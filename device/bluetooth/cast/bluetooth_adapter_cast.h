@@ -5,7 +5,9 @@
 #ifndef DEVICE_BLUETOOTH_CAST_BLUETOOTH_ADAPTER_CAST_H_
 #define DEVICE_BLUETOOTH_CAST_BLUETOOTH_ADAPTER_CAST_H_
 
+#include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -144,8 +146,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
       std::vector<uint8_t> value) override;
 
   // chromecast::bluetooth::LeScanManager::Observer implementation:
-  void OnNewScanResult(
-      chromecast::bluetooth::LeScanManager::ScanResult) override;
+  void OnNewScanResult(chromecast::bluetooth::LeScanResult) override;
   void OnScanEnableChanged(bool enabled) override;
 
   // Helper method to access |devices_| as BluetoothDeviceCast*.
@@ -164,11 +165,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   void OnScanEnabled(bool success);
   void OnGetDevice(scoped_refptr<chromecast::bluetooth::RemoteDevice> device);
   void OnGetScanResults(
-      std::vector<chromecast::bluetooth::LeScanManager::ScanResult> results);
+      std::vector<chromecast::bluetooth::LeScanResult> results);
 
   // Maps address to ScanResults received from |le_scan_manager_|.
-  std::map<std::string,
-           std::list<chromecast::bluetooth::LeScanManager::ScanResult>>
+  std::map<std::string, std::list<chromecast::bluetooth::LeScanResult>>
       pending_scan_results_;
 
   chromecast::bluetooth::GattClientManager* const gatt_client_manager_;

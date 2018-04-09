@@ -4,6 +4,8 @@
 
 #include "device/bluetooth/cast/bluetooth_adapter_cast.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/no_destructor.h"
@@ -269,7 +271,7 @@ void BluetoothAdapterCast::OnCharacteristicNotification(
 }
 
 void BluetoothAdapterCast::OnNewScanResult(
-    chromecast::bluetooth::LeScanManager::ScanResult result) {
+    chromecast::bluetooth::LeScanResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   std::string address = GetCanonicalBluetoothAddress(result.addr);
@@ -382,7 +384,7 @@ void BluetoothAdapterCast::OnGetDevice(
 }
 
 void BluetoothAdapterCast::OnGetScanResults(
-    std::vector<chromecast::bluetooth::LeScanManager::ScanResult> results) {
+    std::vector<chromecast::bluetooth::LeScanResult> results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   for (auto& result : results)

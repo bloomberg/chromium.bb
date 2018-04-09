@@ -4,8 +4,14 @@
 
 #include "device/bluetooth/cast/bluetooth_device_cast.h"
 
+#include <inttypes.h>
+
+#include <unordered_set>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_characteristic_cast.h"
@@ -15,37 +21,21 @@
 namespace device {
 namespace {
 
-// BluetoothUUID expects uuids in this format.
-const char kServiceUuid128BitFormat[] =
-    "%02hhx%02hhx%02hhx%02hhx-%02hhx%02hhx-%02hhx%02hhx-"
-    "%02hhx%02hhx-%02hhx%02hhx%02hhx%02hhx%02hhx%02hhx";
-
-// http://www.argenox.com/bluetooth-low-energy-ble-v4-0-development/library/a-ble-advertising-primer.
-const uint8_t kComplete128BitServiceUuids = 0x07;
-
 BluetoothDevice::UUIDSet ExtractServiceUuids(
-    const chromecast::bluetooth::LeScanManager::ScanResult& result,
+    const chromecast::bluetooth::LeScanResult& result,
     const std::string& debug_name) {
   BluetoothDevice::UUIDSet uuids;
 
-  // Handle 128-bit UUIDs.
-  // TODO(slan): Parse more services.
-  auto it = result.type_to_data.find(kComplete128BitServiceUuids);
-  if (it != result.type_to_data.end()) {
-    // Iterate through this data in 16-byte chunks.
-    const auto& data = it->second;
-    for (size_t i = 0; i < data.size(); i += 16) {
-      auto raw = base::StringPrintf(
-          kServiceUuid128BitFormat, data[i + 15], data[i + 14], data[i + 13],
-          data[i + 12], data[i + 11], data[i + 10], data[i + 9], data[i + 8],
-          data[i + 7], data[i + 6], data[i + 5], data[i + 4], data[i + 3],
-          data[i + 2], data[i + 1], data[i + 0]);
-      BluetoothUUID uuid(raw);
-      LOG_IF(ERROR, !uuid.IsValid()) << raw << " is not a valid uuid.";
-
-      uuids.insert(std::move(uuid));
-    }
+  base::Optional<std::vector<chromecast::bluetooth_v2_shlib::Uuid>> all_uuids =
+      result.AllServiceUuids();
+  if (!all_uuids) {
+    return uuids;
   }
+
+  for (const auto& uuid : *all_uuids) {
+    uuids.insert(UuidToBluetoothUUID(uuid));
+  }
+
   return uuids;
 }
 
@@ -231,15 +221,17 @@ void BluetoothDeviceCast::ConnectToServiceInsecurely(
 }
 
 bool BluetoothDeviceCast::UpdateWithScanResult(
-    const chromecast::bluetooth::LeScanManager::ScanResult& result) {
+    const chromecast::bluetooth::LeScanResult& result) {
   bool changed = false;
+
+  base::Optional<std::string> result_name = result.Name();
 
   // Advertisements for the same device can use different names. For now, the
   // last name wins.
   // TODO(slan): Make sure that this doesn't spam us with name changes.
-  if (!name_ || result.name != *name_) {
+  if (result_name != name_) {
     changed = true;
-    name_ = result.name;
+    name_ = std::move(result_name);
   }
 
   // Replace |device_uuids_| with newly advertised services. Currently this just

@@ -41,6 +41,12 @@ std::string UuidToString(const bluetooth_v2_shlib::Uuid& uuid);
 // Returns true iff |str| is a UUID.
 bool ParseUuid(const std::string& str, bluetooth_v2_shlib::Uuid* uuid);
 
+// Return full UUID object corresponding to 16 bit uuid.
+bluetooth_v2_shlib::Uuid UuidFromInt16(uint16_t uuid);
+
+// Return full UUID object corresponding to 32 bit uuid.
+bluetooth_v2_shlib::Uuid UuidFromInt32(uint32_t uuid);
+
 }  // namespace util
 }  // namespace bluetooth
 }  // namespace chromecast

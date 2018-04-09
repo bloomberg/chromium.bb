@@ -59,7 +59,7 @@ class FakeLeScannerImpl : public bluetooth_v2_shlib::LeScannerImpl {
 class MockLeScanManagerObserver : public LeScanManager::Observer {
  public:
   MOCK_METHOD1(OnScanEnableChanged, void(bool enabled));
-  MOCK_METHOD1(OnNewScanResult, void(LeScanManager::ScanResult result));
+  MOCK_METHOD1(OnNewScanResult, void(LeScanResult result));
 };
 
 class LeScanManagerTest : public ::testing::Test {
@@ -112,11 +112,11 @@ TEST_F(LeScanManagerTest, TestSetScanEnable) {
 }
 
 TEST_F(LeScanManagerTest, TestGetScanResultsEmpty) {
-  std::vector<LeScanManager::ScanResult> results;
+  std::vector<LeScanResult> results;
 
   // Get asynchronous scan results. The result should be empty.
-  le_scan_manager_.GetScanResults(base::BindOnce(
-      &CopyResult<std::vector<LeScanManager::ScanResult>>, &results));
+  le_scan_manager_.GetScanResults(
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results));
 
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(0u, results.size());
@@ -132,10 +132,10 @@ TEST_F(LeScanManagerTest, TestGetScanResults) {
   delegate()->OnScanResult(raw_scan_result);
   scoped_task_environment_.RunUntilIdle();
 
-  std::vector<LeScanManager::ScanResult> results;
+  std::vector<LeScanResult> results;
   // Get asynchronous scan results.
-  le_scan_manager_.GetScanResults(base::BindOnce(
-      &CopyResult<std::vector<LeScanManager::ScanResult>>, &results));
+  le_scan_manager_.GetScanResults(
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results));
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -163,35 +163,31 @@ TEST_F(LeScanManagerTest, TestGetScanResultsWithService) {
   scoped_task_environment_.RunUntilIdle();
 
   // Get asynchronous scan results for results with service 0x4444.
-  std::vector<LeScanManager::ScanResult> results;
+  std::vector<LeScanResult> results;
   le_scan_manager_.GetScanResults(
-      base::BindOnce(&CopyResult<std::vector<LeScanManager::ScanResult>>,
-                     &results),
-      0x4444);
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results), 0x4444);
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, results.size());
   ASSERT_EQ(kTestAddr1, results[0].addr);
-  ASSERT_EQ(std::vector<uint8_t>({0x44, 0x44}), results[0].type_to_data[0x02]);
+  ASSERT_EQ(std::vector<uint8_t>({0x44, 0x44}),
+            results[0].type_to_data[0x02][0]);
   ASSERT_EQ(1234, results[0].rssi);
 
   // Get asynchronous scan results for results with service 0x5555.
   le_scan_manager_.GetScanResults(
-      base::BindOnce(&CopyResult<std::vector<LeScanManager::ScanResult>>,
-                     &results),
-      0x5555);
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results), 0x5555);
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, results.size());
   ASSERT_EQ(kTestAddr2, results[0].addr);
-  ASSERT_EQ(std::vector<uint8_t>({0x55, 0x55}), results[0].type_to_data[0x02]);
+  ASSERT_EQ(std::vector<uint8_t>({0x55, 0x55}),
+            results[0].type_to_data[0x02][0]);
   ASSERT_EQ(1234, results[0].rssi);
 
   // Get asynchronous scan results for results with service 0x6666.
   le_scan_manager_.GetScanResults(
-      base::BindOnce(&CopyResult<std::vector<LeScanManager::ScanResult>>,
-                     &results),
-      0x6666);
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results), 0x6666);
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(0u, results.size());
@@ -221,10 +217,10 @@ TEST_F(LeScanManagerTest, TestGetScanResultsSortedByRssi) {
 
   scoped_task_environment_.RunUntilIdle();
 
-  std::vector<LeScanManager::ScanResult> results;
+  std::vector<LeScanResult> results;
   // Get asynchronous scan results.
-  le_scan_manager_.GetScanResults(base::BindOnce(
-      &CopyResult<std::vector<LeScanManager::ScanResult>>, &results));
+  le_scan_manager_.GetScanResults(
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results));
 
   scoped_task_environment_.RunUntilIdle();
 
@@ -238,11 +234,10 @@ TEST_F(LeScanManagerTest, TestGetScanResultsSortedByRssi) {
 }
 
 TEST_F(LeScanManagerTest, TestOnNewScanResult) {
-  LeScanManager::ScanResult result;
+  LeScanResult result;
   ON_CALL(mock_observer_, OnNewScanResult(_))
-      .WillByDefault(Invoke([&result](LeScanManager::ScanResult result_in) {
-        result = result_in;
-      }));
+      .WillByDefault(
+          Invoke([&result](LeScanResult result_in) { result = result_in; }));
 
   // Add a scan result with service 0x4444.
   bluetooth_v2_shlib::LeScanner::ScanResult raw_scan_result;
@@ -254,7 +249,7 @@ TEST_F(LeScanManagerTest, TestOnNewScanResult) {
 
   // Ensure that the observer was notified.
   ASSERT_EQ(kTestAddr1, result.addr);
-  ASSERT_EQ(std::vector<uint8_t>({0x44, 0x44}), result.type_to_data[0x02]);
+  ASSERT_EQ(std::vector<uint8_t>({0x44, 0x44}), result.type_to_data[0x02][0]);
   ASSERT_EQ(1, result.rssi);
 }
 

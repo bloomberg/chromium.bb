@@ -12,6 +12,8 @@ cast_source_set("le") {
     "le_scan_manager.h",
     "le_scan_manager_impl.cc",
     "le_scan_manager_impl.h",
+    "le_scan_result.cc",
+    "le_scan_result.h",
     "remote_characteristic.h",
     "remote_characteristic_impl.cc",
     "remote_characteristic_impl.h",
@@ -34,6 +36,7 @@ cast_source_set("le") {
   deps = [
     "//base",
     "//chromecast/base",
+    "//chromecast/device/bluetooth:util",
     "//chromecast/device/bluetooth/shlib",
     "//chromecast/public",
   ]
@@ -70,6 +73,7 @@ cast_source_set("unittests") {
     "gatt_client_manager_impl_test.cc",
     "instantiate_mocks.cc",
     "le_scan_manager_impl_test.cc",
+    "le_scan_result_test.cc",
   ]
   deps = [
     ":le",
