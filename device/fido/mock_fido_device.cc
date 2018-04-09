@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/fido_response_test_data.h"
+#include "device/fido/fido_test_data.h"
 #include "device/fido/u2f_parsing_utils.h"
 
 namespace device {

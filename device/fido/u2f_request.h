@@ -47,6 +47,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
 
   void Start();
 
+  // Functions below are implemented in U2fRequest interface(and not in its
+  // respective subclasses) as both {register, sign} commands are used during
+  // registration process. That is, check-only sign command is sent during
+  // registration to prevent duplicate registration.
+  //
   // Returns bogus register command to be used to verify user presence.
   static std::vector<uint8_t> GetBogusRegisterCommand();
   // Returns APDU formatted U2F version request command. If |is_legacy_version|
