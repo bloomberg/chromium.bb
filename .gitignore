@@ -106,6 +106,7 @@ vs-chromium-project.txt
 /chrome/browser/resources/vr/assets/google_chrome/*.png
 /chrome/browser/resources/vr/assets/google_chrome/*.wav
 /chrome/browser/spellchecker/internal
+/chrome/browser/ui/media_router/internal
 /chrome/browser_tests_run.xml
 /chrome/chrome_run.xml
 /chrome/chrome_user32_delay_imports.xml
