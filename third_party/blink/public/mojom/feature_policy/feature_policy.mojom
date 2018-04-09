@@ -83,7 +83,6 @@ enum FeaturePolicyFeature {
   kUnsizedMedia,
   // Controls access to Picture-in-Picture.
   kPictureInPicture,
-  kLastFeature = kPictureInPicture,
 };
 
 // This struct holds feature policy whitelist data that needs to be replicated
