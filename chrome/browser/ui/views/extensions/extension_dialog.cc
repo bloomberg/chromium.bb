@@ -28,14 +28,6 @@
 using content::BrowserContext;
 using content::WebContents;
 
-namespace {
-
-ExtensionViewViews* GetExtensionView(extensions::ExtensionViewHost* host) {
-  return static_cast<ExtensionViewViews*>(host->view());
-}
-
-}  // namespace
-
 ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
                                  ExtensionDialogObserver* observer)
     : host_(host),
@@ -122,6 +114,15 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   window->Activate();
 }
 
+ExtensionViewViews* ExtensionDialog::GetExtensionView() const {
+  return GetExtensionView(host_.get());
+}
+
+ExtensionViewViews* ExtensionDialog::GetExtensionView(
+    extensions::ExtensionViewHost* host) {
+  return static_cast<ExtensionViewViews*>(host->view());
+}
+
 void ExtensionDialog::ObserverDestroyed() {
   observer_ = NULL;
 }
@@ -152,12 +153,11 @@ int ExtensionDialog::GetDialogButtons() const {
 
 bool ExtensionDialog::CanResize() const {
   // Can resize only if minimum contents size set.
-  return static_cast<views::View*>(GetExtensionView(host_.get()))->
-      GetPreferredSize() != gfx::Size();
+  return GetExtensionView()->GetPreferredSize() != gfx::Size();
 }
 
 void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
-  GetExtensionView(host_.get())->SetPreferredSize(gfx::Size(width, height));
+  GetExtensionView()->SetPreferredSize(gfx::Size(width, height));
 }
 
 ui::ModalType ExtensionDialog::GetModalType() const {
@@ -183,15 +183,15 @@ void ExtensionDialog::DeleteDelegate() {
 }
 
 views::Widget* ExtensionDialog::GetWidget() {
-  return GetExtensionView(host_.get())->GetWidget();
+  return GetExtensionView()->GetWidget();
 }
 
 const views::Widget* ExtensionDialog::GetWidget() const {
-  return GetExtensionView(host_.get())->GetWidget();
+  return GetExtensionView()->GetWidget();
 }
 
 views::View* ExtensionDialog::GetContentsView() {
-  return GetExtensionView(host_.get());
+  return GetExtensionView();
 }
 
 bool ExtensionDialog::ShouldUseCustomFrame() const {
@@ -208,7 +208,7 @@ void ExtensionDialog::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
-      GetExtensionView(host_.get())->SetBackground(nullptr);
+      GetExtensionView()->SetBackground(nullptr);
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
       if (content::Details<extensions::ExtensionHost>(host()) == details)
