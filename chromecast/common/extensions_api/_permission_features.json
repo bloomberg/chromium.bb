@@ -6,5 +6,9 @@
   "bookmarks": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
+  },
+  "history": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app"]
   }
 }

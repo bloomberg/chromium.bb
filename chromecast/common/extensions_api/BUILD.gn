@@ -11,6 +11,7 @@ assert(enable_extensions,
 
 schema_sources = [
   "bookmarks.json",
+  "history.json",
   "identity.idl",
 ]
 root_namespace = "extensions::cast::api::%(namespace)s"
