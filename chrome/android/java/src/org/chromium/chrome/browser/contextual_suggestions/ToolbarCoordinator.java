@@ -43,6 +43,8 @@ class ToolbarCoordinator {
         // needs to be bound on creation.
         mModelChangeProcessor.onPropertyChanged(mModel, PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER);
         mModelChangeProcessor.onPropertyChanged(mModel, PropertyKey.TITLE);
+        mModelChangeProcessor.onPropertyChanged(
+                mModel, PropertyKey.DEFAULT_TOOLBAR_ON_CLICK_LISTENER);
     }
 
     /** @return The content {@link View}. */

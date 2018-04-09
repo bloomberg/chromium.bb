@@ -21,6 +21,8 @@ class ToolbarViewBinder
             view.setTitle(model.getTitle());
         } else if (propertyKey == PropertyKey.TOOLBAR_SHADOW_VISIBILITY) {
             view.setShadowVisibility(model.getToolbarShadowVisibility());
+        } else if (propertyKey == PropertyKey.DEFAULT_TOOLBAR_ON_CLICK_LISTENER) {
+            view.setOnClickListener(model.getDefaultToolbarClickListener());
         } else {
             assert false : "Unhandled property detected.";
         }
