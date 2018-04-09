@@ -46,6 +46,7 @@
 #include "components/safe_browsing/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/browser/mojo_safe_browsing_impl.h"
 #include "components/safe_browsing/features.h"
+#include "components/services/heap_profiling/public/mojom/constants.mojom.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -546,6 +547,8 @@ std::unique_ptr<base::Value> AwContentBrowserClient::GetServiceManifestOverlay(
     id = IDR_AW_BROWSER_MANIFEST_OVERLAY;
   else if (name == content::mojom::kRendererServiceName)
     id = IDR_AW_RENDERER_MANIFEST_OVERLAY;
+  else if (name == content::mojom::kUtilityServiceName)
+    id = IDR_AW_UTILITY_MANIFEST_OVERLAY;
   if (id == -1)
     return nullptr;
 
@@ -709,6 +712,12 @@ bool AwContentBrowserClient::HandleExternalProtocol(
   // gets called.
   NOTREACHED();
   return false;
+}
+
+void AwContentBrowserClient::RegisterOutOfProcessServices(
+    OutOfProcessServiceMap* services) {
+  (*services)[heap_profiling::mojom::kServiceName] =
+      base::ASCIIToUTF16("Heap Profiling Service");
 }
 
 // static
