@@ -32,18 +32,19 @@ def EnsureEmptyDir(path):
 
 
 def BuildForArch(arch):
-  Run('scripts/build-zircon.sh', '-t', arch)
-  Run('build/gn/gen.py', '--target_cpu=' + arch,
-      '--packages=garnet/packages/sdk/base', '--release')
-  Run('buildtools/ninja', '-C', 'out/release-' + arch)
+  build_dir = 'out/release-' + arch
+  Run('scripts/fx', 'set', arch,
+      '--packages=garnet/packages/sdk/base',
+      '--args=is_debug=false', build_dir)
+  Run('scripts/fx', 'full-build')
+
   # Also build the deprecated bootfs-based image.
-  # TODO(crbug.com/805057): Remove this once the bootfs path is turned down.
+  # TODO(crbug.com/805057): Remove this once bootfs is turned down.
   build_dir_bootfs = 'out/release-' + arch + '-bootfs'
-  Run('build/gn/gen.py', '--target_cpu=' + arch,
-      '--packages=garnet/packages/sdk/bootfs', '--release',
-      '--args=bootfs_packages=true',
-      '--build-dir='+build_dir_bootfs)
-  Run('buildtools/ninja', '-C', build_dir_bootfs)
+  Run('scripts/fx', 'set', arch,
+      '--packages=garnet/packages/sdk/bootfs', '--args=is_debug=false',
+      '--args=bootfs_packages=true', build_dir_bootfs)
+  Run('scripts/fx', 'full-build')
 
 
 def main(args):
