@@ -65,38 +65,63 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
                      DispatchExtendableMessageEvent_Fail);
 }  // namespace service_worker_dispatcher_host_unittest
 
-// This class is the browser-process representation of a service worker
-// provider. There are two general types of providers: 1) those for a client
-// (windows or shared workers), and 2) those for hosting a running service
-// worker.
+// ServiceWorkerProviderHost is the browser-process representation of a
+// renderer-process entity that can involve service workers. Currently, these
+// entities are frames or workers. So basically, one ServiceWorkerProviderHost
+// instance is the browser process's source of truth about one frame/worker in a
+// renderer process, which the browser process uses when performing operations
+// involving service workers.
 //
-// For client providers, there is a provider per document or a worker and the
-// lifetime of this object is tied to the lifetime of its document or the worker
-// in the renderer process. This class holds service worker state that is scoped
-// to an individual document or a worker.
+// ServiceWorkerProviderHost lives on the IO thread, since all nearly all
+// browser process service worker machinery lives on the IO thread.
 //
-// For providers hosting a running service worker, this class will observe
-// resource loads made directly by the service worker.
+// Example:
+// * A new service worker registration is created. The browser process loops
+// over all ServiceWorkerProviderHosts to find clients (frames and shared
+// workers) with a URL inside the registration's scope, and has the provider
+// host watch the registration in order to resolve navigator.serviceWorker.ready
+// once the registration settles, if neeed.
+//
+// "Provider" is a somewhat tricky term. The idea is that a provider is what
+// attaches to a frame/worker and "provides" it with functionality related to
+// service workers. This functionality is mostly granted by creating the
+// ServiceWorkerProviderHost for this frame/worker, which, again, makes the
+// frame/worker alive in the browser's service worker world.
+//
+// The analogue of ServiceWorkerProviderHost ("provider host") on the renderer
+// process is ServiceWorkerProviderContext ("provider"). A provider host has a
+// Mojo connection to the provider in the renderer. Destruction of the host
+// happens upon disconnection of the Mojo pipe.
+//
+// There are two general types of providers: 1) those for service worker clients
+// (windows or shared workers), and 2) those for service workers themselves.
+//
+// For client providers, there is a provider per frame or shared worker in the
+// renderer process. The lifetime of this host object is tied to the lifetime of
+// the document or the worker.
+//
+// For service worker providers, there is a provider per running service worker
+// in the renderer process. The lifetime of this host object is tied to the
+// lifetime of the running service worker.
 //
 // A ServiceWorkerProviderHost is created in the following situations:
 //
 // 1) For a client created for a navigation (for both top-level and
 // non-top-level frames), the provider host for the resulting document is
-// pre-created by the browser process. Upon navigation commit, the
-// ServiceWorkerNetworkProvider is created on the renderer, at which point the
-// Mojo connection is established.
+// pre-created by the browser process. Upon navigation commit, the provider is
+// created on the renderer, which sends an OnProviderCreated IPC to establish
+// the Mojo connection.
 //
-// 2) For clients created by the renderer not due to navigations (SharedWorkers
-// and about:blank iframes), the provider host is created when the
-// ServiceWorkerNetworkProvider is created by the renderer process.
+// 2) For clients created by the renderer not due to navigations (shared workers
+// in the non-S13nServiceWorker case, and about:blank iframes), the provider
+// host is created and the Mojo connection is established when the provider is
+// created by the renderer process and sends an OnProviderCreated IPC.
 //
-// 3) For service workers, the provider host is created on the browser process
-// before sending the start worker IPC message. The provider host's Mojo's
-// connection to the renderer is established in the start worker message.
-//
-// Destruction of the ServiceWorkerProviderHost instance happens on
-// disconnection of the Mojo's pipe from the renderer side regardless of what
-// the provider is for.
+// 3) For shared workers in the S13nServiceWorker case and for service workers,
+// the provider host is pre-created by the browser process, and information
+// about the host is sent in the start worker IPC message. The Mojo connection
+// is established when renderer process receives the start message and creates
+// the provider.
 class CONTENT_EXPORT ServiceWorkerProviderHost
     : public ServiceWorkerRegistration::Listener,
       public base::SupportsWeakPtr<ServiceWorkerProviderHost>,
@@ -612,7 +637,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // ServiceWorkerContainer that |this| is a ServiceWorkerContainerHost for.
   mojom::ServiceWorkerContainerAssociatedPtr container_;
   // |binding_| is the Mojo binding that keeps the connection to the
-  // renderer-side counterpart (content::ServiceWorkerNetworkProvider). When the
+  // renderer-side counterpart (content::ServiceWorkerProviderContext). When the
   // connection bound on |binding_| gets killed from the renderer side, or the
   // bound |ServiceWorkerProviderInfoForStartWorker::host_ptr_info| is otherwise
   // destroyed before being passed to the renderer, this
