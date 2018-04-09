@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/json/json_writer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -35,6 +34,7 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_tab_socket_impl.h"
+#include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/public/internal/headless_devtools_client_impl.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -584,54 +584,11 @@ void HeadlessWebContentsImpl::OnDisplayDidFinishFrame(
 
 void HeadlessWebContentsImpl::OnNeedsExternalBeginFrames(
     bool needs_begin_frames) {
+  protocol::HeadlessHandler::OnNeedsBeginFrames(this, needs_begin_frames);
   TRACE_EVENT1("headless",
                "HeadlessWebContentsImpl::OnNeedsExternalBeginFrames",
                "needs_begin_frames", needs_begin_frames);
-
   needs_external_begin_frames_ = needs_begin_frames;
-  for (content::DevToolsAgentHostClient* client :
-       begin_frame_events_enabled_clients_) {
-    SendNeedsBeginFramesEvent(client);
-  }
-}
-
-void HeadlessWebContentsImpl::SetBeginFrameEventsEnabled(
-    content::DevToolsAgentHostClient* client,
-    bool enabled) {
-  TRACE_EVENT2("headless",
-               "HeadlessWebContentsImpl::SetBeginFrameEventsEnabled", "client",
-               client, "enabled", enabled);
-
-  if (enabled) {
-    if (!base::ContainsValue(begin_frame_events_enabled_clients_, client)) {
-      begin_frame_events_enabled_clients_.push_back(client);
-
-      // We only need to send an event if BeginFrames are needed, as clients
-      // assume that they are not needed by default.
-      if (needs_external_begin_frames_)
-        SendNeedsBeginFramesEvent(client);
-    }
-  } else {
-    begin_frame_events_enabled_clients_.remove(client);
-  }
-}
-
-void HeadlessWebContentsImpl::SendNeedsBeginFramesEvent(
-    content::DevToolsAgentHostClient* client) {
-  TRACE_EVENT2("headless", "HeadlessWebContentsImpl::SendNeedsBeginFramesEvent",
-               "client", client, "needs_begin_frames",
-               needs_external_begin_frames_);
-  DCHECK(agent_host_);
-  auto params = std::make_unique<base::DictionaryValue>();
-  params->SetBoolean("needsBeginFrames", needs_external_begin_frames_);
-
-  base::DictionaryValue event;
-  event.SetString("method", "HeadlessExperimental.needsBeginFramesChanged");
-  event.Set("params", std::move(params));
-
-  std::string json_result;
-  CHECK(base::JSONWriter::Write(event, &json_result));
-  client->DispatchProtocolMessage(agent_host_.get(), json_result);
 }
 
 void HeadlessWebContentsImpl::PendingFrameReadbackComplete(

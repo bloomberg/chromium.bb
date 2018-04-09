@@ -117,7 +117,7 @@ protocol::Response BrowserHandler::SetWindowBounds(
     bounds.set_height(window_bounds->GetHeight(bounds.height()));
   }
 
-  const std::string& window_state = window_bounds->GetWindowState("normal");
+  const std::string window_state = window_bounds->GetWindowState("normal");
   if (set_bounds && window_state != "normal") {
     return protocol::Response::Error(
         "The 'minimized', 'maximized' and 'fullscreen' states cannot be "

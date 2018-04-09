@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -81,16 +80,6 @@ std::string HeadlessPrintManager::PrintResultToString(PrintResult result) {
       NOTREACHED();
       return "Unknown PrintResult";
   }
-}
-
-// static
-std::unique_ptr<base::DictionaryValue>
-HeadlessPrintManager::PDFContentsToDictionaryValue(const std::string& data) {
-  std::string base_64_data;
-  base::Base64Encode(data, &base_64_data);
-  auto result = std::make_unique<base::DictionaryValue>();
-  result->SetString("data", base_64_data);
-  return result;
 }
 
 // static

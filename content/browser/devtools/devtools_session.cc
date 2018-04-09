@@ -127,12 +127,6 @@ void DevToolsSession::DispatchProtocolMessage(const std::string& message) {
 
     if (delegate->HandleCommand(agent_host_, client_, dict_value))
       return;
-
-    if (delegate->HandleAsyncCommand(agent_host_, client_, dict_value,
-                                     base::Bind(&DevToolsSession::SendResponse,
-                                                weak_factory_.GetWeakPtr()))) {
-      return;
-    }
   }
 
   int call_id;
