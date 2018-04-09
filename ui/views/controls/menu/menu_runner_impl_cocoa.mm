@@ -39,7 +39,9 @@ NSMenuItem* FirstCheckedItem(MenuControllerCocoa* menu_controller) {
 base::scoped_nsobject<NSView> CreateMenuAnchorView(
     NSWindow* window,
     const gfx::Rect& screen_bounds,
-    NSMenuItem* checked_item) {
+    NSMenuItem* checked_item,
+    CGFloat actual_menu_width,
+    MenuAnchorPosition position) {
   NSRect rect = gfx::ScreenRectToNSRect(screen_bounds);
   rect = [window convertRectFromScreen:rect];
   rect = [[window contentView] convertRect:rect fromView:nil];
@@ -69,6 +71,13 @@ base::scoped_nsobject<NSView> CreateMenuAnchorView(
     }
   }
 
+  // When the actual menu width is larger than the anchor, right alignment
+  // should be respected.
+  if (actual_menu_width > rect.size.width &&
+      position == views::MENU_ANCHOR_TOPRIGHT && !base::i18n::IsRTL()) {
+    int width_diff = actual_menu_width - rect.size.width;
+    rect.origin.x -= width_diff;
+  }
   // A plain NSView will anchor below rather than "over", so use an NSButton.
   base::scoped_nsobject<NSView> anchor_view(
       [[NSButton alloc] initWithFrame:rect]);
@@ -165,13 +174,14 @@ void MenuRunnerImplCocoa::RunMenuAt(Widget* parent,
                      forView:parent->GetNativeView()];
   } else if (run_types & MenuRunner::COMBOBOX) {
     NSMenuItem* checked_item = FirstCheckedItem(menu_controller_);
-    base::scoped_nsobject<NSView> anchor_view(
-        CreateMenuAnchorView(window, bounds, checked_item));
     NSMenu* menu = [menu_controller_ menu];
+    base::scoped_nsobject<NSView> anchor_view(CreateMenuAnchorView(
+        window, bounds, checked_item, menu.size.width, anchor));
     [menu setMinimumWidth:bounds.width() + kNativeCheckmarkWidth];
     [menu popUpMenuPositioningItem:checked_item
                         atLocation:NSZeroPoint
                             inView:anchor_view];
+
     [anchor_view removeFromSuperview];
   } else {
     NOTREACHED();

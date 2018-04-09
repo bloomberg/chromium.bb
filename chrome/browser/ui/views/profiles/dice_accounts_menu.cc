@@ -78,17 +78,8 @@ void DiceAccountsMenu::Show(views::View* anchor_view,
   // so the menu only takes the width it needs.
   gfx::Rect anchor_bounds = anchor_view->GetBoundsInScreen();
   anchor_bounds.Inset(kAnchorInset, kAnchorInset);
-#if defined(OS_MACOSX)
-  // On Mac, menus align to the left of the anchor, so collapse the right side
-  // of the rect.
-  bool collapse_right = true;
-#else
-  bool collapse_right = false;
-#endif
-  if (base::i18n::IsRTL())
-    collapse_right = !collapse_right;
 
-  if (collapse_right)
+  if (base::i18n::IsRTL())
     anchor_bounds.Inset(0, 0, anchor_bounds.width(), 0);
   else
     anchor_bounds.Inset(anchor_bounds.width(), 0, 0, 0);
