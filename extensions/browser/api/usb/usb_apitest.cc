@@ -6,7 +6,6 @@
 
 #include <numeric>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"

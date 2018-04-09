@@ -5,7 +5,6 @@
 #include "extensions/common/features/feature_session_type.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace extensions {
 

@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/feature.h"

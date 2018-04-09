@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/storage/storage_frontend.h"

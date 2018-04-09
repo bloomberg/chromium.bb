@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/prefs/mock_pref_change_callback.h"
 #include "content/public/test/test_browser_context.h"

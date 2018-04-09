@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/feature_cache.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"

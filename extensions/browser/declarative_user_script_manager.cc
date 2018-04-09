@@ -4,7 +4,6 @@
 
 #include "extensions/browser/declarative_user_script_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/declarative_user_script_manager_factory.h"
 #include "extensions/browser/declarative_user_script_master.h"

@@ -5,7 +5,6 @@
 #include "extensions/renderer/bindings/exception_handler.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "extensions/renderer/bindings/get_per_context_data.h"

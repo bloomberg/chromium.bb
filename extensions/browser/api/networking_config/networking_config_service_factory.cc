@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/api/networking_config/networking_config_service.h"
 #include "extensions/browser/extension_registry_factory.h"

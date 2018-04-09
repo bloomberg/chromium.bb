@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "extensions/browser/api/audio/audio_device_id_calculator.h"

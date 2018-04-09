@@ -5,7 +5,6 @@
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/shell/browser/shell_oauth2_token_service_delegate.h"

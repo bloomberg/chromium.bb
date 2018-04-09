@@ -6,7 +6,6 @@
 
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_local.h"
 #include "base/values.h"

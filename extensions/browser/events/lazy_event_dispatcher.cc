@@ -5,7 +5,6 @@
 #include "extensions/browser/events/lazy_event_dispatcher.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"

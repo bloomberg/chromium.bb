@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/chrome_setting.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "extensions/renderer/bindings/api_binding_util.h"

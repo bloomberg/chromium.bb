@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/user_script_set_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/extension_messages.h"

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"

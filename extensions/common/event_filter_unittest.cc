@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"

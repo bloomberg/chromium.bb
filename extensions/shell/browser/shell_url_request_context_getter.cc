@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/shell/browser/shell_network_delegate.h"

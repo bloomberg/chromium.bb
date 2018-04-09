@@ -4,7 +4,6 @@
 
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
 
-#include "base/memory/ptr_util.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/dispatcher_delegate.h"
 

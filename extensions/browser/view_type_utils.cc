@@ -5,7 +5,6 @@
 #include "extensions/browser/view_type_utils.h"
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extensions_browser_client.h"
 

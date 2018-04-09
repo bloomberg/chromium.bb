@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"

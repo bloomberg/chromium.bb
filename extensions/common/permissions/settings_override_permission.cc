@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/strings/grit/extensions_strings.h"

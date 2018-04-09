@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension.h"

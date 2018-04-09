@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/request_sender.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"

@@ -4,7 +4,6 @@
 
 #include "extensions/browser/api/system_storage/system_storage_api.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"

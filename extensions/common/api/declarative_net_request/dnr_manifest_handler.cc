@@ -4,7 +4,6 @@
 
 #include "extensions/common/api/declarative_net_request/dnr_manifest_handler.h"
 
-#include "base/memory/ptr_util.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/dnr_manifest_data.h"
 #include "extensions/common/api/declarative_net_request/utils.h"

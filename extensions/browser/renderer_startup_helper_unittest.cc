@@ -4,7 +4,6 @@
 
 #include "extensions/browser/renderer_startup_helper.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/notification_service.h"

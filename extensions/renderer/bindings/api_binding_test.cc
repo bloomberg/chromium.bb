@@ -4,7 +4,6 @@
 
 #include "extensions/renderer/bindings/api_binding_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gin/array_buffer.h"
 #include "gin/public/context_holder.h"

@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "extensions/browser/deferred_start_render_host.h"
 #include "extensions/browser/extensions_test.h"
