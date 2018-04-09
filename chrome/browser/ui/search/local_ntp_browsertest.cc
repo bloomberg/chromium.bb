@@ -40,6 +40,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -174,6 +175,45 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   // Now the API should be available again.
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!window.chrome.embeddedSearch", &result));
+  EXPECT_TRUE(result);
+}
+
+// The spare RenderProcessHost is warmed up *before* the target destination is
+// known and therefore doesn't include any special command-line flags that are
+// used when launching a RenderProcessHost known to be needed for NTP.  This
+// test ensures that the spare RenderProcessHost doesn't accidentally end up
+// being used for NTP navigations.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, SpareProcessDoesntInterfereWithSearchAPI) {
+  content::WebContents* active_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to a non-NTP URL, so that the next step needs to swap the process.
+  GURL non_ntp_url = ui_test_utils::GetTestUrl(
+      base::FilePath(), base::FilePath().AppendASCII("title1.html"));
+  ui_test_utils::NavigateToURL(browser(), non_ntp_url);
+  content::RenderProcessHost* old_process =
+      active_tab->GetMainFrame()->GetProcess();
+
+  // Navigate to an NTP while a spare process is present.
+  content::RenderProcessHost::WarmupSpareRenderProcessHost(
+      browser()->profile());
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  // Verify that a process swap has taken place.  This is an indirect indication
+  // that the spare process could have been used (during the process swap).
+  // This assertion is a sanity check of the test setup, rather than
+  // verification of the core thing that the test cares about.
+  content::RenderProcessHost* new_process =
+      active_tab->GetMainFrame()->GetProcess();
+  ASSERT_NE(new_process, old_process);
+
+  // Check that the embeddedSearch API is available - the spare
+  // RenderProcessHost either shouldn't be used, or if used it should have been
+  // launched with the appropriate, NTP-specific cmdline flags.
+  bool result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "!!window.chrome.embeddedSearch", &result));
   EXPECT_TRUE(result);

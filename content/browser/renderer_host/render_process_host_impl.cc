@@ -591,6 +591,16 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       StoragePartition* partition,
       SiteInstance* site_instance,
       bool is_for_guests_only) {
+    // Give embedder a chance to disable using a spare RenderProcessHost for
+    // certain SiteInstances.  Some navigations, such as to NTP or extensions,
+    // require passing command-line flags to the renderer process at process
+    // launch time, but this cannot be done for spare RenderProcessHosts, which
+    // are started before it is known which navigation might use them.  So, a
+    // spare RenderProcessHost should not be used in such cases.
+    if (!GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
+            browser_context, site_instance->GetSiteURL()))
+      return nullptr;
+
     if (spare_render_process_host_ &&
         browser_context == matching_browser_context_ && !is_for_guests_only &&
         !partition) {

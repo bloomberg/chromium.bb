@@ -251,6 +251,19 @@ void OnHttpHeaderReceived(const std::string& header,
   callback.Run(CheckOriginHeader(resource_context, child_id, origin));
 }
 
+const Extension* GetEnabledExtensionFromEffectiveURL(
+    BrowserContext* context,
+    const GURL& effective_url) {
+  if (!effective_url.SchemeIs(kExtensionScheme))
+    return nullptr;
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  if (!registry)
+    return nullptr;
+
+  return registry->enabled_extensions().GetByID(effective_url.host());
+}
+
 }  // namespace
 
 ChromeContentBrowserClientExtensionsPart::
@@ -315,15 +328,8 @@ GURL ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
 // static
 bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
     Profile* profile, const GURL& effective_url) {
-  if (!effective_url.SchemeIs(kExtensionScheme))
-    return false;
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
-  if (!registry)
-    return false;
-
   const Extension* extension =
-      registry->enabled_extensions().GetByID(effective_url.host());
+      GetEnabledExtensionFromEffectiveURL(profile, effective_url);
   if (!extension)
     return false;
 
@@ -343,6 +349,22 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
   // process per site, since all instances can make synchronous calls to the
   // background window.  Other extensions should use process per site as well.
   return true;
+}
+
+// static
+bool ChromeContentBrowserClientExtensionsPart::ShouldUseSpareRenderProcessHost(
+    Profile* profile,
+    const GURL& site_url) {
+  const Extension* extension =
+      GetEnabledExtensionFromEffectiveURL(profile, site_url);
+  if (!extension)
+    return true;
+
+  // Extensions should not use a spare process, because they require passing a
+  // command-line flag (switches::kExtensionProcess) to the renderer process
+  // when it launches. A spare process is launched earlier, before it is known
+  // which navigation will use it, so it lacks this flag.
+  return false;
 }
 
 // static
@@ -805,9 +827,6 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
     SiteInstance* site_instance) {
   BrowserContext* context = site_instance->GetProcess()->GetBrowserContext();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
-  if (!registry)
-    return;
 
   // Only add the process to the map if the SiteInstance's site URL is already
   // a chrome-extension:// URL. This includes hosted apps, except in rare cases
@@ -815,10 +834,8 @@ void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
   // for isolated origins or cross-site iframes). For that case, don't look up
   // the hosted app's Extension from the site URL using GetExtensionOrAppByURL,
   // since it isn't treated as a hosted app.
-  if (!site_instance->GetSiteURL().SchemeIs(kExtensionScheme))
-    return;
-  const Extension* extension = registry->enabled_extensions().GetByID(
-      site_instance->GetSiteURL().host());
+  const Extension* extension =
+      GetEnabledExtensionFromEffectiveURL(context, site_instance->GetSiteURL());
   if (!extension)
     return;
 
