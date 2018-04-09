@@ -471,7 +471,7 @@ TEST(SetupUtilTest, DecodeDMTokenSwitchValue) {
             *installer::DecodeDMTokenSwitchValue(base::UTF8ToUTF16(encoded)));
 }
 
-TEST(SetupUtilTest, StoreDMTokenToRegistry) {
+TEST(SetupUtilTest, StoreDMTokenToRegistrySuccess) {
   install_static::ScopedInstallDetails scoped_install_details(true);
   registry_util::RegistryOverrideManager registry_override_manager;
   registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
@@ -499,6 +499,17 @@ TEST(SetupUtilTest, StoreDMTokenToRegistry) {
   EXPECT_EQ(REG_BINARY, dtype);
   ASSERT_EQ(kExpectedSize, size);
   EXPECT_EQ(0, memcmp(token.data(), raw_value.data(), kExpectedSize));
+}
+
+TEST(SetupUtilTest, StoreDMTokenToRegistryShouldFailWhenDMTokenTooLarge) {
+  install_static::ScopedInstallDetails scoped_install_details(true);
+  registry_util::RegistryOverrideManager registry_override_manager;
+  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+  std::string token_too_large(installer::kMaxDMTokenLength + 1, 'x');
+  ASSERT_GT(token_too_large.size(), installer::kMaxDMTokenLength);
+
+  EXPECT_FALSE(installer::StoreDMToken(token_too_large));
 }
 
 namespace installer {

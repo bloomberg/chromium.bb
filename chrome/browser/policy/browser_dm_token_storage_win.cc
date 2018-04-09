@@ -79,14 +79,13 @@ std::string GetDMToken() {
   // realistic future size-increase scenarios, although we still make an effort
   // to support somewhat larger token sizes just to be safe.
   constexpr size_t kInitialDMTokenSize = 512;
-  constexpr size_t kMaxDMTokenSize = 4096;
 
   DWORD size = kInitialDMTokenSize;
   std::vector<char> raw_value(size);
   DWORD dtype = REG_NONE;
   result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(), &size,
                          &dtype);
-  if (result == ERROR_MORE_DATA && size <= kMaxDMTokenSize) {
+  if (result == ERROR_MORE_DATA && size <= installer::kMaxDMTokenLength) {
     raw_value.resize(size);
     result = key.ReadValue(dm_token_value_name.c_str(), raw_value.data(), &size,
                            &dtype);
@@ -96,7 +95,7 @@ std::string GetDMToken() {
     DVLOG(1) << "Failed to get DMToken from Registry.";
     return std::string();
   }
-  DCHECK_LE(size, kMaxDMTokenSize);
+  DCHECK_LE(size, installer::kMaxDMTokenLength);
   std::string dm_token;
   dm_token.assign(raw_value.data(), size);
   return dm_token;
