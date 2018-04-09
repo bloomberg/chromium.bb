@@ -4147,6 +4147,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Selected"/>
 </enum>
 
+<enum name="BooleanSent">
+  <int value="0" label="Not Sent"/>
+  <int value="1" label="Sent"/>
+</enum>
+
 <enum name="BooleanShareGroup">
   <int value="0" label="No share group"/>
   <int value="1" label="Using share group"/>

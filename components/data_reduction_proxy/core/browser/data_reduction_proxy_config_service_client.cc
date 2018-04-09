@@ -427,7 +427,8 @@ void DataReductionProxyConfigServiceClient::RetrieveRemoteConfig() {
                                      variations::SignedIn::kNo, &headers);
   if (!headers.IsEmpty())
     fetcher_->SetExtraRequestHeaders(headers.ToString());
-
+  UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.SentVariationHeaders",
+                        !headers.IsEmpty());
   fetcher_->Start();
 }
 
