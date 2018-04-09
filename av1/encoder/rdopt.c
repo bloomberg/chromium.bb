@@ -8958,6 +8958,24 @@ static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
   return 0;
 }
 
+static INLINE void init_mbmi(MB_MODE_INFO *mbmi, int mode_index,
+                             const AV1_COMMON *cm) {
+  PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
+  PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+  mbmi->ref_mv_idx = 0;
+  mbmi->mode = this_mode;
+  mbmi->uv_mode = UV_DC_PRED;
+  mbmi->ref_frame[0] = av1_mode_order[mode_index].ref_frame[0];
+  mbmi->ref_frame[1] = av1_mode_order[mode_index].ref_frame[1];
+  pmi->palette_size[0] = 0;
+  pmi->palette_size[1] = 0;
+  mbmi->filter_intra_mode_info.use_filter_intra = 0;
+  mbmi->mv[0].as_int = mbmi->mv[1].as_int = 0;
+  mbmi->motion_mode = SIMPLE_TRANSLATION;
+  mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
+  set_default_interp_filters(mbmi, cm->interp_filter);
+}
+
 void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                                MACROBLOCK *x, int mi_row, int mi_col,
                                RD_STATS *rd_cost, BLOCK_SIZE bsize,
@@ -9013,9 +9031,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
     int mode_index = mode_map[midx];
-    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index))
-      continue;
-
     int64_t this_rd = INT64_MAX;
     int disable_skip = 0;
     int compmode_cost = 0;
@@ -9030,7 +9045,14 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     this_mode = av1_mode_order[mode_index].mode;
     ref_frame = av1_mode_order[mode_index].ref_frame[0];
     second_ref_frame = av1_mode_order[mode_index].ref_frame[1];
-    mbmi->ref_mv_idx = 0;
+
+    init_mbmi(mbmi, mode_index, cm);
+
+    x->skip = 0;
+    set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
+
+    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index))
+      continue;
 
     if (ref_frame == INTRA_FRAME) {
       if (sf->skip_intra_in_interframe && search_state.skip_intra_modes)
@@ -9106,31 +9128,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         continue;
     }
 
-    mbmi->mode = this_mode;
-    mbmi->uv_mode = UV_DC_PRED;
-    mbmi->ref_frame[0] = ref_frame;
-    mbmi->ref_frame[1] = second_ref_frame;
-    pmi->palette_size[0] = 0;
-    pmi->palette_size[1] = 0;
-    mbmi->filter_intra_mode_info.use_filter_intra = 0;
-    // Evaluate all sub-pel filters irrespective of whether we can use them for
-    // this frame.
-
-    set_default_interp_filters(mbmi, cm->interp_filter);
-
-    mbmi->mv[0].as_int = mbmi->mv[1].as_int = 0;
-    mbmi->motion_mode = SIMPLE_TRANSLATION;
-
-    x->skip = 0;
-    set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
-
     // Select prediction reference frames.
     for (i = 0; i < num_planes; i++) {
       xd->plane[i].pre[0] = yv12_mb[ref_frame][i];
       if (comp_pred) xd->plane[i].pre[1] = yv12_mb[second_ref_frame][i];
     }
-
-    mbmi->interintra_mode = (INTERINTRA_MODE)(II_DC_PRED - 1);
 
     if (ref_frame == INTRA_FRAME) {
       RD_STATS rd_stats_y;
