@@ -108,12 +108,12 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
 
 *   ### Javascript
 
-    [EffectInput](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/animation/EffectInput.cpp)
+    [EffectInput](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/animation/effect_input.cc)
     contains the helper functions that are used to
     [process a keyframe argument](https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument)
     which can take an argument of either object or array form.
 
-    [PlayStateUpdateScope](https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/animation/Animation.h?l=323):
+    [PlayStateUpdateScope](https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/animation/animation.h?l=323):
     whenever there is a mutation to the animation engine from JS level, this
     gets created and the destructor has the logic that handles everything. It
     keeps the old and new state of the animation, checks the difference and
@@ -135,7 +135,7 @@ The Blink animation engine interacts with Blink/Chrome in the following ways:
     animation without having any effect on the underlying animation or its
     listeners.
 
-[InspectorAnimationAgent]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/inspector/InspectorAnimationAgent.h
+[InspectorAnimationAgent]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/inspector/InspectorAnimationAgent.h
 
 *   ### SVG
 
@@ -360,7 +360,7 @@ about the state.
 
 [extending Test]: https://cs.chromium.org/search/?q=public%5C+testing::Test+file:core%5C/Animation&sq=package:chromium&type=cs
 [extending RenderingTest]: https://cs.chromium.org/search/?q=public%5C+RenderingTest+file:core%5C/animation&type=cs
-[enable compositing]: https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/animation/CompositorAnimationsTest.cpp?type=cs&sq=package:chromium&q=file:core%5C/animation%5C/.*Test%5C.cpp+EnableCompositing
+[enable compositing]: https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/animation/compositor_animations_test.cc?type=cs&sq=package:chromium&q=file:core%5C/animation%5C/.*Test%5C.cpp+EnableCompositing
 
 ## Ongoing work
 

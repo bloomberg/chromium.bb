@@ -6,7 +6,7 @@ the Bluetooth component.
 There are also notable higher level bluetooth tests:
 
 *   [Extensions](/extensions/browser/api/bluetooth/)
-*   [Web Bluetooth](/third_party/WebKit/Source/modules/bluetooth/README.md)
+*   [Web Bluetooth](/third_party/blink/renderer/modules/bluetooth/README.md)
 
 
 ## Client Testing

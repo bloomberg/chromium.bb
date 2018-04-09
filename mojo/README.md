@@ -67,7 +67,7 @@ wrapping and unwrapping helpers, common handle operations, and utilities for
 more easily watching handle state changes.
 
 ### JavaScript
-The [**JavaScript System API**](/third_party/WebKit/Source/core/mojo) exposes
+The [**JavaScript System API**](/third_party/blink/renderer/core/mojo) exposes
 the Mojo primitives to JavaScript, covering all basic functionality of the
 low-level C API.
 

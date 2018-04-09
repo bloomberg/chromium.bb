@@ -74,7 +74,7 @@ Custom elements have small C++ unit tests and medium
 
 ###### C++ Unit Tests
 
-These are in third_party/WebKit/Source/core/dom/*Test.cpp and are
+These are in third_party/blink/renderer/core/dom/*_test.cc and are
 built as part of the webkit_unit_tests target. The test names start
 with CustomElement so you can run them with:
 

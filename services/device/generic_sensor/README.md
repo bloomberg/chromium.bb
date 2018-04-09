@@ -9,7 +9,7 @@ Sensors Mojo interfaces are defined in the `services/device/public/mojom` subdir
 
 ### [Generic Sensors](https://www.w3.org/TR/generic-sensor/)
 
-The Generic Sensors API is implemented in `third_party/WebKit/Source/modules/sensor` and exposes the following sensor types as JavaScript objects:
+The Generic Sensors API is implemented in `third_party/blink/renderer/modules/sensor` and exposes the following sensor types as JavaScript objects:
 
 * [AbsoluteOrientationSensor] &rarr; ABSOLUTE_ORIENTATION_QUATERNION
 * [Accelerometer] &rarr; ACCELEROMETER
@@ -19,17 +19,17 @@ The Generic Sensors API is implemented in `third_party/WebKit/Source/modules/sen
 * [Magnetometer] &rarr; MAGNETOMETER
 * [RelativeOrientationSensor] &rarr; RELATIVE_ORIENTATION_QUATERNION
 
-[AbsoluteOrientationSensor]: ../../../third_party/WebKit/Source/modules/sensor/AbsoluteOrientationSensor.idl
-[Accelerometer]: ../../../third_party/WebKit/Source/modules/sensor/Accelerometer.idl
-[AmbientLightSensor]: ../../../third_party/WebKit/Source/modules/sensor/AmbientLightSensor.idl
-[Gyroscope]: ../../../third_party/WebKit/Source/modules/sensor/Gyroscope.idl
-[LinearAccelerationSensor]: ../../../third_party/WebKit/Source/modules/sensor/LinearAccelerationSensor.idl
-[Magnetometer]: ../../../third_party/WebKit/Source/modules/sensor/Magnetometer.idl
-[RelativeOrientationSensor]: ../../../third_party/WebKit/Source/modules/sensor/RelativeOrientationSensor.idl
+[AbsoluteOrientationSensor]: ../../../third_party/blink/renderer/modules/sensor/absolute_orientation_sensor.idl
+[Accelerometer]: ../../../third_party/blink/renderer/modules/sensor/accelerometer.idl
+[AmbientLightSensor]: ../../../third_party/blink/renderer/modules/sensor/ambient_light_sensor.idl
+[Gyroscope]: ../../../third_party/blink/renderer/modules/sensor/gyroscope.idl
+[LinearAccelerationSensor]: ../../../third_party/blink/renderer/modules/sensor/linear_acceleration_sensor.idl
+[Magnetometer]: ../../../third_party/blink/renderer/modules/sensor/magnetometer.idl
+[RelativeOrientationSensor]: ../../../third_party/blink/renderer/modules/sensor/relative_orientation_sensor.idl
 
 ### [DeviceOrientation Events](https://www.w3.org/TR/orientation-event/)
 
-The DeviceOrientation Events API is implemented in `third_party/WebKit/Source/modules/device_orientation` and exposes two events based on the following sensors:
+The DeviceOrientation Events API is implemented in `third_party/blink/renderer/modules/device_orientation` and exposes two events based on the following sensors:
 
 * [DeviceMotionEvent]
   * ACCELEROMETER: populates the `accelerationIncludingGravity` field
@@ -39,8 +39,8 @@ The DeviceOrientation Events API is implemented in `third_party/WebKit/Source/mo
   * ABSOLUTE_ORIENTATION_EULER_ANGLES (when a listener for the `'deviceorientationabsolute'` event is added)
   * RELATIVE_ORIENTATION_EULER_ANGLES (when a listener for the `'deviceorientation'` event is added)
 
-[DeviceMotionEvent]: ../../../third_party/WebKit/Source/modules/device_orientation/DeviceMotionEvent.idl
-[DeviceOrientationEvent]: ../../../third_party/WebKit/Source/modules/device_orientation/DeviceOrientationEvent.idl
+[DeviceMotionEvent]: ../../../third_party/blink/renderer/modules/device_orientation/device_motion_event.idl
+[DeviceOrientationEvent]: ../../../third_party/blink/renderer/modules/device_orientation/device_orientation_event.idl
 
 The content renderer layer is located in `content/renderer/device_sensors`.
 

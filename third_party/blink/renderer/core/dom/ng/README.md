@@ -1,6 +1,6 @@
 # DOM experimental
 
-[Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/WebKit/Source/core/dom/ng/README.md)
+[Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/dom/ng/README.md)
 
 Author: hayato@chromium.org
 
