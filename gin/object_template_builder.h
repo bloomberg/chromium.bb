@@ -17,20 +17,26 @@
 
 namespace gin {
 
+namespace internal {
+
 template <typename T>
 v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(v8::Isolate* isolate,
-                                                       T callback) {
+                                                       T callback,
+                                                       const char* type_name) {
   // We need to handle member function pointers case specially because the first
   // parameter for callbacks to MFP should typically come from the the
   // JavaScript "this" object the function was called on, not from the first
   // normal parameter.
-  int callback_flags = 0;
-  if (std::is_member_function_pointer<T>::value)
-    callback_flags = HolderIsFirstArgument;
-
-  return CreateFunctionTemplate(
-      isolate, base::BindRepeating(std::move(callback)), callback_flags);
+  InvokerOptions options;
+  if (std::is_member_function_pointer<T>::value) {
+    options.holder_is_first_argument = true;
+    options.holder_type = type_name;
+  }
+  return ::gin::CreateFunctionTemplate(
+      isolate, base::BindRepeating(std::move(callback)), std::move(options));
 }
+
+}  // namespace internal
 
 template <typename T>
 void SetAsFunctionHandler(v8::Isolate* isolate,
@@ -40,12 +46,10 @@ void SetAsFunctionHandler(v8::Isolate* isolate,
   // parameter for callbacks to MFP should typically come from the the
   // JavaScript "this" object the function was called on, not from the first
   // normal parameter.
-  int callback_flags = 0;
-  if (std::is_member_function_pointer<T>::value)
-    callback_flags = HolderIsFirstArgument;
+  InvokerOptions options = {std::is_member_function_pointer<T>::value, nullptr};
 
   CreateFunctionHandler(isolate, tmpl, base::BindRepeating(std::move(callback)),
-                        callback_flags);
+                        std::move(options));
 }
 
 // ObjectTemplateBuilder provides a handy interface to creating
@@ -53,6 +57,7 @@ void SetAsFunctionHandler(v8::Isolate* isolate,
 class GIN_EXPORT ObjectTemplateBuilder {
  public:
   explicit ObjectTemplateBuilder(v8::Isolate* isolate);
+  ObjectTemplateBuilder(v8::Isolate* isolate, const char* type_name);
   ObjectTemplateBuilder(const ObjectTemplateBuilder& other);
   ~ObjectTemplateBuilder();
 
@@ -71,19 +76,22 @@ class GIN_EXPORT ObjectTemplateBuilder {
   template<typename T>
   ObjectTemplateBuilder& SetMethod(const base::StringPiece& name,
                                    const T& callback) {
-    return SetImpl(name, CreateFunctionTemplate(isolate_, callback));
+    return SetImpl(
+        name, internal::CreateFunctionTemplate(isolate_, callback, type_name_));
   }
   template<typename T>
   ObjectTemplateBuilder& SetProperty(const base::StringPiece& name,
                                      const T& getter) {
-    return SetPropertyImpl(name, CreateFunctionTemplate(isolate_, getter),
-                           v8::Local<v8::FunctionTemplate>());
+    return SetPropertyImpl(
+        name, internal::CreateFunctionTemplate(isolate_, getter, type_name_),
+        v8::Local<v8::FunctionTemplate>());
   }
   template<typename T, typename U>
   ObjectTemplateBuilder& SetProperty(const base::StringPiece& name,
                                      const T& getter, const U& setter) {
-    return SetPropertyImpl(name, CreateFunctionTemplate(isolate_, getter),
-                           CreateFunctionTemplate(isolate_, setter));
+    return SetPropertyImpl(
+        name, internal::CreateFunctionTemplate(isolate_, getter, type_name_),
+        internal::CreateFunctionTemplate(isolate_, setter, type_name_));
   }
   ObjectTemplateBuilder& AddNamedPropertyInterceptor();
   ObjectTemplateBuilder& AddIndexedPropertyInterceptor();
@@ -98,6 +106,10 @@ class GIN_EXPORT ObjectTemplateBuilder {
       v8::Local<v8::FunctionTemplate> setter);
 
   v8::Isolate* isolate_;
+
+  // If provided, |type_name_| will be used to give a user-friendly error
+  // message if a member function is invoked on the wrong type of object.
+  const char* type_name_ = nullptr;
 
   // ObjectTemplateBuilder should only be used on the stack.
   v8::Local<v8::ObjectTemplate> template_;

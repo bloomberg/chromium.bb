@@ -20,6 +20,7 @@ namespace {
 constexpr const char kEmitterKey[] = "emitter";
 constexpr const char kArgumentsKey[] = "arguments";
 constexpr const char kFilterKey[] = "filter";
+constexpr const char kEventEmitterTypeName[] = "Event";
 
 }  // namespace
 
@@ -46,6 +47,10 @@ gin::ObjectTemplateBuilder EventEmitter::GetObjectTemplateBuilder(
       // TODO(devlin): Once we convert all custom bindings that use these,
       // they can be removed.
       .SetMethod("dispatch", &EventEmitter::Dispatch);
+}
+
+const char* EventEmitter::GetTypeName() {
+  return kEventEmitterTypeName;
 }
 
 void EventEmitter::Fire(v8::Local<v8::Context> context,

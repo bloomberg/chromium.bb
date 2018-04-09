@@ -141,7 +141,13 @@ void IndexedPropertyEnumerator(
 }  // namespace
 
 ObjectTemplateBuilder::ObjectTemplateBuilder(v8::Isolate* isolate)
-    : isolate_(isolate), template_(v8::ObjectTemplate::New(isolate)) {
+    : ObjectTemplateBuilder(isolate, nullptr) {}
+
+ObjectTemplateBuilder::ObjectTemplateBuilder(v8::Isolate* isolate,
+                                             const char* type_name)
+    : isolate_(isolate),
+      type_name_(type_name),
+      template_(v8::ObjectTemplate::New(isolate)) {
   template_->SetInternalFieldCount(kNumberOfInternalFields);
 }
 

@@ -70,6 +70,10 @@ class GIN_EXPORT WrappableBase {
   // Overrides of this method should be declared final and not overridden again.
   virtual ObjectTemplateBuilder GetObjectTemplateBuilder(v8::Isolate* isolate);
 
+  // Returns a readable type name that will be used in surfacing errors. The
+  // default implementation returns nullptr, which results in a generic error.
+  virtual const char* GetTypeName();
+
   v8::MaybeLocal<v8::Object> GetWrapperImpl(v8::Isolate* isolate,
                                             WrapperInfo* wrapper_info);
 
