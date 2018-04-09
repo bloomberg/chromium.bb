@@ -199,6 +199,13 @@ const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
   return root_surface_id_;
 }
 
+std::vector<SurfaceId> SurfaceManager::GetCreatedSurfaceIds() const {
+  std::vector<SurfaceId> surface_ids;
+  for (auto& map_entry : surface_map_)
+    surface_ids.push_back(map_entry.first);
+  return surface_ids;
+}
+
 void SurfaceManager::AddSurfaceReferences(
     const std::vector<SurfaceReference>& references) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -330,6 +337,9 @@ void SurfaceManager::AddSurfaceReferenceImpl(const SurfaceId& parent_id,
   references_[parent_id].children.insert(child_id);
   references_[child_id].parents.insert(parent_id);
 
+  for (auto& observer : observer_list_)
+    observer.OnAddedSurfaceReference(parent_id, child_id);
+
   if (HasTemporaryReference(child_id))
     RemoveTemporaryReference(child_id, RemovedReason::EMBEDDED);
 }
@@ -340,6 +350,9 @@ void SurfaceManager::RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
   auto iter_child = references_.find(child_id);
   if (iter_parent == references_.end() || iter_child == references_.end())
     return;
+
+  for (auto& observer : observer_list_)
+    observer.OnRemovedSurfaceReference(parent_id, child_id);
 
   iter_parent->second.children.erase(child_id);
   iter_child->second.parents.erase(parent_id);
