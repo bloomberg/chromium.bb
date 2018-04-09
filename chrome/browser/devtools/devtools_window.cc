@@ -1042,11 +1042,14 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       "?remoteBase=" + DevToolsUI::GetRemoteBaseURL().spec();
 #endif
 
+  const std::string valid_frontend =
+      frontend_url.empty() ? chrome::kChromeUIDevToolsURL : frontend_url;
+
   // remoteFrontend is here for backwards compatibility only.
   std::string remote_frontend =
-      frontend_url + ((frontend_url.find("?") == std::string::npos)
-                          ? "?remoteFrontend=true"
-                          : "&remoteFrontend=true");
+      valid_frontend + ((valid_frontend.find("?") == std::string::npos)
+                            ? "?remoteFrontend=true"
+                            : "&remoteFrontend=true");
   switch (frontend_type) {
     case kFrontendDefault:
       url = kDefaultFrontendURL + remote_base;
