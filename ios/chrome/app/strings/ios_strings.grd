@@ -628,7 +628,7 @@ locale.  The strings in this file are specific to iOS.
         Download failed
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_SUCCEEDED_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the download has sucessfully finished. [Length: unlimited] [iOS only]">
-        Download successfully finished
+        Download finished
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_REQUESTED_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement read by Voice Over when the Download Manager UI is shown to the user. [Length: unlimited] [iOS only]">
         File download is available
