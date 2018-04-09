@@ -126,9 +126,6 @@ enum RTCIceConnectionState {
     //    List of implemented stats:
     //    https://cs.chromium.org/chromium/src/third_party/webrtc/api/stats/rtcstats_objects.h
     //    See also RTCRtpSender.getStats() and RTCRtpReceiver.getStats().
-    //
-    //    Note: The version of 2) that takes a |selector| is behind flag
-    //    RuntimeEnabled=RTCPeerConnectionGetStatsSelector.
     [CallWith=ScriptState] Promise<any> getStats(optional any callbackOrSelector);
 
     // RTP Media API
