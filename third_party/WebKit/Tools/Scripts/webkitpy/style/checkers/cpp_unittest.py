@@ -1420,45 +1420,17 @@ class CppStyleTest(CppStyleTestBase):
         # Verify that we don't blindly suggest the WTF prefix for all headers.
         self.assertFalse(expected_guard.startswith('WTF_'))
 
-        # Allow the WTF_ prefix for files in that directory.
+        # Verify that the Chromium-style header guard is allowed.
         header_guard_filter = FilterConfiguration(('-', '+build/header_guard'))
         error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
-        self.process_file_data('Source/JavaScriptCore/wtf/TestName.h', 'h',
-                               ['#ifndef WTF_TestName_h', '#define WTF_TestName_h'],
-                               error_collector)
-        self.assertEqual(0, len(error_collector.result_list()),
-                         error_collector.result_list())
-
-        # Also allow the non WTF_ prefix for files in that directory.
-        error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
-        self.process_file_data('Source/JavaScriptCore/wtf/TestName.h', 'h',
-                               ['#ifndef TestName_h', '#define TestName_h'],
-                               error_collector)
-        self.assertEqual(0, len(error_collector.result_list()),
-                         error_collector.result_list())
-
-        # Verify that we suggest the WTF prefix version.
-        error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
-        self.process_file_data('Source/JavaScriptCore/wtf/TestName.h', 'h',
-                               ['#ifndef BAD_TestName_h', '#define BAD_TestName_h'],
-                               error_collector)
-        self.assertEqual(
-            1,
-            error_collector.result_list().count(
-                '#ifndef header guard has wrong style, please use: WTF_TestName_h'
-                '  [build/header_guard] [5]'),
-            error_collector.result_list())
-
-        # Verify that the Chromium-style header guard is allowed as well.
-        error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
         self.process_file_data('Source/foo/testname.h', 'h',
-                               ['#ifndef BLINK_FOO_TESTNAME_H_',
-                                '#define BLINK_FOO_TESTNAME_H_'],
+                               ['#ifndef SOURCE_FOO_TESTNAME_H_',
+                                '#define SOURCE_FOO_TESTNAME_H_'],
                                error_collector)
         self.assertEqual(0, len(error_collector.result_list()),
                          error_collector.result_list())
 
-        # Verify that we suggest the Chromium-style header guard for a snake_case file.
+        # Verify that we suggest the Chromium-style header guard.
         error_collector = ErrorCollector(self.assertTrue, header_guard_filter)
         self.process_file_data('renderer/platform/wtf/auto_reset.h', 'h',
                                ['#ifndef BAD_auto_reset_h', '#define BAD_auto_reset_h'],
