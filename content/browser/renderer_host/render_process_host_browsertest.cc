@@ -345,6 +345,18 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRendererOnProcessReuse) {
   SetBrowserClientForTesting(old_client);
 }
 
+// Verifies that the spare renderer maintained by SpareRenderProcessHostManager
+// is correctly destroyed during browser shutdown.  This test is an analogue
+// to the //chrome-layer FastShutdown.SpareRenderProcessHost test.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       SpareRenderProcessHostDuringShutdown) {
+  content::RenderProcessHost::WarmupSpareRenderProcessHost(
+      shell()->web_contents()->GetBrowserContext());
+
+  // The verification is that there are no DCHECKs anywhere during test tear
+  // down.
+}
+
 class ShellCloser : public RenderProcessHostObserver {
  public:
   ShellCloser(Shell* shell, std::string* logging_string)
@@ -810,6 +822,15 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   EXPECT_GE(base::TimeTicks::Now() - start, base::TimeDelta::FromSeconds(1));
   if (!host_destructions_)
     rph->RemoveObserver(this);
+}
+
+// This test verifies that a fast shutdown is possible for a starting process.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, FastShutdownForStartingProcess) {
+  RenderProcessHost* process = RenderProcessHostImpl::CreateRenderProcessHost(
+      ShellContentBrowserClient::Get()->browser_context(), nullptr, nullptr,
+      false /* is_for_guests_only */);
+  process->Init();
+  EXPECT_TRUE(process->FastShutdownIfPossible());
 }
 
 }  // namespace

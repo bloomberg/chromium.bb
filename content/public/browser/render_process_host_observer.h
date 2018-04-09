@@ -19,7 +19,7 @@ class CONTENT_EXPORT RenderProcessHostObserver {
  public:
   // This method is invoked when the process was launched and the channel was
   // connected. This is the earliest time it is safe to call Shutdown on the
-  // RenderProcessHost and get RenderProcessExited notifications.
+  // RenderProcessHost.
   virtual void RenderProcessReady(RenderProcessHost* host) {}
 
   // This method is invoked when the process when the process could shut down
