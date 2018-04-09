@@ -58,6 +58,8 @@ namespace fileManagerPrivateInternal {
     static void pinDriveFile(DOMString url,
                              boolean pin,
                              SimpleCallback callback);
+    static void ensureFileDownloaded(DOMString url,
+                             SimpleCallback callback);
     static void executeTask(DOMString taskId,
                             DOMString[] urls,
                             ExecuteTaskCallback callback);

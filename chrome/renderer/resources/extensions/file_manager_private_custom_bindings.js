@@ -121,6 +121,12 @@ binding.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.pinDriveFile(url, pin, callback);
   });
 
+  apiFunctions.setHandleRequest(
+      'ensureFileDownloaded', function(entry, callback) {
+        var url = fileManagerPrivateNatives.GetEntryURL(entry);
+        fileManagerPrivateInternal.ensureFileDownloaded(url, callback);
+      });
+
   apiFunctions.setHandleRequest('executeTask',
       function(taskId, entries, callback) {
         var urls = entries.map(function(entry) {

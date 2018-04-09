@@ -14991,6 +14991,7 @@ Called by update_net_error_codes.py.-->
   <int value="1236" label="AUTOMATIONINTERNAL_QUERYSELECTOR"/>
   <int value="1237" label="DEBUGGER_GETTARGETS"/>
   <int value="1238" label="NOTIFICATIONS_GETPERMISSIONLEVEL"/>
+  <int value="1239" label="FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED"/>
 </enum>
 
 <enum name="ExtensionIconState">
