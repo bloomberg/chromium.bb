@@ -432,6 +432,8 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
   InputEventAckState filtered_state =
       client_->FilterInputEvent(input_event, latency_info);
   if (WasHandled(filtered_state)) {
+    TRACE_EVENT_INSTANT0("input", "InputEventFiltered",
+                         TRACE_EVENT_SCOPE_THREAD);
     if (filtered_state != INPUT_EVENT_ACK_STATE_UNKNOWN) {
       std::move(callback).Run(InputEventAckSource::BROWSER, latency_info,
                               filtered_state, base::nullopt, base::nullopt);
@@ -443,10 +445,14 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
       ScaleEvent(input_event, device_scale_factor_), latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(
           input_event, wheel_scroll_latching_enabled_)) {
+    TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",
+                         TRACE_EVENT_SCOPE_THREAD);
     client_->IncrementInFlightEventCount();
     client_->GetWidgetInputHandler()->DispatchEvent(std::move(event),
                                                     std::move(callback));
   } else {
+    TRACE_EVENT_INSTANT0("input", "InputEventSentNonBlocking",
+                         TRACE_EVENT_SCOPE_THREAD);
     client_->GetWidgetInputHandler()->DispatchNonBlockingEvent(
         std::move(event));
     std::move(callback).Run(InputEventAckSource::BROWSER, latency_info,
