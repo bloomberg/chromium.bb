@@ -63,6 +63,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
     self.Fail('conformance2/glsl3/array-length-side-effects.html',
         bug=2142) # angle bug ID
+    self.Fail('conformance2/attribs/' +
+        'gl-bindAttribLocation-aliasing-inactive.html',
+        bug=829541)
 
     # This test needs to be rewritten to measure its expected
     # performance; it's currently too flaky even on release bots.
@@ -257,6 +260,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=2355) # ANGLE bug ID
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['win', 'nvidia', 'opengl'], bug=828572)
+    self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
+        ['win', 'nvidia', 'opengl'], bug=830046)
 
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
