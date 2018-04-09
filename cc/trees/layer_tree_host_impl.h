@@ -596,7 +596,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool IsUIResourceOpaque(UIResourceId uid) const;
 
-  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
+  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement_in_viewport,
                         gfx::Vector2dF* initial_offset,
                         gfx::Vector2dF* target_offset) const override;
 

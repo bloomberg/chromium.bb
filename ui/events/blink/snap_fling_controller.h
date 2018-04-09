@@ -23,7 +23,8 @@ class SnapFlingControllerTest;
 class SnapFlingCurve;
 
 // A client that provides information to the controller. It also executes the
-// scroll operations and requests animation frames.
+// scroll operations and requests animation frames. All the inputs and outputs
+// are in the same coordinate space.
 class SnapFlingClient {
  public:
   virtual bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
