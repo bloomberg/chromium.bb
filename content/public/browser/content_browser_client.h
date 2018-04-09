@@ -241,6 +241,19 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldUseProcessPerSite(BrowserContext* browser_context,
                                        const GURL& effective_url);
 
+  // Returns whether a spare RenderProcessHost should be used for navigating to
+  // the specified site URL.
+  //
+  // Using the spare RenderProcessHost is advisable, because it can improve
+  // performance of a navigation that requires a new process.  On the other
+  // hand, sometimes the spare RenderProcessHost cannot be used - for example
+  // some embedders might override
+  // ContentBrowserClient::AppendExtraCommandLineSwitches and add some cmdline
+  // switches at navigation time (and this won't work for the spare, because the
+  // spare RenderProcessHost is launched ahead of time).
+  virtual bool ShouldUseSpareRenderProcessHost(BrowserContext* browser_context,
+                                               const GURL& site_url);
+
   // Returns true if site isolation should be enabled for |effective_site_url|.
   // This call allows the embedder to supplement the site isolation policy
   // enforced by the content layer. Will only be called if the content layer
