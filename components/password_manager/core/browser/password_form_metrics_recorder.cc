@@ -218,6 +218,19 @@ void PasswordFormMetricsRecorder::RecordDetailedUserAction(
   detailed_user_actions_counts_[action]++;
 }
 
+// static
+int64_t PasswordFormMetricsRecorder::HashFormSignature(
+    autofill::FormSignature form_signature) {
+  // Note that this is an intentionally small hash domain for privacy reasons.
+  return static_cast<uint64_t>(form_signature) % 1021;
+}
+
+void PasswordFormMetricsRecorder::RecordFormSignature(
+    autofill::FormSignature form_signature) {
+  ukm_entry_builder_.SetContext_FormSignature(
+      HashFormSignature(form_signature));
+}
+
 int PasswordFormMetricsRecorder::GetActionsTaken() const {
   return static_cast<int>(user_action_) +
          static_cast<int>(UserAction::kMax) *

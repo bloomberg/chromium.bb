@@ -261,6 +261,8 @@ void PasswordFormManager::Init(
         client_->IsMainFrameSecure(), client_->GetUkmSourceId());
   }
 
+  metrics_recorder_->RecordFormSignature(observed_form_signature_);
+
   if (owned_form_fetcher_)
     owned_form_fetcher_->Fetch();
   form_fetcher_->AddConsumer(this);

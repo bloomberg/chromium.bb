@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/password_form_user_action.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -222,6 +223,13 @@ class PasswordFormMetricsRecorder
 
   // Records a DetailedUserAction UKM metric.
   void RecordDetailedUserAction(DetailedUserAction action);
+
+  // Hash algorithm for RecordFormSignature. Public for testing.
+  static int64_t HashFormSignature(autofill::FormSignature form_signature);
+
+  // Records a low entropy hash of the form signature in order to be able to
+  // distinguish two forms on the same site.
+  void RecordFormSignature(autofill::FormSignature form_signature);
 
  private:
   friend class base::RefCounted<PasswordFormMetricsRecorder>;

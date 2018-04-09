@@ -2018,6 +2018,12 @@ be describing additional metrics about the same event.
     them. A separate event is generated for each password form discovered on a
     site.
   </summary>
+  <metric name="Context.FormSignature">
+    <summary>
+      Records a low entropy hash of the form signature in order to be able to
+      distinguish two forms on the same site.
+    </summary>
+  </metric>
   <metric name="ManagerFill.Action">
     <summary>
       Records for each password form (and HTTP auth), whether the password

@@ -377,6 +377,11 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
 
   void KillDriver() { driver_.reset(); }
 
+  const GURL& GetMainFrameURL() const override {
+    static GURL url("https://www.example.com");
+    return url;
+  }
+
  private:
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
   std::unique_ptr<MockPasswordManagerDriver> driver_;
@@ -4296,6 +4301,52 @@ TEST_F(PasswordFormManagerTest, TestUkmForFilling) {
     }
   }
 }
+
+// Verifies that the form signature of forms is recorded in UKMs.
+TEST_F(PasswordFormManagerTest, TestUkmContextMetrics) {
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder;
+  test_ukm_recorder.UpdateSourceURL(client()->GetUkmSourceId(),
+                                    client()->GetMainFrameURL());
+
+  // Register two forms on one page.
+  PasswordForm second_observed_form = *observed_form();
+  second_observed_form.form_data.action = GURL("https://somewhere-else.com");
+  for (PasswordForm* form : {observed_form(), &second_observed_form}) {
+    auto metrics_recorder = base::MakeRefCounted<PasswordFormMetricsRecorder>(
+        form->origin.SchemeIsCryptographic(), client()->GetUkmSourceId());
+    FakeFormFetcher fetcher;
+    PasswordFormManager form_manager(
+        password_manager(), client(), client()->driver(), *form,
+        std::make_unique<NiceMock<MockFormSaver>>(), &fetcher);
+    form_manager.Init(metrics_recorder);
+  }
+
+  // Verify that a form signatures have been recorded in UKM.
+  int64_t form_signature_1 = PasswordFormMetricsRecorder::HashFormSignature(
+      CalculateFormSignature(observed_form()->form_data));
+  int64_t form_signature_2 = PasswordFormMetricsRecorder::HashFormSignature(
+      CalculateFormSignature(second_observed_form.form_data));
+
+  EXPECT_GE(form_signature_1, 0);
+  EXPECT_GE(form_signature_2, 0);
+
+  auto entries = test_ukm_recorder.GetEntriesByName(
+      ukm::builders::PasswordForm::kEntryName);
+  ASSERT_EQ(2u, entries.size());
+
+  const int64_t* metric1 = test_ukm_recorder.GetEntryMetric(
+      entries[0], ukm::builders::PasswordForm::kContext_FormSignatureName);
+  const int64_t* metric2 = test_ukm_recorder.GetEntryMetric(
+      entries[1], ukm::builders::PasswordForm::kContext_FormSignatureName);
+
+  ASSERT_TRUE(metric1);
+  ASSERT_TRUE(metric2);
+
+  EXPECT_THAT(
+      std::vector<int64_t>({*metric1, *metric2}),
+      ::testing::UnorderedElementsAre(form_signature_1, form_signature_2));
+}
+
 TEST_F(PasswordFormManagerTest,
        TestSendNotBlacklistedMessage_BlacklistedCredentials) {
   // Signing up on a previously visited site. Credentials are found in the
