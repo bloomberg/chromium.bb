@@ -23,7 +23,6 @@ enum PushErrorType {
   NOT_FOUND = 4,
   NOT_SUPPORTED = 5,
   INVALID_STATE = 6,
-  LAST = INVALID_STATE
 };
 
 interface PushMessaging {

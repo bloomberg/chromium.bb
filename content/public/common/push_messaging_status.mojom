@@ -29,12 +29,9 @@ enum PushDeliveryStatus {
   // The message was delivered, but the Service Worker timed out processing it.
   TIMEOUT = 7,
 
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = TIMEOUT
+  // NOTE: Do not renumber or delete these as that would confuse interpretation
+  // of previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
 };
 
 // Push getregistration success/error codes for internal use & reporting in UMA.
@@ -68,12 +65,9 @@ enum PushGetRegistrationStatus {
   // Getting the registration failed because there was no live service worker.
   NO_LIVE_SERVICE_WORKER = 8,
 
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = NO_LIVE_SERVICE_WORKER
+  // NOTE: Do not renumber or delete these as that would confuse interpretation
+  // of previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
 };
 
 // Push registration success/error codes for internal use & reporting in UMA.
@@ -142,12 +136,9 @@ enum PushRegistrationStatus {
   // happen when a subscription is invalidated by the push service.
   SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE = 16,
 
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = SUCCESS_NEW_SUBSCRIPTION_FROM_PUSH_SERVICE
+  // NOTE: Do not renumber or delete these as that would confuse interpretation
+  // of previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
 };
 
 // Push unregistration reason for reporting in UMA. Enum values can be added,
@@ -187,12 +178,9 @@ enum PushUnregistrationReason {
   // The Service Worker database got wiped, most likely due to corruption.
   SERVICE_WORKER_DATABASE_WIPED = 10,
 
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = SERVICE_WORKER_DATABASE_WIPED
+  // NOTE: Do not renumber or delete these as that would confuse interpretation
+  // of previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
 };
 
 
@@ -225,12 +213,9 @@ enum PushUnregistrationStatus {
   // Unregistration failed due to a network error.
   NETWORK_ERROR = 7,
 
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = NETWORK_ERROR
+  // NOTE: Do not renumber or delete these as that would confuse interpretation
+  // of previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
 };
 
 // Push message user visible tracking for reporting in UMA. Enum values can be
@@ -253,10 +238,7 @@ enum PushUserVisibleStatus {
   // has run out of grace, so we had to show the user a generic notification.
   REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED = 4,
 
-  // NOTE: Do not renumber these as that would confuse interpretation of
-  // previously logged data. When making changes, also update the enum list
-  // in tools/metrics/histograms/histograms.xml to keep it in sync, and
-  // update LAST below.
-
-  LAST = REQUIRED_BUT_NOT_SHOWN_GRACE_EXCEEDED
+  // NOTE: Do not renumber or delete these as that would confuse interpretation
+  // of previously logged data. When making changes, also update the enum list
+  // in tools/metrics/histograms/histograms.xml to keep it in sync.
 };
