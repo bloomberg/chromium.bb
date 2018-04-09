@@ -1273,9 +1273,10 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 // among NotificationView and ArcNotificationView.
 void NotificationViewMD::UpdateControlButtonsVisibility() {
   const bool target_visibility =
-      AlwaysShowControlButtons() || IsMouseHovered() ||
-      control_buttons_view_->IsCloseButtonFocused() ||
-      control_buttons_view_->IsSettingsButtonFocused();
+      (AlwaysShowControlButtons() || IsMouseHovered() ||
+       control_buttons_view_->IsCloseButtonFocused() ||
+       control_buttons_view_->IsSettingsButtonFocused()) &&
+      !GetPinned();
 
   control_buttons_view_->SetVisible(target_visibility);
 }
