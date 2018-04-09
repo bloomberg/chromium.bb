@@ -44,6 +44,8 @@ class Rect : public UiElement {
                                  int target_property_id,
                                  cc::KeyframeModel* keyframe_model) override;
 
+  float ComputedAndLocalOpacityForTest() const override;
+
  private:
   SkColor center_color_ = SK_ColorWHITE;
   SkColor edge_color_ = SK_ColorWHITE;

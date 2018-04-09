@@ -1239,6 +1239,7 @@ void UiSceneCreator::CreateContentQuad() {
                      kRepositionFrameEdgePadding, kRepositionFrameEdgePadding);
   frame->set_corner_radius(kContentCornerRadius);
   frame->set_bounds_contain_padding(false);
+  frame->SetLocalOpacity(0.0f);
   frame->SetTransitionedProperties({LOCAL_OPACITY});
   frame->SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kRepositionFrameTransitionDurationMs));
