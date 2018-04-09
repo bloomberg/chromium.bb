@@ -559,10 +559,6 @@ void CrashReporterWriter::AddFileContents(const char* filename_msg,
 // $FIREBASE_APP_ID v$VERSION_CODE ($VERSION_NAME)
 void WriteAndroidPackage(MimeWriter& writer,
                          base::android::BuildInfo* android_build_info) {
-  // Don't write the field if no Firebase ID is set.
-  if (android_build_info->firebase_app_id()[0] == '\0') {
-    return;
-  }
   // The actual size limits on packageId and versionName are quite generous.
   // Limit to a reasonable size rather than allocating theoretical limits.
   const int kMaxSize = 1024;
@@ -1745,8 +1741,11 @@ void HandleCrashDump(const BreakpadInfo& info) {
     writer.AddPairString(resources_version,
                          android_build_info->resources_version());
     writer.AddBoundary();
-    WriteAndroidPackage(writer, android_build_info);
-    writer.AddBoundary();
+    // Don't write the field if no Firebase ID is set.
+    if (android_build_info->firebase_app_id()[0] != '\0') {
+      WriteAndroidPackage(writer, android_build_info);
+      writer.AddBoundary();
+    }
     if (android_build_info->java_exception_info() != nullptr) {
       writer.AddPairString(exception_info,
                            android_build_info->java_exception_info());
