@@ -54,17 +54,22 @@ class MockXdgSurface : public ServerObject {
   MOCK_METHOD1(SetAppId, void(const char* app_id));
   MOCK_METHOD1(AckConfigure, void(uint32_t serial));
   MOCK_METHOD4(SetWindowGeometry,
-               void(int32_t x, int32_t y, int32_t widht, int32_t height));
+               void(int32_t x, int32_t y, int32_t width, int32_t height));
   MOCK_METHOD0(SetMaximized, void());
   MOCK_METHOD0(UnsetMaximized, void());
   MOCK_METHOD0(SetFullscreen, void());
   MOCK_METHOD0(UnsetFullscreen, void());
   MOCK_METHOD0(SetMinimized, void());
 
-  // Used when xdg v6 is used.
-  std::unique_ptr<MockXdgTopLevel> xdg_toplevel;
+  void set_xdg_toplevel(std::unique_ptr<MockXdgTopLevel> xdg_toplevel) {
+    xdg_toplevel_ = std::move(xdg_toplevel);
+  }
+  MockXdgTopLevel* xdg_toplevel() { return xdg_toplevel_.get(); }
 
  private:
+  // Used when xdg v6 is used.
+  std::unique_ptr<MockXdgTopLevel> xdg_toplevel_;
+
   DISALLOW_COPY_AND_ASSIGN(MockXdgSurface);
 };
 
@@ -95,9 +100,14 @@ class MockSurface : public ServerObject {
                void(int32_t x, int32_t y, int32_t width, int32_t height));
   MOCK_METHOD0(Commit, void());
 
-  std::unique_ptr<MockXdgSurface> xdg_surface;
+  void set_xdg_surface(std::unique_ptr<MockXdgSurface> xdg_surface) {
+    xdg_surface_ = std::move(xdg_surface);
+  }
+  MockXdgSurface* xdg_surface() { return xdg_surface_.get(); }
 
  private:
+  std::unique_ptr<MockXdgSurface> xdg_surface_;
+
   DISALLOW_COPY_AND_ASSIGN(MockSurface);
 };
 
@@ -207,11 +217,26 @@ class MockSeat : public Global {
   MockSeat();
   ~MockSeat() override;
 
+  void set_pointer(std::unique_ptr<MockPointer> pointer) {
+    pointer_ = std::move(pointer);
+  }
+  MockPointer* pointer() { return pointer_.get(); }
+
+  void set_keyboard(std::unique_ptr<MockKeyboard> keyboard) {
+    keyboard_ = std::move(keyboard);
+  }
+  MockKeyboard* keyboard() { return keyboard_.get(); }
+
+  void set_touch(std::unique_ptr<MockTouch> touch) {
+    touch_ = std::move(touch);
+  }
+  MockTouch* touch() { return touch_.get(); }
+
+ private:
   std::unique_ptr<MockPointer> pointer_;
   std::unique_ptr<MockKeyboard> keyboard_;
   std::unique_ptr<MockTouch> touch_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(MockSeat);
 };
 

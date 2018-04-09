@@ -39,7 +39,7 @@ class WaylandWindowTest : public WaylandTest {
   void SetUp() override {
     WaylandTest::SetUp();
 
-    xdg_surface_ = surface_->xdg_surface.get();
+    xdg_surface_ = surface_->xdg_surface();
     ASSERT_TRUE(xdg_surface_);
   }
 
@@ -48,7 +48,7 @@ class WaylandWindowTest : public WaylandTest {
                           int height,
                           uint32_t serial,
                           struct wl_array* states) {
-    if (!xdg_surface_->xdg_toplevel) {
+    if (!xdg_surface_->xdg_toplevel()) {
       xdg_surface_send_configure(xdg_surface_->resource(), width, height,
                                  states, serial);
       return;
@@ -57,8 +57,8 @@ class WaylandWindowTest : public WaylandTest {
     // In xdg_shell_v6, both surfaces send serial configure event and toplevel
     // surfaces send other data like states, heights and widths.
     zxdg_surface_v6_send_configure(xdg_surface_->resource(), serial);
-    ASSERT_TRUE(xdg_surface_->xdg_toplevel);
-    zxdg_toplevel_v6_send_configure(xdg_surface_->xdg_toplevel->resource(),
+    ASSERT_TRUE(xdg_surface_->xdg_toplevel());
+    zxdg_toplevel_v6_send_configure(xdg_surface_->xdg_toplevel()->resource(),
                                     width, height, states);
   }
 
@@ -67,7 +67,7 @@ class WaylandWindowTest : public WaylandTest {
   wl::MockXdgSurface* GetXdgSurface() {
     if (GetParam() == kXdgShellV5)
       return xdg_surface_;
-    return xdg_surface_->xdg_toplevel.get();
+    return xdg_surface_->xdg_toplevel();
   }
 
   void SetWlArrayWithState(uint32_t state, wl_array* states) {
@@ -363,7 +363,7 @@ TEST_P(WaylandWindowTest, HasCaptureUpdatedOnPointerEvents) {
 
   Sync();
 
-  wl::MockPointer* pointer = server_.seat()->pointer_.get();
+  wl::MockPointer* pointer = server_.seat()->pointer();
   ASSERT_TRUE(pointer);
 
   wl_pointer_send_enter(pointer->resource(), 1, surface_->resource(), 0, 0);

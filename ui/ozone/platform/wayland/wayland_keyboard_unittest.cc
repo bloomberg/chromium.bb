@@ -36,7 +36,7 @@ class WaylandKeyboardTest : public WaylandTest {
 
     Sync();
 
-    keyboard_ = server_.seat()->keyboard_.get();
+    keyboard_ = server_.seat()->keyboard();
     ASSERT_TRUE(keyboard_);
 
 #if BUILDFLAG(USE_XKBCOMMON)
