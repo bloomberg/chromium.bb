@@ -581,6 +581,20 @@ bool WebrtcLoggingPrivateStartEventLoggingFunction::RunAsync() {
   return true;
 }
 
+// TODO(crbug.com/829748): Merge with super-class's FireCallback().
+void WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback(
+    bool success,
+    const std::string& error_message) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (success) {
+    DCHECK(error_message.empty());
+  } else {
+    DCHECK(!error_message.empty());
+    SetError(error_message);
+  }
+  SendResponse(success);
+}
+
 bool WebrtcLoggingPrivateGetLogsDirectoryFunction::RunAsync() {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Unlike other WebrtcLoggingPrivate functions that take a RequestInfo object,

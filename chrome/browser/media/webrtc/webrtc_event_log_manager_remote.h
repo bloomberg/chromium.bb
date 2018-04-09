@@ -60,12 +60,24 @@ class WebRtcRemoteEventLogManager final
   // 3. The maximum file size must be sensible.
   // The return value is true if all of the restrictions were observed, and if
   // a file was successfully created for this log.
+  //
+  // Upon failure, an error message specific to the failure (as opposed to a
+  // generic one) is produced only if that error message is useful for the
+  // caller:
+  // * Bad parameters.
+  // * Function called at a time when the caller could know it would fail,
+  //   such as for a peer connection that was already logged.
+  // We intentionally avoid giving specific errors in some cases, so as
+  // to avoid leaking information such as being in incognito mode, which we
+  // keep indistinguishable from other common cases, such as having too many
+  // active and/or pending logs.
   bool StartRemoteLogging(int render_process_id,
                           BrowserContextId browser_context_id,
                           const std::string& peer_connection_id,
                           const base::FilePath& browser_context_dir,
                           size_t max_file_size_bytes,
-                          const std::string& metadata);
+                          const std::string& metadata,
+                          std::string* error_message);
 
   // If an active remote-bound log exists for the given peer connection, this
   // will append |message| to that log.
@@ -167,7 +179,8 @@ class WebRtcRemoteEventLogManager final
   bool StartWritingLog(const PeerConnectionKey& key,
                        const base::FilePath& browser_context_dir,
                        size_t max_file_size_bytes,
-                       const std::string& metadata);
+                       const std::string& metadata,
+                       std::string* error_message);
 
   // Checks if the referenced peer connection has an associated active
   // remote-bound log. If it does, the log is changed from ACTIVE to PENDING.
