@@ -187,7 +187,7 @@ TEST(GURLTest, Assign) {
 TEST(GURLTest, SelfAssign) {
   GURL a("filesystem:http://example.com/temporary/");
   // This should not crash.
-  a = a;
+  a = *&a;  // The *& defeats Clang's -Wself-assign warning.
 }
 
 TEST(GURLTest, CopyFileSystem) {

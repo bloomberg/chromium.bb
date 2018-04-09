@@ -211,7 +211,7 @@ TEST(ObserverListTest, BasicTest) {
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Self assignment.
-    it3 = it3;
+    it3 = *&it3;  // The *& defeats Clang's -Wself-assign warning.
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
   }
@@ -228,7 +228,7 @@ TEST(ObserverListTest, BasicTest) {
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Self assignment.
-    it3 = it3;
+    it3 = *&it3;  // The *& defeats Clang's -Wself-assign warning.
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
   }
@@ -255,7 +255,7 @@ TEST(ObserverListTest, BasicTest) {
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Self assignment.
-    it3 = it3;
+    it3 = *&it3;  // The *& defeats Clang's -Wself-assign warning.
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Iterator post increment.
@@ -278,7 +278,7 @@ TEST(ObserverListTest, BasicTest) {
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Self assignment.
-    it3 = it3;
+    it3 = *&it3;  // The *& defeats Clang's -Wself-assign warning.
     EXPECT_EQ(it3, it1);
     EXPECT_EQ(it3, it2);
     // Iterator post increment.
