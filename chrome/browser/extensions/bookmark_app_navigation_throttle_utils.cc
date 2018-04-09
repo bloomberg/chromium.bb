@@ -89,6 +89,21 @@ void OpenNewForegroundTab(content::NavigationHandle* navigation_handle) {
                                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                     navigation_handle->GetPageTransition(),
                                     navigation_handle->IsRendererInitiated());
+  // Per the "Submit as entity body" algorithm
+  // (https://html.spec.whatwg.org/#submit-body), POST form submissions include
+  // the Content-Type header, so we forward it.
+  if (navigation_handle->GetResourceRequestBody()) {
+    std::string content_type;
+    navigation_handle->GetRequestHeaders().GetHeader(
+        net::HttpRequestHeaders::kContentType, &content_type);
+
+    net::HttpRequestHeaders content_type_header;
+    content_type_header.SetHeader(net::HttpRequestHeaders::kContentType,
+                                  content_type);
+
+    url_params.extra_headers = content_type_header.ToString();
+  }
+
   url_params.uses_post = navigation_handle->IsPost();
   url_params.post_data = navigation_handle->GetResourceRequestBody();
   url_params.redirect_chain = navigation_handle->GetRedirectChain();

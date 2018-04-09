@@ -597,6 +597,10 @@ void NavigationRequest::CreateNavigationHandle() {
 
   bool is_external_protocol =
       !GetContentClient()->browser()->IsHandledURL(common_params_.url);
+
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(begin_params_->headers);
+
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
       NavigationHandleImpl::Create(
           common_params_.url, redirect_chain, frame_tree_node_,
@@ -608,7 +612,7 @@ void NavigationRequest::CreateNavigationHandle() {
           common_params_.should_check_main_world_csp,
           begin_params_->is_form_submission, common_params_.suggested_filename,
           std::move(navigation_ui_data_), common_params_.method,
-          common_params_.post_data,
+          std::move(headers), common_params_.post_data,
           Referrer::SanitizeForRequest(common_params_.url,
                                        common_params_.referrer),
           common_params_.has_user_gesture, common_params_.transition,
