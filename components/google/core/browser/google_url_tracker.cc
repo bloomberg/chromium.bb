@@ -34,9 +34,10 @@ GoogleURLTracker::GoogleURLTracker(
     std::unique_ptr<GoogleURLTrackerClient> client,
     Mode mode)
     : client_(std::move(client)),
-      google_url_(mode == UNIT_TEST_MODE ? kDefaultGoogleHomepage
-                                         : client_->GetPrefs()->GetString(
-                                               prefs::kLastKnownGoogleURL)),
+      google_url_(
+          mode == ALWAYS_DOT_COM_MODE
+              ? kDefaultGoogleHomepage
+              : client_->GetPrefs()->GetString(prefs::kLastKnownGoogleURL)),
       fetcher_id_(0),
       in_startup_sleep_(true),
       already_fetched_(false),
@@ -52,8 +53,9 @@ GoogleURLTracker::GoogleURLTracker(
   // browser is starting up, and if so, come back later", but there is currently
   // no function to do this.
   //
-  // In UNIT_TEST_MODE, where we want to explicitly control when the tracker
-  // "wakes up", we do nothing at all.
+  // In ALWAYS_DOT_COM_MODE we do not nothing at all (but in unit tests
+  // /searchdomaincheck lookups might still be issued by calling FinishSleep
+  // manually).
   if (mode == NORMAL_MODE) {
     static const int kStartFetchDelayMS = 5000;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

@@ -161,7 +161,7 @@ void GoogleURLTrackerTest::SetUp() {
   client_ = new TestGoogleURLTrackerClient(&prefs_);
   std::unique_ptr<GoogleURLTrackerClient> client(client_);
   google_url_tracker_.reset(new GoogleURLTracker(
-      std::move(client), GoogleURLTracker::UNIT_TEST_MODE));
+      std::move(client), GoogleURLTracker::ALWAYS_DOT_COM_MODE));
 }
 
 void GoogleURLTrackerTest::TearDown() {
