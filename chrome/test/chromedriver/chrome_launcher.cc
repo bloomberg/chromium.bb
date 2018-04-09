@@ -633,7 +633,6 @@ Status GetExtensionBackgroundPage(const base::DictionaryValue* manifest,
   if (manifest->Get("background.scripts", &unused_value))
     bg_page_name = "_generated_background_page.html";
   manifest->GetString("background.page", &bg_page_name);
-  manifest->GetString("background_page", &bg_page_name);
   if (bg_page_name.empty() || !persistent)
     return Status(kOk);
   GURL baseUrl("chrome-extension://" + id + "/");
