@@ -20,7 +20,6 @@ from chromite.cbuildbot import trybot_patch_pool
 
 
 REMOTE = 'remote'
-SWARMING = 'swarming'
 LOCAL = 'local'
 CBUILDBOT = 'cbuildbot'
 
@@ -92,7 +91,7 @@ def CbuildbotArgs(options):
   """
   args = []
 
-  if options.where in (REMOTE, SWARMING):
+  if options.where == REMOTE:
     if options.production:
       args.append('--buildbot')
     else:
@@ -261,7 +260,7 @@ def RunRemote(site_config, options, patch_pool):
         pass_through_args=args,
         local_patches=patch_pool.local_patches,
         committer_email=options.committer_email,
-        swarming=options.where == SWARMING,
+        swarming=True,
         master_buildbucket_id='',  # TODO: Add new option to populate.
     )
     results.extend(tryjob.Submit(dryrun=False))
@@ -362,10 +361,10 @@ def VerifyOptions(options, site_config):
       if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
         cros_build_lib.Die('No confirmation.')
 
-  if options.where in (REMOTE, SWARMING) and options.buildroot:
+  if options.where == REMOTE and options.buildroot:
     cros_build_lib.Die('--buildroot is not used for remote tryjobs.')
 
-  if options.where not in (REMOTE, SWARMING) and options.json:
+  if options.where != REMOTE and options.json:
     cros_build_lib.Die('--json can only be used for remote tryjobs.')
 
 
@@ -431,15 +430,12 @@ List Examples:
         description='Where do we run the tryjob?')
     where_ex = where_group.add_mutually_exclusive_group()
     where_ex.add_argument(
-        '--remote', dest='where', action='store_const', const=SWARMING,
-        default=SWARMING,
+        '--remote', dest='where', action='store_const', const=REMOTE,
+        default=REMOTE,
         help='Run the tryjob on a remote builder. (default)')
     where_ex.add_argument(
-        '--swarming', dest='where', action='store_const', const=SWARMING,
+        '--swarming', dest='where', action='store_const', const=REMOTE,
         help='Run the tryjob on a swarming builder.')
-    where_ex.add_argument(
-        '--waterfall', dest='where', action='store_const', const=REMOTE,
-        help='Run the tryjob on a waterfall builder.')
     where_ex.add_argument(
         '--local', dest='where', action='store_const', const=LOCAL,
         help='Run the tryjob on your local machine.')
@@ -591,7 +587,7 @@ List Examples:
         sourceroot=constants.SOURCE_ROOT,
         remote_patches=[])
 
-    if self.options.where in (REMOTE, SWARMING):
+    if self.options.where == REMOTE:
       return RunRemote(site_config, self.options, patch_pool)
     elif self.options.where == LOCAL:
       return RunLocal(self.options)

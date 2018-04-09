@@ -113,7 +113,7 @@ class TryjobTestParsing(TryjobTest):
 
   def setUp(self):
     self.expected = {
-        'where': cros_tryjob.SWARMING,
+        'where': cros_tryjob.REMOTE,
         'buildroot': None,
         'branch': 'master',
         'production': False,
@@ -136,7 +136,7 @@ class TryjobTestParsing(TryjobTest):
   def testComplexParsingRemote(self):
     """Tests flow for an interactive session."""
     self.SetupCommandMock([
-        '--waterfall',
+        '--remote',
         '--yes',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
@@ -154,46 +154,6 @@ class TryjobTestParsing(TryjobTest):
 
     self.expected.update({
         'where': cros_tryjob.REMOTE,
-        'buildroot': '/buildroot',
-        'branch': 'master',
-        'yes': True,
-        'list': True,
-        'gerrit_patches': ['123', '*123', '123..456'],
-        'local_patches': ['chromiumos/chromite:tryjob', 'other:other'],
-        'passthrough': [
-            '--latest-toolchain', '--nochromesdk',
-            '--hwtest', '--notests', '--novmtests', '--noimagetests',
-            '--timeout', '5', '--sanity-check-build',
-            '--chrome_version', 'chrome_git_hash',
-            '--debug-cidb',
-        ],
-        'passthrough_raw': ['--cbuild-arg', 'bar'],
-        'build_configs': ['eve-pre-cq', 'eve-release'],
-    })
-
-    self.assertDictContainsSubset(self.expected, vars(options))
-
-  def testComplexParsingSwarming(self):
-    """Tests flow for an interactive session."""
-    self.SetupCommandMock([
-        '--swarming',
-        '--yes',
-        '--latest-toolchain', '--nochromesdk',
-        '--hwtest', '--notests', '--novmtests', '--noimagetests',
-        '--buildroot', '/buildroot',
-        '--timeout', '5', '--sanity-check-build',
-        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
-        '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
-        '--chrome_version', 'chrome_git_hash',
-        '--debug-cidb',
-        '--pass-through=--cbuild-arg', '--pass-through', 'bar',
-        '--list',
-        'eve-pre-cq', 'eve-release',
-    ])
-    options = self.cmd_mock.inst.options
-
-    self.expected.update({
-        'where': cros_tryjob.SWARMING,
         'buildroot': '/buildroot',
         'branch': 'master',
         'yes': True,
