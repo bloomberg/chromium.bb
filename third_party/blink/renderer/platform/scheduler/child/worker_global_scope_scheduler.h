@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_global_scope_scheduler.h"
 
 namespace blink {
 
@@ -19,10 +20,13 @@ class WorkerScheduler;
 // global scope is created and destructed when it's closed.
 //
 // Unless stated otherwise, all methods must be called on the worker thread.
-class PLATFORM_EXPORT WorkerGlobalScopeScheduler {
+class PLATFORM_EXPORT WorkerGlobalScopeScheduler
+    : public FrameOrWorkerGlobalScopeScheduler {
  public:
   explicit WorkerGlobalScopeScheduler(WorkerScheduler* worker_scheduler);
-  ~WorkerGlobalScopeScheduler();
+  ~WorkerGlobalScopeScheduler() override;
+
+  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
 
   // Unregisters the task queues and cancels tasks in them.
   void Dispose();

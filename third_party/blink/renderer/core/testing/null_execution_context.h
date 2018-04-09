@@ -54,6 +54,7 @@ class NullExecutionContext
 
   ResourceFetcher* Fetcher() const override { return nullptr; }
 
+  FrameOrWorkerGlobalScopeScheduler* GetScheduler() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
   using SecurityContext::GetSecurityOrigin;

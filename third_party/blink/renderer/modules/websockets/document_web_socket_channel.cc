@@ -211,15 +211,8 @@ bool DocumentWebSocketChannel::Connect(
     return false;
   }
 
-  // TODO(nhiroki): Remove dependencies on LocalFrame.
-  // (https://crbug.com/825740)
-  LocalFrame* frame = nullptr;
-  if (GetExecutionContext()->IsDocument())
-    frame = ToDocument(GetExecutionContext())->GetFrame();
-  if (frame) {
-    connection_handle_for_scheduler_ =
-        frame->GetFrameScheduler()->OnActiveConnectionCreated();
-  }
+  if (auto* scheduler = GetExecutionContext()->GetScheduler())
+    connection_handle_for_scheduler_ = scheduler->OnActiveConnectionCreated();
 
   if (MixedContentChecker::IsMixedContent(
           GetExecutionContext()->GetSecurityOrigin(), url)) {
@@ -260,6 +253,11 @@ bool DocumentWebSocketChannel::Connect(
                        ->GetTaskRunner(TaskType::kNetworking)
                        .get());
 
+  // TODO(nhiroki): Remove dependencies on LocalFrame.
+  // (https://crbug.com/825740)
+  LocalFrame* frame = nullptr;
+  if (GetExecutionContext()->IsDocument())
+    frame = ToDocument(GetExecutionContext())->GetFrame();
   if (handshake_throttle_ && frame && frame->GetPage()) {
     // TODO(ricea): We may need to do something special here for SharedWorkers
     // and ServiceWorkers

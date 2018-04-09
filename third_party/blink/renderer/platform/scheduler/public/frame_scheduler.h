@@ -11,13 +11,14 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_global_scope_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class PageScheduler;
 
-class FrameScheduler {
+class FrameScheduler : public FrameOrWorkerGlobalScopeScheduler {
  public:
   virtual ~FrameScheduler() = default;
 
@@ -35,15 +36,6 @@ class FrameScheduler {
   enum class FrameType {
     kMainFrame,
     kSubframe,
-  };
-
-  class ActiveConnectionHandle {
-   public:
-    ActiveConnectionHandle() = default;
-    virtual ~ActiveConnectionHandle() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandle);
   };
 
   // Observer interface to receive scheduling policy change events.
@@ -166,12 +158,6 @@ class FrameScheduler {
   // Tells the scheduler that the first meaningful paint has occured for this
   // frame.
   virtual void OnFirstMeaningfulPaint() = 0;
-
-  // Notifies scheduler that this frame has established an active real time
-  // connection (websocket, webrtc, etc). When connection is closed this handle
-  // must be destroyed.
-  virtual std::unique_ptr<ActiveConnectionHandle>
-  OnActiveConnectionCreated() = 0;
 
   // Returns true if this frame is should not throttled (e.g. due to an active
   // connection).

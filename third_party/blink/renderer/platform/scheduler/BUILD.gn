@@ -98,6 +98,7 @@ blink_platform_sources("scheduler") {
     "main_thread/page_scheduler_impl.h",
     "main_thread/web_main_thread_scheduler.cc",
     "main_thread/web_render_widget_scheduling_state.cc",
+    "public/frame_or_worker_global_scope_scheduler.h",
     "public/frame_scheduler.h",
     "public/non_main_thread_scheduler.h",
     "public/page_scheduler.h",

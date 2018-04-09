@@ -202,6 +202,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return nullptr;
   }
 
+  scheduler::WorkerGlobalScopeScheduler* GetScheduler();
+
   // Returns a task runner bound to the per-global-scope scheduler's task queue.
   // You don't have to care about the lifetime of the associated global scope
   // and underlying thread. After the global scope is destroyed, queued tasks

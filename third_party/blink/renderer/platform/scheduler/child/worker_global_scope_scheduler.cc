@@ -21,6 +21,11 @@ WorkerGlobalScopeScheduler::~WorkerGlobalScopeScheduler() {
 #endif
 }
 
+std::unique_ptr<FrameOrWorkerGlobalScopeScheduler::ActiveConnectionHandle>
+WorkerGlobalScopeScheduler::OnActiveConnectionCreated() {
+  return nullptr;
+}
+
 void WorkerGlobalScopeScheduler::Dispose() {
   task_queue_->ShutdownTaskQueue();
 #if DCHECK_IS_ON()
