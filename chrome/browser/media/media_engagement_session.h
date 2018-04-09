@@ -107,6 +107,9 @@ class MediaEngagementSession : public base::RefCounted<MediaEngagementSession> {
   // Whether the session was restored.
   RestoreType restore_status_ = RestoreType::kNotRestored;
 
+  // If the |is_high_| bit has changed since this object was created.
+  bool high_score_changed_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(MediaEngagementSession);
 };
 

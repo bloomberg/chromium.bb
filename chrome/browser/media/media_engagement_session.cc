@@ -144,6 +144,7 @@ void MediaEngagementSession::RecordUkmMetrics() {
       .SetEngagement_Score(round(score.actual_score() * 100))
       .SetPlaybacks_Delta(significant_playback_recorded_)
       .SetEngagement_IsHigh(score.high_score())
+      .SetEngagement_IsHigh_Changed(high_score_changed_)
       .SetEngagement_IsHigh_Changes(score.high_score_changes())
       .SetEngagement_IsPreloaded(is_preloaded)
       .SetPlayer_Audible_Delta(audible_players_total_)
@@ -181,6 +182,7 @@ void MediaEngagementSession::CommitPendingData() {
 
   MediaEngagementScore score =
       service_->CreateEngagementScore(origin_.GetURL());
+  bool previous_high_value = score.high_score();
 
   if (pending_data_to_commit_.visit)
     score.IncrementVisits();
@@ -215,6 +217,9 @@ void MediaEngagementSession::CommitPendingData() {
   }
 
   score.Commit();
+
+  // If the high state has changed store that in a bool.
+  high_score_changed_ = previous_high_value != score.high_score();
 
   pending_data_to_commit_.visit = pending_data_to_commit_.playback =
       pending_data_to_commit_.players = false;

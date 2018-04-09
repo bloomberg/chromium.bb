@@ -1099,18 +1099,87 @@ be describing additional metrics about the same event.
     media playbacks, the total number of visits, the calculated engagement score
     and the new number of significant media playbacks that occured this visit.
   </summary>
-  <metric name="Engagement.IsHigh"/>
-  <metric name="Engagement.IsHigh.Changes"/>
-  <metric name="Engagement.IsPreloaded"/>
-  <metric name="Engagement.Score"/>
-  <metric name="Playbacks.Delta"/>
-  <metric name="Playbacks.SecondsSinceLast"/>
-  <metric name="Playbacks.Total"/>
-  <metric name="Player.Audible.Delta"/>
-  <metric name="Player.Audible.Total"/>
-  <metric name="Player.Significant.Delta"/>
-  <metric name="Player.Significant.Total"/>
-  <metric name="Visits.Total"/>
+  <metric name="Engagement.IsHigh">
+    <summary>
+      Whether the Media Engagement Service considers the score to be high (we
+      are using a two threshold approach so there is one threshold to be
+      considered high and another one to lose that status to reduce jitter).
+    </summary>
+  </metric>
+  <metric name="Engagement.IsHigh.Changed">
+    <summary>
+      Whether the IsHigh bit changed during the current session.
+    </summary>
+  </metric>
+  <metric name="Engagement.IsHigh.Changes">
+    <summary>
+      Counts of IsHigh changing (from 0 to 1 or 1 to 0).
+    </summary>
+  </metric>
+  <metric name="Engagement.IsPreloaded">
+    <summary>
+      Whether the origin was preloaded (from the chrome://component) as a high
+      engagement origin.
+    </summary>
+  </metric>
+  <metric name="Engagement.Score">
+    <summary>
+      The calculated Media Engagement score for the current origin. The score is
+      calculated by dividing the number of significant media playbacks by the
+      number of visits. If the number of visits is below 5 then the score will
+      be zero. This score is taken from MediaEngagementService.
+    </summary>
+  </metric>
+  <metric name="Playbacks.Delta">
+    <summary>
+      The number of significant media playbacks on this origin during this
+      session (a visit to an origin on the same tab). A playback is determined
+      significant if it meets certain criteria such as a video size of at least
+      200x140px, is not muted, is playing, etc.
+    </summary>
+  </metric>
+  <metric name="Playbacks.SecondsSinceLast">
+    <summary>
+      The number of seconds between significant media playback on the last visit
+      and significant media playback on the current visit. If there was no
+      previous visit or significant media playback this visit it will be 0.
+    </summary>
+  </metric>
+  <metric name="Playbacks.Total">
+    <summary>
+      The total number of significant media playbacks on this origin.
+    </summary>
+  </metric>
+  <metric name="Player.Audible.Delta">
+    <summary>
+      The number of unique audio/video players on a page that was audible (made
+      sound) during a visit.
+    </summary>
+  </metric>
+  <metric name="Player.Audible.Total">
+    <summary>
+      The delta from above but instead of a single visit, the total of all
+      deltas for all visits on this origin.
+    </summary>
+  </metric>
+  <metric name="Player.Significant.Delta">
+    <summary>
+      The number of unique audio/video players on a page that was audible (made
+      sound) and considered significant (played for at least 7 seconds) during a
+      visit.
+    </summary>
+  </metric>
+  <metric name="Player.Significant.Total">
+    <summary>
+      The delta from above but instead of a single visit, the total of all
+      deltas for all visits on this origin.
+    </summary>
+  </metric>
+  <metric name="Visits.Total">
+    <summary>
+      The total number of visits to this origin.
+    </summary>
+  </metric>
 </event>
 
 <event name="Media.SiteMuted" singular="True">
