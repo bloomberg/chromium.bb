@@ -303,9 +303,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void preInflationStartup() {
         super.preInflationStartup();
 
-        // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR
-        // mode while we prepare for VR rendering.
-        if (VrIntentUtils.isVrIntent(getIntent())) {
+        // We need to explicitly enable VR mode here so that the system doesn't kick us out of VR,
+        // or drop us into the 2D-in-VR rendering mode, while we prepare for VR rendering.
+        if (VrIntentUtils.isVrIntent(getIntent())
+                || VrIntentUtils.wouldUse2DInVrRenderingMode(this)) {
             VrShellDelegate.setVrModeEnabled(this, true);
         }
 
@@ -2299,14 +2300,14 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public void startActivity(Intent intent, Bundle options) {
-        if (!VrShellDelegate.isInVr() || VrIntentUtils.isVrIntent(intent)) {
+        if (VrShellDelegate.canLaunch2DIntents() || VrIntentUtils.isVrIntent(intent)) {
             super.startActivity(intent, options);
             return;
         }
         VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
             @Override
             public void onSucceeded() {
-                if (VrShellDelegate.isInVr()) {
+                if (!VrShellDelegate.canLaunch2DIntents()) {
                     throw new IllegalStateException("Still in VR after having exited VR.");
                 }
                 startActivity(intent, options);

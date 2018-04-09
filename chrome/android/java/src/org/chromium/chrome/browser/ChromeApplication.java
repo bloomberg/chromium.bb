@@ -178,7 +178,7 @@ public class ChromeApplication extends Application {
 
     @Override
     public void startActivity(Intent intent, Bundle options) {
-        if (!VrShellDelegate.isInVr() || VrIntentUtils.isVrIntent(intent)) {
+        if (VrShellDelegate.canLaunch2DIntents() || VrIntentUtils.isVrIntent(intent)) {
             super.startActivity(intent, options);
             return;
         }
@@ -186,7 +186,7 @@ public class ChromeApplication extends Application {
         VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
             @Override
             public void onSucceeded() {
-                if (VrShellDelegate.isInVr()) {
+                if (!VrShellDelegate.canLaunch2DIntents()) {
                     throw new IllegalStateException("Still in VR after having exited VR.");
                 }
                 startActivity(intent, options);

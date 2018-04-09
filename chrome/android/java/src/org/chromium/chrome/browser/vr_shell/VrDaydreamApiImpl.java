@@ -152,6 +152,11 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     }
 
     @Override
+    public boolean supports2dInVr() {
+        return isDaydreamReadyDevice() && DaydreamApi.supports2dInVr(mContext);
+    }
+
+    @Override
     public void close() {
         if (mDaydreamApi == null) return;
         mDaydreamApi.close();

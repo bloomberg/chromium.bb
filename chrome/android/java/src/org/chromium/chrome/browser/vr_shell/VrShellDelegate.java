@@ -420,6 +420,16 @@ public class VrShellDelegate
     }
 
     /**
+     * @return Whether 2D intents can safely be launched without showing non-VR UI to users in VR
+     *         headsets.
+     */
+    public static boolean canLaunch2DIntents() {
+        if (!isInVr()) return true;
+        return sInstance.mVrDaydreamApi.supports2dInVr()
+                && !sVrModeEnabledActivitys.contains(sInstance.mActivity);
+    }
+
+    /**
      * See {@link ChromeActivity#handleBackPressed}
      * Only handles the back press while in VR.
      */
@@ -581,7 +591,8 @@ public class VrShellDelegate
             listener.onSucceeded();
             return;
         }
-        sInstance.requestToExitVrInternal(listener, reason, true);
+        sInstance.requestToExitVrInternal(
+                listener, reason, !sInstance.mVrDaydreamApi.supports2dInVr());
     }
 
     /**
@@ -652,7 +663,12 @@ public class VrShellDelegate
      * This is called when ChromeTabbedActivity gets a new intent before native is initialized.
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
-        if (!VrIntentUtils.isVrIntent(intent)) return;
+        if (!VrIntentUtils.isVrIntent(intent)) {
+            if (!VrIntentUtils.wouldUse2DInVrRenderingMode(activity)) return;
+            // This is to handle intents that are sent directly to ChromeActivitys, bypassing the
+            // launcher.
+            intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
+        }
 
         if (sInstance != null && !sInstance.mInternalIntentUsedToStartVr) {
             sInstance.swapHostActivity(activity, false /* disableVrMode */);
@@ -1769,7 +1785,13 @@ public class VrShellDelegate
         if (maybeCloseVrCct()) return;
         mStopped = false;
         if (mDonSucceeded) setWindowModeForVr();
-        if (mInVr && !mVrDaydreamApi.isInVrSession()) shutdownVr(true, false);
+        if (mInVr) {
+            if (!mVrDaydreamApi.isInVrSession()) {
+                shutdownVr(true, false);
+            } else {
+                setVrModeEnabled(mActivity, true);
+            }
+        }
     }
 
     private void onStop() {
@@ -1801,6 +1823,12 @@ public class VrShellDelegate
     /* package */ boolean showDoff(boolean optional) {
         assert !mShowingDaydreamDoff;
         if (!isDaydreamCurrentViewer()) return false;
+
+        if (mVrDaydreamApi.supports2dInVr()) {
+            setVrModeEnabled(mActivity, false);
+            callOnExitVrRequestListener(true);
+            return true;
+        }
 
         // To avoid taking the user out of VR mode when started for auto-presentation, never show
         // DOFF and bail to Daydream if we're forced to leave Chrome. We still show DOFF if VR
