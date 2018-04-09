@@ -432,7 +432,9 @@ class SamlTest : public OobeBaseTest {
 // gaia on clicking.
 //
 // Times out on CrOS MSAN. https://crbug.com/504141
-#if defined(MEMORY_SANITIZER)
+// Times out on CrOS ASAN/LSAN. https://crbug.com/830322
+#if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
+    defined(ADDRESS_SANITIZER)
 #define MAYBE_SamlUI DISABLED_SamlUI
 #else
 #define MAYBE_SamlUI SamlUI
@@ -502,7 +504,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_CredentialPassingAPI) {
 }
 
 // Tests the single password scraped flow.
-IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
+//
+// Disabled since it's occasionally timed out: https://crbug.com/830322.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_ScrapedSingle DISABLED_ScrapedSingle
+#else
+#define MAYBE_ScrapedSingle ScrapedSingle
+#endif
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_ScrapedSingle) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
@@ -534,7 +543,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedSingle) {
 }
 
 // Tests password scraping from a dynamically created password field.
-IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedDynamic) {
+//
+// Disabled since it's occasionally timed out: https://crbug.com/830322.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_ScrapedDynamic DISABLED_ScrapedDynamic
+#else
+#define MAYBE_ScrapedDynamic ScrapedDynamic
+#endif
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_ScrapedDynamic) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
@@ -616,7 +632,15 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 // Types |bob@example.com| into the GAIA login form but then authenticates as
 // |alice@example.com| via SAML. Verifies that the logged-in user is correctly
 // identified as Alice.
-IN_PROC_BROWSER_TEST_F(SamlTest, UseAutenticatedUserEmailAddress) {
+//
+// Disabled since it's occasionally timed out: https://crbug.com/830322.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_UseAutenticatedUserEmailAddress \
+  DISABLED_UseAutenticatedUserEmailAddress
+#else
+#define MAYBE_UseAutenticatedUserEmailAddress UseAutenticatedUserEmailAddress
+#endif
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_UseAutenticatedUserEmailAddress) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   // Type |bob@example.com| into the GAIA login form.
   StartSamlAndWaitForIdpPageLoad(kSecondSAMLUserEmail);
@@ -657,7 +681,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
 
 // Tests the password confirm flow when more than one password is scraped: show
 // error on the first failure and fatal error on the second failure.
-IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
+//
+// Disabled since it's occasionally timed out: https://crbug.com/830322.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_PasswordConfirmFlow DISABLED_PasswordConfirmFlow
+#else
+#define MAYBE_PasswordConfirmFlow PasswordConfirmFlow
+#endif
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_PasswordConfirmFlow) {
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_two_passwords.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
@@ -689,7 +720,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
 // Verifies that when the login flow redirects from one host to another, the
 // notice shown to the user is updated. This guards against regressions of
 // http://crbug.com/447818.
-IN_PROC_BROWSER_TEST_F(SamlTest, NoticeUpdatedOnRedirect) {
+//
+// Disabled since it's occasionally timed out: https://crbug.com/830322.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_NoticeUpdatedOnRedirect DISABLED_NoticeUpdatedOnRedirect
+#else
+#define MAYBE_NoticeUpdatedOnRedirect NoticeUpdatedOnRedirect
+#endif
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_NoticeUpdatedOnRedirect) {
   // Start another https server at |kAdditionalIdPHost|.
   HTTPSForwarder saml_https_forwarder_2;
   ASSERT_TRUE(saml_https_forwarder_2.Initialize(
@@ -751,7 +789,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
 // Verifies that when GAIA attempts to redirect to a page served over http, not
 // https, via an HTML meta refresh, the redirect is blocked and an error message
 // is shown. This guards against regressions of http://crbug.com/359515.
-IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
+//
+// Disabled since it's occasionally timed out: https://crbug.com/830322.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_MetaRefreshToHTTPDisallowed DISABLED_MetaRefreshToHTTPDisallowed
+#else
+#define MAYBE_MetaRefreshToHTTPDisallowed MetaRefreshToHTTPDisallowed
+#endif
+IN_PROC_BROWSER_TEST_F(SamlTest, MAYBE_MetaRefreshToHTTPDisallowed) {
   const GURL url = embedded_test_server()->base_url().Resolve("/SSO");
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_instant_meta_refresh.html");
   fake_saml_idp()->SetRefreshURL(url);
