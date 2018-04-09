@@ -13,13 +13,13 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/gestures/motion_event_aura.h"
 #include "ui/latency/latency_info.h"
 
 namespace aura {
-class ScopedKeyboardHook;
 class Window;
 }  // namespace aura
 
@@ -163,6 +163,18 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
  private:
   FRIEND_TEST_ALL_PREFIXES(InputMethodResultAuraTest,
                            FinishImeCompositionSession);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           KeyEventRoutingWithKeyboardLockActiveForOneKey);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           KeyEventRoutingWithKeyboardLockActiveForEscKey);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           KeyEventRoutingWithKeyboardLockActiveForAllKeys);
+  FRIEND_TEST_ALL_PREFIXES(
+      RenderWidgetHostViewAuraTest,
+      KeyEventRoutingKeyboardLockAndChildPopupWithInputGrab);
+  FRIEND_TEST_ALL_PREFIXES(
+      RenderWidgetHostViewAuraTest,
+      KeyEventRoutingKeyboardLockAndChildPopupWithoutInputGrab);
   // Returns true if the |event| passed in can be forwarded to the renderer.
   bool CanRendererHandleEvent(const ui::MouseEvent* event,
                               bool mouse_locked,
@@ -209,6 +221,9 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
                               const ui::LatencyInfo& latency);
   void ProcessTouchEvent(const blink::WebTouchEvent& event,
                          const ui::LatencyInfo& latency);
+
+  // Returns true if event is a reserved key for an active KeyboardLock request.
+  bool IsKeyLocked(const ui::KeyEvent& event);
 
   // Whether return characters should be passed on to the RenderWidgetHostImpl.
   bool accept_return_character_;

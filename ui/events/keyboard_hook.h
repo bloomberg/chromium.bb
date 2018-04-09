@@ -33,6 +33,9 @@ class EVENTS_EXPORT KeyboardHook {
   static std::unique_ptr<KeyboardHook> Create(
       base::Optional<base::flat_set<int>> native_key_codes,
       KeyEventCallback callback);
+
+  // True if |native_key_code| is reserved for an active KeyboardLock request.
+  virtual bool IsKeyLocked(int native_key_code) = 0;
 };
 
 }  // namespace ui

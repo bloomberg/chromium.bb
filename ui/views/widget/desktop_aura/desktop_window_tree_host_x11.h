@@ -167,6 +167,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool CaptureSystemKeyEventsImpl(
       base::Optional<base::flat_set<int>> keys_codes) override;
   void ReleaseSystemKeyEventCapture() override;
+  bool IsKeyLocked(int native_key_code) override;
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void MoveCursorToScreenLocationInPixels(
       const gfx::Point& location_in_pixels) override;

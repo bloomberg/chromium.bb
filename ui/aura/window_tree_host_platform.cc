@@ -120,11 +120,18 @@ void WindowTreeHostPlatform::ReleaseCapture() {
 
 bool WindowTreeHostPlatform::CaptureSystemKeyEventsImpl(
     base::Optional<base::flat_set<int>> native_key_codes) {
+  // TODO(680809): Implement as part of the KeyboardLock feature work.
   NOTIMPLEMENTED();
   return false;
 }
 
 void WindowTreeHostPlatform::ReleaseSystemKeyEventCapture() {}
+
+bool WindowTreeHostPlatform::IsKeyLocked(int native_key_code) {
+  // TODO(680809): Implement as part of the KeyboardLock feature work.
+  NOTIMPLEMENTED();
+  return false;
+}
 
 void WindowTreeHostPlatform::SetCursorNative(gfx::NativeCursor cursor) {
   if (cursor == current_cursor_)
