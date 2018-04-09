@@ -30,16 +30,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto disassembler_win32x86 =
       zucchini::Disassembler::Make<zucchini::DisassemblerWin32X86>(image);
   if (disassembler_win32x86 != nullptr) {
+    // Get the image size which has been shruken to the size understood by the
+    // parser.
+    auto parsed_image_size = disassembler_win32x86->image().size();
+
     // Parse the Win32 PE file and ensure nothing bad occurs.
     // TODO(ckitagawa): Actually validate that the output reference is within
     // the image.
-    auto relocx86 = disassembler_win32x86->MakeReadRelocs(0, image.size());
+    auto relocx86 = disassembler_win32x86->MakeReadRelocs(0, parsed_image_size);
     while (relocx86->GetNext().has_value()) {
     }
-    auto abs32x86 = disassembler_win32x86->MakeReadAbs32(0, image.size());
+    auto abs32x86 = disassembler_win32x86->MakeReadAbs32(0, parsed_image_size);
     while (abs32x86->GetNext().has_value()) {
     }
-    auto rel32x86 = disassembler_win32x86->MakeReadRel32(0, image.size());
+    auto rel32x86 = disassembler_win32x86->MakeReadRel32(0, parsed_image_size);
     while (rel32x86->GetNext().has_value()) {
     }
   }
@@ -49,14 +53,18 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   auto disassembler_win32x64 =
       zucchini::Disassembler::Make<zucchini::DisassemblerWin32X64>(image);
   if (disassembler_win32x64 != nullptr) {
+    // Get the image size which has been shruken to the size understood by the
+    // parser.
+    auto parsed_image_size = disassembler_win32x64->image().size();
+
     // Parse the Win32 PE file and ensure nothing bad occurs.
-    auto relocx64 = disassembler_win32x64->MakeReadRelocs(0, image.size());
+    auto relocx64 = disassembler_win32x64->MakeReadRelocs(0, parsed_image_size);
     while (relocx64->GetNext().has_value()) {
     }
-    auto abs32x64 = disassembler_win32x64->MakeReadAbs32(0, image.size());
+    auto abs32x64 = disassembler_win32x64->MakeReadAbs32(0, parsed_image_size);
     while (abs32x64->GetNext().has_value()) {
     }
-    auto rel32x64 = disassembler_win32x64->MakeReadRel32(0, image.size());
+    auto rel32x64 = disassembler_win32x64->MakeReadRel32(0, parsed_image_size);
     while (rel32x64->GetNext().has_value()) {
     }
   }
