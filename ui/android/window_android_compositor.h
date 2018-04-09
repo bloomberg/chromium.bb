@@ -7,14 +7,11 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/android/ui_android_export.h"
 #include "ui/compositor/compositor_lock.h"
-
-namespace cc {
-class Layer;
-}
 
 namespace ui {
 
@@ -25,7 +22,9 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
  public:
   virtual ~WindowAndroidCompositor() {}
 
-  virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;
+  virtual base::WeakPtr<WindowAndroidCompositor> GetWeakPtr() = 0;
+  virtual void IncrementReadbackRequestCount() = 0;
+  virtual void DecrementReadbackRequestCount() = 0;
   virtual void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) = 0;
   virtual void SetNeedsAnimate() = 0;

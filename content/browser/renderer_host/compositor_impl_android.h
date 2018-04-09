@@ -122,7 +122,9 @@ class CONTENT_EXPORT CompositorImpl
   void DidLoseLayerTreeFrameSink() override;
 
   // WindowAndroidCompositor implementation.
-  void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
+  base::WeakPtr<ui::WindowAndroidCompositor> GetWeakPtr() override;
+  void IncrementReadbackRequestCount() override;
+  void DecrementReadbackRequestCount() override;
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest> request) override;
   void SetNeedsAnimate() override;
@@ -175,9 +177,6 @@ class CONTENT_EXPORT CompositorImpl
   // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> subroot_layer_;
 
-  // Subtree for hidden layers with CopyOutputRequests on them.
-  scoped_refptr<cc::Layer> readback_layer_tree_;
-
   // Destruction order matters here:
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
@@ -215,6 +214,8 @@ class CONTENT_EXPORT CompositorImpl
       pending_child_frame_sink_ids_;
   ui::CompositorLockManager lock_manager_;
   bool has_submitted_frame_since_became_visible_ = false;
+
+  unsigned int pending_readback_request_count_ = 0u;
 
   // A task which runs cleanup tasks on low-end Android after a delay. Enqueued
   // when we hide, canceled when we're shown.

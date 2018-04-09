@@ -35,7 +35,11 @@ namespace {
 class MockCompositor : public WindowAndroidCompositor {
  public:
   ~MockCompositor() override {}
-  void AttachLayerForReadback(scoped_refptr<cc::Layer>) override {}
+  base::WeakPtr<ui::WindowAndroidCompositor> GetWeakPtr() override {
+    return nullptr;
+  }
+  void IncrementReadbackRequestCount() override {}
+  void DecrementReadbackRequestCount() override {}
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<viz::CopyOutputRequest>) override {}
   void SetNeedsAnimate() override {}
