@@ -127,9 +127,8 @@ Status Device::SetUp(const std::string& package,
 
     active_package_ = package;
   }
-  this->ForwardDevtoolsPort(package, process, port, &known_device_socket);
-
-  return status;
+  return this->ForwardDevtoolsPort(package, process, port,
+                                   &known_device_socket);
 }
 
 Status Device::ForwardDevtoolsPort(const std::string& package,

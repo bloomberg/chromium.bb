@@ -49,8 +49,10 @@ class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
       ready_.TimedWait(timeout);
     }
     if (result_ < 0)
-      return Status(kUnknownError,
-          "Failed to run adb command, is the adb server running?");
+      return Status(
+          kUnknownError,
+          "Failed to run adb command, is the adb server running? Error: " +
+              response_ + ".");
     *response = response_;
     return Status(kOk);
   }
@@ -115,15 +117,13 @@ Status AdbImpl::ForwardPort(
     const std::string& device_serial, int local_port,
     const std::string& remote_abstract) {
   std::string response;
-  Status status = ExecuteHostCommand(
-      device_serial,
-      "forward:tcp:" + base::IntToString(local_port) + ";localabstract:" +
-          remote_abstract,
-      &response);
-  if (!status.IsOk())
+  Status status =
+      ExecuteHostCommand(device_serial,
+                         "forward:tcp:" + base::IntToString(local_port) +
+                             ";localabstract:" + remote_abstract,
+                         &response);
+  if (status.IsOk())
     return status;
-  if (response == "OKAY")
-    return Status(kOk);
   return Status(kUnknownError, "Failed to forward ports to device " +
                 device_serial + ": " + response);
 }
@@ -207,8 +207,8 @@ Status AdbImpl::GetPidByName(const std::string& device_serial,
                              int* pid) {
   std::string response;
   // on Android O `ps` returns only user processes, so also try with `-A` flag.
-  Status status = ExecuteHostShellCommand(device_serial, "ps && ps -A",
-      &response);
+  Status status =
+      ExecuteHostShellCommand(device_serial, "ps && ps -A", &response);
 
   if (!status.IsOk())
     return status;
