@@ -22,6 +22,7 @@ namespace chromecast {
 class TaskRunnerImpl : public TaskRunner {
  public:
   TaskRunnerImpl();
+  explicit TaskRunnerImpl(scoped_refptr<base::SingleThreadTaskRunner> runner);
   ~TaskRunnerImpl() override;
 
   bool PostTask(Task* task, uint64_t delay_milliseconds) override;
