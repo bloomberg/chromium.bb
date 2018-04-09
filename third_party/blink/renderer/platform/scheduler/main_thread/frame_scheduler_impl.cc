@@ -515,10 +515,8 @@ void FrameSchedulerImpl::SetPageVisibility(
   page_visibility_ = page_visibility;
   if (page_visibility_ == PageVisibilityState::kVisible)
     page_frozen_ = false;  // visible page must not be frozen.
-  // TODO(altimin): Avoid having to call all these methods here.
   UpdateTaskQueues();
   UpdateTaskQueueThrottling();
-  UpdateThrottlingState();
 }
 
 bool FrameSchedulerImpl::IsPageVisible() const {
@@ -538,7 +536,6 @@ void FrameSchedulerImpl::SetPageFrozen(bool frozen) {
   DCHECK(!frozen || page_visibility_ == PageVisibilityState::kHidden);
   page_frozen_ = frozen;
   UpdateTaskQueues();
-  UpdateThrottlingState();
 }
 
 void FrameSchedulerImpl::SetKeepActive(bool keep_active) {
@@ -557,6 +554,7 @@ void FrameSchedulerImpl::UpdateTaskQueues() {
   UpdateTaskQueue(deferrable_task_queue_,
                   deferrable_queue_enabled_voter_.get());
   UpdateTaskQueue(pausable_task_queue_, pausable_queue_enabled_voter_.get());
+  UpdateThrottlingState();
 }
 
 void FrameSchedulerImpl::UpdateTaskQueue(
@@ -584,7 +582,7 @@ void FrameSchedulerImpl::UpdateThrottlingState() {
 FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState()
     const {
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
-      page_frozen_) {
+      page_frozen_ && !keep_active_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);
     return FrameScheduler::ThrottlingState::kStopped;
   }
