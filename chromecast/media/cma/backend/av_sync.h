@@ -6,6 +6,7 @@
 #define CHROMECAST_MEDIA_CMA_BACKEND_AV_SYNC_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/memory/scoped_refptr.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -49,8 +50,6 @@ class AvSync {
   // Notify that the audio playback has been started. The AV sync will typically
   // start upkeeping AV sync. The AV sync code is *not* responsible for
   // starting the video.
-  // TODO(almasrymina): consider actually changing AV sync's responsibilities
-  // to pause/resume/stop/start playback.
   virtual void NotifyStart() = 0;
 
   // Notify that the audio playback has been stopped. The AV sync will typically

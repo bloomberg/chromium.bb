@@ -23,7 +23,3 @@ cast_shared_library("libcast_media_1.0_avsync") {
 
   libs = [ "videodecoderformixer" ]
 }
-
-cast_source_set("unit_tests") {
-  # TODO(almasrymina): b/73746352
-}

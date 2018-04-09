@@ -41,14 +41,13 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   explicit AudioDecoderForMixer(MediaPipelineBackendForMixer* backend);
   ~AudioDecoderForMixer() override;
 
-  void Initialize();
-  bool Start(int64_t start_pts);
-  void Stop();
-  bool Pause();
-  bool Resume();
-  bool SetPlaybackRate(float rate);
-
-  int64_t GetCurrentPts() const;
+  virtual void Initialize();
+  virtual bool Start(int64_t start_pts);
+  virtual void Stop();
+  virtual bool Pause();
+  virtual bool Resume();
+  virtual bool SetPlaybackRate(float rate);
+  virtual int64_t GetCurrentPts() const;
 
   // MediaPipelineBackend::AudioDecoder implementation:
   void SetDelegate(MediaPipelineBackend::Decoder::Delegate* delegate) override;
@@ -59,6 +58,9 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   RenderingDelay GetRenderingDelay() override;
 
  private:
+  friend class MockAudioDecoderForMixer;
+  friend class AvSyncTest;
+
   struct RateShifterInfo {
     explicit RateShifterInfo(float playback_rate);
 

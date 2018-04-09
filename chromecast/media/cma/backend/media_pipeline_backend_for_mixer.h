@@ -50,7 +50,11 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   AudioDecoderForMixer* audio_decoder() const { return audio_decoder_.get(); }
 
   // Gets current time on the same clock as the rendering delay timestamp.
-  int64_t MonotonicClockNow() const;
+  virtual int64_t MonotonicClockNow() const;
+
+ protected:
+  std::unique_ptr<VideoDecoderForMixer> video_decoder_;
+  std::unique_ptr<AudioDecoderForMixer> audio_decoder_;
 
  private:
   // State variable for DCHECKing caller correctness.
@@ -63,8 +67,6 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   State state_;
 
   const MediaPipelineDeviceParams params_;
-  std::unique_ptr<VideoDecoderForMixer> video_decoder_;
-  std::unique_ptr<AudioDecoderForMixer> audio_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

@@ -37,15 +37,45 @@ class AvSyncVideo : public AvSync {
   void NotifyPause() override;
   void NotifyResume() override;
 
+  class Delegate {
+   public:
+    virtual void NotifyAvSyncPlaybackStatistics(
+        int64_t unexpected_dropped_frames,
+        int64_t unexpected_repeated_frames,
+        double average_av_sync_difference,
+        int64_t current_apts_us,
+        int64_t current_vpts_us,
+        int64_t number_of_soft_corrections,
+        int64_t number_of_hard_corrections) = 0;
+
+    virtual ~Delegate() = default;
+  };
+
+  void SetDelegate(Delegate* delegate) {
+    DCHECK(delegate);
+    delegate_ = delegate;
+  }
+
  private:
   void UpkeepAvSync();
   void StartAvSync();
   void StopAvSync();
   void GatherPlaybackStatistics();
 
+  void SoftCorrection(int64_t now);
+  void HardCorrection(int64_t now);
+  void InSyncCorrection(int64_t now);
+
+  Delegate* delegate_ = nullptr;
+
+  int64_t av_sync_difference_sum_ = 0;
+  int64_t av_sync_difference_count_ = 0;
+
   base::RepeatingTimer upkeep_av_sync_timer_;
   base::RepeatingTimer playback_statistics_timer_;
   bool setup_video_clock_ = false;
+  bool in_soft_correction_ = false;
+  int64_t difference_at_start_of_correction_ = 0;
 
   // TODO(almasrymina): having a linear regression for the audio pts is
   // dangerous, because glitches in the audio or intentional changes in the
@@ -60,8 +90,10 @@ class AvSyncVideo : public AvSync {
   int64_t last_gather_timestamp_us_ = 0;
   int64_t last_repeated_frames_ = 0;
   int64_t last_dropped_frames_ = 0;
+  int64_t number_of_hard_corrections_ = 0;
+  int64_t number_of_soft_corrections_ = 0;
 
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  int64_t last_vpts_value_recorded_ = 0;
 
   MediaPipelineBackendForMixer* const backend_;
 };
