@@ -16,31 +16,23 @@ class VisibleUnitsWordTest : public EditingTestBase {
       const std::string& selection_text,
       EWordSide word_side = EWordSide::kNextWordIfOnBoundary) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
-    return GetSelectionTextFromBody(
-        SelectionInDOMTree::Builder()
-            .Collapse(StartOfWord(CreateVisiblePosition(position), word_side)
-                          .DeepEquivalent())
-            .Build());
+    return GetCaretTextFromBody(
+        StartOfWord(CreateVisiblePosition(position), word_side)
+            .DeepEquivalent());
   }
 
   std::string DoEndOfWord(
       const std::string& selection_text,
       EWordSide word_side = EWordSide::kNextWordIfOnBoundary) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
-    return GetSelectionTextFromBody(
-        SelectionInDOMTree::Builder()
-            .Collapse(EndOfWord(CreateVisiblePosition(position), word_side)
-                          .DeepEquivalent())
-            .Build());
+    return GetCaretTextFromBody(
+        EndOfWord(CreateVisiblePosition(position), word_side).DeepEquivalent());
   }
 
   std::string DoNextWord(const std::string& selection_text) {
     const Position position = SetSelectionTextToBody(selection_text).Base();
-    return GetSelectionTextFromBody(
-        SelectionInDOMTree::Builder()
-            .Collapse(NextWordPosition(CreateVisiblePosition(position))
-                          .DeepEquivalent())
-            .Build());
+    return GetCaretTextFromBody(
+        NextWordPosition(CreateVisiblePosition(position)).DeepEquivalent());
   }
 
   std::string DoPreviousWord(const std::string& selection_text) {
@@ -49,8 +41,7 @@ class VisibleUnitsWordTest : public EditingTestBase {
         PreviousWordPosition(CreateVisiblePosition(position)).DeepEquivalent();
     if (result.IsNull())
       return GetSelectionTextFromBody(SelectionInDOMTree());
-    return GetSelectionTextFromBody(
-        SelectionInDOMTree::Builder().Collapse(result).Build());
+    return GetCaretTextFromBody(result);
   }
 
   // To avoid name conflict in jumbo build, following functions should be here.
