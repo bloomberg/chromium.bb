@@ -64,36 +64,36 @@ class CameraHalDelegateTest : public ::testing::Test {
 
 TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   auto get_number_of_cameras_cb =
-      [](arc::mojom::CameraModule::GetNumberOfCamerasCallback& cb) {
+      [](cros::mojom::CameraModule::GetNumberOfCamerasCallback& cb) {
         std::move(cb).Run(2);
       };
 
   auto get_camera_info_cb = [](uint32_t camera_id,
-                               arc::mojom::CameraModule::GetCameraInfoCallback&
+                               cros::mojom::CameraModule::GetCameraInfoCallback&
                                    cb) {
-    arc::mojom::CameraInfoPtr camera_info = arc::mojom::CameraInfo::New();
-    arc::mojom::CameraMetadataPtr static_metadata =
-        arc::mojom::CameraMetadata::New();
+    cros::mojom::CameraInfoPtr camera_info = cros::mojom::CameraInfo::New();
+    cros::mojom::CameraMetadataPtr static_metadata =
+        cros::mojom::CameraMetadata::New();
     static_metadata->entry_count = 1;
     static_metadata->entry_capacity = 1;
     static_metadata->entries =
-        std::vector<arc::mojom::CameraMetadataEntryPtr>();
+        std::vector<cros::mojom::CameraMetadataEntryPtr>();
 
-    arc::mojom::CameraMetadataEntryPtr entry =
-        arc::mojom::CameraMetadataEntry::New();
+    cros::mojom::CameraMetadataEntryPtr entry =
+        cros::mojom::CameraMetadataEntry::New();
     entry->index = 0;
-    entry->tag = arc::mojom::CameraMetadataTag::
+    entry->tag = cros::mojom::CameraMetadataTag::
         ANDROID_SCALER_AVAILABLE_MIN_FRAME_DURATIONS;
-    entry->type = arc::mojom::EntryType::TYPE_INT64;
+    entry->type = cros::mojom::EntryType::TYPE_INT64;
     entry->count = 8;
     std::vector<int64_t> min_frame_durations(8);
     min_frame_durations[0] = static_cast<int64_t>(
-        arc::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED);
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED);
     min_frame_durations[1] = 1280;
     min_frame_durations[2] = 720;
     min_frame_durations[3] = 33333333;
     min_frame_durations[4] = static_cast<int64_t>(
-        arc::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888);
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888);
     min_frame_durations[5] = 1280;
     min_frame_durations[6] = 720;
     min_frame_durations[7] = 16666666;
@@ -103,12 +103,12 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
 
     switch (camera_id) {
       case 0:
-        camera_info->facing = arc::mojom::CameraFacing::CAMERA_FACING_BACK;
+        camera_info->facing = cros::mojom::CameraFacing::CAMERA_FACING_BACK;
         camera_info->orientation = 0;
         camera_info->static_camera_characteristics = std::move(static_metadata);
         break;
       case 1:
-        camera_info->facing = arc::mojom::CameraFacing::CAMERA_FACING_FRONT;
+        camera_info->facing = cros::mojom::CameraFacing::CAMERA_FACING_FRONT;
         camera_info->orientation = 0;
         camera_info->static_camera_characteristics = std::move(static_metadata);
         break;
@@ -123,17 +123,17 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
       .WillOnce(Invoke(get_number_of_cameras_cb));
   EXPECT_CALL(
       mock_camera_module_,
-      DoSetCallbacks(A<arc::mojom::CameraModuleCallbacksPtr&>(),
-                     A<arc::mojom::CameraModule::SetCallbacksCallback&>()))
+      DoSetCallbacks(A<cros::mojom::CameraModuleCallbacksPtr&>(),
+                     A<cros::mojom::CameraModule::SetCallbacksCallback&>()))
       .Times(1);
-  EXPECT_CALL(
-      mock_camera_module_,
-      DoGetCameraInfo(0, A<arc::mojom::CameraModule::GetCameraInfoCallback&>()))
+  EXPECT_CALL(mock_camera_module_,
+              DoGetCameraInfo(
+                  0, A<cros::mojom::CameraModule::GetCameraInfoCallback&>()))
       .Times(1)
       .WillOnce(Invoke(get_camera_info_cb));
-  EXPECT_CALL(
-      mock_camera_module_,
-      DoGetCameraInfo(1, A<arc::mojom::CameraModule::GetCameraInfoCallback&>()))
+  EXPECT_CALL(mock_camera_module_,
+              DoGetCameraInfo(
+                  1, A<cros::mojom::CameraModule::GetCameraInfoCallback&>()))
       .Times(1)
       .WillOnce(Invoke(get_camera_info_cb));
 

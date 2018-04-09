@@ -28,10 +28,10 @@ class CameraDeviceContext;
 // stream configuration, and circulates the buffers along with capture
 // requests and results between Chrome and the camera HAL process.
 class CAPTURE_EXPORT StreamBufferManager final
-    : public arc::mojom::Camera3CallbackOps {
+    : public cros::mojom::Camera3CallbackOps {
  public:
   StreamBufferManager(
-      arc::mojom::Camera3CallbackOpsRequest callback_ops_request,
+      cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
       std::unique_ptr<StreamCaptureInterface> capture_interface,
       CameraDeviceContext* device_context,
       std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
@@ -43,7 +43,7 @@ class CAPTURE_EXPORT StreamBufferManager final
   // configuration specified in |stream|.
   void SetUpStreamAndBuffers(VideoCaptureFormat capture_format,
                              uint32_t partial_result_count,
-                             arc::mojom::Camera3StreamPtr stream);
+                             cros::mojom::Camera3StreamPtr stream);
 
   // StartCapture is the entry point to starting the video capture.  The way
   // the video capture loop works is:
@@ -59,7 +59,7 @@ class CAPTURE_EXPORT StreamBufferManager final
   //      SubmitCaptureResultIfComplete is called to deliver the filled buffer
   //      to Chrome.  After the buffer is consumed by Chrome it is enqueued back
   //      to the free buffer queue.  Goto (1) to start another capture loop.
-  void StartCapture(arc::mojom::CameraMetadataPtr settings);
+  void StartCapture(cros::mojom::CameraMetadataPtr settings);
 
   // Stops the capture loop.  After StopCapture is called |callback_ops_| is
   // unbound, so no new capture request or result will be processed.
@@ -86,15 +86,15 @@ class CAPTURE_EXPORT StreamBufferManager final
   // buffer from camera HAL.  The result metadata may be divided and delivered
   // in several stages.  Before all the result metadata is received the
   // partial results are kept in |partial_results_|.
-  void ProcessCaptureResult(arc::mojom::Camera3CaptureResultPtr result) final;
+  void ProcessCaptureResult(cros::mojom::Camera3CaptureResultPtr result) final;
 
   // Notify receives the shutter time of capture requests and various errors
   // from camera HAL.  The shutter time is used as the timestamp in the video
   // frame delivered to Chrome.
-  void Notify(arc::mojom::Camera3NotifyMsgPtr message) final;
+  void Notify(cros::mojom::Camera3NotifyMsgPtr message) final;
   void HandleNotifyError(uint32_t frame_number,
                          uint64_t error_stream_id,
-                         arc::mojom::Camera3ErrorMsgCode error_code);
+                         cros::mojom::Camera3ErrorMsgCode error_code);
 
   // Submits the captured buffer of frame |frame_number_| to Chrome if all the
   // required metadata and the captured buffer are received.  After the buffer
@@ -103,7 +103,7 @@ class CAPTURE_EXPORT StreamBufferManager final
   void SubmitCaptureResultIfComplete(uint32_t frame_number);
   void SubmitCaptureResult(uint32_t frame_number);
 
-  mojo::Binding<arc::mojom::Camera3CallbackOps> callback_ops_;
+  mojo::Binding<cros::mojom::Camera3CallbackOps> callback_ops_;
 
   std::unique_ptr<StreamCaptureInterface> capture_interface_;
 
@@ -127,9 +127,9 @@ class CAPTURE_EXPORT StreamBufferManager final
     // The actual pixel format used in the capture request.
     VideoCaptureFormat capture_format;
     // The camera HAL stream.
-    arc::mojom::Camera3StreamPtr stream;
+    cros::mojom::Camera3StreamPtr stream;
     // The request settings used in the capture request of this stream.
-    arc::mojom::CameraMetadataPtr request_settings;
+    cros::mojom::CameraMetadataPtr request_settings;
     // The allocated buffers of this stream.
     std::vector<std::unique_ptr<gfx::GpuMemoryBuffer>> buffers;
     // The free buffers of this stream.  The queue stores indices into the
@@ -151,9 +151,9 @@ class CAPTURE_EXPORT StreamBufferManager final
     base::TimeDelta timestamp;
     // The result metadata.  Contains various information about the captured
     // frame.
-    arc::mojom::CameraMetadataPtr metadata;
+    cros::mojom::CameraMetadataPtr metadata;
     // The buffer handle that hold the captured data of this frame.
-    arc::mojom::Camera3StreamBufferPtr buffer;
+    cros::mojom::Camera3StreamBufferPtr buffer;
     // The set of the partial metadata received.  For each capture result, the
     // total number of partial metadata should equal to
     // |partial_result_count_|.

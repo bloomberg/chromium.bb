@@ -33,7 +33,7 @@ class CameraBufferFactory;
 // is still alive.
 class CAPTURE_EXPORT CameraHalDelegate final
     : public base::RefCountedThreadSafe<CameraHalDelegate>,
-      public arc::mojom::CameraModuleCallbacks {
+      public cros::mojom::CameraModuleCallbacks {
  public:
   // All the Mojo IPC operations happen on |ipc_task_runner|.
   explicit CameraHalDelegate(
@@ -42,7 +42,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // Registers the camera client observer to the CameraHalDispatcher instance.
   void RegisterCameraClient();
 
-  void SetCameraModule(arc::mojom::CameraModulePtrInfo camera_module_ptr_info);
+  void SetCameraModule(cros::mojom::CameraModulePtrInfo camera_module_ptr_info);
 
   // Resets |camera_module_| and |camera_module_callbacks_|.
   void Reset();
@@ -63,7 +63,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // Asynchronous method to get the camera info of |camera_id|.  This method may
   // be called on any thread.
   using GetCameraInfoCallback =
-      base::Callback<void(int32_t, arc::mojom::CameraInfoPtr)>;
+      base::Callback<void(int32_t, cros::mojom::CameraInfoPtr)>;
   void GetCameraInfo(int32_t camera_id, const GetCameraInfoCallback& callback);
 
   // Asynchronous method to open the camera device designated by |camera_id|.
@@ -71,7 +71,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // |ipc_task_runner_|.
   using OpenDeviceCallback = base::Callback<void(int32_t)>;
   void OpenDevice(int32_t camera_id,
-                  arc::mojom::Camera3DeviceOpsRequest device_ops_request,
+                  cros::mojom::Camera3DeviceOpsRequest device_ops_request,
                   const OpenDeviceCallback& callback);
 
  private:
@@ -80,7 +80,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   ~CameraHalDelegate() final;
 
   void SetCameraModuleOnIpcThread(
-      arc::mojom::CameraModulePtrInfo camera_module_ptr_info);
+      cros::mojom::CameraModulePtrInfo camera_module_ptr_info);
 
   // Resets the Mojo interface and bindings.
   void ResetMojoInterfaceOnIpcThread();
@@ -101,21 +101,21 @@ class CAPTURE_EXPORT CameraHalDelegate final
                                 const GetCameraInfoCallback& callback);
   void OnGotCameraInfoOnIpcThread(int32_t camera_id,
                                   int32_t result,
-                                  arc::mojom::CameraInfoPtr camera_info);
+                                  cros::mojom::CameraInfoPtr camera_info);
 
   // Called by OpenDevice to actually open the device specified by |camera_id|.
   // This method runs on |ipc_task_runner_|.
   void OpenDeviceOnIpcThread(
       int32_t camera_id,
-      arc::mojom::Camera3DeviceOpsRequest device_ops_request,
+      cros::mojom::Camera3DeviceOpsRequest device_ops_request,
       const OpenDeviceCallback& callback);
 
   // CameraModuleCallbacks implementation. Operates on |ipc_task_runner_|.
   void CameraDeviceStatusChange(
       int32_t camera_id,
-      arc::mojom::CameraDeviceStatus new_status) final;
+      cros::mojom::CameraDeviceStatus new_status) final;
   void TorchModeStatusChange(int32_t camera_id,
-                             arc::mojom::TorchModeStatus new_status) final;
+                             cros::mojom::TorchModeStatus new_status) final;
 
   base::WaitableEvent camera_module_has_been_set_;
 
@@ -131,7 +131,7 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // access is sequenced through UpdateBuiltInCameraInfo and
   // |builtin_camera_info_updated_| to avoid race conditions.
   size_t num_builtin_cameras_;
-  std::unordered_map<std::string, arc::mojom::CameraInfoPtr> camera_info_;
+  std::unordered_map<std::string, cros::mojom::CameraInfoPtr> camera_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -142,11 +142,11 @@ class CAPTURE_EXPORT CameraHalDelegate final
 
   // The Mojo proxy to access the camera module at the remote camera HAL.  Bound
   // to |ipc_task_runner_|.
-  arc::mojom::CameraModulePtr camera_module_;
+  cros::mojom::CameraModulePtr camera_module_;
 
   // The Mojo binding serving the camera module callbacks.  Bound to
   // |ipc_task_runner_|.
-  mojo::Binding<arc::mojom::CameraModuleCallbacks> camera_module_callbacks_;
+  mojo::Binding<cros::mojom::CameraModuleCallbacks> camera_module_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraHalDelegate);
 };

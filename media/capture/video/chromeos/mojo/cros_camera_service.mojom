@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next min version: 1
+// Next min version: 3
 
-module arc.mojom;
+module cros.mojom;
 
 import "media/capture/video/chromeos/mojo/camera_common.mojom";
 import "media/mojo/interfaces/jpeg_decode_accelerator.mojom";
 import "media/mojo/interfaces/jpeg_encode_accelerator.mojom";
 
-// The ARC++ camera HAL v3 Mojo dispatcher.  The dispatcher acts as a proxy and
+// The CrOS camera HAL v3 Mojo dispatcher.  The dispatcher acts as a proxy and
 // waits for the server and the clients to register.  There can only be one
 // server registered, with multiple clients requesting connections to the
 // server.  For each client, the dispatcher is responsible for creating a Mojo
@@ -36,7 +36,7 @@ interface CameraHalDispatcher {
     media.mojom.JpegEncodeAccelerator& jea_request);
 };
 
-// The ARC++ camera HAL v3 Mojo server.
+// The CrOS camera HAL v3 Mojo server.
 //
 // Next method ID: 1
 interface CameraHalServer {
@@ -47,7 +47,7 @@ interface CameraHalServer {
   CreateChannel@0(CameraModule& camera_module_request);
 };
 
-// The ARC++ camera HAL v3 Mojo client.
+// The CrOS camera HAL v3 Mojo client.
 //
 // Next method ID: 1
 interface CameraHalClient {

@@ -16,7 +16,7 @@
 namespace media {
 
 StreamBufferManager::StreamBufferManager(
-    arc::mojom::Camera3CallbackOpsRequest callback_ops_request,
+    cros::mojom::Camera3CallbackOpsRequest callback_ops_request,
     std::unique_ptr<StreamCaptureInterface> capture_interface,
     CameraDeviceContext* device_context,
     std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
@@ -50,7 +50,7 @@ StreamBufferManager::~StreamBufferManager() {
 void StreamBufferManager::SetUpStreamAndBuffers(
     VideoCaptureFormat capture_format,
     uint32_t partial_result_count,
-    arc::mojom::Camera3StreamPtr stream) {
+    cros::mojom::Camera3StreamPtr stream) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(!stream_context_);
 
@@ -102,7 +102,8 @@ void StreamBufferManager::SetUpStreamAndBuffers(
   VLOG(2) << "Allocated " << stream_context_->stream->max_buffers << " buffers";
 }
 
-void StreamBufferManager::StartCapture(arc::mojom::CameraMetadataPtr settings) {
+void StreamBufferManager::StartCapture(
+    cros::mojom::CameraMetadataPtr settings) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(stream_context_);
   DCHECK(stream_context_->request_settings.is_null());
@@ -145,7 +146,8 @@ void StreamBufferManager::RegisterBuffer() {
                        VideoPixelFormatToString(buffer_format));
     return;
   }
-  arc::mojom::HalPixelFormat hal_pixel_format = stream_context_->stream->format;
+  cros::mojom::HalPixelFormat hal_pixel_format =
+      stream_context_->stream->format;
 
   gfx::NativePixmapHandle buffer_handle =
       buffer->GetHandle().native_pixmap_handle;
@@ -175,7 +177,7 @@ void StreamBufferManager::RegisterBuffer() {
   // We reuse BufferType::GRALLOC here since on ARC++ we are using DMA-buf-based
   // gralloc buffers.
   capture_interface_->RegisterBuffer(
-      buffer_id, arc::mojom::Camera3DeviceOps::BufferType::GRALLOC, drm_format,
+      buffer_id, cros::mojom::Camera3DeviceOps::BufferType::GRALLOC, drm_format,
       hal_pixel_format, stream_context_->stream->width,
       stream_context_->stream->height, std::move(planes),
       base::Bind(&StreamBufferManager::OnRegisteredBuffer,
@@ -202,15 +204,15 @@ void StreamBufferManager::ProcessCaptureRequest(size_t buffer_id) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK(stream_context_);
 
-  arc::mojom::Camera3StreamBufferPtr buffer =
-      arc::mojom::Camera3StreamBuffer::New();
+  cros::mojom::Camera3StreamBufferPtr buffer =
+      cros::mojom::Camera3StreamBuffer::New();
   buffer->stream_id = static_cast<uint64_t>(
-      arc::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW);
+      cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW);
   buffer->buffer_id = buffer_id;
-  buffer->status = arc::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_OK;
+  buffer->status = cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_OK;
 
-  arc::mojom::Camera3CaptureRequestPtr request =
-      arc::mojom::Camera3CaptureRequest::New();
+  cros::mojom::Camera3CaptureRequestPtr request =
+      cros::mojom::Camera3CaptureRequest::New();
   request->frame_number = frame_number_;
   request->settings = stream_context_->request_settings.Clone();
   request->output_buffers.push_back(std::move(buffer));
@@ -240,7 +242,7 @@ void StreamBufferManager::OnProcessedCaptureRequest(int32_t result) {
 }
 
 void StreamBufferManager::ProcessCaptureResult(
-    arc::mojom::Camera3CaptureResultPtr result) {
+    cros::mojom::Camera3CaptureResultPtr result) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   if (!capturing_) {
@@ -264,7 +266,7 @@ void StreamBufferManager::ProcessCaptureResult(
               std::to_string(result->output_buffers->size()));
       return;
     }
-    arc::mojom::Camera3StreamBufferPtr& stream_buffer =
+    cros::mojom::Camera3StreamBufferPtr& stream_buffer =
         result->output_buffers.value()[0];
     VLOG(2) << "Received capture result for frame " << frame_number
             << " stream_id: " << stream_buffer->stream_id;
@@ -284,7 +286,7 @@ void StreamBufferManager::ProcessCaptureResult(
       // don't wait for any partial results.  SubmitCaptureResult() will drop
       // and reuse the buffer.
       if (partial_result.buffer->status ==
-          arc::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_ERROR) {
+          cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_ERROR) {
         SubmitCaptureResult(frame_number);
         return;
       }
@@ -315,19 +317,19 @@ void StreamBufferManager::ProcessCaptureResult(
   SubmitCaptureResultIfComplete(frame_number);
 }
 
-void StreamBufferManager::Notify(arc::mojom::Camera3NotifyMsgPtr message) {
+void StreamBufferManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
 
   if (!capturing_) {
     return;
   }
-  if (message->type == arc::mojom::Camera3MsgType::CAMERA3_MSG_ERROR) {
+  if (message->type == cros::mojom::Camera3MsgType::CAMERA3_MSG_ERROR) {
     uint32_t frame_number = message->message->get_error()->frame_number;
     uint64_t error_stream_id = message->message->get_error()->error_stream_id;
-    arc::mojom::Camera3ErrorMsgCode error_code =
+    cros::mojom::Camera3ErrorMsgCode error_code =
         message->message->get_error()->error_code;
     HandleNotifyError(frame_number, error_stream_id, error_code);
-  } else {  // arc::mojom::Camera3MsgType::CAMERA3_MSG_SHUTTER
+  } else {  // cros::mojom::Camera3MsgType::CAMERA3_MSG_SHUTTER
     uint32_t frame_number = message->message->get_shutter()->frame_number;
     uint64_t shutter_time = message->message->get_shutter()->timestamp;
     // A new partial result may be created in either ProcessCaptureResult or
@@ -363,16 +365,16 @@ void StreamBufferManager::Notify(arc::mojom::Camera3NotifyMsgPtr message) {
 void StreamBufferManager::HandleNotifyError(
     uint32_t frame_number,
     uint64_t error_stream_id,
-    arc::mojom::Camera3ErrorMsgCode error_code) {
+    cros::mojom::Camera3ErrorMsgCode error_code) {
   std::string warning_msg;
 
   switch (error_code) {
-    case arc::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_DEVICE:
+    case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_DEVICE:
       // Fatal error and no more frames will be produced by the device.
       device_context_->SetErrorState(FROM_HERE, "Fatal device error");
       return;
 
-    case arc::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_REQUEST:
+    case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_REQUEST:
       // An error has occurred in processing the request; the request
       // specified by |frame_number| has been dropped by the camera device.
       // Subsequent requests are unaffected.
@@ -385,7 +387,7 @@ void StreamBufferManager::HandleNotifyError(
           std::to_string(frame_number);
       break;
 
-    case arc::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_RESULT:
+    case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_RESULT:
       // An error has occurred in producing the output metadata buffer for a
       // result; the output metadata will not be available for the frame
       // specified by |frame_number|.  Subsequent requests are unaffected.
@@ -395,7 +397,7 @@ void StreamBufferManager::HandleNotifyError(
                     std::to_string(frame_number);
       break;
 
-    case arc::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_BUFFER:
+    case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_BUFFER:
       // An error has occurred in placing the output buffer into a stream for
       // a request. |frame_number| specifies the request for which the buffer
       // was dropped, and |error_stream_id| specifies the stream that dropped
@@ -479,7 +481,7 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number) {
 
   // Deliver the captured data to client and then re-queue the buffer.
   if (partial_result.buffer->status !=
-      arc::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_ERROR) {
+      cros::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_ERROR) {
     gfx::GpuMemoryBuffer* buffer = stream_context_->buffers[buffer_id].get();
     auto buffer_handle = buffer->GetHandle();
     size_t mapped_size = 0;
@@ -503,7 +505,7 @@ StreamBufferManager::StreamContext::StreamContext() = default;
 StreamBufferManager::StreamContext::~StreamContext() = default;
 
 StreamBufferManager::CaptureResult::CaptureResult()
-    : metadata(arc::mojom::CameraMetadata::New()) {}
+    : metadata(cros::mojom::CameraMetadata::New()) {}
 
 StreamBufferManager::CaptureResult::~CaptureResult() = default;
 

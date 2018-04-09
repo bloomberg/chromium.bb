@@ -4,7 +4,7 @@
 
 // Next min version: 2
 
-module arc.mojom;
+module cros.mojom;
 
 import "media/capture/video/chromeos/mojo/camera_metadata.mojom";
 
@@ -247,7 +247,7 @@ interface Camera3DeviceOps {
   // camera HAL to idle state.
   Flush@5() => (int32 result);
 
-  // The type of buffers the ARC++ camera service currently supports.
+  // The type of buffers the CrOS camera service currently supports.
   // GRALLOC is for the platform-specific gralloc buffer allocated by Android.
   // SHM is for the shared memory buffer allocated by Chrome.
   enum BufferType {
@@ -259,7 +259,7 @@ interface Camera3DeviceOps {
   // RegisterBuffer() is called to register a buffer with the camera HAL.  The
   // registered buffer can then be specified in ProcessCaptureRequest() for the
   // camera HAL to fill captured frame.  RegisterBuffer() is not part of the
-  // Android camera HAL v3 API; it is added for ARC++ camera service to pass
+  // Android camera HAL v3 API; it is added for CrOS camera service to pass
   // buffer handles across different processes.
   RegisterBuffer@6(uint64 buffer_id, BufferType type, array<handle> fds,
                    uint32 drm_format, HalPixelFormat hal_pixel_format,

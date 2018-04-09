@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
+#include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 
 #include <memory>
 #include <string>
@@ -23,7 +23,7 @@
 
 namespace media {
 
-VideoCaptureDeviceArcChromeOS::VideoCaptureDeviceArcChromeOS(
+VideoCaptureDeviceChromeOSHalv3::VideoCaptureDeviceChromeOSHalv3(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer,
     const VideoCaptureDeviceDescriptor& device_descriptor,
     scoped_refptr<CameraHalDelegate> camera_hal_delegate)
@@ -47,7 +47,7 @@ VideoCaptureDeviceArcChromeOS::VideoCaptureDeviceArcChromeOS(
       this);
 }
 
-VideoCaptureDeviceArcChromeOS::~VideoCaptureDeviceArcChromeOS() {
+VideoCaptureDeviceChromeOSHalv3::~VideoCaptureDeviceChromeOSHalv3() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   DCHECK(!camera_device_ipc_thread_.IsRunning());
   screen_observer_delegate_->RemoveObserver();
@@ -56,7 +56,7 @@ VideoCaptureDeviceArcChromeOS::~VideoCaptureDeviceArcChromeOS() {
 }
 
 // VideoCaptureDevice implementation.
-void VideoCaptureDeviceArcChromeOS::AllocateAndStart(
+void VideoCaptureDeviceChromeOSHalv3::AllocateAndStart(
     const VideoCaptureParams& params,
     std::unique_ptr<Client> client) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
@@ -76,7 +76,7 @@ void VideoCaptureDeviceArcChromeOS::AllocateAndStart(
   OpenDevice();
 }
 
-void VideoCaptureDeviceArcChromeOS::StopAndDeAllocate() {
+void VideoCaptureDeviceChromeOSHalv3::StopAndDeAllocate() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (!camera_device_delegate_) {
@@ -88,7 +88,7 @@ void VideoCaptureDeviceArcChromeOS::StopAndDeAllocate() {
   device_context_.reset();
 }
 
-void VideoCaptureDeviceArcChromeOS::TakePhoto(TakePhotoCallback callback) {
+void VideoCaptureDeviceChromeOSHalv3::TakePhoto(TakePhotoCallback callback) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   DCHECK(camera_device_delegate_);
   camera_device_ipc_thread_.task_runner()->PostTask(
@@ -97,7 +97,7 @@ void VideoCaptureDeviceArcChromeOS::TakePhoto(TakePhotoCallback callback) {
                             base::Passed(&callback)));
 }
 
-void VideoCaptureDeviceArcChromeOS::GetPhotoState(
+void VideoCaptureDeviceChromeOSHalv3::GetPhotoState(
     GetPhotoStateCallback callback) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   camera_device_ipc_thread_.task_runner()->PostTask(
@@ -106,7 +106,7 @@ void VideoCaptureDeviceArcChromeOS::GetPhotoState(
                             base::Passed(&callback)));
 }
 
-void VideoCaptureDeviceArcChromeOS::SetPhotoOptions(
+void VideoCaptureDeviceChromeOSHalv3::SetPhotoOptions(
     mojom::PhotoSettingsPtr settings,
     SetPhotoOptionsCallback callback) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
@@ -116,33 +116,33 @@ void VideoCaptureDeviceArcChromeOS::SetPhotoOptions(
                             base::Passed(&settings), base::Passed(&callback)));
 }
 
-void VideoCaptureDeviceArcChromeOS::SuspendImminent(
+void VideoCaptureDeviceChromeOSHalv3::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
   capture_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
-          &VideoCaptureDeviceArcChromeOS::CloseDevice,
+          &VideoCaptureDeviceChromeOSHalv3::CloseDevice,
           weak_ptr_factory_.GetWeakPtr(),
           BindToCurrentLoop(chromeos::DBusThreadManager::Get()
                                 ->GetPowerManagerClient()
                                 ->GetSuspendReadinessCallback(FROM_HERE))));
 }
 
-void VideoCaptureDeviceArcChromeOS::SuspendDone(
+void VideoCaptureDeviceChromeOSHalv3::SuspendDone(
     const base::TimeDelta& sleep_duration) {
   capture_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoCaptureDeviceArcChromeOS::OpenDevice,
+      FROM_HERE, base::BindOnce(&VideoCaptureDeviceChromeOSHalv3::OpenDevice,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void VideoCaptureDeviceArcChromeOS::OpenDevice() {
+void VideoCaptureDeviceChromeOSHalv3::OpenDevice() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (!camera_device_delegate_) {
     return;
   }
   // It's safe to pass unretained |device_context_| here since
-  // VideoCaptureDeviceArcChromeOS owns |camera_device_delegate_| and makes
+  // VideoCaptureDeviceChromeOSHalv3 owns |camera_device_delegate_| and makes
   // sure |device_context_| outlives |camera_device_delegate_|.
   camera_device_ipc_thread_.task_runner()->PostTask(
       FROM_HERE,
@@ -154,7 +154,7 @@ void VideoCaptureDeviceArcChromeOS::OpenDevice() {
                             camera_device_delegate_->GetWeakPtr(), rotation_));
 }
 
-void VideoCaptureDeviceArcChromeOS::CloseDevice(base::Closure callback) {
+void VideoCaptureDeviceChromeOSHalv3::CloseDevice(base::Closure callback) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
   if (!camera_device_delegate_) {
@@ -178,18 +178,18 @@ void VideoCaptureDeviceArcChromeOS::CloseDevice(base::Closure callback) {
   base::TimeDelta kWaitTimeoutSecs = base::TimeDelta::FromSeconds(3);
   device_closed.TimedWait(kWaitTimeoutSecs);
   if (callback) {
-    callback.Run();
+    std::move(callback).Run();
   }
 }
 
-void VideoCaptureDeviceArcChromeOS::SetDisplayRotation(
+void VideoCaptureDeviceChromeOSHalv3::SetDisplayRotation(
     const display::Display& display) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   if (display.IsInternal())
     SetRotation(display.rotation() * 90);
 }
 
-void VideoCaptureDeviceArcChromeOS::SetRotation(int rotation) {
+void VideoCaptureDeviceChromeOSHalv3::SetRotation(int rotation) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
   if (!rotates_with_device_) {
     rotation = 0;

@@ -20,7 +20,7 @@
  * Generated automatically from camera_metadata_tags.mojom.mako
  */
 
-module arc.mojom;
+module cros.mojom;
 
 /**
  * Top level hierarchy definitions for camera metadata. *_INFO sections are for

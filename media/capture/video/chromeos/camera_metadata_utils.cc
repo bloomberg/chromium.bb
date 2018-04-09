@@ -8,9 +8,9 @@
 
 namespace media {
 
-const arc::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
-    const arc::mojom::CameraMetadataPtr& camera_metadata,
-    arc::mojom::CameraMetadataTag tag) {
+const cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
+    const cros::mojom::CameraMetadataPtr& camera_metadata,
+    cros::mojom::CameraMetadataTag tag) {
   if (!camera_metadata->entries.has_value()) {
     return nullptr;
   }
@@ -22,8 +22,8 @@ const arc::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
   return nullptr;
 }
 
-void MergeMetadata(arc::mojom::CameraMetadataPtr* to,
-                   const arc::mojom::CameraMetadataPtr& from) {
+void MergeMetadata(cros::mojom::CameraMetadataPtr* to,
+                   const cros::mojom::CameraMetadataPtr& from) {
   DCHECK(to);
   (*to)->entry_count += from->entry_count;
   (*to)->entry_capacity += from->entry_count;
@@ -34,13 +34,13 @@ void MergeMetadata(arc::mojom::CameraMetadataPtr* to,
     return;
   }
 
-  std::set<arc::mojom::CameraMetadataTag> tags;
+  std::set<cros::mojom::CameraMetadataTag> tags;
   if ((*to)->entries) {
     for (const auto& entry : (*to)->entries.value()) {
       tags.insert(entry->tag);
     }
   } else {
-    (*to)->entries = std::vector<arc::mojom::CameraMetadataEntryPtr>();
+    (*to)->entries = std::vector<cros::mojom::CameraMetadataEntryPtr>();
   }
   for (const auto& entry : from->entries.value()) {
     if (tags.find(entry->tag) != tags.end()) {

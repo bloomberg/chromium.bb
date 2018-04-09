@@ -9,12 +9,12 @@
 
 namespace media {
 
-const arc::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
-    const arc::mojom::CameraMetadataPtr& camera_metadata,
-    arc::mojom::CameraMetadataTag tag);
+const cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
+    const cros::mojom::CameraMetadataPtr& camera_metadata,
+    cros::mojom::CameraMetadataTag tag);
 
-void MergeMetadata(arc::mojom::CameraMetadataPtr* to,
-                   const arc::mojom::CameraMetadataPtr& from);
+void MergeMetadata(cros::mojom::CameraMetadataPtr* to,
+                   const cros::mojom::CameraMetadataPtr& from);
 
 }  // namespace media
 

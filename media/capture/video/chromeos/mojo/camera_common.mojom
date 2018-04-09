@@ -4,7 +4,7 @@
 
 // Next min version: 2
 
-module arc.mojom;
+module cros.mojom;
 
 import "media/capture/video/chromeos/mojo/camera3.mojom";
 import "media/capture/video/chromeos/mojo/camera_metadata.mojom";
