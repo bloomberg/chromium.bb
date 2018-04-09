@@ -23,6 +23,7 @@
 class GURL;
 
 namespace net {
+class HttpRequestHeaders;
 class HttpResponseHeaders;
 }  // namespace net
 
@@ -222,6 +223,9 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Returns the remote address of the socket which fetched this resource.
   virtual net::HostPortPair GetSocketAddress() = 0;
+
+  // Returns the headers used for this request.
+  virtual const net::HttpRequestHeaders& GetRequestHeaders() = 0;
 
   // Returns the response headers for the request, or nullptr if there aren't
   // any response headers or they have not been received yet. The response

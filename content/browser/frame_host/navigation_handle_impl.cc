@@ -120,6 +120,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const base::Optional<std::string>& suggested_filename,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     const std::string& method,
+    net::HttpRequestHeaders request_headers,
     scoped_refptr<network::ResourceRequestBody> resource_request_body,
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
@@ -132,9 +133,9 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
       is_same_document, navigation_start, pending_nav_entry_id,
       started_from_context_menu, should_check_main_world_csp,
       is_form_submission, suggested_filename, std::move(navigation_ui_data),
-      method, resource_request_body, sanitized_referrer, has_user_gesture,
-      transition, is_external_protocol, request_context_type,
-      mixed_content_context_type));
+      method, std::move(request_headers), resource_request_body,
+      sanitized_referrer, has_user_gesture, transition, is_external_protocol,
+      request_context_type, mixed_content_context_type));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -151,6 +152,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     const base::Optional<std::string>& suggested_filename,
     std::unique_ptr<NavigationUIData> navigation_ui_data,
     const std::string& method,
+    net::HttpRequestHeaders request_headers,
     scoped_refptr<network::ResourceRequestBody> resource_request_body,
     const Referrer& sanitized_referrer,
     bool has_user_gesture,
@@ -173,6 +175,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       original_url_(url),
       method_(method),
+      request_headers_(std::move(request_headers)),
       state_(INITIAL),
       frame_tree_node_(frame_tree_node),
       next_index_(0),
@@ -390,6 +393,10 @@ RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
 
 bool NavigationHandleImpl::IsSameDocument() {
   return is_same_document_;
+}
+
+const net::HttpRequestHeaders& NavigationHandleImpl::GetRequestHeaders() {
+  return request_headers_;
 }
 
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {

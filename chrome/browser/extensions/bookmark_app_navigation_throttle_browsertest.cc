@@ -42,6 +42,7 @@
 #include "net/base/escape.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_request_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -75,6 +76,8 @@ enum class WindowAccessResult {
 
 namespace {
 
+const char kTextPlainEncType[] = "text/plain";
+
 const char kQueryParam[] = "test=";
 const char kQueryParamName[] = "test";
 
@@ -100,6 +103,10 @@ class BookmarkAppNavigationObserver : public content::TestNavigationObserver {
 
   bool last_navigation_is_post() const { return last_navigation_is_post_; }
 
+  const net::HttpRequestHeaders& last_request_headers() const {
+    return last_request_headers_;
+  }
+
   const scoped_refptr<network::ResourceRequestBody>&
   last_resource_request_body() const {
     return last_resource_request_body_;
@@ -109,12 +116,16 @@ class BookmarkAppNavigationObserver : public content::TestNavigationObserver {
   void OnDidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
     last_navigation_is_post_ = navigation_handle->IsPost();
+    last_request_headers_ = navigation_handle->GetRequestHeaders();
     last_resource_request_body_ = navigation_handle->GetResourceRequestBody();
     content::TestNavigationObserver::OnDidFinishNavigation(navigation_handle);
   }
 
   // True if the last navigation was a post.
   bool last_navigation_is_post_;
+
+  // The request headers of the last navigation.
+  net::HttpRequestHeaders last_request_headers_;
 
   // The request body of the last navigation if it was a post request.
   scoped_refptr<network::ResourceRequestBody> last_resource_request_body_;
@@ -376,6 +387,7 @@ void SubmitFormAndWait(content::WebContents* web_contents,
       "const form = document.createElement('form');"
       "form.action = '%s';"
       "form.method = '%s';"
+      "form.enctype = '%s';"
       "const input = document.createElement('input');"
       "input.name = '%s';"
       "form.appendChild(input);"
@@ -387,17 +399,26 @@ void SubmitFormAndWait(content::WebContents* web_contents,
       "})();",
       target_url.spec().c_str(),
       method == net::URLFetcher::RequestType::POST ? "post" : "get",
-      kQueryParamName);
+      kTextPlainEncType, kQueryParamName);
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
   observer.WaitForNavigationFinished();
 
   EXPECT_EQ(is_post, observer.last_navigation_is_post());
   if (is_post) {
+    const net::HttpRequestHeaders& headers = observer.last_request_headers();
+    std::string post_content_type;
+    headers.GetHeader(net::HttpRequestHeaders::kContentType,
+                      &post_content_type);
+    EXPECT_EQ(kTextPlainEncType, post_content_type);
+
     const std::vector<network::DataElement>* elements =
         observer.last_resource_request_body()->elements();
     EXPECT_EQ(1u, elements->size());
     const auto& element = elements->front();
-    EXPECT_EQ(kQueryParam, std::string(element.bytes(), element.length()));
+
+    // The text/plain enconding algorithm appends "\r\n".
+    EXPECT_EQ(std::string(kQueryParam) + "\r\n",
+              std::string(element.bytes(), element.length()));
   }
 }
 

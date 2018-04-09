@@ -69,6 +69,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const base::Optional<std::string>& suggested_filename,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       const std::string& method = std::string(),
+      net::HttpRequestHeaders request_headers = net::HttpRequestHeaders(),
       scoped_refptr<network::ResourceRequestBody> resource_request_body =
           nullptr,
       const Referrer& sanitized_referrer = content::Referrer(),
@@ -129,6 +130,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool ShouldUpdateHistory() override;
   const GURL& GetPreviousURL() override;
   net::HostPortPair GetSocketAddress() override;
+  const net::HttpRequestHeaders& GetRequestHeaders() override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
   const net::SSLInfo& GetSSLInfo() override;
@@ -382,6 +384,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const base::Optional<std::string>& suggested_filename,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       const std::string& method,
+      net::HttpRequestHeaders request_headers,
       scoped_refptr<network::ResourceRequestBody> resource_request_body,
       const Referrer& sanitized_referrer,
       bool has_user_gesture,
@@ -456,6 +459,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The HTTP method used for the navigation.
   std::string method_;
+
+  // The headers used for the request.
+  net::HttpRequestHeaders request_headers_;
 
   // The POST body associated with this navigation.  This will be null for GET
   // and/or other non-POST requests (or if a response to a POST request was a

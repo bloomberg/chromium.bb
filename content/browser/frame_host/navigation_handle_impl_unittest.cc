@@ -260,7 +260,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
         false,                  // is_form_submission
         base::nullopt,          // suggested_filename
         nullptr,                // navigation_ui_data
-        "GET",
+        "GET", net::HttpRequestHeaders(),
         nullptr,  // resource_request_body
         Referrer(),
         false,  // has_user_gesture
