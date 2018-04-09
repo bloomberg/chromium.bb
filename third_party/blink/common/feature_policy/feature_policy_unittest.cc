@@ -13,15 +13,15 @@ namespace {
 
 mojom::FeaturePolicyFeature kDefaultOnFeature =
     static_cast<mojom::FeaturePolicyFeature>(
-        static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature) + 1);
+        static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
 
 mojom::FeaturePolicyFeature kDefaultSelfFeature =
     static_cast<mojom::FeaturePolicyFeature>(
-        static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature) + 2);
+        static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 2);
 
 mojom::FeaturePolicyFeature kDefaultOffFeature =
     static_cast<mojom::FeaturePolicyFeature>(
-        static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature) + 3);
+        static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue) + 3);
 
 }  // namespace
 

@@ -120,7 +120,7 @@ ParsedFeaturePolicy ParseFeaturePolicy(
 
   ParsedFeaturePolicy whitelists;
   BitVector features_specified(
-      static_cast<int>(mojom::FeaturePolicyFeature::kLastFeature));
+      static_cast<int>(mojom::FeaturePolicyFeature::kMaxValue));
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
   // combined with a comma. Walk the header string, and parse each comma
