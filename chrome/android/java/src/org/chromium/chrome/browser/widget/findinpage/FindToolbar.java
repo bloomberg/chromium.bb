@@ -28,6 +28,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.findinpage.FindInPageBridge;
@@ -53,6 +55,8 @@ import org.chromium.ui.base.WindowAndroid;
 public class FindToolbar extends LinearLayout
         implements TabWebContentsDelegateAndroid.FindResultListener,
                    TabWebContentsDelegateAndroid.FindMatchRectsListener {
+    private static final String TAG = "FindInPage";
+
     private static final long ACCESSIBLE_ANNOUNCEMENT_DELAY_MILLIS = 500;
 
     // Toolbar UI
@@ -90,6 +94,9 @@ public class FindToolbar extends LinearLayout
     private Handler mHandler = new Handler();
     private Runnable mAccessibleAnnouncementRunnable;
     private boolean mAccessibilityDidActivateResult;
+
+    // TODO(tedchoc): Should be removed after debugging https://crbug.com/624332
+    private Throwable mDeactivateCallStack;
 
     /** Subclasses EditText in order to intercept BACK key presses. */
     @SuppressLint("Instantiatable")
@@ -550,6 +557,7 @@ public class FindToolbar extends LinearLayout
      * If the toolbar is already showing, this just focuses the toolbar.
      */
     public void activate() {
+        ThreadUtils.checkUiThread();
         if (!isViewAvailable()) return;
         if (mActive) {
             requestQueryFocus();
@@ -590,7 +598,13 @@ public class FindToolbar extends LinearLayout
      * @param clearSelection Whether the selection on the page should be cleared.
      */
     public void deactivate(boolean clearSelection) {
+        ThreadUtils.checkUiThread();
         if (!mActive) return;
+        if (mDeactivateCallStack != null) {
+            Log.e(TAG, "Re-entrant call to deactive, previous stack", mDeactivateCallStack);
+            throw new IllegalStateException("Re-entrant call to deactivate", mDeactivateCallStack);
+        }
+        mDeactivateCallStack = new Throwable();
 
         if (mObserver != null) mObserver.onFindToolbarHidden();
 
@@ -619,6 +633,7 @@ public class FindToolbar extends LinearLayout
         mFindInPageBridge = null;
         mCurrentTab = null;
         mActive = false;
+        mDeactivateCallStack = null;
     }
 
     /**
