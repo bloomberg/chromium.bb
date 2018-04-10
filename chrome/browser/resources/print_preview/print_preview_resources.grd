@@ -288,7 +288,9 @@
       </if>
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_DIALOG_HTML"
                  file="new/destination_dialog.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true"
+                 allowexternalscript="true" />
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_DIALOG_JS"
                  file="new/destination_dialog.js"
                  type="chrome_html" />

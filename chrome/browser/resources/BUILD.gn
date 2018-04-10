@@ -164,7 +164,23 @@ if (enable_extensions) {
 
 if (enable_print_preview) {
   grit("print_preview_resources") {
-    source = "print_preview/print_preview_resources.grd"
+    if (optimize_webui) {
+      source = "print_preview/print_preview_resources_vulcanized.grd"
+
+      # The .grd contains references to generated files.
+      source_is_generated = true
+
+      deps = [
+        "//chrome/browser/resources/print_preview:build",
+      ]
+      grit_flags = [
+        "-E",
+        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+      ]
+    } else {
+      source = "print_preview/print_preview_resources.grd"
+    }
+
     defines = chrome_grit_defines
     outputs = [
       "grit/print_preview_resources.h",

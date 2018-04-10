@@ -14,6 +14,7 @@ cr.define('model_test', function() {
 
     /** @override */
     setup(function() {
+      PolymerTest.clearBody();
       model = document.createElement('print-preview-model');
       document.body.appendChild(model);
     });
