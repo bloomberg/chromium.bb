@@ -533,6 +533,7 @@ def write_gn_ninja(path, root_gen_dir, options, windows_x64_toolchain):
       'base/message_loop/message_loop_task_runner.cc',
       'base/message_loop/message_pump.cc',
       'base/message_loop/message_pump_default.cc',
+      'base/message_loop/watchable_io_message_pump_posix.cc',
       'base/metrics/bucket_ranges.cc',
       'base/metrics/dummy_histogram.cc',
       'base/metrics/field_trial.cc',
