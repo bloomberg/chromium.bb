@@ -193,6 +193,25 @@ void VTTCueBox::ApplyCSSProperties(
   // text alignment:
   SetInlineStyleProperty(CSSPropertyTextAlign, display_parameters.text_align);
 
+  // TODO(foolip): The position adjustment for non-snap-to-lines cues has
+  // been removed from the spec:
+  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=19178
+  if (std::isnan(display_parameters.snap_to_lines_position)) {
+    // 10.13.1 Set up x and y:
+    // Note: x and y are set through the CSS left and top above.
+    // 10.13.2 Position the boxes in boxes such that the point x% along the
+    // width of the bounding box of the boxes in boxes is x% of the way
+    // across the width of the video's rendering area, and the point y%
+    // along the height of the bounding box of the boxes in boxes is y%
+    // of the way across the height of the video's rendering area, while
+    // maintaining the relative positions of the boxes in boxes to each
+    // other.
+    SetInlineStyleProperty(CSSPropertyTransform,
+                           String::Format("translate(-%.2f%%, -%.2f%%)",
+                                          position.X(), position.Y()));
+    SetInlineStyleProperty(CSSPropertyWhiteSpace, CSSValuePre);
+  }
+
   // The snap-to-lines position is propagated to LayoutVTTCue.
   snap_to_lines_position_ = display_parameters.snap_to_lines_position;
 }
