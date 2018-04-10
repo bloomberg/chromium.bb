@@ -15,7 +15,6 @@ import android.util.Property;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -88,8 +87,6 @@ public class LocationBarTablet extends LocationBarLayout {
     // Whether the microphone and bookmark buttons should be shown in the location bar. These
     // buttons are hidden if the window size is < 600dp.
     private boolean mShouldShowButtonsWhenUnfocused;
-    private final int mUrlBarEndPaddingWithButtons;
-    private final int mUrlBarEndPaddingWithoutButtons;
 
     // Variables needed for animating the location bar and toolbar buttons hiding/showing.
     private final int mToolbarButtonsWidth;
@@ -106,12 +103,6 @@ public class LocationBarTablet extends LocationBarLayout {
     public LocationBarTablet(Context context, AttributeSet attrs) {
         super(context, attrs);
         mShouldShowButtonsWhenUnfocused = true;
-
-        // mUrlBar currently does not have any end padding when buttons are visible in the
-        // unfocused location bar.
-        mUrlBarEndPaddingWithButtons = 0;
-        mUrlBarEndPaddingWithoutButtons = getResources().getDimensionPixelOffset(
-                R.dimen.toolbar_edge_padding);
 
         mToolbarButtonsWidth = getResources().getDimensionPixelOffset(R.dimen.toolbar_button_width)
                 * ToolbarTablet.HIDEABLE_BUTTON_COUNT;
@@ -244,12 +235,6 @@ public class LocationBarTablet extends LocationBarLayout {
     public void setShouldShowButtonsWhenUnfocused(boolean shouldShowButtons) {
         mShouldShowButtonsWhenUnfocused = shouldShowButtons;
         updateButtonVisibility();
-        ApiCompatibilityUtils.setPaddingRelative(mUrlBar,
-                ApiCompatibilityUtils.getPaddingStart(mUrlBar),
-                mUrlBar.getPaddingTop(),
-                mShouldShowButtonsWhenUnfocused ? mUrlBarEndPaddingWithButtons :
-                        mUrlBarEndPaddingWithoutButtons,
-                mUrlBar.getPaddingBottom());
     }
 
     /**
@@ -281,38 +266,6 @@ public class LocationBarTablet extends LocationBarLayout {
         } else {
             mMicButton.setVisibility(shouldShowMicButton() ? View.VISIBLE : View.GONE);
         }
-    }
-
-    @Override
-    protected void updateLayoutParams() {
-        // Calculate the bookmark/delete button margins.
-        int lastButtonSpace;
-        if (mSaveOfflineButton.getVisibility() == View.VISIBLE) {
-            MarginLayoutParams saveOfflineLayoutParams =
-                    (MarginLayoutParams) mSaveOfflineButton.getLayoutParams();
-            lastButtonSpace = ApiCompatibilityUtils.getMarginEnd(saveOfflineLayoutParams);
-        } else {
-            MarginLayoutParams micLayoutParams = (MarginLayoutParams) mMicButton.getLayoutParams();
-            lastButtonSpace = ApiCompatibilityUtils.getMarginEnd(micLayoutParams);
-        }
-
-        if (mMicButton.getVisibility() == View.VISIBLE
-                || mSaveOfflineButton.getVisibility() == View.VISIBLE) {
-            lastButtonSpace += mMicButtonWidth;
-        }
-
-        final MarginLayoutParams deleteLayoutParams =
-                (MarginLayoutParams) mDeleteButton.getLayoutParams();
-        final MarginLayoutParams bookmarkLayoutParams =
-                (MarginLayoutParams) mBookmarkButton.getLayoutParams();
-
-        ApiCompatibilityUtils.setMarginEnd(deleteLayoutParams, lastButtonSpace);
-        ApiCompatibilityUtils.setMarginEnd(bookmarkLayoutParams, lastButtonSpace);
-
-        mDeleteButton.setLayoutParams(deleteLayoutParams);
-        mBookmarkButton.setLayoutParams(bookmarkLayoutParams);
-
-        super.updateLayoutParams();
     }
 
     @Override
@@ -498,6 +451,7 @@ public class LocationBarTablet extends LocationBarLayout {
      */
     private void setWidthChangeAnimationPercent(float percent) {
         mWidthChangePercent = percent;
+
         float offset = (mToolbarButtonsWidth + mToolbarStartPaddingDifference) * percent;
 
         if (LocalizationUtils.isLayoutRtl()) {
@@ -587,32 +541,5 @@ public class LocationBarTablet extends LocationBarLayout {
         // is focused.
         return mVoiceRecognitionHandler != null && mVoiceRecognitionHandler.isVoiceSearchEnabled()
                 && mNativeInitialized && (mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
-    }
-
-    @Override
-    protected List<View> getUrlContainerViewsForMargin() {
-        List<View> outList = new ArrayList<View>(1);
-        int urlContainerChildIndex = indexOfChild(mUrlBar);
-        assert urlContainerChildIndex != -1;
-
-        // For tablets, we have FrameLayouts next to the URL bar and we only want to calculate
-        // the URL bar margin based on the largest one, so we return a list containing only that.
-        int largestChildWidth = 0;
-        View largestChildView = null;
-        for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
-            View childView = getChildAt(i);
-            if (childView.getVisibility() == View.GONE) continue;
-            FrameLayout.LayoutParams childLayoutParams =
-                    (FrameLayout.LayoutParams) childView.getLayoutParams();
-            int width = childLayoutParams.width
-                    + ApiCompatibilityUtils.getMarginStart(childLayoutParams)
-                    + ApiCompatibilityUtils.getMarginEnd(childLayoutParams);
-            if (width > largestChildWidth) {
-                largestChildWidth = width;
-                largestChildView = childView;
-            }
-        }
-        if (largestChildView != null) outList.add(largestChildView);
-        return outList;
     }
 }
