@@ -82,7 +82,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
                             flex_base_content_size,
                             min_max_sizes_in_main_axis_direction,
                             main_axis_border_and_padding, main_axis_margin);
-    flex_items[flex_items.size() - 1].ng_input_node = child;
+    flex_items.back().ng_input_node = child;
   }
 
   FlexLayoutAlgorithm algorithm(&Style(), container_logical_width, flex_items);
