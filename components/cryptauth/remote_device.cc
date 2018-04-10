@@ -85,7 +85,6 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
 
   return user_id == other.user_id && name == other.name &&
          public_key == other.public_key &&
-         bluetooth_address == other.bluetooth_address &&
          persistent_symmetric_key == other.persistent_symmetric_key &&
          unlock_key == other.unlock_key &&
          supports_mobile_hotspot == other.supports_mobile_hotspot &&
