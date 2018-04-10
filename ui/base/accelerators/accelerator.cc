@@ -137,83 +137,15 @@ bool Accelerator::IsRepeat() const {
 }
 
 base::string16 Accelerator::GetShortcutText() const {
-  int string_id = 0;
-  switch (key_code_) {
-    case VKEY_TAB:
-      string_id = IDS_APP_TAB_KEY;
-      break;
-    case VKEY_RETURN:
-      string_id = IDS_APP_ENTER_KEY;
-      break;
-    case VKEY_ESCAPE:
-      string_id = IDS_APP_ESC_KEY;
-      break;
-    case VKEY_SPACE:
-      string_id = IDS_APP_SPACE_KEY;
-      break;
-    case VKEY_PRIOR:
-      string_id = IDS_APP_PAGEUP_KEY;
-      break;
-    case VKEY_NEXT:
-      string_id = IDS_APP_PAGEDOWN_KEY;
-      break;
-    case VKEY_END:
-      string_id = IDS_APP_END_KEY;
-      break;
-    case VKEY_HOME:
-      string_id = IDS_APP_HOME_KEY;
-      break;
-    case VKEY_INSERT:
-      string_id = IDS_APP_INSERT_KEY;
-      break;
-    case VKEY_DELETE:
-      string_id = IDS_APP_DELETE_KEY;
-      break;
-    case VKEY_LEFT:
-      string_id = IDS_APP_LEFT_ARROW_KEY;
-      break;
-    case VKEY_RIGHT:
-      string_id = IDS_APP_RIGHT_ARROW_KEY;
-      break;
-    case VKEY_UP:
-      string_id = IDS_APP_UP_ARROW_KEY;
-      break;
-    case VKEY_DOWN:
-      string_id = IDS_APP_DOWN_ARROW_KEY;
-      break;
-    case VKEY_BACK:
-      string_id = IDS_APP_BACKSPACE_KEY;
-      break;
-    case VKEY_F1:
-      string_id = IDS_APP_F1_KEY;
-      break;
-    case VKEY_F11:
-      string_id = IDS_APP_F11_KEY;
-      break;
-    case VKEY_OEM_COMMA:
-      string_id = IDS_APP_COMMA_KEY;
-      break;
-    case VKEY_OEM_PERIOD:
-      string_id = IDS_APP_PERIOD_KEY;
-      break;
-    case VKEY_MEDIA_NEXT_TRACK:
-      string_id = IDS_APP_MEDIA_NEXT_TRACK_KEY;
-      break;
-    case VKEY_MEDIA_PLAY_PAUSE:
-      string_id = IDS_APP_MEDIA_PLAY_PAUSE_KEY;
-      break;
-    case VKEY_MEDIA_PREV_TRACK:
-      string_id = IDS_APP_MEDIA_PREV_TRACK_KEY;
-      break;
-    case VKEY_MEDIA_STOP:
-      string_id = IDS_APP_MEDIA_STOP_KEY;
-      break;
-    default:
-      break;
-  }
-
   base::string16 shortcut;
-  if (!string_id) {
+
+#if defined(OS_MACOSX)
+  shortcut = KeyCodeToMacSymbol(key_code_);
+#else
+  shortcut = KeyCodeToName(key_code_);
+#endif
+
+  if (shortcut.empty()) {
 #if defined(OS_WIN)
     // Our fallback is to try translate the key code to a regular character
     // unless it is one of digits (VK_0 to VK_9). Some keyboard
@@ -234,8 +166,6 @@ base::string16 Accelerator::GetShortcutText() const {
       shortcut +=
           static_cast<base::string16::value_type>(base::ToUpperASCII(c));
 #endif
-  } else {
-    shortcut = l10n_util::GetStringUTF16(string_id);
   }
 
   // Checking whether the character used for the accelerator is alphanumeric.
@@ -330,6 +260,122 @@ base::string16 Accelerator::ApplyShortFormModifiers(
   parts.push_back(base::string16(IsCmdDown() ? kCommandSymbol : kNoSymbol));
   parts.push_back(shortcut);
   return base::StrCat(parts);
+}
+
+#if defined(OS_MACOSX)
+base::string16 Accelerator::KeyCodeToMacSymbol(KeyboardCode key_code) const {
+  switch (key_code) {
+    case VKEY_CAPITAL:
+      return base::string16({0x21ea, 0});
+    case VKEY_RETURN:
+      return base::string16({0x2324, 0});
+    case VKEY_BACK:
+      return base::string16({0x232b, 0});
+    case VKEY_ESCAPE:
+      return base::string16({0x238b, 0});
+    case VKEY_RIGHT:
+      return base::string16({0x2192, 0});
+    case VKEY_LEFT:
+      return base::string16({0x2190, 0});
+    case VKEY_UP:
+      return base::string16({0x2191, 0});
+    case VKEY_DOWN:
+      return base::string16({0x2193, 0});
+    case VKEY_PRIOR:
+      return base::string16({0x21de, 0});
+    case VKEY_NEXT:
+      return base::string16({0x21df, 0});
+    case VKEY_HOME:
+      return base::string16({0x2196, 0});
+    case VKEY_END:
+      return base::string16({0x2198, 0});
+    case VKEY_TAB:
+      return base::string16({0x21e5, 0});
+    // Mac has a shift-tab icon (0x21e4) but we don't use it.
+    // "Space" and some other keys are written out; fall back to KeyCodeToName()
+    // for those (and any other unhandled keys).
+    default:
+      return KeyCodeToName(key_code);
+  }
+}
+#endif  // OS_MACOSX
+
+base::string16 Accelerator::KeyCodeToName(KeyboardCode key_code) const {
+  int string_id = 0;
+  switch (key_code_) {
+    case VKEY_TAB:
+      string_id = IDS_APP_TAB_KEY;
+      break;
+    case VKEY_RETURN:
+      string_id = IDS_APP_ENTER_KEY;
+      break;
+    case VKEY_SPACE:
+      string_id = IDS_APP_SPACE_KEY;
+      break;
+    case VKEY_PRIOR:
+      string_id = IDS_APP_PAGEUP_KEY;
+      break;
+    case VKEY_NEXT:
+      string_id = IDS_APP_PAGEDOWN_KEY;
+      break;
+    case VKEY_END:
+      string_id = IDS_APP_END_KEY;
+      break;
+    case VKEY_HOME:
+      string_id = IDS_APP_HOME_KEY;
+      break;
+    case VKEY_INSERT:
+      string_id = IDS_APP_INSERT_KEY;
+      break;
+    case VKEY_DELETE:
+      string_id = IDS_APP_DELETE_KEY;
+      break;
+    case VKEY_LEFT:
+      string_id = IDS_APP_LEFT_ARROW_KEY;
+      break;
+    case VKEY_RIGHT:
+      string_id = IDS_APP_RIGHT_ARROW_KEY;
+      break;
+    case VKEY_UP:
+      string_id = IDS_APP_UP_ARROW_KEY;
+      break;
+    case VKEY_DOWN:
+      string_id = IDS_APP_DOWN_ARROW_KEY;
+      break;
+    case VKEY_ESCAPE:
+      string_id = IDS_APP_ESC_KEY;
+      break;
+    case VKEY_BACK:
+      string_id = IDS_APP_BACKSPACE_KEY;
+      break;
+    case VKEY_F1:
+      string_id = IDS_APP_F1_KEY;
+      break;
+    case VKEY_F11:
+      string_id = IDS_APP_F11_KEY;
+      break;
+    case VKEY_OEM_COMMA:
+      string_id = IDS_APP_COMMA_KEY;
+      break;
+    case VKEY_OEM_PERIOD:
+      string_id = IDS_APP_PERIOD_KEY;
+      break;
+    case VKEY_MEDIA_NEXT_TRACK:
+      string_id = IDS_APP_MEDIA_NEXT_TRACK_KEY;
+      break;
+    case VKEY_MEDIA_PLAY_PAUSE:
+      string_id = IDS_APP_MEDIA_PLAY_PAUSE_KEY;
+      break;
+    case VKEY_MEDIA_PREV_TRACK:
+      string_id = IDS_APP_MEDIA_PREV_TRACK_KEY;
+      break;
+    case VKEY_MEDIA_STOP:
+      string_id = IDS_APP_MEDIA_STOP_KEY;
+      break;
+    default:
+      break;
+  }
+  return string_id ? l10n_util::GetStringUTF16(string_id) : base::string16();
 }
 
 }  // namespace ui
