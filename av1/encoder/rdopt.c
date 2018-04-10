@@ -2731,7 +2731,7 @@ static int64_t estimate_yrd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bs,
   RD_STATS rd_stats;
   x->rd_model = LOW_TXFM_RD;
   int64_t rd =
-      txfm_yrd(cpi, x, &rd_stats, ref_best_rd, bs, max_txsize_lookup[bs]);
+      txfm_yrd(cpi, x, &rd_stats, ref_best_rd, bs, max_txsize_rect_lookup[bs]);
   x->rd_model = FULL_TXFM_RD;
   *r = rd_stats.rate;
   *d = rd_stats.dist;
@@ -8938,7 +8938,7 @@ static void set_params_rd_pick_inter_mode(
   }
 
   mode_skip_mask[INTRA_FRAME] |=
-      ~(sf->intra_y_mode_mask[max_txsize_lookup[bsize]]);
+      ~(sf->intra_y_mode_mask[max_txsize_rect_lookup[bsize]]);
 
   if (cpi->sf.tx_type_search.fast_intra_tx_type_search)
     x->use_default_intra_tx_type = 1;
