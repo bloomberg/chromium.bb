@@ -39,6 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
 
   // FidoDevice:
   void TryWink(WinkCallback callback) override;
+  void Cancel() override;
   std::string GetId() const override;
 
   FidoBleConnection::ConnectionStatusCallback
@@ -53,6 +54,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
 
  private:
   void Transition();
+  void AddToPendingFrames(FidoBleDeviceCommand cmd,
+                          std::vector<uint8_t> request,
+                          DeviceCallback callback);
 
   void OnConnectionStatus(bool success);
   void OnStatusMessage(std::vector<uint8_t> data);

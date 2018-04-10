@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual void DeviceTransact(std::vector<uint8_t> command,
                               DeviceCallback callback) = 0;
   virtual void TryWink(WinkCallback callback) = 0;
+  virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
 
   void SetDeviceInfo(AuthenticatorGetInfoResponse device_info);

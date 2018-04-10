@@ -93,8 +93,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   State* mutable_state() { return state_.get(); }
 
  protected:
-  // U2fDevice:
+  // FidoDevice:
   void TryWink(WinkCallback cb) override;
+  void Cancel() override;
   std::string GetId() const override;
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
