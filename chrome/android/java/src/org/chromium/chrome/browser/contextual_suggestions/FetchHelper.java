@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.support.annotation.Nullable;
 import android.webkit.URLUtil;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -15,7 +14,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.ui.widget.Toast;
 
 /**
  * A helper class responsible for determining when to trigger requests for suggestions and when to
@@ -91,10 +89,6 @@ class FetchHelper {
         // Context has changed, so we want to remove any old suggestions.
         mDelegate.clearState();
         mCurrentContextUrl = newUrl;
-
-        Toast.makeText(ContextUtils.getApplicationContext(), "Fetching suggestions...",
-                     Toast.LENGTH_SHORT)
-                .show();
 
         mDelegate.requestSuggestions(newUrl);
     }

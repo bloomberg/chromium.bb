@@ -8,12 +8,10 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -24,10 +22,8 @@ import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
-import org.chromium.ui.widget.Toast;
 import org.chromium.ui.widget.ViewRectProvider;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -164,19 +160,11 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
             List<ContextualSuggestionsCluster> clusters = suggestionsResult.getClusters();
 
             if (clusters.size() > 0 && clusters.get(0).getSuggestions().size() > 0) {
-                Toast.makeText(ContextUtils.getApplicationContext(),
-                             clusters.size() + " clusters fetched", Toast.LENGTH_SHORT)
-                        .show();
-
                 preloadContentInSheet(
                         generateClusterList(clusters), suggestionsResult.getPeekText());
                 // If the controls are already off-screen, show the suggestions immediately so they
                 // are available on reverse scroll.
                 if (areBrowserControlsHidden()) showContentInSheet();
-            } else {
-                Toast.makeText(ContextUtils.getApplicationContext(), "No suggestions",
-                             Toast.LENGTH_SHORT)
-                        .show();
             }
         });
     }
@@ -293,47 +281,11 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
                 mTabModelSelector.getCurrentTab().getWebContents(), event);
     }
 
-    // TODO(twellington): Remove after clusters are returned from the backend.
     private ClusterList generateClusterList(List<ContextualSuggestionsCluster> clusters) {
-        if (clusters.size() != 1) {
-            for (ContextualSuggestionsCluster cluster : clusters) {
-                cluster.buildChildren();
-            }
-
-            return new ClusterList(clusters);
-        }
-
-        List<SnippetArticle> suggestions = clusters.get(0).getSuggestions();
-        List<ContextualSuggestionsCluster> newClusters = new ArrayList<>();
-        int clusterSize = suggestions.size() >= 6 ? 3 : 2;
-        int numClusters = suggestions.size() < 4 ? 1 : suggestions.size() / clusterSize;
-        int currentSuggestion = 0;
-
-        // Construct a list of clusters.
-        for (int i = 0; i < numClusters; i++) {
-            ContextualSuggestionsCluster cluster = new ContextualSuggestionsCluster(
-                    i != 0 ? suggestions.get(currentSuggestion).mTitle : "");
-
-            for (int j = 0; j < clusterSize; j++) {
-                cluster.getSuggestions().add(suggestions.get(currentSuggestion));
-                currentSuggestion++;
-            }
-
-            newClusters.add(cluster);
-        }
-
-        // Add the remaining suggestions to the last cluster.
-        while (currentSuggestion < suggestions.size()) {
-            newClusters.get(newClusters.size() - 1)
-                    .getSuggestions()
-                    .add(suggestions.get(currentSuggestion));
-            currentSuggestion++;
-        }
-
-        for (ContextualSuggestionsCluster cluster : newClusters) {
+        for (ContextualSuggestionsCluster cluster : clusters) {
             cluster.buildChildren();
         }
 
-        return new ClusterList(newClusters);
+        return new ClusterList(clusters);
     }
 }
