@@ -89,7 +89,7 @@ bool ValidateStudyAndComputeTotalProbability(
     return false;
   }
 
-  // Ensure that groups that don't explicitly enable/disable that feature get
+  // Ensure that groups that don't explicitly enable/disable any features get
   // associated with all features in the study (i.e. so "Default" group gets
   // reported).
   if (!features_to_associate.empty()) {
