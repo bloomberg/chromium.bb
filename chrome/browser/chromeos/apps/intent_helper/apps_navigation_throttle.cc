@@ -209,13 +209,16 @@ void AppsNavigationThrottle::OnDeferredRequestProcessed(
     return;
   }
 
+  // We will not show the UI if the apps list is empty.
+  if (apps.empty())
+    ui_displayed_ = false;
+
   content::NavigationHandle* handle = navigation_handle();
   ShowIntentPickerBubbleForApps(
       chrome::FindBrowserWithWebContents(handle->GetWebContents()),
       handle->GetURL(), std::move(apps));
 
-  // We are about to resume the navigation, which will destroy this object.
-  ui_displayed_ = false;
+  // We are about to resume the navigation, which may destroy this object.
   Resume();
 }
 
