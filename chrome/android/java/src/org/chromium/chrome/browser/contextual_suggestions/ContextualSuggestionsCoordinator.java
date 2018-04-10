@@ -65,6 +65,14 @@ public class ContextualSuggestionsCoordinator {
     }
 
     /**
+     * Called when accessibility mode changes.
+     * @param enabled Whether accessibility mode is enabled.
+     */
+    public void onAccessibilityModeChanged(boolean enabled) {
+        mMediator.onAccessibilityModeChanged();
+    }
+
+    /**
      * Preload the contextual suggestions content in the {@link BottomSheet}; the sheet won't
      * actually be shown until {@link #showContentInSheet()} is called.
      */

@@ -119,6 +119,11 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         if (mHelpBubble != null) mHelpBubble.dismiss();
     }
 
+    /** Called when accessibility mode changes. */
+    void onAccessibilityModeChanged() {
+        mEnabledStateMonitor.onAccessibilityModeChanged();
+    }
+
     /**
      * @return Whether the browser controls are currently completely hidden.
      */
