@@ -10,6 +10,7 @@
  */
 function share(path) {
   var appId;
+  var caller = getCaller();
   StepsRunner.run([
     // Set up File Manager.
     function() {
@@ -75,7 +76,8 @@ function share(path) {
           //             'but should be: 350x250',
           //             elements[0]);
           return elements[0] ?
-              undefined : pending('The share dialog is not found.');
+              undefined :
+              pending(caller, 'The share dialog is not found.');
         });
       }).
       then(this.next);

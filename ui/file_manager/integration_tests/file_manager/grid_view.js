@@ -15,6 +15,7 @@
  *     result.
  */
 function showGridView(rootPath, expectedSet) {
+  var caller = getCaller();
   var expectedLabels = expectedSet.map(function(entryInfo) {
     return entryInfo.nameText;
   }).sort();
@@ -43,9 +44,9 @@ function showGridView(rootPath, expectedSet) {
           if (chrome.test.checkDeepEq(expectedLabels, actualLabels))
             return true;
           return pending(
+              caller,
               'Failed to compare the grid lables, expected: %j, actual %j.',
-              expectedLabels,
-              actualLabels);
+              expectedLabels, actualLabels);
         });
       });
     });

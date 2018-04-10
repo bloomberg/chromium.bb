@@ -46,6 +46,7 @@ function audioOpen(path) {
   var expectedFilesAfter =
       expectedFilesBefore.concat([ENTRIES.newlyAdded.getExpectedRow()]).sort();
 
+  var caller = getCaller();
   StepsRunner.run([
     function() {
       setupAndWaitUntilReady(null, path, this.next);
@@ -95,8 +96,9 @@ function audioOpen(path) {
             {title: 'newly added file', artist: 'Unknown Artist'}
           ];
           if (!chrome.test.checkDeepEq(expected, tracks)) {
-            return pending('Tracks are expected as: %j, but is %j.',
-                           expected, tracks);
+            return pending(
+                caller, 'Tracks are expected as: %j, but is %j.', expected,
+                tracks);
           }
         });
       }).then(this.next, function(e) { chrome.test.fail(e); });
@@ -131,8 +133,9 @@ function audioOpen(path) {
             {title: 'newly added file', artist: 'Unknown Artist'}
           ];
           if (!chrome.test.checkDeepEq(expected, tracks)) {
-            return pending('Tracks are expected as: %j, but is %j.',
-                           expected, tracks);
+            return pending(
+                caller, 'Tracks are expected as: %j, but is %j.', expected,
+                tracks);
           }
         });
       }).then(this.next, function(e) { chrome.test.fail(e); });

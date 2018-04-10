@@ -249,6 +249,7 @@ function openNewWindow(appState, initialRoot, opt_callback) {
  */
 function openAndWaitForClosingDialog(
     dialogParams, volumeName, expectedSet, closeDialog) {
+  var caller = getCaller();
   var resultPromise = new Promise(function(fulfill) {
     chrome.fileSystem.chooseEntry(
         dialogParams,
@@ -277,7 +278,8 @@ function openAndWaitForClosingDialog(
             return remoteCall.callRemoteTestUtil('getWindows', null, []).
                 then(function(windows) {
                   if (windows[windowId])
-                    return pending('Window %s does not hide.', windowId);
+                    return pending(
+                        caller, 'Window %s does not hide.', windowId);
                   else
                     return resultPromise;
                 });

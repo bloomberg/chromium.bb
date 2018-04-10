@@ -59,6 +59,7 @@ function selectFirstListItem(windowId) {
  * @return {Promise} Promise to be fulfilled on success.
  */
 function createNewFolder(windowId, path, initialEntrySet) {
+  var caller = getCaller();
   return Promise.resolve(
   ).then(function() {
     // Push Ctrl + E.
@@ -129,10 +130,11 @@ function createNewFolder(windowId, path, initialEntrySet) {
 
       return selectedNameRetrievePromise.then(function(elements) {
         if (elements.length !== 1) {
-          return pending('Selection is not ready (elements: %j)', elements);
+          return pending(
+              caller, 'Selection is not ready (elements: %j)', elements);
         } else if (elements[0].text !== 'Test Folder Name') {
-          return pending('Selected item is wrong. (actual: %s)',
-                         elements[0].text);
+          return pending(
+              caller, 'Selected item is wrong. (actual: %s)', elements[0].text);
         } else {
           return true;
         }

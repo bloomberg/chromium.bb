@@ -42,12 +42,13 @@ function getTreeItems(windowId) {
  * @return {!Promise}
  */
 function waitForDirectoryItem(windowId, name) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return getTreeItems(windowId).then(function(items) {
       if (items.indexOf(name) !== -1) {
         return true;
       } else {
-        return pending('Tree item %s is not found.', name);
+        return pending(caller, 'Tree item %s is not found.', name);
       }
     });
   });
@@ -61,13 +62,14 @@ function waitForDirectoryItem(windowId, name) {
  * @return {!Promise}
  */
 function waitForDirectoryItemLost(windowId, name) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return getTreeItems(windowId).then(function(items) {
       console.log(items);
       if (items.indexOf(name) === -1) {
         return true;
       } else {
-        return pending('Tree item %s is still exists.', name);
+        return pending(caller, 'Tree item %s is still exists.', name);
       }
     });
   });
