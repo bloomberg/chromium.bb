@@ -863,7 +863,9 @@ TEST_F(ProcessUtilTest, FDRemappingIncludesStdio) {
   EXPECT_EQ(0, exit_code);
 }
 
-#if defined(OS_FUCHSIA)
+// TODO(https://crbug.com/793412): Disable on Debug/component builds due to
+// process launch taking too long and triggering timeouts.
+#if defined(OS_FUCHSIA) && defined(NDEBUG)
 const uint16_t kStartupHandleId = 43;
 MULTIPROCESS_TEST_MAIN(ProcessUtilsVerifyHandle) {
   zx_handle_t handle =
@@ -898,11 +900,11 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
   // Read from the pipe to verify that the child received it.
   zx_signals_t signals = 0;
   result = zx_object_wait_one(
-      handles[1], ZX_SOCKET_READABLE,
+      handles[1], ZX_SOCKET_READABLE | ZX_SOCKET_PEER_CLOSED,
       (base::TimeTicks::Now() + TestTimeouts::action_timeout()).ToZxTime(),
       &signals);
-  EXPECT_EQ(ZX_OK, result);
-  EXPECT_TRUE(signals & ZX_SOCKET_READABLE);
+  ASSERT_EQ(ZX_OK, result);
+  ASSERT_TRUE(signals & ZX_SOCKET_READABLE);
 
   size_t bytes_read = 0;
   char buf[16] = {0};
@@ -918,7 +920,7 @@ TEST_F(ProcessUtilTest, LaunchWithHandleTransfer) {
                                              &exit_code));
   EXPECT_EQ(0, exit_code);
 }
-#endif  // defined(OS_FUCHSIA)
+#endif  // defined(OS_FUCHSIA) && defined(NDEBUG)
 
 namespace {
 
