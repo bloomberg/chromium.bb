@@ -42,11 +42,12 @@
     function addNetworkUISourceCodeRevision(next) {
       var newContent = nodeContent.replace('//TODO', 'network();\n//TODO');
       TestRunner.addSniffer(Persistence.Persistence.prototype, '_contentSyncedForTest', onSynced);
+      const writePromise = TestRunner.addSnifferPromise(BindingsTestRunner.TestFileSystem.Writer.prototype, 'truncate');
       binding.network.addRevision(newContent);
 
       function onSynced() {
         dumpBindingContent();
-        next();
+        writePromise.then(next);
       }
     },
 
@@ -61,7 +62,7 @@
       }
     },
 
-    function changeFileSystemFile(next) {
+    async function changeFileSystemFile(next) {
       var newContent = fsContent.replace('//TODO', 'filesystem();\n//TODO');
       TestRunner.addSniffer(Persistence.Persistence.prototype, '_contentSyncedForTest', onSynced);
       fsEntry.setContent(newContent);
