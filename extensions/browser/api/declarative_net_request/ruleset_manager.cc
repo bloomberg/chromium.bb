@@ -156,11 +156,7 @@ bool RulesetManager::ShouldBlockRequest(const WebRequestInfo& request,
                                         bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Ensure clients filter out any requests which should be hidden.
-  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
-
-  // Return early if DNR is not enabled.
-  if (!IsAPIAvailable())
+  if (!ShouldEvaluateRequest(request))
     return false;
 
   if (test_observer_)
@@ -195,11 +191,7 @@ bool RulesetManager::ShouldRedirectRequest(const WebRequestInfo& request,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(redirect_url);
 
-  // Ensure clients filter out any requests which should be hidden.
-  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
-
-  // Return early if DNR is not enabled.
-  if (!IsAPIAvailable())
+  if (!ShouldEvaluateRequest(request))
     return false;
 
   // Redirecting WebSocket handshake request is prohibited.
@@ -260,6 +252,28 @@ bool RulesetManager::ExtensionRulesetData::operator<(
   return (extension_install_time != other.extension_install_time)
              ? (extension_install_time > other.extension_install_time)
              : (extension_id < other.extension_id);
+}
+
+bool RulesetManager::ShouldEvaluateRequest(
+    const WebRequestInfo& request) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Ensure clients filter out sensitive requests.
+  DCHECK(!WebRequestPermissions::HideRequest(info_map_, request));
+
+  if (!IsAPIAvailable()) {
+    DCHECK(rulesets_.empty());
+    return false;
+  }
+
+  // Prevent extensions from modifying any resources on the chrome-extension
+  // scheme. Practically, this has the effect of not allowing an extension to
+  // modify its own resources (The extension wouldn't have the permission to
+  // other extension origins anyway).
+  if (request.url.SchemeIs(kExtensionScheme))
+    return false;
+
+  return true;
 }
 
 bool RulesetManager::ShouldEvaluateRulesetForRequest(

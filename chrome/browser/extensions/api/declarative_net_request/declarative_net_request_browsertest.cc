@@ -1082,8 +1082,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 }
 
-// Ensure that an extension can intercept its own resources, but not those of
-// other extensions.
+// Ensure that an extension can't intercept requests on the chrome-extension
+// scheme.
 IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                        InterceptExtensionScheme) {
   // Load two extensions. One blocks all urls, and the other blocks urls with
@@ -1112,14 +1112,12 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                                    extension_id.c_str()));
   };
 
-  // Extension 1 should be able to block the request to its own
-  // manifest.json.
+  // Extension 1 should not be able to block the request to its own
+  // manifest.json or that of the Extension 2, even with "<all_urls>" host
+  // permissions.
   ui_test_utils::NavigateToURL(browser(), get_manifest_url(extension_id_1));
   GURL final_url = web_contents()->GetLastCommittedURL();
-  EXPECT_EQ(content::PAGE_TYPE_ERROR, GetPageType());
-
-  // But it should not be able to intercept requests to the second extensions's
-  // resources, even with "<all_urls>" host permissions.
+  EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
   ui_test_utils::NavigateToURL(browser(), get_manifest_url(extension_id_2));
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
 }
