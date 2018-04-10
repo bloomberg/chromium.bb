@@ -368,6 +368,21 @@ public class WebContentsTest {
         });
     }
 
+    private ChildProcessConnection getSandboxedChildProcessConnection() {
+        Callable<ChildProcessConnection> getConnectionCallable = () -> {
+            for (ChildProcessLauncherHelper process :
+                    ChildProcessLauncherHelper.getAllProcessesForTesting().values()) {
+                ChildProcessConnection connection = process.getChildProcessConnection();
+                if (connection.getServiceName().getClassName().indexOf("Sandbox") != -1) {
+                    return connection;
+                }
+            }
+            Assert.assertTrue(false);
+            return null;
+        };
+        return ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(getConnectionCallable);
+    }
+
     @Test
     @SmallTest
     public void testChildProcessImportance() {
@@ -376,43 +391,35 @@ public class WebContentsTest {
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
         final WebContents webContents = activity.getActiveWebContents();
 
-        Callable<ChildProcessConnection> getConnectionCallable =
-                new Callable<ChildProcessConnection>() {
-                    @Override
-                    public ChildProcessConnection call() {
-                        for (ChildProcessLauncherHelper process :
-                                ChildProcessLauncherHelper.getAllProcessesForTesting().values()) {
-                            ChildProcessConnection connection = process.getChildProcessConnection();
-                            if (connection.getServiceName().getClassName().indexOf("Sandbox")
-                                    != -1) {
-                                return connection;
-                            }
-                        }
-                        Assert.assertTrue(false);
-                        return null;
-                    }
-                };
-        final ChildProcessConnection connection =
-                ChildProcessLauncherTestUtils.runOnLauncherAndGetResult(getConnectionCallable);
-        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertFalse(connection.isModerateBindingBound());
-            }
-        });
+        final ChildProcessConnection connection = getSandboxedChildProcessConnection();
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
+                () -> Assert.assertFalse(connection.isModerateBindingBound()));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                webContents.setImportance(ChildProcessImportance.MODERATE);
-            }
-        });
-        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                Assert.assertTrue(connection.isModerateBindingBound());
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> webContents.setImportance(ChildProcessImportance.MODERATE));
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
+                () -> Assert.assertTrue(connection.isModerateBindingBound()));
+    }
+
+    @Test
+    @SmallTest
+    public void testVisibilityControlsBinding() {
+        final ContentShellActivity activity =
+                mActivityTestRule.launchContentShellWithUrl(TEST_URL_1);
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        final WebContents webContents = activity.getActiveWebContents();
+
+        final ChildProcessConnection connection = getSandboxedChildProcessConnection();
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
+                () -> Assert.assertTrue(connection.isStrongBindingBound()));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> webContents.onHide());
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
+                () -> Assert.assertFalse(connection.isStrongBindingBound()));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> webContents.onShow());
+        ChildProcessLauncherTestUtils.runOnLauncherThreadBlocking(
+                () -> Assert.assertTrue(connection.isStrongBindingBound()));
     }
 
     private boolean isWebContentsDestroyed(final WebContents webContents) {
