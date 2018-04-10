@@ -121,7 +121,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:hover GtkLabel");
     case ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem:disabled GtkLabel");
-    case ui::NativeTheme::kColorId_MenuItemSubtitleColor:
+    case ui::NativeTheme::kColorId_MenuItemMinorTextColor:
       if (GtkVersionCheck(3, 20)) {
         return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem #accelerator");
       }

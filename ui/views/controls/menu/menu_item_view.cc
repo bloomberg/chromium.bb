@@ -882,12 +882,10 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                   flags);
   if (!subtitle_.empty()) {
     canvas->DrawStringRectWithFlags(
-        subtitle_,
-        font_list,
+        subtitle_, font_list,
         GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_MenuItemSubtitleColor),
-        text_bounds + gfx::Vector2d(0, font_list.GetHeight()),
-        flags);
+            ui::NativeTheme::kColorId_MenuItemMinorTextColor),
+        text_bounds + gfx::Vector2d(0, font_list.GetHeight()), flags);
   }
 
   PaintMinorIconAndText(canvas,
@@ -946,7 +944,7 @@ SkColor MenuItemView::GetTextColor(bool minor,
                                    bool render_selection,
                                    bool emphasized) const {
   ui::NativeTheme::ColorId color_id =
-      minor ? ui::NativeTheme::kColorId_MenuItemSubtitleColor
+      minor ? ui::NativeTheme::kColorId_MenuItemMinorTextColor
             : ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
   if (enabled()) {
     if (render_selection)
