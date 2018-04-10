@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.download.DownloadActivity;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -78,7 +79,9 @@ public class OfflinePageDownloadBridge {
     private static void openItem(final String url, final long offlineId, final boolean openInCct) {
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(url, offlineId, (params) -> {
             if (params == null) return;
-            if (openInCct) {
+            boolean openingFromDownloadsHome =
+                    ApplicationStatus.getLastTrackedFocusedActivity() instanceof DownloadActivity;
+            if (openInCct && openingFromDownloadsHome) {
                 openItemInCct(offlineId, params);
             } else {
                 openItemInNewTab(offlineId, params);
