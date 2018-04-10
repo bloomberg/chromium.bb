@@ -8,8 +8,9 @@ namespace blink {
 
 BackgroundFetchSettledEvent::BackgroundFetchSettledEvent(
     const AtomicString& type,
-    const BackgroundFetchSettledEventInit& initializer)
-    : BackgroundFetchEvent(type, initializer, nullptr /* observer */),
+    const BackgroundFetchSettledEventInit& initializer,
+    WaitUntilObserver* observer)
+    : BackgroundFetchEvent(type, initializer, observer),
       fetches_(*initializer.fetches()) {}
 
 BackgroundFetchSettledEvent::~BackgroundFetchSettledEvent() = default;

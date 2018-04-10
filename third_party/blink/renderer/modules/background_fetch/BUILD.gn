@@ -30,6 +30,8 @@ blink_modules_sources("background_fetch") {
     "background_fetch_settled_fetches.h",
     "background_fetch_type_converters.cc",
     "background_fetch_type_converters.h",
+    "background_fetch_update_event.cc",
+    "background_fetch_update_event.h",
     "background_fetched_event.cc",
     "background_fetched_event.h",
     "service_worker_global_scope_background_fetch.h",
