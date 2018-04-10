@@ -1793,7 +1793,7 @@ input. What follows after the @samp{ing} does not matter, hence the
 @samp{-}.
 
 @example
-!%[^_] ing - 346
+match !%[^_] ing - 346
 @end example
 
 The following will replace @samp{con} with the dots @samp{25} when it
