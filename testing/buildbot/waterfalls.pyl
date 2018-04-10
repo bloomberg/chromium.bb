@@ -1696,17 +1696,17 @@
       },
       'Linux ChromiumOS MSan Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_chromiumos_msan_gtests',
+          'gtest_tests': 'chromium_memory_chromiumos_asan_gtests',
         },
       },
       'Linux MSan Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_linux_msan_gtests',
+          'gtest_tests': 'chromium_memory_linux_asan_gtests',
         },
       },
       'Linux TSan Tests': {
         'test_suites': {
-          'gtest_tests': 'chromium_memory_linux_tsan_gtests',
+          'gtest_tests': 'chromium_memory_linux_asan_gtests',
         },
       },
       'Mac ASan 64 Tests (1)': {

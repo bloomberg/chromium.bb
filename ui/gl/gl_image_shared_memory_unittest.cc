@@ -68,9 +68,12 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageOddSizeTest,
                               GLImageTestTypes);
 
+// https://crbug.com/830653
+#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER)
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageCopyTest,
                               GLImageTestTypes);
+#endif
 
 class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
  public:
@@ -109,9 +112,12 @@ class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
   int GetAdmissibleError() const { return 0; }
 };
 
+// https://crbug.com/830653
+#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER)
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,
                               GLImageCopyTest,
                               GLImageSharedMemoryPoolTestDelegate);
+#endif
 
 }  // namespace
 }  // namespace gl

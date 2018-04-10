@@ -831,7 +831,13 @@ TEST_F(CrasAudioClientTest, GetNodes) {
   EXPECT_TRUE(called);
 }
 
-TEST_F(CrasAudioClientTest, GetNodesV2) {
+#if defined(MEMORY_SANITIZER)
+// https://crbug.com/830945
+#define MAYBE_GetNodesV2 DISABLED_GetNodesV2
+#else
+#define MAYBE_GetNodesV2 GetNodesV2
+#endif
+TEST_F(CrasAudioClientTest, MAYBE_GetNodesV2) {
   // Create the expected value.
   AudioNodeList expected_node_list{kInternalSpeakerV2, kInternalMicV2};
 
