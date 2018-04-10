@@ -189,6 +189,7 @@ set(AOM_AV1_ENCODER_ASM_SSE2
 
 set(AOM_AV1_ENCODER_INTRIN_SSE2
     "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm_sse2.c"
+    "${AOM_ROOT}/av1/encoder/x86/av1_fwd_txfm_sse2.h"
     "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/highbd_block_error_intrin_sse2.c"
     "${AOM_ROOT}/av1/encoder/x86/av1_quantize_sse2.c")

@@ -15,6 +15,7 @@
 #include "av1/common/x86/av1_txfm_sse2.h"
 #include "av1/encoder/av1_fwd_txfm1d_cfg.h"
 #include "av1/encoder/x86/av1_txfm1d_sse4.h"
+#include "av1/encoder/x86/av1_fwd_txfm_sse2.h"
 
 static INLINE void int16_array_with_stride_to_int32_array_without_stride(
     const int16_t *input, int stride, int32_t *output, int txfm1d_size) {
@@ -80,6 +81,91 @@ void av1_fwd_txfm2d_32x32_sse4_1(const int16_t *input, int32_t *output,
   av1_get_fwd_txfm_cfg(tx_type, TX_32X32, &cfg);
   (void)bd;
   fwd_txfm2d_sse4_1(input, output, stride, &cfg, txfm_buf);
+}
+
+static INLINE void transpose_32_4x4x2(int stride, const __m128i *inputA,
+                                      const __m128i *inputB, __m128i *output) {
+  __m128i temp0 = _mm_unpacklo_epi32(inputA[0], inputA[2]);
+  __m128i temp1 = _mm_unpackhi_epi32(inputA[0], inputA[2]);
+  __m128i temp2 = _mm_unpacklo_epi32(inputA[1], inputA[3]);
+  __m128i temp3 = _mm_unpackhi_epi32(inputA[1], inputA[3]);
+
+  output[0 * stride] = _mm_unpacklo_epi32(temp0, temp2);
+  output[1 * stride] = _mm_unpackhi_epi32(temp0, temp2);
+  output[2 * stride] = _mm_unpacklo_epi32(temp1, temp3);
+  output[3 * stride] = _mm_unpackhi_epi32(temp1, temp3);
+
+  temp0 = _mm_unpacklo_epi32(inputB[0], inputB[2]);
+  temp1 = _mm_unpackhi_epi32(inputB[0], inputB[2]);
+  temp2 = _mm_unpacklo_epi32(inputB[1], inputB[3]);
+  temp3 = _mm_unpackhi_epi32(inputB[1], inputB[3]);
+
+  output[4 * stride] = _mm_unpacklo_epi32(temp0, temp2);
+  output[5 * stride] = _mm_unpackhi_epi32(temp0, temp2);
+  output[6 * stride] = _mm_unpacklo_epi32(temp1, temp3);
+  output[7 * stride] = _mm_unpackhi_epi32(temp1, temp3);
+}
+
+static void lowbd_fwd_txfm2d_64x64_sse4_1(const int16_t *input, int32_t *output,
+                                          int stride, TX_TYPE tx_type, int bd) {
+  (void)bd;
+  const TX_SIZE tx_size = TX_64X64;
+  __m128i buf0[64], buf1[512];
+  const int8_t *shift = fwd_txfm_shift_ls[tx_size];
+  const int txw_idx = get_txw_idx(tx_size);
+  const int txh_idx = get_txh_idx(tx_size);
+  const int cos_bit_col = fwd_cos_bit_col[txw_idx][txh_idx];
+  const int cos_bit_row = fwd_cos_bit_row[txw_idx][txh_idx];
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  const transform_1d_sse2 col_txfm = col_txfm8x64_arr[tx_type];
+  const int width_div8 = (width >> 3);
+  const int height_div8 = (height >> 3);
+
+  for (int i = 0; i < width_div8; i++) {
+    load_buffer_16bit_to_16bit(input + 8 * i, stride, buf0, height);
+    round_shift_16bit(buf0, height, shift[0]);
+    col_txfm(buf0, buf0, cos_bit_col);
+    round_shift_16bit(buf0, height, shift[1]);
+    for (int j = 0; j < AOMMIN(4, height_div8); ++j) {
+      transpose_16bit_8x8(buf0 + j * 8, buf1 + j * width + 8 * i);
+    }
+  }
+  if (tx_type == DCT_DCT) {
+    for (int i = 0; i < AOMMIN(4, height_div8); i++) {
+      __m128i bufA[64];
+      __m128i bufB[64];
+      __m128i *buf = buf1 + width * i;
+      for (int j = 0; j < width; ++j) {
+        bufA[j] = _mm_cvtepi16_epi32(buf[j]);
+        bufB[j] = _mm_cvtepi16_epi32(_mm_unpackhi_epi64(buf[j], buf[j]));
+      }
+      av1_fdct64_new_sse4_1(bufA, bufA, cos_bit_row);
+      av1_fdct64_new_sse4_1(bufB, bufB, cos_bit_row);
+      av1_round_shift_array_32_sse4_1(bufA, bufA, 32, -shift[2]);
+      av1_round_shift_array_32_sse4_1(bufB, bufB, 32, -shift[2]);
+
+      int32_t *output8 = output + 8 * 32 * i;
+      for (int j = 0; j < width_div8; ++j) {
+        __m128i *out = (__m128i *)(output8 + 4 * j);
+        transpose_32_4x4x2(8, bufA + 4 * j, bufB + 4 * j, out);
+      }
+    }
+  } else {
+    const transform_1d_sse2 row_txfm16 =
+        (tx_type == H_DCT) ? fdct8x64_new_sse2 : fidentity8x64_new_sse2;
+    for (int i = 0; i < AOMMIN(4, height_div8); i++) {
+      __m128i *buf = buf1 + width * i;
+      row_txfm16(buf, buf, cos_bit_row);
+      round_shift_16bit(buf, width, shift[2]);
+      int32_t *output8 = output + 8 * 32 * i;
+      for (int j = 0; j < 4; ++j) {
+        __m128i *buf8 = buf + 8 * j;
+        transpose_16bit_8x8(buf8, buf8);
+        store_buffer_16bit_to_32bit_w8(buf8, output8 + 8 * j, 32, 8);
+      }
+    }
+  }
 }
 
 static FwdTxfm2dFunc fwd_txfm2d_func_ls[TX_SIZES_ALL] = {
