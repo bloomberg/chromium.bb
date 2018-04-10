@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Intent;
 
 /**
@@ -13,11 +13,6 @@ import android.content.Intent;
  * flags.
  */
 public interface VrDaydreamApi {
-    /**
-     * @return Whether the current device is Daydream Ready.
-     */
-    boolean isDaydreamReadyDevice();
-
     /**
      * Register the intent to launch after phone inserted into a Daydream viewer.
      * @return false if unable to acquire DaydreamApi instance.
@@ -29,11 +24,6 @@ public interface VrDaydreamApi {
      * @return false if unable to acquire DaydreamApi instance.
      */
     boolean unregisterDaydreamIntent();
-
-    /**
-     * Create an Intent to launch a VR activity with the given component name.
-     */
-    Intent createVrIntent(final ComponentName componentName);
 
     /**
      * Launch the given PendingIntent in VR mode.
@@ -52,12 +42,12 @@ public interface VrDaydreamApi {
      * @param intent The data passed to VrCore as part of the exit request.
      * @return false if unable to acquire DaydreamApi instance.
      */
-    boolean exitFromVr(int requestCode, final Intent intent);
+    boolean exitFromVr(Activity activity, int requestCode, final Intent intent);
 
     /**
      * @return Whether the current Viewer is a Daydream Viewer.
      */
-    Boolean isDaydreamCurrentViewer();
+    boolean isDaydreamCurrentViewer();
 
     /**
      * Launch the stereoscopic, 3D VR launcher homescreen.
@@ -65,37 +55,7 @@ public interface VrDaydreamApi {
     boolean launchVrHomescreen();
 
     /**
-     * @return Whether this device boots directly into VR mode. May be used to detect standalone VR
-     * devices.
-     */
-    boolean bootsToVr();
-
-    /**
-     * Adds the necessary VR flags to an intent.
-     * @param intent The intent to add VR flags to.
-     * @return the intent with VR flags set.
-     */
-    Intent setupVrIntent(Intent intent);
-
-    /**
-     * Launch the Daydream Settings Activity.
-     */
-    void launchGvrSettings();
-
-    /**
-     * Whether the user is currently in a VR session. Note that this should be treated as heuristic,
-     * and may at times be wrong as there's a timeout before this state is cleared after the user
-     * has taken off their headset.
-     */
-    boolean isInVrSession();
-
-    /**
      * Closes this DaydreamApi instance.
      */
     void close();
-
-    /**
-     * @return Whether 2D-in-VR rendering mode is currently supported.
-     */
-    boolean supports2dInVr();
 }

@@ -23,16 +23,13 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.vr_shell.VrClassesWrapper;
-import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.ChildProcessAllocatorSettingsHook;
 import org.chromium.policy.test.annotations.Policies;
 import org.chromium.ui.test.util.UiDisableIfSkipCheck;
 import org.chromium.ui.test.util.UiRestrictionSkipCheck;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -70,41 +67,16 @@ public class ChromeJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     }
 
     private static class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {
-        private VrDaydreamApi mDaydreamApi;
-        private boolean mAttemptedToGetApi;
-
         public ChromeRestrictionSkipCheck(Context targetContext) {
             super(targetContext);
         }
 
-        @SuppressWarnings("unchecked")
-        private VrDaydreamApi getDaydreamApi() {
-            if (!mAttemptedToGetApi) {
-                mAttemptedToGetApi = true;
-                try {
-                    Class<? extends VrClassesWrapper> vrClassesBuilderClass =
-                            (Class<? extends VrClassesWrapper>) Class.forName(
-                                    "org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl");
-                    Constructor<?> vrClassesBuilderConstructor =
-                            vrClassesBuilderClass.getConstructor();
-                    VrClassesWrapper vrClassesBuilder =
-                            (VrClassesWrapper) vrClassesBuilderConstructor.newInstance();
-                    mDaydreamApi = vrClassesBuilder.createVrDaydreamApi(getTargetContext());
-                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                        | IllegalArgumentException | InvocationTargetException
-                        | NoSuchMethodException e) {
-                    return null;
-                }
-            }
-            return mDaydreamApi;
-        }
-
         private boolean isDaydreamReady() {
-            return getDaydreamApi() == null ? false : getDaydreamApi().isDaydreamReadyDevice();
+            return VrShellDelegate.isDaydreamReadyDevice();
         }
 
         private boolean isDaydreamViewPaired() {
-            if (getDaydreamApi() == null) {
+            if (VrShellDelegate.getVrDaydreamApi() == null) {
                 return false;
             }
             // isDaydreamCurrentViewer() creates a concrete instance of DaydreamApi,
@@ -112,7 +84,7 @@ public class ChromeJUnit4ClassRunner extends BaseJUnit4ClassRunner {
             FutureTask<Boolean> checker = new FutureTask<>(new Callable<Boolean>() {
                 @Override
                 public Boolean call() {
-                    return getDaydreamApi().isDaydreamCurrentViewer();
+                    return VrShellDelegate.getVrDaydreamApi().isDaydreamCurrentViewer();
                 }
             });
             ThreadUtils.runOnUiThreadBlocking(checker);

@@ -100,6 +100,7 @@ public class VrInstallUpdateInfoBarTest {
             Assert.fail("Invalid VrCoreVersionChecker compatibility: "
                     + String.valueOf(checkerReturnCompatibility));
         }
+        VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(null);
     }
 
     /**

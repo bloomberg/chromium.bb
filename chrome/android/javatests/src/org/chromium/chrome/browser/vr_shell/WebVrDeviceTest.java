@@ -98,6 +98,7 @@ public class WebVrDeviceTest {
         VrTestFramework.executeStepAndWait("stepCheckDeviceCapabilities('VR Orientation Device')",
                 mVrTestFramework.getFirstTabWebContents());
         VrTestFramework.endTest(mVrTestFramework.getFirstTabWebContents());
+        VrShellDelegateUtils.getDelegateInstance().overrideVrCoreVersionCheckerForTesting(null);
     }
 
     /**

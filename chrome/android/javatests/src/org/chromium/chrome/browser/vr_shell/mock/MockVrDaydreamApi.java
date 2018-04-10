@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.vr_shell.mock;
 
+import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.chrome.browser.vr_shell.VrDaydreamApiImpl;
@@ -23,10 +23,6 @@ public class MockVrDaydreamApi extends VrDaydreamApiImpl {
     private boolean mDoNotForwardLaunchRequests;
     private Boolean mExitFromVrReturnValue;
 
-    public MockVrDaydreamApi(Context context) {
-        super(context);
-    }
-
     @Override
     public boolean launchInVr(final PendingIntent pendingIntent) {
         mLaunchInVrCalled = true;
@@ -42,9 +38,9 @@ public class MockVrDaydreamApi extends VrDaydreamApiImpl {
     }
 
     @Override
-    public boolean exitFromVr(int requestCode, final Intent intent) {
+    public boolean exitFromVr(Activity activity, int requestCode, final Intent intent) {
         mExitFromVrCalled = true;
-        if (mExitFromVrReturnValue == null) return super.exitFromVr(requestCode, intent);
+        if (mExitFromVrReturnValue == null) return super.exitFromVr(activity, requestCode, intent);
         return mExitFromVrReturnValue.booleanValue();
     }
 

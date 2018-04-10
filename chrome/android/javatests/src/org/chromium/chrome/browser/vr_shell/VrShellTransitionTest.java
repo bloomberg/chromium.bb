@@ -89,7 +89,7 @@ public class VrShellTransitionTest {
     }
 
     private void enterExitVrShell(boolean supported) {
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         if (!supported) {
             VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         }
@@ -353,13 +353,14 @@ public class VrShellTransitionTest {
 
         Assert.assertTrue(activity.isInOverviewMode());
 
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         Assert.assertTrue(VrTransitionUtils.forceEnterVr());
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
         Assert.assertFalse(mockApi.getExitFromVrCalled());
         Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
     }
 
     /**
@@ -391,7 +392,7 @@ public class VrShellTransitionTest {
         TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
 
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         mockApi.setExitFromVrReturnValue(false);
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -405,7 +406,7 @@ public class VrShellTransitionTest {
         Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
         mockApi.close();
 
-        MockVrDaydreamApi mockApiWithDoff = new MockVrDaydreamApi(mTestRule.getActivity());
+        MockVrDaydreamApi mockApiWithDoff = new MockVrDaydreamApi();
         mockApiWithDoff.setExitFromVrReturnValue(true);
 
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
@@ -423,6 +424,7 @@ public class VrShellTransitionTest {
 
         ActivityUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), Preferences.class);
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
     }
 
     /**
