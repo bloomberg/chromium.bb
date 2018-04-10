@@ -80,7 +80,7 @@
       }
 
       .name-with-error-list {
-        padding: 18px 0;
+        padding: 14px 0;
       }
 
       .name-with-error-list div {
@@ -252,7 +252,7 @@
         <iron-collapse id="spellCheckCollapse" opened="[[spellCheckOpened_]]">
           <div class="list-frame vertical-list">
             <template is="dom-repeat" items="[[spellCheckLanguages_]]">
-              <div class="list-item two-line">
+              <div class="list-item">
                 <div class="start name-with-error-list"
                     on-click="onSpellCheckNameClick_" actionable
                     disabled$="[[isSpellCheckNameClickDisabled_(item,
