@@ -35,9 +35,9 @@ import org.chromium.chrome.test.util.OmniboxTestUtils.SuggestionsResult;
 import org.chromium.chrome.test.util.OmniboxTestUtils.TestAutocompleteController;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.AndroidPermissionDelegate;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.base.WindowAndroid.IntentCallback;
-import org.chromium.ui.base.WindowAndroid.PermissionCallback;
 
 import java.util.HashMap;
 import java.util.List;
@@ -368,6 +368,10 @@ public class LocationBarVoiceRecognitionHandlerTest {
             }
             callback.onRequestPermissionsResult(permissions, results);
         }
+
+        @Override
+        public void onRequestPermissionsResult(
+                int requestCode, String[] permissions, int[] grantResults) {}
     }
 
     @Before

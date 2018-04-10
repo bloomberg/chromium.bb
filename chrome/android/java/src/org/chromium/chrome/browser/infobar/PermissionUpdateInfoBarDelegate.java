@@ -16,12 +16,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Handles requesting the android runtime permissions for the permission update infobar.
  */
-class PermissionUpdateInfoBarDelegate implements WindowAndroid.PermissionCallback {
+class PermissionUpdateInfoBarDelegate implements PermissionCallback {
     private final WebContents mWebContents;
     private final String[] mAndroidPermisisons;
     private long mNativePtr;

@@ -45,8 +45,8 @@ import java.util.concurrent.TimeUnit;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-public class SelectFileDialog implements WindowAndroid.IntentCallback,
-                                         WindowAndroid.PermissionCallback, PhotoPickerListener {
+public class SelectFileDialog
+        implements WindowAndroid.IntentCallback, PermissionCallback, PhotoPickerListener {
     private static final String TAG = "SelectFileDialog";
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";

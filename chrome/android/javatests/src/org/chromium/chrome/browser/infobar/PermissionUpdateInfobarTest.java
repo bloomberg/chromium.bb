@@ -30,7 +30,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.AndroidPermissionDelegate;
-import org.chromium.ui.base.WindowAndroid.PermissionCallback;
+import org.chromium.ui.base.PermissionCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,6 +194,10 @@ public class PermissionUpdateInfobarTest {
         @Override
         public void requestPermissions(String[] permissions, PermissionCallback callback) {
         }
+
+        @Override
+        public void onRequestPermissionsResult(
+                int requestCode, String[] permissions, int[] grantResults) {}
     }
 
 }

@@ -249,6 +249,10 @@ public class WindowAndroid {
         mNativeWindowAndroid = 0;
     }
 
+    protected AndroidPermissionDelegate getAndroidPermissionDelegate() {
+        return mPermissionDelegate;
+    }
+
     /**
      * Set the delegate that will handle android permissions requests.
      */
@@ -549,18 +553,6 @@ public class WindowAndroid {
          * @param data The data returned by the intent.
          */
         void onIntentCompleted(WindowAndroid window, int resultCode, Intent data);
-    }
-
-    /**
-     * Callback for permission requests.
-     */
-    public interface PermissionCallback {
-        /**
-         * Called upon completing a permission request.
-         * @param permissions The list of permissions in the result.
-         * @param grantResults Whether the permissions were granted.
-         */
-        void onRequestPermissionsResult(String[] permissions, int[] grantResults);
     }
 
     /**

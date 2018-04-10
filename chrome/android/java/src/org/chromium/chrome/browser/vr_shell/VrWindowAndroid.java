@@ -16,6 +16,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.ui.base.AndroidPermissionDelegate;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -101,5 +102,9 @@ public class VrWindowAndroid extends WindowAndroid
             Arrays.fill(grantResults, PackageManager.PERMISSION_DENIED);
             callback.onRequestPermissionsResult(permissions, grantResults);
         }
+
+        @Override
+        public void onRequestPermissionsResult(
+                int requestCode, String[] permissions, int[] grantResults) {}
     }
 }

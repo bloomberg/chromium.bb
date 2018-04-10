@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -208,7 +209,7 @@ public class LocationBarVoiceRecognitionHandler {
 
         if (!windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)) {
             if (windowAndroid.canRequestPermission(Manifest.permission.RECORD_AUDIO)) {
-                WindowAndroid.PermissionCallback callback = new WindowAndroid.PermissionCallback() {
+                PermissionCallback callback = new PermissionCallback() {
                     @Override
                     public void onRequestPermissionsResult(
                             String[] permissions, int[] grantResults) {
