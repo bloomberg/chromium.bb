@@ -5905,17 +5905,15 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
   ctx->hybrid_pred_diff = (int)comp_pred_diff[REFERENCE_MODE_SELECT];
 }
 
-static void setup_buffer_inter(
+static void setup_buffer_ref_mvs_inter(
     const AV1_COMP *const cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
     BLOCK_SIZE block_size, int mi_row, int mi_col,
-    int_mv frame_nearest_mv[REF_FRAMES], int_mv frame_near_mv[REF_FRAMES],
     struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  int_mv *const candidates = x->mbmi_ext->ref_mvs[ref_frame];
   const struct scale_factors *const sf = &cm->frame_refs[ref_frame - 1].sf;
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
@@ -5931,10 +5929,6 @@ static void setup_buffer_inter(
                    mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
                    mbmi_ext->mode_context);
 
-  // Candidate refinement carried out at encoder and decoder
-  av1_find_best_ref_mvs(cm->allow_high_precision_mv, candidates,
-                        &frame_nearest_mv[ref_frame], &frame_near_mv[ref_frame],
-                        cm->cur_frame_force_integer_mv);
   // Further refinement that is encode side only to test the top few candidates
   // in full and choose the best as the centre point for subsequent searches.
   // The current implementation doesn't support scaling.
@@ -8817,9 +8811,14 @@ static void set_params_rd_pick_inter_mode(
     x->mbmi_ext->compound_mode_context[ref_frame] = 0;
     if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
       assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
-      setup_buffer_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
-                         frame_mv[NEARESTMV], frame_mv[NEARMV], yv12_mb);
+      setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
+                                 yv12_mb);
+      av1_find_best_ref_mvs(
+          cm->allow_high_precision_mv, x->mbmi_ext->ref_mvs[ref_frame],
+          &frame_mv[NEARESTMV][ref_frame], &frame_mv[NEARMV][ref_frame],
+          cm->cur_frame_force_integer_mv);
     }
+
     frame_mv[NEWMV][ref_frame].as_int = INVALID_MV;
     frame_mv[GLOBALMV][ref_frame].as_int =
         gm_get_motion_vector(&cm->global_motion[ref_frame],
