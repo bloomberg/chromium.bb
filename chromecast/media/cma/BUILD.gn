@@ -47,6 +47,12 @@ cast_source_set("unittests") {
   testonly = true
   sources = [
     "backend/audio_video_pipeline_device_unittest.cc",
+
+    # TODO(almasrymina): enable these tests.
+    # "backend/av_sync_unittest.cc",
+    # "backend/mock_audio_decoder_for_mixer.cc",
+    # "backend/mock_video_decoder_for_mixer.cc",
+    # "backend/video/av_sync_video.cc",
     "base/balanced_media_task_runner_unittest.cc",
     "base/buffering_controller_unittest.cc",
     "base/buffering_frame_provider_unittest.cc",
