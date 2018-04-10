@@ -7422,6 +7422,50 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Hash Mismatch"/>
 </enum>
 
+<enum name="Cr50BoardIdFlags">
+  <int value="-1" label="Unprogrammed (0xffffffff)"/>
+  <int value="127" label="Legacy pre-pvt (0x7f)"/>
+  <int value="32639" label="Pre-pvt (0x7f7f)"/>
+  <int value="32640" label="Prod (0x7f80)"/>
+  <int value="65280" label="Corrected (0xff00)"/>
+</enum>
+
+<enum name="Cr50CrosRlzCodes">
+  <summary>
+    List of RLZ codes of all boards which are using Cr50, the Google security
+    chip. Used by various Cr50 related metrics keeping track of Board ID and RLZ
+    assignments.
+  </summary>
+  <int value="1094926914" label="ACBB (Electro)"/>
+  <int value="1094926916" label="ACBD (Sand)"/>
+  <int value="1094926917" label="ACBE (Santa)"/>
+  <int value="1094926918" label="ACBF (Bruce)"/>
+  <int value="1095909961" label="ARBI (Soraka)"/>
+  <int value="1095980364" label="ASUL (Cave)"/>
+  <int value="1095980366" label="ASUN (Basking)"/>
+  <int value="1095980367" label="ASUO (Bob)"/>
+  <int value="1129336916" label="CPPT (Nasher)"/>
+  <int value="1129597253" label="CTIE (Astronaut)"/>
+  <int value="1145389384" label="DEAH (Asuka)"/>
+  <int value="1146640980" label="DXZT (Scarlet)"/>
+  <int value="1213225551" label="HPZO (Snappy)"/>
+  <int value="1213225554" label="HPZR (Chell)"/>
+  <int value="1213352282" label="HRIZ (Whitetip)"/>
+  <int value="1229870420" label="INUT (Nasher360)"/>
+  <int value="1262568010" label="KABJ (Robo360)"/>
+  <int value="1279607114" label="LEAJ (Sentry)"/>
+  <int value="1279607118" label="LEAN (Pyro)"/>
+  <int value="1280264001" label="LOGA (Gru)"/>
+  <int value="1280264007" label="LOGG (Poppy)"/>
+  <int value="1314212940" label="NULL (not yet assigned)"/>
+  <int value="1364874584" label="QZUX (Robo)"/>
+  <int value="1397244238" label="SHAN (Lava)"/>
+  <int value="1397571914" label="SMAJ (Kevin)"/>
+  <int value="1448498499" label="VVUC (blue)"/>
+  <int value="1515408205" label="ZSKM (Nautilus)"/>
+  <int value="1515864390" label="ZZAF (Eve)"/>
+</enum>
+
 <enum name="CrashExitCodes">
   <int value="1" label="RESULT_CODE_KILLED"/>
   <int value="2" label="RESULT_CODE_HUNG"/>
