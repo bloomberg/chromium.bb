@@ -375,7 +375,8 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
           DeviceStatusCollector::VolumeInfoFetcher(),
           DeviceStatusCollector::CPUStatisticsFetcher(),
           DeviceStatusCollector::CPUTempFetcher(),
-          DeviceStatusCollector::AndroidStatusFetcher()),
+          DeviceStatusCollector::AndroidStatusFetcher(),
+          true /* is_enterprise_device */),
       task_runner_));
 }
 

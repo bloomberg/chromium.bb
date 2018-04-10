@@ -490,7 +490,8 @@ DeviceStatusCollector::DeviceStatusCollector(
     const VolumeInfoFetcher& volume_info_fetcher,
     const CPUStatisticsFetcher& cpu_statistics_fetcher,
     const CPUTempFetcher& cpu_temp_fetcher,
-    const AndroidStatusFetcher& android_status_fetcher)
+    const AndroidStatusFetcher& android_status_fetcher,
+    bool is_enterprise_device)
     : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
@@ -501,6 +502,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       android_status_fetcher_(android_status_fetcher),
       statistics_provider_(provider),
       cros_settings_(chromeos::CrosSettings::Get()),
+      is_enterprise_device_(is_enterprise_device),
       task_runner_(nullptr),
       weak_factory_(this) {
   // Get the task runner of the current thread, so we can queue status responses
@@ -608,7 +610,6 @@ void DeviceStatusCollector::UpdateReportingSettings() {
     return;
   }
 
-  // All reporting settings default to 'enabled'.
   if (!cros_settings_->GetBoolean(
           chromeos::kReportDeviceVersionInfo, &report_version_info_)) {
     report_version_info_ = true;
@@ -621,25 +622,25 @@ void DeviceStatusCollector::UpdateReportingSettings() {
           chromeos::kReportDeviceBootMode, &report_boot_mode_)) {
     report_boot_mode_ = true;
   }
-  if (!cros_settings_->GetBoolean(
-          chromeos::kReportDeviceNetworkInterfaces,
-          &report_network_interfaces_)) {
-    report_network_interfaces_ = true;
-  }
-  if (!cros_settings_->GetBoolean(
-          chromeos::kReportDeviceUsers, &report_users_)) {
-    report_users_ = true;
-  }
-
-  const bool already_reporting_hardware_status = report_hardware_status_;
-  if (!cros_settings_->GetBoolean(
-          chromeos::kReportDeviceHardwareStatus, &report_hardware_status_)) {
-    report_hardware_status_ = true;
-  }
-
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceSessionStatus,
                                   &report_kiosk_session_status_)) {
     report_kiosk_session_status_ = true;
+  }
+  // Network interfaces are reported for enterprise devices only by default.
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceNetworkInterfaces,
+                                  &report_network_interfaces_)) {
+    report_network_interfaces_ = is_enterprise_device_ ? true : false;
+  }
+  // Device users are reported for enterprise devices only by default.
+  if (!cros_settings_->GetBoolean(
+          chromeos::kReportDeviceUsers, &report_users_)) {
+    report_users_ = is_enterprise_device_ ? true : false;
+  }
+  // Hardware status is reported for enterprise devices only by default.
+  const bool already_reporting_hardware_status = report_hardware_status_;
+  if (!cros_settings_->GetBoolean(
+          chromeos::kReportDeviceHardwareStatus, &report_hardware_status_)) {
+    report_hardware_status_ = is_enterprise_device_ ? true : false;
   }
 
   if (!report_hardware_status_) {
@@ -930,8 +931,12 @@ bool DeviceStatusCollector::GetActivityTimes(
 
 bool DeviceStatusCollector::GetVersionInfo(
     em::DeviceStatusReportRequest* status) {
-  status->set_browser_version(version_info::GetVersionNumber());
   status->set_os_version(os_version_);
+  if (!is_enterprise_device_)
+    return true;
+
+  // Enterprise-only version reporting below.
+  status->set_browser_version(version_info::GetVersionNumber());
   status->set_firmware_version(firmware_version_);
 
   em::TpmVersionInfo* const tpm_version_info =
