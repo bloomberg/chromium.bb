@@ -20,9 +20,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 using content::BrowserThread;
 
@@ -36,14 +35,14 @@ ThreatDetailsCacheCollector::ThreatDetailsCacheCollector()
     : resources_(nullptr), result_(nullptr), has_started_(false) {}
 
 void ThreatDetailsCacheCollector::StartCacheCollection(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     ResourceMap* resources,
     bool* result,
     const base::Closure& callback) {
   // Start the data collection from the HTTP cache. We use a URLFetcher
   // and set the right flags so we only hit the cache.
   DVLOG(1) << "Getting cache data for all urls...";
-  request_context_getter_ = request_context_getter;
+  url_loader_factory_ = url_loader_factory;
   resources_ = resources;
   resources_it_ = resources_->begin();
   result_ = result;
@@ -53,12 +52,12 @@ void ThreatDetailsCacheCollector::StartCacheCollection(
   // Post a task in the message loop, so the callers don't need to
   // check if we call their callback immediately.
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 bool ThreatDetailsCacheCollector::HasStarted() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return has_started_;
 }
 
@@ -66,7 +65,7 @@ ThreatDetailsCacheCollector::~ThreatDetailsCacheCollector() {}
 
 // Fetch a URL and advance to the next one when done.
 void ThreatDetailsCacheCollector::OpenEntry() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "OpenEntry";
 
   if (resources_it_ == resources_->end()) {
@@ -74,8 +73,8 @@ void ThreatDetailsCacheCollector::OpenEntry() {
     return;
   }
 
-  if (!request_context_getter_.get()) {
-    DVLOG(1) << "Missing request context getter";
+  if (!url_loader_factory_) {
+    DVLOG(1) << "Missing URLLoaderFactory";
     AllDone(false);
     return;
   }
@@ -109,19 +108,18 @@ void ThreatDetailsCacheCollector::OpenEntry() {
           }
         })");
 
-  current_fetch_ =
-      net::URLFetcher::Create(GURL(resources_it_->first), net::URLFetcher::GET,
-                              this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      current_fetch_.get(),
-      data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  current_fetch_->SetRequestContext(request_context_getter_.get());
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(resources_it_->first);
   // Only from cache, and don't save cookies.
-  current_fetch_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE |
-                               net::LOAD_SKIP_CACHE_VALIDATION |
-                               net::LOAD_DO_NOT_SAVE_COOKIES);
-  current_fetch_->SetAutomaticallyRetryOn5xx(false);  // No retries.
-  current_fetch_->Start();  // OnURLFetchComplete will be called when done.
+  resource_request->load_flags = net::LOAD_ONLY_FROM_CACHE |
+                                 net::LOAD_SKIP_CACHE_VALIDATION |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  current_load_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                   traffic_annotation);
+  current_load_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&ThreatDetailsCacheCollector::OnURLLoaderComplete,
+                     base::Unretained(this)));
 }
 
 ClientSafeBrowsingReportRequest::Resource*
@@ -133,22 +131,21 @@ ThreatDetailsCacheCollector::GetResource(const GURL& url) {
   return nullptr;
 }
 
-void ThreatDetailsCacheCollector::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  DVLOG(1) << "OnUrlFetchComplete";
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(current_fetch_.get());
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS &&
-      source->GetStatus().error() == net::ERR_CACHE_MISS) {
+void ThreatDetailsCacheCollector::OnURLLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  DVLOG(1) << "OnURLLoaderComplete";
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(current_load_.get());
+  if (current_load_->NetError() == net::ERR_CACHE_MISS) {
     // Cache miss, skip this resource.
-    DVLOG(1) << "Cache miss for url: " << source->GetURL();
+    DVLOG(1) << "Cache miss for url: " << current_load_->GetFinalURL();
     AdvanceEntry();
     return;
   }
 
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
+  if (current_load_->NetError() != net::OK) {
     // Some other error occurred, e.g. the request could have been cancelled.
-    DVLOG(1) << "Unsuccessful fetch: " << source->GetURL();
+    DVLOG(1) << "Unsuccessful fetch: " << current_load_->GetFinalURL();
     AdvanceEntry();
     return;
   }
@@ -157,30 +154,32 @@ void ThreatDetailsCacheCollector::OnURLFetchComplete(
   // might not be the same as the one we asked for.
   // For redirects, resources_it_->first != url.spec().
   ClientSafeBrowsingReportRequest::Resource* resource =
-      GetResource(source->GetURL());
+      GetResource(current_load_->GetFinalURL());
   if (!resource) {
-    DVLOG(1) << "Cannot find resource for url:" << source->GetURL();
+    DVLOG(1) << "Cannot find resource for url:" << current_load_->GetFinalURL();
     AdvanceEntry();
     return;
   }
 
-  ReadResponse(resource, source);
+  ReadResponse(resource);
   std::string data;
-  source->GetResponseAsString(&data);
+  if (response_body)
+    data = *response_body.get();
   ReadData(resource, data);
   AdvanceEntry();
 }
 
 void ThreatDetailsCacheCollector::ReadResponse(
-    ClientSafeBrowsingReportRequest::Resource* pb_resource,
-    const net::URLFetcher* source) {
+    ClientSafeBrowsingReportRequest::Resource* pb_resource) {
   DVLOG(1) << "ReadResponse";
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::HttpResponseHeaders* headers = source->GetResponseHeaders();
-  if (!headers) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!current_load_->ResponseInfo() ||
+      !current_load_->ResponseInfo()->headers) {
     DVLOG(1) << "Missing response headers.";
     return;
   }
+  net::HttpResponseHeaders* headers =
+      current_load_->ResponseInfo()->headers.get();
 
   ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
@@ -188,19 +187,18 @@ void ThreatDetailsCacheCollector::ReadResponse(
   size_t iter = 0;
   std::string name, value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
+    // Strip any Set-Cookie headers.
+    if (base::LowerCaseEqualsASCII(name, "set-cookie"))
+      continue;
     ClientSafeBrowsingReportRequest::HTTPHeader* pb_header =
         pb_response->add_headers();
     pb_header->set_name(name);
-    // Strip any Set-Cookie headers.
-    if (base::LowerCaseEqualsASCII(name, "set-cookie")) {
-      pb_header->set_value("");
-    } else {
-      pb_header->set_value(value);
-    }
+    pb_header->set_value(value);
   }
 
-  if (!source->WasFetchedViaProxy()) {
-    pb_response->set_remote_ip(source->GetSocketAddress().ToString());
+  if (!current_load_->ResponseInfo()->was_fetched_via_proxy) {
+    pb_response->set_remote_ip(
+        current_load_->ResponseInfo()->socket_address.ToString());
   }
 }
 
@@ -208,7 +206,7 @@ void ThreatDetailsCacheCollector::ReadData(
     ClientSafeBrowsingReportRequest::Resource* pb_resource,
     const std::string& data) {
   DVLOG(1) << "ReadData";
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
   if (data.size() <= kMaxBodySizeBytes) {  // Only send small bodies for now.
@@ -220,22 +218,22 @@ void ThreatDetailsCacheCollector::ReadData(
 
 void ThreatDetailsCacheCollector::AdvanceEntry() {
   DVLOG(1) << "AdvanceEntry";
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Advance to the next resource.
   ++resources_it_;
-  current_fetch_.reset(nullptr);
+  current_load_.reset();
 
-  // Create a task so we don't take over the IO thread for too long.
+  // Create a task so we don't take over the UI thread for too long.
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::BindOnce(&ThreatDetailsCacheCollector::OpenEntry, this));
 }
 
 void ThreatDetailsCacheCollector::AllDone(bool success) {
   DVLOG(1) << "AllDone";
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   *result_ = success;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback_);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
   callback_.Reset();
 }
 

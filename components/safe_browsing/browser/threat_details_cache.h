@@ -16,10 +16,10 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/completion_callback.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
-namespace net {
-class URLFetcher;
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
@@ -31,8 +31,7 @@ typedef base::hash_map<
     ResourceMap;
 
 class ThreatDetailsCacheCollector
-    : public base::RefCountedThreadSafe<ThreatDetailsCacheCollector>,
-      public net::URLFetcherDelegate {
+    : public base::RefCounted<ThreatDetailsCacheCollector> {
  public:
   ThreatDetailsCacheCollector();
 
@@ -40,7 +39,7 @@ class ThreatDetailsCacheCollector
   // |result|, and we call |callback|, so they must all remain alive
   // for the lifetime of this object.
   void StartCacheCollection(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       ResourceMap* resources,
       bool* result,
       const base::Closure& callback);
@@ -49,14 +48,13 @@ class ThreatDetailsCacheCollector
   bool HasStarted();
 
  protected:
-  // Implementation of URLFetcher::Delegate. Called after the request
-  // completes (either successfully or with failure).
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Called after the request completes (either successfully or with failure).
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
  private:
-  friend class base::RefCountedThreadSafe<ThreatDetailsCacheCollector>;
+  friend class base::RefCounted<ThreatDetailsCacheCollector>;
 
-  ~ThreatDetailsCacheCollector() override;
+  ~ThreatDetailsCacheCollector();
 
   // Points to the url for which we are fetching the HTTP cache entry or
   // redirect chain.
@@ -75,11 +73,11 @@ class ThreatDetailsCacheCollector
   // Set to true as soon as StartCacheCollection is called.
   bool has_started_;
 
-  // Used to get a pointer to the current request context.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // Used to get a pointer to the current URLLoaderFactory.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
-  // The current URLFetcher.
-  std::unique_ptr<net::URLFetcher> current_fetch_;
+  // The current SimpleURLLoader.
+  std::unique_ptr<network::SimpleURLLoader> current_load_;
 
   // Returns the resource from resources_ that corresponds to |url|
   ClientSafeBrowsingReportRequest::Resource* GetResource(const GURL& url);
@@ -87,9 +85,8 @@ class ThreatDetailsCacheCollector
   // Creates a new URLFetcher and starts it.
   void OpenEntry();
 
-  // Read the HTTP response from |source| and add it to |pb_resource|.
-  void ReadResponse(ClientSafeBrowsingReportRequest::Resource* pb_resource,
-                    const net::URLFetcher* source);
+  // Read the HTTP response from |current_load_| and add it to |pb_resource|.
+  void ReadResponse(ClientSafeBrowsingReportRequest::Resource* pb_resource);
 
   // Read the body |data| and add it to |pb_resource|.
   void ReadData(ClientSafeBrowsingReportRequest::Resource* pb_resource,

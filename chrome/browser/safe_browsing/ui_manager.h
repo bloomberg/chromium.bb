@@ -90,10 +90,6 @@ class SafeBrowsingUIManager : public BaseUIManager {
  protected:
   ~SafeBrowsingUIManager() override;
 
-  // Call protocol manager on IO thread to report hits of unsafe contents.
-  void ReportSafeBrowsingHitOnIOThread(
-      const safe_browsing::HitReport& hit_report) override;
-
   // Creates a hit report for the given resource and calls
   // MaybeReportSafeBrowsingHit. This also notifies all observers in
   // |observer_list_|.

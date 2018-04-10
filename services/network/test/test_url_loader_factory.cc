@@ -5,6 +5,7 @@
 #include "services/network/test/test_url_loader_factory.h"
 
 #include "base/logging.h"
+#include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
 
 namespace network {
@@ -48,8 +49,9 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
 void TestURLLoaderFactory::AddResponse(const std::string& url,
                                        const std::string& content) {
   ResourceResponseHead head;
+  std::string headers("HTTP/1.1 200 OK\nContent-type: text/html\n\n");
   head.headers = new net::HttpResponseHeaders(
-      "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
   head.mime_type = "text/html";
   URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();

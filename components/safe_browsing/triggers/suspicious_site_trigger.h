@@ -16,9 +16,9 @@ namespace history {
 class HistoryService;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 class TriggerManager;
@@ -38,7 +38,7 @@ class SuspiciousSiteTrigger
       content::WebContents* web_contents,
       TriggerManager* trigger_manager,
       PrefService* prefs,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service);
 
   // content::WebContentsObserver implementations.
@@ -66,11 +66,12 @@ class SuspiciousSiteTrigger
     REPORT_STARTED,
   };
 
-  SuspiciousSiteTrigger(content::WebContents* web_contents,
-                        TriggerManager* trigger_manager,
-                        PrefService* prefs,
-                        net::URLRequestContextGetter* request_context,
-                        history::HistoryService* history_service);
+  SuspiciousSiteTrigger(
+      content::WebContents* web_contents,
+      TriggerManager* trigger_manager,
+      PrefService* prefs,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      history::HistoryService* history_service);
 
   // Tries to start a report. Returns whether a report started successfully.
   // If a report is started, a delayed callback will also begin to notify
@@ -102,7 +103,7 @@ class SuspiciousSiteTrigger
   TriggerManager* trigger_manager_;
 
   PrefService* prefs_;
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   history::HistoryService* history_service_;
 
   // Task runner for posting delayed tasks. Normally set to the runner for the

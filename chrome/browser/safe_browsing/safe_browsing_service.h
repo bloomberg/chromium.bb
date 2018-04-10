@@ -151,6 +151,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   scoped_refptr<net::URLRequestContextGetter> url_request_context();
 
   // NetworkContext and URLLoaderFactory used for safe browsing requests.
+  // Called on UI thread.
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
@@ -170,6 +171,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   SafeBrowsingProtocolManager* protocol_manager() const;
 
+  // Called on UI thread.
   SafeBrowsingPingManager* ping_manager() const;
 
   // This may be NULL if v4 is not enabled by experiment.
@@ -283,8 +285,6 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // starts or stops the service accordingly.
   void RefreshState();
 
-  void OnSendSerializedDownloadReport(const std::string& report);
-
   // Process the observed resource requests on the UI thread.
   void ProcessResourceRequest(const ResourceRequestInfo& request);
 
@@ -307,7 +307,7 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   std::unique_ptr<SafeBrowsingProtocolManager> protocol_manager_;
 #endif
 
-  // Provides phishing and malware statistics. Accessed on IO thread.
+  // Provides phishing and malware statistics. Accessed on UI thread.
   std::unique_ptr<SafeBrowsingPingManager> ping_manager_;
 
   // Whether SafeBrowsing Extended Reporting is enabled by the current set of

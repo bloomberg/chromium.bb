@@ -10,9 +10,9 @@
 class Profile;
 class SkBitmap;
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 
@@ -25,7 +25,7 @@ class SafeBrowsingPingManager : public BasePingManager {
 
   // Create an instance of the safe browsing ping manager.
   static std::unique_ptr<SafeBrowsingPingManager> Create(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config);
 
   // Report notification content image to SafeBrowsing CSD server if necessary.
@@ -41,9 +41,9 @@ class SafeBrowsingPingManager : public BasePingManager {
                            UMAOnFailure);
 
   // Constructs a SafeBrowsingPingManager that issues network requests
-  // using |request_context_getter|.
+  // using |url_loader_factory|.
   SafeBrowsingPingManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config);
 
   // Sends reports of notification content images.

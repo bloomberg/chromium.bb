@@ -16,6 +16,7 @@ class PrefService;
 
 namespace safe_browsing {
 class BasePingManager;
+class SafeBrowsingNetworkContext;
 class SafeBrowsingURLRequestContextGetter;
 }  // namespace
 
@@ -65,6 +66,10 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   // |url_request_context_|. Accessed on UI thread.
   scoped_refptr<safe_browsing::SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
+
+  // A wrapper around |url_request_context_getter_| to allow usage of
+  // SimpleURLLoader for safe browsing requests.
+  std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
 
   // non-owning
   PrefService* pref_service_;

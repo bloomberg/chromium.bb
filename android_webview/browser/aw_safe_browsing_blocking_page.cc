@@ -19,6 +19,7 @@
 #include "components/security_interstitials/core/safe_browsing_quiet_error_ui.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 
 using content::InterstitialPage;
@@ -59,6 +60,9 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
       ShouldReportThreatDetails(unsafe_resources[0].threat_type)) {
     AwBrowserContext* aw_browser_context =
         AwBrowserContext::FromWebContents(web_contents);
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+        content::BrowserContext::GetDefaultStoragePartition(aw_browser_context)
+            ->GetURLLoaderFactoryForBrowserProcess();
     // TODO(timvolodine): create a proper history service; currently the
     // HistoryServiceFactory lives in the chrome/ layer and relies on Profile
     // which we don't have in Android WebView (crbug.com/731744).
@@ -66,8 +70,7 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
         aw_browser_context->GetSafeBrowsingTriggerManager()
             ->StartCollectingThreatDetails(
                 safe_browsing::TriggerType::SECURITY_INTERSTITIAL, web_contents,
-                unsafe_resources[0],
-                aw_browser_context->GetAwURLRequestContext(),
+                unsafe_resources[0], url_loader_factory,
                 /*history_service*/ nullptr,
                 sb_error_ui()->get_error_display_options());
   }

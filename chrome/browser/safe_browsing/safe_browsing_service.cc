@@ -236,6 +236,8 @@ network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext() {
 scoped_refptr<network::SharedURLLoaderFactory>
 SafeBrowsingService::GetURLLoaderFactory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!network_context_)
+    return nullptr;
   return network_context_->GetURLLoaderFactory();
 }
 
@@ -271,7 +273,7 @@ SafeBrowsingProtocolManager* SafeBrowsingService::protocol_manager() const {
 }
 
 SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return ping_manager_.get();
 }
 
@@ -434,10 +436,6 @@ void SafeBrowsingService::StartOnIOThread(
     }
   }
 #endif
-
-  DCHECK(!ping_manager_);
-  ping_manager_ = SafeBrowsingPingManager::Create(
-      url_request_context_getter, config);
 }
 
 void SafeBrowsingService::StopOnIOThread(bool shutdown) {
@@ -461,12 +459,16 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
     // destroyed, the former must be stopped.
     protocol_manager_.reset();
 #endif
-    ping_manager_.reset();
   }
 }
 
 void SafeBrowsingService::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!ping_manager_) {
+    ping_manager_ = SafeBrowsingPingManager::Create(GetURLLoaderFactory(),
+                                                    GetProtocolConfig());
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -475,6 +477,7 @@ void SafeBrowsingService::Start() {
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {
+  ping_manager_.reset();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));
@@ -580,15 +583,6 @@ void SafeBrowsingService::RefreshState() {
 void SafeBrowsingService::SendSerializedDownloadReport(
     const std::string& report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&SafeBrowsingService::OnSendSerializedDownloadReport, this,
-                     report));
-}
-
-void SafeBrowsingService::OnSendSerializedDownloadReport(
-    const std::string& report) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (ping_manager())
     ping_manager()->ReportThreatDetails(report);
 }

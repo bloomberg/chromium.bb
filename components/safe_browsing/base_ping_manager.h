@@ -18,26 +18,26 @@
 #include "components/safe_browsing/db/hit_report.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/permission_type.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
 
 namespace safe_browsing {
 
-class BasePingManager : public net::URLFetcherDelegate {
+class BasePingManager {
  public:
-  ~BasePingManager() override;
+  virtual ~BasePingManager();
 
   // Create an instance of the safe browsing ping manager.
   static std::unique_ptr<BasePingManager> Create(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config);
 
-  // net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(network::SimpleURLLoader* source,
+                           std::unique_ptr<std::string> response_body);
 
   // Report to Google when a SafeBrowsing warning is shown to the user.
   // |hit_report.threat_type| should be one of the types known by
@@ -51,9 +51,10 @@ class BasePingManager : public net::URLFetcherDelegate {
  protected:
   friend class BasePingManagerTest;
   // Constructs a BasePingManager that issues network requests
-  // using |request_context_getter|.
-  BasePingManager(net::URLRequestContextGetter* request_context_getter,
-                  const SafeBrowsingProtocolConfig& config);
+  // using |url_loader_factory|.
+  BasePingManager(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const SafeBrowsingProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestSafeBrowsingHitUrl);
@@ -61,7 +62,7 @@ class BasePingManager : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestReportThreatDetails);
   FRIEND_TEST_ALL_PREFIXES(BasePingManagerTest, TestReportSafeBrowsingHit);
 
-  typedef std::set<std::unique_ptr<net::URLFetcher>> Reports;
+  typedef std::set<std::unique_ptr<network::SimpleURLLoader>> Reports;
 
   // Generates URL for reporting safe browsing hits.
   GURL SafeBrowsingHitUrl(const safe_browsing::HitReport& hit_report) const;
@@ -75,8 +76,8 @@ class BasePingManager : public net::URLFetcherDelegate {
   // The safe browsing client name sent in each request.
   std::string client_name_;
 
-  // The context we use to issue network requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // The URLLoaderFactory we use to issue network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // URL prefix where browser reports hits to the safebrowsing list and
   // sends detaild threat reports for UMA users.

@@ -16,6 +16,7 @@
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace safe_browsing {
@@ -46,19 +47,20 @@ void TriggerCreator::MaybeCreateTriggersForWebContents(
   // new tabs.
   SBErrorOptions options = TriggerManager::GetSBErrorDisplayOptions(
       *profile->GetPrefs(), *web_contents);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess();
   if (trigger_manager->CanStartDataCollection(options,
                                               TriggerType::AD_SAMPLE)) {
     safe_browsing::AdSamplerTrigger::CreateForWebContents(
-        web_contents, trigger_manager, profile->GetPrefs(),
-        profile->GetRequestContext(),
+        web_contents, trigger_manager, profile->GetPrefs(), url_loader_factory,
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS));
   }
   if (trigger_manager->CanStartDataCollection(options,
                                               TriggerType::SUSPICIOUS_SITE)) {
     safe_browsing::SuspiciousSiteTrigger::CreateForWebContents(
-        web_contents, trigger_manager, profile->GetPrefs(),
-        profile->GetRequestContext(),
+        web_contents, trigger_manager, profile->GetPrefs(), url_loader_factory,
         HistoryServiceFactory::GetForProfile(
             profile, ServiceAccessType::EXPLICIT_ACCESS));
   }

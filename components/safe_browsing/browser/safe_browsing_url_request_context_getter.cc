@@ -116,6 +116,15 @@ void SafeBrowsingURLRequestContextGetter::ServiceShuttingDown() {
 void SafeBrowsingURLRequestContextGetter::DisableQuicOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // |http_network_session_| is only initialized once GetURLRequestContext() is
+  // (lazily) called. With most consumers shifting to use
+  // SafeBrowsingNetworkContext instead of this class directly, now on startup
+  // GetURLRequestContext() might not have been called yet. So expliclity call
+  // it to make sure http_network_session_ is initialized. Don't call it though
+  // if shutdown has already started.
+  if (!http_network_session_ && !shut_down_)
+    GetURLRequestContext();
+
   if (http_network_session_)
     http_network_session_->DisableQuic();
 }

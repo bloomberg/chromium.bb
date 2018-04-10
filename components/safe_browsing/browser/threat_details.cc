@@ -29,7 +29,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 using content::BrowserThread;
@@ -270,12 +270,12 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       BaseUIManager* ui_manager,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
-                             request_context_getter, history_service,
+                             url_loader_factory, history_service,
                              trim_to_ad_tags, done_callback);
   }
 
@@ -296,7 +296,7 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
     BaseUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResource& resource,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service,
     bool trim_to_ad_tags,
     ThreatDetailsDoneCallback done_callback) {
@@ -305,7 +305,7 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
   if (!factory_)
     factory_ = g_threat_details_factory_impl.Pointer();
   return factory_->CreateThreatDetails(ui_manager, web_contents, resource,
-                                       request_context_getter, history_service,
+                                       url_loader_factory, history_service,
                                        trim_to_ad_tags, done_callback);
 }
 
@@ -314,12 +314,12 @@ ThreatDetails::ThreatDetails(
     BaseUIManager* ui_manager,
     content::WebContents* web_contents,
     const UnsafeResource& resource,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service,
     bool trim_to_ad_tags,
     ThreatDetailsDoneCallback done_callback)
     : content::WebContentsObserver(web_contents),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(url_loader_factory),
       ui_manager_(ui_manager),
       resource_(resource),
       cache_result_(false),
@@ -601,20 +601,15 @@ void ThreatDetails::OnReceivedThreatDOMDetails(
     }
   }
 
-  // Schedule this in IO thread, so it doesn't conflict with future users
-  // of our data structures (eg GetSerializedReport).
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&ThreatDetails::AddDOMDetails, this,
-                     sender_frame_tree_node_id, std::move(params),
-                     child_frame_tree_map));
+  AddDOMDetails(sender_frame_tree_node_id, std::move(params),
+                child_frame_tree_map);
 }
 
 void ThreatDetails::AddDOMDetails(
     const int frame_tree_node_id,
     std::vector<mojom::ThreatDOMDetailsNodePtr> params,
     const KeyToFrameTreeIdMap& child_frame_tree_map) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DVLOG(1) << "Nodes from the DOM: " << params.size();
 
   // If we have already started getting redirects from history service,
@@ -659,7 +654,7 @@ void ThreatDetails::AddDOMDetails(
 // OnReceivedThreatDOMDetails in most cases. If not, we don't include
 // the DOM data in our report.
 void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   all_done_expected_ = true;
 
@@ -696,7 +691,7 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
 }
 
 void ThreatDetails::OnRedirectionCollectionReady() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::vector<RedirectChain>& redirects =
       redirects_collector_->GetCollectedUrls();
 
@@ -705,12 +700,12 @@ void ThreatDetails::OnRedirectionCollectionReady() {
 
   // Call the cache collector
   cache_collector_->StartCacheCollection(
-      request_context_getter_.get(), &resources_, &cache_result_,
+      url_loader_factory_, &resources_, &cache_result_,
       base::Bind(&ThreatDetails::OnCacheCollectionReady, this));
 }
 
 void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (size_t i = 0; i < urls.size() - 1; ++i) {
     AddUrl(urls[i], urls[i + 1], std::string(), nullptr);
   }
@@ -773,6 +768,7 @@ void ThreatDetails::OnCacheCollectionReady() {
       base::BindOnce(&WebUIInfoSingleton::AddToReportsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(report_)));
+
   ui_manager_->SendSerializedThreatDetails(serialized);
 
   AllDone();
