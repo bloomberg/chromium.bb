@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "testing/gmock/include/gmock/gmock.h"

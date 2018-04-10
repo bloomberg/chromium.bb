@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"

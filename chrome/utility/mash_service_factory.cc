@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/window_manager_service.h"
 #include "base/bind.h"
+#include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/services/font/font_service_app.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"

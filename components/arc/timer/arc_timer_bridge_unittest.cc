@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/scoped_file.h"
+#include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/run_loop.h"
