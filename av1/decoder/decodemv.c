@@ -624,7 +624,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
       !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     const TxSetType tx_set_type =
-        get_ext_tx_set_type(tx_size, inter_block, cm->reduced_tx_set_used);
+        av1_get_ext_tx_set_type(tx_size, inter_block, cm->reduced_tx_set_used);
     const int eset =
         get_ext_tx_set(tx_size, inter_block, cm->reduced_tx_set_used);
     // eset == 0 should correspond to a set with only DCT_DCT and

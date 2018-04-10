@@ -326,7 +326,7 @@ static void init_txfm_param(const MACROBLOCKD *xd, int plane, TX_SIZE tx_size,
   txfm_param->lossless = xd->lossless[xd->mi[0]->segment_id];
   txfm_param->bd = xd->bd;
   txfm_param->is_hbd = get_bitdepth_data_path_index(xd);
-  txfm_param->tx_set_type = get_ext_tx_set_type(
+  txfm_param->tx_set_type = av1_get_ext_tx_set_type(
       txfm_param->tx_size, is_inter_block(xd->mi[0]), reduced_tx_set);
 }
 

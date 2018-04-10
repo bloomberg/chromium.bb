@@ -4604,7 +4604,7 @@ void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int eset = get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
     if (eset > 0) {
       const TxSetType tx_set_type =
-          get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
+          av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
       if (is_inter) {
         if (allow_update_cdf) {
           update_cdf(fc->inter_ext_tx_cdf[eset][txsize_sqr_map[tx_size]],

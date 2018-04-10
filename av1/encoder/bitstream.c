@@ -803,7 +803,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       !mbmi->skip &&
       !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     const TxSetType tx_set_type =
-        get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
+        av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
     const int eset = get_ext_tx_set(tx_size, is_inter, cm->reduced_tx_set_used);
     // eset == 0 should correspond to a set with only DCT_DCT and there
     // is no need to send the tx_type

@@ -646,7 +646,7 @@ static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
 
 // Number of transform types in each set type
 static const int av1_num_ext_tx_set[EXT_TX_SET_TYPES] = {
-  1, 2, 5, 7, 7, 10, 12, 16, 16,
+  1, 2, 5, 7, 12, 16,
 };
 
 static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
@@ -654,23 +654,19 @@ static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
   { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
   { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
   { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
-  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
 };
 
-static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
-                                            int use_reduced_set) {
+static INLINE TxSetType av1_get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
+                                                int use_reduced_set) {
   const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
-  const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
-
   if (tx_size_sqr_up > TX_32X32) return EXT_TX_SET_DCTONLY;
   if (tx_size_sqr_up == TX_32X32)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DCTONLY;
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
+  const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
   if (is_inter) {
     return (tx_size_sqr == TX_16X16 ? EXT_TX_SET_DTT9_IDTX_1DDCT
                                     : EXT_TX_SET_ALL16);
@@ -683,21 +679,22 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, int is_inter,
 // Maps tx set types to the indices.
 static const int ext_tx_set_index[2][EXT_TX_SET_TYPES] = {
   { // Intra
-    0, -1, 2, -1, 1, -1, -1, -1, -16 },
+    0, -1, 2, 1, -1, -1 },
   { // Inter
-    0, 3, -1, -1, -1, -1, 2, -1, 1 },
+    0, 3, -1, -1, 2, 1 },
 };
 
 static INLINE int get_ext_tx_set(TX_SIZE tx_size, int is_inter,
                                  int use_reduced_set) {
   const TxSetType set_type =
-      get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
+      av1_get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
   return ext_tx_set_index[is_inter][set_type];
 }
 
 static INLINE int get_ext_tx_types(TX_SIZE tx_size, int is_inter,
                                    int use_reduced_set) {
-  const int set_type = get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
+  const int set_type =
+      av1_get_ext_tx_set_type(tx_size, is_inter, use_reduced_set);
   return av1_num_ext_tx_set[set_type];
 }
 
@@ -824,7 +821,7 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const struct macroblockd_plane *const pd = &xd->plane[plane_type];
   const TxSetType tx_set_type =
-      get_ext_tx_set_type(tx_size, is_inter_block(mbmi), reduced_tx_set);
+      av1_get_ext_tx_set_type(tx_size, is_inter_block(mbmi), reduced_tx_set);
 
   TX_TYPE tx_type;
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_up_map[tx_size] > TX_32X32) {
