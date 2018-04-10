@@ -422,7 +422,7 @@ bool IsTopLevelNavigation(WebFrame* frame) {
 WebURLRequest CreateURLRequestForNavigation(
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    std::unique_ptr<NavigationResponseOverrideParameters> response_override,
+    std::unique_ptr<StreamOverrideParameters> stream_override,
     bool is_view_source_mode_enabled,
     bool is_same_document_navigation) {
   // Use the original navigation url to construct the WebURLRequest. The
@@ -462,7 +462,7 @@ WebURLRequest CreateURLRequestForNavigation(
       static_cast<WebURLRequest::PreviewsState>(common_params.previews_state));
 
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_navigation_response_override(std::move(response_override));
+  extra_data->set_stream_override(std::move(stream_override));
   extra_data->set_navigation_initiated_by_renderer(
       request_params.nav_entry_id == 0);
   request.SetExtraData(std::move(extra_data));
@@ -3214,10 +3214,10 @@ void RenderFrameImpl::CommitNavigation(
 
   // Continue the navigation.
   // TODO(arthursonzogni): Pass the data needed to continue the navigation to
-  // this function instead of storing it in the
-  // NavigationResponseOverrideParameters. The architecture of committing the
-  // navigation in the renderer process should be simplified and avoid going
-  // through the ResourceFetcher for the main resource.
+  // this function instead of storing it in the StreamOverrideParameters.
+  // The architecture of committing the navigation in the renderer process
+  // should be simplified and avoid going through the ResourceFetcher for the
+  // main resource.
   if (continue_navigation)
     std::move(continue_navigation).Run();
 }
@@ -3262,10 +3262,11 @@ void RenderFrameImpl::CommitFailedNavigation(
       has_stale_copy_in_cache ? WebURLError::HasCopyInCache::kTrue
                               : WebURLError::HasCopyInCache::kFalse,
       WebURLError::IsWebSecurityViolation::kFalse, common_params.url);
-  WebURLRequest failed_request = CreateURLRequestForNavigation(
-      common_params, request_params,
-      /*response_override=*/nullptr, frame_->IsViewSourceModeEnabled(),
-      false);  // is_same_document_navigation
+  WebURLRequest failed_request =
+      CreateURLRequestForNavigation(common_params, request_params,
+                                    std::unique_ptr<StreamOverrideParameters>(),
+                                    frame_->IsViewSourceModeEnabled(),
+                                    false);  // is_same_document_navigation
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params.url)) {
     // The browser expects this frame to be loading an error page. Inform it
@@ -4852,7 +4853,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
   // There may also be a stream url associated with the request.
   WebString custom_user_agent;
   WebString requested_with;
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override;
+  std::unique_ptr<StreamOverrideParameters> stream_override;
   if (request.GetExtraData()) {
     RequestExtraData* old_extra_data =
         static_cast<RequestExtraData*>(request.GetExtraData());
@@ -4872,8 +4873,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       else
         request.SetHTTPHeaderField("X-Requested-With", requested_with);
     }
-    response_override =
-        old_extra_data->TakeNavigationResponseOverrideOwnership();
+    stream_override = old_extra_data->TakeStreamOverrideOwnership();
   }
 
   // Set an empty HTTP origin header for non GET methods if none is currently
@@ -4902,7 +4902,7 @@ void RenderFrameImpl::WillSendRequest(blink::WebURLRequest& request) {
       navigation_state->common_params().allow_download);
   extra_data->set_transition_type(transition_type);
   extra_data->set_should_replace_current_entry(should_replace_current_entry);
-  extra_data->set_navigation_response_override(std::move(response_override));
+  extra_data->set_stream_override(std::move(stream_override));
   bool is_for_no_state_prefetch =
       GetContentClient()->renderer()->IsPrefetchOnly(this, request);
   extra_data->set_is_for_no_state_prefetch(is_for_no_state_prefetch);
@@ -6645,20 +6645,20 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
     const GURL& body_url) {
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override(
-      new NavigationResponseOverrideParameters());
-  response_override->stream_url = body_url;
-  response_override->url_loader_client_endpoints =
+  std::unique_ptr<StreamOverrideParameters> stream_override(
+      new StreamOverrideParameters());
+  stream_override->stream_url = body_url;
+  stream_override->url_loader_client_endpoints =
       std::move(url_loader_client_endpoints);
-  response_override->response = head;
-  response_override->redirects = request_params.redirects;
-  response_override->redirect_responses = request_params.redirect_response;
-  response_override->redirect_infos = request_params.redirect_infos;
+  stream_override->response = head;
+  stream_override->redirects = request_params.redirects;
+  stream_override->redirect_responses = request_params.redirect_response;
+  stream_override->redirect_infos = request_params.redirect_infos;
 
   // Used to notify the browser that it can release its |stream_handle_| when
-  // the |response_override| object isn't used anymore.
+  // the |stream_override| object isn't used anymore.
   // TODO(clamy): Remove this when we switch to Mojo streams.
-  response_override->on_delete = base::BindOnce(
+  stream_override->on_delete = base::BindOnce(
       [](base::WeakPtr<RenderFrameImpl> weak_self, const GURL& url) {
         if (RenderFrameImpl* self = weak_self.get()) {
           self->Send(
@@ -6668,7 +6668,7 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
       weak_factory_.GetWeakPtr());
 
   WebURLRequest request = CreateURLRequestForNavigation(
-      common_params, request_params, std::move(response_override),
+      common_params, request_params, std::move(stream_override),
       frame_->IsViewSourceModeEnabled(), false /* is_same_document */);
   request.SetFrameType(IsTopLevelNavigation(frame_)
                            ? network::mojom::RequestContextFrameType::kTopLevel

@@ -52,7 +52,6 @@ class URLLoaderFactory;
 }
 
 namespace content {
-struct NavigationResponseOverrideParameters;
 class RequestPeer;
 class ResourceDispatcherDelegate;
 struct SyncLoadResponse;
@@ -123,8 +122,7 @@ class CONTENT_EXPORT ResourceDispatcher {
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      std::unique_ptr<NavigationResponseOverrideParameters>
-          response_override_params,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::OnceClosure* continue_navigation_function);
 
   network::mojom::DownloadedTempFilePtr TakeDownloadedTempFile(int request_id);
@@ -181,9 +179,7 @@ class CONTENT_EXPORT ResourceDispatcher {
                        const GURL& request_url,
                        const std::string& method,
                        const GURL& referrer,
-                       bool download_to_file,
-                       std::unique_ptr<NavigationResponseOverrideParameters>
-                           response_override_params);
+                       bool download_to_file);
 
     ~PendingRequestInfo();
 
@@ -209,9 +205,6 @@ class CONTENT_EXPORT ResourceDispatcher {
     bool network_accessed = false;
     std::string mime_type;
     net::RequestPriority priority = net::RequestPriority::DEFAULT_PRIORITY;
-    std::unique_ptr<NavigationResponseOverrideParameters>
-        navigation_response_override;
-    bool should_follow_redirect = true;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;
@@ -251,7 +244,9 @@ class CONTENT_EXPORT ResourceDispatcher {
       const PendingRequestInfo& request_info,
       const base::TimeTicks& browser_completion_time) const;
 
-  void ContinueForNavigation(int request_id);
+  void ContinueForNavigation(
+      int request_id,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints);
 
   // All pending requests issued to the host
   PendingRequestMap pending_requests_;

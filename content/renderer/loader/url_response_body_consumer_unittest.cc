@@ -13,7 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/renderer/request_peer.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/base/request_priority.h"
@@ -162,7 +161,7 @@ class URLResponseBodyConsumerTest : public ::testing::Test {
         std::make_unique<TestRequestPeer>(context, message_loop_.task_runner()),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(&factory_),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        nullptr /* navigation_response_override_params */,
+        network::mojom::URLLoaderClientEndpointsPtr(),
         nullptr /* continue_navigation_function */);
   }
 

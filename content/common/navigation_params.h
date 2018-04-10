@@ -25,7 +25,6 @@
 #include "content/public/common/request_context_type.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "third_party/blink/public/platform/web_mixed_content_context_type.h"
 #include "ui/base/page_transition_types.h"
@@ -212,7 +211,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
   std::vector<GURL> redirects;
 
   // The ResourceResponseInfos received during redirects.
-  std::vector<network::ResourceResponseHead> redirect_response;
+  std::vector<network::ResourceResponseInfo> redirect_response;
 
   // PlzNavigate
   // The RedirectInfos received during redirects.

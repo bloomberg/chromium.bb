@@ -5,15 +5,22 @@
 #ifndef CONTENT_RENDERER_LOADER_WEB_URL_LOADER_IMPL_H_
 #define CONTENT_RENDERER_LOADER_WEB_URL_LOADER_IMPL_H_
 
+#include <vector>
+
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "url/gurl.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,6 +33,24 @@ struct ResourceResponseInfo;
 namespace content {
 
 class ResourceDispatcher;
+
+// PlzNavigate: Used to override parameters of the navigation request.
+struct CONTENT_EXPORT StreamOverrideParameters {
+ public:
+  StreamOverrideParameters();
+  ~StreamOverrideParameters();
+
+  GURL stream_url;
+  network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
+  network::ResourceResponseHead response;
+  std::vector<GURL> redirects;
+  std::vector<network::ResourceResponseInfo> redirect_responses;
+  std::vector<net::RedirectInfo> redirect_infos;
+
+  // Called when this struct is deleted. Used to notify the browser that it can
+  // release its associated StreamHandle.
+  base::OnceCallback<void(const GURL&)> on_delete;
+};
 
 // Default implementation of WebURLLoaderFactory.
 class CONTENT_EXPORT WebURLLoaderFactoryImpl
