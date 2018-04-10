@@ -290,7 +290,13 @@ void RecordTLSFeatureExtensionWithPrivateRoot(
 // This also accounts for situations in which a new CA is introduced, and
 // has been cross-signed by an existing CA. Assessing impact should use the
 // most-specific trust anchor, when possible.
-void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes) {
+//
+// This also histograms for divergence between the root store and
+// |spki_hashes| - that is, situations in which the OS methods of detecting
+// a known root flag a certificate as known, but its hash is not known as part
+// of the built-in list.
+void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes,
+                                bool is_issued_by_known_root) {
   int32_t id = 0;
   for (const auto& hash : spki_hashes) {
     id = GetNetTrustAnchorHistogramIdForSPKI(hash);
@@ -298,6 +304,14 @@ void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes) {
       break;
   }
   base::UmaHistogramSparse("Net.Certificate.TrustAnchor.Verify", id);
+
+  // Record when a known trust anchor is not found within the chain, but the
+  // certificate is flagged as being from a known root (meaning a fallback to
+  // OS-based methods of determination).
+  if (id == 0) {
+    UMA_HISTOGRAM_BOOLEAN("Net.Certificate.TrustAnchor.VerifyOutOfDate",
+                          is_issued_by_known_root);
+  }
 }
 
 // Comparison functor used for binary searching whether a given HashValue,
@@ -632,8 +646,10 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     RecordTLSFeatureExtensionWithPrivateRoot(cert, verify_result->ocsp_result);
 
   // Record a histogram for per-verification usage of root certs.
-  if (rv == OK)
-    RecordTrustAnchorHistogram(verify_result->public_key_hashes);
+  if (rv == OK) {
+    RecordTrustAnchorHistogram(verify_result->public_key_hashes,
+                               verify_result->is_issued_by_known_root);
+  }
 
   return rv;
 }
