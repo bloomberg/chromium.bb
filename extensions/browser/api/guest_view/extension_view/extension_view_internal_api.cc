@@ -22,14 +22,13 @@ namespace extensionview = extensions::api::extension_view_internal;
 
 namespace extensions {
 
-bool ExtensionViewInternalExtensionFunction::RunAsync() {
+bool ExtensionViewInternalExtensionFunction::PreRunValidation(
+    std::string* error) {
   int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
-  ExtensionViewGuest* guest = ExtensionViewGuest::From(
-      render_frame_host()->GetProcess()->GetID(), instance_id);
-  if (!guest)
-    return false;
-  return RunAsyncSafe(guest);
+  EXTENSION_FUNCTION_PRERUN_VALIDATE(args_->GetInteger(0, &instance_id));
+  guest_ = ExtensionViewGuest::From(render_frame_host()->GetProcess()->GetID(),
+                                    instance_id);
+  return guest_ != nullptr;
 }
 
 // Checks the validity of |src|, including that it follows the chrome extension
@@ -49,8 +48,7 @@ bool IsSrcValid(const GURL& src) {
   return true;
 }
 
-bool ExtensionViewInternalLoadSrcFunction::RunAsyncSafe(
-    ExtensionViewGuest* guest) {
+ExtensionFunction::ResponseAction ExtensionViewInternalLoadSrcFunction::Run() {
   std::unique_ptr<extensionview::LoadSrc::Params> params(
       extensionview::LoadSrc::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -59,16 +57,17 @@ bool ExtensionViewInternalLoadSrcFunction::RunAsyncSafe(
   bool has_load_succeeded = false;
   bool is_src_valid = IsSrcValid(url);
 
-  if (is_src_valid)
-    has_load_succeeded = guest->NavigateGuest(src, true /* force_navigation */);
+  if (is_src_valid) {
+    has_load_succeeded =
+        guest_->NavigateGuest(src, true /* force_navigation */);
+  }
 
   // Return whether load is successful.
-  SetResult(std::make_unique<base::Value>(has_load_succeeded));
-  SendResponse(true);
-  return true;
+  return RespondNow(
+      OneArgument(std::make_unique<base::Value>(has_load_succeeded)));
 }
 
-bool ExtensionViewInternalParseSrcFunction::RunAsync() {
+ExtensionFunction::ResponseAction ExtensionViewInternalParseSrcFunction::Run() {
   std::unique_ptr<extensionview::ParseSrc::Params> params(
       extensionview::ParseSrc::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -77,12 +76,10 @@ bool ExtensionViewInternalParseSrcFunction::RunAsync() {
 
   // Return whether the src is valid and the current extension ID to
   // the callback.
-  std::unique_ptr<base::ListValue> result_list(new base::ListValue());
+  auto result_list = std::make_unique<base::ListValue>();
   result_list->AppendBoolean(is_src_valid);
   result_list->AppendString(url.host());
-  SetResultList(std::move(result_list));
-  SendResponse(true);
-  return true;
+  return RespondNow(ArgumentList(std::move(result_list)));
 }
 
 }  // namespace extensions
