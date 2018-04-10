@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "media/base/media_switches.h"
 

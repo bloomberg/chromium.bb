@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"

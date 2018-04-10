@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
 

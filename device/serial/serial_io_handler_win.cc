@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "device/base/device_info_query_win.h"

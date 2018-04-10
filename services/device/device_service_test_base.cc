@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "device/geolocation/public/cpp/location_provider.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/url_request/url_request_test_util.h"

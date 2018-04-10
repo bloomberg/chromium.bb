@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

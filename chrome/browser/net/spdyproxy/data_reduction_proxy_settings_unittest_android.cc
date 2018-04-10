@@ -16,6 +16,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/base64.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
