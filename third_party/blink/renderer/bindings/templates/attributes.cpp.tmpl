@@ -107,6 +107,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   // Perform a security check for the returned object.
   {{define_exception_state}}
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{attribute.cpp_value}}, exceptionState)) {
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      WebFeature::kCrossOrigin{{interface_name}}{{attribute.name|blink_capitalize}});
     V8SetReturnValueNull(info);
     return;
   }

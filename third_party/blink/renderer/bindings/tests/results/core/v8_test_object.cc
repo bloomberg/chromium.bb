@@ -2179,6 +2179,8 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v
   // Perform a security check for the returned object.
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestObject", "checkSecurityForNodeReadonlyDocumentAttribute");
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), WTF::GetPtr(impl->checkSecurityForNodeReadonlyDocumentAttribute()), exceptionState)) {
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      WebFeature::kCrossOriginTestObjectCheckSecurityForNodeReadonlyDocumentAttribute);
     V8SetReturnValueNull(info);
     return;
   }
@@ -7943,6 +7945,8 @@ static void checkSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestObject", "checkSecurityForNodeVoidMethod");
   if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), impl->checkSecurityForNodeVoidMethod(), exceptionState)) {
+    UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
+                      WebFeature::kCrossOriginTestObjectCheckSecurityForNodeVoidMethod);
     V8SetReturnValueNull(info);
     return;
   }
