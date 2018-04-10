@@ -54,6 +54,16 @@ NSString* GetActiveTabId(WebStateList* webStateList) {
   return tabHelper->tab_id();
 }
 
+int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
+  for (int i = 0; i < webStateList->count(); i++) {
+    web::WebState* webState = webStateList->GetWebStateAt(i);
+    TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
+    if ([tabHelper->tab_id() isEqualToString:identifier])
+      return i;
+  }
+  return -1;
+}
+
 }  // namespace
 
 @interface TabGridMediator ()<CRWWebStateObserver, WebStateListObserving>
@@ -199,12 +209,16 @@ NSString* GetActiveTabId(WebStateList* webStateList) {
   self.webStateList->GetWebStateAt(index)->OpenURL(openParams);
 }
 
-- (void)selectItemAtIndex:(NSUInteger)index {
-  self.webStateList->ActivateWebStateAt(index);
+- (void)selectItemWithID:(NSString*)itemID {
+  int index = GetIndexOfTabWithId(self.webStateList, itemID);
+  if (index >= 0)
+    self.webStateList->ActivateWebStateAt(index);
 }
 
-- (void)closeItemAtIndex:(NSUInteger)index {
-  self.webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
+- (void)closeItemWithID:(NSString*)itemID {
+  int index = GetIndexOfTabWithId(self.webStateList, itemID);
+  if (index >= 0)
+    self.webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
 }
 
 - (void)closeAllItems {

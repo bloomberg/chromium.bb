@@ -38,12 +38,12 @@
   self.itemCount = count;
 }
 - (void)gridViewController:(GridViewController*)gridViewController
-      didSelectItemAtIndex:(NSUInteger)index {
+       didSelectItemWithID:(NSString*)itemID {
   // No-op for unittests. This is only called when a user taps on a cell, not
   // generically when selectedIndex is updated.
 }
 - (void)gridViewController:(GridViewController*)gridViewController
-       didCloseItemAtIndex:(NSUInteger)index {
+        didCloseItemWithID:(NSString*)itemID {
   // No-op for unittests. This is only called when a user taps to close a cell,
   // not generically when items are removed from the data source.
 }

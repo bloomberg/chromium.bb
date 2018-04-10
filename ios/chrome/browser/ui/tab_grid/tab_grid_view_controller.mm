@@ -715,21 +715,21 @@ UIAlertController* NotImplementedAlert() {
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
-      didSelectItemAtIndex:(NSUInteger)index {
+       didSelectItemWithID:(NSString*)itemID {
   if (gridViewController == self.regularTabsViewController) {
-    [self.regularTabsDelegate selectItemAtIndex:index];
+    [self.regularTabsDelegate selectItemWithID:itemID];
   } else if (gridViewController == self.incognitoTabsViewController) {
-    [self.incognitoTabsDelegate selectItemAtIndex:index];
+    [self.incognitoTabsDelegate selectItemWithID:itemID];
   }
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
-       didCloseItemAtIndex:(NSUInteger)index {
+        didCloseItemWithID:(NSString*)itemID {
   if (gridViewController == self.regularTabsViewController) {
-    [self.regularTabsDelegate closeItemAtIndex:index];
+    [self.regularTabsDelegate closeItemWithID:itemID];
   } else if (gridViewController == self.incognitoTabsViewController) {
-    [self.incognitoTabsDelegate closeItemAtIndex:index];
+    [self.incognitoTabsDelegate closeItemWithID:itemID];
   }
 }
 
