@@ -31,11 +31,9 @@ class MockGitCL(object):
         self.calls.append(['git', 'cl'] + args)
         return 'mock output'
 
-    def trigger_try_jobs(self, builders=None, master=None):
-        builders = builders or self._builders
-        if not master:
-            master = 'tryserver.blink'
-        command = ['try', '-m', master]
+    def trigger_try_jobs(self, builders, bucket=None):
+        bucket = bucket or 'master.tryserver.blink'
+        command = ['try', '-B', bucket]
         for builder in sorted(builders):
             command.extend(['-b', builder])
         self.run(command)

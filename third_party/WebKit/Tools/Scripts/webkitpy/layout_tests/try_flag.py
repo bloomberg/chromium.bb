@@ -26,10 +26,10 @@ BUILDER_CONFIGS = {
     'mac_chromium_rel_ng': TestConfiguration('Mac', '', 'release'),
     'win7_chromium_rel_ng': TestConfiguration('Win', '', 'release')
 }
-BUILDER_MASTERS = {
-    'linux_chromium_rel_ng': 'tryserver.chromium.linux',
-    'mac_chromium_rel_ng': 'tryserver.chromium.mac',
-    'win7_chromium_rel_ng': 'tryserver.chromium.win'
+BUILDER_BUCKETS = {
+    'linux_chromium_rel_ng': 'master.tryserver.chromium.linux',
+    'mac_chromium_rel_ng': 'master.tryserver.chromium.mac',
+    'win7_chromium_rel_ng': 'master.tryserver.chromium.win'
 }
 FLAG_FILE = 'additional-driver-flag.setting'
 
@@ -82,9 +82,9 @@ class TryFlag(object):
             self._clear_expectations()
         self._git_cl.run(['upload', '--bypass-hooks', '-f',
                           '-m', 'Flag try job for %s.' % self._args.flag])
-        for builder in sorted(BUILDER_MASTERS.keys()):
-            master = BUILDER_MASTERS[builder]
-            self._git_cl.trigger_try_jobs([builder], master)
+        for builder in sorted(BUILDER_BUCKETS):
+            bucket = BUILDER_BUCKETS[builder]
+            self._git_cl.trigger_try_jobs([builder], bucket)
 
     def _create_expectation_line(self, result, test_configuration):
         test_name = result.test_name()

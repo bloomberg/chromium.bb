@@ -42,6 +42,8 @@ class BuilderListTest(unittest.TestCase):
             'Blink C (dbg)': {'port_name': 'port-c', 'specifiers': ['C', 'Release']},
             'Try A': {'port_name': 'port-a', 'specifiers': ['A', 'Release'], 'is_try_builder': True},
             'Try B': {'port_name': 'port-b', 'specifiers': ['B', 'Release'], 'is_try_builder': True},
+            'CQ Try A': {'bucket': 'bucket.a', 'port_name': 'port-a', 'specifiers': ['A', 'Release'], 'is_try_builder': True},
+            'CQ Try B': {'bucket': 'bucket.b', 'port_name': 'port-b', 'specifiers': ['B', 'Release'], 'is_try_builder': True},
         })
 
     def test_constructor_validates_list(self):
@@ -52,7 +54,8 @@ class BuilderListTest(unittest.TestCase):
 
     def test_all_builder_names(self):
         builders = self.sample_builder_list()
-        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)', 'Try A', 'Try B'], builders.all_builder_names())
+        self.assertEqual(['Blink A', 'Blink B', 'Blink B (dbg)', 'Blink C (dbg)', 'CQ Try A', 'CQ Try B', 'Try A', 'Try B'],
+                         builders.all_builder_names())
 
     def test_all_continuous_builder_names(self):
         builders = self.sample_builder_list()
@@ -60,11 +63,19 @@ class BuilderListTest(unittest.TestCase):
 
     def test_all_try_builder_names(self):
         builders = self.sample_builder_list()
-        self.assertEqual(['Try A', 'Try B'], builders.all_try_builder_names())
+        self.assertEqual(['CQ Try A', 'CQ Try B', 'Try A', 'Try B'], builders.all_try_builder_names())
 
     def test_all_port_names(self):
         builders = self.sample_builder_list()
         self.assertEqual(['port-a', 'port-b', 'port-c'], builders.all_port_names())
+
+    def test_bucket_for_builder_default_bucket(self):
+        builders = self.sample_builder_list()
+        self.assertEqual('master.tryserver.blink', builders.bucket_for_builder('Try A'))
+
+    def test_bucket_for_builder_configured_bucket(self):
+        builders = self.sample_builder_list()
+        self.assertEqual('bucket.a', builders.bucket_for_builder('CQ Try A'))
 
     def test_port_name_for_builder_name(self):
         builders = self.sample_builder_list()
