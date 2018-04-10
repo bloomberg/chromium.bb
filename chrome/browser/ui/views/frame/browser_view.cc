@@ -69,6 +69,7 @@
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
@@ -88,7 +89,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
@@ -829,10 +829,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  // TODO(mgiuca): Use |button_provider_| instead of |toolbar_|, so this also
-  // works for hosted app windows. https://crbug.com/791399.
-  bool app_menu_showing = toolbar_->app_menu_button() &&
-                          toolbar_->app_menu_button()->IsMenuShowing();
+  const AppMenuButton* app_menu_button = button_provider_->GetAppMenuButton();
+  bool app_menu_showing = app_menu_button && app_menu_button->IsMenuShowing();
   GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble &&
                                                 !app_menu_showing);
 }
