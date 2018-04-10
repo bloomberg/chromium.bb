@@ -29,6 +29,10 @@ SdpMessage::SdpMessage(const std::string& sdp) {
 SdpMessage::~SdpMessage() = default;
 
 std::string SdpMessage::ToString() const {
+  return base::JoinString(sdp_lines_, "\r\n") + "\r\n";
+}
+
+std::string SdpMessage::NormalizedForSignature() const {
   return base::JoinString(sdp_lines_, "\n") + "\n";
 }
 

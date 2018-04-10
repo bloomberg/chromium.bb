@@ -29,8 +29,14 @@ class SdpMessage {
   bool has_video() const { return has_video_; }
 
   // Returns string representation of the SDP message. The result always has
-  // line-endings normalized to LF and empty lines removed.
+  // line-endings normalized to CR+LF and empty lines removed.
   std::string ToString() const;
+
+  // Returns string representation of the SDP message for the purpose of
+  // computing or verifying its signature, which is transmitted along with the
+  // SDP over signaling channel. This must be implemented in exactly the same
+  // way at each end of the connection.
+  std::string NormalizedForSignature() const;
 
   // Adds specified parameters for the |codec|. Returns false if the |codec| is
   // not listed anywhere in the SDP message.

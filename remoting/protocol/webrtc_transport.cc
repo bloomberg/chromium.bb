@@ -392,8 +392,8 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
         session_description->Attr(QName(std::string(), "signature"));
     std::string signature;
     if (!base::Base64Decode(signature_base64, &signature) ||
-        !handshake_hmac_.Verify(type + " " + sdp_message.ToString(),
-                                signature)) {
+        !handshake_hmac_.Verify(
+            type + " " + sdp_message.NormalizedForSignature(), signature)) {
       LOG(WARNING) << "Received session-description with invalid signature.";
       bool ignore_error = false;
 #if !defined(NDEBUG)
@@ -516,9 +516,9 @@ void WebrtcTransport::OnLocalSessionDescriptionCreated(
 
   std::string digest;
   digest.resize(handshake_hmac_.DigestLength());
-  CHECK(handshake_hmac_.Sign(description->type() + " " + description_sdp,
-                             reinterpret_cast<uint8_t*>(&(digest[0])),
-                             digest.size()));
+  CHECK(handshake_hmac_.Sign(
+      description->type() + " " + sdp_message.NormalizedForSignature(),
+      reinterpret_cast<uint8_t*>(&(digest[0])), digest.size()));
   std::string digest_base64;
   base::Base64Encode(digest, &digest_base64);
   offer_tag->SetAttr(QName(std::string(), "signature"), digest_base64);
