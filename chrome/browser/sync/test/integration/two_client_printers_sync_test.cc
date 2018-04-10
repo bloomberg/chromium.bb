@@ -22,6 +22,9 @@ using printers_helper::GetPrinterStore;
 using printers_helper::PrintersMatchChecker;
 using printers_helper::RemovePrinter;
 
+constexpr char kOverwrittenDescription[] = "I should not show up";
+constexpr char kLatestDescription[] = "YAY!  More recent changes win!";
+
 class TwoClientPrintersSyncTest : public SyncTest {
  public:
   TwoClientPrintersSyncTest() : SyncTest(TWO_CLIENT) {}
@@ -30,6 +33,8 @@ class TwoClientPrintersSyncTest : public SyncTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPrintersSyncTest);
 };
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, NoPrinters) {
   ASSERT_TRUE(SetupSync());
@@ -114,24 +119,25 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, ConflictResolution) {
   // Store 0 and 1 have 3 printers now.
   ASSERT_TRUE(PrintersMatchChecker().Wait());
 
-  std::string overwritten_message = "I should not show up";
   ASSERT_TRUE(
-      EditPrinterDescription(GetPrinterStore(1), 0, overwritten_message));
+      EditPrinterDescription(GetPrinterStore(1), 0, kOverwrittenDescription));
 
   // Wait for a non-zero period (200ms).
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
 
-  std::string valid_message = "YAY!  More recent changes win!";
-  ASSERT_TRUE(EditPrinterDescription(GetPrinterStore(0), 0, valid_message));
+  ASSERT_TRUE(
+      EditPrinterDescription(GetPrinterStore(0), 0, kLatestDescription));
 
-  // Run all pending tasks and wait until all clients have the same
-  // configuration.
-  content::RunAllTasksUntilIdle();
-  ASSERT_TRUE(PrintersMatchChecker().Wait());
-
-  // The more recent update should win.
-  EXPECT_EQ(valid_message,
-            GetPrinterStore(1)->GetConfiguredPrinters()[0].description());
+  // Run tasks until the most recent update has been applied to all stores.
+  AwaitMatchStatusChangeChecker wait_latest_description_propagated(
+      base::BindRepeating([]() {
+        return GetPrinterStore(0)->GetConfiguredPrinters()[0].description() ==
+                   kLatestDescription &&
+               GetPrinterStore(1)->GetConfiguredPrinters()[0].description() ==
+                   kLatestDescription;
+      }),
+      "Description not propagated");
+  ASSERT_TRUE(wait_latest_description_propagated.Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, SimpleMerge) {
@@ -152,5 +158,3 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, SimpleMerge) {
   EXPECT_EQ(4, GetPrinterCount(0));
   EXPECT_TRUE(AllProfilesContainSamePrinters());
 }
-
-}  // namespace
