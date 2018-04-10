@@ -12,15 +12,6 @@
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_BROWSER" file="common/shelf/window_switcher_icon_normal.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_LIST_INCOGNITO_BROWSER" file="common/shelf/window_switcher_icon_incognito.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
-
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED" file="cros/network/status_network_failed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR" file="cros/network/status_cellular_failed.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G" file="cros/network/notification_3g.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_DATASAVER" file="cros/network/notification_datasaver.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE" file="cros/network/notification_lte.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
 
@@ -28,9 +19,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT" file="common/window_header_shade_right_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP" file="common/window_header_shade_top_inactive.png" />
-
-      <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER" file="cros/avatar_holder.png" />
-      <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER_MASK" file="cros/avatar_holder_mask.png" />
 
       <!-- Crostini terminal images -->
       <structure type="chrome_scaled_image" name="IDR_LOGO_CROSTINI_TERMINAL" file="cros/crostini/logo_crostini_terminal.png" />

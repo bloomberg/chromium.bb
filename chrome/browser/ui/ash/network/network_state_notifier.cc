@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/network/network_state_notifier.h"
 
 #include "ash/public/cpp/vector_icons/vector_icons.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/strings/string16.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_state.h"
@@ -288,8 +288,8 @@ void NetworkStateNotifier::UpdateCellularActivating(
   const gfx::Image& icon =
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           cellular->network_technology() == shill::kNetworkTechnologyLte
-              ? IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_LTE
-              : IDR_AURA_UBER_TRAY_NETWORK_NOTIFICATION_3G);
+              ? IDR_NETWORK_ACTIVATED_LTE
+              : IDR_NETWORK_ACTIVATED_3G);
   SystemNotificationHelper::GetInstance()->Display(
       *message_center::Notification::CreateSystemNotification(
           kNetworkActivateNotificationId,
@@ -334,7 +334,7 @@ void NetworkStateNotifier::ShowMobileActivationErrorForGuid(
           l10n_util::GetStringFUTF16(IDS_NETWORK_ACTIVATION_NEEDS_CONNECTION,
                                      base::UTF8ToUTF16(cellular->name())),
           ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_AURA_UBER_TRAY_NETWORK_FAILED_CELLULAR),
+              IDR_NETWORK_FAILED_CELLULAR),
           kNotifierNetworkError,
           base::Bind(&NetworkStateNotifier::ShowNetworkSettings,
                      weak_ptr_factory_.GetWeakPtr(), cellular->guid())));

@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/ash/session_util.h"
 
 #include "ash/content/shell_content_state.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "ui/aura/window.h"

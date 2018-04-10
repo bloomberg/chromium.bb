@@ -36,7 +36,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/resources/grit/ash_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"

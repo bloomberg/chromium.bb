@@ -15,7 +15,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/pattern.h"
