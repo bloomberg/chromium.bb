@@ -60,6 +60,10 @@ interface BackgroundFetchSettledFetches
     method constructor
     method match
     method values
+interface BackgroundFetchUpdateEvent : BackgroundFetchSettledEvent
+    attribute @@toStringTag
+    method constructor
+    method updateUI
 interface BackgroundFetchedEvent : BackgroundFetchEvent
     attribute @@toStringTag
     getter fetches

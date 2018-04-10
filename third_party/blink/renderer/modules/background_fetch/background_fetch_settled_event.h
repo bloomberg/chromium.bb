@@ -16,8 +16,7 @@
 namespace blink {
 
 // Event for interacting with fetch requests that have completed.
-class MODULES_EXPORT BackgroundFetchSettledEvent final
-    : public BackgroundFetchEvent {
+class MODULES_EXPORT BackgroundFetchSettledEvent : public BackgroundFetchEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -34,11 +33,13 @@ class MODULES_EXPORT BackgroundFetchSettledEvent final
 
   void Trace(blink::Visitor*) override;
 
- private:
+ protected:
   BackgroundFetchSettledEvent(
       const AtomicString& type,
-      const BackgroundFetchSettledEventInit& initializer);
+      const BackgroundFetchSettledEventInit& initializer,
+      WaitUntilObserver* observer = nullptr);
 
+ private:
   Member<BackgroundFetchSettledFetches> fetches_;
 };
 
