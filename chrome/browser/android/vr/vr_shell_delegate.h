@@ -66,6 +66,10 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   device::VRDevice* GetDevice();
 
+  void SendRequestPresentReply(
+      bool success,
+      device::mojom::VRDisplayFrameTransportOptionsPtr);
+
   // device::GvrDelegateProvider implementation.
   void ExitWebVRPresent() override;
 
@@ -96,7 +100,17 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   unsigned int device_id_ = 0;
   VrShell* vr_shell_ = nullptr;
+
+  // Deferred callback stored for later use in cases where vr_shell
+  // wasn't ready yet. Used once SetDelegate is called.
   base::OnceCallback<void(bool)> on_present_result_callback_;
+
+  // Mojo callback waiting for request present response. This is temporarily
+  // stored here from OnPresentResult's outgoing ConnectPresentingService call
+  // until the reply arguments are received by SendRequestPresentReply.
+  device::mojom::VRDisplayHost::RequestPresentCallback
+      request_present_response_callback_;
+
   bool pending_successful_present_request_ = false;
   base::Optional<VrStartAction> pending_vr_start_action_;
   base::Optional<PresentationStartAction> possible_presentation_start_action_;

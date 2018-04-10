@@ -168,11 +168,11 @@ class VrShell : device::GvrGamepadDataProvider,
   void ContentSurfaceCreated(jobject surface, gl::SurfaceTexture* texture);
   void ContentOverlaySurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture);
-  void GvrDelegateReady(gvr::ViewerType viewer_type,
-                        device::mojom::VRDisplayFrameTransportOptionsPtr);
+  void GvrDelegateReady(gvr::ViewerType viewer_type);
+  void SendRequestPresentReply(
+      bool success,
+      device::mojom::VRDisplayFrameTransportOptionsPtr);
 
-  device::mojom::VRDisplayFrameTransportOptionsPtr
-  GetVRDisplayFrameTransportOptions();
   void DialogSurfaceCreated(jobject surface, gl::SurfaceTexture* texture);
 
   void BufferBoundsChanged(JNIEnv* env,
@@ -332,9 +332,6 @@ class VrShell : device::GvrGamepadDataProvider,
   device::CardboardGamepadDataFetcher* cardboard_gamepad_data_fetcher_ =
       nullptr;
   int64_t cardboard_gamepad_timer_ = 0;
-
-  // For GetVRDisplayFrameTransportOptions()
-  device::mojom::VRDisplayFrameTransportOptionsPtr frame_transport_options_;
 
   // Content id
   int content_id_ = 0;

@@ -698,18 +698,15 @@ void VrShell::DialogSurfaceCreated(jobject surface,
   Java_VrShellImpl_dialogSurfaceCreated(env, j_vr_shell_, ref);
 }
 
-void VrShell::GvrDelegateReady(
-    gvr::ViewerType viewer_type,
-    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
-  frame_transport_options_ = std::move(transport_options);
+void VrShell::GvrDelegateReady(gvr::ViewerType viewer_type) {
   delegate_provider_->SetDelegate(this, viewer_type);
 }
 
-device::mojom::VRDisplayFrameTransportOptionsPtr
-VrShell::GetVRDisplayFrameTransportOptions() {
-  // Caller takes ownership. Must return a copy to support having this called
-  // multiple times during the lifetime of this instance.
-  return frame_transport_options_.Clone();
+void VrShell::SendRequestPresentReply(
+    bool success,
+    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+  delegate_provider_->SendRequestPresentReply(success,
+                                              std::move(transport_options));
 }
 
 void VrShell::BufferBoundsChanged(JNIEnv* env,

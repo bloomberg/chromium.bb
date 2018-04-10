@@ -30,8 +30,9 @@ class GlBrowserInterface {
                                      gl::SurfaceTexture* texture) = 0;
   virtual void ContentOverlaySurfaceCreated(jobject surface,
                                             gl::SurfaceTexture* texture) = 0;
-  virtual void GvrDelegateReady(
-      gvr::ViewerType viewer_type,
+  virtual void GvrDelegateReady(gvr::ViewerType viewer_type) = 0;
+  virtual void SendRequestPresentReply(
+      bool success,
       device::mojom::VRDisplayFrameTransportOptionsPtr) = 0;
   virtual void DialogSurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture) = 0;
