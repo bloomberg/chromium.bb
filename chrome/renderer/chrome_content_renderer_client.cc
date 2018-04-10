@@ -351,7 +351,8 @@ void OnModuleEvent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient()
-    : main_entry_time_(base::TimeTicks::Now()) {
+    : main_entry_time_(base::TimeTicks::Now()),
+      main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
@@ -497,6 +498,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
         WebString::FromASCII(scheme));
   }
 
+  main_thread_profiler_->SetMainThreadTaskRunner(
+      base::ThreadTaskRunnerHandle::Get());
   ThreadProfiler::SetServiceManagerConnectorForChildProcess(
       thread->GetConnector());
 }
