@@ -20,6 +20,7 @@ enum class UiUnsupportedMode : int {
   kGenericUnsupportedFeature = 5,
   kNeedsKeyboardUpdate = 6,
   kSearchEnginePromo = 7,
+  kUnhandledConnectionInfo = 8,
   // This must be last.
   kCount,
 };
