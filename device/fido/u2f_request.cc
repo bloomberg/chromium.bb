@@ -176,6 +176,13 @@ void U2fRequest::OnDeviceVersionRequest(
   }
 }
 
+void U2fRequest::AbandonCurrentDeviceAndTransition() {
+  DCHECK_NE(nullptr, current_device_);
+  abandoned_devices_.emplace_back(std::exchange(current_device_, nullptr));
+  state_ = State::IDLE;
+  Transition();
+}
+
 void U2fRequest::DiscoveryStarted(FidoDiscovery* discovery, bool success) {
 #if DCHECK_IS_ON()
   if (success) {
@@ -188,6 +195,8 @@ void U2fRequest::DiscoveryStarted(FidoDiscovery* discovery, bool success) {
     if (current_device_)
       device_ids_known_to_request.insert(current_device_->GetId());
     for (const auto* device : devices_)
+      device_ids_known_to_request.insert(device->GetId());
+    for (const auto* device : abandoned_devices_)
       device_ids_known_to_request.insert(device->GetId());
 
     std::set<std::string> device_ids_from_newly_started_discovery;
@@ -234,6 +243,7 @@ void U2fRequest::DeviceRemoved(FidoDiscovery* discovery, FidoDevice* device) {
   // Remove the device if it exists in either device list
   devices_.remove_if(device_id_eq);
   attempted_devices_.remove_if(device_id_eq);
+  abandoned_devices_.remove_if(device_id_eq);
 }
 
 void U2fRequest::IterateDevice() {
