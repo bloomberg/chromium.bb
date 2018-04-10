@@ -90,20 +90,224 @@
                 android:strokeColor="#e8e9eb"
                 android:strokeLineCap="round"
                 android:strokeLineJoin="round"/>
+            <!-- White and yellow curves on the right side -->
+            <path
+                android:pathData="M265.72,-0.09 C265.72,-0.09 265.53,16.40 254.96,26.40 C244.98,35.85 228.04,35.54 228.04,35.54"
+                android:strokeWidth="5"
+                android:strokeColor="#f7bb2a"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"/>
+            <path
+                android:pathData="M191.22,68.79 C191.22,68.79 191.33,51.52 202.63,43.59 C213.88,35.69 228.04,35.54 228.04,35.54"
+                android:strokeWidth="5"
+                android:strokeColor="#e8e9eb"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"/>
+            <!-- Green circle -->
+            <path
+                android:fillColor="#34a751"
+                android:pathData="M283.21,45.08 C294.33,45.08 303.37,54.11 303.37,65.24 C303.37,76.37 294.33,85.41 283.21,85.41 C272.08,85.41 263.04,76.37 263.04,65.24 C263.04,54.11 272.08,45.08 283.21,45.08"/>
+            <!-- Sync arrows -->
+            <group
+                android:name="sync_arrows_rotation_group"
+                android:pivotX="283.21"
+                android:pivotY="65.24"
+                android:rotation="0">
+
+                <path
+                    android:pathData="M278.31,62.54 C276.19,66.89 279.26,70.97 283.11,70.84 M283.21,69.82 C283.21,69.82 283.21,67.42 283.21,67.42 C283.21,67.42 286.41,70.82 286.41,70.82 C286.41,70.82 283.21,74.02 283.21,74.02 C283.21,74.02 283.21,71.72 283.21,71.72 M288.11,67.94 C290.23,63.59 287.16,59.51 283.31,59.64 M283.21,60.66 C283.21,60.66 283.21,63.06 283.21,63.06 C283.21,63.06 280.01,59.66 280.01,59.66 C280.01,59.66 283.21,56.46 283.21,56.46 C283.21,56.46 283.21,58.76 283.21,58.76"
+                    android:strokeWidth="0.6"
+                    android:strokeColor="#cbcbcb"
+                    android:strokeLineCap="round"/>
+            </group>
+            <!-- Light grey circle -->
+            <path
+                android:fillColor="#f5f5f5"
+                android:pathData="M315.04,45.08 C326.16,45.08 335.20,54.11 335.20,65.24 C335.20,76.37 326.16,85.41 315.04,85.41 C303.91,85.41 294.87,76.37 294.87,65.24 C294.87,54.11 303.91,45.08 315.04,45.08"
+                android:strokeWidth="0.5"
+                android:strokeColor="#dedede"
+                android:strokeLineCap="round"
+                android:strokeLineJoin="round"/>
+            <!-- Blue dot -->
+            <group
+                android:name="blue_dot_rotation_group"
+                android:pivotX="315.04"
+                android:pivotY="65.24"
+                android:rotation="-120">
+
+                <path
+                    android:fillColor="#4b87f1"
+                    android:pathData="M327.75,62.66 C329.17,62.66 330.33,63.82 330.33,65.24 C330.33,66.66 329.17,67.81 327.75,67.81 C326.34,67.81 325.18,66.66 325.18,65.24 C325.18,63.82 326.34,62.66 327.75,62.66"/>
+            </group>
 
             <!-- TODO(https://crbug.com/814728): Add other parts of this image. -->
         </vector>
     </aapt:attr>
+    <!-- Each animation here has a period of 26 seconds. Animation is restarted from the code. -->
     <target android:name="cloud3_animation_group">
         <aapt:attr name="android:animation">
-            <set android:interpolator="@android:anim/linear_interpolator">
+            <set android:ordering="sequentially">
                 <objectAnimator
-                    android:duration="13500"
+                    android:duration="13000"
                     android:propertyName="translateX"
-                    android:repeatCount="infinite"
-                    android:repeatMode="restart"
                     android:valueFrom="100"
                     android:valueTo="0"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="13000"
+                    android:propertyName="translateX"
+                    android:valueFrom="100"
+                    android:valueTo="0"
+                    android:valueType="floatType"/>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="sync_arrows_rotation_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="sequentially">
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="0"
+                    android:valueTo="-360"
+                    android:valueType="floatType"/>
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="blue_dot_rotation_group">
+        <aapt:attr name="android:animation">
+            <set android:ordering="sequentially">
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:valueFrom="-120"
+                    android:valueTo="120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="120"
+                    android:valueTo="-120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="-120"
+                    android:valueTo="120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="120"
+                    android:valueTo="-120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="-120"
+                    android:valueTo="120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="120"
+                    android:valueTo="-120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="-120"
+                    android:valueTo="120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="120"
+                    android:valueTo="-120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="-120"
+                    android:valueTo="120"
+                    android:valueType="floatType"/>
+                <objectAnimator
+                    android:duration="700"
+                    android:propertyName="rotation"
+                    android:startOffset="1900"
+                    android:valueFrom="120"
+                    android:valueTo="-120"
                     android:valueType="floatType"/>
             </set>
         </aapt:attr>
