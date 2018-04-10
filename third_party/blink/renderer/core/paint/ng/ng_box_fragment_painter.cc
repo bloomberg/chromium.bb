@@ -220,9 +220,8 @@ void NGBoxFragmentPainter::PaintObject(
             paint_phase == PaintPhase::kTextClip)
           PaintFloats(contents_paint_info, paint_offset);
       } else {
-        PaintInlineChildren(
-            box_fragment_.Children(), contents_paint_info, paint_offset,
-            /* legacy_paint_offset, TODO(kojii): needs review */ paint_offset);
+        PaintInlineChildren(box_fragment_.Children(), contents_paint_info,
+                            paint_offset);
       }
     } else {
       PaintBlockChildren(contents_paint_info, paint_offset);
@@ -566,24 +565,35 @@ void NGBoxFragmentPainter::PaintLineBoxChildren(
     }
     DCHECK(line->PhysicalFragment().IsLineBox())
         << line->PhysicalFragment().ToString();
-    PaintInlineChildren(line->Children(), paint_info, child_offset,
-                        paint_offset);
+    PaintInlineChildren(line->Children(), paint_info, child_offset);
   }
 }
 
 void NGBoxFragmentPainter::PaintInlineChildren(
     const Vector<std::unique_ptr<NGPaintFragment>>& inline_children,
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
-    const LayoutPoint& legacy_paint_offset) {
+    const LayoutPoint& paint_offset) {
   for (const auto& child : inline_children) {
     if (child->PhysicalFragment().IsFloating())
       continue;
-    if (child->PhysicalFragment().IsAtomicInline())
+    if (child->PhysicalFragment().IsAtomicInline()) {
+      // legacy_paint_offset is local, so we need to remove the offset to
+      // lineBox.
+      LayoutPoint legacy_paint_offset = paint_offset;
+      const NGPaintFragment* parent = child->Parent();
+      while (parent && (parent->PhysicalFragment().IsBox() ||
+                        parent->PhysicalFragment().IsLineBox())) {
+        legacy_paint_offset -= parent->Offset().ToLayoutPoint();
+        if (parent->PhysicalFragment().IsLineBox())
+          break;
+        parent = parent->Parent();
+      }
+
       PaintAtomicInlineChild(*child, paint_info, paint_offset,
                              legacy_paint_offset);
-    else
+    } else {
       PaintInlineChild(*child, paint_info, paint_offset);
+    }
   }
 }
 

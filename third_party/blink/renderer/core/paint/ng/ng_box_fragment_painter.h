@@ -71,8 +71,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                             const LayoutPoint&);
   void PaintInlineChildren(const Vector<std::unique_ptr<NGPaintFragment>>&,
                            const PaintInfo&,
-                           const LayoutPoint& paint_offset,
-                           const LayoutPoint& legacy_paint_offset);
+                           const LayoutPoint& paint_offset);
   void PaintInlineChildrenOutlines(
       const Vector<std::unique_ptr<NGPaintFragment>>&,
       const PaintInfo&,
