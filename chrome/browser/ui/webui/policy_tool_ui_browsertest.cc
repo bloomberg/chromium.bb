@@ -24,6 +24,19 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 
+namespace {
+
+const base::FilePath::CharType kPolicyToolSessionsDir[] =
+    FILE_PATH_LITERAL("Policy sessions");
+
+const base::FilePath::CharType kPolicyToolDefaultSessionName[] =
+    FILE_PATH_LITERAL("policy");
+
+const base::FilePath::CharType kPolicyToolSessionExtension[] =
+    FILE_PATH_LITERAL("json");
+
+}  // namespace
+
 class PolicyToolUITest : public InProcessBrowserTest {
  public:
   PolicyToolUITest();
@@ -70,15 +83,15 @@ base::FilePath PolicyToolUITest::GetSessionsDir() {
   base::FilePath profile_dir;
   EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
   return profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir)
-      .Append(PolicyToolUIHandler::kPolicyToolSessionsDir);
+      .Append(kPolicyToolSessionsDir);
 }
 
 base::FilePath::StringType PolicyToolUITest::GetDefaultSessionName() {
-  return PolicyToolUIHandler::kPolicyToolDefaultSessionName;
+  return kPolicyToolDefaultSessionName;
 }
 
 base::FilePath::StringType PolicyToolUITest::GetSessionExtension() {
-  return PolicyToolUIHandler::kPolicyToolSessionExtension;
+  return kPolicyToolSessionExtension;
 }
 
 base::FilePath PolicyToolUITest::GetSessionPath(
