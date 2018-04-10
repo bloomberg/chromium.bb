@@ -4883,15 +4883,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheChecksumpScrewUp) {
   entry->Close();
 }
 
-// TODO(morlovich): There seems to be an imperfection of leak detection, see
-// https://crbug.com/811276. Please reenable this test when the bug is fixed.
-TEST_F(DiskCacheEntryTest, DISABLED_UseAfterBackendDestruction) {
-  // InitCache uses the kNoRandom flag that check-fails on the tested scenario.
-  CreateBackend(0);
-  DisableIntegrityCheck();
-  UseAfterBackendDestruction();
-}
-
 TEST_F(DiskCacheEntryTest, SimpleUseAfterBackendDestruction) {
   SetSimpleCacheMode();
   InitCache();

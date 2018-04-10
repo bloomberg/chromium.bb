@@ -122,7 +122,11 @@ class NET_EXPORT Backend {
   // operations so the callbacks are not invoked, possibly leaving the work
   // half way (for instance, dooming just a few entries). Note that pending IO
   // for a given Entry (as opposed to the Backend) will still generate a
-  // callback from within this method.
+  // callback.
+  // Warning: there is some inconsistency in details between different backends
+  // on what will succeed and what will fail.  In particular the blockfile
+  // backend will leak entries closed after backend deletion, while others
+  // handle it properly.
   virtual ~Backend() {}
 
   // Returns the type of this cache.
