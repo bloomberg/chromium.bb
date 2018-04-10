@@ -1408,4 +1408,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, SandboxedLocalFile) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/sandboxed_local_file"));
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NewWindowAboutBlank) {
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/new_window_about_blank"));
+}
+
 }  // namespace extensions
