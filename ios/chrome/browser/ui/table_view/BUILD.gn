@@ -39,10 +39,15 @@ source_set("styler") {
 source_set("presentation") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "table_view_animator.h",
+    "table_view_animator.mm",
     "table_view_presentation_controller.h",
     "table_view_presentation_controller.mm",
   ]
   deps = [
+    "//ios/chrome/browser/ui:ui_util",
+    "//ios/chrome/browser/ui/image_util",
+    "//ios/chrome/browser/ui/resources:menu_shadow",
     "//ios/chrome/browser/ui/util:constraints_ui",
   ]
 }
