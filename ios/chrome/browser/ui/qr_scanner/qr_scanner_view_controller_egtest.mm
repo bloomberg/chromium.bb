@@ -415,7 +415,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
     (const GURL&)replacementURL {
   // The specific class to swizzle depends on whether the UIRefresh experiment
   // is enabled.
-  if (IsUIRefreshPhase1Enabled()) {
+  if (IsRefreshLocationBarEnabled()) {
     void (^loadGURLFromLocationBarBlock)(LocationBarCoordinator*, const GURL&,
                                          ui::PageTransition) =
         ^void(LocationBarCoordinator* self, const GURL& url,
