@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/audio_decoder.h"
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/test/blink_test_environment.h"
@@ -21,6 +22,8 @@ struct Environment {
     // This is needed to suppress noisy log messages from ffmpeg.
     media::InitializeMediaLibrary();
   }
+
+  base::AtExitManager at_exit;
 };
 
 Environment* env = new Environment();
