@@ -336,6 +336,9 @@ void BaseArena::CompleteSweep() {
   DCHECK(GetThreadState()->SweepForbidden());
   DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
+  // Some phases, e.g. verification, require iterability of a page.
+  MakeIterable();
+
   while (!SweepingCompleted()) {
     SweepUnsweptPage();
   }
@@ -437,6 +440,10 @@ void NormalPageArena::ClearFreeLists() {
   SetAllocationPoint(nullptr, 0);
   free_list_.Clear();
   promptly_freed_size_ = 0;
+}
+
+void NormalPageArena::MakeIterable() {
+  SetAllocationPoint(nullptr, 0);
 }
 
 size_t NormalPageArena::ArenaSize() {
