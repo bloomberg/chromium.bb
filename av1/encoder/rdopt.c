@@ -3805,7 +3805,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, 0, block, plane_bsize, pta,
                   ptl, rd_stats, fast_tx_search, ref_best_rd,
                   rd_info_node != NULL ? rd_info_node->rd_info_array : NULL);
-    if (rd_stats->rate == INT_MAX) return;
+    assert(rd_stats->rate < INT_MAX);
 
     if ((RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist) >=
              RDCOST(x->rdmult, zero_blk_rate, rd_stats->sse) ||
