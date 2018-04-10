@@ -35,10 +35,6 @@ class KeyboardInterpreter {
   // Assembles PRINT_SCREEN key event and then delegates to
   // |KeyboardInputStrategy| send the keys.
   void HandlePrintScreenEvent();
-  // Assembles ENTER key event and then delegates to |KeyboardInputStrategy| to
-  // send the keys. Do not send a single "\n" text event to the host to inject
-  // enter as it has undefined behavior on Windows.
-  void HandleEnterEvent();
 
  private:
   std::unique_ptr<KeyboardInputStrategy> input_strategy_;

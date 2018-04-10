@@ -85,16 +85,4 @@ void KeyboardInterpreter::HandlePrintScreenEvent() {
   input_strategy_->HandleKeysEvent(keys);
 }
 
-void KeyboardInterpreter::HandleEnterEvent() {
-  if (!input_strategy_) {
-    return;
-  }
-
-  base::queue<KeyEvent> keys;
-  keys.push({static_cast<uint32_t>(ui::DomCode::ENTER), true});
-  keys.push({static_cast<uint32_t>(ui::DomCode::ENTER), false});
-  input_strategy_->HandleKeysEvent(keys);
-  return;
-}
-
 }  // namespace remoting
