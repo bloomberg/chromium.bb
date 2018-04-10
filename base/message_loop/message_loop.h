@@ -449,8 +449,8 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
   bool WatchFileDescriptor(int fd,
                            bool persistent,
                            MessagePumpForUI::Mode mode,
-                           MessagePumpForUI::FileDescriptorWatcher* controller,
-                           MessagePumpForUI::Watcher* delegate);
+                           MessagePumpForUI::FdWatchController* controller,
+                           MessagePumpForUI::FdWatcher* delegate);
 #endif
 };
 
@@ -489,45 +489,19 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
 
 #if !defined(OS_NACL_SFI)
 
-// TODO(gab): Replace usage of these types by straight up MessagePumpForIO usage
-// now that a generic MessagePumpForIO is exposed through message_pump_for_io.h
-// The only historical advantage to defining these types here was coalescing
-// types from multiple impls into one. Recent CLs took care of doing this at a
-// higher level and these now offer no advantage (users still inherit the full
-// headers from message_loop.h's includes (even for callers that aren't using
-// these) and readers must still navigate to the impl to find how to use it).
-#if defined(OS_WIN)
-  using IOHandler = MessagePumpForIO::IOHandler;
-  using IOContext = MessagePumpForIO::IOContext;
-#elif defined(OS_POSIX)
-  using Watcher = MessagePumpForIO::FdWatcher;
-  using FileDescriptorWatcher = MessagePumpForIO::FdWatchController;
-
-  enum Mode {
-    WATCH_READ = MessagePumpForIO::WATCH_READ,
-    WATCH_WRITE = MessagePumpForIO::WATCH_WRITE,
-    WATCH_READ_WRITE = MessagePumpForIO::WATCH_READ_WRITE
-  };
-#endif  // defined(OS_WIN) || defined(OS_POSIX)
-
-#if defined(OS_FUCHSIA)
-  using ZxHandleWatchController = MessagePumpFuchsia::ZxHandleWatchController;
-  using ZxHandleWatcher = MessagePumpFuchsia::ZxHandleWatcher;
-#endif  // defined(OS_FUCHSIA)
-
 #if defined(OS_WIN)
   // Please see MessagePumpWin for definitions of these methods.
-  void RegisterIOHandler(HANDLE file, IOHandler* handler);
-  bool RegisterJobObject(HANDLE job, IOHandler* handler);
-  bool WaitForIOCompletion(DWORD timeout, IOHandler* filter);
+  void RegisterIOHandler(HANDLE file, MessagePumpForIO::IOHandler* handler);
+  bool RegisterJobObject(HANDLE job, MessagePumpForIO::IOHandler* handler);
+  bool WaitForIOCompletion(DWORD timeout, MessagePumpForIO::IOHandler* filter);
 #elif defined(OS_POSIX)
   // Please see WatchableIOMessagePumpPosix for definition.
   // Prefer base::FileDescriptorWatcher for non-critical IO.
   bool WatchFileDescriptor(int fd,
                            bool persistent,
-                           Mode mode,
-                           FileDescriptorWatcher* controller,
-                           Watcher* delegate);
+                           MessagePumpForIO::Mode mode,
+                           MessagePumpForIO::FdWatchController* controller,
+                           MessagePumpForIO::FdWatcher* delegate);
 #endif  // defined(OS_IOS) || defined(OS_POSIX)
 #endif  // !defined(OS_NACL_SFI)
 
@@ -536,8 +510,8 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
   bool WatchZxHandle(zx_handle_t handle,
                      bool persistent,
                      zx_signals_t signals,
-                     ZxHandleWatchController* controller,
-                     ZxHandleWatcher* delegate);
+                     MessagePumpForIO::ZxHandleWatchController* controller,
+                     MessagePumpForIO::ZxHandleWatcher* delegate);
 #endif
 };
 

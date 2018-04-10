@@ -27,7 +27,7 @@ ReceiverPipe::~ReceiverPipe() {}
 
 void ReceiverPipe::StartReadingOnIOThread() {
   base::MessageLoopForIO::current()->WatchFileDescriptor(
-      handle_.get().handle, true, base::MessageLoopForIO::WATCH_READ,
+      handle_.get().handle, true, base::MessagePumpForIO::WATCH_READ,
       &controller_, this);
   OnFileCanReadWithoutBlocking(handle_.get().handle);
 }

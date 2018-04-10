@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
@@ -606,11 +607,11 @@ void PostNTasksThenQuit(int posts_remaining) {
 
 #if defined(OS_WIN)
 
-class TestIOHandler : public MessageLoopForIO::IOHandler {
+class TestIOHandler : public MessagePumpForIO::IOHandler {
  public:
   TestIOHandler(const wchar_t* name, HANDLE signal, bool wait);
 
-  void OnIOCompleted(MessageLoopForIO::IOContext* context,
+  void OnIOCompleted(MessagePumpForIO::IOContext* context,
                      DWORD bytes_transfered,
                      DWORD error) override;
 
@@ -621,7 +622,7 @@ class TestIOHandler : public MessageLoopForIO::IOHandler {
 
  private:
   char buffer_[48];
-  MessageLoopForIO::IOContext context_;
+  MessagePumpForIO::IOContext context_;
   HANDLE signal_;
   win::ScopedHandle file_;
   bool wait_;
@@ -646,8 +647,9 @@ void TestIOHandler::Init() {
     WaitForIO();
 }
 
-void TestIOHandler::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                                  DWORD bytes_transfered, DWORD error) {
+void TestIOHandler::OnIOCompleted(MessagePumpForIO::IOContext* context,
+                                  DWORD bytes_transfered,
+                                  DWORD error) {
   ASSERT_TRUE(context == &context_);
   ASSERT_TRUE(SetEvent(signal_));
 }

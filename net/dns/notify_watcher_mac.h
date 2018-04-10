@@ -7,13 +7,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 
 namespace net {
 
 // Watches for notifications from Libnotify and delivers them to a Callback.
 // After failure the watch is cancelled and will have to be restarted.
-class NotifyWatcherMac : public base::MessageLoopForIO::Watcher {
+class NotifyWatcherMac : public base::MessagePumpForIO::FdWatcher {
  public:
   // Called on received notification with true on success and false on error.
   typedef base::Callback<void(bool succeeded)> CallbackType;
@@ -31,14 +31,14 @@ class NotifyWatcherMac : public base::MessageLoopForIO::Watcher {
   void Cancel();
 
  private:
-  // MessageLoopForIO::Watcher:
+  // MessagePumpForIO::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override {}
 
   int notify_fd_;
   int notify_token_;
   CallbackType callback_;
-  base::MessageLoopForIO::FileDescriptorWatcher watcher_;
+  base::MessagePumpForIO::FdWatchController watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(NotifyWatcherMac);
 };

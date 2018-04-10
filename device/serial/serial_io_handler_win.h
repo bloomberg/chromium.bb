@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/serial_io_handler.h"
@@ -16,7 +16,7 @@
 namespace device {
 
 class SerialIoHandlerWin : public SerialIoHandler,
-                           public base::MessageLoopForIO::IOHandler {
+                           public base::MessagePumpForIO::IOHandler {
  protected:
   // SerialIoHandler implementation.
   void ReadImpl() override;
@@ -41,21 +41,21 @@ class SerialIoHandlerWin : public SerialIoHandler,
       scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner);
   ~SerialIoHandlerWin() override;
 
-  // base::MessageLoopForIO::IOHandler implementation.
-  void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+  // base::MessagePumpForIO::IOHandler implementation.
+  void OnIOCompleted(base::MessagePumpForIO::IOContext* context,
                      DWORD bytes_transfered,
                      DWORD error) override;
 
   void OnDeviceRemoved(const std::string& device_path);
 
   // Context used for asynchronous WaitCommEvent calls.
-  std::unique_ptr<base::MessageLoopForIO::IOContext> comm_context_;
+  std::unique_ptr<base::MessagePumpForIO::IOContext> comm_context_;
 
   // Context used for overlapped reads.
-  std::unique_ptr<base::MessageLoopForIO::IOContext> read_context_;
+  std::unique_ptr<base::MessagePumpForIO::IOContext> read_context_;
 
   // Context used for overlapped writes.
-  std::unique_ptr<base::MessageLoopForIO::IOContext> write_context_;
+  std::unique_ptr<base::MessagePumpForIO::IOContext> write_context_;
 
   // Asynchronous event mask state
   DWORD event_mask_;

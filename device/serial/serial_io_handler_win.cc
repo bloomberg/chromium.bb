@@ -240,9 +240,9 @@ bool SerialIoHandlerWin::PostOpen() {
   base::MessageLoopForIO::current()->RegisterIOHandler(file().GetPlatformFile(),
                                                        this);
 
-  comm_context_.reset(new base::MessageLoopForIO::IOContext());
-  read_context_.reset(new base::MessageLoopForIO::IOContext());
-  write_context_.reset(new base::MessageLoopForIO::IOContext());
+  comm_context_.reset(new base::MessagePumpForIO::IOContext());
+  read_context_.reset(new base::MessagePumpForIO::IOContext());
+  write_context_.reset(new base::MessagePumpForIO::IOContext());
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner =
       base::ThreadTaskRunnerHandle::Get();
@@ -371,7 +371,7 @@ SerialIoHandlerWin::~SerialIoHandlerWin() {
 }
 
 void SerialIoHandlerWin::OnIOCompleted(
-    base::MessageLoopForIO::IOContext* context,
+    base::MessagePumpForIO::IOContext* context,
     DWORD bytes_transferred,
     DWORD error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

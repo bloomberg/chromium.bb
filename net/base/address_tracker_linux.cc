@@ -231,7 +231,7 @@ void AddressTrackerLinux::Init() {
 
   if (tracking_) {
     rv = base::MessageLoopForIO::current()->WatchFileDescriptor(
-        netlink_fd_, true, base::MessageLoopForIO::WATCH_READ, &watcher_, this);
+        netlink_fd_, true, base::MessagePumpForIO::WATCH_READ, &watcher_, this);
     if (rv < 0) {
       PLOG(ERROR) << "Could not watch NETLINK socket";
       AbortAndForceOnline();

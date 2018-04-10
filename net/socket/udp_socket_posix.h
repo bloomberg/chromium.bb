@@ -13,7 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -376,12 +376,12 @@ class NET_EXPORT UDPSocketPosix {
   // bandwidth uploads.
 
   // Watcher for WriteAsync paths.
-  class WriteAsyncWatcher : public base::MessageLoopForIO::Watcher {
+  class WriteAsyncWatcher : public base::MessagePumpForIO::FdWatcher {
    public:
     explicit WriteAsyncWatcher(UDPSocketPosix* socket)
         : socket_(socket), watching_(false) {}
 
-    // MessageLoopForIO::Watcher methods
+    // MessagePumpForIO::FdWatcher methods
 
     void OnFileCanReadWithoutBlocking(int /* fd */) override {}
 
@@ -424,11 +424,11 @@ class NET_EXPORT UDPSocketPosix {
     SOCKET_OPTION_MULTICAST_LOOP = 1 << 0
   };
 
-  class ReadWatcher : public base::MessageLoopForIO::Watcher {
+  class ReadWatcher : public base::MessagePumpForIO::FdWatcher {
    public:
     explicit ReadWatcher(UDPSocketPosix* socket) : socket_(socket) {}
 
-    // MessageLoopForIO::Watcher methods
+    // MessagePumpForIO::FdWatcher methods
 
     void OnFileCanReadWithoutBlocking(int /* fd */) override;
 
@@ -440,11 +440,11 @@ class NET_EXPORT UDPSocketPosix {
     DISALLOW_COPY_AND_ASSIGN(ReadWatcher);
   };
 
-  class WriteWatcher : public base::MessageLoopForIO::Watcher {
+  class WriteWatcher : public base::MessagePumpForIO::FdWatcher {
    public:
     explicit WriteWatcher(UDPSocketPosix* socket) : socket_(socket) {}
 
-    // MessageLoopForIO::Watcher methods
+    // MessagePumpForIO::FdWatcher methods
 
     void OnFileCanReadWithoutBlocking(int /* fd */) override {}
 
@@ -552,8 +552,8 @@ class NET_EXPORT UDPSocketPosix {
   mutable std::unique_ptr<IPEndPoint> remote_address_;
 
   // The socket's posix wrappers
-  base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
-  base::MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
+  base::MessagePumpForIO::FdWatchController read_socket_watcher_;
+  base::MessagePumpForIO::FdWatchController write_socket_watcher_;
 
   // The corresponding watchers for reads and writes.
   ReadWatcher read_watcher_;

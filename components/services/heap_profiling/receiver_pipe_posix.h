@@ -9,14 +9,14 @@
 
 #include "base/files/platform_file.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "build/build_config.h"
 #include "components/services/heap_profiling/receiver_pipe.h"
 
 namespace heap_profiling {
 
 class ReceiverPipe : public ReceiverPipeBase,
-                     public base::MessageLoopForIO::Watcher {
+                     public base::MessagePumpForIO::FdWatcher {
  public:
   explicit ReceiverPipe(mojo::edk::ScopedPlatformHandle handle);
 
@@ -26,11 +26,11 @@ class ReceiverPipe : public ReceiverPipeBase,
  private:
   ~ReceiverPipe() override;
 
-  // MessageLoopForIO::Watcher implementation.
+  // MessagePumpForIO::FdWatcher implementation.
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  base::MessageLoopForIO::FileDescriptorWatcher controller_;
+  base::MessagePumpForIO::FdWatchController controller_;
   std::unique_ptr<char[]> read_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ReceiverPipe);

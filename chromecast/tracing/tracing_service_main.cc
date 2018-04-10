@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/strings/string_split.h"
@@ -98,7 +99,7 @@ class TraceCopyTask : public base::MessagePumpLibevent::FdWatcher {
   void Start() {
     base::MessageLoopForIO::current()->WatchFileDescriptor(
         out_fd_.get(), true /* persistent */,
-        base::MessageLoopForIO::WATCH_WRITE, &out_watcher_, this);
+        base::MessagePumpForIO::WATCH_WRITE, &out_watcher_, this);
   }
 
   // base::MessagePumpLibevent::FdWatcher:
@@ -183,7 +184,7 @@ class TraceConnection : public base::MessagePumpLibevent::FdWatcher {
   void Init() {
     base::MessageLoopForIO::current()->WatchFileDescriptor(
         connection_fd_.get(), true /* persistent */,
-        base::MessageLoopForIO::WATCH_READ, &connection_watcher_, this);
+        base::MessagePumpForIO::WATCH_READ, &connection_watcher_, this);
   }
 
   // base::MessagePumpLibevent::FdWatcher:
@@ -345,7 +346,7 @@ class TracingService : public base::MessagePumpLibevent::FdWatcher {
 
     base::MessageLoopForIO::current()->WatchFileDescriptor(
         server_socket_.get(), true /* persistent */,
-        base::MessageLoopForIO::WATCH_READ, &server_socket_watcher_, this);
+        base::MessagePumpForIO::WATCH_READ, &server_socket_watcher_, this);
 
     return true;
   }

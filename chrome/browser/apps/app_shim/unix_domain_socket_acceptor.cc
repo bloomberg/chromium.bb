@@ -33,7 +33,7 @@ bool UnixDomainSocketAcceptor::Listen() {
   // Watch the fd for connections, and turn any connections into
   // active sockets.
   base::MessageLoopForIO::current()->WatchFileDescriptor(
-      listen_handle_.get().handle, true, base::MessageLoopForIO::WATCH_READ,
+      listen_handle_.get().handle, true, base::MessagePumpForIO::WATCH_READ,
       &server_listen_connection_watcher_, this);
   return true;
 }

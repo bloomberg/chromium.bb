@@ -7,7 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
@@ -17,7 +17,7 @@ namespace apps {
 // client connects to the socket, it accept()s the connection and
 // passes the new FD to the delegate. The delegate is then responsible
 // for creating a new IPC::Channel for the FD.
-class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
+class UnixDomainSocketAcceptor : public base::MessagePumpForIO::FdWatcher {
  public:
   class Delegate {
    public:
@@ -44,8 +44,7 @@ class UnixDomainSocketAcceptor : public base::MessageLoopForIO::Watcher {
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
-  base::MessageLoopForIO::FileDescriptorWatcher
-      server_listen_connection_watcher_;
+  base::MessagePumpForIO::FdWatchController server_listen_connection_watcher_;
   mojo::edk::NamedPlatformHandle named_pipe_;
   Delegate* delegate_;
   mojo::edk::ScopedPlatformHandle listen_handle_;

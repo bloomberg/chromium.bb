@@ -409,7 +409,7 @@ int UDPSocketPosix::RecvFrom(IOBuffer* buf,
     return nread;
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_, true, base::MessageLoopForIO::WATCH_READ,
+          socket_, true, base::MessagePumpForIO::WATCH_READ,
           &read_socket_watcher_, &read_watcher_)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on read";
     int result = MapSystemError(errno);
@@ -454,7 +454,7 @@ int UDPSocketPosix::SendToOrWrite(IOBuffer* buf,
     return result;
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_, true, base::MessageLoopForIO::WATCH_WRITE,
+          socket_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, &write_watcher_)) {
     DVLOG(1) << "WatchFileDescriptor failed on write, errno " << errno;
     int result = MapSystemError(errno);
@@ -1467,7 +1467,7 @@ void UDPSocketPosix::StopWatchingFileDescriptor() {
 
 bool UDPSocketPosix::InternalWatchFileDescriptor() {
   return base::MessageLoopForIO::current()->WatchFileDescriptor(
-      socket_, true, base::MessageLoopForIO::WATCH_WRITE,
+      socket_, true, base::MessagePumpForIO::WATCH_WRITE,
       &write_socket_watcher_, write_async_watcher_.get());
 }
 

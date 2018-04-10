@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/sequence_checker.h"
 
 namespace base {
@@ -42,7 +43,7 @@ class BASE_EXPORT FileDescriptorWatcher {
 
     // Registers |callback| to be invoked when |fd| is readable or writable
     // without blocking (depending on |mode|).
-    Controller(MessageLoopForIO::Mode mode, int fd, const Closure& callback);
+    Controller(MessagePumpForIO::Mode mode, int fd, const Closure& callback);
 
     // Starts watching the file descriptor.
     void StartWatching();

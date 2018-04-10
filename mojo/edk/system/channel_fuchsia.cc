@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 
@@ -185,7 +186,7 @@ class MessageView {
 
 class ChannelFuchsia : public Channel,
                        public base::MessageLoop::DestructionObserver,
-                       public base::MessageLoopForIO::ZxHandleWatcher {
+                       public base::MessagePumpForIO::ZxHandleWatcher {
  public:
   ChannelFuchsia(Delegate* delegate,
                  ConnectionParams connection_params,
@@ -286,7 +287,7 @@ class ChannelFuchsia : public Channel,
     base::MessageLoop::current()->AddDestructionObserver(this);
 
     read_watch_.reset(
-        new base::MessageLoopForIO::ZxHandleWatchController(FROM_HERE));
+        new base::MessagePumpForIO::ZxHandleWatchController(FROM_HERE));
     base::MessageLoopForIO::current()->WatchZxHandle(
         handle_.get().as_handle(), true /* persistent */,
         ZX_CHANNEL_READABLE | ZX_CHANNEL_PEER_CLOSED, read_watch_.get(), this);
@@ -311,7 +312,7 @@ class ChannelFuchsia : public Channel,
       ShutDownOnIOThread();
   }
 
-  // base::MessageLoopForIO::ZxHandleWatcher:
+  // base::MessagePumpForIO::ZxHandleWatcher:
   void OnZxHandleSignalled(zx_handle_t handle, zx_signals_t signals) override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     CHECK_EQ(handle, handle_.get().as_handle());
@@ -436,7 +437,7 @@ class ChannelFuchsia : public Channel,
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These members are only used on the IO thread.
-  std::unique_ptr<base::MessageLoopForIO::ZxHandleWatchController> read_watch_;
+  std::unique_ptr<base::MessagePumpForIO::ZxHandleWatchController> read_watch_;
   base::circular_deque<base::ScopedZxHandle> incoming_handles_;
   bool leak_handle_ = false;
 

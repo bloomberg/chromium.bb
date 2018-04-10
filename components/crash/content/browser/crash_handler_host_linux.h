@@ -14,6 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/breakpad_linux_impl.h"
 
@@ -33,7 +34,7 @@ struct BreakpadInfo;
 // Processes signal that they need to be dumped by sending a datagram over a
 // UNIX domain socket. All processes of the same type share the client end of
 // this socket which is installed in their descriptor table before exec.
-class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
+class CrashHandlerHostLinux : public base::MessagePumpForIO::FdWatcher,
                               public base::MessageLoop::DestructionObserver {
  public:
   CrashHandlerHostLinux(const std::string& process_type,
@@ -96,7 +97,7 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   int process_socket_;
   int browser_socket_;
 
-  base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
+  base::MessagePumpForIO::FdWatchController file_descriptor_watcher_;
   std::unique_ptr<base::Thread> uploader_thread_;
   bool shutting_down_;
 
@@ -111,7 +112,7 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 
 namespace crashpad {
 
-class CrashHandlerHost : public base::MessageLoopForIO::Watcher,
+class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
                          public base::MessageLoop::DestructionObserver {
  public:
   CrashHandlerHost();
@@ -132,7 +133,7 @@ class CrashHandlerHost : public base::MessageLoopForIO::Watcher,
   // MessageLoop::DestructionObserver impl:
   void WillDestroyCurrentMessageLoop() override;
 
-  base::MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
+  base::MessagePumpForIO::FdWatchController file_descriptor_watcher_;
   base::ScopedFD process_socket_;
   base::ScopedFD browser_socket_;
 

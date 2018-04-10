@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/posix/safe_strerror.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -302,7 +303,7 @@ class DrmDevice::IOWatcher : public base::MessagePumpLibevent::FdWatcher {
   void Register() {
     DCHECK(base::MessageLoopForIO::IsCurrent());
     base::MessageLoopForIO::current()->WatchFileDescriptor(
-        fd_, true, base::MessageLoopForIO::WATCH_READ, &controller_, this);
+        fd_, true, base::MessagePumpForIO::WATCH_READ, &controller_, this);
   }
 
   void Unregister() {

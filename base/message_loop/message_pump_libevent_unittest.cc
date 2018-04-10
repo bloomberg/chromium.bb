@@ -95,10 +95,8 @@ TEST_F(MessagePumpLibeventTest, TestWatchingFromBadThread) {
   // creation of the thread's MessagePump.
   WaitUntilIoThreadStarted();
 
-  ASSERT_DCHECK_DEATH(
-      io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
-                                     MessageLoopForIO::WATCH_READ, &watcher,
-                                     &delegate));
+  ASSERT_DCHECK_DEATH(io_loop()->WatchFileDescriptor(
+      STDOUT_FILENO, false, MessagePumpForIO::WATCH_READ, &watcher, &delegate));
 }
 
 TEST_F(MessagePumpLibeventTest, QuitOutsideOfRun) {

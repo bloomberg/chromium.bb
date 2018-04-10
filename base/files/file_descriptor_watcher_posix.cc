@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -41,10 +42,10 @@ FileDescriptorWatcher::Controller::~Controller() {
 }
 
 class FileDescriptorWatcher::Controller::Watcher
-    : public MessageLoopForIO::Watcher,
+    : public MessagePumpForIO::FdWatcher,
       public MessageLoop::DestructionObserver {
  public:
-  Watcher(WeakPtr<Controller> controller, MessageLoopForIO::Mode mode, int fd);
+  Watcher(WeakPtr<Controller> controller, MessagePumpForIO::Mode mode, int fd);
   ~Watcher() override;
 
   void StartWatching();
@@ -52,7 +53,7 @@ class FileDescriptorWatcher::Controller::Watcher
  private:
   friend class FileDescriptorWatcher;
 
-  // MessageLoopForIO::Watcher:
+  // MessagePumpForIO::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -60,7 +61,7 @@ class FileDescriptorWatcher::Controller::Watcher
   void WillDestroyCurrentMessageLoop() override;
 
   // Used to instruct the MessageLoopForIO to stop watching the file descriptor.
-  MessageLoopForIO::FileDescriptorWatcher file_descriptor_watcher_;
+  MessagePumpForIO::FdWatchController file_descriptor_watcher_;
 
   // Runs tasks on the sequence on which this was instantiated (i.e. the
   // sequence on which the callback must run).
@@ -72,7 +73,7 @@ class FileDescriptorWatcher::Controller::Watcher
 
   // Whether this Watcher is notified when |fd_| becomes readable or writable
   // without blocking.
-  const MessageLoopForIO::Mode mode_;
+  const MessagePumpForIO::Mode mode_;
 
   // The watched file descriptor.
   const int fd_;
@@ -90,7 +91,7 @@ class FileDescriptorWatcher::Controller::Watcher
 
 FileDescriptorWatcher::Controller::Watcher::Watcher(
     WeakPtr<Controller> controller,
-    MessageLoopForIO::Mode mode,
+    MessagePumpForIO::Mode mode,
     int fd)
     : file_descriptor_watcher_(FROM_HERE),
       controller_(controller),
@@ -125,7 +126,7 @@ void FileDescriptorWatcher::Controller::Watcher::StartWatching() {
 void FileDescriptorWatcher::Controller::Watcher::OnFileCanReadWithoutBlocking(
     int fd) {
   DCHECK_EQ(fd_, fd);
-  DCHECK_EQ(MessageLoopForIO::WATCH_READ, mode_);
+  DCHECK_EQ(MessagePumpForIO::WATCH_READ, mode_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Run the callback on the sequence on which the watch was initiated.
@@ -136,7 +137,7 @@ void FileDescriptorWatcher::Controller::Watcher::OnFileCanReadWithoutBlocking(
 void FileDescriptorWatcher::Controller::Watcher::OnFileCanWriteWithoutBlocking(
     int fd) {
   DCHECK_EQ(fd_, fd);
-  DCHECK_EQ(MessageLoopForIO::WATCH_WRITE, mode_);
+  DCHECK_EQ(MessagePumpForIO::WATCH_WRITE, mode_);
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Run the callback on the sequence on which the watch was initiated.
@@ -155,7 +156,7 @@ void FileDescriptorWatcher::Controller::Watcher::
   delete this;
 }
 
-FileDescriptorWatcher::Controller::Controller(MessageLoopForIO::Mode mode,
+FileDescriptorWatcher::Controller::Controller(MessagePumpForIO::Mode mode,
                                               int fd,
                                               const Closure& callback)
     : callback_(callback),
@@ -203,13 +204,13 @@ FileDescriptorWatcher::~FileDescriptorWatcher() {
 
 std::unique_ptr<FileDescriptorWatcher::Controller>
 FileDescriptorWatcher::WatchReadable(int fd, const Closure& callback) {
-  return WrapUnique(new Controller(MessageLoopForIO::WATCH_READ, fd, callback));
+  return WrapUnique(new Controller(MessagePumpForIO::WATCH_READ, fd, callback));
 }
 
 std::unique_ptr<FileDescriptorWatcher::Controller>
 FileDescriptorWatcher::WatchWritable(int fd, const Closure& callback) {
   return WrapUnique(
-      new Controller(MessageLoopForIO::WATCH_WRITE, fd, callback));
+      new Controller(MessagePumpForIO::WATCH_WRITE, fd, callback));
 }
 
 }  // namespace base
