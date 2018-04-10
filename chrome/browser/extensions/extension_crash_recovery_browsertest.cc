@@ -443,8 +443,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, CrashAndUnloadAll) {
 // Test that when an extension with a background page that has a tab open
 // crashes, the tab stays open, and reloading it reloads the extension.
 // Regression test for issue 71629 and 763808.
+//
+// Disabled on Linux dbg: https://crbug.com/831078.
+// TODO(https://crbug.com/831078): Disable it only when site-per-process is
+// enabled.
+#if !defined(NDEBUG) && defined(OS_LINUX)
+#define MAYBE_ReloadTabsWithBackgroundPage DISABLED_ReloadTabsWithBackgroundPage
+#else
+#define MAYBE_ReloadTabsWithBackgroundPage ReloadTabsWithBackgroundPage
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest,
-                       ReloadTabsWithBackgroundPage) {
+                       MAYBE_ReloadTabsWithBackgroundPage) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   const size_t count_before = GetEnabledExtensionCount();
   const size_t crash_count_before = GetTerminatedExtensionCount();
