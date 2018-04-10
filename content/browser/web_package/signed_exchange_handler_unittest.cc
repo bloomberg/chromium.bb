@@ -61,18 +61,11 @@ class MockSignedExchangeCertFetcherFactory
       SignedExchangeCertFetcher::CertificateCallback callback) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
-    scoped_refptr<net::X509Certificate> cert;
-
-    base::Optional<std::vector<base::StringPiece>> der_certs =
-        SignedExchangeCertFetcher::GetCertChainFromMessage(cert_str_);
-    EXPECT_TRUE(der_certs);
-    if (der_certs) {
-      cert = net::X509Certificate::CreateFromDERCertChain(*der_certs);
-      EXPECT_TRUE(cert);
-    }
+    auto cert_chain = SignedExchangeCertificateChain::Parse(cert_str_);
+    EXPECT_TRUE(cert_chain);
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), cert));
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(cert_chain)));
     return nullptr;
   }
 

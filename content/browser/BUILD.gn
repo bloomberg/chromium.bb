@@ -1661,6 +1661,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_cert_fetcher.h",
     "web_package/signed_exchange_cert_fetcher_factory.cc",
     "web_package/signed_exchange_cert_fetcher_factory.h",
+    "web_package/signed_exchange_certificate_chain.cc",
+    "web_package/signed_exchange_certificate_chain.h",
     "web_package/signed_exchange_consts.h",
     "web_package/signed_exchange_handler.cc",
     "web_package/signed_exchange_handler.h",

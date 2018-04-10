@@ -12,14 +12,10 @@
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/strings/string_piece_forward.h"
+#include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/common/content_export.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/origin.h"
-
-namespace net {
-class X509Certificate;
-}  // namespace net
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -38,7 +34,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
     : public network::mojom::URLLoaderClient {
  public:
   using CertificateCallback =
-      base::OnceCallback<void(scoped_refptr<net::X509Certificate>)>;
+      base::OnceCallback<void(std::unique_ptr<SignedExchangeCertificateChain>)>;
 
   // Starts fetching the certificate using a ThrottlingURLLoader created with
   // the |shared_url_loader_factory| and the |throttles|. The |callback| will
@@ -55,11 +51,6 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       url::Origin request_initiator,
       bool force_fetch,
       CertificateCallback callback);
-
-  // Parses a TLS 1.3 Certificate message containing X.509v3 certificates and
-  // returns a vector of cert_data. Returns nullopt when failed to parse.
-  static base::Optional<std::vector<base::StringPiece>> GetCertChainFromMessage(
-      base::StringPiece message);
 
   ~SignedExchangeCertFetcher() override;
 
