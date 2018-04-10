@@ -100,10 +100,11 @@ const uint32_t kMinPerfFPS = 30;
 const unsigned int kMinFramesForBitrateTests = 300;
 // The percentiles to measure for encode latency.
 const unsigned int kLoggedLatencyPercentiles[] = {50, 75, 95};
-// Timeout for the flush is completed. The default FPS is 30, so the processing
-// time for 1 frame is about 33 milliseconds. Here we set 10x period of time
-// considering that there might be some pending frames.
-const unsigned int kFlushTimeoutMs = 300;
+// Timeout for the flush is completed. In the multiple encoder test case, the
+// FPS might be lower than expected. Let us assume that the lowest FPS is 5,
+// then the period per frame is 200 milliseconds. Here we set the timeout 10x
+// periods considering that there might be some pending frames.
+const unsigned int kFlushTimeoutMs = 2000;
 
 // The syntax of multiple test streams is:
 //  test-stream1;test-stream2;test-stream3
