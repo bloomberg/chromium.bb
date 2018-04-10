@@ -505,6 +505,8 @@
       name_for_methods: "Kerning",
       type_name: "FontDescription::Kerning",
       priority: "High",
+      keywords: ["auto", "normal", "none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-size",
@@ -568,6 +570,13 @@
       type_name: "VariantLigatures",
       converter: "ConvertFontVariantLigatures",
       priority: "High",
+      keywords: [
+         "normal", "none", "common-ligatures", "no-common-ligatures",
+         "discretionary-ligatures", "no-discretionary-ligatures",
+         "historical-ligatures", "no-historical-ligatures", "contextual",
+         "no-contextual"
+      ],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-variant-caps",
@@ -577,6 +586,11 @@
       name_for_methods: "VariantCaps",
       converter: "ConvertFontVariantCaps",
       priority: "High",
+      keywords: [
+        "normal", "small-caps", "all-small-caps", "petite-caps",
+        "all-petite-caps", "unicase", "titling-caps"
+      ],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-variant-east-asian",
@@ -586,6 +600,11 @@
       name_for_methods: "VariantEastAsian",
       converter: "ConvertFontVariantEastAsian",
       priority: "High",
+      keywords: [
+         "normal", "jis78", "jis83", "jis90", "jis04", "simplified",
+         "traditional", "full-width", "proportional-width", "ruby"
+      ],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-variant-numeric",
@@ -595,6 +614,12 @@
       name_for_methods: "VariantNumeric",
       converter: "ConvertFontVariantNumeric",
       priority: "High",
+      keywords: [
+        "normal", "lining-nums", "oldstyle-nums", "proportional-nums",
+        "tabular-nums", "diagonal-fractions", "stacked-fractions", "ordinal",
+        "slashed-zero"
+      ],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-weight",
@@ -618,6 +643,8 @@
       name_for_methods: "FeatureSettings",
       converter: "ConvertFontFeatureSettings",
       priority: "High",
+      keywords: ["normal"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "font-variation-settings",
