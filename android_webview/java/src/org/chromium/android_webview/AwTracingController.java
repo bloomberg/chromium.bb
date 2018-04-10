@@ -41,7 +41,7 @@ public class AwTracingController {
 
     private static final List<String> CATEGORIES_ALL_LIST = new ArrayList<>(Arrays.asList("*"));
     private static final List<String> CATEGORIES_ANDROID_WEBVIEW_LIST =
-            new ArrayList<>(Arrays.asList("blink", "android_webview", "Java", "toplevel"));
+            new ArrayList<>(Arrays.asList("android_webview", "Java", "toplevel"));
     private static final List<String> CATEGORIES_WEB_DEVELOPER_LIST = new ArrayList<>(
             Arrays.asList("blink", "cc", "netlog", "renderer.scheduler", "toplevel", "v8"));
     private static final List<String> CATEGORIES_INPUT_LATENCY_LIST = new ArrayList<>(
