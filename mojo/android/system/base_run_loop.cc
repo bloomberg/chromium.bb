@@ -5,7 +5,7 @@
 #include <jni.h>
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -74,4 +74,3 @@ static void JNI_BaseRunLoop_DeleteMessageLoop(
 
 }  // namespace android
 }  // namespace mojo
-
