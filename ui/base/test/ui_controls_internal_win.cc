@@ -4,7 +4,9 @@
 
 #include "ui/base/test/ui_controls_internal_win.h"
 
+#include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -75,9 +77,11 @@ class InputDispatcher : public base::RefCounted<InputDispatcher> {
   // Callback from hook when a key message is received.
   static LRESULT CALLBACK KeyHook(int n_code, WPARAM w_param, LPARAM l_param);
 
-  // Invoked from the hook. If mouse_message matches message_waiting_for_
-  // MatchingMessageFound is invoked.
-  void DispatchedMessage(WPARAM mouse_message);
+  // Invoked from the hook. If |message_id| matches message_waiting_for_
+  // MatchingMessageFound is invoked. |mouse_hook_struct| contains extra
+  // information about the mouse event.
+  void DispatchedMessage(UINT message_id,
+                         const MOUSEHOOKSTRUCT* mouse_hook_struct);
 
   // Invoked when a matching event is found. Uninstalls the hook and schedules
   // an event that runs the callback.
@@ -196,7 +200,8 @@ LRESULT CALLBACK InputDispatcher::MouseHook(int n_code,
   HHOOK next_hook = next_hook_;
   if (n_code == HC_ACTION) {
     DCHECK(current_dispatcher_);
-    current_dispatcher_->DispatchedMessage(w_param);
+    current_dispatcher_->DispatchedMessage(
+        w_param, reinterpret_cast<MOUSEHOOKSTRUCT*>(l_param));
   }
   return CallNextHookEx(next_hook, n_code, w_param, l_param);
 }
@@ -216,26 +221,28 @@ LRESULT CALLBACK InputDispatcher::KeyHook(int n_code,
   return CallNextHookEx(next_hook, n_code, w_param, l_param);
 }
 
-void InputDispatcher::DispatchedMessage(WPARAM mouse_message) {
+void InputDispatcher::DispatchedMessage(
+    UINT message_id,
+    const MOUSEHOOKSTRUCT* mouse_hook_struct) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (mouse_message == message_waiting_for_) {
-    if (mouse_message == WM_MOUSEMOVE) {
+  if (message_id == message_waiting_for_) {
+    if (message_id == WM_MOUSEMOVE) {
       // Verify that the mouse ended up at the desired location.
-      POINT current_pos;
-      ::GetCursorPos(&current_pos);
-      LOG_IF(ERROR, expected_mouse_location_ != gfx::Point(current_pos))
-          << "Mouse moved to (" << current_pos.x << ", " << current_pos.y
-          << ") rather than (" << expected_mouse_location_.x() << ", "
+      LOG_IF(ERROR,
+             expected_mouse_location_ != gfx::Point(mouse_hook_struct->pt))
+          << "Mouse moved to (" << mouse_hook_struct->pt.x << ", "
+          << mouse_hook_struct->pt.y << ") rather than ("
+          << expected_mouse_location_.x() << ", "
           << expected_mouse_location_.y()
           << "); check the math in SendMouseMoveImpl.";
     }
     MatchingMessageFound();
   } else if ((message_waiting_for_ == WM_LBUTTONDOWN &&
-              mouse_message == WM_LBUTTONDBLCLK) ||
+              message_id == WM_LBUTTONDBLCLK) ||
              (message_waiting_for_ == WM_MBUTTONDOWN &&
-              mouse_message == WM_MBUTTONDBLCLK) ||
+              message_id == WM_MBUTTONDBLCLK) ||
              (message_waiting_for_ == WM_RBUTTONDOWN &&
-              mouse_message == WM_RBUTTONDBLCLK)) {
+              message_id == WM_RBUTTONDBLCLK)) {
     LOG(WARNING) << "Double click event being treated as single-click. "
                  << "This may result in different event processing behavior. "
                  << "If you need a single click try moving the mouse between "
@@ -449,10 +456,14 @@ bool SendMouseMoveImpl(long screen_x, long screen_y, base::OnceClosure task) {
     return true;
   }
 
-  // Form the input data containing the normalized absolute coordinates.
+  // Form the input data containing the normalized absolute coordinates. As of
+  // Windows 10 Fall Creators Update, moving to an absolute position of zero
+  // does not work. It seems that moving to 1,1 does, though.
   INPUT input = {INPUT_MOUSE};
-  input.mi.dx = static_cast<LONG>(std::ceil(screen_x * (65535.0 / max_x)));
-  input.mi.dy = static_cast<LONG>(std::ceil(screen_y * (65535.0 / max_y)));
+  input.mi.dx =
+      static_cast<LONG>(std::max(1.0, std::ceil(screen_x * (65535.0 / max_x))));
+  input.mi.dy =
+      static_cast<LONG>(std::max(1.0, std::ceil(screen_y * (65535.0 / max_y))));
   input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
 
   scoped_refptr<InputDispatcher> dispatcher;
