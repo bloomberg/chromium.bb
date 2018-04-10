@@ -203,6 +203,58 @@ class LayerTreeHostAnimationTestAddKeyframeModel
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestAddKeyframeModel);
 
+// Add an animation that does not cause damage, followed by an animation that
+// does. Confirm that the first animation finishes even though
+// enable_early_damage_check should abort draws.
+class LayerTreeHostAnimationTestNoDamageAnimation
+    : public LayerTreeHostAnimationTest {
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->using_synchronous_renderer_compositor = true;
+    settings->enable_early_damage_check = true;
+  }
+
+ public:
+  LayerTreeHostAnimationTestNoDamageAnimation()
+      : started_animating_(false), finished_animating_(false) {}
+
+  void BeginTest() override {
+    AttachAnimationsToTimeline();
+    animation_->AttachElement(layer_tree_host()->root_layer()->element_id());
+    PostAddNoDamageAnimationToMainThread(animation_.get());
+    PostAddOpacityAnimationToMainThread(animation_.get());
+  }
+
+  void AnimateLayers(LayerTreeHostImpl* host_impl,
+                     base::TimeTicks monotonic_time) override {
+    base::AutoLock auto_lock(lock_);
+    started_animating_ = true;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    base::AutoLock auto_lock(lock_);
+    if (started_animating_ && finished_animating_)
+      EndTest();
+  }
+
+  void NotifyAnimationFinished(base::TimeTicks monotonic_time,
+                               int target_property,
+                               int group) override {
+    base::AutoLock auto_lock(lock_);
+    finished_animating_ = true;
+  }
+
+  void AfterTest() override {}
+
+ private:
+  bool started_animating_;
+  bool finished_animating_;
+  base::Lock lock_;
+};
+
+// This behavior is specific to Android WebView, which only uses
+// multi-threaded compositor.
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestNoDamageAnimation);
+
 // Add a layer animation to a layer, but continually fail to draw. Confirm that
 // after a while, we do eventually force a draw.
 class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws

@@ -642,6 +642,15 @@ void LayerTreeTest::EndTestAfterDelayMs(int delay_milliseconds) {
       base::TimeDelta::FromMilliseconds(delay_milliseconds));
 }
 
+void LayerTreeTest::PostAddNoDamageAnimationToMainThread(
+    SingleKeyframeEffectAnimation* animation_to_receive_animation) {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&LayerTreeTest::DispatchAddNoDamageAnimation,
+                     main_thread_weak_ptr_,
+                     base::Unretained(animation_to_receive_animation), 1.0));
+}
+
 void LayerTreeTest::PostAddOpacityAnimationToMainThread(
     SingleKeyframeEffectAnimation* animation_to_receive_animation) {
   main_task_runner_->PostTask(
@@ -834,6 +843,17 @@ void LayerTreeTest::RealEndTest() {
   }
 
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
+}
+
+void LayerTreeTest::DispatchAddNoDamageAnimation(
+    SingleKeyframeEffectAnimation* animation_to_receive_animation,
+    double animation_duration) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  if (animation_to_receive_animation) {
+    AddOpacityTransitionToAnimation(animation_to_receive_animation,
+                                    animation_duration, 0, 0, true);
+  }
 }
 
 void LayerTreeTest::DispatchAddOpacityAnimation(

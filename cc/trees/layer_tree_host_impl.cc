@@ -2230,7 +2230,12 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
     DCHECK(ok);
     DamageTracker::UpdateDamageTracking(active_tree_.get(),
                                         active_tree_->GetRenderSurfaceList());
-    return HasDamage();
+    bool has_damage = HasDamage();
+    // Animations are updated after we attempt to draw. If the frame is aborted,
+    // update animations now.
+    if (!has_damage)
+      UpdateAnimationState(true);
+    return has_damage;
   }
   // Assume there is damage if we cannot check for damage.
   return true;
