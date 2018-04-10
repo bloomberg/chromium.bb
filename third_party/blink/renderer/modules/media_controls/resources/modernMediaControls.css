@@ -720,6 +720,18 @@ video::-internal-media-controls-scrubbing-message {
     min-width: 43px;
     margin-left: 5px;
   }
+
+  video::-internal-media-controls-button-panel {
+    height: 43px;
+  }
+
+  /* Hover highlighting. */
+  video::-webkit-media-controls-mute-button:hover,
+  video::-webkit-media-controls-fullscreen-button:hover,
+  video::-internal-media-controls-overflow-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+  }
 }
 
 /**
