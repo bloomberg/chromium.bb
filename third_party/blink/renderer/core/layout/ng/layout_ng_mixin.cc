@@ -131,6 +131,9 @@ scoped_refptr<NGLayoutResult> LayoutNGMixin<Base>::CachedLayoutResult(
     return nullptr;
   if (constraint_space != *cached_constraint_space_)
     return nullptr;
+  if (cached_constraint_space_->UnpositionedFloats().size() ||
+      cached_result_->UnpositionedFloats().size())
+    return nullptr;
   return cached_result_->CloneWithoutOffset();
 }
 
@@ -139,9 +142,7 @@ void LayoutNGMixin<Base>::SetCachedLayoutResult(
     const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token,
     scoped_refptr<NGLayoutResult> layout_result) {
-  if (break_token || constraint_space.UnpositionedFloats().size() ||
-      layout_result->UnpositionedFloats().size() ||
-      layout_result->Status() != NGLayoutResult::kSuccess) {
+  if (break_token || layout_result->Status() != NGLayoutResult::kSuccess) {
     // We can't cache these yet
     return;
   }
