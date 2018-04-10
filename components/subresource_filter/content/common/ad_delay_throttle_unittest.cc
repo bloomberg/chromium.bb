@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,12 +33,15 @@ class AdDelayThrottleTest : public testing::Test {
   AdDelayThrottleTest()
       : scoped_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
+        client_(std::make_unique<network::TestURLLoaderClient>()),
         shared_factory_(
             base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
-                &loader_factory_)) {
+                &loader_factory_)) {}
+  ~AdDelayThrottleTest() override {}
+
+  void SetUp() override {
     scoped_features_.InitAndEnableFeature(AdDelayThrottle::kFeature);
   }
-  ~AdDelayThrottleTest() override {}
 
  protected:
   std::unique_ptr<network::mojom::URLLoaderClient> CreateLoaderAndStart(
@@ -49,7 +53,7 @@ class AdDelayThrottleTest : public testing::Test {
     throttles.push_back(std::move(throttle));
     auto loader = content::CreateThrottlingLoaderAndStart(
         shared_factory_, std::move(throttles), 0 /* routing_id */,
-        0 /* request_id */, 0 /* options */, &request, &client_,
+        0 /* request_id */, 0 /* options */, &request, client_.get(),
         TRAFFIC_ANNOTATION_FOR_TESTS, base::ThreadTaskRunnerHandle::Get());
     return loader;
   }
@@ -62,11 +66,11 @@ class AdDelayThrottleTest : public testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_environment_;
-  network::TestURLLoaderClient client_;
+  std::unique_ptr<network::TestURLLoaderClient> client_;
   network::TestURLLoaderFactory loader_factory_;
+  base::test::ScopedFeatureList scoped_features_;
 
  private:
-  base::test::ScopedFeatureList scoped_features_;
   scoped_refptr<content::WeakWrapperSharedURLLoaderFactory> shared_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AdDelayThrottleTest);
@@ -89,22 +93,34 @@ class MockMetadataProvider : public AdDelayThrottle::MetadataProvider {
   DISALLOW_COPY_AND_ASSIGN(MockMetadataProvider);
 };
 
-TEST_F(AdDelayThrottleTest, NoFeature_NoThrottle) {
+//  This test harness is identical to the AdDelayThrottleTest but is
+//  parameterized by a bool that enables or disables the feature wholesale.
+class AdDelayThrottleEnabledParamTest
+    : public AdDelayThrottleTest,
+      public ::testing::WithParamInterface<bool> {
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_features_.InitAndEnableFeature(AdDelayThrottle::kFeature);
+    } else {
+      scoped_features_.InitAndDisableFeature(AdDelayThrottle::kFeature);
+    }
+  }
+};
+
+TEST_F(AdDelayThrottleTest, NoFeature_NoDelay) {
   base::test::ScopedFeatureList scoped_disable;
   scoped_disable.InitAndDisableFeature(AdDelayThrottle::kFeature);
+
   AdDelayThrottle::Factory factory;
   auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
-  EXPECT_EQ(nullptr, throttle);
-}
+  EXPECT_NE(nullptr, throttle);
+  std::string url = "http://example.test/ad.js";
+  loader_factory_.AddResponse(url, "var ads = 1;");
+  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
+      CreateLoaderAndStart(GURL(url), std::move(throttle));
+  scoped_environment_.RunUntilIdle();
 
-TEST_F(AdDelayThrottleTest, FeatureEnabled_CreatesThrottle) {
-  AdDelayThrottle::Factory factory;
-  EXPECT_NE(nullptr,
-            factory.MaybeCreate(std::make_unique<MockMetadataProvider>()));
-
-  auto metadata = std::make_unique<MockMetadataProvider>();
-  metadata->set_is_ad_request(false);
-  EXPECT_NE(nullptr, factory.MaybeCreate(std::move(metadata)));
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, InsecureNonAd_NoDelay) {
@@ -119,7 +135,7 @@ TEST_F(AdDelayThrottleTest, InsecureNonAd_NoDelay) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
   scoped_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, SecureAdRequest_NoDelay) {
@@ -132,7 +148,7 @@ TEST_F(AdDelayThrottleTest, SecureAdRequest_NoDelay) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
   scoped_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, InsecureAdRequest_Delay) {
@@ -145,9 +161,9 @@ TEST_F(AdDelayThrottleTest, InsecureAdRequest_Delay) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
   scoped_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
   scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, DelayFromFieldTrialParam) {
@@ -164,15 +180,15 @@ TEST_F(AdDelayThrottleTest, DelayFromFieldTrialParam) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
   scoped_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
 
   // Ensure that we are using the greater delay here by first fast forwarding
   // just before the expected delay.
   base::TimeDelta non_triggering_delay = base::TimeDelta::FromMilliseconds(99);
   scoped_environment_.FastForwardBy(non_triggering_delay);
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
   scoped_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, InsecureAdRequestRedirect_Delay) {
@@ -193,9 +209,9 @@ TEST_F(AdDelayThrottleTest, InsecureAdRequestRedirect_Delay) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
   scoped_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
   scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, InsecureRedirectChain_DelaysOnce) {
@@ -216,9 +232,9 @@ TEST_F(AdDelayThrottleTest, InsecureRedirectChain_DelaysOnce) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
   scoped_environment_.RunUntilIdle();
 
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
   scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 TEST_F(AdDelayThrottleTest, DestroyBeforeDelay) {
@@ -231,7 +247,7 @@ TEST_F(AdDelayThrottleTest, DestroyBeforeDelay) {
       CreateLoaderAndStart(GURL(url), std::move(throttle));
 
   scoped_environment_.RunUntilIdle();
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
 
   loader_client.reset();
   scoped_environment_.FastForwardBy(GetExpectedDelay());
@@ -259,9 +275,9 @@ TEST_F(AdDelayThrottleTest, AdDiscoveredAfterRedirect) {
 
   raw_metadata->set_is_ad_request(true);
   scoped_environment_.RunUntilIdle();
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
   scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
 
 // Note: the AdDelayThrottle supports MetadataProviders that update IsAdRequest
@@ -290,9 +306,78 @@ TEST_F(AdDelayThrottleTest, AdDiscoveredAfterSecureRedirect) {
 
   raw_metadata->set_is_ad_request(true);
   scoped_environment_.RunUntilIdle();
-  EXPECT_FALSE(client_.has_received_completion());
+  EXPECT_FALSE(client_->has_received_completion());
   scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_.has_received_completion());
+  EXPECT_TRUE(client_->has_received_completion());
 }
+
+// Make sure metrics are logged when the feature is enabled and disabled.
+TEST_P(AdDelayThrottleEnabledParamTest, SecureMetrics) {
+  AdDelayThrottle::Factory factory;
+  const GURL insecure_url("http://example.test/ad.js");
+  const GURL secure_url("https://example.test/ad.js");
+  loader_factory_.AddResponse(insecure_url.spec(), "foo");
+  loader_factory_.AddResponse(secure_url.spec(), "foo");
+
+  const char kSecureHistogram[] = "SubresourceFilter.AdDelay.SecureInfo";
+  {
+    base::HistogramTester histograms;
+    {
+      auto throttle =
+          factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(insecure_url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectUniqueSample(
+        kSecureHistogram,
+        static_cast<int>(AdDelayThrottle::SecureInfo::kInsecureAd), 1);
+  }
+  {
+    base::HistogramTester histograms;
+    {
+      auto throttle =
+          factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(secure_url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectUniqueSample(
+        kSecureHistogram,
+        static_cast<int>(AdDelayThrottle::SecureInfo::kSecureAd), 1);
+  }
+  {
+    base::HistogramTester histograms;
+    {
+      auto non_ad_metadata = std::make_unique<MockMetadataProvider>();
+      non_ad_metadata->set_is_ad_request(false);
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto throttle = factory.MaybeCreate(std::move(non_ad_metadata));
+      auto loader = CreateLoaderAndStart(insecure_url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectUniqueSample(
+        kSecureHistogram,
+        static_cast<int>(AdDelayThrottle::SecureInfo::kInsecureNonAd), 1);
+  }
+  {
+    base::HistogramTester histograms;
+    {
+      auto non_ad_metadata = std::make_unique<MockMetadataProvider>();
+      non_ad_metadata->set_is_ad_request(false);
+      auto throttle = factory.MaybeCreate(std::move(non_ad_metadata));
+      client_ = std::make_unique<network::TestURLLoaderClient>();
+      auto loader = CreateLoaderAndStart(secure_url, std::move(throttle));
+      scoped_environment_.FastForwardUntilNoTasksRemain();
+    }
+    histograms.ExpectUniqueSample(
+        kSecureHistogram,
+        static_cast<int>(AdDelayThrottle::SecureInfo::kSecureNonAd), 1);
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        AdDelayThrottleEnabledParamTest,
+                        ::testing::Values(true, false));
 
 }  // namespace subresource_filter
