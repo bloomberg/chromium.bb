@@ -46,6 +46,7 @@ std::string UnserializableValue();
 std::string ScriptThrewError();
 std::string TooManyArguments();
 std::string MissingRequiredArgument(const char* argument_name);
+std::string NoMatchingSignature();
 
 // Returns an message indicating an error was found while parsing a given index
 // in an array.

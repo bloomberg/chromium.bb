@@ -88,10 +88,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
             api_errors::InvocationError(
                 "idle.queryState",
                 "integer detectionIntervalInSeconds, function callback",
-                api_errors::ArgumentError(
-                    "detectionIntervalInSeconds",
-                    api_errors::InvalidType(api_errors::kTypeInteger,
-                                            api_errors::kTypeString))));
+                api_errors::NoMatchingSignature()));
   }
 
   {
