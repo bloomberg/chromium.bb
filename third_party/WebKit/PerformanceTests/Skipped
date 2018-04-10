@@ -1,6 +1,3 @@
-# Micro benchmarks not worth running at the moment.
-DOM/TraverseChildNodes.html
-
 # Not enabled by default on some ports
 Mutation
 
@@ -38,9 +35,6 @@ Canvas/getImageDataColorManaged.html
 # Redundant with chromium's page cyclers.
 Replay
 
-# Requires manual intervention.
-Bindings/event-target-wrapper.html
-
 # Microbenchmark that we aren't interested in monitoring.
 Bindings/gc-forest.html
 Bindings/gc-mini-tree.html
@@ -51,5 +45,4 @@ Bindings/named-property-enumerator.html
 Animation/overlay-background-color-transitions.html
 
 # Assumes window.eventSender is always supported; it only is for "content-shell" performance runs.
-DOM/click_webkit_user_select_none.html
 Editing/mouse-move-with-hidden-elements.html
