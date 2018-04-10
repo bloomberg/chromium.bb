@@ -72,6 +72,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual void EndTest();
   void EndTestAfterDelayMs(int delay_milliseconds);
 
+  void PostAddNoDamageAnimationToMainThread(
+      SingleKeyframeEffectAnimation* animation_to_receive_animation);
   void PostAddOpacityAnimationToMainThread(
       SingleKeyframeEffectAnimation* animation_to_receive_animation);
   void PostAddOpacityAnimationToMainThreadInstantly(
@@ -171,6 +173,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool use_skia_renderer_ = false;
 
  private:
+  virtual void DispatchAddNoDamageAnimation(
+      SingleKeyframeEffectAnimation* animation_to_receive_animation,
+      double animation_duration);
   virtual void DispatchAddOpacityAnimation(
       SingleKeyframeEffectAnimation* animation_to_receive_animation,
       double animation_duration);
