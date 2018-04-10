@@ -347,7 +347,7 @@ void FeedbackPrivateSendFeedbackFunction::OnCompleted(
   }
 }
 
-AsyncExtensionFunction::ResponseAction
+ExtensionFunction::ResponseAction
 FeedbackPrivateLogSrtPromptResultFunction::Run() {
   std::unique_ptr<feedback_private::LogSrtPromptResult::Params> params(
       feedback_private::LogSrtPromptResult::Params::Create(*args_));

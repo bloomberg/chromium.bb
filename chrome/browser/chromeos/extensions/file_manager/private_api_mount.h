@@ -26,7 +26,7 @@ class FileManagerPrivateAddMountFunction : public LoggedAsyncExtensionFunction {
  protected:
   ~FileManagerPrivateAddMountFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -61,7 +61,7 @@ class FileManagerPrivateRemoveMountFunction
  protected:
   ~FileManagerPrivateRemoveMountFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -76,7 +76,7 @@ class FileManagerPrivateMarkCacheAsMountedFunction
  protected:
   ~FileManagerPrivateMarkCacheAsMountedFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -105,7 +105,7 @@ class FileManagerPrivateGetVolumeMetadataListFunction
  protected:
   ~FileManagerPrivateGetVolumeMetadataListFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 

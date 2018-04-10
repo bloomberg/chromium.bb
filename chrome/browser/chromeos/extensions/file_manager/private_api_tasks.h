@@ -36,7 +36,7 @@ class FileManagerPrivateInternalExecuteTaskFunction
  protected:
   ~FileManagerPrivateInternalExecuteTaskFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -56,7 +56,7 @@ class FileManagerPrivateInternalGetFileTasksFunction
  protected:
   ~FileManagerPrivateInternalGetFileTasksFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:

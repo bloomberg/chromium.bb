@@ -12,7 +12,7 @@
 
 namespace extensions {
 
-// This class adds a logging feature to AsyncExtensionFunction. Logging is
+// This class adds a logging feature to ChromeAsyncExtensionFunction. Logging is
 // done when sending the response to JavaScript, using drive::util::Log().
 // Async API functions of fileManagerPrivate should inherit this class.
 //
@@ -27,7 +27,7 @@ class LoggedAsyncExtensionFunction : public ChromeAsyncExtensionFunction {
  protected:
   ~LoggedAsyncExtensionFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   void OnResponded() override;
 
   // Sets the logging on completion flag. By default, logging is turned off.

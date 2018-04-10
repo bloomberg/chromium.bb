@@ -112,7 +112,7 @@ class FileWatchFunctionBase : public LoggedAsyncExtensionFunction {
       const storage::FileSystemURL& file_system_url,
       base::WeakPtr<file_manager::EventRouter> event_router) = 0;
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -177,7 +177,7 @@ class FileManagerPrivateGetSizeStatsFunction
  protected:
   ~FileManagerPrivateGetSizeStatsFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -206,7 +206,7 @@ class FileManagerPrivateInternalValidatePathNameLengthFunction
 
   void OnFilePathLimitRetrieved(size_t current_length, size_t max_length);
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -221,7 +221,7 @@ class FileManagerPrivateFormatVolumeFunction
  protected:
   ~FileManagerPrivateFormatVolumeFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -236,7 +236,7 @@ class FileManagerPrivateRenameVolumeFunction
  protected:
   ~FileManagerPrivateRenameVolumeFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -250,7 +250,7 @@ class FileManagerPrivateInternalStartCopyFunction
  protected:
   ~FileManagerPrivateInternalStartCopyFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -278,7 +278,7 @@ class FileManagerPrivateCancelCopyFunction
  protected:
   ~FileManagerPrivateCancelCopyFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -294,7 +294,7 @@ class FileManagerPrivateInternalResolveIsolatedEntriesFunction
  protected:
   ~FileManagerPrivateInternalResolveIsolatedEntriesFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -314,7 +314,7 @@ class FileManagerPrivateInternalComputeChecksumFunction
  protected:
   ~FileManagerPrivateInternalComputeChecksumFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -334,7 +334,7 @@ class FileManagerPrivateSearchFilesByHashesFunction
   ~FileManagerPrivateSearchFilesByHashesFunction() override {}
 
  private:
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
   // Sends a response with |results| to the extension.
@@ -390,7 +390,7 @@ class FileManagerPrivateInternalGetDirectorySizeFunction
 
   void OnDirectorySizeRetrieved(int64_t size);
 
-  // AsyncExtensionFunction overrides
+  // ChromeAsyncExtensionFunction overrides
   bool RunAsync() override;
 };
 

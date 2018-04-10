@@ -144,7 +144,7 @@ class FeedbackPrivateLogSrtPromptResultFunction
 
  protected:
   ~FeedbackPrivateLogSrtPromptResultFunction() override {}
-  AsyncExtensionFunction::ResponseAction Run() override;
+  ResponseAction Run() override;
 };
 
 }  // namespace extensions

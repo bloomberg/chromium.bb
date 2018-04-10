@@ -45,7 +45,7 @@ class UsersPrivateAddWhitelistedUserFunction
  protected:
   ~UsersPrivateAddWhitelistedUserFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   ResponseAction Run() override;
 
  private:
