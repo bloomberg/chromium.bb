@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
@@ -2112,6 +2113,37 @@ FrameFocusedObserver::FrameFocusedObserver(RenderFrameHost* owner_host)
 FrameFocusedObserver::~FrameFocusedObserver() {}
 
 void FrameFocusedObserver::Wait() {
+  impl_->Run();
+}
+
+class FrameDeletedObserver::FrameTreeNodeObserverImpl
+    : public FrameTreeNode::Observer {
+ public:
+  explicit FrameTreeNodeObserverImpl(FrameTreeNode* owner) : owner_(owner) {
+    owner->AddObserver(this);
+  }
+  ~FrameTreeNodeObserverImpl() override = default;
+
+  void Run() { run_loop_.Run(); }
+
+ private:
+  // FrameTreeNode::Observer
+  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
+    if (node == owner_)
+      run_loop_.Quit();
+  }
+
+  FrameTreeNode* owner_;
+  base::RunLoop run_loop_;
+};
+
+FrameDeletedObserver::FrameDeletedObserver(RenderFrameHost* owner_host)
+    : impl_(new FrameTreeNodeObserverImpl(
+          static_cast<RenderFrameHostImpl*>(owner_host)->frame_tree_node())) {}
+
+FrameDeletedObserver::~FrameDeletedObserver() = default;
+
+void FrameDeletedObserver::Wait() {
   impl_->Run();
 }
 

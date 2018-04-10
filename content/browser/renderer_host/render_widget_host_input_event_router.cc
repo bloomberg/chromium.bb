@@ -327,7 +327,14 @@ RenderWidgetTargetResult RenderWidgetHostInputEventRouter::FindViewAtLocation(
   }
 
   auto* view = FindViewFromFrameSinkId(frame_sink_id);
-  return {view ? view : root_view, query_renderer, *transformed_point};
+  // Send the event to |root_view| if |view| is not in |root_view|'s sub-tree
+  // anymore.
+  if (!view || (RenderWidgetHostViewGuest::GetRootView(view) != root_view)) {
+    view = root_view;
+    *transformed_point = point;
+  }
+
+  return {view, query_renderer, *transformed_point};
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
