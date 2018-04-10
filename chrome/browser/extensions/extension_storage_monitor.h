@@ -16,8 +16,6 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace gfx {
@@ -37,7 +35,6 @@ class ExtensionStorageMonitorIOHelper;
 // that are granted unlimited storage and displays notifications when high
 // usage is detected.
 class ExtensionStorageMonitor : public KeyedService,
-                                public content::NotificationObserver,
                                 public ExtensionRegistryObserver,
                                 public ExtensionUninstallDialog::Delegate {
  public:
@@ -53,11 +50,6 @@ class ExtensionStorageMonitor : public KeyedService,
   ~ExtensionStorageMonitor() override;
 
  private:
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
   // ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
@@ -90,7 +82,6 @@ class ExtensionStorageMonitor : public KeyedService,
   void DisableStorageMonitoring(const std::string& extension_id);
   void StartMonitoringStorage(const Extension* extension);
   void StopMonitoringStorage(const std::string& extension_id);
-  void StopMonitoringAll();
 
   void RemoveNotificationForExtension(const std::string& extension_id);
 
@@ -132,7 +123,6 @@ class ExtensionStorageMonitor : public KeyedService,
   Profile* profile_;
   extensions::ExtensionPrefs* extension_prefs_;
 
-  content::NotificationRegistrar registrar_;
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
