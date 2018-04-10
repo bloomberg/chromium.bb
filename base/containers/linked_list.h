@@ -84,9 +84,23 @@ namespace base {
 template <typename T>
 class LinkNode {
  public:
-  LinkNode() : previous_(NULL), next_(NULL) {}
+  LinkNode() : previous_(nullptr), next_(nullptr) {}
   LinkNode(LinkNode<T>* previous, LinkNode<T>* next)
       : previous_(previous), next_(next) {}
+
+  LinkNode(LinkNode<T>&& rhs) {
+    next_ = rhs.next_;
+    rhs.next_ = nullptr;
+    previous_ = rhs.previous_;
+    rhs.previous_ = nullptr;
+
+    // If the node belongs to a list, next_ and previous_ are both non-null.
+    // Otherwise, they are both null.
+    if (next_) {
+      next_->previous_ = this;
+      previous_->next_ = this;
+    }
+  }
 
   // Insert |this| into the linked list, before |e|.
   void InsertBefore(LinkNode<T>* e) {
@@ -108,10 +122,10 @@ class LinkNode {
   void RemoveFromList() {
     this->previous_->next_ = this->next_;
     this->next_->previous_ = this->previous_;
-    // next() and previous() return non-NULL if and only this node is not in any
+    // next() and previous() return non-null if and only this node is not in any
     // list.
-    this->next_ = NULL;
-    this->previous_ = NULL;
+    this->next_ = nullptr;
+    this->previous_ = nullptr;
   }
 
   LinkNode<T>* previous() const {
