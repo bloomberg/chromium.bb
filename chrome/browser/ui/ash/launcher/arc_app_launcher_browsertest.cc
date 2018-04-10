@@ -138,7 +138,7 @@ enum TestAction {
 };
 
 // Test parameters include TestAction and pin/unpin state.
-typedef std::tr1::tuple<TestAction, bool> TestParameter;
+typedef std::tuple<TestAction, bool> TestParameter;
 
 TestParameter build_test_parameter[] = {
     TestParameter(TEST_ACTION_START, false),
@@ -360,9 +360,9 @@ class ArcAppDeferredLauncherWithParamsBrowserTest
   ~ArcAppDeferredLauncherWithParamsBrowserTest() override = default;
 
  protected:
-  bool is_pinned() const { return std::tr1::get<1>(GetParam()); }
+  bool is_pinned() const { return std::get<1>(GetParam()); }
 
-  TestAction test_action() const { return std::tr1::get<0>(GetParam()); }
+  TestAction test_action() const { return std::get<0>(GetParam()); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherWithParamsBrowserTest);

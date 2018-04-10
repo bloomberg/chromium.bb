@@ -288,8 +288,8 @@ TEST_F(CertVerifyProcChromeOSTest, TestAdditionalTrustAnchors) {
 
 class CertVerifyProcChromeOSOrderingTest
     : public CertVerifyProcChromeOSTest,
-      public ::testing::WithParamInterface<
-          std::tr1::tuple<bool, int, std::string> > {};
+      public ::testing::WithParamInterface<std::tuple<bool, int, std::string>> {
+};
 
 // Test a variety of different combinations of (maybe) verifying / (maybe)
 // importing / verifying again, to try to find any cases where caching might
@@ -297,9 +297,9 @@ class CertVerifyProcChromeOSOrderingTest
 // http://crbug.com/396501
 TEST_P(CertVerifyProcChromeOSOrderingTest, DISABLED_TrustThenVerify) {
   const ParamType& param = GetParam();
-  const bool verify_first = std::tr1::get<0>(param);
-  const int trust_bitmask = std::tr1::get<1>(param);
-  const std::string test_order = std::tr1::get<2>(param);
+  const bool verify_first = std::get<0>(param);
+  const int trust_bitmask = std::get<1>(param);
+  const std::string test_order = std::get<2>(param);
   DVLOG(1) << "verify_first: " << verify_first
            << " trust_bitmask: " << trust_bitmask
            << " test_order: " << test_order;

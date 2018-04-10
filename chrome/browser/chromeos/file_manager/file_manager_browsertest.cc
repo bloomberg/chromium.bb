@@ -20,20 +20,20 @@ namespace file_manager {
 
 // Parameter of FileManagerBrowserTest.
 // The second value is the case name of JavaScript.
-typedef std::tr1::tuple<GuestMode, const char*> TestParameter;
+typedef std::tuple<GuestMode, const char*> TestParameter;
 
 // Test fixture class for normal (not multi-profile related) tests.
 class FileManagerBrowserTest :
       public FileManagerBrowserTestBase,
       public ::testing::WithParamInterface<TestParameter> {
   GuestMode GetGuestModeParam() const override {
-    return std::tr1::get<0>(GetParam());
+    return std::get<0>(GetParam());
   }
   const char* GetTestManifestName() const override {
     return "file_manager_test_manifest.json";
   }
   const char* GetTestCaseNameParam() const override {
-    return std::tr1::get<1>(GetParam());
+    return std::get<1>(GetParam());
   }
 };
 

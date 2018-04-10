@@ -204,13 +204,13 @@ void ParseJson(
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p0)) {
-  ::std::tr1::get<k>(args).Run(p0);
+  std::get<k>(args).Run(p0);
 }
 
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_2_VALUE_PARAMS(p0, p1)) {
-  ::std::tr1::get<k>(args).Run(p0, p1);
+  std::get<k>(args).Run(p0, p1);
 }
 
 base::Time GetDummyNow() {
