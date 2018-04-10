@@ -583,7 +583,7 @@ read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 		} else if (!strcmp(option_name, "cursorPos")) {
 			yaml_event_delete(&event);
 			read_cursorPos(parser, cursorPos, cursorOutPos, wordLen, translationLen);
-		} else if (!strcmp(option_name, "maxLength")) {
+		} else if (!strcmp(option_name, "maxOutputLength")) {
 			yaml_event_delete(&event);
 			if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
 				yaml_error(YAML_SCALAR_EVENT, &event);

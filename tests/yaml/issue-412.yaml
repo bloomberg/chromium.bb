@@ -2,8 +2,8 @@ table: [tables/en-us-g1.ctb]
 tests:
   - - "SARVESH KUMAR Upadhyay"
     - ",,sarvesh ,,kumar "
-    - maxLength: 20
+    - maxOutputLength: 20
   - - "SARVESH KUMAR UPADHYAY"
     - ",,sarvesh ,,kumar "
-    - maxLength: 20
+    - maxOutputLength: 20
       xfail: true # received ",,sarvesh ,,kumar ,,"
