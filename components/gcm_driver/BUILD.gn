@@ -123,6 +123,8 @@ static_library("test_support") {
     "fake_gcm_app_handler.h",
     "fake_gcm_driver.cc",
     "fake_gcm_driver.h",
+    "fake_gcm_profile_service.cc",
+    "fake_gcm_profile_service.h",
   ]
 
   public_deps = [
@@ -130,10 +132,26 @@ static_library("test_support") {
   ]
   deps = [
     "//base",
+    "//components/gcm_driver/instance_id:test_support",
+    "//content/public/browser",
     "//google_apis/gcm:test_support",
     "//net",
     "//testing/gtest",
   ]
+
+  # This target goes with Instance ID and they can include headers from each
+  # other.
+  allow_circular_includes_from =
+      [ "//components/gcm_driver/instance_id:test_support" ]
+
+  if (is_ios) {
+    sources -= [
+      "fake_gcm_profile_service.cc",
+      "fake_gcm_profile_service.h",
+    ]
+
+    deps -= [ "//content/public/browser" ]
+  }
 
   if (!use_gcm_from_platform) {
     sources += [

@@ -10,6 +10,7 @@ include_rules = [
   "+components/sync/protocol",
   "+components/timers",  # Only used for Chrome OS builds.
   "+components/version_info",
+  "+content/public/browser/browser_context.h",
   "+google_apis/gaia",
   "+google_apis/gcm",
   "+jni",

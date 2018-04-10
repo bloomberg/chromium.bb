@@ -7,12 +7,12 @@
 #include "chrome/browser/extensions/api/gcm/gcm_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_gcm_app_handler.h"
-#include "chrome/browser/gcm/fake_gcm_profile_service.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browser_sync/browser_sync_switches.h"
+#include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "extensions/test/result_catcher.h"
 
 using extensions::ResultCatcher;
