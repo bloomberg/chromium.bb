@@ -2279,6 +2279,7 @@ test("unit_tests") {
     "../browser/budget_service/budget_manager_unittest.cc",
     "../browser/chrome_content_browser_client_unittest.cc",
     "../browser/chrome_process_singleton_win_unittest.cc",
+    "../browser/client_hints/client_hints_unittest.cc",
     "../browser/command_updater_impl_unittest.cc",
     "../browser/component_updater/chrome_component_updater_configurator_unittest.cc",
     "../browser/component_updater/component_installer_errors_unittest.cc",
