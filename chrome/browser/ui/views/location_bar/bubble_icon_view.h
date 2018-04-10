@@ -132,6 +132,9 @@ class BubbleIconView : public views::InkDropHostView {
 
   bool active() const { return active_; }
 
+  // Retrieve the text to be used for a tooltip or accessible name.
+  virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
+
  private:
   class WidgetObserver : public views::WidgetObserver {
    public:

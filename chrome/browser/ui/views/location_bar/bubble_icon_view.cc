@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -64,10 +65,6 @@ const gfx::ImageSkia& BubbleIconView::GetImage() const {
   return image_->GetImage();
 }
 
-void BubbleIconView::SetTooltipText(const base::string16& tooltip) {
-  image_->SetTooltipText(tooltip);
-}
-
 void BubbleIconView::SetHighlighted(bool bubble_visible) {
   AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
                                 : views::InkDropState::DEACTIVATED,
@@ -86,13 +83,16 @@ bool BubbleIconView::Refresh() {
 }
 
 void BubbleIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  image_->GetAccessibleNodeData(node_data);
   node_data->role = ax::mojom::Role::kButton;
+  node_data->SetName(GetTextForTooltipAndAccessibleName());
 }
 
 bool BubbleIconView::GetTooltipText(const gfx::Point& p,
                                     base::string16* tooltip) const {
-  return !IsBubbleShowing() && image_->GetTooltipText(p, tooltip);
+  if (IsBubbleShowing())
+    return false;
+  *tooltip = GetTextForTooltipAndAccessibleName();
+  return true;
 }
 
 gfx::Size BubbleIconView::CalculatePreferredSize() const {

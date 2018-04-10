@@ -31,6 +31,7 @@ class StarView : public BubbleIconView, public views::WidgetObserver {
   views::BubbleDialogDelegateView* GetBubble() const override;
   SkColor GetInkDropBaseColor() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;

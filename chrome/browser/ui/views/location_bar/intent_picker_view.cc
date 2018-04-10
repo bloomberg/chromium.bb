@@ -11,7 +11,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/toolbar/vector_icons.h"
+#include "ui/base/l10n/l10n_util.h"
 
 IntentPickerView::IntentPickerView(Browser* browser)
     : BubbleIconView(nullptr, 0), browser_(browser) {
@@ -58,4 +60,8 @@ bool IntentPickerView::IsIncognitoMode() {
 
 const gfx::VectorIcon& IntentPickerView::GetVectorIcon() const {
   return toolbar::kOpenInNewIcon;
+}
+
+base::string16 IntentPickerView::GetTextForTooltipAndAccessibleName() const {
+  return l10n_util::GetStringUTF16(IDS_TOOLTIP_INTENT_PICKER_ICON);
 }

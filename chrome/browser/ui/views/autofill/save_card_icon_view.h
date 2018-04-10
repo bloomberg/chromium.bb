@@ -28,6 +28,7 @@ class SaveCardIconView : public BubbleIconView {
   // BubbleIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Refresh() override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  protected:
   // BubbleIconView:

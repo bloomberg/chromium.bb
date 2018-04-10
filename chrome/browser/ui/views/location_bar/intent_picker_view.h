@@ -30,6 +30,7 @@ class IntentPickerView : public BubbleIconView {
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  private:
   bool IsIncognitoMode();
