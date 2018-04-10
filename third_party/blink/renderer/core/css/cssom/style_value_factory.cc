@@ -235,11 +235,11 @@ CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     return style_value_vector;
   }
 
-  if (!css_value.IsValueList()) {
+  if (!css_value.IsValueList() || !CSSProperty::Get(property_id).IsRepeated()) {
     return UnsupportedCSSValue(property_id, css_value);
   }
 
-  // If it's a list, we can try it as a list valued property.
+  // We assume list-valued properties are always stored as a list.
   const CSSValueList& css_value_list = ToCSSValueList(css_value);
   for (const CSSValue* inner_value : css_value_list) {
     style_value = CreateStyleValueWithProperty(property_id, *inner_value);
