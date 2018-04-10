@@ -158,19 +158,22 @@ bool RecommitSystemPagesInternal(void* address,
 }
 
 void DiscardSystemPagesInternal(void* address, size_t length) {
-  // We have experimented with other flags values, but with suboptimal results.
+#if defined(OS_MACOSX)
+  int ret = madvise(address, length, MADV_FREE_REUSABLE);
+  if (ret) {
+    // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.
+    ret = madvise(address, length, MADV_DONTNEED);
+  }
+  CHECK(0 == ret);
+#else
+  // We have experimented with other flags, but with suboptimal results.
   //
   // MADV_FREE (Linux): Makes our memory measurements less predictable;
   // performance benefits unclear.
   //
-  // MADV_FREE_REUSABLE (macOS): Apparently never worked (EINVAL), and the
-  // failure was masked by a retry block intended for Linux in cases when
-  // MADV_FREE was defined but not implemented in the running kernel. So we were
-  // making an unnecessary system call.
-  //
   // Therefore, we just do the simple thing: MADV_DONTNEED.
-  int flags = MADV_DONTNEED;
-  CHECK(!madvise(address, length, flags));
+  CHECK(!madvise(address, length, MADV_DONTNEED));
+#endif
 }
 
 }  // namespace base
