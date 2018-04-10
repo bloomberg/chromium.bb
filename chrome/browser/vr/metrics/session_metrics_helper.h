@@ -34,10 +34,13 @@ enum class VrStartAction : int {
   // Chrome VR was started by an intent from another app. Most likely the user
   // clicked the icon in Daydream home.
   kIntentLaunch = 4,
-  kVrStartActionLast = kIntentLaunch,
+  kMaxValue = kIntentLaunch,
 };
 
 // The source of a request to enter XR Presentation.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Ensure that this stays in sync with VRPresentationStartAction in enums.xml.
 enum PresentationStartAction {
   // A catch all for methods of Presentation entry that are not otherwise
   // logged.
@@ -53,6 +56,7 @@ enum PresentationStartAction {
   kHeadsetActivation = 3,
   // The user opened a deep linked app, probably from the Daydream homescreen.
   kDeepLinkedApp = 4,
+  kMaxValue = kDeepLinkedApp,
 };
 
 // SessionTimer will monitor the time between calls to StartSession and
@@ -183,7 +187,8 @@ class SessionMetricsHelper : public content::WebContentsObserver {
   void SetVrMode(Mode mode);
   void UpdateMode();
 
-  void MaybeSetVrStartAction(VrStartAction action);
+  void LogVrStartAction(VrStartAction action);
+  void LogPresentationStartAction(PresentationStartAction action);
 
   void OnEnterAnyVr();
   void OnExitAllVr();

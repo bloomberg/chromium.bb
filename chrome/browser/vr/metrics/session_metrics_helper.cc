@@ -286,7 +286,7 @@ void SessionMetricsHelper::RecordVrStartAction(VrStartAction action) {
   if (!page_session_tracker_ || mode_ == Mode::kNoVr) {
     pending_page_session_start_action_ = action;
   } else {
-    MaybeSetVrStartAction(action);
+    LogVrStartAction(action);
   }
 }
 
@@ -295,8 +295,7 @@ void SessionMetricsHelper::RecordPresentationStartAction(
   if (!presentation_session_tracker_ || mode_ != Mode::kWebXrVrPresentation) {
     pending_presentation_start_action_ = action;
   } else {
-    presentation_session_tracker_->ukm_entry()->SetStartAction(action);
-    pending_presentation_start_action_ = base::nullopt;
+    LogPresentationStartAction(action);
   }
 }
 
@@ -312,15 +311,24 @@ void SessionMetricsHelper::ReportRequestPresent() {
   }
 }
 
-void SessionMetricsHelper::MaybeSetVrStartAction(VrStartAction action) {
-  UMA_HISTOGRAM_ENUMERATION("XR.VRSession.StartAction", action,
-                            VrStartAction::kVrStartActionLast);
+void SessionMetricsHelper::LogVrStartAction(VrStartAction action) {
   DCHECK(page_session_tracker_);
+
+  UMA_HISTOGRAM_ENUMERATION("XR.VRSession.StartAction", action);
   if (action == VrStartAction::kHeadsetActivation ||
       action == VrStartAction::kPresentationRequest) {
     page_session_tracker_->ukm_entry()->SetEnteredVROnPageReason(
         static_cast<int>(action));
   }
+}
+
+void SessionMetricsHelper::LogPresentationStartAction(
+    PresentationStartAction action) {
+  DCHECK(presentation_session_tracker_);
+
+  UMA_HISTOGRAM_ENUMERATION("XR.WebXR.PresentationSession", action);
+
+  presentation_session_tracker_->ukm_entry()->SetStartAction(action);
 }
 
 void SessionMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
@@ -423,7 +431,7 @@ void SessionMetricsHelper::OnEnterAnyVr() {
           std::make_unique<ukm::builders::XR_PageSession>(
               ukm::GetSourceIdForWebContentsDocument(web_contents())));
   if (pending_page_session_start_action_) {
-    MaybeSetVrStartAction(*pending_page_session_start_action_);
+    LogVrStartAction(*pending_page_session_start_action_);
     pending_page_session_start_action_ = base::nullopt;
   }
 }
@@ -489,8 +497,7 @@ void SessionMetricsHelper::OnEnterPresentation() {
     pending_presentation_start_action_ = PresentationStartAction::kOther;
   }
 
-  presentation_session_tracker_->ukm_entry()->SetStartAction(
-      *pending_presentation_start_action_);
+  LogPresentationStartAction(*pending_presentation_start_action_);
   pending_presentation_start_action_ = base::nullopt;
 }
 
@@ -612,7 +619,7 @@ void SessionMetricsHelper::DidFinishNavigation(
             std::make_unique<ukm::builders::XR_PageSession>(
                 ukm::GetSourceIdForWebContentsDocument(web_contents())));
     if (pending_page_session_start_action_) {
-      MaybeSetVrStartAction(*pending_page_session_start_action_);
+      LogVrStartAction(*pending_page_session_start_action_);
       pending_page_session_start_action_ = base::nullopt;
     }
 
