@@ -27,7 +27,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #import "content/browser/renderer_host/render_widget_host_ns_view_bridge.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
-#import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -461,13 +460,13 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   // |updated_view| is the last view to change its TextInputState which can be
   // used to start/stop monitoring composition info when it has a focused
   // editable text input field.
-  RenderWidgetHostImpl* widgetHost =
+  RenderWidgetHostImpl* widget_host =
       RenderWidgetHostImpl::From(updated_view->GetRenderWidgetHost());
 
   // We might end up here when |updated_view| has had active TextInputState and
   // then got destroyed. In that case, |updated_view->GetRenderWidgetHost()|
   // returns nullptr.
-  if (!widgetHost)
+  if (!widget_host)
     return;
 
   // Set the monitor state based on the text input focus state.
@@ -476,8 +475,8 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   bool need_monitor_composition =
       has_focus && state && state->type != ui::TEXT_INPUT_TYPE_NONE;
 
-  widgetHost->RequestCompositionUpdates(false /* immediate_request */,
-                                        need_monitor_composition);
+  widget_host->RequestCompositionUpdates(false /* immediate_request */,
+                                         need_monitor_composition);
 
   if (has_focus) {
     SetTextInputActive(true);
@@ -1118,8 +1117,8 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
 }
 
 void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
-  RenderWidgetHostViewMacDictionaryHelper helper(this);
-  helper.ShowDefinitionForSelection();
+  // This will round-trip to the NSView to determine the selection range.
+  ns_view_bridge_->ShowDictionaryOverlayForSelection();
 }
 
 void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
@@ -1407,6 +1406,92 @@ void RenderWidgetHostViewMac::OnNSViewGestureEnd(
 void RenderWidgetHostViewMac::OnNSViewSmartMagnify(
     const blink::WebGestureEvent& smart_magnify_event) {
   host()->ForwardGestureEvent(smart_magnify_event);
+}
+
+void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayFromRange(
+    const gfx::Range& range) {
+  content::RenderWidgetHostViewBase* focused_view =
+      GetFocusedViewForTextSelection();
+  if (!focused_view)
+    return;
+
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(focused_view->GetRenderWidgetHost());
+  if (!widget_host)
+    return;
+
+  int32_t target_widget_process_id = widget_host->GetProcess()->GetID();
+  int32_t target_widget_routing_id = widget_host->GetRoutingID();
+  TextInputClientMac::GetInstance()->GetStringFromRange(
+      widget_host, range,
+      base::BindOnce(&RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay,
+                     weak_factory_.GetWeakPtr(), target_widget_process_id,
+                     target_widget_routing_id));
+}
+
+void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayAtPoint(
+    const gfx::PointF& root_point) {
+  if (!host() || !host()->delegate() ||
+      !host()->delegate()->GetInputEventRouter())
+    return;
+
+  gfx::PointF transformed_point;
+  RenderWidgetHostImpl* widget_host =
+      host()->delegate()->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
+          this, root_point, &transformed_point);
+  if (!widget_host)
+    return;
+
+  int32_t target_widget_process_id = widget_host->GetProcess()->GetID();
+  int32_t target_widget_routing_id = widget_host->GetRoutingID();
+  TextInputClientMac::GetInstance()->GetStringAtPoint(
+      widget_host, gfx::ToFlooredPoint(transformed_point),
+      base::BindOnce(&RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay,
+                     weak_factory_.GetWeakPtr(), target_widget_process_id,
+                     target_widget_routing_id));
+}
+
+void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
+    int32_t target_widget_process_id,
+    int32_t target_widget_routing_id,
+    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    gfx::Point baseline_point) {
+  if (encoded_string.string().empty()) {
+    // The PDF plugin does not support getting the attributed string at point.
+    // Until it does, use NSPerformService(), which opens Dictionary.app.
+    // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.
+    // https://crbug.com/152438
+    // This often just opens a blank dictionary, not the definition of |string|.
+    // https://crbug.com/830047
+    // This path will be taken, inappropriately, when a lookup gesture was
+    // performed at a location that doesn't have text, but some text is
+    // selected.
+    // https://crbug.com/830906
+    if (auto* selection = GetTextSelection()) {
+      const base::string16& selected_text = selection->selected_text();
+      NSString* ns_selected_text = base::SysUTF16ToNSString(selected_text);
+      if ([ns_selected_text length] == 0)
+        return;
+      scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
+      NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
+      [pasteboard->get() declareTypes:types owner:nil];
+      if ([pasteboard->get() setString:ns_selected_text
+                               forType:NSStringPboardType]) {
+        NSPerformService(@"Look Up in Dictionary", pasteboard->get());
+      }
+    }
+  } else {
+    // By the time we get here |widget_host| might have been destroyed.
+    // https://crbug.com/737032
+    auto* widget_host = content::RenderWidgetHost::FromID(
+        target_widget_process_id, target_widget_routing_id);
+    if (widget_host) {
+      if (auto* rwhv = widget_host->GetView())
+        baseline_point = rwhv->TransformPointToRootCoordSpace(baseline_point);
+    }
+    if (ns_view_bridge_)
+      ns_view_bridge_->ShowDictionaryOverlay(encoded_string, baseline_point);
+  }
 }
 
 Class GetRenderWidgetHostViewCocoaClassForTesting() {

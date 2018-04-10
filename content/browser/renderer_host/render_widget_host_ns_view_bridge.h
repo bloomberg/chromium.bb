@@ -11,10 +11,12 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "content/common/mac/attributed_string_coder.h"
 #include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
+class Point;
 class Range;
 class Rect;
 }  // namespace gfx
@@ -74,6 +76,16 @@ class RenderWidgetHostNSViewBridge {
 
   // Set the cursor type to display.
   virtual void DisplayCursor(const WebCursor& cursor) = 0;
+
+  // Open the dictionary overlay for the currently selected string. This
+  // will roundtrip to the NSView to determine the selected range.
+  virtual void ShowDictionaryOverlayForSelection() = 0;
+
+  // Open the dictionary overlay for the specified string at the specified
+  // point.
+  virtual void ShowDictionaryOverlay(
+      const mac::AttributedStringCoder::EncodedString& encoded_string,
+      gfx::Point baseline_point) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridge);

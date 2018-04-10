@@ -8,7 +8,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/sys_string_conversions.h"
-#import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/mac/attributed_string_coder.h"
@@ -75,12 +74,9 @@ void TestTextInputClientMessageFilter::SetStringForRangeCallback(
 
 void AskForLookUpDictionaryForRange(RenderWidgetHostView* tab_view,
                                     const gfx::Range& range) {
-  RenderWidgetHostViewCocoa* cocoa_view =
-      static_cast<RenderWidgetHostViewMac*>(tab_view)->cocoa_view();
-
-  // Explicitly ask for the dictionary for the given range.
-  [cocoa_view showLookUpDictionaryOverlayFromRange:range.ToNSRange()
-                                        targetView:cocoa_view];
+  RenderWidgetHostViewMac* tab_view_mac =
+      static_cast<RenderWidgetHostViewMac*>(tab_view);
+  tab_view_mac->OnNSViewLookUpDictionaryOverlayFromRange(range);
 }
 
 size_t GetOpenNSWindowsCount() {

@@ -197,9 +197,7 @@ struct DidOverscrollParams;
                              actualRange:(NSRangePointer)actualRange;
 - (void)tabletEvent:(NSEvent*)theEvent;
 - (void)quickLookWithEvent:(NSEvent*)event;
-- (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point;
-- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
-                                  targetView:(NSView*)targetView;
+- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range;
 - (BOOL)suppressNextKeyUpForTesting:(int)keyCode;
 // Query the display::Display from the view's NSWindow's NSScreen and forward
 // it to the RenderWidgetHostNSViewClient (only if the screen is non-nil).

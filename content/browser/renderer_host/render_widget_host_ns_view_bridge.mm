@@ -47,6 +47,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void SetSelectedRange(const gfx::Range& range) override;
   void SetShowingContextMenu(bool showing) override;
   void DisplayCursor(const WebCursor& cursor) override;
+  void ShowDictionaryOverlayForSelection() override;
+  void ShowDictionaryOverlay(
+      const mac::AttributedStringCoder::EncodedString& encoded_string,
+      gfx::Point baseline_point) override;
 
  private:
   bool IsPopup() const {
@@ -236,6 +240,26 @@ void RenderWidgetHostViewNSViewBridgeLocal::DisplayCursor(
     const WebCursor& cursor) {
   WebCursor non_const_cursor = cursor;
   [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::
+    ShowDictionaryOverlayForSelection() {
+  NSRange selection_range = [cocoa_view_ selectedRange];
+  [cocoa_view_ showLookUpDictionaryOverlayFromRange:selection_range];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::ShowDictionaryOverlay(
+    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    gfx::Point baseline_point) {
+  NSAttributedString* string =
+      mac::AttributedStringCoder::Decode(&encoded_string);
+  if ([string length] == 0)
+    return;
+  NSPoint flipped_baseline_point = {
+      baseline_point.x(), [cocoa_view_ frame].size.height - baseline_point.y(),
+  };
+  [cocoa_view_ showDefinitionForAttributedString:string
+                                         atPoint:flipped_baseline_point];
 }
 
 }  // namespace
