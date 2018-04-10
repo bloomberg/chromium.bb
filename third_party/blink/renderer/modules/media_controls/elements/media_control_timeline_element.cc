@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
@@ -87,6 +88,9 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
+  setAttribute(
+      HTMLNames::aria_valuetextAttr,
+      AtomicString(GetMediaControls().CurrentTimeDisplay().textContent(true)));
   RenderBarSegments();
 }
 
