@@ -103,6 +103,18 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
   // Surface should maintain keyboard focus when moved to top-level window.
   focus_client->FocusWindow(surface->window()->GetToplevelWindow());
 
+  // Release key after surface lost focus.
+  focus_client->FocusWindow(nullptr);
+  generator.ReleaseKey(ui::VKEY_A, ui::EF_SHIFT_DOWN);
+
+  // Key should no longer be pressed when focus returns.
+  EXPECT_CALL(delegate, CanAcceptKeyboardEventsForSurface(surface.get()))
+      .WillOnce(testing::Return(true));
+  EXPECT_CALL(delegate, OnKeyboardModifiers(ui::EF_SHIFT_DOWN));
+  EXPECT_CALL(delegate,
+              OnKeyboardEnter(surface.get(), base::flat_set<ui::DomCode>()));
+  focus_client->FocusWindow(surface->window()->GetToplevelWindow());
+
   keyboard.reset();
 }
 

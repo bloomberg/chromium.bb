@@ -216,13 +216,6 @@ void Keyboard::AckKeyboardKey(uint32_t serial, bool handled) {
 // ui::EventHandler overrides:
 
 void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
-  int modifier_flags = event->flags() & kModifierMask;
-  if (modifier_flags != modifier_flags_) {
-    modifier_flags_ = modifier_flags;
-    if (focus_)
-      delegate_->OnKeyboardModifiers(modifier_flags_);
-  }
-
   // Process reserved accelerators before sending it to client.
   if (focus_ && ProcessAcceleratorIfReserved(focus_, event)) {
     // Discard a key press event if it's a reserved accelerator and it's
@@ -239,10 +232,16 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
   // and client) and causes undesired behavior.
   bool consumed_by_ime = focus_ ? ConsumedByIme(focus_, event) : false;
 
-  switch (event->type()) {
-    case ui::ET_KEY_PRESSED:
-      if (pressed_keys_.insert(event->code()).second) {
-        if (focus_ && !consumed_by_ime && !event->handled()) {
+  if (focus_ && !consumed_by_ime && !event->handled()) {
+    int modifier_flags = event->flags() & kModifierMask;
+    if (modifier_flags != modifier_flags_) {
+      modifier_flags_ = modifier_flags;
+      delegate_->OnKeyboardModifiers(modifier_flags_);
+    }
+
+    switch (event->type()) {
+      case ui::ET_KEY_PRESSED:
+        if (pressed_keys_.insert(event->code()).second) {
           uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
                                                      event->code(), true);
           if (are_keyboard_key_acks_needed_) {
@@ -253,11 +252,9 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
             event->SetHandled();
           }
         }
-      }
-      break;
-    case ui::ET_KEY_RELEASED:
-      if (pressed_keys_.erase(event->code())) {
-        if (focus_ && !consumed_by_ime && !event->handled()) {
+        break;
+      case ui::ET_KEY_RELEASED:
+        if (pressed_keys_.erase(event->code())) {
           uint32_t serial = delegate_->OnKeyboardKey(event->time_stamp(),
                                                      event->code(), false);
           if (are_keyboard_key_acks_needed_) {
@@ -268,11 +265,11 @@ void Keyboard::OnKeyEvent(ui::KeyEvent* event) {
             event->SetHandled();
           }
         }
-      }
-      break;
-    default:
-      NOTREACHED();
-      break;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
 
   if (pending_key_acks_.empty())
