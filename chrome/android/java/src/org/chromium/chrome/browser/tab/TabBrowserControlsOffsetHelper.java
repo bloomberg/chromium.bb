@@ -169,6 +169,8 @@ public class TabBrowserControlsOffsetHelper {
     private void updateFullscreenManagerOffsets(boolean toNonFullscreen, float topControlsOffset,
             float bottomControlsOffset, float topContentOffset) {
         final FullscreenManager manager = mTab.getFullscreenManager();
+        if (manager == null) return;
+
         if (toNonFullscreen) {
             manager.setPositionsForTabToNonFullscreen();
         } else {
