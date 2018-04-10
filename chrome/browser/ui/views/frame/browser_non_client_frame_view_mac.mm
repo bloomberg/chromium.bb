@@ -20,6 +20,8 @@ namespace {
 const int kTabstripTopInset = 8;
 const int kTabstripLeftInset = 70;  // Make room for window control buttons.
 constexpr int kTabstripRightInset = 4;  // Margin for profile switcher.
+constexpr const gfx::Size kMinTabbedWindowSize(400, 272);
+constexpr const gfx::Size kMinPopupWindowSize(100, 122);
 
 }  // namespace
 
@@ -126,7 +128,11 @@ void BrowserNonClientFrameViewMac::SizeConstraintsChanged() {
 // BrowserNonClientFrameViewMac, views::View implementation:
 
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
-  return browser_view()->GetMinimumSize();
+  gfx::Size size = browser_view()->GetMinimumSize();
+  size.SetToMax(browser_view()->browser()->is_type_tabbed()
+                    ? kMinTabbedWindowSize
+                    : kMinPopupWindowSize);
+  return size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
