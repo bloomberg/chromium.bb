@@ -407,9 +407,9 @@ action("generated_testing_idls_settings") {
 
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_internal_settings.py",
-             "../build/scripts/templates/InternalSettingsGenerated.idl.tmpl",
-             "../build/scripts/templates/InternalSettingsGenerated.cpp.tmpl",
-             "../build/scripts/templates/InternalSettingsGenerated.h.tmpl",
+             "../build/scripts/templates/internal_settings_generated.idl.tmpl",
+             "../build/scripts/templates/internal_settings_generated.cc.tmpl",
+             "../build/scripts/templates/internal_settings_generated.h.tmpl",
              "frame/settings.json5",
            ]
 
@@ -432,8 +432,8 @@ action("generated_testing_idls_internal_runtime_flags") {
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_internal_runtime_flags.py",
              "../platform/runtime_enabled_features.json5",
-             "../build/scripts/templates/InternalRuntimeFlags.h.tmpl",
-             "../build/scripts/templates/InternalRuntimeFlags.idl.tmpl",
+             "../build/scripts/templates/internal_runtime_flags.h.tmpl",
+             "../build/scripts/templates/internal_runtime_flags.idl.tmpl",
            ]
 
   args = [
