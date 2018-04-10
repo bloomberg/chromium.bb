@@ -270,9 +270,7 @@ void BackgroundFetchDataManager::GetRegistration(
 }
 
 void BackgroundFetchDataManager::UpdateRegistrationUI(
-    int64_t service_worker_registration_id,
-    const url::Origin& origin,
-    const std::string& unique_id,
+    const BackgroundFetchRegistrationId& registration_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -281,12 +279,11 @@ void BackgroundFetchDataManager::UpdateRegistrationUI(
           switches::kEnableBackgroundFetchPersistence)) {
     AddDatabaseTask(
         std::make_unique<background_fetch::UpdateRegistrationUITask>(
-            this, service_worker_registration_id, origin, unique_id, title,
-            std::move(callback)));
+            this, registration_id, title, std::move(callback)));
     return;
   }
 
-  auto registrations_iter = registrations_.find(unique_id);
+  auto registrations_iter = registrations_.find(registration_id.unique_id());
   if (registrations_iter == registrations_.end()) {  // Not found.
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
     return;

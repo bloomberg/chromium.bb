@@ -108,6 +108,7 @@ void BackgroundFetchServiceImpl::GetIconDisplaySize(
 
 void BackgroundFetchServiceImpl::UpdateUI(
     int64_t service_worker_registration_id,
+    const std::string& developer_id,
     const std::string& unique_id,
     const std::string& title,
     UpdateUICallback callback) {
@@ -118,8 +119,10 @@ void BackgroundFetchServiceImpl::UpdateUI(
     return;
   }
 
-  background_fetch_context_->UpdateUI(service_worker_registration_id, origin_,
-                                      unique_id, title, std::move(callback));
+  BackgroundFetchRegistrationId registration_id(
+      service_worker_registration_id, origin_, developer_id, unique_id);
+  background_fetch_context_->UpdateUI(registration_id, title,
+                                      std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,

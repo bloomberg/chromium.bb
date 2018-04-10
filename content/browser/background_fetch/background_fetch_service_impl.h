@@ -44,6 +44,7 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              FetchCallback callback) override;
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
+                const std::string& developer_id,
                 const std::string& unique_id,
                 const std::string& title,
                 UpdateUICallback callback) override;
