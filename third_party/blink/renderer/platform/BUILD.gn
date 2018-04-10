@@ -246,19 +246,19 @@ config("blink_platform_pch") {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
       # source code in quotes for an #include directive.
-      precompiled_header = rebase_path("precompile_-platform.h", root_build_dir)
+      precompiled_header = rebase_path("precompile_platform.h", root_build_dir)
 
       # This is a file that GN will compile with the above header. It will be
       # implicitly added to the sources (potentially multiple times, with one
       # variant for each language used in the target).
       precompiled_source =
-          "//third_party/blink/renderer/platform/win/precompile_-platform.cc"
+          "//third_party/blink/renderer/platform/win/precompile_platform.cc"
 
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
     } else if (is_mac) {
       precompiled_source =
-          "//third_party/blink/renderer/platform/precompile_-platform.h"
+          "//third_party/blink/renderer/platform/precompile_platform.h"
     }
   }
 }
