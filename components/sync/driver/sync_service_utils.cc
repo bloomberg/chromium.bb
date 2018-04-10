@@ -9,15 +9,6 @@
 
 namespace syncer {
 
-bool IsTabSyncEnabledAndUnencrypted(SyncService* sync_service,
-                                    PrefService* pref_service) {
-  // Check field trials and settings allow sending the URL on suggest requests.
-  SyncPrefs sync_prefs(pref_service);
-  return sync_service && sync_service->CanSyncStart() &&
-         sync_prefs.GetPreferredDataTypes(UserTypes()).Has(PROXY_TABS) &&
-         !sync_service->GetEncryptedDataTypes().Has(SESSIONS);
-}
-
 UploadState GetUploadToGoogleState(const SyncService* sync_service,
                                    ModelType type) {
   // Note: Before configuration is done, GetPreferredDataTypes returns

@@ -362,7 +362,7 @@ bool BaseSearchProvider::CanSendURL(
   if (!scheme_allowed)
     return false;
 
-  if (!client->TabSyncEnabledAndUnencrypted())
+  if (!client->IsTabUploadToGoogleActive())
     return false;
 
   return true;

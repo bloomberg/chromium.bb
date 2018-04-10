@@ -76,7 +76,7 @@ class MockAutocompleteProviderClient
   MOCK_CONST_METHOD0(GetCurrentVisitTimestamp, base::Time());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
-  MOCK_CONST_METHOD0(TabSyncEnabledAndUnencrypted, bool());
+  MOCK_CONST_METHOD0(IsTabUploadToGoogleActive, bool());
   MOCK_CONST_METHOD0(IsAuthenticated, bool());
   MOCK_METHOD6(
       Classify,
