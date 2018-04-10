@@ -113,26 +113,6 @@ class ReferenceWriter {
   virtual void PutNext(Reference reference) = 0;
 };
 
-// Position of the most significant bit of offset_t.
-constexpr offset_t kIndexMarkBitPosition = sizeof(offset_t) * 8 - 1;
-
-// Helper functions to mark an offset_t, so we can distinguish file offsets from
-// Label indices. Implementation: Marking is flagged by the most significant bit
-// (MSB).
-constexpr inline bool IsMarked(offset_t value) {
-  return value >> kIndexMarkBitPosition != 0;
-}
-constexpr inline offset_t MarkIndex(offset_t value) {
-  return value | (offset_t(1) << kIndexMarkBitPosition);
-}
-constexpr inline offset_t UnmarkIndex(offset_t value) {
-  return value & ~(offset_t(1) << kIndexMarkBitPosition);
-}
-
-// Constant as placeholder for non-existing offset for an index.
-constexpr offset_t kUnusedIndex = offset_t(-1);
-static_assert(IsMarked(kUnusedIndex), "kUnusedIndex must be marked");
-
 // An Equivalence is a block of length |length| that approximately match in
 // |old_image| at an offset of |src_offset| and in |new_image| at an offset of
 // |dst_offset|.
