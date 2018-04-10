@@ -125,8 +125,7 @@ class CORE_EXPORT ApplyStyleCommand final : public CompositeEditCommand {
   void ApplyInlineStyleToPushDown(Node*, EditingStyle*, EditingState*);
   void PushDownInlineStyleAroundNode(EditingStyle*, Node*, EditingState*);
   void RemoveInlineStyle(EditingStyle*,
-                         const Position& start,
-                         const Position& end,
+                         const EphemeralRange& range,
                          EditingState*);
   bool ElementFullySelected(const HTMLElement&,
                             const Position& start,
