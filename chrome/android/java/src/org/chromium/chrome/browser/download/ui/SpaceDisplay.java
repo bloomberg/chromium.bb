@@ -43,11 +43,6 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         R.string.download_manager_ui_space_used_mb,
         R.string.download_manager_ui_space_used_gb
     };
-    private static final int[] FREE_STRINGS = {
-        R.string.download_manager_ui_space_free_kb,
-        R.string.download_manager_ui_space_free_mb,
-        R.string.download_manager_ui_space_free_gb
-    };
     private static final int[] OTHER_STRINGS = {
         R.string.download_manager_ui_space_other_kb,
         R.string.download_manager_ui_space_other_mb,
@@ -190,7 +185,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         mSpaceUsedByDownloadsTextView.setText(
                 DownloadUtils.getStringForBytes(context, USED_STRINGS, bytesUsedByDownloads));
 
-        String spaceFree = DownloadUtils.getStringForBytes(context, FREE_STRINGS, mFreeBytes);
+        String spaceFree = DownloadUtils.getStringForAvailableBytes(context, mFreeBytes);
         String spaceUsedByOtherApps =
                 DownloadUtils.getStringForBytes(context, OTHER_STRINGS, bytesUsedByOtherApps);
         mSpaceFreeAndOtherAppsTextView.setText(

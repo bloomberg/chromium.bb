@@ -102,6 +102,9 @@ DownloadTargetDeterminer::DownloadTargetDeterminer(
       danger_level_(DownloadFileType::NOT_DANGEROUS),
       virtual_path_(initial_virtual_path),
       is_filetype_handled_safely_(false),
+#if defined(OS_ANDROID)
+      is_checking_dialog_confirmed_path_(false),
+#endif
       download_(download),
       is_resumption_(download_->GetLastReason() !=
                          download::DOWNLOAD_INTERRUPT_REASON_NONE &&
@@ -408,14 +411,29 @@ DownloadTargetDeterminer::DoRequestConfirmation() {
 
   // Avoid prompting for a download if it isn't in-progress. The user will be
   // prompted once the download is resumed and headers are available.
-  if (confirmation_reason_ != DownloadConfirmationReason::NONE &&
-      download_->GetState() == DownloadItem::IN_PROGRESS) {
-    delegate_->RequestConfirmation(
-        download_, virtual_path_, confirmation_reason_,
-        base::Bind(&DownloadTargetDeterminer::RequestConfirmationDone,
-                   weak_ptr_factory_.GetWeakPtr()));
-    return QUIT_DOLOOP;
+  if (download_->GetState() == DownloadItem::IN_PROGRESS) {
+#if defined(OS_ANDROID)
+    // If we were looping back to check the user-confirmed path from the
+    // dialog, and there were no additional errors, continue.
+    if (is_checking_dialog_confirmed_path_ &&
+        (confirmation_reason_ == DownloadConfirmationReason::PREFERENCE ||
+         confirmation_reason_ == DownloadConfirmationReason::NONE)) {
+      is_checking_dialog_confirmed_path_ = false;
+      return CONTINUE;
+    }
+#endif
+
+    // If there is a non-neutral confirmation reason, prompt the user.
+    if (confirmation_reason_ != DownloadConfirmationReason::NONE) {
+      delegate_->RequestConfirmation(
+          download_, virtual_path_, confirmation_reason_,
+          base::BindRepeating(
+              &DownloadTargetDeterminer::RequestConfirmationDone,
+              weak_ptr_factory_.GetWeakPtr()));
+      return QUIT_DOLOOP;
+    }
   }
+
   return CONTINUE;
 }
 
@@ -425,6 +443,9 @@ void DownloadTargetDeterminer::RequestConfirmationDone(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_->IsTransient());
   DVLOG(20) << "User selected path:" << virtual_path.AsUTF8Unsafe();
+#if defined(OS_ANDROID)
+  is_checking_dialog_confirmed_path_ = false;
+#endif
   if (result == DownloadConfirmationResult::CANCELED) {
     ScheduleCallbackAndDeleteSelf(
         download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
@@ -440,6 +461,16 @@ void DownloadTargetDeterminer::RequestConfirmationDone(
     confirmation_reason_ = DownloadConfirmationReason::NONE;
 
   virtual_path_ = virtual_path;
+
+#if defined(OS_ANDROID)
+  if (result == DownloadConfirmationResult::CONFIRMED_WITH_DIALOG) {
+    // Double check the user-selected path is valid by looping back.
+    is_checking_dialog_confirmed_path_ = true;
+    confirmation_reason_ = DownloadConfirmationReason::NONE;
+    next_state_ = STATE_RESERVE_VIRTUAL_PATH;
+  }
+#endif
+
   download_prefs_->SetSaveFilePath(virtual_path_.DirName());
   DoLoop();
 }

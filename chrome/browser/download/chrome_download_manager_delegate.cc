@@ -28,6 +28,7 @@
 #include "chrome/browser/download/download_file_picker.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item_model.h"
+#include "chrome/browser/download/download_location_dialog_type.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_request_limiter.h"
@@ -44,6 +45,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pdf_uma.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
@@ -66,8 +68,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
 #include "chrome/browser/android/download/chrome_duplicate_download_infobar_delegate.h"
 #include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/android/download/download_location_dialog_bridge_impl.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #endif
@@ -274,7 +278,7 @@ ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
   download_metadata_cache_.reset(new download::InProgressCacheImpl(
       metadata_cache_file, disk_access_task_runner_));
 #if defined(OS_ANDROID)
-  location_dialog_bridge_.reset(new DownloadLocationDialogBridge);
+  location_dialog_bridge_.reset(new DownloadLocationDialogBridgeImpl);
 #endif
 }
 
@@ -293,6 +297,13 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
     sb_service->AddDownloadManager(dm);
   }
 }
+
+#if defined(OS_ANDROID)
+void ChromeDownloadManagerDelegate::SetDownloadLocationDialogBridgeForTesting(
+    DownloadLocationDialogBridge* bridge) {
+  location_dialog_bridge_.reset(bridge);
+}
+#endif
 
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
@@ -776,69 +787,147 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 #if defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(download);
-  switch (reason) {
-    case DownloadConfirmationReason::NONE:
-      NOTREACHED();
-      return;
-
-    case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
-      DownloadManagerService::OnDownloadCanceled(
-          download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
-      callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
-      return;
-
-    case DownloadConfirmationReason::PREFERENCE:
-      if (web_contents) {
-        location_dialog_bridge_->ShowDialog(web_contents, suggested_path,
-                                            callback);
-      } else {
-        // For now, if there are no WebContents, continue anyways.
-        callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-                     suggested_path);
-      }
-      return;
-
-    case DownloadConfirmationReason::NAME_TOO_LONG:
-    case DownloadConfirmationReason::TARGET_NO_SPACE:
-    // These are errors. But rather than cancel the download we are going to
-    // continue with the current path so that the download will get
-    // interrupted again.
-    //
-    // Ideally we'd allow the user to try another location, but on Android,
-    // the user doesn't have much of a choice (currently). So we skip the
-    // prompt and try the same location.
-
-    case DownloadConfirmationReason::SAVE_AS:
+  if (base::FeatureList::IsEnabled(features::kDownloadsLocationChange)) {
+    if (reason == DownloadConfirmationReason::SAVE_AS) {
+      // If this is a 'Save As' download, just run without confirmation.
       callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
                    suggested_path);
-      return;
-
-    case DownloadConfirmationReason::TARGET_CONFLICT:
-      if (web_contents) {
-        android::ChromeDuplicateDownloadInfoBarDelegate::Create(
-            InfoBarService::FromWebContents(web_contents), download,
-            suggested_path, callback);
+    } else if (!web_contents ||
+               reason == DownloadConfirmationReason::UNEXPECTED) {
+      // If there are no web_contents and there are no errors (ie. location
+      // dialog is only being requested because of a user preference), continue.
+      if (reason == DownloadConfirmationReason::PREFERENCE) {
+        callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+                     suggested_path);
         return;
       }
-      FALLTHROUGH;
 
-    // If we cannot reserve the path and the WebContent is already gone, there
-    // is no way to prompt user for an infobar. This could happen after chrome
-    // gets killed, and user tries to resume a download while another app has
-    // created the target file (not the temporary .crdownload file).
-    case DownloadConfirmationReason::UNEXPECTED:
+      // If we cannot reserve the path and the WebContent is already gone, there
+      // is no way to prompt user for a dialog. This could happen after chrome
+      // gets killed, and user tries to resume a download while another app has
+      // created the target file (not the temporary .crdownload file).
       DownloadManagerService::OnDownloadCanceled(
           download,
           DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
       callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+    } else if (reason == DownloadConfirmationReason::TARGET_CONFLICT) {
+      // If there is a file that already has the same name, try to generate a
+      // unique name for the new download (ie. "image (1).png" vs "image.png").
+      base::FilePath download_dir;
+      if (!base::android::GetDownloadsDirectory(&download_dir)) {
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        return;
+      }
+      gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
+      DownloadPathReservationTracker::GetReservedPath(
+          download, suggested_path, download_dir, true,
+          DownloadPathReservationTracker::UNIQUIFY,
+          base::BindRepeating(
+              &ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone,
+              weak_ptr_factory_.GetWeakPtr(), native_window, callback));
       return;
+    } else {
+      // Figure out type of dialog and display.
+      DownloadLocationDialogType dialog_type =
+          DownloadLocationDialogType::DEFAULT;
+      switch (reason) {
+        case DownloadConfirmationReason::TARGET_NO_SPACE:
+          dialog_type = DownloadLocationDialogType::LOCATION_FULL;
+          break;
+
+        case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
+          dialog_type = DownloadLocationDialogType::LOCATION_NOT_FOUND;
+          break;
+
+        case DownloadConfirmationReason::NAME_TOO_LONG:
+          dialog_type = DownloadLocationDialogType::NAME_TOO_LONG;
+          break;
+
+        case DownloadConfirmationReason::PREFERENCE:
+        default:
+          break;
+      }
+
+      gfx::NativeWindow native_window = web_contents->GetTopLevelNativeWindow();
+      location_dialog_bridge_->ShowDialog(native_window, dialog_type,
+                                          suggested_path, callback);
+    }
+  } else {
+    switch (reason) {
+      case DownloadConfirmationReason::NONE:
+        NOTREACHED();
+        return;
+
+      case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
+        DownloadManagerService::OnDownloadCanceled(
+            download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        return;
+
+      case DownloadConfirmationReason::PREFERENCE:
+      case DownloadConfirmationReason::NAME_TOO_LONG:
+      case DownloadConfirmationReason::TARGET_NO_SPACE:
+      // These are errors. But rather than cancel the download we are going to
+      // continue with the current path so that the download will get
+      // interrupted again.
+      //
+      // Ideally we'd allow the user to try another location, but on Android,
+      // the user doesn't have much of a choice (currently). So we skip the
+      // prompt and try the same location.
+
+      case DownloadConfirmationReason::SAVE_AS:
+        callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+                     suggested_path);
+        return;
+
+      case DownloadConfirmationReason::TARGET_CONFLICT:
+        if (web_contents) {
+          android::ChromeDuplicateDownloadInfoBarDelegate::Create(
+              InfoBarService::FromWebContents(web_contents), download,
+              suggested_path, callback);
+          return;
+        }
+        FALLTHROUGH;
+
+      // If we cannot reserve the path and the WebContent is already gone, there
+      // is no way to prompt user for an infobar. This could happen after chrome
+      // gets killed, and user tries to resume a download while another app has
+      // created the target file (not the temporary .crdownload file).
+      case DownloadConfirmationReason::UNEXPECTED:
+        DownloadManagerService::OnDownloadCanceled(
+            download,
+            DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
+        callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+        return;
+    }
   }
+
 #else   // !OS_ANDROID
   // Desktop Chrome displays a file picker for all confirmation needs. We can do
   // better.
   DownloadFilePicker::ShowFilePicker(download, suggested_path, callback);
 #endif  // !OS_ANDROID
 }
+
+#if defined(OS_ANDROID)
+void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
+    gfx::NativeWindow native_window,
+    const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+    PathValidationResult result,
+    const base::FilePath& target_path) {
+  // After a new, unique filename has been generated, display the error dialog
+  // with the filename automatically set to be the unique filename.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (result == PathValidationResult::SUCCESS) {
+    location_dialog_bridge_->ShowDialog(
+        native_window, DownloadLocationDialogType::NAME_CONFLICT, target_path,
+        callback);
+  } else {
+    // If the name generation failed, fail the download.
+    callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());
+  }
+}
+#endif
 
 void ChromeDownloadManagerDelegate::DetermineLocalPath(
     DownloadItem* download,

@@ -88,6 +88,10 @@ public class DownloadUtils {
         R.string.file_size_downloaded_gb
     };
 
+    private static final int[] BYTES_AVAILABLE_STRINGS = {
+            R.string.download_manager_ui_space_free_kb, R.string.download_manager_ui_space_free_mb,
+            R.string.download_manager_ui_space_free_gb};
+
     private static final String TAG = "download";
 
     private static final String DEFAULT_MIME_TYPE = "*/*";
@@ -872,6 +876,18 @@ public class DownloadUtils {
      */
     public static String getStringForDownloadedBytes(Context context, long bytes) {
         return getStringForBytes(context, BYTES_DOWNLOADED_STRINGS, bytes);
+    }
+
+    /**
+     * Format the number of available bytes into KB, MB, or GB and return the corresponding string
+     * resource. Uses deafult format "20 KB available."
+     *
+     * @param context   Context to use.
+     * @param bytes     Number of bytes needed to display.
+     * @return          The formatted string to be displayed.
+     */
+    public static String getStringForAvailableBytes(Context context, long bytes) {
+        return getStringForBytes(context, BYTES_AVAILABLE_STRINGS, bytes);
     }
 
     /**

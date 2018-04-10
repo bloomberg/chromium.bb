@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/buildflags/buildflags.h"
+#include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/download_location_dialog_bridge.h"
@@ -59,6 +60,10 @@ class ChromeDownloadManagerDelegate
   static void DisableSafeBrowsing(download::DownloadItem* item);
 
   void SetDownloadManager(content::DownloadManager* dm);
+#if defined(OS_ANDROID)
+  void SetDownloadLocationDialogBridgeForTesting(
+      DownloadLocationDialogBridge* bridge);
+#endif
 
   // Callbacks passed to GetNextId() will not be called until the returned
   // callback is called.
@@ -197,6 +202,16 @@ class ChromeDownloadManagerDelegate
       content::CheckDownloadAllowedCallback check_download_allowed_cb,
       bool storage_permission_granted,
       bool allow);
+
+#if defined(OS_ANDROID)
+  // Called after a unique file name is generated in the case that there is a
+  // TARGET_CONFLICT and the new file name should be displayed to the user.
+  void GenerateUniqueFileNameDone(
+      gfx::NativeWindow native_window,
+      const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback,
+      PathValidationResult result,
+      const base::FilePath& target_path);
+#endif
 
   Profile* profile_;
 

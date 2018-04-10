@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -980,9 +982,56 @@ class AndroidDownloadInfobarCounter
   int infobar_count_ = 0;
 };
 
+class TestDownloadLocationDialogBridge : public DownloadLocationDialogBridge {
+ public:
+  TestDownloadLocationDialogBridge() {}
+
+  // DownloadLocationDialogBridge implementation.
+  void ShowDialog(gfx::NativeWindow native_window,
+                  DownloadLocationDialogType dialog_type,
+                  const base::FilePath& suggested_path,
+                  const DownloadTargetDeterminerDelegate::ConfirmationCallback&
+                      callback) override {
+    dialog_shown_count_++;
+    dialog_type_ = dialog_type;
+    callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+  }
+
+  void OnComplete(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& returned_path) override {}
+
+  void OnCanceled(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& obj) override {}
+
+  // Returns the number of times ShowDialog has been called.
+  int GetDialogShownCount() { return dialog_shown_count_; }
+
+  // Returns the type of the last dialog that was called to be shown.
+  DownloadLocationDialogType GetDialogType() { return dialog_type_; }
+
+  // Resets the stored information.
+  void ResetStoredVariables() {
+    dialog_shown_count_ = 0;
+    dialog_type_ = DownloadLocationDialogType::NO_DIALOG;
+  }
+
+ private:
+  int dialog_shown_count_;
+  DownloadLocationDialogType dialog_type_;
+  DownloadTargetDeterminerDelegate::ConfirmationCallback
+      dialog_complete_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDownloadLocationDialogBridge);
+};
+
 }  // namespace
 
 TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
+  EXPECT_FALSE(
+      base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
+
   enum class WebContents { AVAILABLE, NONE };
   enum class ExpectPath { FULL, EMPTY };
   enum class ExpectInfoBar { YES, NO };
@@ -1008,11 +1057,6 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
       {DownloadConfirmationReason::SAVE_AS,
        DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
        WebContents::AVAILABLE, ExpectInfoBar::NO, ExpectPath::FULL},
-
-      // TODO(jming): Fix test when download location storage is complete.
-      // {DownloadConfirmationReason::PREFERENCE,
-      //  DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
-      //  WebContents::AVAILABLE, ExpectInfoBar::NO, ExpectPath::FULL},
 
       // This case results in an infobar. The logic above dismisses the infobar
       // and counts it for testing. The functionality of the infobar is not
@@ -1069,6 +1113,126 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
 
     EXPECT_EQ(test_case.info_bar == ExpectInfoBar::YES ? 1 : 0,
               infobar_counter.CheckAndResetInfobarCount());
+  }
+}
+
+TEST_F(ChromeDownloadManagerDelegateTest,
+       RequestConfirmation_Android_WithLocationChangeEnabled) {
+  DeleteContents();
+  SetContents(CreateTestWebContents());
+
+  base::test::ScopedFeatureList scoped_list;
+  scoped_list.InitAndEnableFeature(features::kDownloadsLocationChange);
+  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kDownloadsLocationChange));
+
+  enum class WebContents { AVAILABLE, NONE };
+  enum class ExpectPath { FULL, EMPTY };
+  struct {
+    DownloadConfirmationReason confirmation_reason;
+    DownloadConfirmationResult expected_result;
+    WebContents web_contents;
+    DownloadLocationDialogType dialog_type;
+    ExpectPath path;
+  } kTestCases[] = {
+      // SAVE_AS
+      {DownloadConfirmationReason::SAVE_AS,
+       DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+       WebContents::AVAILABLE, DownloadLocationDialogType::NO_DIALOG,
+       ExpectPath::FULL},
+      {DownloadConfirmationReason::SAVE_AS,
+       DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+       WebContents::NONE, DownloadLocationDialogType::NO_DIALOG,
+       ExpectPath::FULL},
+
+      // !web_contents
+      {DownloadConfirmationReason::PREFERENCE,
+       DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,
+       WebContents::NONE, DownloadLocationDialogType::NO_DIALOG,
+       ExpectPath::FULL},
+      {DownloadConfirmationReason::TARGET_CONFLICT,
+       DownloadConfirmationResult::CANCELED, WebContents::NONE,
+       DownloadLocationDialogType::NO_DIALOG, ExpectPath::EMPTY},
+      {DownloadConfirmationReason::TARGET_NO_SPACE,
+       DownloadConfirmationResult::CANCELED, WebContents::NONE,
+       DownloadLocationDialogType::NO_DIALOG, ExpectPath::EMPTY},
+      {DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE,
+       DownloadConfirmationResult::CANCELED, WebContents::NONE,
+       DownloadLocationDialogType::NO_DIALOG, ExpectPath::EMPTY},
+      {DownloadConfirmationReason::NAME_TOO_LONG,
+       DownloadConfirmationResult::CANCELED, WebContents::NONE,
+       DownloadLocationDialogType::NO_DIALOG, ExpectPath::EMPTY},
+
+      // UNEXPECTED
+      {DownloadConfirmationReason::UNEXPECTED,
+       DownloadConfirmationResult::CANCELED, WebContents::AVAILABLE,
+       DownloadLocationDialogType::NO_DIALOG, ExpectPath::EMPTY},
+      {DownloadConfirmationReason::UNEXPECTED,
+       DownloadConfirmationResult::CANCELED, WebContents::NONE,
+       DownloadLocationDialogType::NO_DIALOG, ExpectPath::EMPTY},
+
+      // TARGET_CONFLICT
+      {DownloadConfirmationReason::TARGET_CONFLICT,
+       DownloadConfirmationResult::CANCELED, WebContents::AVAILABLE,
+       DownloadLocationDialogType::NAME_CONFLICT, ExpectPath::EMPTY},
+
+      // Other error dialogs
+      {DownloadConfirmationReason::TARGET_NO_SPACE,
+       DownloadConfirmationResult::CANCELED, WebContents::AVAILABLE,
+       DownloadLocationDialogType::LOCATION_FULL, ExpectPath::EMPTY},
+      {DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE,
+       DownloadConfirmationResult::CANCELED, WebContents::AVAILABLE,
+       DownloadLocationDialogType::LOCATION_NOT_FOUND, ExpectPath::EMPTY},
+      {DownloadConfirmationReason::NAME_TOO_LONG,
+       DownloadConfirmationResult::CANCELED, WebContents::AVAILABLE,
+       DownloadLocationDialogType::NAME_TOO_LONG, ExpectPath::EMPTY},
+  };
+
+  EXPECT_CALL(*delegate(), RequestConfirmation(_, _, _, _))
+      .WillRepeatedly(Invoke(
+          delegate(),
+          &TestChromeDownloadManagerDelegate::RequestConfirmationConcrete));
+  base::FilePath fake_path = GetPathInDownloadDir(FILE_PATH_LITERAL("foo.txt"));
+  GURL url("http://example.com");
+  TestDownloadLocationDialogBridge* location_dialog_bridge =
+      new TestDownloadLocationDialogBridge();
+  delegate()->SetDownloadLocationDialogBridgeForTesting(
+      static_cast<DownloadLocationDialogBridge*>(location_dialog_bridge));
+
+  for (const auto& test_case : kTestCases) {
+    std::unique_ptr<download::MockDownloadItem> download_item =
+        CreateActiveDownloadItem(1);
+    content::DownloadItemUtils::AttachInfo(
+        download_item.get(), profile(),
+        test_case.web_contents == WebContents::AVAILABLE ? web_contents()
+                                                         : nullptr);
+    EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(url));
+    location_dialog_bridge->ResetStoredVariables();
+
+    base::RunLoop loop;
+    const auto callback = base::BindRepeating(
+        [](const base::RepeatingClosure& quit_closure,
+           DownloadConfirmationResult expected_result,
+           const base::FilePath& expected_path,
+           DownloadConfirmationResult actual_result,
+           const base::FilePath& actual_path) {
+          EXPECT_EQ(expected_result, actual_result);
+          EXPECT_EQ(expected_path, actual_path);
+          quit_closure.Run();
+        },
+        loop.QuitClosure(), test_case.expected_result,
+        test_case.path == ExpectPath::FULL ? fake_path : base::FilePath());
+    delegate()->RequestConfirmation(download_item.get(), fake_path,
+                                    test_case.confirmation_reason, callback);
+    loop.Run();
+
+    EXPECT_EQ(
+        test_case.dialog_type != DownloadLocationDialogType::NO_DIALOG ? 1 : 0,
+        location_dialog_bridge->GetDialogShownCount());
+    EXPECT_EQ(test_case.dialog_type, location_dialog_bridge->GetDialogType());
+
+    EXPECT_CALL(*download_item, GetState())
+        .WillRepeatedly(Return(DownloadItem::COMPLETE));
+    download_item->NotifyObserversDownloadUpdated();
   }
 }
 #endif  // OS_ANDROID
