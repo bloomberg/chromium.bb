@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/cors/cors_url_loader.h"
+#include "services/network/cors/cors_url_loader.h"
 
 #include "base/stl_util.h"
 #include "services/network/public/cpp/cors/cors.h"
@@ -10,6 +10,8 @@
 #include "url/url_util.h"
 
 namespace network {
+
+namespace cors {
 
 namespace {
 
@@ -232,5 +234,7 @@ void CORSURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   network_client_binding_.Close();
   network_loader_.reset();
 }
+
+}  // namespace cors
 
 }  // namespace network
