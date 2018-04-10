@@ -39,7 +39,6 @@ import template_expander
 # We want exactly the same parsing as RuntimeFeatureWriter
 # but generate different files.
 class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
-    class_name = 'InternalRuntimeFlags'
 
     def __init__(self, json5_file_path):
         super(InternalRuntimeFlagsWriter, self).__init__(json5_file_path)
@@ -48,7 +47,7 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
             'internal_runtime_flags.h': self.generate_header,
         }
 
-    @template_expander.use_jinja('templates/' + class_name + '.idl.tmpl')
+    @template_expander.use_jinja('templates/internal_runtime_flags.idl.tmpl')
     def generate_idl(self):
         return {
             'features': self._features,
@@ -56,7 +55,7 @@ class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
             'standard_features': self._standard_features,
         }
 
-    @template_expander.use_jinja('templates/' + class_name + '.h.tmpl')
+    @template_expander.use_jinja('templates/internal_runtime_flags.h.tmpl')
     def generate_header(self):
         return {
             'features': self._features,
