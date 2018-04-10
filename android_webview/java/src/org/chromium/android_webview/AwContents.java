@@ -312,6 +312,7 @@ public class AwContents implements SmartClipProvider {
     private AwViewAndroidDelegate mViewAndroidDelegate;
     private WindowAndroidWrapper mWindowAndroid;
     private WebContents mWebContents;
+    private WebContentsInternalsHolder mWebContentsInternalsHolder;
     private NavigationController mNavigationController;
     private final AwContentsClient mContentsClient;
     private AwWebContentsObserver mWebContentsObserver;
@@ -441,6 +442,10 @@ public class AwContents implements SmartClipProvider {
         public WebContentsInternals get() {
             AwContents awContents = mAwContentsRef.get();
             return awContents == null ? null : awContents.mWebContentsInternals;
+        }
+
+        public boolean weakRefCleared() {
+            return mAwContentsRef.get() == null;
         }
     }
 
@@ -1123,6 +1128,7 @@ public class AwContents implements SmartClipProvider {
             destroyNatives();
             mContentViewCore = null;
             mWebContents = null;
+            mWebContentsInternalsHolder = null;
             mWebContentsInternals = null;
             mNavigationController = null;
             mJavascriptInjector = null;
@@ -1146,7 +1152,8 @@ public class AwContents implements SmartClipProvider {
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
         mWebContents = mContentViewCore.getWebContents();
-        mWebContents.setInternalsHolder(new WebContentsInternalsHolder(this));
+        mWebContentsInternalsHolder = new WebContentsInternalsHolder(this);
+        mWebContents.setInternalsHolder(mWebContentsInternalsHolder);
         GestureListenerManager.fromWebContents(mWebContents)
                 .addListener(new AwGestureStateListener());
 
@@ -1355,11 +1362,13 @@ public class AwContents implements SmartClipProvider {
         }
         boolean destroyRunnableHasRun =
                 mCleanupReference != null && mCleanupReference.hasCleanedUp();
+        boolean weakRefsCleared =
+                mWebContentsInternalsHolder != null && mWebContentsInternalsHolder.weakRefCleared();
         if (TRACE && destroyRunnableHasRun && !mIsDestroyed) {
             // Swallow the error. App developers are not going to do anything with an error msg.
             Log.d(TAG, "AwContents is kept alive past CleanupReference by finalizer");
         }
-        return mIsDestroyed || destroyRunnableHasRun;
+        return mIsDestroyed || destroyRunnableHasRun || weakRefsCleared;
     }
 
     @VisibleForTesting
