@@ -36,6 +36,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
@@ -456,6 +457,17 @@ FileManagerPrivateOpenInspectorFunction::Run() {
           base::StringPrintf("Unexpected inspection type(%d) is specified.",
                              static_cast<int>(params->type))));
   }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateOpenSettingsSubpageFunction::Run() {
+  using extensions::api::file_manager_private::OpenSettingsSubpage::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
+                                        params->sub_page);
   return RespondNow(NoArguments());
 }
 

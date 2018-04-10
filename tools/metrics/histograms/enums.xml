@@ -15040,6 +15040,7 @@ Called by update_net_error_codes.py.-->
   <int value="1237" label="DEBUGGER_GETTARGETS"/>
   <int value="1238" label="NOTIFICATIONS_GETPERMISSIONLEVEL"/>
   <int value="1239" label="FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED"/>
+  <int value="1240" label="FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE"/>
 </enum>
 
 <enum name="ExtensionIconState">

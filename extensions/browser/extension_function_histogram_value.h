@@ -1300,6 +1300,7 @@ enum HistogramValue {
   DEBUGGER_GETTARGETS,
   NOTIFICATIONS_GETPERMISSIONLEVEL,
   FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED,
+  FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

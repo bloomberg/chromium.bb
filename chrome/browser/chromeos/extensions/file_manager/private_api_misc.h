@@ -165,6 +165,19 @@ class FileManagerPrivateOpenInspectorFunction
   ResponseAction Run() override;
 };
 
+// Implements the chrome.fileManagerPrivate.openSettingsSubpage method.
+class FileManagerPrivateOpenSettingsSubpageFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.openSettingsSubpage",
+                             FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE);
+
+ protected:
+  ~FileManagerPrivateOpenSettingsSubpageFunction() override {}
+
+  ResponseAction Run() override;
+};
+
 // Implements the chrome.fileManagerPrivate.getMimeType method.
 class FileManagerPrivateInternalGetMimeTypeFunction
     : public LoggedAsyncExtensionFunction {

@@ -1886,3 +1886,18 @@ CommandHandler.COMMANDS_['set-wallpaper'] = /** @type {Command} */ ({
     event.command.setHidden(false);
   }
 });
+
+/**
+ * Opens settings/storage sub page.
+ * @type {Command}
+ */
+CommandHandler.COMMANDS_['volume-storage'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    chrome.fileManagerPrivate.openSettingsSubpage('storage');
+  },
+  canExecute: CommandUtil.canExecuteAlways
+});

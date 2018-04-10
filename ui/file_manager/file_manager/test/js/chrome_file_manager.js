@@ -149,6 +149,7 @@ chrome.fileManagerPrivate = {
     addListener: () => {},
   },
   openInspector: (type) => {},
+  openSettingsSubpage: (sub_page) => {},
   removeFileWatch: (entry, callback) => {
     setTimeout(callback, 0, true);
   },
