@@ -734,6 +734,16 @@ UIAlertController* NotImplementedAlert() {
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
+         didMoveItemWithID:(NSString*)itemID
+                   toIndex:(NSUInteger)destinationIndex {
+  if (gridViewController == self.regularTabsViewController) {
+    [self.regularTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
+  } else if (gridViewController == self.incognitoTabsViewController) {
+    [self.incognitoTabsDelegate moveItemWithID:itemID toIndex:destinationIndex];
+  }
+}
+
+- (void)gridViewController:(GridViewController*)gridViewController
         didChangeItemCount:(NSUInteger)count {
   [self configureButtonsForOriginalAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {

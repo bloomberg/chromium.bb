@@ -209,6 +209,12 @@ int GetIndexOfTabWithId(WebStateList* webStateList, NSString* identifier) {
   self.webStateList->GetWebStateAt(index)->OpenURL(openParams);
 }
 
+- (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)destinationIndex {
+  int sourceIndex = GetIndexOfTabWithId(self.webStateList, itemID);
+  if (sourceIndex >= 0)
+    self.webStateList->MoveWebStateAt(sourceIndex, destinationIndex);
+}
+
 - (void)selectItemWithID:(NSString*)itemID {
   int index = GetIndexOfTabWithId(self.webStateList, itemID);
   if (index >= 0)

@@ -148,6 +148,8 @@ class TabGridMediatorTest : public PlatformTest {
   NSString* original_selected_identifier_;
 };
 
+#pragma mark - Consumer tests
+
 // Tests that the consumer is populated after the tab model is set on the
 // mediator.
 TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
@@ -216,35 +218,44 @@ TEST_F(TabGridMediatorTest, ConsumerMoveItem) {
   EXPECT_NSEQ(item2, consumer_.items[1]);
 }
 
+#pragma mark - Command tests
+
 // Tests that the active index is updated when |-selectItemWithID:| is called.
+// Tests that the consumer's selected index is updated.
 TEST_F(TabGridMediatorTest, SelectItemCommand) {
   // Previous selected index is 1.
   NSString* identifier =
       TabIdTabHelper::FromWebState(web_state_list_->GetWebStateAt(2))->tab_id();
   [mediator_ selectItemWithID:identifier];
   EXPECT_EQ(2, web_state_list_->active_index());
+  EXPECT_NSEQ(identifier, consumer_.selectedItemID);
 }
 
 // Tests that the |web_state_list_| count is decremented when
 // |-closeItemWithID:| is called.
+// Tests that the consumer's item count is also decremented.
 TEST_F(TabGridMediatorTest, CloseItemCommand) {
   // Previously there were 3 items.
   NSString* identifier =
       TabIdTabHelper::FromWebState(web_state_list_->GetWebStateAt(0))->tab_id();
   [mediator_ closeItemWithID:identifier];
   EXPECT_EQ(2, web_state_list_->count());
+  EXPECT_EQ(2UL, consumer_.items.count);
 }
 
 // Tests that the |web_state_list_| is empty when |-closeAllItems| is called.
+// Tests that the consumer's item list is also empty.
 TEST_F(TabGridMediatorTest, CloseAllItemsCommand) {
   // Previously there were 3 items.
   [mediator_ closeAllItems];
   EXPECT_EQ(0, web_state_list_->count());
+  EXPECT_EQ(0UL, consumer_.items.count);
 }
 
 // Tests that when |-addNewItem| is called, the |web_state_list_| count is
 // incremented, the |active_index| is the newly added index, the new web state
 // has no opener, and the URL is the new tab page.
+// Tests that the consumer has added an item with the correct identifier.
 TEST_F(TabGridMediatorTest, AddNewItemAtEndCommand) {
   // Previously there were 3 items and the selected index was 1.
   [mediator_ addNewItem];
@@ -259,11 +270,16 @@ TEST_F(TabGridMediatorTest, AddNewItemAtEndCommand) {
   EXPECT_EQ(kChromeUINewTabURL, request->params.url.spec());
   NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
   EXPECT_FALSE([original_identifiers_ containsObject:identifier]);
+  // Consumer checks.
+  EXPECT_EQ(4UL, consumer_.items.count);
+  EXPECT_NSEQ(identifier, consumer_.selectedItemID);
+  EXPECT_NSEQ(identifier, consumer_.items[3]);
 }
 
 // Tests that when |-insertNewItemAtIndex:| is called, the |web_state_list_|
 // count is incremented, the |active_index| is the newly added index, the new
 // web state has no opener, and the URL is the new tab page.
+// Checks that the consumer has added an item with the correct identifier.
 TEST_F(TabGridMediatorTest, InsertNewItemCommand) {
   // Previously there were 3 items and the selected index was 1.
   [mediator_ insertNewItemAtIndex:0];
@@ -278,4 +294,39 @@ TEST_F(TabGridMediatorTest, InsertNewItemCommand) {
   EXPECT_EQ(kChromeUINewTabURL, request->params.url.spec());
   NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
   EXPECT_FALSE([original_identifiers_ containsObject:identifier]);
+  // Consumer checks.
+  EXPECT_EQ(4UL, consumer_.items.count);
+  EXPECT_NSEQ(identifier, consumer_.selectedItemID);
+  EXPECT_NSEQ(identifier, consumer_.items[0]);
+}
+
+// Tests that when |-moveItemFromIndex:toIndex:| is called, there is no change
+// in the item count in |web_state_list_|, but that the constituent web states
+// have been reordered.
+TEST_F(TabGridMediatorTest, MoveItemCommand) {
+  // Capture ordered original IDs.
+  NSMutableArray<NSString*>* pre_move_ids = [[NSMutableArray alloc] init];
+  for (int i = 0; i < 3; i++) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(i);
+    [pre_move_ids addObject:TabIdTabHelper::FromWebState(web_state)->tab_id()];
+  }
+  NSString* pre_move_selected_id =
+      pre_move_ids[web_state_list_->active_index()];
+  // Items start ordered [A, B, C].
+  [mediator_ moveItemWithID:consumer_.items[0] toIndex:2];
+  // Items should now be ordered [B, C, A] -- the pre-move identifiers should
+  // still be in this order.
+  // Item count hasn't changed.
+  EXPECT_EQ(3, web_state_list_->count());
+  // Active index has moved -- it was 1, now 0.
+  EXPECT_EQ(0, web_state_list_->active_index());
+  // Identifier at 0, 1, 2 should match the original_identifier_ at 1, 2, 0.
+  for (int index = 0; index < 2; index++) {
+    web::WebState* web_state = web_state_list_->GetWebStateAt(index);
+    ASSERT_TRUE(web_state);
+    NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
+    EXPECT_NSEQ(identifier, pre_move_ids[(index + 1) % 3]);
+    EXPECT_NSEQ(identifier, consumer_.items[index]);
+  }
+  EXPECT_EQ(pre_move_selected_id, consumer_.selectedItemID);
 }
