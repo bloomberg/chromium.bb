@@ -353,7 +353,6 @@
          (matches toolbar_height_no_shadow). -->
     <dimen name="ntp_search_box_bounds_lateral_inset_modern">-8dp</dimen>
     <dimen name="ntp_wide_card_lateral_margins">48dp</dimen>
-    <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
     <dimen name="ntp_sign_in_promo_margin_top">20dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
@@ -390,6 +389,11 @@
 
     <!-- Recent tabs page -->
     <dimen name="recent_tabs_visible_separator_padding">8dp</dimen>
+    <dimen name="recent_tabs_group_view_vertical_padding">8dp</dimen>
+    <dimen name="recent_tabs_list_item_side_padding">16dp</dimen>
+    <dimen name="recent_tabs_show_history_item_size">60dp</dimen>
+    <dimen name="recent_tabs_foreign_session_group_item_height">64dp</dimen>
+    <dimen name="recent_tabs_default_group_item_height">48dp</dimen>
 
     <!-- Snackbars -->
     <dimen name="snackbar_min_height">48dp</dimen>

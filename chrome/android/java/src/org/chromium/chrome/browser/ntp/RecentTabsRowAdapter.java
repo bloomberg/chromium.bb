@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.LruCache;
 import android.view.ContextMenu;
@@ -17,6 +20,7 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -29,6 +33,9 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SyncPromoView;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -76,6 +83,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
     private final FaviconCache mFaviconCache;
     private final int mFaviconSize;
     private boolean mHasForeignDataRecorded;
+    private RoundedIconGenerator mIconGenerator;
 
     /**
      * A generic group of objects to be shown in the RecentTabsRowAdapter, such as the list of
@@ -123,7 +131,14 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 childView = inflater.inflate(R.layout.recent_tabs_list_item, parent, false);
 
                 ViewHolder viewHolder = new ViewHolder();
-                viewHolder.textView = (TextView) childView;
+                viewHolder.textView = (TextView) childView.findViewById(R.id.title_row);
+                viewHolder.domainView = (TextView) childView.findViewById(R.id.domain_row);
+                viewHolder.imageView = (ImageView) childView.findViewById(R.id.recent_tabs_favicon);
+                viewHolder.imageView.setBackgroundResource(R.drawable.list_item_icon_modern_bg);
+                if (!FeatureUtilities.isChromeModernDesignEnabled()) {
+                    viewHolder.imageView.getBackground().setAlpha(0);
+                }
+                viewHolder.itemLayout = childView.findViewById(R.id.recent_tabs_list_item_layout);
                 childView.setTag(viewHolder);
             }
 
@@ -250,8 +265,16 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         @Override
         public void configureChildView(int childPosition, ViewHolder viewHolder) {
             ForeignSessionTab sessionTab = getChild(childPosition);
-            viewHolder.textView.setText(TextUtils.isEmpty(sessionTab.title) ? sessionTab.url
-                    : sessionTab.title);
+            String text = TextUtils.isEmpty(sessionTab.title) ? sessionTab.url : sessionTab.title;
+            viewHolder.textView.setText(text);
+            String domain = UrlUtilities.getDomainAndRegistry(sessionTab.url, false);
+            if (!TextUtils.isEmpty(domain)) {
+                viewHolder.domainView.setText(domain);
+                viewHolder.domainView.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.domainView.setText("");
+                viewHolder.domainView.setVisibility(View.GONE);
+            }
             loadSyncedFavicon(viewHolder, sessionTab.url);
         }
 
@@ -451,16 +474,36 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
 
         @Override
         public void configureChildView(int childPosition, ViewHolder viewHolder) {
+            // Reset the domain view text manually since it does not always reset itself, which can
+            // lead to wrong pairings of domain & title texts.
+            viewHolder.domainView.setText("");
+            viewHolder.domainView.setVisibility(View.GONE);
             if (isHistoryLink(childPosition)) {
                 viewHolder.textView.setText(R.string.show_full_history);
-                ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        viewHolder.textView, R.drawable.history_favicon, 0, 0, 0);
-            } else {
-                RecentlyClosedTab tab = getChild(childPosition);
-                String title = TitleUtil.getTitleForDisplay(tab.title, tab.url);
-                viewHolder.textView.setText(title);
-                loadLocalFavicon(viewHolder, tab.url);
+                Bitmap historyIcon = BitmapFactory.decodeResource(
+                        mActivity.getResources(), R.drawable.ic_watch_later_24dp);
+                Drawable drawable = getRoundedFavicon(historyIcon,
+                        mActivity.getResources().getDimensionPixelSize(
+                                R.dimen.tile_view_icon_size_modern));
+                viewHolder.imageView.setImageDrawable(drawable);
+                viewHolder.itemLayout.getLayoutParams().height =
+                        mActivity.getResources().getDimensionPixelSize(
+                                R.dimen.recent_tabs_show_history_item_size);
+                return;
             }
+            viewHolder.itemLayout.getLayoutParams().height =
+                    mActivity.getResources().getDimensionPixelSize(
+                            R.dimen.recent_tabs_foreign_session_group_item_height);
+            RecentlyClosedTab tab = getChild(childPosition);
+            String title = TitleUtil.getTitleForDisplay(tab.title, tab.url);
+            viewHolder.textView.setText(title);
+
+            String domain = UrlUtilities.getDomainAndRegistry(tab.url, false);
+            if (!TextUtils.isEmpty(domain)) {
+                viewHolder.domainView.setText(domain);
+                viewHolder.domainView.setVisibility(View.VISIBLE);
+            }
+            loadLocalFavicon(viewHolder, tab.url);
         }
 
         @Override
@@ -583,7 +626,7 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             return mMemoryCache.get(SYNCED_FAVICON_PREFIX + url);
         }
 
-        public void putSycnedFaviconImage(String url, Drawable image) {
+        public void putSyncedFaviconImage(String url, Drawable image) {
             mMemoryCache.put(SYNCED_FAVICON_PREFIX + url, image);
         }
 
@@ -613,6 +656,14 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
         mDefaultFavicon = ApiCompatibilityUtils.getDrawable(resources, R.drawable.default_favicon);
         mFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
 
+        int cornerRadius = resources.getDimensionPixelSize(R.dimen.default_favicon_corner_radius);
+        int textSize = resources.getDimensionPixelSize(R.dimen.default_favicon_icon_text_size);
+        int iconColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_favicon_background_color);
+        mIconGenerator = new RoundedIconGenerator(mFaviconSize, mFaviconSize,
+                FeatureUtilities.isChromeModernDesignEnabled() ? mFaviconSize / 2 : cornerRadius,
+                iconColor, textSize);
+
         RecordHistogram.recordEnumeratedHistogram("HistoryPage.OtherDevicesMenu",
                 OtherSessionsActions.MENU_INITIALIZED, OtherSessionsActions.LIMIT);
     }
@@ -624,24 +675,40 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
      */
     private static class ViewHolder {
         public TextView textView;
+        public TextView domainView;
+        public ImageView imageView;
+        public View itemLayout;
         public FaviconImageCallback imageCallback;
     }
 
-    private Drawable faviconDrawable(Bitmap image) {
-        if (image == null) return null;
-        return new BitmapDrawable(mActivity.getResources(), Bitmap.createScaledBitmap(image,
-                mFaviconSize, mFaviconSize, true));
+    private Drawable faviconDrawable(Bitmap image, String url) {
+        if (url == null) return null;
+        if (image == null) {
+            image = mIconGenerator.generateIconForUrl(url);
+            return new BitmapDrawable(mActivity.getResources(),
+                    Bitmap.createScaledBitmap(image, mFaviconSize, mFaviconSize, true));
+        }
+        return getRoundedFavicon(image, mFaviconSize);
+    }
+
+    private Drawable getRoundedFavicon(Bitmap image, int size) {
+        // TODO(injae): Move shared code between Bookmarks/History/Downloads/here to ViewUtils.java.
+        // Also applies to RoundedIconGenerator. crbug.com/829550
+        RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
+                mActivity.getResources(), Bitmap.createScaledBitmap(image, size, size, true));
+        roundedIcon.setCornerRadius(mActivity.getResources().getDimensionPixelSize(
+                R.dimen.default_favicon_corner_radius));
+        return roundedIcon;
     }
 
     private void loadSyncedFavicon(final ViewHolder viewHolder, final String url) {
         Drawable image = mFaviconCache.getSyncedFaviconImage(url);
         if (image == null) {
-            image = faviconDrawable(mRecentTabsManager.getSyncedFaviconImageForURL(url));
+            image = faviconDrawable(mRecentTabsManager.getSyncedFaviconImageForURL(url), url);
             image = (image == null) ? mDefaultFavicon : image;
-            mFaviconCache.putSycnedFaviconImage(url, image);
+            mFaviconCache.putSyncedFaviconImage(url, image);
         }
-        ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(viewHolder.textView,
-                image, null, null, null);
+        viewHolder.imageView.setImageDrawable(image);
     }
 
     private void loadLocalFavicon(final ViewHolder viewHolder, final String url) {
@@ -656,11 +723,10 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                     @Override
                     public void onFaviconAvailable(Bitmap bitmap, String iconUrl) {
                         if (this != viewHolder.imageCallback) return;
-                        Drawable image = faviconDrawable(bitmap);
+                        Drawable image = faviconDrawable(bitmap, url);
                         image = (image == null) ? mDefaultFavicon : image;
                         mFaviconCache.putLocalFaviconImage(url, image);
-                        ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                                viewHolder.textView, image, null, null, null);
+                        viewHolder.imageView.setImageDrawable(image);
                     }
                 };
                 viewHolder.imageCallback = imageCallback;
@@ -668,15 +734,14 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
                 image = mDefaultFavicon;
             }
         }
-        ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(viewHolder.textView,
-                image, null, null, null);
+        viewHolder.imageView.setImageDrawable(image);
     }
 
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
             View convertView, ViewGroup parent) {
-        return getGroup(groupPosition).getChildView(childPosition, isLastChild, convertView,
-                parent);
+        return getGroup(groupPosition)
+                .getChildView(childPosition, isLastChild, convertView, parent);
     }
 
     // BaseExpandableListAdapter group related implementations
@@ -782,8 +847,6 @@ public class RecentTabsRowAdapter extends BaseExpandableListAdapter {
             if (recentlyClosedIndex != mGroups.size() - 2) {
                 mGroups.set(recentlyClosedIndex + 1, mVisibleSeparatorGroup);
             }
-        } else if (recentlyClosedIndex != mGroups.size() - 1) {
-            mGroups.add(recentlyClosedIndex + 1, mVisibleSeparatorGroup);
         }
 
         super.notifyDataSetChanged();

@@ -44,6 +44,7 @@ public class SyncPromoView extends LinearLayout implements AndroidSyncSettingsOb
      * @param accessPoint Where the SyncPromoView is used.
      */
     public static SyncPromoView create(ViewGroup parent, @AccessPoint int accessPoint) {
+        // TODO(injae): crbug.com/829548
         SyncPromoView result = (SyncPromoView) LayoutInflater.from(parent.getContext())
                                        .inflate(R.layout.sync_promo_view, parent, false);
         result.init(accessPoint);

@@ -57,8 +57,6 @@ public class RecentTabsPage
     private int mSnapshotWidth;
     private int mSnapshotHeight;
 
-    private final int mThemeColor;
-
     /**
      * Whether the page is in the foreground and is visible.
      */
@@ -88,8 +86,6 @@ public class RecentTabsPage
         Resources resources = activity.getResources();
 
         mTitle = resources.getString(R.string.recent_tabs);
-        mThemeColor = ColorUtils.getDefaultThemeColor(
-                resources, FeatureUtilities.isChromeModernDesignEnabled(), false);
         mRecentTabsManager.setUpdatedCallback(this);
         LayoutInflater inflater = LayoutInflater.from(activity);
         mView = (ViewGroup) inflater.inflate(R.layout.recent_tabs_page, null);
@@ -107,9 +103,6 @@ public class RecentTabsPage
         // {@link #mInForeground} will be updated once the view is attached to the window.
 
         View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            recentTabsRoot.setBackgroundColor(mThemeColor);
-        }
         if (activity.getBottomSheet() != null) {
             ApiCompatibilityUtils.setPaddingRelative(recentTabsRoot,
                     ApiCompatibilityUtils.getPaddingStart(recentTabsRoot), 0,
@@ -162,7 +155,8 @@ public class RecentTabsPage
 
     @Override
     public int getThemeColor() {
-        return mThemeColor;
+        return ColorUtils.getDefaultThemeColor(
+                mActivity.getResources(), FeatureUtilities.isChromeModernDesignEnabled(), false);
     }
 
     @Override
