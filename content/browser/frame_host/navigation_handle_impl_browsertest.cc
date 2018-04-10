@@ -34,6 +34,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
 
@@ -2143,6 +2144,44 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
     // corresponds to NewNavigation.
     check_navigation(histograms, ProcessType::kSame, FrameType::kSub,
                      TransitionType::kNew);
+  }
+}
+
+// Verify that the SameProcess vs CrossProcess version of the
+// TimeToReadyToCommit metric is correctly logged.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       TimeToReadyToCommitMetrics) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/hello.html")));
+
+  // Check that only SameProcess version is logged and not CrossProcess.
+  {
+    base::HistogramTester histograms;
+    GURL url(embedded_test_server()->GetURL("/title1.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    base::HistogramTester::CountsMap expected_counts = {
+        {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit.SameProcess", 1},
+        {"Navigation.TimeToReadyToCommit.SameProcess.NewNavigation", 1}};
+    EXPECT_THAT(
+        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
+        testing::ContainerEq(expected_counts));
+  }
+
+  // Navigate cross-process and ensure that only CrossProcess is logged.
+  {
+    base::HistogramTester histograms;
+    GURL url(embedded_test_server()->GetURL("a.com", "/title2.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    base::HistogramTester::CountsMap expected_counts = {
+        {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit.CrossProcess", 1},
+        {"Navigation.TimeToReadyToCommit.CrossProcess.NewNavigation", 1}};
+    EXPECT_THAT(
+        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
+        testing::ContainerEq(expected_counts));
   }
 }
 
