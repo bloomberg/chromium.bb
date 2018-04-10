@@ -75,6 +75,10 @@
         <item name="android:textColor">@color/black_alpha_38</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
+    <style name="BlackDisabledText3" tools:ignore="UnusedResources">
+        <item name="android:textColor">@color/black_alpha_38</item>
+        <item name="android:textSize">@dimen/text_size_medium</item>
+    </style>
     <style name="BlackBodyDefault" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/black_alpha_87</item>
         <item name="android:textSize">@dimen/text_size_medium</item>

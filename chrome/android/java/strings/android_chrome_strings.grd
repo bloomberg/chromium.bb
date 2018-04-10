@@ -1204,6 +1204,27 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_LOCATION_DIALOG_CHECKBOX" desc="Label for the checkbox that allows the user to indicate if they do not want the download location selection dialog to appear every time they initiate a download.">
         Don‘t show again
       </message>
+      <message name="IDS_DOWNLOAD_LOCATION_DOWNLOAD_AGAIN" desc="Title for download location dialog in the case that there exists a file with the same name as the one they are trying to download, confirming the user wants to download a file with the same name.">
+        Download file again?
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NAME_EXISTS" desc="Subtitle for download location dialog in the case that the file needs to be renamed because another file has the same name.">
+        File name already exists
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_RENAME_FILE" desc="Title for download location dialog in the case that the file needs to be renamed.">
+        Rename file
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NAME_TOO_LONG" desc="Subtitle for download location dialog in the case that the file needs to be renamed because the name is too long.">
+        File name too long
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NOT_ENOUGH_SPACE" desc="Text on download location dialog in the case that there is not enough space in the chosen location.">
+        Not enough space
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_DOWNLOAD_TO_DEFAULT_FOLDER" desc="Subtitle for download location dialog in the case that the download location the user had originally selected is full or not found. We automatically revert back to the default download location and ask the user to confirm that this is ok.">
+        Download to default folder?
+      </message>
+      <message name="IDS_DOWNLOAD_LOCATION_NO_SD_CARD" desc="Title for download location dialog in the case that the SD card is not found.">
+        No SD card found
+      </message>
 
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">

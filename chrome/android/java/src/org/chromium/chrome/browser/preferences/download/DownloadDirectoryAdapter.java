@@ -9,7 +9,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.format.Formatter;
+import android.support.v4.widget.TextViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.TintedImageView;
 
@@ -29,15 +30,17 @@ import java.util.List;
  * download location.
  */
 public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
+    public static int NO_SELECTED_ITEM_ID = -1;
+
     /**
      * Denotes a given option for directory selection; includes name, location, and space.
      */
     public static class DirectoryOption {
-        private String mName;
-        private File mLocation;
-        private String mAvailableSpace;
+        private final String mName;
+        private final File mLocation;
+        private final long mAvailableSpace;
 
-        DirectoryOption(String directoryName, File directoryLocation, String availableSpace) {
+        DirectoryOption(String directoryName, File directoryLocation, long availableSpace) {
             mName = directoryName;
             mLocation = directoryLocation;
             mAvailableSpace = availableSpace;
@@ -60,7 +63,7 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         /**
          * @return Amount of available space in this directory option.
          */
-        String getAvailableSpace() {
+        long getAvailableSpace() {
             return mAvailableSpace;
         }
     }
@@ -136,7 +139,16 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         titleText.setText(directoryOption.getName());
 
         TextView summaryText = (TextView) view.findViewById(R.id.description);
-        summaryText.setText(directoryOption.getAvailableSpace());
+        if (isEnabled(position)) {
+            TextViewCompat.setTextAppearance(titleText, R.style.BlackTitle1);
+            TextViewCompat.setTextAppearance(summaryText, R.style.BlackBody);
+            summaryText.setText(DownloadUtils.getStringForAvailableBytes(
+                    mContext, directoryOption.getAvailableSpace()));
+        } else {
+            TextViewCompat.setTextAppearance(titleText, R.style.BlackDisabledText1);
+            TextViewCompat.setTextAppearance(summaryText, R.style.BlackDisabledText3);
+            summaryText.setText(mContext.getText(R.string.download_location_not_enough_space));
+        }
 
         TintedImageView imageView = (TintedImageView) view.findViewById(R.id.icon_view);
         imageView.setVisibility(View.GONE);
@@ -144,16 +156,45 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         return view;
     }
 
+    @Override
+    public boolean isEnabled(int position) {
+        DirectoryOption directoryOption = (DirectoryOption) getItem(position);
+        return directoryOption != null && directoryOption.getAvailableSpace() != 0;
+    }
+
     /**
-     * @return Id of the directory option that matches the default download location.
+     * @return  ID of the directory option that matches the default download location or
+     *          NO_SELECTED_ITEM_ID if no item matches the default path.
      */
     public int getSelectedItemId() {
-        String location = PrefServiceBridge.getInstance().getDownloadDefaultDirectory();
+        String defaultLocation = PrefServiceBridge.getInstance().getDownloadDefaultDirectory();
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
-            if (location.equals(option.getLocation().getAbsolutePath())) return i;
+            if (defaultLocation.equals(option.getLocation().getAbsolutePath())) return i;
         }
+        return NO_SELECTED_ITEM_ID;
+    }
+
+    /**
+     * In the case that there is no selected item ID/the selected item ID is invalid (ie. there is
+     * not enough space), select either the default or the next valid item ID. Set the default to be
+     * this item and return the ID.
+     *
+     * @return  ID of the first valid, selectable item and the new default location.
+     */
+    public int getFirstSelectableItemId() {
+        for (int i = 0; i < getCount(); i++) {
+            DirectoryOption option = (DirectoryOption) getItem(i);
+            if (option == null) continue;
+            if (option.getAvailableSpace() > 0) {
+                PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(
+                        option.getLocation().getAbsolutePath());
+                return i;
+            }
+        }
+
+        // TODO(jming): Update behavior with UX suggestions.
         throw new AssertionError("No selected item ID.");
     }
 
@@ -167,13 +208,13 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         File directoryLocation =
                 Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         mCanonicalOptions.add(new DirectoryOption(mContext.getString(R.string.menu_downloads),
-                directoryLocation, getAvailableBytesString(directoryLocation)));
+                directoryLocation, directoryLocation.getUsableSpace()));
     }
 
     private void setAdditionalDirectoryOptions() {
         mAdditionalOptions.clear();
 
-        // TODO(jming): Is there any way to do this for API < 19????
+        // TODO(jming): Is there any way to do this for API < 19?
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
 
         File[] externalDirs = mContext.getExternalFilesDirs(Environment.DIRECTORY_DOWNLOADS);
@@ -197,14 +238,9 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
                               org.chromium.chrome.R.string.downloads_location_sd_card_number,
                               numOtherAdditionalDirectories + 1)
                     : mContext.getString(org.chromium.chrome.R.string.downloads_location_sd_card);
-            String availableBytes = getAvailableBytesString(dir);
 
-            mAdditionalOptions.add(new DirectoryOption(directoryName, dir, availableBytes));
+            mAdditionalOptions.add(new DirectoryOption(directoryName, dir, dir.getUsableSpace()));
             numOtherAdditionalDirectories++;
         }
-    }
-
-    private String getAvailableBytesString(File file) {
-        return Formatter.formatFileSize(mContext, file.getUsableSpace());
     }
 }

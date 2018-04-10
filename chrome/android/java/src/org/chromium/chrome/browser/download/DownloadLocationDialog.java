@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.download;
 
+import static org.chromium.chrome.browser.preferences.download.DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID;
+
 import android.content.Context;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modaldialog.ModalDialogView;
@@ -34,23 +38,54 @@ public class DownloadLocationDialog extends ModalDialogView {
      *
      * @param controller    Controller that listens to the events from the dialog.
      * @param context       Context from which the dialog emerged.
+     * @param dialogType    Type of dialog that should be displayed, dictates title/subtitle.
      * @param suggestedPath The path that was automatically generated, used as a starting point.
      * @return              A {@link DownloadLocationDialog} with the given properties.
      */
-    public static DownloadLocationDialog create(
-            Controller controller, Context context, File suggestedPath) {
+    public static DownloadLocationDialog create(Controller controller, Context context,
+            @DownloadLocationDialogType int dialogType, File suggestedPath) {
         Params params = new Params();
-        params.title = context.getString(R.string.download_location_dialog_title);
         params.positiveButtonTextId = R.string.duplicate_download_infobar_download_button;
         params.negativeButtonTextId = R.string.cancel;
         params.customView =
                 LayoutInflater.from(context).inflate(R.layout.download_location_dialog, null);
 
-        return new DownloadLocationDialog(controller, context, suggestedPath, params);
+        params.title = context.getString(R.string.download_location_dialog_title);
+        TextView subtitleText = params.customView.findViewById(R.id.subtitle);
+        subtitleText.setVisibility(
+                dialogType == DownloadLocationDialogType.DEFAULT ? View.GONE : View.VISIBLE);
+
+        switch (dialogType) {
+            case DownloadLocationDialogType.LOCATION_FULL:
+                params.title = context.getString(R.string.download_location_not_enough_space);
+                subtitleText.setText(R.string.download_location_download_to_default_folder);
+                break;
+
+            case DownloadLocationDialogType.LOCATION_NOT_FOUND:
+                params.title = context.getString(R.string.download_location_no_sd_card);
+                subtitleText.setText(R.string.download_location_download_to_default_folder);
+                break;
+
+            case DownloadLocationDialogType.NAME_CONFLICT:
+                params.title = context.getString(R.string.download_location_download_again);
+                subtitleText.setText(R.string.download_location_name_exists);
+                break;
+
+            case DownloadLocationDialogType.NAME_TOO_LONG:
+                params.title = context.getString(R.string.download_location_rename_file);
+                subtitleText.setText(R.string.download_location_name_too_long);
+                break;
+
+            case DownloadLocationDialogType.DEFAULT:
+            default:
+                break;
+        }
+
+        return new DownloadLocationDialog(controller, context, dialogType, suggestedPath, params);
     }
 
-    private DownloadLocationDialog(
-            Controller controller, Context context, File suggestedPath, Params params) {
+    private DownloadLocationDialog(Controller controller, Context context,
+            @DownloadLocationDialogType int dialogType, File suggestedPath, Params params) {
         super(controller, params);
 
         mDirectoryAdapter = new DownloadDirectoryAdapter(context);
@@ -61,7 +96,13 @@ public class DownloadLocationDialog extends ModalDialogView {
         mFileLocation = (Spinner) params.customView.findViewById(R.id.file_location);
         mFileLocation.setAdapter(mDirectoryAdapter);
 
-        mFileLocation.setSelection(mDirectoryAdapter.getSelectedItemId());
+        int selectedItemId = mDirectoryAdapter.getSelectedItemId();
+        if (selectedItemId == NO_SELECTED_ITEM_ID
+                || dialogType == DownloadLocationDialogType.LOCATION_FULL
+                || dialogType == DownloadLocationDialogType.LOCATION_NOT_FOUND) {
+            selectedItemId = mDirectoryAdapter.getFirstSelectableItemId();
+        }
+        mFileLocation.setSelection(selectedItemId);
 
         // Automatically check "don't show again" the first time the user is seeing the dialog.
         mDontShowAgain = (CheckBox) params.customView.findViewById(R.id.show_again_checkbox);

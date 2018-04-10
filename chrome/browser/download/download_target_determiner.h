@@ -323,6 +323,9 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   base::FilePath intermediate_path_;
   std::string mime_type_;
   bool is_filetype_handled_safely_;
+#if defined(OS_ANDROID)
+  bool is_checking_dialog_confirmed_path_;
+#endif
 
   download::DownloadItem* download_;
   const bool is_resumption_;

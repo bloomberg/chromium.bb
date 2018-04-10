@@ -122,6 +122,7 @@
         <item name="android:windowMinWidthMinor">100%</item>
         <item name="buttonBarStyle">@style/ModalDialogButtonBarStyle</item>
         <item name="buttonBarButtonStyle">@style/ModalDialogButtonStyle</item>
+        <item name="android:windowSoftInputMode">adjustResize|stateHidden</item>
     </style>
 
     <style name="ModalDialogButtonBarStyle" parent="Widget.AppCompat.ButtonBar.AlertDialog">
