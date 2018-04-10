@@ -33,8 +33,6 @@
 namespace network {
 namespace {
 
-typedef net::WebSocketEventInterface::ChannelState ChannelState;
-
 // Convert a mojom::WebSocketMessageType to a
 // net::WebSocketFrameHeader::OpCode
 net::WebSocketFrameHeader::OpCode MessageTypeToOpCode(
@@ -80,23 +78,23 @@ class WebSocket::WebSocketEventHandler final
   // net::WebSocketEventInterface implementation
 
   void OnCreateURLRequest(net::URLRequest* url_request) override;
-  ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
-                                    const std::string& extensions) override;
-  ChannelState OnDataFrame(bool fin,
-                           WebSocketMessageType type,
-                           scoped_refptr<net::IOBuffer> buffer,
-                           size_t buffer_size) override;
-  ChannelState OnClosingHandshake() override;
-  ChannelState OnFlowControl(int64_t quota) override;
-  ChannelState OnDropChannel(bool was_clean,
-                             uint16_t code,
-                             const std::string& reason) override;
-  ChannelState OnFailChannel(const std::string& message) override;
-  ChannelState OnStartOpeningHandshake(
+  void OnAddChannelResponse(const std::string& selected_subprotocol,
+                            const std::string& extensions) override;
+  void OnDataFrame(bool fin,
+                   WebSocketMessageType type,
+                   scoped_refptr<net::IOBuffer> buffer,
+                   size_t buffer_size) override;
+  void OnClosingHandshake() override;
+  void OnFlowControl(int64_t quota) override;
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const std::string& reason) override;
+  void OnFailChannel(const std::string& message) override;
+  void OnStartOpeningHandshake(
       std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) override;
-  ChannelState OnFinishOpeningHandshake(
+  void OnFinishOpeningHandshake(
       std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) override;
-  ChannelState OnSSLCertificateError(
+  void OnSSLCertificateError(
       std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
           callbacks,
       const GURL& url,
@@ -126,7 +124,7 @@ void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
                                        url_request);
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnAddChannelResponse(
+void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
     const std::string& selected_protocol,
     const std::string& extensions) {
   DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse @"
@@ -138,11 +136,9 @@ ChannelState WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->pending_connection_tracker_.OnCompleteHandshake();
 
   impl_->client_->OnAddChannelResponse(selected_protocol, extensions);
-
-  return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnDataFrame(
+void WebSocket::WebSocketEventHandler::OnDataFrame(
     bool fin,
     net::WebSocketFrameHeader::OpCode type,
     scoped_refptr<net::IOBuffer> buffer,
@@ -159,29 +155,23 @@ ChannelState WebSocket::WebSocketEventHandler::OnDataFrame(
   }
 
   impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), data_to_pass);
-
-  return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnClosingHandshake() {
+void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
   DVLOG(3) << "WebSocketEventHandler::OnClosingHandshake @"
            << reinterpret_cast<void*>(this);
 
   impl_->client_->OnClosingHandshake();
-
-  return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnFlowControl(int64_t quota) {
+void WebSocket::WebSocketEventHandler::OnFlowControl(int64_t quota) {
   DVLOG(3) << "WebSocketEventHandler::OnFlowControl @"
            << reinterpret_cast<void*>(this) << " quota=" << quota;
 
   impl_->client_->OnFlowControl(quota);
-
-  return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnDropChannel(
+void WebSocket::WebSocketEventHandler::OnDropChannel(
     bool was_clean,
     uint16_t code,
     const std::string& reason) {
@@ -193,11 +183,9 @@ ChannelState WebSocket::WebSocketEventHandler::OnDropChannel(
 
   // net::WebSocketChannel requires that we delete it at this point.
   impl_->channel_.reset();
-
-  return net::WebSocketEventInterface::CHANNEL_DELETED;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnFailChannel(
+void WebSocket::WebSocketEventHandler::OnFailChannel(
     const std::string& message) {
   DVLOG(3) << "WebSocketEventHandler::OnFailChannel @"
            << reinterpret_cast<void*>(this) << " message=\"" << message << "\"";
@@ -206,11 +194,9 @@ ChannelState WebSocket::WebSocketEventHandler::OnFailChannel(
 
   // net::WebSocketChannel requires that we delete it at this point.
   impl_->channel_.reset();
-
-  return net::WebSocketEventInterface::CHANNEL_DELETED;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
+void WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) {
   bool should_send = impl_->delegate_->CanReadRawCookies();
 
@@ -218,7 +204,7 @@ ChannelState WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
            << reinterpret_cast<void*>(this) << " should_send=" << should_send;
 
   if (!should_send)
-    return WebSocketEventInterface::CHANNEL_ALIVE;
+    return;
 
   mojom::WebSocketHandshakeRequestPtr request_to_pass(
       mojom::WebSocketHandshakeRequest::New());
@@ -236,11 +222,9 @@ ChannelState WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
       request->headers.ToString();
 
   impl_->client_->OnStartOpeningHandshake(std::move(request_to_pass));
-
-  return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
+void WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) {
   bool should_send = impl_->delegate_->CanReadRawCookies();
 
@@ -248,7 +232,7 @@ ChannelState WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
            << reinterpret_cast<void*>(this) << " should_send=" << should_send;
 
   if (!should_send)
-    return WebSocketEventInterface::CHANNEL_ALIVE;
+    return;
 
   mojom::WebSocketHandshakeResponsePtr response_to_pass(
       mojom::WebSocketHandshakeResponse::New());
@@ -268,11 +252,9 @@ ChannelState WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
           response->headers->raw_headers());
 
   impl_->client_->OnFinishOpeningHandshake(std::move(response_to_pass));
-
-  return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocket::WebSocketEventHandler::OnSSLCertificateError(
+void WebSocket::WebSocketEventHandler::OnSSLCertificateError(
     std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
     const GURL& url,
     const net::SSLInfo& ssl_info,
@@ -283,8 +265,6 @@ ChannelState WebSocket::WebSocketEventHandler::OnSSLCertificateError(
   impl_->delegate_->OnSSLCertificateError(std::move(callbacks), url,
                                           impl_->child_id_, impl_->frame_id_,
                                           ssl_info, fatal);
-  // The above method is always asynchronous.
-  return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
 WebSocket::WebSocket(

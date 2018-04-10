@@ -73,31 +73,31 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   // Implementation of WebSocketEventInterface.
   void OnCreateURLRequest(URLRequest* request) override {}
 
-  ChannelState OnAddChannelResponse(const std::string& selected_subprotocol,
-                                    const std::string& extensions) override;
+  void OnAddChannelResponse(const std::string& selected_subprotocol,
+                            const std::string& extensions) override;
 
-  ChannelState OnDataFrame(bool fin,
-                           WebSocketMessageType type,
-                           scoped_refptr<IOBuffer> data,
-                           size_t data_size) override;
+  void OnDataFrame(bool fin,
+                   WebSocketMessageType type,
+                   scoped_refptr<IOBuffer> data,
+                   size_t data_size) override;
 
-  ChannelState OnFlowControl(int64_t quota) override;
+  void OnFlowControl(int64_t quota) override;
 
-  ChannelState OnClosingHandshake() override;
+  void OnClosingHandshake() override;
 
-  ChannelState OnDropChannel(bool was_clean,
-                             uint16_t code,
-                             const std::string& reason) override;
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const std::string& reason) override;
 
-  ChannelState OnFailChannel(const std::string& message) override;
+  void OnFailChannel(const std::string& message) override;
 
-  ChannelState OnStartOpeningHandshake(
+  void OnStartOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeRequestInfo> request) override;
 
-  ChannelState OnFinishOpeningHandshake(
+  void OnFinishOpeningHandshake(
       std::unique_ptr<WebSocketHandshakeResponseInfo> response) override;
 
-  ChannelState OnSSLCertificateError(
+  void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
       const SSLInfo& ssl_info,
@@ -135,60 +135,40 @@ std::string ConnectTestingEventInterface::extensions() const {
   return extensions_;
 }
 
-// Make the function definitions below less verbose.
-typedef ConnectTestingEventInterface::ChannelState ChannelState;
-
-ChannelState ConnectTestingEventInterface::OnAddChannelResponse(
+void ConnectTestingEventInterface::OnAddChannelResponse(
     const std::string& selected_subprotocol,
     const std::string& extensions) {
   selected_subprotocol_ = selected_subprotocol;
   extensions_ = extensions;
   QuitNestedEventLoop();
-  return CHANNEL_ALIVE;
 }
 
-ChannelState ConnectTestingEventInterface::OnDataFrame(
-    bool fin,
-    WebSocketMessageType type,
-    scoped_refptr<IOBuffer> data,
-    size_t data_size) {
-  return CHANNEL_ALIVE;
-}
+void ConnectTestingEventInterface::OnDataFrame(bool fin,
+                                               WebSocketMessageType type,
+                                               scoped_refptr<IOBuffer> data,
+                                               size_t data_size) {}
 
-ChannelState ConnectTestingEventInterface::OnFlowControl(int64_t quota) {
-  return CHANNEL_ALIVE;
-}
+void ConnectTestingEventInterface::OnFlowControl(int64_t quota) {}
 
-ChannelState ConnectTestingEventInterface::OnClosingHandshake() {
-  return CHANNEL_ALIVE;
-}
+void ConnectTestingEventInterface::OnClosingHandshake() {}
 
-ChannelState ConnectTestingEventInterface::OnDropChannel(
-    bool was_clean,
-    uint16_t code,
-    const std::string& reason) {
-  return CHANNEL_DELETED;
-}
+void ConnectTestingEventInterface::OnDropChannel(bool was_clean,
+                                                 uint16_t code,
+                                                 const std::string& reason) {}
 
-ChannelState ConnectTestingEventInterface::OnFailChannel(
-    const std::string& message) {
+void ConnectTestingEventInterface::OnFailChannel(const std::string& message) {
   failed_ = true;
   failure_message_ = message;
   QuitNestedEventLoop();
-  return CHANNEL_DELETED;
 }
 
-ChannelState ConnectTestingEventInterface::OnStartOpeningHandshake(
-    std::unique_ptr<WebSocketHandshakeRequestInfo> request) {
-  return CHANNEL_ALIVE;
-}
+void ConnectTestingEventInterface::OnStartOpeningHandshake(
+    std::unique_ptr<WebSocketHandshakeRequestInfo> request) {}
 
-ChannelState ConnectTestingEventInterface::OnFinishOpeningHandshake(
-    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {
-  return CHANNEL_ALIVE;
-}
+void ConnectTestingEventInterface::OnFinishOpeningHandshake(
+    std::unique_ptr<WebSocketHandshakeResponseInfo> response) {}
 
-ChannelState ConnectTestingEventInterface::OnSSLCertificateError(
+void ConnectTestingEventInterface::OnSSLCertificateError(
     std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
     const GURL& url,
     const SSLInfo& ssl_info,
@@ -197,7 +177,6 @@ ChannelState ConnectTestingEventInterface::OnSSLCertificateError(
       FROM_HERE, base::Bind(&SSLErrorCallbacks::CancelSSLRequest,
                             base::Owned(ssl_error_callbacks.release()),
                             ERR_SSL_PROTOCOL_ERROR, &ssl_info));
-  return CHANNEL_ALIVE;
 }
 
 void ConnectTestingEventInterface::QuitNestedEventLoop() {
