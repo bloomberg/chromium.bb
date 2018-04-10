@@ -1,12 +1,12 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startBlank(
-      `Tests that evaluating V8-embedder callbacks allows side-effect-free methods. Should not crash.`);
+      `Tests that evaluating V8-embedder callbacks allows side-effect-free attribute getters. Should not crash.`);
 
   await session.evaluate(`
-    var global_performance = window.performance;
+    var div = document.createElement('div');
   `);
 
-  await checkHasNoSideEffect('global_performance.now()');
+  await checkHasNoSideEffect('div.isConnected');
   testRunner.completeTest();
 
 

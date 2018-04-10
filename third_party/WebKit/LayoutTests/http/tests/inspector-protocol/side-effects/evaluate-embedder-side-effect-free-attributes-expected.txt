@@ -1,0 +1,3 @@
+Tests that evaluating V8-embedder callbacks allows side-effect-free attribute getters. Should not crash.
+Checking: `div.isConnected` for no side effect
+
