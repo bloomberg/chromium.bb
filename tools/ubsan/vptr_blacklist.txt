@@ -48,9 +48,9 @@ fun:*content*RenderViewObserverTracker*RenderView*
 
 fun:*DatabaseContext*contextDestroyed*
 
-# FIXME: Cannot handle template function LifecycleObserver<>::setContext,
+# FIXME: Cannot handle template function LifecycleObserver<>::SetContext,
 # so exclude source file for now.
-src:*LifecycleObserver.h*
+src:*lifecycle_observer.h*
 
 #############################################################################
 # static_cast into itself in the constructor.
