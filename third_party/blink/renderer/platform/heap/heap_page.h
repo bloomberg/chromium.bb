@@ -750,6 +750,7 @@ class PLATFORM_EXPORT BaseArena {
 #endif
   virtual void TakeFreelistSnapshot(const String& dump_base_name) {}
   virtual void ClearFreeLists() {}
+  virtual void MakeIterable() {}
   virtual void MakeConsistentForGC();
   void MakeConsistentForMutator();
 #if DCHECK_IS_ON()
@@ -808,6 +809,8 @@ class PLATFORM_EXPORT NormalPageArena final : public BaseArena {
     free_list_.AddToFreeList(address, size);
   }
   void ClearFreeLists() override;
+  void MakeIterable() override;
+
 #if DCHECK_IS_ON()
   bool IsConsistentForGC() override;
   bool PagesToBeSweptContains(Address);
