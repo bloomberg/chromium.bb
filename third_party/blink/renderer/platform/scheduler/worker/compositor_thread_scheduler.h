@@ -24,7 +24,7 @@ namespace scheduler {
 
 // TODO(yutak): Rename this class to CompositorThreadScheduler.
 class PLATFORM_EXPORT CompositorWorkerScheduler
-    : public WorkerScheduler,
+    : public NonMainThreadScheduler,
       public SingleThreadIdleTaskRunner::Delegate {
  public:
   CompositorWorkerScheduler(

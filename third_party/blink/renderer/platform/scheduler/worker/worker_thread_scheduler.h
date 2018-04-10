@@ -26,7 +26,7 @@ class TaskQueueManager;
 class WorkerSchedulerProxy;
 
 // TODO(yutak): Rename this class to WorkerThreadScheduler.
-class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
+class PLATFORM_EXPORT WorkerSchedulerImpl : public NonMainThreadScheduler,
                                             public IdleHelper::Delegate,
                                             public TaskTimeObserver {
  public:

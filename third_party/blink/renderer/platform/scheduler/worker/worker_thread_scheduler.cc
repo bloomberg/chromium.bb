@@ -49,7 +49,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
     WebThreadType thread_type,
     std::unique_ptr<TaskQueueManager> task_queue_manager,
     WorkerSchedulerProxy* proxy)
-    : WorkerScheduler(
+    : NonMainThreadScheduler(
           std::make_unique<WorkerSchedulerHelper>(std::move(task_queue_manager),
                                                   this)),
       idle_helper_(helper_.get(),

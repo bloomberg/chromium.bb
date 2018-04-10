@@ -13,20 +13,21 @@
 namespace blink {
 namespace scheduler {
 
-WorkerScheduler::WorkerScheduler(std::unique_ptr<WorkerSchedulerHelper> helper)
+NonMainThreadScheduler::NonMainThreadScheduler(
+    std::unique_ptr<WorkerSchedulerHelper> helper)
     : helper_(std::move(helper)) {}
 
-WorkerScheduler::~WorkerScheduler() = default;
+NonMainThreadScheduler::~NonMainThreadScheduler() = default;
 
 // static
-std::unique_ptr<WorkerScheduler> WorkerScheduler::Create(
+std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
     WebThreadType thread_type,
     WorkerSchedulerProxy* proxy) {
   return std::make_unique<WorkerSchedulerImpl>(
       thread_type, TaskQueueManager::TakeOverCurrentThread(), proxy);
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerScheduler::CreateTaskRunner() {
+scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
   helper_->CheckOnValidThread();
   return helper_->NewTaskQueue(TaskQueue::Spec("worker_tq")
                                    .SetShouldMonitorQuiescence(true)

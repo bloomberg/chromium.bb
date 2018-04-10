@@ -10,10 +10,12 @@
 namespace blink {
 namespace scheduler {
 
-WorkerTaskQueue::WorkerTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
-                                 const TaskQueue::Spec& spec,
-                                 WorkerScheduler* worker_scheduler)
-    : TaskQueue(std::move(impl), spec), worker_scheduler_(worker_scheduler) {
+WorkerTaskQueue::WorkerTaskQueue(
+    std::unique_ptr<internal::TaskQueueImpl> impl,
+    const TaskQueue::Spec& spec,
+    NonMainThreadScheduler* non_main_thread_scheduler)
+    : TaskQueue(std::move(impl), spec),
+      non_main_thread_scheduler_(non_main_thread_scheduler) {
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
     GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
@@ -28,9 +30,11 @@ void WorkerTaskQueue::OnTaskCompleted(
     base::TimeTicks start,
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {
-  // |worker_scheduler_| can be nullptr in tests.
-  if (worker_scheduler_)
-    worker_scheduler_->OnTaskCompleted(this, task, start, end, thread_time);
+  // |non_main_thread_scheduler_| can be nullptr in tests.
+  if (non_main_thread_scheduler_) {
+    non_main_thread_scheduler_->OnTaskCompleted(this, task, start, end,
+                                                thread_time);
+  }
 }
 
 }  // namespace scheduler

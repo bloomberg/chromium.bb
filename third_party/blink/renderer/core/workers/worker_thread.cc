@@ -389,7 +389,7 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
           GetWorkerBackingThread().BackingThread().PlatformThread());
   global_scope_scheduler_ =
       std::make_unique<scheduler::WorkerGlobalScopeScheduler>(
-          web_thread_for_worker.GetWorkerScheduler());
+          web_thread_for_worker.GetNonMainThreadScheduler());
   waitable_event->Signal();
 }
 

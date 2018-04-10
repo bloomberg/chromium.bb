@@ -11,8 +11,8 @@ namespace blink {
 namespace scheduler {
 
 WorkerGlobalScopeScheduler::WorkerGlobalScopeScheduler(
-    WorkerScheduler* worker_scheduler) {
-  task_queue_ = worker_scheduler->CreateTaskRunner();
+    NonMainThreadScheduler* non_main_thread_scheduler) {
+  task_queue_ = non_main_thread_scheduler->CreateTaskRunner();
 }
 
 WorkerGlobalScopeScheduler::~WorkerGlobalScopeScheduler() {
