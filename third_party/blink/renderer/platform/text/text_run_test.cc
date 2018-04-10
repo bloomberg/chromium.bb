@@ -8,7 +8,13 @@
 
 namespace blink {
 
-TEST(TextRunTest, IndexOfSubRun) {
+#if defined(THREAD_SANITIZER)
+#define MAYBE_IndexOfSubRun DISABLED_IndexOfSubRun  // https://crbug.com/830648
+#else
+#define MAYBE_IndexOfSubRun IndexOfSubRun
+#endif
+
+TEST(TextRunTest, MAYBE_IndexOfSubRun) {
   TextRun run(String("1234567890"));
   EXPECT_EQ(0u, run.IndexOfSubRun(run.SubRun(0, 4)));
   EXPECT_EQ(4u, run.IndexOfSubRun(run.SubRun(4, 4)));

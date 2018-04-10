@@ -1322,6 +1322,8 @@
   },
   'cronet_tests': {
     'remove_from': [
+      # chromium.memory
+      'Linux TSan Tests',  # https://crbug.com/830819
       # chromium.fyi
       'Fuchsia (dbg)',
     ],
@@ -1603,6 +1605,10 @@
       # chromium.memory
       'Linux ASan LSan Tests (1)',
       'Linux CFI',
+      'Linux CFI',
+      'Linux MSan Tests',  # https://crbug.com/830659
+      'Linux ChromiumOS MSan Tests',  # https://crbug.com/830659
+      'Linux TSan Tests',  # https://crbug.com/830659
     ],
     'modifications': {
       'KitKat Tablet Tester': {
@@ -2027,6 +2033,7 @@
       # chromium.memory
       # Unclear why this isn't run. http://crbug.com/814403
       'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',  # https://crbug.com/830944
       # Not needed on chromium.fyi because suite is on main waterfall.
       'Mojo ChromiumOS',
     ],
@@ -2311,6 +2318,7 @@
       'Out of Process Profiling Mac',
       # chromium.memory
       'Linux ASan LSan Tests (1)',
+      'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
     ],
   },
   'native_theme_unittests': {
