@@ -47309,6 +47309,11 @@ Full version information for the fingerprint enum values:
   <int value="45" label="kReasonCodeCipherSuiteNotSupported"/>
 </enum>
 
+<enum name="WiFiRoamComplete">
+  <int value="0" label="Roam success"/>
+  <int value="1" label="Roam failure"/>
+</enum>
+
 <enum name="WiFiScanResult">
   <int value="0" label="ProgressiveScan connected"/>
   <int value="1" label="ProgressiveScan error then FullScan didn't connect"/>
