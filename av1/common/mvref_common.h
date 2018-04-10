@@ -301,8 +301,9 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MB_MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t ref_mv_count[MODE_CTX_REF_FRAMES],
                       CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
-                      int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES], int mi_row,
-                      int mi_col, int16_t *mode_context);
+                      int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES],
+                      int_mv *global_mvs, int mi_row, int mi_col,
+                      int16_t *mode_context);
 
 // check a list of motion vectors by sad score using a number rows of pixels
 // above and a number cols of pixels in the left to select the one with best

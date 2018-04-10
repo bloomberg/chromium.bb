@@ -83,6 +83,7 @@ typedef struct {
   int *dc_sign_ctx[MAX_MB_PLANE];
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
+  int_mv global_mvs[REF_FRAMES];
   int16_t compound_mode_context[MODE_CTX_REF_FRAMES];
 } MB_MODE_INFO_EXT;
 

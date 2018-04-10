@@ -932,12 +932,24 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       MB_MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                       uint8_t ref_mv_count[MODE_CTX_REF_FRAMES],
                       CANDIDATE_MV ref_mv_stack[][MAX_REF_MV_STACK_SIZE],
-                      int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES], int mi_row,
-                      int mi_col, int16_t *mode_context) {
+                      int_mv mv_ref_list[][MAX_MV_REF_CANDIDATES],
+                      int_mv *global_mvs, int mi_row, int mi_col,
+                      int16_t *mode_context) {
   int_mv zeromv[2];
   BLOCK_SIZE bsize = mi->sb_type;
   MV_REFERENCE_FRAME rf[2];
   av1_set_ref_frame(rf, ref_frame);
+
+  if (ref_frame < REF_FRAMES) {
+    if (ref_frame != INTRA_FRAME) {
+      global_mvs[ref_frame] = gm_get_motion_vector(
+          &cm->global_motion[ref_frame], cm->allow_high_precision_mv, bsize,
+          mi_col, mi_row, cm->cur_frame_force_integer_mv);
+    } else {
+      global_mvs[ref_frame].as_int = INVALID_MV;
+    }
+  }
+
   if (ref_frame != INTRA_FRAME) {
     zeromv[0].as_int =
         gm_get_motion_vector(&cm->global_motion[rf[0]],

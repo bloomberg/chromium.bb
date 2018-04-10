@@ -5926,7 +5926,8 @@ static void setup_buffer_ref_mvs_inter(
 
   // Gets an initial list of candidate vectors from neighbours and orders them
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
+                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
+                   mbmi_ext->global_mvs, mi_row, mi_col,
                    mbmi_ext->mode_context);
 
   // Further refinement that is encode side only to test the top few candidates
@@ -7644,90 +7645,79 @@ static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return 0;
 }
 
-// This function update the non-new mv for the current prediction mode
-static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
-                               int_mv (*const mode_mv)[REF_FRAMES],
-                               const AV1_COMMON *cm, const MACROBLOCK *x) {
+static INLINE int is_single_inter_mode(int this_mode) {
+  return this_mode >= SINGLE_INTER_MODE_START &&
+         this_mode < SINGLE_INTER_MODE_END;
+}
+
+static INLINE int get_ref_mv_offset(int single_mode, const MB_MODE_INFO *mbmi) {
+  assert(is_single_inter_mode(single_mode));
+  int ref_mv_offset;
+  if (single_mode == NEARESTMV) {
+    ref_mv_offset = 0;
+  } else if (single_mode == NEARMV) {
+    ref_mv_offset = mbmi->ref_mv_idx + 1;
+  } else {
+    ref_mv_offset = -1;
+  }
+  return ref_mv_offset;
+}
+
+static INLINE int get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
+                              const AV1_COMMON *cm, const MACROBLOCK *x) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
   const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  int single_mode;
   const int is_comp_pred = has_second_ref(mbmi);
-  if (!is_comp_pred) {
-    cur_mv[0] = mode_mv[this_mode][mbmi->ref_frame[0]];
-    if (this_mode != NEWMV) {
-      const int ret = clamp_and_check_mv(
-          &cur_mv[0], mode_mv[this_mode][mbmi->ref_frame[0]], cm, x);
-      if (!ret) {
-        return 0;
-      }
-    }
+  if (is_comp_pred) {
+    single_mode =
+        ref_idx ? compound_ref1_mode(this_mode) : compound_ref0_mode(this_mode);
   } else {
-    if (this_mode == NEAREST_NEARESTMV) {
-      if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
-        int ret = clamp_and_check_mv(
-            &cur_mv[0], mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv, cm,
+    single_mode = this_mode;
+  }
+  assert(is_single_inter_mode(single_mode));
+  if (single_mode == NEWMV) {
+    this_mv->as_int = INVALID_MV;
+    return 1;
+  } else if (single_mode == GLOBALMV) {
+    return clamp_and_check_mv(
+        this_mv, mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]], cm, x);
+  } else {
+    assert(single_mode == NEARMV || single_mode == NEARESTMV);
+    const int ref_mv_offset = get_ref_mv_offset(single_mode, mbmi);
+    if (ref_mv_offset < mbmi_ext->ref_mv_count[ref_frame_type]) {
+      assert(ref_mv_offset >= 0);
+      if (ref_idx == 0) {
+        return clamp_and_check_mv(
+            this_mv,
+            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].this_mv, cm,
             x);
-        ret &= clamp_and_check_mv(
-            &cur_mv[1], mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv, cm,
+      } else {
+        return clamp_and_check_mv(
+            this_mv,
+            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].comp_mv, cm,
             x);
-        if (!ret) {
-          return 0;
-        }
       }
-    }
-
-    if (mbmi_ext->ref_mv_count[ref_frame_type] > 0) {
-      if (this_mode == NEAREST_NEWMV) {
-        const int ret = clamp_and_check_mv(
-            &cur_mv[0], mbmi_ext->ref_mv_stack[ref_frame_type][0].this_mv, cm,
-            x);
-        if (!ret) {
-          return 0;
-        }
-      }
-
-      if (this_mode == NEW_NEARESTMV) {
-        const int ret = clamp_and_check_mv(
-            &cur_mv[1], mbmi_ext->ref_mv_stack[ref_frame_type][0].comp_mv, cm,
-            x);
-        if (!ret) {
-          return 0;
-        }
-      }
-    }
-
-    if (mbmi_ext->ref_mv_count[ref_frame_type] > 1) {
-      int ref_mv_idx = mbmi->ref_mv_idx + 1;
-      if (this_mode == NEAR_NEWMV || this_mode == NEAR_NEARMV) {
-        const int ret = clamp_and_check_mv(
-            &cur_mv[0],
-            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv, cm, x);
-        if (!ret) {
-          return 0;
-        }
-      }
-
-      if (this_mode == NEW_NEARMV || this_mode == NEAR_NEARMV) {
-        const int ret = clamp_and_check_mv(
-            &cur_mv[1],
-            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv, cm, x);
-        if (!ret) {
-          return 0;
-        }
-      }
-    }
-    if (this_mode == GLOBAL_GLOBALMV) {
-      int ret = clamp_and_check_mv(
-          &cur_mv[0], mode_mv[GLOBALMV][mbmi->ref_frame[0]], cm, x);
-      ret &= clamp_and_check_mv(&cur_mv[1],
-                                mode_mv[GLOBALMV][mbmi->ref_frame[1]], cm, x);
-      if (!ret) {
-        return 0;
-      }
+    } else {
+      return clamp_and_check_mv(
+          this_mv, mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]], cm, x);
     }
   }
-  return 1;
+}
+
+// This function update the non-new mv for the current prediction mode
+static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
+                               const AV1_COMMON *cm, const MACROBLOCK *x) {
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const MB_MODE_INFO *mbmi = xd->mi[0];
+  const int is_comp_pred = has_second_ref(mbmi);
+  int ret = 1;
+  for (int i = 0; i < is_comp_pred + 1; ++i) {
+    ret &= get_this_mv(cur_mv + i, this_mode, i, cm, x);
+  }
+  return ret;
 }
 
 static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -7828,7 +7818,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
 
     int_mv cur_mv[2];
-    if (!build_cur_mv(cur_mv, this_mode, mode_mv, cm, x)) {
+    if (!build_cur_mv(cur_mv, this_mode, cm, x)) {
       early_terminate = INT64_MAX;
       continue;
     }
@@ -8167,7 +8157,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   MV_REFERENCE_FRAME ref_frame = INTRA_FRAME;
   int_mv *const candidates = x->mbmi_ext->ref_mvs[ref_frame];
   av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
+                   mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
+                   mbmi_ext->global_mvs, mi_row, mi_col,
                    mbmi_ext->mode_context);
 
   int_mv nearestmv, nearmv;
@@ -8839,7 +8830,8 @@ static void set_params_rd_pick_inter_mode(
   for (; ref_frame < MODE_CTX_REF_FRAMES; ++ref_frame) {
     x->mbmi_ext->mode_context[ref_frame] = 0;
     av1_find_mv_refs(cm, xd, mbmi, ref_frame, mbmi_ext->ref_mv_count,
-                     mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs, mi_row, mi_col,
+                     mbmi_ext->ref_mv_stack, mbmi_ext->ref_mvs,
+                     mbmi_ext->global_mvs, mi_row, mi_col,
                      mbmi_ext->mode_context);
   }
 
