@@ -88,7 +88,7 @@ set(aom_asm_config_template "${AOM_CONFIG_DIR}/aom_config.asm.cmake")
 file(WRITE "${aom_asm_config_template}" ${asm_file_header_block})
 foreach(cache_var ${cmake_cache_vars})
   if (NOT "${cache_var}" MATCHES
-      "AOM_CONFIG_DIR\|AOM_ROOT\|^CMAKE_\|INLINE\|RESTRICT")
+      "AOM_CONFIG_DIR\|AOM_ROOT\|^CMAKE_\|INLINE")
     file(APPEND "${aom_asm_config_template}"
          "${cache_var} equ \${${cache_var}}\n")
   endif ()
@@ -98,7 +98,7 @@ set(aom_rtcd_config_template "${AOM_CONFIG_DIR}/rtcd_config.cmake")
 file(WRITE "${aom_rtcd_config_template}" ${cmake_file_header_block})
 foreach(cache_var ${cmake_cache_vars})
   if (NOT "${cache_var}" MATCHES
-      "AOM_CONFIG_DIR\|AOM_ROOT\|^CMAKE_\|INLINE\|RESTRICT")
+      "AOM_CONFIG_DIR\|AOM_ROOT\|^CMAKE_\|INLINE")
     file(APPEND "${aom_rtcd_config_template}"
          "${cache_var}=\${RTCD_${cache_var}}\n")
   endif ()

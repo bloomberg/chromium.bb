@@ -13,7 +13,6 @@
 # allow users to specify values when executing cmake to generate build files.
 # Values here are used only if not set by the user.
 set(INLINE "" CACHE STRING "Sets INLINE value for current target.")
-set(RESTRICT "" CACHE STRING "Sets RESTRICT value for current target.")
 
 # CPUs.
 set(ARCH_ARM 0 CACHE NUMBER "Enables ARM architecture.")
