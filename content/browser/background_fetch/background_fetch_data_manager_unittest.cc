@@ -39,6 +39,9 @@ const char kAlternativeDeveloperId[] = "my-other-id";
 const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kAlternativeUniqueId[] = "bb48a9fb-c21f-4c2d-a9ae-58bd48a9fb53";
 
+const char kInitialTitle[] = "Initial Title";
+const char kUpdatedTitle[] = "Updated Title";
+
 // See schema documentation in background_fetch_data_manager.cc.
 // A "bgfetch_registration_" per registration (not including keys for requests).
 constexpr size_t kUserDataKeysPerInactiveRegistration = 1u;
@@ -141,6 +144,40 @@ class BackgroundFetchDataManagerTest
     return registration;
   }
 
+  std::unique_ptr<proto::BackgroundFetchMetadata> GetMetadata(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
+      const std::string developer_id,
+      blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(out_error);
+
+    std::unique_ptr<proto::BackgroundFetchMetadata> metadata;
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->GetMetadata(
+        service_worker_registration_id, origin, developer_id,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidGetMetadata,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error, &metadata));
+    run_loop.Run();
+
+    return metadata;
+  }
+
+  void UpdateRegistrationUI(
+      const BackgroundFetchRegistrationId& registration_id,
+      const std::string& updated_title,
+      blink::mojom::BackgroundFetchError* out_error) {
+    DCHECK(out_error);
+
+    base::RunLoop run_loop;
+    background_fetch_data_manager_->UpdateRegistrationUI(
+        registration_id, updated_title,
+        base::BindOnce(&BackgroundFetchDataManagerTest::DidUpdateRegistrationUI,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error));
+    run_loop.Run();
+  }
+
   std::vector<std::string> GetDeveloperIds(
       int64_t service_worker_registration_id,
       const url::Origin& origin,
@@ -217,6 +254,28 @@ class BackgroundFetchDataManagerTest
     *out_error = error;
     *out_registration = std::move(registration);
 
+    std::move(quit_closure).Run();
+  }
+
+  void DidGetMetadata(
+      base::OnceClosure quit_closure,
+      blink::mojom::BackgroundFetchError* out_error,
+      std::unique_ptr<proto::BackgroundFetchMetadata>* out_metadata,
+      blink::mojom::BackgroundFetchError error,
+      std::unique_ptr<proto::BackgroundFetchMetadata> metadata) {
+    if (error == blink::mojom::BackgroundFetchError::NONE) {
+      DCHECK(metadata);
+    }
+    *out_error = error;
+    *out_metadata = std::move(metadata);
+
+    std::move(quit_closure).Run();
+  }
+
+  void DidUpdateRegistrationUI(base::OnceClosure quit_closure,
+                               blink::mojom::BackgroundFetchError* out_error,
+                               blink::mojom::BackgroundFetchError error) {
+    *out_error = error;
     std::move(quit_closure).Run();
   }
 
@@ -385,6 +444,87 @@ TEST_P(BackgroundFetchDataManagerTest, GetRegistration) {
   ASSERT_TRUE(registration);
   EXPECT_EQ(kExampleUniqueId, registration->unique_id);
   EXPECT_EQ(kExampleDeveloperId, registration->developer_id);
+}
+
+TEST_P(BackgroundFetchDataManagerTest, GetMetadata) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  blink::mojom::BackgroundFetchError error;
+
+  // Create a single registration.
+  CreateRegistration(registration_id, requests, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Verify that the metadata can be retrieved.
+  auto metadata = GetMetadata(sw_id, origin(), kExampleDeveloperId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ(metadata->origin(), origin().Serialize());
+  EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
+
+  // Verify that retrieving using the wrong developer id doesn't work.
+  metadata = GetMetadata(sw_id, origin(), kAlternativeDeveloperId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::INVALID_ID);
+  ASSERT_FALSE(metadata);
+
+  RestartDataManagerFromPersistentStorage();
+
+  // After a restart, GetMetadata should still find the registration.
+  metadata = GetMetadata(sw_id, origin(), kExampleDeveloperId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ(metadata->origin(), origin().Serialize());
+  EXPECT_NE(metadata->creation_microseconds_since_unix_epoch(), 0);
+}
+
+TEST_P(BackgroundFetchDataManagerTest, UpdateRegistrationUI) {
+  // This test only applies to persistent storage.
+  if (registration_storage_ ==
+      BackgroundFetchRegistrationStorage::kNonPersistent)
+    return;
+
+  int64_t sw_id = RegisterServiceWorker();
+  ASSERT_NE(blink::mojom::kInvalidServiceWorkerRegistrationId, sw_id);
+
+  BackgroundFetchRegistrationId registration_id(
+      sw_id, origin(), kExampleDeveloperId, kExampleUniqueId);
+
+  std::vector<ServiceWorkerFetchRequest> requests(2u);
+  BackgroundFetchOptions options;
+  options.title = kInitialTitle;
+  blink::mojom::BackgroundFetchError error;
+
+  // Create a single registration.
+  CreateRegistration(registration_id, requests, options, &error);
+  EXPECT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+
+  // Verify that the title can be retrieved.
+  auto metadata = GetMetadata(sw_id, origin(), kExampleDeveloperId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ(metadata->ui_title(), kInitialTitle);
+
+  // Update the title.
+  UpdateRegistrationUI(registration_id, kUpdatedTitle, &error);
+
+  RestartDataManagerFromPersistentStorage();
+
+  // After a restart, GetMetadata should find the new title.
+  metadata = GetMetadata(sw_id, origin(), kExampleDeveloperId, &error);
+  ASSERT_EQ(error, blink::mojom::BackgroundFetchError::NONE);
+  ASSERT_TRUE(metadata);
+  EXPECT_EQ(metadata->ui_title(), kUpdatedTitle);
 }
 
 TEST_P(BackgroundFetchDataManagerTest, CreateAndDeleteRegistration) {

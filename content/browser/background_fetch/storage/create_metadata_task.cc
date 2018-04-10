@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/background_fetch/storage/create_registration_task.h"
+#include "content/browser/background_fetch/storage/create_metadata_task.h"
 
 #include <utility>
 
@@ -20,12 +20,12 @@ std::string RequestKey(const std::string& unique_id, int request_index) {
   return RequestKeyPrefix(unique_id) + base::IntToString(request_index);
 }
 
-CreateRegistrationTask::CreateRegistrationTask(
+CreateMetadataTask::CreateMetadataTask(
     BackgroundFetchDataManager* data_manager,
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
-    CreateRegistrationCallback callback)
+    CreateMetadataCallback callback)
     : DatabaseTask(data_manager),
       registration_id_(registration_id),
       requests_(requests),
@@ -33,19 +33,18 @@ CreateRegistrationTask::CreateRegistrationTask(
       callback_(std::move(callback)),
       weak_factory_(this) {}
 
-CreateRegistrationTask::~CreateRegistrationTask() = default;
+CreateMetadataTask::~CreateMetadataTask() = default;
 
-void CreateRegistrationTask::Start() {
+void CreateMetadataTask::Start() {
   service_worker_context()->GetRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       {ActiveRegistrationUniqueIdKey(registration_id_.developer_id())},
-      base::BindOnce(&CreateRegistrationTask::DidGetUniqueId,
+      base::BindOnce(&CreateMetadataTask::DidGetUniqueId,
                      weak_factory_.GetWeakPtr()));
 }
 
-void CreateRegistrationTask::DidGetUniqueId(
-    const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+void CreateMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
+                                        ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
       StoreMetadata();
@@ -56,30 +55,28 @@ void CreateRegistrationTask::DidGetUniqueId(
       // (completed/failed/aborted) first.
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::DUPLICATED_DEVELOPER_ID,
-          nullptr /* registration */);
+          nullptr /* metadata */);
       Finished();  // Destroys |this|.
       return;
     case DatabaseStatus::kFailed:
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* registration */);
+          nullptr /* metadata */);
       Finished();  // Destroys |this|.
       return;
   }
 }
 
-proto::BackgroundFetchMetadata CreateRegistrationTask::CreateMetadataProto()
-    const {
-  proto::BackgroundFetchMetadata metadata_proto;
-
+void CreateMetadataTask::InitializeMetadataProto() {
+  metadata_proto_ = std::make_unique<proto::BackgroundFetchMetadata>();
   // Set BackgroundFetchRegistration fields.
   // Upload/Download stats default to correct initial values.
-  auto* registration_proto = metadata_proto.mutable_registration();
-  registration_proto->set_unique_id(registration_->unique_id);
-  registration_proto->set_developer_id(registration_->developer_id);
+  auto* registration_proto = metadata_proto_->mutable_registration();
+  registration_proto->set_unique_id(registration_id_.unique_id());
+  registration_proto->set_developer_id(registration_id_.developer_id());
 
   // Set Options fields.
-  auto* options_proto = metadata_proto.mutable_options();
+  auto* options_proto = metadata_proto_->mutable_options();
   options_proto->set_title(options_.title);
   options_proto->set_download_total(options_.download_total);
   for (const auto& icon : options_.icons) {
@@ -90,37 +87,23 @@ proto::BackgroundFetchMetadata CreateRegistrationTask::CreateMetadataProto()
   }
 
   // Set other metadata fields.
-  metadata_proto.set_origin(registration_id_.origin().Serialize());
-  metadata_proto.set_creation_microseconds_since_unix_epoch(
+  metadata_proto_->set_origin(registration_id_.origin().Serialize());
+  metadata_proto_->set_creation_microseconds_since_unix_epoch(
       (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds());
-  metadata_proto.set_ui_title(options_.title);
-
-  return metadata_proto;
+  metadata_proto_->set_ui_title(options_.title);
 }
 
-void CreateRegistrationTask::StoreMetadata() {
-  DCHECK(!registration_);
-  DCHECK(!registration_id_.origin().unique());
-
-  registration_ = std::make_unique<BackgroundFetchRegistration>();
-  registration_->developer_id = registration_id_.developer_id();
-  registration_->unique_id = registration_id_.unique_id();
-  // TODO(crbug.com/774054): Uploads are not yet supported.
-  registration_->upload_total = 0;
-  registration_->uploaded = 0;
-  registration_->download_total = options_.download_total;
-  registration_->downloaded = 0;
-
+void CreateMetadataTask::StoreMetadata() {
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
 
-  const proto::BackgroundFetchMetadata metadata_proto = CreateMetadataProto();
+  InitializeMetadataProto();
   std::string serialized_metadata_proto;
 
-  if (!metadata_proto.SerializeToString(&serialized_metadata_proto)) {
+  if (!metadata_proto_->SerializeToString(&serialized_metadata_proto)) {
     // TODO(crbug.com/780025): Log failures to UMA.
     std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-                             nullptr /* registration */);
+                             nullptr /* metadata */);
     Finished();  // Destroys |this|.
     return;
   }
@@ -138,7 +121,7 @@ void CreateRegistrationTask::StoreMetadata() {
                          "TODO: Serialize FetchAPIRequest as value");
     entries.emplace_back(
         PendingRequestKey(
-            metadata_proto.creation_microseconds_since_unix_epoch(),
+            metadata_proto_->creation_microseconds_since_unix_epoch(),
             registration_id_.unique_id(), i),
         std::string());
   }
@@ -146,12 +129,12 @@ void CreateRegistrationTask::StoreMetadata() {
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(), entries,
-      base::BindOnce(&CreateRegistrationTask::DidStoreMetadata,
-                     weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&CreateMetadataTask::DidStoreMetadata,
+                          weak_factory_.GetWeakPtr()));
 }
 
-void CreateRegistrationTask::DidStoreMetadata(ServiceWorkerStatusCode status) {
-  DCHECK(registration_);
+void CreateMetadataTask::DidStoreMetadata(ServiceWorkerStatusCode status) {
+  DCHECK(metadata_proto_);
 
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
@@ -160,13 +143,13 @@ void CreateRegistrationTask::DidStoreMetadata(ServiceWorkerStatusCode status) {
     case DatabaseStatus::kNotFound:
       std::move(callback_).Run(
           blink::mojom::BackgroundFetchError::STORAGE_ERROR,
-          nullptr /* registration */);
+          nullptr /* metadata */);
       Finished();  // Destroys |this|.
       return;
   }
 
   std::move(callback_).Run(blink::mojom::BackgroundFetchError::NONE,
-                           std::move(registration_));
+                           std::move(metadata_proto_));
   Finished();  // Destroys |this|.
 }
 }  // namespace background_fetch
