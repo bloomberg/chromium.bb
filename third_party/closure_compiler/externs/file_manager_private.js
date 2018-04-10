@@ -628,6 +628,12 @@ chrome.fileManagerPrivate.getProfiles = function(callback) {};
 chrome.fileManagerPrivate.openInspector = function(type) {};
 
 /**
+ * Opens settings sub page. |sub_page| Name of a sub page.
+ * @param {string} sub_page
+ */
+chrome.fileManagerPrivate.openSettingsSubpage = function(sub_page) {};
+
+/**
  * Computes an MD5 checksum for the given file.
  * @param {!Entry} entry
  * @param {function((string|undefined))} callback

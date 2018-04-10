@@ -1005,6 +1005,10 @@ interface Functions {
   // |type| InspectionType which specifies how to open inspector.
   static void openInspector(InspectionType type);
 
+  // Opens page in Settings window.
+  // |sub_page| Name of a sub_page to show.
+  static void openSettingsSubpage(DOMString sub_page);
+
   // Computes an MD5 checksum for the given file.
   // |entry| The entry of the file to checksum.
   // |callback|

@@ -44,20 +44,24 @@ cr.define('cr.ui', function() {
      * @override
      */
     decorate: function() {
-      this.label_ = assertInstanceof(
-          document.createElement('span'), HTMLElement);
-      this.label_.textContent = this.textContent;
+      // Custom menu item can have sophisticated content (elements).
+      if (!this.children.length) {
+        this.label_ =
+            assertInstanceof(document.createElement('span'), HTMLElement);
+        this.label_.textContent = this.textContent;
 
-      this.iconStart_ = assertInstanceof(
-          document.createElement('div'), HTMLElement);
-      this.iconStart_.classList.add('icon', 'start');
+        this.iconStart_ =
+            assertInstanceof(document.createElement('div'), HTMLElement);
+        this.iconStart_.classList.add('icon', 'start');
 
-      this.ripple_ = assertInstanceof(
-          document.createElement('paper-ripple'), HTMLElement);
+        // Override with standard menu item elements.
+        this.textContent = '';
+        this.appendChild(this.iconStart_);
+        this.appendChild(this.label_);
+      }
 
-      this.textContent = '';
-      this.appendChild(this.iconStart_);
-      this.appendChild(this.label_);
+      this.ripple_ =
+          assertInstanceof(document.createElement('paper-ripple'), HTMLElement);
       this.appendChild(this.ripple_);
 
       this.addEventListener('activate', this.onActivated_.bind(this));

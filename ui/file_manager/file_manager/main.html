@@ -131,6 +131,7 @@
       <command id="configure" i18n-values="label:CONFIGURE_VOLUME_BUTTON_LABEL">
 
       <command id="volume-help" i18n-values="label:DRIVE_MENU_HELP">
+      <command id="volume-storage">
       <command id="drive-buy-more-space"
                i18n-values="label:DRIVE_BUY_MORE_SPACE">
       <command id="drive-go-to-drive"
@@ -255,14 +256,14 @@
       <cr-menu-item id="gear-menu-volume-help"
                     command="#volume-help"></cr-menu-item>
       <hr id="volume-space-info-separator">
-      <div id="volume-space-info">
+      <cr-menu-item id="volume-space-info" command="#volume-storage">
         <div id="volume-space-info-contents">
           <span id="volume-space-info-label"></span>
           <div class="progress-bar" aria-hidden="true">
             <div class="progress-track" id="volume-space-info-bar"></div>
           </div>
         </div>
-      </div>
+      </cr-menu-item>
     </cr-menu>
 
     <cr-menu id="tasks-menu" class="chrome-menu files-menu"
