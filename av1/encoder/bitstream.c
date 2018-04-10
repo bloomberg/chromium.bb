@@ -464,7 +464,7 @@ static void write_segment_id(AV1_COMP *cpi, const MB_MODE_INFO *const mbmi,
   const int coded_id =
       av1_neg_interleave(mbmi->segment_id, pred, seg->last_active_segid + 1);
   aom_cdf_prob *pred_cdf = segp->spatial_pred_seg_cdf[cdf_num];
-  aom_write_symbol(w, coded_id, pred_cdf, 8);
+  aom_write_symbol(w, coded_id, pred_cdf, MAX_SEGMENTS);
   set_spatial_segment_id(cm, cm->current_frame_seg_map, mbmi->sb_type, mi_row,
                          mi_col, mbmi->segment_id);
 }
