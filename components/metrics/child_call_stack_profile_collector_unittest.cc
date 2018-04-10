@@ -84,14 +84,14 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   // Add profiles before providing the interface.
   CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
-                             CallStackProfileParams::UI_THREAD,
+                             CallStackProfileParams::MAIN_THREAD,
                              CallStackProfileParams::JANKY_TASK,
                              CallStackProfileParams::PRESERVE_ORDER),
       2);
   ASSERT_EQ(1u, profiles().size());
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS,
             profiles()[0].params.process);
-  EXPECT_EQ(CallStackProfileParams::UI_THREAD, profiles()[0].params.thread);
+  EXPECT_EQ(CallStackProfileParams::MAIN_THREAD, profiles()[0].params.thread);
   EXPECT_EQ(CallStackProfileParams::JANKY_TASK, profiles()[0].params.trigger);
   EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
             profiles()[0].params.ordering_spec);
@@ -117,7 +117,7 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   receiver_impl_->profiles.clear();
   CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::GPU_PROCESS,
-                             CallStackProfileParams::GPU_MAIN_THREAD,
+                             CallStackProfileParams::MAIN_THREAD,
                              CallStackProfileParams::THREAD_HUNG,
                              CallStackProfileParams::PRESERVE_ORDER),
       1);
@@ -126,7 +126,7 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceProvided) {
   ASSERT_EQ(1u, receiver_impl_->profiles.size());
   EXPECT_EQ(CallStackProfileParams::GPU_PROCESS,
             receiver_impl_->profiles[0].params.process);
-  EXPECT_EQ(CallStackProfileParams::GPU_MAIN_THREAD,
+  EXPECT_EQ(CallStackProfileParams::MAIN_THREAD,
             receiver_impl_->profiles[0].params.thread);
   EXPECT_EQ(CallStackProfileParams::THREAD_HUNG,
             receiver_impl_->profiles[0].params.trigger);
@@ -144,14 +144,14 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
   // Add profiles before providing a null interface.
   CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
-                             CallStackProfileParams::UI_THREAD,
+                             CallStackProfileParams::MAIN_THREAD,
                              CallStackProfileParams::JANKY_TASK,
                              CallStackProfileParams::PRESERVE_ORDER),
       2);
   ASSERT_EQ(1u, profiles().size());
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS,
             profiles()[0].params.process);
-  EXPECT_EQ(CallStackProfileParams::UI_THREAD, profiles()[0].params.thread);
+  EXPECT_EQ(CallStackProfileParams::MAIN_THREAD, profiles()[0].params.thread);
   EXPECT_EQ(CallStackProfileParams::JANKY_TASK, profiles()[0].params.trigger);
   EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER,
             profiles()[0].params.ordering_spec);
@@ -168,7 +168,7 @@ TEST_F(ChildCallStackProfileCollectorTest, InterfaceNotProvided) {
   // Add profiles after providing a null interface. They should also be flushed.
   CollectEmptyProfiles(
       CallStackProfileParams(CallStackProfileParams::GPU_PROCESS,
-                             CallStackProfileParams::GPU_MAIN_THREAD,
+                             CallStackProfileParams::MAIN_THREAD,
                              CallStackProfileParams::THREAD_HUNG,
                              CallStackProfileParams::PRESERVE_ORDER),
       1);

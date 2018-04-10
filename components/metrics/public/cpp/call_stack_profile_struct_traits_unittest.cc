@@ -303,21 +303,11 @@ TEST_F(CallStackProfileStructTraitsTest, Thread) {
 
   Thread out;
 
-  EXPECT_TRUE(proxy_->BounceThread(Thread::UI_THREAD, &out));
-  EXPECT_EQ(Thread::UI_THREAD, out);
-
+  EXPECT_TRUE(proxy_->BounceThread(Thread::MAIN_THREAD, &out));
+  EXPECT_EQ(Thread::MAIN_THREAD, out);
 
   EXPECT_TRUE(proxy_->BounceThread(Thread::IO_THREAD, &out));
   EXPECT_EQ(Thread::IO_THREAD, out);
-
-  EXPECT_TRUE(proxy_->BounceThread(Thread::GPU_MAIN_THREAD, &out));
-  EXPECT_EQ(Thread::GPU_MAIN_THREAD, out);
-
-  EXPECT_TRUE(proxy_->BounceThread(Thread::RENDER_THREAD, &out));
-  EXPECT_EQ(Thread::RENDER_THREAD, out);
-
-  EXPECT_TRUE(proxy_->BounceThread(Thread::UTILITY_THREAD, &out));
-  EXPECT_EQ(Thread::UTILITY_THREAD, out);
 
   EXPECT_TRUE(proxy_->BounceThread(Thread::COMPOSITOR_THREAD, &out));
   EXPECT_EQ(Thread::COMPOSITOR_THREAD, out);
@@ -365,13 +355,13 @@ TEST_F(CallStackProfileStructTraitsTest, CallStackProfileParams) {
 
   EXPECT_TRUE(proxy_->BounceCallStackProfileParams(
       CallStackProfileParams(CallStackProfileParams::BROWSER_PROCESS,
-                             CallStackProfileParams::UI_THREAD,
+                             CallStackProfileParams::MAIN_THREAD,
                              CallStackProfileParams::PROCESS_STARTUP,
                              CallStackProfileParams::PRESERVE_ORDER),
       &out));
 
   EXPECT_EQ(CallStackProfileParams::BROWSER_PROCESS, out.process);
-  EXPECT_EQ(CallStackProfileParams::UI_THREAD, out.thread);
+  EXPECT_EQ(CallStackProfileParams::MAIN_THREAD, out.thread);
   EXPECT_EQ(CallStackProfileParams::PROCESS_STARTUP, out.trigger);
   EXPECT_EQ(CallStackProfileParams::PRESERVE_ORDER, out.ordering_spec);
 }

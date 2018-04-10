@@ -58,8 +58,7 @@ class ThreadProfiler {
   // process. The returned profiler must be destroyed prior to thread exit to
   // stop the profiling. SetMainThreadTaskRunner() should be called after the
   // message loop has been started on the thread.
-  static std::unique_ptr<ThreadProfiler> CreateAndStartOnMainThread(
-      metrics::CallStackProfileParams::Thread thread);
+  static std::unique_ptr<ThreadProfiler> CreateAndStartOnMainThread();
 
   // Sets the task runner when profiling on the main thread. This occurs in a
   // separate call from CreateAndStartOnMainThread so that startup profiling can

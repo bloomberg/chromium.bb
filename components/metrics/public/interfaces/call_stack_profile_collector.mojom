@@ -46,15 +46,8 @@ enum Process {
 
 enum Thread {
   UNKNOWN_THREAD,
-
-  UI_THREAD,
+  MAIN_THREAD,
   IO_THREAD,
-
-  GPU_MAIN_THREAD,
-
-  RENDER_THREAD,
-  UTILITY_THREAD,
-
   COMPOSITOR_THREAD,
 };
 

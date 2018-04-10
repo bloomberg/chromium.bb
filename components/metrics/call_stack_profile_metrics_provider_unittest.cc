@@ -339,7 +339,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
@@ -423,7 +423,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
@@ -509,7 +509,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::PRESERVE_ORDER);
   AppendProfiles(&params, std::move(profiles));
@@ -553,7 +553,7 @@ TEST_F(CallStackProfileMetricsProviderTest, UnknownModule) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
@@ -586,7 +586,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesProvidedOnlyOnce) {
     CallStackProfileMetricsProvider provider;
     provider.OnRecordingEnabled();
     CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                  CallStackProfileParams::UI_THREAD,
+                                  CallStackProfileParams::MAIN_THREAD,
                                   CallStackProfileParams::PROCESS_STARTUP,
                                   CallStackProfileParams::MAY_SHUFFLE);
     AppendProfiles(&params, std::move(profiles));
@@ -616,7 +616,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
   ASSERT_EQ(1U, profiles.size());
 
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
@@ -643,7 +643,7 @@ TEST_F(CallStackProfileMetricsProviderTest, ProfilesNotProvidedWhileDisabled) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&params, std::move(profiles));
@@ -660,7 +660,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   base::StackSamplingProfiler::CompletedCallback callback =
@@ -686,7 +686,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   base::StackSamplingProfiler::CompletedCallback callback =
@@ -713,7 +713,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingDisabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
   base::StackSamplingProfiler::CompletedCallback callback =
@@ -807,7 +807,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MAYBE_PeriodicProfiles) {
   CallStackProfileMetricsProvider provider;
   provider.OnRecordingEnabled();
   CallStackProfileParams params(CallStackProfileParams::BROWSER_PROCESS,
-                                CallStackProfileParams::UI_THREAD,
+                                CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PERIODIC_COLLECTION,
                                 CallStackProfileParams::MAY_SHUFFLE);
   const base::TimeDelta min_expected_uptime = internal::GetUptime();
@@ -993,14 +993,14 @@ TEST_F(CallStackProfileMetricsProviderTest, MAYBE_PeriodicProfileMerging) {
   provider.OnRecordingEnabled();
 
   CallStackProfileParams startup_params(CallStackProfileParams::BROWSER_PROCESS,
-                                        CallStackProfileParams::UI_THREAD,
+                                        CallStackProfileParams::MAIN_THREAD,
                                         CallStackProfileParams::PROCESS_STARTUP,
                                         CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&startup_params, std::move(startup_profiles));
 
   CallStackProfileParams periodic1_params(
       CallStackProfileParams::BROWSER_PROCESS,
-      CallStackProfileParams::UI_THREAD,
+      CallStackProfileParams::MAIN_THREAD,
       CallStackProfileParams::PERIODIC_COLLECTION,
       CallStackProfileParams::MAY_SHUFFLE);
   AppendProfiles(&periodic1_params, std::move(periodic1_profiles));

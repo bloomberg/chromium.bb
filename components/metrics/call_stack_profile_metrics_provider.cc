@@ -61,7 +61,7 @@ const ProcessPhase
 // profiling.
 CallStackProfileParams g_ui_thread_sampling_params(
     CallStackProfileParams::BROWSER_PROCESS,
-    CallStackProfileParams::UI_THREAD,
+    CallStackProfileParams::MAIN_THREAD,
     CallStackProfileParams::PROCESS_STARTUP,
     CallStackProfileParams::MAY_SHUFFLE);
 
@@ -310,7 +310,7 @@ ReceiveCompletedProfilesImpl(
   // over this, for example ending sampling after some amount of time.
   if (CallStackProfileMetricsProvider::IsPeriodicSamplingEnabled() &&
       params->process == CallStackProfileParams::BROWSER_PROCESS &&
-      (params->thread == CallStackProfileParams::UI_THREAD ||
+      (params->thread == CallStackProfileParams::MAIN_THREAD ||
        params->thread == CallStackProfileParams::IO_THREAD)) {
     params->trigger = CallStackProfileParams::PERIODIC_COLLECTION;
     params->start_timestamp = base::TimeTicks::Now();
@@ -480,16 +480,10 @@ Thread ToExecutionContextThread(CallStackProfileParams::Thread thread) {
   switch (thread) {
     case CallStackProfileParams::UNKNOWN_THREAD:
       return UNKNOWN_THREAD;
-    case CallStackProfileParams::UI_THREAD:
+    case CallStackProfileParams::MAIN_THREAD:
       return UI_THREAD;
     case CallStackProfileParams::IO_THREAD:
       return IO_THREAD;
-    case CallStackProfileParams::GPU_MAIN_THREAD:
-      return GPU_MAIN_THREAD;
-    case CallStackProfileParams::RENDER_THREAD:
-      return RENDER_THREAD;
-    case CallStackProfileParams::UTILITY_THREAD:
-      return UTILITY_THREAD;
     case CallStackProfileParams::COMPOSITOR_THREAD:
       return COMPOSITOR_THREAD;
   }
