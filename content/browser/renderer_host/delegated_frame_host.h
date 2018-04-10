@@ -201,6 +201,10 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   void WindowTitleChanged(const std::string& title);
 
+  // If our SurfaceLayer doesn't have a fallback, use the fallback info of
+  // |other|.
+  void TakeFallbackContentFrom(DelegatedFrameHost* other);
+
  private:
   friend class DelegatedFrameHostClient;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,

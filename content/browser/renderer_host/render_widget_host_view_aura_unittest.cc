@@ -291,6 +291,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
       : RenderWidgetHostViewAura(widget,
                                  is_guest_view_hack,
                                  false /* is_mus_browser_plugin_guest */),
+        is_guest_view_hack_(is_guest_view_hack),
         delegated_frame_host_client_(
             new FakeDelegatedFrameHostClientAura(this)) {
     InstallDelegatedFrameHostClient(
@@ -365,6 +366,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
   bool compositor_locked() const {
     return delegated_frame_host_client_->compositor_locked();
   }
+  bool is_guest_view_hack() { return is_guest_view_hack_; }
 
   gfx::Size last_frame_size_;
   FakeWindowEventDispatcher* dispatcher_;
@@ -372,6 +374,7 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
       renderer_compositor_frame_sink_;
 
  private:
+  bool is_guest_view_hack_;
   FakeDelegatedFrameHostClientAura* delegated_frame_host_client_;
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
 
@@ -546,6 +549,32 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         false /* should_register_frame_sink_id */);
   }
 
+  FakeRenderWidgetHostViewAura* CreateView(bool is_guest_view_hack) {
+    int32_t routing_id = process_host_->GetNextRoutingID();
+    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
+    auto* widget_host = MockRenderWidgetHostImpl::Create(
+        delegates_.back().get(), process_host_, routing_id);
+    delegates_.back()->set_widget_host(widget_host);
+    widget_host->Init();
+    return new FakeRenderWidgetHostViewAura(widget_host, is_guest_view_hack);
+  }
+
+  void DestroyView(FakeRenderWidgetHostViewAura* view) {
+    // For guest-views, |view_| is not the view used by |widget_host_|.
+    bool is_guest_view_hack = view->is_guest_view_hack();
+    RenderWidgetHostImpl* host = view->host();
+    if (!is_guest_view_hack)
+      EXPECT_EQ(view, host->GetView());
+    view->Destroy();
+    if (!is_guest_view_hack)
+      EXPECT_EQ(nullptr, host->GetView());
+
+    if (widget_host_uses_shutdown_to_destroy_)
+      host->ShutdownAndDestroyWidget(true);
+    else
+      delete host;
+  }
+
   void SetUpEnvironment() {
     mojo_feature_list_.InitAndEnableFeature(features::kMojoInputMessages);
     ImageTransportFactory::SetFactory(
@@ -574,14 +603,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura::client::ParentWindowWithContext(parent_view_->GetNativeView(),
                                           aura_test_helper_->root_window(),
                                           gfx::Rect());
-
-    routing_id = process_host_->GetNextRoutingID();
-    delegates_.push_back(base::WrapUnique(new MockRenderWidgetHostDelegate));
-    widget_host_ = MockRenderWidgetHostImpl::Create(delegates_.back().get(),
-                                                    process_host_, routing_id);
-    delegates_.back()->set_widget_host(widget_host_);
-    widget_host_->Init();
-    view_ = new FakeRenderWidgetHostViewAura(widget_host_, is_guest_view_hack_);
+    view_ = CreateView(is_guest_view_hack_);
+    widget_host_ = static_cast<MockRenderWidgetHostImpl*>(view_->host());
     // Set the mouse_wheel_phase_handler_ timer timeout to 100ms.
     view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
         base::TimeDelta::FromMilliseconds(100));
@@ -591,21 +614,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   void TearDownEnvironment() {
     sink_ = nullptr;
     process_host_ = nullptr;
-    if (view_) {
-      // For guest-views, |view_| is not the view used by |widget_host_|.
-      if (!is_guest_view_hack_) {
-        EXPECT_EQ(view_, widget_host_->GetView());
-      }
-      view_->Destroy();
-      if (!is_guest_view_hack_) {
-        EXPECT_EQ(nullptr, widget_host_->GetView());
-      }
-    }
-
-    if (widget_host_uses_shutdown_to_destroy_)
-      widget_host_->ShutdownAndDestroyWidget(true);
-    else
-      delete widget_host_;
+    if (view_)
+      DestroyView(view_);
 
     parent_view_->Destroy();
     delete parent_host_;
@@ -6472,6 +6482,39 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
   view_->Hide();
   view_->Show();
   EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+}
+
+// Check that TakeFallbackContentFrom() copies the fallback SurfaceId and
+// background color from the previous view to the new view.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       TakeFallbackContent) {
+  // Initialize the first view.
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->Show();
+
+  // Create and initialize the second view.
+  FakeRenderWidgetHostViewAura* view2 = CreateView(false);
+  view2->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view2->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  // Set fallback for the first view.
+  viz::LocalSurfaceId id = view_->GetLocalSurfaceId();
+  view_->delegated_frame_host_->OnFirstSurfaceActivation(viz::SurfaceInfo(
+      viz::SurfaceId(view_->GetFrameSinkId(), id), 1, gfx::Size(20, 20)));
+  EXPECT_TRUE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+
+  // Call TakeFallbackContentFrom(). The second view should now have the same
+  // fallback as the first view.
+  view2->TakeFallbackContentFrom(view_);
+  EXPECT_EQ(*view_->window_->layer()->GetFallbackSurfaceId(),
+            *view2->window_->layer()->GetFallbackSurfaceId());
+
+  DestroyView(view2);
 }
 
 // This class provides functionality to test a RenderWidgetHostViewAura

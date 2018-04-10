@@ -2438,4 +2438,20 @@ RenderWidgetHostViewAura::AllocateFrameSinkIdForGuestViewHack() {
       ->AllocateFrameSinkId();
 }
 
+void RenderWidgetHostViewAura::TakeFallbackContentFrom(
+    RenderWidgetHostView* view) {
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+              ->IsRenderWidgetHostViewChildFrame());
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+              ->IsRenderWidgetHostViewGuest());
+  RenderWidgetHostViewAura* view_aura =
+      static_cast<RenderWidgetHostViewAura*>(view);
+  SetBackgroundColor(view_aura->background_color());
+  if (delegated_frame_host_ && view_aura->delegated_frame_host_) {
+    delegated_frame_host_->TakeFallbackContentFrom(
+        view_aura->delegated_frame_host_.get());
+  }
+  host()->GetContentRenderingTimeoutFrom(view_aura->host());
+}
+
 }  // namespace content

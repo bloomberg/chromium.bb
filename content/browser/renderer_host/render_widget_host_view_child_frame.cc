@@ -931,6 +931,11 @@ void RenderWidgetHostViewChildFrame::SetWantsAnimateOnlyBeginFrames() {
     support_->SetWantsAnimateOnlyBeginFrames();
 }
 
+void RenderWidgetHostViewChildFrame::TakeFallbackContentFrom(
+    RenderWidgetHostView* view) {
+  // This method only makes sense for top-level views.
+}
+
 InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
   if (input_event.GetType() == blink::WebInputEvent::kGestureFlingStart) {

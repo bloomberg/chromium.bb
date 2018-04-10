@@ -2649,9 +2649,10 @@ uint32_t RenderWidget::GetContentSourceId() {
 }
 
 void RenderWidget::DidNavigate() {
+  ++current_content_source_id_;
   if (!compositor_)
     return;
-  compositor_->SetContentSourceId(++current_content_source_id_);
+  compositor_->SetContentSourceId(current_content_source_id_);
 
   UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
                              compositor_viewport_pixel_size_, screen_info_);

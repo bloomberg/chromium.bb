@@ -734,6 +734,12 @@ void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
   browser_compositor_->SetWantsAnimateOnlyBeginFrames();
 }
 
+void RenderWidgetHostViewMac::TakeFallbackContentFrom(
+    RenderWidgetHostView* view) {
+  SetBackgroundColor(view->background_color());
+  // TODO(crbug.com/829523): Implement this.
+}
+
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
     const std::vector<gfx::Rect>& bounds,
     const gfx::Range& range,

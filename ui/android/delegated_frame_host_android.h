@@ -96,6 +96,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Returns the local surface ID for this delegated content.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
+  void TakeFallbackContentFrom(DelegatedFrameHostAndroid* other);
+
  private:
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
