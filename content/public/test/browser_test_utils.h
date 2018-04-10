@@ -872,9 +872,6 @@ class BrowserTestClipboardScope {
 
 // This observer is used to wait for its owner Frame to become focused.
 class FrameFocusedObserver {
-  // Private impl struct which hides non public types including FrameTreeNode.
-  class FrameTreeNodeObserverImpl;
-
  public:
   explicit FrameFocusedObserver(RenderFrameHost* owner_host);
   ~FrameFocusedObserver();
@@ -882,10 +879,31 @@ class FrameFocusedObserver {
   void Wait();
 
  private:
+  // Private impl struct which hides non public types including FrameTreeNode.
+  class FrameTreeNodeObserverImpl;
+
   // FrameTreeNode::Observer
   std::unique_ptr<FrameTreeNodeObserverImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameFocusedObserver);
+};
+
+// This observer is used to wait for its owner FrameTreeNode to become deleted.
+class FrameDeletedObserver {
+ public:
+  explicit FrameDeletedObserver(RenderFrameHost* owner_host);
+  ~FrameDeletedObserver();
+
+  void Wait();
+
+ private:
+  // Private impl struct which hides non public types including FrameTreeNode.
+  class FrameTreeNodeObserverImpl;
+
+  // FrameTreeNode::Observer
+  std::unique_ptr<FrameTreeNodeObserverImpl> impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameDeletedObserver);
 };
 
 // This class can be used to pause and resume navigations, based on a URL

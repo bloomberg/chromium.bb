@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/content_export.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_info.h"
 
@@ -32,7 +33,7 @@ namespace content {
 class RenderWidgetHostViewBase;
 class OneShotTimeoutMonitor;
 
-struct RenderWidgetTargetResult {
+struct CONTENT_EXPORT RenderWidgetTargetResult {
   RenderWidgetTargetResult();
   RenderWidgetTargetResult(const RenderWidgetTargetResult&);
   RenderWidgetTargetResult(RenderWidgetHostViewBase* view,

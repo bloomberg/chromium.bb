@@ -388,29 +388,6 @@ class UserInteractionObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(UserInteractionObserver);
 };
 
-// This observer is used to wait for its owner FrameTreeNode to become deleted.
-class FrameDeletedObserver : public FrameTreeNode::Observer {
- public:
-  explicit FrameDeletedObserver(FrameTreeNode* owner)
-      : owner_(owner), message_loop_runner_(new MessageLoopRunner) {
-    owner->AddObserver(this);
-  }
-
-  void Wait() { message_loop_runner_->Run(); }
-
- private:
-  // FrameTreeNode::Observer
-  void OnFrameTreeNodeDestroyed(FrameTreeNode* node) override {
-    if (node == owner_)
-      message_loop_runner_->Quit();
-  }
-
-  FrameTreeNode* owner_;
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(FrameDeletedObserver);
-};
-
 // Helper function to focus a frame by sending it a mouse click and then
 // waiting for it to become focused.
 void FocusFrame(FrameTreeNode* frame) {
@@ -5807,7 +5784,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigate the first child frame to 'about:blank' (which is a
   // remote-to-local transition), and then detach it.
-  FrameDeletedObserver observer(root->child_at(0));
+  FrameDeletedObserver observer(root->child_at(0)->current_frame_host());
   std::string script =
       "var f = document.querySelector('iframe');"
       "f.contentWindow.location.href = 'about:blank';"
@@ -5850,7 +5827,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Tell parent to remove the first child.  This should happen after the
   // previous navigation starts but before it commits.
-  FrameDeletedObserver observer(child);
+  FrameDeletedObserver observer(child->current_frame_host());
   EXPECT_TRUE(ExecuteScript(
       root, "document.body.removeChild(document.querySelector('iframe'));"));
   observer.Wait();
@@ -5881,7 +5858,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateAboutBlankAndDetach) {
 
   // Navigate the child frame to "about:blank" from the parent document and
   // wait for it to be removed.
-  FrameDeletedObserver observer(child);
+  FrameDeletedObserver observer(child->current_frame_host());
   EXPECT_TRUE(ExecuteScript(
       root, base::StringPrintf("f.src = '%s'", url::kAboutBlankURL)));
   observer.Wait();
@@ -5925,7 +5902,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root->child_at(0)->render_manager()->GetProxyToParent()->GetRoutingID();
 
   // Tell main frame A to delete its subframe B.
-  FrameDeletedObserver observer(root->child_at(0));
+  FrameDeletedObserver observer(root->child_at(0)->current_frame_host());
   EXPECT_TRUE(ExecuteScript(
       root, "document.body.removeChild(document.querySelector('iframe'));"));
 

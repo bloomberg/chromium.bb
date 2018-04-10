@@ -25,6 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/screen_info.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -1391,6 +1392,79 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestWatermark) {
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        HitTestWatermark) {
   HitTestWatermark(shell(), embedded_test_server());
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       HitTestStaleDataDeletedView) {
+  // Have two iframes to avoid going to short circuit path during the second
+  // targeting.
+  GURL main_url(
+      embedded_test_server()->GetURL("/frame_tree/page_with_two_iframes.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(2U, root->child_count());
+
+  FrameTreeNode* child_node1 = root->child_at(0);
+  GURL site_url1(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  EXPECT_EQ(site_url1, child_node1->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node1->current_frame_host()->GetSiteInstance());
+
+  FrameTreeNode* child_node2 = root->child_at(1);
+  GURL site_url2(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url2, child_node2->current_url());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child_node2->current_frame_host()->GetSiteInstance());
+
+  RenderWidgetHostImpl* root_rwh = static_cast<RenderWidgetHostImpl*>(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostViewBase* rwhv_parent =
+      static_cast<RenderWidgetHostViewBase*>(root_rwh->GetView());
+  RenderWidgetHostViewBase* rwhv_child2 =
+      static_cast<RenderWidgetHostViewBase*>(
+          child_node2->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForChildFrameSurfaceReady(child_node1->current_frame_host());
+  WaitForChildFrameSurfaceReady(child_node2->current_frame_host());
+
+  const gfx::PointF child_location(50, 50);
+  gfx::PointF parent_location =
+      rwhv_child2->TransformPointToRootCoordSpaceF(child_location);
+  // Send a mouse-down at the center of the child2. This should go to the
+  // child2.
+  DispatchMouseEventAndWaitUntilDispatch(
+      web_contents, rwhv_parent, parent_location, rwhv_child2, child_location);
+
+  // Remove the iframe from the page. Add an infinite loop at the end so that
+  // renderer wouldn't submit updated hit-test data.
+  FrameDeletedObserver delete_observer(child_node2->current_frame_host());
+  ExecuteScriptAsync(
+      root,
+      "document.body.removeChild(document.getElementsByName('frame2')[0]);"
+      "while(true) {}");
+  delete_observer.Wait();
+  EXPECT_EQ(1U, root->child_count());
+
+  // The synchronous targeting for the same location should now find the
+  // root-view as the target (and require async-targeting), since child2 has
+  // been removed. We cannot actually attempt to dispatch the event though,
+  // since it would try to do asynchronous targeting by asking the root-view,
+  // whose main-thread is blocked because of the infinite-loop in the injected
+  // javascript above.
+  blink::WebMouseEvent down_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  down_event.button = blink::WebPointerProperties::Button::kLeft;
+  down_event.click_count = 1;
+  SetWebEventPositions(&down_event, parent_location, rwhv_parent);
+  auto result = web_contents->GetInputEventRouter()->FindTargetSynchronously(
+      rwhv_parent, down_event);
+  EXPECT_EQ(result.view, rwhv_parent);
+  EXPECT_TRUE(result.should_query_view);
+  EXPECT_EQ(result.target_location.value(), parent_location);
 }
 
 // This test tests that browser process hittesting ignores frames with
