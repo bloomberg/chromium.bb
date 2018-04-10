@@ -91,6 +91,14 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com/id"));
   EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com/12345"));
   EXPECT_FALSE(VerifyStoreKitLaunched("itms-apps://itunes.apple.com/id123"));
+  // Verify that StoreKit is not launched for iTunes bundle URLs for iOS 11.
+  // TODO(crbug.com/831196): Remove the test after storeKit bug is fixed.
+  if (@available(iOS 11, *)) {
+    EXPECT_FALSE(VerifyStoreKitLaunched(
+        "http://itunes.apple.com/us/app-bundle/testapp/id12345"));
+    EXPECT_FALSE(
+        VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
+  }
 }
 
 // Verifies that navigating to URLs for a product hosted on iTunes AppStore
@@ -125,6 +133,17 @@ TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
       "http://itunes.apple.com/bar/id123?at=2&uo=4#foo"));
   expected_params = @{product_id : @"123", af_tkn : @"2", @"uo" : @"4"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
+
+  // Verify that StoreKit is launched for iTunes bundle URLs before iOS 11.
+  if (@available(iOS 11, *)) {
+    // In iOS 11 StoreKit doesn't load iTunes bundle correctly.
+    // TODO(crbug.com/831196): Remove the condition after storeKit bug is fixed.
+  } else {
+    EXPECT_TRUE(VerifyStoreKitLaunched(
+        "http://itunes.apple.com/us/app-bundle/testapp/id12345"));
+    EXPECT_TRUE(
+        VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
+  }
 }
 
 // Verifies that ItunesLinkHandlerPolicyDecider don't allow redirects to Apple

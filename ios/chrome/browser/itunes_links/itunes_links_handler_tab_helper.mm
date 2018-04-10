@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/web/public/navigation_item.h"
@@ -34,11 +33,22 @@ namespace {
 // The domain for iTunes appstore links.
 const char kITunesUrlDomain[] = "itunes.apple.com";
 const char kITunesProductIdPrefix[] = "id";
+const char kITunesBundlePathIdentifier[] = "/app-bundle/";
 
 // Returns true, it the given |url| is iTunes product url.
 bool IsITunesProductUrl(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS() || !url.DomainIs(kITunesUrlDomain))
     return false;
+
+  // Reject app bundles URLs after iOS 11, because StoreKit doesn't handle them
+  // correctly.
+  // TODO(crbug.com/831196): Handle bundles once StoreKit is fixed.
+  if (@available(iOS 11, *)) {
+    std::string path = url.GetWithoutFilename().path();
+    if (path.find(kITunesBundlePathIdentifier) != std::string::npos)
+      return false;
+  }
+
   std::string file_name = url.ExtractFileName();
   // The first |kITunesProductIdLength| characters must be
   // |kITunesProductIdPrefix|, followed by the app ID.
