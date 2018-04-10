@@ -170,10 +170,7 @@ public class VrIntentUtils {
      * @param activity The activity context to launch the intent from.
      */
     public static void launchInVr(Intent intent, Activity activity) {
-        VrDaydreamApi api = createDaydreamApi(activity);
-        if (api == null) return;
-        api.launchInVr(intent);
-        api.close();
+        VrShellDelegate.getVrDaydreamApi().launchInVr(intent);
     }
 
     /**
@@ -203,11 +200,8 @@ public class VrIntentUtils {
         Configuration config = activity.getResources().getConfiguration();
         int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;
         if (uiMode != Configuration.UI_MODE_TYPE_VR_HEADSET) return false;
-        VrDaydreamApi api = createDaydreamApi(activity);
-        if (api == null) return false;
-        boolean supports2dInVr = api.supports2dInVr();
-        api.close();
-        return supports2dInVr;
+        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
+        return wrapper != null && wrapper.supports2dInVr();
     }
 
     /**
@@ -224,11 +218,5 @@ public class VrIntentUtils {
         if (intent == null) return;
         intent.removeCategory(DAYDREAM_CATEGORY);
         assert !isVrIntent(intent);
-    }
-
-    private static VrDaydreamApi createDaydreamApi(Activity activity) {
-        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
-        if (wrapper == null) return null;
-        return wrapper.createVrDaydreamApi(activity);
     }
 }

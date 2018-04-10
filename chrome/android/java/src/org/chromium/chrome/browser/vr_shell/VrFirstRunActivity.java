@@ -27,8 +27,6 @@ public class VrFirstRunActivity extends Activity {
     private static final BooleanHistogramSample sFreNotCompleteAutopresentHistogram =
             new BooleanHistogramSample("VRFreNotComplete.WebVRAutopresent");
 
-    private VrDaydreamApi mApi;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,23 +46,20 @@ public class VrFirstRunActivity extends Activity {
         // that's why we have a timeout below before we call DOFF. Redundantly setting VR mode
         // here ensures that this never happens for users running the latest version of VrCore.
         VrShellDelegate.setVrModeEnabled(this, true);
-        mApi = wrapper.createVrDaydreamApi(this);
-        try {
-            if (!mApi.isDaydreamCurrentViewer()) {
-                showFre();
-                return;
-            }
-            // Show DOFF with a timeout so that this activity has enough time to be the active VR
-            // app.
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mApi.exitFromVr(VrShellDelegate.EXIT_VR_RESULT, new Intent());
-                }
-            }, SHOW_DOFF_TIMEOUT_MS);
-        } finally {
-            mApi.close();
+        VrDaydreamApi daydreamApi = VrShellDelegate.getVrDaydreamApi();
+        if (!daydreamApi.isDaydreamCurrentViewer()) {
+            showFre();
+            return;
         }
+        // Show DOFF with a timeout so that this activity has enough time to be the active VR
+        // app.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                daydreamApi.exitFromVr(
+                        VrFirstRunActivity.this, VrShellDelegate.EXIT_VR_RESULT, new Intent());
+            }
+        }, SHOW_DOFF_TIMEOUT_MS);
     }
 
     @Override
@@ -75,7 +70,7 @@ public class VrFirstRunActivity extends Activity {
             return;
         }
         finish();
-        mApi.launchVrHomescreen();
+        VrShellDelegate.getVrDaydreamApi().launchVrHomescreen();
     }
 
     private void showFre() {

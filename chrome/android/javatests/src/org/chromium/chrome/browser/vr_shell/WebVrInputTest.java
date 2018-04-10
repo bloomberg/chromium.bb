@@ -464,7 +464,7 @@ public class WebVrInputTest {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         TransitionUtils.enterPresentationOrFail(framework);
 
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
 
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
@@ -478,6 +478,7 @@ public class WebVrInputTest {
                     }
                 }));
         assertAppButtonEffect(false /* shouldHaveExited */, framework);
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
     }
 
     /**
@@ -532,7 +533,7 @@ public class WebVrInputTest {
                         "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, wc));
 
         // Verify that pressing the app button does nothing
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(cct.get());
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
 
         EmulatedVrController controller = new EmulatedVrController(cct.get());
@@ -550,6 +551,7 @@ public class WebVrInputTest {
                         "!vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS, wc));
 
         VrTestFramework.endTest(wc);
+        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
     }
 
     /**

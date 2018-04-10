@@ -39,7 +39,7 @@ public class VrMainActivity extends Activity {
         try {
             super.onCreate(savedInstanceState);
 
-            if (!VrShellDelegate.isDaydreamReadyDevice(this)) {
+            if (!VrShellDelegate.isDaydreamReadyDevice()) {
                 finish();
                 return;
             }
@@ -51,7 +51,7 @@ public class VrMainActivity extends Activity {
             // configuration to set style attributes.
             boolean needsRelaunch;
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                needsRelaunch = !VrShellDelegate.isInVrSession(this);
+                needsRelaunch = !VrShellDelegate.isInVrSession();
             } else {
                 Configuration config = getResources().getConfiguration();
                 int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;

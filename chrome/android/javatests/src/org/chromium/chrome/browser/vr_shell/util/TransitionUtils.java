@@ -10,8 +10,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 
-import com.google.vr.ndk.base.DaydreamApi;
-
 import org.junit.Assert;
 
 import org.chromium.base.ContextUtils;
@@ -19,8 +17,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.vr.VrMainActivity;
 import org.chromium.chrome.browser.vr_shell.TestFramework;
 import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
-import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
-import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrShellImpl;
@@ -206,7 +202,7 @@ public class TransitionUtils {
                 new Intent(ContextUtils.getApplicationContext(), VrMainActivity.class);
         intent.setData(Uri.parse(url));
         intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
-        DaydreamApi.setupVrIntent(intent);
+        VrShellDelegate.getVrClassesWrapper().setupVrIntent(intent);
 
         if (autopresent) {
             // Daydream removes this category for deep-linked URLs for legacy reasons.
@@ -215,13 +211,10 @@ public class TransitionUtils {
         }
         if (avoidRelaunch) intent.putExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, true);
 
-        final VrClassesWrapperImpl wrapper = new VrClassesWrapperImpl();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
-                api.launchInVr(intent);
-                api.close();
+                VrShellDelegate.getVrDaydreamApi().launchInVr(intent);
             }
         });
     }
