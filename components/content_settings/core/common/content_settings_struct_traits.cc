@@ -86,9 +86,10 @@ bool StructTraits<content_settings::mojom::ContentSettingPatternSourceDataView,
     Read(content_settings::mojom::ContentSettingPatternSourceDataView data,
          ContentSettingPatternSource* out) {
   out->incognito = data.incognito();
+  out->setting_value = std::make_unique<base::Value>();
   return data.ReadPrimaryPattern(&out->primary_pattern) &&
          data.ReadSecondaryPattern(&out->secondary_pattern) &&
-         data.ReadSettingValue(&out->setting_value) &&
+         data.ReadSettingValue(out->setting_value.get()) &&
          data.ReadSource(&out->source);
 }
 

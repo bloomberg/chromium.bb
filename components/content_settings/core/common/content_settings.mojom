@@ -4,7 +4,7 @@
 
 module content_settings.mojom;
 
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 
 // This mirrors the C++ type in content_settings_pattern.h.
 struct PatternParts {
@@ -61,7 +61,7 @@ enum ContentSetting {
 struct ContentSettingPatternSource {
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
-  mojo.common.mojom.Value setting_value;
+  mojo_base.mojom.Value setting_value;
   string source;
   bool incognito;
 };

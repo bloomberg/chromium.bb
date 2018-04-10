@@ -23,7 +23,7 @@ static_library("common") {
 
   deps = [
     "//base",
-    "//mojo/common:common_custom_types",
+    "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings:struct_traits",
     "//net",
     "//url",
@@ -52,6 +52,6 @@ mojom("mojo_bindings") {
   ]
 
   public_deps = [
-    "//mojo/common:common_custom_types",
+    "//mojo/public/mojom/base",
   ]
 }
