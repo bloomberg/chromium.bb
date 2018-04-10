@@ -153,7 +153,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
 
     case kColorId_EnabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), NORMAL);
-    case kColorId_MenuItemSubtitleColor:
+    case kColorId_MenuItemMinorTextColor:
     case kColorId_DisabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), INSENSITIVE);
     case kColorId_MenuBorderColor:
