@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_authentication.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -51,6 +52,8 @@ const char kModesAndCredentialsLengthMismatch[] =
     "|modes| and |credentials| must have the same number of elements";
 const char kMultipleModesNotSupported[] =
     "At most one quick unlock mode can be active.";
+const char kPinDisabledByPolicy[] = "PIN unlock has been disabled by policy";
+
 const char kInvalidPIN[] = "Invalid PIN.";
 const char kInvalidCredential[] = "Invalid credential.";
 const char kWeakCredential[] = "Weak credential.";
@@ -303,10 +306,11 @@ QuickUnlockPrivateGetAvailableModesFunction::
 
 ExtensionFunction::ResponseAction
 QuickUnlockPrivateGetAvailableModesFunction::Run() {
-  // TODO(jdufault): Check for policy and do not return PIN if policy makes it
-  // unavailable. See crbug.com/612271.
-  const QuickUnlockModeList modes = {
-      quick_unlock_private::QUICK_UNLOCK_MODE_PIN};
+  QuickUnlockModeList modes;
+  if (!chromeos::quick_unlock::IsPinDisabledByPolicy(
+          Profile::FromBrowserContext(browser_context())->GetPrefs())) {
+    modes.push_back(quick_unlock_private::QUICK_UNLOCK_MODE_PIN);
+  }
 
   return RespondNow(ArgumentList(GetAvailableModes::Results::Create(modes)));
 }
@@ -427,8 +431,18 @@ ExtensionFunction::ResponseAction QuickUnlockPrivateSetModesFunction::Run() {
   // Verify every credential is valid based on policies.
   PrefService* pref_service =
       Profile::FromBrowserContext(browser_context())->GetPrefs();
-  bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
 
+  // Do not allow setting a PIN if it is disabled by policy. It is disabled
+  // on the UI, but users can still reach here via dev tools.
+  for (size_t i = 0; i < params_->modes.size(); ++i) {
+    if (params_->modes[i] == QuickUnlockMode::QUICK_UNLOCK_MODE_PIN &&
+        chromeos::quick_unlock::IsPinDisabledByPolicy(pref_service)) {
+      return RespondNow(Error(kPinDisabledByPolicy));
+    }
+  }
+
+  // Verify every credential is valid based on policies.
+  bool allow_weak = pref_service->GetBoolean(prefs::kPinUnlockWeakPinsAllowed);
   for (size_t i = 0; i < params_->modes.size(); ++i) {
     if (params_->credentials[i].empty())
       continue;

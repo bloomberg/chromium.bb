@@ -51,6 +51,9 @@ bool IsFingerprintEnabled();
 // Forcibly enable all quick-unlock modes for testing.
 void EnableForTesting(PinStorageType pin_storage_type);
 
+// Forcibly disable PIN for testing purposes.
+void DisablePinByPolicyForTesting(bool disable);
+
 }  // namespace quick_unlock
 }  // namespace chromeos
 
