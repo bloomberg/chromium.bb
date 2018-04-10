@@ -261,9 +261,11 @@ def LocateChromeosImageArchiveProtectedPrefixes(ctx):
   for top_level in top_levels:
     # 'gs://chromeos-releases/Attic/' -> 'Attic'
     name = top_level.url.rstrip('/').split('/')[-1]
-    # If non-trybot firmware builds or testbed-ap builds, skip them
+    # If non-trybot firmware builds or testbed-ap builds, skip them.
+    # Note that at various points in time, tryjobs have had various
+    # combinations of trybot-* prefixes and *-tryjob suffixes.
     if ((not name.startswith('trybot-') and name.endswith('-firmware')) or
-        (name.startswith('trybot-') and name.endswith('-test-ap'))):
+        (name.endswith('-test-ap') or name.endswith('-test-ap-tryjob'))):
       result.append(top_level.url)
   return result
 

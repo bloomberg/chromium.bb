@@ -142,6 +142,10 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
                 'gs://chromeos-image-archive/trybot-whirlwind-test-ap/'),
             self.mockResult(
                 'gs://chromeos-image-archive/trybot-stumpy-test-ap/'),
+            self.mockResult(
+                'gs://chromeos-image-archive/trybot-whirlwind-test-ap-tryjob/'),
+            self.mockResult(
+                'gs://chromeos-image-archive/gale-test-ap-tryjob/'),
         ],
         'gs://chromeos-image-archive/foo-paladin/': [
             self.mockResult(
@@ -275,6 +279,8 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
         'gs://chromeos-image-archive/bar-firmware/',
         'gs://chromeos-image-archive/trybot-whirlwind-test-ap/',
         'gs://chromeos-image-archive/trybot-stumpy-test-ap/',
+        'gs://chromeos-image-archive/trybot-whirlwind-test-ap-tryjob/',
+        'gs://chromeos-image-archive/gale-test-ap-tryjob/',
 
     ])
 
@@ -284,6 +290,8 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
         'gs://chromeos-image-archive/bar-firmware',
         'gs://chromeos-image-archive/trybot-whirlwind-test-ap/',
         'gs://chromeos-image-archive/trybot-stumpy-test-ap/',
+        'gs://chromeos-image-archive/trybot-whirlwind-test-ap-tryjob/',
+        'gs://chromeos-image-archive/gale-test-ap-tryjob/',
     )
 
     self.patchSafeList()
