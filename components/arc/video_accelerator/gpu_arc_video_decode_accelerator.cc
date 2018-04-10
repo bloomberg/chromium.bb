@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
@@ -50,24 +51,6 @@ constexpr size_t kMaxOutputBufferCount = 32;
 // Currently we have no way to know the resources are not enough to create more
 // VDAs. Arbitrarily chosen a reasonable constant as the limit.
 constexpr size_t kMaxConcurrentClients = 8;
-
-// TODO(hiroh): Refactor UnwrapFdFromMojoHandle not to declare multiple times.
-base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle) {
-  if (!handle.is_valid()) {
-    VLOGF(1) << "Handle is invalid.";
-    return base::ScopedFD();
-  }
-
-  base::PlatformFile platform_file;
-  MojoResult mojo_result =
-      mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
-  if (mojo_result != MOJO_RESULT_OK) {
-    VLOGF(1) << "UnwrapPlatformFile failed: " << mojo_result;
-    return base::ScopedFD();
-  }
-
-  return base::ScopedFD(platform_file);
-}
 
 arc::mojom::VideoDecodeAccelerator::Result ConvertErrorCode(
     media::VideoDecodeAccelerator::Error error) {

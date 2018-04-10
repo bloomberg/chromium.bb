@@ -4,6 +4,8 @@
 
 static_library("video_accelerator") {
   sources = [
+    "arc_video_accelerator_util.cc",
+    "arc_video_accelerator_util.h",
     "gpu_arc_video_decode_accelerator.cc",
     "gpu_arc_video_decode_accelerator.h",
     "gpu_arc_video_encode_accelerator.cc",

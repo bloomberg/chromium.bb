@@ -4,6 +4,7 @@
 
 #include "components/arc/video_accelerator/protected_buffer_manager_proxy.h"
 
+#include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -19,24 +20,6 @@ GpuArcProtectedBufferManagerProxy::GpuArcProtectedBufferManagerProxy(
 
 GpuArcProtectedBufferManagerProxy::~GpuArcProtectedBufferManagerProxy() {}
 
-base::ScopedFD GpuArcProtectedBufferManagerProxy::UnwrapFdFromMojoHandle(
-    mojo::ScopedHandle handle) {
-  base::PlatformFile platform_file;
-  MojoResult mojo_result =
-      mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
-  if (mojo_result != MOJO_RESULT_OK) {
-    VLOGF(1) << "UnwrapPlatformFile failed: " << mojo_result;
-    return base::ScopedFD();
-  }
-
-  return base::ScopedFD(platform_file);
-}
-
-mojo::ScopedHandle GpuArcProtectedBufferManagerProxy::WrapFdInMojoHandle(
-    base::ScopedFD fd) {
-  return mojo::WrapPlatformFile(fd.release());
-}
-
 void GpuArcProtectedBufferManagerProxy::GetProtectedSharedMemoryFromHandle(
     mojo::ScopedHandle dummy_handle,
     GetProtectedSharedMemoryFromHandleCallback callback) {
@@ -47,7 +30,7 @@ void GpuArcProtectedBufferManagerProxy::GetProtectedSharedMemoryFromHandle(
           ->GetProtectedSharedMemoryHandleFor(std::move(unwrapped_fd))
           .Release());
 
-  std::move(callback).Run(WrapFdInMojoHandle(std::move(shmem_fd)));
+  std::move(callback).Run(mojo::WrapPlatformFile(shmem_fd.release()));
 }
 
 }  // namespace arc

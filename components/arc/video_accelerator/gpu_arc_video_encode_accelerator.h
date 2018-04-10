@@ -66,11 +66,6 @@ class GpuArcVideoEncodeAccelerator
                                        uint32_t framerate) override;
   void Flush(FlushCallback callback) override;
 
-  // Unwraps a file descriptor from the given mojo::ScopedHandle.
-  // If an error is encountered, it returns an invalid base::ScopedFD and
-  // notifies client about the error via VideoEncodeClient::NotifyError.
-  base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
-
   gpu::GpuPreferences gpu_preferences_;
   std::unique_ptr<media::VideoEncodeAccelerator> accelerator_;
   ::arc::mojom::VideoEncodeClientPtr client_;

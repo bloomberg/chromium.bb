@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -131,8 +132,10 @@ void GpuArcVideoEncodeAccelerator::Encode(
   }
 
   base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(handle));
-  if (!fd.is_valid())
+  if (!fd.is_valid()) {
+    client_->NotifyError(Error::kPlatformFailureError);
     return;
+  }
 
   size_t allocation_size =
       media::VideoFrame::AllocationSize(input_pixel_format_, coded_size_);
@@ -194,8 +197,10 @@ void GpuArcVideoEncodeAccelerator::UseBitstreamBuffer(
   }
 
   base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(shmem_fd));
-  if (!fd.is_valid())
+  if (!fd.is_valid()) {
+    client_->NotifyError(Error::kPlatformFailureError);
     return;
+  }
 
   // TODO(rockot): Pass GUIDs through Mojo. https://crbug.com/713763.
   // TODO(rockot): This fd comes from a mojo::ScopedHandle in
@@ -231,27 +236,6 @@ void GpuArcVideoEncodeAccelerator::Flush(FlushCallback callback) {
     return;
   }
   accelerator_->Flush(std::move(callback));
-}
-
-base::ScopedFD GpuArcVideoEncodeAccelerator::UnwrapFdFromMojoHandle(
-    mojo::ScopedHandle handle) {
-  DCHECK(client_);
-  if (!handle.is_valid()) {
-    DLOG(ERROR) << "handle is invalid.";
-    client_->NotifyError(Error::kInvalidArgumentError);
-    return base::ScopedFD();
-  }
-
-  base::PlatformFile platform_file;
-  MojoResult mojo_result =
-      mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
-  if (mojo_result != MOJO_RESULT_OK) {
-    DLOG(ERROR) << "UnwrapPlatformFile failed: " << mojo_result;
-    client_->NotifyError(Error::kPlatformFailureError);
-    return base::ScopedFD();
-  }
-
-  return base::ScopedFD(platform_file);
 }
 
 }  // namespace arc
