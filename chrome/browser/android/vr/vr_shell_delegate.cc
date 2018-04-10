@@ -8,7 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/callback_helpers.h"
-#include "chrome/browser/android/vr/vr_metrics_util.h"
+#include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
@@ -103,7 +103,7 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
 
   JNIEnv* env = AttachCurrentThread();
   std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
-  VrMetricsUtil::LogGvrVersionForVrViewerType(viewer_type, *vr_core_info);
+  MetricsUtilAndroid::LogGvrVersionForVrViewerType(viewer_type, *vr_core_info);
 }
 
 void VrShellDelegate::RemoveDelegate() {

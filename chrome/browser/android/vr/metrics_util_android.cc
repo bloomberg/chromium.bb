@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/vr/vr_metrics_util.h"
+#include "chrome/browser/android/vr/metrics_util_android.h"
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,9 +14,9 @@ static constexpr int kGvrTooOld = -1;
 
 namespace vr {
 
-bool VrMetricsUtil::has_logged_vr_runtime_version_ = false;
+bool MetricsUtilAndroid::has_logged_vr_runtime_version_ = false;
 
-void VrMetricsUtil::LogGvrVersionForVrViewerType(
+void MetricsUtilAndroid::LogGvrVersionForVrViewerType(
     gvr::ViewerType viewer_type,
     const VrCoreInfo& vr_core_info) {
   if (has_logged_vr_runtime_version_) {
@@ -66,12 +66,12 @@ void VrMetricsUtil::LogGvrVersionForVrViewerType(
   has_logged_vr_runtime_version_ = true;
 }
 
-void VrMetricsUtil::LogVrViewerType(gvr::ViewerType viewer_type) {
+void MetricsUtilAndroid::LogVrViewerType(gvr::ViewerType viewer_type) {
   base::UmaHistogramSparse("VRViewerType",
                            static_cast<int>(GetVrViewerType(viewer_type)));
 }
 
-device::VrViewerType VrMetricsUtil::GetVrViewerType(
+device::VrViewerType MetricsUtilAndroid::GetVrViewerType(
     gvr::ViewerType viewer_type) {
   switch (viewer_type) {
     case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
@@ -85,7 +85,7 @@ device::VrViewerType VrMetricsUtil::GetVrViewerType(
 }
 
 // static
-void VrMetricsUtil::LogXrRenderPathUsed(XRRenderPath path) {
+void MetricsUtilAndroid::LogXrRenderPathUsed(XRRenderPath path) {
   UMA_HISTOGRAM_ENUMERATION("XR.WebXR.RenderPath.Used", path,
                             XRRenderPath::kCount);
 }

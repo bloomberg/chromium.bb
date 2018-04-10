@@ -21,8 +21,8 @@
 #include "chrome/browser/android/vr/gl_browser_interface.h"
 #include "chrome/browser/android/vr/gvr_util.h"
 #include "chrome/browser/android/vr/mailbox_to_surface_bridge.h"
+#include "chrome/browser/android/vr/metrics_util_android.h"
 #include "chrome/browser/android/vr/vr_controller.h"
-#include "chrome/browser/android/vr/vr_metrics_util.h"
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -830,7 +830,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
   controller_.reset(new VrController(gvr_api));
   ui_->OnPlatformControllerInitialized(controller_.get());
 
-  VrMetricsUtil::LogVrViewerType(gvr_api_->GetViewerType());
+  MetricsUtilAndroid::LogVrViewerType(gvr_api_->GetViewerType());
 
   cardboard_ =
       (gvr_api_->GetViewerType() == gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD);
@@ -844,8 +844,8 @@ VrShellGl::GetWebVrFrameTransportOptions(
     device::mojom::VRRequestPresentOptionsPtr present_options) {
   DVLOG(1) << __FUNCTION__;
 
-  VrMetricsUtil::XRRenderPath render_path =
-      VrMetricsUtil::XRRenderPath::kClientWait;
+  MetricsUtilAndroid::XRRenderPath render_path =
+      MetricsUtilAndroid::XRRenderPath::kClientWait;
 
   std::string render_path_string = base::GetFieldTrialParamValueByFeature(
       features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
@@ -857,10 +857,10 @@ VrShellGl::GetWebVrFrameTransportOptions(
     // Use kGpuFence if it is supported. If not, use baseline kClientWait.
     if (gl::GLFence::IsGpuFenceSupported()) {
       webvr_use_gpu_fence_ = true;
-      render_path = VrMetricsUtil::XRRenderPath::kGpuFence;
+      render_path = MetricsUtilAndroid::XRRenderPath::kGpuFence;
     }
   }
-  VrMetricsUtil::LogXrRenderPathUsed(render_path);
+  MetricsUtilAndroid::LogXrRenderPathUsed(render_path);
 
   device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
       device::mojom::VRDisplayFrameTransportOptions::New();
