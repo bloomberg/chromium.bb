@@ -201,6 +201,47 @@ TEST_P(MapDOMOffsetToTextContentOffset, Basic) {
   }
 }
 
+// TODO(kojii): Include LayoutNG tests by switching to
+// ParameterizedLayoutTextTest when these functions support LayoutNG.
+TEST_F(LayoutTextTest, CharacterAfterWhitespaceCollapsing) {
+  SetBodyInnerHTML("a<span id=target> b </span>");
+  LayoutText* layout_text = GetLayoutTextById("target");
+  EXPECT_EQ(' ', layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ('b', layout_text->LastCharacterAfterWhitespaceCollapsing());
+
+  SetBodyInnerHTML("a <span id=target> b </span>");
+  layout_text = GetLayoutTextById("target");
+  EXPECT_EQ('b', layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ('b', layout_text->LastCharacterAfterWhitespaceCollapsing());
+
+  SetBodyInnerHTML("a<span id=target> </span>b");
+  layout_text = GetLayoutTextById("target");
+  EXPECT_EQ(' ', layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ(' ', layout_text->LastCharacterAfterWhitespaceCollapsing());
+
+  SetBodyInnerHTML("a <span id=target> </span>b");
+  layout_text = GetLayoutTextById("target");
+  DCHECK(!layout_text->HasTextBoxes());
+  EXPECT_EQ(0, layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ(0, layout_text->LastCharacterAfterWhitespaceCollapsing());
+
+  SetBodyInnerHTML(
+      "<span style='white-space: pre'>a <span id=target> </span>b</span>");
+  layout_text = GetLayoutTextById("target");
+  EXPECT_EQ(' ', layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ(' ', layout_text->LastCharacterAfterWhitespaceCollapsing());
+
+  SetBodyInnerHTML("<span id=target>Hello </span> <span>world</span>");
+  layout_text = GetLayoutTextById("target");
+  EXPECT_EQ('H', layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ(' ', layout_text->LastCharacterAfterWhitespaceCollapsing());
+  layout_text =
+      ToLayoutText(GetLayoutObjectByElementId("target")->NextSibling());
+  DCHECK(!layout_text->HasTextBoxes());
+  EXPECT_EQ(0, layout_text->FirstCharacterAfterWhitespaceCollapsing());
+  EXPECT_EQ(0, layout_text->LastCharacterAfterWhitespaceCollapsing());
+}
+
 TEST_P(ParameterizedLayoutTextTest, CaretMinMaxOffset) {
   SetBasicBody("foo");
   EXPECT_EQ(0, GetBasicText()->CaretMinOffset());
