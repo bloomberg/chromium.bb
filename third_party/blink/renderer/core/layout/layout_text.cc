@@ -1535,6 +1535,24 @@ bool LayoutText::ContainsOnlyWhitespace(unsigned from, unsigned len) const {
   return curr_pos >= (from + len);
 }
 
+UChar32 LayoutText::FirstCharacterAfterWhitespaceCollapsing() const {
+  if (InlineTextBox* text_box = FirstTextBox()) {
+    String text = text_box->GetText();
+    return text.length() ? text.CharacterStartingAt(0) : 0;
+  }
+  // TODO(kojii): Support LayoutNG once we have NGInlineItem pointers.
+  return 0;
+}
+
+UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
+  if (InlineTextBox* text_box = LastTextBox()) {
+    String text = text_box->GetText();
+    return text.length() ? text.CharacterStartingAt(text.length() - 1) : 0;
+  }
+  // TODO(kojii): Support LayoutNG once we have NGInlineItem pointers.
+  return 0;
+}
+
 FloatPoint LayoutText::FirstRunOrigin() const {
   return IntPoint(FirstRunX(), FirstRunY());
 }

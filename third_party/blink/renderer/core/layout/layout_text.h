@@ -130,6 +130,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     return text_.length();
   }  // non virtual implementation of length()
   bool ContainsOnlyWhitespace(unsigned from, unsigned len) const;
+
+  // Get characters after whitespace collapsing was applied. Returns 0 if there
+  // were no characters left. If whitespace collapsing is disabled (i.e.
+  // white-space: pre), returns characters without whitespace collapsing.
+  UChar32 FirstCharacterAfterWhitespaceCollapsing() const;
+  UChar32 LastCharacterAfterWhitespaceCollapsing() const;
+
   void PositionLineBox(InlineBox*);
 
   virtual float Width(unsigned from,
