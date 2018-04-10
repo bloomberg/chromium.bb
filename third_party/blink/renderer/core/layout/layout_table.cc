@@ -273,6 +273,12 @@ bool LayoutTable::IsLogicalWidthAuto() const {
 void LayoutTable::UpdateLogicalWidth() {
   RecalcSectionsIfNeeded();
 
+  // Recalculate preferred logical widths now, rather than relying on them being
+  // lazily recalculated, via MinPreferredLogicalWidth() further below. We might
+  // not even get there.
+  if (PreferredLogicalWidthsDirty())
+    ComputePreferredLogicalWidths();
+
   if (IsFlexItemIncludingDeprecated() || IsGridItem()) {
     // TODO(jfernandez): Investigate whether the grid layout algorithm provides
     // all the logic needed and that we're not skipping anything essential due
