@@ -56,11 +56,11 @@ class TryFlagTest(unittest.TestCase):
         self.assertEqual(git_cl.calls, [
             ['git', 'cl', 'upload', '--bypass-hooks', '-f',
              '-m', 'Flag try job for --foo.'],
-            ['git', 'cl', 'try', '-m', 'tryserver.chromium.linux',
+            ['git', 'cl', 'try', '-B', 'master.tryserver.chromium.linux',
              '-b', 'linux_chromium_rel_ng'],
-            ['git', 'cl', 'try', '-m', 'tryserver.chromium.mac',
+            ['git', 'cl', 'try', '-B', 'master.tryserver.chromium.mac',
              '-b', 'mac_chromium_rel_ng'],
-            ['git', 'cl', 'try', '-m', 'tryserver.chromium.win',
+            ['git', 'cl', 'try', '-B', 'master.tryserver.chromium.win',
              '-b', 'win7_chromium_rel_ng']
         ])
 

@@ -59,22 +59,32 @@ class GitCL(object):
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
         return self._host.executive.run_command(command, cwd=self._cwd)
 
-    def trigger_try_jobs(self, builders, master=None):
-        # TODO(crbug.com/700552): Let "git cl try" get the master automatically.
-        # (It tries to do this, but its map is unreliable.)
-        if not master:
-            # Assume Blink try bots (all on tryserver.blink except Android).
-            if 'android_blink_rel' in builders:
-                self.trigger_try_jobs(['android_blink_rel'],
-                                      master='tryserver.chromium.android')
-                builders = set(builders) - {'android_blink_rel'}
-            self.trigger_try_jobs(builders, 'tryserver.blink')
-            return
+    def trigger_try_jobs(self, builders, bucket=None):
+        """Triggers try jobs on the given builders.
 
-        command = ['try', '-m', master]
-        for builder in sorted(builders):
-            command.extend(['-b', builder])
-        self.run(command)
+        Args:
+            builder: A list of builder names.
+            bucket: When specified, all jobs are triggered to be in this bucket
+                (instead of the configured or default buckets).
+        """
+        if bucket:
+            builders_by_bucket = {bucket: builders}
+        else:
+            builders_by_bucket = self._group_builders_by_bucket(builders)
+
+        # Sort both buckets and builders to ensure stable unit tests.
+        for bucket in sorted(builders_by_bucket):
+            command = ['try', '-B', bucket]
+            for builder in sorted(builders_by_bucket[bucket]):
+                command.extend(['-b', builder])
+            self.run(command)
+
+    def _group_builders_by_bucket(self, builders):
+        builders_by_bucket = collections.defaultdict(list)
+        for builder in builders:
+            bucket = self._host.builders.bucket_for_builder(builder)
+            builders_by_bucket[bucket].append(builder)
+        return builders_by_bucket
 
     def get_issue_number(self):
         return self.run(['issue']).split()[2]
