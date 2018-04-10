@@ -26,6 +26,8 @@ Signing Flow:
 
 from __future__ import print_function
 
+from chromite.lib import cros_build_lib
+
 
 class BaseSigner(object):
   """Base Signer object."""
@@ -59,3 +61,23 @@ class BaseSigner(object):
   def Sign(self, keyset, input_name, output_name):
     """Sign given input to output. Returns True if success."""
     raise NotImplementedError
+
+
+class FutilitySigner(BaseSigner):
+  """Base class for signers that use futility command."""
+
+  def GetFutilityArgs(self, keyset, input_name, output_name):
+    """Return list of arguments to use with futility."""
+    raise NotImplementedError
+
+  def Sign(self, keyset, input_name, output_name):
+    if self.CheckKeyset(keyset):
+      return RunFutility(self.GetFutilityArgs(keyset, input_name, output_name))
+    return False
+
+
+def RunFutility(args):
+  """Runs futility with the given args, returns True if success"""
+  cmd = ['futility']
+  cmd += args
+  return cros_build_lib.RunCommand(cmd, error_code_ok=True).returncode == 0

@@ -110,3 +110,58 @@ def KeysetFromSigner(s, keydir):
     keys_unittest.CreateDummyKeyblock(keyblock)
 
   return ks
+
+
+class MockFutilitySigner(signer.FutilitySigner):
+  """Basic implementation of a FutilitySigner."""
+  _required_keys = ('foo',)
+
+  def GetFutilityArgs(self, keyset, input_name, output_name):
+    """Returns a list of [input_name, output_name]."""
+    return [input_name, output_name]
+
+
+class TestFutilitySigner(cros_test_lib.RunCommandTestCase,
+                         cros_test_lib.TempDirTestCase):
+  """Test Futility Signer."""
+
+  def testSign(self):
+    keyset = keys.Keyset()
+    fs = signer.FutilitySigner()
+    self.assertRaises(NotImplementedError, fs.Sign, keyset, 'dummy', 'dummy')
+
+  def testSignWithMock(self):
+    foo_key = keys.KeyPair('foo', self.tempdir)
+    keys_unittest.CreateDummyKeys(foo_key)
+
+    keyset = keys.Keyset()
+    keyset.AddKey(foo_key)
+
+    fsm = MockFutilitySigner()
+    self.assertTrue(fsm.Sign(keyset, 'foo', 'bar'))
+    self.assertCommandContains(['foo', 'bar'])
+
+  def testSignWithMockMissingKey(self):
+    keyset = keys.Keyset()
+    fsm = MockFutilitySigner()
+    self.assertFalse(fsm.Sign(keyset, 'foo', 'bar'))
+
+  def testGetCmdArgs(self):
+    keyset = keys.Keyset()
+    fs = signer.FutilitySigner()
+    self.assertRaises(NotImplementedError,
+                      fs.GetFutilityArgs, keyset, 'foo', 'bar')
+
+
+class TestFutilityFunction(cros_test_lib.RunCommandTestCase):
+  """Test Futility command."""
+
+  def testCommand(self):
+    self.assertTrue(signer.RunFutility([]),
+                    msg='Futility should pass w/ mock')
+    self.assertCommandContains(['futility'])
+
+  def testCommandWithArgs(self):
+    args = ['--privkey', 'foo.priv2']
+    signer.RunFutility(args)
+    self.assertCommandContains(args)
