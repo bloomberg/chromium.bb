@@ -22,8 +22,8 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -137,7 +137,7 @@ void ToolbarViewInteractiveUITest::SetUpCommandLine(
     base::CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  AppMenuButton::g_open_app_immediately_for_testing = true;
+  BrowserAppMenuButton::g_open_app_immediately_for_testing = true;
 }
 
 void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
@@ -150,7 +150,7 @@ void ToolbarViewInteractiveUITest::SetUpOnMainThread() {
 
 void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
   ToolbarActionsBar::disable_animations_for_testing_ = false;
-  AppMenuButton::g_open_app_immediately_for_testing = false;
+  BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 }
 
 // Borrowed from chrome/browser/ui/views/bookmarks/bookmark_bar_view_test.cc,

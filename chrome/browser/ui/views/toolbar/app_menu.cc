@@ -840,7 +840,7 @@ void AppMenu::CloseMenu() {
     menu_runner_->Cancel();
 }
 
-bool AppMenu::IsShowing() {
+bool AppMenu::IsShowing() const {
   return menu_runner_.get() && menu_runner_->IsRunning();
 }
 

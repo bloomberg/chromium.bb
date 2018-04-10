@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
@@ -37,7 +37,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/controls/button/label_button_border.h"
-#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/metrics.h"
 
 namespace {
@@ -47,17 +46,18 @@ constexpr base::TimeDelta kDelayTime = base::TimeDelta::FromMilliseconds(1500);
 }  // namespace
 
 // static
-bool AppMenuButton::g_open_app_immediately_for_testing = false;
+bool BrowserAppMenuButton::g_open_app_immediately_for_testing = false;
 
-AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
-    : views::MenuButton(base::string16(), toolbar_view, false),
+BrowserAppMenuButton::BrowserAppMenuButton(ToolbarView* toolbar_view)
+    : AppMenuButton(toolbar_view),
       toolbar_view_(toolbar_view),
-      animation_delay_timer_(FROM_HERE,
-                             kDelayTime,
-                             base::Bind(&AppMenuButton::AnimateIconIfPossible,
-                                        base::Unretained(this),
-                                        false),
-                             false) {
+      animation_delay_timer_(
+          FROM_HERE,
+          kDelayTime,
+          base::BindRepeating(&BrowserAppMenuButton::AnimateIconIfPossible,
+                              base::Unretained(this),
+                              false),
+          false) {
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -73,11 +73,11 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
 }
 
-AppMenuButton::~AppMenuButton() {}
+BrowserAppMenuButton::~BrowserAppMenuButton() {}
 
-void AppMenuButton::SetSeverity(AppMenuIconController::IconType type,
-                                AppMenuIconController::Severity severity,
-                                bool animate) {
+void BrowserAppMenuButton::SetSeverity(AppMenuIconController::IconType type,
+                                       AppMenuIconController::Severity severity,
+                                       bool animate) {
   type_ = type;
   severity_ = severity;
 
@@ -88,7 +88,7 @@ void AppMenuButton::SetSeverity(AppMenuIconController::IconType type,
   UpdateIcon(animate);
 }
 
-void AppMenuButton::SetIsProminent(bool is_prominent) {
+void BrowserAppMenuButton::SetIsProminent(bool is_prominent) {
   if (is_prominent) {
     SetBackground(views::CreateSolidBackground(GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_ProminentButtonColor)));
@@ -98,8 +98,8 @@ void AppMenuButton::SetIsProminent(bool is_prominent) {
   SchedulePaint();
 }
 
-void AppMenuButton::ShowMenu(bool for_drop) {
-  if (menu_ && menu_->IsShowing())
+void BrowserAppMenuButton::ShowMenu(bool for_drop) {
+  if (IsMenuShowing())
     return;
 
 #if defined(USE_AURA)
@@ -113,16 +113,11 @@ void AppMenuButton::ShowMenu(bool for_drop) {
 
   Browser* browser = toolbar_view_->browser();
 
-  menu_.reset(new AppMenu(browser, for_drop ? AppMenu::FOR_DROP : 0));
-  menu_model_.reset(new AppMenuModel(toolbar_view_, browser));
-  menu_model_->Init();
-  menu_->Init(menu_model_.get());
-
-  for (views::MenuListener& observer : menu_listeners_)
-    observer.OnMenuOpened();
+  InitMenu(std::make_unique<AppMenuModel>(toolbar_view_, browser), browser,
+           for_drop ? AppMenu::FOR_DROP : AppMenu::NO_FLAGS);
 
   base::TimeTicks menu_open_time = base::TimeTicks::Now();
-  menu_->RunMenu(this);
+  menu()->RunMenu(this);
 
   if (!for_drop) {
     // Record the time-to-action for the menu. We don't record in the case of a
@@ -135,25 +130,7 @@ void AppMenuButton::ShowMenu(bool for_drop) {
   AnimateIconIfPossible(false);
 }
 
-void AppMenuButton::CloseMenu() {
-  if (menu_)
-    menu_->CloseMenu();
-  menu_.reset();
-}
-
-bool AppMenuButton::IsMenuShowing() const {
-  return menu_ && menu_->IsShowing();
-}
-
-void AppMenuButton::AddMenuListener(views::MenuListener* listener) {
-  menu_listeners_.AddObserver(listener);
-}
-
-void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
-  menu_listeners_.RemoveObserver(listener);
-}
-
-gfx::Size AppMenuButton::CalculatePreferredSize() const {
+gfx::Size BrowserAppMenuButton::CalculatePreferredSize() const {
   const int icon_size =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled() ? 24 : 16;
   gfx::Rect rect(gfx::Size(icon_size, icon_size));
@@ -162,7 +139,7 @@ gfx::Size AppMenuButton::CalculatePreferredSize() const {
   return rect.size();
 }
 
-void AppMenuButton::Layout() {
+void BrowserAppMenuButton::Layout() {
   if (new_icon_) {
     new_icon_->SetBoundsRect(GetContentsBounds());
     ink_drop_container()->SetBoundsRect(GetLocalBounds());
@@ -173,18 +150,18 @@ void AppMenuButton::Layout() {
   views::MenuButton::Layout();
 }
 
-void AppMenuButton::OnThemeChanged() {
+void BrowserAppMenuButton::OnThemeChanged() {
   UpdateIcon(false);
 }
 
-void AppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
-                                  content::WebContents* contents,
-                                  int index,
-                                  bool foreground) {
+void BrowserAppMenuButton::TabInsertedAt(TabStripModel* tab_strip_model,
+                                         content::WebContents* contents,
+                                         int index,
+                                         bool foreground) {
   AnimateIconIfPossible(true);
 }
 
-void AppMenuButton::UpdateIcon(bool should_animate) {
+void BrowserAppMenuButton::UpdateIcon(bool should_animate) {
   SkColor severity_color = gfx::kPlaceholderColor;
   SkColor toolbar_icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
@@ -253,13 +230,13 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
            gfx::CreateVectorIcon(*icon_id, severity_color));
 }
 
-void AppMenuButton::SetTrailingMargin(int margin) {
+void BrowserAppMenuButton::SetTrailingMargin(int margin) {
   margin_trailing_ = margin;
   UpdateThemedBorder();
   InvalidateLayout();
 }
 
-void AppMenuButton::AnimateIconIfPossible(bool with_delay) {
+void BrowserAppMenuButton::AnimateIconIfPossible(bool with_delay) {
   if (!new_icon_ || !should_use_new_icon_ ||
       severity_ == AppMenuIconController::Severity::NONE) {
     return;
@@ -275,12 +252,12 @@ void AppMenuButton::AnimateIconIfPossible(bool with_delay) {
     animation_delay_timer_.Reset();
 }
 
-const char* AppMenuButton::GetClassName() const {
-  return "AppMenuButton";
+const char* BrowserAppMenuButton::GetClassName() const {
+  return "BrowserAppMenuButton";
 }
 
-std::unique_ptr<views::LabelButtonBorder> AppMenuButton::CreateDefaultBorder()
-    const {
+std::unique_ptr<views::LabelButtonBorder>
+BrowserAppMenuButton::CreateDefaultBorder() const {
   std::unique_ptr<views::LabelButtonBorder> border =
       MenuButton::CreateDefaultBorder();
 
@@ -294,70 +271,71 @@ std::unique_ptr<views::LabelButtonBorder> AppMenuButton::CreateDefaultBorder()
   return border;
 }
 
-gfx::Rect AppMenuButton::GetThemePaintRect() const {
+gfx::Rect BrowserAppMenuButton::GetThemePaintRect() const {
   gfx::Rect rect(MenuButton::GetThemePaintRect());
   rect.Inset(0, 0, margin_trailing_, 0);
   return rect;
 }
 
-bool AppMenuButton::GetDropFormats(
+bool BrowserAppMenuButton::GetDropFormats(
     int* formats,
     std::set<ui::Clipboard::FormatType>* format_types) {
   return BrowserActionDragData::GetDropFormats(format_types);
 }
 
-bool AppMenuButton::AreDropTypesRequired() {
+bool BrowserAppMenuButton::AreDropTypesRequired() {
   return BrowserActionDragData::AreDropTypesRequired();
 }
 
-bool AppMenuButton::CanDrop(const ui::OSExchangeData& data) {
+bool BrowserAppMenuButton::CanDrop(const ui::OSExchangeData& data) {
   return BrowserActionDragData::CanDrop(data,
                                         toolbar_view_->browser()->profile());
 }
 
-void AppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
+void BrowserAppMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(!weak_factory_.HasWeakPtrs());
   if (!g_open_app_immediately_for_testing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&AppMenuButton::ShowMenu, weak_factory_.GetWeakPtr(),
-                       true),
+        base::BindOnce(&BrowserAppMenuButton::ShowMenu,
+                       weak_factory_.GetWeakPtr(), true),
         base::TimeDelta::FromMilliseconds(views::GetMenuShowDelay()));
   } else {
     ShowMenu(true);
   }
 }
 
-int AppMenuButton::OnDragUpdated(const ui::DropTargetEvent& event) {
+int BrowserAppMenuButton::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-void AppMenuButton::OnDragExited() {
+void BrowserAppMenuButton::OnDragExited() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-int AppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
+int BrowserAppMenuButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_MOVE;
 }
 
-std::unique_ptr<views::InkDrop> AppMenuButton::CreateInkDrop() {
+std::unique_ptr<views::InkDrop> BrowserAppMenuButton::CreateInkDrop() {
   return CreateToolbarInkDrop<MenuButton>(this);
 }
 
-std::unique_ptr<views::InkDropRipple> AppMenuButton::CreateInkDropRipple()
-    const {
+std::unique_ptr<views::InkDropRipple>
+BrowserAppMenuButton::CreateInkDropRipple() const {
   // FIXME: GetInkDropCenterBasedOnLastEvent() will always return the center
   // of this view. https://crbug.com/819878.
   return CreateToolbarInkDropRipple<MenuButton>(
       this, GetInkDropCenterBasedOnLastEvent());
 }
 
-std::unique_ptr<views::InkDropHighlight> AppMenuButton::CreateInkDropHighlight()
-    const {
+std::unique_ptr<views::InkDropHighlight>
+BrowserAppMenuButton::CreateInkDropHighlight() const {
   return CreateToolbarInkDropHighlight<MenuButton>(
       this, GetMirroredRect(GetContentsBounds()).CenterPoint());
 }
 
-std::unique_ptr<views::InkDropMask> AppMenuButton::CreateInkDropMask() const {
+std::unique_ptr<views::InkDropMask> BrowserAppMenuButton::CreateInkDropMask()
+    const {
   return CreateToolbarInkDropMask<MenuButton>(this);
 }

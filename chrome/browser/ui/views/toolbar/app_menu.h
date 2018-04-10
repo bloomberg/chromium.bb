@@ -36,6 +36,7 @@ class AppMenu : public views::MenuDelegate,
                 public content::NotificationObserver {
  public:
   enum RunFlags {
+    NO_FLAGS = 0,
     // Indicates that the menu was opened for a drag-and-drop operation.
     FOR_DROP = 1 << 0,
   };
@@ -52,7 +53,7 @@ class AppMenu : public views::MenuDelegate,
   void CloseMenu();
 
   // Whether the menu is currently visible to the user.
-  bool IsShowing();
+  bool IsShowing() const;
 
   bool for_drop() const { return (run_flags_ & FOR_DROP) != 0; }
 

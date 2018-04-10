@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_BUTTON_PROVIDER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_BUTTON_PROVIDER_H_
 
+class AppMenuButton;
 class BrowserActionsContainer;
-
-namespace views {
-class MenuButton;
-}
 
 // An interface implemented by a class that provides buttons that a BrowserView
 // uses.
@@ -19,7 +16,7 @@ class BrowserViewButtonProvider {
   virtual BrowserActionsContainer* GetBrowserActionsContainer() = 0;
 
   // Get the app menu button for the BrowserView.
-  virtual views::MenuButton* GetAppMenuButton() = 0;
+  virtual AppMenuButton* GetAppMenuButton() = 0;
 
   // TODO(calamity): Move other buttons and button actions into here.
  protected:

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 
@@ -26,7 +26,7 @@ class AppMenuTestApiViews : public test::AppMenuTestApi {
   void ExecuteCommand(int command) override;
 
  private:
-  AppMenuButton* GetAppMenuButton();
+  BrowserAppMenuButton* GetAppMenuButton();
   AppMenu* GetAppMenu();
 
   Browser* browser_;
@@ -51,7 +51,7 @@ void AppMenuTestApiViews::ExecuteCommand(int command) {
   GetAppMenu()->ExecuteCommand(command, 0);
 }
 
-AppMenuButton* AppMenuTestApiViews::GetAppMenuButton() {
+BrowserAppMenuButton* AppMenuTestApiViews::GetAppMenuButton() {
   return BrowserView::GetBrowserViewForBrowser(browser_)
       ->toolbar()
       ->app_menu_button();

@@ -20,8 +20,7 @@
 constexpr int kMenuHighlightFadeDurationMs = 800;
 
 HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
-    : views::MenuButton(base::string16(), this, false),
-      browser_view_(browser_view) {
+    : AppMenuButton(this), browser_view_(browser_view) {
   SetInkDropMode(InkDropMode::ON);
   // This name is guaranteed not to change during the lifetime of this button.
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
@@ -45,12 +44,10 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
   Browser* browser = browser_view_->browser();
-  menu_ = std::make_unique<AppMenu>(browser, 0);
-  menu_model_ = std::make_unique<HostedAppMenuModel>(browser_view_, browser);
-  menu_model_->Init();
-  menu_->Init(menu_model_.get());
+  InitMenu(std::make_unique<HostedAppMenuModel>(browser_view_, browser),
+           browser, AppMenu::NO_FLAGS);
 
-  menu_->RunMenu(this);
+  menu()->RunMenu(this);
 }
 
 void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
