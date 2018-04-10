@@ -137,6 +137,7 @@ void AddCookieToList(const GURL& url,
 
 // Just act like a backing database.  Keep cookie information from
 // Add/Update/Delete and regurgitate it when Load is called.
+// TODO(morlovich): This still assumes that creation times are unique.
 class MockSimplePersistentCookieStore
     : public CookieMonster::PersistentCookieStore {
  public:

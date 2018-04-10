@@ -1865,11 +1865,11 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCookies) {
 }
 
 // Tests importing from a persistent cookie store that contains cookies
-// with duplicate creation times.  This situation should be handled by
-// dropping the cookies before insertion/visibility to user.
+// with duplicate creation times.  This is OK now, but it still interacts
+// with the de-duplication algorithm.
 //
 // This is a regression test for: http://crbug.com/43188.
-TEST_F(CookieMonsterTest, DontImportDuplicateCreationTimes) {
+TEST_F(CookieMonsterTest, ImportDuplicateCreationTimes) {
   scoped_refptr<MockPersistentCookieStore> store(new MockPersistentCookieStore);
 
   Time now(Time::Now());
@@ -2072,6 +2072,41 @@ TEST_F(CookieMonsterTest, BackingStoreCommunication) {
       EXPECT_EQ(input->expiration_time.ToInternalValue(),
                 output->ExpiryDate().ToInternalValue());
     }
+  }
+}
+
+TEST_F(CookieMonsterTest, RestoreDifferentCookieSameCreationTime) {
+  // Test that we can restore different cookies with duplicate creation times.
+  base::Time current(base::Time::Now());
+  scoped_refptr<MockPersistentCookieStore> store =
+      base::MakeRefCounted<MockPersistentCookieStore>();
+
+  {
+    CookieMonster cmout(store.get());
+    GURL url("http://www.example.com/");
+    EXPECT_TRUE(
+        SetCookieWithCreationTime(&cmout, url, "A=1; max-age=600", current));
+    EXPECT_TRUE(
+        SetCookieWithCreationTime(&cmout, url, "B=2; max-age=600", current));
+  }
+
+  // Play back the cookies into store 2.
+  scoped_refptr<MockPersistentCookieStore> store2 =
+      base::MakeRefCounted<MockPersistentCookieStore>();
+  std::vector<std::unique_ptr<CanonicalCookie>> load_expectation;
+  EXPECT_EQ(2u, store->commands().size());
+  for (const CookieStoreCommand& command : store->commands()) {
+    ASSERT_EQ(command.type, CookieStoreCommand::ADD);
+    load_expectation.push_back(
+        std::make_unique<CanonicalCookie>(command.cookie));
+  }
+  store2->SetLoadExpectation(true, std::move(load_expectation));
+
+  // Now read them in. Should get two cookies, not one.
+  {
+    CookieMonster cmin(store2.get());
+    CookieList cookies(GetAllCookies(&cmin));
+    ASSERT_EQ(2u, cookies.size());
   }
 }
 
