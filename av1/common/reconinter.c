@@ -301,9 +301,7 @@ const uint8_t *av1_get_compound_type_mask(
   }
 }
 
-#define DIFF_FACTOR 16
-
-static void diffwtd_mask_d32(uint8_t *mask, int which_inverse, int mask_base,
+static void diffwtd_mask_d16(uint8_t *mask, int which_inverse, int mask_base,
                              const CONV_BUF_TYPE *src0, int src0_stride,
                              const CONV_BUF_TYPE *src1, int src1_stride, int h,
                              int w, ConvolveParams *conv_params, int bd) {
@@ -320,17 +318,17 @@ static void diffwtd_mask_d32(uint8_t *mask, int which_inverse, int mask_base,
   }
 }
 
-static void build_compound_diffwtd_mask_d16(
+void av1_build_compound_diffwtd_mask_d16_c(
     uint8_t *mask, DIFFWTD_MASK_TYPE mask_type, const CONV_BUF_TYPE *src0,
     int src0_stride, const CONV_BUF_TYPE *src1, int src1_stride, int h, int w,
     ConvolveParams *conv_params, int bd) {
   switch (mask_type) {
     case DIFFWTD_38:
-      diffwtd_mask_d32(mask, 0, 38, src0, src0_stride, src1, src1_stride, h, w,
+      diffwtd_mask_d16(mask, 0, 38, src0, src0_stride, src1, src1_stride, h, w,
                        conv_params, bd);
       break;
     case DIFFWTD_38_INV:
-      diffwtd_mask_d32(mask, 1, 38, src0, src0_stride, src1, src1_stride, h, w,
+      diffwtd_mask_d16(mask, 1, 38, src0, src0_stride, src1, src1_stride, h, w,
                        conv_params, bd);
       break;
     default: assert(0);
@@ -632,9 +630,9 @@ void av1_make_masked_inter_predictor(
                            xd, can_use_previous);
 
   if (!plane && comp_data.interinter_compound_type == COMPOUND_DIFFWTD) {
-    build_compound_diffwtd_mask_d16(comp_data.seg_mask, comp_data.mask_type,
-                                    org_dst, org_dst_stride, tmp_buf16,
-                                    tmp_buf_stride, h, w, conv_params, xd->bd);
+    av1_build_compound_diffwtd_mask_d16(
+        comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
+        tmp_buf16, tmp_buf_stride, h, w, conv_params, xd->bd);
   }
   build_masked_compound_no_round(dst, dst_stride, org_dst, org_dst_stride,
                                  tmp_buf16, tmp_buf_stride, &comp_data,
