@@ -72,15 +72,14 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       bool response_has_value) {
     switch (device_response_code) {
       case CtapDeviceResponseCode::kSuccess:
-        return response_has_value
-                   ? base::make_optional(FidoReturnCode::kSuccess)
-                   : base::nullopt;
+        return response_has_value ? FidoReturnCode::kSuccess
+                                  : FidoReturnCode::kFailure;
+
       // These errors are only returned after the user interacted with the
       // device.
-      case CtapDeviceResponseCode::kCtap2ErrInvalidCredential:
       case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
-      case CtapDeviceResponseCode::kCtap2ErrNotAllowed:
-        return FidoReturnCode::kConditionsNotSatisfied;
+      case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
+        return FidoReturnCode::kInvalidState;
       default:
         return base::nullopt;
     }
