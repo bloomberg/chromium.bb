@@ -95,25 +95,33 @@ void ExecuteCodeFunction::DidLoadAndLocalizeFile(
     const std::string& file,
     bool success,
     std::unique_ptr<std::string> data) {
-  if (success) {
-    if (!base::IsStringUTF8(*data)) {
-      error_ = ErrorUtils::FormatErrorMessage(kBadFileEncodingError, file);
-      SendResponse(false);
-    } else if (!Execute(*data))
-      SendResponse(false);
-  } else {
+  if (!success) {
     // TODO(viettrungluu): bug: there's no particular reason the path should be
     // UTF-8, in which case this may fail.
-    error_ = ErrorUtils::FormatErrorMessage(kLoadFileError, file);
-    SendResponse(false);
+    Respond(Error(ErrorUtils::FormatErrorMessage(kLoadFileError, file)));
+    return;
   }
+
+  if (!base::IsStringUTF8(*data)) {
+    Respond(Error(ErrorUtils::FormatErrorMessage(kBadFileEncodingError, file)));
+    return;
+  }
+
+  std::string error;
+  if (!Execute(*data, &error))
+    Respond(Error(error));
+
+  // If Execute() succeeds, the function will respond in
+  // OnExecuteCodeFinished().
 }
 
-bool ExecuteCodeFunction::Execute(const std::string& code_string) {
-  ScriptExecutor* executor = GetScriptExecutor();
+bool ExecuteCodeFunction::Execute(const std::string& code_string,
+                                  std::string* error) {
+  ScriptExecutor* executor = GetScriptExecutor(error);
   if (!executor)
     return false;
 
+  // TODO(lazyboy): Set |error|?
   if (!extension() && !IsWebView())
     return false;
 
@@ -171,46 +179,47 @@ bool ExecuteCodeFunction::HasPermission() {
   return true;
 }
 
-bool ExecuteCodeFunction::RunAsync() {
+ExtensionFunction::ResponseAction ExecuteCodeFunction::Run() {
   InitResult init_result = Init();
   EXTENSION_FUNCTION_VALIDATE(init_result != VALIDATION_FAILURE);
-  if (init_result == FAILURE) {
-    if (init_error_)
-      SetError(init_error_.value());
-    return false;
-  }
+  if (init_result == FAILURE)
+    return RespondNow(Error(init_error_.value_or(kUnknownErrorDoNotUse)));
 
-  if (!details_->code.get() && !details_->file.get()) {
-    error_ = kNoCodeOrFileToExecuteError;
-    return false;
-  }
-  if (details_->code.get() && details_->file.get()) {
-    error_ = kMoreThanOneValuesError;
-    return false;
-  }
+  if (!details_->code && !details_->file)
+    return RespondNow(Error(kNoCodeOrFileToExecuteError));
+
+  if (details_->code && details_->file)
+    return RespondNow(Error(kMoreThanOneValuesError));
+
   if (details_->css_origin != api::extension_types::CSS_ORIGIN_NONE &&
       !ShouldInsertCSS()) {
-    error_ = kCSSOriginForNonCSSError;
-    return false;
+    return RespondNow(Error(kCSSOriginForNonCSSError));
   }
 
-  if (!CanExecuteScriptOnPage())
-    return false;
+  std::string error;
+  if (!CanExecuteScriptOnPage(&error))
+    return RespondNow(Error(error));
 
-  if (details_->code.get())
-    return Execute(*details_->code);
+  if (details_->code) {
+    if (!Execute(*details_->code, &error))
+      return RespondNow(Error(error));
+    return did_respond() ? AlreadyResponded() : RespondLater();
+  }
 
-  if (!details_->file.get())
-    return false;
+  DCHECK(details_->file);
+  if (!LoadFile(*details_->file, &error))
+    return RespondNow(Error(error));
 
-  return LoadFile(*details_->file);
+  // LoadFile will respond asynchronously later.
+  return RespondLater();
 }
 
-bool ExecuteCodeFunction::LoadFile(const std::string& file) {
+bool ExecuteCodeFunction::LoadFile(const std::string& file,
+                                   std::string* error) {
   resource_ = extension()->GetResource(file);
 
   if (resource_.extension_root().empty() || resource_.relative_path().empty()) {
-    error_ = kNoCodeOrFileToExecuteError;
+    *error = kNoCodeOrFileToExecuteError;
     return false;
   }
 
@@ -269,10 +278,14 @@ bool ExecuteCodeFunction::LoadFile(const std::string& file) {
 void ExecuteCodeFunction::OnExecuteCodeFinished(const std::string& error,
                                                 const GURL& on_url,
                                                 const base::ListValue& result) {
-  if (!error.empty())
-    SetError(error);
+  if (!error.empty()) {
+    Respond(Error(error));
+    return;
+  }
 
-  SendResponse(error.empty());
+  // insertCSS doesn't have a result argument.
+  Respond(ShouldInsertCSS() ? NoArguments()
+                            : OneArgument(result.CreateDeepCopy()));
 }
 
 }  // namespace extensions

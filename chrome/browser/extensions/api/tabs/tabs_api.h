@@ -241,8 +241,8 @@ class ExecuteCodeInTabFunction : public ExecuteCodeFunction {
 
   // Initializes |execute_tab_id_| and |details_|.
   InitResult Init() override;
-  bool CanExecuteScriptOnPage() override;
-  ScriptExecutor* GetScriptExecutor() override;
+  bool CanExecuteScriptOnPage(std::string* error) override;
+  ScriptExecutor* GetScriptExecutor(std::string* error) override;
   bool IsWebView() const override;
   const GURL& GetWebViewSrc() const override;
 
@@ -259,10 +259,6 @@ class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {
 
  private:
   ~TabsExecuteScriptFunction() override {}
-
-  void OnExecuteCodeFinished(const std::string& error,
-                             const GURL& on_url,
-                             const base::ListValue& script_result) override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.executeScript", TABS_EXECUTESCRIPT)
 };
