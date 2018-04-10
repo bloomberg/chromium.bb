@@ -205,7 +205,7 @@ LeScanResult::CompleteListOf128BitServiceUuids() const {
   return GetUuidsAsUuid(type_to_data, kGapComplete128BitServiceUuids);
 }
 
-LeScanResult::ServiceDataMap LeScanResult::AllServiceData() {
+LeScanResult::ServiceDataMap LeScanResult::AllServiceData() const {
   ServiceDataMap ret;
 
   auto sd16 = ServiceData16Bit();
@@ -220,7 +220,7 @@ LeScanResult::ServiceDataMap LeScanResult::AllServiceData() {
   return ret;
 }
 
-LeScanResult::ServiceDataMap LeScanResult::ServiceData16Bit() {
+LeScanResult::ServiceDataMap LeScanResult::ServiceData16Bit() const {
   ServiceDataMap ret;
   auto it = type_to_data.find(kGapServicesData16bit);
   if (it == type_to_data.end()) {
@@ -242,7 +242,7 @@ LeScanResult::ServiceDataMap LeScanResult::ServiceData16Bit() {
   return ret;
 }
 
-LeScanResult::ServiceDataMap LeScanResult::ServiceData32Bit() {
+LeScanResult::ServiceDataMap LeScanResult::ServiceData32Bit() const {
   ServiceDataMap ret;
   auto it = type_to_data.find(kGapServicesData32bit);
   if (it == type_to_data.end()) {
@@ -264,7 +264,7 @@ LeScanResult::ServiceDataMap LeScanResult::ServiceData32Bit() {
   return ret;
 }
 
-LeScanResult::ServiceDataMap LeScanResult::ServiceData128Bit() {
+LeScanResult::ServiceDataMap LeScanResult::ServiceData128Bit() const {
   ServiceDataMap ret;
   auto it = type_to_data.find(kGapServicesData128bit);
   if (it == type_to_data.end()) {
@@ -285,7 +285,8 @@ LeScanResult::ServiceDataMap LeScanResult::ServiceData128Bit() {
   return ret;
 }
 
-std::map<uint16_t, std::vector<uint8_t>> LeScanResult::ManufacturerData() {
+std::map<uint16_t, std::vector<uint8_t>> LeScanResult::ManufacturerData()
+    const {
   std::map<uint16_t, std::vector<uint8_t>> ret;
   auto it = type_to_data.find(kGapManufacturerData);
   if (it == type_to_data.end()) {

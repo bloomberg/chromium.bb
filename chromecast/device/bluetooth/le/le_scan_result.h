@@ -55,12 +55,12 @@ struct LeScanResult {
 
   using ServiceDataMap =
       std::map<bluetooth_v2_shlib::Uuid, std::vector<uint8_t>>;
-  ServiceDataMap AllServiceData();
-  ServiceDataMap ServiceData16Bit();
-  ServiceDataMap ServiceData32Bit();
-  ServiceDataMap ServiceData128Bit();
+  ServiceDataMap AllServiceData() const;
+  ServiceDataMap ServiceData16Bit() const;
+  ServiceDataMap ServiceData32Bit() const;
+  ServiceDataMap ServiceData128Bit() const;
 
-  std::map<uint16_t, std::vector<uint8_t>> ManufacturerData();
+  std::map<uint16_t, std::vector<uint8_t>> ManufacturerData() const;
 
   bluetooth_v2_shlib::Addr addr;
   std::vector<uint8_t> adv_data;

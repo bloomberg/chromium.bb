@@ -21,6 +21,8 @@
 #include "device/bluetooth/test/bluetooth_test_mac.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/test/bluetooth_test_win.h"
+#elif defined(USE_CAST_BLUETOOTH_ADAPTER)
+#include "device/bluetooth/test/bluetooth_test_cast.h"
 #elif defined(OS_CHROMEOS) || defined(OS_LINUX)
 #include "device/bluetooth/test/bluetooth_test_bluez.h"
 #endif
@@ -216,7 +218,8 @@ TEST_F(BluetoothTest, MAYBE_GetServiceDataUUIDs_GetServiceDataForUUID) {
 
 // TODO(crbug.com/707039): Remove #if once the BlueZ caching behavior is
 // changed.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && \
+    !defined(USE_CAST_BLUETOOTH_ADAPTER)
   // On ChromeOS and Linux, BlueZ persists all service data meaning if
   // a device stops advertising service data for a UUID, BlueZ will
   // still return the cached value for that UUID.
@@ -1694,11 +1697,13 @@ TEST_F(BluetoothTest, GetDeviceTransportType) {
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
   EXPECT_EQ(BLUETOOTH_TRANSPORT_LE, device->GetType());
 
+#if !defined(USE_CAST_BLUETOOTH_ADAPTER)
   BluetoothDevice* device2 = SimulateLowEnergyDevice(6);
   EXPECT_EQ(BLUETOOTH_TRANSPORT_DUAL, device2->GetType());
 
   BluetoothDevice* device3 = SimulateClassicDevice();
   EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, device3->GetType());
+#endif  // !defined(USE_CAST_BLUETOOTH_ADAPTER)
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 

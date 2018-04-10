@@ -22,21 +22,33 @@ namespace device {
 namespace {
 
 BluetoothDevice::UUIDSet ExtractServiceUuids(
-    const chromecast::bluetooth::LeScanResult& result,
-    const std::string& debug_name) {
-  BluetoothDevice::UUIDSet uuids;
+    const chromecast::bluetooth::LeScanResult& result) {
+  BluetoothDevice::UUIDSet ret;
+  auto uuids = result.AllServiceUuids();
+  if (!uuids)
+    return ret;
 
-  base::Optional<std::vector<chromecast::bluetooth_v2_shlib::Uuid>> all_uuids =
-      result.AllServiceUuids();
-  if (!all_uuids) {
-    return uuids;
+  for (const auto& uuid : *uuids)
+    ret.insert(UuidToBluetoothUUID(uuid));
+  return ret;
+}
+
+BluetoothDevice::ServiceDataMap ExtractServiceData(
+    const chromecast::bluetooth::LeScanResult& result) {
+  BluetoothDevice::ServiceDataMap service_data;
+  for (const auto& it : result.AllServiceData()) {
+    service_data.insert(
+        std::make_pair(UuidToBluetoothUUID(it.first), it.second));
   }
+  return service_data;
+}
 
-  for (const auto& uuid : *all_uuids) {
-    uuids.insert(UuidToBluetoothUUID(uuid));
-  }
-
-  return uuids;
+BluetoothDevice::ManufacturerDataMap ExtractManufacturerData(
+    const chromecast::bluetooth::LeScanResult& result) {
+  BluetoothDevice::ManufacturerDataMap ret;
+  for (const auto& it : result.ManufacturerData())
+    ret.insert(std::make_pair(it.first, it.second));
+  return ret;
 }
 
 }  // namespace
@@ -52,7 +64,8 @@ BluetoothDeviceCast::BluetoothDeviceCast(
 BluetoothDeviceCast::~BluetoothDeviceCast() {}
 
 uint32_t BluetoothDeviceCast::GetBluetoothClass() const {
-  return 0;
+  // Return the code for miscellaneous device.
+  return 0x1F00;
 }
 
 BluetoothTransport BluetoothDeviceCast::GetType() const {
@@ -106,11 +119,6 @@ bool BluetoothDeviceCast::IsConnectable() const {
 
 bool BluetoothDeviceCast::IsConnecting() const {
   return pending_connect_;
-}
-
-BluetoothDevice::UUIDSet BluetoothDeviceCast::GetUUIDs() const {
-  // TODO(slan): Remove if we do not need this.
-  return BluetoothDevice::GetUUIDs();
 }
 
 base::Optional<int8_t> BluetoothDeviceCast::GetInquiryRSSI() const {
@@ -222,12 +230,13 @@ void BluetoothDeviceCast::ConnectToServiceInsecurely(
 
 bool BluetoothDeviceCast::UpdateWithScanResult(
     const chromecast::bluetooth::LeScanResult& result) {
+  DVLOG(3) << __func__;
   bool changed = false;
 
   base::Optional<std::string> result_name = result.Name();
 
   // Advertisements for the same device can use different names. For now, the
-  // last name wins.
+  // last name wins. An empty string represents no name.
   // TODO(slan): Make sure that this doesn't spam us with name changes.
   if (result_name != name_) {
     changed = true;
@@ -240,10 +249,24 @@ bool BluetoothDeviceCast::UpdateWithScanResult(
   // services, preferably from the LeScanManager.
   // TODO(slan): Think about whether this is needed.
   UUIDSet prev_uuids = device_uuids_.GetUUIDs();
-  UUIDSet new_uuids = ExtractServiceUuids(result, *GetName());
+  UUIDSet new_uuids = ExtractServiceUuids(result);
   if (prev_uuids != new_uuids) {
     device_uuids_.ReplaceAdvertisedUUIDs(
         UUIDList(new_uuids.begin(), new_uuids.end()));
+    changed = true;
+  }
+
+  // Extract service data from the advertisement.
+  ServiceDataMap service_data = ExtractServiceData(result);
+  if (service_data != service_data_) {
+    service_data_ = std::move(service_data);
+    changed = true;
+  }
+
+  // Extract manufacturer data from the advertisement.
+  ManufacturerDataMap manufacturer_data = ExtractManufacturerData(result);
+  if (manufacturer_data_ != manufacturer_data) {
+    manufacturer_data_ = manufacturer_data;
     changed = true;
   }
 
@@ -304,6 +327,8 @@ bool BluetoothDeviceCast::UpdateServices(
     changed = true;
   }
 
+  if (changed)
+    device_uuids_.ReplaceServiceUUIDs(gatt_services_);
   return changed;
 }
 

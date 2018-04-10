@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -163,9 +164,26 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
 
   // Called when the scanner has enabled scanning.
   void OnScanEnabled(bool success);
+  void OnScanDisabled(bool success);
   void OnGetDevice(scoped_refptr<chromecast::bluetooth::RemoteDevice> device);
   void OnGetScanResults(
       std::vector<chromecast::bluetooth::LeScanResult> results);
+
+  struct DiscoveryParams {
+    DiscoveryParams(device::BluetoothDiscoveryFilter* filter,
+                    base::Closure success_callback,
+                    DiscoverySessionErrorCallback error_callback);
+    DiscoveryParams(const DiscoveryParams&);
+    ~DiscoveryParams();
+    device::BluetoothDiscoveryFilter* filter = nullptr;
+    base::Closure success_callback;
+    DiscoverySessionErrorCallback error_callback;
+  };
+
+  std::queue<DiscoveryParams> pending_discovery_requests_;
+  base::Optional<DiscoveryParams> pending_disable_discovery_request_;
+
+  int num_discovery_sessions_ = 0;
 
   // Maps address to ScanResults received from |le_scan_manager_|.
   std::map<std::string, std::list<chromecast::bluetooth::LeScanResult>>
@@ -174,8 +192,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   chromecast::bluetooth::GattClientManager* const gatt_client_manager_;
   chromecast::bluetooth::LeScanManager* const le_scan_manager_;
 
+  bool powered_ = false;
   bool initialized_ = false;
-  bool scan_enabled_ = false;
 
   std::string name_;
 

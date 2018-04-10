@@ -32,6 +32,18 @@ BluetoothAdapterCast::FactoryCb& GetFactory() {
 
 }  // namespace
 
+BluetoothAdapterCast::DiscoveryParams::DiscoveryParams(
+    device::BluetoothDiscoveryFilter* filter,
+    base::Closure success_callback,
+    DiscoverySessionErrorCallback error_callback)
+    : filter(filter),
+      success_callback(success_callback),
+      error_callback(error_callback) {}
+
+BluetoothAdapterCast::DiscoveryParams::DiscoveryParams(const DiscoveryParams&) =
+    default;
+BluetoothAdapterCast::DiscoveryParams::~DiscoveryParams() = default;
+
 BluetoothAdapterCast::BluetoothAdapterCast(
     chromecast::bluetooth::GattClientManager* gatt_client_manager,
     chromecast::bluetooth::LeScanManager* le_scan_manager)
@@ -78,21 +90,20 @@ bool BluetoothAdapterCast::IsPresent() const {
 }
 
 bool BluetoothAdapterCast::IsPowered() const {
-  // The BluetoothAdapter is always powered on Cast devices.
-  return true;
+  return powered_;
 }
 
 void BluetoothAdapterCast::SetPowered(bool powered,
                                       const base::Closure& callback,
                                       const ErrorCallback& error_callback) {
-  // This class cannot change the powered state of the BT stack. Assume that it
-  // is always powered.
-  if (powered) {
-    callback.Run();
-  } else {
-    LOG(ERROR) << "Cannot change the powered state of the BT stack.";
-    error_callback.Run();
-  }
+  // This class cannot actually change the powered state of the BT stack.
+  // We simulate these changes for the benefit of testing. However, we may
+  // want to actually delegate this call to the bluetooth service, at least
+  // as a signal of the client's intent.
+  // TODO(slan): Determine whether this would be useful.
+  powered_ = powered;
+  NotifyAdapterPoweredChanged(powered_);
+  callback.Run();
 }
 
 bool BluetoothAdapterCast::IsDiscoverable() const {
@@ -109,7 +120,7 @@ void BluetoothAdapterCast::SetDiscoverable(
 }
 
 bool BluetoothAdapterCast::IsDiscovering() const {
-  return true;
+  return num_discovery_sessions_ > 0;
 }
 
 BluetoothAdapter::UUIDList BluetoothAdapterCast::GetUUIDs() const {
@@ -174,27 +185,80 @@ void BluetoothAdapterCast::AddDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
-  // TODO(slan): Implement this or properly stub.
-  NOTIMPLEMENTED();
-  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  // The discovery filter is unused for now, as the Cast bluetooth stack does
+  // not expose scan filters yet. However, implementation of filtering would
+  // save numerous UI<->IO threadhops by eliminating uneccessary calls to
+  // GetDevice().
+  // TODO(bcf|slan): Wire this up once scan filters are implemented.
+  (void)discovery_filter;
+
+  // If the count is greater than 0, increment the count and return success.
+  if (num_discovery_sessions_ > 0) {
+    num_discovery_sessions_++;
+    callback.Run();
+    return;
+  }
+
+  // Add this request to the queue.
+  pending_discovery_requests_.push(DiscoveryParams(
+      discovery_filter, std::move(callback), std::move(error_callback)));
+
+  // If the queue length is greater than 1 (i.e. there was a pending request
+  // when this method was called), exit early. This request will be processed
+  // after the pending requests.
+  if (pending_discovery_requests_.size() > 1u)
+    return;
+
+  // There is no active discovery session, and no pending requests. Enable
+  // scanning.
+  le_scan_manager_->SetScanEnable(
+      true, base::BindOnce(&BluetoothAdapterCast::OnScanEnabled,
+                           weak_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterCast::RemoveDiscoverySession(
     BluetoothDiscoveryFilter* discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
-  // TODO(slan): Implement this or properly stub.
-  NOTIMPLEMENTED();
-  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  // The discovery filter is unused for now, as the Cast bluetooth stack does
+  // not expose scan filters yet. However, implementation of filtering would
+  // save numerous UI<->IO threadhops by eliminating uneccessary calls to
+  // GetDevice().
+  // TODO(b/77663782): Wire this up once scan filters are implemented.
+  (void)discovery_filter;
+
+  // If there are pending requests, run the error call immediately.
+  if (pending_discovery_requests_.size() > 0u ||
+      pending_disable_discovery_request_) {
+    error_callback.Run(
+        UMABluetoothDiscoverySessionOutcome::REMOVE_WITH_PENDING_REQUEST);
+    return;
+  }
+
+  // If the count is greater than 1, decrement the count and return success.
+  if (num_discovery_sessions_ > 1) {
+    num_discovery_sessions_--;
+    callback.Run();
+  }
+
+  // This was the last active discovery session. Disable scanning.
+  pending_disable_discovery_request_ =
+      DiscoveryParams(discovery_filter, callback, error_callback);
+  le_scan_manager_->SetScanEnable(
+      false, base::BindOnce(&BluetoothAdapterCast::OnScanDisabled,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterCast::SetDiscoveryFilter(
     std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
     const base::Closure& callback,
     const DiscoverySessionErrorCallback& error_callback) {
-  // TODO(slan): Implement this or properly stub.
+  // The discovery filter is unused for now, as the Cast bluetooth stack does
+  // not expose scan filters yet. However, implementation of filtering would
+  // save numerous UI<->IO threadhops by eliminating unnecessary calls to
+  // GetDevice().
   NOTIMPLEMENTED();
-  error_callback.Run(UMABluetoothDiscoverySessionOutcome::NOT_IMPLEMENTED);
+  callback.Run();
 }
 
 void BluetoothAdapterCast::RemovePairingDelegateInternal(
@@ -273,6 +337,7 @@ void BluetoothAdapterCast::OnCharacteristicNotification(
 void BluetoothAdapterCast::OnNewScanResult(
     chromecast::bluetooth::LeScanResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOG(3) << __func__;
 
   std::string address = GetCanonicalBluetoothAddress(result.addr);
 
@@ -304,15 +369,10 @@ void BluetoothAdapterCast::OnNewScanResult(
 
 void BluetoothAdapterCast::OnScanEnableChanged(bool enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  scan_enabled_ = enabled;
-  if (enabled)
-    return;
-
-  // This is called when the state of |le_scan_manager_| changes. If it has been
-  // disabled suddenly, log a warning.
-  // TODO(slan): We may need to re-enable this on requestDevice() calls.
-  LOG(WARNING) << "BLE scan has been disabled!";
+  // If the scan function has been disabled during discovery, something has
+  // gone wrong. We should consider re-enabling it here.
+  LOG_IF(WARNING, IsDiscovering() && !enabled)
+      << "BLE scan has been disabled during WebBluetooth discovery!";
 }
 
 BluetoothDeviceCast* BluetoothAdapterCast::GetCastDevice(
@@ -353,13 +413,53 @@ void BluetoothAdapterCast::OnScanEnabled(bool enabled) {
 
   if (!enabled) {
     LOG(WARNING) << "Failed to start scan.";
-    // TODO(slan): Retry the scan after some amount of time.
+
+    // Run the error callback.
+    DCHECK(!pending_discovery_requests_.empty());
+    pending_discovery_requests_.front().error_callback.Run(
+        UMABluetoothDiscoverySessionOutcome::FAILED);
+    pending_discovery_requests_.pop();
+
+    // If there is another pending request, try again.
+    if (pending_discovery_requests_.size() > 0u) {
+      le_scan_manager_->SetScanEnable(
+          true, base::BindOnce(&BluetoothAdapterCast::OnScanEnabled,
+                               weak_factory_.GetWeakPtr()));
+    }
     return;
   }
 
-  scan_enabled_ = true;
+  // The scan has been successfully enabled. Request the initial scan results
+  // from the scan manager.
   le_scan_manager_->GetScanResults(base::BindOnce(
       &BluetoothAdapterCast::OnGetScanResults, weak_factory_.GetWeakPtr()));
+
+  // For each pending request, increment the count and run the success callback.
+  while (!pending_discovery_requests_.empty()) {
+    num_discovery_sessions_++;
+    pending_discovery_requests_.front().success_callback.Run();
+    pending_discovery_requests_.pop();
+  }
+}
+
+void BluetoothAdapterCast::OnScanDisabled(bool success) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(pending_disable_discovery_request_);
+
+  if (!success) {
+    LOG(WARNING) << "Failed to stop scan.";
+
+    // Run the error callback.
+    pending_disable_discovery_request_->error_callback.Run(
+        UMABluetoothDiscoverySessionOutcome::FAILED);
+    pending_disable_discovery_request_ = base::nullopt;
+    return;
+  }
+
+  // The scan has been successfully disabled.
+  num_discovery_sessions_--;
+  pending_disable_discovery_request_->success_callback.Run();
+  pending_disable_discovery_request_ = base::nullopt;
 }
 
 void BluetoothAdapterCast::OnGetDevice(
@@ -393,13 +493,7 @@ void BluetoothAdapterCast::OnGetScanResults(
 
 void BluetoothAdapterCast::InitializeAsynchronously(InitCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   initialized_ = true;
-  le_scan_manager_->SetScanEnable(
-      true, base::BindOnce(&BluetoothAdapterCast::OnScanEnabled,
-                           weak_factory_.GetWeakPtr()));
-
-  // Subsequent calls will get the scan results.
   std::move(callback).Run();
 }
 
