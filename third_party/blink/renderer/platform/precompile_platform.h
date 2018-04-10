@@ -9,9 +9,9 @@
 #define PrecompilePlatform_h_
 
 #if defined(_MSC_VER)
-#include "build/win/Precompile.h"
+#include "build/win/precompile.h"
 #elif defined(__APPLE__)
-#include "build/mac/Prefix.h"
+#include "build/mac/prefix.h"
 #else
 #error implement
 #endif
