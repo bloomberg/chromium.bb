@@ -678,8 +678,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorReturned) {
 
   // Emulate Chrome receiving a new, invalid LST. This happens when the user
   // signs out of the content area.
-  auth_service()->GetDelegate()->UpdateCredentials(primary_account_id,
-                                                   "not a valid token");
+  auth_service()->UpdateCredentials(primary_account_id, "not a valid token");
   auth_service()->IssueErrorForAllPendingRequests(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
@@ -720,8 +719,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
 
   // Emulate Chrome receiving a new, invalid LST. This happens when the user
   // signs out of the content area.
-  auth_service()->GetDelegate()->UpdateCredentials(primary_account_id,
-                                                   "not a valid token");
+  auth_service()->UpdateCredentials(primary_account_id, "not a valid token");
   auth_service()->IssueErrorForAllPendingRequests(
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 
@@ -730,8 +728,7 @@ TEST_F(ProfileSyncServiceTest, CredentialErrorClearsOnNewToken) {
             service()->GetAuthError().state());
 
   // Now emulate Chrome receiving a new, valid LST.
-  auth_service()->GetDelegate()->UpdateCredentials(primary_account_id,
-                                                   "totally valid token");
+  auth_service()->UpdateCredentials(primary_account_id, "totally valid token");
   auth_service()->IssueTokenForAllPendingRequests(
       "this one works", base::Time::Now() + base::TimeDelta::FromDays(10));
 

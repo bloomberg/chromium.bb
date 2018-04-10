@@ -316,8 +316,8 @@ TEST_F(SigninManagerTest, SignOutDiceWithError) {
 
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  token_service_.GetDelegate()->UpdateAuthError(main_account_id, error);
-  token_service_.GetDelegate()->UpdateAuthError(other_account_id, error);
+  token_service_.UpdateAuthErrorForTesting(main_account_id, error);
+  token_service_.UpdateAuthErrorForTesting(other_account_id, error);
   ASSERT_TRUE(token_service_.RefreshTokenHasError(main_account_id));
   ASSERT_TRUE(token_service_.RefreshTokenHasError(other_account_id));
 

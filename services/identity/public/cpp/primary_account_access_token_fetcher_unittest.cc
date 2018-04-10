@@ -138,7 +138,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, OneShotShouldReturnAccessToken) {
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -164,7 +164,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -190,7 +190,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotReplyIfDestroyed) {
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -216,7 +216,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldNotRequestIfDestroyedEarly) {
       base::BindOnce([]() { EXPECT_TRUE(false); }));
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in
   // posting a task to make a request for an access token.
@@ -295,7 +295,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignIn) {
 
   SignIn("account");
 
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   run_loop.Run();
 
@@ -323,7 +323,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForSignInInProgress) {
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   run_loop.Run();
 
@@ -375,7 +375,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest, ShouldWaitForRefreshToken) {
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // Getting a refresh token should result in a request for an access token.
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   run_loop.Run();
 
@@ -395,7 +395,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   // Signed-in to "account", but there's only a refresh token for a different
   // account.
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account 2", "refresh");
+  token_service()->UpdateCredentials("account 2", "refresh");
 
   // The fetcher should wait for the correct refresh token.
   auto fetcher = CreateFetcher(
@@ -403,7 +403,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // A refresh token for yet another account shouldn't matter either.
-  token_service()->GetDelegate()->UpdateCredentials("account 3", "refresh");
+  token_service()->UpdateCredentials("account 3", "refresh");
 }
 
 TEST_F(PrimaryAccountAccessTokenFetcherTest,
@@ -419,14 +419,13 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
       PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
 
   // Getting a refresh token for some other account should have no effect.
-  token_service()->GetDelegate()->UpdateCredentials("different account",
-                                                    "refresh token");
+  token_service()->UpdateCredentials("different account", "refresh token");
 
   // When all refresh tokens have been loaded by the token service, but the one
   // for our account wasn't among them, we should get called back with an empty
   // access token.
   EXPECT_CALL(callback, Run(testing::_, std::string()));
-  token_service()->GetDelegate()->LoadCredentials("account doesn't matter");
+  token_service()->LoadCredentials("account doesn't matter");
 
   // Wait for the task posted by OAuth2TokenService to run.
   base::RunLoop().RunUntilIdle();
@@ -438,7 +437,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   set_on_access_token_request_callback(run_loop.QuitClosure());
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   base::RunLoop run_loop2;
 
@@ -468,7 +467,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   TestTokenCallback callback;
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -506,7 +505,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   TestTokenCallback callback;
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -548,7 +547,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   TestTokenCallback callback;
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -581,7 +580,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   TestTokenCallback callback;
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
@@ -593,7 +592,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
 
   // Simulate the refresh token getting invalidated. In this case, pending
   // access token requests get canceled, and the fetcher should *not* retry.
-  token_service()->GetDelegate()->RevokeCredentials("account");
+  token_service()->RevokeCredentials("account");
   EXPECT_CALL(
       callback,
       Run(GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED),
@@ -611,7 +610,7 @@ TEST_F(PrimaryAccountAccessTokenFetcherTest,
   TestTokenCallback callback;
 
   SignIn("account");
-  token_service()->GetDelegate()->UpdateCredentials("account", "refresh token");
+  token_service()->UpdateCredentials("account", "refresh token");
 
   // Signed in and refresh token already exists, so this should result in a
   // request for an access token.
