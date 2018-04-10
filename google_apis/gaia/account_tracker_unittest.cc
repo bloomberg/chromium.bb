@@ -22,10 +22,7 @@ namespace {
 
 const char kPrimaryAccountKey[] = "primary_account@example.com";
 
-enum TrackingEventType {
-  SIGN_IN,
-  SIGN_OUT
-};
+enum TrackingEventType { SIGN_IN, SIGN_OUT };
 
 std::string AccountKeyToObfuscatedId(const std::string& email) {
   return "obfid-" + email;
@@ -36,23 +33,20 @@ class TrackingEvent {
   TrackingEvent(TrackingEventType type,
                 const std::string& account_key,
                 const std::string& gaia_id)
-      : type_(type),
-        account_key_(account_key),
-        gaia_id_(gaia_id) {}
+      : type_(type), account_key_(account_key), gaia_id_(gaia_id) {}
 
-  TrackingEvent(TrackingEventType type,
-                const std::string& account_key)
+  TrackingEvent(TrackingEventType type, const std::string& account_key)
       : type_(type),
         account_key_(account_key),
         gaia_id_(AccountKeyToObfuscatedId(account_key)) {}
 
   bool operator==(const TrackingEvent& event) const {
     return type_ == event.type_ && account_key_ == event.account_key_ &&
-        gaia_id_ == event.gaia_id_;
+           gaia_id_ == event.gaia_id_;
   }
 
   std::string ToString() const {
-    const char * typestr = "INVALID";
+    const char* typestr = "INVALID";
     switch (type_) {
       case SIGN_IN:
         typestr = " IN";
@@ -61,10 +55,8 @@ class TrackingEvent {
         typestr = "OUT";
         break;
     }
-    return base::StringPrintf("{ type: %s, email: %s, gaia: %s }",
-                              typestr,
-                              account_key_.c_str(),
-                              gaia_id_.c_str());
+    return base::StringPrintf("{ type: %s, email: %s, gaia: %s }", typestr,
+                              account_key_.c_str(), gaia_id_.c_str());
   }
 
  private:
@@ -82,8 +74,8 @@ bool CompareByUser(TrackingEvent a, TrackingEvent b) {
 std::string Str(const std::vector<TrackingEvent>& events) {
   std::string str = "[";
   bool needs_comma = false;
-  for (std::vector<TrackingEvent>::const_iterator it =
-       events.begin(); it != events.end(); ++it) {
+  for (std::vector<TrackingEvent>::const_iterator it = events.begin();
+       it != events.end(); ++it) {
     if (needs_comma)
       str += ",\n ";
     needs_comma = true;
@@ -254,10 +246,9 @@ class IdentityAccountTrackerTest : public testing::Test {
     fake_identity_provider_.reset(
         new FakeIdentityProvider(fake_oauth2_token_service_.get()));
 
-    account_tracker_.reset(
-        new AccountTracker(fake_identity_provider_.get(),
-                           new net::TestURLRequestContextGetter(
-                               message_loop_.task_runner())));
+    account_tracker_.reset(new AccountTracker(
+        fake_identity_provider_.get(),
+        new net::TestURLRequestContextGetter(message_loop_.task_runner())));
     account_tracker_->AddObserver(&observer_);
   }
 
@@ -266,13 +257,9 @@ class IdentityAccountTrackerTest : public testing::Test {
     account_tracker_->Shutdown();
   }
 
-  AccountTrackerObserver* observer() {
-    return &observer_;
-  }
+  AccountTrackerObserver* observer() { return &observer_; }
 
-  AccountTracker* account_tracker() {
-    return account_tracker_.get();
-  }
+  AccountTracker* account_tracker() { return account_tracker_.get(); }
 
   // Helpers to pass fake events to the tracker.
 
@@ -338,8 +325,7 @@ class IdentityAccountTrackerTest : public testing::Test {
 void IdentityAccountTrackerTest::ReturnOAuthUrlFetchResults(
     int fetcher_id,
     net::HttpStatusCode response_code,
-    const std::string&  response_string) {
-
+    const std::string& response_string) {
   net::TestURLFetcher* fetcher =
       test_fetcher_factory_.GetFetcherByID(fetcher_id);
   ASSERT_TRUE(fetcher);
@@ -351,16 +337,15 @@ void IdentityAccountTrackerTest::ReturnOAuthUrlFetchResults(
 void IdentityAccountTrackerTest::ReturnOAuthUrlFetchSuccess(
     const std::string& account_key) {
   IssueAccessToken(account_key);
-  ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId,
-                             net::HTTP_OK,
+  ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId, net::HTTP_OK,
                              GetValidTokenInfoResponse(account_key));
 }
 
 void IdentityAccountTrackerTest::ReturnOAuthUrlFetchFailure(
     const std::string& account_key) {
   IssueAccessToken(account_key);
-  ReturnOAuthUrlFetchResults(
-      gaia::GaiaOAuthClient::kUrlFetcherId, net::HTTP_BAD_REQUEST, "");
+  ReturnOAuthUrlFetchResults(gaia::GaiaOAuthClient::kUrlFetcherId,
+                             net::HTTP_BAD_REQUEST, "");
 }
 
 // Primary tests just involve the Active account
@@ -460,8 +445,8 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
   NotifyLogin(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
 // Non-primary accounts
@@ -473,8 +458,8 @@ TEST_F(IdentityAccountTrackerTest, Available) {
   EXPECT_TRUE(observer()->CheckEvents());
 
   ReturnOAuthUrlFetchSuccess("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
 TEST_F(IdentityAccountTrackerTest, Revoke) {
@@ -490,13 +475,13 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailable) {
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
   NotifyTokenRevoked("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com"),
-      TrackingEvent(SIGN_OUT, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com"),
+                              TrackingEvent(SIGN_OUT, "user@example.com")));
 
   NotifyTokenAvailable("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
 TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
@@ -508,8 +493,8 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeAvailableWithPendingFetch) {
 
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
 TEST_F(IdentityAccountTrackerTest, AvailableRevokeRevoke) {
@@ -518,9 +503,9 @@ TEST_F(IdentityAccountTrackerTest, AvailableRevokeRevoke) {
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
   NotifyTokenRevoked("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com"),
-      TrackingEvent(SIGN_OUT, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com"),
+                              TrackingEvent(SIGN_OUT, "user@example.com")));
 
   NotifyTokenRevoked("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents());
@@ -531,8 +516,8 @@ TEST_F(IdentityAccountTrackerTest, AvailableAvailable) {
 
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 
   NotifyTokenAvailable("user@example.com");
   EXPECT_TRUE(observer()->CheckEvents());
@@ -543,21 +528,21 @@ TEST_F(IdentityAccountTrackerTest, TwoAccounts) {
 
   NotifyTokenAvailable("alpha@example.com");
   ReturnOAuthUrlFetchSuccess("alpha@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "alpha@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "alpha@example.com")));
 
   NotifyTokenAvailable("beta@example.com");
   ReturnOAuthUrlFetchSuccess("beta@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "beta@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "beta@example.com")));
 
   NotifyTokenRevoked("alpha@example.com");
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, "alpha@example.com")));
 
   NotifyTokenRevoked("beta@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_OUT, "beta@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_OUT, "beta@example.com")));
 }
 
 TEST_F(IdentityAccountTrackerTest, AvailableTokenFetchFailAvailable) {
@@ -569,8 +554,8 @@ TEST_F(IdentityAccountTrackerTest, AvailableTokenFetchFailAvailable) {
 
   NotifyTokenAvailable("user@example.com");
   ReturnOAuthUrlFetchSuccess("user@example.com");
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "user@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "user@example.com")));
 }
 
 TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
@@ -582,9 +567,9 @@ TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
   ReturnOAuthUrlFetchSuccess("beta@example.com");
 
   observer()->SortEventsByUser();
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "alpha@example.com"),
-      TrackingEvent(SIGN_IN, "beta@example.com")));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "alpha@example.com"),
+                              TrackingEvent(SIGN_IN, "beta@example.com")));
 
   NotifyLogout();
   observer()->SortEventsByUser();
@@ -605,19 +590,19 @@ TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
   ReturnOAuthUrlFetchSuccess("gamma@example.com");
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   observer()->SortEventsByUser();
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, "beta@example.com"),
-      TrackingEvent(SIGN_IN, "gamma@example.com"),
-      TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, "beta@example.com"),
+                              TrackingEvent(SIGN_IN, "gamma@example.com"),
+                              TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 
   // Revoking the primary token does not affect other accounts.
   NotifyTokenRevoked(kPrimaryAccountKey);
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
 
   NotifyTokenAvailable(kPrimaryAccountKey);
-  EXPECT_TRUE(observer()->CheckEvents(
-      TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
+  EXPECT_TRUE(
+      observer()->CheckEvents(TrackingEvent(SIGN_IN, kPrimaryAccountKey)));
 }
 
 // Primary/non-primary interactions

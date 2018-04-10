@@ -148,6 +148,6 @@ class AccountIdFetcher : public OAuth2TokenService::Consumer,
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_oauth_client_;
 };
 
-}  // namespace extensions
+}  // namespace gaia
 
 #endif  // GOOGLE_APIS_GAIA_ACCOUNT_TRACKER_H_
