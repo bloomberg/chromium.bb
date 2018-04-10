@@ -53,7 +53,8 @@ def _RunBindingsTests(input_api, output_api):
         message_type = output_api.PresubmitPromptWarning
 
     pardir = input_api.os_path.pardir
-    run_bindings_tests_path = input_api.os_path.join(input_api.PresubmitLocalPath(), pardir, pardir, 'Tools', 'Scripts', 'run-bindings-tests')
+    run_bindings_tests_path = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), pardir, pardir, pardir, 'WebKit', 'Tools', 'Scripts', 'run-bindings-tests')
     cmd_name = 'run-bindings-tests'
     if input_api.platform == 'win32':
         # Windows needs some help.
