@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -113,11 +114,16 @@ class TextFinder::DeferredScopeStringMatches
 
 static void ScrollToVisible(Range* match) {
   const Node& first_node = *match->FirstNode();
+  Settings* settings = first_node.GetDocument().GetSettings();
+  bool smooth_find_enabled =
+      settings ? settings->GetSmoothScrollForFindEnabled() : false;
+  ScrollBehavior scroll_behavior =
+      smooth_find_enabled ? kScrollBehaviorSmooth : kScrollBehaviorAuto;
   first_node.GetLayoutObject()->ScrollRectToVisible(
       LayoutRect(match->BoundingBox()),
       WebScrollIntoViewParams(ScrollAlignment::kAlignCenterIfNeeded,
                               ScrollAlignment::kAlignCenterIfNeeded,
-                              kUserScroll));
+                              kUserScroll, false, scroll_behavior, true));
   first_node.GetDocument().SetSequentialFocusNavigationStartingPoint(
       const_cast<Node*>(&first_node));
 }

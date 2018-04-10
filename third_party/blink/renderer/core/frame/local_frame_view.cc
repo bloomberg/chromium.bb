@@ -5039,13 +5039,20 @@ LayoutRect LocalFrameView::ScrollIntoView(
           scroll_snapport_rect, rect_in_absolute, params.GetScrollAlignmentX(),
           params.GetScrollAlignmentY(), GetScrollOffset()));
   ScrollOffset old_scroll_offset = GetScrollOffset();
+  if (params.GetScrollType() == kUserScroll) {
+    if (!UserInputScrollable(kHorizontalScrollbar))
+      new_scroll_offset.SetWidth(old_scroll_offset.Width());
+    if (!UserInputScrollable(kVerticalScrollbar))
+      new_scroll_offset.SetHeight(old_scroll_offset.Height());
+  }
 
   if (new_scroll_offset != old_scroll_offset) {
     new_scroll_offset = ShouldUseIntegerScrollOffset()
                             ? ScrollOffset(FlooredIntSize(new_scroll_offset))
                             : new_scroll_offset;
     if (params.is_for_scroll_sequence) {
-      DCHECK(params.GetScrollType() == kProgrammaticScroll);
+      DCHECK(params.GetScrollType() == kProgrammaticScroll ||
+             params.GetScrollType() == kUserScroll);
       ScrollBehavior behavior =
           DetermineScrollBehavior(params.GetScrollBehavior(),
                                   GetLayoutBox()->Style()->GetScrollBehavior());

@@ -156,11 +156,13 @@ WebPreferences::WebPreferences()
       shrinks_viewport_contents_to_fit(true),
       viewport_style(ViewportStyle::MOBILE),
       always_show_context_menu_on_touch(false),
+      smooth_scroll_for_find_enabled(true),
 #else
       viewport_meta_enabled(false),
       shrinks_viewport_contents_to_fit(false),
       viewport_style(ViewportStyle::DEFAULT),
       always_show_context_menu_on_touch(true),
+      smooth_scroll_for_find_enabled(false),
 #endif
       main_frame_resizes_are_orientation_changes(false),
       initialize_at_minimum_page_scale(true),

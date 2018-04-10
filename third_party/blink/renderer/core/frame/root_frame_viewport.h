@@ -75,6 +75,8 @@ class CORE_EXPORT RootFrameViewport final
   IntSize MinimumScrollOffsetInt() const override;
   IntSize MaximumScrollOffsetInt() const override;
   ScrollOffset MaximumScrollOffset() const override;
+  IntSize ClampScrollOffset(const IntSize&) const override;
+  ScrollOffset ClampScrollOffset(const ScrollOffset&) const override;
   IntSize ContentsSize() const override;
   bool ScrollbarsCanBeActive() const override;
   IntRect ScrollableAreaBoundingBox() const override;
@@ -131,6 +133,8 @@ class CORE_EXPORT RootFrameViewport final
     DCHECK(visual_viewport_);
     return *visual_viewport_;
   }
+
+  ScrollOffset ClampToUserScrollableOffset(const ScrollOffset&) const;
 
   Member<ScrollableArea> visual_viewport_;
   Member<ScrollableArea> layout_viewport_;

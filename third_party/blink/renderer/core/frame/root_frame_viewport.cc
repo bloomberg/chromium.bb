@@ -14,7 +14,32 @@
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
 
 namespace blink {
+namespace {
+// Computes the rect of valid scroll offsets reachable by user scrolls for the
+// scrollable area.
+FloatRect GetUserScrollableRect(const ScrollableArea& area) {
+  FloatRect user_scrollable_rect;
+  FloatSize scrollable_size =
+      area.MaximumScrollOffset() - area.MinimumScrollOffset();
+  if (area.UserInputScrollable(kHorizontalScrollbar)) {
+    user_scrollable_rect.SetX(area.MinimumScrollOffset().Width());
+    user_scrollable_rect.SetWidth(scrollable_size.Width());
+  } else {
+    user_scrollable_rect.SetX(area.GetScrollOffset().Width());
+    user_scrollable_rect.SetWidth(0);
+  }
 
+  if (area.UserInputScrollable(kVerticalScrollbar)) {
+    user_scrollable_rect.SetY(area.MinimumScrollOffset().Height());
+    user_scrollable_rect.SetHeight(scrollable_size.Height());
+  } else {
+    user_scrollable_rect.SetY(area.GetScrollOffset().Height());
+    user_scrollable_rect.SetHeight(0);
+  }
+  return user_scrollable_rect;
+}
+
+}  // namespace
 RootFrameViewport::RootFrameViewport(ScrollableArea& visual_viewport,
                                      ScrollableArea& layout_viewport)
     : visual_viewport_(visual_viewport) {
@@ -244,6 +269,18 @@ ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
   return LayoutViewport().ScrollBehaviorStyle();
 }
 
+ScrollOffset RootFrameViewport::ClampToUserScrollableOffset(
+    const ScrollOffset& offset) const {
+  ScrollOffset scroll_offset = offset;
+  FloatRect user_scrollable = GetUserScrollableRect(LayoutViewport()) +
+                              GetUserScrollableRect(VisualViewport());
+  scroll_offset.SetWidth(clampTo(scroll_offset.Width(), user_scrollable.X(),
+                                 user_scrollable.MaxX()));
+  scroll_offset.SetHeight(clampTo(scroll_offset.Height(), user_scrollable.Y(),
+                                  user_scrollable.MaxY()));
+  return scroll_offset;
+}
+
 LayoutRect RootFrameViewport::ScrollIntoView(
     const LayoutRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
@@ -257,10 +294,13 @@ LayoutRect RootFrameViewport::ScrollIntoView(
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
           scroll_snapport_rect, rect_in_document, params.GetScrollAlignmentX(),
           params.GetScrollAlignmentY(), GetScrollOffset()));
+  if (params.GetScrollType() == kUserScroll)
+    new_scroll_offset = ClampToUserScrollableOffset(new_scroll_offset);
 
   if (new_scroll_offset != GetScrollOffset()) {
     if (params.is_for_scroll_sequence) {
-      DCHECK(params.GetScrollType() == kProgrammaticScroll);
+      DCHECK(params.GetScrollType() == kProgrammaticScroll ||
+             params.GetScrollType() == kUserScroll);
       ScrollBehavior behavior =
           DetermineScrollBehavior(params.GetScrollBehavior(),
                                   GetLayoutBox()->Style()->GetScrollBehavior());
@@ -353,6 +393,18 @@ IntSize RootFrameViewport::MaximumScrollOffsetInt() const {
 ScrollOffset RootFrameViewport::MaximumScrollOffset() const {
   return LayoutViewport().MaximumScrollOffset() +
          VisualViewport().MaximumScrollOffset();
+}
+
+IntSize RootFrameViewport::ClampScrollOffset(
+    const IntSize& scroll_offset) const {
+  return scroll_offset.ShrunkTo(MaximumScrollOffsetInt())
+      .ExpandedTo(MinimumScrollOffsetInt());
+}
+
+ScrollOffset RootFrameViewport::ClampScrollOffset(
+    const ScrollOffset& scroll_offset) const {
+  return scroll_offset.ShrunkTo(MaximumScrollOffset())
+      .ExpandedTo(MinimumScrollOffset());
 }
 
 IntSize RootFrameViewport::ContentsSize() const {

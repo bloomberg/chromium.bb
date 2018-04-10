@@ -265,8 +265,8 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // NOTE: Only called from Internals for testing.
   void UpdateScrollOffsetFromInternals(const IntSize&);
 
-  IntSize ClampScrollOffset(const IntSize&) const;
-  ScrollOffset ClampScrollOffset(const ScrollOffset&) const;
+  virtual IntSize ClampScrollOffset(const IntSize&) const;
+  virtual ScrollOffset ClampScrollOffset(const ScrollOffset&) const;
 
   // Let subclasses provide a way of asking for and servicing scroll
   // animations.

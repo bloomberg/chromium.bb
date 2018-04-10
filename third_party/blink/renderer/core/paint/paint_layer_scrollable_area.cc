@@ -2030,6 +2030,12 @@ LayoutRect PaintLayerScrollableArea::ScrollIntoView(
       ClampScrollOffset(RoundedIntSize(target_offset)));
 
   ScrollOffset old_scroll_offset = GetScrollOffset();
+  if (params.GetScrollType() == kUserScroll) {
+    if (!UserInputScrollable(kHorizontalScrollbar))
+      new_scroll_offset.SetWidth(old_scroll_offset.Width());
+    if (!UserInputScrollable(kVerticalScrollbar))
+      new_scroll_offset.SetHeight(old_scroll_offset.Height());
+  }
   if (params.is_for_scroll_sequence) {
     DCHECK(params.GetScrollType() == kProgrammaticScroll ||
            params.GetScrollType() == kUserScroll);

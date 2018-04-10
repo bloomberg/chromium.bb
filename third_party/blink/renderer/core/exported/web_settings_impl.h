@@ -158,6 +158,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetShowPaintRects(bool) override;
   void SetShrinksViewportContentToFit(bool) override;
   void SetSmartInsertDeleteEnabled(bool) override;
+  void SetSmoothScrollForFindEnabled(bool) override;
   void SetSpatialNavigationEnabled(bool) override;
   void SetSpellCheckEnabledByDefault(bool) override;
   void SetStandardFontFamily(const WebString&,
