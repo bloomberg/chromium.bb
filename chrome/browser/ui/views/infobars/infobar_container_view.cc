@@ -6,7 +6,6 @@
 
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
-#include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -69,14 +68,7 @@ void InfoBarContainerView::Layout() {
   // Iterate over all infobars; the last child is the content shadow.
   for (int i = 0; i < child_count() - 1; ++i) {
     InfoBarView* child = static_cast<InfoBarView*>(child_at(i));
-    int child_height = child->computed_height();
-
-    // Trim off the bottom bar's separator; the shadow is good enough.
-    // The last infobar is the second to last child overall (followed by
-    // |content_shadow_|).
-    if (i == child_count() - 2)
-      child_height -= InfoBarContainerDelegate::kSeparatorLineHeight;
-    child->SetBounds(0, top, width(), child_height);
+    child->SetBounds(0, top, width(), child->computed_height());
     top = child->bounds().bottom();
   }
 
@@ -107,10 +99,6 @@ gfx::Size InfoBarContainerView::CalculatePreferredSize() const {
     size.SetToMax(child_size);  // Only affects our width.
   }
 
-  // No need to reserve space for the bottom bar's separator; the shadow is good
-  // enough.
-  size.Enlarge(0, -InfoBarContainerDelegate::kSeparatorLineHeight);
-
   // Don't reserve space for the bottom shadow here.  Because the shadow paints
   // to its own layer and this class doesn't, it can paint outside the size
   // computed here.  Not including the shadow bounds means the browser will
@@ -133,4 +121,23 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(
     infobars::InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
+}
+
+void InfoBarContainerView::PlatformSpecificInfoBarStateChanged(
+    bool is_animating) {
+  // If we just finished animating the removal of the previous top infobar, the
+  // new top infobar should now stop drawing a top separator.  In this case the
+  // previous top infobar is zero-sized but has not yet been removed from the
+  // container, so we'll have at least three children (two infobars and a
+  // shadow), and the new top infobar is child 1.  The conditional below
+  // won't exclude cases where we're adding rather than removing an infobar, but
+  // doing unnecessary work on the second infobar in those cases is harmless.
+  if (!is_animating && child_count() > 2) {
+    // Dropping the separator may change the height.
+    auto* infobar = static_cast<InfoBarView*>(child_at(1));
+    infobar->RecalculateHeight();
+
+    // We need to force a paint whether or not the height actually changed.
+    infobar->SchedulePaint();
+  }
 }

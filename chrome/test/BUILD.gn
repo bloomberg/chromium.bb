@@ -4255,6 +4255,7 @@ test("unit_tests") {
         "../browser/ui/views/frame/test_with_browser_view.cc",
         "../browser/ui/views/frame/test_with_browser_view.h",
         "../browser/ui/views/frame/web_contents_close_handler_unittest.cc",
+        "../browser/ui/views/infobars/infobar_view_unittest.cc",
         "../browser/ui/views/location_bar/icon_label_bubble_view_unittest.cc",
         "../browser/ui/views/media_router/web_contents_display_observer_view_unittest.cc",
         "../browser/ui/views/omnibox/omnibox_result_view_unittest.cc",
