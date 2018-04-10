@@ -58,9 +58,6 @@ void FetchComplete(OfflinePageModel* offline_model,
                    const std::string& image_data) {
   if (image_data.empty())
     return;
-  if (image_data.size() > PrefetchDispatcherImpl::kMaxThumbnailSize)
-    return;
-
   // Thumbnails are marked to expire after this delta. Expired thumbnails are
   // eventually deleted if their offline_id does not correspond to an offline
   // item. Two days gives us plenty of time so that the prefetched item can be

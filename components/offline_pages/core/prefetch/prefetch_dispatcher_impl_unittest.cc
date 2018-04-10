@@ -460,18 +460,9 @@ TEST_F(PrefetchDispatcherTest, ThumbnailFetchFailure) {
 }
 
 TEST_F(PrefetchDispatcherTest, ThumbnailFetchSuccess) {
-  std::string kThumbnailData =
-      std::string(PrefetchDispatcherImpl::kMaxThumbnailSize, 'x');
+  std::string kThumbnailData = "abc";
   EXPECT_CALL(*offline_model_, StoreThumbnail(ValidThumbnail()));
   ExpectFetchThumbnail(kThumbnailData);
-  prefetch_dispatcher()->ItemDownloaded(
-      kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID1));
-}
-
-TEST_F(PrefetchDispatcherTest, ThumbnailFetchTooBig) {
-  ExpectFetchThumbnail(
-      std::string(PrefetchDispatcherImpl::kMaxThumbnailSize + 1, 'x'));
-  EXPECT_CALL(*offline_model_, StoreThumbnail(_)).Times(0);
   prefetch_dispatcher()->ItemDownloaded(
       kTestOfflineID, ClientId(kSuggestedArticlesNamespace, kClientID1));
 }

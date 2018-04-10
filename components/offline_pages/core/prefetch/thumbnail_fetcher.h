@@ -21,10 +21,23 @@ class ThumbnailFetcher {
   using ImageDataFetchedCallback =
       base::OnceCallback<void(const std::string& image_data)>;
 
-  virtual void SetContentSuggestionsService(
-      ntp_snippets::ContentSuggestionsService* content_suggestions) {}
+  // Status of thumbnail fetch for UMA, exposed for tests only.
+  enum class FetchCompleteStatus {
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    kSuccess,     // Fetch returned a good thumbnail.
+    kEmptyImage,  // Fetch returned no thumbnail.
+    kTooLarge,    // Fetch returned a very large thumbnail we will not use.
+    kMaxValue = kTooLarge,  // Must be updated when adding a new value.
+  };
+  // Thumbnails larger than 200KB are not retained. Thumbnails are typically
+  // around 10KB.
+  static constexpr int64_t kMaxThumbnailSize = 200000;
 
   virtual ~ThumbnailFetcher() {}
+
+  virtual void SetContentSuggestionsService(
+      ntp_snippets::ContentSuggestionsService* content_suggestions) {}
 
   // Fetches a thumbnail for a suggestion. Calls callback when the fetch
   // completes. |image_data| is empty if the fetch failed, otherwise it will

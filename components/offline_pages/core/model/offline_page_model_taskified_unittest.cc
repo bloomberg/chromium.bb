@@ -1453,16 +1453,6 @@ TEST_F(OfflinePageModelTaskifiedTest, MAYBE_ConsistencyCheckExecuted) {
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
-  // Add a thumbnail that will be cleaned up by RunMaintenanceTasks.
-  // TODO(harringtond): Replace thumbnail checks with UMA after UMA is added.
-  const int64_t kThumbnailOfflineID = 95912912;  // Does not match any items.
-  OfflinePageThumbnail thumbnail;
-  thumbnail.offline_id = kThumbnailOfflineID;
-  thumbnail.expiration = task_runner()->Now() - base::TimeDelta::FromDays(1);
-  thumbnail.thumbnail = "page1";
-  model()->StoreThumbnail(thumbnail);
-  EXPECT_CALL(*this, ThumbnailAdded(_, thumbnail));
-
   // The ClearStorage task should not be executed based on time delays after
   // launch (aka the model being built).
   task_runner()->FastForwardBy(base::TimeDelta::FromDays(1));
@@ -1489,21 +1479,8 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   PumpLoop();
   EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
   // Check that CleanupThumbnailsTask ran.
-  bool called = false;
-  model()->GetThumbnailByOfflineId(
-      kThumbnailOfflineID,
-      base::BindLambdaForTesting(
-          [&](std::unique_ptr<OfflinePageThumbnail> thumbnail) {
-            EXPECT_FALSE(thumbnail);
-            called = true;
-          }));
-  PumpLoop();
-  EXPECT_TRUE(called);
-
-  // Add thumbnail again, it should not be deleted because CleanupThumbnailsTask
-  // is only called on first run.
-  model()->StoreThumbnail(thumbnail);
-  EXPECT_CALL(*this, ThumbnailAdded(_, thumbnail));
+  histogram_tester()->ExpectUniqueSample("OfflinePages.CleanupThumbnails.Count",
+                                         0, 1);
 
   // Calling GetAllPages after only half of the enforced interval between
   // ClearStorage runs should not schedule ClearStorage.
@@ -1537,24 +1514,15 @@ TEST_F(OfflinePageModelTaskifiedTest, ClearStorage) {
   PumpLoop();
   EXPECT_EQ(last_scheduling_time, last_maintenance_tasks_schedule_time());
 
-  // Check that CleanupThumbnailsTask did not run again.
-  called = false;
-  model()->GetThumbnailByOfflineId(
-      kThumbnailOfflineID,
-      base::BindLambdaForTesting(
-          [&](std::unique_ptr<OfflinePageThumbnail> thumbnail) {
-            EXPECT_TRUE(thumbnail);
-            called = true;
-          }));
-  PumpLoop();
-  EXPECT_TRUE(called);
-
   // Confirm that two runs happened.
   histogram_tester()->ExpectUniqueSample(
       "OfflinePages.ClearTemporaryPages.Result",
       static_cast<int>(ClearStorageResult::UNNECESSARY), 2);
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ClearTemporaryPages.BatchSize", 0);
+  // Check that CleanupThumbnailsTask ran only once.
+  histogram_tester()->ExpectTotalCount("OfflinePages.CleanupThumbnails.Count",
+                                       1);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {
@@ -1584,6 +1552,8 @@ TEST_F(OfflinePageModelTaskifiedTest, MaintenanceTasksAreDisabled) {
       "OfflinePages.ConsistencyCheck.Temporary.Result", 0);
   histogram_tester()->ExpectTotalCount(
       "OfflinePages.ConsistencyCheck.Persistent.Result", 0);
+  histogram_tester()->ExpectTotalCount("OfflinePages.CleanupThumbnails.Count",
+                                       0);
 }
 
 TEST_F(OfflinePageModelTaskifiedTest, StoreAndGetThumbnail) {
