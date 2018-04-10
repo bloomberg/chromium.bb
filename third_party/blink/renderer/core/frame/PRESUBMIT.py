@@ -9,11 +9,11 @@ for more details about the presubmit API built into gcl.
 """
 
 CSS_PROPERTY_ID_HEADER_PATH = (
-    'third_party/WebKit/public/mojom/use_counter/css_property_id.mojom')
+    'third_party/blink/public/mojom/use_counter/css_property_id.mojom')
 
 def _RunUseCounterChecks(input_api, output_api):
     for f in input_api.AffectedFiles():
-        if f.LocalPath().endswith('UseCounter.cpp'):
+        if f.LocalPath().endswith('use_counter.cc'):
             use_counter_cpp_file = f
             break
     else:
