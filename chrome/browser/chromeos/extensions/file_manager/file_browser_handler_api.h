@@ -107,7 +107,7 @@ class FileBrowserHandlerInternalSelectFileFunction
   // The class is ref counted, so destructor should not be public.
   ~FileBrowserHandlerInternalSelectFileFunction() override;
 
-  // AsyncExtensionFunction implementation.
+  // ChromeAsyncExtensionFunction implementation.
   // Runs the extension function implementation.
   bool RunAsync() override;
 

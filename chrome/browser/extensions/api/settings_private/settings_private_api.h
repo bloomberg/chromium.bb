@@ -22,7 +22,7 @@ class SettingsPrivateSetPrefFunction : public UIThreadExtensionFunction {
  protected:
   ~SettingsPrivateSetPrefFunction() override;
 
-  // ExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetPrefFunction);
@@ -38,7 +38,7 @@ class SettingsPrivateGetAllPrefsFunction : public UIThreadExtensionFunction {
  protected:
   ~SettingsPrivateGetAllPrefsFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetAllPrefsFunction);
@@ -54,7 +54,7 @@ class SettingsPrivateGetPrefFunction : public UIThreadExtensionFunction {
  protected:
   ~SettingsPrivateGetPrefFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetPrefFunction);
@@ -71,7 +71,7 @@ class SettingsPrivateGetDefaultZoomFunction
  protected:
   ~SettingsPrivateGetDefaultZoomFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateGetDefaultZoomFunction);
@@ -88,7 +88,7 @@ class SettingsPrivateSetDefaultZoomFunction
  protected:
   ~SettingsPrivateSetDefaultZoomFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // UIThreadExtensionFunction overrides.
   ResponseAction Run() override;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsPrivateSetDefaultZoomFunction);

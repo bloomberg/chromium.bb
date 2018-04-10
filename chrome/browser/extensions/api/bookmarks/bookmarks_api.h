@@ -126,7 +126,7 @@ class BookmarksAPI : public BrowserContextKeyedAPI,
 class BookmarksFunction : public ChromeAsyncExtensionFunction,
                           public bookmarks::BaseBookmarkModelObserver {
  public:
-  // AsyncExtensionFunction:
+  // ChromeAsyncExtensionFunction:
   bool RunAsync() override;
 
  protected:

@@ -16,7 +16,7 @@
 
 namespace extensions {
 
-AsyncExtensionFunction::ResponseAction
+ExtensionFunction::ResponseAction
 DataReductionProxyClearDataSavingsFunction::Run() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   data_reduction_proxy::DataReductionProxySettings* settings =
@@ -27,7 +27,7 @@ DataReductionProxyClearDataSavingsFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-AsyncExtensionFunction::ResponseAction
+ExtensionFunction::ResponseAction
 DataReductionProxyGetDataUsageFunction::Run() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   data_reduction_proxy::DataReductionProxySettings* settings =

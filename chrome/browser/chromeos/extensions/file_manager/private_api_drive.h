@@ -70,7 +70,7 @@ class FileManagerPrivateInternalGetEntryPropertiesFunction
  protected:
   ~FileManagerPrivateInternalGetEntryPropertiesFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -94,7 +94,7 @@ class FileManagerPrivateInternalPinDriveFileFunction
  protected:
   ~FileManagerPrivateInternalPinDriveFileFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
  private:
@@ -112,7 +112,7 @@ class FileManagerPrivateInternalCancelFileTransfersFunction
  protected:
   ~FileManagerPrivateInternalCancelFileTransfersFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -126,7 +126,7 @@ class FileManagerPrivateCancelAllFileTransfersFunction
  protected:
   ~FileManagerPrivateCancelAllFileTransfersFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 };
 
@@ -211,7 +211,7 @@ class FileManagerPrivateRequestAccessTokenFunction
  protected:
   ~FileManagerPrivateRequestAccessTokenFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
   // Callback with a cached auth token (if available) or a fetched one.
@@ -229,7 +229,7 @@ class FileManagerPrivateInternalGetShareUrlFunction
  protected:
   ~FileManagerPrivateInternalGetShareUrlFunction() override {}
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
   // Callback with an url to the sharing dialog as |share_url|, called by
@@ -265,7 +265,7 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
  protected:
   ~FileManagerPrivateInternalGetDownloadUrlFunction() override;
 
-  // AsyncExtensionFunction overrides.
+  // ChromeAsyncExtensionFunction overrides.
   bool RunAsync() override;
 
   void OnGetResourceEntry(drive::FileError error,
