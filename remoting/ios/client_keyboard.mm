@@ -38,7 +38,7 @@
     _autocapitalizationType = UITextAutocapitalizationTypeNone;
     _autocorrectionType = UITextAutocorrectionTypeNo;
     _keyboardAppearance = UIKeyboardAppearanceDefault;
-    _keyboardType = UIKeyboardTypeDefault;
+    _keyboardType = UIKeyboardTypeASCIICapable;
     _spellCheckingType = UITextSpellCheckingTypeNo;
 
     self.showsSoftKeyboard = NO;
