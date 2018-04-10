@@ -76,12 +76,13 @@ class InputMethod {
   // Called when the top-level system window loses keyboard focus.
   virtual void OnBlur() = 0;
 
+#if defined(OS_WIN)
   // Called when the focused window receives native IME messages that are not
   // translated into other predefined event callbacks. Currently this method is
   // used only for IME functionalities specific to Windows.
-  // TODO(ime): Break down these messages into platform-neutral methods.
-  virtual bool OnUntranslatedIMEMessage(const PlatformEvent& event,
+  virtual bool OnUntranslatedIMEMessage(const MSG event,
                                         NativeEventResult* result) = 0;
+#endif
 
   // Sets the text input client which receives text input events such as
   // SetCompositionText(). |client| can be NULL. A gfx::NativeWindow which

@@ -27,8 +27,6 @@ class UI_BASE_IME_EXPORT InputMethodAuraLinux
   LinuxInputMethodContext* GetContextForTesting(bool is_simple);
 
   // Overriden from InputMethod.
-  bool OnUntranslatedIMEMessage(const PlatformEvent& event,
-                                NativeEventResult* result) override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;

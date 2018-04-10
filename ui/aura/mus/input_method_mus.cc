@@ -76,13 +76,6 @@ void InputMethodMus::OnBlur() {
   UpdateTextInputType();
 }
 
-bool InputMethodMus::OnUntranslatedIMEMessage(const ui::PlatformEvent& event,
-                                              NativeEventResult* result) {
-  // This method is not called on non-Windows platforms. See the comments for
-  // ui::InputMethod::OnUntranslatedIMEMessage().
-  return false;
-}
-
 ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(ui::KeyEvent* event) {
   ui::EventDispatchDetails dispatch_details =
       DispatchKeyEvent(event, EventResultCallback());

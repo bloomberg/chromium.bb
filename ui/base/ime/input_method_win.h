@@ -27,7 +27,7 @@ class UI_BASE_IME_EXPORT InputMethodWin : public InputMethodWinBase {
   void OnFocus() override;
 
   // Overridden from InputMethod:
-  bool OnUntranslatedIMEMessage(const PlatformEvent& event,
+  bool OnUntranslatedIMEMessage(const MSG event,
                                 NativeEventResult* result) override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;

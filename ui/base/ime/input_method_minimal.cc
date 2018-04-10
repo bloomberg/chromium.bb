@@ -19,11 +19,6 @@ InputMethodMinimal::InputMethodMinimal(
 
 InputMethodMinimal::~InputMethodMinimal() {}
 
-bool InputMethodMinimal::OnUntranslatedIMEMessage(const PlatformEvent& event,
-                                                  NativeEventResult* result) {
-  return false;
-}
-
 ui::EventDispatchDetails InputMethodMinimal::DispatchKeyEvent(
     ui::KeyEvent* event) {
   DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);

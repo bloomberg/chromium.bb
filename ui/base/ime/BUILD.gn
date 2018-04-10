@@ -61,8 +61,6 @@ jumbo_component("ime") {
     "infolist_entry.cc",
     "infolist_entry.h",
     "input_method.h",
-    "input_method_auralinux.cc",
-    "input_method_auralinux.h",
     "input_method_base.cc",
     "input_method_base.h",
     "input_method_chromeos.cc",
@@ -77,8 +75,6 @@ jumbo_component("ime") {
     "input_method_minimal.cc",
     "input_method_minimal.h",
     "input_method_observer.h",
-    "input_method_win.cc",
-    "input_method_win.h",
     "linux/fake_input_method_context.cc",
     "linux/fake_input_method_context.h",
     "linux/fake_input_method_context_factory.cc",
@@ -139,8 +135,8 @@ jumbo_component("ime") {
     "//skia",
   ]
 
-  if (!use_aura || is_chromeos || (!is_linux && !use_ozone)) {
-    sources -= [
+  if (is_desktop_linux) {
+    sources += [
       "input_method_auralinux.cc",
       "input_method_auralinux.h",
     ]
@@ -194,6 +190,8 @@ jumbo_component("ime") {
                             # uninteresting.
 
     sources += [
+      "input_method_win.cc",
+      "input_method_win.h",
       "input_method_win_base.cc",
       "input_method_win_base.h",
       "input_method_win_tsf.cc",
@@ -211,12 +209,5 @@ jumbo_component("ime") {
 
   if (is_mac) {
     libs = [ "AppKit.framework" ]
-  }
-
-  if (is_fuchsia) {
-    sources -= [
-      "input_method_auralinux.cc",
-      "input_method_auralinux.h",
-    ]
   }
 }

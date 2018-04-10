@@ -26,7 +26,7 @@ class UI_BASE_IME_EXPORT InputMethodWinTSF : public InputMethodWinBase {
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnFocus() override;
   void OnBlur() override;
-  bool OnUntranslatedIMEMessage(const PlatformEvent& event,
+  bool OnUntranslatedIMEMessage(const MSG event,
                                 NativeEventResult* result) override;
   void OnTextInputTypeChanged(const TextInputClient* client) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;

@@ -140,11 +140,6 @@ class MockInputMethodBase : public InputMethodBase {
 
  private:
   // Overriden from InputMethod.
-  bool OnUntranslatedIMEMessage(
-      const PlatformEvent& event,
-      InputMethod::NativeEventResult* result) override {
-    return false;
-  }
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent*) override {
     return ui::EventDispatchDetails();
   }

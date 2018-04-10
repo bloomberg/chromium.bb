@@ -142,11 +142,6 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
   return ProcessKeyEventDone(event, std::move(ack_callback), false);
 }
 
-bool InputMethodChromeOS::OnUntranslatedIMEMessage(const PlatformEvent& event,
-                                                   NativeEventResult* result) {
-  return false;
-}
-
 void InputMethodChromeOS::KeyEventDoneCallback(ui::KeyEvent* event,
                                                AckCallback ack_callback,
                                                bool is_handled) {

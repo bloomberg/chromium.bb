@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/ui_base_ime_export.h"
@@ -32,8 +33,12 @@ class UI_BASE_IME_EXPORT MockInputMethod : public InputMethod {
   void SetDelegate(internal::InputMethodDelegate* delegate) override;
   void OnFocus() override;
   void OnBlur() override;
-  bool OnUntranslatedIMEMessage(const PlatformEvent& event,
+
+#if defined(OS_WIN)
+  bool OnUntranslatedIMEMessage(const MSG event,
                                 NativeEventResult* result) override;
+#endif
+
   void SetFocusedTextInputClient(TextInputClient* client) override;
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;
