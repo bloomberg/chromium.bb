@@ -4,9 +4,11 @@
 
 package com.android.webview.chromium;
 
+import android.webkit.ServiceWorkerWebSettings;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import org.chromium.android_webview.AwServiceWorkerSettings;
 import org.chromium.android_webview.AwSettings;
 
 /**
@@ -27,5 +29,11 @@ public class WebkitToSharedGlueConverter {
 
     public static WebViewChromiumAwInit getGlobalAwInit() {
         return WebViewChromiumFactoryProvider.getSingleton().getAwInit();
+    }
+
+    public static AwServiceWorkerSettings getServiceWorkerSettings(
+            ServiceWorkerWebSettings settings) {
+        ServiceWorkerSettingsAdapter adapter = (ServiceWorkerSettingsAdapter) settings;
+        return adapter.getAwSettings();
     }
 }

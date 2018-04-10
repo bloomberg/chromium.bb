@@ -4,6 +4,7 @@
 
 package org.chromium.support_lib_boundary;
 
+import android.webkit.ServiceWorkerWebSettings;
 import android.webkit.WebSettings;
 
 import java.lang.reflect.InvocationHandler;
@@ -14,4 +15,6 @@ import java.lang.reflect.InvocationHandler;
  */
 public interface WebkitToCompatConverterBoundaryInterface {
     /* SupportLibraryWebSettings */ InvocationHandler convertSettings(WebSettings webSettings);
+    /* SupportLibServiceWorkerSettings */ InvocationHandler convertServiceWorkerSettings(
+            ServiceWorkerWebSettings settings);
 }
