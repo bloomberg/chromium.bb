@@ -1490,7 +1490,7 @@ def GeneralTemplates(site_config, ge_build_config):
       description='Run Unittests repeatedly to look for flake.',
 
       builder_class_name='test_builders.UnittestStressBuilder',
-      active_waterfall=waterfall.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
 
       # Make this available, so we can stress a previous build.
       manifest_version=True,
@@ -1702,7 +1702,7 @@ def GeneralTemplates(site_config, ge_build_config):
       # This is the actual work we want to do.
       paygen=True,
       upload_hw_test_artifacts=False,
-      active_waterfall=waterfall.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   site_config.AddTemplate(
@@ -1987,7 +1987,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.paladin,
       display_label=config_lib.DISPLAY_LABEL_PRECQ,
       luci_builder='PreCQ',
-      active_waterfall=waterfall.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
       build_type=constants.PRE_CQ_TYPE,
       pre_cq=True,
       archive=False,
@@ -4029,7 +4029,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       build_type=None,
       builder_class_name='release_builders.CreateBranchBuilder',
       description='Used for creating/deleting branches (TPMs only)',
-      active_waterfall=waterfall.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
       # This very weird tryjob is only run locally. It should never upload
       # build artifacts.
       archive=False,
@@ -4045,7 +4045,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       builder_class_name='test_builders.ManifestVersionedSyncBuilder',
       chroot_replace=True,
       description='Sync tryjob to help with cbuildbot development',
-      active_waterfall=waterfall.WATERFALL_TRYBOT,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
 
@@ -4207,7 +4207,7 @@ def TryjobMirrors(site_config):
         push_overlays=None,
         # Force uprev. This is so patched in changes are always built.
         uprev=True,
-        active_waterfall=waterfall.WATERFALL_TRYBOT,
+        active_waterfall=waterfall.WATERFALL_SWARMING,
         gs_path=config_lib.GS_PATH_DEFAULT,
     )
 

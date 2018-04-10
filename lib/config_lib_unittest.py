@@ -849,7 +849,7 @@ class ConfigLibHelperTests(cros_test_lib.TestCase):
 
     pre_cq_config = config_lib.BuildConfig(
         name=constants.BINHOST_PRE_CQ,
-        active_waterfall=waterfall.WATERFALL_TRYBOT)
+        active_waterfall=waterfall.WATERFALL_SWARMING)
     self.assertFalse(config_lib.UseBuildbucketScheduler(
         pre_cq_config))
 

@@ -15,7 +15,6 @@ import cPickle
 
 from chromite.cbuildbot import builders
 from chromite.cbuildbot import chromeos_config
-from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import constants
@@ -375,8 +374,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.assertTrue(
               self.site_config[slave_name].active_waterfall,
               '"%s" is not in an active waterfall' % slave_name)
-          self.assertNotEqual(self.site_config[slave_name].active_waterfall,
-                              waterfall.WATERFALL_TRYBOT)
       else:
         self.assertIsNone(config.slave_configs)
 
