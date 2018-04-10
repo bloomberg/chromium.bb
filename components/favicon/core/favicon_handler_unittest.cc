@@ -1879,6 +1879,52 @@ TEST_F(FaviconHandlerManifestsEnabledTest,
 // Believed to fix crbug.com/544560.
 // Tests that there is not crash and SetFavicons() is called with the
 // appropriate icon URL in the following scenario:
+// - The database initially has a cached icon for the page (not expired).
+// - Two initial favicon candidates are received fast, before the history lookup
+//   completes. There is no manifest URL initially.
+// - Before the history lookup completes, favicon candidates are updated via
+//   javascript to include a manifest URL.
+// - The manifest lists at least one icon.
+TEST_F(FaviconHandlerManifestsEnabledTest,
+       AddManifestWithIconsViaJavascriptAfterFastCandidates) {
+  EXPECT_CALL(favicon_service_, DeleteFaviconMappings(_, _)).Times(0);
+  EXPECT_CALL(favicon_service_, SetFavicons(_, kManifestURL, _, _));
+
+  // Initial database contains a cached by expired icon for |kPageURL|.
+  favicon_service_.fake()->Store(
+      kPageURL, kIconURL16x16,
+      CreateRawBitmapResult(kIconURL16x16, kTouchIcon));
+
+  // Manifest with icons.
+  const std::vector<favicon::FaviconURL> kManifestIcons = {
+      FaviconURL(kIconURL64x64, kWebManifestIcon, kEmptySizes),
+  };
+  delegate_.fake_manifest_downloader().Add(kManifestURL, kManifestIcons);
+
+  // Initial load does NOT contain a manifest. Regular candidates are received
+  // before the history lookup for |kPageURL| is finished.
+  favicon_service_.fake()->SetRunCallbackManuallyForUrl(kPageURL);
+  std::unique_ptr<FaviconHandler> handler =
+      RunHandlerWithSimpleTouchIconCandidates({kIconURL12x12, kIconURL16x16},
+                                              /*manifest_url=*/GURL());
+  ASSERT_TRUE(favicon_service_.fake()->HasPendingManualCallback());
+  // Update candidates, now containing a manifest URL.
+  handler->OnUpdateCandidates(
+      kPageURL, {FaviconURL(kIconURL16x16, kTouchIcon, kEmptySizes)},
+      kManifestURL);
+  base::RunLoop().RunUntilIdle();
+  // Complete the history lookup for |kPageURL| now.
+  ASSERT_TRUE(favicon_service_.fake()->RunCallbackManually());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(favicon_service_.fake()->db_requests(),
+              ElementsAre(kPageURL, kManifestURL));
+  EXPECT_THAT(delegate_.downloads(), ElementsAre(kManifestURL, kIconURL64x64));
+}
+
+// Believed to fix crbug.com/544560.
+// Tests that there is not crash and SetFavicons() is called with the
+// appropriate icon URL in the following scenario:
 // - The database initially has a cached but expired icon for the page.
 // - Initial favicon candidates are received fast, before the history lookup
 //   completes. There is no manifest URL initially.
