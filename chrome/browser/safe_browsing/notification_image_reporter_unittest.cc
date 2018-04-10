@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/safe_browsing/mock_report_sender.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -35,13 +34,18 @@ namespace {
 
 class TestingNotificationImageReporter : public NotificationImageReporter {
  public:
-  explicit TestingNotificationImageReporter(
-      std::unique_ptr<net::ReportSender> report_sender)
-      : NotificationImageReporter(std::move(report_sender)) {}
+  explicit TestingNotificationImageReporter()
+      : NotificationImageReporter(nullptr) {}
 
   void WaitForReportSkipped() {
     base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
+    skipped_quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+  void WaitForReportSent() {
+    base::RunLoop run_loop;
+    send_quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
   }
 
@@ -49,25 +53,41 @@ class TestingNotificationImageReporter : public NotificationImageReporter {
     reporting_chance_ = reporting_chance;
   }
 
+  int sent_report_count() { return sent_report_count_; }
+  const GURL& last_report_url() { return last_report_url_; }
+  const std::string& last_content_type() { return last_content_type_; }
+  const std::string& last_report() { return last_report_; }
+
  protected:
   double GetReportChance() const override { return reporting_chance_; }
   void SkippedReporting() override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&TestingNotificationImageReporter::SkippedReportingOnUI,
-                       base::Unretained(this)));
+    if (skipped_quit_closure_) {
+      skipped_quit_closure_.Run();
+      skipped_quit_closure_.Reset();
+    }
+  }
+
+  void SendReportInternal(const GURL& url,
+                          const std::string& content_type,
+                          const std::string& report) override {
+    sent_report_count_++;
+    last_report_url_ = url;
+    last_content_type_ = content_type;
+    last_report_ = report;
+    if (send_quit_closure_) {
+      send_quit_closure_.Run();
+      send_quit_closure_.Reset();
+    }
   }
 
  private:
-  void SkippedReportingOnUI() {
-    if (quit_closure_) {
-      quit_closure_.Run();
-      quit_closure_.Reset();
-    }
-  }
-  base::Closure quit_closure_;
+  base::Closure send_quit_closure_;
+  base::Closure skipped_quit_closure_;
   double reporting_chance_ = 1.0;
+  int sent_report_count_ = 0;
+  GURL last_report_url_;
+  std::string last_content_type_;
+  std::string last_report_;
 };
 
 class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
@@ -104,10 +124,7 @@ class NotificationImageReporterTest : public ::testing::Test {
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 
-  std::unique_ptr<TestingProfile> profile_;  // Written on UI, read on IO.
-
-  // Owned by |notification_image_reporter_|.
-  MockReportSender* mock_report_sender_;
+  std::unique_ptr<TestingProfile> profile_;
 
   TestingNotificationImageReporter* notification_image_reporter_;
 
@@ -117,11 +134,6 @@ class NotificationImageReporterTest : public ::testing::Test {
   SkBitmap image_;  // Written on UI, read on IO.
 
   scoped_refptr<MockSafeBrowsingDatabaseManager> mock_database_manager_;
-
- private:
-  void SetUpOnIO();
-
-  void ReportNotificationImageOnIO();
 };
 
 NotificationImageReporterTest::NotificationImageReporterTest()
@@ -151,29 +163,15 @@ void NotificationImageReporterTest::SetUp() {
 
   profile_ = std::make_unique<TestingProfile>();
 
-  base::RunLoop run_loop;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&NotificationImageReporterTest::SetUpOnIO,
-                     base::Unretained(this)),
-      run_loop.QuitClosure());
-  run_loop.Run();
+  notification_image_reporter_ = new TestingNotificationImageReporter();
+  safe_browsing_service_->ping_manager()->notification_image_reporter_ =
+      base::WrapUnique(notification_image_reporter_);
 }
 
 void NotificationImageReporterTest::TearDown() {
   TestingBrowserProcess::GetGlobal()->safe_browsing_service()->ShutDown();
   base::RunLoop().RunUntilIdle();  // TODO(johnme): Might still be tasks on IO.
   TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
-}
-
-void NotificationImageReporterTest::SetUpOnIO() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  mock_report_sender_ = new MockReportSender;
-  notification_image_reporter_ = new TestingNotificationImageReporter(
-      base::WrapUnique(mock_report_sender_));
-  safe_browsing_service_->ping_manager()->notification_image_reporter_ =
-      base::WrapUnique(notification_image_reporter_);
 }
 
 void NotificationImageReporterTest::SetExtendedReportingLevel(
@@ -188,17 +186,7 @@ void NotificationImageReporterTest::SetExtendedReportingLevel(
 }
 
 void NotificationImageReporterTest::ReportNotificationImage() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          &NotificationImageReporterTest::ReportNotificationImageOnIO,
-          base::Unretained(this)));
-}
-
-void NotificationImageReporterTest::ReportNotificationImageOnIO() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!safe_browsing_service_->enabled())
+  if (!safe_browsing_service_->enabled_by_prefs())
     return;
   safe_browsing_service_->ping_manager()->ReportNotificationImage(
       profile_.get(), safe_browsing_service_->database_manager(), origin_,
@@ -209,16 +197,16 @@ TEST_F(NotificationImageReporterTest, ReportSuccess) {
   SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
 
   ReportNotificationImage();
-  mock_report_sender_->WaitForReportSent();
+  notification_image_reporter_->WaitForReportSent();
 
-  ASSERT_EQ(1, mock_report_sender_->GetAndResetNumberOfReportsSent());
   EXPECT_EQ(GURL(NotificationImageReporter::kReportingUploadUrl),
-            mock_report_sender_->latest_report_uri());
+            notification_image_reporter_->last_report_url());
   EXPECT_EQ("application/octet-stream",
-            mock_report_sender_->latest_content_type());
+            notification_image_reporter_->last_content_type());
 
   NotificationImageReportRequest report;
-  ASSERT_TRUE(report.ParseFromString(mock_report_sender_->latest_report()));
+  ASSERT_TRUE(
+      report.ParseFromString(notification_image_reporter_->last_report()));
   EXPECT_EQ(origin_.spec(), report.notification_origin());
   ASSERT_TRUE(report.has_image());
   EXPECT_GT(report.image().data().size(), 0U);
@@ -236,10 +224,11 @@ TEST_F(NotificationImageReporterTest, ImageDownscaling) {
   image_ = CreateBitmap(640 /* w */, 360 /* h */);
 
   ReportNotificationImage();
-  mock_report_sender_->WaitForReportSent();
+  notification_image_reporter_->WaitForReportSent();
 
   NotificationImageReportRequest report;
-  ASSERT_TRUE(report.ParseFromString(mock_report_sender_->latest_report()));
+  ASSERT_TRUE(
+      report.ParseFromString(notification_image_reporter_->last_report()));
   ASSERT_TRUE(report.has_image());
   EXPECT_GT(report.image().data().size(), 0U);
   ASSERT_TRUE(report.image().has_dimensions());
@@ -256,7 +245,7 @@ TEST_F(NotificationImageReporterTest, NoReportWithoutSBER) {
   ReportNotificationImage();
   notification_image_reporter_->WaitForReportSkipped();
 
-  EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
+  EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
 TEST_F(NotificationImageReporterTest, NoReportWithoutScout) {
@@ -265,7 +254,7 @@ TEST_F(NotificationImageReporterTest, NoReportWithoutScout) {
   ReportNotificationImage();
   notification_image_reporter_->WaitForReportSkipped();
 
-  EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
+  EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
 TEST_F(NotificationImageReporterTest, NoReportWithoutReportingEnabled) {
@@ -275,7 +264,7 @@ TEST_F(NotificationImageReporterTest, NoReportWithoutReportingEnabled) {
   ReportNotificationImage();
   notification_image_reporter_->WaitForReportSkipped();
 
-  EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
+  EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
 TEST_F(NotificationImageReporterTest, NoReportOnWhitelistedUrl) {
@@ -287,7 +276,7 @@ TEST_F(NotificationImageReporterTest, NoReportOnWhitelistedUrl) {
   ReportNotificationImage();
   notification_image_reporter_->WaitForReportSkipped();
 
-  EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
+  EXPECT_EQ(0, notification_image_reporter_->sent_report_count());
 }
 
 TEST_F(NotificationImageReporterTest, MaxReportsPerDay) {
@@ -297,13 +286,13 @@ TEST_F(NotificationImageReporterTest, MaxReportsPerDay) {
 
   for (int i = 0; i < kMaxReportsPerDay; i++) {
     ReportNotificationImage();
-    mock_report_sender_->WaitForReportSent();
+    notification_image_reporter_->WaitForReportSent();
   }
   ReportNotificationImage();
   notification_image_reporter_->WaitForReportSkipped();
 
   EXPECT_EQ(kMaxReportsPerDay,
-            mock_report_sender_->GetAndResetNumberOfReportsSent());
+            notification_image_reporter_->sent_report_count());
 }
 
 }  // namespace safe_browsing

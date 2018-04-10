@@ -14,7 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::SuspiciousSiteTrigger);
 
@@ -30,14 +30,14 @@ SuspiciousSiteTrigger::SuspiciousSiteTrigger(
     content::WebContents* web_contents,
     TriggerManager* trigger_manager,
     PrefService* prefs,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service)
     : content::WebContentsObserver(web_contents),
       finish_report_delay_ms_(kSuspiciousSiteCollectionPeriodMilliseconds),
       current_state_(TriggerState::IDLE),
       trigger_manager_(trigger_manager),
       prefs_(prefs),
-      request_context_(request_context),
+      url_loader_factory_(url_loader_factory),
       history_service_(history_service),
       task_runner_(content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI)),
@@ -50,13 +50,13 @@ void SuspiciousSiteTrigger::CreateForWebContents(
     content::WebContents* web_contents,
     TriggerManager* trigger_manager,
     PrefService* prefs,
-    net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     history::HistoryService* history_service) {
   if (!FromWebContents(web_contents)) {
     web_contents->SetUserData(UserDataKey(),
                               base::WrapUnique(new SuspiciousSiteTrigger(
                                   web_contents, trigger_manager, prefs,
-                                  request_context, history_service)));
+                                  url_loader_factory, history_service)));
   }
 }
 
@@ -73,7 +73,7 @@ bool SuspiciousSiteTrigger::MaybeStartReport() {
 
   if (!trigger_manager_->StartCollectingThreatDetails(
           TriggerType::SUSPICIOUS_SITE, web_contents(), resource,
-          request_context_, history_service_, error_options)) {
+          url_loader_factory_, history_service_, error_options)) {
     return false;
   }
 

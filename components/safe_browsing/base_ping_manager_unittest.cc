@@ -12,8 +12,6 @@
 #include "base/values.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
-#include "net/url_request/report_sender.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -49,7 +47,6 @@ class BasePingManagerTest : public testing::Test {
   BasePingManager* ping_manager() { return ping_manager_.get(); }
 
   std::string key_param_;
-  net::TestURLFetcherFactory fetcher_factory_;
   std::unique_ptr<BasePingManager> ping_manager_;
 };
 

@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
@@ -127,12 +128,15 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       ShouldReportThreatDetails(unsafe_resources[0].threat_type)) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+        content::BrowserContext::GetDefaultStoragePartition(profile)
+            ->GetURLLoaderFactoryForBrowserProcess();
     threat_details_in_progress_ =
         g_browser_process->safe_browsing_service()
             ->trigger_manager()
             ->StartCollectingThreatDetails(
                 TriggerType::SECURITY_INTERSTITIAL, web_contents,
-                unsafe_resources[0], profile->GetRequestContext(),
+                unsafe_resources[0], url_loader_factory,
                 HistoryServiceFactory::GetForProfile(
                     profile, ServiceAccessType::EXPLICIT_ACCESS),
                 sb_error_ui()->get_error_display_options());

@@ -13,6 +13,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/base_ping_manager.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/browser/safe_browsing_network_context.h"
 #include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,6 +52,10 @@ AwSafeBrowsingUIManager::AwSafeBrowsingUIManager(
   url_request_context_getter_ =
       new safe_browsing::SafeBrowsingURLRequestContextGetter(
           browser_url_request_context_getter, user_data_dir);
+
+  network_context_ =
+      std::make_unique<safe_browsing::SafeBrowsingNetworkContext>(
+          url_request_context_getter_);
 }
 
 AwSafeBrowsingUIManager::~AwSafeBrowsingUIManager() {}
@@ -107,7 +112,7 @@ void AwSafeBrowsingUIManager::SendSerializedThreatDetails(
     config.backup_network_error_url_prefix =
         ::safe_browsing::kSbBackupNetworkErrorURLPrefix;
     ping_manager_ = ::safe_browsing::BasePingManager::Create(
-        url_request_context_getter_.get(), config);
+        network_context_->GetURLLoaderFactory(), config);
   }
 
   if (!serialized.empty()) {

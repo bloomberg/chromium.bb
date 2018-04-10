@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/notification_image_reporter.h"
+#include "components/net_log/chrome_net_log.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using content::BrowserThread;
@@ -20,32 +22,30 @@ namespace safe_browsing {
 
 // static
 std::unique_ptr<SafeBrowsingPingManager> SafeBrowsingPingManager::Create(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const SafeBrowsingProtocolConfig& config) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return base::WrapUnique(
-      new SafeBrowsingPingManager(request_context_getter, config));
+      new SafeBrowsingPingManager(url_loader_factory, config));
 }
 
 SafeBrowsingPingManager::SafeBrowsingPingManager(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const SafeBrowsingProtocolConfig& config)
-    : BasePingManager(request_context_getter, config) {
-  if (request_context_getter) {
-    notification_image_reporter_ = std::make_unique<NotificationImageReporter>(
-        request_context_getter->GetURLRequestContext());
+    : BasePingManager(url_loader_factory, config) {
+  if (url_loader_factory) {
+    notification_image_reporter_ =
+        std::make_unique<NotificationImageReporter>(url_loader_factory);
   }
 }
 
-SafeBrowsingPingManager::~SafeBrowsingPingManager() {
-}
+SafeBrowsingPingManager::~SafeBrowsingPingManager() {}
 
 void SafeBrowsingPingManager::ReportNotificationImage(
     Profile* profile,
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager,
     const GURL& origin,
     const SkBitmap& image) {
-  notification_image_reporter_->ReportNotificationImageOnIO(
+  notification_image_reporter_->ReportNotificationImage(
       profile, database_manager, origin, image);
 }
 

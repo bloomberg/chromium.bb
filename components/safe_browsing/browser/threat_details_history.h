@@ -26,9 +26,7 @@ namespace safe_browsing {
 typedef std::vector<GURL> RedirectChain;
 
 class ThreatDetailsRedirectsCollector
-    : public base::RefCountedThreadSafe<
-          ThreatDetailsRedirectsCollector,
-          content::BrowserThread::DeleteOnUIThread>,
+    : public base::RefCounted<ThreatDetailsRedirectsCollector>,
       public history::HistoryServiceObserver {
  public:
   explicit ThreatDetailsRedirectsCollector(
@@ -36,7 +34,6 @@ class ThreatDetailsRedirectsCollector
 
   // Collects urls' redirects chain information from the history service.
   // We get access to history service via web_contents in UI thread.
-  // Notice the callback will be posted to the IO thread.
   void StartHistoryCollection(const std::vector<GURL>& urls,
                               const base::Closure& callback);
 
@@ -51,9 +48,7 @@ class ThreatDetailsRedirectsCollector
       history::HistoryService* history_service) override;
 
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::UI>;
-  friend class base::DeleteHelper<ThreatDetailsRedirectsCollector>;
+  friend class base::RefCounted<ThreatDetailsRedirectsCollector>;
 
   ~ThreatDetailsRedirectsCollector() override;
 
@@ -62,8 +57,7 @@ class ThreatDetailsRedirectsCollector
   void OnGotQueryRedirectsTo(const GURL& url,
                              const history::RedirectList* redirect_list);
 
-  // Posts the callback method back to IO thread when redirects collecting
-  // is all done.
+  // Runs the callback when redirects collecting is all done.
   void AllDone();
 
   base::CancelableTaskTracker request_tracker_;

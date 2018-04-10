@@ -265,17 +265,11 @@ void BaseUIManager::MaybeReportSafeBrowsingHit(
   return;
 }
 
-void BaseUIManager::ReportSafeBrowsingHitOnIOThread(
-    const HitReport& hit_report) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return;
-}
-
 // If the user had opted-in to send ThreatDetails, this gets called
 // when the report is ready.
 void BaseUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return;
 }
 

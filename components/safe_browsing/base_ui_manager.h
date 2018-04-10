@@ -48,7 +48,7 @@ class BaseUIManager
   virtual void DisplayBlockingPage(const UnsafeResource& resource);
 
   // This is a no-op in the base class, but should be overridden to send threat
-  // details. Called on the IO thread by the ThreatDetails with the serialized
+  // details. Called on the UI thread by the ThreatDetails with the serialized
   // protocol buffer.
   virtual void SendSerializedThreatDetails(const std::string& serialized);
 
@@ -113,11 +113,6 @@ class BaseUIManager
                             content::WebContents* web_contents,
                             bool is_pending,
                             SBThreatType threat_type);
-
-  // This is a no-op that should be overridden to call protocol manager on IO
-  // thread to report hits of unsafe contents.
-  virtual void ReportSafeBrowsingHitOnIOThread(
-      const safe_browsing::HitReport& hit_report);
 
   // Removes |whitelist_url| from the whitelist for |web_contents|.
   // Called on the UI thread.

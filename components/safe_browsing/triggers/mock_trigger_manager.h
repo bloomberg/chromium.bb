@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace safe_browsing {
@@ -16,13 +17,14 @@ class MockTriggerManager : public TriggerManager {
   MockTriggerManager();
   virtual ~MockTriggerManager();
 
-  MOCK_METHOD6(StartCollectingThreatDetails,
-               bool(TriggerType trigger_type,
-                    content::WebContents* web_contents,
-                    const security_interstitials::UnsafeResource& resource,
-                    net::URLRequestContextGetter* request_context_getter,
-                    history::HistoryService* history_service,
-                    const SBErrorOptions& error_display_options));
+  MOCK_METHOD6(
+      StartCollectingThreatDetails,
+      bool(TriggerType trigger_type,
+           content::WebContents* web_contents,
+           const security_interstitials::UnsafeResource& resource,
+           scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+           history::HistoryService* history_service,
+           const SBErrorOptions& error_display_options));
 
   MOCK_METHOD6(FinishCollectingThreatDetails,
                bool(TriggerType trigger_type,

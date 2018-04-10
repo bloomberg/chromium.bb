@@ -75,6 +75,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -251,12 +252,12 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
       BaseUIManager* delegate,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
     details_ = new ThreatDetails(delegate, web_contents, unsafe_resource,
-                                 request_context_getter, history_service,
+                                 url_loader_factory, history_service,
                                  trim_to_ad_tags, done_callback);
     return details_;
   }

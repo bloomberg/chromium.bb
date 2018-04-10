@@ -110,7 +110,7 @@ void ThreatDetailsRedirectsCollector::OnGotQueryRedirectsTo(
 
 void ThreatDetailsRedirectsCollector::AllDone() {
   DVLOG(1) << "AllDone";
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback_);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
   callback_.Reset();
 }
 

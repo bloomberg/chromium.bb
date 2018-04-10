@@ -22,8 +22,8 @@ namespace history {
 class HistoryService;
 }
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace safe_browsing {
@@ -83,7 +83,7 @@ class TriggerManager {
 
   // Begins collecting a ThreatDetails report on the specified |web_contents|.
   // |resource| is the unsafe resource that cause the collection to occur.
-  // |request_context_getter| is used to retrieve data from the HTTP cache.
+  // |url_loader_factory| is used to retrieve data from the HTTP cache.
   // |history_service| is used to get data about redirects.
   // |error_display_options| contains the current state of relevant user
   // preferences. We use this object for interop with WebView, in Chrome it
@@ -93,7 +93,7 @@ class TriggerManager {
       TriggerType trigger_type,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& resource,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service,
       const SBErrorOptions& error_display_options);
 

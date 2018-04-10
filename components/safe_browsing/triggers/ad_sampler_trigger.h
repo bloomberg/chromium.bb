@@ -16,9 +16,9 @@ namespace history {
 class HistoryService;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 class TriggerManager;
@@ -65,7 +65,7 @@ class AdSamplerTrigger : public content::WebContentsObserver,
       content::WebContents* web_contents,
       TriggerManager* trigger_manager,
       PrefService* prefs,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       history::HistoryService* history_service);
 
   // content::WebContentsObserver implementation.
@@ -78,11 +78,12 @@ class AdSamplerTrigger : public content::WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(AdSamplerTriggerTestFinch,
                            FrequencyDenominatorFeature);
 
-  AdSamplerTrigger(content::WebContents* web_contents,
-                   TriggerManager* trigger_manager,
-                   PrefService* prefs,
-                   net::URLRequestContextGetter* request_context,
-                   history::HistoryService* history_service);
+  AdSamplerTrigger(
+      content::WebContents* web_contents,
+      TriggerManager* trigger_manager,
+      PrefService* prefs,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      history::HistoryService* history_service);
 
   // Called to create an ad sample report.
   void CreateAdSampleReport();
@@ -111,7 +112,7 @@ class AdSamplerTrigger : public content::WebContentsObserver,
   TriggerManager* trigger_manager_;
 
   PrefService* prefs_;
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   history::HistoryService* history_service_;
 
   // Task runner for posting delayed tasks. Normally set to the runner for the

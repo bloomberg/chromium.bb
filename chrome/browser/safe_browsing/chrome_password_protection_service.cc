@@ -49,6 +49,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -334,11 +335,15 @@ void ChromePasswordProtectionService::MaybeStartThreatDetailsCollection(
       web_contents->GetMainFrame()->GetProcess()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID());
   resource.token = token;
-  // Ignores the return of |StartCollectingThreatDetails()| here and let
-  // TriggerManager decide whether it should start data collection.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile_)
+          ->GetURLLoaderFactoryForBrowserProcess();
+  // Ignores the return of |StartCollectingThreatDetails()| here and
+  // let TriggerManager decide whether it should start data
+  // collection.
   trigger_manager_->StartCollectingThreatDetails(
       safe_browsing::TriggerType::GAIA_PASSWORD_REUSE, web_contents, resource,
-      profile_->GetRequestContext(), /*history_service=*/nullptr,
+      url_loader_factory, /*history_service=*/nullptr,
       TriggerManager::GetSBErrorDisplayOptions(*profile_->GetPrefs(),
                                                *web_contents));
 }
