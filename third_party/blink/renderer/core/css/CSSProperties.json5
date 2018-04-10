@@ -1440,6 +1440,7 @@
       inherited: true,
       svg: true,
       converter: "ConvertNumberOrPercentage",
+      typedom_types: ["Number"],
     },
     {
       name: "fill-rule",
@@ -1447,6 +1448,8 @@
       inherited: true,
       svg: true,
       type_name: "WindRule",
+      keywords: ["nonzero", "evenodd"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "filter",
@@ -2706,6 +2709,8 @@
       svg: true,
       name_for_methods: "StrokeDashArray",
       converter: "ConvertStrokeDasharray",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "stroke-dashoffset",
@@ -2715,6 +2720,7 @@
       svg: true,
       name_for_methods: "StrokeDashOffset",
       converter: "ConvertLength",
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "stroke-linecap",
@@ -2723,6 +2729,8 @@
       svg: true,
       name_for_methods: "CapStyle",
       type_name: "LineCap",
+      keywords: ["butt", "round", "square"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "stroke-linejoin",
@@ -2731,6 +2739,8 @@
       svg: true,
       name_for_methods: "JoinStyle",
       type_name: "LineJoin",
+      keywords: ["miter", "bevel", "round"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "stroke-miterlimit",
@@ -2740,6 +2750,7 @@
       svg: true,
       name_for_methods: "StrokeMiterLimit",
       type_name: "float",
+      typedom_types: ["Number"]
     },
     {
       name: "stroke-opacity",
@@ -2748,6 +2759,7 @@
       inherited: true,
       svg: true,
       converter: "ConvertNumberOrPercentage",
+      typedom_types: ["Number"]
     },
     {
       name: "stroke-width",
@@ -2756,6 +2768,7 @@
       inherited: true,
       svg: true,
       converter: "ConvertUnzoomedLength",
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "table-layout",
