@@ -24,7 +24,7 @@ ServiceWorkerScriptLoaderFactory::ServiceWorkerScriptLoaderFactory(
     : context_(context),
       provider_host_(provider_host),
       loader_factory_getter_(loader_factory_getter) {
-  DCHECK(provider_host_->IsHostToRunningServiceWorker());
+  DCHECK(provider_host_->IsProviderForServiceWorker());
 }
 
 ServiceWorkerScriptLoaderFactory::~ServiceWorkerScriptLoaderFactory() = default;

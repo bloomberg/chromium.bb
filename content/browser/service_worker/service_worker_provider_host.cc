@@ -392,6 +392,11 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   SendSetControllerServiceWorker(notify_controllerchange);
 }
 
+bool ServiceWorkerProviderHost::IsProviderForServiceWorker() const {
+  return info_.type ==
+         blink::mojom::ServiceWorkerProviderType::kForServiceWorker;
+}
+
 bool ServiceWorkerProviderHost::IsProviderForClient() const {
   switch (info_.type) {
     case blink::mojom::ServiceWorkerProviderType::kForWindow:
@@ -400,7 +405,7 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
       return false;
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
-      NOTREACHED() << info_.type;
+      break;
   }
   NOTREACHED() << info_.type;
   return false;
@@ -415,7 +420,7 @@ blink::mojom::ServiceWorkerClientType ServiceWorkerProviderHost::client_type()
       return blink::mojom::ServiceWorkerClientType::kSharedWorker;
     case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
     case blink::mojom::ServiceWorkerProviderType::kUnknown:
-      NOTREACHED() << info_.type;
+      break;
   }
   NOTREACHED() << info_.type;
   return blink::mojom::ServiceWorkerClientType::kWindow;
@@ -520,10 +525,8 @@ ServiceWorkerProviderHost::CreateRequestHandler(
   // scripts.
   // TODO(falken): Really it should be treated as an error to set
   // |skip_service_worker| for requests to start the service worker, but it's
-  // difficult to fix that renderer-side, since we don't know whether a request
-  // is for a service worker without access to IsHostToRunningServiceWorker() as
-  // that state is stored browser-side.
-  if (IsHostToRunningServiceWorker() &&
+  // difficult to fix that renderer-side (maybe try after S13nServiceWorker).
+  if (IsProviderForServiceWorker() &&
       (resource_type == RESOURCE_TYPE_SERVICE_WORKER ||
        resource_type == RESOURCE_TYPE_SCRIPT)) {
     skip_service_worker = false;
@@ -534,7 +537,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     return std::make_unique<ServiceWorkerURLTrackingRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
-  if (IsHostToRunningServiceWorker()) {
+  if (IsProviderForServiceWorker()) {
     return std::make_unique<ServiceWorkerContextRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
@@ -1170,7 +1173,7 @@ void ServiceWorkerProviderHost::GetInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_NE(kDocumentMainThreadId, render_thread_id_);
-  DCHECK(IsHostToRunningServiceWorker());
+  DCHECK(IsProviderForServiceWorker());
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(

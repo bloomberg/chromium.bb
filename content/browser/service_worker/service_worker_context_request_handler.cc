@@ -58,7 +58,8 @@ ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
                                   blob_storage_context,
                                   resource_type),
       version_(provider_host_->running_hosted_version()) {
-  DCHECK(provider_host_->IsHostToRunningServiceWorker());
+  DCHECK(provider_host_->IsProviderForServiceWorker());
+  DCHECK(version_);
 }
 
 ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
