@@ -4006,7 +4006,7 @@ crbug.com/825262 [ Win ] external/wpt/css/css-transitions/properties-value-003.h
 crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-implicit-001.html [ Pass Failure ]
 
 # Sheriff 2018-03-26
-crbug.com/825733 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+crbug.com/825733 [ Win ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 
 # Sheriff 2018-03-29
