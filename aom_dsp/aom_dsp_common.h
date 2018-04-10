@@ -86,6 +86,14 @@ static INLINE uint16_t clip_pixel_highbd(int val, int bd) {
   }
 }
 
+// The result of this branchless code is equivalent to (value < 0 ? 0 : value)
+// or max(0, value) and might be faster in some cases.
+// Care should be taken since the behavior of right shifting signed type
+// negative value is undefined by C standards and implementation defined,
+static INLINE unsigned int negative_to_zero(int value) {
+  return value & ~(value >> (sizeof(value) * 8 - 1));
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
