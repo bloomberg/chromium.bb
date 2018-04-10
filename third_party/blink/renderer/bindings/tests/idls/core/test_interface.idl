@@ -124,6 +124,7 @@
     [LegacyInterfaceTypeChecking] void legacyInterfaceTypeCheckingMethod(TestInterfaceEmpty testInterfaceEmptyArg);
 
     [Affects=Nothing] void sideEffectFreeMethod();
+    [Affects=Nothing] attribute boolean attributeWithSideEffectFreeGetter;
 
     [SecureContext] void secureContextMethod();
     [SecureContext] attribute boolean secureContextAttribute;

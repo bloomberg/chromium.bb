@@ -65,6 +65,8 @@ void InstallAttributeInternal(
   v8::AccessorNameGetterCallback getter = attribute.getter;
   v8::AccessorNameSetterCallback setter = attribute.setter;
 
+  DCHECK_EQ(attribute.getter_side_effect_type,
+            V8DOMConfiguration::kHasSideEffect);
   DCHECK(attribute.property_location_configuration);
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInstance) {
@@ -103,6 +105,7 @@ void InstallAttributeInternal(
   const unsigned location = config.property_location_configuration;
   DCHECK(location);
 
+  DCHECK_EQ(config.getter_side_effect_type, V8DOMConfiguration::kHasSideEffect);
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (location & V8DOMConfiguration::kOnInstance && !instance.IsEmpty()) {
     instance
@@ -131,6 +134,8 @@ void InstallLazyDataAttributeInternal(
   DCHECK(!attribute.setter);
   DCHECK_EQ(attribute.world_configuration, V8DOMConfiguration::kAllWorlds);
 
+  DCHECK_EQ(attribute.getter_side_effect_type,
+            V8DOMConfiguration::kHasSideEffect);
   DCHECK(attribute.property_location_configuration);
   if (attribute.property_location_configuration &
       V8DOMConfiguration::kOnInstance) {
@@ -156,7 +161,8 @@ v8::Local<FunctionOrTemplate> CreateAccessorFunctionOrTemplate(
     V8PrivateProperty::CachedAccessorSymbol,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature>,
-    int length);
+    int length,
+    v8::SideEffectType side_effect_type = v8::SideEffectType::kHasSideEffect);
 
 template <>
 v8::Local<v8::FunctionTemplate>
@@ -166,7 +172,8 @@ CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
     V8PrivateProperty::CachedAccessorSymbol cached_property_key,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
-    int length) {
+    int length,
+    v8::SideEffectType side_effect_type) {
   v8::Local<v8::FunctionTemplate> function_template;
   if (callback) {
     if (cached_property_key != V8PrivateProperty::kNoCachedAccessor) {
@@ -174,10 +181,11 @@ CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
           isolate, callback,
           V8PrivateProperty::GetCachedAccessor(isolate, cached_property_key)
               .GetPrivate(),
-          data, signature, length);
+          data, signature, length, side_effect_type);
     } else {
-      function_template =
-          v8::FunctionTemplate::New(isolate, callback, data, signature, length);
+      function_template = v8::FunctionTemplate::New(
+          isolate, callback, data, signature, length,
+          v8::ConstructorBehavior::kAllow, side_effect_type);
     }
 
     if (!function_template.IsEmpty()) {
@@ -195,14 +203,15 @@ v8::Local<v8::Function> CreateAccessorFunctionOrTemplate<v8::Function>(
     V8PrivateProperty::CachedAccessorSymbol,
     v8::Local<v8::Value> data,
     v8::Local<v8::Signature> signature,
-    int length) {
+    int length,
+    v8::SideEffectType side_effect_type) {
   if (!callback)
     return v8::Local<v8::Function>();
 
   v8::Local<v8::FunctionTemplate> function_template =
       CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
           isolate, callback, V8PrivateProperty::kNoCachedAccessor, data,
-          signature, length);
+          signature, length, side_effect_type);
   if (function_template.IsEmpty())
     return v8::Local<v8::Function>();
 
@@ -264,13 +273,17 @@ void InstallAccessorInternal(
     signature = v8::Local<v8::Signature>();
 
   const unsigned location = config.property_location_configuration;
+  v8::SideEffectType getter_side_effect_type =
+      config.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
+          ? v8::SideEffectType::kHasNoSideEffect
+          : v8::SideEffectType::kHasSideEffect;
   DCHECK(location);
   if (location &
       (V8DOMConfiguration::kOnInstance | V8DOMConfiguration::kOnPrototype)) {
     v8::Local<FunctionOrTemplate> getter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, getter_callback, cached_property_key,
-            v8::Local<v8::Value>(), signature, 0);
+            v8::Local<v8::Value>(), signature, 0, getter_side_effect_type);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setter_callback, V8PrivateProperty::kNoCachedAccessor,
@@ -296,7 +309,8 @@ void InstallAccessorInternal(
     v8::Local<FunctionOrTemplate> getter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, getter_callback, V8PrivateProperty::kNoCachedAccessor,
-            v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0);
+            v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0,
+            getter_side_effect_type);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setter_callback, V8PrivateProperty::kNoCachedAccessor,

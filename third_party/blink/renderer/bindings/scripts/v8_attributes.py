@@ -134,6 +134,7 @@ def attribute_context(interface, attribute, interfaces):
         'enum_type': idl_type.enum_type,
         'enum_values': idl_type.enum_values,
         'exposed_test': v8_utilities.exposed(attribute, interface),  # [Exposed]
+        'getter_has_no_side_effect': has_extended_attribute_value(attribute, 'Affects', 'Nothing'),
         'has_cross_origin_getter':
             has_extended_attribute_value(attribute, 'CrossOrigin', None) or
             has_extended_attribute_value(attribute, 'CrossOrigin', 'Getter'),

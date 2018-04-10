@@ -93,6 +93,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned property_location_configuration : 3;
     // HolderCheckConfiguration
     unsigned holder_check_configuration : 1;
+    // SideEffectConfiguration
+    unsigned getter_side_effect_type : 1;
     // WorldConfiguration
     unsigned world_configuration : 2;
   };
@@ -155,6 +157,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned property_location_configuration : 3;
     // HolderCheckConfiguration
     unsigned holder_check_configuration : 1;
+    // SideEffectConfiguration
+    unsigned getter_side_effect_type : 1;
     // WorldConfiguration
     unsigned world_configuration : 2;
   };

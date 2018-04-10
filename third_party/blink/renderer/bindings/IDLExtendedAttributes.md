@@ -1548,7 +1548,7 @@ V8PrivateProperty::getHTMLFooBarCachedAccessor().set(context, object, newValue);
 ```
 
 
-### [Affects] _(m)_
+### [Affects] _(m, a)_
 
 Summary: `[Affects=Nothing]` indicates that a function must not produce JS-observable side effects. Functions without this attribute are never invoked by V8 with throwOnSideEffect.
 
@@ -1556,11 +1556,13 @@ Marked functions are allowed to be nondeterministic and throw exceptions, but mu
 
 There is not yet support for marking SymbolKeyedMethodConfigurations as side-effect free. This requires additional support in V8 to whitelist Intrinsics.
 
-Usage: `[Affects=Nothing]` can be specified on a method to indicate that it is side effect free:
+Usage: `[Affects=Nothing]` can be specified on a method, or on an attribute to indicate that its getter callback is side effect free:
 
 ```webidl
 interface HTMLFoo {
-    [Affects=Nothing] void bar();
+    [Affects=Nothing] attribute Bar bar;
+    [Affects=Nothing] Bar baz();
+    void removeItems();
 };
 ```
 

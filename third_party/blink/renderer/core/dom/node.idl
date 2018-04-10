@@ -38,7 +38,7 @@ interface Node : EventTarget {
 
     readonly attribute USVString baseURI;
 
-    [Measure] readonly attribute boolean isConnected;
+    [Affects=Nothing, Measure] readonly attribute boolean isConnected;
     [PerWorldBindings] readonly attribute Document? ownerDocument;
     [PerWorldBindings] readonly attribute Node? parentNode;
     [PerWorldBindings] readonly attribute Element? parentElement;
