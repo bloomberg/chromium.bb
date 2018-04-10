@@ -62,7 +62,7 @@ class NET_EXPORT WebSocketChannel {
   // Methods which return a value of type ChannelState may delete |this|. If the
   // return value is CHANNEL_DELETED, then the caller must return without making
   // any further access to member variables or methods.
-  using ChannelState = WebSocketEventInterface::ChannelState;
+  enum ChannelState { CHANNEL_ALIVE, CHANNEL_DELETED };
 
   // Creates a new WebSocketChannel in an idle state.
   // SendAddChannelRequest() must be called immediately afterwards to start the
@@ -289,12 +289,11 @@ class NET_EXPORT WebSocketChannel {
   // Javascript. Javascript will see a Close code of AbnormalClosure (1006) with
   // an empty reason string. If state_ is CONNECTED then a Close message is sent
   // to the remote host containing the supplied |code| and |reason|. If the
-  // stream is open, closes it and sets state_ to CLOSED.  FailChannel() always
-  // returns CHANNEL_DELETED. It is not valid to access any member variables or
-  // methods after calling FailChannel().
-  ChannelState FailChannel(const std::string& message,
-                           uint16_t code,
-                           const std::string& reason) WARN_UNUSED_RESULT;
+  // stream is open, closes it and sets state_ to CLOSED. This function deletes
+  // |this|.
+  void FailChannel(const std::string& message,
+                   uint16_t code,
+                   const std::string& reason);
 
   // Sends a Close frame to Start the WebSocket Closing Handshake, or to respond
   // to a Close frame from the server. As a special case, setting |code| to
@@ -317,12 +316,8 @@ class NET_EXPORT WebSocketChannel {
 
   // Drop this channel.
   // If there are pending opening handshake notifications, notify them
-  // before dropping.
-  //
-  // Always returns CHANNEL_DELETED.
-  ChannelState DoDropChannel(bool was_clean,
-                             uint16_t code,
-                             const std::string& reason);
+  // before dropping. This function deletes |this|.
+  void DoDropChannel(bool was_clean, uint16_t code, const std::string& reason);
 
   // Called if the closing handshake times out. Closes the connection and
   // informs the |event_interface_| if appropriate.

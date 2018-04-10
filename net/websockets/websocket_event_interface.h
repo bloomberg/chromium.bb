@@ -32,14 +32,6 @@ class NET_EXPORT WebSocketEventInterface {
  public:
   typedef int WebSocketMessageType;
 
-  // Any event can cause the Channel to be deleted. The Channel needs to avoid
-  // doing further processing in this case. It does not need to do cleanup, as
-  // cleanup will already have been done as a result of the deletion.
-  enum ChannelState {
-    CHANNEL_ALIVE,
-    CHANNEL_DELETED
-  };
-
   virtual ~WebSocketEventInterface() {}
 
   // Called when a URLRequest is created for handshaking.
@@ -47,27 +39,26 @@ class NET_EXPORT WebSocketEventInterface {
 
   // Called in response to an AddChannelRequest. This means that a response has
   // been received from the remote server.
-  virtual ChannelState OnAddChannelResponse(
-      const std::string& selected_subprotocol,
-      const std::string& extensions) WARN_UNUSED_RESULT = 0;
+  virtual void OnAddChannelResponse(const std::string& selected_subprotocol,
+                                    const std::string& extensions) = 0;
 
   // Called when a data frame has been received from the remote host and needs
   // to be forwarded to the renderer process.
-  virtual ChannelState OnDataFrame(bool fin,
-                                   WebSocketMessageType type,
-                                   scoped_refptr<IOBuffer> buffer,
-                                   size_t buffer_size) WARN_UNUSED_RESULT = 0;
+  virtual void OnDataFrame(bool fin,
+                           WebSocketMessageType type,
+                           scoped_refptr<IOBuffer> buffer,
+                           size_t buffer_size) = 0;
 
   // Called to provide more send quota for this channel to the renderer
   // process. Currently the quota units are always bytes of message body
   // data. In future it might depend on the type of multiplexing in use.
-  virtual ChannelState OnFlowControl(int64_t quota) WARN_UNUSED_RESULT = 0;
+  virtual void OnFlowControl(int64_t quota) = 0;
 
   // Called when the remote server has Started the WebSocket Closing
   // Handshake. The client should not attempt to send any more messages after
   // receiving this message. It will be followed by OnDropChannel() when the
   // closing handshake is complete.
-  virtual ChannelState OnClosingHandshake() WARN_UNUSED_RESULT = 0;
+  virtual void OnClosingHandshake() = 0;
 
   // Called when the channel has been dropped, either due to a network close, a
   // network error, or a protocol error. This may or may not be preceeded by a
@@ -82,32 +73,26 @@ class NET_EXPORT WebSocketEventInterface {
   // The channel should not be used again after OnDropChannel() has been
   // called.
   //
-  // This method returns a ChannelState for consistency, but all implementations
-  // must delete the Channel and return CHANNEL_DELETED.
-  virtual ChannelState OnDropChannel(bool was_clean,
-                                     uint16_t code,
-                                     const std::string& reason)
-      WARN_UNUSED_RESULT = 0;
+  // This function deletes the Channel.
+  virtual void OnDropChannel(bool was_clean,
+                             uint16_t code,
+                             const std::string& reason) = 0;
 
   // Called when the browser fails the channel, as specified in the spec.
   //
   // The channel should not be used again after OnFailChannel() has been
   // called.
   //
-  // This method returns a ChannelState for consistency, but all implementations
-  // must delete the Channel and return CHANNEL_DELETED.
-  virtual ChannelState OnFailChannel(const std::string& message)
-      WARN_UNUSED_RESULT = 0;
+  // This function deletes the Channel.
+  virtual void OnFailChannel(const std::string& message) = 0;
 
   // Called when the browser starts the WebSocket Opening Handshake.
-  virtual ChannelState OnStartOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeRequestInfo> request)
-      WARN_UNUSED_RESULT = 0;
+  virtual void OnStartOpeningHandshake(
+      std::unique_ptr<WebSocketHandshakeRequestInfo> request) = 0;
 
   // Called when the browser finishes the WebSocket Opening Handshake.
-  virtual ChannelState OnFinishOpeningHandshake(
-      std::unique_ptr<WebSocketHandshakeResponseInfo> response)
-      WARN_UNUSED_RESULT = 0;
+  virtual void OnFinishOpeningHandshake(
+      std::unique_ptr<WebSocketHandshakeResponseInfo> response) = 0;
 
   // Callbacks to be used in response to a call to OnSSLCertificateError. Very
   // similar to content::SSLErrorHandler::Delegate (which we can't use directly
@@ -129,11 +114,11 @@ class NET_EXPORT WebSocketEventInterface {
   // this method will delegate to content::SSLManager::OnSSLCertificateError to
   // make the actual decision. The callbacks must not be called after the
   // WebSocketChannel has been destroyed.
-  virtual ChannelState OnSSLCertificateError(
+  virtual void OnSSLCertificateError(
       std::unique_ptr<SSLErrorCallbacks> ssl_error_callbacks,
       const GURL& url,
       const SSLInfo& ssl_info,
-      bool fatal) WARN_UNUSED_RESULT = 0;
+      bool fatal) = 0;
 
  protected:
   WebSocketEventInterface() {}
