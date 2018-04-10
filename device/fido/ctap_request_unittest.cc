@@ -229,15 +229,12 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
 TEST(CTAPRequestTest, TestConstructCtapAuthenticatorRequestParam) {
   static constexpr uint8_t kSerializedGetInfoCmd = 0x04;
   static constexpr uint8_t kSerializedGetNextAssertionCmd = 0x08;
-  static constexpr uint8_t kSerializedCancelCmd = 0x03;
   static constexpr uint8_t kSerializedResetCmd = 0x07;
 
   EXPECT_THAT(AuthenticatorGetInfoRequest().Serialize(),
               ::testing::ElementsAre(kSerializedGetInfoCmd));
   EXPECT_THAT(AuthenticatorGetNextAssertionRequest().Serialize(),
               ::testing::ElementsAre(kSerializedGetNextAssertionCmd));
-  EXPECT_THAT(AuthenticatorCancelRequest().Serialize(),
-              ::testing::ElementsAre(kSerializedCancelCmd));
   EXPECT_THAT(AuthenticatorResetRequest().Serialize(),
               ::testing::ElementsAre(kSerializedResetCmd));
 }

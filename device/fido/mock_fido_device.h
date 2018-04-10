@@ -31,6 +31,8 @@ class MockFidoDevice : public FidoDevice {
   MOCK_METHOD1(TryWinkRef, void(WinkCallback& cb));
   void TryWink(WinkCallback cb) override;
 
+  MOCK_METHOD0(Cancel, void(void));
+
   MOCK_CONST_METHOD0(GetId, std::string(void));
   // GMock cannot mock a method taking a move-only type.
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only

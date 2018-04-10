@@ -58,14 +58,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorResetRequest
   }
 };
 
-class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorCancelRequest
-    : public internal::CtapEmptyAuthenticatorRequest {
- public:
-  AuthenticatorCancelRequest()
-      : CtapEmptyAuthenticatorRequest(
-            CtapRequestCommand::kAuthenticatorCancel) {}
-};
-
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CTAP_EMPTY_AUTHENTICATOR_REQUEST_H_

@@ -33,8 +33,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   // Send a command to this device.
   void DeviceTransact(std::vector<uint8_t> command,
                       DeviceCallback callback) final;
+
+  // FidoDevice:
   // Send a wink command if supported.
   void TryWink(WinkCallback callback) final;
+  // Send command to cancel any outstanding requests on this device.
+  void Cancel() final;
   // Use a string identifier to compare to other devices.
   std::string GetId() const final;
 

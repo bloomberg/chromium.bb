@@ -28,8 +28,7 @@ void FidoTask::CancelTask() {
   if (device()->supported_protocol() != ProtocolVersion::kCtap)
     return;
 
-  device()->DeviceTransact(AuthenticatorCancelRequest().Serialize(),
-                           base::DoNothing());
+  device()->Cancel();
 }
 
 void FidoTask::GetAuthenticatorInfo(base::OnceClosure ctap_callback,

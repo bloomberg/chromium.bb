@@ -38,6 +38,14 @@ void FidoHidDevice::DeviceTransact(std::vector<uint8_t> command,
   Transition(std::move(command), std::move(callback));
 }
 
+void FidoHidDevice::Cancel() {
+  // If device has not been connected or is already in error state, do nothing.
+  if (state_ != State::kBusy && state_ != State::kReady)
+    return;
+
+  Transition(std::vector<uint8_t>(), base::DoNothing());
+}
+
 void FidoHidDevice::Transition(std::vector<uint8_t> command,
                                DeviceCallback callback) {
   // This adapter is needed to support the calls to ArmTimeout(). However, it is
@@ -60,6 +68,19 @@ void FidoHidDevice::Transition(std::vector<uint8_t> command,
     case State::kReady: {
       state_ = State::kBusy;
       ArmTimeout(repeating_callback);
+
+      // If cancel command has been received, send HID_CANCEL with no-op
+      // callback.
+      // TODO(hongjunchoi): Re-factor cancel logic and consolidate it with
+      // FidoBleDevice::Cancel().
+      if (command.empty()) {
+        WriteMessage(
+            FidoHidMessage::Create(channel_id_, FidoHidDeviceCommand::kCancel,
+                                   std::move(command)),
+            false, base::DoNothing());
+        return;
+      }
+
       // Write message to the device.
       const auto command_type = supported_protocol() == ProtocolVersion::kCtap
                                     ? FidoHidDeviceCommand::kCbor
@@ -188,7 +209,8 @@ void FidoHidDevice::WriteMessage(std::unique_ptr<FidoHidMessage> message,
   connection_->Write(
       kReportId, packet,
       base::BindOnce(&FidoHidDevice::PacketWritten, weak_factory_.GetWeakPtr(),
-                     std::move(message), true, std::move(callback)));
+                     std::move(message), response_expected,
+                     std::move(callback)));
 }
 
 void FidoHidDevice::PacketWritten(std::unique_ptr<FidoHidMessage> message,
@@ -209,6 +231,7 @@ void FidoHidDevice::ReadMessage(HidMessageCallback callback) {
     std::move(callback).Run(false, nullptr);
     return;
   }
+
   connection_->Read(base::BindOnce(
       &FidoHidDevice::OnRead, weak_factory_.GetWeakPtr(), std::move(callback)));
 }

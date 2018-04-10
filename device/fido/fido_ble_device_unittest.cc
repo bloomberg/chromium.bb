@@ -10,6 +10,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/mock_fido_ble_connection.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/u2f_parsing_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -115,6 +116,19 @@ TEST_F(FidoBleDeviceTest, SendPingTest) {
   const auto& result = std::get<0>(*callback_receiver.result());
   ASSERT_TRUE(result);
   EXPECT_EQ(ping_data, *result);
+}
+
+TEST_F(FidoBleDeviceTest, SendCancelTest) {
+  // BLE cancel command, follow bytes 2 bytes of zero length payload.
+  constexpr uint8_t kBleCancelCommand[] = {0xBE, 0x00, 0x00};
+
+  ConnectWithLength(20);
+  EXPECT_CALL(*connection(),
+              WriteControlPointPtr(
+                  u2f_parsing_utils::Materialize(kBleCancelCommand), _));
+
+  device()->Cancel();
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(FidoBleDeviceTest, StaticGetIdTest) {

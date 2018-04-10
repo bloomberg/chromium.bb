@@ -157,15 +157,12 @@ TEST_F(FidoRequestHandlerTest, TestAuthenticatorHandlerReset) {
   device0->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   device0->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  device0->ExpectCtap2CommandAndDoNotRespond(
-      CtapRequestCommand::kAuthenticatorCancel);
-
+  EXPECT_CALL(*device0, Cancel());
   auto device1 = std::make_unique<MockFidoDevice>();
   device1->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
   device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  device1->ExpectCtap2CommandAndDoNotRespond(
-      CtapRequestCommand::kAuthenticatorCancel);
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -185,8 +182,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleDevices) {
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
   // Device is unresponsive and cancel command is invoked afterwards.
   device0->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
-  device0->ExpectCtap2CommandAndDoNotRespond(
-      CtapRequestCommand::kAuthenticatorCancel);
+  EXPECT_CALL(*device0, Cancel());
 
   // Represents a connected device that response successfully.
   auto device1 = std::make_unique<MockFidoDevice>();
@@ -231,8 +227,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
                                        CreateFakeSuccessDeviceResponse(),
                                        base::TimeDelta::FromMicroseconds(10));
   // Cancel command is invoked after receiving response from |device0|.
-  device1->ExpectCtap2CommandAndDoNotRespond(
-      CtapRequestCommand::kAuthenticatorCancel);
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
@@ -278,8 +273,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
       std::vector<uint8_t>(),
       // Responds with an empty vector that represents a UP-verified error.
       std::vector<uint8_t>(), base::TimeDelta::FromMicroseconds(10));
-  device2->ExpectCtap2CommandAndDoNotRespond(
-      CtapRequestCommand::kAuthenticatorCancel);
+  EXPECT_CALL(*device2, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));

@@ -178,7 +178,6 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorMakeCredential = 0x01,
   kAuthenticatorGetAssertion = 0x02,
   kAuthenticatorGetNextAssertion = 0x08,
-  kAuthenticatorCancel = 0x03,
   kAuthenticatorGetInfo = 0x04,
   kAuthenticatorClientPin = 0x06,
   kAuthenticatorReset = 0x07,
