@@ -298,6 +298,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnNSViewGestureEnd(blink::WebGestureEvent end_event) override;
   void OnNSViewSmartMagnify(
       const blink::WebGestureEvent& smart_magnify_event) override;
+  void OnNSViewLookUpDictionaryOverlayAtPoint(
+      const gfx::PointF& root_point) override;
+  void OnNSViewLookUpDictionaryOverlayFromRange(
+      const gfx::Range& range) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
@@ -371,6 +375,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   void OnResizeDueToAutoResizeComplete(const gfx::Size& new_size,
                                        uint64_t sequence_number);
+
+  void OnGotStringForDictionaryOverlay(
+      int32_t targetWidgetProcessId,
+      int32_t targetWidgetRoutingId,
+      const mac::AttributedStringCoder::EncodedString& encodedString,
+      gfx::Point baselinePoint);
 
   // Gets a textual view of the page's contents, and passes it to the callback
   // provided.

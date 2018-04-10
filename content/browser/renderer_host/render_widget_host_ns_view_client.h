@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_NS_VIEW_CLIENT_H_
 
 #include "base/macros.h"
+#include "content/common/mac/attributed_string_coder.h"
 
 namespace content {
 
@@ -67,6 +68,11 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewGestureEnd(blink::WebGestureEvent end_event) = 0;
   virtual void OnNSViewSmartMagnify(
       const blink::WebGestureEvent& smart_magnify_event) = 0;
+
+  virtual void OnNSViewLookUpDictionaryOverlayAtPoint(
+      const gfx::PointF& root_point) = 0;
+  virtual void OnNSViewLookUpDictionaryOverlayFromRange(
+      const gfx::Range& range) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);

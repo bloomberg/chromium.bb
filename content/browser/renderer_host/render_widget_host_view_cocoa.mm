@@ -22,7 +22,6 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
-#import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/public/browser/browser_context.h"
@@ -146,10 +145,6 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
-- (void)showLookUpDictionaryOverlayInternal:
-            (mac::AttributedStringCoder::EncodedString)encodedString
-                              baselinePoint:(gfx::Point)baselinePoint
-                                 targetView:(NSView*)view;
 - (void)sendViewBoundsInWindowToClient;
 - (void)sendWindowFrameInScreenToClient;
 @end
@@ -884,112 +879,16 @@ void ExtractUnderlines(NSAttributedString* string,
   client_->OnNSViewSmartMagnify(smartMagnifyEvent);
 }
 
-- (void)showLookUpDictionaryOverlayInternal:
-            (mac::AttributedStringCoder::EncodedString)encodedString
-                              baselinePoint:(gfx::Point)baselinePoint
-                                 targetView:(NSView*)view {
-  NSAttributedString* string =
-      mac::AttributedStringCoder::Decode(&encodedString);
-  if ([string length] == 0) {
-    // The PDF plugin does not support getting the attributed string at point.
-    // Until it does, use NSPerformService(), which opens Dictionary.app.
-    // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.
-    // See https://crbug.com/152438.
-    NSString* text = nil;
-    if (auto* selection = renderWidgetHostView_->GetTextSelection())
-      text = base::SysUTF16ToNSString(selection->selected_text());
-
-    if ([text length] == 0)
-      return;
-    scoped_refptr<ui::UniquePasteboard> pasteboard = new ui::UniquePasteboard;
-    NSArray* types = [NSArray arrayWithObject:NSStringPboardType];
-    [pasteboard->get() declareTypes:types owner:nil];
-    if ([pasteboard->get() setString:text forType:NSStringPboardType])
-      NSPerformService(@"Look Up in Dictionary", pasteboard->get());
-    return;
-  }
-  NSPoint flippedBaselinePoint = {
-      baselinePoint.x(), [view frame].size.height - baselinePoint.y(),
-  };
-  [view showDefinitionForAttributedString:string atPoint:flippedBaselinePoint];
-}
-
-- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
-                                  targetView:(NSView*)targetView {
-  content::RenderWidgetHostViewBase* focusedView =
-      renderWidgetHostView_->GetFocusedViewForTextSelection();
-  if (!focusedView)
-    return;
-
-  RenderWidgetHostImpl* widgetHost =
-      RenderWidgetHostImpl::From(focusedView->GetRenderWidgetHost());
-  if (!widgetHost)
-    return;
-
-  int32_t targetWidgetProcessId = widgetHost->GetProcess()->GetID();
-  int32_t targetWidgetRoutingId = widgetHost->GetRoutingID();
-  TextInputClientMac::GetInstance()->GetStringFromRange(
-      widgetHost, gfx::Range(range),
-      base::BindBlock(^(
-          const mac::AttributedStringCoder::EncodedString& encodedString,
-          gfx::Point baselinePoint) {
-        if (!content::RenderWidgetHost::FromID(targetWidgetProcessId,
-                                               targetWidgetRoutingId)) {
-          // By the time we get here |widgetHost| might have been destroyed.
-          // (See https://crbug.com/737032).
-          return;
-        }
-        if (auto* rwhv = widgetHost->GetView())
-          baselinePoint = rwhv->TransformPointToRootCoordSpace(baselinePoint);
-        [self showLookUpDictionaryOverlayInternal:encodedString
-                                    baselinePoint:baselinePoint
-                                       targetView:targetView];
-      }));
-}
-
-- (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point {
-  gfx::PointF rootPoint(point.x, NSHeight([self frame]) - point.y);
-  gfx::PointF transformedPoint;
-  if (!renderWidgetHostView_->host() ||
-      !renderWidgetHostView_->host()->delegate() ||
-      !renderWidgetHostView_->host()->delegate()->GetInputEventRouter())
-    return;
-
-  RenderWidgetHostImpl* widgetHost =
-      renderWidgetHostView_->host()
-          ->delegate()
-          ->GetInputEventRouter()
-          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_, rootPoint,
-                                       &transformedPoint);
-  if (!widgetHost)
-    return;
-
-  int32_t targetWidgetProcessId = widgetHost->GetProcess()->GetID();
-  int32_t targetWidgetRoutingId = widgetHost->GetRoutingID();
-  TextInputClientMac::GetInstance()->GetStringAtPoint(
-      widgetHost, gfx::ToFlooredPoint(transformedPoint),
-      base::BindBlock(^(
-          const mac::AttributedStringCoder::EncodedString& encodedString,
-          gfx::Point baselinePoint) {
-        if (!content::RenderWidgetHost::FromID(targetWidgetProcessId,
-                                               targetWidgetRoutingId)) {
-          // By the time we get here |widgetHost| might have been destroyed.
-          // (See https://crbug.com/737032).
-          return;
-        }
-        if (auto* rwhv = widgetHost->GetView())
-          baselinePoint = rwhv->TransformPointToRootCoordSpace(baselinePoint);
-        [self showLookUpDictionaryOverlayInternal:encodedString
-                                    baselinePoint:baselinePoint
-                                       targetView:self];
-      }));
+- (void)showLookUpDictionaryOverlayFromRange:(NSRange)range {
+  client_->OnNSViewLookUpDictionaryOverlayFromRange(gfx::Range(range));
 }
 
 // This is invoked only on 10.8 or newer when the user taps a word using
 // three fingers.
 - (void)quickLookWithEvent:(NSEvent*)event {
   NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
-  [self showLookUpDictionaryOverlayAtPoint:point];
+  gfx::PointF rootPoint(point.x, NSHeight([self frame]) - point.y);
+  client_->OnNSViewLookUpDictionaryOverlayAtPoint(rootPoint);
 }
 
 // This method handles 2 different types of hardware events.
@@ -1204,7 +1103,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (BOOL)canBecomeKeyView {
-  if (!renderWidgetHostView_->host())
+  if (clientWasDestroyed_)
     return NO;
 
   return canBeKeyView_;
