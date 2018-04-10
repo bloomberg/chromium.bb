@@ -37,7 +37,8 @@ Surface* GetEffectiveFocus(aura::Window* window) {
 Seat::Seat() : changing_clipboard_data_to_selection_source_(false) {
   aura::client::GetFocusClient(ash::Shell::Get()->GetPrimaryRootWindow())
       ->AddObserver(this);
-  WMHelper::GetInstance()->AddPreTargetHandler(this);
+  // Prepend handler as it's critical that we see all events.
+  WMHelper::GetInstance()->PrependPreTargetHandler(this);
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
 }
 
