@@ -83,8 +83,7 @@ class AXRelationCache {
   bool IsValidOwnsRelation(AXObject* owner, AXObject* child) const;
   void UnmapOwnedChildren(const AXObject* owner, Vector<AXID>);
   void MapOwnedChildren(const AXObject* owner, Vector<AXID>);
-  // Get reverse relations, returns target AXObject* and filling sources&.
-  AXObject* GetReverseRelated(Node*, HeapVector<Member<AXObject>>& sources);
+  void GetReverseRelated(Node*, HeapVector<Member<AXObject>>& sources);
 
   WeakPersistent<AXObjectCacheImpl> object_cache_;
 
