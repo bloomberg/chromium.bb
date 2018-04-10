@@ -77,19 +77,21 @@ static Mutex& ThreadSetMutex() {
   return mutex;
 }
 
+static std::atomic_int g_unique_worker_thread_id(1);
+
 static int GetNextWorkerThreadId() {
-  DCHECK(IsMainThread());
-  static int next_worker_thread_id = 1;
+  int next_worker_thread_id =
+      g_unique_worker_thread_id.fetch_add(1, std::memory_order_relaxed);
   CHECK_LT(next_worker_thread_id, std::numeric_limits<int>::max());
-  return next_worker_thread_id++;
+  return next_worker_thread_id;
 }
 
 WorkerThread::~WorkerThread() {
-  DCHECK(IsMainThread());
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
   WorkerThreads().erase(this);
 
+  DCHECK(child_threads_.IsEmpty());
   DCHECK_NE(ExitCode::kNotTerminated, exit_code_);
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, exit_code_histogram,
@@ -102,7 +104,7 @@ void WorkerThread::Start(
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     WorkerInspectorProxy::PauseOnWorkerStart pause_on_start,
     ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   DCHECK(!parent_execution_context_task_runners_);
   parent_execution_context_task_runners_ =
       parent_execution_context_task_runners;
@@ -133,7 +135,7 @@ void WorkerThread::EvaluateClassicScript(
     const String& source_code,
     std::unique_ptr<Vector<char>> cached_meta_data,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
       CrossThreadBind(&WorkerThread::EvaluateClassicScriptOnWorkerThread,
@@ -144,7 +146,7 @@ void WorkerThread::EvaluateClassicScript(
 void WorkerThread::ImportModuleScript(
     const KURL& script_url,
     network::mojom::FetchCredentialsMode credentials_mode) {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kUnthrottled), FROM_HERE,
       CrossThreadBind(&WorkerThread::ImportModuleScriptOnWorkerThread,
@@ -152,9 +154,15 @@ void WorkerThread::ImportModuleScript(
                       credentials_mode));
 }
 
-void WorkerThread::Terminate() {
-  DCHECK(IsMainThread());
+void WorkerThread::TerminateChildThreadsOnWorkerThread() {
+  DCHECK(IsCurrentThread());
+  PerformShutdownOnWorkerThread();
+  for (WorkerThread* child : child_threads_)
+    child->Terminate();
+}
 
+void WorkerThread::Terminate() {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   {
     MutexLocker lock(mutex_);
     if (requested_to_terminate_)
@@ -169,6 +177,18 @@ void WorkerThread::Terminate() {
 
   worker_thread_lifecycle_context_->NotifyContextDestroyed();
   inspector_task_runner_->Dispose();
+
+  if (!child_threads_.IsEmpty()) {
+    // When child workers are present, wait for them to shutdown before shutting
+    // down this thread. ChildThreadTerminatedOnWorkerThread() is responsible
+    // for completing shutdown on the worker thread after the last child shuts
+    // down.
+    GetWorkerBackingThread().BackingThread().PostTask(
+        FROM_HERE,
+        CrossThreadBind(&WorkerThread::TerminateChildThreadsOnWorkerThread,
+                        CrossThreadUnretained(this)));
+    return;
+  }
 
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
@@ -245,7 +265,7 @@ ThreadableLoadingContext* WorkerThread::GetLoadingContext() {
 }
 
 void WorkerThread::AppendDebuggerTask(CrossThreadClosure task) {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   inspector_task_runner_->AppendTask(std::move(task));
 }
 
@@ -282,8 +302,7 @@ unsigned WorkerThread::WorkerThreadCount() {
 }
 
 HashSet<WorkerThread*>& WorkerThread::WorkerThreads() {
-  DCHECK(IsMainThread());
-  DEFINE_STATIC_LOCAL(HashSet<WorkerThread*>, threads, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(HashSet<WorkerThread*>, threads, ());
   return threads;
 }
 
@@ -318,6 +337,18 @@ scheduler::WorkerGlobalScopeScheduler* WorkerThread::GetScheduler() {
   return global_scope_scheduler_.get();
 }
 
+void WorkerThread::ChildThreadStartedOnWorkerThread(WorkerThread* child) {
+  DCHECK(IsCurrentThread());
+  child_threads_.insert(child);
+}
+
+void WorkerThread::ChildThreadTerminatedOnWorkerThread(WorkerThread* child) {
+  DCHECK(IsCurrentThread());
+  child_threads_.erase(child);
+  if (child_threads_.IsEmpty() && CheckRequestedToTerminate())
+    PerformShutdownOnWorkerThread();
+}
+
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
                            WorkerReportingProxy& worker_reporting_proxy)
     : time_origin_(CurrentTimeTicksInSeconds()),
@@ -330,7 +361,6 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
           WaitableEvent::ResetPolicy::kManual,
           WaitableEvent::InitialState::kNonSignaled)),
       worker_thread_lifecycle_context_(new WorkerThreadLifecycleContext) {
-  DCHECK(IsMainThread());
   MutexLocker lock(ThreadSetMutex());
   WorkerThreads().insert(this);
 }
@@ -346,7 +376,7 @@ void WorkerThread::ScheduleToTerminateScriptExecution() {
 }
 
 bool WorkerThread::ShouldTerminateScriptExecution() {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   switch (thread_state_) {
     case ThreadState::kNotStarted:
       // Shutdown sequence will surely start during initialization sequence
@@ -367,7 +397,7 @@ bool WorkerThread::ShouldTerminateScriptExecution() {
 }
 
 void WorkerThread::EnsureScriptExecutionTerminates(ExitCode exit_code) {
-  DCHECK(IsMainThread());
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(mutex_);
   if (!ShouldTerminateScriptExecution())
     return;

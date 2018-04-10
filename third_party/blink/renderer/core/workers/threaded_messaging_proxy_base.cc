@@ -95,6 +95,12 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
       GetParentExecutionContextTaskRunners());
   GetWorkerInspectorProxy()->WorkerThreadCreated(execution_context_,
                                                  GetWorkerThread(), script_url);
+
+  if (execution_context_->IsWorkerGlobalScope()) {
+    ToWorkerGlobalScope(execution_context_)
+        ->GetThread()
+        ->ChildThreadStartedOnWorkerThread(worker_thread_.get());
+  }
 }
 
 void ThreadedMessagingProxyBase::CountFeature(WebFeature feature) {
@@ -138,12 +144,19 @@ void ThreadedMessagingProxyBase::WorkerThreadTerminated() {
   // Worker/Worklet object may still exist, and it assumes that the proxy
   // exists, too.
   asked_to_terminate_ = true;
-  worker_thread_ = nullptr;
+  WorkerThread* parent_thread =
+      execution_context_->IsWorkerGlobalScope()
+          ? ToWorkerGlobalScope(execution_context_)->GetThread()
+          : nullptr;
+  std::unique_ptr<WorkerThread> child_thread = std::move(worker_thread_);
   worker_inspector_proxy_->WorkerThreadTerminated();
 
   // If the parent Worker/Worklet object was already destroyed, this will
   // destroy |this|.
   keep_alive_.Clear();
+
+  if (parent_thread && child_thread)
+    parent_thread->ChildThreadTerminatedOnWorkerThread(child_thread.get());
 }
 
 void ThreadedMessagingProxyBase::TerminateGlobalScope() {
