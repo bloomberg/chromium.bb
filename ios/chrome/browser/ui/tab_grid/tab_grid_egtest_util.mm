@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -28,7 +29,11 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
 namespace chrome_test_util {
 
 id<GREYMatcher> TabGridOpenButton() {
-  return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
+  if (IsRegularXRegularSizeClass()) {
+    return ButtonWithAccessibilityLabelId(IDS_IOS_TAB_STRIP_ENTER_TAB_SWITCHER);
+  } else {
+    return ButtonWithAccessibilityLabelId(IDS_IOS_TOOLBAR_SHOW_TABS);
+  }
 }
 
 id<GREYMatcher> TabGridDoneButton() {
