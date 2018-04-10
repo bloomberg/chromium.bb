@@ -6,8 +6,7 @@
     "service_manager:connector": {
       "provides": {
         "info": [ "audio::mojom::SystemInfo" ],
-        "debug_recording": [ "audio::mojom::DebugRecording" ],
-        "stream_factory": [ "audio::mojom::StreamFactory" ]
+        "debug_recording": [ "audio::mojom::DebugRecording" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

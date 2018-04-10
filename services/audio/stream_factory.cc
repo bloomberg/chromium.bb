@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "services/audio/output_stream.h"
-#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace audio {
 
@@ -18,11 +17,9 @@ StreamFactory::~StreamFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
 }
 
-void StreamFactory::Bind(
-    mojom::StreamFactoryRequest request,
-    std::unique_ptr<service_manager::ServiceContextRef> context_ref) {
+void StreamFactory::BindRequest(mojom::StreamFactoryRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-  bindings_.AddBinding(this, std::move(request), std::move(context_ref));
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void StreamFactory::CreateOutputStream(
