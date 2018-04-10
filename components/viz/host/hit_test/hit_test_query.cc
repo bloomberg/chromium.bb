@@ -19,7 +19,8 @@ bool ShouldUseTouchBounds(EventSource event_source) {
 
 }  // namespace
 
-HitTestQuery::HitTestQuery() = default;
+HitTestQuery::HitTestQuery(base::RepeatingClosure bad_message_gpu_callback)
+    : bad_message_gpu_callback_(std::move(bad_message_gpu_callback)) {}
 
 HitTestQuery::~HitTestQuery() = default;
 
@@ -28,7 +29,10 @@ void HitTestQuery::OnAggregatedHitTestRegionListUpdated(
     uint32_t active_handle_size,
     mojo::ScopedSharedBufferHandle idle_handle,
     uint32_t idle_handle_size) {
-  DCHECK(active_handle.is_valid() && idle_handle.is_valid());
+  if (!active_handle.is_valid() || !idle_handle.is_valid()) {
+    ReceivedBadMessageFromGpuProcess();
+    return;
+  }
   handle_buffer_sizes_[0] = active_handle_size;
   handle_buffers_[0] = active_handle->Map(handle_buffer_sizes_[0] *
                                           sizeof(AggregatedHitTestRegion));
@@ -36,8 +40,10 @@ void HitTestQuery::OnAggregatedHitTestRegionListUpdated(
   handle_buffers_[1] = idle_handle->Map(handle_buffer_sizes_[1] *
                                         sizeof(AggregatedHitTestRegion));
   if (!handle_buffers_[0] || !handle_buffers_[1]) {
-    // TODO(riajiang): Report security fault. http://crbug.com/746470
-    NOTREACHED();
+    handle_buffer_sizes_[0] = handle_buffer_sizes_[1] = 0;
+    handle_buffers_[0] = {};
+    handle_buffers_[1] = {};
+    ReceivedBadMessageFromGpuProcess();
     return;
   }
   SwitchActiveAggregatedHitTestRegionList(0);
@@ -180,6 +186,11 @@ bool HitTestQuery::TransformLocationForTargetRecursively(
   }
 
   return false;
+}
+
+void HitTestQuery::ReceivedBadMessageFromGpuProcess() const {
+  if (!bad_message_gpu_callback_.is_null())
+    bad_message_gpu_callback_.Run();
 }
 
 }  // namespace viz

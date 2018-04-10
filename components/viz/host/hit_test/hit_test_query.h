@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/viz/common/hit_test/aggregated_hit_test_region.h"
 #include "components/viz/host/viz_host_export.h"
@@ -34,7 +35,8 @@ enum class EventSource {
 // TODO(riajiang): Handle 3d space cases correctly.
 class VIZ_HOST_EXPORT HitTestQuery {
  public:
-  HitTestQuery();
+  explicit HitTestQuery(
+      base::RepeatingClosure shut_down_gpu_callback = base::RepeatingClosure());
   ~HitTestQuery();
 
   // TODO(riajiang): Need to validate the data received.
@@ -111,11 +113,16 @@ class VIZ_HOST_EXPORT HitTestQuery {
       AggregatedHitTestRegion* region,
       gfx::PointF* location_in_target) const;
 
+  void ReceivedBadMessageFromGpuProcess() const;
+
   uint32_t handle_buffer_sizes_[2];
   mojo::ScopedSharedBufferMapping handle_buffers_[2];
 
   AggregatedHitTestRegion* active_hit_test_list_ = nullptr;
   uint32_t active_hit_test_list_size_ = 0;
+
+  // Log bad message and shut down Viz process when it is compromised.
+  base::RepeatingClosure bad_message_gpu_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HitTestQuery);
 };

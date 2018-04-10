@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
@@ -84,6 +85,23 @@ bool IsWorkerContextLost(viz::RasterContextProvider* context_provider) {
   return lock.RasterInterface()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
+// Provided as a callback to crash the GPU process.
+void ReceivedBadMessageFromGpuProcess() {
+  GpuProcessHost::CallOnIO(
+      GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+      base::BindRepeating([](GpuProcessHost* host) {
+        // There should always be a GpuProcessHost instance, and GPU process,
+        // for running the compositor thread. The exception is during shutdown
+        // the GPU process won't be restarted and GpuProcessHost::Get() can
+        // return null.
+        if (host)
+          host->ForceShutdown();
+
+        LOG(ERROR) << "Bad message received, terminating gpu process.";
+        base::debug::DumpWithoutCrashing();
+      }));
+}
+
 }  // namespace
 
 VizProcessTransportFactory::VizProcessTransportFactory(
@@ -103,6 +121,8 @@ VizProcessTransportFactory::VizProcessTransportFactory(
   GetHostFrameSinkManager()->SetConnectionLostCallback(
       base::BindRepeating(&VizProcessTransportFactory::OnGpuProcessLost,
                           weak_ptr_factory_.GetWeakPtr()));
+  GetHostFrameSinkManager()->SetBadMessageReceivedFromGpuCallback(
+      base::BindRepeating(&ReceivedBadMessageFromGpuProcess));
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableGpu) ||

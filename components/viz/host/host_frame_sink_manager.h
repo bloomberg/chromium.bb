@@ -67,6 +67,9 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // on |frame_sink_manager_ptr_| is lost.
   void SetConnectionLostCallback(base::RepeatingClosure callback);
 
+  // Sets a callback to be notified after Viz sent bad message to Viz host.
+  void SetBadMessageReceivedFromGpuCallback(base::RepeatingClosure callback);
+
   // Registers |frame_sink_id| will be used. This must be called before
   // CreateCompositorFrameSink(Support) is called.
   void RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
@@ -262,6 +265,8 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   bool assign_temporary_references_ = true;
 
   base::RepeatingClosure connection_lost_callback_;
+
+  base::RepeatingClosure bad_message_received_from_gpu_callback_;
 
   DisplayHitTestQueryMap display_hit_test_query_;
 
