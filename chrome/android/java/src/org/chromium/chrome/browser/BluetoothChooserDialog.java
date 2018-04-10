@@ -28,6 +28,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.location.LocationUtils;
+import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -41,7 +42,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  * The dialog is shown by create() or show(), and always runs finishDialog() as it's closing.
  */
 public class BluetoothChooserDialog
-        implements ItemChooserDialog.ItemSelectedCallback, WindowAndroid.PermissionCallback {
+        implements ItemChooserDialog.ItemSelectedCallback, PermissionCallback {
     private static final String TAG = "Bluetooth";
 
     // These constants match BluetoothChooserAndroid::ShowDiscoveryState, and are used in
