@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/ct_policy_status.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/ocsp_verify_result.h"
 #include "net/cert/sct_status_flags.h"
@@ -20,12 +21,6 @@
 #include "net/ssl/ssl_config.h"
 
 namespace net {
-
-namespace ct {
-
-enum class CTPolicyCompliance;
-
-}  // namespace ct
 
 class X509Certificate;
 
@@ -74,51 +69,51 @@ class NET_EXPORT SSLInfo {
   // Bitmask of status info of |cert|, representing, for example, known errors
   // and extended validation (EV) status.
   // See cert_status_flags.h for values.
-  CertStatus cert_status;
+  CertStatus cert_status = 0;
 
   // The security strength, in bits, of the SSL cipher suite.
   // 0 means the connection is not encrypted.
   // -1 means the security strength is unknown.
-  int security_bits;
+  int security_bits = -1;
 
   // The ID of the (EC)DH group used by the key exchange or zero if unknown
   // (older cache entries may not store the value) or not applicable.
-  uint16_t key_exchange_group;
+  uint16_t key_exchange_group = 0;
 
   // Information about the SSL connection itself. See
   // ssl_connection_status_flags.h for values. The protocol version,
   // ciphersuite, and compression in use are encoded within.
-  int connection_status;
+  int connection_status = 0;
 
   // If the certificate is valid, then this is true iff it was rooted at a
   // standard CA root. (As opposed to a user-installed root.)
-  bool is_issued_by_known_root;
+  bool is_issued_by_known_root = false;
 
   // True if pinning was bypassed on this connection.
-  bool pkp_bypassed;
+  bool pkp_bypassed = false;
 
   // True if a client certificate was sent to the server.  Note that sending
   // a Certificate message with no client certificate in it does not count.
-  bool client_cert_sent;
+  bool client_cert_sent = false;
 
   // True if a channel ID was sent to the server.
-  bool channel_id_sent;
+  bool channel_id_sent = false;
 
   // True if Token Binding was negotiated with the server and we agreed on a
   // version and key params.
-  bool token_binding_negotiated;
+  bool token_binding_negotiated = false;
 
   // Only valid if |token_binding_negotiated| is true. Contains the key param
   // negotiated by the client and server in the Token Binding Negotiation TLS
   // extension.
-  TokenBindingParam token_binding_key_param;
+  TokenBindingParam token_binding_key_param = TB_PARAM_ECDSAP256;
 
   // True if the server echoed a dummy post-quantum padding extension. See
   // https://crbug.com/801302.
   // TODO(agl): remove by 2018-05-31.
-  bool dummy_pq_padding_received;
+  bool dummy_pq_padding_received = false;
 
-  HandshakeType handshake_type;
+  HandshakeType handshake_type = HANDSHAKE_UNKNOWN;
 
   // The hashes, in several algorithms, of the SubjectPublicKeyInfos from
   // each certificate in the chain.
@@ -135,19 +130,20 @@ class NET_EXPORT SSLInfo {
 
   // Whether the connection complied with the CT cert policy, and if
   // not, why not.
-  ct::CTPolicyCompliance ct_policy_compliance;
+  ct::CTPolicyCompliance ct_policy_compliance =
+      ct::CTPolicyCompliance::CT_POLICY_COMPLIANCE_DETAILS_NOT_AVAILABLE;
 
   // True if the connection was required to comply with the CT cert policy. Only
   // meaningful if |ct_policy_compliance| is not
   // COMPLIANCE_DETAILS_NOT_AVAILABLE.
-  bool ct_policy_compliance_required;
+  bool ct_policy_compliance_required = false;
 
   // OCSP stapling details.
   OCSPVerifyResult ocsp_result;
 
   // True if there was a certificate error which should be treated as fatal,
   // and false otherwise.
-  bool is_fatal_cert_error;
+  bool is_fatal_cert_error = false;
 };
 
 }  // namespace net
