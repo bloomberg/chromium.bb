@@ -128,7 +128,13 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
  protected:
   BubbleDialogDelegateView();
-  BubbleDialogDelegateView(View* anchor_view, BubbleBorder::Arrow arrow);
+  // |shadow| usually doesn't need to be explicitly set, just uses the default
+  // argument. Unless on Mac when the bubble needs to use Views base shadow,
+  // override it with suitable bubble border type.
+  BubbleDialogDelegateView(
+      View* anchor_view,
+      BubbleBorder::Arrow arrow,
+      BubbleBorder::Shadow shadow = BubbleBorder::DIALOG_SHADOW);
 
   // Get bubble bounds from the anchor rect and client view's preferred size.
   virtual gfx::Rect GetBubbleBounds();

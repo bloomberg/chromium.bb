@@ -38,6 +38,10 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
   bubble_params.delegate = bubble;
   bubble_params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
   bubble_params.accept_events = bubble->accept_events();
+  // Use a window default shadow if the bubble doesn't provides its own.
+  bubble_params.shadow_type = bubble->shadow() == BubbleBorder::NO_ASSETS
+                                  ? Widget::InitParams::SHADOW_TYPE_DEFAULT
+                                  : Widget::InitParams::SHADOW_TYPE_NONE;
   if (bubble->parent_window())
     bubble_params.parent = bubble->parent_window();
   else if (bubble->anchor_widget())
@@ -219,14 +223,15 @@ BubbleDialogDelegateView::BubbleDialogDelegateView()
     : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
 
 BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
-                                                   BubbleBorder::Arrow arrow)
+                                                   BubbleBorder::Arrow arrow,
+                                                   BubbleBorder::Shadow shadow)
     : close_on_deactivate_(true),
       anchor_view_tracker_(std::make_unique<ViewTracker>()),
       anchor_widget_(nullptr),
       arrow_(arrow),
       mirror_arrow_in_rtl_(
           ViewsDelegate::GetInstance()->ShouldMirrorArrowsInRTL()),
-      shadow_(BubbleBorder::DIALOG_SHADOW),
+      shadow_(shadow),
       color_explicitly_set_(false),
       accept_events_(true),
       adjust_if_offscreen_(true),

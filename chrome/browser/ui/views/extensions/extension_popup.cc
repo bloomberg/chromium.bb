@@ -44,7 +44,10 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                                views::View* anchor_view,
                                views::BubbleBorder::Arrow arrow,
                                ShowAction show_action)
-    : BubbleDialogDelegateView(anchor_view, arrow), host_(host) {
+    : BubbleDialogDelegateView(anchor_view,
+                               arrow,
+                               views::BubbleBorder::SMALL_SHADOW),
+      host_(host) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   set_margins(gfx::Insets());
   SetLayoutManager(std::make_unique<views::FillLayout>());
