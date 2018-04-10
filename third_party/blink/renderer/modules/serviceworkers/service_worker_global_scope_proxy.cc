@@ -49,7 +49,7 @@
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_click_event.h"
@@ -124,7 +124,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
 }
 
 void ServiceWorkerGlobalScopeProxy::Trace(blink::Visitor* visitor) {
-  visitor->Trace(parent_frame_task_runners_);
+  visitor->Trace(parent_execution_context_task_runners_);
 }
 
 void ServiceWorkerGlobalScopeProxy::SetRegistration(
@@ -530,7 +530,8 @@ void ServiceWorkerGlobalScopeProxy::PostMessageToPageInspector(
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnthrottled), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnthrottled),
+      FROM_HERE,
       CrossThreadBind(&WebEmbeddedWorkerImpl::PostMessageToPageInspector,
                       CrossThreadUnretained(embedded_worker_), session_id,
                       message));
@@ -560,7 +561,8 @@ void ServiceWorkerGlobalScopeProxy::DidLoadInstalledScript(
   DCHECK(embedded_worker_);
   WaitableEvent waitable_event;
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnthrottled), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnthrottled),
+      FROM_HERE,
       CrossThreadBind(&SetContentSecurityPolicyAndReferrerPolicyOnMainThread,
                       CrossThreadUnretained(embedded_worker_),
                       csp_headers_on_worker_thread,
@@ -625,7 +627,8 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
   // a document's frame but these documents can be from a different process. So
   // we intentionally populate the task runners with default task runners of the
   // main thread.
-  parent_frame_task_runners_ = ParentFrameTaskRunners::Create();
+  parent_execution_context_task_runners_ =
+      ParentExecutionContextTaskRunners::Create();
 }
 
 void ServiceWorkerGlobalScopeProxy::Detach() {

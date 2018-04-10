@@ -25,11 +25,11 @@ TEST(SerializedScriptValueThreadedTest,
   // Start a worker.
   WorkerReportingProxy proxy;
   WorkerThreadForTest worker_thread(nullptr, proxy);
-  ParentFrameTaskRunners* parent_frame_task_runners =
-      ParentFrameTaskRunners::Create(&scope.GetDocument());
+  ParentExecutionContextTaskRunners* parent_execution_context_task_runners =
+      ParentExecutionContextTaskRunners::Create(&scope.GetDocument());
   worker_thread.StartWithSourceCode(scope.GetDocument().GetSecurityOrigin(),
                                     "/* no worker script */",
-                                    parent_frame_task_runners);
+                                    parent_execution_context_task_runners);
 
   // Create a serialized script value that contains transferred array buffer
   // contents.

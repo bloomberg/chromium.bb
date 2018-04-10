@@ -68,7 +68,7 @@ class AnimationWorkletGlobalScopeTest : public PageTestBase {
             kV8CacheOptionsDefault,
             new WorkletModuleResponsesMap(document->Fetcher())),
         WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
-        ParentFrameTaskRunners::Create());
+        ParentExecutionContextTaskRunners::Create());
     return thread;
   }
 

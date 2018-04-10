@@ -52,7 +52,7 @@
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_content_settings_proxy.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
@@ -341,7 +341,8 @@ void WebSharedWorkerImpl::ContinueOnScriptLoaderFinished() {
   // main thread. Note that |m_document| should not be used as it's a dummy
   // document for loading that doesn't represent the frame of any associated
   // document.
-  ParentFrameTaskRunners* task_runners = ParentFrameTaskRunners::Create();
+  ParentExecutionContextTaskRunners* task_runners =
+      ParentExecutionContextTaskRunners::Create();
 
   reporting_proxy_ = new SharedWorkerReportingProxy(this, task_runners);
   worker_thread_ = std::make_unique<SharedWorkerThread>(

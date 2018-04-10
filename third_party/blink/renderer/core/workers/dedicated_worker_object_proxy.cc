@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
@@ -55,10 +55,10 @@ namespace blink {
 
 std::unique_ptr<DedicatedWorkerObjectProxy> DedicatedWorkerObjectProxy::Create(
     DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
-    ParentFrameTaskRunners* parent_frame_task_runners) {
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
   DCHECK(messaging_proxy_weak_ptr);
   return base::WrapUnique(new DedicatedWorkerObjectProxy(
-      messaging_proxy_weak_ptr, parent_frame_task_runners));
+      messaging_proxy_weak_ptr, parent_execution_context_task_runners));
 }
 
 DedicatedWorkerObjectProxy::~DedicatedWorkerObjectProxy() = default;
@@ -68,7 +68,8 @@ void DedicatedWorkerObjectProxy::PostMessageToWorkerObject(
     Vector<MessagePortChannel> channels,
     const v8_inspector::V8StackTraceId& stack_id) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kPostedMessage), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kPostedMessage),
+      FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::PostMessageToWorkerObject,
                       messaging_proxy_weak_ptr_, std::move(message),
                       WTF::Passed(std::move(channels)), stack_id));
@@ -103,7 +104,8 @@ void DedicatedWorkerObjectProxy::ReportException(
     std::unique_ptr<SourceLocation> location,
     int exception_id) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DispatchErrorEvent,
                       messaging_proxy_weak_ptr_, error_message,
                       WTF::Passed(location->Clone()), exception_id));
@@ -117,14 +119,16 @@ void DedicatedWorkerObjectProxy::DidCreateWorkerGlobalScope(
 
 void DedicatedWorkerObjectProxy::DidEvaluateClassicScript(bool success) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
                       messaging_proxy_weak_ptr_, success));
 }
 
 void DedicatedWorkerObjectProxy::DidEvaluateModuleScript(bool success) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&DedicatedWorkerMessagingProxy::DidEvaluateScript,
                       messaging_proxy_weak_ptr_, success));
 }
@@ -135,8 +139,8 @@ void DedicatedWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
 
 DedicatedWorkerObjectProxy::DedicatedWorkerObjectProxy(
     DedicatedWorkerMessagingProxy* messaging_proxy_weak_ptr,
-    ParentFrameTaskRunners* parent_frame_task_runners)
-    : ThreadedObjectProxyBase(parent_frame_task_runners),
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+    : ThreadedObjectProxyBase(parent_execution_context_task_runners),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}
 
 CrossThreadWeakPersistent<ThreadedMessagingProxyBase>

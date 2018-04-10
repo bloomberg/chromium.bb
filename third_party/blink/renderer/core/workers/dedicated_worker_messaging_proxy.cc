@@ -36,8 +36,8 @@ DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     DedicatedWorker* worker_object)
     : ThreadedMessagingProxyBase(execution_context),
       worker_object_(worker_object) {
-  worker_object_proxy_ =
-      DedicatedWorkerObjectProxy::Create(this, GetParentFrameTaskRunners());
+  worker_object_proxy_ = DedicatedWorkerObjectProxy::Create(
+      this, GetParentExecutionContextTaskRunners());
 }
 
 DedicatedWorkerMessagingProxy::~DedicatedWorkerMessagingProxy() = default;

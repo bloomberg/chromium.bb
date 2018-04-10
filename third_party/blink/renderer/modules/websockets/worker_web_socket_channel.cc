@@ -369,8 +369,9 @@ Bridge::Bridge(WebSocketChannelClient* client,
                WorkerGlobalScope& worker_global_scope)
     : client_(client),
       worker_global_scope_(worker_global_scope),
-      parent_frame_task_runners_(
-          worker_global_scope_->GetThread()->GetParentFrameTaskRunners()) {}
+      parent_execution_context_task_runners_(
+          worker_global_scope_->GetThread()
+              ->GetParentExecutionContextTaskRunners()) {}
 
 Bridge::~Bridge() {
   DCHECK(!main_channel_client_);
@@ -420,7 +421,8 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   }
 
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kNetworking), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
       CrossThreadBind(
           &Bridge::ConnectOnMainThread, WrapCrossThreadPersistent(this),
           WTF::Passed(location->Clone()),
@@ -443,7 +445,8 @@ void Bridge::Send(const CString& message) {
            message.length());
 
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kNetworking), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
       CrossThreadBind(&MainChannelClient::SendTextAsCharVector,
                       main_channel_client_, WTF::Passed(std::move(data))));
 }
@@ -462,25 +465,28 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
            byte_length);
 
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kNetworking), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
       CrossThreadBind(&MainChannelClient::SendBinaryAsCharVector,
                       main_channel_client_, WTF::Passed(std::move(data))));
 }
 
 void Bridge::Send(scoped_refptr<BlobDataHandle> data) {
   DCHECK(main_channel_client_);
-  PostCrossThreadTask(*parent_frame_task_runners_->Get(TaskType::kNetworking),
-                      FROM_HERE,
-                      CrossThreadBind(&MainChannelClient::SendBlob,
-                                      main_channel_client_, std::move(data)));
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
+      CrossThreadBind(&MainChannelClient::SendBlob, main_channel_client_,
+                      std::move(data)));
 }
 
 void Bridge::Close(int code, const String& reason) {
   DCHECK(main_channel_client_);
-  PostCrossThreadTask(*parent_frame_task_runners_->Get(TaskType::kNetworking),
-                      FROM_HERE,
-                      CrossThreadBind(&MainChannelClient::Close,
-                                      main_channel_client_, code, reason));
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
+      CrossThreadBind(&MainChannelClient::Close, main_channel_client_, code,
+                      reason));
 }
 
 void Bridge::Fail(const String& reason,
@@ -488,7 +494,8 @@ void Bridge::Fail(const String& reason,
                   std::unique_ptr<SourceLocation> location) {
   DCHECK(main_channel_client_);
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kNetworking), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
       CrossThreadBind(&MainChannelClient::Fail, main_channel_client_, reason,
                       level, WTF::Passed(location->Clone())));
 }
@@ -498,7 +505,8 @@ void Bridge::Disconnect() {
     return;
 
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kNetworking), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kNetworking),
+      FROM_HERE,
       CrossThreadBind(&MainChannelClient::Disconnect, main_channel_client_));
 
   client_ = nullptr;

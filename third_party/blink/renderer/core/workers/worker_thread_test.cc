@@ -60,7 +60,8 @@ void WaitForSignalTask(WorkerThread* worker_thread,
 
   // Notify the main thread that the debugger task is waiting for the signal.
   PostCrossThreadTask(
-      *worker_thread->GetParentFrameTaskRunners()->Get(TaskType::kInternalTest),
+      *worker_thread->GetParentExecutionContextTaskRunners()->Get(
+          TaskType::kInternalTest),
       FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   waitable_event->Wait();
 }
@@ -83,17 +84,17 @@ class WorkerThreadTest : public testing::Test {
   void TearDown() override {}
 
   void Start() {
-    worker_thread_->StartWithSourceCode(security_origin_.get(),
-                                        "//fake source code",
-                                        ParentFrameTaskRunners::Create());
+    worker_thread_->StartWithSourceCode(
+        security_origin_.get(), "//fake source code",
+        ParentExecutionContextTaskRunners::Create());
   }
 
   void StartWithSourceCodeNotToFinish() {
     // Use a JavaScript source code that makes an infinite loop so that we
     // can catch some kind of issues as a timeout.
-    worker_thread_->StartWithSourceCode(security_origin_.get(),
-                                        "while(true) {}",
-                                        ParentFrameTaskRunners::Create());
+    worker_thread_->StartWithSourceCode(
+        security_origin_.get(), "while(true) {}",
+        ParentExecutionContextTaskRunners::Create());
   }
 
   void SetForcibleTerminationDelay(TimeDelta forcible_termination_delay) {
@@ -316,7 +317,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
                         WorkerInspectorProxy::PauseOnWorkerStart::kPause,
-                        ParentFrameTaskRunners::Create());
+                        ParentExecutionContextTaskRunners::Create());
 
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.

@@ -44,7 +44,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
 
   virtual std::unique_ptr<ThreadedWorkletObjectProxy> CreateObjectProxy(
       ThreadedWorkletMessagingProxy*,
-      ParentFrameTaskRunners*);
+      ParentExecutionContextTaskRunners*);
 
   std::unique_ptr<ThreadedWorkletObjectProxy> worklet_object_proxy_;
 };

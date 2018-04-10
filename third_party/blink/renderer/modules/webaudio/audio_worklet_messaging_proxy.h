@@ -65,7 +65,7 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
   // Implements ThreadedWorkletMessagingProxy.
   std::unique_ptr<ThreadedWorkletObjectProxy> CreateObjectProxy(
       ThreadedWorkletMessagingProxy*,
-      ParentFrameTaskRunners*) override;
+      ParentExecutionContextTaskRunners*) override;
 
   std::unique_ptr<WorkerThread> CreateWorkerThread() override;
 

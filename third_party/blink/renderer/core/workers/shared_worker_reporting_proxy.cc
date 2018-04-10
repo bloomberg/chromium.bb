@@ -14,8 +14,10 @@ namespace blink {
 
 SharedWorkerReportingProxy::SharedWorkerReportingProxy(
     WebSharedWorkerImpl* worker,
-    ParentFrameTaskRunners* parent_frame_task_runners)
-    : worker_(worker), parent_frame_task_runners_(parent_frame_task_runners) {
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+    : worker_(worker),
+      parent_execution_context_task_runners_(
+          parent_execution_context_task_runners) {
   DCHECK(IsMainThread());
 }
 
@@ -26,7 +28,8 @@ SharedWorkerReportingProxy::~SharedWorkerReportingProxy() {
 void SharedWorkerReportingProxy::CountFeature(WebFeature feature) {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::CountFeature,
                       CrossThreadUnretained(worker_), feature));
 }
@@ -62,7 +65,8 @@ void SharedWorkerReportingProxy::PostMessageToPageInspector(
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnthrottled), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnthrottled),
+      FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::PostMessageToPageInspector,
                       CrossThreadUnretained(worker_), session_id, message));
 }
@@ -70,7 +74,8 @@ void SharedWorkerReportingProxy::PostMessageToPageInspector(
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::DidCloseWorkerGlobalScope,
                       CrossThreadUnretained(worker_)));
 }
@@ -78,13 +83,14 @@ void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {
 void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
   DCHECK(!IsMainThread());
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&WebSharedWorkerImpl::DidTerminateWorkerThread,
                       CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::Trace(blink::Visitor* visitor) {
-  visitor->Trace(parent_frame_task_runners_);
+  visitor->Trace(parent_execution_context_task_runners_);
 }
 
 }  // namespace blink

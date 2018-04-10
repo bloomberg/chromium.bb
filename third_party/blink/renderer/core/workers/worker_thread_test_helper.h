@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
@@ -89,11 +89,12 @@ class WorkerThreadForTest : public WorkerThread {
   }
   void ClearWorkerBackingThread() override { worker_backing_thread_.reset(); }
 
-  void StartWithSourceCode(const SecurityOrigin* security_origin,
-                           const String& source,
-                           ParentFrameTaskRunners* parent_frame_task_runners,
-                           const KURL& script_url = KURL("http://fake.url/"),
-                           WorkerClients* worker_clients = nullptr) {
+  void StartWithSourceCode(
+      const SecurityOrigin* security_origin,
+      const String& source,
+      ParentExecutionContextTaskRunners* parent_execution_context_task_runners,
+      const KURL& script_url = KURL("http://fake.url/"),
+      WorkerClients* worker_clients = nullptr) {
     auto headers = std::make_unique<Vector<CSPHeaderAndType>>();
     CSPHeaderAndType header_and_type("contentSecurityPolicy",
                                      kContentSecurityPolicyHeaderTypeReport);
@@ -110,7 +111,7 @@ class WorkerThreadForTest : public WorkerThread {
     Start(std::move(creation_params),
           WorkerBackingThreadStartupData::CreateDefault(),
           WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
-          parent_frame_task_runners);
+          parent_execution_context_task_runners);
     EvaluateClassicScript(script_url, source, nullptr /* cached_meta_data */,
                           v8_inspector::V8StackTraceId());
   }

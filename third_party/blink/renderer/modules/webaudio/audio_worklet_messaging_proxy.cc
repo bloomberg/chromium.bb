@@ -90,10 +90,10 @@ WorkerThread* AudioWorkletMessagingProxy::GetBackingWorkerThread() {
 std::unique_ptr<ThreadedWorkletObjectProxy>
 AudioWorkletMessagingProxy::CreateObjectProxy(
     ThreadedWorkletMessagingProxy* messaging_proxy,
-    ParentFrameTaskRunners* parent_frame_task_runners) {
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
   return std::make_unique<AudioWorkletObjectProxy>(
       static_cast<AudioWorkletMessagingProxy*>(messaging_proxy),
-      parent_frame_task_runners,
+      parent_execution_context_task_runners,
       worklet_->GetBaseAudioContext()->sampleRate());
 }
 

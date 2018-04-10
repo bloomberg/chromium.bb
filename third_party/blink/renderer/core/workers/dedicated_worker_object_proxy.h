@@ -47,7 +47,7 @@ struct V8StackTraceId;
 namespace blink {
 
 class DedicatedWorkerMessagingProxy;
-class ParentFrameTaskRunners;
+class ParentExecutionContextTaskRunners;
 class ThreadedMessagingProxyBase;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
@@ -62,7 +62,7 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
  public:
   static std::unique_ptr<DedicatedWorkerObjectProxy> Create(
       DedicatedWorkerMessagingProxy*,
-      ParentFrameTaskRunners*);
+      ParentExecutionContextTaskRunners*);
   ~DedicatedWorkerObjectProxy() override;
 
   void PostMessageToWorkerObject(scoped_refptr<SerializedScriptValue>,
@@ -85,7 +85,7 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
 
  protected:
   DedicatedWorkerObjectProxy(DedicatedWorkerMessagingProxy*,
-                             ParentFrameTaskRunners*);
+                             ParentExecutionContextTaskRunners*);
 
   CrossThreadWeakPersistent<ThreadedMessagingProxyBase> MessagingProxyWeakPtr()
       final;

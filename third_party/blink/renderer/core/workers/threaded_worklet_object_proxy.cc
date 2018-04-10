@@ -16,10 +16,10 @@ namespace blink {
 
 std::unique_ptr<ThreadedWorkletObjectProxy> ThreadedWorkletObjectProxy::Create(
     ThreadedWorkletMessagingProxy* messaging_proxy_weak_ptr,
-    ParentFrameTaskRunners* parent_frame_task_runners) {
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
   DCHECK(messaging_proxy_weak_ptr);
   return base::WrapUnique(new ThreadedWorkletObjectProxy(
-      messaging_proxy_weak_ptr, parent_frame_task_runners));
+      messaging_proxy_weak_ptr, parent_execution_context_task_runners));
 }
 
 ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() = default;
@@ -39,8 +39,8 @@ void ThreadedWorkletObjectProxy::FetchAndInvokeScript(
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(
     ThreadedWorkletMessagingProxy* messaging_proxy_weak_ptr,
-    ParentFrameTaskRunners* parent_frame_task_runners)
-    : ThreadedObjectProxyBase(parent_frame_task_runners),
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+    : ThreadedObjectProxyBase(parent_execution_context_task_runners),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr) {}
 
 CrossThreadWeakPersistent<ThreadedMessagingProxyBase>

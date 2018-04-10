@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -12,18 +12,19 @@
 
 namespace blink {
 
-ParentFrameTaskRunners* ParentFrameTaskRunners::Create(
+ParentExecutionContextTaskRunners* ParentExecutionContextTaskRunners::Create(
     ExecutionContext* context) {
   DCHECK(context);
   DCHECK(context->IsContextThread());
-  return new ParentFrameTaskRunners(context);
+  return new ParentExecutionContextTaskRunners(context);
 }
 
-ParentFrameTaskRunners* ParentFrameTaskRunners::Create() {
-  return new ParentFrameTaskRunners(nullptr);
+ParentExecutionContextTaskRunners* ParentExecutionContextTaskRunners::Create() {
+  return new ParentExecutionContextTaskRunners(nullptr);
 }
 
-ParentFrameTaskRunners::ParentFrameTaskRunners(ExecutionContext* context)
+ParentExecutionContextTaskRunners::ParentExecutionContextTaskRunners(
+    ExecutionContext* context)
     : ContextLifecycleObserver(context) {
   // For now we only support very limited task types.
   for (auto type : {TaskType::kUnspecedTimer, TaskType::kInternalLoading,
@@ -36,17 +37,17 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(ExecutionContext* context)
   }
 }
 
-scoped_refptr<base::SingleThreadTaskRunner> ParentFrameTaskRunners::Get(
-    TaskType type) {
+scoped_refptr<base::SingleThreadTaskRunner>
+ParentExecutionContextTaskRunners::Get(TaskType type) {
   MutexLocker lock(mutex_);
   return task_runners_.at(type);
 }
 
-void ParentFrameTaskRunners::Trace(blink::Visitor* visitor) {
+void ParentExecutionContextTaskRunners::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void ParentFrameTaskRunners::ContextDestroyed(ExecutionContext*) {
+void ParentExecutionContextTaskRunners::ContextDestroyed(ExecutionContext*) {
   MutexLocker lock(mutex_);
   for (auto& entry : task_runners_)
     entry.value = Platform::Current()->CurrentThread()->GetTaskRunner();

@@ -37,7 +37,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/mojom/websocket.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/websockets/document_web_socket_channel.h"
 #include "third_party/blink/renderer/modules/websockets/web_socket_channel.h"
@@ -195,7 +195,8 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
    private:
     Member<WebSocketChannelClient> client_;
     Member<WorkerGlobalScope> worker_global_scope_;
-    CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+    CrossThreadPersistent<ParentExecutionContextTaskRunners>
+        parent_execution_context_task_runners_;
     CrossThreadPersistent<MainChannelClient> main_channel_client_;
   };
 

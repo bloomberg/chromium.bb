@@ -345,7 +345,7 @@ WorkerGlobalScope::WorkerGlobalScope(
       fetch_coordinator_proxy_(
           WorkerOrWorkletModuleFetchCoordinatorProxy::Create(
               creation_params->module_fetch_coordinator,
-              thread->GetParentFrameTaskRunners()->Get(
+              thread->GetParentExecutionContextTaskRunners()->Get(
                   TaskType::kInternalLoading),
               thread->GetTaskRunner(TaskType::kInternalLoading))),
       thread_(thread),
@@ -395,9 +395,10 @@ void WorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
 }
 
 void WorkerGlobalScope::RemoveURLFromMemoryCache(const KURL& url) {
-  PostCrossThreadTask(
-      *thread_->GetParentFrameTaskRunners()->Get(TaskType::kNetworking),
-      FROM_HERE, CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
+  PostCrossThreadTask(*thread_->GetParentExecutionContextTaskRunners()->Get(
+                          TaskType::kNetworking),
+                      FROM_HERE,
+                      CrossThreadBind(&RemoveURLFromMemoryCacheInternal, url));
 }
 
 void WorkerGlobalScope::SetWorkerSettings(
