@@ -122,14 +122,14 @@ fuzzer_test("signed_exchange_header_parser_fuzzer") {
       "//content/test/data/fuzzer_corpus/signed_exchange_header_parser_data/"
 }
 
-fuzzer_test("signed_exchange_cert_fetcher_parser_fuzzer") {
+fuzzer_test("signed_exchange_certificate_chain_fuzzer") {
   sources = [
-    "signed_exchange_cert_fetcher_parser_fuzzer.cc",
+    "../../browser/web_package/signed_exchange_certificate_chain_fuzzer.cc",
   ]
   deps = [
     "//content/test:test_support",
   ]
-  seed_corpus = "//content/test/data/fuzzer_corpus/signed_exchange_cert_fetcher_parser_data/"
+  seed_corpus = "//content/test/data/fuzzer_corpus/signed_exchange_certificate_chain_data/"
 }
 
 fuzzer_test("appcache_manifest_parser_fuzzer") {

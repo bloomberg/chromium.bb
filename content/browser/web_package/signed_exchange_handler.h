@@ -27,7 +27,6 @@ class CertVerifyResult;
 class DrainableIOBuffer;
 class SourceStream;
 class URLRequestContextGetter;
-class X509Certificate;
 }  // namespace net
 
 namespace network {
@@ -38,6 +37,7 @@ namespace content {
 
 class SignedExchangeCertFetcher;
 class SignedExchangeCertFetcherFactory;
+class SignedExchangeCertificateChain;
 
 // IMPORTANT: Currenly SignedExchangeHandler partially implements the verifying
 // logic.
@@ -90,7 +90,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void RunErrorCallback(net::Error);
 
   void OnCertReceived(
-      scoped_refptr<net::X509Certificate> cert);
+      std::unique_ptr<SignedExchangeCertificateChain> cert_chain);
   void OnCertVerifyComplete(int result);
 
   ExchangeHeadersCallback headers_callback_;
@@ -110,7 +110,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  scoped_refptr<net::X509Certificate> unverified_cert_;
+  std::unique_ptr<SignedExchangeCertificateChain> unverified_cert_chain_;
 
   // CertVerifyResult must be freed after the Request has been destructed.
   // So |cert_verify_result_| must be written before |cert_verifier_request_|.

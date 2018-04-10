@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
+#include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
@@ -250,11 +251,11 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
 }
 
 void SignedExchangeHandler::OnCertReceived(
-    scoped_refptr<net::X509Certificate> cert) {
+    std::unique_ptr<SignedExchangeCertificateChain> cert_chain) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::OnCertReceived");
   DCHECK_EQ(state_, State::kFetchingCertificate);
-  if (!cert) {
+  if (!cert_chain) {
     RunErrorCallback(net::ERR_FAILED);
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::OnCertReceived", "error",
@@ -262,7 +263,7 @@ void SignedExchangeHandler::OnCertReceived(
     return;
   }
 
-  if (SignedExchangeSignatureVerifier::Verify(*header_, cert,
+  if (SignedExchangeSignatureVerifier::Verify(*header_, cert_chain->cert(),
                                               GetVerificationTime()) !=
       SignedExchangeSignatureVerifier::Result::kSuccess) {
     RunErrorCallback(net::ERR_FAILED);
@@ -281,7 +282,7 @@ void SignedExchangeHandler::OnCertReceived(
     return;
   }
 
-  unverified_cert_ = cert;
+  unverified_cert_chain_ = std::move(cert_chain);
 
   net::SSLConfig config;
   request_context->ssl_config_service()->GetSSLConfig(&config);
@@ -294,7 +295,7 @@ void SignedExchangeHandler::OnCertReceived(
   // (nextUpdate - thisUpdate) is less than 7 days.
   int result = cert_verifier->Verify(
       net::CertVerifier::RequestParams(
-          unverified_cert_, header_->request_url().host(),
+          unverified_cert_chain_->cert(), header_->request_url().host(),
           config.GetCertVerifyFlags(), std::string() /* ocsp_response */,
           net::CertificateList()),
       net::SSLConfigService::GetCRLSet().get(), &cert_verify_result_,
@@ -350,7 +351,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
 
   net::SSLInfo ssl_info;
   ssl_info.cert = cert_verify_result_.verified_cert;
-  ssl_info.unverified_cert = unverified_cert_;
+  ssl_info.unverified_cert = unverified_cert_chain_->cert();
   ssl_info.cert_status = cert_verify_result_.cert_status;
   ssl_info.is_issued_by_known_root =
       cert_verify_result_.is_issued_by_known_root;
