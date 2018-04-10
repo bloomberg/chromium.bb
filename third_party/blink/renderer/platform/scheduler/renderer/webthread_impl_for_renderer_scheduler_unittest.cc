@@ -15,7 +15,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
 
 namespace blink {

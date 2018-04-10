@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
@@ -53,7 +53,7 @@ class PageSchedulerImpl;
 class TaskQueueThrottler;
 class WebRenderWidgetSchedulingState;
 
-// TODO(yutak): Rename this class to MainThreadScheduler.
+// TODO(yutak): Rename this class to MainThreadSchedulerImpl.
 class PLATFORM_EXPORT RendererSchedulerImpl
     : public WebMainThreadScheduler,
       public IdleHelper::Delegate,
@@ -805,4 +805,4 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
