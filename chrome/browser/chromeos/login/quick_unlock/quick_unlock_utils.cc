@@ -20,6 +20,7 @@ namespace quick_unlock {
 namespace {
 // Quick unlock is enabled regardless of flags.
 bool enable_for_testing_ = false;
+bool disable_pin_by_policy_for_testing_ = false;
 // If testing is enabled, PIN will use prefs as backend. Otherwise, it will use
 // cryptohome.
 PinStorageType testing_pin_storage_type_ = PinStorageType::kPrefs;
@@ -67,6 +68,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 bool IsPinDisabledByPolicy(PrefService* pref_service) {
+  if (disable_pin_by_policy_for_testing_)
+    return true;
+
   if (enable_for_testing_)
     return false;
 
@@ -118,6 +122,10 @@ bool IsFingerprintEnabled() {
 void EnableForTesting(PinStorageType pin_storage_type) {
   enable_for_testing_ = true;
   testing_pin_storage_type_ = pin_storage_type;
+}
+
+void DisablePinByPolicyForTesting(bool disable) {
+  disable_pin_by_policy_for_testing_ = disable;
 }
 
 }  // namespace quick_unlock

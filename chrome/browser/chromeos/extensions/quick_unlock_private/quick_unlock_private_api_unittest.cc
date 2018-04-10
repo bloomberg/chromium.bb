@@ -128,6 +128,12 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     modes_changed_handler_ = base::DoNothing();
   }
 
+  void TearDown() override {
+    quick_unlock::DisablePinByPolicyForTesting(false);
+
+    ExtensionApiUnittest::TearDown();
+  }
+
   TestingProfile::TestingFactories GetTestingFactories() override {
     return {{EasyUnlockServiceFactory::GetInstance(),
              &CreateEasyUnlockServiceForTest}};
@@ -446,10 +452,21 @@ TEST_F(QuickUnlockPrivateUnitTest, SetLockScreenEnabledFailsWithInvalidToken) {
             pref_service->GetBoolean(prefs::kEnableAutoScreenLock));
 }
 
-// Verifies that this returns PIN for GetAvailableModes.
+// Verifies that this returns PIN for GetAvailableModes, unless it is blocked by
+// policy.
 TEST_F(QuickUnlockPrivateUnitTest, GetAvailableModes) {
   EXPECT_EQ(GetAvailableModes(),
             QuickUnlockModeList{QuickUnlockMode::QUICK_UNLOCK_MODE_PIN});
+
+  quick_unlock::DisablePinByPolicyForTesting(true);
+  EXPECT_TRUE(GetAvailableModes().empty());
+}
+
+// Verfies that trying to set modes with a valid PIN failes when PIN is blocked
+// by policy.
+TEST_F(QuickUnlockPrivateUnitTest, SetModesForPinFailsWhenPinDisabledByPolicy) {
+  quick_unlock::DisablePinByPolicyForTesting(true);
+  EXPECT_FALSE(SetModesWithError("[\"valid\", [\"PIN\"], [\"111\"]]").empty());
 }
 
 // Verifies that SetModes succeeds with a valid token.
