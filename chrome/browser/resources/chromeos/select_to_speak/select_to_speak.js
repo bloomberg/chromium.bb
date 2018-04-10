@@ -1122,10 +1122,10 @@ SelectToSpeak.prototype = {
         opt_startIndex - this.currentNode_.startChar;
     let nodeEnd = Math.min(
         nextWordEnd - this.currentNode_.startChar,
-        this.currentNode_.node.name.length);
+        nameLength(this.currentNode_.node));
     if ((this.currentNodeWord_ == null ||
          nodeStart >= this.currentNodeWord_.end) &&
-        nodeStart < nodeEnd) {
+        nodeStart <= nodeEnd) {
       // Only update the bounds if they have increased from the
       // previous node. Because tts may send multiple callbacks
       // for the end of one word and the beginning of the next,
