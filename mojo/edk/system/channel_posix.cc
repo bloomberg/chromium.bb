@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/platform_channel_utils_posix.h"
@@ -87,7 +88,7 @@ class MessageView {
 
 class ChannelPosix : public Channel,
                      public base::MessageLoop::DestructionObserver,
-                     public base::MessageLoopForIO::Watcher {
+                     public base::MessagePumpForIO::FdWatcher {
  public:
   ChannelPosix(Delegate* delegate,
                ConnectionParams connection_params,
@@ -209,18 +210,18 @@ class ChannelPosix : public Channel,
     DCHECK(!read_watcher_);
     DCHECK(!write_watcher_);
     read_watcher_.reset(
-        new base::MessageLoopForIO::FileDescriptorWatcher(FROM_HERE));
+        new base::MessagePumpForIO::FdWatchController(FROM_HERE));
     base::MessageLoop::current()->AddDestructionObserver(this);
     if (handle_.get().needs_connection) {
       base::MessageLoopForIO::current()->WatchFileDescriptor(
           handle_.get().handle, false /* persistent */,
-          base::MessageLoopForIO::WATCH_READ, read_watcher_.get(), this);
+          base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
     } else {
       write_watcher_.reset(
-          new base::MessageLoopForIO::FileDescriptorWatcher(FROM_HERE));
+          new base::MessagePumpForIO::FdWatchController(FROM_HERE));
       base::MessageLoopForIO::current()->WatchFileDescriptor(
           handle_.get().handle, true /* persistent */,
-          base::MessageLoopForIO::WATCH_READ, read_watcher_.get(), this);
+          base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
       base::AutoLock lock(write_lock_);
       FlushOutgoingMessagesNoLock();
     }
@@ -240,7 +241,7 @@ class ChannelPosix : public Channel,
       pending_write_ = true;
       base::MessageLoopForIO::current()->WatchFileDescriptor(
           handle_.get().handle, false /* persistent */,
-          base::MessageLoopForIO::WATCH_WRITE, write_watcher_.get(), this);
+          base::MessagePumpForIO::WATCH_WRITE, write_watcher_.get(), this);
     } else {
       io_task_runner_->PostTask(
           FROM_HERE,
@@ -271,7 +272,7 @@ class ChannelPosix : public Channel,
       ShutDownOnIOThread();
   }
 
-  // base::MessageLoopForIO::Watcher:
+  // base::MessagePumpForIO::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     CHECK_EQ(fd, handle_.get().handle);
     if (handle_.get().needs_connection) {
@@ -549,8 +550,8 @@ class ChannelPosix : public Channel,
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These watchers must only be accessed on the IO thread.
-  std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> read_watcher_;
-  std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher> write_watcher_;
+  std::unique_ptr<base::MessagePumpForIO::FdWatchController> read_watcher_;
+  std::unique_ptr<base::MessagePumpForIO::FdWatchController> write_watcher_;
 
   base::circular_deque<ScopedPlatformHandle> incoming_platform_handles_;
 

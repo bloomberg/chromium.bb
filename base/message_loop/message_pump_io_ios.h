@@ -61,10 +61,6 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop,
     DISALLOW_COPY_AND_ASSIGN(FdWatchController);
   };
 
-  // TODO(gab): Mass migrate users of the old types.
-  using Watcher = FdWatcher;
-  using FileDescriptorWatcher = FdWatchController;
-
   MessagePumpIOSForIO();
   ~MessagePumpIOSForIO() override;
 

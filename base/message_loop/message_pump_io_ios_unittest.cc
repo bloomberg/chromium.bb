@@ -44,7 +44,7 @@ class MessagePumpIOSForIOTest : public testing::Test {
     return static_cast<MessageLoopForIO*>(io_thread_.message_loop());
   }
 
-  void HandleFdIOEvent(MessageLoopForIO::FileDescriptorWatcher* watcher) {
+  void HandleFdIOEvent(MessagePumpForIO::FdWatchController* watcher) {
     MessagePumpIOSForIO::HandleFdIOEvent(watcher->fdref_.get(),
         kCFFileDescriptorReadCallBack | kCFFileDescriptorWriteCallBack,
         watcher);
@@ -79,10 +79,8 @@ TEST_F(MessagePumpIOSForIOTest, TestWatchingFromBadThread) {
   MessagePumpIOSForIO::FdWatchController watcher(FROM_HERE);
   StupidWatcher delegate;
 
-  ASSERT_DCHECK_DEATH(
-      io_loop()->WatchFileDescriptor(STDOUT_FILENO, false,
-                                     MessageLoopForIO::WATCH_READ, &watcher,
-                                     &delegate));
+  ASSERT_DCHECK_DEATH(io_loop()->WatchFileDescriptor(
+      STDOUT_FILENO, false, MessagePumpForIO::WATCH_READ, &watcher, &delegate));
 }
 
 class BaseWatcher : public MessagePumpIOSForIO::FdWatcher {

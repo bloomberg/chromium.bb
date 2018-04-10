@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 
@@ -25,7 +26,7 @@ struct MyOverlapped {
     return &context_.overlapped;
   }
 
-  base::MessageLoopForIO::IOContext context_;
+  base::MessagePumpForIO::IOContext context_;
   scoped_refptr<disk_cache::File> file_;
   scoped_refptr<CompletionHandler> completion_handler_;
   disk_cache::FileIOCallback* callback_;
@@ -35,7 +36,7 @@ static_assert(offsetof(MyOverlapped, context_) == 0,
               "should start with overlapped");
 
 // Helper class to handle the IO completion notifications from the message loop.
-class CompletionHandler : public base::MessageLoopForIO::IOHandler,
+class CompletionHandler : public base::MessagePumpForIO::IOHandler,
                           public base::RefCounted<CompletionHandler> {
  public:
   CompletionHandler() = default;
@@ -45,8 +46,8 @@ class CompletionHandler : public base::MessageLoopForIO::IOHandler,
   friend class base::RefCounted<CompletionHandler>;
   ~CompletionHandler() override {}
 
-  // implement base::MessageLoopForIO::IOHandler.
-  void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
+  // implement base::MessagePumpForIO::IOHandler.
+  void OnIOCompleted(base::MessagePumpForIO::IOContext* context,
                      DWORD actual_bytes,
                      DWORD error) override;
 
@@ -74,7 +75,7 @@ CompletionHandler* CompletionHandler::Get() {
 }
 
 void CompletionHandler::OnIOCompleted(
-    base::MessageLoopForIO::IOContext* context,
+    base::MessagePumpForIO::IOContext* context,
     DWORD actual_bytes,
     DWORD error) {
   MyOverlapped* data = reinterpret_cast<MyOverlapped*>(context);
@@ -276,7 +277,7 @@ void File::WaitForPendingIO(int* num_pending_io) {
   while (*num_pending_io) {
     // Asynchronous IO operations may be in flight and the completion may end
     // up calling us back so let's wait for them.
-    base::MessageLoopForIO::IOHandler* handler = CompletionHandler::Get();
+    base::MessagePumpForIO::IOHandler* handler = CompletionHandler::Get();
     base::MessageLoopForIO::current()->WaitForIOCompletion(100, handler);
   }
 }

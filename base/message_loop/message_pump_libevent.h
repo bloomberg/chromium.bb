@@ -63,10 +63,6 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump,
     DISALLOW_COPY_AND_ASSIGN(FdWatchController);
   };
 
-  // TODO(gab): Mass migrate users of the old types.
-  using Watcher = FdWatcher;
-  using FileDescriptorWatcher = FdWatchController;
-
   MessagePumpLibevent();
   ~MessagePumpLibevent() override;
 

@@ -340,10 +340,9 @@ void AlsaVolumeControl::RefreshMixerFds(ScopedAlsaMixer* mixer) {
   DCHECK_GT(num_fds, 0);
   for (int i = 0; i < num_fds; ++i) {
     auto watcher =
-        std::make_unique<base::MessageLoopForIO::FileDescriptorWatcher>(
-            FROM_HERE);
+        std::make_unique<base::MessagePumpForIO::FdWatchController>(FROM_HERE);
     base::MessageLoopForIO::current()->WatchFileDescriptor(
-        pfds[i].fd, true /* persistent */, base::MessageLoopForIO::WATCH_READ,
+        pfds[i].fd, true /* persistent */, base::MessagePumpForIO::WATCH_READ,
         watcher.get(), this);
     file_descriptor_watchers_.push_back(std::move(watcher));
   }

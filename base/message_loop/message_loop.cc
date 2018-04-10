@@ -500,8 +500,8 @@ bool MessageLoopForUI::WatchFileDescriptor(
     int fd,
     bool persistent,
     MessagePumpLibevent::Mode mode,
-    MessagePumpLibevent::FileDescriptorWatcher* controller,
-    MessagePumpLibevent::Watcher* delegate) {
+    MessagePumpLibevent::FdWatchController* controller,
+    MessagePumpLibevent::FdWatcher* delegate) {
   return static_cast<MessagePumpForUI*>(pump_.get())
       ->WatchFileDescriptor(fd, persistent, mode, controller, delegate);
 }
@@ -523,23 +523,28 @@ MessagePumpForIO* ToPumpIO(MessagePump* pump) {
 }  // namespace
 
 #if defined(OS_WIN)
-void MessageLoopForIO::RegisterIOHandler(HANDLE file, IOHandler* handler) {
+void MessageLoopForIO::RegisterIOHandler(HANDLE file,
+                                         MessagePumpForIO::IOHandler* handler) {
   ToPumpIO(pump_.get())->RegisterIOHandler(file, handler);
 }
 
-bool MessageLoopForIO::RegisterJobObject(HANDLE job, IOHandler* handler) {
+bool MessageLoopForIO::RegisterJobObject(HANDLE job,
+                                         MessagePumpForIO::IOHandler* handler) {
   return ToPumpIO(pump_.get())->RegisterJobObject(job, handler);
 }
 
-bool MessageLoopForIO::WaitForIOCompletion(DWORD timeout, IOHandler* filter) {
+bool MessageLoopForIO::WaitForIOCompletion(
+    DWORD timeout,
+    MessagePumpForIO::IOHandler* filter) {
   return ToPumpIO(pump_.get())->WaitForIOCompletion(timeout, filter);
 }
 #elif defined(OS_POSIX)
-bool MessageLoopForIO::WatchFileDescriptor(int fd,
-                                           bool persistent,
-                                           Mode mode,
-                                           FileDescriptorWatcher* controller,
-                                           Watcher* delegate) {
+bool MessageLoopForIO::WatchFileDescriptor(
+    int fd,
+    bool persistent,
+    MessagePumpForIO::Mode mode,
+    MessagePumpForIO::FdWatchController* controller,
+    MessagePumpForIO::FdWatcher* delegate) {
   return ToPumpIO(pump_.get())->WatchFileDescriptor(
       fd,
       persistent,
@@ -553,11 +558,12 @@ bool MessageLoopForIO::WatchFileDescriptor(int fd,
 
 #if defined(OS_FUCHSIA)
 // Additional watch API for native platform resources.
-bool MessageLoopForIO::WatchZxHandle(zx_handle_t handle,
-                                     bool persistent,
-                                     zx_signals_t signals,
-                                     ZxHandleWatchController* controller,
-                                     ZxHandleWatcher* delegate) {
+bool MessageLoopForIO::WatchZxHandle(
+    zx_handle_t handle,
+    bool persistent,
+    zx_signals_t signals,
+    MessagePumpForIO::ZxHandleWatchController* controller,
+    MessagePumpForIO::ZxHandleWatcher* delegate) {
   return ToPumpIO(pump_.get())
       ->WatchZxHandle(handle, persistent, signals, controller, delegate);
 }

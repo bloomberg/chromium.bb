@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/threading/thread.h"
 #include "chromeos/binder/command_broker.h"
 #include "chromeos/chromeos_export.h"
@@ -19,7 +20,8 @@ class Driver;
 
 // IpcThreadPoller watches the driver for incoming commands, and polls and
 // handles them when necessary.
-class CHROMEOS_EXPORT IpcThreadPoller : public base::MessageLoopForIO::Watcher {
+class CHROMEOS_EXPORT IpcThreadPoller
+    : public base::MessagePumpForIO::FdWatcher {
  public:
   enum ThreadType {
     THREAD_TYPE_MAIN,  // The thread owns the driver instance.
@@ -44,7 +46,7 @@ class CHROMEOS_EXPORT IpcThreadPoller : public base::MessageLoopForIO::Watcher {
   ThreadType type_;
   Driver* driver_;
   CommandBroker command_broker_;
-  base::MessageLoopForIO::FileDescriptorWatcher watcher_;
+  base::MessagePumpForIO::FdWatchController watcher_;
   DISALLOW_COPY_AND_ASSIGN(IpcThreadPoller);
 };
 

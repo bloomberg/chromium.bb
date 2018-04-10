@@ -175,7 +175,7 @@ int SocketPosix::Accept(std::unique_ptr<SocketPosix>* socket,
     return rv;
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_fd_, true, base::MessageLoopForIO::WATCH_READ,
+          socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &accept_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on accept, errno " << errno;
     return MapSystemError(errno);
@@ -200,7 +200,7 @@ int SocketPosix::Connect(const SockaddrStorage& address,
     return rv;
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_fd_, true, base::MessageLoopForIO::WATCH_WRITE,
+          socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on connect, errno " << errno;
     return MapSystemError(errno);
@@ -338,7 +338,7 @@ int SocketPosix::ReadIfReady(IOBuffer* buf,
     return rv;
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_fd_, true, base::MessageLoopForIO::WATCH_READ,
+          socket_fd_, true, base::MessagePumpForIO::WATCH_READ,
           &read_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on read, errno " << errno;
     return MapSystemError(errno);
@@ -378,7 +378,7 @@ int SocketPosix::WaitForWrite(IOBuffer* buf,
   DCHECK_LT(0, buf_len);
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          socket_fd_, true, base::MessageLoopForIO::WATCH_WRITE,
+          socket_fd_, true, base::MessagePumpForIO::WATCH_WRITE,
           &write_socket_watcher_, this)) {
     PLOG(ERROR) << "WatchFileDescriptor failed on write, errno " << errno;
     return MapSystemError(errno);

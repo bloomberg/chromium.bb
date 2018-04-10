@@ -13,7 +13,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 
@@ -41,7 +41,8 @@ class WaitableEvent;
 // Watches for |kTerminateMessage| to be written to the file descriptor it is
 // watching. When it reads |kTerminateMessage|, it performs |terminate_task_|.
 // Used here to monitor the socket listening to g_signal_socket.
-class ServiceProcessTerminateMonitor : public base::MessageLoopForIO::Watcher {
+class ServiceProcessTerminateMonitor
+    : public base::MessagePumpForIO::FdWatcher {
  public:
 
   enum {
@@ -51,7 +52,7 @@ class ServiceProcessTerminateMonitor : public base::MessageLoopForIO::Watcher {
   explicit ServiceProcessTerminateMonitor(const base::Closure& terminate_task);
   ~ServiceProcessTerminateMonitor() override;
 
-  // MessageLoopForIO::Watcher overrides
+  // MessagePumpForIO::FdWatcher overrides
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -77,7 +78,7 @@ struct ServiceProcessState::StateData {
   std::unique_ptr<MultiProcessLock> running_lock;
 #endif
   std::unique_ptr<ServiceProcessTerminateMonitor> terminate_monitor;
-  base::MessageLoopForIO::FileDescriptorWatcher watcher;
+  base::MessagePumpForIO::FdWatchController watcher;
   int sockets[2];
   struct sigaction old_action;
   bool set_action;

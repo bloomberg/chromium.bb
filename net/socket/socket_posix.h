@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
@@ -24,7 +24,8 @@ struct SockaddrStorage;
 
 // Socket class to provide asynchronous read/write operations on top of the
 // posix socket api. It supports AF_INET, AF_INET6, and AF_UNIX addresses.
-class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
+class NET_EXPORT_PRIVATE SocketPosix
+    : public base::MessagePumpForIO::FdWatcher {
  public:
   SocketPosix();
   ~SocketPosix() override;
@@ -104,7 +105,7 @@ class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
   SocketDescriptor socket_fd() const { return socket_fd_; }
 
  private:
-  // base::MessageLoopForIO::Watcher methods.
+  // base::MessagePumpForIO::FdWatcher methods.
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -125,11 +126,11 @@ class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
 
   SocketDescriptor socket_fd_;
 
-  base::MessageLoopForIO::FileDescriptorWatcher accept_socket_watcher_;
+  base::MessagePumpForIO::FdWatchController accept_socket_watcher_;
   std::unique_ptr<SocketPosix>* accept_socket_;
   CompletionCallback accept_callback_;
 
-  base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
+  base::MessagePumpForIO::FdWatchController read_socket_watcher_;
 
   // Non-null when a Read() is in progress.
   scoped_refptr<IOBuffer> read_buf_;
@@ -139,7 +140,7 @@ class NET_EXPORT_PRIVATE SocketPosix : public base::MessageLoopForIO::Watcher {
   // Non-null when a ReadIfReady() is in progress.
   CompletionCallback read_if_ready_callback_;
 
-  base::MessageLoopForIO::FileDescriptorWatcher write_socket_watcher_;
+  base::MessagePumpForIO::FdWatchController write_socket_watcher_;
   scoped_refptr<IOBuffer> write_buf_;
   int write_buf_len_;
   // External callback; called when write or connect is complete.

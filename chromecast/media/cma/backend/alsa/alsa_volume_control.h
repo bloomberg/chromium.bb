@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "chromecast/media/cma/backend/system_volume_control.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 
@@ -19,7 +19,7 @@ namespace media {
 
 // SystemVolumeControl implementation for ALSA.
 class AlsaVolumeControl : public SystemVolumeControl,
-                          public base::MessageLoopForIO::Watcher {
+                          public base::MessagePumpForIO::FdWatcher {
  public:
   explicit AlsaVolumeControl(Delegate* delegate);
   ~AlsaVolumeControl() override;
@@ -52,7 +52,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
 
   void RefreshMixerFds(ScopedAlsaMixer* mixer);
 
-  // base::MessageLoopForIO::Watcher implementation:
+  // base::MessagePumpForIO::FdWatcher implementation:
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -76,7 +76,7 @@ class AlsaVolumeControl : public SystemVolumeControl,
   ScopedAlsaMixer* mute_mixer_ptr_;
   std::unique_ptr<ScopedAlsaMixer> amp_mixer_;
 
-  std::vector<std::unique_ptr<base::MessageLoopForIO::FileDescriptorWatcher>>
+  std::vector<std::unique_ptr<base::MessagePumpForIO::FdWatchController>>
       file_descriptor_watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(AlsaVolumeControl);

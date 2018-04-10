@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
@@ -235,7 +236,7 @@ void ChannelNacl::DidRecvMsg(std::unique_ptr<MessageContents> contents) {
   contents->fds.clear();
 
   // In POSIX, we would be told when there are bytes to read by implementing
-  // OnFileCanReadWithoutBlocking in MessageLoopForIO::Watcher. In NaCl, we
+  // OnFileCanReadWithoutBlocking in MessagePumpForIO::FdWatcher. In NaCl, we
   // instead know at this point because the reader thread posted some data to
   // us.
   ProcessIncomingMessages();

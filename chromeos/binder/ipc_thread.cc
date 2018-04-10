@@ -38,7 +38,7 @@ bool IpcThreadPoller::Initialize() {
     }
   }
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          driver_->GetFD(), true, base::MessageLoopForIO::WATCH_READ, &watcher_,
+          driver_->GetFD(), true, base::MessagePumpForIO::WATCH_READ, &watcher_,
           this)) {
     LOG(ERROR) << "Failed to initialize watcher.";
     return false;

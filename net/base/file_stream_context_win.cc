@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_for_io.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -131,7 +132,7 @@ void FileStream::Context::IOCompletionIsPending(CompletionOnceCallback callback,
 }
 
 void FileStream::Context::OnIOCompleted(
-    base::MessageLoopForIO::IOContext* context,
+    base::MessagePumpForIO::IOContext* context,
     DWORD bytes_read,
     DWORD error) {
   DCHECK_EQ(&io_context_, context);
