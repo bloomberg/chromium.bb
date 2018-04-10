@@ -1,5 +1,5 @@
 include_rules = [
-  "+mojo/common",
+  "+mojo/public/cpp/base",
   "+mojo/public/cpp/bindings",
   "+net/base",
   "+testing",
