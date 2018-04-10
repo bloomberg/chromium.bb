@@ -658,6 +658,11 @@ public class UrlBar extends AutocompleteEditText {
         return super.onTextContextMenuItem(id);
     }
 
+    @Override
+    protected boolean getDefaultEditable() {
+        return false;
+    }
+
     /**
      * Sets the text content of the URL bar.
      *
@@ -980,6 +985,14 @@ public class UrlBar extends AutocompleteEditText {
         Log.w(TAG, "Text change observed, triggering autocomplete.");
 
         mUrlBarDelegate.onTextChangedForAutocomplete();
+    }
+
+    /**
+     * Set whether the URL text should be ellipsized. Note that this is different from
+     * {@link #limitDisplayableLength} in that it limits the visible part of the text.
+     */
+    public void setShouldEllipsizeUrlText(boolean shouldEllipsize) {
+        setEllipsize(shouldEllipsize ? TextUtils.TruncateAt.END : null);
     }
 
     /**

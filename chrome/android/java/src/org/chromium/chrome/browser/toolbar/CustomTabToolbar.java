@@ -441,6 +441,8 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (mUrlBar.setUrl(url, displayText)) {
             mUrlBar.emphasizeUrl();
         }
+
+        mUrlBar.setShouldEllipsizeUrlText(publisherUrl != null);
     }
 
     private boolean isStoredArticle(String url) {
