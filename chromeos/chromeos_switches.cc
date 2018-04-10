@@ -40,6 +40,12 @@ const base::Feature kAssistantFeatureForLocale{
 const base::Feature kVoiceInteractionFeature{"ChromeOSVoiceInteraction",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether Instant Tethering supports hosts which use the background
+// advertisement model.
+const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
+    "InstantTetheringBackgroundAdvertisementSupport",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace
 
 // Please keep the order of these switches synchronized with the header file
@@ -714,6 +720,11 @@ bool IsDisplayZoomSettingEnabled() {
 bool ShouldHideActiveAppsFromShelf() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kHideActiveAppsFromShelf);
+}
+
+bool IsInstantTetheringBackgroundAdvertisingSupported() {
+  return base::FeatureList::IsEnabled(
+      kInstantTetheringBackgroundAdvertisementSupport);
 }
 
 }  // namespace switches

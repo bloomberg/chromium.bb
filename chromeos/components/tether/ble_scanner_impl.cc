@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/ble_synchronizer.h"
@@ -339,7 +340,8 @@ void BleScannerImpl::CheckForMatchingScanFilters(
 
   // If the device has not yet been identified, try identifying |service_data|
   // as a background advertisement.
-  if (device_id.empty() && service_data.size() >= kMinNumBytesInServiceData &&
+  if (chromeos::switches::IsInstantTetheringBackgroundAdvertisingSupported() &&
+      device_id.empty() && service_data.size() >= kMinNumBytesInServiceData &&
       service_data.size() <= kMaxNumBytesInBackgroundServiceData) {
     device_id = background_eid_generator_->IdentifyRemoteDeviceByAdvertisement(
         remote_beacon_seed_fetcher_, service_data,

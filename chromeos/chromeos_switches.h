@@ -215,6 +215,10 @@ CHROMEOS_EXPORT bool IsDisplayZoomSettingEnabled();
 // Returns true if we should hide open apps that aren't pinned from the shelf.
 CHROMEOS_EXPORT bool ShouldHideActiveAppsFromShelf();
 
+// Returns true if Instant Tethering should support hosts which use the
+// background advertisement model
+CHROMEOS_EXPORT bool IsInstantTetheringBackgroundAdvertisingSupported();
+
 }  // namespace switches
 }  // namespace chromeos
 
