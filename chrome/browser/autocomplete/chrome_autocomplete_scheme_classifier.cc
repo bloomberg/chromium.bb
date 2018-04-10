@@ -22,6 +22,9 @@ ChromeAutocompleteSchemeClassifier::~ChromeAutocompleteSchemeClassifier() {
 metrics::OmniboxInputType
 ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
     const std::string& scheme) const {
+  if (scheme.empty()) {
+    return metrics::OmniboxInputType::INVALID;
+  }
   if (base::IsStringASCII(scheme) &&
       (ProfileIOData::IsHandledProtocol(scheme) ||
        base::LowerCaseEqualsASCII(scheme, content::kViewSourceScheme) ||
@@ -55,7 +58,16 @@ ChromeAutocompleteSchemeClassifier::GetInputTypeForScheme(
       // to at all.
       return metrics::OmniboxInputType::QUERY;
 
-    default:
-      return metrics::OmniboxInputType::INVALID;
+    case ExternalProtocolHandler::UNKNOWN: {
+      // If block state is unknown, check if there is an application registered
+      // for the url scheme.
+      GURL url(scheme + "://");
+      base::string16 application_name =
+          shell_integration::GetApplicationNameForProtocol(url);
+      return application_name.empty() ? metrics::OmniboxInputType::INVALID
+                                      : metrics::OmniboxInputType::URL;
+    }
   }
+  NOTREACHED();
+  return metrics::OmniboxInputType::INVALID;
 }

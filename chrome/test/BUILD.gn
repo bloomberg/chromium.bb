@@ -2246,6 +2246,7 @@ test("unit_tests") {
     "../browser/android/webapps/add_to_homescreen_data_fetcher_unittest.cc",
     "../browser/app_controller_mac_unittest.mm",
     "../browser/autocomplete/chrome_autocomplete_provider_client_unittest.cc",
+    "../browser/autocomplete/chrome_autocomplete_scheme_classifier_unittest.cc",
     "../browser/autocomplete/search_provider_unittest.cc",
     "../browser/autocomplete/shortcuts_provider_extension_unittest.cc",
     "../browser/background_sync/background_sync_controller_impl_unittest.cc",
