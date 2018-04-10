@@ -230,6 +230,10 @@ class DisplayPrefsTest : public ash::AshTestBase {
         .ToString();
   }
 
+  chromeos::DisplayPowerState GetRequestedPowerState() const {
+    return ash::Shell::Get()->display_configurator()->GetRequestedPowerState();
+  }
+
   PrefService* local_state() { return &local_state_; }
   DisplayPrefs* display_prefs() { return display_prefs_.get(); }
 
@@ -263,8 +267,7 @@ TEST_F(DisplayPrefsTest, ListedLayoutOverrides) {
 
   display_prefs()->LoadDisplayPreferences(true);
   // DisplayPowerState should be ignored at boot.
-  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON,
-            shell->display_configurator()->requested_power_state());
+  EXPECT_EQ(chromeos::DISPLAY_POWER_ALL_ON, GetRequestedPowerState());
 
   shell->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
@@ -776,22 +779,21 @@ TEST_F(DisplayPrefsTest, DisplayPowerStateAfterRestart) {
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   display_prefs()->LoadDisplayPreferences(false);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            ash::Shell::Get()->display_configurator()->requested_power_state());
+            GetRequestedPowerState());
 }
 
 TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
-  ash::Shell* shell = ash::Shell::Get();
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
   display_prefs()->LoadDisplayPreferences(false);
   // DisplayPowerState should be ignored at boot.
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            shell->display_configurator()->requested_power_state());
+            GetRequestedPowerState());
 
   display_prefs()->StoreDisplayPowerStateForTest(
       chromeos::DISPLAY_POWER_ALL_OFF);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            shell->display_configurator()->requested_power_state());
+            GetRequestedPowerState());
   EXPECT_EQ("internal_off_external_on",
             local_state()->GetString(prefs::kDisplayPowerState));
 
@@ -799,7 +801,7 @@ TEST_F(DisplayPrefsTest, DontSaveAndRestoreAllOff) {
   local_state()->SetString(prefs::kDisplayPowerState, "all_off");
   display_prefs()->LoadDisplayPreferences(false);
   EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
-            shell->display_configurator()->requested_power_state());
+            GetRequestedPowerState());
 }
 
 // Tests that display configuration changes caused by TabletModeController
