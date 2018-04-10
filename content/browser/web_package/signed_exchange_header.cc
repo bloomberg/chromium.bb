@@ -82,6 +82,12 @@ bool ParseRequestMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
     return false;
   }
   out->set_request_url(GURL(url_iter->second.GetBytestringAsString()));
+  if (!out->request_url().is_valid() || out->request_url().has_ref()) {
+    TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseRequestMap",
+                     "error", ":url is not a valid URL.", "url",
+                     url_iter->second.GetBytestringAsString().as_string());
+    return false;
+  }
 
   auto method_iter = request_map.find(
       cbor::CBORValue(kMethodKey, cbor::CBORValue::Type::BYTE_STRING));

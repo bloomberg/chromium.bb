@@ -228,7 +228,7 @@ SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
       return base::nullopt;
     }
     sig.cert_url = GURL(value.params["certUrl"]);
-    if (!sig.cert_url.is_valid()) {
+    if (!sig.cert_url.is_valid() || sig.cert_url.has_ref()) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "certUrl".
       TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -253,7 +253,7 @@ SignedExchangeHeaderParser::ParseSignature(base::StringPiece signature_str) {
     // TODO(https://crbug.com/819467): Support ed25519key.
     // sig.ed25519_key = value.params["ed25519Key"];
     sig.validity_url = GURL(value.params["validityUrl"]);
-    if (!sig.validity_url.is_valid()) {
+    if (!sig.validity_url.is_valid() || sig.validity_url.has_ref()) {
       TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"),
                        "SignedExchangeHeaderParser::ParseSignature", "error",
                        "'validityUrl' parameter is not a valid URL.",
