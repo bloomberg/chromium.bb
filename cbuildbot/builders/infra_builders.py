@@ -46,3 +46,17 @@ class PuppetPreCqBuilder(generic_builders.PreCqBuilder):
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(infra_stages.TestPuppetSpecsStage)
+
+
+class InfraUnittestsPreCqBuilder(generic_builders.PreCqBuilder):
+  """Builder that runs infra projects' venved unittests."""
+
+  def GetVersionInfo(self):
+    """Returns the CrOS version info from the chromiumos-overlay."""
+    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
+
+  def RunTestStages(self):
+    """Run various infra venv package unittsets."""
+    self._RunStage(build_stages.UprevStage)
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(infra_stages.TestVenvPackagesStage)

@@ -2180,6 +2180,20 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
           'chromeos/chromeos-admin/+/HEAD/puppet/README.md',
   )
 
+  site_config.AddWithoutTemplate(
+      'chromeos-infra-unittests-pre-cq',
+      site_config.templates.pre_cq,
+      site_config.templates.internal,
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_unittest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      builder_class_name='infra_builders.InfraUnittestsPreCqBuilder',
+      use_sdk=True,
+      build_timeout=60 * 60,
+      description='Run unittests for infra repositories',
+  )
+
 
 def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the Android PFQ.
