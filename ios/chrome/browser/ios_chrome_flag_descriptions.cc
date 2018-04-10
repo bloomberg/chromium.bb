@@ -143,6 +143,11 @@ const char kToolbarButtonPositionsName[] = "Toolbar's buttons positions";
 const char kToolbarButtonPositionsDescription[] =
     "Position of the toolbars buttons.";
 
+const char kUIRefreshLocationBarName[] = "UI Refresh Location Bar";
+const char kUIRefreshLocationBarDescription[] =
+    "When enabled, the UI Refresh location bar with a custom steady-state will "
+    "be displayed.";
+
 const char kUIRefreshPhase1Name[] = "UI Refresh Phase 1";
 const char kUIRefreshPhase1Description[] =
     "When enabled, the first phase of the iOS UI refresh will be displayed.";

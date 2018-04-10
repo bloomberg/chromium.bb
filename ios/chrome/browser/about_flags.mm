@@ -284,6 +284,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
      flag_descriptions::kAutofillDynamicFormsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
+    {"ui-refresh-location-bar", flag_descriptions::kUIRefreshLocationBarName,
+     flag_descriptions::kUIRefreshLocationBarDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUIRefreshLocationBar)},
 };
 
 // Add all switches from experimental flags to |command_line|.

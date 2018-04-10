@@ -8,6 +8,7 @@ source_set("location_bar") {
     "location_bar_consumer.h",
     "location_bar_coordinator.h",
     "location_bar_coordinator.mm",
+    "location_bar_generic_coordinator.h",
     "location_bar_legacy_consumer.h",
     "location_bar_legacy_coordinator.h",
     "location_bar_legacy_coordinator.mm",

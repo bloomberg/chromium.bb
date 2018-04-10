@@ -251,7 +251,9 @@ const int kLocationAuthorizationStatusCount = 4;
 #pragma mark - OmniboxFocuser
 
 - (void)focusOmniboxFromSearchButton {
-  NOTREACHED();
+  OmniboxEditModel* model = _locationBarController->GetLocationEntry()->model();
+  model->set_focus_source(OmniboxEditModel::FocusSource::SEARCH_BUTTON);
+  [self focusOmnibox];
 }
 
 - (void)focusOmnibox {
