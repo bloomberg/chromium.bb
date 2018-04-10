@@ -50,8 +50,10 @@ MenuConfig::MenuConfig()
       show_delay(400),
       corner_radius(0),
       touchable_corner_radius(8),
+      touchable_anchor_offset(8),
       touchable_menu_height(36),
       touchable_menu_width(256),
+      touchable_menu_shadow_elevation(12),
       vertical_touchable_menu_item_padding(8) {
   Init();
 }

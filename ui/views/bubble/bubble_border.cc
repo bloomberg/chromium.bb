@@ -182,7 +182,13 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
 BubbleBorder::~BubbleBorder() {}
 
 // static
-gfx::Insets BubbleBorder::GetBorderAndShadowInsets() {
+gfx::Insets BubbleBorder::GetBorderAndShadowInsets(
+    base::Optional<int> elevation) {
+  if (elevation.has_value()) {
+    return -gfx::ShadowValue::GetMargin(GetShadowValues(elevation)) +
+           gfx::Insets(kBorderThicknessDip);
+  }
+
   constexpr gfx::Insets blur(kShadowBlur + kBorderThicknessDip);
   constexpr gfx::Insets offset(-kShadowVerticalOffset, 0, kShadowVerticalOffset,
                                0);
@@ -378,8 +384,11 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 }
 
 gfx::Insets BubbleBorder::GetInsets() const {
-  if (UseMaterialDesign())
-    return (shadow_ == NO_ASSETS) ? gfx::Insets() : GetBorderAndShadowInsets();
+  if (UseMaterialDesign()) {
+    return (shadow_ == NO_ASSETS)
+               ? gfx::Insets()
+               : GetBorderAndShadowInsets(md_shadow_elevation_);
+  }
 
   // The insets contain the stroke and shadow pixels outside the bubble fill.
   const int inset = GetBorderThickness();
@@ -401,14 +410,20 @@ gfx::Size BubbleBorder::GetMinimumSize() const {
 }
 
 // static
-const cc::PaintFlags& BubbleBorder::GetBorderAndShadowFlags() {
-  // This object is always the same, so construct it once and cache.
-  static const base::NoDestructor<cc::PaintFlags> flags([] {
-    cc::PaintFlags f;
-    constexpr SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x26);
-    f.setColor(kBorderColor);
-    f.setAntiAlias(true);
+const gfx::ShadowValues& BubbleBorder::GetShadowValues(
+    base::Optional<int> elevation) {
+  // The shadows are always the same for any elevation, so construct them once
+  // and cache.
+  static base::NoDestructor<std::map<int, gfx::ShadowValues>> shadow_map;
+  if (shadow_map->find(elevation.value_or(-1)) != shadow_map->end())
+    return shadow_map->find(elevation.value_or(-1))->second;
 
+  gfx::ShadowValues shadows;
+  if (elevation.has_value()) {
+    DCHECK(elevation.value() >= 0);
+    shadows = gfx::ShadowValues(
+        gfx::ShadowValue::MakeMdShadowValues(elevation.value()));
+  } else {
     constexpr int kSmallShadowVerticalOffset = 2;
     constexpr int kSmallShadowBlur = 4;
     constexpr SkColor kSmallShadowColor = SkColorSetA(SK_ColorBLACK, 0x33);
@@ -416,15 +431,38 @@ const cc::PaintFlags& BubbleBorder::GetBorderAndShadowFlags() {
     // gfx::ShadowValue counts blur pixels both inside and outside the shape,
     // whereas these blur values only describe the outside portion, hence they
     // must be doubled.
-    f.setLooper(gfx::CreateShadowDrawLooper({
+    shadows = gfx::ShadowValues({
         {gfx::Vector2d(0, kSmallShadowVerticalOffset), 2 * kSmallShadowBlur,
          kSmallShadowColor},
         {gfx::Vector2d(0, kShadowVerticalOffset), 2 * kShadowBlur,
          kLargeShadowColor},
-    }));
-    return f;
-  }());
-  return *flags;
+    });
+  }
+
+  shadow_map->insert(
+      std::pair<int, gfx::ShadowValues>(elevation.value_or(-1), shadows));
+  return shadow_map->find(elevation.value_or(-1))->second;
+}
+
+// static
+const cc::PaintFlags& BubbleBorder::GetBorderAndShadowFlags(
+    base::Optional<int> elevation) {
+  // The flags are always the same for any elevation, so construct them once and
+  // cache.
+  static base::NoDestructor<std::map<int, cc::PaintFlags>> flag_map;
+
+  if (flag_map->find(elevation.value_or(-1)) != flag_map->end())
+    return flag_map->find(elevation.value_or(-1))->second;
+
+  cc::PaintFlags flags;
+  constexpr SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x26);
+  flags.setColor(kBorderColor);
+  flags.setAntiAlias(true);
+  flags.setLooper(gfx::CreateShadowDrawLooper(GetShadowValues(elevation)));
+  flag_map->insert(
+      std::pair<int, cc::PaintFlags>(elevation.value_or(-1), flags));
+
+  return flag_map->find(elevation.value_or(-1))->second;
 }
 
 gfx::Size BubbleBorder::GetSizeForContentsSize(
@@ -560,7 +598,8 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
   canvas->sk_canvas()->clipRRect(r_rect, SkClipOp::kDifference,
                                  true /*doAntiAlias*/);
 
-  DrawBorderAndShadow(std::move(r_rect), &cc::PaintCanvas::drawRRect, canvas);
+  DrawBorderAndShadow(std::move(r_rect), &cc::PaintCanvas::drawRRect, canvas,
+                      md_shadow_elevation_);
 }
 
 void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {
