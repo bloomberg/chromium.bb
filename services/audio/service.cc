@@ -90,6 +90,14 @@ void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
       ref_factory_->CreateRef());
 }
 
+void Service::BindStreamFactoryRequest(mojom::StreamFactoryRequest request) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(ref_factory_);
+  if (!stream_factory_)
+    stream_factory_.emplace(audio_manager_accessor_->GetAudioManager());
+  stream_factory_->Bind(std::move(request), ref_factory_->CreateRef());
+}
+
 void Service::MaybeRequestQuitDelayed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (quit_timeout_ <= base::TimeDelta())
