@@ -11,12 +11,21 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace subresource_filter {
+
+namespace {
+
+void LogSecureInfo(AdDelayThrottle::SecureInfo info) {
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.AdDelay.SecureInfo", info);
+}
+
+}  // namespace
 
 const base::Feature AdDelayThrottle::kFeature{
     "DelayUnsafeAds", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -31,22 +40,33 @@ AdDelayThrottle::Factory::Factory()
               kDefaultDelay.InMilliseconds()))),
       // TODO(csharrison): Also check for AdTagging here to avoid reporting on
       // groups without that experiment.
-      enabled_(base::FeatureList::IsEnabled(kFeature)) {}
+      delay_enabled_(base::FeatureList::IsEnabled(kFeature)) {}
 
-// TODO(csharrison): Log metrics for the # of requests delayed.
 AdDelayThrottle::Factory::~Factory() = default;
 
 std::unique_ptr<AdDelayThrottle> AdDelayThrottle::Factory::MaybeCreate(
     std::unique_ptr<AdDelayThrottle::MetadataProvider> provider) const {
   DCHECK(provider);
-  if (!enabled_)
-    return nullptr;
-
-  return base::WrapUnique(
-      new AdDelayThrottle(std::move(provider), insecure_delay_));
+  return base::WrapUnique(new AdDelayThrottle(std::move(provider),
+                                              insecure_delay_, delay_enabled_));
 }
 
-AdDelayThrottle::~AdDelayThrottle() = default;
+// TODO(csharrison): Log metrics for actual delay time.
+AdDelayThrottle::~AdDelayThrottle() {
+  if (provider_->IsAdRequest()) {
+    LogSecureInfo(was_ever_insecure_ ? SecureInfo::kInsecureAd
+                                     : SecureInfo::kSecureAd);
+  } else {
+    LogSecureInfo(was_ever_insecure_ ? SecureInfo::kInsecureNonAd
+                                     : SecureInfo::kSecureNonAd);
+  }
+}
+
+void AdDelayThrottle::DetachFromCurrentSequence() {
+  // The throttle is moving to another thread. Ensure this is done before any
+  // weak pointers are created.
+  DCHECK(!weak_factory_.HasWeakPtrs());
+}
 
 void AdDelayThrottle::WillStartRequest(network::ResourceRequest* request,
                                        bool* defer) {
@@ -74,6 +94,10 @@ bool AdDelayThrottle::MaybeDefer(const GURL& url) {
   if (!was_ever_insecure_ || !provider_->IsAdRequest())
     return false;
 
+  // Bail out right before we'd actually defer if the feature isn't enabled.
+  if (!delay_enabled_)
+    return false;
+
   // TODO(csharrison): Consider logging to the console here that Chrome
   // delayed this request.
   has_deferred_ = true;
@@ -89,10 +113,12 @@ void AdDelayThrottle::Resume() {
 }
 
 AdDelayThrottle::AdDelayThrottle(std::unique_ptr<MetadataProvider> provider,
-                                 base::TimeDelta insecure_delay)
+                                 base::TimeDelta insecure_delay,
+                                 bool delay_enabled)
     : content::URLLoaderThrottle(),
       provider_(std::move(provider)),
       insecure_delay_(insecure_delay),
+      delay_enabled_(delay_enabled),
       weak_factory_(this) {}
 
 }  // namespace subresource_filter

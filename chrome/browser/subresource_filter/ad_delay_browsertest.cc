@@ -108,3 +108,20 @@ IN_PROC_BROWSER_TEST_F(MinimalAdDelayBrowserTest, AdRequest_IsNotBlackholed) {
   FetchResources(WaitForPolicy::kBothFetches);
   EXPECT_LE(GetExpectedDelay(), timer.Elapsed());
 }
+
+IN_PROC_BROWSER_TEST_F(MinimalAdDelayBrowserTest, SyncXHRAd) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  std::string script = R"(
+    var request = new XMLHttpRequest();
+    request.open('GET', '/subresource_filter/included_script.js', false);
+    request.send(null);
+  )";
+  base::ElapsedTimer timer;
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), script.c_str()));
+  subresource_filter::AdDelayThrottle::Factory factory;
+  EXPECT_LE(factory.insecure_delay(), timer.Elapsed());
+}

@@ -516,6 +516,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="4" label="An ad was found but data collection was rejected"/>
 </enum>
 
+<enum name="AdSecureInfo">
+  <int value="0" label="Secure ad request"/>
+  <int value="1" label="Insecure ad request"/>
+  <int value="2" label="Secure non-ad request"/>
+  <int value="3" label="Insecure non-ad request"/>
+</enum>
+
 <enum name="AffiliationFetchResult">
   <int value="0" label="Success"/>
   <int value="1" label="Network/server error"/>

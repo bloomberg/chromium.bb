@@ -27,6 +27,7 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
 
   static constexpr base::TimeDelta kDefaultDelay =
       base::TimeDelta::FromMilliseconds(50);
+
   class MetadataProvider {
    public:
     virtual ~MetadataProvider() {}
@@ -45,17 +46,36 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
     std::unique_ptr<AdDelayThrottle> MaybeCreate(
         std::unique_ptr<MetadataProvider> provider) const;
 
+    base::TimeDelta insecure_delay() const { return insecure_delay_; }
+
    private:
     const base::TimeDelta insecure_delay_;
-    const bool enabled_ = false;
+    const bool delay_enabled_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Factory);
+  };
+
+  // This enum backs a histogram. Make sure to only append elements, and update
+  // enums.xml with new values.
+  enum class SecureInfo {
+    // Ad that was loaded securely (e.g. using https).
+    kSecureAd = 0,
+
+    // Ad that was loaded insecurely (e.g. at least one request through http).
+    kInsecureAd = 1,
+
+    kSecureNonAd = 2,
+    kInsecureNonAd = 3,
+
+    // Add new elements above kLast.
+    kMaxValue = kInsecureNonAd
   };
 
   ~AdDelayThrottle() override;
 
  private:
   // content::URLLoaderThrottle:
+  void DetachFromCurrentSequence() override;
   void WillStartRequest(network::ResourceRequest* request,
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
@@ -67,19 +87,24 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
   void Resume();
 
   AdDelayThrottle(std::unique_ptr<MetadataProvider> provider,
-                  base::TimeDelta insecure_delay);
+                  base::TimeDelta insecure_delay,
+                  bool delay_enabled);
 
   // Will never be nullptr.
   std::unique_ptr<MetadataProvider> provider_;
 
   // How long to delay an ad request that is insecure.
-  base::TimeDelta insecure_delay_;
+  const base::TimeDelta insecure_delay_;
 
   // Only defer at most once per request.
   bool has_deferred_ = false;
 
   // Tracks whether this request was ever insecure, across all its redirects.
   bool was_ever_insecure_ = false;
+
+  // Whether to actually delay the request. If set to false, will operate in a
+  // dry-run style mode that only logs metrics.
+  const bool delay_enabled_ = false;
 
   base::WeakPtrFactory<AdDelayThrottle> weak_factory_;
 
