@@ -681,6 +681,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         'copy-tex-image-and-sub-image-2d.html',
         ['android', ('qualcomm', 'Adreno (TM) 420'), 'no_passthrough'],
         bug=499555)
+    self.Flaky('conformance/textures/misc/' +
+        'tex-video-using-tex-unit-non-zero.html',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=830901)
     self.Fail('conformance/uniforms/uniform-samplers-test.html',
         ['android', ('qualcomm', 'Adreno (TM) 430'), 'no_passthrough'],
         bug=663071)
