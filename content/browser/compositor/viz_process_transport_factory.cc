@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "components/viz/client/client_layer_tree_frame_sink.h"
+#include "components/viz/client/hit_test_data_provider_draw_quad.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
@@ -520,6 +521,9 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
+  params.hit_test_data_provider =
+      std::make_unique<viz::HitTestDataProviderDrawQuad>(
+          /*should_ask_for_child_region=*/false);
 
   scoped_refptr<viz::ContextProvider> compositor_context;
   scoped_refptr<viz::RasterContextProvider> worker_context;

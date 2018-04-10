@@ -177,4 +177,45 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
             hit_test_region_list->regions[0]->frame_sink_id);
 }
 
+// Test to ensure that browser shouldn't set kHitTestAsk flag for the renderers
+// it embeds.
+TEST(HitTestDataProviderDrawQuad, HitTestDataBrowser) {
+  std::unique_ptr<HitTestDataProvider> hit_test_data_provider =
+      std::make_unique<HitTestDataProviderDrawQuad>(
+          /*should_ask_for_child_region=*/false);
+
+  constexpr gfx::Rect frame_rect(1024, 768);
+  SurfaceId child_surface_id = CreateChildSurfaceId(2);
+  constexpr gfx::Rect child_rect(200, 100);
+  gfx::Transform render_to_browser_transform;
+  render_to_browser_transform.Translate(-200, -100);
+  auto pass = CreateRenderPassWithChildSurface(child_surface_id, frame_rect,
+                                               child_rect, gfx::Transform(),
+                                               render_to_browser_transform);
+  CompositorFrame compositor_frame =
+      CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
+  mojom::HitTestRegionListPtr hit_test_region_list =
+      hit_test_data_provider->GetHitTestData(compositor_frame);
+
+  // Browser should be able to receive both mouse and touch events. It embeds
+  // one renderer, which should also have mouse and touch flags; the renderer
+  // should have child surface flag because it is being embeded, but not ask
+  // flag because we shouldn't do asyn targeting for the entire renderer.
+  EXPECT_EQ(mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestMine,
+            hit_test_region_list->flags);
+  EXPECT_EQ(frame_rect, hit_test_region_list->bounds);
+  EXPECT_EQ(1u, hit_test_region_list->regions.size());
+  EXPECT_EQ(child_surface_id.frame_sink_id(),
+            hit_test_region_list->regions[0]->frame_sink_id);
+  EXPECT_EQ(
+      mojom::kHitTestMouse | mojom::kHitTestTouch | mojom::kHitTestChildSurface,
+      hit_test_region_list->regions[0]->flags);
+  EXPECT_EQ(child_rect, hit_test_region_list->regions[0]->rect);
+  gfx::Transform browser_to_render_transform;
+  EXPECT_TRUE(
+      render_to_browser_transform.GetInverse(&browser_to_render_transform));
+  EXPECT_EQ(browser_to_render_transform,
+            hit_test_region_list->regions[0]->transform);
+}
+
 }  // namespace viz
