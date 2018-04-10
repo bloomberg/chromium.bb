@@ -163,12 +163,15 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   }
   LayoutBlockFlow* block_flow =
       box_->IsLayoutNGMixin() ? ToLayoutBlockFlow(box_) : nullptr;
+  NGLayoutInputNode first_child = FirstChild();
   scoped_refptr<NGLayoutResult> layout_result;
   if (box_->IsLayoutNGMixin()) {
     layout_result = ToLayoutBlockFlow(box_)->CachedLayoutResult(
         constraint_space, break_token);
     if (layout_result) {
-      block_flow->SetPaintFragment(layout_result->PhysicalFragment());
+      block_flow->ClearPaintFragment();
+      if (first_child && first_child.IsInline())
+        block_flow->SetPaintFragment(layout_result->PhysicalFragment());
       return layout_result;
     }
   }
@@ -185,7 +188,6 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       layout_result->UnpositionedFloats().IsEmpty()) {
     DCHECK(layout_result->PhysicalFragment());
 
-    NGLayoutInputNode first_child = FirstChild();
     if (block_flow && first_child && first_child.IsInline()) {
         CopyFragmentDataToLayoutBoxForInlineChildren(
             ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
