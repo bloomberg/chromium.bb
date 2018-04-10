@@ -10,10 +10,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
+#include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
+#include "services/audio/stream_factory.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 
@@ -64,6 +67,7 @@ class Service : public service_manager::Service {
  private:
   void BindSystemInfoRequest(mojom::SystemInfoRequest request);
   void BindDebugRecordingRequest(mojom::DebugRecordingRequest request);
+  void BindStreamFactoryRequest(mojom::StreamFactoryRequest request);
 
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
@@ -81,6 +85,7 @@ class Service : public service_manager::Service {
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   std::unique_ptr<SystemInfo> system_info_;
   std::unique_ptr<DebugRecording> debug_recording_;
+  base::Optional<StreamFactory> stream_factory_;
 
   service_manager::BinderRegistry registry_;
 
