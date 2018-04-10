@@ -76,6 +76,8 @@ def attribute_context(interface, attribute, interfaces):
         has_extended_attribute_value(attribute, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
         includes.add('bindings/core/v8/binding_security.h')
+    if is_check_security_for_return_value:
+        includes.add('core/frame/use_counter.h')
     # [CrossOrigin]
     if has_extended_attribute_value(attribute, 'CrossOrigin', 'Setter'):
         includes.add('bindings/core/v8/v8_cross_origin_setter_info.h')

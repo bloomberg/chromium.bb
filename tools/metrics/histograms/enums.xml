@@ -15739,7 +15739,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FeatureObserver">
-<!-- Generated from third_party/WebKit/public/platform/web_feature.mojom.-->
+<!-- Generated from third_party/blink/public/platform/web_feature.mojom.-->
 
   <int value="0" label="OBSOLETE_PageDestruction"/>
   <int value="1" label="LegacyNotifications"/>
@@ -18210,6 +18210,12 @@ Called by update_net_error_codes.py.-->
   <int value="2404" label="ClientHintsRtt"/>
   <int value="2405" label="ClientHintsDownlink"/>
   <int value="2406" label="ClientHintsEct"/>
+  <int value="2407" label="CrossOriginHTMLIFrameElementContentDocument"/>
+  <int value="2408" label="CrossOriginHTMLIFrameElementGetSVGDocument"/>
+  <int value="2409" label="CrossOriginHTMLEmbedElementGetSVGDocument"/>
+  <int value="2410" label="CrossOriginHTMLFrameElementContentDocument"/>
+  <int value="2411" label="CrossOriginHTMLObjectElementContentDocument"/>
+  <int value="2412" label="CrossOriginHTMLObjectElementGetSVGDocument"/>
 </enum>
 
 <enum name="FeedbackSource">

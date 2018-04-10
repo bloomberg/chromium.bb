@@ -1896,6 +1896,12 @@ enum WebFeature {
   kClientHintsRtt = 2404,
   kClientHintsDownlink = 2405,
   kClientHintsEct = 2406,
+  kCrossOriginHTMLIFrameElementContentDocument = 2407,
+  kCrossOriginHTMLIFrameElementGetSVGDocument = 2408,
+  kCrossOriginHTMLEmbedElementGetSVGDocument = 2409,
+  kCrossOriginHTMLFrameElementContentDocument = 2410,
+  kCrossOriginHTMLObjectElementContentDocument = 2411,
+  kCrossOriginHTMLObjectElementGetSVGDocument = 2412,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

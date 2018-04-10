@@ -150,6 +150,8 @@ def method_context(interface, method, is_visible=True):
         has_extended_attribute_value(method, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
         includes.add('bindings/core/v8/binding_security.h')
+    if is_check_security_for_return_value:
+        includes.add('core/frame/use_counter.h')
 
     is_ce_reactions = 'CEReactions' in extended_attributes
     if is_ce_reactions:
