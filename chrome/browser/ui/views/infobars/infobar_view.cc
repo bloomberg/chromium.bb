@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
-#include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/strings/grit/components_strings.h"
@@ -91,7 +90,6 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
     : infobars::InfoBar(std::move(delegate)),
       views::ExternalFocusTracker(this, nullptr) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
-  SetBackground(std::make_unique<InfoBarBackground>());
 
   // Clip child layers; without this, buttons won't look correct during
   // animation.
@@ -215,7 +213,7 @@ void InfoBarView::OnPaint(gfx::Canvas* canvas) {
 
 void InfoBarView::OnThemeChanged() {
   const SkColor background_color = GetColor(kBackgroundColor);
-  background()->SetNativeControlColor(background_color);
+  SetBackground(views::CreateSolidBackground(background_color));
 
   const SkColor text_color = GetColor(kTextColor);
   views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,

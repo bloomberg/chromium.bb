@@ -3142,8 +3142,6 @@ split_static_library("ui") {
         "views/infobars/alternate_nav_infobar_view.h",
         "views/infobars/confirm_infobar.cc",
         "views/infobars/confirm_infobar.h",
-        "views/infobars/infobar_background.cc",
-        "views/infobars/infobar_background.h",
         "views/infobars/infobar_container_view.cc",
         "views/infobars/infobar_container_view.h",
         "views/infobars/infobar_view.cc",
