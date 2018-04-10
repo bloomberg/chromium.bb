@@ -22420,6 +22420,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="NTLM Reject"/>
   <int value="6" label="Negotiate Start"/>
   <int value="7" label="Negotiate Reject"/>
+  <int value="8" label="SpdyProxy Start (Deprecated)"/>
+  <int value="9" label="SpdyProxy Reject (Deprecated)"/>
 </enum>
 
 <enum name="HttpAuthPromptType">
@@ -22461,6 +22463,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="13" label="Negotiate Secure Proxy"/>
   <int value="14" label="Negotiate Server"/>
   <int value="15" label="Negotiate Secure Server"/>
+  <int value="16" label="SpdyProxy (Deprecated)"/>
+  <int value="17" label="SpdyProxy Secure (Deprecated)"/>
+  <int value="18" label="SpdyProxy Server (Invalid)"/>
+  <int value="19" label="SpdyProxy Secure Server (Invalid)"/>
 </enum>
 
 <enum name="HttpCacheParallelWritingPattern">
