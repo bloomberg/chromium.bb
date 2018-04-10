@@ -823,15 +823,25 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
   if (!IsSameDocument() && !is_error) {
-    // TODO(csharrison,nasko): Increase the max value to 3 minutes in M68 or
-    // M69.
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_,
-                                    ready_to_commit_time_ - navigation_start_,
-                                    base::TimeDelta::FromSeconds(10));
     is_same_process_ =
         render_frame_host_->GetProcess()->GetID() ==
         frame_tree_node_->current_frame_host()->GetProcess()->GetID();
     LogIsSameProcess(transition_, is_same_process_);
+
+    // TODO(csharrison,nasko): Increase the max value to 3 minutes in M68 or
+    // M69.
+    base::TimeDelta delta = ready_to_commit_time_ - navigation_start_;
+    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_, delta,
+                                    base::TimeDelta::FromSeconds(10));
+    if (is_same_process_) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.SameProcess",
+                                      transition_, delta,
+                                      base::TimeDelta::FromSeconds(10));
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.CrossProcess",
+                                      transition_, delta,
+                                      base::TimeDelta::FromSeconds(10));
+    }
   }
 
   SetExpectedProcess(render_frame_host->GetProcess());
