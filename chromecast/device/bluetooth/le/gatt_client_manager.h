@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "chromecast/public/bluetooth/bluetooth_types.h"
@@ -50,8 +51,6 @@ class GattClientManager {
     virtual ~Observer() = default;
   };
 
-  virtual ~GattClientManager() = default;
-
   virtual void AddObserver(Observer* o) = 0;
   virtual void RemoveObserver(Observer* o) = 0;
 
@@ -80,6 +79,13 @@ class GattClientManager {
   // TODO(bcf): Deprecated. Should be removed now that this class may be used
   // from any thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> task_runner() = 0;
+
+ protected:
+  GattClientManager() = default;
+  virtual ~GattClientManager() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GattClientManager);
 };
 
 }  // namespace bluetooth

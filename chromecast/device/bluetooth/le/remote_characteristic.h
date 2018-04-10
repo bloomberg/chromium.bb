@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromecast/public/bluetooth/gatt.h"
@@ -78,7 +79,12 @@ class RemoteCharacteristic
 
  protected:
   friend class base::RefCountedThreadSafe<RemoteCharacteristic>;
+
+  RemoteCharacteristic() = default;
   virtual ~RemoteCharacteristic() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RemoteCharacteristic);
 };
 
 }  // namespace bluetooth

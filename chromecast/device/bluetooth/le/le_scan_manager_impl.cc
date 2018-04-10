@@ -39,18 +39,6 @@ namespace {
 
 const int kMaxMessagesInQueue = 5;
 
-bool ScanResultHasServiceUuid(const LeScanResult& scan_result,
-                              uint16_t service_uuid) {
-  base::Optional<std::vector<bluetooth_v2_shlib::Uuid>> all_uuids =
-      scan_result.AllServiceUuids();
-  if (!all_uuids) {
-    return false;
-  }
-
-  auto uuid = util::UuidFromInt16(service_uuid);
-  return base::ContainsValue(*all_uuids, uuid);
-}
-
 }  // namespace
 
 LeScanManagerImpl::LeScanManagerImpl(
@@ -97,21 +85,20 @@ void LeScanManagerImpl::SetScanEnable(bool enable, SetScanEnableCallback cb) {
 }
 
 void LeScanManagerImpl::GetScanResults(GetScanResultsCallback cb,
-                                       base::Optional<uint16_t> service_uuid) {
+                                       base::Optional<ScanFilter> scan_filter) {
   MAKE_SURE_IO_THREAD(GetScanResults, BindToCurrentSequence(std::move(cb)),
-                      service_uuid);
-  std::move(cb).Run(GetScanResultsInternal(service_uuid));
+                      std::move(scan_filter));
+  std::move(cb).Run(GetScanResultsInternal(std::move(scan_filter)));
 }
 
 // Returns a list of all scan results. The results are sorted by RSSI.
 std::vector<LeScanResult> LeScanManagerImpl::GetScanResultsInternal(
-    base::Optional<uint16_t> service_uuid) {
+    base::Optional<ScanFilter> scan_filter) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   std::vector<LeScanResult> results;
   for (const auto& pair : addr_to_scan_results_) {
     for (const auto& scan_result : pair.second) {
-      if (!service_uuid ||
-          ScanResultHasServiceUuid(scan_result, *service_uuid)) {
+      if (!scan_filter || scan_filter->Matches(scan_result)) {
         results.push_back(scan_result);
       }
     }

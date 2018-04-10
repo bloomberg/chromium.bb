@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/public/bluetooth/gatt.h"
 
@@ -57,7 +58,12 @@ class RemoteDescriptor : public base::RefCountedThreadSafe<RemoteDescriptor> {
 
  protected:
   friend class base::RefCountedThreadSafe<RemoteDescriptor>;
+
+  RemoteDescriptor() = default;
   virtual ~RemoteDescriptor() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RemoteDescriptor);
 };
 
 }  // namespace bluetooth

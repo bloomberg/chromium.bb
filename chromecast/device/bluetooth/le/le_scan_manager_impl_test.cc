@@ -165,7 +165,8 @@ TEST_F(LeScanManagerTest, TestGetScanResultsWithService) {
   // Get asynchronous scan results for results with service 0x4444.
   std::vector<LeScanResult> results;
   le_scan_manager_.GetScanResults(
-      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results), 0x4444);
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results),
+      ScanFilter::From16bitUuid(0x4444));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, results.size());
@@ -176,7 +177,8 @@ TEST_F(LeScanManagerTest, TestGetScanResultsWithService) {
 
   // Get asynchronous scan results for results with service 0x5555.
   le_scan_manager_.GetScanResults(
-      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results), 0x5555);
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results),
+      ScanFilter::From16bitUuid(0x5555));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(1u, results.size());
@@ -187,7 +189,8 @@ TEST_F(LeScanManagerTest, TestGetScanResultsWithService) {
 
   // Get asynchronous scan results for results with service 0x6666.
   le_scan_manager_.GetScanResults(
-      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results), 0x6666);
+      base::BindOnce(&CopyResult<std::vector<LeScanResult>>, &results),
+      ScanFilter::From16bitUuid(0x6666));
   scoped_task_environment_.RunUntilIdle();
 
   ASSERT_EQ(0u, results.size());

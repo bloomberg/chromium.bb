@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "chromecast/device/bluetooth/le/le_scan_result.h"
+#include "chromecast/device/bluetooth/le/scan_filter.h"
 
 namespace chromecast {
 namespace bluetooth {
@@ -39,18 +41,22 @@ class LeScanManager {
 
   // Asynchronously get the most recent scan results. Can be called on any
   // thread. |cb| is called on the calling thread with the results. If
-  // |service_uuid| is passed, only scan results advertising the given
-  // |service_uuid| will be returned.
+  // |scan_filter| is passed, only scan results matching the given |scan_filter|
+  // will be returned.
   using GetScanResultsCallback =
       base::OnceCallback<void(std::vector<LeScanResult>)>;
   virtual void GetScanResults(
       GetScanResultsCallback cb,
-      base::Optional<uint16_t> service_uuid = base::nullopt) = 0;
+      base::Optional<ScanFilter> scan_filter = base::nullopt) = 0;
 
   virtual void ClearScanResults() = 0;
 
  protected:
+  LeScanManager() = default;
   virtual ~LeScanManager() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LeScanManager);
 };
 
 }  // namespace bluetooth
