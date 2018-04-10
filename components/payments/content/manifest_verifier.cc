@@ -40,10 +40,12 @@ void EnableMethodManifestUrlForSupportedApps(
     for (auto& app : *apps) {
       if (app_origin.IsSameOriginWith(
               url::Origin::Create(app.second->scope.GetOrigin()))) {
-        if (all_origins_supported ||
+        app.second->has_explicitly_verified_methods =
             std::find(supported_origin_strings.begin(),
-                      supported_origin_strings.end(), app_origin.Serialize()) !=
-                supported_origin_strings.end()) {
+                      supported_origin_strings.end(),
+                      app_origin.Serialize()) != supported_origin_strings.end();
+        if (all_origins_supported ||
+            app.second->has_explicitly_verified_methods) {
           app.second->enabled_methods.emplace_back(method_manifest_url.spec());
           prohibited_payment_methods->at(app.second->scope)
               .erase(method_manifest_url);
@@ -122,6 +124,7 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
       if (url::Origin::Create(method_manifest_url.GetOrigin())
               .IsSameOriginWith(app_origin)) {
         verified_method_names.emplace_back(method);
+        app.second->has_explicitly_verified_methods = true;
         continue;
       }
 

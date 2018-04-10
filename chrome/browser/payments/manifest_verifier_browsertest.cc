@@ -74,16 +74,20 @@ class ManifestVerifierBrowserTest : public InProcessBrowserTest {
   }
 
   // Expects that the verified payment app with |id| has the |expected_scope|
-  // and the |expected_methods|.
+  // and the |expected_methods| and the
+  // |expect_has_explicitly_verified_methods|.
   void ExpectApp(int64_t id,
                  const std::string& expected_scope,
-                 const std::set<std::string>& expected_methods) {
+                 const std::set<std::string>& expected_methods,
+                 bool expect_has_explicitly_verified_methods) {
     const auto& it = verified_apps().find(id);
     ASSERT_NE(verified_apps().end(), it);
     EXPECT_EQ(GURL(expected_scope), it->second->scope);
     std::set<std::string> actual_methods(it->second->enabled_methods.begin(),
                                          it->second->enabled_methods.end());
     EXPECT_EQ(expected_methods, actual_methods);
+    EXPECT_EQ(expect_has_explicitly_verified_methods,
+              it->second->has_explicitly_verified_methods);
   }
 
  private:
@@ -181,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, KnownPaymentMethodName) {
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"}, false);
   }
 
   // Repeat verifications should have identical results.
@@ -194,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, KnownPaymentMethodName) {
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"}, false);
   }
 }
 
@@ -212,7 +216,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card", "interledger"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card", "interledger"},
+              false);
   }
 
   // Repeat verifications should have identical results.
@@ -226,7 +231,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card", "interledger"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card", "interledger"},
+              false);
   }
 }
 
@@ -245,8 +251,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(2U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"});
-    ExpectApp(1, "https://alicepay.com/webpay", {"basic-card"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"}, false);
+    ExpectApp(1, "https://alicepay.com/webpay", {"basic-card"}, false);
   }
 
   // Repeat verifications should have identical results.
@@ -261,8 +267,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(2U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"});
-    ExpectApp(1, "https://alicepay.com/webpay", {"basic-card"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"basic-card"}, false);
+    ExpectApp(1, "https://alicepay.com/webpay", {"basic-card"}, false);
   }
 }
 
@@ -280,7 +286,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"https://frankpay.com/webpay"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"https://frankpay.com/webpay"},
+              false);
   }
 
   // Repeat verifications should have identical results.
@@ -292,7 +299,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://bobpay.com/webpay", {"https://frankpay.com/webpay"});
+    ExpectApp(0, "https://bobpay.com/webpay", {"https://frankpay.com/webpay"},
+              false);
   }
 }
 
@@ -310,7 +318,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://404.com/webpay", {"https://frankpay.com/webpay"});
+    ExpectApp(0, "https://404.com/webpay", {"https://frankpay.com/webpay"},
+              false);
   }
 
   // Repeat verifications should have identical results.
@@ -322,7 +331,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     Verify(std::move(apps));
 
     EXPECT_EQ(1U, verified_apps().size());
-    ExpectApp(0, "https://404.com/webpay", {"https://frankpay.com/webpay"});
+    ExpectApp(0, "https://404.com/webpay", {"https://frankpay.com/webpay"},
+              false);
   }
 }
 
@@ -342,7 +352,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://bobpay.com/anything/here",
-              {"https://bobpay.com/does/not/matter/whats/here"});
+              {"https://bobpay.com/does/not/matter/whats/here"}, true);
   }
 
   // Repeat verifications should have identical results.
@@ -356,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://bobpay.com/anything/here",
-              {"https://bobpay.com/does/not/matter/whats/here"});
+              {"https://bobpay.com/does/not/matter/whats/here"}, true);
   }
 }
 
@@ -376,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://404.com/anything/here",
-              {"https://404.com/does/not/matter/whats/here"});
+              {"https://404.com/does/not/matter/whats/here"}, true);
   }
 
   // Repeat verifications should have identical results.
@@ -390,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
 
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://404.com/anything/here",
-              {"https://404.com/does/not/matter/whats/here"});
+              {"https://404.com/does/not/matter/whats/here"}, true);
   }
 }
 
@@ -416,7 +426,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, OneSupportedOrigin) {
 
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://alicepay.com/webpay",
-              {"https://georgepay.com/webpay", "https://ikepay.com/webpay"});
+              {"https://georgepay.com/webpay", "https://ikepay.com/webpay"},
+              true);
   }
 
   // Repeat verifications should have identical results.
@@ -435,7 +446,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, OneSupportedOrigin) {
 
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://alicepay.com/webpay",
-              {"https://georgepay.com/webpay", "https://ikepay.com/webpay"});
+              {"https://georgepay.com/webpay", "https://ikepay.com/webpay"},
+              true);
   }
 }
 
@@ -456,7 +468,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, ThreeTypesOfMethods) {
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://alicepay.com/webpay",
               {"basic-card", "https://alicepay.com/webpay2",
-               "https://ikepay.com/webpay"});
+               "https://ikepay.com/webpay"},
+              true);
   }
 
   // Repeat verifications should have identical results.
@@ -473,7 +486,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest, ThreeTypesOfMethods) {
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://alicepay.com/webpay",
               {"basic-card", "https://alicepay.com/webpay2",
-               "https://ikepay.com/webpay"});
+               "https://ikepay.com/webpay"},
+              true);
   }
 }
 
@@ -525,7 +539,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://bobpay.com/webpay",
               {"basic-card", "interledger", "payee-credit-transfer",
-               "payer-credit-transfer"});
+               "payer-credit-transfer"},
+              false);
   }
 
   // Repeat verifications should have identical results.
@@ -544,7 +559,8 @@ IN_PROC_BROWSER_TEST_F(ManifestVerifierBrowserTest,
     EXPECT_EQ(1U, verified_apps().size());
     ExpectApp(0, "https://bobpay.com/webpay",
               {"basic-card", "interledger", "payee-credit-transfer",
-               "payer-credit-transfer"});
+               "payer-credit-transfer"},
+              false);
   }
 }
 

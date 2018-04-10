@@ -64,7 +64,8 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                             UriUtils.parseUriFromString("https://bobpay.com") /* scope */,
                             withName ? "BobPay" : null /* name */, "test@bobpay.com" /* userHint */,
                             "https://bobpay.com" /* origin */, icon /* icon */,
-                            supportedMethodNames /* methodNames */, capabilities /* capabilities */,
+                            supportedMethodNames /* methodNames */, true /* explicitlyVerified */,
+                            capabilities /* capabilities */,
                             new String[0] /* preferredRelatedApplicationIds */));
                     callback.onAllPaymentAppsCreated();
                 });
