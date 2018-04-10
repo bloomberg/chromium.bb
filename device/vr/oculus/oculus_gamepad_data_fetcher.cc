@@ -17,6 +17,14 @@ namespace device {
 
 namespace {
 
+float ApplyTriggerDeadzone(float value) {
+  // Trigger value should be between 0 and 1.  We apply a deadzone for small
+  // values so a loose controller still reports a value of 0 when not in use.
+  float kTriggerDeadzone = 0.01f;
+
+  return (value < kTriggerDeadzone) ? 0 : value;
+}
+
 void SetGamepadButton(Gamepad* pad,
                       const ovrInputState& input_state,
                       ovrButton button_id) {
@@ -33,17 +41,17 @@ void SetGamepadTouchTrigger(Gamepad* pad,
                             ovrTouch touch_id,
                             float value) {
   bool touched = (input_state.Touches & touch_id) != 0;
-  pad->buttons[pad->buttons_length].pressed =
-      value > 0;  // Deadzone already applied.
+  value = ApplyTriggerDeadzone(value);
+  pad->buttons[pad->buttons_length].pressed = value != 0;
   pad->buttons[pad->buttons_length].touched = touched;
   pad->buttons[pad->buttons_length].value = value;
   pad->buttons_length++;
 }
 
 void SetGamepadTrigger(Gamepad* pad, float value) {
-  pad->buttons[pad->buttons_length].pressed =
-      value > 0;  // Deadzone is already applied.
-  pad->buttons[pad->buttons_length].touched = value > 0;
+  value = ApplyTriggerDeadzone(value);
+  pad->buttons[pad->buttons_length].pressed = value != 0;
+  pad->buttons[pad->buttons_length].touched = value != 0;
   pad->buttons[pad->buttons_length].value = value;
   pad->buttons_length++;
 }
