@@ -538,6 +538,11 @@
     {
       name: "HeapIncrementalMarking",
     },
+    // https://crbug.com/766694 for testing disabling the feature.
+    {
+      name: "HTMLImports",
+      status: "stable",
+    },
     // https://crbug.com/523952 for testing disabling the feature.
     {
       name: "HTMLImportsStyleApplication",
