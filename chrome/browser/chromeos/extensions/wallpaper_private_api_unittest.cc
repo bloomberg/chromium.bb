@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chromeos/cryptohome/system_salt_getter.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "extensions/browser/api_test_utils.h"
@@ -377,6 +378,54 @@ TEST_F(WallpaperPrivateApiMultiUserUnittest, HideTeleportedWindow) {
   EXPECT_FALSE(window1_state->IsMinimized());
   EXPECT_FALSE(window2_state->IsMinimized());
   EXPECT_FALSE(window3_state->IsMinimized());
+}
+
+class WallpaperPrivateApiResetWallpaperUnittest
+    : public WallpaperPrivateApiUnittest {
+ public:
+  WallpaperPrivateApiResetWallpaperUnittest() = default;
+
+  void SetUp() override {
+    WallpaperPrivateApiUnittest::SetUp();
+
+    // Required for WallpaperControllerClient.
+    DeviceSettingsService::Initialize();
+    CrosSettings::Initialize();
+  }
+
+  void TearDown() override {
+    // Required for WallpaperControllerClient.
+    CrosSettings::Shutdown();
+    DeviceSettingsService::Shutdown();
+
+    WallpaperPrivateApiUnittest::TearDown();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPrivateApiResetWallpaperUnittest);
+};
+
+// Test wallpaperPrivate.resetWallpaper() function.
+// Regression test for https://crbug.com/830157.
+TEST_F(WallpaperPrivateApiResetWallpaperUnittest, Basic) {
+  SystemSaltGetter::Get()->SetRawSaltForTesting(
+      SystemSaltGetter::RawSalt({1, 2, 3, 4, 5, 6, 7, 8}));
+
+  WallpaperControllerClient client;
+  TestWallpaperController test_controller;
+  client.InitForTesting(test_controller.CreateInterfacePtr());
+  fake_user_manager()->AddUser(test_account_id1_);
+
+  {
+    auto function =
+        base::MakeRefCounted<WallpaperPrivateResetWallpaperFunction>();
+    EXPECT_TRUE(
+        extensions::api_test_utils::RunFunction(function.get(), "[]", nullptr));
+  }
+
+  client.FlushForTesting();
+  // Expect SetDefaultWallpaper() to be called exactly once.
+  EXPECT_EQ(1, test_controller.set_default_wallpaper_count());
 }
 
 }  // namespace chromeos
