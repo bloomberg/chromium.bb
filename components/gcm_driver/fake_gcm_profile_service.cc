@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gcm/fake_gcm_profile_service.h"
+#include "components/gcm_driver/fake_gcm_profile_service.h"
 
 #include <utility>
 
@@ -16,11 +16,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/gcm_driver/fake_gcm_client_factory.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
-#include "content/public/browser/browser_context.h"
 
 namespace gcm {
 
@@ -199,16 +197,17 @@ void FakeGCMProfileService::CustomFakeGCMDriver::OnDispatchMessage(
 // static
 std::unique_ptr<KeyedService> FakeGCMProfileService::Build(
     content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  std::unique_ptr<FakeGCMProfileService> service(
-      new FakeGCMProfileService(profile));
-  service->SetDriverForTesting(new CustomFakeGCMDriver(service.get()));
-  return std::move(service);
+  std::unique_ptr<FakeGCMProfileService> service =
+      std::make_unique<FakeGCMProfileService>();
+  service->SetDriverForTesting(
+      std::make_unique<CustomFakeGCMDriver>(service.get()));
+
+  return service;
 }
 
-FakeGCMProfileService::FakeGCMProfileService(Profile* profile) {}
+FakeGCMProfileService::FakeGCMProfileService() = default;
 
-FakeGCMProfileService::~FakeGCMProfileService() {}
+FakeGCMProfileService::~FakeGCMProfileService() = default;
 
 void FakeGCMProfileService::AddExpectedUnregisterResponse(
     GCMClient::Result result) {

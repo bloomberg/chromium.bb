@@ -62,8 +62,8 @@ class GCMProfileService : public KeyedService {
   // KeyedService:
   void Shutdown() override;
 
-  // For testing purpose.
-  void SetDriverForTesting(GCMDriver* driver);
+  // For testing purposes.
+  void SetDriverForTesting(std::unique_ptr<GCMDriver> driver);
 
   GCMDriver* driver() const { return driver_.get(); }
 

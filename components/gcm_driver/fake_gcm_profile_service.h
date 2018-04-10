@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GCM_FAKE_GCM_PROFILE_SERVICE_H_
-#define CHROME_BROWSER_GCM_FAKE_GCM_PROFILE_SERVICE_H_
+#ifndef COMPONENTS_GCM_DRIVER_FAKE_GCM_PROFILE_SERVICE_H_
+#define COMPONENTS_GCM_DRIVER_FAKE_GCM_PROFILE_SERVICE_H_
 
 #include <list>
 #include <memory>
@@ -13,23 +13,17 @@
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-
-class Profile;
-
-namespace content {
-class BrowserContext;
-}  // namespace content
+#include "content/public/browser/browser_context.h"
 
 namespace gcm {
 
-// Acts as a bridge between GCM API and GCMClient layer for testing purposes.
+// Acts as a bridge between GCM API and GCM Client layer for testing purposes.
 class FakeGCMProfileService : public GCMProfileService {
  public:
-  // Helper function to be used with
-  // KeyedService::SetTestingFactory().
+  // Helper function to be used with KeyedServiceFactory::SetTestingFactory().
   static std::unique_ptr<KeyedService> Build(content::BrowserContext* context);
 
-  explicit FakeGCMProfileService(Profile* profile);
+  FakeGCMProfileService();
   ~FakeGCMProfileService() override;
 
   void AddExpectedUnregisterResponse(GCMClient::Result result);
@@ -41,9 +35,7 @@ class FakeGCMProfileService : public GCMProfileService {
     return last_sent_message_;
   }
 
-  const std::string& last_receiver_id() const {
-    return last_receiver_id_;
-  }
+  const std::string& last_receiver_id() const { return last_receiver_id_; }
 
   const std::string& last_registered_app_id() const {
     return last_registered_app_id_;
@@ -79,4 +71,4 @@ class FakeGCMProfileService : public GCMProfileService {
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_GCM_FAKE_GCM_PROFILE_SERVICE_H_
+#endif  // COMPONENTS_GCM_DRIVER_FAKE_GCM_PROFILE_SERVICE_H_

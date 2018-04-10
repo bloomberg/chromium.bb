@@ -4622,8 +4622,6 @@ static_library("test_support") {
     "consent_auditor/consent_auditor_test_utils.h",
     "download/download_test_file_activity_observer.cc",
     "download/download_test_file_activity_observer.h",
-    "gcm/fake_gcm_profile_service.cc",
-    "gcm/fake_gcm_profile_service.h",
     "history/history_test_utils.cc",
     "history/history_test_utils.h",
     "media/webrtc/fake_desktop_media_list.cc",
