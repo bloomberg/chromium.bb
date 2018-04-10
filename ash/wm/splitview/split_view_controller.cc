@@ -282,18 +282,20 @@ void SplitViewController::SnapWindow(aura::Window* window,
 }
 
 void SplitViewController::SwapWindows() {
-  if (state_ != BOTH_SNAPPED)
-    return;
-
-  DCHECK(left_window_ && right_window_);
+  DCHECK(IsSplitViewModeActive());
 
   aura::Window* new_left_window = right_window_;
   aura::Window* new_right_window = left_window_;
   left_window_ = new_left_window;
   right_window_ = new_right_window;
 
+  // Update |default_snap_position_| if necessary.
+  if (!left_window_ || !right_window_)
+    default_snap_position_ = left_window_ ? LEFT : RIGHT;
+
   MoveDividerToClosestFixedPosition();
   UpdateSnappedWindowsAndDividerBounds();
+  UpdateSplitViewStateAndNotifyObservers();
 
   base::RecordAction(
       base::UserMetricsAction("SplitView_DoubleTapDividerSwapWindows"));

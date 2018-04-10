@@ -4266,4 +4266,36 @@ TEST_F(SplitViewWindowSelectorTest, SnappedWindowAnimationObserverTest) {
   EXPECT_TRUE(window4->layer()->GetTargetTransform().IsIdentity());
 }
 
+// Test that when split view and overview are both active at the same time,
+// double tapping on the divider can swap the window's position with the
+// overview window grid's postion.
+TEST_F(SplitViewWindowSelectorTest, SwapWindowAndOverviewGrid) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->default_snap_position(),
+            SplitViewController::LEFT);
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(GetGridBounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::RIGHT));
+
+  split_view_controller()->SwapWindows();
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->default_snap_position(),
+            SplitViewController::RIGHT);
+  EXPECT_EQ(GetGridBounds(),
+            split_view_controller()->GetSnappedWindowBoundsInScreen(
+                window1.get(), SplitViewController::LEFT));
+}
+
 }  // namespace ash
