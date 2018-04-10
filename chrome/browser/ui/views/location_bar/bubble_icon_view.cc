@@ -37,7 +37,10 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater,
       delegate_(delegate),
       command_id_(command_id),
       active_(false),
-      suppress_mouse_released_action_(false) {}
+      suppress_mouse_released_action_(false) {
+  SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING))));
+}
 
 BubbleIconView::~BubbleIconView() {}
 
@@ -93,19 +96,13 @@ bool BubbleIconView::GetTooltipText(const gfx::Point& p,
 }
 
 gfx::Size BubbleIconView::CalculatePreferredSize() const {
-  gfx::Rect image_rect(image_->GetPreferredSize());
-  image_rect.Inset(
-      -gfx::Insets(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING)));
-  DCHECK_EQ(image_rect.height(),
-            GetLayoutConstant(LOCATION_BAR_HEIGHT) -
-                2 * (GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-                     BackgroundWith1PxBorder::kLocationBarBorderThicknessDip));
-  return image_rect.size();
+  gfx::Size image_rect(image_->GetPreferredSize());
+  image_rect.Enlarge(GetInsets().width(), GetInsets().height());
+  return image_rect;
 }
 
 void BubbleIconView::Layout() {
-  View::Layout();
-  image_->SetBoundsRect(GetLocalBounds());
+  image_->SetBoundsRect(GetContentsBounds());
 }
 
 bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
