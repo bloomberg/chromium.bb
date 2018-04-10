@@ -233,6 +233,9 @@ def main():
   else:
     extra_gn_options += 'ios_web_view_enable_autofill=false '
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
+  # This prevents Breakpad from being included in the final binary to avoid
+  # duplicate symbols with the client app.
+  extra_gn_options += 'use_crash_key_stubs=true '
 
   return package_all_frameworks(out_dir, output_name, extra_gn_options,
                                 set(options.build_configs),
