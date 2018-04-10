@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -32,17 +31,17 @@ leveldb::Status InvalidDBKeyStatus();
 leveldb::Status IOErrorStatus();
 
 template <typename DBOrTransaction>
-leveldb::Status CONTENT_EXPORT GetInt(DBOrTransaction* db,
-                                      const base::StringPiece& key,
-                                      int64_t* found_int,
-                                      bool* found);
+leveldb::Status GetInt(DBOrTransaction* db,
+                       const base::StringPiece& key,
+                       int64_t* found_int,
+                       bool* found);
 
 void PutBool(LevelDBTransaction* transaction,
              const base::StringPiece& key,
              bool value);
-void CONTENT_EXPORT PutInt(LevelDBTransaction* transaction,
-                           const base::StringPiece& key,
-                           int64_t value);
+void PutInt(LevelDBTransaction* transaction,
+            const base::StringPiece& key,
+            int64_t value);
 
 template <typename DBOrTransaction>
 WARN_UNUSED_RESULT leveldb::Status GetVarInt(DBOrTransaction* db,
