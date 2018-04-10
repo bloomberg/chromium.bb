@@ -1262,6 +1262,11 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 
 #if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 
+// This is defined as a separate test class because MAYBE_RepeatedReturnNull
+// test exhausts the process memory, and breaks any test in the same
+// class that runs after it.
+class PartitionAllocReturnNullTest : public PartitionAllocTest {};
+
 // Unit tests that check if an allocation fails in "return null" mode,
 // repeating it doesn't crash, and still returns null. The tests need to
 // stress memory subsystem limits to do so, hence they try to allocate
@@ -1282,7 +1287,7 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
 #else
 #define MAYBE_RepeatedReturnNullDirect RepeatedReturnNullDirect
 #endif
-TEST_F(PartitionAllocTest, MAYBE_RepeatedReturnNullDirect) {
+TEST_F(PartitionAllocReturnNullTest, MAYBE_RepeatedReturnNullDirect) {
   // A direct-mapped allocation size.
   DoReturnNullTest(32 * 1024 * 1024);
 }
@@ -1296,7 +1301,7 @@ TEST_F(PartitionAllocTest, MAYBE_RepeatedReturnNullDirect) {
 #else
 #define MAYBE_RepeatedReturnNull RepeatedReturnNull
 #endif
-TEST_F(PartitionAllocTest, MAYBE_RepeatedReturnNull) {
+TEST_F(PartitionAllocReturnNullTest, MAYBE_RepeatedReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
   DoReturnNullTest(512 * 1024);
 }
