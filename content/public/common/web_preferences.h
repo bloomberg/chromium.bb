@@ -183,6 +183,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool shrinks_viewport_contents_to_fit;
   ViewportStyle viewport_style;
   bool always_show_context_menu_on_touch;
+  bool smooth_scroll_for_find_enabled;
   bool main_frame_resizes_are_orientation_changes;
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;

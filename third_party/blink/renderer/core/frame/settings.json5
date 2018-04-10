@@ -726,6 +726,10 @@
       name: "logPreload",
       initial: false,
     },
+    {
+      name: "smoothScrollForFindEnabled",
+      initial: false,
+    },
 
     // These values specify the UA intial viewport style.
     // It is dynamically set by the inspector for mobile emulation and can be

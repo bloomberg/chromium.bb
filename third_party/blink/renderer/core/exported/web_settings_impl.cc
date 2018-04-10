@@ -458,6 +458,10 @@ void WebSettingsImpl::SetAlwaysShowContextMenuOnTouch(bool enabled) {
   settings_->SetAlwaysShowContextMenuOnTouch(enabled);
 }
 
+void WebSettingsImpl::SetSmoothScrollForFindEnabled(bool enabled) {
+  settings_->SetSmoothScrollForFindEnabled(enabled);
+}
+
 void WebSettingsImpl::SetShowContextMenuOnMouseUp(bool enabled) {
   settings_->SetShowContextMenuOnMouseUp(enabled);
 }
