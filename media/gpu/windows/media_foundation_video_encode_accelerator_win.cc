@@ -493,14 +493,6 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
   if (!compatible_with_win7_) {
     RETURN_ON_HR_FAILURE(hr, "Couldn't set FrameRate", false);
   }
-  // We have key-frame control ourselves, so set the default key-frame distance
-  // to UINT32_MAX.
-  var.lVal = UINT32_MAX;
-  hr = codec_api_->SetValue(&CODECAPI_AVEncMPVGOPSize, &var);
-  if (FAILED(hr)) {
-    LOG(WARNING) << "Failed to set CODECAPI_AVEncMPVGOPSize, HRESULT: 0x"
-                 << std::hex << hr;
-  }
   var.vt = VT_BOOL;
   var.boolVal = VARIANT_TRUE;
   hr = codec_api_->SetValue(&CODECAPI_AVLowLatencyMode, &var);
