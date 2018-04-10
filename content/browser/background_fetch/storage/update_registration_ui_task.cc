@@ -14,15 +14,11 @@ namespace background_fetch {
 
 UpdateRegistrationUITask::UpdateRegistrationUITask(
     BackgroundFetchDataManager* data_manager,
-    int64_t service_worker_registration_id,
-    const url::Origin& origin,
-    const std::string& unique_id,
+    const BackgroundFetchRegistrationId& registration_id,
     const std::string& updated_title,
     UpdateRegistrationUICallback callback)
     : DatabaseTask(data_manager),
-      service_worker_registration_id_(service_worker_registration_id),
-      origin_(origin),
-      unique_id_(unique_id),
+      registration_id_(registration_id),
       updated_title_(updated_title),
       callback_(std::move(callback)),
       weak_factory_(this) {}
@@ -31,12 +27,13 @@ UpdateRegistrationUITask::~UpdateRegistrationUITask() = default;
 
 void UpdateRegistrationUITask::Start() {
   service_worker_context()->GetRegistrationUserData(
-      service_worker_registration_id_, {RegistrationKey(unique_id_)},
-      base::BindOnce(&UpdateRegistrationUITask::DidGetUniqueId,
+      registration_id_.service_worker_registration_id(),
+      {RegistrationKey(registration_id_.unique_id())},
+      base::BindOnce(&UpdateRegistrationUITask::DidGetMetadata,
                      weak_factory_.GetWeakPtr()));
 }
 
-void UpdateRegistrationUITask::DidGetUniqueId(
+void UpdateRegistrationUITask::DidGetMetadata(
     const std::vector<std::string>& data,
     ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
@@ -47,8 +44,7 @@ void UpdateRegistrationUITask::DidGetUniqueId(
       Finished();  // Destroys |this|.
       return;
     case DatabaseStatus::kOk:
-      DCHECK_EQ(1u, data.size());
-      if (data.empty()) {
+      if (data.size() != 1u) {
         std::move(callback_).Run(
             blink::mojom::BackgroundFetchError::STORAGE_ERROR);
         Finished();  // Destroys |this|.
@@ -71,8 +67,10 @@ void UpdateRegistrationUITask::UpdateUI(
   metadata_proto.set_ui_title(updated_title_);
 
   service_worker_context()->StoreRegistrationUserData(
-      service_worker_registration_id_, origin_.GetURL(),
-      {{RegistrationKey(unique_id_), metadata_proto.SerializeAsString()}},
+      registration_id_.service_worker_registration_id(),
+      registration_id_.origin().GetURL(),
+      {{RegistrationKey(registration_id_.unique_id()),
+        metadata_proto.SerializeAsString()}},
       base::BindOnce(&UpdateRegistrationUITask::DidUpdateUI,
                      weak_factory_.GetWeakPtr()));
 }

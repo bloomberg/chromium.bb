@@ -149,25 +149,23 @@ void BackgroundFetchContext::AddRegistrationObserver(
 }
 
 void BackgroundFetchContext::UpdateUI(
-    int64_t service_worker_registration_id,
-    const url::Origin& origin,
-    const std::string& unique_id,
+    const BackgroundFetchRegistrationId& registration_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The registration must a) still be active, or b) have completed/failed (not
   // aborted) with the waitUntil promise from that event not yet resolved.
-  if (!job_controllers_.count(unique_id)) {
+  if (!job_controllers_.count(registration_id.unique_id())) {
     std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_ID);
     return;
   }
 
   data_manager_.UpdateRegistrationUI(
-      service_worker_registration_id, origin, unique_id, title,
+      registration_id, title,
       base::BindOnce(&BackgroundFetchContext::DidUpdateStoredUI,
-                     weak_factory_.GetWeakPtr(), unique_id, title,
-                     std::move(callback)));
+                     weak_factory_.GetWeakPtr(), registration_id.unique_id(),
+                     title, std::move(callback)));
 }
 
 void BackgroundFetchContext::DidUpdateStoredUI(

@@ -17,16 +17,14 @@ namespace content {
 
 namespace background_fetch {
 
-// Updates Background Fetch registration entries in the database.
+// Updates Background Fetch UI options. Accepts a new title.
 class UpdateRegistrationUITask : public DatabaseTask {
  public:
   using UpdateRegistrationUICallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
 
   UpdateRegistrationUITask(BackgroundFetchDataManager* data_manager,
-                           int64_t service_worker_registration_id,
-                           const url::Origin& origin,
-                           const std::string& unique_id,
+                           const BackgroundFetchRegistrationId& registration_id,
                            const std::string& updated_title,
                            UpdateRegistrationUICallback callback);
 
@@ -35,16 +33,14 @@ class UpdateRegistrationUITask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidGetUniqueId(const std::vector<std::string>& data,
+  void DidGetMetadata(const std::vector<std::string>& data,
                       ServiceWorkerStatusCode status);
 
   void UpdateUI(const std::string& serialized_metadata_proto);
 
   void DidUpdateUI(ServiceWorkerStatusCode status);
 
-  int64_t service_worker_registration_id_;
-  url::Origin origin_;
-  std::string unique_id_;
+  BackgroundFetchRegistrationId registration_id_;
   std::string updated_title_;
 
   UpdateRegistrationUICallback callback_;
