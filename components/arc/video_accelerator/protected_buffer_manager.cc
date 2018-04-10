@@ -31,9 +31,8 @@ constexpr gfx::Size kDummyBufferSize(32, 32);
 constexpr size_t kMaxConcurrentProtectedBufferAllocators = 32;
 
 // Maximum number of concurrent allocated protected buffers in a single
-// ProtectedBufferAllocator. This limitation, 48, is chosen expectedly, 16 for
-// protected input buffers and 32 for protected output buffers.
-constexpr size_t kMaxBuffersPerAllocator = 48;
+// ProtectedBufferAllocator. This limitation, 64 is arbitrarily chosen.
+constexpr size_t kMaxBuffersPerAllocator = 64;
 }  // namespace
 
 class ProtectedBufferManager::ProtectedBuffer {
