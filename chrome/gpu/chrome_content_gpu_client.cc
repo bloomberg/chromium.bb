@@ -36,8 +36,7 @@
 #endif
 
 ChromeContentGpuClient::ChromeContentGpuClient()
-    : main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread(
-          metrics::CallStackProfileParams::GPU_MAIN_THREAD)) {
+    : main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()) {
 #if defined(OS_CHROMEOS)
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif

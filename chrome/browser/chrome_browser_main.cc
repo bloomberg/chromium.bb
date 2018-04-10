@@ -848,8 +848,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       result_code_(content::RESULT_CODE_NORMAL_EXIT),
       startup_watcher_(new StartupTimeBomb()),
       shutdown_watcher_(new ShutdownWatcherHelper()),
-      ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread(
-          metrics::CallStackProfileParams::UI_THREAD)),
+      ui_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread()),
       should_call_pre_main_loop_start_startup_on_variations_service_(
           !parameters.ui_task),
       profile_(NULL),

@@ -117,9 +117,9 @@ base::TimeTicks PeriodicSamplingScheduler::Now() const {
 ThreadProfiler::~ThreadProfiler() {}
 
 // static
-std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread(
-    metrics::CallStackProfileParams::Thread thread) {
-  return std::unique_ptr<ThreadProfiler>(new ThreadProfiler(thread));
+std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
+  return std::unique_ptr<ThreadProfiler>(
+      new ThreadProfiler(metrics::CallStackProfileParams::MAIN_THREAD));
 }
 
 void ThreadProfiler::SetMainThreadTaskRunner(

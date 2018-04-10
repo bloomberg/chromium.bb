@@ -228,16 +228,10 @@ struct EnumTraits<metrics::mojom::Thread,
     switch (thread) {
       case metrics::CallStackProfileParams::Thread::UNKNOWN_THREAD:
         return metrics::mojom::Thread::UNKNOWN_THREAD;
-      case metrics::CallStackProfileParams::Thread::UI_THREAD:
-        return metrics::mojom::Thread::UI_THREAD;
+      case metrics::CallStackProfileParams::Thread::MAIN_THREAD:
+        return metrics::mojom::Thread::MAIN_THREAD;
       case metrics::CallStackProfileParams::Thread::IO_THREAD:
         return metrics::mojom::Thread::IO_THREAD;
-      case metrics::CallStackProfileParams::Thread::GPU_MAIN_THREAD:
-        return metrics::mojom::Thread::GPU_MAIN_THREAD;
-      case metrics::CallStackProfileParams::Thread::RENDER_THREAD:
-        return metrics::mojom::Thread::RENDER_THREAD;
-      case metrics::CallStackProfileParams::Thread::UTILITY_THREAD:
-        return metrics::mojom::Thread::UTILITY_THREAD;
       case metrics::CallStackProfileParams::Thread::COMPOSITOR_THREAD:
         return metrics::mojom::Thread::COMPOSITOR_THREAD;
     }
@@ -251,20 +245,11 @@ struct EnumTraits<metrics::mojom::Thread,
       case metrics::mojom::Thread::UNKNOWN_THREAD:
         *out = metrics::CallStackProfileParams::Thread::UNKNOWN_THREAD;
         return true;
-      case metrics::mojom::Thread::UI_THREAD:
-        *out = metrics::CallStackProfileParams::Thread::UI_THREAD;
+      case metrics::mojom::Thread::MAIN_THREAD:
+        *out = metrics::CallStackProfileParams::Thread::MAIN_THREAD;
         return true;
       case metrics::mojom::Thread::IO_THREAD:
         *out = metrics::CallStackProfileParams::Thread::IO_THREAD;
-        return true;
-      case metrics::mojom::Thread::GPU_MAIN_THREAD:
-        *out = metrics::CallStackProfileParams::Thread::GPU_MAIN_THREAD;
-        return true;
-      case metrics::mojom::Thread::RENDER_THREAD:
-        *out = metrics::CallStackProfileParams::Thread::RENDER_THREAD;
-        return true;
-      case metrics::mojom::Thread::UTILITY_THREAD:
-        *out = metrics::CallStackProfileParams::Thread::UTILITY_THREAD;
         return true;
       case metrics::mojom::Thread::COMPOSITOR_THREAD:
         *out = metrics::CallStackProfileParams::Thread::COMPOSITOR_THREAD;
