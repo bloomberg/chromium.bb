@@ -52,30 +52,6 @@ def TryJobUrl(buildbucket_id):
   return BUILD_DETAILS_PATTERN % {'buildbucket_id': buildbucket_id}
 
 
-def DefaultDescription(description_branch='master', patches=None):
-  """Calculate the default description for a tryjob.
-
-  Args:
-    description_branch: String name of branch to build.
-    patches: List of strings describing all patches includes.
-             Usually based on raw command line values.
-
-  Returns:
-    str
-  """
-  result = ''
-  if description_branch != 'master':
-    result += '[%s] ' % description_branch
-
-  if patches:
-    result += ','.join(patches[:RemoteTryJob.MAX_PATCHES_IN_DESCRIPTION])
-    if len(patches) > RemoteTryJob.MAX_PATCHES_IN_DESCRIPTION:
-      remaining_patches = len(patches) - RemoteTryJob.MAX_PATCHES_IN_DESCRIPTION
-      result += '... (%d more CLs)' % (remaining_patches,)
-
-  return result
-
-
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
   # Constants for controlling the length of JSON fields sent to buildbot.
@@ -103,26 +79,22 @@ class RemoteTryJob(object):
                                  'with [config:%s] [buildbucket_id:%s].')
 
   def __init__(self,
-               build_configs,
+               build_config,
                display_label,
-               remote_description,
                branch='master',
                pass_through_args=(),
                local_patches=(),
                committer_email=None,
-               swarming=False,
                master_buildbucket_id=''):
     """Construct the object.
 
     Args:
-      build_configs: A list of configs to run tryjobs for.
+      build_config: A list of configs to run tryjobs for.
       display_label: String describing how build group on waterfall.
-      remote_description: Requested tryjob description.
       branch: Name of branch to build for.
       pass_through_args: Command line arguments to pass to cbuildbot in job.
       local_patches: A list of LocalPatch objects.
       committer_email: Email address of person requesting job, or None.
-      swarming: Boolean, do we use a swarming build?
       master_buildbucket_id: String with buildbucket id of scheduling builder.
     """
     self.user = getpass.getuser()
@@ -134,39 +106,15 @@ class RemoteTryJob(object):
     logging.info('Using email:%s', self.user_email)
 
     # Name of the job that appears on the waterfall.
-    self.build_configs = build_configs[:]
+    self.build_config = build_config
     self.display_label = display_label
     self.extra_args = pass_through_args
-    self.name = remote_description
     self.branch = branch
     self.local_patches = local_patches
-    self.swarming = swarming
     self.master_buildbucket_id = master_buildbucket_id
 
     # Needed for handling local patches.
     self.manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
-
-  def _VerifyForBuildbot(self):
-    """Early validation, to ensure the job can be processed by buildbot."""
-
-    # TODO: Delete this after all tryjobs are on swarming. This restriction
-    # will have been lifted.
-
-    # Buildbot stores the trybot description in a property with a 256
-    # character limit. Validate that our description is well under the limit.
-    if (len(self.user) + len(self.name) + self.PADDING >
-        self.MAX_DESCRIPTION_LENGTH):
-      logging.warning('remote tryjob description is too long, truncating it')
-      self.name = self.name[:self.MAX_DESCRIPTION_LENGTH - self.PADDING] + '...'
-
-    # Buildbot will set extra_args as a buildset 'property'.  It will store
-    # the property in its database in JSON form.  The limit of the database
-    # field is 1023 characters.
-    if len(json.dumps(self.extra_args)) > self.MAX_PROPERTY_LENGTH:
-      raise ValidationError(
-          'The number of extra arguments passed to cbuildbot has exceeded the '
-          'limit.  If you have a lot of local patches, upload them and use the '
-          '-g flag instead.')
 
   def Submit(self, testjob=False, dryrun=False):
     """Submit the tryjob through Git.
@@ -177,7 +125,7 @@ class RemoteTryJob(object):
       dryrun: Setting to true will run everything except the final submit step.
 
     Returns:
-      List of ScheduledBuild instances for each build scheduled.
+      A ScheduledBuild instance.
     """
     # TODO(rcui): convert to shallow clone when that's available.
     current_time = str(int(time.time()))
@@ -203,19 +151,7 @@ class RemoteTryJob(object):
                              % (patch.project, local_branch, ref_final,
                                 patch.tracking_branch, tag))
 
-    self._VerifyForBuildbot()
-    return self._PostConfigsToBuildBucket(testjob, dryrun)
-
-  def _GetBuilder(self, bot):
-    """Find and return the builder for bot."""
-    if self.swarming:
-      return 'Generic'
-
-    if bot in site_config and site_config[bot]['_template']:
-      return site_config[bot]['_template']
-
-    # Default to etc builder.
-    return 'etc'
+    return self._PostConfigToBuildBucket(testjob, dryrun)
 
   def _GetRequestBody(self, bot):
     """Generate the request body for a swarming buildbucket request.
@@ -226,10 +162,7 @@ class RemoteTryJob(object):
     Returns:
       buildbucket request properties as a python dict.
     """
-    if self.swarming:
-      bucket = constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET
-    else:
-      bucket = constants.TRYSERVER_BUILDBUCKET_BUCKET
+    bucket = constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET
 
     tags = {
         'cbb_display_label': self.display_label,
@@ -244,23 +177,14 @@ class RemoteTryJob(object):
 
     # All tags should also be listed as properties.
     properties = tags.copy()
-    properties.update({
-        'bot' : self.build_configs,
-        'cbb_extra_args': self.extra_args,
-        'email': [self.user_email],
-        'extra_args' : self.extra_args,
-        'name' : self.name,
-        'owners': [self.user_email],
-        'user' : self.user,
-    })
+    properties['cbb_extra_args'] = self.extra_args
 
     parameters = {
         'builder_name': 'Generic',
         'properties': properties,
     }
 
-    if self.swarming:
-      parameters['email_notify'] = [{'email': self.user_email}]
+    parameters['email_notify'] = [{'email': self.user_email}]
 
     return {
         'bucket': bucket,
@@ -299,7 +223,7 @@ class RemoteTryJob(object):
 
     return ScheduledBuild(buildbucket_id, bot, TryJobUrl(buildbucket_id))
 
-  def _PostConfigsToBuildBucket(self, testjob=False, dryrun=False):
+  def _PostConfigToBuildBucket(self, testjob=False, dryrun=False):
     """Posts the tryjob configs to buildbucket.
 
     Args:
@@ -307,7 +231,7 @@ class RemoteTryJob(object):
       testjob: Whether to use the test instance of the buildbucket server.
 
     Returns:
-      List of ScheduledBuild instances for each build scheduled.
+      A ScheduledBuild instance.
     """
     host = (buildbucket_lib.BUILDBUCKET_TEST_HOST if testjob
             else buildbucket_lib.BUILDBUCKET_HOST)
@@ -316,5 +240,5 @@ class RemoteTryJob(object):
         service_account_json=buildbucket_lib.GetServiceAccount(
             constants.CHROMEOS_SERVICE_ACCOUNT))
 
-    return [self._PutConfigToBuildBucket(buildbucket_client, bot, dryrun)
-            for bot in self.build_configs]
+    return self._PutConfigToBuildBucket(
+        buildbucket_client, self.build_config, dryrun)

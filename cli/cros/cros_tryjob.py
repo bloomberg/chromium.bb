@@ -242,28 +242,19 @@ def RunRemote(site_config, options, patch_pool):
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
 
-  # Figure out the tryjob description.
-  description = options.remote_description
-  if description is None:
-    description = remote_try.DefaultDescription(
-        options.branch,
-        options.gerrit_patches+options.local_patches)
-
   logging.info('Submitting tryjob...')
   results = []
   for build_config in options.build_configs:
     tryjob = remote_try.RemoteTryJob(
-        build_configs=[build_config],
+        build_config=build_config,
         display_label=DisplayLabel(site_config, options, build_config),
-        remote_description=description,
         branch=options.branch,
         pass_through_args=args,
         local_patches=patch_pool.local_patches,
         committer_email=options.committer_email,
-        swarming=True,
         master_buildbucket_id='',  # TODO: Add new option to populate.
     )
-    results.extend(tryjob.Submit(dryrun=False))
+    results.append(tryjob.Submit(dryrun=False))
 
   if options.json:
     # Just is a list of dicts, not a list of lists.
@@ -435,7 +426,7 @@ List Examples:
         help='Run the tryjob on a remote builder. (default)')
     where_ex.add_argument(
         '--swarming', dest='where', action='store_const', const=REMOTE,
-        help='Run the tryjob on a swarming builder.')
+        help='Run the tryjob on a swarming builder. (deprecated)')
     where_ex.add_argument(
         '--local', dest='where', action='store_const', const=LOCAL,
         help='Run the tryjob on your local machine.')
@@ -476,11 +467,6 @@ List Examples:
     who_group.add_argument(
         '--committer-email',
         help='Override default git committer email.')
-    who_group.add_argument(
-        '--remote-description',
-        help='Attach an optional description to a --remote run '
-             'to make it easier to identify the results when it '
-             'finishes')
 
     # Modify the build.
     how_group = parser.add_argument_group(
