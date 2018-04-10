@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_URL_LOADER_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_URL_LOADER_H_
+#ifndef SERVICES_NETWORK_CORS_CORS_URL_LOADER_H_
+#define SERVICES_NETWORK_CORS_CORS_URL_LOADER_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -14,12 +14,14 @@
 
 namespace network {
 
+namespace cors {
+
 // Wrapper class that adds cross-origin resource sharing capabilities
 // (https://fetch.spec.whatwg.org/#http-cors-protocol), delegating requests as
 // well as potential preflight requests to the supplied
 // |network_loader_factory|. It is owned by the CORSURLLoaderFactory that
 // created it.
-class COMPONENT_EXPORT(NETWORK_CPP) CORSURLLoader
+class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
     : public mojom::URLLoader,
       public mojom::URLLoaderClient {
  public:
@@ -96,6 +98,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) CORSURLLoader
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoader);
 };
 
+}  // namespace cors
+
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_URL_LOADER_H_
+#endif  // SERVICES_NETWORK_CORS_CORS_URL_LOADER_H_

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/public/cpp/cors/cors_url_loader_factory.h"
+#include "services/network/cors/cors_url_loader_factory.h"
 
-#include "services/network/public/cpp/cors/cors_url_loader.h"
+#include "services/network/cors/cors_url_loader.h"
 #include "services/network/public/cpp/features.h"
 
 namespace network {
+
+namespace cors {
 
 CORSURLLoaderFactory::CORSURLLoaderFactory(
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory)
@@ -41,5 +43,7 @@ void CORSURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
   // The cloned factories stop working when this factory is destructed.
   bindings_.AddBinding(this, std::move(request));
 }
+
+}  // namespace cors
 
 }  // namespace network

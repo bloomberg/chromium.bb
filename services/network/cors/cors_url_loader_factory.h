@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_URL_LOADER_FACTORY_H_
-#define SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_URL_LOADER_FACTORY_H_
+#ifndef SERVICES_NETWORK_CORS_CORS_URL_LOADER_FACTORY_H_
+#define SERVICES_NETWORK_CORS_CORS_URL_LOADER_FACTORY_H_
 
 #include <memory>
 
@@ -16,11 +16,13 @@ namespace network {
 
 struct ResourceRequest;
 
+namespace cors {
+
 // A factory class to create a URLLoader that supports CORS.
 // This class takes a network::mojom::URLLoaderFactory instance in the
 // constructor and owns it to make network requests for CORS preflight, and
 // actual network request.
-class COMPONENT_EXPORT(NETWORK_CPP) CORSURLLoaderFactory final
+class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
     : public mojom::URLLoaderFactory {
  public:
   explicit CORSURLLoaderFactory(
@@ -49,6 +51,8 @@ class COMPONENT_EXPORT(NETWORK_CPP) CORSURLLoaderFactory final
   DISALLOW_COPY_AND_ASSIGN(CORSURLLoaderFactory);
 };
 
+}  // namespace cors
+
 }  // namespace network
 
-#endif  // SERVICES_NETWORK_PUBLIC_CPP_CORS_CORS_URL_LOADER_FACTORY_H_
+#endif  // SERVICES_NETWORK_CORS_CORS_URL_LOADER_FACTORY_H_
