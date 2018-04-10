@@ -110,9 +110,7 @@ class ProxyBrowserTest : public InProcessBrowserTest {
 };
 
 // We bypass manually installed proxy for localhost on chromeos.
-// TODO(crbug.com/822614): Flaky on Windows Debug and ASAN bots.
-#if (defined(OS_CHROMEOS) || defined(ADDRESS_SANITIZER) || \
-     defined(OS_WIN) || defined(OS_MACOSX))
+#if defined(OS_CHROMEOS)
 #define MAYBE_BasicAuthWSConnect DISABLED_BasicAuthWSConnect
 #else
 #define MAYBE_BasicAuthWSConnect BasicAuthWSConnect
