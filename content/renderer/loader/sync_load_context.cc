@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/common/url_loader_throttle.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -41,7 +40,7 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
       traffic_annotation, true /* is_sync */,
       download_to_blob /* pass_response_pipe_to_peer */,
       base::WrapUnique(context), context->url_loader_factory_,
-      std::move(throttles), nullptr /* navigation_response_override_params */,
+      std::move(throttles), network::mojom::URLLoaderClientEndpointsPtr(),
       nullptr /* continue_for_navigation */);
 }
 

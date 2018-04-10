@@ -23,7 +23,6 @@
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
-#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/sync_load_response.h"
@@ -93,8 +92,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       std::unique_ptr<RequestPeer> peer,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-      std::unique_ptr<NavigationResponseOverrideParameters>
-          navigation_response_override_params,
+      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::OnceClosure* continue_navigation_function) override {
     EXPECT_FALSE(peer_);
     if (sync_load_response_.info.encoded_body_length != -1)
@@ -102,8 +100,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
     peer_ = std::move(peer);
     url_ = request->url;
     stream_url_ = request->resource_body_stream_url;
-    navigation_response_override_params_ =
-        std::move(navigation_response_override_params);
     return 1;
   }
 
@@ -130,11 +126,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
     sync_load_response_ = std::move(sync_load_response);
   }
 
-  std::unique_ptr<NavigationResponseOverrideParameters>
-  TakeNavigationResponseOverrideParams() {
-    return std::move(navigation_response_override_params_);
-  }
-
  private:
   std::unique_ptr<RequestPeer> peer_;
   bool canceled_;
@@ -142,8 +133,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
   GURL url_;
   GURL stream_url_;
   SyncLoadResponse sync_load_response_;
-  std::unique_ptr<NavigationResponseOverrideParameters>
-      navigation_response_override_params_;
 
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcher);
 };
@@ -634,8 +623,8 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnFail) {
   DoFailRequest();
 }
 
-// PlzNavigate: checks that the navigation response override parameters provided
-// on navigation commit are properly applied.
+// PlzNavigate: checks that the stream override parameters provided on
+// navigation commit are properly applied.
 TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   // Initialize the request and the stream override.
   const GURL kNavigationURL = GURL(kTestURL);
@@ -644,12 +633,12 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   blink::WebURLRequest request(kNavigationURL);
   request.SetFrameType(network::mojom::RequestContextFrameType::kTopLevel);
   request.SetRequestContext(blink::WebURLRequest::kRequestContextFrame);
-  std::unique_ptr<NavigationResponseOverrideParameters> response_override(
-      new NavigationResponseOverrideParameters());
-  response_override->stream_url = kStreamURL;
-  response_override->response.mime_type = kMimeType;
+  std::unique_ptr<StreamOverrideParameters> stream_override(
+      new StreamOverrideParameters());
+  stream_override->stream_url = kStreamURL;
+  stream_override->response.mime_type = kMimeType;
   auto extra_data = std::make_unique<RequestExtraData>();
-  extra_data->set_navigation_response_override(std::move(response_override));
+  extra_data->set_stream_override(std::move(stream_override));
   request.SetExtraData(std::move(extra_data));
 
   client()->loader()->LoadAsynchronously(request, client());
@@ -660,10 +649,7 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   EXPECT_EQ(kStreamURL, dispatcher()->stream_url());
 
   EXPECT_FALSE(client()->did_receive_response());
-
-  response_override = dispatcher()->TakeNavigationResponseOverrideParams();
-  ASSERT_TRUE(response_override);
-  peer()->OnReceivedResponse(response_override->response);
+  peer()->OnReceivedResponse(network::ResourceResponseInfo());
   EXPECT_TRUE(client()->did_receive_response());
 
   // The response info should have been overriden.
