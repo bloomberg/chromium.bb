@@ -190,6 +190,36 @@ TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
 }
 
 TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
+       SkiaRenderer_RunSingleThread) {
+  use_gl_renderer_ = true;
+  use_skia_renderer_ = true;
+  RunTest(CompositorMode::SINGLE_THREADED);
+}
+
+TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
+       SkiaRenderer_RunMultiThread) {
+  use_gl_renderer_ = true;
+  use_skia_renderer_ = true;
+  RunTest(CompositorMode::THREADED);
+}
+
+TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
+       SkiaRenderer_RunSingleThread_OutOfOrderCallbacks) {
+  use_gl_renderer_ = true;
+  use_skia_renderer_ = true;
+  out_of_order_callbacks_ = true;
+  RunTest(CompositorMode::SINGLE_THREADED);
+}
+
+TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
+       SkiaRenderer_RunMultiThread_OutOfOrderCallbacks) {
+  use_gl_renderer_ = true;
+  use_skia_renderer_ = true;
+  out_of_order_callbacks_ = true;
+  RunTest(CompositorMode::THREADED);
+}
+
+TEST_F(LayerTreeHostCopyRequestTestMultipleRequests,
        SoftwareRenderer_RunSingleThread) {
   use_gl_renderer_ = false;
   RunTest(CompositorMode::SINGLE_THREADED);
