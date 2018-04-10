@@ -532,7 +532,9 @@ std::unique_ptr<base::ListValue> PeopleHandler::GetStoredAccountsList() {
 
 void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
   const base::Value* email;
+  const base::Value* is_default_promo_account;
   CHECK(args->Get(0, &email));
+  CHECK(args->Get(1, &is_default_promo_account));
 
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
@@ -541,12 +543,9 @@ void PeopleHandler::HandleStartSyncingWithEmail(const base::ListValue* args) {
       AccountTrackerServiceFactory::GetForProfile(profile_);
   AccountInfo account =
       account_tracker->FindAccountInfoByEmail(email->GetString());
-
-  // TODO(http://crbug.com/819431): Pass the right is_default_promo_account bit
-  // from the settings web_ui.
   signin_ui_util::EnableSyncFromPromo(
       browser, account, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
-      false /* is_default_promo_account */);
+      is_default_promo_account->GetBool());
 }
 #endif
 

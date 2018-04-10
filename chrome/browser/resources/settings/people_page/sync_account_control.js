@@ -194,7 +194,12 @@ Polymer({
   /** @private */
   onSyncButtonTap_: function() {
     assert(this.shownAccount_);
-    this.syncBrowserProxy_.startSyncingWithEmail(this.shownAccount_.email);
+    assert(this.storedAccounts_.length > 0);
+    const isDefaultPromoAccount =
+        (this.shownAccount_.email == this.storedAccounts_[0].email);
+
+    this.syncBrowserProxy_.startSyncingWithEmail(
+        this.shownAccount_.email, isDefaultPromoAccount);
   },
 
   /** @private */

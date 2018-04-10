@@ -146,7 +146,7 @@ void EnableSyncFromPromo(
   // It looks like on ChromeOS there are tests that expect that the Chrome
   // sign-in tab is presented even thought the user is signed in to Chrome
   // (e.g. BookmarkBubbleSignInDelegateTest.*). However signing in to Chrome in
-  // a refular profile is not supported on ChromeOS as the primary account is
+  // a regular profile is not supported on ChromeOS as the primary account is
   // set when the profile is created.
   //
   // TODO(msarda): Investigate whether this flow needs to be supported on

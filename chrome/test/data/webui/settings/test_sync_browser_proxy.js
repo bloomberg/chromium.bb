@@ -53,8 +53,8 @@ class TestSyncBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  startSyncingWithEmail(email) {
-    this.methodCalled('startSyncingWithEmail', email);
+  startSyncingWithEmail(email, isDefaultPromoAccount) {
+    this.methodCalled('startSyncingWithEmail', [email, isDefaultPromoAccount]);
   }
 
   setImpressionCount(count) {
