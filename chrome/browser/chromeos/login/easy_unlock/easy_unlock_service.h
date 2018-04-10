@@ -128,14 +128,6 @@ class EasyUnlockService : public KeyedService {
   // Records metrics for password based flow for the given user.
   virtual void RecordPasswordLoginEvent(const AccountId& account_id) const = 0;
 
-  // Starts auto pairing.
-  typedef base::Callback<void(bool success, const std::string& error)>
-      AutoPairingResultCallback;
-  virtual void StartAutoPairing(const AutoPairingResultCallback& callback) = 0;
-
-  // Sets auto pairing result.
-  virtual void SetAutoPairingResult(bool success, const std::string& error) = 0;
-
   // Sets the service up and schedules service initialization.
   void Initialize(std::unique_ptr<EasyUnlockAppManager> app_manager);
 

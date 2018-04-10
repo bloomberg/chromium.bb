@@ -96,8 +96,6 @@ class EasyUnlockServiceRegular
   void RecordEasySignInOutcome(const AccountId& account_id,
                                bool success) const override;
   void RecordPasswordLoginEvent(const AccountId& account_id) const override;
-  void StartAutoPairing(const AutoPairingResultCallback& callback) override;
-  void SetAutoPairingResult(bool success, const std::string& error) override;
   void InitializeInternal() override;
   void ShutdownInternal() override;
   bool IsAllowedInternal() const override;
@@ -161,8 +159,6 @@ class EasyUnlockServiceRegular
   std::unique_ptr<cryptauth::CryptAuthClient> cryptauth_client_;
   ScopedObserver<cryptauth::CryptAuthDeviceManager, EasyUnlockServiceRegular>
       scoped_crypt_auth_device_manager_observer_;
-
-  AutoPairingResultCallback auto_pairing_callback_;
 
   // True if the user just unlocked the screen using Easy Unlock. Reset once
   // the screen unlocks. Used to distinguish Easy Unlock-powered unlocks from
