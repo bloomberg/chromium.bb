@@ -14,11 +14,11 @@
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/cleanup_task.h"
-#include "content/browser/background_fetch/storage/create_registration_task.h"
+#include "content/browser/background_fetch/storage/create_metadata_task.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/background_fetch/storage/delete_registration_task.h"
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
-#include "content/browser/background_fetch/storage/get_registration_task.h"
+#include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
 #include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -41,6 +41,30 @@ namespace {
 bool IsOK(const BackgroundFetchRequestInfo& request) {
   int status = request.GetResponseCode();
   return status >= 200 && status < 300;
+}
+
+// Helper function to convert a BackgroundFetchRegistration proto into a
+// BackgroundFetchRegistration struct, and call the appropriate callback.
+void GetRegistrationFromMetadata(
+    BackgroundFetchDataManager::GetRegistrationCallback callback,
+    blink::mojom::BackgroundFetchError error,
+    std::unique_ptr<proto::BackgroundFetchMetadata> metadata_proto) {
+  if (!metadata_proto) {
+    std::move(callback).Run(error, nullptr);
+    return;
+  }
+
+  const auto& registration_proto = metadata_proto->registration();
+  auto registration = std::make_unique<BackgroundFetchRegistration>();
+  registration->developer_id = registration_proto.developer_id();
+  registration->unique_id = registration_proto.unique_id();
+  // TODO(crbug.com/774054): Uploads are not yet supported.
+  registration->upload_total = registration_proto.upload_total();
+  registration->uploaded = registration_proto.uploaded();
+  registration->download_total = registration_proto.download_total();
+  registration->downloaded = registration_proto.downloaded();
+
+  std::move(callback).Run(error, std::move(registration));
 }
 
 }  // namespace
@@ -187,8 +211,11 @@ void BackgroundFetchDataManager::CreateRegistration(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
-    AddDatabaseTask(std::make_unique<background_fetch::CreateRegistrationTask>(
-        this, registration_id, requests, options, std::move(callback)));
+    auto registration_callback =
+        base::BindOnce(&GetRegistrationFromMetadata, std::move(callback));
+    AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(
+        this, registration_id, requests, options,
+        std::move(registration_callback)));
     return;
   }
 
@@ -225,6 +252,21 @@ void BackgroundFetchDataManager::CreateRegistration(
                   std::move(callback));
 }
 
+void BackgroundFetchDataManager::GetMetadata(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
+    const std::string& developer_id,
+    GetMetadataCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    return;
+  }
+  AddDatabaseTask(std::make_unique<background_fetch::GetMetadataTask>(
+      this, service_worker_registration_id, origin, developer_id,
+      std::move(callback)));
+}
+
 void BackgroundFetchDataManager::GetRegistration(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
@@ -234,9 +276,10 @@ void BackgroundFetchDataManager::GetRegistration(
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableBackgroundFetchPersistence)) {
-    AddDatabaseTask(std::make_unique<background_fetch::GetRegistrationTask>(
-        this, service_worker_registration_id, origin, developer_id,
-        std::move(callback)));
+    auto registration_callback =
+        base::BindOnce(&GetRegistrationFromMetadata, std::move(callback));
+    GetMetadata(service_worker_registration_id, origin, developer_id,
+                std::move(registration_callback));
     return;
   }
 
