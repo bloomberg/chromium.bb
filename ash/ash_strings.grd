@@ -1231,6 +1231,26 @@ Only use this feature with accounts you trust.
         Got it, don't show me this again.
       </message>
 
+      <!-- Strings shown within MultiDevice setup notifications -->
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_TITLE" desc="Title of the notification shown to a user that has not completed the MultiDevice setup flow when a potential host device is found." translateable="false">
+        PLACEHOLDER TEXT blah blah blah (Better together in sickness and in health)
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup flow when a potential host device is found. Clicking it opens the setup WebUI." translateable="false">
+        PLACEHOLDER TEXT blah blah blah (Your Chromebook works better with your phone)
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow that a new host device is replacing the current one (i.e., when the user purchases a new Android phone)." translateable="false">
+        PLACEHOLDER TEXT blah blah blah (Better together phone changed)
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_HOST_SWITCHED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow that a new host device is replacing the current one (i.e., when the user purchases a new Android phone)." translateable="false">
+        PLACEHOLDER TEXT blah blah blah (A new phone was connected to your Chromebook)
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_TITLE" desc="Title of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled." translateable="false">
+        PLACEHOLDER TEXT blah blah blah (New Chromebook added to Better together)
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_EXISTING_USER_NEW_CHROMEBOOK_ADDED_MESSAGE" desc="Message shown as part of the notification shown to a user that has already completed the MultiDevice setup flow logging into a new Chromebook that all their Chromebooks are MultiDevice enabled." translateable="false">
+        PLACEHOLDER TEXT blah blah blah (All Chromebooks work better with your phone)
+      </message>
+
       <!-- Window teleportation warning dialog -->
       <message name="IDS_ASH_TELEPORT_WARNING_TITLE" desc="The title of the dialog which warns user about oddities which can be seen when a window gets moved to another user desktop.">
         Careful, this feature may bite

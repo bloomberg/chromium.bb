@@ -58,6 +58,7 @@ include_rules = [
   "+chromeos/audio",
   "+chromeos/chromeos_switches.h",
   "+chromeos/chromeos_paths.h",
+  "+chromeos/components/proximity_auth/logging/logging.h",
   "+chromeos/dbus/dbus_thread_manager.h",
   "+chromeos/dbus/fake_power_manager_client.h",
   "+chromeos/dbus/fake_session_manager_client.h",
@@ -72,6 +73,7 @@ include_rules = [
   # TODO(jamescook): Eliminate this. http://crbug.com/644355
   "+chromeos/network",
   "+chromeos/services/assistant/public" ,
+  "+chromeos/services/multidevice_setup/public/mojom",
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/system",
