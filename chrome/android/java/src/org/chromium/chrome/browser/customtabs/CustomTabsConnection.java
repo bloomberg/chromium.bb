@@ -62,7 +62,9 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.BrowserStartupController;
@@ -213,6 +215,7 @@ public class CustomTabsConnection {
 
         // Only for hidden tab.
         public final Tab tab;
+        public final TabObserver observer;
         @VisibleForTesting
         boolean mDidFinishLoad;
 
@@ -221,21 +224,23 @@ public class CustomTabsConnection {
         public final Bundle extras;
 
         static SpeculationParams forPrefetch(CustomTabsSessionToken session, String url) {
-            return new SpeculationParams(session, url, PREFETCH, null, null, null, null);
+            return new SpeculationParams(session, url, PREFETCH, null, null, null, null, null);
         }
 
         static SpeculationParams forPrerender(CustomTabsSessionToken session, String url,
                 WebContents webcontents, String referrer, Bundle extras) {
             return new SpeculationParams(
-                    session, url, PRERENDER, webcontents, referrer, extras, null);
+                    session, url, PRERENDER, webcontents, referrer, extras, null, null);
         }
         static SpeculationParams forHiddenTab(CustomTabsSessionToken session, String url, Tab tab,
-                String referrer, Bundle extras) {
-            return new SpeculationParams(session, url, HIDDEN_TAB, null, referrer, extras, tab);
+                TabObserver observer, String referrer, Bundle extras) {
+            return new SpeculationParams(
+                    session, url, HIDDEN_TAB, null, referrer, extras, tab, observer);
         }
 
         private SpeculationParams(CustomTabsSessionToken session, String url, int speculationMode,
-                WebContents webContents, String referrer, Bundle extras, Tab tab) {
+                WebContents webContents, String referrer, Bundle extras, Tab tab,
+                TabObserver observer) {
             this.session = session;
             this.url = url;
             this.speculationMode = speculationMode;
@@ -243,6 +248,21 @@ public class CustomTabsConnection {
             this.referrer = referrer;
             this.extras = extras;
             this.tab = tab;
+            this.observer = observer;
+        }
+    }
+
+    static class HiddenTabObserver extends EmptyTabObserver {
+        private CustomTabsConnection mCustomTabsConnection;
+
+        HiddenTabObserver(CustomTabsConnection connection) {
+            mCustomTabsConnection = connection;
+        }
+
+        @Override
+        public void onCrash(Tab tab, boolean sadTabShown) {
+            final CustomTabsConnection connection = mCustomTabsConnection;
+            ThreadUtils.postOnUiThread(() -> { connection.cancelSpeculation(null /* session */); });
         }
     }
 
@@ -897,6 +917,7 @@ public class CustomTabsConnection {
             if (mSpeculation == null || session == null) return null;
             if (session.equals(mSpeculation.session) && mSpeculation.tab != null) {
                 Tab tab = mSpeculation.tab;
+                tab.removeObserver(mSpeculation.observer);
                 String speculatedUrl = mSpeculation.url;
                 String speculationReferrer = mSpeculation.referrer;
                 mSpeculation = null;
@@ -1526,6 +1547,8 @@ public class CustomTabsConnection {
         if (IntentHandler.getExtraHeadersFromIntent(extrasIntent) != null) return;
 
         Tab tab = Tab.createDetached(new CustomTabDelegateFactory(false, false, null));
+        HiddenTabObserver observer = new HiddenTabObserver(this);
+        tab.addObserver(observer);
 
         // Updating post message as soon as we have a valid WebContents.
         mClientManager.resetPostMessageHandlerForSession(
@@ -1537,7 +1560,8 @@ public class CustomTabsConnection {
             loadParams.setReferrer(
                     new Referrer(referrer, WebReferrerPolicy.DEFAULT));
         }
-        mSpeculation = SpeculationParams.forHiddenTab(session, url, tab, referrer, extras);
+        mSpeculation =
+                SpeculationParams.forHiddenTab(session, url, tab, observer, referrer, extras);
         mSpeculation.tab.loadUrl(loadParams);
     }
 

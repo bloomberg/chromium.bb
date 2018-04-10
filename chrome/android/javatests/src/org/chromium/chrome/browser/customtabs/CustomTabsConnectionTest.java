@@ -25,6 +25,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -50,8 +52,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /** Tests for CustomTabsConnection. */
@@ -62,6 +62,9 @@ public class CustomTabsConnectionTest {
     private static final String URL2 = "https://www.android.com";
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
+
+    @Rule
+    public Features.InstrumentationProcessor mProcessor = new Features.InstrumentationProcessor();
 
     @Before
     public void setUp() throws Exception {
@@ -240,8 +243,8 @@ public class CustomTabsConnectionTest {
     @Test
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-            "enable-features=" + ChromeFeatureList.CCT_BACKGROUND_TAB})
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+    @Features.EnableFeatures(ChromeFeatureList.CCT_BACKGROUND_TAB)
     @RetryOnFailure
     public void testOnlyOneHiddenTab() throws Exception {
         Assert.assertTrue("Failed warmup()", mCustomTabsConnection.warmup(0));
@@ -253,7 +256,7 @@ public class CustomTabsConnectionTest {
         // First hidden tab, add an observer to check that it's destroyed.
         Assert.assertTrue("Failed first mayLaunchUrl()",
                 mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
-        final Semaphore destroyed = new Semaphore(0);
+        final CallbackHelper tabDestroyedHelper = new CallbackHelper();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -264,7 +267,7 @@ public class CustomTabsConnectionTest {
                 tab.addObserver(new EmptyTabObserver() {
                     @Override
                     public void onDestroyed(Tab destroyedTab) {
-                        destroyed.release();
+                        tabDestroyedHelper.notifyCalled();
                     }
                 });
             }
@@ -283,14 +286,46 @@ public class CustomTabsConnectionTest {
                 Assert.assertEquals(URL2, mCustomTabsConnection.mSpeculation.url);
             }
         });
-
-        Assert.assertTrue(
-                "Only one hidden tab should exist.", destroyed.tryAcquire(10, TimeUnit.SECONDS));
+        tabDestroyedHelper.waitForCallback("The first hidden tab should have been destroyed", 0);
 
         // Clears the second hidden tab.
         mCustomTabsConnection.resetThrottling(Process.myUid());
         Assert.assertTrue("Failed cleanup mayLaunchUrl()",
                 mCustomTabsConnection.mayLaunchUrl(token, null, null, null));
+    }
+
+    /**
+     * Tests that if the renderer backing a hidden tab is killed, the speculation is
+     * canceled.
+     */
+    @Test
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
+    @Features.EnableFeatures(ChromeFeatureList.CCT_BACKGROUND_TAB)
+    @RetryOnFailure
+    public void testKillHiddenTabRenderer() throws Exception {
+        Assert.assertTrue("Failed warmup()", mCustomTabsConnection.warmup(0));
+        CustomTabsSessionToken token = CustomTabsSessionToken.createMockSessionTokenForTesting();
+        Assert.assertTrue("Failed newSession()", mCustomTabsConnection.newSession(token));
+        mCustomTabsConnection.setSpeculationModeForSession(
+                token, CustomTabsConnection.SpeculationParams.HIDDEN_TAB);
+        Assert.assertTrue("Failed first mayLaunchUrl()",
+                mCustomTabsConnection.mayLaunchUrl(token, Uri.parse(URL), null, null));
+        final CallbackHelper tabDestroyedHelper = new CallbackHelper();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNotNull("Null speculation", mCustomTabsConnection.mSpeculation);
+            Tab speculationTab = mCustomTabsConnection.mSpeculation.tab;
+            Assert.assertNotNull("Null speculation tab", speculationTab);
+            speculationTab.addObserver(new EmptyTabObserver() {
+                @Override
+                public void onDestroyed(Tab tab) {
+                    tabDestroyedHelper.notifyCalled();
+                }
+            });
+            speculationTab.getWebContents().simulateRendererKilledForTesting(false);
+        });
+        tabDestroyedHelper.waitForCallback("The speculated tab was not destroyed", 0);
     }
 
     @Test

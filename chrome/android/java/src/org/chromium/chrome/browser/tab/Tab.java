@@ -1693,6 +1693,8 @@ public class Tab
     protected void didStartPageLoad(String validatedUrl, boolean showingErrorPage) {
         updateTitle();
         removeSadTabIfPresent();
+        // A page load means that any pending reload is no longer necessary.
+        mNeedsReload = false;
 
         mDataSavedOnStartPageLoad =
                 DataReductionProxySettings.getInstance().getContentLengthSavedInHistorySummary();

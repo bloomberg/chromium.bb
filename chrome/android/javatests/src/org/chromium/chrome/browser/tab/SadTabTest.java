@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.net.test.util.TestWebServer;
 
 /**
  * Tests related to the sad tab logic.
@@ -66,6 +67,50 @@ public class SadTabTest {
         Assert.assertFalse(tab.isShowingSadTab());
         simulateRendererKilled(tab, false);
         Assert.assertFalse(tab.isShowingSadTab());
+    }
+
+    /**
+     * Verify that a tab navigating to a page that is killed in the background is reloaded.
+     */
+    @Test
+    @SmallTest
+    @Feature({"SadTab"})
+    public void testSadTabReloadAfterKill() throws Throwable {
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url1 = webServer.setEmptyResponse("/page1.html");
+            mActivityTestRule.loadUrl(url1);
+            Assert.assertFalse(tab.needsReload());
+            simulateRendererKilled(tab, false);
+            Assert.assertTrue(tab.needsReload());
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    /**
+     * Verify that a tab killed in the background is not reloaded if another load has started.
+     */
+    @Test
+    @SmallTest
+    @Feature({"SadTab"})
+    public void testSadTabNoReloadAfterLoad() throws Throwable {
+        final Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        TestWebServer webServer = TestWebServer.start();
+        try {
+            final String url1 = webServer.setEmptyResponse("/page1.html");
+            final String url2 = webServer.setEmptyResponse("/page2.html");
+            mActivityTestRule.loadUrl(url1);
+            Assert.assertFalse(tab.needsReload());
+            simulateRendererKilled(tab, false);
+            mActivityTestRule.loadUrl(url2);
+            Assert.assertFalse(tab.needsReload());
+        } finally {
+            webServer.shutdown();
+        }
     }
 
     /**
