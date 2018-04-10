@@ -10,7 +10,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/infobar_container_delegate.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
@@ -126,6 +126,13 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
   AddChildView(close_button_);
 }
 
+InfoBarView::~InfoBarView() {
+  // We should have closed any open menus in PlatformSpecificHide(), then
+  // subclasses' RunMenu() functions should have prevented opening any new ones
+  // once we became unowned.
+  DCHECK(!menu_runner_.get());
+}
+
 void InfoBarView::RecalculateHeight() {
   // Ensure the infobar is tall enough to display its contents.
   int height = 0;
@@ -135,14 +142,7 @@ void InfoBarView::RecalculateHeight() {
     const int margin_height = margins ? margins->height() : 0;
     height = std::max(height, child->height() + margin_height);
   }
-  SetTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
-}
-
-InfoBarView::~InfoBarView() {
-  // We should have closed any open menus in PlatformSpecificHide(), then
-  // subclasses' RunMenu() functions should have prevented opening any new ones
-  // once we became unowned.
-  DCHECK(!menu_runner_.get());
+  SetTargetHeight(height + GetSeparatorHeightDip());
 }
 
 views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
@@ -203,6 +203,16 @@ void InfoBarView::ViewHierarchyChanged(
   }
 }
 
+void InfoBarView::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+
+  if (ShouldDrawSeparator()) {
+    const SkColor color =
+        GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
+    BrowserView::Paint1pxHorizontalLine(canvas, color, GetLocalBounds(), false);
+  }
+}
+
 void InfoBarView::OnThemeChanged() {
   const SkColor background_color = GetColor(kBackgroundColor);
   background()->SetNativeControlColor(background_color);
@@ -260,7 +270,8 @@ int InfoBarView::EndX() const {
 }
 
 int InfoBarView::OffsetY(views::View* view) const {
-  return std::max((target_height() - view->height()) / 2, 0) -
+  return GetSeparatorHeightDip() +
+         std::max((target_height() - view->height()) / 2, 0) -
          (target_height() - height());
 }
 
@@ -345,6 +356,30 @@ void InfoBarView::OnWillChangeFocus(View* focused_before, View* focused_now) {
       Contains(focused_now)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
   }
+}
+
+bool InfoBarView::ShouldDrawSeparator() const {
+  return parent()->GetIndexOf(this) != 0;
+}
+
+int InfoBarView::GetSeparatorHeightDip() const {
+  // We only need a separator for infobars after the first; the topmost infobar
+  // uses the toolbar as its top separator.
+  //
+  // Ideally the separator would take out 1 px in layout, but since we lay out
+  // in DIPs, we reserve 1 DIP below scale factor 2x, and 0 DIPs at 2 or above.
+  // This way the padding above the infobar content will never be more than 1 px
+  // from its ideal value.
+  //
+  // This only works because all infobars have padding at the top; if we
+  // actually draw all the way to the top, we'd risk drawing a separator atop
+  // some infobar content.
+  auto scale_factor = [this]() {
+    auto* widget = GetWidget();
+    // There may be no widget in tests.
+    return widget ? widget->GetCompositor()->device_scale_factor() : 1;
+  };
+  return (ShouldDrawSeparator() && (scale_factor() < 2)) ? 1 : 0;
 }
 
 SkColor InfoBarView::GetColor(int id) const {

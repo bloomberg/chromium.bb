@@ -41,19 +41,4 @@ void InfoBarBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   fill.setStyle(cc::PaintFlags::kFill_Style);
   fill.setColor(get_color());
   canvas->DrawPath(fill_path, fill);
-
-  // Bottom separator.
-  cc::PaintFlags stroke;
-  stroke.setStyle(cc::PaintFlags::kStroke_Style);
-  const int kSeparatorThicknessPx = 1;
-  stroke.setStrokeWidth(SkIntToScalar(kSeparatorThicknessPx));
-  SkColor separator_color = view->GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
-  stroke.setColor(separator_color);
-  stroke.setAntiAlias(false);
-  gfx::SizeF view_size_px = gfx::ScaleSize(gfx::SizeF(view->size()), dsf);
-  SkScalar y = SkIntToScalar(view_size_px.height() - kSeparatorThicknessPx) +
-               SK_ScalarHalf;
-  SkScalar w = SkFloatToScalar(view_size_px.width());
-  canvas->sk_canvas()->drawLine(0, y, w, y, stroke);
 }
