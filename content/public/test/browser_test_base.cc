@@ -177,7 +177,8 @@ void BrowserTestBase::SetUp() {
       base::Int64ToString(TestTimeouts::action_max_timeout().InSeconds()));
 
   // The tests assume that file:// URIs can freely access other file:// URIs.
-  command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
+  if (AllowFileAccessFromFiles())
+    command_line->AppendSwitch(switches::kAllowFileAccessFromFiles);
 
   command_line->AppendSwitch(switches::kDomAutomationController);
 
@@ -323,6 +324,10 @@ void BrowserTestBase::SetUp() {
 }
 
 void BrowserTestBase::TearDown() {
+}
+
+bool BrowserTestBase::AllowFileAccessFromFiles() const {
+  return true;
 }
 
 void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
