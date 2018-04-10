@@ -443,26 +443,6 @@ void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
   NOTREACHED();
 }
 
-void EasyUnlockServiceRegular::StartAutoPairing(
-    const AutoPairingResultCallback& callback) {
-  if (!auto_pairing_callback_.is_null()) {
-    LOG(ERROR)
-        << "Start auto pairing when there is another auto pairing requested.";
-    callback.Run(false, std::string());
-    return;
-  }
-
-  auto_pairing_callback_ = callback;
-}
-
-void EasyUnlockServiceRegular::SetAutoPairingResult(bool success,
-                                                    const std::string& error) {
-  DCHECK(!auto_pairing_callback_.is_null());
-
-  auto_pairing_callback_.Run(success, error);
-  auto_pairing_callback_.Reset();
-}
-
 void EasyUnlockServiceRegular::InitializeInternal() {
   proximity_auth::ScreenlockBridge::Get()->AddObserver(this);
 
