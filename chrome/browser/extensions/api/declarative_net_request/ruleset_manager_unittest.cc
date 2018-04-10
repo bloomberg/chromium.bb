@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -20,6 +21,7 @@
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
@@ -45,14 +47,16 @@ class RulesetManagerTest : public DNRTestBase {
                              const std::string& extension_dirname,
                              std::unique_ptr<RulesetMatcher>* matcher,
                              const std::vector<std::string>& host_permissions =
-                                 {URLPattern::kAllUrlsPattern}) {
+                                 {URLPattern::kAllUrlsPattern},
+                             bool has_background_script = false) {
     base::FilePath extension_dir =
         temp_dir().GetPath().AppendASCII(extension_dirname);
 
     // Create extension directory.
     ASSERT_TRUE(base::CreateDirectory(extension_dir));
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, host_permissions);
+                            kJSONRulesFilename, rules, host_permissions,
+                            has_background_script);
 
     last_loaded_extension_ =
         CreateExtensionLoader()->LoadExtension(extension_dir);
@@ -274,6 +278,90 @@ TEST_P(RulesetManagerTest, Redirect) {
   extensions::WebRequestInfo request_info4(request.get());
   EXPECT_FALSE(manager->ShouldRedirectRequest(
       request_info4, is_incognito_context, &redirect_url4));
+}
+
+// Tests that an extension can't block or redirect resources on the chrome-
+// extension scheme.
+TEST_P(RulesetManagerTest, ExtensionScheme) {
+  RulesetManager* manager = info_map()->GetRulesetManager();
+  ASSERT_TRUE(manager);
+
+  const Extension* extension_1 = nullptr;
+  const Extension* extension_2 = nullptr;
+  // Add an extension with a background page which blocks all requests.
+  {
+    std::unique_ptr<RulesetMatcher> matcher;
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = std::string("*");
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "test extension", &matcher,
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
+        true /* has_background_script*/));
+    extension_1 = last_loaded_extension();
+    manager->AddRuleset(extension_1->id(), std::move(matcher));
+  }
+
+  // Add another extension with a background page which redirects all requests
+  // to "http://google.com".
+  {
+    std::unique_ptr<RulesetMatcher> matcher;
+    TestRule rule = CreateGenericRule();
+    rule.condition->url_filter = std::string("*");
+    rule.priority = kMinValidPriority;
+    rule.action->type = std::string("redirect");
+    rule.action->redirect_url = std::string("http://google.com");
+    ASSERT_NO_FATAL_FAILURE(CreateMatcherForRules(
+        {rule}, "test extension_2", &matcher,
+        std::vector<std::string>({URLPattern::kAllUrlsPattern}),
+        true /* has_background_script*/));
+    extension_2 = last_loaded_extension();
+    manager->AddRuleset(extension_2->id(), std::move(matcher));
+  }
+
+  EXPECT_EQ(2u, manager->GetMatcherCountForTest());
+
+  // Ensure that "http://example.com" will be blocked and redirected.
+  std::unique_ptr<net::URLRequest> request =
+      GetRequestForURL("http://example.com");
+  EXPECT_TRUE(manager->ShouldBlockRequest(WebRequestInfo(request.get()),
+                                          false /*is_incognito_context*/));
+  GURL redirect_url;
+  EXPECT_TRUE(manager->ShouldRedirectRequest(WebRequestInfo(request.get()),
+                                             false /*is_incognito_context*/,
+                                             &redirect_url));
+  EXPECT_EQ(GURL("http://google.com"), redirect_url);
+
+  // Ensure that the background page for |extension_1| won't be blocked or
+  // redirected.
+  GURL background_page_url_1 = BackgroundInfo::GetBackgroundURL(extension_1);
+  EXPECT_TRUE(!background_page_url_1.is_empty());
+  request = GetRequestForURL(background_page_url_1.spec());
+  EXPECT_FALSE(manager->ShouldBlockRequest(WebRequestInfo(request.get()),
+                                           false /*is_incognito_context*/));
+  EXPECT_FALSE(manager->ShouldRedirectRequest(WebRequestInfo(request.get()),
+                                              false /*is_incognito_context*/,
+                                              &redirect_url));
+
+  // Ensure that the background page for |extension_2| won't be blocked or
+  // redirected.
+  GURL background_page_url_2 = BackgroundInfo::GetBackgroundURL(extension_2);
+  EXPECT_TRUE(!background_page_url_2.is_empty());
+  request = GetRequestForURL(background_page_url_2.spec());
+  EXPECT_FALSE(manager->ShouldBlockRequest(WebRequestInfo(request.get()),
+                                           false /*is_incognito_context*/));
+  EXPECT_FALSE(manager->ShouldRedirectRequest(WebRequestInfo(request.get()),
+                                              false /*is_incognito_context*/,
+                                              &redirect_url));
+
+  // Also ensure that an arbitrary url on the chrome extension scheme is also
+  // not blocked or redirected.
+  request = GetRequestForURL(base::StringPrintf("%s://%s/%s", kExtensionScheme,
+                                                "extension_id", "path"));
+  EXPECT_FALSE(manager->ShouldBlockRequest(WebRequestInfo(request.get()),
+                                           false /*is_incognito_context*/));
+  EXPECT_FALSE(manager->ShouldRedirectRequest(WebRequestInfo(request.get()),
+                                              false /*is_incognito_context*/,
+                                              &redirect_url));
 }
 
 INSTANTIATE_TEST_CASE_P(,

@@ -84,6 +84,10 @@ class RulesetManager {
     DISALLOW_COPY_AND_ASSIGN(ExtensionRulesetData);
   };
 
+  // Returns true if the given |request| should be evaluated for
+  // blocking/redirection.
+  bool ShouldEvaluateRequest(const WebRequestInfo& request) const;
+
   // Returns whether |ruleset| should be evaluated for the given |request|.
   bool ShouldEvaluateRulesetForRequest(const ExtensionRulesetData& ruleset,
                                        const WebRequestInfo& request,
