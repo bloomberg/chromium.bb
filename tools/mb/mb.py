@@ -471,11 +471,11 @@ class MetaBuildWrapper(object):
 
     # This code is naive and just picks reasonable defaults per platform.
     if self.platform == 'darwin':
-      os_dim = ('os', 'Mac-10.12')
+      os_dim = ('os', 'Mac-10.13')
     elif self.platform.startswith('linux'):
       os_dim = ('os', 'Ubuntu-14.04')
     elif self.platform == 'win32':
-      os_dim = ('os', 'Windows-10-14393')
+      os_dim = ('os', 'Windows-10')
     else:
       raise MBErr('unrecognized platform string "%s"' % self.platform)
 
