@@ -39,6 +39,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -159,64 +160,6 @@ std::string ChromeVersion::ToASCII() const {
   return std::string(&buffer[0], string_len);
 }
 
-// A read/write mapping of a file.
-// Note: base::MemoryMappedFile is not used because it doesn't support
-// read/write mappings.  Adding such support across all platforms for this
-// Windows-only test code seems like overkill.
-class MappedFile {
- public:
-  MappedFile() : size_(), mapping_(), view_() { }
-  ~MappedFile();
-  bool Initialize(base::File file);
-  void* data() const { return view_; }
-  size_t size() const { return size_; }
-
- private:
-  size_t size_;
-  base::File file_;
-  HANDLE mapping_;
-  void* view_;
-  DISALLOW_COPY_AND_ASSIGN(MappedFile);
-};  // class MappedFile
-
-MappedFile::~MappedFile() {
-  if (view_ && !UnmapViewOfFile(view_))
-    PLOG(DFATAL) << "MappedFile failed to unmap view.";
-  if (mapping_ && !CloseHandle(mapping_))
-    PLOG(DFATAL) << "Could not close file mapping handle.";
-}
-
-bool MappedFile::Initialize(base::File file) {
-  DCHECK(mapping_ == NULL);
-  bool result = false;
-  base::File::Info file_info;
-
-  if (file.GetInfo(&file_info)) {
-    if (file_info.size <=
-        static_cast<int64_t>(std::numeric_limits<DWORD>::max())) {
-      mapping_ = CreateFileMapping(file.GetPlatformFile(), NULL, PAGE_READWRITE,
-                                   0, static_cast<DWORD>(file_info.size), NULL);
-      if (mapping_ != NULL) {
-        view_ = MapViewOfFile(mapping_, FILE_MAP_WRITE, 0, 0,
-                              static_cast<size_t>(file_info.size));
-        if (view_)
-          result = true;
-        else
-          PLOG(DFATAL) << "MapViewOfFile failed";
-      } else {
-        PLOG(DFATAL) << "CreateFileMapping failed";
-      }
-    } else {
-      LOG(DFATAL) << "Files larger than " << std::numeric_limits<DWORD>::max()
-                  << " are not supported.";
-    }
-  } else {
-    PLOG(DFATAL) << "file.GetInfo failed";
-  }
-  file_ = std::move(file);
-  return result;
-}
-
 // Calls CreateProcess with good default parameters and waits for the process
 // to terminate returning the process exit code.
 bool RunProcessAndWait(const base::char16* exe_path,
@@ -332,6 +275,7 @@ void VisitResource(const upgrade_test::EntryPath& path,
                    DWORD code_page,
                    uintptr_t context) {
   VisitResourceContext& ctx = *reinterpret_cast<VisitResourceContext*>(context);
+  DCHECK_EQ(ctx.current_version_str.size(), ctx.new_version_str.size());
 
   // Replace all occurrences of current_version_str with new_version_str
   bool changing_version = false;
@@ -368,6 +312,46 @@ void VisitResource(const upgrade_test::EntryPath& path,
       reinterpret_cast<uint8_t*>(&new_version[0]), NULL);
 }
 
+// Updates version strings found in an image's .rdata (read-only data) section.
+// This handles uses of CHROME_VERSION_STRING (e.g., chrome::kChromeVersion).
+// Version numbers found even as substrings of larger strings are updated.
+bool UpdateVersionInData(const base::win::PEImage& image,
+                         VisitResourceContext* context) {
+  DCHECK_EQ(context->current_version_str.size(),
+            context->new_version_str.size());
+  IMAGE_SECTION_HEADER* rdata_header =
+      image.GetImageSectionHeaderByName(".rdata");
+  if (!rdata_header)
+    return true;  // Nothing to update.
+
+  size_t size = rdata_header->SizeOfRawData;
+  uint8_t* data = reinterpret_cast<uint8_t*>(image.module()) +
+                  rdata_header->PointerToRawData;
+
+  // Replace all wide string occurrences of |current_version| with
+  // |new_version|. No attempt is made to ensure that the modified bytes are
+  // truly part of a wide string.
+  const base::string16& current_version_str = context->current_version_str;
+  ReplaceAll(data, data + size,
+             reinterpret_cast<const uint8_t*>(&current_version_str[0]),
+             reinterpret_cast<const uint8_t*>(
+                 &current_version_str[current_version_str.size()]),
+             reinterpret_cast<const uint8_t*>(context->new_version_str.c_str()),
+             nullptr);
+
+  // Replace all ASCII occurrences of |current_version| with |new_version|. No
+  // attempt is made to ensure that the modified bytes are truly part of an
+  // ASCII string.
+  std::string current_version(context->current_version.ToASCII());
+  std::string new_version(context->new_version.ToASCII());
+  ReplaceAll(
+      data, data + size, reinterpret_cast<uint8_t*>(&current_version[0]),
+      reinterpret_cast<uint8_t*>(&current_version[current_version.size()]),
+      reinterpret_cast<uint8_t*>(&new_version[0]), nullptr);
+
+  return true;
+}
+
 // Updates the version strings and numbers in all of |image_file|'s resources.
 bool UpdateVersionIfMatch(const base::FilePath& image_file,
                           VisitResourceContext* context) {
@@ -393,8 +377,9 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
   }
 
   if (file.IsValid()) {
-    MappedFile image_mapping;
-    if (image_mapping.Initialize(std::move(file))) {
+    base::MemoryMappedFile image_mapping;
+    if (image_mapping.Initialize(std::move(file),
+                                 base::MemoryMappedFile::READ_WRITE)) {
       base::win::PEImageAsData image(
           reinterpret_cast<HMODULE>(image_mapping.data()));
       // PEImage class does not support other-architecture images.
@@ -402,6 +387,7 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
           IMAGE_NT_OPTIONAL_HDR_MAGIC) {
         result = upgrade_test::EnumResources(
             image, &VisitResource, reinterpret_cast<uintptr_t>(context));
+        result = result && UpdateVersionInData(image, context);
       } else {
         result = true;
       }
