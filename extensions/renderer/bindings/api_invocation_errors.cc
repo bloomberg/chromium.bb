@@ -92,6 +92,10 @@ std::string TooManyArguments() {
   return "Too many arguments.";
 }
 
+std::string NoMatchingSignature() {
+  return "No matching signature.";
+}
+
 std::string MissingRequiredArgument(const char* argument_name) {
   return base::StringPrintf("Missing required argument '%s'.", argument_name);
 }

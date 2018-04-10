@@ -39,7 +39,7 @@ class ArgumentParser {
                  std::string* error)
       : context_(context),
         signature_(signature),
-        arguments_(arguments),
+        provided_arguments_(arguments),
         type_refs_(type_refs),
         error_(error) {}
 
@@ -50,24 +50,31 @@ class ArgumentParser {
   v8::Isolate* GetIsolate() { return context_->GetIsolate(); }
 
  private:
-  v8::Local<v8::Value> next_argument() {
-    return current_index_ < arguments_.size() ?
-        arguments_[current_index_] : v8::Local<v8::Value>();
-  }
-
-  void ConsumeArgument() {
-    current_index_ = std::min(arguments_.size(), current_index_ + 1);
-  }
+  // API methods can have multiple possible signatures. For instance, an API
+  // method that takes (optional int, string) could be invoked with either
+  // an int and string, or just a string. ResolveArguments() takes the
+  // |provided| arguments and the |expected| signature, and populates |result|
+  // with a normalized array of values such that each entry in |result| is
+  // positionally correct with the signature. Omitted arguments will be
+  // empty v8::Local<v8::Value> handles in the array.
+  // Returns true if the arguments were successfully resolved.
+  // Note: This only checks arguments against their basic types, not other
+  // values (like specific required properties or values).
+  bool ResolveArguments(
+      base::span<const v8::Local<v8::Value>> provided,
+      base::span<const std::unique_ptr<ArgumentSpec>> expected,
+      std::vector<v8::Local<v8::Value>>* result,
+      size_t index);
 
   // Attempts to match the next argument to the given |spec|.
   // If the next argument does not match and |spec| is optional, uses a null
   // value.
   // Returns true on success.
-  bool ParseArgument(const ArgumentSpec& spec);
+  bool ParseArgument(const ArgumentSpec& spec, v8::Local<v8::Value> value);
 
   // Attempts to parse the callback from the given |spec|. Returns true on
   // success.
-  bool ParseCallback(const ArgumentSpec& spec);
+  bool ParseCallback(const ArgumentSpec& spec, v8::Local<v8::Value> value);
 
   // Adds a null value to the parsed arguments.
   virtual void AddNull() = 0;
@@ -83,10 +90,9 @@ class ArgumentParser {
 
   v8::Local<v8::Context> context_;
   const std::vector<std::unique_ptr<ArgumentSpec>>& signature_;
-  const std::vector<v8::Local<v8::Value>>& arguments_;
+  const std::vector<v8::Local<v8::Value>>& provided_arguments_;
   const APITypeReferenceMap& type_refs_;
   std::string* error_;
-  size_t current_index_ = 0;
 
   // An error to pass while parsing arguments to avoid having to allocate a new
   // std::string on the stack multiple times.
@@ -171,80 +177,129 @@ class BaseValueArgumentParser : public ArgumentParser {
 };
 
 bool ArgumentParser::ParseArguments() {
-  if (arguments_.size() > signature_.size()) {
-    *error_ = api_errors::TooManyArguments();
+  if (provided_arguments_.size() > signature_.size()) {
+    *error_ = api_errors::NoMatchingSignature();
     return false;
   }
 
-  bool signature_has_callback = HasCallback(signature_);
+  std::vector<v8::Local<v8::Value>> resolved_arguments(signature_.size());
+  if (!ResolveArguments(provided_arguments_, signature_, &resolved_arguments,
+                        0u)) {
+    *error_ = api_errors::NoMatchingSignature();
+    return false;
+  }
+  DCHECK_EQ(resolved_arguments.size(), signature_.size());
 
+  bool signature_has_callback = HasCallback(signature_);
   size_t end_size =
       signature_has_callback ? signature_.size() - 1 : signature_.size();
   for (size_t i = 0; i < end_size; ++i) {
-    if (!ParseArgument(*signature_[i]))
+    if (!ParseArgument(*signature_[i], resolved_arguments[i]))
       return false;
   }
 
-  if (signature_has_callback && !ParseCallback(*signature_.back()))
+  if (signature_has_callback &&
+      !ParseCallback(*signature_.back(), resolved_arguments.back())) {
     return false;
-
-  if (current_index_ != arguments_.size()) {
-    // This can potentially happen even if the check above for too many
-    // arguments succeeds when optional parameters are omitted. For instance,
-    // if the signature expects (optional int, function callback) and the caller
-    // provides (function callback, object random), the first size check and
-    // callback spec would succeed, but we wouldn't consume all the arguments.
-    *error_ = api_errors::TooManyArguments();
-    return false;  // Extra arguments aren't allowed.
   }
 
   return true;
 }
 
-bool ArgumentParser::ParseArgument(const ArgumentSpec& spec) {
-  v8::Local<v8::Value> value = next_argument();
-  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
-    if (!spec.optional()) {
-      *error_ = api_errors::MissingRequiredArgument(spec.name().c_str());
-      return false;
-    }
-    // This is safe to call even if |arguments| is at the end (which can happen
-    // if n optional arguments are omitted at the end of the signature).
-    ConsumeArgument();
+bool ArgumentParser::ResolveArguments(
+    base::span<const v8::Local<v8::Value>> provided,
+    base::span<const std::unique_ptr<ArgumentSpec>> expected,
+    std::vector<v8::Local<v8::Value>>* result,
+    size_t index) {
+  // If the provided arguments and expected arguments are both empty, it means
+  // we've successfully matched all provided arguments to the expected
+  // signature.
+  if (provided.empty() && expected.empty())
+    return true;
 
+  // If there are more provided arguments than expected arguments, there's no
+  // possible signature that could match.
+  if (provided.size() > expected.size())
+    return false;
+
+  DCHECK(!expected.empty());
+
+  // If there are more provided arguments (and more expected arguments, as
+  // guaranteed above), check if the next argument could match the next expected
+  // argument.
+  if (!provided.empty()) {
+    // The argument could potentially match if it is either null or undefined
+    // and an optional argument, or if it's the correct expected type.
+    bool can_match = false;
+    if (expected[0]->optional() && provided[0]->IsNullOrUndefined()) {
+      can_match = true;
+      // For null/undefined, just use an empty handle. It'll be normalized to
+      // null in ParseArgument().
+      (*result)[index] = v8::Local<v8::Value>();
+    } else if (expected[0]->IsCorrectType(provided[0], type_refs_, error_)) {
+      can_match = true;
+      (*result)[index] = provided[0];
+    }
+
+    // If the provided argument could potentially match the next expected
+    // argument, assume it does, and try to match the remaining arguments.
+    // This recursion is safe because it's bounded by the number of arguments
+    // present in the signature. Additionally, though this is 2^n complexity,
+    // <n> is bounded by the number of expected arguments, which is almost
+    // always small. Further, it is only when parameters are optional, which is
+    // also not the default.
+    if (can_match && ResolveArguments(provided.subspan(1), expected.subspan(1),
+                                      result, index + 1)) {
+      return true;
+    }
+  }
+
+  // One of three cases happened:
+  // - There are no more provided arguments.
+  // - The next provided argument could not match the expected argument.
+  // - The next provided argument could match the expected argument, but
+  //   subsequent arguments did not.
+  // In all of these cases, if the expected argument was optional, assume it
+  // was omitted, and try matching subsequent arguments.
+  if (expected[0]->optional()) {
+    // Assume the expected argument was omitted.
+    (*result)[index] = v8::Local<v8::Value>();
+    // See comments above for recursion notes.
+    if (ResolveArguments(provided, expected.subspan(1), result, index + 1))
+      return true;
+  }
+
+  // A required argument was not matched.
+  return false;
+}
+
+bool ArgumentParser::ParseArgument(const ArgumentSpec& spec,
+                                   v8::Local<v8::Value> value) {
+  if (value.IsEmpty()) {
+    // ResolveArguments() should only allow empty values for optional arguments.
+    DCHECK(spec.optional());
     AddNull();
     return true;
   }
 
-  if (!spec.IsCorrectType(value, type_refs_, &parse_error_)) {
-    if (!spec.optional()) {
-      *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
-      return false;
-    }
-
-    AddNull();
-    return true;
-  }
-
+  // ResolveArguments() should verify that all arguments are at least the
+  // correct type.
+  DCHECK(spec.IsCorrectType(value, type_refs_, error_));
   if (!spec.ParseArgument(context_, value, type_refs_, GetBaseBuffer(),
                           GetV8Buffer(), &parse_error_)) {
     *error_ = api_errors::ArgumentError(spec.name(), parse_error_);
     return false;
   }
 
-  ConsumeArgument();
   AddParsedArgument();
   return true;
 }
 
-bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
-  v8::Local<v8::Value> value = next_argument();
-  if (value.IsEmpty() || value->IsNull() || value->IsUndefined()) {
-    if (!spec.optional()) {
-      *error_ = api_errors::MissingRequiredArgument(spec.name().c_str());
-      return false;
-    }
-    ConsumeArgument();
+bool ArgumentParser::ParseCallback(const ArgumentSpec& spec,
+                                   v8::Local<v8::Value> value) {
+  if (value.IsEmpty()) {
+    // ResolveArguments() should only allow empty values for optional arguments.
+    DCHECK(spec.optional());
     AddNullCallback();
     return true;
   }
@@ -257,7 +312,6 @@ bool ArgumentParser::ParseCallback(const ArgumentSpec& spec) {
     return false;
   }
 
-  ConsumeArgument();
   SetCallback(value.As<v8::Function>());
   return true;
 }
