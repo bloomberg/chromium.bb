@@ -223,7 +223,8 @@ TEST_F(RTCRtpSenderTest, MAYBE_ReplaceTrackIsNotSetSynchronously) {
   std::move(replaceTrackRunLoopAndGetResult).Run();
 }
 
-TEST_F(RTCRtpSenderTest, GetStats) {
+// Test is flaky (https://crbug.com/827450).
+TEST_F(RTCRtpSenderTest, DISABLED_GetStats) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
 

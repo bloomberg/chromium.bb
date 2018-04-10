@@ -14,3 +14,6 @@
 
 # Flaky since migration to unified mojo_unittests, https://crbug.com/814914.
 -FileDataPipeProducerTest.HugeFile
+
+# Flaky due to slow process launch, https://crbug.com/831024.
+-DataPipeTest.SendConsumerAndCloseProducer

@@ -72,7 +72,7 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   }
 }
 
-#if defined(OS_IOS) || defined(ADDRESS_SANITIZER) || \
+#if defined(OS_IOS) || defined(OS_FUCHSIA) || defined(ADDRESS_SANITIZER) || \
     defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_NewOverflow DISABLED_NewOverflow
 #else
@@ -80,6 +80,8 @@ void OverflowTestsSoftExpectTrue(bool overflow_detected) {
 #endif
 // Test array[TooBig][X] and array[X][TooBig] allocations for int overflows.
 // IOS doesn't honor nothrow, so disable the test there.
+// TODO(https://crbug.com/828229): Fuchsia SDK exports an incorrect new[] that
+// gets picked up in Debug/component builds, breaking this test.
 // Disabled under XSan because asan aborts when new returns nullptr,
 // https://bugs.chromium.org/p/chromium/issues/detail?id=690271#c15
 TEST(SecurityTest, MAYBE_NewOverflow) {
