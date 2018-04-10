@@ -216,6 +216,56 @@ class DCLayerTree {
     gfx::Transform transform;
   };
 
+  // TODO(sunnyps): Remove after fixing https://crbug.com/823498
+  struct VisualDebugInfo {
+    uintptr_t content_visual = 0;
+    uintptr_t clip_visual = 0;
+    uintptr_t swap_chain_presenter = 0;
+    uintptr_t swap_chain = 0;
+    uintptr_t surface = 0;
+    uint64_t dcomp_surface_serial = 0;
+    gfx::Rect bounds;
+    float swap_chain_scale_x = 0.0f;
+    float swap_chain_scale_y = 0.0f;
+    bool is_clipped = false;
+    gfx::Rect clip_rect;
+    gfx::Transform transform;
+
+    static VisualDebugInfo FromVisualInfo(const VisualInfo& visual_info) {
+      VisualDebugInfo debug_info;
+      debug_info.clip_visual =
+          reinterpret_cast<uintptr_t>(visual_info.clip_visual.Get());
+      debug_info.content_visual =
+          reinterpret_cast<uintptr_t>(visual_info.content_visual.Get());
+      debug_info.swap_chain_presenter =
+          reinterpret_cast<uintptr_t>(visual_info.swap_chain_presenter.get());
+      debug_info.swap_chain =
+          reinterpret_cast<uintptr_t>(visual_info.swap_chain.Get());
+      debug_info.surface =
+          reinterpret_cast<uintptr_t>(visual_info.surface.Get());
+      debug_info.dcomp_surface_serial = visual_info.dcomp_surface_serial;
+      debug_info.bounds = visual_info.bounds;
+      debug_info.swap_chain_scale_x = visual_info.swap_chain_scale_x;
+      debug_info.swap_chain_scale_y = visual_info.swap_chain_scale_y;
+      debug_info.is_clipped = visual_info.is_clipped;
+      debug_info.clip_rect = visual_info.clip_rect;
+      debug_info.transform = visual_info.transform;
+      return debug_info;
+    }
+
+    static void CopyVisuals(VisualDebugInfo debug_visuals[],
+                            const std::vector<VisualInfo>& visuals,
+                            size_t n) {
+      for (size_t i = 0; i < n; i++) {
+        if (i < visuals.size()) {
+          debug_visuals[i] = FromVisualInfo(visuals[i]);
+        } else {
+          debug_visuals[i] = VisualDebugInfo();
+        }
+      }
+    }
+  };
+
   // These functions return true if the visual tree was changed.
   bool InitVisual(size_t i);
   bool UpdateVisualForVideo(VisualInfo* visual_info,
@@ -1024,6 +1074,12 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
               return a->z_order < b->z_order;
             });
 
+  // TODO(sunnyps): Remove after fixing https://crbug.com/823498
+  VisualDebugInfo previous_frame_visuals[5];
+  base::debug::Alias(previous_frame_visuals);
+  VisualDebugInfo::CopyVisuals(previous_frame_visuals, visual_info_,
+                               arraysize(previous_frame_visuals));
+
   bool changed = false;
   while (visual_info_.size() > pending_overlays_.size()) {
     visual_info_.back().clip_visual->RemoveAllVisuals();
@@ -1053,6 +1109,12 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
     }
     changed |= UpdateVisualClip(visual_info, params);
   }
+
+  // TODO(sunnyps): Remove after fixing https://crbug.com/823498
+  VisualDebugInfo current_frame_visuals[5];
+  base::debug::Alias(current_frame_visuals);
+  VisualDebugInfo::CopyVisuals(current_frame_visuals, visual_info_,
+                               arraysize(current_frame_visuals));
 
   if (changed) {
     HRESULT hr = dcomp_device_->Commit();
