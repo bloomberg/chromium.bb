@@ -124,6 +124,28 @@ TEST(SignedExchangeHeaderTest, UnsafeMethod) {
   ASSERT_FALSE(header.has_value());
 }
 
+TEST(SignedExchangeHeaderTest, InvalidURL) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "test/"}, {kMethodKey, "GET"},
+      },
+      {
+          {kStatusKey, "200"}, {kSignature, kSignatureString},
+      });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeHeaderTest, URLWithFragment) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "https://test.example.org/test/#foo"}, {kMethodKey, "GET"},
+      },
+      {
+          {kStatusKey, "200"}, {kSignature, kSignatureString},
+      });
+  ASSERT_FALSE(header.has_value());
+}
+
 TEST(SignedExchangeHeaderTest, StatefulRequestHeader) {
   auto header = GenerateHeaderAndParse(
       {

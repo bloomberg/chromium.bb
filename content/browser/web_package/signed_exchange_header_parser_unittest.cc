@@ -126,6 +126,20 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidCertURL) {
   EXPECT_FALSE(signatures.has_value());
 }
 
+TEST_F(SignedExchangeHeaderParserTest, CertURLWithFragment) {
+  const char hdr_string[] =
+      "sig1;"
+      " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      " integrity=\"mi\";"
+      " validityUrl=\"https://example.com/resource.validity.1511128380\";"
+      " certUrl=\"https://example.com/oldcerts#test\";"
+      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " date=1511128380; expires=1511733180";
+  auto signatures = SignedExchangeHeaderParser::ParseSignature(hdr_string);
+  EXPECT_FALSE(signatures.has_value());
+}
+
 TEST_F(SignedExchangeHeaderParserTest, InvalidValidityUrl) {
   const char hdr_string[] =
       "sig1;"
@@ -133,6 +147,20 @@ TEST_F(SignedExchangeHeaderParserTest, InvalidValidityUrl) {
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
       " integrity=\"mi\";"
       " validityUrl=\"https:://example.com/resource.validity.1511128380\";"
+      " certUrl=\"https://example.com/oldcerts\";"
+      " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
+      " date=1511128380; expires=1511733180";
+  auto signatures = SignedExchangeHeaderParser::ParseSignature(hdr_string);
+  EXPECT_FALSE(signatures.has_value());
+}
+
+TEST_F(SignedExchangeHeaderParserTest, ValidityUrlWithFragment) {
+  const char hdr_string[] =
+      "sig1;"
+      " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY;"
+      " integrity=\"mi\";"
+      " validityUrl=\"https://example.com/resource.validity.1511128380#test\";"
       " certUrl=\"https://example.com/oldcerts\";"
       " certSha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI;"
       " date=1511128380; expires=1511733180";
