@@ -97,7 +97,7 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 	int32_t ret;
 	bool supported;
 	struct cros_gralloc_buffer_descriptor descriptor;
-	auto mod = (struct gralloc0_module *)dev->common.module;
+	auto mod = (struct gralloc0_module const *)dev->common.module;
 
 	descriptor.width = w;
 	descriptor.height = h;
@@ -132,7 +132,7 @@ static int gralloc0_alloc(alloc_device_t *dev, int w, int h, int format, int usa
 
 static int gralloc0_free(alloc_device_t *dev, buffer_handle_t handle)
 {
-	auto mod = (struct gralloc0_module *)dev->common.module;
+	auto mod = (struct gralloc0_module const *)dev->common.module;
 	return mod->driver->release(handle);
 }
 
@@ -171,7 +171,8 @@ static int gralloc0_init(struct gralloc0_module *mod, bool initialize_alloc)
 
 static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct hw_device_t **dev)
 {
-	auto module = (struct gralloc0_module *)mod;
+	auto const_module = reinterpret_cast<const struct gralloc0_module *>(mod);
+	auto module = const_cast<struct gralloc0_module *>(const_module);
 
 	if (module->initialized) {
 		*dev = &module->alloc->common;
@@ -192,7 +193,8 @@ static int gralloc0_open(const struct hw_module_t *mod, const char *name, struct
 
 static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffer_handle_t handle)
 {
-	auto mod = (struct gralloc0_module *)module;
+	auto const_module = reinterpret_cast<const struct gralloc0_module *>(module);
+	auto mod = const_cast<struct gralloc0_module *>(const_module);
 
 	if (!mod->initialized)
 		if (gralloc0_init(mod, false))
@@ -203,7 +205,7 @@ static int gralloc0_register_buffer(struct gralloc_module_t const *module, buffe
 
 static int gralloc0_unregister_buffer(struct gralloc_module_t const *module, buffer_handle_t handle)
 {
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 	return mod->driver->release(handle);
 }
 
@@ -216,7 +218,7 @@ static int gralloc0_lock(struct gralloc_module_t const *module, buffer_handle_t 
 static int gralloc0_unlock(struct gralloc_module_t const *module, buffer_handle_t handle)
 {
 	int32_t fence_fd, ret;
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 	ret = mod->driver->unlock(handle, &fence_fd);
 	if (ret)
 		return ret;
@@ -235,7 +237,7 @@ static int gralloc0_perform(struct gralloc_module_t const *module, int op, ...)
 	uint64_t *out_store;
 	buffer_handle_t handle;
 	uint32_t *out_width, *out_height, *out_stride;
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 
 	switch (op) {
 	case GRALLOC_DRM_GET_STRIDE:
@@ -297,7 +299,7 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 	int32_t ret;
 	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES];
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 	struct rectangle rect = { .x = static_cast<uint32_t>(l),
 				  .y = static_cast<uint32_t>(t),
 				  .width = static_cast<uint32_t>(w),
@@ -328,7 +330,7 @@ static int gralloc0_lock_async(struct gralloc_module_t const *module, buffer_han
 static int gralloc0_unlock_async(struct gralloc_module_t const *module, buffer_handle_t handle,
 				 int *fence_fd)
 {
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 	return mod->driver->unlock(handle, fence_fd);
 }
 
@@ -339,7 +341,7 @@ static int gralloc0_lock_async_ycbcr(struct gralloc_module_t const *module, buff
 	int32_t ret;
 	uint32_t map_flags;
 	uint8_t *addr[DRV_MAX_PLANES] = { nullptr, nullptr, nullptr, nullptr };
-	auto mod = (struct gralloc0_module *)module;
+	auto mod = (struct gralloc0_module const *)module;
 	struct rectangle rect = { .x = static_cast<uint32_t>(l),
 				  .y = static_cast<uint32_t>(t),
 				  .width = static_cast<uint32_t>(w),
