@@ -184,15 +184,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)collectionView:(UICollectionView*)collectionView
     didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self.delegate gridViewController:self didSelectItemAtIndex:indexPath.item];
+  NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
+  DCHECK_LT(index, self.items.count);
+  NSString* itemID = self.items[index].identifier;
+  [self.delegate gridViewController:self didSelectItemWithID:itemID];
 }
 
 #pragma mark - GridCellDelegate
 
 - (void)closeButtonTappedForCell:(GridCell*)cell {
-  NSInteger index = [self.collectionView indexPathForCell:cell].item;
-  [self.delegate gridViewController:self
-                didCloseItemAtIndex:base::checked_cast<NSUInteger>(index)];
+  NSUInteger index = base::checked_cast<NSUInteger>(
+      [self.collectionView indexPathForCell:cell].item);
+  DCHECK_LT(index, self.items.count);
+  NSString* itemID = self.items[index].identifier;
+  [self.delegate gridViewController:self didCloseItemWithID:itemID];
 }
 
 #pragma mark - GridConsumer

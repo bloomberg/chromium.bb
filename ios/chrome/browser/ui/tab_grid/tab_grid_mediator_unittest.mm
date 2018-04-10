@@ -174,6 +174,8 @@ TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
 }
 
 // Tests that the consumer is notified when a web state is removed.
+// The selected web state at index 1 is removed. The web state originally
+// at index 2 should be the new selected item.
 TEST_F(TabGridMediatorTest, ConsumerRemoveItem) {
   web_state_list_->CloseWebStateAt(1, WebStateList::CLOSE_NO_FLAGS);
   EXPECT_EQ(2UL, consumer_.items.count);
@@ -191,6 +193,8 @@ TEST_F(TabGridMediatorTest, ConsumerUpdateSelectedItem) {
 }
 
 // Tests that the consumer is notified when a web state is replaced.
+// The selected item is replaced, so the new selected item id should be the
+// id of the new item.
 TEST_F(TabGridMediatorTest, ConsumerReplaceItem) {
   auto new_web_state = std::make_unique<web::TestWebState>();
   TabIdTabHelper::CreateForWebState(new_web_state.get());
@@ -212,18 +216,22 @@ TEST_F(TabGridMediatorTest, ConsumerMoveItem) {
   EXPECT_NSEQ(item2, consumer_.items[1]);
 }
 
-// Tests that the active index is updated when |-selectItemAtIndex:| is called.
+// Tests that the active index is updated when |-selectItemWithID:| is called.
 TEST_F(TabGridMediatorTest, SelectItemCommand) {
   // Previous selected index is 1.
-  [mediator_ selectItemAtIndex:2];
+  NSString* identifier =
+      TabIdTabHelper::FromWebState(web_state_list_->GetWebStateAt(2))->tab_id();
+  [mediator_ selectItemWithID:identifier];
   EXPECT_EQ(2, web_state_list_->active_index());
 }
 
 // Tests that the |web_state_list_| count is decremented when
-// |-closeItemAtIndex:| is called.
+// |-closeItemWithID:| is called.
 TEST_F(TabGridMediatorTest, CloseItemCommand) {
   // Previously there were 3 items.
-  [mediator_ closeItemAtIndex:1];
+  NSString* identifier =
+      TabIdTabHelper::FromWebState(web_state_list_->GetWebStateAt(0))->tab_id();
+  [mediator_ closeItemWithID:identifier];
   EXPECT_EQ(2, web_state_list_->count());
 }
 
