@@ -92,17 +92,25 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
 
   virtual void TryDevice() = 0;
 
+  // Moves |current_device_| to the list of |abandoned_devices_| and iterates
+  // |current_device_|. Expects |current_device_| to be valid prior to calling
+  // this method.
+  void AbandonCurrentDeviceAndTransition();
+
   // Hold handles to the devices known to the system. Known devices are
-  // partitioned into three parts:
-  // [attempted_devices_), current_device_, [devices_)
+  // partitioned into four parts:
+  // [attempted_devices_), current_device_, [devices_), [abandoned_devices_)
   // During device iteration the |current_device_| gets pushed to
   // |attempted_devices_|, and, if possible, the first element of |devices_|
   // gets popped and becomes the new |current_device_|. Once all |devices_| are
   // exhausted, |attempted_devices_| get moved into |devices_| and
-  // |current_device_| is reset.
+  // |current_device_| is reset. |abandoned_devices_| contains a list of devices
+  // that have been tried in the past, but were abandoned because of an error.
+  // Devices in this list won't be tried again.
   FidoDevice* current_device_ = nullptr;
   std::list<FidoDevice*> devices_;
   std::list<FidoDevice*> attempted_devices_;
+  std::list<FidoDevice*> abandoned_devices_;
   State state_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
   std::vector<uint8_t> application_parameter_;
@@ -111,6 +119,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
 
  private:
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestIterateDevice);
+  FRIEND_TEST_ALL_PREFIXES(U2fRequestTest,
+                           TestAbandonCurrentDeviceAndTransition);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestBasicMachine);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestAlreadyPresentDevice);
   FRIEND_TEST_ALL_PREFIXES(U2fRequestTest, TestMultipleDiscoveries);

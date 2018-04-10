@@ -109,9 +109,7 @@ void U2fRegister::OnTryCheckRegistration(
       break;
     default:
       // Some sort of failure occurred. Abandon this device and move on.
-      state_ = State::IDLE;
-      current_device_ = nullptr;
-      Transition();
+      AbandonCurrentDeviceAndTransition();
       break;
   }
 }
@@ -164,10 +162,8 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       Transition();
       break;
     default:
-      state_ = State::IDLE;
       // An error has occurred, quit trying this device.
-      current_device_ = nullptr;
-      Transition();
+      AbandonCurrentDeviceAndTransition();
       break;
   }
 }

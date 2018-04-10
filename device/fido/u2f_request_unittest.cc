@@ -106,6 +106,36 @@ TEST_F(U2fRequestTest, TestIterateDevice) {
   EXPECT_EQ(static_cast<size_t>(0), request.attempted_devices_.size());
 }
 
+TEST_F(U2fRequestTest, TestAbandonCurrentDeviceAndTransition) {
+  auto* discovery = discovery_factory().ForgeNextHidDiscovery();
+
+  FakeU2fRequest request({U2fTransportProtocol::kUsbHumanInterfaceDevice});
+  request.Start();
+
+  auto device = std::make_unique<MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(::testing::Return("device"));
+
+  discovery->AddDevice(std::move(device));
+
+  // Move device to current.
+  request.IterateDevice();
+  EXPECT_NE(nullptr, request.current_device_);
+
+  // Abandon device.
+  request.AbandonCurrentDeviceAndTransition();
+  EXPECT_EQ(nullptr, request.current_device_);
+  EXPECT_EQ(1u, request.abandoned_devices_.size());
+
+  // Iterating through the device list should not change the state.
+  request.IterateDevice();
+  EXPECT_EQ(nullptr, request.current_device_);
+  EXPECT_EQ(1u, request.abandoned_devices_.size());
+
+  // Removing the device from the discovery should clear it from the list.
+  discovery->RemoveDevice("device");
+  EXPECT_TRUE(request.abandoned_devices_.empty());
+}
+
 TEST_F(U2fRequestTest, TestBasicMachine) {
   auto* discovery = discovery_factory().ForgeNextHidDiscovery();
   FakeU2fRequest request({U2fTransportProtocol::kUsbHumanInterfaceDevice});
