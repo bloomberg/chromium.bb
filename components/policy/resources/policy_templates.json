@@ -1635,7 +1635,7 @@
 
       If this policy is left not set, this will be enabled but the user will be able to change it.
 
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.
 
       This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
     },
@@ -2128,17 +2128,17 @@
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will prevent certain types of downloads, and won't let user bypass the security warnings.
 
-      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry SafeBrowsing warnings.
+      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry Safe Browsing warnings.
 
-      When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry SafeBrowsing warnings of potentially dangerous downloads.
+      When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry Safe Browsing warnings of potentially dangerous downloads.
 
       When the 'Block all downloads' option is chosen, all downloads are blocked.
 
-      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on SafeBrowsing analysis results.
+      When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on Safe Browsing analysis results.
 
       Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
 
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
       'label': '''Download restrictions''',
     },
     {
@@ -2177,7 +2177,7 @@
       },
       'example_value': False,
       'id': 375,
-      'caption': '''SafeBrowsing enable state for trusted sources''',
+      'caption': '''Safe Browsing enable state for trusted sources''',
       'tags': ['local-data-access'],
       'desc': '''Identify if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can allow download without Safe Browsing checks when it's from a trusted source.
 
@@ -2189,7 +2189,7 @@
 
       This policy is not available on Windows instances that are not joined
       to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.''',
-      'label': '''SafeBrowsing enable state for trusted sources''',
+      'label': '''Safe Browsing enable state for trusted sources''',
     },
     {
       'name': 'ClearSiteDataOnExit',
@@ -6525,7 +6525,7 @@
 
       If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
 
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
       'name': 'SafeBrowsingExtendedReportingOptInAllowed',
@@ -6545,7 +6545,7 @@
 
       Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
 
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
       'name': 'SpellCheckServiceEnabled',
@@ -10021,8 +10021,8 @@
       'desc': '''Enables component updates for all components in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when not set or set to True.
 
       If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behavior of the browser, or is critical for its security will not be disabled.
-      Examples of such components include the certificate revocation lists and safe browsing data.
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
+      Examples of such components include the certificate revocation lists and Safe Browsing data.
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
       'name': 'NativePrinters',
@@ -11590,7 +11590,7 @@
 
       If this policy is left unset, the user will be able to change the setting and decide whether to send reports or not.
 
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.''',
+      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
     },
     {
       'name': 'MachineLevelUserCloudPolicyEnrollmentToken',
