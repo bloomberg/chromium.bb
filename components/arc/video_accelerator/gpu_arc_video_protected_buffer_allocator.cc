@@ -10,6 +10,7 @@
 #include "base/files/platform_file.h"
 #include "base/files/scoped_file.h"
 #include "base/numerics/safe_conversions.h"
+#include "components/arc/video_accelerator/arc_video_accelerator_util.h"
 #include "components/arc/video_accelerator/protected_buffer_allocator.h"
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 #include "media/gpu/format_utils.h"
@@ -18,24 +19,6 @@
 #include "ui/gfx/geometry/size.h"
 
 #define VLOGF(level) VLOG(level) << __func__ << "(): "
-
-namespace {
-// TODO(hiroh): Refactor UnwrapFdFromMojoHandle not to declare multiple times.
-base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle) {
-  if (!handle.is_valid()) {
-    VLOGF(1) << "Handle is invalid.";
-    return base::ScopedFD();
-  }
-  base::PlatformFile platform_file;
-  MojoResult mojo_result =
-      mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
-  if (mojo_result != MOJO_RESULT_OK) {
-    VLOGF(1) << "UnwrapPlatformFile failed: " << mojo_result;
-    return base::ScopedFD();
-  }
-  return base::ScopedFD(platform_file);
-}
-}  // namespace
 
 namespace arc {
 // static

@@ -26,9 +26,6 @@ class GpuArcProtectedBufferManagerProxy
       GetProtectedSharedMemoryFromHandleCallback callback) override;
 
  private:
-  base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
-  mojo::ScopedHandle WrapFdInMojoHandle(base::ScopedFD fd);
-
   scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcProtectedBufferManagerProxy);
