@@ -17,6 +17,7 @@ namespace {
 class HostedAppNonClientFrameViewAshTest;
 }
 
+class AppMenuButton;
 class BrowserView;
 class HostedAppMenuButton;
 
@@ -70,7 +71,7 @@ class HostedAppButtonContainer : public views::View,
 
   // BrowserViewButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
-  views::MenuButton* GetAppMenuButton() override;
+  AppMenuButton* GetAppMenuButton() override;
 
   // The containing browser view.
   BrowserView* browser_view_;

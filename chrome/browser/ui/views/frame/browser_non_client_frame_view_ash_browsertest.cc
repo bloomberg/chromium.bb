@@ -594,7 +594,7 @@ class HostedAppNonClientFrameViewAshTest
   }
 
   AppMenu* GetAppMenu(HostedAppButtonContainer* button_container) {
-    return button_container->app_menu_button_->menu();
+    return button_container->app_menu_button_->app_menu_for_testing();
   }
 
   SkColor GetActiveIconColor(HostedAppButtonContainer* button_container) {

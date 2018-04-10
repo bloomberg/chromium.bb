@@ -87,8 +87,8 @@
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
@@ -829,6 +829,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
+  // TODO(mgiuca): Use |button_provider_| instead of |toolbar_|, so this also
+  // works for hosted app windows. https://crbug.com/791399.
   bool app_menu_showing = toolbar_->app_menu_button() &&
                           toolbar_->app_menu_button()->IsMenuShowing();
   GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble &&

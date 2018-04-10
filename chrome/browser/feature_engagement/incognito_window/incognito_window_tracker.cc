@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/views/feature_promos/incognito_window_promo_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/app_menu_button.h"
+#include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "components/feature_engagement/public/event_constants.h"
@@ -23,7 +23,7 @@ constexpr int kDefaultIncognitoWindowPromoShowTimeInHours = 2;
 constexpr char kIncognitoWindowObservedSessionTimeKey[] =
     "incognito_window_in_product_help_observed_session_time_key";
 
-AppMenuButton* GetAppMenuButton() {
+BrowserAppMenuButton* GetAppMenuButton() {
   auto* browser = BrowserView::GetBrowserViewForBrowser(
       BrowserList::GetInstance()->GetLastActive());
   DCHECK(browser);

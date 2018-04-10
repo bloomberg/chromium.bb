@@ -6,20 +6,18 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_HOSTED_APP_MENU_BUTTON_H_
 
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 
-class AppMenu;
 class BrowserView;
-class HostedAppMenuModel;
 
 namespace base {
 class TimeDelta;
 }
 
 // The 'app menu' button for the hosted app.
-class HostedAppMenuButton : public views::MenuButton,
+class HostedAppMenuButton : public AppMenuButton,
                             public views::MenuButtonListener {
  public:
   explicit HostedAppMenuButton(BrowserView* browser_view);
@@ -33,8 +31,6 @@ class HostedAppMenuButton : public views::MenuButton,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
-  AppMenu* menu() { return menu_.get(); }
-
   // Fades the menu button highlight on and off.
   void StartHighlightAnimation(base::TimeDelta duration);
 
@@ -43,12 +39,6 @@ class HostedAppMenuButton : public views::MenuButton,
 
   // The containing browser view.
   BrowserView* browser_view_;
-
-  // App model and menu.
-  // Note that the menu should be destroyed before the model it uses, so the
-  // menu should be listed later.
-  std::unique_ptr<HostedAppMenuModel> menu_model_;
-  std::unique_ptr<AppMenu> menu_;
 
   base::OneShotTimer highlight_off_timer_;
 

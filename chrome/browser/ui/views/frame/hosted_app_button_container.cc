@@ -232,6 +232,6 @@ HostedAppButtonContainer::GetBrowserActionsContainer() {
   return browser_actions_container_;
 }
 
-views::MenuButton* HostedAppButtonContainer::GetAppMenuButton() {
+AppMenuButton* HostedAppButtonContainer::GetAppMenuButton() {
   return app_menu_button_;
 }
