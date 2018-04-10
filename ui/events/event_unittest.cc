@@ -1161,8 +1161,8 @@ const struct AltGraphEventTestCase {
      EF_ALTGR_DOWN},
 };
 
-class AltGraphEventTest : public testing::TestWithParam<
-                              std::tr1::tuple<UINT, AltGraphEventTestCase>> {
+class AltGraphEventTest
+    : public testing::TestWithParam<std::tuple<UINT, AltGraphEventTestCase>> {
  public:
   AltGraphEventTest()
       : msg_({nullptr, message_type(),
@@ -1188,9 +1188,9 @@ class AltGraphEventTest : public testing::TestWithParam<
   }
 
  protected:
-  UINT message_type() const { return std::tr1::get<0>(GetParam()); }
+  UINT message_type() const { return std::get<0>(GetParam()); }
   const AltGraphEventTestCase& test_case() const {
-    return std::tr1::get<1>(GetParam());
+    return std::get<1>(GetParam());
   }
 
   const MSG msg_;

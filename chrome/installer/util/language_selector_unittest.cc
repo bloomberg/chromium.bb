@@ -111,15 +111,14 @@ INSTANTIATE_TEST_CASE_P(
 // first member of the tuple is the expected translation, the second is a
 // candidate that should be aliased to the expectation.
 class LanguageSelectorAliasTest
-    : public ::testing::TestWithParam< std::tr1::tuple<const wchar_t*,
-                                                       const wchar_t*> > {
-};
+    : public ::testing::TestWithParam<
+          std::tuple<const wchar_t*, const wchar_t*>> {};
 
 // Test that the candidate language maps to the aliased translation.
 TEST_P(LanguageSelectorAliasTest, AliasesMatch) {
   installer::LanguageSelector instance(
-      std::vector<std::wstring>(1, std::tr1::get<1>(GetParam())));
-  EXPECT_EQ(std::tr1::get<0>(GetParam()), instance.selected_translation());
+      std::vector<std::wstring>(1, std::get<1>(GetParam())));
+  EXPECT_EQ(std::get<0>(GetParam()), instance.selected_translation());
 }
 
 INSTANTIATE_TEST_CASE_P(

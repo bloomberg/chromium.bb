@@ -121,8 +121,7 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
 
 }  // namespace
 
-using TestParams =
-    std::tr1::tuple<int /* sample rate */, float /* playback rate */>;
+using TestParams = std::tuple<int /* sample rate */, float /* playback rate */>;
 
 class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
  public:
