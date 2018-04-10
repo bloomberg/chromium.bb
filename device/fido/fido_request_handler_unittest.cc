@@ -51,8 +51,9 @@ class FakeFidoTask : public FidoTask {
   }
 
   // Fake callback that treats all response with non-empty |device_response| as
-  // a successful response, empty (not base::nullopt) response as an UP-verified
-  // error, and base::nullopt as a device processing error.
+  // a successful response, empty (not base::nullopt) response as an error
+  // received after obtaining user presence, and base::nullopt as a device
+  // processing error.
   // TODO(hongjunchoi): Change criteria for deciding when to return success,
   // UP-verified error, or processing error for readability.
   void CompletionCallback(
@@ -64,8 +65,8 @@ class FakeFidoTask : public FidoTask {
     }
 
     device_response->empty()
-        ? std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNotAllowed,
-                                   base::nullopt)
+        ? std::move(callback_).Run(
+              CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt)
         : std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
                                    std::vector<uint8_t>());
   }
@@ -282,7 +283,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied, callback().status());
+  EXPECT_EQ(FidoReturnCode::kInvalidState, callback().status());
 }
 
 }  // namespace device
