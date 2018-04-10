@@ -90,8 +90,6 @@ class MockInputMethod : public ui::InputMethodBase {
   ~MockInputMethod() override;
 
   // Overridden from InputMethod:
-  bool OnUntranslatedIMEMessage(const ui::PlatformEvent& event,
-                                NativeEventResult* result) override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* key) override;
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
@@ -149,13 +147,6 @@ MockInputMethod::MockInputMethod()
 }
 
 MockInputMethod::~MockInputMethod() {
-}
-
-bool MockInputMethod::OnUntranslatedIMEMessage(const ui::PlatformEvent& event,
-                                               NativeEventResult* result) {
-  if (result)
-    *result = NativeEventResult();
-  return false;
 }
 
 ui::EventDispatchDetails MockInputMethod::DispatchKeyEvent(ui::KeyEvent* key) {

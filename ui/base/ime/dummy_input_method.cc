@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/base/ime/dummy_input_method.h"
+#include "build/build_config.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -22,10 +23,12 @@ void DummyInputMethod::OnFocus() {
 void DummyInputMethod::OnBlur() {
 }
 
-bool DummyInputMethod::OnUntranslatedIMEMessage(const PlatformEvent& event,
+#if defined(OS_WIN)
+bool DummyInputMethod::OnUntranslatedIMEMessage(const MSG event,
                                                 NativeEventResult* result) {
   return false;
 }
+#endif
 
 void DummyInputMethod::SetFocusedTextInputClient(TextInputClient* client) {
 }

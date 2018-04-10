@@ -46,11 +46,6 @@ LinuxInputMethodContext* InputMethodAuraLinux::GetContextForTesting(
 
 // Overriden from InputMethod.
 
-bool InputMethodAuraLinux::OnUntranslatedIMEMessage(const PlatformEvent& event,
-                                                    NativeEventResult* result) {
-  return false;
-}
-
 ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
     ui::KeyEvent* event) {
   DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -52,6 +53,14 @@ void InputMethodBase::OnBlur() {
       ui::IMEBridge::Get()->GetInputContextHandler() == this)
     ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
+
+#if defined(OS_WIN)
+bool InputMethodBase::OnUntranslatedIMEMessage(
+    const MSG event,
+    InputMethod::NativeEventResult* result) {
+  return false;
+}
+#endif
 
 void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
   SetFocusedTextInputClientInternal(client);

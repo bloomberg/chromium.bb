@@ -52,7 +52,7 @@ void InputMethodWin::OnFocus() {
 }
 
 bool InputMethodWin::OnUntranslatedIMEMessage(
-    const PlatformEvent& event,
+    const MSG event,
     InputMethod::NativeEventResult* result) {
   LRESULT original_result = 0;
   BOOL handled = FALSE;

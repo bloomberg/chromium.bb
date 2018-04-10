@@ -6,6 +6,7 @@
 #define UI_BASE_IME_DUMMY_INPUT_METHOD_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/base/ime/input_method.h"
 
 namespace ui {
@@ -21,8 +22,12 @@ class DummyInputMethod : public InputMethod {
   void SetDelegate(internal::InputMethodDelegate* delegate) override;
   void OnFocus() override;
   void OnBlur() override;
-  bool OnUntranslatedIMEMessage(const PlatformEvent& event,
+
+#if defined(OS_WIN)
+  bool OnUntranslatedIMEMessage(const MSG event,
                                 NativeEventResult* result) override;
+#endif
+
   void SetFocusedTextInputClient(TextInputClient* client) override;
   void DetachTextInputClient(TextInputClient* client) override;
   TextInputClient* GetTextInputClient() const override;

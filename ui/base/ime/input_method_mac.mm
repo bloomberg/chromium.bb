@@ -15,11 +15,6 @@ InputMethodMac::InputMethodMac(internal::InputMethodDelegate* delegate) {
 InputMethodMac::~InputMethodMac() {
 }
 
-bool InputMethodMac::OnUntranslatedIMEMessage(const PlatformEvent& event,
-                                              NativeEventResult* result) {
-  return false;
-}
-
 ui::EventDispatchDetails InputMethodMac::DispatchKeyEvent(ui::KeyEvent* event) {
   // This is used on Mac only to dispatch events post-IME.
   return DispatchKeyEventPostIME(event);
