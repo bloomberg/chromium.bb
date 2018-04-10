@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "chromecast/device/bluetooth/le/le_scan_manager.h"
+#include "chromecast/device/bluetooth/le/scan_filter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromecast {
@@ -22,7 +23,7 @@ class MockLeScanManager : public LeScanManager {
   MOCK_METHOD1(RemoveObserver, void(Observer* o));
   void SetScanEnable(bool enable, SetScanEnableCallback cb) override {}
   void GetScanResults(GetScanResultsCallback cb,
-                      base::Optional<uint16_t> service_uuid) override {}
+                      base::Optional<ScanFilter> scan_filter) override {}
   MOCK_METHOD0(ClearScanResults, void());
 };
 

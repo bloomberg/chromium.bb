@@ -27,6 +27,8 @@ cast_source_set("le") {
     "remote_service.h",
     "remote_service_impl.cc",
     "remote_service_impl.h",
+    "scan_filter.cc",
+    "scan_filter.h",
   ]
 
   public_deps = [
@@ -74,6 +76,7 @@ cast_source_set("unittests") {
     "instantiate_mocks.cc",
     "le_scan_manager_impl_test.cc",
     "le_scan_result_test.cc",
+    "scan_filter_test.cc",
   ]
   deps = [
     ":le",

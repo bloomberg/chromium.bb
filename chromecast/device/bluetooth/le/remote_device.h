@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/public/bluetooth/gatt.h"
 
@@ -92,7 +93,12 @@ class RemoteDevice : public base::RefCountedThreadSafe<RemoteDevice> {
 
  protected:
   friend base::RefCountedThreadSafe<RemoteDevice>;
+
+  RemoteDevice() = default;
   virtual ~RemoteDevice() = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RemoteDevice);
 };
 
 }  // namespace bluetooth
