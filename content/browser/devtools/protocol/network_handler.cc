@@ -1448,12 +1448,13 @@ void NetworkHandler::NavigationRequestWillBeSent(
   request->SetMixedContentType(Security::MixedContentTypeEnum::None);
 
   std::unique_ptr<Network::Initiator> initiator;
-  base::DictionaryValue* initiator_value =
-      nav_request.begin_params()->devtools_initiator.get();
-  if (initiator_value) {
+  const base::Optional<base::Value>& initiator_optional =
+      nav_request.begin_params()->devtools_initiator;
+  if (initiator_optional.has_value()) {
     ErrorSupport ignored_errors;
     initiator = Network::Initiator::fromValue(
-        toProtocolValue(initiator_value, 1000).get(), &ignored_errors);
+        toProtocolValue(&initiator_optional.value(), 1000).get(),
+        &ignored_errors);
   }
   if (!initiator) {
     initiator = Network::Initiator::Create()
