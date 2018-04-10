@@ -620,6 +620,7 @@ static_library("test_support_base") {
     "test/mock_invalidation.h",
     "test/mock_invalidation_tracker.cc",
     "test/mock_invalidation_tracker.h",
+    "test/test_matchers.h",
     "test/trackable_mock_invalidation.cc",
     "test/trackable_mock_invalidation.h",
   ]

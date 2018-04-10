@@ -22,6 +22,7 @@
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/test/test_matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -56,11 +57,6 @@ const sync_pb::SyncEnums::DeviceType kDeviceType =
 // suffix. Local suffix can be changed by setting the provider and then
 // initializing. Remote data should use other suffixes.
 const int kDefaultLocalSuffix = 0;
-
-MATCHER_P(MetadataHasEncryptionKeyName, expected_key_name, "") {
-  return arg != nullptr &&
-         arg->GetModelTypeState().encryption_key_name() == expected_key_name;
-}
 
 MATCHER_P(HasDeviceInfo, expected, "") {
   return arg.device_info().SerializeAsString() == expected.SerializeAsString();
@@ -444,8 +440,10 @@ TEST_F(DeviceInfoSyncBridgeTest, TestWithLocalDataAndMetadata) {
   WriteToStore({specifics}, state);
 
   EXPECT_CALL(*processor(),
-              DoModelReadyToSync(_, MetadataHasEncryptionKeyName(
-                                        state.encryption_key_name())));
+              DoModelReadyToSync(
+                  _, MetadataBatchContains(
+                         HasEncryptionKeyName(state.encryption_key_name()),
+                         /*entities=*/IsEmpty())));
   InitializeAndPump();
 
   ASSERT_EQ(2u, bridge()->GetAllDeviceInfo().size());
@@ -545,8 +543,10 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplySyncChangesStore) {
   EXPECT_EQ(2, change_count());
 
   EXPECT_CALL(*processor(),
-              DoModelReadyToSync(_, MetadataHasEncryptionKeyName(
-                                        state.encryption_key_name())));
+              DoModelReadyToSync(
+                  _, MetadataBatchContains(
+                         HasEncryptionKeyName(state.encryption_key_name()),
+                         /*entities=*/IsEmpty())));
   RestartBridge();
 
   std::unique_ptr<DeviceInfo> info =
@@ -670,8 +670,10 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeWithData) {
               ModelEqualsSpecifics(conflict_remote));
 
   EXPECT_CALL(*processor(),
-              DoModelReadyToSync(_, MetadataHasEncryptionKeyName(
-                                        state.encryption_key_name())));
+              DoModelReadyToSync(
+                  _, MetadataBatchContains(
+                         HasEncryptionKeyName(state.encryption_key_name()),
+                         /*entities=*/IsEmpty())));
   RestartBridge();
 }
 
