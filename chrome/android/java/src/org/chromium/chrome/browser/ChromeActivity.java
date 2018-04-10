@@ -1289,7 +1289,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                     mCompositorViewHolder.getLayoutManager(), coordinator);
         }
 
-        if (FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet())) {
+        if (supportsContextualSuggestionsBottomSheet()
+                && FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet())) {
             ViewGroup coordinator = (ViewGroup) findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
@@ -2277,6 +2278,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return Whether this Activity supports modern design.
      */
     public boolean supportsModernDesign() {
+        return false;
+    }
+
+    /**
+     * @return Whether this Activity supports showing contextual suggestions in a bottom sheet.
+     */
+    public boolean supportsContextualSuggestionsBottomSheet() {
         return false;
     }
 

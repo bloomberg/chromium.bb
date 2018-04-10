@@ -2346,6 +2346,11 @@ public class ChromeTabbedActivity
     }
 
     @Override
+    public boolean supportsContextualSuggestionsBottomSheet() {
+        return true;
+    }
+
+    @Override
     public void onScreenshotTaken() {
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
