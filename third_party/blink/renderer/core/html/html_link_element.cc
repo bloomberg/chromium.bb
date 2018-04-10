@@ -144,7 +144,8 @@ LinkResource* HTMLLinkElement::LinkResourceToProcess() {
   }
 
   if (!link_) {
-    if (rel_attribute_.IsImport()) {
+    if (rel_attribute_.IsImport() &&
+        RuntimeEnabledFeatures::HTMLImportsEnabled()) {
       link_ = LinkImport::Create(this);
     } else if (rel_attribute_.IsManifest()) {
       link_ = LinkManifest::Create(this);
