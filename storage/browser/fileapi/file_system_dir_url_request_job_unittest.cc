@@ -55,11 +55,10 @@ const char kValidExternalMountPoint[] = "mnt_name";
 // An auto mounter that will try to mount anything for |storage_domain| =
 // "automount", but will only succeed for the mount point "mnt_name".
 bool TestAutoMountForURLRequest(
-    const net::URLRequest* /*url_request*/,
+    const storage::FileSystemRequestInfo& request_info,
     const storage::FileSystemURL& filesystem_url,
-    const std::string& storage_domain,
     base::OnceCallback<void(base::File::Error result)> callback) {
-  if (storage_domain != "automount")
+  if (request_info.storage_domain != "automount")
     return false;
 
   std::vector<base::FilePath::StringType> components;
