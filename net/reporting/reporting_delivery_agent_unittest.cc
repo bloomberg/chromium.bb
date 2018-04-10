@@ -132,6 +132,15 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {
   }
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
 
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(1, stats.attempted_uploads);
+    EXPECT_EQ(1, stats.successful_uploads);
+    EXPECT_EQ(1, stats.attempted_reports);
+    EXPECT_EQ(1, stats.successful_reports);
+  }
+
   // Successful upload should remove delivered reports.
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
@@ -152,6 +161,15 @@ TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
   ASSERT_EQ(1u, pending_uploads().size());
   pending_uploads()[0]->Complete(ReportingUploader::Outcome::FAILURE);
 
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(1, stats.attempted_uploads);
+    EXPECT_EQ(0, stats.successful_uploads);
+    EXPECT_EQ(1, stats.attempted_reports);
+    EXPECT_EQ(0, stats.successful_reports);
+  }
+
   // Failed upload should increment reports' attempts.
   std::vector<const ReportingReport*> reports;
   cache()->GetReports(&reports);
@@ -164,6 +182,15 @@ TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
   EXPECT_TRUE(delivery_timer()->IsRunning());
   delivery_timer()->Fire();
   EXPECT_TRUE(pending_uploads().empty());
+
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(1, stats.attempted_uploads);
+    EXPECT_EQ(0, stats.successful_uploads);
+    EXPECT_EQ(1, stats.attempted_reports);
+    EXPECT_EQ(0, stats.successful_reports);
+  }
 }
 
 TEST_F(ReportingDeliveryAgentTest, DisallowedUpload) {
@@ -188,6 +215,15 @@ TEST_F(ReportingDeliveryAgentTest, DisallowedUpload) {
   // We should not try to upload the report, since we weren't given permission
   // for this origin.
   EXPECT_TRUE(pending_uploads().empty());
+
+  {
+    ReportingCache::ClientStatistics stats =
+        cache()->GetStatisticsForOriginAndEndpoint(kOrigin_, kEndpoint_);
+    EXPECT_EQ(0, stats.attempted_uploads);
+    EXPECT_EQ(0, stats.successful_uploads);
+    EXPECT_EQ(0, stats.attempted_reports);
+    EXPECT_EQ(0, stats.successful_reports);
+  }
 
   // Disallowed reports should NOT have been removed from the cache.
   std::vector<const ReportingReport*> reports;
