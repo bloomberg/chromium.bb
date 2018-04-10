@@ -84,6 +84,19 @@ bool OverscrollController::ShouldProcessEvent(
   return true;
 }
 
+bool OverscrollController::ShouldIgnoreInertialEvent(
+    const blink::WebInputEvent& event) const {
+  if (!ignore_following_inertial_events_ ||
+      event.GetType() != blink::WebInputEvent::kGestureScrollUpdate) {
+    return false;
+  }
+
+  const blink::WebGestureEvent& gesture =
+      static_cast<const blink::WebGestureEvent&>(event);
+  return gesture.data.scroll_update.inertial_phase ==
+         blink::WebGestureEvent::kMomentumPhase;
+}
+
 bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   if (event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
     ignore_following_inertial_events_ = false;
@@ -104,15 +117,8 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
 
   // Consume the scroll-update events if they are from a inertial scroll (fling)
   // event that completed an overscroll gesture.
-  if (ignore_following_inertial_events_ &&
-      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate) {
-    const blink::WebGestureEvent& gesture =
-        static_cast<const blink::WebGestureEvent&>(event);
-    if (gesture.data.scroll_update.inertial_phase ==
-        blink::WebGestureEvent::kMomentumPhase) {
-      return true;
-    }
-  }
+  if (ShouldIgnoreInertialEvent(event))
+    return true;
 
   bool reset_scroll_state = false;
   if (scroll_state_ != ScrollState::NONE || overscroll_delta_x_ ||
@@ -173,6 +179,11 @@ void OverscrollController::OnDidOverscroll(
 void OverscrollController::ReceivedEventACK(const blink::WebInputEvent& event,
                                             bool processed) {
   if (!ShouldProcessEvent(event))
+    return;
+
+  // An inertial scroll (fling) event from a completed overscroll gesture
+  // should not modify states below.
+  if (ShouldIgnoreInertialEvent(event))
     return;
 
   if (processed) {

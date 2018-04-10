@@ -157,9 +157,9 @@ TEST_F(OverscrollControllerTest,
   EXPECT_FALSE(SimulateGestureScrollUpdate(
       100, 0, blink::kWebGestureDeviceTouchpad, true));
   SimulateAck(false);
-  EXPECT_EQ(OVERSCROLL_EAST, controller_mode());
-  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
-  EXPECT_EQ(OVERSCROLL_EAST, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
   EXPECT_EQ(OVERSCROLL_EAST, delegate()->completed_mode());
 
   // Next Inertial update event would be consumed by overscroll controller.
