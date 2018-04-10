@@ -1320,6 +1320,15 @@
       status: "test",
     },
     {
+      name: "WorkerNosniffBlock",
+      status: "test",
+    },
+    {
+      name: "WorkerNosniffWarn",
+      status: "test",
+      implied_by: ["WorkerNosniffBlock"],
+    },
+    {
       name: "Worklet",
       status: "stable",
     },

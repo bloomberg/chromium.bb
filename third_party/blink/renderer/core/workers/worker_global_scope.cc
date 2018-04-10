@@ -172,6 +172,9 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls,
     }
 
     if (result != LoadResult::kSuccess) {
+      // TODO(vogelheim): In case of certain types of failure - e.g. 'nosniff'
+      // block - this ought to be a kSecurityError, but that information
+      // presently gets lost on the way.
       exception_state.ThrowDOMException(
           kNetworkError, "The script at '" + complete_url.ElidedString() +
                              "' failed to load.");

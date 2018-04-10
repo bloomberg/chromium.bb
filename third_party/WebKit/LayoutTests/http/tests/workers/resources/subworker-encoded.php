@@ -1,6 +1,7 @@
 <?php
 header("Expires: Thu, 01 Dec 2003 16:00:00 GMT");
 header("Cache-Control: no-cache, must-revalidate");
+header("Content-Type: text/javascript");
 header("Pragma: no-cache");
 
 print("postMessage('Sub: Original test string: ' + String.fromCharCode(0x41F, 0x440, 0x438, 0x432, 0x435, 0x442));");

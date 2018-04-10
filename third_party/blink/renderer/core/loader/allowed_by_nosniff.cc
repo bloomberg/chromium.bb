@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -53,10 +54,84 @@ const WebFeature kTextXmlFeatures[2][2] = {
     {WebFeature::kCrossOriginTextXml, WebFeature::kCrossOriginWorkerTextXml},
     {WebFeature::kSameOriginTextXml, WebFeature::kSameOriginWorkerTextXml}};
 
-}  // namespace
+// Helper function to decide what to do with with a given mime type. This takes
+// - a mime type
+// - inputs that affect the decision (is_same_origin, is_worker_global_scope).
+//
+// The return value determines whether this mime should be allowed or blocked.
+// Additionally, warn returns whether we should log a console warning about
+// expected future blocking of this resource. 'counter' determines which
+// Use counter should be used to count this.
+bool AllowMimeTypeAsScript(const String& mime_type,
+                           bool same_origin,
+                           bool is_worker_global_scope,
+                           bool& warn,
+                           WebFeature& counter) {
+  // The common case: A proper JavaScript MIME type
+  if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))
+    return true;
 
-bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
-                                        const ResourceResponse& response) {
+  // Check for certain non-executable MIME types.
+  // See:
+  // https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-mime-type
+  if (mime_type.StartsWithIgnoringASCIICase("image/") ||
+      mime_type.StartsWithIgnoringASCIICase("text/csv") ||
+      mime_type.StartsWithIgnoringASCIICase("audio/") ||
+      mime_type.StartsWithIgnoringASCIICase("video/")) {
+    if (mime_type.StartsWithIgnoringASCIICase("image/")) {
+      counter = WebFeature::kBlockedSniffingImageToScript;
+    } else if (mime_type.StartsWithIgnoringASCIICase("audio/")) {
+      counter = WebFeature::kBlockedSniffingAudioToScript;
+    } else if (mime_type.StartsWithIgnoringASCIICase("video/")) {
+      counter = WebFeature::kBlockedSniffingVideoToScript;
+    } else if (mime_type.StartsWithIgnoringASCIICase("text/csv")) {
+      counter = WebFeature::kBlockedSniffingCSVToScript;
+    }
+    return false;
+  }
+
+  // Beyond this point we handle legacy MIME types, where it depends whether
+  // we still wish to accept them (or log them using UseCounter, or add a
+  // deprecation warning to the console).
+
+  if (!is_worker_global_scope &&
+      mime_type.StartsWithIgnoringASCIICase("text/") &&
+      MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(
+          mime_type.Substring(5))) {
+    return true;
+  }
+
+  if (mime_type.StartsWithIgnoringASCIICase("application/octet-stream")) {
+    counter =
+        kApplicationOctetStreamFeatures[same_origin][is_worker_global_scope];
+  } else if (mime_type.StartsWithIgnoringASCIICase("application/xml")) {
+    counter = kApplicationXmlFeatures[same_origin][is_worker_global_scope];
+  } else if (mime_type.StartsWithIgnoringASCIICase("text/html")) {
+    counter = kTextHtmlFeatures[same_origin][is_worker_global_scope];
+  } else if (mime_type.StartsWithIgnoringASCIICase("text/plain")) {
+    counter = kTextPlainFeatures[same_origin][is_worker_global_scope];
+  } else if (mime_type.StartsWithIgnoringCase("text/xml")) {
+    counter = kTextXmlFeatures[same_origin][is_worker_global_scope];
+  }
+
+  // Depending on RuntimeEnabledFeatures, we'll allow, allow-but-warn, or block
+  // these types when we're in a worker.
+  bool allow = !is_worker_global_scope ||
+               !RuntimeEnabledFeatures::WorkerNosniffBlockEnabled();
+  warn = allow && is_worker_global_scope &&
+         RuntimeEnabledFeatures::WorkerNosniffWarnEnabled();
+  return allow;
+}
+
+bool MimeTypeAsScriptImpl(ExecutionContext* execution_context,
+                          const ResourceResponse& response,
+                          bool is_worker_global_scope) {
+  // Is it a file:-URL? If so, decide based on file suffix.
+  if (RuntimeEnabledFeatures::WorkerNosniffBlockEnabled() &&
+      is_worker_global_scope && response.Url().IsLocalFile()) {
+    return response.Url().LastPathComponent().EndsWith(".js");
+  }
+
   String mime_type = response.HttpContentType();
 
   // Allowed by nosniff?
@@ -73,53 +148,20 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
     return false;
   }
 
-  // TODO(mkwst): Remove the UseCoutner measurements below, once we verify
-  // that other vendors are following along with these restrictions..
-
   // Check for certain non-executable MIME types.
   // See:
   // https://fetch.spec.whatwg.org/#should-response-to-request-be-blocked-due-to-mime-type
-  if (mime_type.StartsWithIgnoringASCIICase("image/") ||
-      mime_type.StartsWithIgnoringASCIICase("text/csv") ||
-      mime_type.StartsWithIgnoringASCIICase("audio/") ||
-      mime_type.StartsWithIgnoringASCIICase("video/")) {
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
-        kSecurityMessageSource, kErrorMessageLevel,
-        "Refused to execute script from '" + response.Url().ElidedString() +
-            "' because its MIME type ('" + mime_type +
-            "') is not executable."));
-    if (mime_type.StartsWithIgnoringASCIICase("image/")) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kBlockedSniffingImageToScript);
-    } else if (mime_type.StartsWithIgnoringASCIICase("audio/")) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kBlockedSniffingAudioToScript);
-    } else if (mime_type.StartsWithIgnoringASCIICase("video/")) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kBlockedSniffingVideoToScript);
-    } else if (mime_type.StartsWithIgnoringASCIICase("text/csv")) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kBlockedSniffingCSVToScript);
-    }
-    return false;
-  }
-
-  // Beyond this point, we accept the given MIME type. Since we also accept
-  // some legacy types, We want to log some of them using UseCounter to
-  // support deprecation decisions.
-
-  if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))
-    return true;
-
-  if (mime_type.StartsWithIgnoringASCIICase("text/") &&
-      MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(
-          mime_type.Substring(5))) {
-    return true;
-  }
 
   bool same_origin =
       execution_context->GetSecurityOrigin()->CanRequest(response.Url());
-  bool worker_global_scope = execution_context->IsWorkerGlobalScope();
+
+  // For any MIME type, we can do three things: accept/reject it, print a
+  // warning into the console, and count it using a use counter.
+  const WebFeature kWebFeatureNone = WebFeature::kNumberOfFeatures;
+  bool warn = false;
+  WebFeature counter = kWebFeatureNone;
+  bool allow = AllowMimeTypeAsScript(mime_type, same_origin,
+                                     is_worker_global_scope, warn, counter);
 
   // These record usages for two MIME types (without subtypes), per same/cross
   // origin.
@@ -129,28 +171,37 @@ bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
     UseCounter::Count(execution_context, kTextFeatures[same_origin]);
   }
 
-  // These record usages for several MIME types/subtypes, per same/cross origin,
-  // and per worker/non-worker context.
-  if (mime_type.StartsWithIgnoringASCIICase("application/octet-stream")) {
-    UseCounter::Count(
-        execution_context,
-        kApplicationOctetStreamFeatures[same_origin][worker_global_scope]);
-  } else if (mime_type.StartsWithIgnoringASCIICase("application/xml")) {
-    UseCounter::Count(
-        execution_context,
-        kApplicationXmlFeatures[same_origin][worker_global_scope]);
-  } else if (mime_type.StartsWithIgnoringASCIICase("text/html")) {
-    UseCounter::Count(execution_context,
-                      kTextHtmlFeatures[same_origin][worker_global_scope]);
-  } else if (mime_type.StartsWithIgnoringASCIICase("text/plain")) {
-    UseCounter::Count(execution_context,
-                      kTextPlainFeatures[same_origin][worker_global_scope]);
-  } else if (mime_type.StartsWithIgnoringCase("text/xml")) {
-    UseCounter::Count(execution_context,
-                      kTextXmlFeatures[same_origin][worker_global_scope]);
+  // The code above has made a decision and handed down the result in accept,
+  // warn, and counter.
+  if (counter != kWebFeatureNone) {
+    UseCounter::Count(execution_context, counter);
   }
+  if (!allow || warn) {
+    const char* msg =
+        allow ? "Deprecated: Future versions will refuse" : "Refused";
+    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+        kSecurityMessageSource, kErrorMessageLevel,
+        String() + msg + " to execute script from '" +
+            response.Url().ElidedString() + "' because its MIME type ('" +
+            mime_type + "') is not executable."));
+  }
+  return allow;
+}
 
-  return true;
+}  // namespace
+
+bool AllowedByNosniff::MimeTypeAsScript(ExecutionContext* execution_context,
+                                        const ResourceResponse& response) {
+  return MimeTypeAsScriptImpl(execution_context, response,
+                              execution_context->IsWorkerGlobalScope());
+}
+
+bool AllowedByNosniff::MimeTypeAsScriptForTesting(
+    ExecutionContext* execution_context,
+    const ResourceResponse& response,
+    bool is_worker_global_scope) {
+  return MimeTypeAsScriptImpl(execution_context, response,
+                              is_worker_global_scope);
 }
 
 }  // namespace blink

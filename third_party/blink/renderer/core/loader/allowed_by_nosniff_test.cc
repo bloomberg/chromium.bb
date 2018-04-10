@@ -7,6 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
@@ -22,6 +24,10 @@ class AllowedByNosniffTest : public testing::Test {
 
   Document* doc() { return &dummy_page_holder_->GetDocument(); }
 
+  size_t ConsoleMessageStoreSize() const {
+    return dummy_page_holder_->GetPage().GetConsoleMessageStorage().size();
+  }
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };
@@ -36,63 +42,103 @@ TEST_F(AllowedByNosniffTest, SanityCheckSetUp) {
   EXPECT_FALSE(UseCounter::IsCounted(*doc(), f));
   UseCounter::Count(doc(), f);
   EXPECT_TRUE(UseCounter::IsCounted(*doc(), f));
+
+  EXPECT_EQ(ConsoleMessageStoreSize(), 0U);
 }
 
 TEST_F(AllowedByNosniffTest, AllowedOrNot) {
   struct {
     const char* mimetype;
     bool allowed;
+    bool strict_allowed;
   } data[] = {
       // Supported mimetypes:
-      {"text/javascript", true},
-      {"application/javascript", true},
-      {"text/ecmascript", true},
+      {"text/javascript", true, true},
+      {"application/javascript", true, true},
+      {"text/ecmascript", true, true},
 
       // Blocked mimetpyes:
-      {"image/png", false},
-      {"text/csv", false},
-      {"video/mpeg", false},
+      {"image/png", false, false},
+      {"text/csv", false, false},
+      {"video/mpeg", false, false},
 
       // Legacy mimetypes:
-      {"text/html", true},
-      {"text/plain", true},
-      {"application/xml", true},
-      {"application/octet-stream", true},
+      {"text/html", true, false},
+      {"text/plain", true, false},
+      {"application/xml", true, false},
+      {"application/octet-stream", true, false},
 
-      // Made-up mimetypes:
-      {"text/potato", true},
-      {"potato/text", true},
-      {"aaa/aaa", true},
-      {"zzz/zzz", true},
+      // Potato mimetypes:
+      {"text/potato", true, false},
+      {"potato/text", true, false},
+      {"aaa/aaa", true, false},
+      {"zzz/zzz", true, false},
 
-      // Parameterized mime types
-      {"text/javascript; charset=utf-8", true},
-      {"text/javascript;charset=utf-8", true},
-      {"text/javascript;bla;bla", true},
-      {"text/csv; charset=utf-8", false},
-      {"text/csv;charset=utf-8", false},
-      {"text/csv;bla;bla", false},
+      // Parameterized mime types:
+      {"text/javascript; charset=utf-8", true, true},
+      {"text/javascript;charset=utf-8", true, true},
+      {"text/javascript;bla;bla", true, true},
+      {"text/csv; charset=utf-8", false, false},
+      {"text/csv;charset=utf-8", false, false},
+      {"text/csv;bla;bla", false, false},
 
       // Funky capitalization:
-      {"text/html", true},
-      {"Text/html", true},
-      {"text/Html", true},
-      {"TeXt/HtMl", true},
-      {"TEXT/HTML", true},
+      {"text/html", true, false},
+      {"Text/html", true, false},
+      {"text/Html", true, false},
+      {"TeXt/HtMl", true, false},
+      {"TEXT/HTML", true, false},
   };
 
   for (auto& testcase : data) {
     SCOPED_TRACE(testing::Message()
                  << "\n  mime type: " << testcase.mimetype
-                 << "\n  allowed: " << (testcase.allowed ? "true" : "false"));
+                 << "\n  allowed: " << (testcase.allowed ? "true" : "false")
+                 << "\n  strict_allowed: "
+                 << (testcase.strict_allowed ? "true" : "false"));
 
     const KURL url("https://bla.com/");
     doc()->SetSecurityOrigin(SecurityOrigin::Create(url));
     ResourceResponse response(url);
     response.SetHTTPHeaderField("Content-Type", testcase.mimetype);
 
+    // Nosniff 'legacy' setting: Both worker + non-worker obey the 'allowed'
+    // setting. Warnings for any blocked script.
+    RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
+    RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
+    size_t message_count = ConsoleMessageStoreSize();
     EXPECT_EQ(testcase.allowed,
               AllowedByNosniff::MimeTypeAsScript(doc(), response));
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScriptForTesting(
+                                    doc(), response, true));
+    EXPECT_EQ(ConsoleMessageStoreSize(), message_count + 2 * !testcase.allowed);
+
+    // Nosniff worker blocked: Workers follow the 'strict_allow' setting.
+    // Warnings for any blocked scripts.
+    RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(true);
+    RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(false);
+    message_count = ConsoleMessageStoreSize();
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(doc(), response));
+    EXPECT_EQ(ConsoleMessageStoreSize(), message_count + !testcase.allowed);
+    EXPECT_EQ(
+        testcase.strict_allowed,
+        AllowedByNosniff::MimeTypeAsScriptForTesting(doc(), response, true));
+    EXPECT_EQ(ConsoleMessageStoreSize(),
+              message_count + !testcase.allowed + !testcase.strict_allowed);
+
+    // Nosniff 'legacy', but with warnings. The allowed setting follows the
+    // 'allowed' setting, but the warnings follow the 'strict' setting.
+    RuntimeEnabledFeatures::SetWorkerNosniffBlockEnabled(false);
+    RuntimeEnabledFeatures::SetWorkerNosniffWarnEnabled(true);
+    message_count = ConsoleMessageStoreSize();
+    EXPECT_EQ(testcase.allowed,
+              AllowedByNosniff::MimeTypeAsScript(doc(), response));
+    EXPECT_EQ(ConsoleMessageStoreSize(), message_count + !testcase.allowed);
+    EXPECT_EQ(testcase.allowed, AllowedByNosniff::MimeTypeAsScriptForTesting(
+                                    doc(), response, true));
+    EXPECT_EQ(ConsoleMessageStoreSize(),
+              message_count + !testcase.allowed + !testcase.strict_allowed);
   }
 }
 
