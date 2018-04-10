@@ -15,19 +15,47 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-// static
-const base::FilePath::CharType PolicyToolUIHandler::kPolicyToolSessionsDir[] =
+namespace {
+
+const base::FilePath::CharType kPolicyToolSessionsDir[] =
     FILE_PATH_LITERAL("Policy sessions");
 
-// static
-const base::FilePath::CharType
-    PolicyToolUIHandler::kPolicyToolDefaultSessionName[] =
-        FILE_PATH_LITERAL("policy");
+const base::FilePath::CharType kPolicyToolDefaultSessionName[] =
+    FILE_PATH_LITERAL("policy");
 
-// static
-const base::FilePath::CharType
-    PolicyToolUIHandler::kPolicyToolSessionExtension[] =
-        FILE_PATH_LITERAL("json");
+const base::FilePath::CharType kPolicyToolSessionExtension[] =
+    FILE_PATH_LITERAL("json");
+
+// Returns the current list of all sessions sorted by last access time in
+// decreasing order.
+base::ListValue GetSessionsList(const base::FilePath& sessions_dir) {
+  base::FilePath::StringType sessions_pattern =
+      FILE_PATH_LITERAL("*.") +
+      base::FilePath::StringType(kPolicyToolSessionExtension);
+  base::FileEnumerator enumerator(sessions_dir, /*recursive=*/false,
+                                  base::FileEnumerator::FILES,
+                                  sessions_pattern);
+  // A vector of session names and their last access times.
+  using Session = std::pair<base::Time, base::FilePath::StringType>;
+  std::vector<Session> sessions;
+  for (base::FilePath name = enumerator.Next(); !name.empty();
+       name = enumerator.Next()) {
+    base::File::Info info;
+    base::GetFileInfo(name, &info);
+    sessions.push_back(
+        {info.last_accessed, name.BaseName().RemoveExtension().value()});
+  }
+  // Sort the sessions by the the time of last access in decreasing order.
+  std::sort(sessions.begin(), sessions.end(), std::greater<Session>());
+
+  // Convert sessions to the list containing only names.
+  base::ListValue session_names;
+  for (const Session& session : sessions)
+    session_names.GetList().push_back(base::Value(session.second));
+  return session_names;
+}
+
+}  // namespace
 
 PolicyToolUIHandler::PolicyToolUIHandler() : callback_weak_ptr_factory_(this) {}
 
@@ -73,35 +101,8 @@ base::FilePath PolicyToolUIHandler::GetSessionPath(
   return sessions_dir_.Append(name).AddExtension(kPolicyToolSessionExtension);
 }
 
-base::ListValue PolicyToolUIHandler::GetSessionsList() {
-  base::FilePath::StringType sessions_pattern =
-      FILE_PATH_LITERAL("*.") +
-      base::FilePath::StringType(kPolicyToolSessionExtension);
-  base::FileEnumerator enumerator(sessions_dir_, /*recursive=*/false,
-                                  base::FileEnumerator::FILES,
-                                  sessions_pattern);
-  // A vector of session names and their last access times.
-  using Session = std::pair<base::Time, base::FilePath::StringType>;
-  std::vector<Session> sessions;
-  for (base::FilePath name = enumerator.Next(); !name.empty();
-       name = enumerator.Next()) {
-    base::File::Info info;
-    base::GetFileInfo(name, &info);
-    sessions.push_back(
-        {info.last_accessed, name.BaseName().RemoveExtension().value()});
-  }
-  // Sort the sessions by the the time of last access in decreasing order.
-  std::sort(sessions.begin(), sessions.end(), std::greater<Session>());
-
-  // Convert sessions to the list containing only names.
-  base::ListValue session_names;
-  for (const Session& session : sessions)
-    session_names.GetList().push_back(base::Value(session.second));
-  return session_names;
-}
-
 void PolicyToolUIHandler::SetDefaultSessionName() {
-  base::ListValue sessions = GetSessionsList();
+  base::ListValue sessions = GetSessionsList(sessions_dir_);
   if (sessions.empty()) {
     // If there are no sessions, fallback to the default session name.
     session_name_ = kPolicyToolDefaultSessionName;
@@ -180,8 +181,7 @@ void PolicyToolUIHandler::OnFileRead(const std::string& contents) {
                            base::Value(session_name_));
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&PolicyToolUIHandler::GetSessionsList,
-                       base::Unretained(this)),
+        base::BindOnce(&GetSessionsList, sessions_dir_),
         base::BindOnce(&PolicyToolUIHandler::OnSessionsListReceived,
                        callback_weak_ptr_factory_.GetWeakPtr()));
   }
@@ -234,15 +234,14 @@ void PolicyToolUIHandler::HandleLoadSession(const base::ListValue* args) {
   ImportFile();
 }
 
+// static
 PolicyToolUIHandler::SessionErrors PolicyToolUIHandler::DoRenameSession(
-    const base::FilePath::StringType& old_session_name,
-    const base::FilePath::StringType& new_session_name) {
-  const base::FilePath old_session_path = GetSessionPath(old_session_name);
-  const base::FilePath new_session_path = GetSessionPath(new_session_name);
-
-  // Check if the session files exist. If |old_session_name| doesn't exist, it
-  // means that is not a valid session. If |new_session_name| exists, it means
-  // that we can't do the rename because that will cause a file overwrite.
+    const base::FilePath& old_session_path,
+    const base::FilePath& new_session_path) {
+  // Check if a session files with the new name exist. If |old_session_path|
+  // doesn't exist, it means that is not a valid session. If |new_session_path|
+  // exists, it means that we can't do the rename because that will cause a file
+  // overwrite.
   if (!PathExists(old_session_path))
     return SessionErrors::kSessionNameNotExist;
   if (PathExists(new_session_path))
@@ -257,8 +256,7 @@ void PolicyToolUIHandler::OnSessionRenamed(
   if (result == SessionErrors::kNone) {
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(&PolicyToolUIHandler::GetSessionsList,
-                       base::Unretained(this)),
+        base::BindOnce(&GetSessionsList, sessions_dir_),
         base::BindOnce(&PolicyToolUIHandler::OnSessionsListReceived,
                        callback_weak_ptr_factory_.GetWeakPtr()));
     CallJavascriptFunction("policy.Page.closeRenameSessionDialog");
@@ -299,10 +297,12 @@ void PolicyToolUIHandler::HandleRenameSession(const base::ListValue* args) {
   // will be created with the old name and with an empty dictionary in it.
   session_name_.clear();
   base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&PolicyToolUIHandler::DoRenameSession,
-                     base::Unretained(this), old_session_name,
-                     new_session_name),
+                     GetSessionPath(old_session_name),
+                     GetSessionPath(new_session_name)),
       base::BindOnce(&PolicyToolUIHandler::OnSessionRenamed,
                      callback_weak_ptr_factory_.GetWeakPtr()));
 }

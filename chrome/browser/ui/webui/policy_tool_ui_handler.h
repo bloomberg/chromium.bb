@@ -28,9 +28,6 @@ class PolicyToolUIHandler : public PolicyUIHandler {
     kRenamedSessionError,
   };
 
-  static const base::FilePath::CharType kPolicyToolSessionsDir[];
-  static const base::FilePath::CharType kPolicyToolDefaultSessionName[];
-  static const base::FilePath::CharType kPolicyToolSessionExtension[];
   // Reads the current session file (based on the session_name_) and sends the
   // contents to the UI.
   void ImportFile();
@@ -53,9 +50,8 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   std::string ReadOrCreateFileCallback();
   void OnFileRead(const std::string& contents);
 
-  SessionErrors DoRenameSession(
-      const base::FilePath::StringType& old_session_name,
-      const base::FilePath::StringType& new_session_name);
+  static SessionErrors DoRenameSession(const base::FilePath& old_session_path,
+                                       const base::FilePath& new_session_path);
 
   void OnSessionRenamed(SessionErrors result);
 
@@ -66,10 +62,6 @@ class PolicyToolUIHandler : public PolicyUIHandler {
   bool IsValidSessionName(const base::FilePath::StringType& name) const;
 
   base::FilePath GetSessionPath(const base::FilePath::StringType& name) const;
-
-  // Returns the current list of all sessions sorted by last access time in
-  // decreasing order.
-  base::ListValue GetSessionsList();
 
   void OnSessionsListReceived(base::ListValue list);
 
