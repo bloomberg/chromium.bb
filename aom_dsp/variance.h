@@ -33,10 +33,6 @@ typedef unsigned int (*aom_sad_avg_fn_t)(const uint8_t *a, int a_stride,
 typedef void (*aom_copy32xn_fn_t)(const uint8_t *a, int a_stride, uint8_t *b,
                                   int b_stride, int n);
 
-typedef void (*aom_sad_multi_fn_t)(const uint8_t *a, int a_stride,
-                                   const uint8_t *b, int b_stride,
-                                   unsigned int *sad_array);
-
 typedef void (*aom_sad_multi_d_fn_t)(const uint8_t *a, int a_stride,
                                      const uint8_t *const b_array[],
                                      int b_stride, unsigned int *sad_array);
@@ -103,8 +99,6 @@ typedef struct aom_variance_vtable {
   aom_variance_fn_t vf;
   aom_subpixvariance_fn_t svf;
   aom_subp_avg_variance_fn_t svaf;
-  aom_sad_multi_fn_t sdx3f;
-  aom_sad_multi_fn_t sdx8f;
   aom_sad_multi_d_fn_t sdx4df;
   aom_masked_sad_fn_t msdf;
   aom_masked_subpixvariance_fn_t msvf;

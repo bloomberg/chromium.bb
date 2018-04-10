@@ -242,16 +242,9 @@ if (CONFIG_AV1_ENCODER)
   set(AOM_DSP_ENCODER_INTRIN_SSE2
       "${AOM_ROOT}/aom_dsp/x86/quantize_sse2.c")
 
-  set(AOM_DSP_ENCODER_ASM_SSSE3
-      "${AOM_ROOT}/aom_dsp/x86/sad_ssse3.asm")
-
   set(AOM_DSP_ENCODER_ASM_SSSE3_X86_64
       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_ssse3_x86_64.asm"
       "${AOM_ROOT}/aom_dsp/x86/ssim_opt_x86_64.asm")
-
-  set(AOM_DSP_ENCODER_ASM_SSE3 "${AOM_ROOT}/aom_dsp/x86/sad_sse3.asm")
-
-  set(AOM_DSP_ENCODER_ASM_SSE4_1 "${AOM_ROOT}/aom_dsp/x86/sad_sse4.asm")
 
   set(AOM_DSP_ENCODER_INTRIN_AVX2
       "${AOM_ROOT}/aom_dsp/x86/fwd_dct32x32_impl_avx2.h"

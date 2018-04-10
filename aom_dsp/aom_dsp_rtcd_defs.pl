@@ -779,60 +779,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
 
   #
-  # Multi-block SAD, comparing a reference to N blocks 1 pixel apart horizontally
-  #
-  # Blocks of 3
-  foreach $s (@block_widths) {
-    add_proto qw/void/, "aom_sad${s}x${s}x3", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  }
-  specialize qw/aom_sad64x64x3            msa/;
-  specialize qw/aom_sad32x32x3            msa/;
-  specialize qw/aom_sad16x16x3 sse3 ssse3 msa/;
-  specialize qw/aom_sad8x8x3   sse3       msa/;
-  specialize qw/aom_sad4x4x3   sse3       msa/;
-
-  add_proto qw/void/, "aom_sad16x8x3", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  specialize qw/aom_sad16x8x3 sse3 ssse3 msa/;
-  add_proto qw/void/, "aom_sad8x16x3", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  specialize qw/aom_sad8x16x3 sse3 msa/;
-
-  # Blocks of 8
-  foreach $s (@block_widths) {
-    add_proto qw/void/, "aom_sad${s}x${s}x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  }
-  specialize qw/aom_sad64x64x8        msa/;
-  specialize qw/aom_sad32x32x8        msa/;
-  specialize qw/aom_sad16x16x8 sse4_1 msa/;
-  specialize qw/aom_sad8x8x8   sse4_1 msa/;
-  specialize qw/aom_sad4x4x8   sse4_1 msa/;
-
-  add_proto qw/void/, "aom_sad16x8x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  specialize qw/aom_sad16x8x8 sse4_1 msa/;
-  add_proto qw/void/, "aom_sad8x16x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  specialize qw/aom_sad8x16x8 sse4_1 msa/;
-  add_proto qw/void/, "aom_sad8x4x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  specialize qw/aom_sad8x4x8 msa/;
-  add_proto qw/void/, "aom_sad4x8x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  specialize qw/aom_sad4x8x8 msa/;
-
-
-  foreach $s (@block_widths) {
-    # Blocks of 3
-    add_proto qw/void/, "aom_highbd_sad${s}x${s}x3", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-    # Blocks of 8
-    add_proto qw/void/, "aom_highbd_sad${s}x${s}x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  }
-  # Blocks of 3
-  add_proto qw/void/, "aom_highbd_sad16x8x3", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  add_proto qw/void/, "aom_highbd_sad8x16x3", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  # Blocks of 8
-  add_proto qw/void/, "aom_highbd_sad16x8x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  add_proto qw/void/, "aom_highbd_sad8x16x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  add_proto qw/void/, "aom_highbd_sad8x4x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-  add_proto qw/void/, "aom_highbd_sad4x8x8", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sad_array";
-
-
-  #
   # Multi-block SAD, comparing a reference to N independent blocks
   #
   foreach (@block_sizes) {

@@ -495,7 +495,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
     sf->partition_search_breakout_dist_thr <<= 2 * (MAX_SB_SIZE_LOG2 - 6);
   }
 
-  cpi->full_search_sad = av1_full_search_sad;
   cpi->diamond_search_sad = av1_diamond_search_sad;
 
   sf->allow_exhaustive_searches = 1;

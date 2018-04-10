@@ -481,7 +481,6 @@ typedef struct AV1_COMP {
   ActiveMap active_map;
 
   fractional_mv_step_fp *find_fractional_mv_step;
-  av1_full_search_fn_t full_search_sad;  // It is currently unused.
   av1_diamond_search_fn_t diamond_search_sad;
   aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES_ALL];
   uint64_t time_receive_data;
