@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_storage_monitor_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -23,8 +22,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -290,22 +287,10 @@ ExtensionStorageMonitor::ExtensionStorageMonitor(Profile* profile)
       weak_ptr_factory_(this) {
   DCHECK(extension_prefs_);
 
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                 content::Source<Profile>(profile_));
-
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
 }
 
-ExtensionStorageMonitor::~ExtensionStorageMonitor() {}
-
-void ExtensionStorageMonitor::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_DESTROYED, type);
-
-  StopMonitoringAll();
-}
+ExtensionStorageMonitor::~ExtensionStorageMonitor() = default;
 
 void ExtensionStorageMonitor::OnExtensionLoaded(
     content::BrowserContext* browser_context,
@@ -537,13 +522,6 @@ void ExtensionStorageMonitor::StopMonitoringStorage(
       base::BindOnce(
           &ExtensionStorageMonitorIOHelper::StopObservingForExtension,
           io_helper_, extension_id));
-}
-
-void ExtensionStorageMonitor::StopMonitoringAll() {
-  extension_registry_observer_.RemoveAll();
-
-  io_helper_ = nullptr;
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void ExtensionStorageMonitor::RemoveNotificationForExtension(
