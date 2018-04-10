@@ -82,6 +82,17 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
         return CSSKeywordValue::Create("currentcolor");
       }
       return CSSUnsupportedStyleValue::Create(property_id, value);
+    case CSSPropertyFontVariantEastAsian:
+    case CSSPropertyFontVariantLigatures:
+    case CSSPropertyFontVariantNumeric: {
+      // Only single keywords are supported in level 1.
+      if (const auto* value_list = ToCSSValueListOrNull(value)) {
+        if (value_list->length() != 1U)
+          return nullptr;
+        return CreateStyleValue(value_list->Item(0));
+      }
+      return CreateStyleValue(value);
+    }
     case CSSPropertyGridAutoFlow: {
       const auto& value_list = ToCSSValueList(value);
       // Only single keywords are supported in level 1.

@@ -67,6 +67,25 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
+    case CSSPropertyFontVariantEastAsian:
+    case CSSPropertyFontVariantLigatures:
+    case CSSPropertyFontVariantNumeric: {
+      // level 1 only accept single keywords, but font-variant-* store
+      // them as a list
+      if (const auto* value =
+              ToCSSIdentifierValueOrNull(style_value.ToCSSValue())) {
+        // 'none' and 'normal' are stored as a single value
+        if (value->GetValueID() == CSSValueNone ||
+            value->GetValueID() == CSSValueNormal) {
+          break;
+        }
+
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
+        return list;
+      }
+      break;
+    }
     case CSSPropertyGridAutoFlow: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();
