@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 import os
+import traceback
 
 from benchmarks import loading
 
@@ -112,8 +113,16 @@ def _MergeControlChartJsonIntoEnabled(enabled_chart_json, control_chart_json):
   control_charts = control_chart_json['charts']
   diff_charts = copy.deepcopy(enabled_charts)
   diff_charts['trace'] = {}
-  for chart_name in diff_charts:
-    for point_name in diff_charts[chart_name]:
+  for chart_name in diff_charts.keys():
+    if chart_name not in control_charts:
+      # Charts like 'timeToInteractive_std' may not be there if all values are
+      # None.
+      del diff_charts[chart_name]
+      continue
+    for point_name in diff_charts[chart_name].keys():
+      if point_name not in control_charts[chart_name]:
+        del diff_charts[chart_name][point_name]
+        continue
       _PointSubtraction(diff_charts[chart_name][point_name],
                         control_charts[chart_name][point_name])
 
@@ -165,18 +174,22 @@ class LoadingDesktopNetworkService(loading.LoadingDesktop):
       return enabled_return_code
     enabled_chart_json = json.load(open(temp_file_path))
 
+    logging.info('Starting to merge control chartjson into enabled chartjson')
     try:
       # Merge the result and compute the difference.
       _MergeControlChartJsonIntoEnabled(enabled_chart_json, control_chart_json)
     except Exception as e:
-      logging.error('exception merging two chart json: %s', e)
+      logging.error('exception merging two chart json: %s', repr(e))
+      traceback.print_exc()
       with open(temp_file_path, 'w') as f:
         json.dump({
           'control_chart_json': control_chart_json,
           'enabled_chart_json': enabled_chart_json},
           f, indent=2, separators=(',', ': '))
         f.write('\n')
+        return 1
     else:
+      logging.info('Finished merging chartjsons, writing back to disk')
       with open(temp_file_path, 'w') as f:
         json.dump(enabled_chart_json, f, indent=2, separators=(',', ': '))
         f.write('\n')
