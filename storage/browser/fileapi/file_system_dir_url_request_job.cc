@@ -82,8 +82,10 @@ void FileSystemDirURLRequestJob::StartAsync() {
     return;
   url_ = file_system_context_->CrackURL(request_->url());
   if (!url_.is_valid()) {
+    const FileSystemRequestInfo request_info = {request_->url(), request_,
+                                                storage_domain_, 0};
     file_system_context_->AttemptAutoMountForURLRequest(
-        request_, storage_domain_,
+        request_info,
         base::BindOnce(&FileSystemDirURLRequestJob::DidAttemptAutoMount,
                        weak_factory_.GetWeakPtr()));
     return;

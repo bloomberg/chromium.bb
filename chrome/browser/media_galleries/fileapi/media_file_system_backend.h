@@ -27,8 +27,8 @@ namespace storage {
 class FileSystemURL;
 }
 
-namespace net {
-class URLRequest;
+namespace storage {
+struct FileSystemRequestInfo;
 }
 
 class DeviceMediaAsyncFileUtil;
@@ -52,9 +52,8 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
                                         MediaGalleryPrefId pref_id);
 
   static bool AttemptAutoMountForURLRequest(
-      const net::URLRequest* url_request,
+      const storage::FileSystemRequestInfo& request_info,
       const storage::FileSystemURL& filesystem_url,
-      const std::string& storage_domain,
       base::OnceCallback<void(base::File::Error result)> callback);
 
   // FileSystemBackend implementation.
