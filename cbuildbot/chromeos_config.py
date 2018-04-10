@@ -4068,6 +4068,9 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       site_config.Add('whirlwind-test-ap',
                       site_config.templates.test_ap,
                       boards=['whirlwind']),
+      site_config.Add('gale-test-ap',
+                      site_config.templates.test_ap,
+                      boards=['gale']),
       description='Create images used to power access points in WiFi lab.',
   )
 

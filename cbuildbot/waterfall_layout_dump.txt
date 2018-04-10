@@ -1351,6 +1351,7 @@ gale-paladin-tryjob (gce_beefy)
 gale-payloads (gce_beefy)
 gale-pre-cq (gce_beefy)
 gale-release-tryjob (gce_beefy)
+gale-test-ap-tryjob (gce_beefy)
 gale-unittest-stress (gce_beefy)
 gandof-chrome-pfq-tryjob (gce_beefy)
 gandof-chromium-pfq-tryjob (gce_beefy)
@@ -3025,6 +3026,7 @@ terra-tot-chrome-pfq-informational-tryjob (gce_beefy)
 terra-tot-chromium-pfq-informational-tryjob (gce_beefy)
 terra-unittest-stress (gce_beefy)
 [test-ap-group-tryjob] (gce_beefy)
+  gale-test-ap
   panther-test-ap
   whirlwind-test-ap
 tidus-chrome-pfq-tryjob (gce_beefy)
