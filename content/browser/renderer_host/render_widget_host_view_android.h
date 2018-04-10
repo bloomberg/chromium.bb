@@ -182,6 +182,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   GetTouchSelectionControllerClientManager() override;
   viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void OnRenderWidgetInit() override;
+  void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // ui::ViewClient implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;

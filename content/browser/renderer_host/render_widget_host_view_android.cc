@@ -974,18 +974,14 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
 }
 
 void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
-  DCHECK(!delegated_frame_host_ ||
-         delegated_frame_host_->HasDelegatedContent() ==
-             frame_evictor_->HasFrame());
-
   if (!delegated_frame_host_)
     return;
 
-  if (!delegated_frame_host_->HasDelegatedContent())
-    return;
-
-  frame_evictor_->DiscardedFrame();
   delegated_frame_host_->DestroyDelegatedContent();
+
+  if (frame_evictor_->HasFrame())
+    frame_evictor_->DiscardedFrame();
+
   current_surface_size_.SetSize(0, 0);
 }
 
@@ -2226,6 +2222,22 @@ void RenderWidgetHostViewAndroid::SetOverscrollControllerForTesting(
   overscroll_controller_ = std::make_unique<OverscrollControllerAndroid>(
       overscroll_refresh_handler, view_.GetWindowAndroid()->GetCompositor(),
       view_.GetDipScale());
+}
+
+void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
+    RenderWidgetHostView* view) {
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+              ->IsRenderWidgetHostViewChildFrame());
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
+              ->IsRenderWidgetHostViewGuest());
+  SetBackgroundColor(view->background_color());
+  RenderWidgetHostViewAndroid* view_android =
+      static_cast<RenderWidgetHostViewAndroid*>(view);
+  if (!delegated_frame_host_ || !view_android->delegated_frame_host_)
+    return;
+  delegated_frame_host_->TakeFallbackContentFrom(
+      view_android->delegated_frame_host_.get());
+  host()->GetContentRenderingTimeoutFrom(view_android->host());
 }
 
 }  // namespace content

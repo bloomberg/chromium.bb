@@ -1116,6 +1116,7 @@ void RenderWidgetHostImpl::StopHangMonitorTimeout() {
 
 void RenderWidgetHostImpl::DidNavigate(uint32_t next_source_id) {
   current_content_source_id_ = next_source_id;
+  did_receive_first_frame_after_navigation_ = false;
 
   if (enable_surface_synchronization_) {
     // Resize messages before navigation are not acked, so reset
@@ -1917,6 +1918,14 @@ void RenderWidgetHostImpl::RejectMouseLockOrUnlockIfNecessary() {
 
 bool RenderWidgetHostImpl::IsKeyboardLocked() const {
   return view_ ? view_->IsKeyboardLocked() : false;
+}
+
+void RenderWidgetHostImpl::GetContentRenderingTimeoutFrom(
+    RenderWidgetHostImpl* other) {
+  if (other->new_content_rendering_timeout_->IsRunning()) {
+    new_content_rendering_timeout_->Start(
+        other->new_content_rendering_timeout_->GetCurrentDelay());
+  }
 }
 
 bool RenderWidgetHostImpl::IsMouseLocked() const {
@@ -2987,10 +2996,12 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
     // After navigation, if a frame belonging to the new page is received, stop
     // the timer that triggers clearing the graphics of the last page.
-    if (new_content_rendering_timeout_ &&
-        last_received_content_source_id_ >= current_content_source_id_ &&
-        new_content_rendering_timeout_->IsRunning()) {
-      new_content_rendering_timeout_->Stop();
+    if (last_received_content_source_id_ >= current_content_source_id_) {
+      did_receive_first_frame_after_navigation_ = true;
+      if (new_content_rendering_timeout_ &&
+          new_content_rendering_timeout_->IsRunning()) {
+        new_content_rendering_timeout_->Stop();
+      }
     }
   }
 
@@ -3118,6 +3129,7 @@ void RenderWidgetHostImpl::ProgressFling(TimeTicks current_time) {
 
 void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {
   DCHECK(enable_surface_synchronization_);
+  did_receive_first_frame_after_navigation_ = true;
   if (!new_content_rendering_timeout_ ||
       !new_content_rendering_timeout_->IsRunning()) {
     return;
@@ -3126,11 +3138,11 @@ void RenderWidgetHostImpl::DidReceiveFirstFrameAfterNavigation() {
 }
 
 void RenderWidgetHostImpl::ForceFirstFrameAfterNavigationTimeout() {
-  if (new_content_rendering_timeout_ &&
-      new_content_rendering_timeout_->IsRunning()) {
+  if (did_receive_first_frame_after_navigation_)
+    return;
+  if (new_content_rendering_timeout_)
     new_content_rendering_timeout_->Stop();
-    ClearDisplayedGraphics();
-  }
+  ClearDisplayedGraphics();
 }
 
 void RenderWidgetHostImpl::StopFling() {

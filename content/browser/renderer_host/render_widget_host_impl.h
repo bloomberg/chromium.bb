@@ -699,6 +699,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether keyboard lock is active.
   bool IsKeyboardLocked() const;
 
+  void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
+
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -1156,6 +1158,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderFrameMetadataProviderImpl render_frame_metadata_provider_;
 
   const viz::FrameSinkId frame_sink_id_;
+
+  bool did_receive_first_frame_after_navigation_ = true;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

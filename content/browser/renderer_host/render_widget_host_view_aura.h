@@ -205,6 +205,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsLocalSurfaceIdAllocationSuppressed() const override;
 
   void DidNavigate() override;
+  void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -414,6 +415,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                            AllocateLocalSurfaceIdOnEviction);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest,
                            WebContentsViewReparent);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+                           TakeFallbackContent);
 
   class WindowObserver;
   friend class WindowObserver;

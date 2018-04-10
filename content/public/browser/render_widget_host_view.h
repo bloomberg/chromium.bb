@@ -252,6 +252,10 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // Tells the view to speak the currently selected text.
   virtual void SpeakSelection() = 0;
 #endif  // defined(OS_MACOSX)
+
+  // Indicates that this view should show the contents of |view| if it doesn't
+  // have anything to show.
+  virtual void TakeFallbackContentFrom(RenderWidgetHostView* view) = 0;
 };
 
 }  // namespace content

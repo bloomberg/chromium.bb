@@ -188,6 +188,11 @@ void TestRenderWidgetHostView::SubmitCompositorFrame(
     OnFrameTokenChanged(frame_token);
 }
 
+void TestRenderWidgetHostView::TakeFallbackContentFrom(
+    RenderWidgetHostView* view) {
+  SetBackgroundColor(view->background_color());
+}
+
 bool TestRenderWidgetHostView::LockMouse() {
   return false;
 }

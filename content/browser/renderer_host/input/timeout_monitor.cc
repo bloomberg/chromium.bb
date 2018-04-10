@@ -109,4 +109,9 @@ bool TimeoutMonitor::IsRunning() const {
          !time_when_considered_timed_out_.is_null();
 }
 
+base::TimeDelta TimeoutMonitor::GetCurrentDelay() {
+  DCHECK(!time_when_considered_timed_out_.is_null());
+  return time_when_considered_timed_out_ - TimeTicks::Now();
+}
+
 }  // namespace content

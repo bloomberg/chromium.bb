@@ -2104,15 +2104,6 @@ void RenderFrameHostManager::CommitPending() {
   old_render_frame_host =
       SetRenderFrameHost(std::move(speculative_render_frame_host_));
 
-  // Save off the old background color before possibly deleting the
-  // old RenderWidgetHostView.
-  SkColor old_background_color = SK_ColorWHITE;
-  bool has_old_background_color = false;
-  if (old_render_frame_host->GetView()) {
-    has_old_background_color = true;
-    old_background_color = old_render_frame_host->GetView()->background_color();
-  }
-
   // For top-level frames, also hide the old RenderViewHost's view.
   // TODO(creis): As long as show/hide are on RVH, we don't want to hide on
   // subframe navigations or we will interfere with the top-level frame.
@@ -2154,8 +2145,13 @@ void RenderFrameHostManager::CommitPending() {
   delegate_->NotifySwappedFromRenderManager(
       old_render_frame_host.get(), render_frame_host_.get(), is_main_frame);
 
-  if (has_old_background_color && render_frame_host_->GetView())
-    render_frame_host_->GetView()->SetBackgroundColor(old_background_color);
+  // Make the new view show the contents of old view until it has something
+  // useful to show.
+  if (is_main_frame && old_render_frame_host->GetView() &&
+      render_frame_host_->GetView()) {
+    render_frame_host_->GetView()->TakeFallbackContentFrom(
+        old_render_frame_host->GetView());
+  }
 
   // The RenderViewHost keeps track of the main RenderFrameHost routing id.
   // If this is committing a main frame navigation, update it and set the

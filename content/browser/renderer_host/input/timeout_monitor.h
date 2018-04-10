@@ -30,6 +30,8 @@ class CONTENT_EXPORT TimeoutMonitor {
   void Stop();
   bool IsRunning() const;
 
+  base::TimeDelta GetCurrentDelay();
+
  private:
   void StartImpl(base::TimeDelta delay);
   void CheckTimedOut();
