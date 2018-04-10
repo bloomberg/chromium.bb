@@ -129,6 +129,10 @@ extern const char kTabSwitcherPresentsBVCDescription[];
 extern const char kToolbarButtonPositionsName[];
 extern const char kToolbarButtonPositionsDescription[];
 
+// Title and description for the flag to enable the UI Refresh location bar.
+extern const char kUIRefreshLocationBarName[];
+extern const char kUIRefreshLocationBarDescription[];
+
 // Title and description for the flag to enable the phase 1 UI Refresh.
 extern const char kUIRefreshPhase1Name[];
 extern const char kUIRefreshPhase1Description[];

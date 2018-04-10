@@ -396,6 +396,9 @@ void CheckToolbarButtonVisibilityWithOmniboxFocused(
     [EarlGrey rotateDeviceToOrientation:UIDeviceOrientationPortrait
                              errorOrNil:nil];
   }
+  // Check the visiblity after a size class change. This should let the trait
+  // collection change come into effect.
+  CheckToolbarButtonVisibilityWithOmniboxFocused(originalTraitCollection);
 }
 
 // Tests the interactions between the infobars and the bottom toolbar during
