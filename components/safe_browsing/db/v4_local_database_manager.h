@@ -74,8 +74,9 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   safe_browsing::ThreatSource GetThreatSource() const override;
   bool IsDownloadProtectionEnabled() const override;
   bool IsSupported() const override;
-  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
-                       const V4ProtocolConfig& config) override;
+  void StartOnIOThread(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
 
   // The stores/lists to always get full hashes for, regardless of which store
@@ -300,7 +301,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Instantiates and initializes |v4_update_protocol_manager_|.
   void SetupUpdateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config);
 
   // Updates the |list_client_states_| with the state information in

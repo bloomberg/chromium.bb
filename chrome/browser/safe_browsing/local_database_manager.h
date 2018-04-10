@@ -37,10 +37,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace safe_browsing {
 
 class SafeBrowsingService;
@@ -134,8 +130,9 @@ class LocalSafeBrowsingDatabaseManager
   bool MatchDownloadWhitelistUrl(const GURL& url) override;
   bool MatchDownloadWhitelistString(const std::string& str) override;
   void CancelCheck(Client* client) override;
-  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
-                       const V4ProtocolConfig& config) override;
+  void StartOnIOThread(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
   bool IsDownloadProtectionEnabled() const override;
 

@@ -17,11 +17,13 @@
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/platform_test.h"
 
 using base::Time;
@@ -66,6 +68,9 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     callback_called_ = false;
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
   }
 
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager() {
@@ -74,19 +79,25 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
          ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING),
          ListIdentifier(CHROME_PLATFORM, URL, POTENTIALLY_HARMFUL_APPLICATION),
          ListIdentifier(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER)});
-    return V4GetHashProtocolManager::Create(nullptr, stores_to_check,
+    return V4GetHashProtocolManager::Create(test_shared_loader_factory_,
+                                            stores_to_check,
                                             GetTestV4ProtocolConfig());
   }
 
+  static void SetupFetcherToReturnResponse(V4GetHashProtocolManager* pm,
+                                           int net_error,
+                                           int response_code,
+                                           const std::string& data) {
+    CHECK_EQ(pm->pending_hash_requests_.size(), 1u);
+    pm->OnURLLoaderCompleteInternal(
+        pm->pending_hash_requests_.begin()->second->loader.get(), net_error,
+        response_code, data);
+  }
+
   static void SetupFetcherToReturnOKResponse(
-      const net::TestURLFetcherFactory& factory,
+      V4GetHashProtocolManager* pm,
       const std::vector<ResponseInfo>& infos) {
-    net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-    DCHECK(fetcher);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(GetV4HashResponse(infos));
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
+    SetupFetcherToReturnResponse(pm, net::OK, 200, GetV4HashResponse(infos));
   }
 
   static std::vector<ResponseInfo> GetStockV4HashResponseInfos() {
@@ -155,11 +166,12 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
 
   bool callback_called_;
   base::SimpleTestClock clock_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {
-  net::TestURLFetcherFactory factory;
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FullHashToStoreAndHashPrefixesMap matched_locally;
@@ -171,14 +183,9 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
   // Failed request status should result in error.
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                            net::ERR_CONNECTION_RESET));
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(GetStockV4HashResponse());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcherToReturnResponse(pm.get(), net::ERR_CONNECTION_RESET, 200,
+                               GetStockV4HashResponse());
 
   // Should have recorded one error, but back off multiplier is unchanged.
   EXPECT_EQ(1ul, pm->gethash_error_count_);
@@ -187,7 +194,6 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingNetwork) {
 }
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingResponseCode) {
-  net::TestURLFetcherFactory factory;
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   FullHashToStoreAndHashPrefixesMap matched_locally;
@@ -199,13 +205,9 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingResponseCode) {
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  fetcher->set_status(net::URLRequestStatus());
   // Response code of anything other than 200 should result in error.
-  fetcher->set_response_code(204);
-  fetcher->SetResponseString(GetStockV4HashResponse());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  SetupFetcherToReturnResponse(pm.get(), net::OK, 204,
+                               GetStockV4HashResponse());
 
   // Should have recorded one error, but back off multiplier is unchanged.
   EXPECT_EQ(1ul, pm->gethash_error_count_);
@@ -214,7 +216,6 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingResponseCode) {
 }
 
 TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
-  net::TestURLFetcherFactory factory;
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   base::Time now = base::Time::UnixEpoch();
@@ -236,7 +237,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
-  SetupFetcherToReturnOKResponse(factory, GetStockV4HashResponseInfos());
+  SetupFetcherToReturnOKResponse(pm.get(), GetStockV4HashResponseInfos());
 
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->gethash_error_count_);
@@ -258,7 +259,6 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashErrorHandlingOK) {
 
 TEST_F(V4GetHashProtocolManagerTest,
        TestResultsNotCachedForNegativeCacheDuration) {
-  net::TestURLFetcherFactory factory;
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
 
   HashPrefix prefix("Everything");
@@ -736,7 +736,6 @@ TEST_F(V4GetHashProtocolManagerTest, TestUpdatesAreMerged) {
   // inject the other one as a response from the server. The result should
   // include both FullHashInfo objects.
 
-  net::TestURLFetcherFactory factory;
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
   HashPrefix prefix_1("exam");
   FullHash full_hash_1("example");
@@ -776,7 +775,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestUpdatesAreMerged) {
       base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4HashResults,
                  base::Unretained(this), expected_results));
 
-  SetupFetcherToReturnOKResponse(factory, GetStockV4HashResponseInfos());
+  SetupFetcherToReturnOKResponse(pm.get(), GetStockV4HashResponseInfos());
 
   // No error, back off multiplier is unchanged.
   EXPECT_EQ(0ul, pm->gethash_error_count_);
@@ -803,7 +802,6 @@ TEST_F(V4GetHashProtocolManagerTest, TestUpdatesAreMerged) {
 // The server responds back with full hash information containing metadata
 // information for one of the full hashes for the URL in test.
 TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
-  net::TestURLFetcherFactory factory;
   const GURL url("https://www.example.com/more");
   ThreatMetadata expected_md;
   expected_md.api_permissions.insert("NOTIFICATIONS");
@@ -835,7 +833,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
   info = ResponseInfo(full_hash, GetChromeUrlApiId());
   info.key_values.emplace_back("permission", "GEOLOCATION");
   infos.push_back(info);
-  SetupFetcherToReturnOKResponse(factory, infos);
+  SetupFetcherToReturnOKResponse(pm.get(), infos);
 
   EXPECT_TRUE(callback_called());
 }

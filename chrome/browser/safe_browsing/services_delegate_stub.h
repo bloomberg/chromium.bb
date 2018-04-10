@@ -35,8 +35,8 @@ class ServicesDelegateStub : public ServicesDelegate {
   DownloadProtectionService* GetDownloadService() override;
 
   void StartOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter,
-    const V4ProtocolConfig& v4_config) override;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
   void CreatePasswordProtectionService(Profile* profile) override;
   void RemovePasswordProtectionService(Profile* profile) override;

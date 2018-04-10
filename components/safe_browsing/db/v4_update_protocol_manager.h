@@ -26,14 +26,13 @@
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/webui.pb.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 
@@ -48,9 +47,9 @@ typedef base::Callback<void(std::unique_ptr<ParsedServerResponse>)>
 
 typedef base::Callback<ExtendedReportingLevel()> ExtendedReportingLevelCallback;
 
-class V4UpdateProtocolManager : public net::URLFetcherDelegate {
+class V4UpdateProtocolManager {
  public:
-  ~V4UpdateProtocolManager() override;
+  ~V4UpdateProtocolManager();
 
   // Makes the passed |factory| the factory used to instantiate
   // a V4UpdateProtocolManager. Useful for tests.
@@ -60,13 +59,12 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate {
 
   // Create an instance of the safe browsing v4 protocol manager.
   static std::unique_ptr<V4UpdateProtocolManager> Create(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config,
       V4UpdateCallback update_callback,
       ExtendedReportingLevelCallback extended_reporting_level_callback);
 
-  // net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnURLLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Schedule the next update without backoff.
   void ScheduleNextUpdate(std::unique_ptr<StoreStateMap> store_state_map);
@@ -76,11 +74,11 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate {
 
  protected:
   // Constructs a V4UpdateProtocolManager that issues network requests using
-  // |request_context_getter|. It schedules updates to get the hash prefixes for
+  // |url_loader_factory|. It schedules updates to get the hash prefixes for
   // SafeBrowsing lists, and invoke |callback| when the results are retrieved.
   // The callback may be invoked synchronously.
   V4UpdateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config,
       V4UpdateCallback update_callback,
       ExtendedReportingLevelCallback extended_reporting_level_callback);
@@ -101,6 +99,10 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(V4UpdateProtocolManagerTest,
                            TestExtendedReportingLevelIncluded);
   friend class V4UpdateProtocolManagerFactoryImpl;
+
+  void OnURLLoaderCompleteInternal(int net_error,
+                                   int response_code,
+                                   const std::string& data);
 
   // Fills a FetchThreatListUpdatesRequest protocol buffer for a request.
   // Returns the serialized and base64 URL encoded request as a string.
@@ -174,18 +176,15 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate {
   // The config of the client making Pver4 requests.
   const V4ProtocolConfig config_;
 
-  // The context we use to issue network requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-
-  // ID for URLFetchers for testing.
-  int url_fetcher_id_;
+  // The URLLoaderFactory we use to issue network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // The callback that's called when GetUpdates completes.
   V4UpdateCallback update_callback_;
 
   // The pending update request. The request must be canceled when the object is
   // destroyed.
-  std::unique_ptr<net::URLFetcher> request_;
+  std::unique_ptr<network::SimpleURLLoader> request_;
 
   // Timer to setup the next update request.
   base::OneShotTimer update_timer_;
@@ -209,7 +208,7 @@ class V4UpdateProtocolManagerFactory {
   V4UpdateProtocolManagerFactory() {}
   virtual ~V4UpdateProtocolManagerFactory() {}
   virtual std::unique_ptr<V4UpdateProtocolManager> CreateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config,
       V4UpdateCallback update_callback,
       ExtendedReportingLevelCallback extended_reporting_level_callback) = 0;

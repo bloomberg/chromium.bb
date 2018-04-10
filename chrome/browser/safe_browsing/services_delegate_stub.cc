@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
 namespace safe_browsing {
@@ -66,7 +67,7 @@ DownloadProtectionService* ServicesDelegateStub::GetDownloadService() {
 }
 
 void ServicesDelegateStub::StartOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& v4_config) {}
 
 void ServicesDelegateStub::StopOnIOThread(bool shutdown) {}

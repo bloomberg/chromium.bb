@@ -169,11 +169,10 @@ ResourceRequestDetector* ServicesDelegateImpl::CreateResourceRequestDetector() {
 }
 
 void ServicesDelegateImpl::StartOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& v4_config) {
   if (v4_local_database_manager_.get()) {
-    v4_local_database_manager_->StartOnIOThread(url_request_context_getter,
-                                                v4_config);
+    v4_local_database_manager_->StartOnIOThread(url_loader_factory, v4_config);
   }
 }
 

@@ -21,8 +21,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -144,11 +144,11 @@ class V4GetHashProtocolManagerFactoryImpl
   V4GetHashProtocolManagerFactoryImpl() {}
   ~V4GetHashProtocolManagerFactoryImpl() override {}
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config) override {
     return base::WrapUnique(new V4GetHashProtocolManager(
-        request_context_getter, stores_to_check, config));
+        url_loader_factory, stores_to_check, config));
   }
 
  private:
@@ -171,14 +171,14 @@ FullHashCallbackInfo::FullHashCallbackInfo() {}
 FullHashCallbackInfo::FullHashCallbackInfo(
     const std::vector<FullHashInfo>& cached_full_hash_infos,
     const std::vector<HashPrefix>& prefixes_requested,
-    std::unique_ptr<net::URLFetcher> fetcher,
+    std::unique_ptr<network::SimpleURLLoader> loader,
     const FullHashToStoreAndHashPrefixesMap&
         full_hash_to_store_and_hash_prefixes,
     const FullHashCallback& callback,
     const base::Time& network_start_time)
     : cached_full_hash_infos(cached_full_hash_infos),
       callback(callback),
-      fetcher(std::move(fetcher)),
+      loader(std::move(loader)),
       full_hash_to_store_and_hash_prefixes(
           full_hash_to_store_and_hash_prefixes),
       network_start_time(network_start_time),
@@ -215,13 +215,13 @@ V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = nullptr;
 
 // static
 std::unique_ptr<V4GetHashProtocolManager> V4GetHashProtocolManager::Create(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config) {
   if (!factory_)
     factory_ = new V4GetHashProtocolManagerFactoryImpl();
-  return factory_->CreateProtocolManager(request_context_getter,
-                                         stores_to_check, config);
+  return factory_->CreateProtocolManager(url_loader_factory, stores_to_check,
+                                         config);
 }
 
 // static
@@ -233,15 +233,14 @@ void V4GetHashProtocolManager::RegisterFactory(
 }
 
 V4GetHashProtocolManager::V4GetHashProtocolManager(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
       next_gethash_time_(Time::FromDoubleT(0)),
       config_(config),
-      request_context_getter_(request_context_getter),
-      url_fetcher_id_(0),
+      url_loader_factory_(url_loader_factory),
       clock_(base::DefaultClock::GetInstance()) {
   DCHECK(!stores_to_check.empty());
   std::set<PlatformType> platform_types;
@@ -303,12 +302,6 @@ void V4GetHashProtocolManager::GetFullHashes(
     return;
   }
 
-  std::string req_base64 =
-      GetHashRequest(prefixes_to_request, list_client_states);
-  GURL gethash_url;
-  net::HttpRequestHeaders headers;
-  GetHashUrlAndHeaders(req_base64, &gethash_url, &headers);
-
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("safe_browsing_v4_get_hash", R"(
         semantics {
@@ -341,20 +334,25 @@ void V4GetHashProtocolManager::GetFullHashes(
             }
           }
         })");
-  std::unique_ptr<net::URLFetcher> owned_fetcher =
-      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
-                              net::URLFetcher::GET, this, traffic_annotation);
-  net::URLFetcher* fetcher = owned_fetcher.get();
-  pending_hash_requests_[fetcher].reset(new FullHashCallbackInfo(
-      cached_full_hash_infos, prefixes_to_request, std::move(owned_fetcher),
-      full_hash_to_store_and_hash_prefixes, callback, clock_->Now()));
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  std::string req_base64 =
+      GetHashRequest(prefixes_to_request, list_client_states);
+  GetHashUrlAndHeaders(req_base64, &resource_request->url,
+                       &resource_request->headers);
 
-  fetcher->SetExtraRequestHeaders(headers.ToString());
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher->SetRequestContext(request_context_getter_.get());
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  fetcher->Start();
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  std::unique_ptr<network::SimpleURLLoader> owned_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation);
+  network::SimpleURLLoader* loader = owned_loader.get();
+  owned_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&V4GetHashProtocolManager::OnURLLoaderComplete,
+                     base::Unretained(this), loader));
+
+  pending_hash_requests_[loader].reset(new FullHashCallbackInfo(
+      cached_full_hash_infos, prefixes_to_request, std::move(owned_loader),
+      full_hash_to_store_and_hash_prefixes, callback, clock_->Now()));
 }
 
 void V4GetHashProtocolManager::GetFullHashesWithApis(
@@ -767,29 +765,41 @@ void V4GetHashProtocolManager::MergeResults(
   }
 }
 
-// net::URLFetcherDelegate implementation ----------------------------------
-
 // SafeBrowsing request responses are handled here.
-void V4GetHashProtocolManager::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void V4GetHashProtocolManager::OnURLLoaderComplete(
+    network::SimpleURLLoader* url_loader,
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  PendingHashRequests::iterator it = pending_hash_requests_.find(source);
-  DCHECK(it != pending_hash_requests_.end()) << "Request not found";
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
 
-  int response_code = source->GetResponseCode();
-  net::URLRequestStatus status = source->GetStatus();
+  std::string data;
+  if (response_body)
+    data = *response_body.get();
+
+  OnURLLoaderCompleteInternal(url_loader, url_loader->NetError(), response_code,
+                              data);
+}
+
+void V4GetHashProtocolManager::OnURLLoaderCompleteInternal(
+    network::SimpleURLLoader* url_loader,
+    int net_error,
+    int response_code,
+    const std::string& data) {
+  PendingHashRequests::iterator it = pending_hash_requests_.find(url_loader);
+  DCHECK(it != pending_hash_requests_.end()) << "Request not found";
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
-      "SafeBrowsing.V4GetHash.Network.Result", status, response_code);
+      "SafeBrowsing.V4GetHash.Network.Result", net_error, response_code);
 
   std::vector<FullHashInfo> full_hash_infos;
   Time negative_cache_expire;
-  if (status.is_success() && response_code == net::HTTP_OK) {
+  if (net_error == net::OK && response_code == net::HTTP_OK) {
     RecordGetHashResult(V4OperationResult::STATUS_200);
     ResetGetHashErrors();
-    std::string data;
-    source->GetResponseAsString(&data);
     if (!ParseHashResponse(data, &full_hash_infos, &negative_cache_expire)) {
       full_hash_infos.clear();
       RecordGetHashResult(V4OperationResult::PARSE_ERROR);
@@ -798,10 +808,10 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
     HandleGetHashError(clock_->Now());
 
     DVLOG(1) << "SafeBrowsing GetEncodedFullHashes request for: "
-             << source->GetURL() << " failed with error: " << status.error()
+             << url_loader->GetFinalURL() << " failed with error: " << net_error
              << " and response code: " << response_code;
 
-    if (status.status() == net::URLRequestStatus::FAILED) {
+    if (net_error != net::OK) {
       RecordGetHashResult(V4OperationResult::NETWORK_ERROR);
     } else {
       RecordGetHashResult(V4OperationResult::HTTP_ERROR);

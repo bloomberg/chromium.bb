@@ -105,6 +105,7 @@ static_library("test_database_manager") {
     ":v4_protocol_manager_util",
     "//base:base",
     "//net",
+    "//services/network/public/cpp",
   ]
 }
 
@@ -282,6 +283,7 @@ static_library("v4_test_util") {
     ":v4_protocol_manager_util",
     "//base",
     "//net:test_support",
+    "//services/network/public/cpp",
   ]
 }
 
@@ -299,6 +301,7 @@ static_library("v4_update_protocol_manager") {
     "//components/safe_browsing:webui_proto",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//net",
+    "//services/network/public/cpp",
     "//url",
   ]
 }
@@ -335,6 +338,7 @@ source_set("v4_get_hash_protocol_manager_unittest") {
     "//content/test:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }
@@ -354,6 +358,7 @@ source_set("v4_local_database_manager_unittest") {
     "//content/test:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }
@@ -370,8 +375,10 @@ source_set("v4_update_protocol_manager_unittest") {
     ":v4_update_protocol_manager",
     "//base",
     "//base/test:test_support",
+    "//content/public/common",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
 }
@@ -401,6 +408,7 @@ source_set("unit_tests_shared") {
     "//content/test:test_support",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
   ]
   if (is_win) {
@@ -436,6 +444,8 @@ source_set("unit_tests_desktop") {
     "//crypto",
     "//net",
     "//net:test_support",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gtest",
     "//url",
   ]

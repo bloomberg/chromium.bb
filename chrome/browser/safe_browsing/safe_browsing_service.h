@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
@@ -42,7 +43,7 @@ class DownloadManager;
 namespace net {
 class URLRequest;
 class URLRequestContextGetter;
-}
+}  // namespace net
 
 namespace network {
 namespace mojom {
@@ -55,7 +56,7 @@ namespace prefs {
 namespace mojom {
 class TrackedPreferenceValidationDelegate;
 }
-}
+}  // namespace prefs
 
 namespace safe_browsing {
 class ClientSideDetectionService;
@@ -154,6 +155,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // Called on UI thread.
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
+  // Called to get a SharedURLLoaderFactory that can be used on the IO thread.
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryOnIOThread();
 
   // Called on IO thread thread when QUIC should be disabled (e.g. because of
   // policy). This should not be necessary anymore when http://crbug.com/678653
@@ -290,6 +295,11 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   void CreateTriggerManager();
 
+  // Called on the UI thread to create a URLLoaderFactory interface ptr for
+  // the IO thread.
+  void CreateURLLoaderFactoryForIO(
+      network::mojom::URLLoaderFactoryRequest request);
+
   // The factory used to instantiate a SafeBrowsingService object.
   // Useful for tests, so they can provide their own implementation of
   // SafeBrowsingService.
@@ -300,7 +310,13 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
 
+  // A wrapper around |url_request_context_getter_|. Accessed on UI thread.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
+
+  // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
+  scoped_refptr<content::WeakWrapperSharedURLLoaderFactory>
+      shared_url_loader_factory_on_io_;
 
 #if defined(SAFE_BROWSING_DB_LOCAL)
   // Handles interaction with SafeBrowsing servers. Accessed on IO thread.
@@ -365,9 +381,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 // Factory for creating SafeBrowsingService.  Useful for tests.
 class SafeBrowsingServiceFactory {
  public:
-  SafeBrowsingServiceFactory() { }
-  virtual ~SafeBrowsingServiceFactory() { }
+  SafeBrowsingServiceFactory() {}
+  virtual ~SafeBrowsingServiceFactory() {}
   virtual SafeBrowsingService* CreateSafeBrowsingService() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactory);
 };

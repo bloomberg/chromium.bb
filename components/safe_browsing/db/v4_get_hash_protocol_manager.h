@@ -30,14 +30,13 @@
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/webui.pb.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 
@@ -109,7 +108,7 @@ struct FullHashCallbackInfo {
   FullHashCallbackInfo();
   FullHashCallbackInfo(const std::vector<FullHashInfo>& cached_full_hash_infos,
                        const std::vector<HashPrefix>& prefixes_requested,
-                       std::unique_ptr<net::URLFetcher> fetcher,
+                       std::unique_ptr<network::SimpleURLLoader> loader,
                        const FullHashToStoreAndHashPrefixesMap&
                            full_hash_to_store_and_hash_prefixes,
                        const FullHashCallback& callback,
@@ -124,9 +123,9 @@ struct FullHashCallbackInfo {
   // hash prefixes.
   FullHashCallback callback;
 
-  // The fetcher that will return the response from the server. This is stored
+  // The loader that will return the response from the server. This is stored
   // here as a unique pointer to be able to reason about its lifetime easily.
-  std::unique_ptr<net::URLFetcher> fetcher;
+  std::unique_ptr<network::SimpleURLLoader> loader;
 
   // The generated full hashes and the corresponding prefixes and the stores in
   // which to look for a full hash match.
@@ -144,7 +143,7 @@ struct FullHashCallbackInfo {
 
 class V4GetHashProtocolManagerFactory;
 
-class V4GetHashProtocolManager : public net::URLFetcherDelegate {
+class V4GetHashProtocolManager {
  public:
   // Invoked when GetFullHashesWithApis completes.
   // Parameters:
@@ -152,11 +151,11 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   typedef base::Callback<void(const ThreatMetadata& md)>
       ThreatMetadataForApiCallback;
 
-  ~V4GetHashProtocolManager() override;
+  virtual ~V4GetHashProtocolManager();
 
   // Create an instance of the safe browsing v4 protocol manager.
   static std::unique_ptr<V4GetHashProtocolManager> Create(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config);
 
@@ -186,18 +185,20 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
       const std::vector<std::string>& list_client_states,
       ThreatMetadataForApiCallback api_callback);
 
-  // net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Callback when the request completes
+  void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           std::unique_ptr<std::string> response_body);
 
   // Populates the protobuf with the FullHashCache data.
   void CollectFullHashCacheInfo(FullHashCacheInfo* full_hash_cache_info);
 
  protected:
   // Constructs a V4GetHashProtocolManager that issues network requests using
-  // |request_context_getter|.
-  V4GetHashProtocolManager(net::URLRequestContextGetter* request_context_getter,
-                           const StoresToCheck& stores_to_check,
-                           const V4ProtocolConfig& config);
+  // |url_loader_factory|.
+  V4GetHashProtocolManager(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const StoresToCheck& stores_to_check,
+      const V4ProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest, TestGetHashRequest);
@@ -227,6 +228,11 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   friend class V4GetHashProtocolManagerFactoryImpl;
 
   FullHashCache* full_hash_cache_for_tests() { return &full_hash_cache_; }
+
+  void OnURLLoaderCompleteInternal(network::SimpleURLLoader* url_loader,
+                                   int net_error,
+                                   int response_code,
+                                   const std::string& data);
 
   // Looks up the cached results for full hashes in
   // |full_hash_to_store_and_hash_prefixes|. Fills |prefixes_to_request| with
@@ -306,17 +312,12 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
  private:
   // Map of GetHash requests to parameters which created it.
   using PendingHashRequests =
-      std::unordered_map<const net::URLFetcher*,
+      std::unordered_map<const network::SimpleURLLoader*,
                          std::unique_ptr<FullHashCallbackInfo>>;
 
   // The factory that controls the creation of V4GetHashProtocolManager.
   // This is used by tests.
   static V4GetHashProtocolManagerFactory* factory_;
-
-  // Current active request (in case we need to cancel) for updates or chunks
-  // from the SafeBrowsing service. We can only have one of these outstanding
-  // at any given time unlike GetHash requests, which are tracked separately.
-  std::unique_ptr<net::URLFetcher> request_;
 
   // The number of HTTP response errors since the the last successful HTTP
   // response, used for request backoff timing.
@@ -335,14 +336,11 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   // The config of the client making Pver4 requests.
   const V4ProtocolConfig config_;
 
-  // The context we use to issue network requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // The URLLoaderFactory we use to issue network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Records number of cache hits since the beginning of this session.
   int number_of_hits_ = 0;
-
-  // ID for URLFetchers for testing.
-  int url_fetcher_id_;
 
   // The clock used to vend times.
   base::Clock* clock_;
@@ -365,7 +363,7 @@ class V4GetHashProtocolManagerFactory {
   V4GetHashProtocolManagerFactory() {}
   virtual ~V4GetHashProtocolManagerFactory() {}
   virtual std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config) = 0;
 

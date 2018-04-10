@@ -18,15 +18,17 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -45,17 +47,21 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
                                     const ThreatMetadata& metadata) override {
     blocked_permissions_ = metadata.api_permissions;
     callback_invoked_ = true;
+    run_loop_.Quit();
   }
 
   const std::set<std::string>& GetBlockedPermissions() {
     return blocked_permissions_;
   }
 
+  void WaitForCallback() { run_loop_.Run(); }
+
   bool callback_invoked() { return callback_invoked_; }
 
  private:
   std::set<std::string> blocked_permissions_;
   bool callback_invoked_;
+  base::RunLoop run_loop_;
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
@@ -64,8 +70,13 @@ class TestClient : public SafeBrowsingDatabaseManager::Client {
 class SafeBrowsingDatabaseManagerTest : public testing::Test {
  protected:
   void SetUp() override {
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+            &test_url_loader_factory_);
+
     db_manager_ = new TestSafeBrowsingDatabaseManager();
-    db_manager_->StartOnIOThread(nullptr, GetTestV4ProtocolConfig());
+    db_manager_->StartOnIOThread(test_shared_loader_factory_,
+                                 GetTestV4ProtocolConfig());
   }
 
   void TearDown() override {
@@ -97,6 +108,8 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
     return res_data;
   }
 
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   scoped_refptr<SafeBrowsingDatabaseManager> db_manager_;
 
  private:
@@ -109,19 +122,11 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CheckApiBlacklistUrlWrongScheme) {
 }
 
 TEST_F(SafeBrowsingDatabaseManagerTest, CancelApiCheck) {
-  net::TestURLFetcherFactory factory;
   TestClient client;
   const GURL url("https://www.example.com/more");
 
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
   EXPECT_TRUE(db_manager_->CancelApiCheck(&client));
-
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  fetcher->set_status(net::URLRequestStatus());
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(GetStockV4GetHashResponse());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
 
   base::RunLoop().RunUntilIdle();
 
@@ -130,22 +135,21 @@ TEST_F(SafeBrowsingDatabaseManagerTest, CancelApiCheck) {
 }
 
 TEST_F(SafeBrowsingDatabaseManagerTest, GetApiCheckResponse) {
-  net::TestURLFetcherFactory factory;
   TestClient client;
   const GURL url("https://www.example.com/more");
 
+  GURL request_url;
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        request_url = request.url;
+      }));
+
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
-
-  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
-  DCHECK(fetcher);
-  fetcher->set_status(net::URLRequestStatus());
-  fetcher->set_response_code(200);
-  fetcher->SetResponseString(GetStockV4GetHashResponse());
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-
+  test_url_loader_factory_.AddResponse(request_url.spec(),
+                                       GetStockV4GetHashResponse());
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_TRUE(client.callback_invoked());
+  client.WaitForCallback();
   ASSERT_EQ(1ul, client.GetBlockedPermissions().size());
   EXPECT_EQ("GEOLOCATION", *(client.GetBlockedPermissions().begin()));
 }
