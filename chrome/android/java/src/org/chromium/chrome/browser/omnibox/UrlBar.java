@@ -197,6 +197,12 @@ public class UrlBar extends AutocompleteEditText {
          */
         @ScrollType
         int getScrollType();
+
+        /**
+         * @return Whether or not the copy/cut action should grab the underlying URL or just copy
+         *         whatever's in the URL bar verbatim.
+         */
+        boolean shouldCutCopyVerbatim();
     }
 
     public UrlBar(Context context, AttributeSet attrs) {
@@ -626,10 +632,10 @@ public class UrlBar extends AutocompleteEditText {
         // As long as the full original text was selected, it will replace that with the original
         // URL and keep any further modifications by the user.
         String currentText = getText().toString();
-        if (selectedStartIndex == 0
-                && (id == android.R.id.cut || id == android.R.id.copy)
+        if (selectedStartIndex == 0 && (id == android.R.id.cut || id == android.R.id.copy)
                 && currentText.startsWith(mFormattedUrlLocation)
-                && selectedEndIndex >= mFormattedUrlLocation.length()) {
+                && selectedEndIndex >= mFormattedUrlLocation.length()
+                && !mUrlBarDelegate.shouldCutCopyVerbatim()) {
             String newText = mOriginalUrlLocation
                     + currentText.substring(mFormattedUrlLocation.length());
             selectedEndIndex = selectedEndIndex - mFormattedUrlLocation.length()

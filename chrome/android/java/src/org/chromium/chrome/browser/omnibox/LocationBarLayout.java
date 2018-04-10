@@ -2085,6 +2085,14 @@ public class LocationBarLayout
                                                                : UrlBar.SCROLL_TO_TLD;
     }
 
+    @Override
+    public boolean shouldCutCopyVerbatim() {
+        // When cutting/copying text in the URL bar, it will try to copy some version of the actual
+        // URL to the clipboard, not the currently displayed URL bar contents. We want to avoid this
+        // when displaying search terms.
+        return mToolbarDataProvider.shouldDisplaySearchTerms();
+    }
+
     /**
      * @return Returns the original url of the page.
      */

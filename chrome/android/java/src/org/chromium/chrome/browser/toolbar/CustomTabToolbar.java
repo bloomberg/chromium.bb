@@ -285,6 +285,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     }
 
     @Override
+    public boolean shouldCutCopyVerbatim() {
+        return false;
+    }
+
+    @Override
     public void setShowTitle(boolean showTitle) {
         if (showTitle) {
             mState = STATE_DOMAIN_AND_TITLE;
