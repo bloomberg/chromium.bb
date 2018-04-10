@@ -37,6 +37,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_stability_metrics_provider.h"
+#include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/metrics/network_quality_estimator_provider_impl.h"
@@ -896,6 +897,14 @@ void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
     return;
   }
 #endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // This creates the DesktopProfileSessionDurationsServices if it didn't exist
+  // already.
+  metrics::DesktopProfileSessionDurationsServiceFactory::GetForBrowserContext(
+      profile);
+#endif
+
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
