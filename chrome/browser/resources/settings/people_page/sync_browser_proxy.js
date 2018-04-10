@@ -207,9 +207,12 @@ cr.define('settings', function() {
 
     /**
      * Start syncing with an account, specified by its email.
+     * |isDefaultPromoAccount| is true if |email| is the email of the default
+     * account displayed in the promo.
      * @param {string} email
+     * @param {boolean} isDefaultPromoAccount
      */
-    startSyncingWithEmail(email) {}
+    startSyncingWithEmail(email, isDefaultPromoAccount) {}
 
     /**
      * Opens the Google Activity Controls url in a new tab.
@@ -297,8 +300,9 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    startSyncingWithEmail(email) {
-      chrome.send('SyncSetupStartSyncingWithEmail', [email]);
+    startSyncingWithEmail(email, isDefaultPromoAccount) {
+      chrome.send(
+          'SyncSetupStartSyncingWithEmail', [email, isDefaultPromoAccount]);
     }
 
     /** @override */

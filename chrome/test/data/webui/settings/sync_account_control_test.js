@@ -150,8 +150,12 @@ cr.define('settings_sync_account_control', function() {
       Polymer.dom.flush();
 
       return browserProxy.whenCalled('startSyncingWithEmail')
-          .then(email => {
+          .then((args) => {
+            const email = args[0];
+            const isDefaultPromoAccount = args[1];
+
             assertEquals(email, 'foo@foo.com');
+            assertEquals(isDefaultPromoAccount, true);
 
             assertVisible(testElement.$$('paper-icon-button-light'), true);
             assertTrue(testElement.$$('#sync-icon-container').hidden);
@@ -178,8 +182,11 @@ cr.define('settings_sync_account_control', function() {
 
             return browserProxy.whenCalled('startSyncingWithEmail');
           })
-          .then(email => {
+          .then((args) => {
+            const email = args[0];
+            const isDefaultPromoAccount = args[1];
             assertEquals(email, 'bar@bar.com');
+            assertEquals(isDefaultPromoAccount, false);
 
             // Tapping the last menu item will initiate sign-in.
             items[2].click();
