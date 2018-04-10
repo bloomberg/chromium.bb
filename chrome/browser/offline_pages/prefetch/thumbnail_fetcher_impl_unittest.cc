@@ -5,6 +5,7 @@
 #include "chrome/browser/offline_pages/prefetch/thumbnail_fetcher_impl.h"
 
 #include "base/test/bind_test_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
@@ -111,8 +112,9 @@ class ThumbnailFetcherImplTest : public testing::Test {
   ntp_snippets::MockContentSuggestionsProvider* suggestions_provider_;
 };
 
-TEST_F(ThumbnailFetcherImplTest, FetchSuggestionImageData) {
+TEST_F(ThumbnailFetcherImplTest, Success) {
   // Successfully fetch an image.
+  base::HistogramTester histogram_tester;
   ThumbnailFetcherImpl fetcher;
   fetcher.SetContentSuggestionsService(content_suggestions_.get());
   ExpectFetchThumbnail("abcdefg");
@@ -122,6 +124,50 @@ TEST_F(ThumbnailFetcherImplTest, FetchSuggestionImageData) {
   fetcher.FetchSuggestionImageData(
       ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
   task_runner_->RunUntilIdle();
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete",
+      ThumbnailFetcher::FetchCompleteStatus::kSuccess, 1);
+}
+
+TEST_F(ThumbnailFetcherImplTest, TooBig) {
+  base::HistogramTester histogram_tester;
+  ThumbnailFetcherImpl fetcher;
+  fetcher.SetContentSuggestionsService(content_suggestions_.get());
+  ExpectFetchThumbnail(
+      std::string(ThumbnailFetcher::kMaxThumbnailSize + 1, 'x'));
+  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
+  EXPECT_CALL(callback, Run("")).Times(1);
+
+  fetcher.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
+  task_runner_->RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete",
+      ThumbnailFetcher::FetchCompleteStatus::kTooLarge, 1);
+}
+
+TEST_F(ThumbnailFetcherImplTest, EmptyImage) {
+  base::HistogramTester histogram_tester;
+  ThumbnailFetcherImpl fetcher;
+  fetcher.SetContentSuggestionsService(content_suggestions_.get());
+  ExpectFetchThumbnail(std::string());
+  base::MockCallback<ThumbnailFetcher::ImageDataFetchedCallback> callback;
+  EXPECT_CALL(callback, Run("")).Times(1);
+
+  fetcher.FetchSuggestionImageData(
+      ClientId(kSuggestedArticlesNamespace, kClientID1), callback.Get());
+  task_runner_->RunUntilIdle();
+
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.FetchThumbnail.Start", 1);
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.FetchThumbnail.Complete",
+      ThumbnailFetcher::FetchCompleteStatus::kEmptyImage, 1);
 }
 
 }  // namespace

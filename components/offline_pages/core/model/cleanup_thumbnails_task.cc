@@ -4,6 +4,7 @@
 
 #include "components/offline_pages/core/model/cleanup_thumbnails_task.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "sql/connection.h"
@@ -55,6 +56,8 @@ void CleanupThumbnailsTask::Run() {
 
 void CleanupThumbnailsTask::Complete(Result result) {
   TaskComplete();
+  UMA_HISTOGRAM_COUNTS_1000("OfflinePages.CleanupThumbnails.Count",
+                            result.removed_thumbnails);
   std::move(complete_callback_).Run(result.success);
 }
 

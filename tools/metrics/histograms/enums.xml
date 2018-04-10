@@ -32976,6 +32976,12 @@ Called by update_net_trust_anchors.py.-->
   </int>
 </enum>
 
+<enum name="OfflinePagesThumbnailFetchStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="No Image"/>
+  <int value="2" label="Image is too large"/>
+</enum>
+
 <enum name="OfflinePageTrustedState">
   <int value="0" label="Trusted: in internal directory"/>
   <int value="1" label="Trusted: in public directory and unmodified"/>
