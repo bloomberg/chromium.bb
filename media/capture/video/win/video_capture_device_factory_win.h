@@ -30,6 +30,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   ~VideoCaptureDeviceFactoryWin() override;
 
   using MFEnumDeviceSourcesFunc = decltype(&MFEnumDeviceSources);
+  using DirectShowEnumDevicesFunc =
+      base::RepeatingCallback<HRESULT(IEnumMoniker**)>;
 
   std::unique_ptr<VideoCaptureDevice> CreateDevice(
       const VideoCaptureDeviceDescriptor& device_descriptor) override;
@@ -49,6 +51,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
       MFEnumDeviceSourcesFunc func) {
     mf_enum_device_sources_func_ = func;
   }
+  void set_direct_show_enum_devices_func_for_testing(
+      DirectShowEnumDevicesFunc func) {
+    direct_show_enum_devices_func_ = func;
+  }
 
  private:
   void EnumerateDevicesUWP(
@@ -67,6 +73,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryWin
   // |mf_enum_device_sources_func_| points to MFEnumDeviceSources. It enables
   // mock of Media Foundation API in unit tests.
   MFEnumDeviceSourcesFunc mf_enum_device_sources_func_ = nullptr;
+  DirectShowEnumDevicesFunc direct_show_enum_devices_func_;
 
   // For calling WinRT methods on a COM initiated thread.
   base::Thread com_thread_;

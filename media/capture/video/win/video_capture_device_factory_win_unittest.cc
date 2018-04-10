@@ -20,12 +20,28 @@ namespace media {
 
 namespace {
 
-const wchar_t* kDeviceId0 = L"\\\\?\\usb#vid_0000&pid_0000&mi_00";
-const wchar_t* kDeviceId1 = L"\\\\?\\usb#vid_0001&pid_0001&mi_00";
-const wchar_t* kDeviceId2 = L"\\\\?\\usb#vid_0002&pid_0002&mi_00";
-const wchar_t* kDeviceName0 = L"Device 0";
-const wchar_t* kDeviceName1 = L"Device 1";
-const wchar_t* kDeviceName2 = L"Device 2";
+// MediaFoundation devices
+const wchar_t* kMFDeviceId0 = L"\\\\?\\usb#vid_0000&pid_0000&mi_00";
+const wchar_t* kMFDeviceName0 = L"Device 0";
+
+const wchar_t* kMFDeviceId1 = L"\\\\?\\usb#vid_0001&pid_0001&mi_00";
+const wchar_t* kMFDeviceName1 = L"Device 1";
+
+const wchar_t* kMFDeviceId2 = L"\\\\?\\usb#vid_0002&pid_0002&mi_00";
+const wchar_t* kMFDeviceName2 = L"Device 2";
+
+// DirectShow devices
+const wchar_t* kDirectShowDeviceId0 = L"\\\\?\\usb#vid_0000&pid_0000&mi_00";
+const wchar_t* kDirectShowDeviceName0 = L"Device 0";
+
+const wchar_t* kDirectShowDeviceId1 = L"\\\\?\\usb#vid_0001&pid_0001&mi_00#1";
+const wchar_t* kDirectShowDeviceName1 = L"Device 1";
+
+const wchar_t* kDirectShowDeviceId3 = L"Virtual Camera 3";
+const wchar_t* kDirectShowDeviceName3 = L"Virtual Camera";
+
+const wchar_t* kDirectShowDeviceId4 = L"Virtual Camera 4";
+const wchar_t* kDirectShowDeviceName4 = L"Virtual Camera";
 
 using iterator = VideoCaptureDeviceDescriptors::const_iterator;
 iterator FindDescriptorInRange(iterator begin,
@@ -210,13 +226,189 @@ class MockMFActivate : public base::RefCountedThreadSafe<MockMFActivate>,
   const bool kscategory_sensor_camera_;
 };
 
+class StubPropertyBag : public base::RefCountedThreadSafe<StubPropertyBag>,
+                        public IPropertyBag {
+ public:
+  StubPropertyBag(const wchar_t* device_path, const wchar_t* description)
+      : device_path_(device_path), description_(description) {}
+
+  STDMETHOD(QueryInterface)(REFIID riid, void** ppvObject) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD_(ULONG, AddRef)(void) override {
+    base::RefCountedThreadSafe<StubPropertyBag>::AddRef();
+    return 1U;
+  }
+  STDMETHOD_(ULONG, Release)(void) override {
+    base::RefCountedThreadSafe<StubPropertyBag>::Release();
+    return 1U;
+  }
+  STDMETHOD(Read)
+  (LPCOLESTR pszPropName, VARIANT* pVar, IErrorLog* pErrorLog) override {
+    if (pszPropName == std::wstring(L"Description")) {
+      pVar->vt = VT_BSTR;
+      pVar->bstrVal = SysAllocString(description_);
+      return S_OK;
+    }
+    if (pszPropName == std::wstring(L"DevicePath")) {
+      pVar->vt = VT_BSTR;
+      pVar->bstrVal = SysAllocString(device_path_);
+      return S_OK;
+    }
+    return E_NOTIMPL;
+  }
+  STDMETHOD(Write)(LPCOLESTR pszPropName, VARIANT* pVar) override {
+    return E_NOTIMPL;
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<StubPropertyBag>;
+  virtual ~StubPropertyBag() = default;
+
+  const wchar_t* device_path_;
+  const wchar_t* description_;
+};
+
+class StubMoniker : public base::RefCountedThreadSafe<StubMoniker>,
+                    public IMoniker {
+ public:
+  StubMoniker(const wchar_t* device_path, const wchar_t* description)
+      : device_path_(device_path), description_(description) {}
+
+  STDMETHOD(QueryInterface)(REFIID riid, void** ppvObject) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD_(ULONG, AddRef)(void) override {
+    base::RefCountedThreadSafe<StubMoniker>::AddRef();
+    return 1U;
+  }
+  STDMETHOD_(ULONG, Release)(void) override {
+    base::RefCountedThreadSafe<StubMoniker>::Release();
+    return 1U;
+  }
+  STDMETHOD(GetClassID)(CLSID* pClassID) override { return E_NOTIMPL; }
+  STDMETHOD(IsDirty)(void) override { return E_NOTIMPL; }
+  STDMETHOD(Load)(IStream* pStm) override { return E_NOTIMPL; }
+  STDMETHOD(Save)(IStream* pStm, BOOL fClearDirty) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(GetSizeMax)(ULARGE_INTEGER* pcbSize) override { return E_NOTIMPL; }
+  STDMETHOD(BindToObject)
+  (IBindCtx* pbc,
+   IMoniker* pmkToLeft,
+   REFIID riidResult,
+   void** ppvResult) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(BindToStorage)
+  (IBindCtx* pbc, IMoniker* pmkToLeft, REFIID riid, void** ppvObj) override {
+    StubPropertyBag* propertyBag =
+        new StubPropertyBag(device_path_, description_);
+    propertyBag->AddRef();
+    *ppvObj = propertyBag;
+    return S_OK;
+  }
+  STDMETHOD(Reduce)
+  (IBindCtx* pbc,
+   DWORD dwReduceHowFar,
+   IMoniker** ppmkToLeft,
+   IMoniker** ppmkReduced) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(ComposeWith)
+  (IMoniker* pmkRight,
+   BOOL fOnlyIfNotGeneric,
+   IMoniker** ppmkComposite) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(Enum)(BOOL fForward, IEnumMoniker** ppenumMoniker) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(IsEqual)(IMoniker* pmkOtherMoniker) override { return E_NOTIMPL; }
+  STDMETHOD(Hash)(DWORD* pdwHash) override { return E_NOTIMPL; }
+  STDMETHOD(IsRunning)
+  (IBindCtx* pbc, IMoniker* pmkToLeft, IMoniker* pmkNewlyRunning) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(GetTimeOfLastChange)
+  (IBindCtx* pbc, IMoniker* pmkToLeft, FILETIME* pFileTime) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(Inverse)(IMoniker** ppmk) override { return E_NOTIMPL; }
+  STDMETHOD(CommonPrefixWith)
+  (IMoniker* pmkOther, IMoniker** ppmkPrefix) override { return E_NOTIMPL; }
+  STDMETHOD(RelativePathTo)
+  (IMoniker* pmkOther, IMoniker** ppmkRelPath) override { return E_NOTIMPL; }
+  STDMETHOD(GetDisplayName)
+  (IBindCtx* pbc, IMoniker* pmkToLeft, LPOLESTR* ppszDisplayName) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(ParseDisplayName)
+  (IBindCtx* pbc,
+   IMoniker* pmkToLeft,
+   LPOLESTR pszDisplayName,
+   ULONG* pchEaten,
+   IMoniker** ppmkOut) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(IsSystemMoniker)(DWORD* pdwMksys) override { return E_NOTIMPL; }
+
+ private:
+  friend class base::RefCountedThreadSafe<StubMoniker>;
+  virtual ~StubMoniker() = default;
+
+  const wchar_t* device_path_;
+  const wchar_t* description_;
+};
+
+class StubEnumMoniker : public base::RefCountedThreadSafe<StubEnumMoniker>,
+                        public IEnumMoniker {
+ public:
+  void AddMoniker(StubMoniker* moniker) { monikers_.push_back(moniker); }
+
+  STDMETHOD(QueryInterface)(REFIID riid, void** ppvObject) override {
+    return E_NOTIMPL;
+  }
+  STDMETHOD_(ULONG, AddRef)() override {
+    base::RefCountedThreadSafe<StubEnumMoniker>::AddRef();
+    return 1U;
+  }
+  STDMETHOD_(ULONG, Release)() override {
+    base::RefCountedThreadSafe<StubEnumMoniker>::Release();
+    return 1U;
+  }
+  STDMETHOD(Next)
+  (ULONG celt, IMoniker** rgelt, ULONG* pceltFetched) override {
+    cursor_position_ = cursor_position_ + celt;
+    if (cursor_position_ >= monikers_.size())
+      return E_FAIL;
+    IMoniker* moniker = monikers_.at(cursor_position_);
+    *rgelt = moniker;
+    moniker->AddRef();
+    return S_OK;
+  }
+  STDMETHOD(Skip)(ULONG celt) override { return E_NOTIMPL; }
+  STDMETHOD(Reset)(void) override {
+    cursor_position_ = unsigned(-1);
+    return S_OK;
+  }
+  STDMETHOD(Clone)(IEnumMoniker** ppenum) override { return E_NOTIMPL; }
+
+ private:
+  friend class base::RefCountedThreadSafe<StubEnumMoniker>;
+  virtual ~StubEnumMoniker() = default;
+
+  std::vector<IMoniker*> monikers_;
+  ULONG cursor_position_ = unsigned(-1);
+};
+
 HRESULT __stdcall MockMFEnumDeviceSources(IMFAttributes* attributes,
                                           IMFActivate*** devices,
                                           UINT32* count) {
   MockMFActivate* mock_devices[] = {
-      new MockMFActivate(kDeviceId0, kDeviceName0, true, false),
-      new MockMFActivate(kDeviceId1, kDeviceName1, true, true),
-      new MockMFActivate(kDeviceId2, kDeviceName2, false, true)};
+      new MockMFActivate(kMFDeviceId0, kMFDeviceName0, true, false),
+      new MockMFActivate(kMFDeviceId1, kMFDeviceName1, true, true),
+      new MockMFActivate(kMFDeviceId2, kMFDeviceName2, false, true)};
   // Iterate once to get the match count and check for errors.
   *count = 0U;
   HRESULT hr;
@@ -237,6 +429,22 @@ HRESULT __stdcall MockMFEnumDeviceSources(IMFAttributes* attributes,
     *(*devices + offset++) = device;
     device->AddRef();
   }
+  return S_OK;
+}
+
+HRESULT EnumerateStubDirectShowDevices(IEnumMoniker** enum_moniker) {
+  StubMoniker* monikers[] = {
+      new StubMoniker(kDirectShowDeviceId0, kDirectShowDeviceName0),
+      new StubMoniker(kDirectShowDeviceId1, kDirectShowDeviceName1),
+      new StubMoniker(kDirectShowDeviceId3, kDirectShowDeviceName3),
+      new StubMoniker(kDirectShowDeviceId4, kDirectShowDeviceName4)};
+
+  StubEnumMoniker* stub_enum_moniker = new StubEnumMoniker();
+  for (StubMoniker* moniker : monikers)
+    stub_enum_moniker->AddMoniker(moniker);
+
+  stub_enum_moniker->AddRef();
+  *enum_moniker = stub_enum_moniker;
   return S_OK;
 }
 
@@ -270,29 +478,45 @@ TEST_F(VideoCaptureDeviceFactoryMFWinTest, GetDeviceDescriptors) {
     return;
   factory_.set_mf_enum_device_sources_func_for_testing(
       &MockMFEnumDeviceSources);
+  factory_.set_direct_show_enum_devices_func_for_testing(
+      base::BindRepeating(&EnumerateStubDirectShowDevices));
   VideoCaptureDeviceDescriptors descriptors;
   factory_.GetDeviceDescriptors(&descriptors);
-  EXPECT_EQ(descriptors.size(), 3U);
+  EXPECT_EQ(descriptors.size(), 5U);
   for (auto it = descriptors.begin(); it != descriptors.end(); it++) {
     // Verify that there are no duplicates.
     EXPECT_EQ(FindDescriptorInRange(descriptors.begin(), it, it->device_id),
               it);
   }
   iterator it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
-                                      base::SysWideToUTF8(kDeviceId0));
+                                      base::SysWideToUTF8(kMFDeviceId0));
   EXPECT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
-  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDeviceName0));
+  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName0));
+
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
-                             base::SysWideToUTF8(kDeviceId1));
+                             base::SysWideToUTF8(kMFDeviceId1));
   EXPECT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION);
-  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDeviceName1));
+  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName1));
+
   it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
-                             base::SysWideToUTF8(kDeviceId2));
+                             base::SysWideToUTF8(kMFDeviceId2));
   EXPECT_NE(it, descriptors.end());
   EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR);
-  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDeviceName2));
+  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kMFDeviceName2));
+
+  it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
+                             base::SysWideToUTF8(kDirectShowDeviceId3));
+  EXPECT_NE(it, descriptors.end());
+  EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
+  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName3));
+
+  it = FindDescriptorInRange(descriptors.begin(), descriptors.end(),
+                             base::SysWideToUTF8(kDirectShowDeviceId4));
+  EXPECT_NE(it, descriptors.end());
+  EXPECT_EQ(it->capture_api, VideoCaptureApi::WIN_DIRECT_SHOW);
+  EXPECT_EQ(it->display_name(), base::SysWideToUTF8(kDirectShowDeviceName4));
 }
 
 }  // namespace media

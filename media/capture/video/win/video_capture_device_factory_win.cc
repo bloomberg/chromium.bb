@@ -211,19 +211,27 @@ std::string GetDeviceModelId(const std::string& device_id) {
   return id_vendor + ":" + id_product;
 }
 
-void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
-  DCHECK(device_descriptors);
-  DVLOG(1) << __func__;
-
+HRESULT EnumerateDirectShowDevices(IEnumMoniker** enum_moniker) {
   ComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
                                   IID_PPV_ARGS(&dev_enum));
   if (FAILED(hr))
-    return;
+    return hr;
+
+  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
+                                       enum_moniker, 0);
+  return hr;
+}
+
+void GetDeviceDescriptorsDirectShow(
+    VideoCaptureDeviceFactoryWin::DirectShowEnumDevicesFunc
+        direct_show_enum_devices_func,
+    Descriptors* device_descriptors) {
+  DCHECK(device_descriptors);
+  DVLOG(1) << __func__;
 
   ComPtr<IEnumMoniker> enum_moniker;
-  hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-                                       enum_moniker.GetAddressOf(), 0);
+  HRESULT hr = direct_show_enum_devices_func.Run(enum_moniker.GetAddressOf());
   // CreateClassEnumerator returns S_FALSE on some Windows OS
   // when no camera exist. Therefore the FAILED macro can't be used.
   if (hr != S_OK)
@@ -277,9 +285,25 @@ bool DescriptorsContainDeviceId(const Descriptors& descriptors,
              }) != descriptors.end();
 }
 
+// Returns true if the provided descriptors contains a non DirectShow descriptor
+// using the provided name and model
+bool DescriptorsContainNonDirectShowNameAndModel(
+    const Descriptors& descriptors,
+    const std::string& name_and_model) {
+  return std::find_if(
+             descriptors.begin(), descriptors.end(),
+             [name_and_model](const VideoCaptureDeviceDescriptor& descriptor) {
+               return descriptor.capture_api !=
+                          VideoCaptureApi::WIN_DIRECT_SHOW &&
+                      name_and_model == descriptor.GetNameAndModel();
+             }) != descriptors.end();
+}
+
 void GetDeviceDescriptorsMediaFoundation(
     VideoCaptureDeviceFactoryWin::MFEnumDeviceSourcesFunc
         mf_enum_device_sources_func,
+    VideoCaptureDeviceFactoryWin::DirectShowEnumDevicesFunc
+        direct_show_enum_devices_func,
     Descriptors* device_descriptors) {
   DVLOG(1) << " GetDeviceDescriptorsMediaFoundation";
   // Recent non-RGB (depth, IR) cameras could be marked as sensor cameras in
@@ -323,6 +347,25 @@ void GetDeviceDescriptorsMediaFoundation(
                                  << logging::SystemErrorCodeToString(hr);
       devices[i]->Release();
     }
+  }
+
+  // DirectShow virtual cameras are not supported by MediaFoundation.
+  // To overcome this, based on device name and model, we append
+  // missing DirectShow device descriptor to full descriptors list.
+  Descriptors direct_show_descriptors;
+  GetDeviceDescriptorsDirectShow(direct_show_enum_devices_func,
+                                 &direct_show_descriptors);
+  for (const auto& direct_show_descriptor : direct_show_descriptors) {
+    // DirectShow can produce two descriptors with same name and model.
+    // If those descriptors are missing from MediaFoundation, we want them both
+    // appended to the full descriptors list.
+    // Therefore, we prevent duplication by always comparing a DirectShow
+    // descriptor with a MediaFoundation one.
+    if (DescriptorsContainNonDirectShowNameAndModel(
+            *device_descriptors, direct_show_descriptor.GetNameAndModel())) {
+      continue;
+    }
+    device_descriptors->emplace_back(direct_show_descriptor);
   }
 }
 
@@ -443,6 +486,8 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
       weak_ptr_factory_(this) {
   mf_enum_device_sources_func_ =
       PlatformSupportsMediaFoundation() ? MFEnumDeviceSources : nullptr;
+  direct_show_enum_devices_func_ =
+      base::BindRepeating(&EnumerateDirectShowDevices);
   if (!PlatformSupportsMediaFoundation()) {
     use_media_foundation_ = false;
     LogVideoCaptureWinBackendUsed(
@@ -500,9 +545,11 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptors(
 
   if (use_media_foundation_) {
     GetDeviceDescriptorsMediaFoundation(mf_enum_device_sources_func_,
+                                        direct_show_enum_devices_func_,
                                         device_descriptors);
   } else {
-    GetDeviceDescriptorsDirectShow(device_descriptors);
+    GetDeviceDescriptorsDirectShow(direct_show_enum_devices_func_,
+                                   device_descriptors);
   }
 }
 
