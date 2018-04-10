@@ -188,31 +188,6 @@ static void highbd_fwd_txfm_32x64(const int16_t *src_diff, tran_low_t *coeff,
     case DCT_DCT:
       av1_fwd_txfm2d_32x64_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
       break;
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case FLIPADST_DCT:
-    case DCT_FLIPADST:
-    case FLIPADST_FLIPADST:
-    case ADST_FLIPADST:
-    case FLIPADST_ADST:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-      // TODO(sarahparker)
-      // I've deleted the 64x64 implementations that existed in lieu
-      // of adst, flipadst and identity for simplicity but will bring back
-      // in a later change. This shouldn't impact performance since
-      // DCT_DCT is the only extended type currently allowed for 64x64,
-      // as dictated by get_ext_tx_set_type in blockd.h.
-      av1_fwd_txfm2d_32x64_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
-      break;
-    case IDTX:
-      av1_fwd_txfm2d_32x64_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
-      break;
     default: assert(0); break;
   }
 }
@@ -224,31 +199,6 @@ static void highbd_fwd_txfm_64x32(const int16_t *src_diff, tran_low_t *coeff,
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
-      av1_fwd_txfm2d_64x32_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
-      break;
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case FLIPADST_DCT:
-    case DCT_FLIPADST:
-    case FLIPADST_FLIPADST:
-    case ADST_FLIPADST:
-    case FLIPADST_ADST:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-      // TODO(sarahparker)
-      // I've deleted the 64x64 implementations that existed in lieu
-      // of adst, flipadst and identity for simplicity but will bring back
-      // in a later change. This shouldn't impact performance since
-      // DCT_DCT is the only extended type currently allowed for 64x64,
-      // as dictated by get_ext_tx_set_type in blockd.h.
-      av1_fwd_txfm2d_64x32_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
-      break;
-    case IDTX:
       av1_fwd_txfm2d_64x32_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
       break;
     default: assert(0); break;
@@ -264,31 +214,6 @@ static void highbd_fwd_txfm_16x64(const int16_t *src_diff, tran_low_t *coeff,
     case DCT_DCT:
       av1_fwd_txfm2d_16x64_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
       break;
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case FLIPADST_DCT:
-    case DCT_FLIPADST:
-    case FLIPADST_FLIPADST:
-    case ADST_FLIPADST:
-    case FLIPADST_ADST:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-      // TODO(sarahparker)
-      // I've deleted the 64x64 implementations that existed in lieu
-      // of adst, flipadst and identity for simplicity but will bring back
-      // in a later change. This shouldn't impact performance since
-      // DCT_DCT is the only extended type currently allowed for 64x64,
-      // as dictated by get_ext_tx_set_type in blockd.h.
-      av1_fwd_txfm2d_16x64_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
-      break;
-    case IDTX:
-      av1_fwd_txfm2d_16x64_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
-      break;
     default: assert(0); break;
   }
 }
@@ -300,31 +225,6 @@ static void highbd_fwd_txfm_64x16(const int16_t *src_diff, tran_low_t *coeff,
   const int bd = txfm_param->bd;
   switch (tx_type) {
     case DCT_DCT:
-      av1_fwd_txfm2d_64x16_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
-      break;
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case FLIPADST_DCT:
-    case DCT_FLIPADST:
-    case FLIPADST_FLIPADST:
-    case ADST_FLIPADST:
-    case FLIPADST_ADST:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-      // TODO(sarahparker)
-      // I've deleted the 64x64 implementations that existed in lieu
-      // of adst, flipadst and identity for simplicity but will bring back
-      // in a later change. This shouldn't impact performance since
-      // DCT_DCT is the only extended type currently allowed for 64x64,
-      // as dictated by get_ext_tx_set_type in blockd.h.
-      av1_fwd_txfm2d_64x16_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
-      break;
-    case IDTX:
       av1_fwd_txfm2d_64x16_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
       break;
     default: assert(0); break;
@@ -339,31 +239,6 @@ static void highbd_fwd_txfm_64x64(const int16_t *src_diff, tran_low_t *coeff,
   switch (tx_type) {
     case DCT_DCT:
       av1_fwd_txfm2d_64x64(src_diff, dst_coeff, diff_stride, tx_type, bd);
-      break;
-    case ADST_DCT:
-    case DCT_ADST:
-    case ADST_ADST:
-    case FLIPADST_DCT:
-    case DCT_FLIPADST:
-    case FLIPADST_FLIPADST:
-    case ADST_FLIPADST:
-    case FLIPADST_ADST:
-    case V_DCT:
-    case H_DCT:
-    case V_ADST:
-    case H_ADST:
-    case V_FLIPADST:
-    case H_FLIPADST:
-      // TODO(sarahparker)
-      // I've deleted the 64x64 implementations that existed in lieu
-      // of adst, flipadst and identity for simplicity but will bring back
-      // in a later change. This shouldn't impact performance since
-      // DCT_DCT is the only extended type currently allowed for 64x64,
-      // as dictated by get_ext_tx_set_type in blockd.h.
-      av1_fwd_txfm2d_64x64_c(src_diff, dst_coeff, diff_stride, DCT_DCT, bd);
-      break;
-    case IDTX:
-      av1_fwd_txfm2d_64x64_c(src_diff, dst_coeff, diff_stride, tx_type, bd);
       break;
     default: assert(0); break;
   }
