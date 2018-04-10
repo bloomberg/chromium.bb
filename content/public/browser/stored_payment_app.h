@@ -57,6 +57,11 @@ struct CONTENT_EXPORT StoredPaymentApp {
   // A list of one or more enabled payment methods in this payment app.
   std::vector<std::string> enabled_methods;
 
+  // A flag indicates whether this app has explicitly verified payment methods,
+  // like listed as default application or supported origin in the payment
+  // methods' manifest.
+  bool has_explicitly_verified_methods = false;
+
   // A list of capabilities in this payment app.
   // |capabilities| is non-empty only if |enabled_methods| contains "basic-card"
   // for now and these |capabilities| apply only to the "basic-card" instrument,

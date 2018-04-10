@@ -109,6 +109,13 @@ void ServiceWorkerPaymentInstrument::ValidateCanMakePayment(
     return;
   }
 
+  // Do not send CanMakePayment event to payment apps that have not been
+  // explicitly verified.
+  if (!stored_payment_app_info_->has_explicitly_verified_methods) {
+    OnCanMakePayment(std::move(callback), true);
+    return;
+  }
+
   mojom::CanMakePaymentEventDataPtr event_data =
       CreateCanMakePaymentEventData();
   if (event_data.is_null()) {
