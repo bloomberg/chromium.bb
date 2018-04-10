@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_EDIT_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_EDIT_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -13,7 +13,7 @@
 // bar" space of the toolbar. Everything that's located in the white rectangle
 // is the location bar: the button on the left, the buttons on the right, the
 // omnibox textfield.
-@interface LocationBarView : UIView
+@interface LocationBarEditView : UIView
 
 // Initialize the location bar with the given frame, font, text color, and tint
 // color for omnibox.
@@ -41,28 +41,9 @@
 // Enables or disables the leading button for user interaction.
 - (void)setLeadingButtonEnabled:(BOOL)enabled;
 
-// Sets the leading button's image by resource id.
-- (void)setPlaceholderImage:(int)imageID;
-
-// Perform an animation of |leadingButton| fading in and sliding in from the
-// leading edge.
-- (void)fadeInLeadingButton;
-// Perform an animation of |leadingButton| sliding out and fading out towards
-// the leading edge.
-- (void)fadeOutLeadingButton;
-
-// Perform animations for expanding the omnibox. This animation can be seen on
-// an iPhone when the omnibox is focused. It involves sliding the leading button
-// out and fading its alpha.
-// The trailing button is faded-in in the |completionAnimator| animations.
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-                completionAnimator:(UIViewPropertyAnimator*)completionAnimator;
-
-// Perform animations for expanding the omnibox. This animation can be seen on
-// an iPhone when the omnibox is defocused. It involves sliding the leading
-// button in and fading its alpha.
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator;
+// Sets the leading button's image.
+- (void)setPlaceholderImage:(UIImage*)image;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_EDIT_VIEW_H_

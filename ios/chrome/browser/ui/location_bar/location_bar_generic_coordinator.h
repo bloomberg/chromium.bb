@@ -60,9 +60,6 @@ class WebStateList;
 // Indicates when the omnibox is the first responder.
 - (BOOL)isOmniboxFirstResponder;
 
-// Updates omnibox state, including the displayed text and the cursor position.
-- (void)updateOmniboxState;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_GENERIC_COORDINATOR_H_

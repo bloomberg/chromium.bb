@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_view.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
 
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
@@ -27,9 +27,6 @@ const CGFloat kLeadingButtonEdgeOffset = 9;
 const CGFloat kTextFieldLeadingOffsetNoImage = 16;
 // Space between the leading button and the textfield when a button is shown.
 const CGFloat kTextFieldLeadingOffsetImage = 6;
-// The default position animation is 10 pixels toward the trailing side, so
-// that's a negative leading offset.
-const LayoutOffset kPositionAnimationLeadingOffset = -10;
 }  // namespace
 
 @interface OmniboxTextFieldIOS ()
@@ -55,9 +52,9 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
 
 @end
 
-#pragma mark - LocationBarView
+#pragma mark - LocationBarEditView
 
-@interface LocationBarView ()
+@interface LocationBarEditView ()
 // Constraints the leading textfield side to the leading of |self|.
 // Active when the |leadingView| is nil or hidden.
 @property(nonatomic, strong) NSLayoutConstraint* leadingTextfieldConstraint;
@@ -70,7 +67,7 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
 @property(nonatomic, strong) ClippingTextFieldContainer* textFieldContainer;
 @end
 
-@implementation LocationBarView
+@implementation LocationBarEditView
 @synthesize textField = _textField;
 @synthesize leadingButton = _leadingButton;
 @synthesize leadingTextfieldConstraint = _leadingTextfieldConstraint;
@@ -139,7 +136,7 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
-    }
+  }
   return self;
 }
 
@@ -159,9 +156,9 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
                        constant:-kLeadingButtonEdgeOffset];
 
     NSLayoutConstraint* leadingButtonToTextField = nil;
-      leadingButtonToTextField = [self.leadingButton.trailingAnchor
-          constraintEqualToAnchor:self.textFieldContainer.leadingAnchor
-                         constant:-kTextFieldLeadingOffsetImage];
+    leadingButtonToTextField = [self.leadingButton.trailingAnchor
+        constraintEqualToAnchor:self.textFieldContainer.leadingAnchor
+                       constant:-kTextFieldLeadingOffsetImage];
 
     [NSLayoutConstraint activateConstraints:@[
       [_leadingButton.centerYAnchor
@@ -176,107 +173,8 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
   _leadingButton.enabled = enabled;
 }
 
-- (void)setPlaceholderImage:(int)imageID {
-  [self.leadingButton setImage:[self placeholderImageWithId:imageID]
-                      forState:UIControlStateNormal];
-  [self.leadingButton setTintColor:[self tintColorForLeftImageWithID:imageID]];
-
-  // TODO(crbug.com/774121): This should not be done like this; instead the
-  // responder status of the textfield should be broadcasted and observed
-  // by the mediator of location bar, that would then show/hide the
-  // leading button.
-  BOOL hidden = (!IsIPadIdiom() && [self.textField isFirstResponder]);
-  [self setLeadingButtonHidden:hidden];
-}
-
-- (void)fadeInLeadingButton {
-  self.leadingButton.alpha = 0;
-  // Instead of passing a delay into -fadeInView:, wait to call -fadeInView:.
-  // The CABasicAnimation's start and end positions are calculated immediately
-  // instead of after the animation's delay, but the omnibox's layer isn't set
-  // yet to its final state and as a result the start and end positions will not
-  // be correct.
-  dispatch_time_t delay = dispatch_time(
-      DISPATCH_TIME_NOW, ios::material::kDuration2 * NSEC_PER_SEC);
-  dispatch_after(delay, dispatch_get_main_queue(), ^(void) {
-    UIView* view = self.leadingButton;
-    LayoutOffset leadingOffset = kPositionAnimationLeadingOffset;
-    NSTimeInterval duration = ios::material::kDuration1;
-    NSTimeInterval delay = 0;
-
-    [CATransaction begin];
-    [CATransaction setDisableActions:YES];
-    [CATransaction setCompletionBlock:^{
-      [view.layer removeAnimationForKey:@"fadeIn"];
-    }];
-    view.alpha = 1.0;
-
-    // Animate the position of |view| |leadingOffset| pixels after |delay|.
-    CGRect shiftedFrame = CGRectLayoutOffset(view.frame, leadingOffset);
-    CAAnimation* shiftAnimation =
-        FrameAnimationMake(view.layer, shiftedFrame, view.frame);
-    shiftAnimation.duration = duration;
-    shiftAnimation.beginTime = delay;
-    shiftAnimation.timingFunction =
-        TimingFunction(ios::material::CurveEaseInOut);
-
-    // Animate the opacity of |view| to 1 after |delay|.
-    CAAnimation* fadeAnimation = OpacityAnimationMake(0.0, 1.0);
-    fadeAnimation.duration = duration;
-    fadeAnimation.beginTime = delay;
-    shiftAnimation.timingFunction =
-        TimingFunction(ios::material::CurveEaseInOut);
-
-    // Add group animation to layer.
-    CAAnimation* group = AnimationGroupMake(@[ shiftAnimation, fadeAnimation ]);
-    [view.layer addAnimation:group forKey:@"fadeIn"];
-
-    [CATransaction commit];
-  });
-}
-
-- (void)fadeOutLeadingButton {
-  [self setLeadingButtonHidden:NO];
-
-  UIView* leadingView = [self leadingButton];
-
-  // Move the leadingButton outside of the bounds; this constraint will be
-  // created from scratch when the button is shown.
-  self.leadingButtonLeadingConstraint.constant = leadingView.frame.size.width;
-  [UIView animateWithDuration:ios::material::kDuration2
-      delay:0
-      options:UIViewAnimationOptionCurveEaseInOut
-      animations:^{
-        // Fade out the alpha and apply the constraint change above.
-        leadingView.alpha = 0;
-        [self setNeedsLayout];
-        [self layoutIfNeeded];
-      }
-      completion:^(BOOL finished) {
-        // Restore alpha and update the hidden state.
-        leadingView.alpha = 1;
-        [self setLeadingButtonHidden:YES];
-      }];
-}
-
-- (void)addExpandOmniboxAnimations:(UIViewPropertyAnimator*)animator
-                completionAnimator:(UIViewPropertyAnimator*)completionAnimator {
-  // TODO(crbug.com/791455): Due to crbug.com/774121 |self.leadingButton| is
-  // hidden in line 151 before the animation starts. For this reason any
-  // animation we try doing on |self.leadingButton| will not be visible.
-  [self.textField addExpandOmniboxAnimations:animator
-                          completionAnimator:completionAnimator];
-}
-
-- (void)addContractOmniboxAnimations:(UIViewPropertyAnimator*)animator {
-  [self setLeadingButtonHidden:NO];
-  self.leadingButton.alpha = 0;
-  [animator addAnimations:^{
-    self.leadingButton.alpha = 1;
-    [self setLeadingButtonHidden:YES];
-    [self layoutIfNeeded];
-  }];
-  [self.textField addContractOmniboxAnimations:animator];
+- (void)setPlaceholderImage:(UIImage*)image {
+  [self.leadingButton setImage:image forState:UIControlStateNormal];
 }
 
 #pragma mark - Private methods
@@ -285,32 +183,6 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
 - (UIImage*)placeholderImageWithId:(int)imageID {
   return [NativeImage(imageID)
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-}
-
-// Returns the tint color for the left image. This is necessary because the
-// resource images are stored as templates, but in non-incognito the securtiy
-// indicator needs to have a color depending on security status.
-- (UIColor*)tintColorForLeftImageWithID:(int)imageID {
-  UIColor* tint = [UIColor whiteColor];
-  if (!self.incognito) {
-    switch (imageID) {
-      case IDR_IOS_LOCATION_BAR_HTTP:
-        tint = [UIColor darkGrayColor];
-        break;
-      case IDR_IOS_OMNIBOX_HTTPS_VALID:
-        tint = skia::UIColorFromSkColor(gfx::kGoogleGreen700);
-        break;
-      case IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING:
-        tint = skia::UIColorFromSkColor(gfx::kGoogleYellow700);
-        break;
-      case IDR_IOS_OMNIBOX_HTTPS_INVALID:
-        tint = skia::UIColorFromSkColor(gfx::kGoogleRed700);
-        break;
-      default:
-        tint = [UIColor darkGrayColor];
-    }
-  }
-  return tint;
 }
 
 @end

@@ -100,6 +100,8 @@ extern NSString* const kToolbarStackButtonIdentifier;
 extern NSString* const kToolbarShareButtonIdentifier;
 // Accessibility identifier of the omnibox button.
 extern NSString* const kToolbarOmniboxButtonIdentifier;
+// Accessibility identifier of the cancel omnibox edit button.
+extern NSString* const kToolbarCancelOmniboxEditButtonIdentifier;
 
 // The maximum number to display in the tab switcher button.
 extern NSInteger const kStackButtonMaxTabCount;

@@ -26,6 +26,9 @@
 // Focuses omnibox with fakebox as the focus event source.
 - (void)focusOmniboxFromFakebox;
 
+// Updates omnibox state, including the displayed text and the cursor position.
+- (void)updateOmniboxState;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_LEGACY_COORDINATOR_H_

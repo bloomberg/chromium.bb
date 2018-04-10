@@ -55,7 +55,7 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
 
 @end
 
-#pragma mark - LocationBarView
+#pragma mark - LocationBarEditView
 
 @interface LocationBarLegacyView ()
 // Constraints the leading textfield side to the leading of |self|.

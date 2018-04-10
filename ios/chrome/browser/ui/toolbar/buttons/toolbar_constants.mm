@@ -76,6 +76,8 @@ NSString* const kToolbarShareButtonIdentifier =
     @"kToolbarShareButtonIdentifier";
 NSString* const kToolbarOmniboxButtonIdentifier =
     @"kToolbarOmniboxButtonIdentifier";
+NSString* const kToolbarCancelOmniboxEditButtonIdentifier =
+    @"kToolbarCancelOmniboxEditButtonIdentifier";
 
 const NSInteger kStackButtonMaxTabCount = 99;
 

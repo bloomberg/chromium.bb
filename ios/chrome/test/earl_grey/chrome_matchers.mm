@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/payments/payment_request_edit_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
@@ -149,6 +150,10 @@ id<GREYMatcher> Omnibox() {
   return grey_kindOfClass([OmniboxTextFieldIOS class]);
 }
 
+id<GREYMatcher> DefocusedLocationView() {
+  return grey_kindOfClass([LocationBarSteadyView class]);
+}
+
 id<GREYMatcher> PageSecurityInfoButton() {
   return grey_accessibilityLabel(@"Page Security Info");
 }
@@ -168,6 +173,22 @@ id<GREYMatcher> OmniboxContainingText(std::string text) {
             appendText:[NSString
                            stringWithFormat:@"Omnibox contains text \"%@\"",
                                             base::SysUTF8ToNSString(text)]];
+      }];
+  return matcher;
+}
+
+id<GREYMatcher> LocationViewContainingText(std::string text) {
+  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
+      matcherWithMatchesBlock:^BOOL(LocationBarSteadyView* element) {
+        return [element.locationLabel.text
+            containsString:base::SysUTF8ToNSString(text)];
+      }
+      descriptionBlock:^void(id<GREYDescription> description) {
+        [description
+            appendText:[NSString
+                           stringWithFormat:
+                               @"LocationBarSteadyView contains text \"%@\"",
+                               base::SysUTF8ToNSString(text)]];
       }];
   return matcher;
 }
