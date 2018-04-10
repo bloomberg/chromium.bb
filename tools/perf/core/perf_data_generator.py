@@ -933,7 +933,8 @@ NON_WATERFALL_BENCHMARKS = {
     'sizes (linux)': BenchmarkMetadata('thestig@chromium.org', None, False),
     'resource_sizes': BenchmarkMetadata(
         'agrieve@chromium.org, rnephew@chromium.org, perezju@chromium.org',
-        None, False)
+        None, False),
+    'supersize_archive': BenchmarkMetadata('agrieve@chromium.org', None, False),
 }
 
 
