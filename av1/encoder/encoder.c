@@ -3830,6 +3830,7 @@ static uint8_t calculate_next_resize_scale(const AV1_COMP *cpi) {
   if (oxcf->pass == 1) return SCALE_NUMERATOR;
   uint8_t new_denom = SCALE_NUMERATOR;
 
+  if (cpi->common.seq_params.reduced_still_picture_hdr) return SCALE_NUMERATOR;
   switch (oxcf->resize_mode) {
     case RESIZE_NONE: new_denom = SCALE_NUMERATOR; break;
     case RESIZE_FIXED:
