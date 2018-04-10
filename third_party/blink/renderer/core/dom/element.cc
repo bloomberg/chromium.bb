@@ -3027,7 +3027,7 @@ void Element::focus(const FocusParams& params) {
       ToHTMLFrameOwnerElement(this)->contentDocument()->UnloadStarted())
     return;
 
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  GetDocument().UpdateStyleAndLayoutTreeForNode(this);
   if (!IsFocusable())
     return;
 

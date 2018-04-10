@@ -42,6 +42,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutTextControl TEXTAREA id='editor'",
       "reason": "subtree"
     },

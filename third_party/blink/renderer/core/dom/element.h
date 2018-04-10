@@ -605,10 +605,10 @@ class CORE_EXPORT Element : public ContainerNode {
   // layoutObjectIsFocusable(), this method may be called when layout is not up
   // to date, so it must not use the layoutObject to determine focusability.
   virtual bool SupportsFocus() const;
-  // isFocusable(), isKeyboardFocusable(), and isMouseFocusable() check
+  // IsFocusable(), IsKeyboardFocusable(), and IsMouseFocusable() check
   // whether the element can actually be focused. Callers should ensure
   // ComputedStyle is up to date;
-  // e.g. by calling Document::updateLayoutTreeIgnorePendingStylesheets().
+  // e.g. by calling Document::UpdateStyleAndLayoutTree().
   bool IsFocusable() const;
   virtual bool IsKeyboardFocusable() const;
   virtual bool IsMouseFocusable() const;

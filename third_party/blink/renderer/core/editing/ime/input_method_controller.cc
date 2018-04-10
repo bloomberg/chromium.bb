@@ -446,6 +446,9 @@ bool InputMethodController::FinishComposingText(
   // clamp the text by replacing the composition with the same value.
   const bool is_too_long = IsTextTooLongAt(composition_range_->StartPosition());
 
+  // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   const String& composing = ComposingText();
 
   // Suppress input event (if we hit the is_too_long case) and compositionend
