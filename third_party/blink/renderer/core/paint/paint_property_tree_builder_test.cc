@@ -4521,6 +4521,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipSubpixelPosition) {
     <div id='clipper'
         style='position: relative; overflow: hidden;
                width: 400px; height: 300px; left: 1.5px'>
+      <div style='width: 1000px; height: 1000px'></div>
     </div>
   )HTML");
 
@@ -5372,6 +5373,66 @@ TEST_P(PaintPropertyTreeBuilderTest,
        NoTransformPropertyForWillChangeWithoutLayer) {
   SetBodyInnerHTML("<svg id='target' style='will-change: left'></svg>");
   EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OmitOverflowClip) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .sized-container { width: 100px; height: 100px }
+      .small-content { width: 50px; height: 50px }
+      .big-content { width: 200px; height: 200px }
+    </style>
+    <div id="auto-size" style="overflow: hidden">
+      <div class="small-content"></div>
+    </div>
+    <div id="overflow-hidden-no-overflow" class="sized-container"
+        style="overflow: hidden">
+      <div class="small-content"></div>
+    </div>
+    <div id="overflow-hidden-overflow" class="sized-container"
+        style="overflow: hidden">
+      <div class="big-content"></div>
+    </div>
+    <div id="contain-paint-no-overflow" class="sized-container"
+        style="contain: paint">
+      <div class="small-content"></div>
+    </div>
+    <div id="contain-paint-overflow" class="sized-container"
+        style="contain: paint">
+      <div class="big-content"></div>
+    </div>
+    <div id="has-self-painting-descendant" class="sized-container"
+        style="overflow: hidden">
+      <div class="small-content" style="position: relative; left: 100px"></div>
+    </div>
+    <div id="overflow-auto-no-overflow" class="sized-container"
+        style="overflow: auto">
+      <div class="small-content"></div>
+    </div>
+    <div id="overflow-auto-overflow" class="sized-container"
+        style="overflow: auto">
+      <div class="big-content"></div>
+    </div>
+    <input id="button" type="button" value="button">
+  )HTML");
+  CHECK(GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
+
+  EXPECT_FALSE(OverflowClip(*PaintPropertiesForElement("auto-size")));
+  EXPECT_FALSE(
+      OverflowClip(*PaintPropertiesForElement("overflow-hidden-no-overflow")));
+  EXPECT_TRUE(
+      OverflowClip(*PaintPropertiesForElement("overflow-hidden-overflow")));
+  EXPECT_FALSE(
+      OverflowClip(*PaintPropertiesForElement("contain-paint-no-overflow")));
+  EXPECT_TRUE(
+      OverflowClip(*PaintPropertiesForElement("contain-paint-overflow")));
+  EXPECT_TRUE(
+      OverflowClip(*PaintPropertiesForElement("has-self-painting-descendant")));
+  EXPECT_FALSE(
+      OverflowClip(*PaintPropertiesForElement("overflow-auto-no-overflow")));
+  EXPECT_TRUE(
+      OverflowClip(*PaintPropertiesForElement("overflow-auto-overflow")));
+  EXPECT_TRUE(OverflowClip(*PaintPropertiesForElement("button")));
 }
 
 }  // namespace blink

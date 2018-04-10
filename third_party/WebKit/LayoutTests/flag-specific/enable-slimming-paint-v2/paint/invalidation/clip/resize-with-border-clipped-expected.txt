@@ -7,9 +7,14 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='target'",
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
           "rect": [100, 100, 200, 200],
-          "reason": "geometry"
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='container'",
+          "rect": [100, 100, 120, 120],
+          "reason": "disappeared"
         }
       ]
     }

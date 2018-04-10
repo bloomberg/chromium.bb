@@ -18,17 +18,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "VerticalScrollbar",
-          "rect": [14, 37, 15, 68],
-          "reason": "appeared"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [14, 37, 15, 68],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutListBox SELECT",
+          "object": "LayoutBlockFlow OPTION id='option'",
           "rect": [1, 37, 13, 17],
           "reason": "appeared"
         }

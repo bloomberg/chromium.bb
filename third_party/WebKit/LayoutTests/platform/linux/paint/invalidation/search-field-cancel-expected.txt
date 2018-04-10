@@ -18,31 +18,29 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutListBox SELECT",
-          "rect": [1, 35, 12, 15],
+          "object": "LayoutBlockFlow DIV",
+          "rect": [11, 47, 58, 16],
           "reason": "appeared"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [13, 35, 11, 57],
-          "reason": "appeared"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [13, 35, 11, 57],
-          "reason": "disappeared"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow OPTION id='option'",
-      "reason": "style change"
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
     },
     {
       "object": "RootInlineBox",
-      "reason": "style change"
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'some text'",
+      "reason": "appeared"
     }
   ]
 }
