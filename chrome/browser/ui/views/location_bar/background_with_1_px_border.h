@@ -26,6 +26,9 @@ class BackgroundWith1PxBorder : public views::Background {
   // The thickness of the location bar's border in DIP.
   static constexpr int kLocationBarBorderThicknessDip = 1;
 
+  // The legacy (non touch/material) border radius.
+  static constexpr int kLegacyBorderRadiusPx = 2;
+
   BackgroundWith1PxBorder(SkColor background, SkColor border);
 
   // Whether the OmniboxBackgroundBorder is a pill shape.

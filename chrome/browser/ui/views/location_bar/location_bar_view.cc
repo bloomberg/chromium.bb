@@ -577,6 +577,11 @@ void LocationBarView::Layout() {
   leading_decorations.LayoutPass3(&location_bounds, &available_width);
   trailing_decorations.LayoutPass3(&location_bounds, &available_width);
 
+  // |omnibox_view_| has an opaque background, so ensure it doesn't paint atop
+  // the rounded ends.
+  location_bounds.Intersect(GetLocalBoundsWithoutEndcaps());
+  entry_width = location_bounds.width();
+
   // Layout |ime_inline_autocomplete_view_| next to the user input.
   if (ime_inline_autocomplete_view_->visible()) {
     int width =
@@ -746,6 +751,18 @@ int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
 SkColor LocationBarView::GetBorderColor() const {
   return GetThemeProvider()->GetColor(
       ThemeProperties::COLOR_LOCATION_BAR_BORDER);
+}
+
+gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
+  const float device_scale_factor = layer()->device_scale_factor();
+  const int border_radius =
+      BackgroundWith1PxBorder::IsRounded()
+          ? height() / 2
+          : gfx::ToCeiledInt(BackgroundWith1PxBorder::kLegacyBorderRadiusPx /
+                             device_scale_factor);
+  gfx::Rect bounds_without_endcaps(GetLocalBounds());
+  bounds_without_endcaps.Inset(border_radius, 0);
+  return bounds_without_endcaps;
 }
 
 int LocationBarView::GetHorizontalEdgeThickness() const {
