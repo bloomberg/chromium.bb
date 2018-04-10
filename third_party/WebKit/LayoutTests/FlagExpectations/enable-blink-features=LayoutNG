@@ -815,7 +815,6 @@ crbug.com/591099 external/wpt/geolocation-API/PositionOptions.https.html [ Failu
 crbug.com/591099 external/wpt/html-media-capture/capture_audio_cancel-manual.html [ Failure ]
 crbug.com/591099 external/wpt/html-media-capture/capture_image_cancel-manual.html [ Failure ]
 crbug.com/591099 external/wpt/html-media-capture/capture_video_cancel-manual.html [ Failure ]
-crbug.com/591099 external/wpt/html/browsers/browsing-the-web/navigating-across-documents/navigation-consumes-user-activation.tentative.sub.html [ Crash ]
 crbug.com/591099 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/591099 external/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Pass ]
 crbug.com/591099 external/wpt/html/dom/interfaces.https.html [ Timeout ]
