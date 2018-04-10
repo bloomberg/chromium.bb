@@ -263,7 +263,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   height: 56px;
   border-radius: 28px;
 
-  background-size: 24px;
+  background-size: 30px;
   background-repeat: no-repeat;
   background-position: center center;
   background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
