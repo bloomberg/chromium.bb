@@ -2179,7 +2179,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       description='Test Puppet specs',
       doc='https://chrome-internal.googlesource.com/'
           'chromeos/chromeos-admin/+/HEAD/puppet/README.md',
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
   )
 
 
