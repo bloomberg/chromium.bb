@@ -91,8 +91,8 @@ const char kArcStatus[] = "{\"applications\":[ { "
     "\"permissions\": [\"android.permission.INTERNET\"] }],"
     "\"userEmail\":\"xxx@google.com\"}";
 const char kDroidGuardInfo[] = "{\"droid_guard_info\":42}";
-const std::string kShillFakeProfilePath = "/profile/user1/shill";
-const std::string kShillFakeUserhash = "user1";
+const char kShillFakeProfilePath[] = "/profile/user1/shill";
+const char kShillFakeUserhash[] = "user1";
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
@@ -104,13 +104,15 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_fetcher,
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
       const policy::DeviceStatusCollector::AndroidStatusFetcher&
-          android_status_fetcher)
+          android_status_fetcher,
+      bool is_enterprise_device)
       : policy::DeviceStatusCollector(local_state,
                                       provider,
                                       volume_info_fetcher,
                                       cpu_fetcher,
                                       cpu_temp_fetcher,
-                                      android_status_fetcher) {
+                                      android_status_fetcher,
+                                      is_enterprise_device) {
     // Set the baseline time to a fixed value (1 AM) to prevent test flakiness
     // due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
@@ -355,11 +357,6 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     chromeos::CrasAudioHandler::InitializeForTesting();
     chromeos::LoginState::Initialize();
-
-    RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                           base::Bind(&GetEmptyCPUStatistics),
-                           base::Bind(&GetEmptyCPUTempInfo),
-                           base::Bind(&GetEmptyAndroidStatus));
   }
 
   ~DeviceStatusCollectorTest() override {
@@ -375,6 +372,11 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   void SetUp() override {
+    RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                           base::BindRepeating(&GetEmptyCPUStatistics),
+                           base::BindRepeating(&GetEmptyCPUTempInfo),
+                           base::BindRepeating(&GetEmptyAndroidStatus));
+
     // Disable network interface reporting since it requires additional setup.
     settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces,
                                 false);
@@ -392,7 +394,7 @@ class DeviceStatusCollectorTest : public testing::Test {
                          chromeos::disks::MOUNT_CONDITION_NONE)));
   }
 
-  void RestartStatusCollector(
+  virtual void RestartStatusCollector(
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
@@ -401,7 +403,8 @@ class DeviceStatusCollectorTest : public testing::Test {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
-        cpu_temp_fetcher, android_status_fetcher));
+        cpu_temp_fetcher, android_status_fetcher,
+        true /* is_enterprise_device */));
   }
 
   void GetStatus() {
@@ -1589,6 +1592,11 @@ class DeviceStatusCollectorNetworkInterfacesTest
     : public DeviceStatusCollectorTest {
  protected:
   void SetUp() override {
+    RestartStatusCollector(base::BindRepeating(&GetEmptyVolumeInfo),
+                           base::BindRepeating(&GetEmptyCPUStatistics),
+                           base::BindRepeating(&GetEmptyCPUTempInfo),
+                           base::BindRepeating(&GetEmptyAndroidStatus));
+
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
@@ -1805,6 +1813,171 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
   GetStatus();
   VerifyNetworkReporting();
+}
+
+// Tests collecting device status for registered consumer device.
+class ConsumerDeviceStatusCollectorTest : public DeviceStatusCollectorTest {
+ protected:
+  void RestartStatusCollector(
+      const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
+      const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
+      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
+      const policy::DeviceStatusCollector::AndroidStatusFetcher&
+          android_status_fetcher) override {
+    status_collector_.reset(new TestingDeviceStatusCollector(
+        &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
+        cpu_temp_fetcher, android_status_fetcher,
+        false /* is_enterprise_device */));
+  }
+};
+
+TEST_F(ConsumerDeviceStatusCollectorTest, ReportingBootMode) {
+  fake_statistics_provider_.SetMachineStatistic(
+      chromeos::system::kDevSwitchBootKey,
+      chromeos::system::kDevSwitchBootValueVerified);
+
+  GetStatus();
+
+  EXPECT_TRUE(device_status_.has_boot_mode());
+  EXPECT_EQ("Verified", device_status_.boot_mode());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, ReportingActivityTimes) {
+  ui::IdleState test_states[] = {ui::IDLE_STATE_ACTIVE, ui::IDLE_STATE_ACTIVE,
+                                 ui::IDLE_STATE_ACTIVE};
+  status_collector_->Simulate(test_states,
+                              sizeof(test_states) / sizeof(ui::IdleState));
+
+  GetStatus();
+
+  EXPECT_EQ(1, device_status_.active_period_size());
+  EXPECT_EQ(3 * ActivePeriodMilliseconds(),
+            GetActiveMilliseconds(device_status_));
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, ReportingArcStatus) {
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo));
+
+  const AccountId account_id(AccountId::FromUserEmail("user0@gmail.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+  testing_profile_->GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled,
+                                           true);
+
+  GetStatus();
+
+  EXPECT_EQ(kArcStatus, session_status_.android_status().status_payload());
+  EXPECT_EQ(kDroidGuardInfo,
+            session_status_.android_status().droid_guard_info());
+  // In tests, GetUserDMToken returns the e-mail for easy verification.
+  EXPECT_EQ(account_id.GetUserEmail(), session_status_.user_dm_token());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, ReportingPartialVersionInfo) {
+  GetStatus();
+
+  // Should only report OS version.
+  EXPECT_TRUE(device_status_.has_os_version());
+  EXPECT_FALSE(device_status_.has_browser_version());
+  EXPECT_FALSE(device_status_.has_firmware_version());
+  EXPECT_FALSE(device_status_.has_tpm_version_info());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingVolumeInfo) {
+  std::vector<std::string> expected_mount_points;
+  std::vector<em::VolumeInfo> expected_volume_info;
+  for (const auto& mount_info :
+       DiskMountManager::GetInstance()->mount_points()) {
+    expected_mount_points.push_back(mount_info.first);
+  }
+  expected_mount_points.push_back(kExternalMountPoint);
+
+  for (const std::string& mount_point : expected_mount_points) {
+    em::VolumeInfo info;
+    info.set_volume_id(mount_point);
+    info.set_storage_total(12345678);
+    info.set_storage_free(1234567);
+    expected_volume_info.push_back(info);
+  }
+  EXPECT_FALSE(expected_volume_info.empty());
+
+  RestartStatusCollector(
+      base::BindRepeating(&GetFakeVolumeInfo, expected_volume_info),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus));
+  content::RunAllTasksUntilIdle();
+
+  GetStatus();
+
+  EXPECT_EQ(0, device_status_.volume_info_size());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingUsers) {
+  const AccountId account_id0(AccountId::FromUserEmail("user0@gmail.com"));
+  const AccountId account_id1(AccountId::FromUserEmail("user1@gmail.com"));
+  user_manager_->AddUserWithAffiliation(account_id0, true);
+  user_manager_->AddUserWithAffiliation(account_id1, true);
+
+  GetStatus();
+
+  EXPECT_EQ(0, device_status_.user_size());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingRunningKioskApp) {
+  MockPlatformVersion("1234.0.0");
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, "1235");
+  MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
+  status_collector_->set_kiosk_account(
+      std::make_unique<policy::DeviceLocalAccount>(
+          fake_kiosk_device_local_account_));
+
+  GetStatus();
+
+  EXPECT_FALSE(device_status_.has_running_kiosk_app());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingOSUpdateStatus) {
+  MockPlatformVersion("1234.0.0");
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      fake_kiosk_device_local_account_, "1234.0.0");
+
+  GetStatus();
+
+  EXPECT_FALSE(device_status_.has_os_update_status());
+}
+
+TEST_F(ConsumerDeviceStatusCollectorTest, NotReportingDeviceHardwareStatus) {
+  const std::string full_cpu_usage("cpu  500 0 500 0");
+
+  std::vector<em::CPUTempInfo> expected_temp_info;
+  for (int i = 0; i < 5; ++i) {
+    em::CPUTempInfo info;
+    info.set_cpu_temp(100);
+    info.set_cpu_label("Core");
+    expected_temp_info.push_back(info);
+  }
+
+  status_collector_->RefreshSampleResourceUsage();
+
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetFakeCPUStatistics, full_cpu_usage),
+      base::BindRepeating(&GetFakeCPUTempInfo, expected_temp_info),
+      base::BindRepeating(&GetEmptyAndroidStatus));
+  content::RunAllTasksUntilIdle();
+
+  GetStatus();
+
+  EXPECT_FALSE(device_status_.has_sound_volume());
+  EXPECT_EQ(0, device_status_.cpu_utilization_pct().size());
+  EXPECT_EQ(0, device_status_.cpu_temp_info_size());
+  EXPECT_EQ(0, device_status_.system_ram_free().size());
+  EXPECT_FALSE(device_status_.has_system_ram_total());
 }
 
 }  // namespace policy

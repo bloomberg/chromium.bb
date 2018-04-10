@@ -21,7 +21,10 @@
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
+#include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -29,6 +32,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/system/statistics_provider.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
@@ -91,6 +95,7 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
                                     PolicyEnforcement::kServerCheckRequired ||
                                 !policy_refresh_timeout.is_zero()),
       enforcement_type_(enforcement_type),
+      task_runner_(task_runner),
       account_id_(account_id),
       fatal_error_callback_(std::move(fatal_error_callback)) {
   time_init_started_ = base::Time::Now();
@@ -197,6 +202,25 @@ void UserCloudPolicyManagerChromeOS::Connect(
 
   app_install_event_log_uploader_ =
       std::make_unique<AppInstallEventLogUploader>(client());
+
+  // If non-enterprise device is registered with DMServer and has User Policy
+  // applied, it should upload device status to the server. For devices in
+  // enterprise mode status upload is controlled by
+  // DeviceCloudPolicyManagerChromeOS.
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (connector->GetDeviceMode() == DEVICE_MODE_CONSUMER) {
+    status_uploader_.reset(new StatusUploader(
+        client(),
+        std::make_unique<DeviceStatusCollector>(
+            local_state_, chromeos::system::StatisticsProvider::GetInstance(),
+            DeviceStatusCollector::VolumeInfoFetcher(),
+            DeviceStatusCollector::CPUStatisticsFetcher(),
+            DeviceStatusCollector::CPUTempFetcher(),
+            DeviceStatusCollector::AndroidStatusFetcher(),
+            false /* is_enterprise_device */),
+        task_runner_));
+  }
 }
 
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
@@ -262,6 +286,7 @@ void UserCloudPolicyManagerChromeOS::Shutdown() {
   if (service())
     service()->RemoveObserver(this);
   token_fetcher_.reset();
+  status_uploader_.reset();
   external_data_manager_->Disconnect();
   CloudPolicyManager::Shutdown();
 }

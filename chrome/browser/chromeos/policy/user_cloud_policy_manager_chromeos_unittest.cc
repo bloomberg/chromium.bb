@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
@@ -31,6 +32,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -126,6 +128,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         user_manager_enabler_(base::WrapUnique(user_manager_)) {}
 
   void SetUp() override {
+    chromeos::DBusThreadManager::Initialize();
+
     // The initialization path that blocks on the initial policy fetch requires
     // a signin Profile to use its URLRequestContext.
     profile_manager_.reset(
@@ -194,6 +198,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     signin_profile_ = NULL;
     profile_ = NULL;
     profile_manager_->DeleteTestingProfile(chrome::kInitialProfile);
+
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   void MakeManagerWithEmptyStore(const base::TimeDelta& fetch_timeout,
@@ -792,6 +798,59 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, TestHasAppInstallEventLogUploader) {
   ASSERT_NO_FATAL_FAILURE(MakeManagerWithEmptyStore(
       base::TimeDelta(), PolicyEnforcement::kPolicyRequired));
   EXPECT_TRUE(manager_->GetAppInstallEventLogUploader());
+}
+
+// Tests uploading status to DMServer. Install attributes for testing need to be
+// set before BrowserPolicyConnectorChromeOS is created, therefore
+// initialization of test environment is done at the begining of the test
+// instead of SetUp method.
+class StatusUploadingTest : public UserCloudPolicyManagerChromeOSTest {
+ protected:
+  StatusUploadingTest() = default;
+  ~StatusUploadingTest() override = default;
+
+  void SetUp() override{};
+  void TearDown() override{};
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StatusUploadingTest);
+};
+
+TEST_F(StatusUploadingTest, UnownedDeviceShouldNotUploadStatus) {
+  auto install_attributes =
+      chromeos::ScopedStubInstallAttributes::CreateUnset();
+  UserCloudPolicyManagerChromeOSTest::SetUp();
+
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_EQ(nullptr, manager_->GetStatusUploader());
+
+  UserCloudPolicyManagerChromeOSTest::TearDown();
+}
+
+TEST_F(StatusUploadingTest, ManagedDeviceShouldNotUploadStatus) {
+  auto install_attributes =
+      chromeos::ScopedStubInstallAttributes::CreateCloudManaged("domain.com",
+                                                                "device-id");
+  UserCloudPolicyManagerChromeOSTest::SetUp();
+
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_EQ(nullptr, manager_->GetStatusUploader());
+
+  UserCloudPolicyManagerChromeOSTest::TearDown();
+}
+
+TEST_F(StatusUploadingTest, RegisteredConsumerDeviceShouldUploadStatus) {
+  auto install_attributes =
+      chromeos::ScopedStubInstallAttributes::CreateConsumerOwned();
+  UserCloudPolicyManagerChromeOSTest::SetUp();
+
+  ASSERT_NO_FATAL_FAILURE(MakeManagerWithPreloadedStore(base::TimeDelta()));
+  EXPECT_TRUE(manager_->core()->client()->is_registered());
+  EXPECT_NE(nullptr, manager_->GetStatusUploader());
+
+  UserCloudPolicyManagerChromeOSTest::TearDown();
 }
 
 }  // namespace policy
