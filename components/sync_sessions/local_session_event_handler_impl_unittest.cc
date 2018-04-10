@@ -15,6 +15,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "components/sync_sessions/synced_session_tracker.h"
+#include "components/sync_sessions/test_matchers.h"
 #include "components/sync_sessions/test_synced_window_delegates_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +29,7 @@ using testing::ByMove;
 using testing::Eq;
 using testing::IsEmpty;
 using testing::NiceMock;
+using testing::Pointee;
 using testing::Return;
 using testing::SizeIs;
 using testing::StrictMock;
@@ -49,80 +51,11 @@ const base::Time kTime4 = base::Time::FromInternalValue(140);
 const base::Time kTime5 = base::Time::FromInternalValue(150);
 const base::Time kTime6 = base::Time::FromInternalValue(190);
 
-const SessionID kWindowId1 = SessionID::FromSerializedValue(1000001);
-const SessionID kWindowId2 = SessionID::FromSerializedValue(1000002);
-const SessionID kTabId1 = SessionID::FromSerializedValue(1000003);
-const SessionID kTabId2 = SessionID::FromSerializedValue(1000004);
-const SessionID kTabId3 = SessionID::FromSerializedValue(1000005);
-
-MATCHER_P3(MatchesHeader, session_tag, num_windows, num_tabs, "") {
-  if (arg == nullptr) {
-    *result_listener << "which is null";
-    return false;
-  }
-
-  const sync_pb::SessionSpecifics& specifics = *arg;
-  if (!specifics.has_header()) {
-    *result_listener << "which is not a header entity";
-    return false;
-  }
-  if (specifics.session_tag() != session_tag) {
-    *result_listener << "which contains an unexpected session tag";
-    return false;
-  }
-  if (specifics.header().window_size() != num_windows) {
-    *result_listener << "which contains an unexpected number of windows: "
-                     << specifics.header().window_size();
-    return false;
-  }
-  int tab_count = 0;
-  for (auto& window : specifics.header().window()) {
-    tab_count += window.tab_size();
-  }
-  if (tab_count != num_tabs) {
-    *result_listener << "which contains an unexpected number of tabs: "
-                     << tab_count;
-    return false;
-  }
-  return true;
-}
-
-MATCHER_P4(MatchesTab, session_tag, window_id, tab_id, urls, "") {
-  if (arg == nullptr) {
-    *result_listener << "which is null";
-    return false;
-  }
-
-  const sync_pb::SessionSpecifics& specifics = *arg;
-
-  if (!specifics.has_tab()) {
-    *result_listener << "which is not a tab entity";
-    return false;
-  }
-  if (specifics.session_tag() != session_tag) {
-    *result_listener << "which contains an unexpected session tag";
-    return false;
-  }
-  if (specifics.tab().window_id() != window_id.id()) {
-    *result_listener << "which contains an unexpected window ID";
-    return false;
-  }
-  if (specifics.tab().tab_id() != tab_id.id()) {
-    *result_listener << "which contains an unexpected tab ID";
-    return false;
-  }
-  if (specifics.tab().navigation_size() != static_cast<int>(urls.size())) {
-    *result_listener << "which contains an unexpected number of windows";
-    return false;
-  }
-  for (int i = 0; i < specifics.tab().navigation_size(); ++i) {
-    if (specifics.tab().navigation(i).virtual_url() != urls.at(i)) {
-      *result_listener << "which contains an unexpected navigation URL " << i;
-      return false;
-    }
-  }
-  return true;
-}
+const int kWindowId1 = 1000001;
+const int kWindowId2 = 1000002;
+const int kTabId1 = 1000003;
+const int kTabId2 = 1000004;
+const int kTabId3 = 1000005;
 
 class MockWriteBatch : public LocalSessionEventHandlerImpl::WriteBatch {
  public:
@@ -181,24 +114,27 @@ class LocalSessionEventHandlerImplTest : public testing::Test {
     InitHandler(&initial_batch);
   }
 
-  TestSyncedWindowDelegate* AddWindow(
-      SessionID window_id = SessionID::NewUnique()) {
+  TestSyncedWindowDelegate* AddWindow(int window_id) {
     return window_getter_.AddWindow(
-        sync_pb::SessionWindow_BrowserType_TYPE_TABBED, window_id);
+        sync_pb::SessionWindow_BrowserType_TYPE_TABBED,
+        SessionID::FromSerializedValue(window_id));
   }
 
-  TestSyncedTabDelegate* AddTab(SessionID window_id,
+  TestSyncedTabDelegate* AddTab(int window_id,
                                 const std::string& url,
-                                SessionID tab_id = SessionID::NewUnique()) {
-    TestSyncedTabDelegate* tab = window_getter_.AddTab(window_id, tab_id);
+                                int tab_id = SessionID::NewUnique().id()) {
+    TestSyncedTabDelegate* tab =
+        window_getter_.AddTab(SessionID::FromSerializedValue(window_id),
+                              SessionID::FromSerializedValue(tab_id));
     tab->Navigate(url, base::Time::Now());
     return tab;
   }
 
-  TestSyncedTabDelegate* AddTabWithTime(SessionID window_id,
+  TestSyncedTabDelegate* AddTabWithTime(int window_id,
                                         const std::string& url,
                                         base::Time time = base::Time::Now()) {
-    TestSyncedTabDelegate* tab = window_getter_.AddTab(window_id);
+    TestSyncedTabDelegate* tab =
+        window_getter_.AddTab(SessionID::FromSerializedValue(window_id));
     tab->Navigate(url, time);
     return tab;
   }
@@ -215,8 +151,8 @@ class LocalSessionEventHandlerImplTest : public testing::Test {
 // information.
 TEST_F(LocalSessionEventHandlerImplTest, GetTabSpecificsFromDelegate) {
   // Create a tab with three valid entries.
-  TestSyncedTabDelegate* tab =
-      AddTabWithTime(AddWindow()->GetSessionId(), kFoo1, kTime1);
+  AddWindow(kWindowId1);
+  TestSyncedTabDelegate* tab = AddTabWithTime(kWindowId1, kFoo1, kTime1);
   tab->Navigate(kBar1, kTime2);
   tab->Navigate(kBaz1, kTime3);
   InitHandler();
@@ -253,7 +189,8 @@ TEST_F(LocalSessionEventHandlerImplTest, GetTabSpecificsFromDelegate) {
 // stack gets trucated to +/- 6 entries.
 TEST_F(LocalSessionEventHandlerImplTest,
        SetSessionTabFromDelegateNavigationIndex) {
-  TestSyncedTabDelegate* tab = AddTab(AddWindow()->GetSessionId(), kFoo1);
+  AddWindow(kWindowId1);
+  TestSyncedTabDelegate* tab = AddTab(kWindowId1, kFoo1);
   const int kNavs = 10;
   for (int i = 1; i < kNavs; ++i) {
     tab->Navigate(base::StringPrintf("http://foo%i", i));
@@ -276,8 +213,8 @@ TEST_F(LocalSessionEventHandlerImplTest,
 // stack if the current navigation is invalid.
 TEST_F(LocalSessionEventHandlerImplTest,
        SetSessionTabFromDelegateCurrentInvalid) {
-  TestSyncedTabDelegate* tab =
-      AddTabWithTime(AddWindow()->GetSessionId(), kFoo1, kTime0);
+  AddWindow(kWindowId1);
+  TestSyncedTabDelegate* tab = AddTabWithTime(kWindowId1, kFoo1, kTime0);
   tab->Navigate(std::string(""), kTime1);
   tab->Navigate(kBar1, kTime2);
   tab->Navigate(kBar2, kTime3);
@@ -295,8 +232,8 @@ TEST_F(LocalSessionEventHandlerImplTest,
 // Tests that for supervised users blocked navigations are recorded and marked
 // as such, while regular navigations are marked as allowed.
 TEST_F(LocalSessionEventHandlerImplTest, BlockedNavigations) {
-  TestSyncedTabDelegate* tab =
-      AddTabWithTime(AddWindow()->GetSessionId(), kFoo1, kTime1);
+  AddWindow(kWindowId1);
+  TestSyncedTabDelegate* tab = AddTabWithTime(kWindowId1, kFoo1, kTime1);
 
   auto entry2 = std::make_unique<sessions::SerializedNavigationEntry>();
   GURL url2("http://blocked.com/foo");
@@ -354,8 +291,10 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabsIfEmpty) {
   EXPECT_CALL(mock_delegate_, OnFaviconVisited(_, _)).Times(0);
 
   StrictMock<MockWriteBatch> mock_batch;
-  EXPECT_CALL(mock_batch, DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/0,
-                                                 /*num_tabs=*/0)));
+  EXPECT_CALL(
+      mock_batch,
+      DoUpdate(Pointee(MatchesHeader(kSessionTag, /*window_ids=*/IsEmpty(),
+                                     /*tabs_ids=*/IsEmpty()))));
 
   InitHandler(&mock_batch);
 }
@@ -378,15 +317,19 @@ TEST_F(LocalSessionEventHandlerImplTest, AssociateWindowsAndTabs) {
   EXPECT_CALL(mock_delegate_, OnFaviconVisited(GURL(kBaz1), _));
 
   StrictMock<MockWriteBatch> mock_batch;
-  EXPECT_CALL(mock_batch, DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/2,
-                                                 /*num_tabs=*/3)));
-  EXPECT_CALL(mock_batch, DoAdd(MatchesTab(kSessionTag, kWindowId1, kTabId1,
-                                           std::vector<std::string>{kFoo1})));
-  EXPECT_CALL(mock_batch, DoAdd(MatchesTab(kSessionTag, kWindowId2, kTabId2,
-                                           std::vector<std::string>{kBar1})));
+  EXPECT_CALL(
+      mock_batch,
+      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
+                                     {kTabId1, kTabId2, kTabId3}))));
   EXPECT_CALL(mock_batch,
-              DoAdd(MatchesTab(kSessionTag, kWindowId2, kTabId3,
-                               std::vector<std::string>{kBar2, kBaz1})));
+              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
+                                       /*urls=*/{kFoo1}))));
+  EXPECT_CALL(mock_batch,
+              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId2,
+                                       /*urls=*/{kBar1}))));
+  EXPECT_CALL(mock_batch,
+              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId3,
+                                       /*urls=*/{kBar2, kBaz1}))));
 
   InitHandler(&mock_batch);
 }
@@ -400,12 +343,12 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewNavigation) {
   auto update_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   // Note that the header is reported again, although it hasn't changed. This is
   // OK because sync will avoid updating an entity with identical content.
+  EXPECT_CALL(
+      *update_mock_batch,
+      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
   EXPECT_CALL(*update_mock_batch,
-              DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/1,
-                                     /*num_tabs=*/1)));
-  EXPECT_CALL(*update_mock_batch,
-              DoUpdate(MatchesTab(kSessionTag, kWindowId1, kTabId1,
-                                  std::vector<std::string>{kFoo1, kBar1})));
+              DoUpdate(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId1,
+                                          /*urls=*/{kFoo1, kBar1}))));
   EXPECT_CALL(*update_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
@@ -425,18 +368,18 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewTab) {
   // for tab update). During the first update, however, the tab is not syncable
   // and is hence skipped.
   auto tab_create_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
-  EXPECT_CALL(*tab_create_mock_batch,
-              DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/1,
-                                     /*num_tabs=*/1)));
+  EXPECT_CALL(
+      *tab_create_mock_batch,
+      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1}, {kTabId1}))));
   EXPECT_CALL(*tab_create_mock_batch, Commit());
 
   auto navigation_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   EXPECT_CALL(*navigation_mock_batch,
-              DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/1,
-                                     /*num_tabs=*/2)));
+              DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1},
+                                             {kTabId1, kTabId2}))));
   EXPECT_CALL(*navigation_mock_batch,
-              DoAdd(MatchesTab(kSessionTag, kWindowId1, kTabId2,
-                               std::vector<std::string>{kBar1})));
+              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId1, kTabId2,
+                                       /*urls=*/{kBar1}))));
   EXPECT_CALL(*navigation_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())
@@ -459,17 +402,18 @@ TEST_F(LocalSessionEventHandlerImplTest, PropagateNewWindow) {
   // the window is not syncable and is hence skipped.
   auto tab_create_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
   EXPECT_CALL(*tab_create_mock_batch,
-              DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/1,
-                                     /*num_tabs=*/2)));
+              DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1},
+                                             {kTabId1, kTabId2}))));
   EXPECT_CALL(*tab_create_mock_batch, Commit());
 
   auto navigation_mock_batch = std::make_unique<StrictMock<MockWriteBatch>>();
+  EXPECT_CALL(
+      *navigation_mock_batch,
+      DoUpdate(Pointee(MatchesHeader(kSessionTag, {kWindowId1, kWindowId2},
+                                     {kTabId1, kTabId2, kTabId3}))));
   EXPECT_CALL(*navigation_mock_batch,
-              DoUpdate(MatchesHeader(kSessionTag, /*num_windows=*/2,
-                                     /*num_tabs=*/3)));
-  EXPECT_CALL(*navigation_mock_batch,
-              DoAdd(MatchesTab(kSessionTag, kWindowId2, kTabId3,
-                               std::vector<std::string>{kBaz1})));
+              DoAdd(Pointee(MatchesTab(kSessionTag, kWindowId2, kTabId3,
+                                       /*urls=*/{kBaz1}))));
   EXPECT_CALL(*navigation_mock_batch, Commit());
 
   EXPECT_CALL(mock_delegate_, CreateLocalSessionWriteBatch())

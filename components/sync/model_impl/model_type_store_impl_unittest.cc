@@ -15,6 +15,7 @@
 #include "components/sync/model/model_error.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/test/test_matchers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,13 +37,6 @@ sync_pb::EntityMetadata CreateEntityMetadata(const std::string& value) {
   sync_pb::EntityMetadata metadata;
   metadata.set_client_tag_hash(value);
   return metadata;
-}
-
-MATCHER(IsEmptyMetadataBatch, "") {
-  return arg != nullptr &&
-         sync_pb::ModelTypeState().SerializeAsString() ==
-             arg->GetModelTypeState().SerializeAsString() &&
-         arg->TakeAllMetadata().empty();
 }
 
 }  // namespace
