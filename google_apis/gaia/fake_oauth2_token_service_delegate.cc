@@ -34,11 +34,11 @@ bool FakeOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
   return !GetRefreshToken(account_id).empty();
 }
 
-bool FakeOAuth2TokenServiceDelegate::RefreshTokenHasError(
+GoogleServiceAuthError FakeOAuth2TokenServiceDelegate::GetAuthError(
     const std::string& account_id) const {
   auto it = refresh_tokens_.find(account_id);
-  // TODO(rogerta): should we distinguish between transient and persistent?
-  return it == refresh_tokens_.end() ? false : IsError(it->second->error);
+  return (it == refresh_tokens_.end()) ? GoogleServiceAuthError::AuthErrorNone()
+                                       : it->second->error;
 }
 
 std::string FakeOAuth2TokenServiceDelegate::GetRefreshToken(
@@ -104,7 +104,11 @@ FakeOAuth2TokenServiceDelegate::GetRequestContext() const {
 void FakeOAuth2TokenServiceDelegate::UpdateAuthError(
     const std::string& account_id,
     const GoogleServiceAuthError& error) {
+  if (GetAuthError(account_id) == error)
+    return;
+
   auto it = refresh_tokens_.find(account_id);
   DCHECK(it != refresh_tokens_.end());
   it->second->error = error;
+  FireAuthErrorChanged(account_id, error);
 }

@@ -33,7 +33,6 @@
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "google_apis/gaia/fake_oauth2_token_service_delegate.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -228,10 +227,6 @@ class AccountReconcilorTest : public ::testing::Test {
 
   FakeSigninManagerForTesting* signin_manager() { return &signin_manager_; }
   FakeProfileOAuth2TokenService* token_service() { return &token_service_; }
-  FakeOAuth2TokenServiceDelegate* token_service_delegate() {
-    return static_cast<FakeOAuth2TokenServiceDelegate*>(
-        token_service_.GetDelegate());
-  }
   DiceTestSigninClient* test_signin_client() { return &test_signin_client_; }
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   FakeGaiaCookieManagerService* cookie_manager_service() {
@@ -660,9 +655,8 @@ class AccountReconcilorTestDice
       std::string account_id =
           PickAccountIdForAccount(token.gaia_id, token.email);
       EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
-      EXPECT_EQ(
-          token.has_error,
-          token_service()->GetDelegate()->RefreshTokenHasError(account_id));
+      EXPECT_EQ(token.has_error,
+                token_service()->RefreshTokenHasError(account_id));
       if (token.is_authenticated) {
         EXPECT_EQ(account_id, signin_manager()->GetAuthenticatedAccountId());
         authenticated_account_found = true;
@@ -732,7 +726,7 @@ TEST_P(AccountReconcilorTestDice, TableRowTest) {
     else
       token_service()->UpdateCredentials(account_id, "refresh_token");
     if (token.has_error) {
-      token_service_delegate()->UpdateAuthError(
+      token_service()->UpdateAuthErrorForTesting(
           account_id, GoogleServiceAuthError(
                           GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
     }
@@ -1495,6 +1489,60 @@ TEST_F(AccountReconcilorTest, StartReconcileAddToCookie) {
               testing::ContainerEq(expected_counts));
 }
 
+TEST_F(AccountReconcilorTest, AuthErrorTriggersListAccount) {
+  class TestGaiaCookieObserver : public GaiaCookieManagerService::Observer {
+   public:
+    void OnGaiaAccountsInCookieUpdated(
+        const std::vector<gaia::ListedAccount>& accounts,
+        const std::vector<gaia::ListedAccount>& signed_out_accounts,
+        const GoogleServiceAuthError& error) override {
+      cookies_updated_ = true;
+    }
+
+    bool cookies_updated_ = false;
+  };
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  signin::AccountConsistencyMethod account_consistency =
+      signin::AccountConsistencyMethod::kDice;
+  SetAccountConsistency(account_consistency);
+#else
+  signin::AccountConsistencyMethod account_consistency =
+      signin::AccountConsistencyMethod::kMirror;
+  SetAccountConsistency(account_consistency);
+#endif
+
+  // Add one account to Chrome and instantiate the reconcilor.
+  const std::string account_id =
+      ConnectProfileToAccount("12345", "user@gmail.com");
+  token_service()->UpdateCredentials(account_id, "refresh_token");
+  TestGaiaCookieObserver observer;
+  cookie_manager_service()->AddObserver(&observer);
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(reconcilor->is_reconcile_started_);
+  cookie_manager_service()->SetListAccountsResponseOneAccount("user@gmail.com",
+                                                              "12345");
+  if (account_consistency == signin::AccountConsistencyMethod::kDice) {
+    EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction())
+        .Times(1);
+  }
+
+  // Set an authentication error.
+  ASSERT_FALSE(observer.cookies_updated_);
+  token_service()->UpdateAuthErrorForTesting(
+      account_id, GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                      GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                          CREDENTIALS_REJECTED_BY_SERVER));
+  base::RunLoop().RunUntilIdle();
+
+  // Check that a call to ListAccount was triggered.
+  EXPECT_TRUE(observer.cookies_updated_);
+  testing::Mock::VerifyAndClearExpectations(GetMockReconcilor());
+
+  cookie_manager_service()->RemoveObserver(&observer);
+}
+
 #if !defined(OS_CHROMEOS)
 // This test does not run on ChromeOS because it calls
 // FakeSigninManagerForTesting::SignOut() which doesn't exist for ChromeOS.
@@ -1846,7 +1894,7 @@ TEST_F(AccountReconcilorTest, NoLoopWithBadPrimary) {
 
   // Now that we've tried once, the token service knows that the primary
   // account has an auth error.
-  token_service_delegate()->UpdateAuthError(account_id1, error);
+  token_service()->UpdateAuthErrorForTesting(account_id1, error);
 
   // A second attempt to reconcile should be a noop.
   reconcilor->StartReconcile();
@@ -1865,7 +1913,7 @@ TEST_F(AccountReconcilorTest, WontMergeAccountsWithError) {
   token_service()->UpdateCredentials(account_id2, "refresh_token");
 
   // Mark the secondary account in auth error state.
-  token_service_delegate()->UpdateAuthError(
+  token_service()->UpdateAuthErrorForTesting(
       account_id2,
       GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
 

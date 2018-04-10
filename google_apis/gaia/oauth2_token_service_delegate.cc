@@ -51,11 +51,6 @@ void OAuth2TokenServiceDelegate::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-// static
-bool OAuth2TokenServiceDelegate::IsError(const GoogleServiceAuthError& error) {
-  return error.IsPersistentError();
-}
-
 void OAuth2TokenServiceDelegate::StartBatchChanges() {
   ++batch_change_depth_;
   if (batch_change_depth_ == 1) {
@@ -90,14 +85,21 @@ void OAuth2TokenServiceDelegate::FireRefreshTokensLoaded() {
     observer.OnRefreshTokensLoaded();
 }
 
+void OAuth2TokenServiceDelegate::FireAuthErrorChanged(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  for (auto& observer : observer_list_)
+    observer.OnAuthErrorChanged(account_id, error);
+}
+
 net::URLRequestContextGetter* OAuth2TokenServiceDelegate::GetRequestContext()
     const {
   return nullptr;
 }
 
-bool OAuth2TokenServiceDelegate::RefreshTokenHasError(
+GoogleServiceAuthError OAuth2TokenServiceDelegate::GetAuthError(
     const std::string& account_id) const {
-  return false;
+  return GoogleServiceAuthError::AuthErrorNone();
 }
 
 std::vector<std::string> OAuth2TokenServiceDelegate::GetAccounts() {

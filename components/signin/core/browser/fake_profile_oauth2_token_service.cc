@@ -80,6 +80,12 @@ void FakeProfileOAuth2TokenService::IssueTokenForAllPendingRequests(
                    expiration);
 }
 
+void FakeProfileOAuth2TokenService::UpdateAuthErrorForTesting(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  ProfileOAuth2TokenService::UpdateAuthError(account_id, error);
+}
+
 void FakeProfileOAuth2TokenService::CompleteRequests(
     const std::string& account_id,
     bool all_scopes,

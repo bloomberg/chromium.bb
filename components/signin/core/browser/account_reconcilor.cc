@@ -262,6 +262,20 @@ void AccountReconcilor::OnRefreshTokensLoaded() {
   StartReconcile();
 }
 
+void AccountReconcilor::OnAuthErrorChanged(
+    const std::string& account_id,
+    const GoogleServiceAuthError& error) {
+  // Gaia cookies may be invalidated server-side and the client does not get any
+  // notification when this happens.
+  // Gaia cookies derived from refresh tokens are always invalidated server-side
+  // when the tokens are revoked. Trigger a ListAccounts to Gaia when this
+  // happens to make sure that the cookies accounts are up-to-date.
+  // This should cover well the Mirror and Desktop Identity Consistency cases as
+  // the cookies are always bound to the refresh tokens in these cases.
+  if (error != GoogleServiceAuthError::AuthErrorNone())
+    cookie_manager_service_->TriggerListAccounts(kSource);
+}
+
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
   reconcile_is_noop_ = false;
   if (!delegate_->IsAccountConsistencyEnforced()) {

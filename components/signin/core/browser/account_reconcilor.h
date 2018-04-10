@@ -149,6 +149,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopWithDots);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, AuthErrorTriggersListAccount);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            SignoutAfterErrorDoesNotRecordUma);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
@@ -232,6 +233,8 @@ class AccountReconcilor : public KeyedService,
   // Overriden from OAuth2TokenService::Observer.
   void OnEndBatchChanges() override;
   void OnRefreshTokensLoaded() override;
+  void OnAuthErrorChanged(const std::string& account_id,
+                          const GoogleServiceAuthError& error) override;
 
   // Lock related methods.
   void IncrementLockCount();

@@ -574,7 +574,14 @@ bool OAuth2TokenService::RefreshTokenIsAvailable(
 
 bool OAuth2TokenService::RefreshTokenHasError(
     const std::string& account_id) const {
-  return delegate_->RefreshTokenHasError(account_id);
+  return GetAuthError(account_id) != GoogleServiceAuthError::AuthErrorNone();
+}
+
+GoogleServiceAuthError OAuth2TokenService::GetAuthError(
+    const std::string& account_id) const {
+  GoogleServiceAuthError error = delegate_->GetAuthError(account_id);
+  DCHECK(!error.IsTransientError());
+  return error;
 }
 
 void OAuth2TokenService::RevokeAllCredentials() {

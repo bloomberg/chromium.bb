@@ -35,7 +35,8 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   void Shutdown() override;
 
   bool RefreshTokenIsAvailable(const std::string& account_id) const override;
-  bool RefreshTokenHasError(const std::string& account_id) const override;
+  GoogleServiceAuthError GetAuthError(
+      const std::string& account_id) const override;
   void UpdateAuthError(const std::string& account_id,
                        const GoogleServiceAuthError& error) override;
 
