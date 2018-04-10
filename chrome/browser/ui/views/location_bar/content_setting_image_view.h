@@ -81,6 +81,8 @@ class ContentSettingImageView : public IconLabelBubbleView {
   bool ShowBubble(const ui::Event& event) override;
   bool IsBubbleShowing() const override;
 
+  ContentSettingImageModel::ImageType GetTypeForTesting() const;
+
  private:
   // The total animation time, including open and close as well as an
   // intervening "stay open" period.

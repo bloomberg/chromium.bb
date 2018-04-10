@@ -13,6 +13,10 @@
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/views/view.h"
 
+namespace {
+class HostedAppNonClientFrameViewAshTest;
+}
+
 class BrowserView;
 class HostedAppMenuButton;
 
@@ -43,7 +47,7 @@ class HostedAppButtonContainer : public views::View,
   void StartTitlebarAnimation(base::TimeDelta origin_text_slide_duration);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
+  friend class HostedAppNonClientFrameViewAshTest;
 
   class ContentSettingsContainer;
 

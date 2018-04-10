@@ -214,6 +214,11 @@ bool ContentSettingImageView::IsBubbleShowing() const {
   return bubble_view_ != nullptr;
 }
 
+ContentSettingImageModel::ImageType ContentSettingImageView::GetTypeForTesting()
+    const {
+  return content_setting_image_model_->image_type();
+}
+
 SkColor ContentSettingImageView::GetInkDropBaseColor() const {
   return icon_color_ ? icon_color_.value()
                      : IconLabelBubbleView::GetInkDropBaseColor();
