@@ -1,356 +1,323 @@
 #include "av1/encoder/x86/av1_txfm1d_sse4.h"
 
 void av1_fdct32_new_sse4_1(const __m128i *input, __m128i *output,
-                           const int8_t cos_bit, const int8_t *stage_range) {
-  const int txfm_size = 32;
-  const int num_per_128 = 4;
-  const int32_t *cospi;
+                           int8_t cos_bit) {
   __m128i buf0[32];
   __m128i buf1[32];
-  int col_num = txfm_size / num_per_128;
-  int col;
-  (void)stage_range;
-  for (col = 0; col < col_num; col++) {
-    // stage 0;
-    int32_t stage_idx = 0;
-    int j;
-    for (j = 0; j < 32; ++j) {
-      buf0[j] = input[j * col_num + col];
-    }
+  const int32_t *cospi;
+  // stage 0
+  // stage 1
+  buf1[0] = _mm_add_epi32(input[0], input[31]);
+  buf1[31] = _mm_sub_epi32(input[0], input[31]);
+  buf1[1] = _mm_add_epi32(input[1], input[30]);
+  buf1[30] = _mm_sub_epi32(input[1], input[30]);
+  buf1[2] = _mm_add_epi32(input[2], input[29]);
+  buf1[29] = _mm_sub_epi32(input[2], input[29]);
+  buf1[3] = _mm_add_epi32(input[3], input[28]);
+  buf1[28] = _mm_sub_epi32(input[3], input[28]);
+  buf1[4] = _mm_add_epi32(input[4], input[27]);
+  buf1[27] = _mm_sub_epi32(input[4], input[27]);
+  buf1[5] = _mm_add_epi32(input[5], input[26]);
+  buf1[26] = _mm_sub_epi32(input[5], input[26]);
+  buf1[6] = _mm_add_epi32(input[6], input[25]);
+  buf1[25] = _mm_sub_epi32(input[6], input[25]);
+  buf1[7] = _mm_add_epi32(input[7], input[24]);
+  buf1[24] = _mm_sub_epi32(input[7], input[24]);
+  buf1[8] = _mm_add_epi32(input[8], input[23]);
+  buf1[23] = _mm_sub_epi32(input[8], input[23]);
+  buf1[9] = _mm_add_epi32(input[9], input[22]);
+  buf1[22] = _mm_sub_epi32(input[9], input[22]);
+  buf1[10] = _mm_add_epi32(input[10], input[21]);
+  buf1[21] = _mm_sub_epi32(input[10], input[21]);
+  buf1[11] = _mm_add_epi32(input[11], input[20]);
+  buf1[20] = _mm_sub_epi32(input[11], input[20]);
+  buf1[12] = _mm_add_epi32(input[12], input[19]);
+  buf1[19] = _mm_sub_epi32(input[12], input[19]);
+  buf1[13] = _mm_add_epi32(input[13], input[18]);
+  buf1[18] = _mm_sub_epi32(input[13], input[18]);
+  buf1[14] = _mm_add_epi32(input[14], input[17]);
+  buf1[17] = _mm_sub_epi32(input[14], input[17]);
+  buf1[15] = _mm_add_epi32(input[15], input[16]);
+  buf1[16] = _mm_sub_epi32(input[15], input[16]);
 
-    // stage 1
-    stage_idx++;
-    buf1[0] = _mm_add_epi32(buf0[0], buf0[31]);
-    buf1[31] = _mm_sub_epi32(buf0[0], buf0[31]);
-    buf1[1] = _mm_add_epi32(buf0[1], buf0[30]);
-    buf1[30] = _mm_sub_epi32(buf0[1], buf0[30]);
-    buf1[2] = _mm_add_epi32(buf0[2], buf0[29]);
-    buf1[29] = _mm_sub_epi32(buf0[2], buf0[29]);
-    buf1[3] = _mm_add_epi32(buf0[3], buf0[28]);
-    buf1[28] = _mm_sub_epi32(buf0[3], buf0[28]);
-    buf1[4] = _mm_add_epi32(buf0[4], buf0[27]);
-    buf1[27] = _mm_sub_epi32(buf0[4], buf0[27]);
-    buf1[5] = _mm_add_epi32(buf0[5], buf0[26]);
-    buf1[26] = _mm_sub_epi32(buf0[5], buf0[26]);
-    buf1[6] = _mm_add_epi32(buf0[6], buf0[25]);
-    buf1[25] = _mm_sub_epi32(buf0[6], buf0[25]);
-    buf1[7] = _mm_add_epi32(buf0[7], buf0[24]);
-    buf1[24] = _mm_sub_epi32(buf0[7], buf0[24]);
-    buf1[8] = _mm_add_epi32(buf0[8], buf0[23]);
-    buf1[23] = _mm_sub_epi32(buf0[8], buf0[23]);
-    buf1[9] = _mm_add_epi32(buf0[9], buf0[22]);
-    buf1[22] = _mm_sub_epi32(buf0[9], buf0[22]);
-    buf1[10] = _mm_add_epi32(buf0[10], buf0[21]);
-    buf1[21] = _mm_sub_epi32(buf0[10], buf0[21]);
-    buf1[11] = _mm_add_epi32(buf0[11], buf0[20]);
-    buf1[20] = _mm_sub_epi32(buf0[11], buf0[20]);
-    buf1[12] = _mm_add_epi32(buf0[12], buf0[19]);
-    buf1[19] = _mm_sub_epi32(buf0[12], buf0[19]);
-    buf1[13] = _mm_add_epi32(buf0[13], buf0[18]);
-    buf1[18] = _mm_sub_epi32(buf0[13], buf0[18]);
-    buf1[14] = _mm_add_epi32(buf0[14], buf0[17]);
-    buf1[17] = _mm_sub_epi32(buf0[14], buf0[17]);
-    buf1[15] = _mm_add_epi32(buf0[15], buf0[16]);
-    buf1[16] = _mm_sub_epi32(buf0[15], buf0[16]);
+  // stage 2
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = _mm_add_epi32(buf1[0], buf1[15]);
+  buf0[15] = _mm_sub_epi32(buf1[0], buf1[15]);
+  buf0[1] = _mm_add_epi32(buf1[1], buf1[14]);
+  buf0[14] = _mm_sub_epi32(buf1[1], buf1[14]);
+  buf0[2] = _mm_add_epi32(buf1[2], buf1[13]);
+  buf0[13] = _mm_sub_epi32(buf1[2], buf1[13]);
+  buf0[3] = _mm_add_epi32(buf1[3], buf1[12]);
+  buf0[12] = _mm_sub_epi32(buf1[3], buf1[12]);
+  buf0[4] = _mm_add_epi32(buf1[4], buf1[11]);
+  buf0[11] = _mm_sub_epi32(buf1[4], buf1[11]);
+  buf0[5] = _mm_add_epi32(buf1[5], buf1[10]);
+  buf0[10] = _mm_sub_epi32(buf1[5], buf1[10]);
+  buf0[6] = _mm_add_epi32(buf1[6], buf1[9]);
+  buf0[9] = _mm_sub_epi32(buf1[6], buf1[9]);
+  buf0[7] = _mm_add_epi32(buf1[7], buf1[8]);
+  buf0[8] = _mm_sub_epi32(buf1[7], buf1[8]);
+  buf0[16] = buf1[16];
+  buf0[17] = buf1[17];
+  buf0[18] = buf1[18];
+  buf0[19] = buf1[19];
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[20], buf1[27], buf0[20],
+                      buf0[27], cos_bit);
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[21], buf1[26], buf0[21],
+                      buf0[26], cos_bit);
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[22], buf1[25], buf0[22],
+                      buf0[25], cos_bit);
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[23], buf1[24], buf0[23],
+                      buf0[24], cos_bit);
+  buf0[28] = buf1[28];
+  buf0[29] = buf1[29];
+  buf0[30] = buf1[30];
+  buf0[31] = buf1[31];
 
-    // stage 2
-    stage_idx++;
+  // stage 3
+  cospi = cospi_arr(cos_bit);
+  buf1[0] = _mm_add_epi32(buf0[0], buf0[7]);
+  buf1[7] = _mm_sub_epi32(buf0[0], buf0[7]);
+  buf1[1] = _mm_add_epi32(buf0[1], buf0[6]);
+  buf1[6] = _mm_sub_epi32(buf0[1], buf0[6]);
+  buf1[2] = _mm_add_epi32(buf0[2], buf0[5]);
+  buf1[5] = _mm_sub_epi32(buf0[2], buf0[5]);
+  buf1[3] = _mm_add_epi32(buf0[3], buf0[4]);
+  buf1[4] = _mm_sub_epi32(buf0[3], buf0[4]);
+  buf1[8] = buf0[8];
+  buf1[9] = buf0[9];
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf0[10], buf0[13], buf1[10],
+                      buf1[13], cos_bit);
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf0[11], buf0[12], buf1[11],
+                      buf1[12], cos_bit);
+  buf1[14] = buf0[14];
+  buf1[15] = buf0[15];
+  buf1[16] = _mm_add_epi32(buf0[16], buf0[23]);
+  buf1[23] = _mm_sub_epi32(buf0[16], buf0[23]);
+  buf1[17] = _mm_add_epi32(buf0[17], buf0[22]);
+  buf1[22] = _mm_sub_epi32(buf0[17], buf0[22]);
+  buf1[18] = _mm_add_epi32(buf0[18], buf0[21]);
+  buf1[21] = _mm_sub_epi32(buf0[18], buf0[21]);
+  buf1[19] = _mm_add_epi32(buf0[19], buf0[20]);
+  buf1[20] = _mm_sub_epi32(buf0[19], buf0[20]);
+  buf1[24] = _mm_sub_epi32(buf0[31], buf0[24]);
+  buf1[31] = _mm_add_epi32(buf0[31], buf0[24]);
+  buf1[25] = _mm_sub_epi32(buf0[30], buf0[25]);
+  buf1[30] = _mm_add_epi32(buf0[30], buf0[25]);
+  buf1[26] = _mm_sub_epi32(buf0[29], buf0[26]);
+  buf1[29] = _mm_add_epi32(buf0[29], buf0[26]);
+  buf1[27] = _mm_sub_epi32(buf0[28], buf0[27]);
+  buf1[28] = _mm_add_epi32(buf0[28], buf0[27]);
 
-    cospi = cospi_arr(cos_bit);
-    buf0[0] = _mm_add_epi32(buf1[0], buf1[15]);
-    buf0[15] = _mm_sub_epi32(buf1[0], buf1[15]);
-    buf0[1] = _mm_add_epi32(buf1[1], buf1[14]);
-    buf0[14] = _mm_sub_epi32(buf1[1], buf1[14]);
-    buf0[2] = _mm_add_epi32(buf1[2], buf1[13]);
-    buf0[13] = _mm_sub_epi32(buf1[2], buf1[13]);
-    buf0[3] = _mm_add_epi32(buf1[3], buf1[12]);
-    buf0[12] = _mm_sub_epi32(buf1[3], buf1[12]);
-    buf0[4] = _mm_add_epi32(buf1[4], buf1[11]);
-    buf0[11] = _mm_sub_epi32(buf1[4], buf1[11]);
-    buf0[5] = _mm_add_epi32(buf1[5], buf1[10]);
-    buf0[10] = _mm_sub_epi32(buf1[5], buf1[10]);
-    buf0[6] = _mm_add_epi32(buf1[6], buf1[9]);
-    buf0[9] = _mm_sub_epi32(buf1[6], buf1[9]);
-    buf0[7] = _mm_add_epi32(buf1[7], buf1[8]);
-    buf0[8] = _mm_sub_epi32(buf1[7], buf1[8]);
-    buf0[16] = buf1[16];
-    buf0[17] = buf1[17];
-    buf0[18] = buf1[18];
-    buf0[19] = buf1[19];
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[20], buf1[27], buf0[20],
-                        buf0[27], cos_bit);
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[21], buf1[26], buf0[21],
-                        buf0[26], cos_bit);
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[22], buf1[25], buf0[22],
-                        buf0[25], cos_bit);
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[23], buf1[24], buf0[23],
-                        buf0[24], cos_bit);
-    buf0[28] = buf1[28];
-    buf0[29] = buf1[29];
-    buf0[30] = buf1[30];
-    buf0[31] = buf1[31];
+  // stage 4
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = _mm_add_epi32(buf1[0], buf1[3]);
+  buf0[3] = _mm_sub_epi32(buf1[0], buf1[3]);
+  buf0[1] = _mm_add_epi32(buf1[1], buf1[2]);
+  buf0[2] = _mm_sub_epi32(buf1[1], buf1[2]);
+  buf0[4] = buf1[4];
+  btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[5], buf1[6], buf0[5], buf0[6],
+                      cos_bit);
+  buf0[7] = buf1[7];
+  buf0[8] = _mm_add_epi32(buf1[8], buf1[11]);
+  buf0[11] = _mm_sub_epi32(buf1[8], buf1[11]);
+  buf0[9] = _mm_add_epi32(buf1[9], buf1[10]);
+  buf0[10] = _mm_sub_epi32(buf1[9], buf1[10]);
+  buf0[12] = _mm_sub_epi32(buf1[15], buf1[12]);
+  buf0[15] = _mm_add_epi32(buf1[15], buf1[12]);
+  buf0[13] = _mm_sub_epi32(buf1[14], buf1[13]);
+  buf0[14] = _mm_add_epi32(buf1[14], buf1[13]);
+  buf0[16] = buf1[16];
+  buf0[17] = buf1[17];
+  btf_32_sse4_1_type0(-cospi[16], cospi[48], buf1[18], buf1[29], buf0[18],
+                      buf0[29], cos_bit);
+  btf_32_sse4_1_type0(-cospi[16], cospi[48], buf1[19], buf1[28], buf0[19],
+                      buf0[28], cos_bit);
+  btf_32_sse4_1_type0(-cospi[48], -cospi[16], buf1[20], buf1[27], buf0[20],
+                      buf0[27], cos_bit);
+  btf_32_sse4_1_type0(-cospi[48], -cospi[16], buf1[21], buf1[26], buf0[21],
+                      buf0[26], cos_bit);
+  buf0[22] = buf1[22];
+  buf0[23] = buf1[23];
+  buf0[24] = buf1[24];
+  buf0[25] = buf1[25];
+  buf0[30] = buf1[30];
+  buf0[31] = buf1[31];
 
-    // stage 3
-    stage_idx++;
+  // stage 5
+  cospi = cospi_arr(cos_bit);
+  btf_32_sse4_1_type0(cospi[32], cospi[32], buf0[0], buf0[1], buf1[0], buf1[1],
+                      cos_bit);
+  btf_32_sse4_1_type1(cospi[48], cospi[16], buf0[2], buf0[3], buf1[2], buf1[3],
+                      cos_bit);
+  buf1[4] = _mm_add_epi32(buf0[4], buf0[5]);
+  buf1[5] = _mm_sub_epi32(buf0[4], buf0[5]);
+  buf1[6] = _mm_sub_epi32(buf0[7], buf0[6]);
+  buf1[7] = _mm_add_epi32(buf0[7], buf0[6]);
+  buf1[8] = buf0[8];
+  btf_32_sse4_1_type0(-cospi[16], cospi[48], buf0[9], buf0[14], buf1[9],
+                      buf1[14], cos_bit);
+  btf_32_sse4_1_type0(-cospi[48], -cospi[16], buf0[10], buf0[13], buf1[10],
+                      buf1[13], cos_bit);
+  buf1[11] = buf0[11];
+  buf1[12] = buf0[12];
+  buf1[15] = buf0[15];
+  buf1[16] = _mm_add_epi32(buf0[16], buf0[19]);
+  buf1[19] = _mm_sub_epi32(buf0[16], buf0[19]);
+  buf1[17] = _mm_add_epi32(buf0[17], buf0[18]);
+  buf1[18] = _mm_sub_epi32(buf0[17], buf0[18]);
+  buf1[20] = _mm_sub_epi32(buf0[23], buf0[20]);
+  buf1[23] = _mm_add_epi32(buf0[23], buf0[20]);
+  buf1[21] = _mm_sub_epi32(buf0[22], buf0[21]);
+  buf1[22] = _mm_add_epi32(buf0[22], buf0[21]);
+  buf1[24] = _mm_add_epi32(buf0[24], buf0[27]);
+  buf1[27] = _mm_sub_epi32(buf0[24], buf0[27]);
+  buf1[25] = _mm_add_epi32(buf0[25], buf0[26]);
+  buf1[26] = _mm_sub_epi32(buf0[25], buf0[26]);
+  buf1[28] = _mm_sub_epi32(buf0[31], buf0[28]);
+  buf1[31] = _mm_add_epi32(buf0[31], buf0[28]);
+  buf1[29] = _mm_sub_epi32(buf0[30], buf0[29]);
+  buf1[30] = _mm_add_epi32(buf0[30], buf0[29]);
 
-    cospi = cospi_arr(cos_bit);
-    buf1[0] = _mm_add_epi32(buf0[0], buf0[7]);
-    buf1[7] = _mm_sub_epi32(buf0[0], buf0[7]);
-    buf1[1] = _mm_add_epi32(buf0[1], buf0[6]);
-    buf1[6] = _mm_sub_epi32(buf0[1], buf0[6]);
-    buf1[2] = _mm_add_epi32(buf0[2], buf0[5]);
-    buf1[5] = _mm_sub_epi32(buf0[2], buf0[5]);
-    buf1[3] = _mm_add_epi32(buf0[3], buf0[4]);
-    buf1[4] = _mm_sub_epi32(buf0[3], buf0[4]);
-    buf1[8] = buf0[8];
-    buf1[9] = buf0[9];
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf0[10], buf0[13], buf1[10],
-                        buf1[13], cos_bit);
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf0[11], buf0[12], buf1[11],
-                        buf1[12], cos_bit);
-    buf1[14] = buf0[14];
-    buf1[15] = buf0[15];
-    buf1[16] = _mm_add_epi32(buf0[16], buf0[23]);
-    buf1[23] = _mm_sub_epi32(buf0[16], buf0[23]);
-    buf1[17] = _mm_add_epi32(buf0[17], buf0[22]);
-    buf1[22] = _mm_sub_epi32(buf0[17], buf0[22]);
-    buf1[18] = _mm_add_epi32(buf0[18], buf0[21]);
-    buf1[21] = _mm_sub_epi32(buf0[18], buf0[21]);
-    buf1[19] = _mm_add_epi32(buf0[19], buf0[20]);
-    buf1[20] = _mm_sub_epi32(buf0[19], buf0[20]);
-    buf1[24] = _mm_sub_epi32(buf0[31], buf0[24]);
-    buf1[31] = _mm_add_epi32(buf0[31], buf0[24]);
-    buf1[25] = _mm_sub_epi32(buf0[30], buf0[25]);
-    buf1[30] = _mm_add_epi32(buf0[30], buf0[25]);
-    buf1[26] = _mm_sub_epi32(buf0[29], buf0[26]);
-    buf1[29] = _mm_add_epi32(buf0[29], buf0[26]);
-    buf1[27] = _mm_sub_epi32(buf0[28], buf0[27]);
-    buf1[28] = _mm_add_epi32(buf0[28], buf0[27]);
+  // stage 6
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = buf1[0];
+  buf0[1] = buf1[1];
+  buf0[2] = buf1[2];
+  buf0[3] = buf1[3];
+  btf_32_sse4_1_type1(cospi[56], cospi[8], buf1[4], buf1[7], buf0[4], buf0[7],
+                      cos_bit);
+  btf_32_sse4_1_type1(cospi[24], cospi[40], buf1[5], buf1[6], buf0[5], buf0[6],
+                      cos_bit);
+  buf0[8] = _mm_add_epi32(buf1[8], buf1[9]);
+  buf0[9] = _mm_sub_epi32(buf1[8], buf1[9]);
+  buf0[10] = _mm_sub_epi32(buf1[11], buf1[10]);
+  buf0[11] = _mm_add_epi32(buf1[11], buf1[10]);
+  buf0[12] = _mm_add_epi32(buf1[12], buf1[13]);
+  buf0[13] = _mm_sub_epi32(buf1[12], buf1[13]);
+  buf0[14] = _mm_sub_epi32(buf1[15], buf1[14]);
+  buf0[15] = _mm_add_epi32(buf1[15], buf1[14]);
+  buf0[16] = buf1[16];
+  btf_32_sse4_1_type0(-cospi[8], cospi[56], buf1[17], buf1[30], buf0[17],
+                      buf0[30], cos_bit);
+  btf_32_sse4_1_type0(-cospi[56], -cospi[8], buf1[18], buf1[29], buf0[18],
+                      buf0[29], cos_bit);
+  buf0[19] = buf1[19];
+  buf0[20] = buf1[20];
+  btf_32_sse4_1_type0(-cospi[40], cospi[24], buf1[21], buf1[26], buf0[21],
+                      buf0[26], cos_bit);
+  btf_32_sse4_1_type0(-cospi[24], -cospi[40], buf1[22], buf1[25], buf0[22],
+                      buf0[25], cos_bit);
+  buf0[23] = buf1[23];
+  buf0[24] = buf1[24];
+  buf0[27] = buf1[27];
+  buf0[28] = buf1[28];
+  buf0[31] = buf1[31];
 
-    // stage 4
-    stage_idx++;
+  // stage 7
+  cospi = cospi_arr(cos_bit);
+  buf1[0] = buf0[0];
+  buf1[1] = buf0[1];
+  buf1[2] = buf0[2];
+  buf1[3] = buf0[3];
+  buf1[4] = buf0[4];
+  buf1[5] = buf0[5];
+  buf1[6] = buf0[6];
+  buf1[7] = buf0[7];
+  btf_32_sse4_1_type1(cospi[60], cospi[4], buf0[8], buf0[15], buf1[8], buf1[15],
+                      cos_bit);
+  btf_32_sse4_1_type1(cospi[28], cospi[36], buf0[9], buf0[14], buf1[9],
+                      buf1[14], cos_bit);
+  btf_32_sse4_1_type1(cospi[44], cospi[20], buf0[10], buf0[13], buf1[10],
+                      buf1[13], cos_bit);
+  btf_32_sse4_1_type1(cospi[12], cospi[52], buf0[11], buf0[12], buf1[11],
+                      buf1[12], cos_bit);
+  buf1[16] = _mm_add_epi32(buf0[16], buf0[17]);
+  buf1[17] = _mm_sub_epi32(buf0[16], buf0[17]);
+  buf1[18] = _mm_sub_epi32(buf0[19], buf0[18]);
+  buf1[19] = _mm_add_epi32(buf0[19], buf0[18]);
+  buf1[20] = _mm_add_epi32(buf0[20], buf0[21]);
+  buf1[21] = _mm_sub_epi32(buf0[20], buf0[21]);
+  buf1[22] = _mm_sub_epi32(buf0[23], buf0[22]);
+  buf1[23] = _mm_add_epi32(buf0[23], buf0[22]);
+  buf1[24] = _mm_add_epi32(buf0[24], buf0[25]);
+  buf1[25] = _mm_sub_epi32(buf0[24], buf0[25]);
+  buf1[26] = _mm_sub_epi32(buf0[27], buf0[26]);
+  buf1[27] = _mm_add_epi32(buf0[27], buf0[26]);
+  buf1[28] = _mm_add_epi32(buf0[28], buf0[29]);
+  buf1[29] = _mm_sub_epi32(buf0[28], buf0[29]);
+  buf1[30] = _mm_sub_epi32(buf0[31], buf0[30]);
+  buf1[31] = _mm_add_epi32(buf0[31], buf0[30]);
 
-    cospi = cospi_arr(cos_bit);
-    buf0[0] = _mm_add_epi32(buf1[0], buf1[3]);
-    buf0[3] = _mm_sub_epi32(buf1[0], buf1[3]);
-    buf0[1] = _mm_add_epi32(buf1[1], buf1[2]);
-    buf0[2] = _mm_sub_epi32(buf1[1], buf1[2]);
-    buf0[4] = buf1[4];
-    btf_32_sse4_1_type0(-cospi[32], cospi[32], buf1[5], buf1[6], buf0[5],
-                        buf0[6], cos_bit);
-    buf0[7] = buf1[7];
-    buf0[8] = _mm_add_epi32(buf1[8], buf1[11]);
-    buf0[11] = _mm_sub_epi32(buf1[8], buf1[11]);
-    buf0[9] = _mm_add_epi32(buf1[9], buf1[10]);
-    buf0[10] = _mm_sub_epi32(buf1[9], buf1[10]);
-    buf0[12] = _mm_sub_epi32(buf1[15], buf1[12]);
-    buf0[15] = _mm_add_epi32(buf1[15], buf1[12]);
-    buf0[13] = _mm_sub_epi32(buf1[14], buf1[13]);
-    buf0[14] = _mm_add_epi32(buf1[14], buf1[13]);
-    buf0[16] = buf1[16];
-    buf0[17] = buf1[17];
-    btf_32_sse4_1_type0(-cospi[16], cospi[48], buf1[18], buf1[29], buf0[18],
-                        buf0[29], cos_bit);
-    btf_32_sse4_1_type0(-cospi[16], cospi[48], buf1[19], buf1[28], buf0[19],
-                        buf0[28], cos_bit);
-    btf_32_sse4_1_type0(-cospi[48], -cospi[16], buf1[20], buf1[27], buf0[20],
-                        buf0[27], cos_bit);
-    btf_32_sse4_1_type0(-cospi[48], -cospi[16], buf1[21], buf1[26], buf0[21],
-                        buf0[26], cos_bit);
-    buf0[22] = buf1[22];
-    buf0[23] = buf1[23];
-    buf0[24] = buf1[24];
-    buf0[25] = buf1[25];
-    buf0[30] = buf1[30];
-    buf0[31] = buf1[31];
+  // stage 8
+  cospi = cospi_arr(cos_bit);
+  buf0[0] = buf1[0];
+  buf0[1] = buf1[1];
+  buf0[2] = buf1[2];
+  buf0[3] = buf1[3];
+  buf0[4] = buf1[4];
+  buf0[5] = buf1[5];
+  buf0[6] = buf1[6];
+  buf0[7] = buf1[7];
+  buf0[8] = buf1[8];
+  buf0[9] = buf1[9];
+  buf0[10] = buf1[10];
+  buf0[11] = buf1[11];
+  buf0[12] = buf1[12];
+  buf0[13] = buf1[13];
+  buf0[14] = buf1[14];
+  buf0[15] = buf1[15];
+  btf_32_sse4_1_type1(cospi[62], cospi[2], buf1[16], buf1[31], buf0[16],
+                      buf0[31], cos_bit);
+  btf_32_sse4_1_type1(cospi[30], cospi[34], buf1[17], buf1[30], buf0[17],
+                      buf0[30], cos_bit);
+  btf_32_sse4_1_type1(cospi[46], cospi[18], buf1[18], buf1[29], buf0[18],
+                      buf0[29], cos_bit);
+  btf_32_sse4_1_type1(cospi[14], cospi[50], buf1[19], buf1[28], buf0[19],
+                      buf0[28], cos_bit);
+  btf_32_sse4_1_type1(cospi[54], cospi[10], buf1[20], buf1[27], buf0[20],
+                      buf0[27], cos_bit);
+  btf_32_sse4_1_type1(cospi[22], cospi[42], buf1[21], buf1[26], buf0[21],
+                      buf0[26], cos_bit);
+  btf_32_sse4_1_type1(cospi[38], cospi[26], buf1[22], buf1[25], buf0[22],
+                      buf0[25], cos_bit);
+  btf_32_sse4_1_type1(cospi[6], cospi[58], buf1[23], buf1[24], buf0[23],
+                      buf0[24], cos_bit);
 
-    // stage 5
-    stage_idx++;
-
-    cospi = cospi_arr(cos_bit);
-    btf_32_sse4_1_type0(cospi[32], cospi[32], buf0[0], buf0[1], buf1[0],
-                        buf1[1], cos_bit);
-    btf_32_sse4_1_type1(cospi[48], cospi[16], buf0[2], buf0[3], buf1[2],
-                        buf1[3], cos_bit);
-    buf1[4] = _mm_add_epi32(buf0[4], buf0[5]);
-    buf1[5] = _mm_sub_epi32(buf0[4], buf0[5]);
-    buf1[6] = _mm_sub_epi32(buf0[7], buf0[6]);
-    buf1[7] = _mm_add_epi32(buf0[7], buf0[6]);
-    buf1[8] = buf0[8];
-    btf_32_sse4_1_type0(-cospi[16], cospi[48], buf0[9], buf0[14], buf1[9],
-                        buf1[14], cos_bit);
-    btf_32_sse4_1_type0(-cospi[48], -cospi[16], buf0[10], buf0[13], buf1[10],
-                        buf1[13], cos_bit);
-    buf1[11] = buf0[11];
-    buf1[12] = buf0[12];
-    buf1[15] = buf0[15];
-    buf1[16] = _mm_add_epi32(buf0[16], buf0[19]);
-    buf1[19] = _mm_sub_epi32(buf0[16], buf0[19]);
-    buf1[17] = _mm_add_epi32(buf0[17], buf0[18]);
-    buf1[18] = _mm_sub_epi32(buf0[17], buf0[18]);
-    buf1[20] = _mm_sub_epi32(buf0[23], buf0[20]);
-    buf1[23] = _mm_add_epi32(buf0[23], buf0[20]);
-    buf1[21] = _mm_sub_epi32(buf0[22], buf0[21]);
-    buf1[22] = _mm_add_epi32(buf0[22], buf0[21]);
-    buf1[24] = _mm_add_epi32(buf0[24], buf0[27]);
-    buf1[27] = _mm_sub_epi32(buf0[24], buf0[27]);
-    buf1[25] = _mm_add_epi32(buf0[25], buf0[26]);
-    buf1[26] = _mm_sub_epi32(buf0[25], buf0[26]);
-    buf1[28] = _mm_sub_epi32(buf0[31], buf0[28]);
-    buf1[31] = _mm_add_epi32(buf0[31], buf0[28]);
-    buf1[29] = _mm_sub_epi32(buf0[30], buf0[29]);
-    buf1[30] = _mm_add_epi32(buf0[30], buf0[29]);
-
-    // stage 6
-    stage_idx++;
-
-    cospi = cospi_arr(cos_bit);
-    buf0[0] = buf1[0];
-    buf0[1] = buf1[1];
-    buf0[2] = buf1[2];
-    buf0[3] = buf1[3];
-    btf_32_sse4_1_type1(cospi[56], cospi[8], buf1[4], buf1[7], buf0[4], buf0[7],
-                        cos_bit);
-    btf_32_sse4_1_type1(cospi[24], cospi[40], buf1[5], buf1[6], buf0[5],
-                        buf0[6], cos_bit);
-    buf0[8] = _mm_add_epi32(buf1[8], buf1[9]);
-    buf0[9] = _mm_sub_epi32(buf1[8], buf1[9]);
-    buf0[10] = _mm_sub_epi32(buf1[11], buf1[10]);
-    buf0[11] = _mm_add_epi32(buf1[11], buf1[10]);
-    buf0[12] = _mm_add_epi32(buf1[12], buf1[13]);
-    buf0[13] = _mm_sub_epi32(buf1[12], buf1[13]);
-    buf0[14] = _mm_sub_epi32(buf1[15], buf1[14]);
-    buf0[15] = _mm_add_epi32(buf1[15], buf1[14]);
-    buf0[16] = buf1[16];
-    btf_32_sse4_1_type0(-cospi[8], cospi[56], buf1[17], buf1[30], buf0[17],
-                        buf0[30], cos_bit);
-    btf_32_sse4_1_type0(-cospi[56], -cospi[8], buf1[18], buf1[29], buf0[18],
-                        buf0[29], cos_bit);
-    buf0[19] = buf1[19];
-    buf0[20] = buf1[20];
-    btf_32_sse4_1_type0(-cospi[40], cospi[24], buf1[21], buf1[26], buf0[21],
-                        buf0[26], cos_bit);
-    btf_32_sse4_1_type0(-cospi[24], -cospi[40], buf1[22], buf1[25], buf0[22],
-                        buf0[25], cos_bit);
-    buf0[23] = buf1[23];
-    buf0[24] = buf1[24];
-    buf0[27] = buf1[27];
-    buf0[28] = buf1[28];
-    buf0[31] = buf1[31];
-
-    // stage 7
-    stage_idx++;
-
-    cospi = cospi_arr(cos_bit);
-    buf1[0] = buf0[0];
-    buf1[1] = buf0[1];
-    buf1[2] = buf0[2];
-    buf1[3] = buf0[3];
-    buf1[4] = buf0[4];
-    buf1[5] = buf0[5];
-    buf1[6] = buf0[6];
-    buf1[7] = buf0[7];
-    btf_32_sse4_1_type1(cospi[60], cospi[4], buf0[8], buf0[15], buf1[8],
-                        buf1[15], cos_bit);
-    btf_32_sse4_1_type1(cospi[28], cospi[36], buf0[9], buf0[14], buf1[9],
-                        buf1[14], cos_bit);
-    btf_32_sse4_1_type1(cospi[44], cospi[20], buf0[10], buf0[13], buf1[10],
-                        buf1[13], cos_bit);
-    btf_32_sse4_1_type1(cospi[12], cospi[52], buf0[11], buf0[12], buf1[11],
-                        buf1[12], cos_bit);
-    buf1[16] = _mm_add_epi32(buf0[16], buf0[17]);
-    buf1[17] = _mm_sub_epi32(buf0[16], buf0[17]);
-    buf1[18] = _mm_sub_epi32(buf0[19], buf0[18]);
-    buf1[19] = _mm_add_epi32(buf0[19], buf0[18]);
-    buf1[20] = _mm_add_epi32(buf0[20], buf0[21]);
-    buf1[21] = _mm_sub_epi32(buf0[20], buf0[21]);
-    buf1[22] = _mm_sub_epi32(buf0[23], buf0[22]);
-    buf1[23] = _mm_add_epi32(buf0[23], buf0[22]);
-    buf1[24] = _mm_add_epi32(buf0[24], buf0[25]);
-    buf1[25] = _mm_sub_epi32(buf0[24], buf0[25]);
-    buf1[26] = _mm_sub_epi32(buf0[27], buf0[26]);
-    buf1[27] = _mm_add_epi32(buf0[27], buf0[26]);
-    buf1[28] = _mm_add_epi32(buf0[28], buf0[29]);
-    buf1[29] = _mm_sub_epi32(buf0[28], buf0[29]);
-    buf1[30] = _mm_sub_epi32(buf0[31], buf0[30]);
-    buf1[31] = _mm_add_epi32(buf0[31], buf0[30]);
-
-    // stage 8
-    stage_idx++;
-
-    cospi = cospi_arr(cos_bit);
-    buf0[0] = buf1[0];
-    buf0[1] = buf1[1];
-    buf0[2] = buf1[2];
-    buf0[3] = buf1[3];
-    buf0[4] = buf1[4];
-    buf0[5] = buf1[5];
-    buf0[6] = buf1[6];
-    buf0[7] = buf1[7];
-    buf0[8] = buf1[8];
-    buf0[9] = buf1[9];
-    buf0[10] = buf1[10];
-    buf0[11] = buf1[11];
-    buf0[12] = buf1[12];
-    buf0[13] = buf1[13];
-    buf0[14] = buf1[14];
-    buf0[15] = buf1[15];
-    btf_32_sse4_1_type1(cospi[62], cospi[2], buf1[16], buf1[31], buf0[16],
-                        buf0[31], cos_bit);
-    btf_32_sse4_1_type1(cospi[30], cospi[34], buf1[17], buf1[30], buf0[17],
-                        buf0[30], cos_bit);
-    btf_32_sse4_1_type1(cospi[46], cospi[18], buf1[18], buf1[29], buf0[18],
-                        buf0[29], cos_bit);
-    btf_32_sse4_1_type1(cospi[14], cospi[50], buf1[19], buf1[28], buf0[19],
-                        buf0[28], cos_bit);
-    btf_32_sse4_1_type1(cospi[54], cospi[10], buf1[20], buf1[27], buf0[20],
-                        buf0[27], cos_bit);
-    btf_32_sse4_1_type1(cospi[22], cospi[42], buf1[21], buf1[26], buf0[21],
-                        buf0[26], cos_bit);
-    btf_32_sse4_1_type1(cospi[38], cospi[26], buf1[22], buf1[25], buf0[22],
-                        buf0[25], cos_bit);
-    btf_32_sse4_1_type1(cospi[6], cospi[58], buf1[23], buf1[24], buf0[23],
-                        buf0[24], cos_bit);
-
-    // stage 9
-    stage_idx++;
-    buf1[0] = buf0[0];
-    buf1[1] = buf0[16];
-    buf1[2] = buf0[8];
-    buf1[3] = buf0[24];
-    buf1[4] = buf0[4];
-    buf1[5] = buf0[20];
-    buf1[6] = buf0[12];
-    buf1[7] = buf0[28];
-    buf1[8] = buf0[2];
-    buf1[9] = buf0[18];
-    buf1[10] = buf0[10];
-    buf1[11] = buf0[26];
-    buf1[12] = buf0[6];
-    buf1[13] = buf0[22];
-    buf1[14] = buf0[14];
-    buf1[15] = buf0[30];
-    buf1[16] = buf0[1];
-    buf1[17] = buf0[17];
-    buf1[18] = buf0[9];
-    buf1[19] = buf0[25];
-    buf1[20] = buf0[5];
-    buf1[21] = buf0[21];
-    buf1[22] = buf0[13];
-    buf1[23] = buf0[29];
-    buf1[24] = buf0[3];
-    buf1[25] = buf0[19];
-    buf1[26] = buf0[11];
-    buf1[27] = buf0[27];
-    buf1[28] = buf0[7];
-    buf1[29] = buf0[23];
-    buf1[30] = buf0[15];
-    buf1[31] = buf0[31];
-
-    for (j = 0; j < 32; ++j) {
-      output[j * col_num + col] = buf1[j];
-    }
-  }
+  // stage 9
+  output[0] = buf0[0];
+  output[1] = buf0[16];
+  output[2] = buf0[8];
+  output[3] = buf0[24];
+  output[4] = buf0[4];
+  output[5] = buf0[20];
+  output[6] = buf0[12];
+  output[7] = buf0[28];
+  output[8] = buf0[2];
+  output[9] = buf0[18];
+  output[10] = buf0[10];
+  output[11] = buf0[26];
+  output[12] = buf0[6];
+  output[13] = buf0[22];
+  output[14] = buf0[14];
+  output[15] = buf0[30];
+  output[16] = buf0[1];
+  output[17] = buf0[17];
+  output[18] = buf0[9];
+  output[19] = buf0[25];
+  output[20] = buf0[5];
+  output[21] = buf0[21];
+  output[22] = buf0[13];
+  output[23] = buf0[29];
+  output[24] = buf0[3];
+  output[25] = buf0[19];
+  output[26] = buf0[11];
+  output[27] = buf0[27];
+  output[28] = buf0[7];
+  output[29] = buf0[23];
+  output[30] = buf0[15];
+  output[31] = buf0[31];
 }
 
 void av1_fadst4_new_sse4_1(const __m128i *input, __m128i *output,

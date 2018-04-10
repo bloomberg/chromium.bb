@@ -31,6 +31,28 @@ static INLINE void av1_round_shift_array_32_sse4_1(__m128i *input,
   }
 }
 
+static INLINE void av1_round_shift_rect_array_32_sse4_1(__m128i *input,
+                                                        __m128i *output,
+                                                        const int size,
+                                                        const int bit) {
+  const __m128i sqrt2 = _mm_set1_epi32(NewSqrt2);
+  if (bit > 0) {
+    int i;
+    for (i = 0; i < size; i++) {
+      const __m128i r0 = av1_round_shift_32_sse4_1(input[i], bit);
+      const __m128i r1 = _mm_mullo_epi32(sqrt2, r0);
+      output[i] = av1_round_shift_32_sse4_1(r1, NewSqrt2Bits);
+    }
+  } else {
+    int i;
+    for (i = 0; i < size; i++) {
+      const __m128i r0 = _mm_slli_epi32(input[i], -bit);
+      const __m128i r1 = _mm_mullo_epi32(sqrt2, r0);
+      output[i] = av1_round_shift_32_sse4_1(r1, NewSqrt2Bits);
+    }
+  }
+}
+
 #ifdef __cplusplus
 }
 #endif

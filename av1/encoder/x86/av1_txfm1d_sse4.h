@@ -27,7 +27,7 @@ void av1_fdct8_new_sse4_1(const __m128i *input, __m128i *output,
 void av1_fdct16_new_sse4_1(const __m128i *input, __m128i *output,
                            const int8_t cos_bit, const int8_t *stage_range);
 void av1_fdct32_new_sse4_1(const __m128i *input, __m128i *output,
-                           const int8_t cos_bit, const int8_t *stage_range);
+                           int8_t cos_bit);
 void av1_fdct64_new_sse4_1(const __m128i *input, __m128i *output,
                            int8_t cos_bit);
 
