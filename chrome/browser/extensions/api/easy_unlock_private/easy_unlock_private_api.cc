@@ -324,7 +324,8 @@ EasyUnlockPrivatePerformECDHKeyAgreementFunction() {}
 EasyUnlockPrivatePerformECDHKeyAgreementFunction::
 ~EasyUnlockPrivatePerformECDHKeyAgreementFunction() {}
 
-bool EasyUnlockPrivatePerformECDHKeyAgreementFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivatePerformECDHKeyAgreementFunction::Run() {
   std::unique_ptr<easy_unlock_private::PerformECDHKeyAgreement::Params> params =
       easy_unlock_private::PerformECDHKeyAgreement::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -333,17 +334,21 @@ bool EasyUnlockPrivatePerformECDHKeyAgreementFunction::RunAsync() {
       *params,
       base::Bind(&EasyUnlockPrivatePerformECDHKeyAgreementFunction::OnData,
                  this));
-  return true;
+  // TODO(https://crbug.com/829182): Resolve this.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void EasyUnlockPrivatePerformECDHKeyAgreementFunction::OnData(
     const std::string& secret_key) {
   // TODO(tbarzic): Improve error handling.
   if (!secret_key.empty()) {
-    results_ = easy_unlock_private::PerformECDHKeyAgreement::Results::Create(
-        std::vector<char>(secret_key.begin(), secret_key.end()));
+    Respond(ArgumentList(
+        easy_unlock_private::PerformECDHKeyAgreement::Results::Create(
+            std::vector<char>(secret_key.begin(), secret_key.end()))));
+    return;
   }
-  SendResponse(true);
+
+  Respond(NoArguments());
 }
 
 EasyUnlockPrivateGenerateEcP256KeyPairFunction::
@@ -352,11 +357,13 @@ EasyUnlockPrivateGenerateEcP256KeyPairFunction() {}
 EasyUnlockPrivateGenerateEcP256KeyPairFunction::
 ~EasyUnlockPrivateGenerateEcP256KeyPairFunction() {}
 
-bool EasyUnlockPrivateGenerateEcP256KeyPairFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateGenerateEcP256KeyPairFunction::Run() {
   GetCryptoDelegate(browser_context())->GenerateEcP256KeyPair(
       base::Bind(&EasyUnlockPrivateGenerateEcP256KeyPairFunction::OnData,
                  this));
-  return true;
+  // TODO(https://crbug.com/829182): Resolve this.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void EasyUnlockPrivateGenerateEcP256KeyPairFunction::OnData(
@@ -364,11 +371,14 @@ void EasyUnlockPrivateGenerateEcP256KeyPairFunction::OnData(
     const std::string& public_key) {
   // TODO(tbarzic): Improve error handling.
   if (!public_key.empty() && !private_key.empty()) {
-    results_ = easy_unlock_private::GenerateEcP256KeyPair::Results::Create(
-        std::vector<char>(public_key.begin(), public_key.end()),
-        std::vector<char>(private_key.begin(), private_key.end()));
+    Respond(ArgumentList(
+        easy_unlock_private::GenerateEcP256KeyPair::Results::Create(
+            std::vector<char>(public_key.begin(), public_key.end()),
+            std::vector<char>(private_key.begin(), private_key.end()))));
+    return;
   }
-  SendResponse(true);
+
+  Respond(NoArguments());
 }
 
 EasyUnlockPrivateCreateSecureMessageFunction::
@@ -377,7 +387,8 @@ EasyUnlockPrivateCreateSecureMessageFunction() {}
 EasyUnlockPrivateCreateSecureMessageFunction::
 ~EasyUnlockPrivateCreateSecureMessageFunction() {}
 
-bool EasyUnlockPrivateCreateSecureMessageFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateCreateSecureMessageFunction::Run() {
   std::unique_ptr<easy_unlock_private::CreateSecureMessage::Params> params =
       easy_unlock_private::CreateSecureMessage::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -386,17 +397,21 @@ bool EasyUnlockPrivateCreateSecureMessageFunction::RunAsync() {
       *params,
       base::Bind(&EasyUnlockPrivateCreateSecureMessageFunction::OnData,
                  this));
-  return true;
+  // TODO(https://crbug.com/829182): Resolve this.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void EasyUnlockPrivateCreateSecureMessageFunction::OnData(
     const std::string& message) {
   // TODO(tbarzic): Improve error handling.
   if (!message.empty()) {
-    results_ = easy_unlock_private::CreateSecureMessage::Results::Create(
-        std::vector<char>(message.begin(), message.end()));
+    Respond(
+        ArgumentList(easy_unlock_private::CreateSecureMessage::Results::Create(
+            std::vector<char>(message.begin(), message.end()))));
+    return;
   }
-  SendResponse(true);
+
+  Respond(NoArguments());
 }
 
 EasyUnlockPrivateUnwrapSecureMessageFunction::
@@ -405,7 +420,8 @@ EasyUnlockPrivateUnwrapSecureMessageFunction() {}
 EasyUnlockPrivateUnwrapSecureMessageFunction::
 ~EasyUnlockPrivateUnwrapSecureMessageFunction() {}
 
-bool EasyUnlockPrivateUnwrapSecureMessageFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateUnwrapSecureMessageFunction::Run() {
   std::unique_ptr<easy_unlock_private::UnwrapSecureMessage::Params> params =
       easy_unlock_private::UnwrapSecureMessage::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -414,17 +430,21 @@ bool EasyUnlockPrivateUnwrapSecureMessageFunction::RunAsync() {
       *params,
       base::Bind(&EasyUnlockPrivateUnwrapSecureMessageFunction::OnData,
                  this));
-  return true;
+  // TODO(https://crbug.com/829182): Resolve this.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void EasyUnlockPrivateUnwrapSecureMessageFunction::OnData(
     const std::string& data) {
   // TODO(tbarzic): Improve error handling.
   if (!data.empty()) {
-    results_ = easy_unlock_private::UnwrapSecureMessage::Results::Create(
-        std::vector<char>(data.begin(), data.end()));
+    Respond(
+        ArgumentList(easy_unlock_private::UnwrapSecureMessage::Results::Create(
+            std::vector<char>(data.begin(), data.end()))));
+    return;
   }
-  SendResponse(true);
+
+  Respond(NoArguments());
 }
 
 EasyUnlockPrivateSetPermitAccessFunction::
@@ -551,16 +571,16 @@ EasyUnlockPrivateGetRemoteDevicesFunction::
     ~EasyUnlockPrivateGetRemoteDevicesFunction() {
 }
 
-bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateGetRemoteDevicesFunction::Run() {
   // Check that we are inside a user profile.
   Profile* profile = Profile::FromBrowserContext(browser_context());
   chromeos::EasyUnlockService* easy_unlock_service =
       chromeos::EasyUnlockService::Get(profile);
   if (easy_unlock_service->GetType() !=
       chromeos::EasyUnlockService::TYPE_REGULAR) {
-    SetError("This function must be called inside a user session.");
-    SendResponse(true);
-    return true;
+    return RespondNow(
+        Error("This function must be called inside a user session."));
   }
 
   // Get the synced unlock key data.
@@ -574,20 +594,14 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
   expected_devices_count_ = unlock_keys.size();
 
   remote_devices_.reset(new base::ListValue());
-  if (expected_devices_count_ == 0) {
-    SetResult(std::move(remote_devices_));
-    SendResponse(true);
-    return true;
-  }
+  if (expected_devices_count_ == 0)
+    return RespondNow(OneArgument(std::move(remote_devices_)));
 
   // If there is a BLE unlock key, then don't return anything, so the app does
   // not try the classic Bluetooth protocol.
   for (const auto& unlock_key : unlock_keys) {
-    if (unlock_key.bluetooth_address().empty()) {
-      SetResult(std::move(remote_devices_));
-      SendResponse(true);
-      return true;
-    }
+    if (unlock_key.bluetooth_address().empty())
+      return RespondNow(OneArgument(std::move(remote_devices_)));
   }
 
   // Derive the PSKs for the user's unlock keys.
@@ -601,8 +615,7 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
             &EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice,
             this, unlock_key));
   }
-
-  return true;
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 std::string EasyUnlockPrivateGetRemoteDevicesFunction::GetUserPrivateKey() {
@@ -656,10 +669,8 @@ void EasyUnlockPrivateGetRemoteDevicesFunction::OnPSKDerivedForDevice(
   // If all PSKs are derived, then return from the API call.
   PA_LOG(INFO) << "Derived PSK for " << b64_public_key << ": "
                << remote_devices_->GetSize() << "/" << expected_devices_count_;
-  if (remote_devices_->GetSize() == expected_devices_count_) {
-    SetResult(std::move(remote_devices_));
-    SendResponse(true);
-  }
+  if (remote_devices_->GetSize() == expected_devices_count_)
+    Respond(OneArgument(std::move(remote_devices_)));
 }
 
 EasyUnlockPrivateGetUserInfoFunction::EasyUnlockPrivateGetUserInfoFunction() {
@@ -759,9 +770,8 @@ EasyUnlockPrivateFindSetupConnectionFunction::
 
 void EasyUnlockPrivateFindSetupConnectionFunction::
     OnConnectionFinderTimedOut() {
-  SetError("No connection found.");
   connection_finder_.reset();
-  SendResponse(false);
+  Respond(Error("No connection found."));
 }
 
 void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
@@ -772,12 +782,13 @@ void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
   int connection_id =
       GetConnectionManager(browser_context())
           ->AddConnection(extension(), std::move(connection), persistent);
-  results_ = easy_unlock_private::FindSetupConnection::Results::Create(
-      connection_id, device_address);
-  SendResponse(true);
+  Respond(
+      ArgumentList(easy_unlock_private::FindSetupConnection::Results::Create(
+          connection_id, device_address)));
 }
 
-bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+EasyUnlockPrivateFindSetupConnectionFunction::Run() {
   std::unique_ptr<easy_unlock_private::FindSetupConnection::Params> params =
       easy_unlock_private::FindSetupConnection::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -797,7 +808,8 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
                                OnConnectionFinderTimedOut,
                            this));
 
-  return true;
+  // TODO(https://crbug.com/829182): Resolve this.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 EasyUnlockPrivateSetupConnectionDisconnectFunction::

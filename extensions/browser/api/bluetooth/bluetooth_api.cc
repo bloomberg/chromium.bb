@@ -107,20 +107,20 @@ void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
 
 namespace api {
 
-BluetoothGetAdapterStateFunction::~BluetoothGetAdapterStateFunction() {}
+BluetoothGetAdapterStateFunction::~BluetoothGetAdapterStateFunction() = default;
 
-bool BluetoothGetAdapterStateFunction::DoWork(
+void BluetoothGetAdapterStateFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   bluetooth::AdapterState state;
   PopulateAdapterState(*adapter, &state);
-  results_ = bluetooth::GetAdapterState::Results::Create(state);
-  SendResponse(true);
-  return true;
+  Respond(ArgumentList(bluetooth::GetAdapterState::Results::Create(state)));
 }
 
-BluetoothGetDevicesFunction::~BluetoothGetDevicesFunction() {}
+BluetoothGetDevicesFunction::BluetoothGetDevicesFunction() = default;
 
-bool BluetoothGetDevicesFunction::DoWork(
+BluetoothGetDevicesFunction::~BluetoothGetDevicesFunction() = default;
+
+void BluetoothGetDevicesFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -139,73 +139,64 @@ bool BluetoothGetDevicesFunction::DoWork(
     device_list->Append(extension_device.ToValue());
   }
 
-  SetResult(std::move(device_list));
-  SendResponse(true);
-
-  return true;
+  Respond(OneArgument(std::move(device_list)));
 }
 
-BluetoothGetDeviceFunction::~BluetoothGetDeviceFunction() {}
+BluetoothGetDeviceFunction::BluetoothGetDeviceFunction() = default;
 
-bool BluetoothGetDeviceFunction::DoWork(
+BluetoothGetDeviceFunction::~BluetoothGetDeviceFunction() = default;
+
+bool BluetoothGetDeviceFunction::CreateParams() {
+  params_ = GetDevice::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
+void BluetoothGetDeviceFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::unique_ptr<GetDevice::Params> params(GetDevice::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-
-  BluetoothDevice* device = adapter->GetDevice(params->device_address);
+  BluetoothDevice* device = adapter->GetDevice(params_->device_address);
   if (device) {
     bluetooth::Device extension_device;
     bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
-    SetResult(extension_device.ToValue());
-    SendResponse(true);
+    Respond(OneArgument(extension_device.ToValue()));
   } else {
-    SetError(kInvalidDevice);
-    SendResponse(false);
+    Respond(Error(kInvalidDevice));
   }
-
-  return false;
 }
 
 void BluetoothStartDiscoveryFunction::OnSuccessCallback() {
-  SendResponse(true);
+  Respond(NoArguments());
 }
 
 void BluetoothStartDiscoveryFunction::OnErrorCallback() {
-  SetError(kStartDiscoveryFailed);
-  SendResponse(false);
+  Respond(Error(kStartDiscoveryFailed));
 }
 
-bool BluetoothStartDiscoveryFunction::DoWork(
+void BluetoothStartDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(browser_context())
       ->StartDiscoverySession(
           adapter.get(), GetExtensionId(),
           base::Bind(&BluetoothStartDiscoveryFunction::OnSuccessCallback, this),
           base::Bind(&BluetoothStartDiscoveryFunction::OnErrorCallback, this));
-
-  return true;
 }
 
 void BluetoothStopDiscoveryFunction::OnSuccessCallback() {
-  SendResponse(true);
+  Respond(NoArguments());
 }
 
 void BluetoothStopDiscoveryFunction::OnErrorCallback() {
-  SetError(kStopDiscoveryFailed);
-  SendResponse(false);
+  Respond(Error(kStopDiscoveryFailed));
 }
 
-bool BluetoothStopDiscoveryFunction::DoWork(
+void BluetoothStopDiscoveryFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   GetEventRouter(browser_context())
       ->StopDiscoverySession(
           adapter.get(), GetExtensionId(),
           base::Bind(&BluetoothStopDiscoveryFunction::OnSuccessCallback, this),
           base::Bind(&BluetoothStopDiscoveryFunction::OnErrorCallback, this));
-
-  return true;
 }
 
 }  // namespace api

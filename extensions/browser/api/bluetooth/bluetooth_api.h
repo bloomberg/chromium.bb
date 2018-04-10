@@ -75,29 +75,42 @@ class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
   ~BluetoothGetAdapterStateFunction() override;
 
   // BluetoothExtensionFunction:
-  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 };
 
 class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getDevices", BLUETOOTH_GETDEVICES)
 
+  BluetoothGetDevicesFunction();
+
  protected:
   ~BluetoothGetDevicesFunction() override;
 
   // BluetoothExtensionFunction:
-  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGetDevicesFunction);
 };
 
 class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getDevice", BLUETOOTH_GETDEVICE)
 
+  BluetoothGetDeviceFunction();
+
   // BluetoothExtensionFunction:
-  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  bool CreateParams() override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  protected:
   ~BluetoothGetDeviceFunction() override;
+
+ private:
+  std::unique_ptr<extensions::api::bluetooth::GetDevice::Params> params_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGetDeviceFunction);
 };
 
 class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
@@ -109,7 +122,7 @@ class BluetoothStartDiscoveryFunction : public BluetoothExtensionFunction {
   ~BluetoothStartDiscoveryFunction() override {}
 
   // BluetoothExtensionFunction:
-  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  private:
   void OnSuccessCallback();
@@ -124,7 +137,7 @@ class BluetoothStopDiscoveryFunction : public BluetoothExtensionFunction {
   ~BluetoothStopDiscoveryFunction() override {}
 
   // BluetoothExtensionFunction:
-  bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
+  void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  private:
   void OnSuccessCallback();
