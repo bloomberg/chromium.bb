@@ -175,19 +175,6 @@ class ConversionContext {
   // or the stack is empty.
   void EndClips();
 
-  const PropertyTreeState& layer_state_;
-  gfx::Vector2dF layer_offset_;
-  bool translated_for_layer_offset_ = false;
-
-  const TransformPaintPropertyNode* current_transform_;
-  const ClipPaintPropertyNode* current_clip_;
-  const EffectPaintPropertyNode* current_effect_;
-
-  // The previous transform state before SwitchToTransform(). When the next
-  // chunk's state is different from the current state we should restore to
-  // this transform.
-  const TransformPaintPropertyNode* previous_transform_ = nullptr;
-
   // State stack.
   // The size of the stack is the number of nested paired items that are
   // currently nested. Note that this is a "restore stack", i.e. the top
@@ -202,8 +189,29 @@ class ConversionContext {
     const TransformPaintPropertyNode* transform;
     const ClipPaintPropertyNode* clip;
     const EffectPaintPropertyNode* effect;
+    // See ConversionContext::previous_transform_.
+    const TransformPaintPropertyNode* previous_transform;
   };
+  void PushState(StateEntry::PairedType, int saved_count);
+  void PopState();
   Vector<StateEntry> state_stack_;
+
+  const PropertyTreeState& layer_state_;
+  gfx::Vector2dF layer_offset_;
+  bool translated_for_layer_offset_ = false;
+
+  const TransformPaintPropertyNode* current_transform_;
+  const ClipPaintPropertyNode* current_clip_;
+  const EffectPaintPropertyNode* current_effect_;
+
+  // The previous transform state before SwitchToTransform() within the current
+  // clip/effect state. When the next chunk's transform is different from the
+  // current transform we should restore to this transform using EndTransform()
+  // which will set this field to nullptr. When a new clip/effect state starts,
+  // the value of this field will be saved into the state stack and set to
+  // nullptr. When the clip/effect state ends, this field will be restored to
+  // the saved value.
+  const TransformPaintPropertyNode* previous_transform_ = nullptr;
 
   // This structure accumulates bounds of all chunks under an effect. When an
   // effect starts, we emit a SaveLayer[Alpha]Op with null bounds starts, and
@@ -230,13 +238,13 @@ class ConversionContext {
 
 ConversionContext::~ConversionContext() {
   // End all states.
-  EndTransform();
   while (state_stack_.size()) {
     if (state_stack_.back().type == StateEntry::kEffect)
       EndEffect();
     else
       EndClip();
   }
+  EndTransform();
   if (translated_for_layer_offset_)
     AppendRestore(1);
 }
@@ -256,10 +264,6 @@ void ConversionContext::SwitchToChunkState(const PaintChunk& chunk) {
   chunk_to_layer_mapper_.SwitchToChunk(chunk);
 
   const auto& chunk_state = chunk.properties.property_tree_state;
-  if (chunk_state.Effect() != current_effect_ ||
-      chunk_state.Clip() != current_clip_ ||
-      chunk_state.Transform() != current_transform_)
-    EndTransform();
   SwitchToEffect(chunk_state.Effect());
   SwitchToClip(chunk_state.Clip());
   SwitchToTransform(chunk_state.Transform());
@@ -289,12 +293,8 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
       // Jump to the first of the combined clips.
       current_clip_ = lca_clip = previous_state.clip;
     }
-    if (current_clip_ == previous_state.clip) {
-      AppendRestore(previous_state.saved_count);
-      current_transform_ = previous_state.transform;
-      DCHECK_EQ(previous_state.effect, current_effect_);
-      state_stack_.pop_back();
-    }
+    if (current_clip_ == previous_state.clip)
+      EndClip();
   }
 
   if (target_clip == current_clip_)
@@ -352,21 +352,24 @@ void ConversionContext::SwitchToClip(const ClipPaintPropertyNode* target_clip) {
 void ConversionContext::StartCombinedClip(
     const FloatRect& combined_clip_rect,
     const ClipPaintPropertyNode* lowest_combined_clip_node) {
+  if (lowest_combined_clip_node->LocalTransformSpace() != current_transform_)
+    EndTransform();
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
   ApplyTransform(lowest_combined_clip_node->LocalTransformSpace());
   const bool antialias = true;
   cc_list_.push<cc::ClipRectOp>(combined_clip_rect, SkClipOp::kIntersect,
                                 antialias);
-
   cc_list_.EndPaintOfPairedBegin();
-  state_stack_.emplace_back(StateEntry{StateEntry::kClip, 1, current_transform_,
-                                       current_clip_, current_effect_});
+
+  PushState(StateEntry::kClip, 1);
   current_clip_ = lowest_combined_clip_node;
   current_transform_ = lowest_combined_clip_node->LocalTransformSpace();
 }
 
 void ConversionContext::StartSingleClip(const ClipPaintPropertyNode* clip) {
+  if (clip->LocalTransformSpace() != current_transform_)
+    EndTransform();
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
   ApplyTransform(clip->LocalTransformSpace());
@@ -382,8 +385,8 @@ void ConversionContext::StartSingleClip(const ClipPaintPropertyNode* clip) {
                                   SkClipOp::kIntersect, antialias);
   }
   cc_list_.EndPaintOfPairedBegin();
-  state_stack_.emplace_back(StateEntry{StateEntry::kClip, 1, current_transform_,
-                                       current_clip_, current_effect_});
+
+  PushState(StateEntry::kClip, 1);
   current_clip_ = clip;
   current_transform_ = clip->LocalTransformSpace();
 }
@@ -439,7 +442,6 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
     EndClips();
 
   // Apply effects.
-  cc_list_.StartPaint();
   int saved_count = 0;
   size_t save_layer_id = kNotFound;
   const auto* target_transform = current_transform_;
@@ -453,6 +455,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
   DCHECK(!has_filter || !(has_opacity || has_other_effects));
 
   if (!has_filter) {
+    cc_list_.StartPaint();
     // No need to adjust transform for non-filter effects because transform
     // doesn't matter.
     // TODO(ajuma): This should really be rounding instead of flooring the
@@ -472,17 +475,22 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
           nullptr, alpha, preserve_lcd_text_requests);
     }
     saved_count++;
+    cc_list_.EndPaintOfPairedBegin();
   } else {
     // Handle filter effect. Adjust transform first.
     target_transform = effect->LocalTransformSpace();
     FloatPoint filter_origin = effect->PaintOffset();
     if (current_transform_ != target_transform ||
         filter_origin != FloatPoint()) {
+      EndTransform();
       auto matrix = GetSkMatrix(target_transform);
       matrix.preTranslate(filter_origin.X(), filter_origin.Y());
+      cc_list_.StartPaint();
       cc_list_.push<cc::SaveOp>();
       cc_list_.push<cc::ConcatOp>(matrix);
       saved_count++;
+    } else {
+      cc_list_.StartPaint();
     }
 
     // The size parameter is only used to computed the origin of zoom
@@ -495,20 +503,18 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
 
     if (filter_origin != FloatPoint())
       cc_list_.push<cc::TranslateOp>(-filter_origin.X(), -filter_origin.Y());
+    cc_list_.EndPaintOfPairedBegin();
     saved_count++;
   }
 
   DCHECK_GT(saved_count, 0);
   DCHECK_LE(saved_count, 2);
   DCHECK_NE(save_layer_id, kNotFound);
-  cc_list_.EndPaintOfPairedBegin();
 
   // Adjust state and push previous state onto effect stack.
   // TODO(trchen): Change input clip to expansion hint once implemented.
   const ClipPaintPropertyNode* input_clip = current_clip_;
-  state_stack_.emplace_back(StateEntry{StateEntry::PairedType::kEffect,
-                                       saved_count, current_transform_,
-                                       current_clip_, current_effect_});
+  PushState(StateEntry::kEffect, saved_count);
   effect_bounds_stack_.emplace_back(
       EffectBoundsInfo{save_layer_id, target_transform});
   current_transform_ = target_transform;
@@ -555,15 +561,10 @@ void ConversionContext::EndEffect() {
   }
 
   effect_bounds_stack_.pop_back();
-  current_effect_ = previous_state.effect;
-
+  EndTransform();
   // Propagate the bounds to the parent effect.
   UpdateEffectBounds(bounds, current_transform_);
-
-  AppendRestore(previous_state.saved_count);
-  current_effect_ = previous_state.effect;
-  current_transform_ = previous_state.transform;
-  state_stack_.pop_back();
+  PopState();
 }
 
 void ConversionContext::EndClips() {
@@ -573,11 +574,28 @@ void ConversionContext::EndClips() {
 
 void ConversionContext::EndClip() {
   DCHECK_EQ(state_stack_.back().type, StateEntry::kClip);
+  DCHECK_EQ(state_stack_.back().effect, current_effect_);
+  EndTransform();
+  PopState();
+}
+
+void ConversionContext::PushState(StateEntry::PairedType type,
+                                  int saved_count) {
+  state_stack_.emplace_back(StateEntry{type, saved_count, current_transform_,
+                                       current_clip_, current_effect_,
+                                       previous_transform_});
+  previous_transform_ = nullptr;
+}
+
+void ConversionContext::PopState() {
+  DCHECK_EQ(nullptr, previous_transform_);
+
   const auto& previous_state = state_stack_.back();
   AppendRestore(previous_state.saved_count);
   current_transform_ = previous_state.transform;
+  previous_transform_ = previous_state.previous_transform;
   current_clip_ = previous_state.clip;
-  DCHECK_EQ(previous_state.effect, current_effect_);
+  current_effect_ = previous_state.effect;
   state_stack_.pop_back();
 }
 
@@ -586,7 +604,8 @@ void ConversionContext::SwitchToTransform(
   if (target_transform == current_transform_)
     return;
 
-  DCHECK_EQ(nullptr, previous_transform_);
+  EndTransform();
+
   cc_list_.StartPaint();
   cc_list_.push<cc::SaveOp>();
   ApplyTransform(target_transform);

@@ -850,19 +850,18 @@ TEST_F(PaintChunksToCcLayerTest, ChunksSamePropertyTreeState) {
 
   EXPECT_THAT(*output,
               PaintRecordMatcher::Make(
-                  {cc::PaintOpType::DrawRecord,                     // <p0/>
-                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1>
-                   cc::PaintOpType::DrawRecord,                     // <p1/>
-                   cc::PaintOpType::DrawRecord,                     // <p2/>
-                   cc::PaintOpType::Restore,                        // </t1>
-                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1>
-                   cc::PaintOpType::ClipRect,                       // <c1>
-                   cc::PaintOpType::DrawRecord,                     // <p3/>
-                   cc::PaintOpType::DrawRecord,                     // <p4/>
-                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t2>
-                   cc::PaintOpType::DrawRecord,                     // <p5/>
-                   cc::PaintOpType::DrawRecord,                     // <p6/>
-                   cc::PaintOpType::Restore,                        // </t2>
+                  {cc::PaintOpType::DrawRecord,                       // <p0/>
+                   cc::PaintOpType::Save, cc::PaintOpType::Concat,    // <t1>
+                   cc::PaintOpType::DrawRecord,                       // <p1/>
+                   cc::PaintOpType::DrawRecord,                       // <p2/>
+                   cc::PaintOpType::Save, cc::PaintOpType::ClipRect,  // <c1>
+                   cc::PaintOpType::DrawRecord,                       // <p3/>
+                   cc::PaintOpType::DrawRecord,                       // <p4/>
+                   cc::PaintOpType::Save, cc::PaintOpType::Concat,    // <t2>
+                   cc::PaintOpType::DrawRecord,                       // <p5/>
+                   cc::PaintOpType::DrawRecord,                       // <p6/>
+                   cc::PaintOpType::Restore,                          // </t2>
+                   cc::PaintOpType::Restore,                          // </c1>
                    cc::PaintOpType::Restore}));  // </c1></t1>
 }
 
