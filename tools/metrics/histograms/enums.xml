@@ -6216,6 +6216,7 @@ Called by update_net_error_codes.py.-->
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-177" label="SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS"/>
   <int value="-176" label="NO_BUFFER_SPACE"/>
   <int value="-175" label="SSL_VERSION_INTERFERENCE"/>
   <int value="-174" label="READ_IF_READY_NOT_IMPLEMENTED"/>
@@ -30337,6 +30338,7 @@ Called by update_net_error_codes.py.-->
   <int value="174" label="READ_IF_READY_NOT_IMPLEMENTED"/>
   <int value="175" label="SSL_VERSION_INTERFERENCE"/>
   <int value="176" label="NO_BUFFER_SPACE"/>
+  <int value="177" label="SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS"/>
   <int value="200" label="CERT_COMMON_NAME_INVALID"/>
   <int value="201" label="CERT_DATE_INVALID"/>
   <int value="202" label="CERT_AUTHORITY_INVALID"/>

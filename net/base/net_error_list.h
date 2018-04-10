@@ -411,7 +411,7 @@ NET_ERROR(NO_BUFFER_SPACE, -176)
 
 // There were no common signature algorithms between our client certificate
 // private key and the server's preferences.
-NET_ERROR(SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS, -1478)
+NET_ERROR(SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS, -177)
 
 // Certificate error codes
 //
