@@ -6927,7 +6927,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       } else {
         av1_set_mvcost(x, 1,
                        mbmi->ref_mv_idx + (this_mode == NEAR_NEWMV ? 1 : 0));
-        *rate_mv = av1_mv_bit_cost(&frame_mv[refs[1]].as_mv,
+        *rate_mv = av1_mv_bit_cost(&cur_mv[1].as_mv,
                                    &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
@@ -6942,7 +6942,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       } else {
         av1_set_mvcost(x, 0,
                        mbmi->ref_mv_idx + (this_mode == NEW_NEARMV ? 1 : 0));
-        *rate_mv = av1_mv_bit_cost(&frame_mv[refs[0]].as_mv,
+        *rate_mv = av1_mv_bit_cost(&cur_mv[0].as_mv,
                                    &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
