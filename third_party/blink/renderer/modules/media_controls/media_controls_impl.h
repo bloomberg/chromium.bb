@@ -111,8 +111,6 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
     RefreshCastButtonVisibilityWithoutUpdate();
   }
 
-  bool GetTestMode() const;
-
   // Called by the fullscreen buttons to toggle fulllscreen on/off.
   void EnterFullscreen();
   void ExitFullscreen();

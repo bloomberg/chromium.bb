@@ -458,3 +458,8 @@ function getElementByPseudoId(root, pseudoId) {
     }
     return null;
 }
+
+function enableTestMode(video) {
+  if (window.internals)
+    window.internals.setMediaControlsTestMode(video, true);
+}

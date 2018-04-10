@@ -127,6 +127,7 @@ constexpr int kModernControlsVideoButtonPadding = 26;
 const char kShowDefaultPosterCSSClass[] = "use-default-poster";
 const char kActAsAudioControlsCSSClass[] = "audio-only";
 const char kScrubbingMessageCSSClass[] = "scrubbing-message";
+const char kTestModeCSSClass[] = "test-mode";
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -678,6 +679,11 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
     builder.Append(kActAsAudioControlsCSSClass);
   }
 
+  if (is_test_mode_) {
+    builder.Append(" ");
+    builder.Append(kTestModeCSSClass);
+  }
+
   const AtomicString& classes = builder.ToAtomicString();
   if (getAttribute("class") != classes)
     setAttribute("class", classes);
@@ -803,14 +809,7 @@ LayoutObject* MediaControlsImpl::ContainerLayoutObject() {
 
 void MediaControlsImpl::SetTestMode(bool enable) {
   is_test_mode_ = enable;
-  if (loading_panel_)
-    loading_panel_->OnTestModeUpdated();
-  // TODO(steimel): Add other test mode changes, such as stopping the overlay
-  // play button transition.
-}
-
-bool MediaControlsImpl::GetTestMode() const {
-  return is_test_mode_;
+  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::MaybeShow() {
