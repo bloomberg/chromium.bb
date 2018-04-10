@@ -196,38 +196,32 @@ void AXRelationCache::UpdateAriaOwns(
                                       validated_owned_child_axids);
 }
 
-// Return target AXObject and fill source_objects with AXObjects for
-// relations pointing to target.
-AXObject* AXRelationCache::GetReverseRelated(
+// Fill source_objects with AXObjects for relations pointing to target.
+void AXRelationCache::GetReverseRelated(
     Node* target,
     HeapVector<Member<AXObject>>& source_objects) {
   if (!target || !target->IsElementNode())
-    return nullptr;
+    return;
 
   Element* element = ToElement(target);
   if (!element->HasID())
-    return nullptr;
+    return;
 
   String id = element->GetIdAttribute();
   HashSet<AXID>* source_axids = id_attr_to_related_mapping_.at(id);
   if (!source_axids)
-    return nullptr;
+    return;
 
-  // Not safe to call GetOrCreate() as this method is called during layout
-  // changes such as AttributeChanged().
-  AXObject* ax_element = Get(element);
   for (const auto& source_axid : *source_axids) {
     AXObject* source_object = ObjectFromAXID(source_axid);
     if (source_object)
       source_objects.push_back(source_object);
   }
-
-  return ax_element;
 }
 
 void AXRelationCache::UpdateRelatedTree(Node* node) {
   HeapVector<Member<AXObject>> related_sources;
-  AXObject* related_target = GetReverseRelated(node, related_sources);
+  AXObject* related_target = Get(node);
   // If it's already owned, call childrenChanged on the owner to make sure
   // it's still an owner.
   if (related_target && IsAriaOwned(related_target)) {
@@ -237,10 +231,10 @@ void AXRelationCache::UpdateRelatedTree(Node* node) {
   }
 
   // Ensure children are updated if there is a change.
+  GetReverseRelated(node, related_sources);
   for (AXObject* related : related_sources) {
-    if (related) {
+    if (related)
       ChildrenChanged(related);
-    }
   }
 
   UpdateRelatedText(node);
@@ -251,11 +245,10 @@ void AXRelationCache::UpdateRelatedText(Node* node) {
   while (node) {
     // Reverse relations via aria-labelledby, aria-describedby, aria-owns.
     HeapVector<Member<AXObject>> related_sources;
-    if (GetReverseRelated(node, related_sources)) {
-      for (AXObject* related : related_sources) {
-        if (related)
-          TextChanged(related);
-      }
+    GetReverseRelated(node, related_sources);
+    for (AXObject* related : related_sources) {
+      if (related)
+        TextChanged(related);
     }
 
     // Forward relation via <label for="[id]">.

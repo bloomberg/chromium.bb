@@ -38,6 +38,27 @@ test(function(t)
 </script>
 
 <div class="container">
+  <div id="source1" aria-owns="target1"></div>
+  <div id="target"></div>
+</div>
+
+<script>
+test(function(t) {
+  var source1 = document.getElementById("source1");
+  var target = document.getElementById("target");
+  var axSource1 = accessibilityController.accessibleElementById("source1");
+
+  assert_equals(axSource1.childrenCount, 0);
+
+  target.id = "target1";
+  assert_equals(axSource1.childrenCount, 1);
+
+  target.id = "target";
+  assert_equals(axSource1.childrenCount, 0);
+}, "Aria-owns is dynamically recomputed (2).");
+</script>
+
+<div class="container">
     <div id="logical_parent" role="group" aria-owns="logical_1 logical_2 logical_3 logical_4">
         <div id="logical_3">3</div>
         <div id="logical_4">4</div>
