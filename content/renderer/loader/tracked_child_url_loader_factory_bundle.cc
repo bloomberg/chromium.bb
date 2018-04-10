@@ -104,8 +104,10 @@ void TrackedChildURLLoaderFactoryBundle::OnUpdate(
 
 // -----------------------------------------------------------------------------
 
-HostChildURLLoaderFactoryBundle::HostChildURLLoaderFactoryBundle()
-    : observer_list_(std::make_unique<ObserverList>()) {
+HostChildURLLoaderFactoryBundle::HostChildURLLoaderFactoryBundle(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : observer_list_(std::make_unique<ObserverList>()),
+      task_runner_(std::move(task_runner)) {
   DCHECK(RenderThread::Get()) << "HostChildURLLoaderFactoryBundle should live "
                                  "on the main renderer thread";
 }
@@ -119,8 +121,8 @@ HostChildURLLoaderFactoryBundle::Clone() {
 
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   auto main_thread_host_bundle_clone = std::make_unique<
-      TrackedChildURLLoaderFactoryBundle::HostPtrAndTaskRunner>(
-      AsWeakPtr(), base::SequencedTaskRunnerHandle::Get());
+      TrackedChildURLLoaderFactoryBundle::HostPtrAndTaskRunner>(AsWeakPtr(),
+                                                                task_runner_);
 
   return std::make_unique<TrackedChildURLLoaderFactoryBundleInfo>(
       std::move(info->default_factory_info()),

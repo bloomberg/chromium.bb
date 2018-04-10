@@ -107,7 +107,8 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
       std::unordered_map<TrackedChildURLLoaderFactoryBundle*,
                          std::unique_ptr<ObserverPtrAndTaskRunner>>;
 
-  HostChildURLLoaderFactoryBundle();
+  explicit HostChildURLLoaderFactoryBundle(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // ChildURLLoaderFactoryBundle overrides.
   // Returns |std::unique_ptr<TrackedChildURLLoaderFactoryBundleInfo>|.
@@ -144,6 +145,8 @@ class CONTENT_EXPORT HostChildURLLoaderFactoryBundle
 
   // Contains |WeakPtr| and |TaskRunner| to tracked bundles.
   std::unique_ptr<ObserverList> observer_list_ = nullptr;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(HostChildURLLoaderFactoryBundle);
 };
