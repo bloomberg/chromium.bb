@@ -289,6 +289,8 @@ void WASAPIAudioInputStream::Close() {
   if (converter_)
     converter_->RemoveInput(this);
 
+  ReportAndResetGlitchStats();
+
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
   manager_->ReleaseInputStream(this);
@@ -466,13 +468,17 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     // Retrieve the amount of data in the capture endpoint buffer, replace it
     // with silence if required, create callbacks for each packet and store
     // non-delivered data for the next event.
-    // TODO(grunell): Should we handle
-    // |flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY|?
     HRESULT hr =
         audio_capture_client_->GetBuffer(&data_ptr, &num_frames_to_read, &flags,
                                          &device_position, &capture_time_100ns);
     if (hr == AUDCLNT_S_BUFFER_EMPTY)
       break;
+
+    ReportDelayStatsAndUpdateGlitchCount(
+        num_frames_to_read, flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY,
+        device_position,
+        base::TimeTicks() +
+            base::TimeDelta::FromMicroseconds(capture_time_100ns / 10.0));
 
     // TODO(grunell): Should we handle different errors explicitly? Perhaps exit
     // by setting |error = true|. What are the assumptions here that makes us
@@ -955,6 +961,89 @@ double WASAPIAudioInputStream::ProvideInput(AudioBus* audio_bus,
                                             uint32_t frames_delayed) {
   fifo_->Consume()->CopyTo(audio_bus);
   return 1.0;
+}
+
+void WASAPIAudioInputStream::ReportDelayStatsAndUpdateGlitchCount(
+    UINT32 frames_in_buffer,
+    bool discontinuity_flagged,
+    UINT64 device_position,
+    base::TimeTicks capture_time) {
+  // Report delay. Don't report if no valid capture time.
+  // Unreasonably large delays are clamped at 1 second. Some devices sometimes
+  // have capture timestamps way off.
+  if (capture_time > base::TimeTicks()) {
+    base::TimeDelta delay = base::TimeTicks::Now() - capture_time;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Capture.DeviceLatency", delay,
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromSeconds(1), 50);
+  }
+
+  // Detect glitch. Detect and count separately based on expected device
+  // position and the discontinuity flag since they have showed to not always
+  // be consistent with each other.
+  if (expected_next_device_position_ != 0) {
+    if (device_position > expected_next_device_position_) {
+      ++total_glitches_;
+      auto lost_frames = device_position - expected_next_device_position_;
+      total_lost_frames_ += lost_frames;
+      if (lost_frames > largest_glitch_frames_)
+        largest_glitch_frames_ = lost_frames;
+    } else if (device_position < expected_next_device_position_) {
+      ++total_device_position_less_than_expected_;
+    }
+    if (discontinuity_flagged)
+      ++total_discontinuities_;
+    if (device_position > expected_next_device_position_ &&
+        discontinuity_flagged) {
+      ++total_concurrent_glitch_and_discontinuities_;
+    }
+  }
+
+  expected_next_device_position_ = device_position + frames_in_buffer;
+}
+
+void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
+  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Glitches", total_glitches_);
+  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Win.DevicePositionLessThanExpected",
+                       total_device_position_less_than_expected_);
+  UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Win.Discontinuities",
+                       total_discontinuities_);
+  UMA_HISTOGRAM_COUNTS(
+      "Media.Audio.Capture.Win.ConcurrentGlitchAndDiscontinuities",
+      total_concurrent_glitch_and_discontinuities_);
+
+  double lost_frames_ms =
+      (total_lost_frames_ * 1000) / input_format_.nSamplesPerSec;
+  std::string log_message = base::StringPrintf(
+      "WASAPIAIS: Total glitches=%d. Total frames lost=%llu (%.0lf ms). Total "
+      "discontinuities=%d. Total concurrent glitch and discont=%d. Total low "
+      "device "
+      "positions=%d.",
+      total_glitches_, total_lost_frames_, lost_frames_ms,
+      total_discontinuities_, total_concurrent_glitch_and_discontinuities_,
+      total_device_position_less_than_expected_);
+  log_callback_.Run(log_message);
+
+  if (total_glitches_ != 0) {
+    UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.LostFramesInMs",
+                             base::TimeDelta::FromMilliseconds(lost_frames_ms));
+    int64_t largest_glitch_ms =
+        (largest_glitch_frames_ * 1000) / input_format_.nSamplesPerSec;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Media.Audio.Capture.LargestGlitchMs",
+        base::TimeDelta::FromMilliseconds(largest_glitch_ms),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
+        50);
+    DLOG(WARNING) << log_message;
+  }
+
+  expected_next_device_position_ = 0;
+  total_glitches_ = 0;
+  total_device_position_less_than_expected_ = 0;
+  total_discontinuities_ = 0;
+  total_concurrent_glitch_and_discontinuities_ = 0;
+  total_lost_frames_ = 0;
+  largest_glitch_frames_ = 0;
 }
 
 }  // namespace media
