@@ -1,5 +1,7 @@
 include_rules = [
     "+base/unguessable_token.h",
+    "+mojo/public/cpp/bindings",
+    "+skia/ext",
     "-third_party/blink/renderer/modules",
     "+third_party/blink/renderer/modules/event_modules.h",
     "+third_party/blink/renderer/modules/event_target_modules.h",
@@ -8,6 +10,4 @@ include_rules = [
     "+third_party/blink/renderer/modules/permissions",
     "+third_party/blink/renderer/modules/serviceworkers",
     "+third_party/blink/renderer/modules/vibration",
-    "+mojo/public/cpp/bindings",
-    "+skia/ext",
 ]

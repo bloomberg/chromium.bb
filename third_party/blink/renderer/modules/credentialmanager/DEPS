@@ -1,6 +1,6 @@
 include_rules = [
-  "-third_party/blink/renderer/modules",
-  "+third_party/blink/renderer/modules/modules_export.h",
-  "+third_party/blink/renderer/modules/credentialmanager",
   "+mojo/public",
+  "-third_party/blink/renderer/modules",
+  "+third_party/blink/renderer/modules/credentialmanager",
+  "+third_party/blink/renderer/modules/modules_export.h",
 ]
