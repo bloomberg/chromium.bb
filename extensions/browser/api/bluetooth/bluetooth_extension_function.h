@@ -22,7 +22,7 @@ namespace api {
 // Base class for bluetooth extension functions. This class initializes
 // bluetooth adapter and calls (on the UI thread) DoWork() implemented by
 // individual bluetooth extension functions.
-class BluetoothExtensionFunction : public AsyncExtensionFunction {
+class BluetoothExtensionFunction : public UIThreadExtensionFunction {
  public:
   BluetoothExtensionFunction();
 
@@ -30,17 +30,19 @@ class BluetoothExtensionFunction : public AsyncExtensionFunction {
   ~BluetoothExtensionFunction() override;
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
   // Use instead of extension_id() so that this can be run from WebUI.
   std::string GetExtensionId();
+
+  virtual bool CreateParams();
 
  private:
   void RunOnAdapterReady(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Implemented by individual bluetooth extension functions, called
   // automatically on the UI thread once |adapter| has been initialized.
-  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) = 0;
+  virtual void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothExtensionFunction);
 };

@@ -12,8 +12,6 @@
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "extensions/browser/api/bluetooth/bluetooth_extension_function.h"
-#include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
@@ -74,8 +72,6 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateAPI);
 };
 
-// TODO(tbarzic): Replace SyncExtensionFunction/AsyncExtensionFunction overrides
-// with UIThreadExtensionFunction throughout the file.
 class EasyUnlockPrivateGetStringsFunction : public UIThreadExtensionFunction {
  public:
   EasyUnlockPrivateGetStringsFunction();
@@ -94,14 +90,15 @@ class EasyUnlockPrivateGetStringsFunction : public UIThreadExtensionFunction {
 };
 
 class EasyUnlockPrivatePerformECDHKeyAgreementFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   EasyUnlockPrivatePerformECDHKeyAgreementFunction();
 
  protected:
   ~EasyUnlockPrivatePerformECDHKeyAgreementFunction() override;
 
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void OnData(const std::string& secret_key);
@@ -113,14 +110,15 @@ class EasyUnlockPrivatePerformECDHKeyAgreementFunction
 };
 
 class EasyUnlockPrivateGenerateEcP256KeyPairFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   EasyUnlockPrivateGenerateEcP256KeyPairFunction();
 
  protected:
   ~EasyUnlockPrivateGenerateEcP256KeyPairFunction() override;
 
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void OnData(const std::string& public_key,
@@ -133,14 +131,15 @@ class EasyUnlockPrivateGenerateEcP256KeyPairFunction
 };
 
 class EasyUnlockPrivateCreateSecureMessageFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   EasyUnlockPrivateCreateSecureMessageFunction();
 
  protected:
   ~EasyUnlockPrivateCreateSecureMessageFunction() override;
 
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void OnData(const std::string& message);
@@ -152,14 +151,15 @@ class EasyUnlockPrivateCreateSecureMessageFunction
 };
 
 class EasyUnlockPrivateUnwrapSecureMessageFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   EasyUnlockPrivateUnwrapSecureMessageFunction();
 
  protected:
   ~EasyUnlockPrivateUnwrapSecureMessageFunction() override;
 
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void OnData(const std::string& data);
@@ -241,7 +241,7 @@ class EasyUnlockPrivateSetRemoteDevicesFunction
 };
 
 class EasyUnlockPrivateGetRemoteDevicesFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.getRemoteDevices",
                              EASYUNLOCKPRIVATE_GETREMOTEDEVICES)
@@ -259,8 +259,8 @@ class EasyUnlockPrivateGetRemoteDevicesFunction
   virtual std::vector<cryptauth::ExternalDeviceInfo> GetUnlockKeys();
 
  private:
-  // AsyncExtensionFunction:
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
   // Callback when the PSK of a device is derived.
   void OnPSKDerivedForDevice(const cryptauth::ExternalDeviceInfo& device,
@@ -330,7 +330,7 @@ class EasyUnlockPrivateHideErrorBubbleFunction
 };
 
 class EasyUnlockPrivateFindSetupConnectionFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.findSetupConnection",
                              EASYUNLOCKPRIVATE_FINDSETUPCONNECTION)
@@ -339,8 +339,8 @@ class EasyUnlockPrivateFindSetupConnectionFunction
  private:
   ~EasyUnlockPrivateFindSetupConnectionFunction() override;
 
-  // AsyncExtensionFunction:
-  bool RunAsync() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
 
   // Called when the connection with the remote device advertising the setup
   // service was found.

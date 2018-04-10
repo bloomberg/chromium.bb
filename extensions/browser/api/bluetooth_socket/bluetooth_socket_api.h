@@ -39,23 +39,15 @@ class BluetoothSocketEventDispatcher;
 // thread while providing methods to manage resources of that class. This
 // follows the pattern of AsyncApiFunction, but does not derive from it,
 // because BluetoothApiSocket methods must be called on the UI Thread.
-class BluetoothSocketAsyncApiFunction : public AsyncExtensionFunction {
+class BluetoothSocketAsyncApiFunction : public UIThreadExtensionFunction {
  public:
   BluetoothSocketAsyncApiFunction();
 
  protected:
   ~BluetoothSocketAsyncApiFunction() override;
 
-  // AsyncExtensionFunction:
-  bool RunAsync() override;
-
-  bool PrePrepare();
-  bool Respond();
-  void AsyncWorkCompleted();
-
-  virtual bool Prepare() = 0;
-  virtual void Work();
-  virtual void AsyncWorkStart();
+  // UIThreadExtensionFunction:
+  bool PreRunValidation(std::string* error) override;
 
   content::BrowserThread::ID work_thread_id() const;
 
@@ -77,9 +69,7 @@ class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   ~BluetoothSocketCreateFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void Work() override;
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<bluetooth_socket::Create::Params> params_;
@@ -94,9 +84,8 @@ class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   ~BluetoothSocketUpdateFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void Work() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<bluetooth_socket::Update::Params> params_;
@@ -113,13 +102,11 @@ class BluetoothSocketSetPausedFunction
  protected:
   ~BluetoothSocketSetPausedFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void Work() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<bluetooth_socket::SetPaused::Params> params_;
-  BluetoothSocketEventDispatcher* socket_event_dispatcher_;
 };
 
 class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
@@ -134,14 +121,14 @@ class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) = 0;
-  virtual void CreateResults() = 0;
+  virtual std::unique_ptr<base::ListValue> CreateResults() = 0;
 
   virtual int socket_id() const = 0;
   virtual const std::string& uuid() const = 0;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+  bool PreRunValidation(std::string* error) override;
 
  protected:
   ~BluetoothSocketListenFunction() override;
@@ -150,7 +137,7 @@ class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
   virtual void OnCreateService(scoped_refptr<device::BluetoothSocket> socket);
   virtual void OnCreateServiceError(const std::string& message);
 
-  BluetoothSocketEventDispatcher* socket_event_dispatcher_;
+  BluetoothSocketEventDispatcher* socket_event_dispatcher_ = nullptr;
 };
 
 class BluetoothSocketListenUsingRfcommFunction
@@ -173,7 +160,7 @@ class BluetoothSocketListenUsingRfcommFunction
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) override;
-  void CreateResults() override;
+  std::unique_ptr<base::ListValue> CreateResults() override;
 
  protected:
   ~BluetoothSocketListenUsingRfcommFunction() override;
@@ -202,7 +189,7 @@ class BluetoothSocketListenUsingL2capFunction
       const device::BluetoothAdapter::CreateServiceCallback& callback,
       const device::BluetoothAdapter::CreateServiceErrorCallback&
           error_callback) override;
-  void CreateResults() override;
+  std::unique_ptr<base::ListValue> CreateResults() override;
 
  protected:
   ~BluetoothSocketListenUsingL2capFunction() override;
@@ -219,9 +206,9 @@ class BluetoothSocketAbstractConnectFunction :
  protected:
   ~BluetoothSocketAbstractConnectFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
+  // UIThreadExtensionFunction:
+  bool PreRunValidation(std::string* error) override;
+  ResponseAction Run() override;
 
   // Subclasses should implement this method to connect to the service
   // registered with |uuid| on the |device|.
@@ -235,7 +222,7 @@ class BluetoothSocketAbstractConnectFunction :
   virtual void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
   std::unique_ptr<bluetooth_socket::Connect::Params> params_;
-  BluetoothSocketEventDispatcher* socket_event_dispatcher_;
+  BluetoothSocketEventDispatcher* socket_event_dispatcher_ = nullptr;
 };
 
 class BluetoothSocketConnectFunction :
@@ -265,9 +252,8 @@ class BluetoothSocketDisconnectFunction
  protected:
   ~BluetoothSocketDisconnectFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   virtual void OnSuccess();
@@ -284,9 +270,8 @@ class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   ~BluetoothSocketCloseFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void Work() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<bluetooth_socket::Close::Params> params_;
@@ -301,9 +286,8 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   ~BluetoothSocketSendFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void AsyncWorkStart() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void OnSuccess(int bytes_sent);
@@ -325,9 +309,8 @@ class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
  protected:
   ~BluetoothSocketGetInfoFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void Work() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   std::unique_ptr<bluetooth_socket::GetInfo::Params> params_;
@@ -344,9 +327,8 @@ class BluetoothSocketGetSocketsFunction
  protected:
   ~BluetoothSocketGetSocketsFunction() override;
 
-  // BluetoothSocketAsyncApiFunction:
-  bool Prepare() override;
-  void Work() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 };
 
 }  // namespace api
