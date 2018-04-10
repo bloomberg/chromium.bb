@@ -191,8 +191,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TimestampMatchesHistory) {
         history::URLRow virtual_row;
         ASSERT_TRUE(GetUrlFromClient(0, it3->virtual_url(), &virtual_row));
         const base::Time history_timestamp = virtual_row.last_visit();
-
-        ASSERT_EQ(timestamp, history_timestamp);
+        // Propagated timestamps have millisecond-level resolution, so we avoid
+        // exact comparison here (i.e. usecs might differ).
+        ASSERT_EQ(0, (timestamp - history_timestamp).InMilliseconds());
         ++found_navigations;
       }
     }

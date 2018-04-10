@@ -667,8 +667,8 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, IncognitotoNonIncognito) {
 namespace {
 
 // Verifies that the given NavigationController has exactly two
-// entries that correspond to the given URLs and that all but the last
-// entry have null timestamps.
+// entries that correspond to the given URLs and that all entries have non-null
+// timestamps.
 void VerifyNavigationEntries(
     const content::NavigationController& controller,
     GURL url1, GURL url2) {
@@ -676,7 +676,7 @@ void VerifyNavigationEntries(
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_EQ(url1, controller.GetEntryAtIndex(0)->GetURL());
   EXPECT_EQ(url2, controller.GetEntryAtIndex(1)->GetURL());
-  EXPECT_TRUE(controller.GetEntryAtIndex(0)->GetTimestamp().is_null());
+  EXPECT_FALSE(controller.GetEntryAtIndex(0)->GetTimestamp().is_null());
   EXPECT_FALSE(controller.GetEntryAtIndex(1)->GetTimestamp().is_null());
 }
 
@@ -702,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   tab.SetFromSyncData(sync_data, base::Time::Now());
   EXPECT_EQ(2U, tab.navigations.size());
   for (size_t i = 0; i < tab.navigations.size(); ++i)
-    EXPECT_TRUE(tab.navigations[i].timestamp().is_null());
+    EXPECT_FALSE(tab.navigations[i].timestamp().is_null());
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
 
