@@ -10,8 +10,10 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
@@ -29,14 +31,18 @@ namespace ash {
 namespace {
 
 // The length of short side of the black bar of the divider in dp.
-constexpr int kDividerShortSideLength = 7;
-constexpr int kDividerEnlargedShortSideLength = 12;
+constexpr int kDividerShortSideLength = 8;
+constexpr int kDividerEnlargedShortSideLength = 16;
 
 // The length of the white bar of the divider in dp.
 constexpr int kWhiteBarShortSideLength = 2;
-constexpr int kWhiteBarLongSideLength = 17;
-constexpr int kWhiteBarDiameter = 7;
+constexpr int kWhiteBarLongSideLength = 16;
+constexpr int kWhiteBarRadius = 4;
 constexpr int kWhiteBarCornerRadius = 1;
+
+constexpr SkColor kDividerBackgroundColor = SK_ColorBLACK;
+constexpr SkColor kWhiteBarBackgroundColor = SK_ColorWHITE;
+constexpr int kDividerBoundsChangeDurationMs = 250;
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
@@ -69,50 +75,74 @@ class AlwaysOnTopWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(AlwaysOnTopWindowTargeter);
 };
 
+// The white handler bar in the middle of the divider.
+class DividerHandlerView : public RoundedRectView {
+ public:
+  DividerHandlerView(int corner_radius, SkColor background_color)
+      : RoundedRectView(corner_radius, background_color) {}
+  ~DividerHandlerView() override = default;
+
+  // views::View:
+  void OnPaint(gfx::Canvas* canvas) override {
+    views::View::OnPaint(canvas);
+    // It's needed to avoid artifacts when tapping on the divider quickly.
+    canvas->DrawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
+    RoundedRectView::OnPaint(canvas);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DividerHandlerView);
+};
+
 // The divider view class. Passes the mouse/gesture events to the controller.
 class DividerView : public views::View, public views::ViewTargeterDelegate {
  public:
-  explicit DividerView(SplitViewController* controller)
-      : controller_(controller) {
+  explicit DividerView(SplitViewDivider* divider)
+      : controller_(Shell::Get()->split_view_controller()), divider_(divider) {
+    divider_view_ = new views::View();
+    divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    divider_view_->layer()->SetColor(kDividerBackgroundColor);
+
+    divider_handler_view_ =
+        new DividerHandlerView(kWhiteBarCornerRadius, kWhiteBarBackgroundColor);
+    divider_handler_view_->SetPaintToLayer();
+
+    AddChildView(divider_view_);
+    AddChildView(divider_handler_view_);
+
     SetEventTargeter(
         std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
   }
   ~DividerView() override = default;
 
   // views::View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    // Draw the black divider bar.
-    canvas->DrawColor(SK_ColorBLACK);
+  void Layout() override {
+    divider_view_->SetBoundsRect(GetLocalBounds());
 
-    cc::PaintFlags flags;
-    flags.setColor(SK_ColorWHITE);
-    flags.setAntiAlias(true);
+    // Calculate the bounds of the divider handler.
+    gfx::Rect white_bar_bounds(GetLocalBounds());
     if (controller_->is_resizing()) {
-      // Draw the white drag circle.
-      canvas->DrawCircle(gfx::RectF(GetLocalBounds()).CenterPoint(),
-                         kWhiteBarDiameter / 2.f, flags);
+      white_bar_bounds.ClampToCenteredSize(
+          gfx::Size(kWhiteBarRadius * 2, kWhiteBarRadius * 2));
+      divider_handler_view_->SetCornerRadius(kWhiteBarRadius);
     } else {
-      // Draw the white drag bar.
-      gfx::RectF white_bar_bounds;
       if (controller_->IsCurrentScreenOrientationLandscape()) {
-        white_bar_bounds = gfx::RectF(
-            (GetLocalBounds().width() - kWhiteBarShortSideLength) / 2.f,
-            (GetLocalBounds().height() - kWhiteBarLongSideLength) / 2.f,
-            kWhiteBarShortSideLength, kWhiteBarLongSideLength);
+        white_bar_bounds.ClampToCenteredSize(
+            gfx::Size(kWhiteBarShortSideLength, kWhiteBarLongSideLength));
       } else {
-        white_bar_bounds = gfx::RectF(
-            (GetLocalBounds().width() - kWhiteBarLongSideLength) / 2.f,
-            (GetLocalBounds().height() - kWhiteBarShortSideLength) / 2.f,
-            kWhiteBarLongSideLength, kWhiteBarShortSideLength);
+        white_bar_bounds.ClampToCenteredSize(
+            gfx::Size(kWhiteBarLongSideLength, kWhiteBarShortSideLength));
       }
-      canvas->DrawRoundRect(white_bar_bounds, kWhiteBarCornerRadius, flags);
+      divider_handler_view_->SetCornerRadius(kWhiteBarCornerRadius);
     }
+    divider_handler_view_->SetBoundsRect(white_bar_bounds);
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->StartResize(location);
+    OnResizeStatusChanged();
     return true;
   }
 
@@ -127,6 +157,7 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     gfx::Point location(event.location());
     views::View::ConvertPointToScreen(this, &location);
     controller_->EndResize(location);
+    OnResizeStatusChanged();
     if (event.GetClickCount() == 2)
       controller_->SwapWindows();
   }
@@ -142,12 +173,14 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
       case ui::ET_GESTURE_TAP_DOWN:
       case ui::ET_GESTURE_SCROLL_BEGIN:
         controller_->StartResize(location);
+        OnResizeStatusChanged();
         break;
       case ui::ET_GESTURE_SCROLL_UPDATE:
         controller_->Resize(location);
         break;
       case ui::ET_GESTURE_END:
         controller_->EndResize(location);
+        OnResizeStatusChanged();
         break;
       default:
         break;
@@ -163,7 +196,39 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
   }
 
  private:
+  void OnResizeStatusChanged() {
+    // It's possible that when this function is called, split view mode has
+    // been ended, and the divider widget is to be deleted soon. In this case
+    // no need to update the divider layout and do the animation.
+    if (!controller_->IsSplitViewModeActive())
+      return;
+
+    Layout();
+    // Do the divider enlarge/shrink animation when starting/ending dragging.
+    const gfx::Rect old_bounds =
+        divider_->GetDividerBoundsInScreen(/*is_dragging=*/false);
+    const gfx::Rect new_bounds =
+        divider_->GetDividerBoundsInScreen(controller_->is_resizing());
+    gfx::Transform transform;
+    transform.Translate(new_bounds.x() - old_bounds.x(),
+                        new_bounds.y() - old_bounds.y());
+    transform.Scale(
+        static_cast<float>(new_bounds.width()) / old_bounds.width(),
+        static_cast<float>(new_bounds.height()) / old_bounds.height());
+    ui::ScopedLayerAnimationSettings settings(
+        divider_view_->layer()->GetAnimator());
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kDividerBoundsChangeDurationMs));
+    settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
+    settings.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    divider_view_->SetTransform(transform);
+  }
+
+  views::View* divider_view_ = nullptr;
+  DividerHandlerView* divider_handler_view_ = nullptr;
   SplitViewController* controller_;
+  SplitViewDivider* divider_;
 
   DISALLOW_COPY_AND_ASSIGN(DividerView);
 };
@@ -185,10 +250,11 @@ SplitViewDivider::SplitViewDivider(SplitViewController* controller,
 
 SplitViewDivider::~SplitViewDivider() {
   Shell::Get()->activation_client()->RemoveObserver(this);
-  divider_widget_.reset();
+  divider_widget_->Close();
   split_view_window_targeter_.reset();
   for (auto* iter : observed_windows_)
     iter->RemoveObserver(this);
+  observed_windows_.clear();
 }
 
 // static
@@ -248,8 +314,8 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
   }
 }
 
-void SplitViewDivider::UpdateDividerBounds(bool is_dragging) {
-  divider_widget_->SetBounds(GetDividerBoundsInScreen(is_dragging));
+void SplitViewDivider::UpdateDividerBounds() {
+  divider_widget_->SetBounds(GetDividerBoundsInScreen(/*is_dragging=*/false));
 }
 
 gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
@@ -297,14 +363,14 @@ void SplitViewDivider::OnWindowActivated(ActivationReason reason,
 }
 
 void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
-  DCHECK(!divider_widget_.get());
-  divider_widget_ = std::make_unique<views::Widget>();
+  DCHECK(!divider_widget_);
+  // Native widget owns this widget.
+  divider_widget_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
-  DividerView* divider_view = new DividerView(controller_);
+  DividerView* divider_view = new DividerView(this);
   divider_widget_->set_focus_on_creation(false);
   divider_widget_->Init(params);
   divider_widget_->SetContentsView(divider_view);

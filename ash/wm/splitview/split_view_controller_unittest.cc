@@ -539,7 +539,7 @@ TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
       split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
 
   // Test that |window1| and |window2| has the same width and height after snap.
-  EXPECT_EQ(bounds_window1.width(), bounds_window2.width());
+  EXPECT_NEAR(bounds_window1.width(), bounds_window2.width(), 1);
   EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
   EXPECT_EQ(bounds_divider.height(), bounds_window1.height());
 

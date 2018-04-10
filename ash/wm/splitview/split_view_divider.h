@@ -53,7 +53,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
       bool is_dragging);
 
   // Updates |divider_widget_|'s bounds.
-  void UpdateDividerBounds(bool is_dragging);
+  void UpdateDividerBounds();
 
   // Calculates the divider's expected bounds according to the divider's
   // position.
@@ -70,7 +70,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  views::Widget* divider_widget() { return divider_widget_.get(); }
+  views::Widget* divider_widget() { return divider_widget_; }
 
  private:
   void CreateDividerWidget(aura::Window* root_window);
@@ -87,7 +87,7 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // screen to the other, containing a small white drag bar in the middle. As
   // the user presses on it and drag it to left or right, the left and right
   // window will be resized accordingly.
-  std::unique_ptr<views::Widget> divider_widget_;
+  views::Widget* divider_widget_ = nullptr;
 
   // Tracks observed windows.
   aura::Window::Windows observed_windows_;
