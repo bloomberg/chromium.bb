@@ -38,8 +38,8 @@ class RendererMediaPlayerInterface {
                                       bool success) = 0;
   virtual void OnPlaybackComplete() = 0;
   virtual void OnBufferingUpdate(int percentage) = 0;
-  virtual void OnSeekRequest(const base::TimeDelta& time_to_seek) = 0;
-  virtual void OnSeekComplete(const base::TimeDelta& current_time) = 0;
+  virtual void OnSeekRequest(base::TimeDelta time_to_seek) = 0;
+  virtual void OnSeekComplete(base::TimeDelta current_time) = 0;
   virtual void OnMediaError(int error_type) = 0;
   virtual void OnVideoSizeChanged(int width, int height) = 0;
 
@@ -89,7 +89,7 @@ class RendererMediaPlayerManagerInterface {
   virtual void Pause(int player_id, bool is_media_related_action) = 0;
 
   // Performs seek on the player.
-  virtual void Seek(int player_id, const base::TimeDelta& time) = 0;
+  virtual void Seek(int player_id, base::TimeDelta time) = 0;
 
   // Sets the player volume.
   virtual void SetVolume(int player_id, double volume) = 0;
