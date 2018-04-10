@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
@@ -45,7 +46,6 @@ namespace blink {
 
 class FlexLayoutAlgorithm;
 class LayoutBox;
-class NGLayoutResult;
 struct MinMaxSize;
 
 enum FlexSign {
