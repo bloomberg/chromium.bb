@@ -310,6 +310,8 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
           ->use_touchable_layout()) {
     const MenuConfig& menu_config = MenuConfig::instance();
     bubble_border_->SetCornerRadius(menu_config.touchable_corner_radius);
+    bubble_border_->set_md_shadow_elevation(
+        menu_config.touchable_menu_shadow_elevation);
     scroll_view_->GetContents()->SetBorder(CreateEmptyBorder(
         gfx::Insets(menu_config.vertical_touchable_menu_item_padding, 0)));
   }
