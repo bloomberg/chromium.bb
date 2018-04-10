@@ -28,13 +28,26 @@ void RoundedRectView::OnPaint(gfx::Canvas* canvas) {
   const int h = size().height();
 
   SkPath path;
-  path.addCircle(r, r, r);          // top-left
-  path.addCircle(r, h - r, r);      // bottom-left
-  path.addCircle(w - r, h - r, r);  // bottom-right
-  path.addCircle(w - r, r, r);      // top-right
-  path.addRect(gfx::RectToSkRect(gfx::Rect(r, 0, w - 2 * r, r)));      // top
-  path.addRect(gfx::RectToSkRect(gfx::Rect(0, r, w, h - 2 * r)));      // middle
-  path.addRect(gfx::RectToSkRect(gfx::Rect(r, h - r, w - 2 * r, r)));  // bottom
+  const int vertical_ext = h - r * 2;
+  const int horizontal_ext = w - r * 2;
+
+  path.addCircle(r, r, r);  // top-left circle
+  if (vertical_ext > 0) {
+    // bottom-left circle
+    path.addCircle(r, h - r, r);
+    // middle rectangle
+    path.addRect(gfx::RectToSkRect(gfx::Rect(0, r, w, vertical_ext)));
+  }
+  if (horizontal_ext > 0) {
+    // top-right circle
+    path.addCircle(w - r, r, r);
+    // top rectangle
+    path.addRect(gfx::RectToSkRect(gfx::Rect(r, 0, horizontal_ext, r)));
+    // bottom rectangle
+    path.addRect(gfx::RectToSkRect(gfx::Rect(r, h - r, horizontal_ext, r)));
+  }
+  if (vertical_ext > 0 && horizontal_ext > 0)
+    path.addCircle(w - r, h - r, r);  // bottom-right circle
 
   canvas->ClipPath(path, true);
   canvas->DrawColor(background_color_);

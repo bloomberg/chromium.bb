@@ -374,7 +374,7 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreenUnadjusted(
 void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   DCHECK(IsSplitViewModeActive());
   is_resizing_ = true;
-  split_view_divider_->UpdateDividerBounds(is_resizing_);
+  split_view_divider_->UpdateDividerBounds();
   previous_event_location_ = location_in_screen;
 
   smooth_resize_window_ = GetWindowForSmoothResize();
@@ -834,7 +834,7 @@ void SplitViewController::UpdateSnappedWindowsAndDividerBounds() {
   }
 
   // Update divider's bounds.
-  split_view_divider_->UpdateDividerBounds(is_resizing_);
+  split_view_divider_->UpdateDividerBounds();
 }
 
 SplitViewController::SnapPosition SplitViewController::GetBlackScrimPosition(
