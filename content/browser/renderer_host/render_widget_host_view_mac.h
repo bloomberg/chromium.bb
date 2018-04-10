@@ -303,6 +303,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const gfx::PointF& root_point) override;
   void OnNSViewLookUpDictionaryOverlayFromRange(
       const gfx::Range& range) override;
+  void OnNSViewSyncGetTextInputType(
+      ui::TextInputType* text_input_type) override;
+  void OnNSViewSyncGetSelectedText(bool* has_selection,
+                                   base::string16* selected_text) override;
+  void OnNSViewSyncGetCharacterIndexAtPoint(const gfx::PointF& root_point,
+                                            uint32_t* index) override;
+  void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
+                                        gfx::Rect* rect,
+                                        gfx::Range* actual_range) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
