@@ -329,11 +329,8 @@ public class FeatureUtilities {
      * @return Whether the contextual suggestions bottom sheet is enabled.
      */
     public static boolean isContextualSuggestionsBottomSheetEnabled(boolean isTablet) {
-        boolean hasSeenSearchEnginePromo =
-                LocaleManager.getInstance().hasCompletedSearchEnginePromo()
-                || LocaleManager.getInstance().hasShownSearchEnginePromoThisSession();
-
-        return !isTablet && !hasSeenSearchEnginePromo && isChromeModernDesignEnabled()
+        return !isTablet && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
+                && isChromeModernDesignEnabled()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET);
     }

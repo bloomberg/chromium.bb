@@ -1329,6 +1329,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mContextualSearchManager != null) {
             mContextualSearchManager.onAccessibilityModeChanged(enabled);
         }
+        if (mContextualSuggestionsCoordinator != null) {
+            mContextualSuggestionsCoordinator.onAccessibilityModeChanged(enabled);
+        }
     }
 
     @Override
