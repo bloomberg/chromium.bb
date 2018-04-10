@@ -1060,8 +1060,30 @@ def _ElfInfoFromApk(apk_path, apk_so_path, tool_prefix):
     return build_id, section_sizes, elf_overhead_size
 
 
+def _AutoIdentifyInputFile(args):
+  file_output = subprocess.check_output(['file', args.f])
+  format_text = file_output[file_output.find(': ') + 2:]
+  # File-not-found -> 'cannot ...' and directory -> 'directory', which don't
+  # match anything here, so they are handled by the final 'return False'.
+  if format_text.startswith('Java archive data '):
+    logging.info('Auto-identified --apk-file.')
+    args.apk_file = args.f
+    return True
+  if format_text.startswith('ELF '):
+    logging.info('Auto-identified --elf-file.')
+    args.elf_file = args.f
+    return True
+  if format_text.startswith('ASCII text'):
+    logging.info('Auto-identified --map-file.')
+    args.map_file = args.f
+    return True
+  return False
+
+
 def AddMainPathsArguments(parser):
   """Add arguments for DeduceMainPaths()."""
+  parser.add_argument('-f', metavar='FILE',
+                      help='Auto-identify input file type.')
   parser.add_argument('--apk-file',
                       help='.apk file to measure. When set, --elf-file will be '
                             'derived (if unset). Providing the .apk allows '
@@ -1098,6 +1120,10 @@ def AddArguments(parser):
 
 def DeduceMainPaths(args, parser):
   """Computes main paths based on input, and deduces them if needed."""
+  if args.f is not None:
+    if not _AutoIdentifyInputFile(args):
+      parser.error('Cannot find or identify file %s' % args.f)
+
   apk_path = args.apk_file
   elf_path = args.elf_file
   map_path = args.map_file
