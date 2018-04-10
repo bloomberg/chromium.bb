@@ -21,11 +21,8 @@ PresentationConnectionMessage::PresentationConnectionMessage(
 PresentationConnectionMessage::PresentationConnectionMessage(
     const PresentationConnectionMessage& other) = default;
 
-// Note: "move constructor noexcept = default" currently does not compile on
-// Windows and Android (crbug.com/706963).
 PresentationConnectionMessage::PresentationConnectionMessage(
-    PresentationConnectionMessage&& other) noexcept
-    : message(std::move(other.message)), data(std::move(other.data)) {}
+    PresentationConnectionMessage&& other) noexcept = default;
 
 PresentationConnectionMessage::~PresentationConnectionMessage() {}
 
