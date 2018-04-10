@@ -14,6 +14,11 @@ class ResourceResponse;
 class CORE_EXPORT AllowedByNosniff {
  public:
   static bool MimeTypeAsScript(ExecutionContext*, const ResourceResponse&);
+
+  // For testing:
+  static bool MimeTypeAsScriptForTesting(ExecutionContext*,
+                                         const ResourceResponse&,
+                                         bool is_worker_global_scope);
 };
 
 }  // namespace blink
