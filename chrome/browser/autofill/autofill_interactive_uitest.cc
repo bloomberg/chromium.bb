@@ -4,16 +4,19 @@
 
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -170,17 +173,20 @@ class AutofillManagerTestDelegateImpl
 
   // autofill::AutofillManagerTestDelegate:
   void DidPreviewFormData() override {
+    ASSERT_TRUE(loop_runner_ != nullptr);
     ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
   void DidFillFormData() override {
+    ASSERT_TRUE(loop_runner_ != nullptr);
     if (!is_expecting_dynamic_refill_)
       ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
 
   void DidShowSuggestions() override {
+    ASSERT_TRUE(loop_runner_ != nullptr);
     ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
@@ -189,6 +195,7 @@ class AutofillManagerTestDelegateImpl
     if (!waiting_for_text_change_)
       return;
     waiting_for_text_change_ = false;
+    ASSERT_TRUE(loop_runner_ != nullptr);
     ASSERT_TRUE(loop_runner_->loop_running());
     loop_runner_->Quit();
   }
@@ -688,26 +695,63 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
   ExpectFilledTestForm();
 }
 
-// Makes sure that the first click does *not* activate the popup.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForFirstClick) {
+// Test fixture that enables/disables AutofillSingleClick per a bool param,
+class AutofillSingleClickTest : public AutofillInteractiveTest,
+                                public testing::WithParamInterface<bool> {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AutofillInteractiveTest::SetUpCommandLine(command_line);
+    const bool single_click_enabled = GetParam();
+    const char* group = single_click_enabled ? "Enabled" : "Disabled";
+    command_line->AppendSwitchASCII(
+        ::switches::kForceFieldTrials,
+        base::StringPrintf("AutofillSingleClick/%s", group));
+  }
+};
+
+// Depending on whether or not AutofillSingleClick is enabled, makes sure that
+// the first click does or does not activate the autofill popup on the initial
+// click within a fillable field.
+IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
+  // Get the test parameters.
+  const bool single_click_enabled = GetParam();
+
+  // Make sure autofill data exists.
   CreateTestProfile();
 
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), GURL(std::string(kDataURIPrefix) + kTestFormString)));
 
-  // Click the first name field while it's out of focus, then twiddle our thumbs
-  // a bit. If a popup were to show, it would hit the asserts in
-  // AutofillManagerTestDelegateImpl while we're wasting time.
-  ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
+  // If AutofillSingleClick is NOT enabled, then the first time we click on the
+  // first name field, nothing should happen.
+  if (!single_click_enabled) {
+    // Click the first name field while it's out of focus, then twiddle our
+    // thumbs a bit. If the autofill popup shows, it will hit the CHECKs in
+    // AutofillManagerTestDelegateImpl while we're waiting.
+    ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
+    ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
+  }
 
-  // The second click should activate the popup since the first click focused
-  // the field.
+  // This click should activate the autofill popup.
   test_delegate()->Reset();
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
   test_delegate()->Wait();
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  SendKeyToPopupAndWait(ui::DomKey::ARROW_DOWN);
+
+  // Press Enter to accept the autofill suggestions.
+  SendKeyToPopupAndWait(ui::DomKey::ENTER);
+
+  // The form should be filled.
+  ExpectFilledTestForm();
 }
+
+INSTANTIATE_TEST_CASE_P(AutofillInteractiveTest,
+                        AutofillSingleClickTest,
+                        testing::Bool());
 
 // Makes sure that clicking outside the focused field doesn't activate
 // the popup.

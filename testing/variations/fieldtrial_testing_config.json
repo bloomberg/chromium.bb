@@ -415,6 +415,21 @@
             ]
         }
     ],
+    "AutofillSingleClick": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "AutofillUpstreamRequestCvcIfMissing": [
         {
             "platforms": [
