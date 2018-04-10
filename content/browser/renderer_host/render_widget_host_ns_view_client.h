@@ -69,10 +69,39 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewSmartMagnify(
       const blink::WebGestureEvent& smart_magnify_event) = 0;
 
+  // Request an overlay dictionary be displayed for the text at the specified
+  // point.
   virtual void OnNSViewLookUpDictionaryOverlayAtPoint(
       const gfx::PointF& root_point) = 0;
+
+  // Request an overlay dictionary be displayed for the text in the the
+  // specified character range.
   virtual void OnNSViewLookUpDictionaryOverlayFromRange(
       const gfx::Range& range) = 0;
+
+  // Synchronously query the text input type from the
+  virtual void OnNSViewSyncGetTextInputType(
+      ui::TextInputType* text_input_type) = 0;
+
+  // Synchronously query the current selection. If there exists a selection then
+  // set |*has_selection| to true and return in |*selected_text| the selected
+  // text. Otherwise set |*has_selection| to false.
+  virtual void OnNSViewSyncGetSelectedText(bool* has_selection,
+                                           base::string16* selected_text) = 0;
+
+  // Synchronously query the character index for |root_point| and return it in
+  // |*index|. Sets it to UINT32_MAX if the request fails or is not completed.
+  virtual void OnNSViewSyncGetCharacterIndexAtPoint(
+      const gfx::PointF& root_point,
+      uint32_t* index) = 0;
+
+  // Synchronously query the composition character boundary rectangle and return
+  // it in |*rect|. Set |*actual_range| to the range actually used for the
+  // returned rectangle.
+  virtual void OnNSViewSyncGetFirstRectForRange(
+      const gfx::Range& requested_range,
+      gfx::Rect* rect,
+      gfx::Range* actual_range) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);

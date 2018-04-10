@@ -23,7 +23,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
-#import "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
@@ -46,7 +45,6 @@ using content::RenderWidgetHostNSViewClient;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
-using content::TextInputClientMac;
 using content::WebContents;
 using content::WebGestureEventBuilder;
 using content::WebMouseEventBuilder;
@@ -581,9 +579,11 @@ void ExtractUnderlines(NSAttributedString* string,
       return;
   }
 
-  bool shouldAutohideCursor =
-      renderWidgetHostView_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
-      eventType == NSKeyDown && !(modifierFlags & NSCommandKeyMask);
+  ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
+  client_->OnNSViewSyncGetTextInputType(&textInputType);
+  bool shouldAutohideCursor = textInputType != ui::TEXT_INPUT_TYPE_NONE &&
+                              eventType == NSKeyDown &&
+                              !(modifierFlags & NSCommandKeyMask);
 
   // We only handle key down events and just simply forward other events.
   if (eventType != NSKeyDown) {
@@ -1395,25 +1395,10 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   thePoint = ui::ConvertPointFromScreenToWindow([self window], thePoint);
   thePoint = [self convertPoint:thePoint fromView:nil];
   thePoint.y = NSHeight([self frame]) - thePoint.y;
-
-  if (!renderWidgetHostView_->host() ||
-      !renderWidgetHostView_->host()->delegate() ||
-      !renderWidgetHostView_->host()->delegate()->GetInputEventRouter())
-    return NSNotFound;
-
   gfx::PointF rootPoint(thePoint.x, thePoint.y);
-  gfx::PointF transformedPoint;
-  RenderWidgetHostImpl* widgetHost =
-      renderWidgetHostView_->host()
-          ->delegate()
-          ->GetInputEventRouter()
-          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_, rootPoint,
-                                       &transformedPoint);
-  if (!widgetHost)
-    return NSNotFound;
 
-  uint32_t index = TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
-      widgetHost, gfx::ToFlooredPoint(transformedPoint));
+  uint32_t index = UINT32_MAX;
+  client_->OnNSViewSyncGetCharacterIndexAtPoint(rootPoint, &index);
   // |index| could be WTF::notFound (-1) and its value is different from
   // NSNotFound so we need to convert it.
   if (index == UINT32_MAX)
@@ -1424,27 +1409,19 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
 - (NSRect)firstViewRectForCharacterRange:(NSRange)theRange
                              actualRange:(NSRangePointer)actualRange {
-  gfx::Rect rect;
-  gfx::Range range;
+  gfx::Rect gfxRect;
+  gfx::Range gfxActualRange;
   if (actualRange)
-    range = gfx::Range(*actualRange);
-  if (!renderWidgetHostView_->GetCachedFirstRectForCharacterRange(
-          gfx::Range(theRange), &rect, &range)) {
-    rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
-        renderWidgetHostView_->GetFocusedWidget(), gfx::Range(theRange));
-
-    // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
-    if (actualRange)
-      *actualRange = theRange;
-  } else {
-    if (actualRange)
-      *actualRange = range.ToNSRange();
-  }
+    gfxActualRange = gfx::Range(*actualRange);
+  client_->OnNSViewSyncGetFirstRectForRange(gfx::Range(theRange), &gfxRect,
+                                            &gfxActualRange);
+  if (actualRange)
+    *actualRange = gfxActualRange.ToNSRange();
 
   // The returned rectangle is in WebKit coordinates (upper left origin), so
   // flip the coordinate system.
   NSRect viewFrame = [self frame];
-  NSRect flippedRect = NSRectFromCGRect(rect.ToCGRect());
+  NSRect flippedRect = NSRectFromCGRect(gfxRect.ToCGRect());
   flippedRect.origin.y = NSHeight(viewFrame) - NSMaxY(flippedRect);
   return flippedRect;
 }
@@ -1453,7 +1430,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
                          actualRange:(NSRangePointer)actualRange {
   // During tab closure, events can arrive after RenderWidgetHostViewMac::
   // Destroy() is called, which will have set |host()| to null.
-  if (!renderWidgetHostView_->GetFocusedWidget()) {
+  if (clientWasDestroyed_) {
     [self cancelComposition];
     return NSZeroRect;
   }
@@ -1554,7 +1531,9 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 // nil when the caret is in non-editable content or password box to avoid
 // making input methods do their work.
 - (NSTextInputContext*)inputContext {
-  switch (renderWidgetHostView_->GetTextInputType()) {
+  ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
+  client_->OnNSViewSyncGetTextInputType(&textInputType);
+  switch (textInputType) {
     case ui::TEXT_INPUT_TYPE_NONE:
     case ui::TEXT_INPUT_TYPE_PASSWORD:
       return nil;
@@ -1828,14 +1807,17 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 
 - (id)validRequestorForSendType:(NSString*)sendType
                      returnType:(NSString*)returnType {
+  ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
+  client_->OnNSViewSyncGetTextInputType(&textInputType);
+  bool hasSelection = false;
+  base::string16 selectedText;
+  client_->OnNSViewSyncGetSelectedText(&hasSelection, &selectedText);
+
   id requestor = nil;
   BOOL sendTypeIsString = [sendType isEqual:NSStringPboardType];
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
-  const content::TextInputManager::TextSelection* selection =
-      renderWidgetHostView_->GetTextSelection();
-  BOOL hasText = selection && !selection->selected_text().empty();
-  BOOL takesText =
-      renderWidgetHostView_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
+  BOOL hasText = hasSelection && !selectedText.empty();
+  BOOL takesText = textInputType != ui::TEXT_INPUT_TYPE_NONE;
 
   if (sendTypeIsString && hasText && !returnType) {
     requestor = self;
@@ -1877,16 +1859,16 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 @implementation RenderWidgetHostViewCocoa (NSServicesRequests)
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard types:(NSArray*)types {
-  const content::TextInputManager::TextSelection* selection =
-      renderWidgetHostView_->GetTextSelection();
-  if (!selection || selection->selected_text().empty() ||
+  bool hasSelection = false;
+  base::string16 selectedText;
+  client_->OnNSViewSyncGetSelectedText(&hasSelection, &selectedText);
+  if (!hasSelection || selectedText.empty() ||
       ![types containsObject:NSStringPboardType]) {
     return NO;
   }
 
   base::scoped_nsobject<NSString> text([[NSString alloc]
-      initWithUTF8String:base::UTF16ToUTF8(selection->selected_text())
-                             .c_str()]);
+      initWithUTF8String:base::UTF16ToUTF8(selectedText).c_str()]);
   NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
   [pboard declareTypes:toDeclare owner:nil];
   return [pboard setString:text forType:NSStringPboardType];

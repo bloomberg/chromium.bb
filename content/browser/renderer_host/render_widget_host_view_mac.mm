@@ -1457,6 +1457,56 @@ void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayAtPoint(
                      target_widget_routing_id));
 }
 
+void RenderWidgetHostViewMac::OnNSViewSyncGetTextInputType(
+    ui::TextInputType* text_input_type) {
+  *text_input_type = GetTextInputType();
+}
+
+void RenderWidgetHostViewMac::OnNSViewSyncGetSelectedText(
+    bool* has_selection,
+    base::string16* selected_text) {
+  const TextInputManager::TextSelection* selection = GetTextSelection();
+  if (selection) {
+    *has_selection = true;
+    *selected_text = selection->selected_text();
+  } else {
+    *has_selection = false;
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewSyncGetCharacterIndexAtPoint(
+    const gfx::PointF& root_point,
+    uint32_t* index) {
+  *index = UINT32_MAX;
+
+  if (!host() || !host()->delegate() ||
+      !host()->delegate()->GetInputEventRouter())
+    return;
+
+  gfx::PointF transformed_point;
+  RenderWidgetHostImpl* widget_host =
+      host()->delegate()->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
+          this, root_point, &transformed_point);
+  if (!widget_host)
+    return;
+
+  *index = TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
+      widget_host, gfx::ToFlooredPoint(transformed_point));
+}
+
+void RenderWidgetHostViewMac::OnNSViewSyncGetFirstRectForRange(
+    const gfx::Range& requested_range,
+    gfx::Rect* rect,
+    gfx::Range* actual_range) {
+  if (!GetCachedFirstRectForCharacterRange(requested_range, rect,
+                                           actual_range)) {
+    *rect = TextInputClientMac::GetInstance()->GetFirstRectForRange(
+        GetFocusedWidget(), requested_range);
+    // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
+    *actual_range = requested_range;
+  }
+}
+
 void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     int32_t target_widget_process_id,
     int32_t target_widget_routing_id,
