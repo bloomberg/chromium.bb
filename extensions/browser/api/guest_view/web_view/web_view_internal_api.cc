@@ -724,7 +724,12 @@ WebViewInternalFindFunction::WebViewInternalFindFunction() {
 WebViewInternalFindFunction::~WebViewInternalFindFunction() {
 }
 
-bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
+void WebViewInternalFindFunction::ForwardResponse(
+    const base::DictionaryValue& results) {
+  Respond(OneArgument(results.CreateDeepCopy()));
+}
+
+ExtensionFunction::ResponseAction WebViewInternalFindFunction::Run() {
   std::unique_ptr<web_view_internal::Find::Params> params(
       web_view_internal::Find::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -743,8 +748,9 @@ bool WebViewInternalFindFunction::RunAsyncSafe(WebViewGuest* guest) {
         params->options->match_case ? *params->options->match_case : false;
   }
 
-  guest->StartFind(search_text, options, this);
-  return true;
+  guest_->StartFind(search_text, options, this);
+  // It is possible that StartFind has already responded.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 WebViewInternalStopFindingFunction::WebViewInternalStopFindingFunction() {
@@ -990,7 +996,7 @@ uint32_t WebViewInternalClearDataFunction::GetRemovalMask() {
 
 // TODO(lazyboy): Parameters in this extension function are similar (or a
 // sub-set) to BrowsingDataRemoverFunction. How can we share this code?
-bool WebViewInternalClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
+ExtensionFunction::ResponseAction WebViewInternalClearDataFunction::Run() {
   // Grab the initial |options| parameter, and parse out the arguments.
   base::DictionaryValue* options;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &options));
@@ -1012,30 +1018,28 @@ bool WebViewInternalClearDataFunction::RunAsyncSafe(WebViewGuest* guest) {
 
   remove_mask_ = GetRemovalMask();
   if (bad_message_)
-    return false;
+    return RespondNow(Error(kUnknownErrorDoNotUse));
 
   AddRef();  // Balanced below or in WebViewInternalClearDataFunction::Done().
 
   bool scheduled = false;
   if (remove_mask_) {
-    scheduled = guest->ClearData(
-        remove_since_,
-        remove_mask_,
+    scheduled = guest_->ClearData(
+        remove_since_, remove_mask_,
         base::Bind(&WebViewInternalClearDataFunction::ClearDataDone, this));
   }
   if (!remove_mask_ || !scheduled) {
-    SendResponse(false);
     Release();  // Balanced above.
-    return false;
+    return RespondNow(Error(kUnknownErrorDoNotUse));
   }
 
   // Will finish asynchronously.
-  return true;
+  return RespondLater();
 }
 
 void WebViewInternalClearDataFunction::ClearDataDone() {
   Release();  // Balanced in RunAsync().
-  SendResponse(true);
+  Respond(NoArguments());
 }
 
 }  // namespace extensions

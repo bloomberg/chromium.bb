@@ -13,9 +13,9 @@
 namespace extensions {
 
 // An abstract base class for async extensionview APIs. It does a process ID
-// check in RunAsync, and then calls RunAsyncSafe which must be overriden by
-// all subclasses.
-class ExtensionViewInternalExtensionFunction : public AsyncExtensionFunction {
+// check in PreRunValidation.
+class ExtensionViewInternalExtensionFunction
+    : public UIThreadExtensionFunction {
  public:
   ExtensionViewInternalExtensionFunction() {}
 
@@ -23,10 +23,9 @@ class ExtensionViewInternalExtensionFunction : public AsyncExtensionFunction {
   ~ExtensionViewInternalExtensionFunction() override {}
 
   // ExtensionFunction implementation.
-  bool RunAsync() final;
+  bool PreRunValidation(std::string* error) final;
 
- private:
-  virtual bool RunAsyncSafe(ExtensionViewGuest* guest) = 0;
+  ExtensionViewGuest* guest_ = nullptr;
 };
 
 // Attempts to load a src into the extensionview.
@@ -41,14 +40,14 @@ class ExtensionViewInternalLoadSrcFunction
   ~ExtensionViewInternalLoadSrcFunction() override {}
 
  private:
-  // ExtensionViewInternalLoadSrcFunction implementation.
-  bool RunAsyncSafe(ExtensionViewGuest* guest) override;
+  // UIThreadExtensionFunction implementation.
+  ResponseAction Run() final;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalLoadSrcFunction);
 };
 
 // Parses a src and determines whether or not it is valid.
-class ExtensionViewInternalParseSrcFunction : public AsyncExtensionFunction {
+class ExtensionViewInternalParseSrcFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("extensionViewInternal.parseSrc",
                              EXTENSIONVIEWINTERNAL_PARSESRC);
@@ -58,8 +57,8 @@ class ExtensionViewInternalParseSrcFunction : public AsyncExtensionFunction {
   ~ExtensionViewInternalParseSrcFunction() override {}
 
  private:
-  // ExtensionViewInternalParseSrcFunction implementation.
-  bool RunAsync() final;
+  // UIThreadExtensionFunction implementation.
+  ResponseAction Run() final;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewInternalParseSrcFunction);
 };

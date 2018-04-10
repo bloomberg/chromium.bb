@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-class GuestViewInternalCreateGuestFunction : public AsyncExtensionFunction {
+class GuestViewInternalCreateGuestFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("guestViewInternal.createGuest",
                              GUESTVIEWINTERNAL_CREATEGUEST);
@@ -18,14 +18,16 @@ class GuestViewInternalCreateGuestFunction : public AsyncExtensionFunction {
 
  protected:
   ~GuestViewInternalCreateGuestFunction() override {}
-  bool RunAsync() final;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() final;
 
  private:
   void CreateGuestCallback(content::WebContents* guest_web_contents);
   DISALLOW_COPY_AND_ASSIGN(GuestViewInternalCreateGuestFunction);
 };
 
-class GuestViewInternalDestroyGuestFunction : public AsyncExtensionFunction {
+class GuestViewInternalDestroyGuestFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("guestViewInternal.destroyGuest",
                              GUESTVIEWINTERNAL_DESTROYGUEST);
@@ -33,14 +35,16 @@ class GuestViewInternalDestroyGuestFunction : public AsyncExtensionFunction {
 
  protected:
   ~GuestViewInternalDestroyGuestFunction() override;
-  bool RunAsync() final;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() final;
 
  private:
   void DestroyGuestCallback(content::WebContents* guest_web_contents);
   DISALLOW_COPY_AND_ASSIGN(GuestViewInternalDestroyGuestFunction);
 };
 
-class GuestViewInternalSetSizeFunction : public AsyncExtensionFunction {
+class GuestViewInternalSetSizeFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("guestViewInternal.setSize",
                              GUESTVIEWINTERNAL_SETAUTOSIZE);
@@ -49,7 +53,9 @@ class GuestViewInternalSetSizeFunction : public AsyncExtensionFunction {
 
  protected:
   ~GuestViewInternalSetSizeFunction() override;
-  bool RunAsync() final;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() final;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GuestViewInternalSetSizeFunction);

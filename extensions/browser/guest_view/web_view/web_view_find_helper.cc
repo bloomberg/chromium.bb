@@ -283,8 +283,7 @@ void WebViewFindHelper::FindInfo::SendResponse(bool canceled) {
   results.SetBoolean(webview::kFindCanceled, canceled);
 
   // Call the callback.
-  find_function_->SetResult(results.CreateDeepCopy());
-  find_function_->SendResponse(true);
+  find_function_->ForwardResponse(results);
 }
 
 WebViewFindHelper::FindInfo::~FindInfo() {}
