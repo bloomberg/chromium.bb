@@ -92,26 +92,32 @@ TEST_F('SelectToSpeakNodeUtilsUnitTest', 'findAllMatching', function() {
   let node2 = {root: rootNode, parent: container1, name: 'two',
       role: 'inlineTextBox', state: {},
       location: {left: 0, top: 50, width: 50, height: 50}};
+  let node3 = {root: rootNode, parent: container1, value: 'text',
+      role: 'textField', state: {},
+      location: {left: 0, top: 0, width: 25, height: 25}};
 
   // Set up relationships between nodes.
   rootNode.children = [container1, container2];
   rootNode.firstChild = container1;
   container1.nextSibling = container2;
-  container1.children = [node1, node2];
+  container1.children = [node1, node2, node3];
   container1.firstChild = node1;
   node1.nextSibling = node2;
+  node2.nextSibling = node3;
 
   // Should get both children of the first container, without getting
   // the first container itself or the empty container.
   let result = [];
   assertTrue(findAllMatching(rootNode, rect, result));
-  assertEquals(2, result.length);
+  assertEquals(3, result.length);
   assertEquals(node1, result[0]);
   assertEquals(node2, result[1]);
+  assertEquals(node3, result[2]);
 
   // If a node doesn't have a name, it should not be included.
   result = [];
   node2.name = undefined;
+  node3.value = undefined;
   assertTrue(findAllMatching(rootNode, rect, result));
   assertEquals(1, result.length);
   assertEquals(node1, result[0]);
@@ -133,7 +139,7 @@ TEST_F('SelectToSpeakNodeUtilsUnitTest', 'findAllMatching', function() {
 
   // Offscreen should cause a node to be skipped.
   result = [];
-  node2.state = {offscreen: true}
+  node2.state = {offscreen: true};
   assertFalse(findAllMatching(rootNode, rect, result));
   assertEquals(0, result.length);
 
@@ -144,14 +150,14 @@ TEST_F('SelectToSpeakNodeUtilsUnitTest', 'findAllMatching', function() {
   assertFalse(findAllMatching(rootNode, rect, result));
 
   // A non staticText container without a name should still have
-  // children found.
+  // children found if they are valid.
   result = [];
-  let node3 = {root: rootNode, parent: container2, name: 'three',
+  let node4 = {root: rootNode, parent: container2, name: 'four',
       state: {}, location: {left: 0, top: 50, width: 50, height: 50}};
-  container2.firstChild = node3;
+  container2.firstChild = node4;
   assertTrue(findAllMatching(rootNode, rect, result));
   assertEquals(1, result.length);
-  assertEquals(node3, result[0]);
+  assertEquals(node4, result[0]);
 
   // A non staticText container with a valid name should not be
   // read if its children are read. Children take precidence.
@@ -159,12 +165,12 @@ TEST_F('SelectToSpeakNodeUtilsUnitTest', 'findAllMatching', function() {
   container2.name = 'container2';
   assertTrue(findAllMatching(rootNode, rect, result));
   assertEquals(1, result.length);
-  assertEquals(node3, result[0]);
+  assertEquals(node4, result[0]);
 
   // A non staticText container with a valid name which has only
   // children without names should be read instead of its children.
   result = [];
-  node3.name = undefined;
+  node4.name = undefined;
   assertTrue(findAllMatching(rootNode, rect, result));
   assertEquals(1, result.length);
   assertEquals(container2, result[0]);

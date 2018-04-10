@@ -136,7 +136,8 @@ function buildNodeGroup(nodes, index) {
   // While next node is in the same paragraph as this node AND is
   // a text type node, continue building the paragraph.
   while (index < nodes.length) {
-    if (node.name !== undefined && !isWhitespace(node.name)) {
+    if ((node.name !== undefined && !isWhitespace(node.name)) ||
+        (node.role == RoleType.TEXT_FIELD && node.value !== undefined)) {
       let newNode;
       if (node.role == RoleType.INLINE_TEXT_BOX && node.parent !== undefined) {
         if (node.parent.role == RoleType.STATIC_TEXT) {

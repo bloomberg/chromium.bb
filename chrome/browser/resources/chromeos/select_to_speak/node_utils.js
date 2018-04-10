@@ -47,15 +47,39 @@ function getNodeState(node) {
 }
 
 /**
- * Returns true if a node should be ignored by Select-to-Speak.
- * @param {AutomationNode} node The node to test
+ * Returns true if a node should be ignored by Select-to-Speak, or if it
+ * is of interest. This does not deal with whether nodes have children --
+ * nodes are interesting if they have a name or a value and have an onscreen
+ * location.
+ * @param {!AutomationNode} node The node to test
  * @param {boolean} includeOffscreen Whether to include offscreen nodes.
  * @return {boolean} whether this node should be ignored.
  */
 function shouldIgnoreNode(node, includeOffscreen) {
-  return (
-      !node.name || isWhitespace(node.name) || !node.location ||
-      node.state.invisible || (node.state.offscreen && !includeOffscreen));
+  if (isNodeInvisible(node, includeOffscreen)) {
+    return true;
+  }
+  if (!node.name || isWhitespace(node.name)) {
+    if (isTextField(node)) {
+      // Text fields may also be marked by value.
+      return !node.value || isWhitespace(node.value);
+    }
+    return true;
+  }
+  // The node should not be ignored.
+  return false;
+}
+
+/**
+ * Returns true if a node is invisible for any reason.
+ * @param {!AutomationNode} node The node to test
+ * @param {boolean} includeOffscreen Whether to include offscreen nodes
+ *     as visible type nodes.
+ * @return {boolean} whether this node is invisible.
+ */
+function isNodeInvisible(node, includeOffscreen) {
+  return !node.location || node.state.invisible ||
+      (node.state.offscreen && !includeOffscreen);
 }
 
 /**
@@ -94,7 +118,7 @@ function nameLength(node) {
 /**
  * Returns true if a node is a text field type, but not for any other type,
  * including contentEditables.
- * @param {AutomationNode} node The node to check
+ * @param {!AutomationNode} node The node to check
  * @return {boolean} True if the node is a text field type.
  */
 function isTextField(node) {
@@ -133,7 +157,7 @@ function getLastLeafChild(node) {
 /**
  * Finds all nodes within the subtree rooted at |node| that overlap
  * a given rectangle.
- * @param {AutomationNode} node The starting node.
+ * @param {!AutomationNode} node The starting node.
  * @param {{left: number, top: number, width: number, height: number}} rect
  *     The bounding box to search.
  * @param {Array<AutomationNode>} nodes The matching node array to be
