@@ -12,6 +12,8 @@ import org.chromium.net.CronetProvider;
 import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.ICronetEngineBuilder;
 
+import java.util.Arrays;
+
 /**
  * Implementation of {@link CronetProvider} that creates {@link CronetEngine.Builder}
  * for building the native implementation of {@link CronetEngine}.
@@ -46,5 +48,17 @@ public class NativeCronetProvider extends CronetProvider {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(new Object[] {NativeCronetProvider.class, mContext});
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other == this
+                || (other instanceof NativeCronetProvider
+                           && this.mContext.equals(((NativeCronetProvider) other).mContext));
     }
 }
