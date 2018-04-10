@@ -16,7 +16,6 @@ WorkerThreadLifecycleObserver::WorkerThreadLifecycleObserver(
     : LifecycleObserver(worker_thread_lifecycle_context),
       was_context_destroyed_before_observer_creation_(
           worker_thread_lifecycle_context->was_context_destroyed_) {
-  DCHECK(IsMainThread());
 }
 
 WorkerThreadLifecycleObserver::~WorkerThreadLifecycleObserver() = default;

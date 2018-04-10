@@ -214,6 +214,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return global_scope_scheduler_->GetTaskRunner(type);
   }
 
+  void ChildThreadStartedOnWorkerThread(WorkerThread*);
+  void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
+
  protected:
   WorkerThread(ThreadableLoadingContext*, WorkerReportingProxy&);
 
@@ -281,6 +284,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void ImportModuleScriptOnWorkerThread(const KURL& script_url,
                                         network::mojom::FetchCredentialsMode);
 
+  void TerminateChildThreadsOnWorkerThread();
+
   // These are called in this order during worker thread termination.
   void PrepareForShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
   void PerformShutdownOnWorkerThread() LOCKS_EXCLUDED(mutex_);
@@ -341,6 +346,10 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // when worker thread posts tasks.
   CrossThreadPersistent<WorkerThreadLifecycleContext>
       worker_thread_lifecycle_context_;
+
+  HashSet<WorkerThread*> child_threads_;
+
+  THREAD_CHECKER(parent_thread_checker_);
 };
 
 }  // namespace blink

@@ -15,9 +15,9 @@ namespace blink {
 
 class WorkerThreadLifecycleObserver;
 
-// Used for notifying observers on the main thread of worker thread termination.
-// The lifetime of this class is equal to that of WorkerThread. Created and
-// destructed on the main thread.
+// Used for notifying observers on the creating thread of worker thread
+// termination. The lifetime of this class is equal to that of WorkerThread.
+// Created and destructed on the thread that constructed the worker.
 class CORE_EXPORT WorkerThreadLifecycleContext final
     : public GarbageCollectedFinalized<WorkerThreadLifecycleContext>,
       public LifecycleNotifier<WorkerThreadLifecycleContext,
