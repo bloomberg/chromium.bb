@@ -34,7 +34,6 @@ class VIZ_CLIENT_EXPORT DefaultLocalSurfaceIdProvider
       const CompositorFrame& frame) override;
 
  private:
-  LocalSurfaceId local_surface_id_;
   gfx::Size surface_size_;
   float device_scale_factor_ = 0;
   ParentLocalSurfaceIdAllocator parent_local_surface_id_allocator_;
