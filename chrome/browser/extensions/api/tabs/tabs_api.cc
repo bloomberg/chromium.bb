@@ -1965,14 +1965,14 @@ ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
   return set_init_result(SUCCESS);
 }
 
-bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
-  content::WebContents* contents = NULL;
+bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
+  content::WebContents* contents = nullptr;
 
   // If |tab_id| is specified, look for the tab. Otherwise default to selected
   // tab in the current window.
   CHECK_GE(execute_tab_id_, 0);
   if (!GetTabById(execute_tab_id_, browser_context(), include_incognito(),
-                  nullptr, nullptr, &contents, nullptr, &error_)) {
+                  nullptr, nullptr, &contents, nullptr, error)) {
     return false;
   }
 
@@ -1983,7 +1983,7 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   content::RenderFrameHost* rfh =
       ExtensionApiFrameIdMap::GetRenderFrameHostById(contents, frame_id);
   if (!rfh) {
-    error_ = ErrorUtils::FormatErrorMessage(keys::kFrameNotFoundError,
+    *error = ErrorUtils::FormatErrorMessage(keys::kFrameNotFoundError,
                                             base::IntToString(frame_id),
                                             base::IntToString(execute_tab_id_));
     return false;
@@ -2008,11 +2008,11 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
   if (!extension()->permissions_data()->CanAccessPage(
-          extension(), effective_document_url, execute_tab_id_, &error_)) {
+          extension(), effective_document_url, execute_tab_id_, error)) {
     if (is_about_url &&
         extension()->permissions_data()->active_permissions().HasAPIPermission(
             APIPermission::kTab)) {
-      error_ = ErrorUtils::FormatErrorMessage(
+      *error = ErrorUtils::FormatErrorMessage(
           manifest_errors::kCannotAccessAboutUrl,
           rfh->GetLastCommittedURL().spec(),
           rfh->GetLastCommittedOrigin().Serialize());
@@ -2023,17 +2023,18 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
   return true;
 }
 
-ScriptExecutor* ExecuteCodeInTabFunction::GetScriptExecutor() {
-  Browser* browser = NULL;
-  content::WebContents* contents = NULL;
+ScriptExecutor* ExecuteCodeInTabFunction::GetScriptExecutor(
+    std::string* error) {
+  Browser* browser = nullptr;
+  content::WebContents* contents = nullptr;
 
   bool success =
       GetTabById(execute_tab_id_, browser_context(), include_incognito(),
-                 &browser, nullptr, &contents, nullptr, &error_) &&
+                 &browser, nullptr, &contents, nullptr, error) &&
       contents && browser;
 
   if (!success)
-    return NULL;
+    return nullptr;
 
   return TabHelper::FromWebContents(contents)->script_executor();
 }
@@ -2048,15 +2049,6 @@ const GURL& ExecuteCodeInTabFunction::GetWebViewSrc() const {
 
 bool TabsExecuteScriptFunction::ShouldInsertCSS() const {
   return false;
-}
-
-void TabsExecuteScriptFunction::OnExecuteCodeFinished(
-    const std::string& error,
-    const GURL& on_url,
-    const base::ListValue& result) {
-  if (error.empty())
-    SetResult(result.CreateDeepCopy());
-  ExecuteCodeInTabFunction::OnExecuteCodeFinished(error, on_url, result);
 }
 
 bool TabsInsertCSSFunction::ShouldInsertCSS() const {

@@ -101,12 +101,12 @@ class WebViewInternalExecuteCodeFunction
   // Initialize |details_| if it hasn't already been.
   InitResult Init() override;
   bool ShouldInsertCSS() const override;
-  bool CanExecuteScriptOnPage() override;
+  bool CanExecuteScriptOnPage(std::string* error) override;
   // Guarded by a process ID check.
-  extensions::ScriptExecutor* GetScriptExecutor() final;
+  extensions::ScriptExecutor* GetScriptExecutor(std::string* error) final;
   bool IsWebView() const override;
   const GURL& GetWebViewSrc() const override;
-  bool LoadFile(const std::string& file) override;
+  bool LoadFile(const std::string& file, std::string* error) override;
 
  private:
   // Loads a file url on WebUI.
@@ -133,10 +133,6 @@ class WebViewInternalExecuteScriptFunction
 
  protected:
   ~WebViewInternalExecuteScriptFunction() override {}
-
-  void OnExecuteCodeFinished(const std::string& error,
-                             const GURL& on_url,
-                             const base::ListValue& result) override;
 
   DECLARE_EXTENSION_FUNCTION("webViewInternal.executeScript",
                              WEBVIEWINTERNAL_EXECUTESCRIPT)

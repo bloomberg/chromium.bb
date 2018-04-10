@@ -436,18 +436,19 @@ bool WebViewInternalExecuteCodeFunction::ShouldInsertCSS() const {
   return false;
 }
 
-bool WebViewInternalExecuteCodeFunction::CanExecuteScriptOnPage() {
+bool WebViewInternalExecuteCodeFunction::CanExecuteScriptOnPage(
+    std::string* error) {
   return true;
 }
 
 extensions::ScriptExecutor*
-WebViewInternalExecuteCodeFunction::GetScriptExecutor() {
+WebViewInternalExecuteCodeFunction::GetScriptExecutor(std::string* error) {
   if (!render_frame_host() || !render_frame_host()->GetProcess())
-    return NULL;
+    return nullptr;
   WebViewGuest* guest = WebViewGuest::From(
       render_frame_host()->GetProcess()->GetID(), guest_instance_id_);
   if (!guest)
-    return NULL;
+    return nullptr;
 
   return guest->script_executor();
 }
@@ -480,7 +481,8 @@ bool WebViewInternalExecuteCodeFunction::LoadFileForWebUI(
   return true;
 }
 
-bool WebViewInternalExecuteCodeFunction::LoadFile(const std::string& file) {
+bool WebViewInternalExecuteCodeFunction::LoadFile(const std::string& file,
+                                                  std::string* error) {
   if (!extension()) {
     if (LoadFileForWebUI(
             *details_->file,
@@ -489,24 +491,13 @@ bool WebViewInternalExecuteCodeFunction::LoadFile(const std::string& file) {
                 this, file)))
       return true;
 
-    SendResponse(false);
-    error_ = ErrorUtils::FormatErrorMessage(kLoadFileError, file);
+    *error = ErrorUtils::FormatErrorMessage(kLoadFileError, file);
     return false;
   }
-  return ExecuteCodeFunction::LoadFile(file);
+  return ExecuteCodeFunction::LoadFile(file, error);
 }
 
 WebViewInternalExecuteScriptFunction::WebViewInternalExecuteScriptFunction() {
-}
-
-void WebViewInternalExecuteScriptFunction::OnExecuteCodeFinished(
-    const std::string& error,
-    const GURL& on_url,
-    const base::ListValue& result) {
-  if (error.empty())
-    SetResult(result.CreateDeepCopy());
-  WebViewInternalExecuteCodeFunction::OnExecuteCodeFinished(
-      error, on_url, result);
 }
 
 WebViewInternalInsertCSSFunction::WebViewInternalInsertCSSFunction() {

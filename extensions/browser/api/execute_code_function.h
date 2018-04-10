@@ -17,7 +17,7 @@ namespace extensions {
 // Base class for javascript code injection.
 // This is used by both chrome.webview.executeScript and
 // chrome.tabs.executeScript.
-class ExecuteCodeFunction : public AsyncExtensionFunction {
+class ExecuteCodeFunction : public UIThreadExtensionFunction {
  public:
   ExecuteCodeFunction();
 
@@ -26,7 +26,7 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
 
   // ExtensionFunction implementation.
   bool HasPermission() override;
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
   enum InitResult {
     // ExtensionFunction validation failure.
@@ -46,15 +46,11 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   // fatal (VALIDATION_FAILURE).
   virtual InitResult Init() = 0;
   virtual bool ShouldInsertCSS() const = 0;
-  virtual bool CanExecuteScriptOnPage() = 0;
-  virtual ScriptExecutor* GetScriptExecutor() = 0;
+  virtual bool CanExecuteScriptOnPage(std::string* error) = 0;
+  virtual ScriptExecutor* GetScriptExecutor(std::string* error) = 0;
   virtual bool IsWebView() const = 0;
   virtual const GURL& GetWebViewSrc() const = 0;
-  virtual void OnExecuteCodeFinished(const std::string& error,
-                                     const GURL& on_url,
-                                     const base::ListValue& result);
-
-  virtual bool LoadFile(const std::string& file);
+  virtual bool LoadFile(const std::string& file, std::string* error);
 
   // Called when contents from the loaded file have been localized.
   void DidLoadAndLocalizeFile(const std::string& file,
@@ -80,6 +76,10 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
   base::Optional<std::string> init_error_;
 
  private:
+  void OnExecuteCodeFinished(const std::string& error,
+                             const GURL& on_url,
+                             const base::ListValue& result);
+
   // Retrieves the file url for the given |extension_path| and optionally
   // localizes |data|.
   // Localization depends on whether |might_require_localization| was specified.
@@ -104,8 +104,9 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
       bool might_require_localization);
 
   // Run in UI thread.  Code string contains the code to be executed. Returns
-  // true on success. If true is returned, this does an AddRef.
-  bool Execute(const std::string& code_string);
+  // true on success. If true is returned, this does an AddRef. Returns false on
+  // failure and sets |error|.
+  bool Execute(const std::string& code_string, std::string* error);
 
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
