@@ -4,12 +4,13 @@
 
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 
-#include "base/feature_list.h"
+#include "base/command_line.h"
+#include "base/optional.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_features.h"
 
 namespace {
 
@@ -98,8 +99,7 @@ WebRtcEventLogManager::WebRtcEventLogManager()
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (base::FeatureList::IsEnabled(::features::kWebRtcRemoteEventLog)) {
-    VLOG(1) << "WebRTC remote-bound event logging enabled.";
+  if (IsRemoteLoggingEnabled()) {
     remote_logs_manager_ = std::make_unique<WebRtcRemoteEventLogManager>(this);
   }
 
@@ -361,6 +361,36 @@ void WebRtcEventLogManager::SetRemoteLogsObserver(
       FROM_HERE,
       base::BindOnce(&WebRtcEventLogManager::SetRemoteLogsObserverInternal,
                      base::Unretained(this), observer, std::move(reply)));
+}
+
+bool WebRtcEventLogManager::IsRemoteLoggingEnabled() const {
+  base::Optional<bool> enabled;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWebRtcRemoteEventLog)) {
+    const std::string switch_value =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kWebRtcRemoteEventLog);
+    if (switch_value == "disable" || switch_value == "disabled") {
+      enabled = false;
+    } else if (switch_value == "enable" || switch_value == "enabled") {
+      enabled = true;
+    } else {
+      LOG(WARNING) << "Unrecognized value given for "
+                   << switches::kWebRtcRemoteEventLog
+                   << "; ignoring. (Use enabled/disabled.)";
+    }
+  }
+
+  if (!enabled.has_value()) {
+    // TODO(crbug.com/775415): Enable for non-mobile builds where the users
+    // have given appropriate consent.
+    enabled = false;
+  }
+
+  VLOG(1) << "WebRTC remote-bound event logging "
+          << (enabled.value() ? "enabled" : "disabled") << ".";
+
+  return enabled.value();
 }
 
 void WebRtcEventLogManager::RenderProcessExited(RenderProcessHost* host,

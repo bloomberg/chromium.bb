@@ -528,11 +528,6 @@ const base::Feature kWebRtcHWVP8Encoding {
 const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows privileged JS applications to trigger the logging peer connections,
-// and the later upload of those logs to a remote server.
-const base::Feature kWebRtcRemoteEventLog{"WebRtcRemoteEventLog",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Fallback from hardware encoder (if available) to software, for WebRTC
 // screensharing that uses temporal scalability.
 const base::Feature kWebRtcScreenshareSwEncoding{

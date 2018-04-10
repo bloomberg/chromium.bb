@@ -19,10 +19,8 @@
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
-
-// TODO(crbug.com/775415): Block remote-bound logging on mobile devices.
 
 const size_t kMaxRemoteLogFileMetadataSizeBytes = 0xffffu;  // 65535
 static_assert(kMaxRemoteLogFileMetadataSizeBytes <= 0xFFFFFFu,

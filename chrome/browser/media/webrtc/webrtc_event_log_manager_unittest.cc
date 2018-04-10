@@ -28,16 +28,14 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_remote.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -529,6 +527,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
   }
 
   // Testing utilities.
+  base::test::ScopedCommandLine scoped_command_line_;
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   base::SimpleTestClock frozen_clock_;
 
@@ -602,7 +601,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
 class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase {
  public:
   WebRtcEventLogManagerTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+    auto* cl = scoped_command_line_.GetProcessCommandLine();
+    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 
@@ -611,9 +611,6 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase {
         std::make_unique<NullWebRtcEventLogUploader::Factory>());
     WebRtcEventLogManagerTestBase::SetUp();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class WebRtcEventLogManagerTestCacheClearing
@@ -677,16 +674,24 @@ class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
     : public WebRtcEventLogManagerTestBase {
  public:
   WebRtcEventLogManagerTestUploadSuppressionDisablingFlag() {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
-    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
-        ::switches::kWebRtcRemoteEventLogUploadNoSuppression);
+    auto* cl = scoped_command_line_.GetProcessCommandLine();
+    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
+    cl->AppendSwitch(::switches::kWebRtcRemoteEventLogUploadNoSuppression);
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedCommandLine scoped_command_line_;
 };
+
+#if defined(OS_ANDROID)
+class WebRtcEventLogManagerTestOnMobileDevices
+    : public WebRtcEventLogManagerTestBase {
+ public:
+  WebRtcEventLogManagerTestOnMobileDevices() {
+    // ::switches::kWebRtcRemoteEventLog is NOT added. The default behavior
+    // on mobile should be to disable the feature.
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+  }
+};
+#endif
 
 namespace {
 
@@ -2957,3 +2962,11 @@ TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
   ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
   WaitForPendingTasks(&run_loop);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(WebRtcEventLogManagerTestOnMobileDevices, RemoteBoundLoggingDisabled) {
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  EXPECT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+}
+#endif

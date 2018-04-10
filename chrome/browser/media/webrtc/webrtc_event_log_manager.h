@@ -193,6 +193,9 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   WebRtcEventLogManager();
 
+  // Checks whether remote-bound logging is enabled.
+  bool IsRemoteLoggingEnabled() const;
+
   // RenderProcessHostObserver implementation.
   void RenderProcessExited(content::RenderProcessHost* host,
                            base::TerminationStatus status,

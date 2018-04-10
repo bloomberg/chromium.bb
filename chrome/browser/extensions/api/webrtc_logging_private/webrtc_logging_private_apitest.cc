@@ -7,10 +7,11 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/webrtc_event_logger.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension_builder.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -74,7 +74,8 @@ void InitializeTestMetaData(base::ListValue* parameters) {
 class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+    auto* cl = scoped_command_line_.GetProcessCommandLine();
+    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
     ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
@@ -336,7 +337,7 @@ class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
     manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedCommandLine scoped_command_line_;
   scoped_refptr<Extension> extension_;
 };
 
@@ -344,7 +345,8 @@ class WebrtcLoggingPrivateApiTestDisabledRemoteLogging
     : public WebrtcLoggingPrivateApiTest {
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndDisableFeature(features::kWebRtcRemoteEventLog);
+    auto* cl = scoped_command_line_.GetProcessCommandLine();
+    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "disabled");
     ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }

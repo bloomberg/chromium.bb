@@ -699,6 +699,19 @@ const char kValidateCrx[]                   = "validate-crx";
 // Prints version information and quits.
 const char kVersion[]                       = "version";
 
+// Allows privileged JS applications to trigger event logging for peer
+// connections, and to later upload those logs to a remote server.
+// * If "disable" or "disabled", remote-logging will be disabled.
+// * If "enable" or "enabled", remote-logging will be enabled.
+// * If unset (or set to any other value), the platform-specific behavior
+//   will be used. (This behavior may depend on additional factors.)
+const char kWebRtcRemoteEventLog[] = "webrtc-remote-event-log";
+
+// Normally, remote-bound WebRTC event logs are uploaded only when no
+// peer connections are active. With this flag, the upload is never suppressed.
+const char kWebRtcRemoteEventLogUploadNoSuppression[] =
+    "webrtc-event-log-upload-no-suppression";
+
 // Specify the initial window position: --window-position=x,y
 const char kWindowPosition[]                = "window-position";
 
