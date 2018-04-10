@@ -267,6 +267,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   background-position: center center;
   background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
   background-color: rgba(255, 255, 255, .9);
+  box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.10);
 
   transition: opacity cubic-bezier(0.4, 0.0, 0.6, 1) 600ms;
 }
