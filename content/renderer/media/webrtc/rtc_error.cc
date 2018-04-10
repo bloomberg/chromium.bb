@@ -48,7 +48,8 @@ blink::WebRTCError ConvertToWebKitRTCError(
       // If adding a new error type, need 3 CLs: One to add the enum to webrtc,
       // one to update this mapping code, and one to start using the enum in
       // webrtc.
-      NOTREACHED() << "webrtc::RTCErrorType " << webrtc_error.type()
+      NOTREACHED() << "webrtc::RTCErrorType "
+                   << webrtc::ToString(webrtc_error.type())
                    << " not covered by switch statement.";
       break;
   }
