@@ -251,7 +251,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
   set_info_function->set_has_callback(true);
 
   EXPECT_EQ(
-      SystemDisplayFunction::kCrosOnlyError,
+      SystemDisplayCrOSRestrictedFunction::kCrosOnlyError,
       api_test_utils::RunFunctionAndReturnError(
           set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
@@ -301,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
   set_info_function->set_has_callback(true);
 
   EXPECT_EQ(
-      SystemDisplayFunction::kKioskOnlyError,
+      SystemDisplayCrOSRestrictedFunction::kKioskOnlyError,
       api_test_utils::RunFunctionAndReturnError(
           set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 

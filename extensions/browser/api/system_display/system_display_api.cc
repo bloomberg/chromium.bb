@@ -24,9 +24,9 @@ namespace extensions {
 
 namespace display = api::system_display;
 
-const char SystemDisplayFunction::kCrosOnlyError[] =
+const char SystemDisplayCrOSRestrictedFunction::kCrosOnlyError[] =
     "Function available only on ChromeOS.";
-const char SystemDisplayFunction::kKioskOnlyError[] =
+const char SystemDisplayCrOSRestrictedFunction::kKioskOnlyError[] =
     "Only kiosk enabled extensions are allowed to use this function.";
 
 namespace {
@@ -147,9 +147,27 @@ bool OverscanTracker::RemoveObserverImpl(content::WebContents* web_contents) {
   return observers_.empty();
 }
 
+bool HasAutotestPrivate(const UIThreadExtensionFunction& function) {
+  return function.extension() &&
+         function.extension()->permissions_data()->HasAPIPermission(
+             APIPermission::kAutoTestPrivate);
+}
+
+#if defined(OS_CHROMEOS)
+// |edid| is available only to Chrome OS kiosk mode applications.
+bool ShouldRestrictEdidInformation(const UIThreadExtensionFunction& function) {
+  if (function.extension()) {
+    return !(HasAutotestPrivate(function) ||
+             KioskModeInfo::IsKioskEnabled(function.extension()));
+  }
+
+  return function.source_context_type() != Feature::WEBUI_CONTEXT;
+}
+#endif
+
 }  // namespace
 
-bool SystemDisplayFunction::PreRunValidation(std::string* error) {
+bool SystemDisplayCrOSRestrictedFunction::PreRunValidation(std::string* error) {
   if (!UIThreadExtensionFunction::PreRunValidation(error))
     return false;
 
@@ -169,20 +187,8 @@ bool SystemDisplayFunction::PreRunValidation(std::string* error) {
 #endif
 }
 
-bool SystemDisplayFunction::ShouldRestrictToKioskAndWebUI() {
-  // Allow autotest extension to access for Chrome OS testing.
-  if (extension() && extension()->permissions_data()->HasAPIPermission(
-                         APIPermission::kAutoTestPrivate)) {
-    return false;
-  }
-
-  return true;
-}
-
-bool SystemDisplayGetInfoFunction::PreRunValidation(std::string* error) {
-  // Returns true to not block the method completely when in non-kiosk mode.
-  // Only the |edid| property is conditional to kiosk mode.
-  return true;
+bool SystemDisplayCrOSRestrictedFunction::ShouldRestrictToKioskAndWebUI() {
+  return !HasAutotestPrivate(*this);
 }
 
 ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
@@ -198,11 +204,12 @@ ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
 
 void SystemDisplayGetInfoFunction::Response(
     DisplayInfoProvider::DisplayUnitInfoList all_displays_info) {
-  // |edid| is restricted to kiosk mode.
-  if (ShouldRestrictToKioskAndWebUI()) {
+#if defined(OS_CHROMEOS)
+  if (ShouldRestrictEdidInformation(*this)) {
     for (auto& display_info : all_displays_info)
       display_info.edid.release();
   }
+#endif
   Respond(ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
 }
 
