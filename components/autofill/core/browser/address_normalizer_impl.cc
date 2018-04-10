@@ -12,6 +12,7 @@
 #include "base/cancelable_callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -31,6 +32,9 @@ namespace {
 
 using ::i18n::addressinput::Source;
 using ::i18n::addressinput::Storage;
+
+using DeleteOnTaskRunnerStorageUniquePtr =
+    std::unique_ptr<Storage, base::OnTaskRunnerDeleter>;
 
 bool NormalizeProfileWithValidator(AutofillProfile* profile,
                                    const std::string& app_locale,
@@ -70,11 +74,12 @@ void FormatPhoneNumberToE164(AutofillProfile* profile,
 }
 
 std::unique_ptr<AddressValidator> CreateAddressValidator(
-    std::unique_ptr<::i18n::addressinput::Source> source,
-    std::unique_ptr<::i18n::addressinput::Storage> storage,
+    std::unique_ptr<Source> source,
+    DeleteOnTaskRunnerStorageUniquePtr storage,
     LoadRulesListener* load_rules_listener) {
-  return std::make_unique<AddressValidator>(
-      std::move(source), std::move(storage), load_rules_listener);
+  return std::make_unique<AddressValidator>(std::move(source),
+                                            base::WrapUnique(storage.release()),
+                                            load_rules_listener);
 }
 
 }  // namespace
@@ -146,10 +151,20 @@ AddressNormalizerImpl::AddressNormalizerImpl(std::unique_ptr<Source> source,
     : app_locale_(app_locale), weak_ptr_factory_(this) {
   // |address_validator_| is created in the background. Once initialized, it
   // will run any pending normalization.
+  //
+  // |storage| is wrapped in a DeleteOnTaskRunnerStorageUniquePtr to ensure that
+  // it is deleted on the current sequence even if the task is skipped on
+  // shutdown. This is important to prevent an access race when the destructor
+  // of |storage| accesses an ObserverList that lives on the current sequence.
+  // https://crbug.com/829122
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-      base::BindOnce(&CreateAddressValidator, std::move(source),
-                     std::move(storage), this),
+      base::BindOnce(
+          &CreateAddressValidator, std::move(source),
+          DeleteOnTaskRunnerStorageUniquePtr(
+              storage.release(), base::OnTaskRunnerDeleter(
+                                     base::SequencedTaskRunnerHandle::Get())),
+          this),
       base::BindOnce(&AddressNormalizerImpl::OnAddressValidatorCreated,
                      weak_ptr_factory_.GetWeakPtr()));
 }
