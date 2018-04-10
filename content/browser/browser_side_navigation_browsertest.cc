@@ -596,13 +596,6 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
 // properly.
 IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
                        CancelRequestAfterReadyToCommit) {
-// TODO(https://crbug.com/820959). Test temporarily disabled on Windows with
-// NavigationMojoResponse.
-#if defined(OS_WIN)
-  if (IsNavigationMojoResponseEnabled())
-    return;
-#endif
-
   // This test cancels the request using the ResourceDispatchHost. With the
   // NetworkService, it is not used so the request is not canceled.
   // TODO(arthursonzogni): Find a way to cancel a request from the browser
