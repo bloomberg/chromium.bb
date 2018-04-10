@@ -147,6 +147,11 @@ const base::FilePath::CharType* g_default_in_parameters =
 // test.
 bool g_fake_encoder = false;
 
+// Skip checking the flush functionality. Currently only Chrome OS devices
+// support flush, so we need this to skip the check. This is set by the
+// command line switch "--disable_flush".
+bool g_disable_flush = false;
+
 // Environment to store test stream data for all test cases.
 class VideoEncodeAcceleratorTestEnvironment;
 VideoEncodeAcceleratorTestEnvironment* g_env;
@@ -1193,6 +1198,7 @@ class VEAClient : public VEAClientBase {
   // frames at BitstreamBufferReady() and verify the number after flush is
   // completed.
   void FlushEncoderDone(bool success);
+  void FlushEncoderSuccessfully();
 
   // Timeout function to check the flush callback function is called in the
   // short period.
@@ -1649,6 +1655,10 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
           static_cast<int>(payload_size)));
       quality_validator_->AddDecodeBuffer(buffer);
     }
+    // If flush is disabled, pretend flush is done when all frames are received.
+    if (g_disable_flush && num_encoded_frames_ == num_frames_to_encode_) {
+      FlushEncoderSuccessfully();
+    }
 
     if (save_to_file_) {
       if (IsVP8(test_stream_->requested_profile))
@@ -1918,6 +1928,9 @@ void VEAClient::FlushEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(num_frames_submitted_to_encoder_ == num_frames_to_encode_);
 
+  if (g_disable_flush)
+    return;
+
   encoder_->Flush(
       base::BindOnce(&VEAClient::FlushEncoderDone, base::Unretained(this)));
   // We might receive the last frame before calling Flush(). In this case we set
@@ -1941,6 +1954,11 @@ void VEAClient::FlushEncoderDone(bool success) {
     SetState(CS_ERROR);
     return;
   }
+  FlushEncoderSuccessfully();
+}
+
+void VEAClient::FlushEncoderSuccessfully() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   SetState(CS_FLUSHED);
   if (!quality_validator_) {
@@ -2530,6 +2548,12 @@ int main(int argc, char** argv) {
   DCHECK(cmd_line);
 
   bool run_at_fps = false;
+#if defined(OS_CHROMEOS)
+  // Currently only ARC++ uses flush function, we only verify it on Chrome OS.
+  media::g_disable_flush = false;
+#else
+  media::g_disable_flush = true;
+#endif
   bool needs_encode_latency = false;
   bool verify_all_output = false;
   base::FilePath log_path;
@@ -2563,6 +2587,10 @@ int main(int argc, char** argv) {
     }
     if (it->first == "run_at_fps") {
       run_at_fps = true;
+      continue;
+    }
+    if (it->first == "disable_flush") {
+      media::g_disable_flush = true;
       continue;
     }
     if (it->first == "verify_all_output") {
