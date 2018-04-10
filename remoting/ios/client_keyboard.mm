@@ -49,7 +49,11 @@
 #pragma mark - UIKeyInput
 
 - (void)insertText:(NSString*)text {
-  [_delegate clientKeyboardShouldSend:text];
+  if ([text isEqualToString:@"\n"]) {
+    [_delegate clientKeyboardShouldSendEnter];
+  } else {
+    [_delegate clientKeyboardShouldSend:text];
+  }
 }
 
 - (void)deleteBackward {
