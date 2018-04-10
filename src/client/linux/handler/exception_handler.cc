@@ -549,7 +549,7 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
   // Allow the child to ptrace us
   sys_prctl(PR_SET_PTRACER, child, 0, 0, 0);
   SendContinueSignalToChild();
-  int status;
+  int status = 0;
   const int r = HANDLE_EINTR(sys_waitpid(child, &status, __WALL));
 
   sys_close(fdes[1]);
