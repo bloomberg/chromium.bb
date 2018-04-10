@@ -70,8 +70,8 @@ class WallpaperPrivateSetWallpaperIfExistsFunction
  protected:
   ~WallpaperPrivateSetWallpaperIfExistsFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
@@ -102,8 +102,8 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
  protected:
   ~WallpaperPrivateSetWallpaperFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
@@ -126,7 +126,7 @@ class WallpaperPrivateSetWallpaperFunction : public WallpaperFunctionBase {
 };
 
 class WallpaperPrivateResetWallpaperFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.resetWallpaper",
                              WALLPAPERPRIVATE_RESETWALLPAPER)
@@ -136,8 +136,8 @@ class WallpaperPrivateResetWallpaperFunction
  protected:
   ~WallpaperPrivateResetWallpaperFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 class WallpaperPrivateSetCustomWallpaperFunction
@@ -151,8 +151,8 @@ class WallpaperPrivateSetCustomWallpaperFunction
  protected:
   ~WallpaperPrivateSetCustomWallpaperFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) override;
@@ -169,7 +169,7 @@ class WallpaperPrivateSetCustomWallpaperFunction
 };
 
 class WallpaperPrivateSetCustomWallpaperLayoutFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.setCustomWallpaperLayout",
                              WALLPAPERPRIVATE_SETCUSTOMWALLPAPERLAYOUT)
@@ -179,8 +179,8 @@ class WallpaperPrivateSetCustomWallpaperLayoutFunction
  protected:
   ~WallpaperPrivateSetCustomWallpaperLayoutFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 class WallpaperPrivateMinimizeInactiveWindowsFunction
@@ -209,7 +209,7 @@ class WallpaperPrivateRestoreMinimizedWindowsFunction
   ResponseAction Run() override;
 };
 
-class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
+class WallpaperPrivateGetThumbnailFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getThumbnail",
                              WALLPAPERPRIVATE_GETTHUMBNAIL)
@@ -219,8 +219,8 @@ class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
  protected:
   ~WallpaperPrivateGetThumbnailFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   // Failed to get thumbnail for |file_name|.
@@ -238,7 +238,7 @@ class WallpaperPrivateGetThumbnailFunction : public AsyncExtensionFunction {
   void Get(const base::FilePath& path);
 };
 
-class WallpaperPrivateSaveThumbnailFunction : public AsyncExtensionFunction {
+class WallpaperPrivateSaveThumbnailFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.saveThumbnail",
                              WALLPAPERPRIVATE_SAVETHUMBNAIL)
@@ -248,8 +248,8 @@ class WallpaperPrivateSaveThumbnailFunction : public AsyncExtensionFunction {
  protected:
   ~WallpaperPrivateSaveThumbnailFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   // Failed to save thumbnail for |file_name|.
@@ -263,7 +263,7 @@ class WallpaperPrivateSaveThumbnailFunction : public AsyncExtensionFunction {
 };
 
 class WallpaperPrivateGetOfflineWallpaperListFunction
-    : public AsyncExtensionFunction {
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("wallpaperPrivate.getOfflineWallpaperList",
                              WALLPAPERPRIVATE_GETOFFLINEWALLPAPERLIST)
@@ -272,8 +272,8 @@ class WallpaperPrivateGetOfflineWallpaperListFunction
  protected:
   ~WallpaperPrivateGetOfflineWallpaperListFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   // Enumerates the list of files in online wallpaper directory.

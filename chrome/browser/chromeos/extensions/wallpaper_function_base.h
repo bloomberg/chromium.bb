@@ -31,7 +31,7 @@ void RecordCustomWallpaperLayout(const ash::WallpaperLayout& layout);
 
 // Wallpaper manager function base. It contains a image decoder to decode
 // wallpaper data.
-class WallpaperFunctionBase : public AsyncExtensionFunction {
+class WallpaperFunctionBase : public UIThreadExtensionFunction {
  public:
   static const int kWallpaperThumbnailWidth;
   static const int kWallpaperThumbnailHeight;
@@ -65,6 +65,13 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
 
   // Handles failure case. Sets error message.
   void OnFailure(const std::string& error);
+
+  // Handles failure case with setting an error message with results argument.
+  // TODO(wzang): This is a bug, we shouldn't be sending arguments when the
+  // function fails. Only used in setWallpaperIfExists function. See
+  // https://crbug.com/830212 for details.
+  void OnFailureWithArguments(std::unique_ptr<base::ListValue> args,
+                              const std::string& error);
 
   // Resize the image to |size|, encode it and save to |thumbnail_data_out|.
   void GenerateThumbnail(

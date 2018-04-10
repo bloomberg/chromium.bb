@@ -87,6 +87,8 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
   }
 
   void OnImageDecoded(const SkBitmap& decoded_image) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
     // Make the SkBitmap immutable as we won't modify it. This is important
     // because otherwise it gets duplicated during painting, wasting memory.
     SkBitmap immutable(decoded_image);
@@ -103,6 +105,8 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
   }
 
   void OnDecodeImageFailed() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
     function_->OnFailure(
         l10n_util::GetStringUTF8(IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER));
     delete this;
@@ -150,14 +154,18 @@ void WallpaperFunctionBase::StartDecode(const std::vector<char>& data) {
 
 void WallpaperFunctionBase::OnCancel() {
   unsafe_wallpaper_decoder_ = nullptr;
-  SetError(wallpaper_api_util::kCancelWallpaperMessage);
-  SendResponse(false);
+  Respond(Error(wallpaper_api_util::kCancelWallpaperMessage));
 }
 
 void WallpaperFunctionBase::OnFailure(const std::string& error) {
+  OnFailureWithArguments(nullptr, error);
+}
+
+void WallpaperFunctionBase::OnFailureWithArguments(
+    std::unique_ptr<base::ListValue> args,
+    const std::string& error) {
   unsafe_wallpaper_decoder_ = nullptr;
-  SetError(error);
-  SendResponse(false);
+  Respond(args ? ErrorWithArguments(std::move(args), error) : Error(error));
 }
 
 void WallpaperFunctionBase::GenerateThumbnail(

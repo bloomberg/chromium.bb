@@ -146,7 +146,7 @@ WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
 WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction() {
 }
 
-bool WallpaperSetWallpaperFunction::RunAsync() {
+ExtensionFunction::ResponseAction WallpaperSetWallpaperFunction::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   params_ = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_);
@@ -159,21 +159,22 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
 
   if (params_->details.data) {
     StartDecode(*params_->details.data);
-  } else if (params_->details.url) {
-    GURL wallpaper_url(*params_->details.url);
-    if (wallpaper_url.is_valid()) {
-      g_wallpaper_fetcher.Get().FetchWallpaper(
-          wallpaper_url,
-          base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
-    } else {
-      SetError("URL is invalid.");
-      SendResponse(false);
-    }
-  } else {
-    SetError("Either url or data field is required.");
-    SendResponse(false);
+    // StartDecode() responds asynchronously.
+    return RespondLater();
   }
-  return true;
+
+  if (!params_->details.url)
+    return RespondNow(Error("Either url or data field is required."));
+
+  GURL wallpaper_url(*params_->details.url);
+  if (!wallpaper_url.is_valid())
+    return RespondNow(Error("URL is invalid."));
+
+  g_wallpaper_fetcher.Get().FetchWallpaper(
+      wallpaper_url,
+      base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched, this));
+  // FetchWallpaper() repsonds asynchronously.
+  return RespondLater();
 }
 
 void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
@@ -186,9 +187,6 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
       account_id_, wallpaper_files_id_, params_->details.filename, layout,
       image, false /*preview_mode=*/);
   unsafe_wallpaper_decoder_ = nullptr;
-
-  if (!params_->details.thumbnail)
-    SendResponse(true);
 
   // We need to generate thumbnail image anyway to make the current third party
   // wallpaper syncable through different devices.
@@ -206,11 +204,6 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   std::unique_ptr<Value> thumbnail_result = Value::CreateWithCopiedBuffer(
       reinterpret_cast<const char*>(thumbnail_data->front()),
       thumbnail_data->size());
-
-  if (params_->details.thumbnail) {
-    SetResult(thumbnail_result->CreateDeepCopy());
-    SendResponse(true);
-  }
 
   // Inform the native Wallpaper Picker Application that the current wallpaper
   // has been modified by a third party application.
@@ -242,6 +235,10 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     event_router->DispatchEventToExtension(extension_misc::kWallpaperManagerId,
                                            std::move(event));
   }
+
+  Respond(params_->details.thumbnail
+              ? OneArgument(thumbnail_result->CreateDeepCopy())
+              : NoArguments());
 }
 
 void WallpaperSetWallpaperFunction::OnWallpaperFetched(
@@ -251,8 +248,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperFetched(
     params_->details.data.reset(
         new std::vector<char>(response.begin(), response.end()));
     StartDecode(*params_->details.data);
+    // StartDecode() will Respond later through OnWallpaperDecoded()
   } else {
-    SetError(response);
-    SendResponse(false);
+    Respond(Error(response));
   }
 }

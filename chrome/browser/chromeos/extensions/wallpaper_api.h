@@ -30,8 +30,8 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
  protected:
   ~WallpaperSetWallpaperFunction() override;
 
-  // AsyncExtensionFunction overrides.
-  bool RunAsync() override;
+  // UIThreadExtensionFunction overrides.
+  ResponseAction Run() override;
 
  private:
   void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
