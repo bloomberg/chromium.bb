@@ -646,51 +646,6 @@ Status IndexedDBBackingStore::DestroyBackingStore(const FilePath& path_base,
   return leveldb_factory.DestroyLevelDB(file_path);
 }
 
-Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(
-    LevelDBTransaction* transaction,
-    bool* blobs_exist) {
-  Status status = leveldb::Status::OK();
-  std::vector<base::string16> names;
-  IndexedDBMetadataCoding metadata_coding;
-  status = metadata_coding.ReadDatabaseNames(transaction, origin_identifier_,
-                                             &names);
-  if (!status.ok())
-    return status;
-
-  *blobs_exist = false;
-  for (const auto& name : names) {
-    IndexedDBDatabaseMetadata metadata;
-    bool found = false;
-    status = metadata_coding.ReadMetadataForDatabaseName(
-        transaction, origin_identifier_, name, &metadata, &found);
-    if (!found)
-      return Status::NotFound("Metadata not found for \"%s\".",
-                              base::UTF16ToUTF8(name));
-    for (const auto& store_id_metadata_pair : metadata.object_stores) {
-      std::unique_ptr<LevelDBIterator> iterator = transaction->CreateIterator();
-      std::string min_key = BlobEntryKey::EncodeMinKeyForObjectStore(
-          metadata.id, store_id_metadata_pair.first);
-      std::string max_key = BlobEntryKey::EncodeStopKeyForObjectStore(
-          metadata.id, store_id_metadata_pair.first);
-      status = iterator->Seek(base::StringPiece(min_key));
-      if (status.IsNotFound())
-        continue;
-      if (!status.ok())
-        return status;
-      if (iterator->IsValid() &&
-          comparator_->Compare(iterator->Key(), base::StringPiece(max_key)) <
-              0) {
-        *blobs_exist = true;
-        return Status::OK();
-      }
-    }
-
-    if (!status.ok())
-      return status;
-  }
-  return Status::OK();
-}
-
 WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
   const IndexedDBDataFormatVersion latest_known_data_version =
       IndexedDBDataFormatVersion::GetCurrent();
@@ -760,29 +715,21 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
       PutInt(transaction.get(), data_version_key, db_data_version.Encode());
     }
     if (db_schema_version < 3) {
-      // Up until http://crrev.com/3c0d175b, this migration path did not write
-      // the updated schema version to disk. In consequence, any database that
-      // started out as schema version <= 2 will remain at schema version 2
-      // indefinitely. Furthermore, this migration path used to call
+      // TODO(dmurph): This migration path did not write the updated schema
+      // version to disk. In consequence, any database that started out as
+      // schema version <= 2 will remain at schema version 2 indefinitely.
+      // Furthermore, this migration path used to call
       // "base::DeleteFile(blob_path_, true)", so databases stuck at version 2
       // would lose their stored Blobs on every open call.
       //
       // In order to prevent corrupt databases, when upgrading from 2 to 3 this
-      // will consider any v2 databases with BlobEntryKey entries as corrupt.
+      // should either:
+      // 1. Blow away all databases as corrupted (fastest), or
+      // 2. Only blow away databases with BlobEntryKey entries, which can be
+      //    detected in  O(object stores * databases) time.
       // https://crbug.com/756447, https://crbug.com/829125,
       // https://crbug.com/829141
       db_schema_version = 3;
-      bool has_blobs = false;
-      s = AnyDatabaseContainsBlobs(transaction.get(), &has_blobs);
-      if (!s.ok()) {
-        INTERNAL_CONSISTENCY_ERROR_UNTESTED(SET_UP_METADATA);
-        return InternalInconsistencyStatus();
-      }
-      if (has_blobs) {
-        INTERNAL_CONSISTENCY_ERROR(UPGRADING_SCHEMA_CORRUPTED_BLOBS);
-        return InternalInconsistencyStatus();
-      }
-      PutInt(transaction.get(), schema_version_key, db_schema_version);
     }
   }
 

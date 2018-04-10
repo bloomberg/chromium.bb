@@ -32,20 +32,10 @@ using indexed_db::PutVarInt;
 
 namespace {
 
-std::unique_ptr<LevelDBIterator> CreateIterator(LevelDBDatabase* database) {
-  return database->CreateIterator(database->DefaultReadOptions());
-}
-
-std::unique_ptr<LevelDBIterator> CreateIterator(
-    LevelDBTransaction* transaction) {
-  return transaction->CreateIterator();
-}
-
 // Reads all indexes for the given database and object store in |indexes|.
 // TODO(jsbell): This should do some error handling rather than plowing ahead
 // when bad data is encountered.
-template <typename DatabaseOrTransaction>
-Status ReadIndexes(DatabaseOrTransaction* db_or_transaction,
+Status ReadIndexes(LevelDBDatabase* db,
                    int64_t database_id,
                    int64_t object_store_id,
                    std::map<int64_t, IndexedDBIndexMetadata>* indexes) {
@@ -58,7 +48,8 @@ Status ReadIndexes(DatabaseOrTransaction* db_or_transaction,
 
   DCHECK(indexes->empty());
 
-  std::unique_ptr<LevelDBIterator> it = CreateIterator(db_or_transaction);
+  std::unique_ptr<LevelDBIterator> it =
+      db->CreateIterator(db->DefaultReadOptions());
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     IndexMetaDataKey meta_data_key;
@@ -146,9 +137,8 @@ Status ReadIndexes(DatabaseOrTransaction* db_or_transaction,
 // |object_stores|.
 // TODO(jsbell): This should do some error handling rather than plowing ahead
 // when bad data is encountered.
-template <typename DatabaseOrTransaction>
 Status ReadObjectStores(
-    DatabaseOrTransaction* db_or_transaction,
+    LevelDBDatabase* db,
     int64_t database_id,
     std::map<int64_t, IndexedDBObjectStoreMetadata>* object_stores) {
   if (!KeyPrefix::IsValidDatabaseId(database_id))
@@ -160,7 +150,8 @@ Status ReadObjectStores(
 
   DCHECK(object_stores->empty());
 
-  std::unique_ptr<LevelDBIterator> it = CreateIterator(db_or_transaction);
+  std::unique_ptr<LevelDBIterator> it =
+      db->CreateIterator(db->DefaultReadOptions());
   Status s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     ObjectStoreMetaDataKey meta_data_key;
@@ -305,8 +296,7 @@ Status ReadObjectStores(
     IndexedDBObjectStoreMetadata metadata(object_store_name, object_store_id,
                                           key_path, auto_increment,
                                           max_index_id);
-    s = ReadIndexes(db_or_transaction, database_id, object_store_id,
-                    &metadata.indexes);
+    s = ReadIndexes(db, database_id, object_store_id, &metadata.indexes);
     if (!s.ok())
       break;
     (*object_stores)[object_store_id] = metadata;
@@ -317,18 +307,24 @@ Status ReadObjectStores(
 
   return s;
 }
+}  // namespace
 
-template <typename DatabaseOrTransaction>
-Status ReadDatabaseNamesInternal(DatabaseOrTransaction* db_or_transaction,
-                                 const std::string& origin_identifier,
-                                 std::vector<base::string16>* names) {
+IndexedDBMetadataCoding::IndexedDBMetadataCoding() = default;
+IndexedDBMetadataCoding::~IndexedDBMetadataCoding() = default;
+
+leveldb::Status IndexedDBMetadataCoding::ReadDatabaseNames(
+    LevelDBDatabase* db,
+    const std::string& origin_identifier,
+    std::vector<base::string16>* names) {
   const std::string start_key =
       DatabaseNameKey::EncodeMinKeyForOrigin(origin_identifier);
   const std::string stop_key =
       DatabaseNameKey::EncodeStopKeyForOrigin(origin_identifier);
 
   DCHECK(names->empty());
-  std::unique_ptr<LevelDBIterator> it = CreateIterator(db_or_transaction);
+
+  std::unique_ptr<LevelDBIterator> it =
+      db->CreateIterator(db->DefaultReadOptions());
   Status s;
   for (s = it->Seek(start_key);
        s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
@@ -354,7 +350,7 @@ Status ReadDatabaseNamesInternal(DatabaseOrTransaction* db_or_transaction,
     // Look up version by id.
     bool found = false;
     int64_t database_version = IndexedDBDatabaseMetadata::DEFAULT_VERSION;
-    s = GetVarInt(db_or_transaction,
+    s = GetVarInt(db,
                   DatabaseMetaDataKey::Encode(
                       database_id, DatabaseMetaDataKey::USER_VERSION),
                   &database_version, &found);
@@ -376,9 +372,8 @@ Status ReadDatabaseNamesInternal(DatabaseOrTransaction* db_or_transaction,
 
 // TODO(jsbell): This should do some error handling rather than
 // plowing ahead when bad data is encountered.
-template <typename DatabaseOrTransaction>
-Status ReadMetadataForDatabaseNameInternal(
-    DatabaseOrTransaction* db_or_transaction,
+Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
+    LevelDBDatabase* db,
     const std::string& origin_identifier,
     const base::string16& name,
     IndexedDBDatabaseMetadata* metadata,
@@ -387,7 +382,7 @@ Status ReadMetadataForDatabaseNameInternal(
   const std::string key = DatabaseNameKey::Encode(origin_identifier, name);
   *found = false;
 
-  Status s = GetInt(db_or_transaction, key, &metadata->id, found);
+  Status s = GetInt(db, key, &metadata->id, found);
   if (!s.ok()) {
     INTERNAL_READ_ERROR(GET_IDBDATABASE_METADATA);
     return s;
@@ -395,7 +390,7 @@ Status ReadMetadataForDatabaseNameInternal(
   if (!*found)
     return Status::OK();
 
-  s = GetVarInt(db_or_transaction,
+  s = GetVarInt(db,
                 DatabaseMetaDataKey::Encode(metadata->id,
                                             DatabaseMetaDataKey::USER_VERSION),
                 &metadata->version, found);
@@ -411,7 +406,7 @@ Status ReadMetadataForDatabaseNameInternal(
   if (metadata->version == IndexedDBDatabaseMetadata::DEFAULT_VERSION)
     metadata->version = IndexedDBDatabaseMetadata::NO_VERSION;
 
-  s = indexed_db::GetMaxObjectStoreId(db_or_transaction, metadata->id,
+  s = indexed_db::GetMaxObjectStoreId(db, metadata->id,
                                       &metadata->max_object_store_id);
   if (!s.ok())
     INTERNAL_READ_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
@@ -421,7 +416,7 @@ Status ReadMetadataForDatabaseNameInternal(
       DatabaseMetaDataKey::kInvalidBlobKey;
 
   s = GetVarInt(
-      db_or_transaction,
+      db,
       DatabaseMetaDataKey::Encode(
           metadata->id, DatabaseMetaDataKey::BLOB_KEY_GENERATOR_CURRENT_NUMBER),
       &blob_key_generator_current_number, found);
@@ -438,51 +433,12 @@ Status ReadMetadataForDatabaseNameInternal(
     return InternalInconsistencyStatus();
   }
 
-  s = ReadObjectStores(db_or_transaction, metadata->id,
-                       &metadata->object_stores);
+  s = ReadObjectStores(db, metadata->id, &metadata->object_stores);
 
   return s;
 }
-}  // namespace
 
-IndexedDBMetadataCoding::IndexedDBMetadataCoding() = default;
-IndexedDBMetadataCoding::~IndexedDBMetadataCoding() = default;
-
-Status IndexedDBMetadataCoding::ReadDatabaseNames(
-    LevelDBDatabase* db,
-    const std::string& origin_identifier,
-    std::vector<base::string16>* names) {
-  return ReadDatabaseNamesInternal(db, origin_identifier, names);
-}
-
-Status IndexedDBMetadataCoding::ReadDatabaseNames(
-    LevelDBTransaction* transaction,
-    const std::string& origin_identifier,
-    std::vector<base::string16>* names) {
-  return ReadDatabaseNamesInternal(transaction, origin_identifier, names);
-}
-
-Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
-    LevelDBDatabase* db,
-    const std::string& origin_identifier,
-    const base::string16& name,
-    IndexedDBDatabaseMetadata* metadata,
-    bool* found) {
-  return ReadMetadataForDatabaseNameInternal(db, origin_identifier, name,
-                                             metadata, found);
-}
-
-Status IndexedDBMetadataCoding::ReadMetadataForDatabaseName(
-    LevelDBTransaction* transaction,
-    const std::string& origin_identifier,
-    const base::string16& name,
-    IndexedDBDatabaseMetadata* metadata,
-    bool* found) {
-  return ReadMetadataForDatabaseNameInternal(transaction, origin_identifier,
-                                             name, metadata, found);
-}
-
-Status IndexedDBMetadataCoding::CreateDatabase(
+leveldb::Status IndexedDBMetadataCoding::CreateDatabase(
     LevelDBDatabase* db,
     const std::string& origin_identifier,
     const base::string16& name,
@@ -735,7 +691,7 @@ Status IndexedDBMetadataCoding::CreateIndex(LevelDBTransaction* transaction,
   return s;
 }
 
-Status IndexedDBMetadataCoding::DeleteIndex(
+leveldb::Status IndexedDBMetadataCoding::DeleteIndex(
     LevelDBTransaction* transaction,
     int64_t database_id,
     int64_t object_store_id,
