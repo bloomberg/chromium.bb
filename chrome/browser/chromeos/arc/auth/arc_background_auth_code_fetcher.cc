@@ -31,6 +31,7 @@ constexpr int kGetAuthCodeNetworkRetry = 3;
 
 constexpr char kConsumerName[] = "ArcAuthContext";
 constexpr char kToken[] = "token";
+constexpr char kErrorDescription[] = "error_description";
 constexpr char kDeviceId[] = "device_id";
 constexpr char kDeviceType[] = "device_type";
 constexpr char kDeviceTypeArc[] = "arc_plus_plus";
@@ -156,9 +157,22 @@ void ArcBackgroundAuthCodeFetcher::OnURLFetchComplete(
 
   ResetFetchers();
 
+  JSONStringValueDeserializer deserializer(json_string);
+  std::string error_msg;
+  std::unique_ptr<base::Value> json_value =
+      deserializer.Deserialize(nullptr, &error_msg);
+
   if (response_code != net::HTTP_OK) {
+    const auto* error_value =
+        json_value && json_value->is_dict()
+            ? json_value->FindKeyOfType(kErrorDescription,
+                                        base::Value::Type::STRING)
+            : nullptr;
+
     LOG(WARNING) << "Server returned wrong response code: " << response_code
+                 << ": " << (error_value ? error_value->GetString() : "Unknown")
                  << ".";
+
     OptInSilentAuthCode uma_status;
     if (response_code >= 400 && response_code < 500)
       uma_status = OptInSilentAuthCode::HTTP_CLIENT_FAILURE;
@@ -170,28 +184,24 @@ void ArcBackgroundAuthCodeFetcher::OnURLFetchComplete(
     return;
   }
 
-  JSONStringValueDeserializer deserializer(json_string);
-  std::string error_msg;
-  std::unique_ptr<base::Value> auth_code_info =
-      deserializer.Deserialize(nullptr, &error_msg);
-  if (!auth_code_info) {
+  if (!json_value) {
     LOG(WARNING) << "Unable to deserialize auth code json data: " << error_msg
                  << ".";
     ReportResult(std::string(), OptInSilentAuthCode::RESPONSE_PARSE_FAILURE);
     return;
   }
 
-  std::unique_ptr<base::DictionaryValue> auth_code_dictionary =
-      base::DictionaryValue::From(std::move(auth_code_info));
-  if (!auth_code_dictionary) {
-    NOTREACHED();
+  if (!json_value->is_dict()) {
+    LOG(WARNING) << "Response is not a JSON dictionary.";
     ReportResult(std::string(), OptInSilentAuthCode::RESPONSE_PARSE_FAILURE);
     return;
   }
 
-  std::string auth_code;
-  if (!auth_code_dictionary->GetString(kToken, &auth_code) ||
-      auth_code.empty()) {
+  const auto* auth_code_value =
+      json_value->FindKeyOfType(kToken, base::Value::Type::STRING);
+  std::string auth_code =
+      auth_code_value ? auth_code_value->GetString() : std::string();
+  if (auth_code.empty()) {
     LOG(WARNING) << "Response does not contain auth code.";
     ReportResult(std::string(), OptInSilentAuthCode::NO_AUTH_CODE_IN_RESPONSE);
     return;
