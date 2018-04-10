@@ -179,7 +179,7 @@ PrerenderManager::PrerenderManager(Profile* profile)
       histograms_(new PrerenderHistograms()),
       profile_network_bytes_(0),
       last_recorded_profile_network_bytes_(0),
-      tick_clock_(new base::DefaultTickClock()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       page_load_metric_observer_disabled_(false),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -1024,8 +1024,8 @@ base::TimeTicks PrerenderManager::GetCurrentTimeTicks() const {
 }
 
 void PrerenderManager::SetTickClockForTesting(
-    std::unique_ptr<const base::TickClock> tick_clock) {
-  tick_clock_ = std::move(tick_clock);
+    const base::TickClock* tick_clock) {
+  tick_clock_ = tick_clock;
 }
 
 void PrerenderManager::AddObserver(
