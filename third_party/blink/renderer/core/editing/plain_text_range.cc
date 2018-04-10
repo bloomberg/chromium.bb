@@ -120,8 +120,10 @@ EphemeralRange PlainTextRange::CreateRangeFor(
   for (; !it.AtEnd(); it.Advance()) {
     const int len = it.length();
 
-    text_run_start_position = it.StartPositionInCurrentContainer();
-    text_run_end_position = it.EndPositionInCurrentContainer();
+    text_run_start_position =
+        it.StartPositionInCurrentContainer().ToOffsetInAnchor();
+    text_run_end_position =
+        it.EndPositionInCurrentContainer().ToOffsetInAnchor();
 
     const bool found_start =
         Start() >= doc_text_position && Start() <= doc_text_position + len;
@@ -162,8 +164,7 @@ EphemeralRange PlainTextRange::CreateRangeFor(
                                            text_run_end_position);
 
       DCHECK(start_range_found);
-      return EphemeralRange(result_start.ToOffsetInAnchor(),
-                            result_end.ToOffsetInAnchor());
+      return EphemeralRange(result_start, result_end);
     }
 
     doc_text_position += len;
@@ -174,8 +175,7 @@ EphemeralRange PlainTextRange::CreateRangeFor(
     return EphemeralRange();
 
   // End() is out of bounds
-  return EphemeralRange(result_start.ToOffsetInAnchor(),
-                        text_run_end_position.ToOffsetInAnchor());
+  return EphemeralRange(result_start, text_run_end_position);
 }
 
 PlainTextRange PlainTextRange::Create(const ContainerNode& scope,
