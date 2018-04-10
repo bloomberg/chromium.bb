@@ -17,12 +17,12 @@ include_rules = [
     "+base/threading/thread_checker.h",
     "+base/time/time.h",
     "+build",
-    "+third_party/blink/renderer/platform",
-    "+third_party/blink/public/platform",
     "+services/service_manager/public/cpp/connector.h",
     "+services/service_manager/public/cpp/interface_provider.h",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",
+    "+third_party/blink/public/platform",
+    "+third_party/blink/renderer/platform",
     "+v8",
 
     # We are moving from WTF_MAKE_NONCOPYABLE to DISALLOW_COPY_AND_ASSIGN. Stop

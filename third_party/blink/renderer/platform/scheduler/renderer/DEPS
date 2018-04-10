@@ -1,12 +1,10 @@
 include_rules = [
-  "+third_party/blink/renderer/platform/scheduler/base",
-  "+third_party/blink/renderer/platform/scheduler/child",
   "+base/metrics/single_sample_metrics.h",
-  "+source/platform/scheduler/base",
-  "+source/platform/scheduler/child",
   "+cc",
   "+components/viz/common",
   "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
+  "+third_party/blink/renderer/platform/scheduler/base",
+  "+third_party/blink/renderer/platform/scheduler/child",
 ]
 
 specific_include_rules = {

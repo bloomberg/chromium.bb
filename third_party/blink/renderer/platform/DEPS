@@ -46,13 +46,13 @@ include_rules = [
     "+gpu/GLES2",
     "+mojo/public",
     "+mozilla",
-    #TODO(nverne): remove this
-    "+third_party/blink/public/web/blink.h",
     "+services/metrics/public/cpp/ukm_entry_builder.h",
     "+services/metrics/public/cpp/ukm_recorder.h",
     "+services/network/public/mojom/data_pipe_getter.mojom-blink.h",
     "+services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h",
     "+skia/ext",
+    #TODO(nverne): remove this
+    "+third_party/blink/public/web/blink.h",
     "+third_party/ced/src/compact_enc_det/compact_enc_det.h",
     "+third_party/khronos",
     "+third_party/skia",
