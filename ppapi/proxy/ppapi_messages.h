@@ -2048,17 +2048,6 @@ IPC_MESSAGE_CONTROL4(PpapiPluginMsg_WebSocket_ClosedReply,
                      uint16_t /* code */,
                      std::string /* reason */)
 
-// OutputProtection -----------------------------------------------------------
-
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_OutputProtection_Create)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_OutputProtection_EnableProtection,
-                     uint32_t /* desired_method_mask */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_OutputProtection_EnableProtectionReply)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_OutputProtection_QueryStatus)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_OutputProtection_QueryStatusReply,
-                     uint32_t /* link_mask */,
-                     uint32_t /* protection_mask */)
-
 // VideoDecoder ------------------------------------------------------
 
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_VideoDecoder_Create)

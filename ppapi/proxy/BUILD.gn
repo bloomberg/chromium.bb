@@ -80,8 +80,6 @@ component("proxy") {
     "network_monitor_resource.h",
     "network_proxy_resource.cc",
     "network_proxy_resource.h",
-    "output_protection_resource.cc",
-    "output_protection_resource.h",
     "plugin_array_buffer_var.cc",
     "plugin_array_buffer_var.h",
     "plugin_dispatcher.cc",

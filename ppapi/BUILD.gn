@@ -92,8 +92,6 @@ test_common_source_files = [
   "tests/test_network_monitor.h",
   "tests/test_network_proxy.cc",
   "tests/test_network_proxy.h",
-  "tests/test_output_protection_private.cc",
-  "tests/test_output_protection_private.h",
   "tests/test_paint_aggregator.cc",
   "tests/test_paint_aggregator.h",
   "tests/test_post_message.cc",

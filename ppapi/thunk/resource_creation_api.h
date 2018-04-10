@@ -171,7 +171,6 @@ class ResourceCreationAPI {
       PP_Instance instance,
       const PP_NetAddress_Private& private_addr) = 0;
   virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) = 0;
-  virtual PP_Resource CreateOutputProtectionPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreatePrinting(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPServerSocketPrivate(PP_Instance instance) = 0;
   virtual PP_Resource CreateTCPSocket1_0(PP_Instance instace) = 0;

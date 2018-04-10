@@ -26,7 +26,6 @@
 #include "ppapi/proxy/media_stream_video_track_resource.h"
 #include "ppapi/proxy/net_address_resource.h"
 #include "ppapi/proxy/network_monitor_resource.h"
-#include "ppapi/proxy/output_protection_resource.h"
 #include "ppapi/proxy/platform_verification_private_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_globals.h"
@@ -344,12 +343,6 @@ PP_Resource ResourceCreationProxy::CreateNetAddressFromNetAddressPrivate(
 PP_Resource ResourceCreationProxy::CreateNetworkMonitor(
     PP_Instance instance) {
   return (new NetworkMonitorResource(GetConnection(), instance))->
-      GetReference();
-}
-
-PP_Resource ResourceCreationProxy::CreateOutputProtectionPrivate(
-    PP_Instance instance) {
-  return (new OutputProtectionResource(GetConnection(), instance))->
       GetReference();
 }
 

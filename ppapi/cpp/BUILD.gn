@@ -238,8 +238,6 @@ source_set("objects") {
     "private/isolated_file_system_private.h",
     "private/net_address_private.cc",
     "private/net_address_private.h",
-    "private/output_protection_private.cc",
-    "private/output_protection_private.h",
     "private/pass_file_handle.cc",
     "private/pass_file_handle.h",
     "private/pdf.cc",

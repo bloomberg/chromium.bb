@@ -105,8 +105,6 @@ source_set("thunk") {
     "ppb_network_monitor_thunk.cc",
     "ppb_network_proxy_api.h",
     "ppb_network_proxy_thunk.cc",
-    "ppb_output_protection_api.h",
-    "ppb_output_protection_private_thunk.cc",
     "ppb_pdf_api.h",
     "ppb_platform_verification_api.h",
     "ppb_printing_api.h",

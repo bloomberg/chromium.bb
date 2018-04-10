@@ -1259,10 +1259,6 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
           LIST_TEST(FlashDRM_GetVoucherFile));
 }
 
-#if defined(OS_CHROMEOS)
-TEST_PPAPI_OUT_OF_PROCESS(OutputProtectionPrivate)
-#endif
-
 #if BUILDFLAG(ENABLE_NACL)
 class PackagedAppTest : public ExtensionBrowserTest {
  public:
