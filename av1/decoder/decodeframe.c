@@ -2618,6 +2618,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
+  cm->disable_cdf_update = 1;
 
   if (!cm->seq_params.reduced_still_picture_hdr) {
     cm->show_existing_frame = aom_rb_read_bit(rb);
