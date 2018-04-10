@@ -28,10 +28,12 @@ MINIGBM_SRC := \
 	vgem.c \
 	virtio_gpu.c
 
-MINIGBM_CPPFLAGS := -std=c++14 -D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
-MINIGBM_CFLAGS := -Wall -Wsign-compare -Wpointer-arith \
-		-Wcast-qual -Wcast-align \
-		-D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64
+MINIGBM_CPPFLAGS := -std=c++14
+MINIGBM_CFLAGS := \
+	-D_GNU_SOURCE=1 -D_FILE_OFFSET_BITS=64 \
+	-Wall -Wsign-compare -Wpointer-arith \
+	-Wcast-qual -Wcast-align \
+	-Wno-unused-parameter
 
 ifneq ($(filter $(intel_drivers), $(BOARD_GPU_DRIVERS)),)
 MINIGBM_CPPFLAGS += -DDRV_I915
@@ -43,7 +45,6 @@ ifneq ($(filter meson, $(BOARD_GPU_DRIVERS)),)
 MINIGBM_CPPFLAGS += -DDRV_MESON
 MINIGBM_CFLAGS += -DDRV_MESON
 endif
-
 
 include $(CLEAR_VARS)
 
@@ -67,7 +68,10 @@ LOCAL_PROPRIETARY_MODULE := true
 LOCAL_MODULE_RELATIVE_PATH := hw
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
 LOCAL_MODULE_SUFFIX := $(TARGET_SHLIB_SUFFIX)
+LOCAL_HEADER_LIBRARIES += \
+	libhardware_headers libnativebase_headers libsystem_headers
 LOCAL_SHARED_LIBRARIES += libnativewindow libsync liblog
+LOCAL_STATIC_LIBRARIES += libarect
 include $(BUILD_SHARED_LIBRARY)
 
 
