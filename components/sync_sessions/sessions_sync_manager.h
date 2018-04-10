@@ -88,6 +88,10 @@ class SessionsSyncManager : public syncer::SyncableService,
     return current_machine_tag_;
   }
 
+  const std::string GetCurrentSessionNameForTest() const {
+    return current_session_name_;
+  }
+
   // Triggers garbage collection of stale sessions (as defined by
   // |stale_session_threshold_days_|). This is called every time we see new
   // sessions data downloaded (sync cycles complete).
