@@ -18,6 +18,9 @@ config("bluetooth_config") {
       "/DELAYLOAD:setupapi.dll",
     ]
   }
+  if (is_linux && is_chromecast) {
+    defines = [ "USE_CAST_BLUETOOTH_ADAPTER" ]
+  }
 }
 
 # Experimental implementation not ready for production use yet. See

@@ -223,14 +223,29 @@ test("device_unittests") {
   }
 
   if (is_linux) {
-    # BLE discovery: works on Linux.
-    sources += [ "fido/fido_ble_discovery_unittest.cc" ]
-
     if (is_chromecast) {
+      # Cast does not support GATT server mode.
+      sources -= [
+        "bluetooth/bluetooth_local_gatt_characteristic_unittest.cc",
+        "bluetooth/bluetooth_local_gatt_descriptor_unittest.cc",
+        "bluetooth/bluetooth_local_gatt_service_unittest.cc",
+      ]
+
       sources += [
         "bluetooth/cast/bluetooth_adapter_cast_unittest.cc",
         "bluetooth/cast/bluetooth_utils_unittest.cc",
+        "bluetooth/test/bluetooth_test_cast.cc",
+        "bluetooth/test/bluetooth_test_cast.h",
       ]
+
+      deps += [
+        "//chromecast/device/bluetooth:util",
+        "//chromecast/device/bluetooth/le",
+        "//chromecast/device/bluetooth/shlib:mock_shlib",
+      ]
+    } else {
+      # BLE discovery: works on Linux.
+      sources += [ "fido/fido_ble_discovery_unittest.cc" ]
     }
   }
 
