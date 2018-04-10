@@ -826,11 +826,6 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
     case UiUnsupportedMode::kGenericUnsupportedFeature:
       ExitVrDueToUnsupportedMode(mode);
       return;
-    case UiUnsupportedMode::kUnhandledPageInfo:
-      // Is not send by the UI anymore. Enum value still exists to show correct
-      // exit prompt if vr-browsing-native-android-ui flag is false.
-      NOTREACHED();
-      return;
     case UiUnsupportedMode::kVoiceSearchNeedsRecordAudioOsPermission: {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_VrShellImpl_onUnhandledPermissionPrompt(env, j_vr_shell_);
@@ -841,11 +836,17 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
       Java_VrShellImpl_onNeedsKeyboardUpdate(env, j_vr_shell_);
       return;
     }
+    // Is not sent by the UI anymore. Enum value still exists to show correct
+    // exit prompt if vr-browsing-native-android-ui flag is false.
+    case UiUnsupportedMode::kUnhandledPageInfo:
     // kSearchEnginePromo should directly DOFF without showing a promo. So it
     // should never be used from VR ui thread.
     case UiUnsupportedMode::kSearchEnginePromo:
+    // Not sent by the UI but from PageInfoPopup.
+    case UiUnsupportedMode::kUnhandledConnectionInfo:
+    // Should never be used as a mode.
     case UiUnsupportedMode::kCount:
-      NOTREACHED();  // Should never be used as a mode.
+      NOTREACHED();
       return;
   }
 

@@ -72,6 +72,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.vr_shell.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.location.LocationUtils;
@@ -829,7 +830,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
                 // TODO(crbug.com/826749): Track how often users encounter this via UMA.
                 if (VrShellDelegate.isInVr()) {
                     VrShellDelegate.requestToExitVrAndRunOnSuccess(
-                            PageInfoPopup.this ::showConnectionInfoPopup);
+                            PageInfoPopup.this ::showConnectionInfoPopup,
+                            UiUnsupportedMode.UNHANDLED_CONNECTION_INFO);
                 } else {
                     showConnectionInfoPopup();
                 }
