@@ -4,6 +4,7 @@
 
 #include "ui/keyboard/container_floating_behavior.h"
 
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -194,6 +195,12 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
   if (keyboard_bounds.height() <= 0)
     return false;
 
+  ui::PointerId pointer_id = -1;
+  if (event.IsTouchEvent()) {
+    const ui::TouchEvent* te = event.AsTouchEvent();
+    pointer_id = te->pointer_details().id;
+  }
+
   bool handled = false;
 
   const ui::EventType type = event.type();
@@ -210,8 +217,9 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
       } else if (!drag_descriptor_) {
         // If there is no active drag descriptor, start a new one.
         bool drag_started_by_touch = (type == ui::ET_TOUCH_PRESSED);
-        drag_descriptor_.reset(new DragDescriptor(
-            keyboard_bounds.origin(), kb_offset, drag_started_by_touch));
+        drag_descriptor_.reset(
+            new DragDescriptor(keyboard_bounds.origin(), kb_offset,
+                               drag_started_by_touch, pointer_id));
         handled = true;
       }
       break;
@@ -225,6 +233,8 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
         // If the event isn't of the same type that started the drag, end the
         // drag to prevent confusion.
         drag_descriptor_ = nullptr;
+      } else if (drag_descriptor_->pointer_id() != pointer_id) {
+        // do nothing.
       } else {
         // Drag continues.
         // If there is an active drag, use it to determine the new location
