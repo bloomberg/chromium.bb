@@ -109,12 +109,13 @@ MessageCenterController::MessageCenterController() {
       {&kNotificationCaptivePortalIcon, &kNotificationCellularAlertIcon,
        &kNotificationDownloadIcon, &kNotificationEndOfSupportIcon,
        &kNotificationGoogleIcon, &kNotificationImageIcon,
-       &kNotificationInstalledIcon, &kNotificationMobileDataIcon,
-       &kNotificationMobileDataOffIcon, &kNotificationPlayPrismIcon,
-       &kNotificationPrintingDoneIcon, &kNotificationPrintingIcon,
-       &kNotificationPrintingWarningIcon, &kNotificationSettingsIcon,
-       &kNotificationStorageFullIcon, &kNotificationVpnIcon,
-       &kNotificationWarningIcon, &kNotificationWifiOffIcon});
+       &kNotificationInstalledIcon, &kNotificationMultiDeviceSetupIcon,
+       &kNotificationMobileDataIcon, &kNotificationMobileDataOffIcon,
+       &kNotificationPlayPrismIcon, &kNotificationPrintingDoneIcon,
+       &kNotificationPrintingIcon, &kNotificationPrintingWarningIcon,
+       &kNotificationSettingsIcon, &kNotificationStorageFullIcon,
+       &kNotificationVpnIcon, &kNotificationWarningIcon,
+       &kNotificationWifiOffIcon});
 
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").
