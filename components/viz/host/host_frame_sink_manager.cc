@@ -54,6 +54,11 @@ void HostFrameSinkManager::SetConnectionLostCallback(
   connection_lost_callback_ = std::move(callback);
 }
 
+void HostFrameSinkManager::SetBadMessageReceivedFromGpuCallback(
+    base::RepeatingClosure callback) {
+  bad_message_received_from_gpu_callback_ = std::move(callback);
+}
+
 void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
                                                HostFrameSinkClient* client) {
   DCHECK(frame_sink_id.is_valid());
@@ -138,7 +143,8 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   data.has_created_compositor_frame_sink = true;
 
   frame_sink_manager_->CreateRootCompositorFrameSink(std::move(params));
-  display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
+  display_hit_test_query_[frame_sink_id] =
+      std::make_unique<HitTestQuery>(bad_message_received_from_gpu_callback_);
 }
 
 void HostFrameSinkManager::CreateCompositorFrameSink(
