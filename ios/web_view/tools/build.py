@@ -167,7 +167,7 @@ def package_all_frameworks(out_dir, output_name, extra_gn_options,
       return 1
 
   # Copy common files from last built package to out_dir.
-  build_dir = os.path.join('out', target_dir_name('Release', 'os'))
+  build_dir = os.path.join('out', target_dir_name('Release', 'iphoneos'))
   package_dir = os.path.join(build_dir, 'ios_web_view')
   shutil.copy2(os.path.join(package_dir, 'AUTHORS'), out_dir)
   shutil.copy2(os.path.join(package_dir, 'LICENSE'), out_dir)
