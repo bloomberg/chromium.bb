@@ -15,8 +15,11 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
@@ -377,6 +380,13 @@ bool IsOutOfProcessNetworkService() {
              switches::kSingleProcess);
 }
 
+// Takes the lower 31 bits of the metric-name-hash of a Mojo interface |name|.
+base::Histogram::Sample HashInterfaceNameToHistogramSample(
+    base::StringPiece name) {
+  return base::strict_cast<base::Histogram::Sample>(
+      static_cast<int32_t>(base::HashMetricName(name) & 0x7fffffffull));
+}
+
 }  // namespace
 
 RenderFrameHostImpl::PendingNavigation::PendingNavigation(
@@ -397,6 +407,7 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
       : binding_(this) {
     binding_.Bind(std::move(request));
   }
+
   ~DroppedInterfaceRequestLogger() override {
     UMA_HISTOGRAM_EXACT_LINEAR("RenderFrameHostImpl.DroppedInterfaceRequests",
                                num_dropped_requests_, 20);
@@ -407,6 +418,9 @@ class RenderFrameHostImpl::DroppedInterfaceRequestLogger
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle pipe) override {
     ++num_dropped_requests_;
+    base::UmaHistogramSparse(
+        "RenderFrameHostImpl.DroppedInterfaceRequestName",
+        HashInterfaceNameToHistogramSample(interface_name));
     DLOG(WARNING)
         << "InterfaceRequest was dropped, the document is no longer active: "
         << interface_name;
