@@ -249,7 +249,8 @@ public class NewTabPage
 
             if (windowDisposition != WindowOpenDisposition.NEW_WINDOW) {
                 RecordHistogram.recordMediumTimesHistogram("NewTabPage.MostVisitedTime",
-                        System.nanoTime() - mLastShownTimeNs, TimeUnit.NANOSECONDS);
+                        TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - mLastShownTimeNs),
+                        TimeUnit.MILLISECONDS);
             }
         }
     }
@@ -469,8 +470,9 @@ public class NewTabPage
 
     /** Records UMA for the NTP being hidden and the time spent on it. */
     private void recordNTPHidden() {
-        RecordHistogram.recordMediumTimesHistogram(
-                "NewTabPage.TimeSpent", System.nanoTime() - mLastShownTimeNs, TimeUnit.NANOSECONDS);
+        RecordHistogram.recordMediumTimesHistogram("NewTabPage.TimeSpent",
+                TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - mLastShownTimeNs),
+                TimeUnit.MILLISECONDS);
         SuggestionsMetrics.recordSurfaceHidden();
     }
 

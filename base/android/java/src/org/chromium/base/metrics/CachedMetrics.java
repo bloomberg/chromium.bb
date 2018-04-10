@@ -162,6 +162,7 @@ public class CachedMetrics {
 
         public TimesHistogramSample(String histogramName, TimeUnit timeUnit) {
             super(histogramName);
+            RecordHistogram.assertTimesHistogramSupportsUnit(timeUnit);
             mTimeUnit = timeUnit;
         }
 
