@@ -2067,6 +2067,7 @@ crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pa
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
+crbug.com/663847 [ Linux ] fast/events/context-no-deselect.html [ Failure Pass ]
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
