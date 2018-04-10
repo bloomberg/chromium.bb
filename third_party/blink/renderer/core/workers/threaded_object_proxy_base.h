@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class ParentFrameTaskRunners;
+class ParentExecutionContextTaskRunners;
 class ThreadedMessagingProxyBase;
 
 // The base proxy class to talk to a DedicatedWorker or *Worklet object on the
@@ -39,15 +39,16 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
   void DidTerminateWorkerThread() override;
 
  protected:
-  explicit ThreadedObjectProxyBase(ParentFrameTaskRunners*);
+  explicit ThreadedObjectProxyBase(ParentExecutionContextTaskRunners*);
   virtual CrossThreadWeakPersistent<ThreadedMessagingProxyBase>
   MessagingProxyWeakPtr() = 0;
-  ParentFrameTaskRunners* GetParentFrameTaskRunners();
+  ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners();
 
  private:
   // Used to post a task to ThreadedMessagingProxyBase on the parent context
   // thread.
-  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  CrossThreadPersistent<ParentExecutionContextTaskRunners>
+      parent_execution_context_task_runners_;
   DISALLOW_COPY_AND_ASSIGN(ThreadedObjectProxyBase);
 };
 

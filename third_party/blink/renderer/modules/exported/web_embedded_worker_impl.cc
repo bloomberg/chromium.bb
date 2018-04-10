@@ -47,7 +47,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
 #include "third_party/blink/renderer/core/loader/worker_fetch_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
@@ -402,7 +402,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
       std::move(global_scope_creation_params),
       WorkerBackingThreadStartupData::CreateDefault(),
       worker_inspector_proxy_->ShouldPauseOnWorkerStart(document),
-      ParentFrameTaskRunners::Create());
+      ParentExecutionContextTaskRunners::Create());
 
   worker_inspector_proxy_->WorkerThreadCreated(document, worker_thread_.get(),
                                                worker_start_data_.script_url);

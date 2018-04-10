@@ -28,8 +28,9 @@ class ThreadedWorkletObjectProxyForTest final
  public:
   ThreadedWorkletObjectProxyForTest(
       ThreadedWorkletMessagingProxy* messaging_proxy,
-      ParentFrameTaskRunners* parent_frame_task_runners)
-      : ThreadedWorkletObjectProxy(messaging_proxy, parent_frame_task_runners),
+      ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+      : ThreadedWorkletObjectProxy(messaging_proxy,
+                                   parent_execution_context_task_runners),
         reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
  protected:
@@ -86,8 +87,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(global_scope->GetSecurityOrigin()->IsUnique());
     EXPECT_FALSE(global_scope->DocumentSecurityOrigin()->IsUnique());
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
   void TestContentSecurityPolicy() {
@@ -110,8 +111,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
         IntegrityMetadataSet(), kParserInserted));
 
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
   // Emulates API use on ThreadedWorkletGlobalScope.
@@ -119,8 +120,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
   // Emulates deprecated API use on ThreadedWorkletGlobalScope.
@@ -134,8 +135,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(console_message.Contains("deprecated"));
 
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -144,8 +145,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
         GlobalScope()->GetTaskRunner(TaskType::kInternalTest);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
  private:
@@ -169,7 +170,7 @@ class ThreadedWorkletMessagingProxyForTest
       ExecutionContext* execution_context)
       : ThreadedWorkletMessagingProxy(execution_context) {
     worklet_object_proxy_ = std::make_unique<ThreadedWorkletObjectProxyForTest>(
-        this, GetParentFrameTaskRunners());
+        this, GetParentExecutionContextTaskRunners());
   }
 
   ~ThreadedWorkletMessagingProxyForTest() override = default;

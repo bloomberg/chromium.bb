@@ -7,7 +7,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/threaded_messaging_proxy_base.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
@@ -17,14 +17,16 @@ namespace blink {
 
 void ThreadedObjectProxyBase::CountFeature(WebFeature feature) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::CountFeature,
                       MessagingProxyWeakPtr(), feature));
 }
 
 void ThreadedObjectProxyBase::CountDeprecation(WebFeature feature) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::CountDeprecation,
                       MessagingProxyWeakPtr(), feature));
 }
@@ -34,7 +36,8 @@ void ThreadedObjectProxyBase::ReportConsoleMessage(MessageSource source,
                                                    const String& message,
                                                    SourceLocation* location) {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::ReportConsoleMessage,
                       MessagingProxyWeakPtr(), source, level, message,
                       WTF::Passed(location->Clone())));
@@ -46,14 +49,16 @@ void ThreadedObjectProxyBase::PostMessageToPageInspector(
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnthrottled), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnthrottled),
+      FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::PostMessageToPageInspector,
                       MessagingProxyWeakPtr(), session_id, message));
 }
 
 void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::TerminateGlobalScope,
                       MessagingProxyWeakPtr()));
 }
@@ -61,17 +66,20 @@ void ThreadedObjectProxyBase::DidCloseWorkerGlobalScope() {
 void ThreadedObjectProxyBase::DidTerminateWorkerThread() {
   // This will terminate the MessagingProxy.
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::WorkerThreadTerminated,
                       MessagingProxyWeakPtr()));
 }
 
-ParentFrameTaskRunners* ThreadedObjectProxyBase::GetParentFrameTaskRunners() {
-  return parent_frame_task_runners_.Get();
+ParentExecutionContextTaskRunners*
+ThreadedObjectProxyBase::GetParentExecutionContextTaskRunners() {
+  return parent_execution_context_task_runners_.Get();
 }
 
 ThreadedObjectProxyBase::ThreadedObjectProxyBase(
-    ParentFrameTaskRunners* parent_frame_task_runners)
-    : parent_frame_task_runners_(parent_frame_task_runners) {}
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+    : parent_execution_context_task_runners_(
+          parent_execution_context_task_runners) {}
 
 }  // namespace blink

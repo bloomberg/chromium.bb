@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
@@ -101,7 +101,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const WTF::Optional<WorkerBackingThreadStartupData>&,
              WorkerInspectorProxy::PauseOnWorkerStart,
-             ParentFrameTaskRunners*);
+             ParentExecutionContextTaskRunners*);
 
   // Posts a task to evaluate a top-level classic script on the worker thread.
   // Called on the main thread after Start().
@@ -193,8 +193,9 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void WaitForShutdownForTesting() { shutdown_event_->Wait(); }
   ExitCode GetExitCodeForTesting() LOCKS_EXCLUDED(mutex_);
 
-  ParentFrameTaskRunners* GetParentFrameTaskRunners() const {
-    return parent_frame_task_runners_.Get();
+  ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners()
+      const {
+    return parent_execution_context_task_runners_.Get();
   }
 
   // For ServiceWorkerScriptStreaming. Returns nullptr otherwise.
@@ -312,7 +313,8 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   WorkerReportingProxy& worker_reporting_proxy_;
 
-  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  CrossThreadPersistent<ParentExecutionContextTaskRunners>
+      parent_execution_context_task_runners_;
 
   // Tasks managed by this scheduler are canceled when the global scope is
   // closed.

@@ -16,7 +16,7 @@ class AudioWorkletObjectProxy final
     : public ThreadedWorkletObjectProxy {
  public:
   AudioWorkletObjectProxy(AudioWorkletMessagingProxy*,
-                          ParentFrameTaskRunners*,
+                          ParentExecutionContextTaskRunners*,
                           float context_sample_rate);
 
   // Implements WorkerReportingProxy.

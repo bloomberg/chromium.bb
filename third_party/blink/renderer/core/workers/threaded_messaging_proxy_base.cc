@@ -33,8 +33,8 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
     ExecutionContext* execution_context)
     : execution_context_(execution_context),
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
-      parent_frame_task_runners_(
-          ParentFrameTaskRunners::Create(execution_context_.Get())),
+      parent_execution_context_task_runners_(
+          ParentExecutionContextTaskRunners::Create(execution_context_.Get())),
       terminate_sync_load_event_(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
@@ -92,7 +92,7 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   worker_thread_->Start(
       std::move(global_scope_creation_params), thread_startup_data,
       GetWorkerInspectorProxy()->ShouldPauseOnWorkerStart(execution_context_),
-      GetParentFrameTaskRunners());
+      GetParentExecutionContextTaskRunners());
   GetWorkerInspectorProxy()->WorkerThreadCreated(execution_context_,
                                                  GetWorkerThread(), script_url);
 }
@@ -180,10 +180,10 @@ ExecutionContext* ThreadedMessagingProxyBase::GetExecutionContext() const {
   return execution_context_;
 }
 
-ParentFrameTaskRunners* ThreadedMessagingProxyBase::GetParentFrameTaskRunners()
-    const {
+ParentExecutionContextTaskRunners*
+ThreadedMessagingProxyBase::GetParentExecutionContextTaskRunners() const {
   DCHECK(IsParentContextThread());
-  return parent_frame_task_runners_;
+  return parent_execution_context_task_runners_;
 }
 
 WorkerInspectorProxy* ThreadedMessagingProxyBase::GetWorkerInspectorProxy()

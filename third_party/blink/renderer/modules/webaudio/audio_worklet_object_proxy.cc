@@ -15,11 +15,11 @@ namespace blink {
 
 AudioWorkletObjectProxy::AudioWorkletObjectProxy(
     AudioWorkletMessagingProxy* messaging_proxy_weak_ptr,
-    ParentFrameTaskRunners* parent_frame_task_runners,
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners,
     float context_sample_rate)
     : ThreadedWorkletObjectProxy(
           static_cast<ThreadedWorkletMessagingProxy*>(messaging_proxy_weak_ptr),
-          parent_frame_task_runners),
+          parent_execution_context_task_runners),
       context_sample_rate_(context_sample_rate) {}
 
 void AudioWorkletObjectProxy::DidCreateWorkerGlobalScope(
@@ -42,7 +42,8 @@ void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
     return;
 
   PostCrossThreadTask(
-      *GetParentFrameTaskRunners()->Get(TaskType::kUnthrottled), FROM_HERE,
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnthrottled),
+      FROM_HERE,
       CrossThreadBind(
           &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,
           GetAudioWorkletMessagingProxyWeakPtr(),

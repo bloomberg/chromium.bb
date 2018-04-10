@@ -196,7 +196,8 @@ class WorkerThreadableLoader final : public ThreadableLoader {
       std::unique_ptr<CrossThreadResourceTimingInfoData>);
 
   Member<WorkerGlobalScope> worker_global_scope_;
-  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  CrossThreadPersistent<ParentExecutionContextTaskRunners>
+      parent_execution_context_task_runners_;
   ThreadableLoaderClient* client_;
 
   ThreadableLoaderOptions threadable_loader_options_;

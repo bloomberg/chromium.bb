@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_FRAME_TASK_RUNNERS_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_FRAME_TASK_RUNNERS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_EXECUTION_CONTEXT_TASK_RUNNERS_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_EXECUTION_CONTEXT_TASK_RUNNERS_H_
 
 #include <memory>
 #include "base/macros.h"
@@ -19,22 +19,21 @@ namespace blink {
 
 // Represents a set of task runners of the parent execution context, or default
 // task runners for the current thread if no execution context is available.
-// TODO(japhet): Rename to something like ParentExecutionContextTaskRunners.
-class CORE_EXPORT ParentFrameTaskRunners final
-    : public GarbageCollectedFinalized<ParentFrameTaskRunners>,
+class CORE_EXPORT ParentExecutionContextTaskRunners final
+    : public GarbageCollectedFinalized<ParentExecutionContextTaskRunners>,
       public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(ParentFrameTaskRunners);
+  USING_GARBAGE_COLLECTED_MIXIN(ParentExecutionContextTaskRunners);
 
  public:
   // Returns task runners associated with a given context. This must be called
   // on the context's context thread, that is, the thread where the context was
   // created.
-  static ParentFrameTaskRunners* Create(ExecutionContext*);
+  static ParentExecutionContextTaskRunners* Create(ExecutionContext*);
 
   // Returns default task runners of the current thread. This can be called from
   // any threads. This must be used only for shared workers, service workers and
   // tests that don't have a parent frame.
-  static ParentFrameTaskRunners* Create();
+  static ParentExecutionContextTaskRunners* Create();
 
   // Might return nullptr for unsupported task types. This can be called from
   // any threads.
@@ -51,16 +50,16 @@ class CORE_EXPORT ParentFrameTaskRunners final
 
   // ExecutionContext could be nullptr if the worker is not associated with a
   // particular context.
-  explicit ParentFrameTaskRunners(ExecutionContext*);
+  explicit ParentExecutionContextTaskRunners(ExecutionContext*);
 
   void ContextDestroyed(ExecutionContext*) LOCKS_EXCLUDED(mutex_) override;
 
   Mutex mutex_;
   TaskRunnerHashMap task_runners_ GUARDED_BY(mutex_);
 
-  DISALLOW_COPY_AND_ASSIGN(ParentFrameTaskRunners);
+  DISALLOW_COPY_AND_ASSIGN(ParentExecutionContextTaskRunners);
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_FRAME_TASK_RUNNERS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_PARENT_EXECUTION_CONTEXT_TASK_RUNNERS_H_

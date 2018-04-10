@@ -199,8 +199,9 @@ WorkerThreadableLoader::WorkerThreadableLoader(
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options)
     : worker_global_scope_(&worker_global_scope),
-      parent_frame_task_runners_(
-          worker_global_scope.GetThread()->GetParentFrameTaskRunners()),
+      parent_execution_context_task_runners_(
+          worker_global_scope.GetThread()
+              ->GetParentExecutionContextTaskRunners()),
       client_(client),
       threadable_loader_options_(options),
       resource_loader_options_(resource_loader_options) {
@@ -239,7 +240,8 @@ void WorkerThreadableLoader::Start(const ResourceRequest& original_request) {
   scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner =
       worker_global_scope_->GetTaskRunner(TaskType::kInternalLoading);
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalLoading),
+      FROM_HERE,
       CrossThreadBind(
           &MainThreadLoaderHolder::CreateAndStart,
           WrapCrossThreadPersistent(this),
@@ -274,7 +276,8 @@ void WorkerThreadableLoader::OverrideTimeout(
   if (!main_thread_loader_holder_)
     return;
   PostCrossThreadTask(
-      *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalLoading),
+      FROM_HERE,
       CrossThreadBind(&MainThreadLoaderHolder::OverrideTimeout,
                       main_thread_loader_holder_, timeout_milliseconds));
 }
@@ -282,10 +285,11 @@ void WorkerThreadableLoader::OverrideTimeout(
 void WorkerThreadableLoader::Cancel() {
   DCHECK(!IsMainThread());
   if (main_thread_loader_holder_) {
-    PostCrossThreadTask(
-        *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
-        CrossThreadBind(&MainThreadLoaderHolder::Cancel,
-                        main_thread_loader_holder_));
+    PostCrossThreadTask(*parent_execution_context_task_runners_->Get(
+                            TaskType::kInternalLoading),
+                        FROM_HERE,
+                        CrossThreadBind(&MainThreadLoaderHolder::Cancel,
+                                        main_thread_loader_holder_));
     main_thread_loader_holder_ = nullptr;
   }
 
@@ -316,7 +320,9 @@ void WorkerThreadableLoader::DidStart(
   if (!client_) {
     // The thread is terminating.
     PostCrossThreadTask(
-        *parent_frame_task_runners_->Get(TaskType::kInternalLoading), FROM_HERE,
+        *parent_execution_context_task_runners_->Get(
+            TaskType::kInternalLoading),
+        FROM_HERE,
         CrossThreadBind(&MainThreadLoaderHolder::Cancel,
                         WrapCrossThreadPersistent(main_thread_loader_holder)));
     return;

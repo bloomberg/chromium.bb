@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -101,7 +101,7 @@ class AnimationWorkletThreadTest : public PageTestBase {
             kV8CacheOptionsDefault,
             new WorkletModuleResponsesMap(document->Fetcher())),
         WTF::nullopt, WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
-        ParentFrameTaskRunners::Create());
+        ParentExecutionContextTaskRunners::Create());
     return thread;
   }
 

@@ -35,7 +35,8 @@ void ThreadedWorkletMessagingProxy::Initialize(
   if (AskedToTerminate())
     return;
 
-  worklet_object_proxy_ = CreateObjectProxy(this, GetParentFrameTaskRunners());
+  worklet_object_proxy_ =
+      CreateObjectProxy(this, GetParentExecutionContextTaskRunners());
 
   Document* document = ToDocument(GetExecutionContext());
   ContentSecurityPolicy* csp = document->GetContentSecurityPolicy();
@@ -87,11 +88,11 @@ void ThreadedWorkletMessagingProxy::TerminateWorkletGlobalScope() {
 }
 
 std::unique_ptr<ThreadedWorkletObjectProxy>
-    ThreadedWorkletMessagingProxy::CreateObjectProxy(
-        ThreadedWorkletMessagingProxy* messaging_proxy,
-        ParentFrameTaskRunners* parent_frame_task_runners) {
-  return ThreadedWorkletObjectProxy::Create(messaging_proxy,
-                                            parent_frame_task_runners);
+ThreadedWorkletMessagingProxy::CreateObjectProxy(
+    ThreadedWorkletMessagingProxy* messaging_proxy,
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
+  return ThreadedWorkletObjectProxy::Create(
+      messaging_proxy, parent_execution_context_task_runners);
 }
 
 ThreadedWorkletObjectProxy&

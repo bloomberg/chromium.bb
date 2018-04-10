@@ -29,7 +29,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
  public:
   static std::unique_ptr<ThreadedWorkletObjectProxy> Create(
       ThreadedWorkletMessagingProxy*,
-      ParentFrameTaskRunners*);
+      ParentExecutionContextTaskRunners*);
   ~ThreadedWorkletObjectProxy() override;
 
   void FetchAndInvokeScript(
@@ -41,7 +41,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
 
  protected:
   ThreadedWorkletObjectProxy(ThreadedWorkletMessagingProxy*,
-                             ParentFrameTaskRunners*);
+                             ParentExecutionContextTaskRunners*);
 
   CrossThreadWeakPersistent<ThreadedMessagingProxyBase> MessagingProxyWeakPtr()
       final;

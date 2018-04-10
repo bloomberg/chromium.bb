@@ -45,7 +45,7 @@
 namespace blink {
 
 class FetchEvent;
-class ParentFrameTaskRunners;
+class ParentExecutionContextTaskRunners;
 class ServiceWorkerGlobalScope;
 class WebDataConsumerHandle;
 class WebEmbeddedWorkerImpl;
@@ -184,7 +184,8 @@ class ServiceWorkerGlobalScopeProxy final
   // as part of its finalization.
   WebEmbeddedWorkerImpl* embedded_worker_;
 
-  Member<ParentFrameTaskRunners> parent_frame_task_runners_;
+  Member<ParentExecutionContextTaskRunners>
+      parent_execution_context_task_runners_;
 
   // The worker thread uses this map to track |FetchEvent|s created
   // on the worker thread (heap.) But as the proxy object is created

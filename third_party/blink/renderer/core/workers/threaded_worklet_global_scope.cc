@@ -28,7 +28,8 @@ ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
           thread->GetWorkerReportingProxy(),
           // Specify |kInternalLoading| because these task runners are used
           // during module loading and this usage is not explicitly spec'ed.
-          thread->GetParentFrameTaskRunners()->Get(TaskType::kInternalLoading),
+          thread->GetParentExecutionContextTaskRunners()->Get(
+              TaskType::kInternalLoading),
           thread->GetTaskRunner(TaskType::kInternalLoading)),
       thread_(thread) {}
 

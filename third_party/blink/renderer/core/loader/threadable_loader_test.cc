@@ -326,7 +326,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
   void OnSetUp() override {
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
     security_origin_ = GetDocument().GetSecurityOrigin();
-    parent_frame_task_runners_ = ParentFrameTaskRunners::Create(&GetDocument());
+    parent_execution_context_task_runners_ =
+        ParentExecutionContextTaskRunners::Create(&GetDocument());
     worker_thread_ = std::make_unique<WorkerThreadForTest>(
         ThreadableLoadingContext::Create(GetDocument()), *reporting_proxy_);
     WorkerClients* worker_clients = WorkerClients::Create();
@@ -336,7 +337,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
                             GetDocument().SiteForCookies()));
     worker_thread_->StartWithSourceCode(
         security_origin_.get(), "//fake source code",
-        parent_frame_task_runners_.Get(), GetDocument().Url(), worker_clients);
+        parent_execution_context_task_runners_.Get(), GetDocument().Url(),
+        worker_clients);
     worker_thread_->WaitForInit();
     worker_loading_task_runner_ =
         worker_thread_->GetTaskRunner(TaskType::kInternalTest);
@@ -428,7 +430,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   // Accessed cross-thread when worker thread posts tasks to the parent.
-  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  CrossThreadPersistent<ParentExecutionContextTaskRunners>
+      parent_execution_context_task_runners_;
   scoped_refptr<base::SingleThreadTaskRunner> worker_loading_task_runner_;
   Checkpoint checkpoint_;
   // |m_loader| must be touched only from the worker thread only.

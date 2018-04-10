@@ -101,10 +101,11 @@ void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const WTF::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
     WorkerInspectorProxy::PauseOnWorkerStart pause_on_start,
-    ParentFrameTaskRunners* parent_frame_task_runners) {
+    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
   DCHECK(IsMainThread());
-  DCHECK(!parent_frame_task_runners_);
-  parent_frame_task_runners_ = parent_frame_task_runners;
+  DCHECK(!parent_execution_context_task_runners_);
+  parent_execution_context_task_runners_ =
+      parent_execution_context_task_runners;
 
   // Synchronously initialize the per-global-scope scheduler to prevent someone
   // from posting a task to the thread before the scheduler is ready.
@@ -337,7 +338,8 @@ WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
 void WorkerThread::ScheduleToTerminateScriptExecution() {
   DCHECK(!forcible_termination_task_handle_.IsActive());
   forcible_termination_task_handle_ = PostDelayedCancellableTask(
-      *parent_frame_task_runners_->Get(TaskType::kUnspecedTimer), FROM_HERE,
+      *parent_execution_context_task_runners_->Get(TaskType::kUnspecedTimer),
+      FROM_HERE,
       WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
                 WTF::Unretained(this), ExitCode::kAsyncForciblyTerminated),
       forcible_termination_delay_);

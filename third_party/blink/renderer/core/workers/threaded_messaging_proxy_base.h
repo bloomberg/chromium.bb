@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature_forward.h"
 #include "third_party/blink/renderer/core/inspector/console_types.h"
-#include "third_party/blink/renderer/core/workers/parent_frame_task_runners.h"
+#include "third_party/blink/renderer/core/workers/parent_execution_context_task_runners.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
@@ -80,7 +80,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   ThreadableLoadingContext* CreateThreadableLoadingContext() const;
 
   ExecutionContext* GetExecutionContext() const;
-  ParentFrameTaskRunners* GetParentFrameTaskRunners() const;
+  ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners()
+      const;
   WorkerInspectorProxy* GetWorkerInspectorProxy() const;
 
   // May return nullptr after termination is requested.
@@ -98,7 +99,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   Member<WorkerInspectorProxy> worker_inspector_proxy_;
 
   // Accessed cross-thread when worker thread posts tasks to the parent.
-  CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
+  CrossThreadPersistent<ParentExecutionContextTaskRunners>
+      parent_execution_context_task_runners_;
 
   std::unique_ptr<WorkerThread> worker_thread_;
 

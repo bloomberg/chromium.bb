@@ -50,8 +50,8 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(IsCurrentThread());
     GlobalScope()->CountFeature(feature);
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
   // Emulates deprecated API use on DedicatedWorkerGlobalScope.
@@ -65,8 +65,8 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     EXPECT_TRUE(console_message.Contains("deprecated"));
 
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -75,8 +75,8 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
         GlobalScope()->GetTaskRunner(TaskType::kInternalTest);
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     PostCrossThreadTask(
-        *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&test::ExitRunLoop));
+        *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalTest),
+        FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   }
 };
 
@@ -85,8 +85,9 @@ class DedicatedWorkerObjectProxyForTest final
  public:
   DedicatedWorkerObjectProxyForTest(
       DedicatedWorkerMessagingProxy* messaging_proxy,
-      ParentFrameTaskRunners* parent_frame_task_runners)
-      : DedicatedWorkerObjectProxy(messaging_proxy, parent_frame_task_runners),
+      ParentExecutionContextTaskRunners* parent_execution_context_task_runners)
+      : DedicatedWorkerObjectProxy(messaging_proxy,
+                                   parent_execution_context_task_runners),
         reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
   void CountFeature(WebFeature feature) override {
@@ -114,7 +115,7 @@ class DedicatedWorkerMessagingProxyForTest
       : DedicatedWorkerMessagingProxy(execution_context,
                                       nullptr /* worker_object */) {
     worker_object_proxy_ = std::make_unique<DedicatedWorkerObjectProxyForTest>(
-        this, GetParentFrameTaskRunners());
+        this, GetParentExecutionContextTaskRunners());
   }
 
   ~DedicatedWorkerMessagingProxyForTest() override = default;
