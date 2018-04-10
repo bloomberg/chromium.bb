@@ -38,11 +38,21 @@ class CONTENT_EXPORT IndexedDBMetadataCoding {
       LevelDBDatabase* db,
       const std::string& origin_identifier,
       std::vector<base::string16>* names);
+  virtual leveldb::Status ReadDatabaseNames(
+      LevelDBTransaction* transaction,
+      const std::string& origin_identifier,
+      std::vector<base::string16>* names);
 
   // Reads in metadata for the database and all object stores & indices.
   // Note: the database name is not populated in |metadata|.
   virtual leveldb::Status ReadMetadataForDatabaseName(
       LevelDBDatabase* db,
+      const std::string& origin_identifier,
+      const base::string16& name,
+      IndexedDBDatabaseMetadata* metadata,
+      bool* found);
+  virtual leveldb::Status ReadMetadataForDatabaseName(
+      LevelDBTransaction* transaction,
       const std::string& origin_identifier,
       const base::string16& name,
       IndexedDBDatabaseMetadata* metadata,
