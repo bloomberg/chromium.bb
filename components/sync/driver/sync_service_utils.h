@@ -7,16 +7,9 @@
 
 #include "components/sync/base/model_type.h"
 
-class PrefService;
-
 namespace syncer {
 
 class SyncService;
-
-// Returns whether sync is enabled and tab sync is configured for syncing
-// without encryption.
-bool IsTabSyncEnabledAndUnencrypted(SyncService* sync_service,
-                                    PrefService* pref_service);
 
 // Indicates whether uploading of data to Google is enabled, i.e. the user has
 // given consent to upload this data.

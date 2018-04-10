@@ -51,7 +51,7 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   base::Time GetCurrentVisitTimestamp() const override;
   bool IsOffTheRecord() const override;
   bool SearchSuggestEnabled() const override;
-  bool TabSyncEnabledAndUnencrypted() const override;
+  bool IsTabUploadToGoogleActive() const override;
   bool IsAuthenticated() const override;
   void Classify(
       const base::string16& text,

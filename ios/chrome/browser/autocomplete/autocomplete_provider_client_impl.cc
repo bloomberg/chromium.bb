@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -156,10 +157,11 @@ bool AutocompleteProviderClientImpl::SearchSuggestEnabled() const {
   return browser_state_->GetPrefs()->GetBoolean(prefs::kSearchSuggestEnabled);
 }
 
-bool AutocompleteProviderClientImpl::TabSyncEnabledAndUnencrypted() const {
-  return syncer::IsTabSyncEnabledAndUnencrypted(
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_),
-      browser_state_->GetPrefs());
+bool AutocompleteProviderClientImpl::IsTabUploadToGoogleActive() const {
+  return syncer::GetUploadToGoogleState(
+             IOSChromeProfileSyncServiceFactory::GetForBrowserState(
+                 browser_state_),
+             syncer::ModelType::PROXY_TABS) == syncer::UploadState::ACTIVE;
 }
 
 bool AutocompleteProviderClientImpl::IsAuthenticated() const {
