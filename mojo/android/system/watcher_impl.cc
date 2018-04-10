@@ -6,8 +6,6 @@
 #include <stdint.h>
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
-#include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "jni/WatcherImpl_jni.h"
