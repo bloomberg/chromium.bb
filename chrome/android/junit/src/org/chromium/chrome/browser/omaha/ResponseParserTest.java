@@ -194,7 +194,7 @@ public class ResponseParserTest {
                 createTestXML("3.0", "12345", appStatus, addInstall, addPing, updateStatus, URL);
         ResponseParser parser =
                 new ResponseParser(true, "{APP_ID}", addInstall, addPing, updateStatus != null);
-        parser.parseResponse(xml);
+        OmahaBase.VersionConfig versionConfig = parser.parseResponse(xml);
 
         Assert.assertEquals("elapsed_seconds doesn't match.", 12345, parser.getDaystartSeconds());
         Assert.assertEquals("<app> status doesn't match.", appStatus, parser.getAppStatus());
@@ -211,6 +211,9 @@ public class ResponseParserTest {
             Assert.assertEquals(
                     "Market URL doesn't match.", null, parser.getURL());
         }
+        Assert.assertEquals("Version number doesn't match.", versionConfig.latestVersion,
+                parser.getNewVersion());
+        Assert.assertEquals("URL doesn't match.", versionConfig.downloadUrl, parser.getURL());
     }
 
     /**
