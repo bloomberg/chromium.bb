@@ -2079,6 +2079,10 @@ void Document::UpdateStyleAndLayoutTree() {
   HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   ScriptForbiddenScope forbid_script;
 
+  if (HTMLFrameOwnerElement* owner = LocalOwner()) {
+    owner->GetDocument().UpdateStyleAndLayoutTree();
+  }
+
   if (!View() || !IsActive())
     return;
 
@@ -4533,6 +4537,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
       goto SetFocusedElementDone;
     }
     CancelFocusAppearanceUpdate();
+    UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(focused_element_);
     focused_element_->UpdateFocusAppearanceWithOptions(
         params.selection_behavior, params.options);
 
