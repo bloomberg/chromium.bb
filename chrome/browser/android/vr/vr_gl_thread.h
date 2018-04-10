@@ -57,8 +57,9 @@ class VrGLThread : public base::android::JavaHandlerThread,
                              gl::SurfaceTexture* texture) override;
   void ContentOverlaySurfaceCreated(jobject surface,
                                     gl::SurfaceTexture* texture) override;
-  void GvrDelegateReady(
-      gvr::ViewerType viewer_type,
+  void GvrDelegateReady(gvr::ViewerType viewer_type) override;
+  void SendRequestPresentReply(
+      bool success,
       device::mojom::VRDisplayFrameTransportOptionsPtr) override;
   void DialogSurfaceCreated(jobject surface,
                             gl::SurfaceTexture* texture) override;

@@ -124,13 +124,21 @@ void VrGLThread::DialogSurfaceCreated(jobject surface,
                                 surface, base::Unretained(texture)));
 }
 
-void VrGLThread::GvrDelegateReady(
-    gvr::ViewerType viewer_type,
+void VrGLThread::GvrDelegateReady(gvr::ViewerType viewer_type) {
+  DCHECK(OnGlThread());
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&VrShell::GvrDelegateReady, weak_vr_shell_, viewer_type));
+}
+
+void VrGLThread::SendRequestPresentReply(
+    bool success,
     device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VrShell::GvrDelegateReady, weak_vr_shell_,
-                                viewer_type, std::move(transport_options)));
+      FROM_HERE,
+      base::BindOnce(&VrShell::SendRequestPresentReply, weak_vr_shell_, success,
+                     std::move(transport_options)));
 }
 
 void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {

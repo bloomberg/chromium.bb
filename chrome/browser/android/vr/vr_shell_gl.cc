@@ -410,28 +410,8 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 
-  VrMetricsUtil::XRRenderPath render_path =
-      VrMetricsUtil::XRRenderPath::kClientWait;
-
-  std::string render_path_string = base::GetFieldTrialParamValueByFeature(
-      features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
-  DVLOG(1) << __FUNCTION__ << ": WebXrRenderPath=" << render_path_string;
-  if (render_path_string == features::kWebXrRenderPathParamValueClientWait) {
-    // Use the baseline kClientWait.
-  } else {
-    // Default aka features::kWebXrRenderPathParamValueGpuFence.
-    // Use kGpuFence if it is supported. If not, use baseline kClientWait.
-    if (gl::GLFence::IsGpuFenceSupported()) {
-      webvr_use_gpu_fence_ = true;
-      render_path = VrMetricsUtil::XRRenderPath::kGpuFence;
-    }
-  }
-  VrMetricsUtil::LogXrRenderPathUsed(render_path);
-
   // InitializeRenderer calls GvrDelegateReady which triggers actions such as
-  // responding to RequestPresent. All member assignments or other
-  // initialization actions which affect presentation setup, i.e. feature
-  // checks, must happen before this point.
+  // responding to RequestPresent.
   if (!reinitializing)
     InitializeRenderer();
 
@@ -682,6 +662,9 @@ void VrShellGl::ConnectPresentingService(
            << present_options->preserve_drawing_buffer;
 
   report_webxr_input_ = present_options->webxr_input;
+
+  browser_->SendRequestPresentReply(
+      true, GetWebVrFrameTransportOptions(std::move(present_options)));
 }
 
 void VrShellGl::OnSwapContents(int new_content_id) {
@@ -857,10 +840,27 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 }
 
 device::mojom::VRDisplayFrameTransportOptionsPtr
-VrShellGl::GetWebVrFrameTransportOptions() {
-  // All member assignments that affect render path selections must be complete
-  // before this function executes. See InitializeRenderer comment in
-  // InitializeGl.
+VrShellGl::GetWebVrFrameTransportOptions(
+    device::mojom::VRRequestPresentOptionsPtr present_options) {
+  DVLOG(1) << __FUNCTION__;
+
+  VrMetricsUtil::XRRenderPath render_path =
+      VrMetricsUtil::XRRenderPath::kClientWait;
+
+  std::string render_path_string = base::GetFieldTrialParamValueByFeature(
+      features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
+  DVLOG(1) << __FUNCTION__ << ": WebXrRenderPath=" << render_path_string;
+  if (render_path_string == features::kWebXrRenderPathParamValueClientWait) {
+    // Use the baseline kClientWait.
+  } else {
+    // Default aka features::kWebXrRenderPathParamValueGpuFence.
+    // Use kGpuFence if it is supported. If not, use baseline kClientWait.
+    if (gl::GLFence::IsGpuFenceSupported()) {
+      webvr_use_gpu_fence_ = true;
+      render_path = VrMetricsUtil::XRRenderPath::kGpuFence;
+    }
+  }
+  VrMetricsUtil::LogXrRenderPathUsed(render_path);
 
   device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
       device::mojom::VRDisplayFrameTransportOptions::New();
@@ -952,8 +952,7 @@ void VrShellGl::InitializeRenderer() {
                                            webvr_right_viewport_.get());
   webvr_right_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
 
-  browser_->GvrDelegateReady(gvr_api_->GetViewerType(),
-                             GetWebVrFrameTransportOptions());
+  browser_->GvrDelegateReady(gvr_api_->GetViewerType());
 }
 
 void VrShellGl::UpdateController(const RenderInfo& render_info,

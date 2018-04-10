@@ -156,6 +156,7 @@ void VrShellDelegate::OnPresentResult(
     device::mojom::VRRequestPresentOptionsPtr present_options,
     device::mojom::VRDisplayHost::RequestPresentCallback callback,
     bool success) {
+  DVLOG(1) << __FUNCTION__ << ": success=" << success;
   if (!success) {
     std::move(callback).Run(false, nullptr);
     possible_presentation_start_action_ = base::nullopt;
@@ -182,11 +183,23 @@ void VrShellDelegate::OnPresentResult(
     possible_presentation_start_action_ = base::nullopt;
   }
 
+  DVLOG(1) << __FUNCTION__ << ": connecting presenting service";
+  request_present_response_callback_ = std::move(callback);
   vr_shell_->ConnectPresentingService(
       std::move(submit_client), std::move(request), std::move(display_info),
       std::move(present_options));
+}
 
-  std::move(callback).Run(true, vr_shell_->GetVRDisplayFrameTransportOptions());
+void VrShellDelegate::SendRequestPresentReply(
+    bool success,
+    device::mojom::VRDisplayFrameTransportOptionsPtr transport_options) {
+  DVLOG(1) << __FUNCTION__;
+  if (!request_present_response_callback_) {
+    DLOG(ERROR) << __FUNCTION__ << ": ERROR: no callback";
+    return;
+  }
+  base::ResetAndReturn(&request_present_response_callback_)
+      .Run(success, std::move(transport_options));
 }
 
 void VrShellDelegate::DisplayActivate(JNIEnv* env,
@@ -263,7 +276,8 @@ void VrShellDelegate::RequestWebVRPresent(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::VRRequestPresentOptionsPtr present_options,
     device::mojom::VRDisplayHost::RequestPresentCallback callback) {
-  if (!on_present_result_callback_.is_null()) {
+  if (!on_present_result_callback_.is_null() ||
+      !request_present_response_callback_.is_null()) {
     // Can only handle one request at a time. This is also extremely unlikely to
     // happen in practice.
     std::move(callback).Run(false, nullptr);

@@ -262,7 +262,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
  private:
   void GvrInit(gvr_context* gvr_api);
   device::mojom::VRDisplayFrameTransportOptionsPtr
-  GetWebVrFrameTransportOptions();
+      GetWebVrFrameTransportOptions(device::mojom::VRRequestPresentOptionsPtr);
   void InitializeRenderer();
   void OnGpuProcessConnectionReady();
   // Returns true if successfully resized.
