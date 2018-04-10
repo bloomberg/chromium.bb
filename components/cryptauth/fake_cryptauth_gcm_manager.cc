@@ -8,11 +8,13 @@ namespace cryptauth {
 
 FakeCryptAuthGCMManager::FakeCryptAuthGCMManager(
     const std::string& registration_id)
-    : registration_in_progress_(false), registration_id_(registration_id) {}
+    : registration_id_(registration_id) {}
 
-FakeCryptAuthGCMManager::~FakeCryptAuthGCMManager() {}
+FakeCryptAuthGCMManager::~FakeCryptAuthGCMManager() = default;
 
-void FakeCryptAuthGCMManager::StartListening() {}
+void FakeCryptAuthGCMManager::StartListening() {
+  has_started_listening_ = true;
+}
 
 void FakeCryptAuthGCMManager::RegisterWithGCM() {
   registration_in_progress_ = true;
