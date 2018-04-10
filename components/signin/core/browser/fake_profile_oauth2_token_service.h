@@ -81,6 +81,10 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
     auto_post_fetch_response_on_message_loop_ = auto_post_response;
   }
 
+  // Calls ProfileOAuth2TokenService::UpdateAuthError(). Exposed for testing.
+  void UpdateAuthErrorForTesting(const std::string& account_id,
+                                 const GoogleServiceAuthError& error);
+
  protected:
   // OAuth2TokenService overrides.
   void FetchOAuth2Token(RequestImpl* request,

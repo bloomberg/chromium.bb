@@ -212,11 +212,11 @@ bool OAuth2TokenServiceDelegateAndroid::RefreshTokenIsAvailable(
   return refresh_token_is_available == JNI_TRUE;
 }
 
-bool OAuth2TokenServiceDelegateAndroid::RefreshTokenHasError(
+GoogleServiceAuthError OAuth2TokenServiceDelegateAndroid::GetAuthError(
     const std::string& account_id) const {
   auto it = errors_.find(account_id);
-  // TODO(rogerta): should we distinguish between transient and persistent?
-  return it == errors_.end() ? false : IsError(it->second.error);
+  return (it == errors_.end()) ? GoogleServiceAuthError::AuthErrorNone()
+                               : it->second.error;
 }
 
 void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
@@ -225,12 +225,14 @@ void OAuth2TokenServiceDelegateAndroid::UpdateAuthError(
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::UpdateAuthError"
            << " account=" << account_id
            << " error=" << error.ToString();
-  if (error.state() == GoogleServiceAuthError::NONE) {
+
+  if (error.IsTransientError())
+    return;
+
+  if (error.state() == GoogleServiceAuthError::NONE)
     errors_.erase(account_id);
-  } else {
-    // TODO(rogerta): should we distinguish between transient and persistent?
+  else
     errors_[account_id] = ErrorInfo(error);
-  }
 }
 
 std::vector<std::string> OAuth2TokenServiceDelegateAndroid::GetAccounts() {

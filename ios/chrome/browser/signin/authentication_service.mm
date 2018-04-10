@@ -397,10 +397,7 @@ NSDictionary* AuthenticationService::GetCachedMDMInfo(
     return nil;
   }
 
-  ProfileOAuth2TokenServiceIOSDelegate* token_service_delegate =
-      static_cast<ProfileOAuth2TokenServiceIOSDelegate*>(
-          token_service_->GetDelegate());
-  if (!token_service_delegate->RefreshTokenHasError(it->first)) {
+  if (!token_service_->RefreshTokenHasError(it->first)) {
     // Account has no error, invalidate the cache.
     cached_mdm_infos_.erase(it);
     return nil;

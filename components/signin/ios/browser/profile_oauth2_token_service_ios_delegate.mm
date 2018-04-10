@@ -164,10 +164,8 @@ ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::~AccountStatus() {
 
 void ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::SetLastAuthError(
     const GoogleServiceAuthError& error) {
-  if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
     signin_error_controller_->AuthStatusChanged();
-  }
 }
 
 std::string ProfileOAuth2TokenServiceIOSDelegate::AccountStatus::GetAccountId()
@@ -325,12 +323,11 @@ bool ProfileOAuth2TokenServiceIOSDelegate::RefreshTokenIsAvailable(
   return accounts_.count(account_id) > 0;
 }
 
-bool ProfileOAuth2TokenServiceIOSDelegate::RefreshTokenHasError(
+GoogleServiceAuthError ProfileOAuth2TokenServiceIOSDelegate::GetAuthError(
     const std::string& account_id) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
   auto it = accounts_.find(account_id);
-  // TODO(rogerta): should we distinguish between transient and persistent?
-  return it == accounts_.end() ? false : IsError(it->second->GetAuthStatus());
+  return (it == accounts_.end()) ? GoogleServiceAuthError::AuthErrorNone()
+                                 : it->second->GetAuthStatus();
 }
 
 void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
@@ -341,16 +338,19 @@ void ProfileOAuth2TokenServiceIOSDelegate::UpdateAuthError(
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
   // subsequently get a transient network error.
-  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
-      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
+  if (error.IsTransientError())
     return;
-  }
 
   if (accounts_.count(account_id) == 0) {
     // Nothing to update as the account has already been removed.
     return;
   }
-  accounts_[account_id]->SetLastAuthError(error);
+
+  AccountStatus* status = accounts_[account_id].get();
+  if (error.state() != status->GetAuthStatus().state()) {
+    status->SetLastAuthError(error);
+    FireAuthErrorChanged(account_id, error);
+  }
 }
 
 // Clear the authentication error state and notify all observers that a new
@@ -375,6 +375,7 @@ void ProfileOAuth2TokenServiceIOSDelegate::AddOrUpdateAccount(
   if (!account_present) {
     accounts_[account_id].reset(
         new AccountStatus(signin_error_controller_, account_id));
+    FireAuthErrorChanged(account_id, accounts_[account_id]->GetAuthStatus());
   }
 
   UpdateAuthError(account_id, GoogleServiceAuthError::AuthErrorNone());
