@@ -6722,7 +6722,8 @@ void RenderFrameImpl::SetupLoaderFactoryBundle(
         subresource_overrides) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
-  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>();
+  loader_factories_ = base::MakeRefCounted<HostChildURLLoaderFactoryBundle>(
+      GetTaskRunner(blink::TaskType::kInternalLoading));
 
   // In some tests |render_thread| could be null.
   if (render_thread) {
