@@ -1269,7 +1269,10 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       } else if (GetView()->wheel_scroll_latching_enabled()) {
         // When wheel scroll latching is enabled, no GSE is sent before GFS, so
         // is_in_gesture_scroll must be true.
-        DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
+        // TODO(sahel): This often gets tripped on Debug builds in ChromeOS
+        // indicating some kind of gesture event ordering race.
+        // https://crbug.com/821237.
+        // DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
 
         // The FlingController handles GFS with touchpad source and sends wheel
         // events to progress the fling, the wheel events will get processed by
