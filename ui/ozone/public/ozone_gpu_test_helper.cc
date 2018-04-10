@@ -5,6 +5,7 @@
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_listener.h"
@@ -119,6 +120,13 @@ bool OzoneGpuTestHelper::Initialize(
       base::BindOnce(&FakeGpuProcessHost::InitOnIO,
                      base::Unretained(fake_gpu_process_host_.get())));
   io_helper_thread_->FlushForTesting();
+
+  // Give the UI thread a chance to run any tasks posted from the IO thread
+  // after the GPU process is launched. This is needed for Ozone DRM, see
+  // https://crbug.com/830233.
+  base::RunLoop run_loop;
+  ui_task_runner->PostTask(FROM_HERE, run_loop.QuitClosure());
+  run_loop.Run();
 
   return true;
 }
