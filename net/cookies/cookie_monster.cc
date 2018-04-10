@@ -924,28 +924,17 @@ void CookieMonster::StoreLoadedCookies(
   CookieItVector cookies_with_control_chars;
 
   for (auto& cookie : cookies) {
-    int64_t cookie_creation_time = cookie->CreationDate().ToInternalValue();
+    CanonicalCookie* cookie_ptr = cookie.get();
+    CookieMap::iterator inserted = InternalInsertCookie(
+        GetKey(cookie_ptr->Domain()), std::move(cookie), false);
+    const Time cookie_access_time(cookie_ptr->LastAccessDate());
+    if (earliest_access_time_.is_null() ||
+        cookie_access_time < earliest_access_time_)
+      earliest_access_time_ = cookie_access_time;
 
-    if (creation_times_.insert(cookie_creation_time).second) {
-      CanonicalCookie* cookie_ptr = cookie.get();
-      CookieMap::iterator inserted = InternalInsertCookie(
-          GetKey(cookie_ptr->Domain()), std::move(cookie), false);
-      const Time cookie_access_time(cookie_ptr->LastAccessDate());
-      if (earliest_access_time_.is_null() ||
-          cookie_access_time < earliest_access_time_)
-        earliest_access_time_ = cookie_access_time;
-
-      if (ContainsControlCharacter(cookie_ptr->Name()) ||
-          ContainsControlCharacter(cookie_ptr->Value())) {
-        cookies_with_control_chars.push_back(inserted);
-      }
-    } else {
-      LOG(ERROR) << base::StringPrintf(
-          "Found cookies with duplicate creation "
-          "times in backing store: "
-          "{name='%s', domain='%s', path='%s'}",
-          cookie->Name().c_str(), cookie->Domain().c_str(),
-          cookie->Path().c_str());
+    if (ContainsControlCharacter(cookie_ptr->Name()) ||
+        ContainsControlCharacter(cookie_ptr->Value())) {
+      cookies_with_control_chars.push_back(inserted);
     }
   }
 
@@ -995,7 +984,6 @@ void CookieMonster::InvokeQueue() {
   DCHECK(tasks_pending_for_key_.empty());
 
   finished_fetching_all_cookies_ = true;
-  creation_times_.clear();
   keys_loaded_.clear();
 }
 
@@ -1021,7 +1009,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Set of cookies ordered by creation time.
-  typedef std::set<CookieMap::iterator, OrderByCreationTimeDesc> CookieSet;
+  typedef std::multiset<CookieMap::iterator, OrderByCreationTimeDesc> CookieSet;
 
   // Helper map we populate to find the duplicates.
   typedef std::map<CookieSignature, CookieSet> EquivalenceMap;
@@ -1045,9 +1033,7 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
 
     // We save the iterator into |cookies_| rather than the actual cookie
     // pointer, since we may need to delete it later.
-    bool insert_success = set.insert(it).second;
-    DCHECK(insert_success)
-        << "Duplicate creation times found in duplicate cookie name scan.";
+    set.insert(it);
   }
 
   // If there were no duplicates, we are done!
@@ -1068,8 +1054,9 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
       continue;  // This cookiename/path has no duplicates.
     num_duplicates_found += dupes.size() - 1;
 
-    // Since |dups| is sorted by creation time (descending), the first cookie
-    // is the most recent one, so we will keep it. The rest are duplicates.
+    // Since |dupes| is sorted by creation time (descending), the first cookie
+    // is the most recent one (or tied for it), so we will keep it. The rest are
+    // duplicates.
     dupes.erase(dupes.begin());
 
     LOG(ERROR) << base::StringPrintf(

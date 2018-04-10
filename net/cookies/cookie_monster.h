@@ -643,12 +643,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // wanted.  Thus this value is not initialized.
   base::Time earliest_access_time_;
 
-  // During loading, holds the set of all loaded cookie creation times. Used to
-  // avoid ever letting cookies with duplicate creation times into the store;
-  // that way we don't have to worry about what sections of code are safe
-  // to call while it's in that state.
-  std::set<int64_t> creation_times_;
-
   std::vector<std::string> cookieable_schemes_;
 
   ChannelIDService* channel_id_service_;
