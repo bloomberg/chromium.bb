@@ -91,16 +91,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return touch_optimized_material ? 68 : 120;
     case TAB_STANDARD_WIDTH:
       return touch_optimized_material ? 245 : 193;
-    case TOOLBAR_ACTION_LEFT_PADDING:
-#if defined(OS_MACOSX)
-      return 2;
-#else
-      return 0;
-#endif
-    case TOOLBAR_ELEMENT_PADDING: {
-      constexpr int kElementPadding[] = {0, 8, 0, 4};
-      return kElementPadding[mode];
-    }
+    case TOOLBAR_ELEMENT_PADDING:
+      return hybrid ? 8 : 0;
     case TOOLBAR_STANDARD_SPACING: {
       constexpr int kSpacings[] = {4, 8, 12, 8};
       return kSpacings[mode];

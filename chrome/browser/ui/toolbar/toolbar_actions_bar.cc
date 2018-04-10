@@ -88,7 +88,6 @@ bool ToolbarActionsBar::disable_animations_for_testing_ = false;
 
 ToolbarActionsBar::PlatformSettings::PlatformSettings()
     : item_spacing(GetLayoutConstant(TOOLBAR_STANDARD_SPACING)),
-      left_padding(GetLayoutConstant(TOOLBAR_ACTION_LEFT_PADDING)),
       icons_per_overflow_menu_row(1) {}
 
 ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
@@ -168,9 +167,7 @@ gfx::Size ToolbarActionsBar::GetFullSize() const {
     num_rows += (std::max(0, icon_count - 1) / num_icons);
   }
 
-  gfx::Size size = gfx::ScaleToFlooredSize(GetViewSize(), num_icons, num_rows);
-  size.Enlarge(platform_settings_.left_padding, 0);
-  return size;
+  return gfx::ScaleToFlooredSize(GetViewSize(), num_icons, num_rows);
 }
 
 int ToolbarActionsBar::GetMinimumWidth() const {
@@ -178,8 +175,7 @@ int ToolbarActionsBar::GetMinimumWidth() const {
 }
 
 int ToolbarActionsBar::GetMaximumWidth() const {
-  return IconCountToWidth(toolbar_actions_.size()) +
-         platform_settings_.left_padding;
+  return IconCountToWidth(toolbar_actions_.size());
 }
 
 int ToolbarActionsBar::IconCountToWidth(size_t icons) const {
@@ -187,8 +183,7 @@ int ToolbarActionsBar::IconCountToWidth(size_t icons) const {
 }
 
 size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
-  int available_width = pixels - platform_settings_.left_padding;
-  return base::ClampToRange(available_width / GetViewSize().width(), 0,
+  return base::ClampToRange(pixels / GetViewSize().width(), 0,
                             static_cast<int>(toolbar_actions_.size()));
 }
 
@@ -280,9 +275,7 @@ gfx::Rect ToolbarActionsBar::GetFrameForIndex(
 
   const auto size = GetViewSize();
   return gfx::Rect(
-      gfx::Point(index_in_row * size.width() + platform_settings_.left_padding,
-                 row_index * size.height()),
-      size);
+      gfx::Point(index_in_row * size.width(), row_index * size.height()), size);
 }
 
 std::vector<ToolbarActionViewController*>
