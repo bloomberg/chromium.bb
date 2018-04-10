@@ -3002,10 +3002,6 @@ if (enable_java_templates) {
   #       Whether to generate nano protos. If false, this will use the lite proto generator.
   #       Nano protos are deprecated, so please use lite new proto libraries.
   #
-  #   generate_lite (optional, default true)
-  #       Whether to generate lite protos. If false, this will use the nano proto generator.
-  #       This variable is deprecated and cannot be used at the same time as generate_nano.
-  #
   # Example:
   #  proto_java_library("foo_proto_java") {
   #    proto_path = "src/foo"
@@ -3015,8 +3011,7 @@ if (enable_java_templates) {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
     _generate_nano =
-        (defined(invoker.generate_nano) && invoker.generate_nano == true) ||
-        (defined(invoker.generate_lite) && invoker.generate_lite == false)
+        defined(invoker.generate_nano) && invoker.generate_nano == true
 
     if (_generate_nano) {
       # Use the legacy Android nano proto generator.
