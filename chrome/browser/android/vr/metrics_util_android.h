@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_VR_VR_METRICS_UTIL_H_
-#define CHROME_BROWSER_ANDROID_VR_VR_METRICS_UTIL_H_
+#ifndef CHROME_BROWSER_ANDROID_VR_METRICS_UTIL_ANDROID_H_
+#define CHROME_BROWSER_ANDROID_VR_METRICS_UTIL_ANDROID_H_
 
 #include "base/macros.h"
 
@@ -14,7 +14,8 @@
 
 namespace vr {
 
-class VrMetricsUtil {
+// A utility class containing static functions for metrics logging.
+class MetricsUtilAndroid {
  public:
   // Ensure that this stays in sync with XRRenderPath in enums.xml. Do
   // not reuse or renumber entries.
@@ -37,9 +38,9 @@ class VrMetricsUtil {
 
   static bool has_logged_vr_runtime_version_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VrMetricsUtil);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MetricsUtilAndroid);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_ANDROID_VR_VR_METRICS_UTIL_H_
+#endif  // CHROME_BROWSER_ANDROID_VR_METRICS_UTIL_ANDROID_H_
