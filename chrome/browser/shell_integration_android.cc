@@ -23,6 +23,11 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
   return SET_DEFAULT_NOT_ALLOWED;
 }
 
+base::string16 GetApplicationNameForProtocol(const GURL& url) {
+  NOTIMPLEMENTED();
+  return base::string16();
+}
+
 DefaultWebClientState GetDefaultBrowser() {
   NOTIMPLEMENTED();
   return UNKNOWN_DEFAULT;
