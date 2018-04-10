@@ -53,7 +53,8 @@ class WebThreadImplForWorkerSchedulerForTest
                 .SetFrameScheduler(frame_scheduler)),
         throtting_state_changed_(throtting_state_changed) {}
 
-  std::unique_ptr<WorkerScheduler> CreateWorkerScheduler() {
+  std::unique_ptr<NonMainThreadScheduler> CreateNonMainThreadScheduler()
+      override {
     auto scheduler = std::make_unique<WorkerSchedulerImplForTest>(
         TaskQueueManager::TakeOverCurrentThread(), worker_scheduler_proxy(),
         throtting_state_changed_);

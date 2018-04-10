@@ -14,7 +14,7 @@ namespace blink {
 
 namespace scheduler {
 
-class WorkerScheduler;
+class NonMainThreadScheduler;
 
 // A scheduler provides per-global-scope task queues. This is constructed when a
 // global scope is created and destructed when it's closed.
@@ -23,7 +23,8 @@ class WorkerScheduler;
 class PLATFORM_EXPORT WorkerGlobalScopeScheduler
     : public FrameOrWorkerGlobalScopeScheduler {
  public:
-  explicit WorkerGlobalScopeScheduler(WorkerScheduler* worker_scheduler);
+  explicit WorkerGlobalScopeScheduler(
+      NonMainThreadScheduler* non_main_thread_scheduler);
   ~WorkerGlobalScopeScheduler() override;
 
   std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;

@@ -61,13 +61,14 @@ void WebThreadImplForWorkerScheduler::InitOnThread(
     base::WaitableEvent* completion) {
   // TODO(alexclarke): Do we need to unify virtual time for workers and the
   // main thread?
-  worker_scheduler_ = CreateWorkerScheduler();
-  worker_scheduler_->Init();
-  task_queue_ = worker_scheduler_->DefaultTaskQueue();
-  idle_task_runner_ = worker_scheduler_->IdleTaskRunner();
-  web_scheduler_.reset(new WebSchedulerImpl(
-      worker_scheduler_.get(), worker_scheduler_->IdleTaskRunner(),
-      worker_scheduler_->DefaultTaskQueue()));
+  non_main_thread_scheduler_ = CreateNonMainThreadScheduler();
+  non_main_thread_scheduler_->Init();
+  task_queue_ = non_main_thread_scheduler_->DefaultTaskQueue();
+  idle_task_runner_ = non_main_thread_scheduler_->IdleTaskRunner();
+  web_scheduler_.reset(
+      new WebSchedulerImpl(non_main_thread_scheduler_.get(),
+                           non_main_thread_scheduler_->IdleTaskRunner(),
+                           non_main_thread_scheduler_->DefaultTaskQueue()));
   base::MessageLoop::current()->AddDestructionObserver(this);
   completion->Signal();
 }
@@ -79,15 +80,16 @@ void WebThreadImplForWorkerScheduler::ShutdownOnThread(
   task_queue_ = nullptr;
   idle_task_runner_ = nullptr;
   web_scheduler_ = nullptr;
-  worker_scheduler_ = nullptr;
+  non_main_thread_scheduler_ = nullptr;
 
   if (completion)
     completion->Signal();
 }
 
-std::unique_ptr<WorkerScheduler>
-WebThreadImplForWorkerScheduler::CreateWorkerScheduler() {
-  return WorkerScheduler::Create(thread_type_, worker_scheduler_proxy_.get());
+std::unique_ptr<NonMainThreadScheduler>
+WebThreadImplForWorkerScheduler::CreateNonMainThreadScheduler() {
+  return NonMainThreadScheduler::Create(thread_type_,
+                                        worker_scheduler_proxy_.get());
 }
 
 void WebThreadImplForWorkerScheduler::WillDestroyCurrentMessageLoop() {
@@ -114,12 +116,12 @@ WebThreadImplForWorkerScheduler::GetTaskRunner() const {
 
 void WebThreadImplForWorkerScheduler::AddTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
-  worker_scheduler_->AddTaskObserver(observer);
+  non_main_thread_scheduler_->AddTaskObserver(observer);
 }
 
 void WebThreadImplForWorkerScheduler::RemoveTaskObserverInternal(
     base::MessageLoop::TaskObserver* observer) {
-  worker_scheduler_->RemoveTaskObserver(observer);
+  non_main_thread_scheduler_->RemoveTaskObserver(observer);
 }
 
 }  // namespace scheduler

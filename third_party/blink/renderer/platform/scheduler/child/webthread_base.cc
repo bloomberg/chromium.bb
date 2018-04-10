@@ -115,8 +115,8 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
 
  private:
   // WebThreadImplForWorkerScheduler:
-  std::unique_ptr<blink::scheduler::WorkerScheduler> CreateWorkerScheduler()
-      override {
+  std::unique_ptr<blink::scheduler::NonMainThreadScheduler>
+  CreateNonMainThreadScheduler() override {
     return std::make_unique<CompositorWorkerScheduler>(
         GetThread(), TaskQueueManager::TakeOverCurrentThread());
   }

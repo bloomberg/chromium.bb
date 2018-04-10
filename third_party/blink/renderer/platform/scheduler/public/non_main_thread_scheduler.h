@@ -21,16 +21,16 @@ namespace blink {
 namespace scheduler {
 class WorkerSchedulerProxy;
 
-// TODO(yutak): Rename this class to NonMainThreadScheduler.
-class PLATFORM_EXPORT WorkerScheduler : public WebThreadScheduler {
+class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler {
  public:
-  ~WorkerScheduler() override;
+  ~NonMainThreadScheduler() override;
 
-  static std::unique_ptr<WorkerScheduler> Create(WebThreadType thread_type,
-                                                 WorkerSchedulerProxy* proxy);
+  static std::unique_ptr<NonMainThreadScheduler> Create(
+      WebThreadType thread_type,
+      WorkerSchedulerProxy* proxy);
 
-  // Blink should use WorkerScheduler::DefaultTaskQueue instead of
-  // ChildScheduler::DefaultTaskRunner.
+  // Blink should use NonMainThreadScheduler::DefaultTaskQueue instead of
+  // WebThreadScheduler::DefaultTaskRunner.
   virtual scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() = 0;
 
   // Must be called before the scheduler can be used. Does any post construction
@@ -46,11 +46,12 @@ class PLATFORM_EXPORT WorkerScheduler : public WebThreadScheduler {
   scoped_refptr<WorkerTaskQueue> CreateTaskRunner();
 
  protected:
-  explicit WorkerScheduler(std::unique_ptr<WorkerSchedulerHelper> helper);
+  explicit NonMainThreadScheduler(
+      std::unique_ptr<WorkerSchedulerHelper> helper);
 
   std::unique_ptr<WorkerSchedulerHelper> helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerScheduler);
+  DISALLOW_COPY_AND_ASSIGN(NonMainThreadScheduler);
 };
 
 }  // namespace scheduler

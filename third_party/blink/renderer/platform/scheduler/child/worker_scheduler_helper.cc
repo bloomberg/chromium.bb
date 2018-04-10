@@ -11,9 +11,9 @@ namespace scheduler {
 
 WorkerSchedulerHelper::WorkerSchedulerHelper(
     std::unique_ptr<TaskQueueManager> task_queue_manager,
-    WorkerScheduler* worker_scheduler)
+    NonMainThreadScheduler* non_main_thread_scheduler)
     : SchedulerHelper(std::move(task_queue_manager)),
-      worker_scheduler_(worker_scheduler),
+      non_main_thread_scheduler_(non_main_thread_scheduler),
       default_task_queue_(NewTaskQueue(TaskQueue::Spec("worker_default_tq")
                                            .SetShouldMonitorQuiescence(true))),
       control_task_queue_(NewTaskQueue(TaskQueue::Spec("worker_control_tq")
@@ -45,7 +45,7 @@ scoped_refptr<TaskQueue> WorkerSchedulerHelper::ControlTaskQueue() {
 scoped_refptr<WorkerTaskQueue> WorkerSchedulerHelper::NewTaskQueue(
     const TaskQueue::Spec& spec) {
   return task_queue_manager_->CreateTaskQueue<WorkerTaskQueue>(
-      spec, worker_scheduler_);
+      spec, non_main_thread_scheduler_);
 }
 
 }  // namespace scheduler
