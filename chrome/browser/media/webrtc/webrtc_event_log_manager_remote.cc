@@ -197,9 +197,13 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& metadata,
     std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(error_message);
+  DCHECK(error_message->empty());
 
   if (!AreLogParametersValid(max_file_size_bytes, metadata, error_message)) {
     // |error_message| will have been set by AreLogParametersValid().
+    DCHECK(!error_message->empty()) << "AreLogParametersValid() reported an "
+                                       "error without an error message.";
     return false;
   }
 
