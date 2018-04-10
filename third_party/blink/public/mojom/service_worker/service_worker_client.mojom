@@ -28,9 +28,9 @@ struct ServiceWorkerClientQueryOptions {
   ServiceWorkerClientType client_type = ServiceWorkerClientType.kWindow;
 };
 
-// Holds the information related to a service worker window or non-window
-// client.
+// Holds the information related to a service worker client.
 // https://w3c.github.io/ServiceWorker/#client
+//
 // An invalid client info can be indicated by setting the client_uuid to the
 // empty string. Sometimes this is needed when the browser process couldn't
 // find a client.

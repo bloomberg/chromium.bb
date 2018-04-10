@@ -93,8 +93,9 @@ FORWARD_DECLARE_TEST(ServiceWorkerDispatcherHostTest,
 // Mojo connection to the provider in the renderer. Destruction of the host
 // happens upon disconnection of the Mojo pipe.
 //
-// There are two general types of providers: 1) those for service worker clients
-// (windows or shared workers), and 2) those for service workers themselves.
+// There are two general types of providers:
+// 1) those for service worker clients (windows or shared workers), and
+// 2) those for service workers themselves.
 //
 // For client providers, there is a provider per frame or shared worker in the
 // renderer process. The lifetime of this host object is tied to the lifetime of
@@ -141,7 +142,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       bool are_ancestors_secure,
       const WebContentsGetter& web_contents_getter);
 
-  // Creates a ServiceWorkerProviderHost for hosting a running service worker.
+  // Creates a ServiceWorkerProviderHost for a service worker execution context.
   // Information about this provider host is passed down to the service worker
   // via StartWorker message.
   static std::unique_ptr<ServiceWorkerProviderHost> PreCreateForController(
@@ -190,10 +191,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // security, so they must be set properly before calling this function.
   bool IsContextSecureForServiceWorker() const;
 
-  bool IsHostToRunningServiceWorker() {
-    return running_hosted_version_.get() != nullptr;
-  }
-
   // Returns this provider's controller. The controller is typically the same as
   // active_version() but can differ in the following cases:
   // (1) The client was created before the registration existed or had an active
@@ -237,8 +234,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
     return associated_registration_.get();
   }
 
-  // The running version, if any, that this provider is providing resource
-  // loads for.
+  // For service worker execution contexts. The version of the service worker.
+  // This is nullptr when the worker is still starting up (until
+  // CompleteStartWorkerPreparation() is called).
   ServiceWorkerVersion* running_hosted_version() const {
     DCHECK(!running_hosted_version_ ||
            info_.type ==
@@ -286,9 +284,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Sets the |document_url_|.  When this object is for a client,
   // |matching_registrations_| gets also updated to ensure that |document_url_|
   // is in scope of all |matching_registrations_|.
-  // |document_url_| is the service worker script URL if this is hosting a
-  // running service worker, it will be used when creating ServiceWorkerHandle
-  // or handling ServiceWorkerRegistration#{*} calls etc.
+  // |document_url_| is the service worker script URL if this is for a
+  // service worker execution context. It will be used when creating
+  // ServiceWorkerHandle or handling ServiceWorkerRegistration#{*} calls etc.
   // TODO(leonhsl): We should rename |document_url_| to something more
   // appropriate and/or split this class into one for clients vs one for service
   // workers.
@@ -298,13 +296,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker clients. Sets the |topmost_frame_url|.
   void SetTopmostFrameUrl(const GURL& url);
   // For service worker clients, used for permission checks. Use document_url()
-  // instead if |this| is hosting a running service worker.
+  // instead if |this| is for a service worker execution context.
   const GURL& topmost_frame_url() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
     return info_.type;
   }
+  bool IsProviderForServiceWorker() const;
   bool IsProviderForClient() const;
+  // Can only be called when IsProviderForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
 
   // For service worker clients. Associates to |registration| to listen for its
@@ -541,7 +541,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsValidGetRegistrationForReadyMessage(std::string* out_error) const;
 
   // service_manager::mojom::InterfaceProvider:
-  // For provider hosts that are hosting a running service worker.
+  // For service worker execution contexts.
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
@@ -570,9 +570,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   const base::TimeTicks create_time_;
   int render_process_id_;
 
-  // For provider hosts that are hosting a running service worker, the id of the
-  // service worker thread or |kInvalidEmbeddedWorkerThreadId| before the
-  // service worker starts up. Otherwise, |kDocumentMainThreadId|.
+  // For service worker execution contexts, the id of the service worker thread
+  // or |kInvalidEmbeddedWorkerThreadId| before the service worker starts up.
+  // Otherwise, |kDocumentMainThreadId|.
   int render_thread_id_;
 
   ServiceWorkerProviderHostInfo info_;
@@ -618,8 +618,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //    been run.
   std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
 
+  // For service worker clients. The controller service worker (i.e.,
+  // ServiceWorkerContainer#controller).
   scoped_refptr<ServiceWorkerVersion> controller_;
+  // For service worker execution contexts. The ServiceWorkerVersion of the
+  // service worker this is a provider for. This is nullptr if the service
+  // worker is still being started up (until CompleteStartWorkerPreparation() is
+  // called).
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
+
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   // |dispatcher_host_| is expected to outlive |this| because it destroys
@@ -658,7 +665,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   std::vector<base::Closure> queued_events_;
 
-  // For provider hosts that are hosting a running service worker.
+  // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
 
