@@ -58,7 +58,7 @@ const int kLocationAuthorizationStatusCount = 4;
 // Coordinator for the omnibox popup.
 @property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
 @property(nonatomic, strong) LocationBarLegacyMediator* mediator;
-// Redefined as readwrite and as LocationBarView.
+// Redefined as readwrite and as LocationBarEditView.
 @property(nonatomic, strong, readwrite) LocationBarLegacyView* locationBarView;
 
 @end

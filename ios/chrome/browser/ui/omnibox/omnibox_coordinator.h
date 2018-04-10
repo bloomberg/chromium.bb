@@ -34,9 +34,17 @@ class WebOmniboxEditController;
 - (void)start;
 // Stop this coordinator.
 - (void)stop;
+// Indicates if the omnibox is the first responder.
+- (BOOL)isOmniboxFirstResponder;
+// Inserts text to the omnibox without triggering autocomplete.
+// Use this method to insert target URL or search terms for alternative input
+// methods, such as QR code scanner or voice search.
+- (void)insertTextToOmnibox:(NSString*)string;
 // Update the contents and the styling of the omnibox.
 - (void)updateOmniboxState;
-// Marks the next omnibox focus event source as the fakebox.
+// Use this method to make the omnibox first responder.
+- (void)focusOmnibox;
+// Marks the next omnibox focus event source as the search button.
 - (void)setNextFocusSourceAsSearchButton;
 // Use this method to resign |textField| as the first responder.
 - (void)endEditing;

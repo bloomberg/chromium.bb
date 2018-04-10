@@ -8,9 +8,10 @@
 // Consumer for the location bar mediator.
 @protocol LocationBarConsumer
 
-// Notifies the consumer to update the omnibox state, including the displayed
-// text and the cursor position.
-- (void)updateOmniboxState;
+// Notifies the consumer to update the location text.
+- (void)updateLocationText:(NSString*)string;
+// Notifies the consumer to update the location icon.
+- (void)updateLocationIcon:(UIImage*)icon;
 
 // Notifies consumer to defocus the omnibox (for example on tab change).
 - (void)defocusOmnibox;

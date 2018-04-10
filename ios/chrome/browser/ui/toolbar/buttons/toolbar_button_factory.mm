@@ -471,6 +471,8 @@ const int styleCount = 2;
   [cancelButton addTarget:self.dispatcher
                    action:@selector(cancelOmniboxEdit)
          forControlEvents:UIControlEventTouchUpInside];
+  cancelButton.accessibilityIdentifier =
+      kToolbarCancelOmniboxEditButtonIdentifier;
   return cancelButton;
 }
 
