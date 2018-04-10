@@ -14,6 +14,20 @@
 
 namespace device {
 
+namespace {
+
+bool ResponseContainsUserIdentifiableInfo(
+    const AuthenticatorGetAssertionResponse& response) {
+  const auto& user_entity = response.user_entity();
+  if (!user_entity)
+    return false;
+
+  return user_entity->user_display_name() || user_entity->user_name() ||
+         user_entity->user_icon_url();
+}
+
+}  // namespace
+
 GetAssertionTask::GetAssertionTask(FidoDevice* device,
                                    CtapGetAssertionRequest request,
                                    GetAssertionTaskCallback callback)
@@ -49,10 +63,10 @@ void GetAssertionTask::U2fSign() {
 
 bool GetAssertionTask::CheckRequirementsOnReturnedUserEntities(
     const AuthenticatorGetAssertionResponse& response) {
-  // If assertion has been made without user verification, user entity must not
-  // be included.
+  // If assertion has been made without user verification, user identifiable
+  // information must not be included.
   if (!response.auth_data().obtained_user_verification() &&
-      response.user_entity()) {
+      ResponseContainsUserIdentifiableInfo(response)) {
     return false;
   }
 
@@ -104,7 +118,7 @@ void GetAssertionTask::OnCtapGetAssertionResponseReceived(
   if (!parsed_response ||
       !CheckRequirementsOnReturnedCredentialId(*parsed_response) ||
       !CheckRequirementsOnReturnedUserEntities(*parsed_response)) {
-    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrInvalidCredential,
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
                              base::nullopt);
     return;
   }
