@@ -255,9 +255,10 @@ static uint32_t read_frame_header_obu(AV1Decoder *pbi,
   return (uint32_t)(pbi->uncomp_hdr_size);
 }
 
-static uint32_t read_tile_group_header(AV1Decoder *pbi,
-                                       struct aom_read_bit_buffer *rb,
-                                       int *startTile, int *endTile) {
+static int32_t read_tile_group_header(AV1Decoder *pbi,
+                                      struct aom_read_bit_buffer *rb,
+                                      int *startTile, int *endTile,
+                                      int tile_start_implicit) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
   int tile_start_and_end_present_flag = 0;
@@ -272,24 +273,26 @@ static uint32_t read_tile_group_header(AV1Decoder *pbi,
     *endTile = num_tiles - 1;
     return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
   }
-
+  if (tile_start_implicit && tile_start_and_end_present_flag) {
+    return -1;
+  }
   *startTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
   *endTile = aom_rb_read_literal(rb, cm->log2_tile_rows + cm->log2_tile_cols);
 
   return ((rb->bit_offset - saved_bit_offset + 7) >> 3);
 }
 
-static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
-                                        struct aom_read_bit_buffer *rb,
-                                        int is_first_tg, const uint8_t *data,
-                                        const uint8_t *data_end,
-                                        const uint8_t **p_data_end,
-                                        int *is_last_tg) {
+static uint32_t read_one_tile_group_obu(
+    AV1Decoder *pbi, struct aom_read_bit_buffer *rb, int is_first_tg,
+    const uint8_t *data, const uint8_t *data_end, const uint8_t **p_data_end,
+    int *is_last_tg, int tile_start_implicit) {
   AV1_COMMON *const cm = &pbi->common;
   int startTile, endTile;
-  uint32_t header_size, tg_payload_size;
+  int32_t header_size, tg_payload_size;
 
-  header_size = read_tile_group_header(pbi, rb, &startTile, &endTile);
+  header_size = read_tile_group_header(pbi, rb, &startTile, &endTile,
+                                       tile_start_implicit);
+  if (header_size == -1) return 0;
   if (startTile > endTile) return header_size;
   data += header_size;
   av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, startTile,
@@ -543,7 +546,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         }
         decoded_payload_size += read_one_tile_group_obu(
             pbi, &rb, is_first_tg_obu_received, data + obu_payload_offset,
-            data + payload_size, p_data_end, &frame_decoding_finished);
+            data + payload_size, p_data_end, &frame_decoding_finished,
+            obu_header.type == OBU_FRAME);
         is_first_tg_obu_received = 0;
         break;
       case OBU_METADATA:
