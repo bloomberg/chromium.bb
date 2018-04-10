@@ -37,10 +37,8 @@ base::Optional<Reference> Rel32ReaderX86::GetNext() {
     rva_t loc_rva = location_offset_to_rva_.Convert(loc_offset);
     rva_t target_rva = loc_rva + 4 + image_.read<int32_t>(loc_offset);
     offset_t target_offset = target_rva_to_offset_.Convert(target_rva);
-    // In rare cases, the most significant bit of |target| is set. This
-    // interferes with label marking. We expect these to already be filtered out
-    // from |locations|.
-    DCHECK(!IsMarked(target_offset));
+    // |locations| is valid by assumption (see class description).
+    DCHECK_NE(kInvalidOffset, target_offset);
     return Reference{loc_offset, target_offset};
   }
   return base::nullopt;

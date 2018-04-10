@@ -149,15 +149,10 @@ base::Optional<Reference> RelocReaderWin32::GetNext() {
     offset_t target = entry_rva_to_offset_.Convert(unit->target_rva);
     if (target == kInvalidOffset)
       continue;
-    offset_t location = unit->location;
-    if (IsMarked(target)) {
-      LOG(WARNING) << "Warning: Skipping mark-aliased reloc target: "
-                   << AsHex<8>(location) << " -> " << AsHex<8>(target) << ".";
-      continue;
-    }
     // Ensures the target (abs32 reference) lies entirely within the image.
     if (target >= offset_bound_)
       continue;
+    offset_t location = unit->location;
     return Reference{location, target};
   }
   return base::nullopt;

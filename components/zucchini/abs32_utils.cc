@@ -139,13 +139,6 @@ base::Optional<Reference> Abs32ReaderWin32::GetNext() {
     offset_t target = target_rva_to_offset_.Convert(unit->target_rva);
     if (target == kInvalidOffset)
       continue;
-    // In rare cases, the most significant bit of |target| is set. This
-    // interferes with label marking. A quick fix is to reject these.
-    if (IsMarked(target)) {
-      LOG(WARNING) << "Warning: Skipping mark-aliased PE abs32 target: "
-                   << AsHex<8>(location) << " -> " << AsHex<8>(target) << ".";
-      continue;
-    }
     return Reference{location, target};
   }
   return base::nullopt;

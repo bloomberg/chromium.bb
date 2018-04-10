@@ -51,7 +51,7 @@ TEST(Rel32UtilsTest, Rel32ReaderX86) {
   // including rel32 targets, without the full instructions.
   std::vector<uint8_t> bytes = {
       0xFF, 0xFF, 0xFF, 0xFF,  // 00030000: (Filler)
-      0x00, 0x00, 0x00, 0x80,  // 00030004: 80030008 Marked, so invalid.
+      0xFF, 0xFF, 0xFF, 0xFF,  // 0003000C: (Filler)
       0x04, 0x00, 0x00, 0x00,  // 00030008: 00030010
       0xFF, 0xFF, 0xFF, 0xFF,  // 0003000C: (Filler)
       0x00, 0x00, 0x00, 0x00,  // 00030010: 00030014
@@ -82,12 +82,6 @@ TEST(Rel32UtilsTest, Rel32ReaderX86) {
   Rel32ReaderX86 reader3(buffer, 0x000CU, 0x0018U, &rel32_locations,
                          translator);
   CheckReader({{0x0010U, 0x0014U}}, &reader3);
-
-  // Marked target encountered (error).
-  std::vector<offset_t> rel32_marked_locations = {0x00004U};
-  Rel32ReaderX86 reader4(buffer, 0x0000U, 0x0020U, &rel32_marked_locations,
-                         translator);
-  EXPECT_DCHECK_DEATH(reader4.GetNext());
 }
 
 TEST(Rel32UtilsTest, Rel32WriterX86) {
