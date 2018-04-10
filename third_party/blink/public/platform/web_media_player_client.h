@@ -163,6 +163,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // should only return `true` when MEI allowed autoplay.
   virtual bool WasAutoplayInitiated() { return false; }
 
+  // Returns true if playback would start if the ready state was at least
+  // WebMediaPlayer::kReadyStateHaveFutureData.
+  virtual bool CouldPlayIfEnoughData() const = 0;
+
  protected:
   ~WebMediaPlayerClient() = default;
 };

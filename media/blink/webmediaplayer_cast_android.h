@@ -59,8 +59,8 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
                               bool success) override;
   void OnPlaybackComplete() override;
   void OnBufferingUpdate(int percentage) override;
-  void OnSeekRequest(const base::TimeDelta& time_to_seek) override;
-  void OnSeekComplete(const base::TimeDelta& current_time) override;
+  void OnSeekRequest(base::TimeDelta time_to_seek) override;
+  void OnSeekComplete(base::TimeDelta current_time) override;
   void OnMediaError(int error_type) override;
   void OnVideoSizeChanged(int width, int height) override;
 

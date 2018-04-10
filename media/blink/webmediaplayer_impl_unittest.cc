@@ -15,18 +15,28 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
 #include "components/viz/test/test_context_provider.h"
+#include "media/base/decoder_buffer.h"
+#include "media/base/gmock_callback_support.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
+#include "media/base/mock_audio_renderer_sink.h"
 #include "media/base/mock_media_log.h"
+#include "media/base/test_data_util.h"
 #include "media/base/test_helpers.h"
+#include "media/blink/mock_resource_fetch_context.h"
+#include "media/blink/mock_webassociatedurlloader.h"
+#include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/mojo/services/media_metrics_provider.h"
@@ -36,21 +46,32 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
+#include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
+#include "third_party/blink/public/platform/web_thread.h"
+#include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "url/gurl.h"
 
+#if defined(OS_ANDROID)
+#include "media/blink/renderer_media_player_interface.h"
+#endif
+
 using ::testing::AnyNumber;
 using ::testing::Eq;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
@@ -59,6 +80,8 @@ using ::testing::StrictMock;
 using ::testing::_;
 
 namespace media {
+
+constexpr char kAudioOnlyTestFile[] = "sfx-opus-441.webm";
 
 // Specify different values for testing.
 const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
@@ -79,6 +102,33 @@ MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {
                                   std::string(old_rate_string) + " to " +
                                   std::string(new_rate_string));
 }
+
+#if defined(OS_ANDROID)
+class MockRendererMediaPlayerManager
+    : public RendererMediaPlayerManagerInterface {
+ public:
+  MOCK_METHOD7(Initialize,
+               void(MediaPlayerHostMsg_Initialize_Type type,
+                    int player_id,
+                    const GURL& url,
+                    const GURL& site_for_cookies,
+                    const GURL& frame_url,
+                    bool allow_credentials,
+                    int delegate_id));
+  MOCK_METHOD1(Start, void(int player_id));
+  MOCK_METHOD2(Pause, void(int player_id, bool is_media_related_action));
+  MOCK_METHOD2(Seek, void(int player_id, base::TimeDelta time));
+  MOCK_METHOD2(SetVolume, void(int player_id, double volume));
+  MOCK_METHOD2(SetPoster, void(int player_id, const GURL& poster));
+  MOCK_METHOD1(SuspendAndReleaseResources, void(int player_id));
+  MOCK_METHOD1(DestroyPlayer, void(int player_id));
+  MOCK_METHOD1(RequestRemotePlayback, void(int player_id));
+  MOCK_METHOD1(RequestRemotePlaybackControl, void(int player_id));
+  MOCK_METHOD1(RequestRemotePlaybackStop, void(int player_id));
+  MOCK_METHOD1(RegisterMediaPlayer, int(RendererMediaPlayerInterface* player));
+  MOCK_METHOD1(UnregisterMediaPlayer, void(int player_id));
+};
+#endif
 
 class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
  public:
@@ -133,6 +183,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(PictureInPictureStarted, void());
   MOCK_METHOD0(PictureInPictureStopped, void());
   MOCK_METHOD0(IsInPictureInPictureMode, bool());
+  MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
 
   void set_is_autoplaying_muted(bool value) { is_autoplaying_muted_ = value; }
 
@@ -257,6 +308,51 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
                void(const viz::FrameSinkId&, media::VideoRotation));
 };
 
+// We must use a custom blink::Platform that ensures the main thread scheduler
+// knows about the ScopedTaskEnvironment; the default one is not setup with a
+// ScopedTaskEnvironment to allow other tests to use mock MessageLoops.
+class BlinkPlatformWithTaskEnvironment : public blink::Platform {
+ public:
+  BlinkPlatformWithTaskEnvironment()
+      : original_platform_(blink::Platform::Current()),
+        scoped_task_environment_(
+            std::make_unique<base::test::ScopedTaskEnvironment>()),
+        main_thread_scheduler_(
+            blink::scheduler::CreateWebMainThreadSchedulerForTests()),
+        main_thread_(main_thread_scheduler_->CreateMainThread()) {
+    DCHECK(original_platform_);
+    blink::Platform::SetCurrentPlatformForTesting(this);
+  }
+
+  ~BlinkPlatformWithTaskEnvironment() override {
+    main_thread_scheduler_->Shutdown();
+    main_thread_.reset();
+    main_thread_scheduler_.reset();
+    scoped_task_environment_.reset();
+
+    DCHECK_EQ(this, blink::Platform::Current());
+    blink::Platform::SetCurrentPlatformForTesting(original_platform_);
+  }
+
+  blink::WebThread* CurrentThread() override {
+    EXPECT_TRUE(main_thread_->IsCurrentThread());
+    return main_thread_.get();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return scoped_task_environment_->GetMainThreadTaskRunner();
+  }
+
+ private:
+  blink::Platform* const original_platform_;
+
+  // Must be constructed first; otherwise the main thread may stop pumping.
+  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
+      main_thread_scheduler_;
+  std::unique_ptr<blink::WebThread> main_thread_;
+};
+
 class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
@@ -304,18 +400,22 @@ class WebMediaPlayerImplTest : public testing::Test {
     // will start DCHECK failing.
     provider->Initialize(false, false, url::Origin());
 
+    audio_sink_ = base::WrapRefCounted(new NiceMock<MockAudioRendererSink>());
+
+    url_index_.reset(new UrlIndex(&mock_resource_fetch_context_));
+
     auto params = std::make_unique<WebMediaPlayerParams>(
-        std::move(media_log), WebMediaPlayerParams::DeferLoadCB(),
-        scoped_refptr<SwitchableAudioRendererSink>(),
-        media_thread_.task_runner(), message_loop_.task_runner(),
-        message_loop_.task_runner(), media_thread_.task_runner(),
-        base::Bind(&OnAdjustAllocatedMemory), nullptr, nullptr,
+        std::move(media_log), WebMediaPlayerParams::DeferLoadCB(), audio_sink_,
+        media_thread_.task_runner(), platform_.task_runner(),
+        platform_.task_runner(), media_thread_.task_runner(),
+        base::BindRepeating(&OnAdjustAllocatedMemory), nullptr, nullptr,
         RequestRoutingTokenCallback(), nullptr,
         kMaxKeyframeDistanceToDisableBackgroundVideo,
         kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
         std::move(provider),
-        base::Bind(&WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
-                   base::Unretained(this)),
+        base::BindRepeating(
+            &WebMediaPlayerImplTest::CreateMockSurfaceLayerBridge,
+            base::Unretained(this)),
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo),
         base::BindRepeating(pip_surface_info_cb_.Get()),
@@ -329,7 +429,11 @@ class WebMediaPlayerImplTest : public testing::Test {
         web_local_frame_, &client_, nullptr, &delegate_,
         std::move(factory_selector), url_index_.get(), std::move(compositor),
         std::move(params));
-}
+
+#if defined(OS_ANDROID)
+    wmpi_->SetMediaPlayerManager(&mock_media_player_manager_);
+#endif
+  }
 
   ~WebMediaPlayerImplTest() override {
     EXPECT_CALL(client_, SetWebLayer(nullptr));
@@ -506,8 +610,63 @@ class WebMediaPlayerImplTest : public testing::Test {
     return !wmpi_->update_background_status_cb_.IsCancelled();
   }
 
-  // "Renderer" thread.
-  base::MessageLoop message_loop_;
+  void LoadAndWaitForMetadata(std::string data_file) {
+    // URL doesn't matter, it's value is unknown to the underlying demuxer.
+    const GURL kTestURL("file://example.com/sample.webm");
+
+    // This block sets up a fetch context which ultimately provides us a pointer
+    // to the WebAssociatedURLLoaderClient handed out by the DataSource after it
+    // requests loading of a resource. We then use that client as if we are the
+    // network stack and "serve" an in memory file to the DataSource.
+    blink::WebAssociatedURLLoaderClient* client = nullptr;
+    EXPECT_CALL(mock_resource_fetch_context_, CreateUrlLoader(_))
+        .WillRepeatedly(
+            Invoke([&client](const blink::WebAssociatedURLLoaderOptions&) {
+              auto a = std::make_unique<NiceMock<MockWebAssociatedURLLoader>>();
+              EXPECT_CALL(*a, LoadAsynchronously(_, _))
+                  .WillRepeatedly(testing::SaveArg<1>(&client));
+              return a;
+            }));
+
+    wmpi_->Load(blink::WebMediaPlayer::kLoadTypeURL,
+                blink::WebMediaPlayerSource(blink::WebURL(kTestURL)),
+                blink::WebMediaPlayer::kCORSModeUnspecified);
+
+    base::RunLoop().RunUntilIdle();
+
+    // Load a real media file into memory.
+    scoped_refptr<DecoderBuffer> data = ReadTestDataFile(data_file);
+
+    // "Serve" the file to the DataSource. Note: We respond with 200 okay, which
+    // will prevent range requests or partial responses from being used.
+    blink::WebURLResponse response(kTestURL);
+    response.SetHTTPHeaderField(
+        blink::WebString::FromUTF8("Content-Length"),
+        blink::WebString::FromUTF8(base::NumberToString(data->data_size())));
+    response.SetExpectedContentLength(data->data_size());
+    response.SetHTTPStatusCode(200);
+    client->DidReceiveResponse(response);
+
+    // Copy over the file data and indicate that's everything.
+    client->DidReceiveData(reinterpret_cast<const char*>(data->data()),
+                           data->data_size());
+    client->DidFinishLoading(0);
+
+    // This runs until we reach the have metadata state.
+    base::RunLoop loop;
+    EXPECT_CALL(client_, ReadyStateChanged())
+        .WillOnce(RunClosure(loop.QuitClosure()));
+    loop.Run();
+
+    // Verify we made it to pipeline startup.
+    EXPECT_EQ(blink::WebMediaPlayer::kReadyStateHaveMetadata,
+              wmpi_->GetReadyState());
+    EXPECT_TRUE(wmpi_->data_source_);
+    EXPECT_TRUE(wmpi_->demuxer_);
+    EXPECT_TRUE(wmpi_->seeking_);
+  }
+
+  BlinkPlatformWithTaskEnvironment platform_;
 
   // "Media" thread. This is necessary because WMPI destruction waits on a
   // WaitableEvent.
@@ -521,6 +680,8 @@ class WebMediaPlayerImplTest : public testing::Test {
   scoped_refptr<viz::TestContextProvider> context_provider_;
   StrictMock<MockVideoFrameCompositor>* compositor_;
 
+  scoped_refptr<NiceMock<MockAudioRendererSink>> audio_sink_;
+  MockResourceFetchContext mock_resource_fetch_context_;
   std::unique_ptr<media::UrlIndex> url_index_;
 
   // Audio hardware configuration.
@@ -528,6 +689,10 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
+
+#if defined(OS_ANDROID)
+  NiceMock<MockRendererMediaPlayerManager> mock_media_player_manager_;
+#endif
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
   viz::LocalSurfaceId local_surface_id_ =
@@ -559,6 +724,43 @@ class WebMediaPlayerImplTest : public testing::Test {
 
 TEST_F(WebMediaPlayerImplTest, ConstructAndDestroy) {
   InitializeWebMediaPlayerImpl();
+  EXPECT_FALSE(IsSuspended());
+}
+
+// Verify LoadAndWaitForMetadata() functions without issue.
+TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
+  InitializeWebMediaPlayerImpl();
+  EXPECT_FALSE(IsSuspended());
+  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  EXPECT_FALSE(IsSuspended());
+}
+
+// Verify that preload=metadata suspend works properly.
+TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
+  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsSuspended());
+}
+
+// Verify that preload=metadata suspend is aborted if we know the element will
+// play as soon as we reach kReadyStateHaveFutureData.
+TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendCouldPlay) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(true));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
+  LoadAndWaitForMetadata(kAudioOnlyTestFile);
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(IsSuspended());
 }
 

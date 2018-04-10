@@ -127,6 +127,10 @@ test("media_blink_unittests") {
     "//url",
   ]
 
+  data = [
+    "//media/test/data/",
+  ]
+
   configs += [
     "//build/config/compiler:no_size_t_to_int_warning",
     "//tools/v8_context_snapshot:use_v8_context_snapshot",

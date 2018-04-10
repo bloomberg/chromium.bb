@@ -209,12 +209,12 @@ void WebMediaPlayerCast::OnBufferingUpdate(int percentage) {
   DVLOG(1) << __func__;
 }
 
-void WebMediaPlayerCast::OnSeekRequest(const base::TimeDelta& time_to_seek) {
+void WebMediaPlayerCast::OnSeekRequest(base::TimeDelta time_to_seek) {
   DVLOG(1) << __func__;
   client_->RequestSeek(time_to_seek.InSecondsF());
 }
 
-void WebMediaPlayerCast::OnSeekComplete(const base::TimeDelta& current_time) {
+void WebMediaPlayerCast::OnSeekComplete(base::TimeDelta current_time) {
   DVLOG(1) << __func__;
   remote_time_at_ = base::TimeTicks::Now();
   remote_time_ = current_time;

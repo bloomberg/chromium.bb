@@ -564,6 +564,7 @@ class WebMediaPlayerMSTest
                void(blink::WebMediaPlayer::NetworkState));
   MOCK_METHOD1(DoReadyStateChanged, void(blink::WebMediaPlayer::ReadyState));
   MOCK_METHOD1(CheckSizeChanged, void(gfx::Size));
+  MOCK_CONST_METHOD0(CouldPlayIfEnoughData, bool());
 
   base::MessageLoop message_loop_;
   MockRenderFactory* render_factory_;

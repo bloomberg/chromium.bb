@@ -94,9 +94,7 @@ void RendererMediaPlayerManager::Pause(
       routing_id(), player_id, is_media_related_action));
 }
 
-void RendererMediaPlayerManager::Seek(
-    int player_id,
-    const base::TimeDelta& time) {
+void RendererMediaPlayerManager::Seek(int player_id, base::TimeDelta time) {
   Send(new MediaPlayerHostMsg_Seek(routing_id(), player_id, time));
 }
 
@@ -154,17 +152,15 @@ void RendererMediaPlayerManager::OnMediaBufferingUpdate(int player_id,
     player->OnBufferingUpdate(percent);
 }
 
-void RendererMediaPlayerManager::OnSeekRequest(
-    int player_id,
-    const base::TimeDelta& time_to_seek) {
+void RendererMediaPlayerManager::OnSeekRequest(int player_id,
+                                               base::TimeDelta time_to_seek) {
   media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
   if (player)
     player->OnSeekRequest(time_to_seek);
 }
 
-void RendererMediaPlayerManager::OnSeekCompleted(
-    int player_id,
-    const base::TimeDelta& current_time) {
+void RendererMediaPlayerManager::OnSeekCompleted(int player_id,
+                                                 base::TimeDelta current_time) {
   media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
   if (player)
     player->OnSeekComplete(current_time);

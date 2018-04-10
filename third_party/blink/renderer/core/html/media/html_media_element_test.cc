@@ -4,22 +4,49 @@
 
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/renderer/core/html/media/media_error.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
+#include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
 namespace blink {
+
+class MockWebMediaPlayer : public EmptyWebMediaPlayer {
+ public:
+  MOCK_CONST_METHOD0(Duration, double());
+  MOCK_CONST_METHOD0(CurrentTime, double());
+};
+
+class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
+ public:
+  static MediaStubLocalFrameClient* Create() {
+    return new MediaStubLocalFrameClient;
+  }
+
+  std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
+      HTMLMediaElement&,
+      const WebMediaPlayerSource&,
+      WebMediaPlayerClient* client,
+      WebLayerTreeView*) override {
+    return std::make_unique<MockWebMediaPlayer>();
+  }
+};
 
 enum class MediaTestParam { kAudio, kVideo };
 
 class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
  protected:
   void SetUp() override {
-    dummy_page_holder_ = DummyPageHolder::Create();
+    dummy_page_holder_ = DummyPageHolder::Create(
+        IntSize(), nullptr, MediaStubLocalFrameClient::Create(), nullptr);
 
     if (GetParam() == MediaTestParam::kAudio)
       media_ = HTMLAudioElement::Create(dummy_page_holder_->GetDocument());
@@ -28,12 +55,20 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   }
 
   HTMLMediaElement* Media() { return media_.Get(); }
-  void SetCurrentSrc(const String& src) {
+  void SetCurrentSrc(const AtomicString& src) {
     KURL url(src);
     Media()->current_src_ = url;
   }
 
   bool WasAutoplayInitiated() { return Media()->WasAutoplayInitiated(); }
+
+  bool CouldPlayIfEnoughData() { return Media()->CouldPlayIfEnoughData(); }
+
+  void SetReadyState(HTMLMediaElement::ReadyState state) {
+    Media()->SetReadyState(state);
+  }
+
+  void SetError(MediaError* err) { Media()->MediaEngineError(err); }
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -73,7 +108,7 @@ enum class TestURLScheme {
   kBlob,
 };
 
-String SrcSchemeToURL(TestURLScheme scheme) {
+AtomicString SrcSchemeToURL(TestURLScheme scheme) {
   switch (scheme) {
     case TestURLScheme::kHttp:
       return "http://example.com/foo.mp4";
@@ -90,7 +125,7 @@ String SrcSchemeToURL(TestURLScheme scheme) {
     default:
       NOTREACHED();
   }
-  return g_empty_string;
+  return g_empty_atom;
 }
 
 TEST_P(HTMLMediaElementTest, preloadType) {
@@ -141,6 +176,61 @@ TEST_P(HTMLMediaElementTest, preloadType) {
         << "preload type differs at index" << index;
     ++index;
   }
+}
+
+TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToPlay) {
+  EXPECT_FALSE(CouldPlayIfEnoughData());
+  Media()->Play();
+  EXPECT_TRUE(CouldPlayIfEnoughData());
+}
+
+TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToEnded) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+
+  test::RunPendingTasks();
+
+  MockWebMediaPlayer* mock_wmpi =
+      reinterpret_cast<MockWebMediaPlayer*>(Media()->GetWebMediaPlayer());
+  EXPECT_NE(mock_wmpi, nullptr);
+  EXPECT_CALL(*mock_wmpi, Duration()).WillRepeatedly(testing::Return(1.0));
+  EXPECT_CALL(*mock_wmpi, CurrentTime()).WillRepeatedly(testing::Return(0));
+  EXPECT_TRUE(CouldPlayIfEnoughData());
+
+  // Playback can only end once the ready state is above kHaveMetadata.
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+  EXPECT_FALSE(Media()->paused());
+  EXPECT_FALSE(Media()->ended());
+  EXPECT_TRUE(CouldPlayIfEnoughData());
+
+  // Now advance current time to duration and verify ended state.
+  testing::Mock::VerifyAndClearExpectations(mock_wmpi);
+  EXPECT_CALL(*mock_wmpi, CurrentTime())
+      .WillRepeatedly(testing::Return(Media()->duration()));
+  EXPECT_FALSE(CouldPlayIfEnoughData());
+  EXPECT_TRUE(Media()->ended());
+}
+
+TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  Media()->Play();
+
+  test::RunPendingTasks();
+
+  MockWebMediaPlayer* mock_wmpi =
+      reinterpret_cast<MockWebMediaPlayer*>(Media()->GetWebMediaPlayer());
+  EXPECT_NE(mock_wmpi, nullptr);
+  EXPECT_CALL(*mock_wmpi, Duration()).WillRepeatedly(testing::Return(1.0));
+  EXPECT_CALL(*mock_wmpi, CurrentTime()).WillRepeatedly(testing::Return(0));
+  EXPECT_TRUE(CouldPlayIfEnoughData());
+
+  SetReadyState(HTMLMediaElement::kHaveMetadata);
+  EXPECT_FALSE(Media()->paused());
+  EXPECT_FALSE(Media()->ended());
+  EXPECT_TRUE(CouldPlayIfEnoughData());
+
+  SetError(MediaError::Create(MediaError::kMediaErrDecode, ""));
+  EXPECT_FALSE(CouldPlayIfEnoughData());
 }
 
 TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
