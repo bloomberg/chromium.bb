@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -34,6 +35,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "services/network/public/cpp/features.h"
+#include "ui/base/ui_base_switches.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
  public:
@@ -116,6 +118,71 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
+}
+
+class TouchLocationBarViewBrowserTest : public LocationBarViewBrowserTest {
+ public:
+  TouchLocationBarViewBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(
+        switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
+    LocationBarViewBrowserTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TouchLocationBarViewBrowserTest);
+};
+
+// Test the corners of the OmniboxViewViews do not get drawn on top of the
+// rounded corners of the omnibox in touch mode.
+IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest, OmniboxViewViewsSize) {
+  // Make sure all the LocationBarView children are invisible. This should
+  // ensure there are no trailing decorations at the end of the omnibox
+  // (currently, the LocationIconView is *always* added as a leading decoration,
+  // so it's not possible to test the leading side).
+  views::View* omnibox_view_views = GetLocationBarView()->omnibox_view();
+  for (int i = 0; i < GetLocationBarView()->child_count(); ++i) {
+    views::View* child = GetLocationBarView()->child_at(i);
+    if (child != omnibox_view_views)
+      child->SetVisible(false);
+  }
+
+  GetLocationBarView()->Layout();
+  // Check |omnibox_view_views| is not wider than the LocationBarView with its
+  // rounded ends removed.
+  EXPECT_LE(omnibox_view_views->width(),
+            GetLocationBarView()->width() - GetLocationBarView()->height());
+  // Check the trailing edge of |omnibox_view_views| does not exceed the
+  // trailing edge of the LocationBarView with its endcap removed.
+  EXPECT_LE(omnibox_view_views->bounds().right(),
+            GetLocationBarView()->GetLocalBoundsWithoutEndcaps().right());
+}
+
+// Make sure the IME autocomplete selection text is positioned correctly when
+// there are no trailing decorations.
+IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
+                       IMEInlineAutocompletePosition) {
+  // Make sure all the LocationBarView children are invisible. This should
+  // ensure there are no trailing decorations at the end of the omnibox.
+  OmniboxViewViews* omnibox_view_views = GetLocationBarView()->omnibox_view();
+  views::Label* ime_inline_autocomplete_view =
+      GetLocationBarView()->ime_inline_autocomplete_view_;
+  for (int i = 0; i < GetLocationBarView()->child_count(); ++i) {
+    views::View* child = GetLocationBarView()->child_at(i);
+    if (child != omnibox_view_views)
+      child->SetVisible(false);
+  }
+  omnibox_view_views->SetText(base::UTF8ToUTF16("谷"));
+  GetLocationBarView()->SetImeInlineAutocompletion(base::UTF8ToUTF16("歌"));
+  EXPECT_TRUE(ime_inline_autocomplete_view->visible());
+
+  GetLocationBarView()->Layout();
+
+  // Make sure the IME inline autocomplete view starts at the end of
+  // |omnibox_view_views|.
+  EXPECT_EQ(omnibox_view_views->bounds().right(),
+            ime_inline_autocomplete_view->x());
 }
 
 // After AddUrlHandler() is called, requests to this hostname will be mocked

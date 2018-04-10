@@ -251,6 +251,10 @@ class LocationBarView : public LocationBar,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
+  FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
+                           OmniboxViewViewsSize);
+  FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
+                           IMEInlineAutocompletePosition);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
 
   // Helper for GetMinimumWidth().  Calculates the incremental minimum width
@@ -259,6 +263,11 @@ class LocationBarView : public LocationBar,
 
   // The border color, drawn on top of the toolbar.
   SkColor GetBorderColor() const;
+
+  // The LocationBarView bounds, without the ends which have a border radius.
+  // E.g., if the LocationBarView was 50dip long, and the border radius was 2,
+  // this method would return a gfx::Rect with 46dip width.
+  gfx::Rect GetLocalBoundsWithoutEndcaps() const;
 
   // Returns the thickness of any visible edge, in pixels.
   int GetHorizontalEdgeThickness() const;

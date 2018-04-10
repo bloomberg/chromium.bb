@@ -47,8 +47,7 @@ float BackgroundWith1PxBorder::GetBorderRadius(int height_in_px) const {
     // off the final border radius since the border thickness is always 1px.
     return height_in_px / 2.f - 1;
   }
-  constexpr int kBorderRadius = 2;
-  return kBorderRadius;
+  return kLegacyBorderRadiusPx;
 }
 
 void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
