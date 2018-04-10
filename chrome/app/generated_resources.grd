@@ -9882,7 +9882,7 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
           </message>
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
-            Uninstall...
+            Uninstall
           </message>
           <message name="IDS_APP_LIST_REMOVE_SHORTCUT"
                    desc="Title text for the 'remove' context menu item of an app list shortcut item.">
@@ -9916,7 +9916,7 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
           </message>
           <message name="IDS_APP_LIST_UNINSTALL_ITEM"
                    desc="Title text for the 'uninstall' context menu item of an app list item.">
-            Uninstall...
+            Uninstall
           </message>
           <message name="IDS_APP_LIST_REMOVE_SHORTCUT"
                    desc="Title text for the 'remove' context menu item of an app list shortcut item.">
