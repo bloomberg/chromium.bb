@@ -21,7 +21,7 @@ namespace ui {
 class WaylandWindow;
 
 class WaylandConnection : public PlatformEventSource,
-                          public base::MessagePumpLibevent::Watcher {
+                          public base::MessagePumpLibevent::FdWatcher {
  public:
   WaylandConnection();
   ~WaylandConnection() override;
@@ -63,7 +63,7 @@ class WaylandConnection : public PlatformEventSource,
   // PlatformEventSource
   void OnDispatcherListChanged() override;
 
-  // base::MessagePumpLibevent::Watcher
+  // base::MessagePumpLibevent::FdWatcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -101,7 +101,7 @@ class WaylandConnection : public PlatformEventSource,
 
   bool scheduled_flush_ = false;
   bool watching_ = false;
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
 
   uint32_t serial_ = 0;
 

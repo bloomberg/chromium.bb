@@ -75,7 +75,7 @@ std::vector<std::string> ParseCategories(base::StringPiece message) {
   return categories;
 }
 
-class TraceCopyTask : public base::MessagePumpLibevent::Watcher {
+class TraceCopyTask : public base::MessagePumpLibevent::FdWatcher {
  public:
   // Read 64 kB at a time (standard pipe capacity).
   static constexpr size_t kCopyBufferSize = 1UL << 16;
@@ -101,7 +101,7 @@ class TraceCopyTask : public base::MessagePumpLibevent::Watcher {
         base::MessageLoopForIO::WATCH_WRITE, &out_watcher_, this);
   }
 
-  // base::MessagePumpLibevent::Watcher:
+  // base::MessagePumpLibevent::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override { NOTREACHED(); }
   void OnFileCanWriteWithoutBlocking(int fd) override {
     DCHECK_EQ(out_fd_.get(), fd);
@@ -164,13 +164,13 @@ class TraceCopyTask : public base::MessagePumpLibevent::Watcher {
 
   // Pipe for trace data.
   base::ScopedFD out_fd_;
-  base::MessagePumpLibevent::FileDescriptorWatcher out_watcher_;
+  base::MessagePumpLibevent::FdWatchController out_watcher_;
 
   // Callback for when copy finishes.
   base::OnceCallback<void(Status, size_t)> callback_;
 };
 
-class TraceConnection : public base::MessagePumpLibevent::Watcher {
+class TraceConnection : public base::MessagePumpLibevent::FdWatcher {
  public:
   TraceConnection(base::ScopedFD connection_fd, base::OnceClosure callback)
       : recv_buffer_(new char[kMessageSize]),
@@ -186,7 +186,7 @@ class TraceConnection : public base::MessagePumpLibevent::Watcher {
         base::MessageLoopForIO::WATCH_READ, &connection_watcher_, this);
   }
 
-  // base::MessagePumpLibevent::Watcher:
+  // base::MessagePumpLibevent::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     DCHECK_EQ(connection_fd_.get(), fd);
     ReceiveClientMessage();
@@ -318,7 +318,7 @@ class TraceConnection : public base::MessagePumpLibevent::Watcher {
 
   // Client connection.
   base::ScopedFD connection_fd_;
-  base::MessagePumpLibevent::FileDescriptorWatcher connection_watcher_;
+  base::MessagePumpLibevent::FdWatchController connection_watcher_;
 
   // Pipe for trace output.
   base::ScopedFD trace_pipe_;
@@ -332,7 +332,7 @@ class TraceConnection : public base::MessagePumpLibevent::Watcher {
   base::WeakPtrFactory<TraceConnection> weak_ptr_factory_;
 };
 
-class TracingService : public base::MessagePumpLibevent::Watcher {
+class TracingService : public base::MessagePumpLibevent::FdWatcher {
  public:
   TracingService()
       : server_socket_watcher_(FROM_HERE), weak_ptr_factory_(this) {}
@@ -350,7 +350,7 @@ class TracingService : public base::MessagePumpLibevent::Watcher {
     return true;
   }
 
-  // base::MessagePumpLibevent::Watcher:
+  // base::MessagePumpLibevent::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     DCHECK_EQ(server_socket_.get(), fd);
     AcceptConnection();
@@ -377,7 +377,7 @@ class TracingService : public base::MessagePumpLibevent::Watcher {
 
   // Socket and watcher for listening socket.
   base::ScopedFD server_socket_;
-  base::MessagePumpLibevent::FileDescriptorWatcher server_socket_watcher_;
+  base::MessagePumpLibevent::FdWatchController server_socket_watcher_;
 
   // Currently active tracing connection.
   // There can only be one; ftrace affects the whole system.

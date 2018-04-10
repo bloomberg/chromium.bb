@@ -175,7 +175,7 @@ class ExoParts::WaylandWatcher {
   DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);
 };
 #else
-class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::Watcher {
+class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::FdWatcher {
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : controller_(FROM_HERE), server_(server) {
@@ -185,7 +185,7 @@ class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::Watcher {
         base::MessagePumpLibevent::WATCH_READ, &controller_, this);
   }
 
-  // base::MessagePumpLibevent::Watcher:
+  // base::MessagePumpLibevent::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     server_->Dispatch(base::TimeDelta());
     server_->Flush();
@@ -193,7 +193,7 @@ class ExoParts::WaylandWatcher : public base::MessagePumpLibevent::Watcher {
   void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
 
  private:
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
   exo::wayland::Server* const server_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);

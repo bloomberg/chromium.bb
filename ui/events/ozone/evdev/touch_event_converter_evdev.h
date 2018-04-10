@@ -68,7 +68,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
  private:
   friend class MockTouchEventConverterEvdev;
 
-  // Overidden from base::MessagePumpLibevent::Watcher.
+  // Overidden from base::MessagePumpLibevent::FdWatcher.
   void OnFileCanReadWithoutBlocking(int fd) override;
 
   virtual void Reinitialize();

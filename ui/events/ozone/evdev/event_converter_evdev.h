@@ -24,7 +24,7 @@ namespace ui {
 enum class DomCode;
 
 class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
-    : public base::MessagePumpLibevent::Watcher {
+    : public base::MessagePumpLibevent::FdWatcher {
  public:
   EventConverterEvdev(int fd,
                       const base::FilePath& path,
@@ -115,7 +115,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   static base::TimeTicks TimeTicksFromInputEvent(const input_event& event);
 
  protected:
-  // base::MessagePumpLibevent::Watcher:
+  // base::MessagePumpLibevent::FdWatcher:
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // File descriptor to read.
@@ -132,7 +132,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
   bool watching_ = false;
 
   // Controller for watching the input fd.
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EventConverterEvdev);
