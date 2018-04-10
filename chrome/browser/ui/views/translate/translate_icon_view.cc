@@ -23,7 +23,6 @@ TranslateIconView::TranslateIconView(CommandUpdater* command_updater,
     : BubbleIconView(command_updater, IDC_TRANSLATE_PAGE, delegate) {
   DCHECK(delegate);
   set_id(VIEW_ID_TRANSLATE_BUTTON);
-  SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE));
 }
 
 TranslateIconView::~TranslateIconView() {}
@@ -62,4 +61,8 @@ void TranslateIconView::OnPressed(bool activated) {
 
 const gfx::VectorIcon& TranslateIconView::GetVectorIcon() const {
   return kTranslateIcon;
+}
+
+base::string16 TranslateIconView::GetTextForTooltipAndAccessibleName() const {
+  return l10n_util::GetStringUTF16(IDS_TOOLTIP_TRANSLATE);
 }

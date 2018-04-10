@@ -32,6 +32,7 @@ class ManagePasswordsIconViews : public ManagePasswordsIconView,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
   // views::View:
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;

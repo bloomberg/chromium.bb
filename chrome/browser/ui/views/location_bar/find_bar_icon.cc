@@ -8,9 +8,7 @@
 #include "components/toolbar/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
-FindBarIcon::FindBarIcon() : BubbleIconView(nullptr, 0) {
-  SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FIND));
-}
+FindBarIcon::FindBarIcon() : BubbleIconView(nullptr, 0) {}
 
 FindBarIcon::~FindBarIcon() {}
 
@@ -27,6 +25,10 @@ void FindBarIcon::SetActive(bool activate, bool should_animate) {
   } else {
     AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
   }
+}
+
+base::string16 FindBarIcon::GetTextForTooltipAndAccessibleName() const {
+  return l10n_util::GetStringUTF16(IDS_TOOLTIP_FIND);
 }
 
 void FindBarIcon::OnExecuting(ExecuteSource execute_source) {}

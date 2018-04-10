@@ -46,11 +46,6 @@ void ManagePasswordsIconViews::UpdateUiForState() {
     return;
   }
 
-  SetTooltipText(l10n_util::GetStringUTF16(
-      state_ == password_manager::ui::PENDING_PASSWORD_STATE
-          ? IDS_PASSWORD_MANAGER_TOOLTIP_SAVE
-          : IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE));
-
   SetVisible(true);
 
   // We may be about to automatically pop up a passwords bubble.
@@ -98,6 +93,14 @@ bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
 
 const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {
   return kKeyIcon;
+}
+
+base::string16 ManagePasswordsIconViews::GetTextForTooltipAndAccessibleName()
+    const {
+  return l10n_util::GetStringUTF16(
+      state_ == password_manager::ui::PENDING_PASSWORD_STATE
+          ? IDS_PASSWORD_MANAGER_TOOLTIP_SAVE
+          : IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE);
 }
 
 void ManagePasswordsIconViews::AboutToRequestFocusFromTabTraversal(

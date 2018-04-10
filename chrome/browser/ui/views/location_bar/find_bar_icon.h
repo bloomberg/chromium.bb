@@ -21,6 +21,7 @@ class FindBarIcon : public BubbleIconView {
   void OnExecuting(ExecuteSource execute_source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FindBarIcon);

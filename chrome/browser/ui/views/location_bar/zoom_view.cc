@@ -36,9 +36,7 @@ void ZoomView::Update(zoom::ZoomController* zoom_controller) {
     return;
   }
 
-  SetTooltipText(l10n_util::GetStringFUTF16(
-      IDS_TOOLTIP_ZOOM,
-      base::FormatPercent(zoom_controller->GetZoomPercent())));
+  current_zoom_percent_ = zoom_controller->GetZoomPercent();
 
   // The icon is hidden when the zoom level is default.
   icon_ = zoom_controller->GetZoomRelativeToDefault() ==
@@ -56,15 +54,15 @@ void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
                              gfx::Point(), ZoomBubbleView::USER_GESTURE);
 }
 
-void ZoomView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  BubbleIconView::GetAccessibleNodeData(node_data);
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_ZOOM));
-}
-
 views::BubbleDialogDelegateView* ZoomView::GetBubble() const {
   return ZoomBubbleView::GetZoomBubble();
 }
 
 const gfx::VectorIcon& ZoomView::GetVectorIcon() const {
   return *icon_;
+}
+
+base::string16 ZoomView::GetTextForTooltipAndAccessibleName() const {
+  return l10n_util::GetStringFUTF16(IDS_TOOLTIP_ZOOM,
+                                    base::FormatPercent(current_zoom_percent_));
 }

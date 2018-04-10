@@ -32,8 +32,6 @@ StarView::~StarView() {}
 
 void StarView::SetToggled(bool on) {
   BubbleIconView::SetActiveInternal(on);
-  SetTooltipText(l10n_util::GetStringUTF16(
-      on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
 }
 
 void StarView::ShowPromo() {
@@ -83,6 +81,11 @@ views::BubbleDialogDelegateView* StarView::GetBubble() const {
 
 const gfx::VectorIcon& StarView::GetVectorIcon() const {
   return active() ? toolbar::kStarActiveIcon : toolbar::kStarIcon;
+}
+
+base::string16 StarView::GetTextForTooltipAndAccessibleName() const {
+  return l10n_util::GetStringUTF16(active() ? IDS_TOOLTIP_STARRED
+                                            : IDS_TOOLTIP_STAR);
 }
 
 SkColor StarView::GetInkDropBaseColor() const {

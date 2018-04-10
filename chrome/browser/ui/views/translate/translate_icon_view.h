@@ -27,6 +27,7 @@ class TranslateIconView : public BubbleIconView {
   void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
   void OnPressed(bool activated) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
+  base::string16 GetTextForTooltipAndAccessibleName() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateIconView);
