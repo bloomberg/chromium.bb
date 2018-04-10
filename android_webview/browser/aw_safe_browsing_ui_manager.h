@@ -11,8 +11,13 @@
 
 #include "components/safe_browsing/base_ui_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 
 class PrefService;
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace safe_browsing {
 class BasePingManager;
@@ -47,11 +52,16 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   // BaseUIManager methods:
   void DisplayBlockingPage(const UnsafeResource& resource) override;
 
-  // Called on the IO thread by the ThreatDetails with the serialized
+  // Called on the UI thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
   void SendSerializedThreatDetails(const std::string& serialized) override;
 
   void SetExtendedReportingAllowed(bool allowed);
+
+  // Called on the IO thread to get a SharedURLLoaderFactory that can be used on
+  // the IO thread.
+  scoped_refptr<network::SharedURLLoaderFactory>
+  GetURLLoaderFactoryOnIOThread();
 
  protected:
   ~AwSafeBrowsingUIManager() override;
@@ -59,6 +69,11 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   void ShowBlockingPageForResource(const UnsafeResource& resource) override;
 
  private:
+  // Called on the UI thread to create a URLLoaderFactory interface ptr for
+  // the IO thread.
+  void CreateURLLoaderFactoryForIO(
+      network::mojom::URLLoaderFactoryRequest request);
+
   // Provides phishing and malware statistics. Accessed on IO thread.
   std::unique_ptr<safe_browsing::BasePingManager> ping_manager_;
 
@@ -70,6 +85,11 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   // A wrapper around |url_request_context_getter_| to allow usage of
   // SimpleURLLoader for safe browsing requests.
   std::unique_ptr<safe_browsing::SafeBrowsingNetworkContext> network_context_;
+
+  // A SharedURLLoaderFactory and its interfaceptr used on the IO thread.
+  network::mojom::URLLoaderFactoryPtr url_loader_factory_on_io_;
+  scoped_refptr<content::WeakWrapperSharedURLLoaderFactory>
+      shared_url_loader_factory_on_io_;
 
   // non-owning
   PrefService* pref_service_;

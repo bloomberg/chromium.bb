@@ -24,9 +24,9 @@
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 
@@ -219,7 +219,7 @@ class SafeBrowsingDatabaseManager
   // override this method, set enabled_ to true and call the base class method
   // at the top of it.
   virtual void StartOnIOThread(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const V4ProtocolConfig& config);
 
   //

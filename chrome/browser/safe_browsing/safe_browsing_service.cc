@@ -87,7 +87,7 @@ class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
  private:
   friend struct base::LazyInstanceTraitsBase<SafeBrowsingServiceFactoryImpl>;
 
-  SafeBrowsingServiceFactoryImpl() { }
+  SafeBrowsingServiceFactoryImpl() {}
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactoryImpl);
 };
@@ -108,7 +108,6 @@ base::FilePath SafeBrowsingService::GetBaseFilename() {
   DCHECK(result);
   return path.Append(safe_browsing::kSafeBrowsingBaseFilename);
 }
-
 
 // static
 SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
@@ -241,14 +240,29 @@ SafeBrowsingService::GetURLLoaderFactory() {
   return network_context_->GetURLLoaderFactory();
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+SafeBrowsingService::GetURLLoaderFactoryOnIOThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!shared_url_loader_factory_on_io_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&SafeBrowsingService::CreateURLLoaderFactoryForIO, this,
+                       MakeRequest(&url_loader_factory_on_io_)));
+    shared_url_loader_factory_on_io_ =
+        base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
+            url_loader_factory_on_io_.get());
+  }
+  return shared_url_loader_factory_on_io_;
+}
+
 void SafeBrowsingService::DisableQuicOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   url_request_context_getter_->DisableQuicOnIOThread();
 }
 
-const scoped_refptr<SafeBrowsingUIManager>&
-SafeBrowsingService::ui_manager() const {
+const scoped_refptr<SafeBrowsingUIManager>& SafeBrowsingService::ui_manager()
+    const {
   return ui_manager_;
 }
 
@@ -358,8 +372,7 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
   return config;
 }
 
-V4ProtocolConfig
-SafeBrowsingService::GetV4ProtocolConfig() const {
+V4ProtocolConfig SafeBrowsingService::GetV4ProtocolConfig() const {
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   return V4ProtocolConfig(
       GetProtocolConfigClientName(),
@@ -416,12 +429,14 @@ void SafeBrowsingService::StartOnIOThread(
   SafeBrowsingProtocolConfig config = GetProtocolConfig();
   V4ProtocolConfig v4_config = GetV4ProtocolConfig();
 
-  services_delegate_->StartOnIOThread(url_request_context_getter, v4_config);
+  services_delegate_->StartOnIOThread(GetURLLoaderFactoryOnIOThread(),
+                                      v4_config);
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   if (!use_v4_only_) {
     DCHECK(database_manager_.get());
-    database_manager_->StartOnIOThread(url_request_context_getter, v4_config);
+    database_manager_->StartOnIOThread(GetURLLoaderFactoryOnIOThread(),
+                                       v4_config);
   }
 #endif
 
@@ -460,6 +475,10 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
     protocol_manager_.reset();
 #endif
   }
+
+  if (shared_url_loader_factory_on_io_)
+    shared_url_loader_factory_on_io_->Detach();
+  url_loader_factory_on_io_.reset();
 }
 
 void SafeBrowsingService::Start() {
@@ -597,4 +616,13 @@ void SafeBrowsingService::CreateTriggerManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   trigger_manager_ = std::make_unique<TriggerManager>(ui_manager_.get());
 }
+
+void SafeBrowsingService::CreateURLLoaderFactoryForIO(
+    network::mojom::URLLoaderFactoryRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!url_request_context_getter_)
+    return;  // We've been shut down already.
+  GetNetworkContext()->CreateURLLoaderFactory(std::move(request), 0);
+}
+
 }  // namespace safe_browsing

@@ -83,7 +83,7 @@ class TestV4DatabaseFactory : public V4DatabaseFactory {
 class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
  public:
   TestV4GetHashProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config);
 
@@ -97,7 +97,7 @@ class TestV4GetHashProtocolManagerFactory
   ~TestV4GetHashProtocolManagerFactory() override;
 
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config) override;
 

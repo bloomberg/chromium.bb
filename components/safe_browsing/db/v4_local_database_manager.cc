@@ -23,6 +23,7 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using content::BrowserThread;
 
@@ -469,14 +470,14 @@ bool V4LocalDatabaseManager::IsSupported() const {
 }
 
 void V4LocalDatabaseManager::StartOnIOThread(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& config) {
-  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
+  SafeBrowsingDatabaseManager::StartOnIOThread(url_loader_factory, config);
 
   db_updated_callback_ = base::Bind(&V4LocalDatabaseManager::DatabaseUpdated,
                                     weak_factory_.GetWeakPtr());
 
-  SetupUpdateProtocolManager(request_context_getter, config);
+  SetupUpdateProtocolManager(url_loader_factory, config);
   SetupDatabase();
 
   enabled_ = true;
@@ -917,14 +918,14 @@ void V4LocalDatabaseManager::SetupDatabase() {
 }
 
 void V4LocalDatabaseManager::SetupUpdateProtocolManager(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& config) {
   V4UpdateCallback update_callback =
       base::Bind(&V4LocalDatabaseManager::UpdateRequestCompleted,
                  weak_factory_.GetWeakPtr());
 
   v4_update_protocol_manager_ = V4UpdateProtocolManager::Create(
-      request_context_getter, config, update_callback,
+      url_loader_factory, config, update_callback,
       extended_reporting_level_callback_);
 }
 

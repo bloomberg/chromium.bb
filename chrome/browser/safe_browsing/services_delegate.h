@@ -16,10 +16,6 @@ namespace content {
 class DownloadManager;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
 }
@@ -108,8 +104,8 @@ class ServicesDelegate {
   virtual DownloadProtectionService* GetDownloadService() = 0;
 
   virtual void StartOnIOThread(
-    net::URLRequestContextGetter* url_request_context_getter,
-    const V4ProtocolConfig& v4_config) = 0;
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const V4ProtocolConfig& v4_config) = 0;
   virtual void StopOnIOThread(bool shutdown) = 0;
 
   virtual void CreatePasswordProtectionService(Profile* profile) = 0;

@@ -369,7 +369,7 @@ AwBrowserContext::GetSafeBrowsingDBManager() {
     // V4ProtocolConfig is not used. Just create one with empty values..
     safe_browsing::V4ProtocolConfig config("", false, "", "");
     safe_browsing_db_manager_->StartOnIOThread(
-        url_request_context_getter_.get(), config);
+        safe_browsing_ui_manager_->GetURLLoaderFactoryOnIOThread(), config);
     safe_browsing_db_manager_started_ = true;
   }
   return safe_browsing_db_manager_.get();

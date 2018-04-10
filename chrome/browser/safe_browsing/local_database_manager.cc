@@ -37,7 +37,6 @@
 #include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "url/url_constants.h"
 
 using content::BrowserThread;
@@ -656,10 +655,10 @@ void LocalSafeBrowsingDatabaseManager::ResetDatabase() {
 }
 
 void LocalSafeBrowsingDatabaseManager::StartOnIOThread(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
+  SafeBrowsingDatabaseManager::StartOnIOThread(url_loader_factory, config);
 
   if (enabled_)
     return;

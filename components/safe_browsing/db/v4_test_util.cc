@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "components/safe_browsing/db/util.h"
 #include "crypto/sha2.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace safe_browsing {
 
@@ -104,12 +105,10 @@ void TestV4DatabaseFactory::MarkPrefixAsBad(ListIdentifier list_id,
 }
 
 TestV4GetHashProtocolManager::TestV4GetHashProtocolManager(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config)
-    : V4GetHashProtocolManager(request_context_getter,
-                               stores_to_check,
-                               config) {}
+    : V4GetHashProtocolManager(url_loader_factory, stores_to_check, config) {}
 
 void TestV4GetHashProtocolManager::AddToFullHashCache(FullHashInfo fhi) {
   full_hash_cache_[fhi.full_hash].full_hash_infos.push_back(fhi);
@@ -123,11 +122,11 @@ TestV4GetHashProtocolManagerFactory::~TestV4GetHashProtocolManagerFactory() =
 
 std::unique_ptr<V4GetHashProtocolManager>
 TestV4GetHashProtocolManagerFactory::CreateProtocolManager(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config) {
   auto pm = std::make_unique<TestV4GetHashProtocolManager>(
-      request_context_getter, stores_to_check, config);
+      url_loader_factory, stores_to_check, config);
   pm_ = pm.get();
   return std::move(pm);
 }

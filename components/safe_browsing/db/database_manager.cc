@@ -11,7 +11,7 @@
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -114,12 +114,12 @@ void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(
 }
 
 void SafeBrowsingDatabaseManager::StartOnIOThread(
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   v4_get_hash_protocol_manager_ = V4GetHashProtocolManager::Create(
-      request_context_getter, GetStoresForFullHashRequests(), config);
+      url_loader_factory, GetStoresForFullHashRequests(), config);
 }
 
 // |shutdown| not used. Destroys the v4 protocol managers. This may be called
