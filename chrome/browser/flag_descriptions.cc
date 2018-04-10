@@ -2474,6 +2474,10 @@ const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =
     "Use GDI to print text as simply text";
 
+const char kIncreaseInputAudioBufferSize[] = "Increase input audio buffer size";
+const char kIncreaseInputAudioBufferSizeDescription[] =
+    "Increases the input audio endpoint buffer to 100 ms.";
+
 const char kTraceExportEventsToEtwName[] =
     "Enable exporting of tracing events to ETW.";
 const char kTraceExportEventsToEtwDesription[] =

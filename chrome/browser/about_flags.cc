@@ -3826,6 +3826,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(app_list::features::kEnableHomeLauncher)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_WIN)
+    {"increase-input-audio-buffer-size",
+     flag_descriptions::kIncreaseInputAudioBufferSize,
+     flag_descriptions::kIncreaseInputAudioBufferSizeDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kIncreaseInputAudioBufferSize)},
+#endif  // OS_WIN
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
