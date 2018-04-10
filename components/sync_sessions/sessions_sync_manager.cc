@@ -445,8 +445,6 @@ bool SessionsSyncManager::InitFromSyncModel(
       if (specifics.has_header() && !found_current_header) {
         // This is our previous header node, reuse it.
         found_current_header = true;
-        if (specifics.header().has_client_name())
-          current_session_name_ = specifics.header().client_name();
 
         // The specifics from the SyncData are immutable. Create a mutable copy
         // to hold the rewritten ids.

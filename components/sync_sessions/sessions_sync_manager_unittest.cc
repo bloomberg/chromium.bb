@@ -36,6 +36,7 @@ namespace sync_sessions {
 
 namespace {
 
+const char kCacheGuid[] = "cache_guid";
 const char kFoo1[] = "http://foo1/";
 const char kFoo2[] = "http://foo2/";
 const char kBar1[] = "http://bar1/";
@@ -190,8 +191,8 @@ class SessionsSyncManagerTest : public testing::Test {
         .WillByDefault(testing::Return(window_getter_.router()));
 
     local_device_ = std::make_unique<LocalDeviceInfoProviderMock>(
-        "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
-        "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
+        kCacheGuid, "Wayne Gretzky's Hacking Box", "Chromium 10k", "Chrome 10k",
+        sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
     sync_client_ = std::make_unique<syncer::FakeSyncClient>();
     sync_prefs_ =
         std::make_unique<syncer::SyncPrefs>(sync_client_->GetPrefService());
@@ -218,7 +219,7 @@ class SessionsSyncManagerTest : public testing::Test {
 
   SessionsSyncManager* manager() { return manager_.get(); }
   SessionSyncTestHelper* helper() { return &helper_; }
-  LocalDeviceInfoProvider* local_device() { return local_device_.get(); }
+  LocalDeviceInfoProviderMock* local_device() { return local_device_.get(); }
   SessionNotificationObserver* observer() { return &observer_; }
   syncer::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
@@ -676,6 +677,29 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
   // Verify tab delegates have Sync ids.
   EXPECT_EQ(0, window->GetTabAt(0)->GetSyncId());
   EXPECT_EQ(1, window->GetTabAt(1)->GetSyncId());
+}
+
+// Ensure that the last known device name is reported.
+TEST_F(SessionsSyncManagerTest, MergeLocalSessionName) {
+  const std::string kModifiedDeviceName = "New Device Name";
+
+  SyncChangeList out;
+  InitWithSyncDataTakeOutput(SyncDataList(), &out);
+  syncer::SyncDataList initial_data = GetDataFromChanges(out);
+  // Local header expected.
+  ASSERT_EQ(1U, initial_data.size());
+
+  // Change local device name to |kModifiedDeviceName|.
+  local_device()->Initialize(std::make_unique<DeviceInfo>(
+      kCacheGuid, kModifiedDeviceName, "Chromium 10k", "Chrome 10k",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
+
+  // Restart the manager, now that the local device name has changed.
+  manager()->StopSyncing(syncer::SESSIONS);
+  out.clear();
+  InitWithSyncDataTakeOutput(ConvertToRemote(initial_data), &out);
+
+  EXPECT_EQ(kModifiedDeviceName, manager()->GetCurrentSessionNameForTest());
 }
 
 // This is a combination of MergeWithInitialForeignSession and
