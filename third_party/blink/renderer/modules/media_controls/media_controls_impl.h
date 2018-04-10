@@ -147,6 +147,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void MaybeRecordOverflowTimeToAction();
 
+  // Accessors for UI elements.
+  const MediaControlCurrentTimeDisplayElement& CurrentTimeDisplay() const;
+
   virtual void Trace(blink::Visitor*);
 
   // Track the state of the controls.
