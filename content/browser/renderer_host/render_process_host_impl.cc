@@ -2755,6 +2755,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kUseGL,
     switches::kUseGpuInTests,
     switches::kUseMobileUserAgent,
+    switches::kUseSkiaRenderer,
     switches::kV,
     switches::kVideoThreads,
     switches::kVideoUnderflowThresholdMs,

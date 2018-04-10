@@ -54,6 +54,7 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
@@ -336,6 +337,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
     // floating point badness in texcoords.
     renderer_settings.dont_round_texture_sizes_for_pixel_tests = true;
+    renderer_settings.use_skia_renderer =
+        cmd->HasSwitch(switches::kUseSkiaRenderer);
 
     constexpr bool disable_display_vsync = false;
     constexpr double refresh_rate = 60.0;
