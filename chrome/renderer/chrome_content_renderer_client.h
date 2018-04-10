@@ -48,6 +48,7 @@ class PrescientNetworkingDispatcher;
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
 #endif
+class ThreadProfiler;
 
 namespace content {
 class BrowserPluginDelegate;
@@ -294,6 +295,9 @@ class ChromeContentRendererClient
 #endif
 
   service_manager::Connector* GetConnector();
+
+  // Used to profile main thread.
+  std::unique_ptr<ThreadProfiler> main_thread_profiler_;
 
   rappor::mojom::RapporRecorderPtr rappor_recorder_;
 
