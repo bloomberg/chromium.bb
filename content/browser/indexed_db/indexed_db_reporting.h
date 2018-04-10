@@ -74,6 +74,8 @@ void HistogramOpenStatus(IndexedDBBackingStoreOpenResult result,
 void ReportInternalError(const char* type,
                          IndexedDBBackingStoreErrorSource location);
 
+void ReportSchemaVersion(int version, const url::Origin& origin);
+
 // Use to signal conditions caused by data corruption.
 // A macro is used instead of an inline function so that the assert and log
 // report the line number.

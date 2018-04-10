@@ -79,12 +79,6 @@ using indexed_db::PutIDBKeyPath;
 
 namespace {
 
-// 0 - Initial version.
-// 1 - Adds UserIntVersion to DatabaseMetaData.
-// 2 - Adds DataVersion to to global metadata.
-// 3 - Adds metadata needed for blob support.
-const int64_t kLatestKnownSchemaVersion = 3;
-
 FilePath GetBlobDirectoryName(const FilePath& path_base, int64_t database_id) {
   return path_base.AppendASCII(base::StringPrintf("%" PRIx64, database_id));
 }
@@ -134,7 +128,7 @@ WARN_UNUSED_RESULT bool IsSchemaKnown(LevelDBDatabase* db, bool* known) {
   }
   if (db_schema_version < 0)
     return false;  // Only corruption should cause this.
-  if (db_schema_version > kLatestKnownSchemaVersion) {
+  if (db_schema_version > indexed_db::kLatestKnownSchemaVersion) {
     *known = false;
     return true;
   }
@@ -664,9 +658,10 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
     INTERNAL_READ_ERROR_UNTESTED(SET_UP_METADATA);
     return s;
   }
+  indexed_db::ReportSchemaVersion(db_schema_version, origin_);
   if (!found) {
     // Initialize new backing store.
-    db_schema_version = kLatestKnownSchemaVersion;
+    db_schema_version = indexed_db::kLatestKnownSchemaVersion;
     PutInt(transaction.get(), schema_version_key, db_schema_version);
     db_data_version = latest_known_data_version;
     PutInt(transaction.get(), data_version_key, db_data_version.Encode());
@@ -678,7 +673,7 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
     }
   } else {
     // Upgrade old backing store.
-    DCHECK_LE(db_schema_version, kLatestKnownSchemaVersion);
+    DCHECK_LE(db_schema_version, indexed_db::kLatestKnownSchemaVersion);
     if (db_schema_version < 1) {
       db_schema_version = 1;
       PutInt(transaction.get(), schema_version_key, db_schema_version);
@@ -762,7 +757,7 @@ WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
     return InternalInconsistencyStatus();
   }
 
-  DCHECK_EQ(db_schema_version, kLatestKnownSchemaVersion);
+  DCHECK_EQ(db_schema_version, indexed_db::kLatestKnownSchemaVersion);
   DCHECK(db_data_version == latest_known_data_version);
 
   s = transaction->Commit();
