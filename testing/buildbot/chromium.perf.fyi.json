@@ -594,7 +594,7 @@
           "dimension_sets": [
             {
               "os": "Linux",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -607,7 +607,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"id\": \"swarm823-c4\"}]",
+            "[{\"id\": \"swarm77-c7\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],
@@ -639,7 +639,7 @@
           "dimension_sets": [
             {
               "os": "Linux",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -652,7 +652,7 @@
         "trigger_script": {
           "args": [
             "--multiple-trigger-configs",
-            "[{\"id\": \"swarm823-c4\"}, {\"id\": \"swarm846-c4\"}, {\"id\": \"swarm847-c4\"}]",
+            "[{\"id\": \"swarm77-c7\"}, {\"id\": \"swarm78-c7\"}, {\"id\": \"swarm79-c7\"}]",
             "--multiple-dimension-script-verbose",
             "True"
           ],

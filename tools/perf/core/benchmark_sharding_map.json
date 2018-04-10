@@ -2132,7 +2132,7 @@
     }
   },
   "One Buildbot Step Test Builder": {
-    "swarm823-c4": {
+    "swarm77-c7": {
       "benchmarks": [
         "blink_perf.css",
         "smoothness.maps"
