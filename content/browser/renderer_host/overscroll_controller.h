@@ -122,6 +122,9 @@ class CONTENT_EXPORT OverscrollController {
   // triggered the overscroll gesture.
   void SetOverscrollMode(OverscrollMode new_mode, OverscrollSource source);
 
+  // Whether this inertial event should be filtered out by the controller.
+  bool ShouldIgnoreInertialEvent(const blink::WebInputEvent& event) const;
+
   // Whether this event should be processed or not handled by the controller.
   bool ShouldProcessEvent(const blink::WebInputEvent& event);
 
