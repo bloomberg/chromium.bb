@@ -149,8 +149,6 @@ gpu::raster::RasterInterface* InProcessContextProvider::RasterInterface() {
 }
 
 gpu::ContextSupport* InProcessContextProvider::ContextSupport() {
-  CheckValidThreadOrLockAcquired();
-
   return context_->GetImplementation();
 }
 
