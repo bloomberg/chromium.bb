@@ -10,7 +10,6 @@
 
 @protocol ClientKeyboardDelegate<NSObject>
 - (void)clientKeyboardShouldSend:(NSString*)text;
-- (void)clientKeyboardShouldSendEnter;
 - (void)clientKeyboardShouldDelete;
 @end
 

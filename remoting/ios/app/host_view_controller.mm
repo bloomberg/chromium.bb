@@ -326,10 +326,6 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
                                                0);
 }
 
-- (void)clientKeyboardShouldSendEnter {
-  _client.keyboardInterpreter->HandleEnterEvent();
-}
-
 - (void)clientKeyboardShouldDelete {
   _client.keyboardInterpreter->HandleDeleteEvent(0);
 }
