@@ -156,6 +156,8 @@ void ChromeShellDelegate::PreInit() {
       chromeos::switches::kFirstExecAfterBoot);
   display_prefs_ = std::make_unique<chromeos::DisplayPrefs>(
       g_browser_process->local_state());
+  // TODO(stevenjb): Move this to ash::Shell which will call
+  // LoadDisplayPreferences asynchronously when it receives local state.
   display_prefs_->LoadDisplayPreferences(first_run_after_boot);
   // Object owns itself, and deletes itself when Observer::OnShutdown is called:
   new policy::DisplayRotationDefaultHandler();

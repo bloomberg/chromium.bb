@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/display/manager/chromeos/query_content_protection_task.h"
@@ -179,9 +180,6 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   ~DisplayConfigurator() override;
 
   MultipleDisplayState display_state() const { return current_display_state_; }
-  chromeos::DisplayPowerState requested_power_state() const {
-    return requested_power_state_;
-  }
   const std::vector<DisplaySnapshot*>& cached_displays() const {
     return cached_displays_;
   }
@@ -211,7 +209,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   void SetDelegateForTesting(
       std::unique_ptr<NativeDisplayDelegate> display_delegate);
 
-  // Sets the initial value of |power_state_|.  Must be called before Start().
+  // Called asynchronously with the initial |power_state| loaded from prefs.
+  // This may be called after ForceInitialConfigure triggers a call to
+  // OnConfigured(), in which case UpdatePowerState() will be called with the
+  // correct initial value. Does nothing if |requested_power_state_| is set,
+  // e.g. via SetDisplayPower().
   void SetInitialDisplayPower(chromeos::DisplayPowerState power_state);
 
   // Initialization, must be called right after constructor.
@@ -289,6 +291,9 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
                           const std::vector<GammaRampRGBEntry>& gamma_lut,
                           const std::vector<float>& correction_matrix);
 
+  // Returns the requested power state if set or the default power state.
+  chromeos::DisplayPowerState GetRequestedPowerState() const;
+
   void set_is_multi_mirroring_enabled_for_test(bool enabled) {
     is_multi_mirroring_enabled_ = enabled;
   }
@@ -333,6 +338,9 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
                     const std::vector<DisplaySnapshot*>& displays,
                     MultipleDisplayState new_display_state,
                     chromeos::DisplayPowerState new_power_state);
+
+  // Updates the current and pending power state and notifies observers.
+  void UpdatePowerState(chromeos::DisplayPowerState new_power_state);
 
   // Helps in identifying if a configuration task needs to be scheduled.
   // Return true if any of the |requested_*| parameters have been updated. False
@@ -395,7 +403,7 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   MultipleDisplayState requested_display_state_;
 
   // Stores the requested power state.
-  chromeos::DisplayPowerState requested_power_state_;
+  base::Optional<chromeos::DisplayPowerState> requested_power_state_;
 
   // The power state used by RunPendingConfiguration(). May be
   // |requested_power_state_| or DISPLAY_POWER_ALL_OFF for suspend.

@@ -556,7 +556,7 @@ void StoreDisplayPowerState(PrefService* local_state,
 void StoreCurrentDisplayPowerState(PrefService* local_state) {
   StoreDisplayPowerState(
       local_state,
-      ash::Shell::Get()->display_configurator()->requested_power_state());
+      ash::Shell::Get()->display_configurator()->GetRequestedPowerState());
 }
 
 void StoreDisplayRotationPrefs(PrefService* local_state,
