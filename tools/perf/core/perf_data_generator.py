@@ -1085,14 +1085,14 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       ],
       'platform': 'linux',
       'dimension': {
-        'pool': 'Chrome-perf-fyi',
+        'pool': 'chrome.tests.perf-fyi',
         'os': 'Linux',
       },
       'testing': True,
       'device_ids': [
-          'swarm823-c4',
-          'swarm846-c4',
-          'swarm847-c4'
+          'swarm77-c7',
+          'swarm78-c7',
+          'swarm79-c7'
       ],
     },
     'Mac 10.12 Laptop Low End': {
