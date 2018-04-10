@@ -261,14 +261,25 @@ void AV1FwdTxfm2dMatchTest(TX_SIZE tx_size, lowbd_fwd_txfm_func target_func) {
 
 #if HAVE_SSE2
 static TX_SIZE fwd_txfm_for_sse2[] = {
-  TX_4X4, TX_8X8, TX_16X16, TX_32X32,
+  TX_4X4,
+  TX_8X8,
+  TX_16X16,
+  TX_32X32,
   // TX_64X64,
-  TX_4X8, TX_8X4, TX_8X16, TX_16X8, TX_16X32, TX_32X16,
+  TX_4X8,
+  TX_8X4,
+  TX_8X16,
+  TX_16X8,
+  TX_16X32,
+  TX_32X16,
   // TX_32X64,
   // TX_64X32,
-  TX_4X16, TX_16X4, TX_8X32, TX_32X8,
-  //  TX_16X64,
-  //  TX_64X16,
+  TX_4X16,
+  TX_16X4,
+  TX_8X32,
+  TX_32X8,
+  TX_16X64,
+  TX_64X16,
 };
 TEST(av1_fwd_txfm2d_sse2, match) {
   const int cnt = sizeof(fwd_txfm_for_sse2) / sizeof(TX_SIZE);
@@ -281,9 +292,9 @@ TEST(av1_fwd_txfm2d_sse2, match) {
 #if HAVE_SSE4_1
 static TX_SIZE fwd_txfm_for_sse41[] = {
   TX_4X4,
-  //  TX_64X64,
-  //  TX_32X64,
-  //  TX_64X32,
+  TX_64X64,
+  TX_32X64,
+  TX_64X32,
 };
 TEST(av1_fwd_txfm2d_sse4_1, match) {
   const int cnt = sizeof(fwd_txfm_for_sse41) / sizeof(TX_SIZE);
