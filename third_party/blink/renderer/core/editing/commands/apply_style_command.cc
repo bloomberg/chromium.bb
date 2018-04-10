@@ -778,8 +778,10 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
           GetDocument().GetSecureContextMode());
 
       if (ComparePositions(embedding_remove_start, embedding_remove_end) <= 0) {
-        RemoveInlineStyle(embedding_style, embedding_remove_start,
-                          embedding_remove_end, editing_state);
+        RemoveInlineStyle(
+            embedding_style,
+            EphemeralRange(embedding_remove_start, embedding_remove_end),
+            editing_state);
         if (editing_state->IsAborted())
           return;
       }
@@ -787,7 +789,7 @@ void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
   }
 
   RemoveInlineStyle(style_without_embedding ? style_without_embedding : style,
-                    remove_start, end, editing_state);
+                    EphemeralRange(remove_start, end), editing_state);
   if (editing_state->IsAborted())
     return;
   start = StartPosition();
@@ -1418,15 +1420,11 @@ void ApplyStyleCommand::PushDownInlineStyleAroundNode(
 }
 
 void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
-                                          const Position& start,
-                                          const Position& end,
+                                          const EphemeralRange& range,
                                           EditingState* editing_state) {
-  DCHECK(start.IsNotNull());
-  DCHECK(end.IsNotNull());
-  DCHECK(start.IsConnected()) << start;
-  DCHECK(end.IsConnected()) << end;
+  const Position& start = range.StartPosition();
+  const Position& end = range.EndPosition();
   DCHECK(Position::CommonAncestorTreeScope(start, end)) << start << " " << end;
-  DCHECK_LE(start, end);
   // FIXME: We should assert that start/end are not in the middle of a text
   // node.
 
