@@ -132,6 +132,14 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
     frame_sink_manager_->OnFrameTokenChanged(frame_sink_id_, frame_token);
 }
 
+void CompositorFrameSinkSupport::OnSurfaceDiscarded(Surface* surface) {
+  if (surface->surface_id() == last_activated_surface_id_)
+    last_activated_surface_id_ = SurfaceId();
+
+  if (surface->surface_id() == last_created_surface_id_)
+    last_created_surface_id_ = SurfaceId();
+}
+
 void CompositorFrameSinkSupport::RefResources(
     const std::vector<TransferableResource>& resources) {
   surface_resource_holder_.RefResources(resources);

@@ -2400,5 +2400,65 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_FALSE(IsMarkedForDestruction(parent_id2));
 }
 
+// This test verifies that CompositorFrameSinkSupport does not refer to
+// a valid but non-existant |last_activated_surface_id_|.
+TEST_F(SurfaceSynchronizationTest, SetPreviousFrameSurfaceDoesntCrash) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const SurfaceId child_id1 = MakeSurfaceId(kChildFrameSink1, 1);
+
+  // The parent CompositorFrame is not blocked on anything and so it should
+  // immediately activate.
+  EXPECT_FALSE(parent_support().last_activated_surface_id().is_valid());
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // Verify that the parent CompositorFrame has activated.
+  EXPECT_FALSE(parent_surface()->has_deadline());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_FALSE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(), IsEmpty());
+  EXPECT_TRUE(parent_support().last_activated_surface_id().is_valid());
+
+  // Submit another CompositorFrame to |parent_id|, but this time block it
+  // on |child_id1|.
+  parent_support().SubmitCompositorFrame(
+      parent_id.local_surface_id(),
+      MakeCompositorFrame({child_id1}, empty_surface_ids(),
+                          std::vector<TransferableResource>(),
+                          MakeDefaultDeadline()));
+
+  // Verify that the surface has both a pending and activate CompositorFrame.
+  EXPECT_TRUE(parent_surface()->has_deadline());
+  EXPECT_TRUE(parent_surface()->HasActiveFrame());
+  EXPECT_TRUE(parent_surface()->HasPendingFrame());
+  EXPECT_THAT(parent_surface()->activation_dependencies(),
+              UnorderedElementsAre(child_id1));
+
+  // Evict the activated surface in the parent_support.
+  EXPECT_TRUE(parent_support().last_activated_surface_id().is_valid());
+  parent_support().EvictLastActivatedSurface();
+  EXPECT_FALSE(parent_support().last_activated_surface_id().is_valid());
+
+  // The CompositorFrame in the evicted |parent_id| activates here because it
+  // was blocked on |child_id1|.
+  child_support1().SubmitCompositorFrame(child_id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+
+  // parent_support will be informed of the activation of a CompositorFrame
+  // associated with |parent_id|.
+  EXPECT_TRUE(parent_support().last_activated_surface_id().is_valid());
+
+  // Perform a garbage collection. |parent_id| should no longer exist.
+  EXPECT_NE(nullptr, GetSurfaceForId(parent_id));
+  frame_sink_manager().surface_manager()->GarbageCollectSurfaces();
+  EXPECT_EQ(nullptr, GetSurfaceForId(parent_id));
+
+  // This should not crash as the previous surface was cleared in
+  // CompositorFrameSinkSupport.
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+}
+
 }  // namespace test
 }  // namespace viz

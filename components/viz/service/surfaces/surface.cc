@@ -32,6 +32,9 @@ Surface::Surface(const SurfaceInfo& surface_info,
 
 Surface::~Surface() {
   ClearCopyRequests();
+
+  if (surface_client_)
+    surface_client_->OnSurfaceDiscarded(this);
   surface_manager_->SurfaceDiscarded(this);
 
   UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));

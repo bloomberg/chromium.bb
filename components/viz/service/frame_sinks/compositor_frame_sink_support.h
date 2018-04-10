@@ -91,6 +91,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   // SurfaceClient implementation.
   void OnSurfaceActivated(Surface* surface) override;
+  void OnSurfaceDiscarded(Surface* surface) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
   void UnrefResources(const std::vector<ReturnedResource>& resources) override;
