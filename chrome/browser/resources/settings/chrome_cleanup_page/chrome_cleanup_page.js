@@ -729,7 +729,7 @@ Polymer({
     const icons = {
       // Card's icon indicates a cleanup offer.
       SYSTEM: {
-        statusIcon: 'settings:security',
+        statusIcon: 'cr:security',
         statusIconClassName: 'status-icon-remove',
       },
 

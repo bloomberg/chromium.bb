@@ -464,7 +464,7 @@ void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 
   const std::string icon_id =
-      show_softer_warning ? "settings:security" : "cr:warning";
+      show_softer_warning ? "cr:security" : "cr:warning";
   html_source->AddString("changePasswordPageIcon", icon_id);
 #endif
 }
