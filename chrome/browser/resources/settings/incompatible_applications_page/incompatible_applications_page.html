@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="incompatible_application_item.html">
@@ -25,7 +26,7 @@
 
     <template is="dom-if" if="[[!isDone_]]">
       <div class="settings-box first">
-        <iron-icon icon="settings:security"></iron-icon>
+        <iron-icon icon="cr:security"></iron-icon>
         <div class="middle no-min-width">
           <div hidden$="[[!hasAdminRights_]]">
             [[subtitleText_]] $i18nRaw{incompatibleApplicationsSubpageLearnHow}
