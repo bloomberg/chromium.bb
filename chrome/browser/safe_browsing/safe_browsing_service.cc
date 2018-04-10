@@ -188,6 +188,12 @@ void SafeBrowsingService::ShutDown() {
 
   services_delegate_->ShutdownServices();
 
+  // Make sure to destruct SafeBrowsingNetworkContext first before
+  // |url_request_context_getter_|, as they both post tasks to the IO thread. We
+  // want the underlying NetworkContext C++ class to be torn down first so that
+  // it destroys any URLLoaders in flight.
+  network_context_->ServiceShuttingDown();
+
   // Since URLRequestContextGetters are refcounted, can't count on clearing
   // |url_request_context_getter_| to delete it, so need to shut it down first,
   // which will cancel any requests that are currently using it, and prevent
@@ -196,7 +202,6 @@ void SafeBrowsingService::ShutDown() {
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeBrowsingURLRequestContextGetter::ServiceShuttingDown,
                      url_request_context_getter_));
-  network_context_->ServiceShuttingDown();
 
   // Release the URLRequestContextGetter after passing it to the IOThread.  It
   // has to be released now rather than in the destructor because it can only

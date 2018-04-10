@@ -90,8 +90,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/websockets/websocket_handshake_constants.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1780,6 +1782,32 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, StartAndStop) {
   EXPECT_FALSE(sb_service->enabled_by_prefs());
   WaitForIOAndCheckEnabled(sb_service, false);
   EXPECT_FALSE(csd_service->enabled());
+}
+
+// This test should not end in an AssertNoURLLRequests CHECK.
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, ShutdownWithLiveRequest) {
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = embedded_test_server()->GetURL("/hung-after-headers");
+  std::unique_ptr<network::SimpleURLLoader> loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  base::RunLoop run_loop;
+  loader->SetOnResponseStartedCallback(base::BindOnce(
+      [](const base::Closure& quit_closure, const GURL& final_url,
+         const network::ResourceResponseHead& response_head) {
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      g_browser_process->safe_browsing_service()->GetURLLoaderFactory().get(),
+      base::BindOnce([](std::unique_ptr<std::string> response_body) {}));
+
+  // Ensure that the request has already reached the URLLoader responsible for
+  // making it, or otherwise this test might pass if we have a regression.
+  run_loop.Run();
+  loader.release();
 }
 
 // Parameterised fixture to permit running the same test for Window and Worker
