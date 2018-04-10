@@ -24,6 +24,11 @@
 // |gridViewController|.
 - (void)gridViewController:(GridViewController*)gridViewController
         didCloseItemWithID:(NSString*)itemID;
+// Tells the delegate that the item at |sourceIndex| was moved to
+// |destinationIndex|.
+- (void)gridViewController:(GridViewController*)gridViewController
+         didMoveItemWithID:(NSString*)itemID
+                   toIndex:(NSUInteger)destinationIndex;
 // Tells the delegate that the the number of items in |gridViewController|
 // changed to |count|.
 - (void)gridViewController:(GridViewController*)gridViewController

@@ -40,6 +40,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic, copy) NSString* selectedItemID;
 // Index of the selected item in |items|.
 @property(nonatomic, readonly) NSUInteger selectedIndex;
+// The gesture recognizer used for interactive item reordering.
+@property(nonatomic, strong)
+    UILongPressGestureRecognizer* itemReorderRecognizer;
 @end
 
 @implementation GridViewController
@@ -51,6 +54,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize collectionView = _collectionView;
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
+@synthesize itemReorderRecognizer = _itemReorderRecognizer;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -72,6 +76,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   if (@available(iOS 11, *))
     collectionView.contentInsetAdjustmentBehavior =
         UIScrollViewContentInsetAdjustmentAlways;
+  self.itemReorderRecognizer = [[UILongPressGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(handleItemReorderingWithGesture:)];
+  // The collection view cells will by default get touch events in parallel with
+  // the reorder recognizer. When this happens, long-pressing on a non-selected
+  // cell will cause the selected cell to briefly become unselected and then
+  // selected again. To avoid this, the recognizer delays touchesBegan: calls
+  // until it fails to recognize a long-press.
+  self.itemReorderRecognizer.delaysTouchesBegan = YES;
+  [collectionView addGestureRecognizer:self.itemReorderRecognizer];
   self.collectionView = collectionView;
   self.view = collectionView;
 }
@@ -178,6 +192,28 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                      cell.snapshot = snapshot;
                  }];
   return cell;
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    canMoveItemAtIndexPath:(NSIndexPath*)indexPath {
+  return indexPath && self.items.count > 1;
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+    moveItemAtIndexPath:(NSIndexPath*)sourceIndexPath
+            toIndexPath:(NSIndexPath*)destinationIndexPath {
+  NSUInteger source = base::checked_cast<NSUInteger>(sourceIndexPath.item);
+  NSUInteger destination =
+      base::checked_cast<NSUInteger>(destinationIndexPath.item);
+  // Update |items| before informing the delegate, so the state of the UI
+  // is correctly represented before any updates occur.
+  GridItem* item = self.items[source];
+  [self.items removeObjectAtIndex:source];
+  [self.items insertObject:item atIndex:destination];
+
+  [self.delegate gridViewController:self
+                  didMoveItemWithID:item.identifier
+                            toIndex:destination];
 }
 
 #pragma mark - UICollectionViewDelegate
@@ -312,11 +348,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
   NSUInteger fromIndex = [self indexOfItemWithID:itemID];
+  // If this move would be a no-op, early return and avoid spurious UI updates.
+  if (fromIndex == toIndex)
+    return;
+
   auto performDataSourceUpdates = ^{
     GridItem* item = self.items[fromIndex];
     [self.items removeObjectAtIndex:fromIndex];
     [self.items insertObject:item atIndex:toIndex];
   };
+  // If the view isn't visible, there's no need for the collection view to
+  // update.
   if (![self isViewVisible]) {
     performDataSourceUpdates();
     return;
@@ -342,7 +384,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [self indexOfItemWithID:self.selectedItemID];
 }
 
-#pragma mark - Private properties
+#pragma mark - Private
 
 // Returns the index in |self.items| of the first item whose identifier is
 // |identifier|.
@@ -355,9 +397,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 // If the view is not visible, there is no need to update the collection view.
 - (BOOL)isViewVisible {
-  // Invoking the view method causes the view to load (if it is not loaded)
-  // which is unnecessary.
-  return (self.isViewLoaded && self.view.window);
+  return self.viewIfLoaded.window != nil;
 }
 
 // Animates the empty state into view.
@@ -380,6 +420,38 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                      self.emptyStateView.transform = originalTransform;
                    }
                    completion:nil];
+}
+
+// Handle the long-press gesture used to reorder cells in the collection view.
+- (void)handleItemReorderingWithGesture:(UIGestureRecognizer*)gesture {
+  DCHECK(gesture == self.itemReorderRecognizer);
+  CGPoint location = [gesture locationInView:self.collectionView];
+  switch (gesture.state) {
+    case UIGestureRecognizerStateBegan: {
+      NSIndexPath* path =
+          [self.collectionView indexPathForItemAtPoint:location];
+      BOOL moving =
+          [self.collectionView beginInteractiveMovementForItemAtIndexPath:path];
+      if (!moving) {
+        gesture.enabled = NO;
+      }
+      break;
+    }
+    case UIGestureRecognizerStateChanged:
+      [self.collectionView updateInteractiveMovementTargetPosition:location];
+      break;
+    case UIGestureRecognizerStateEnded:
+      [self.collectionView endInteractiveMovement];
+      break;
+    case UIGestureRecognizerStateCancelled:
+      [self.collectionView cancelInteractiveMovement];
+      // Re-enable cancelled gesture.
+      gesture.enabled = YES;
+      break;
+    case UIGestureRecognizerStatePossible:
+    case UIGestureRecognizerStateFailed:
+      NOTREACHED() << "Unexpected long-press recognizer state";
+  }
 }
 
 @end
