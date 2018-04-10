@@ -82,7 +82,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
   int y_offset_ = 0;
 
   // Controller for watching the input fd.
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
 
   // The evdev codes of the keys which should be blocked.
   std::bitset<KEY_CNT> blocked_keys_;

@@ -62,13 +62,13 @@ class MessagePumpIOSForIOTest : public testing::Test {
 
 namespace {
 
-// Concrete implementation of MessagePumpIOSForIO::Watcher that does
+// Concrete implementation of MessagePumpIOSForIO::FdWatcher that does
 // nothing useful.
-class StupidWatcher : public MessagePumpIOSForIO::Watcher {
+class StupidWatcher : public MessagePumpIOSForIO::FdWatcher {
  public:
   ~StupidWatcher() override {}
 
-  // base:MessagePumpIOSForIO::Watcher interface
+  // base:MessagePumpIOSForIO::FdWatcher interface
   void OnFileCanReadWithoutBlocking(int fd) override {}
   void OnFileCanWriteWithoutBlocking(int fd) override {}
 };
@@ -76,7 +76,7 @@ class StupidWatcher : public MessagePumpIOSForIO::Watcher {
 // Test to make sure that we catch calling WatchFileDescriptor off of the wrong
 // thread.
 TEST_F(MessagePumpIOSForIOTest, TestWatchingFromBadThread) {
-  MessagePumpIOSForIO::FileDescriptorWatcher watcher(FROM_HERE);
+  MessagePumpIOSForIO::FdWatchController watcher(FROM_HERE);
   StupidWatcher delegate;
 
   ASSERT_DCHECK_DEATH(
@@ -85,27 +85,26 @@ TEST_F(MessagePumpIOSForIOTest, TestWatchingFromBadThread) {
                                      &delegate));
 }
 
-class BaseWatcher : public MessagePumpIOSForIO::Watcher {
+class BaseWatcher : public MessagePumpIOSForIO::FdWatcher {
  public:
-  BaseWatcher(MessagePumpIOSForIO::FileDescriptorWatcher* controller)
+  BaseWatcher(MessagePumpIOSForIO::FdWatchController* controller)
       : controller_(controller) {
     DCHECK(controller_);
   }
   ~BaseWatcher() override {}
 
-  // MessagePumpIOSForIO::Watcher interface
+  // MessagePumpIOSForIO::FdWatcher interface
   void OnFileCanReadWithoutBlocking(int /* fd */) override { NOTREACHED(); }
 
   void OnFileCanWriteWithoutBlocking(int /* fd */) override { NOTREACHED(); }
 
  protected:
-  MessagePumpIOSForIO::FileDescriptorWatcher* controller_;
+  MessagePumpIOSForIO::FdWatchController* controller_;
 };
 
 class DeleteWatcher : public BaseWatcher {
  public:
-  explicit DeleteWatcher(
-      MessagePumpIOSForIO::FileDescriptorWatcher* controller)
+  explicit DeleteWatcher(MessagePumpIOSForIO::FdWatchController* controller)
       : BaseWatcher(controller) {}
 
   ~DeleteWatcher() override { DCHECK(!controller_); }
@@ -119,8 +118,8 @@ class DeleteWatcher : public BaseWatcher {
 
 TEST_F(MessagePumpIOSForIOTest, DeleteWatcher) {
   std::unique_ptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
-  MessagePumpIOSForIO::FileDescriptorWatcher* watcher =
-      new MessagePumpIOSForIO::FileDescriptorWatcher(FROM_HERE);
+  MessagePumpIOSForIO::FdWatchController* watcher =
+      new MessagePumpIOSForIO::FdWatchController(FROM_HERE);
   DeleteWatcher delegate(watcher);
   pump->WatchFileDescriptor(pipefds_[1],
       false, MessagePumpIOSForIO::WATCH_READ_WRITE, watcher, &delegate);
@@ -131,7 +130,7 @@ TEST_F(MessagePumpIOSForIOTest, DeleteWatcher) {
 
 class StopWatcher : public BaseWatcher {
  public:
-  StopWatcher(MessagePumpIOSForIO::FileDescriptorWatcher* controller,
+  StopWatcher(MessagePumpIOSForIO::FdWatchController* controller,
               MessagePumpIOSForIO* pump,
               int fd_to_start_watching = -1)
       : BaseWatcher(controller),
@@ -155,7 +154,7 @@ class StopWatcher : public BaseWatcher {
 
 TEST_F(MessagePumpIOSForIOTest, StopWatcher) {
   std::unique_ptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
-  MessagePumpIOSForIO::FileDescriptorWatcher watcher(FROM_HERE);
+  MessagePumpIOSForIO::FdWatchController watcher(FROM_HERE);
   StopWatcher delegate(&watcher, pump.get());
   pump->WatchFileDescriptor(pipefds_[1],
       false, MessagePumpIOSForIO::WATCH_READ_WRITE, &watcher, &delegate);
@@ -166,7 +165,7 @@ TEST_F(MessagePumpIOSForIOTest, StopWatcher) {
 
 TEST_F(MessagePumpIOSForIOTest, StopWatcherAndWatchSomethingElse) {
   std::unique_ptr<MessagePumpIOSForIO> pump(new MessagePumpIOSForIO);
-  MessagePumpIOSForIO::FileDescriptorWatcher watcher(FROM_HERE);
+  MessagePumpIOSForIO::FdWatchController watcher(FROM_HERE);
   StopWatcher delegate(&watcher, pump.get(), alternate_pipefds_[1]);
   pump->WatchFileDescriptor(pipefds_[1],
       false, MessagePumpIOSForIO::WATCH_READ_WRITE, &watcher, &delegate);

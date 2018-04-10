@@ -19,7 +19,7 @@
 namespace ash {
 
 class WaylandServerController::WaylandWatcher
-    : public base::MessagePumpLibevent::Watcher {
+    : public base::MessagePumpLibevent::FdWatcher {
  public:
   explicit WaylandWatcher(exo::wayland::Server* server)
       : controller_(FROM_HERE), server_(server) {
@@ -29,7 +29,7 @@ class WaylandServerController::WaylandWatcher
         base::MessagePumpLibevent::WATCH_READ, &controller_, this);
   }
 
-  // base::MessagePumpLibevent::Watcher:
+  // base::MessagePumpLibevent::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
     server_->Dispatch(base::TimeDelta());
     server_->Flush();
@@ -37,7 +37,7 @@ class WaylandServerController::WaylandWatcher
   void OnFileCanWriteWithoutBlocking(int fd) override { NOTREACHED(); }
 
  private:
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
   exo::wayland::Server* const server_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandWatcher);

@@ -16,8 +16,8 @@ namespace ui {
 class DeviceEvent;
 class DeviceEventObserver;
 
-class DeviceManagerUdev
-    : public DeviceManager, base::MessagePumpLibevent::Watcher {
+class DeviceManagerUdev : public DeviceManager,
+                          base::MessagePumpLibevent::FdWatcher {
  public:
   DeviceManagerUdev();
   ~DeviceManagerUdev() override;
@@ -33,14 +33,14 @@ class DeviceManagerUdev
   void AddObserver(DeviceEventObserver* observer) override;
   void RemoveObserver(DeviceEventObserver* observer) override;
 
-  // base::MessagePumpLibevent::Watcher overrides:
+  // base::MessagePumpLibevent::FdWatcher overrides:
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
   device::ScopedUdevPtr udev_;
   device::ScopedUdevMonitorPtr monitor_;
 
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
 
   base::ObserverList<DeviceEventObserver> observers_;
 

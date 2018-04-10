@@ -53,7 +53,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TabletEventConverterEvdev
   base::ScopedFD input_device_fd_;
 
   // Controller for watching the input fd.
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
 
   // Shared cursor state.
   CursorDelegateEvdev* cursor_;

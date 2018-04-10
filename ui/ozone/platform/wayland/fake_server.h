@@ -269,7 +269,7 @@ struct DisplayDeleter {
   void operator()(wl_display* display);
 };
 
-class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
+class FakeServer : public base::Thread, base::MessagePumpLibevent::FdWatcher {
  public:
   FakeServer();
   ~FakeServer() override;
@@ -303,7 +303,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
 
   std::unique_ptr<base::MessagePump> CreateMessagePump();
 
-  // base::MessagePumpLibevent::Watcher
+  // base::MessagePumpLibevent::FdWatcher
   void OnFileCanReadWithoutBlocking(int fd) override;
   void OnFileCanWriteWithoutBlocking(int fd) override;
 
@@ -321,7 +321,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
   MockXdgShell xdg_shell_;
   MockXdgShellV6 zxdg_shell_v6_;
 
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  base::MessagePumpLibevent::FdWatchController controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeServer);
 };
