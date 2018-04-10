@@ -6275,14 +6275,12 @@ static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 // Wrapper for compound_single_motion_search, for the common case
 // where the second prediction is also an inter mode.
 static void compound_single_motion_search_interinter(
-    const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int_mv *frame_mv,
+    const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int_mv *cur_mv,
     int mi_row, int mi_col, const uint8_t *mask, int mask_stride, int *rate_mv,
     const int block, int ref_idx) {
   MACROBLOCKD *xd = &x->e_mbd;
-  MB_MODE_INFO *mbmi = xd->mi[0];
-
   // This function should only ever be called for compound modes
-  assert(has_second_ref(mbmi));
+  assert(has_second_ref(xd->mi[0]));
 
   // Prediction buffer from second frame.
   DECLARE_ALIGNED(16, uint16_t, second_pred_alloc_16[MAX_SB_SQUARE]);
@@ -6292,8 +6290,8 @@ static void compound_single_motion_search_interinter(
   else
     second_pred = (uint8_t *)second_pred_alloc_16;
 
-  MV *this_mv = &frame_mv[mbmi->ref_frame[ref_idx]].as_mv;
-  const MV *other_mv = &frame_mv[mbmi->ref_frame[!ref_idx]].as_mv;
+  MV *this_mv = &cur_mv[ref_idx].as_mv;
+  const MV *other_mv = &cur_mv[!ref_idx].as_mv;
 
   build_second_inter_pred(cpi, x, bsize, other_mv, mi_row, mi_col, block,
                           ref_idx, second_pred);
@@ -6316,20 +6314,13 @@ static void do_masked_motion_search_indexed(
 
   mask = av1_get_compound_type_mask(comp_data, sb_type);
 
-  MV_REFERENCE_FRAME rf[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
-
+  tmp_mv[0].as_int = cur_mv[0].as_int;
+  tmp_mv[1].as_int = cur_mv[1].as_int;
   if (which == 0 || which == 1) {
-    int_mv frame_mv[REF_FRAMES];
-    frame_mv[rf[0]].as_int = cur_mv[0].as_int;
-    frame_mv[rf[1]].as_int = cur_mv[1].as_int;
-    compound_single_motion_search_interinter(cpi, x, bsize, frame_mv, mi_row,
+    compound_single_motion_search_interinter(cpi, x, bsize, tmp_mv, mi_row,
                                              mi_col, mask, mask_stride, rate_mv,
                                              0, which);
-    tmp_mv[0].as_int = frame_mv[rf[0]].as_int;
-    tmp_mv[1].as_int = frame_mv[rf[1]].as_int;
   } else if (which == 2) {
-    tmp_mv[0].as_int = cur_mv[0].as_int;
-    tmp_mv[1].as_int = cur_mv[1].as_int;
     joint_motion_search(cpi, x, bsize, tmp_mv, mi_row, mi_col, NULL, mask,
                         mask_stride, rate_mv, 0);
   }
@@ -6849,11 +6840,10 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       frame_mv[refs[0]].as_int = cur_mv[0].as_int;
       frame_mv[refs[1]].as_int = cur_mv[1].as_int;
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
-      frame_mv[refs[1]].as_int = single_newmv[refs[1]].as_int;
+      cur_mv[1].as_int = single_newmv[refs[1]].as_int;
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
-        frame_mv[refs[0]].as_int = cur_mv[0].as_int;
         compound_single_motion_search_interinter(
-            cpi, x, bsize, frame_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 1);
+            cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 1);
       } else {
         av1_set_mvcost(x, 1,
                        mbmi->ref_mv_idx + (this_mode == NEAR_NEWMV ? 1 : 0));
@@ -6861,14 +6851,14 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                    &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
-      cur_mv[1].as_int = frame_mv[refs[1]].as_int;
+      frame_mv[refs[0]].as_int = cur_mv[0].as_int;
+      frame_mv[refs[1]].as_int = cur_mv[1].as_int;
     } else {
       assert(this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV);
-      frame_mv[refs[0]].as_int = single_newmv[refs[0]].as_int;
+      cur_mv[0].as_int = single_newmv[refs[0]].as_int;
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
-        frame_mv[refs[1]].as_int = cur_mv[1].as_int;
         compound_single_motion_search_interinter(
-            cpi, x, bsize, frame_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 0);
+            cpi, x, bsize, cur_mv, mi_row, mi_col, NULL, 0, rate_mv, 0, 0);
       } else {
         av1_set_mvcost(x, 0,
                        mbmi->ref_mv_idx + (this_mode == NEW_NEARMV ? 1 : 0));
@@ -6876,7 +6866,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                    &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
-      cur_mv[0].as_int = frame_mv[refs[0]].as_int;
+      frame_mv[refs[0]].as_int = cur_mv[0].as_int;
+      frame_mv[refs[1]].as_int = cur_mv[1].as_int;
     }
   } else {
     single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, rate_mv);
