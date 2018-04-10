@@ -1,48 +1,71 @@
-<html> 
-<head>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-
-
-<script>
-
-function editingTest() {
-    var start = document.getElementById("start");
-    
-    x = start.offsetLeft + 2;
-    y = start.offsetTop + 10;
-    
-    eventSender.mouseMoveTo(x, y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    eventSender.mouseDown();
-    
-    var end = document.getElementById("end");
-    
-    x = end.offsetLeft + end.offsetWidth + 2;
-    y = end.offsetTop + 10;
-    
-    eventSender.mouseMoveTo(x, y);
-    eventSender.mouseUp();
+function click() {
+  if (!window.eventSender)
+    throw 'This test requires eventSender.';
+  eventSender.mouseDown();
+  eventSender.mouseUp();
 }
 
+function mouseMoveTo(selection, target, offsetX) {
+  if (!window.eventSender)
+    throw 'This test requires eventSender.';
+  const left = selection.computeLeft(target) + offsetX;
+  const top = selection.computeTop(target) + 10;
+  eventSender.mouseMoveTo(left, top);
+}
+
+selection_test(
+  [
+    '012 <span id="start">a</span>bc<br>',
+    'def<br>',
+    'ghi<br>',
+    '<span id="end">j</span>kl<br>',
+  ],
+  selection => {
+    const start = selection.document.getElementById('start');
+    const end = selection.document.getElementById('end');
+    mouseMoveTo(selection, start, 2);
+    click();
+    eventSender.mouseDown();
+
+    mouseMoveTo(selection, end, end.offsetWidth + 2);
+    eventSender.mouseUp();
+  },
+  [
+    '012 <span id="start">^a</span>bc<br>',
+    'def<br>',
+    'ghi<br>',
+    '<span id="end">j</span>kl|<br>',
+  ],
+  '1. Double-click with dragging, extend by word granularity');
+
+selection_test(
+  [
+    '012 <span id="start">a</span>bc<br>',
+    'def<br>',
+    'ghi<br>',
+    '<span id="end">j</span>kl<br>',
+  ],
+  selection => {
+    const start = selection.document.getElementById('start');
+    const end = selection.document.getElementById('end');
+    mouseMoveTo(selection, start, 2);
+    click();
+    click();
+    eventSender.mouseDown();
+
+    mouseMoveTo(selection, end, end.offsetWidth + 2);
+    eventSender.mouseUp();
+  },
+  [
+    '^012 <span id="start">a</span>bc<br>',
+    'def<br>',
+    'ghi<br>',
+    '<span id="end">j</span>kl|<br>',
+  ],
+  '2. Tripple-click with dragging, extend by paragraph granularity');
 </script>
-</head>
-<body>
-<p>This tests modifying a selection created with a double click.  The new selection should use word granularity.</p>
-<p style="color:green">This test does not run interactively.  It uses the testRunners eventSender to do mouse clicks.  To run it manually, double click on the blue 'g', then drag down to the red 'g'.  As you drag, watch the selection that is created, it should always start and end on word boundaries.</p>
-<div>
-This is a para<span style="color:blue;" id="start">g</span>raph.<br>
-Some text<br>
-Some text<br>
-Some text<br>
-Some text<br>
-This is a para<span style="color:red;" id="end">g</span>raph.
-</div>
-</body>
-<script>
-editingTest();
-</script>
-</html>
