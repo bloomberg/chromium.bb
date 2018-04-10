@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextmenu;
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.os.StrictMode;
-import android.text.TextUtils;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,19 +88,7 @@ class TabularContextMenuListAdapter extends BaseAdapter {
 
         final String titleText = menuItem.getTitle(mActivity);
         viewHolder.mText.setText(titleText);
-        viewHolder.mIcon.setVisibility(View.INVISIBLE);
-        viewHolder.mIcon.setImageDrawable(null);
-        Callback<Drawable> callback = new Callback<Drawable>() {
-            @Override
-            public void onResult(Drawable drawable) {
-                if (!TextUtils.equals(titleText, viewHolder.mText.getText())) return;
-                if (drawable != null) {
-                    viewHolder.mIcon.setVisibility(View.VISIBLE);
-                    viewHolder.mIcon.setImageDrawable(drawable);
-                }
-            }
-        };
-        menuItem.getDrawableAsync(mActivity, callback);
+        viewHolder.mIcon.setVisibility(View.GONE);
 
         if (menuItem instanceof ShareContextMenuItem) {
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
