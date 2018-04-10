@@ -14,12 +14,14 @@
  *     given.
  */
 function waitForFunctionResult(funcName, filename, expectedResult) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return remoteCallVideoPlayer.callRemoteTestUtil(funcName, null, [filename])
         .then(function(result) {
           if (result === expectedResult)
             return true;
-          return pending('Waiting for %s return %s.', funcName, expectedResult);
+          return pending(
+              caller, 'Waiting for %s return %s.', funcName, expectedResult);
         });
   });
 }

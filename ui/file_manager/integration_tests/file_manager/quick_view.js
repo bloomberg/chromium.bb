@@ -5,6 +5,7 @@
 'use strict';
 
 function openQuickViewSteps(appId, filename) {
+  var caller = getCaller();
   return [
     function(results) {
       remoteCall.callRemoteTestUtil('selectFile', appId, [filename], this.next);
@@ -28,7 +29,7 @@ function openQuickViewSteps(appId, filename) {
             .then(function(results) {
               if (results.length === 0 ||
                   results[0].styles.display === 'none') {
-                return pending('Quick View is not opened yet.');
+                return pending(caller, 'Quick View is not opened yet.');
               }
               return results;
             });
@@ -60,7 +61,7 @@ function closeQuickViewSteps(appId) {
                 [['#quick-view', '#dialog'], null, ['display']])
             .then(function(results) {
               if (results.length > 0 && results[0].styles.display !== 'none') {
-                return pending('Quick View is not closed yet.');
+                return pending(caller, 'Quick View is not closed yet.');
               }
               return;
             });

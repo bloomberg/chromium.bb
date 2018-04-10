@@ -12,6 +12,7 @@
       "test_util.js",
       "remote_call.js",
       "file_manager/background.js",
+      "file_manager/test_util_unittest.js",
       "file_manager/copy_between_windows.js",
       "file_manager/create_new_folder.js",
       "file_manager/delete.js",

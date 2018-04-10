@@ -53,6 +53,7 @@ testcase.restoreGeometry = function() {
 testcase.restoreGeometryMaximizedState = function() {
   var appId;
   var appId2;
+  var caller = getCaller();
   StepsRunner.run([
     // Set up File Manager.
     function() {
@@ -71,7 +72,7 @@ testcase.restoreGeometryMaximizedState = function() {
               if (isMaximized)
                 return true;
               else
-                return pending('Waiting window maximized...');
+                return pending(caller, 'Waiting window maximized...');
             });
       }).then(this.next);
     },
@@ -92,7 +93,7 @@ testcase.restoreGeometryMaximizedState = function() {
               if (isMaximized)
                 return true;
               else
-                return pending('Waiting window maximized...');
+                return pending(caller, 'Waiting window maximized...');
             });
       }).then(this.next);
     },

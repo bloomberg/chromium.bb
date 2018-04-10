@@ -129,6 +129,7 @@ function defaultTaskDialog(expectedTaskId, windowId) {
         chrome.test.assertTrue(result);
       });
 
+  var caller = getCaller();
   // Wait for the list of menu item is added as expected.
   var menuPreparedPromise = menuClickedPromise.then(function() {
     return repeatUntil(function() {
@@ -144,9 +145,9 @@ function defaultTaskDialog(expectedTaskId, windowId) {
         if (chrome.test.checkDeepEq(expectedLabels, actualLabels)) {
           return true;
         } else {
-          return pending('Tasks do not match, expected: %j, actual: %j.',
-                         expectedLabels,
-                         actualLabels);
+          return pending(
+              caller, 'Tasks do not match, expected: %j, actual: %j.',
+              expectedLabels, actualLabels);
         }
       });
     });

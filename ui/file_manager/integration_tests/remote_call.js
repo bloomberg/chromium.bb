@@ -80,6 +80,7 @@ RemoteCall.prototype.callRemoteTestUtil =
  * @return {Promise} promise Promise to be fulfilled with a found window's ID.
  */
 RemoteCall.prototype.waitForWindow = function(windowIdPrefix) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil('getWindows', null, []).
         then(function(windows) {
@@ -87,7 +88,8 @@ RemoteCall.prototype.waitForWindow = function(windowIdPrefix) {
         if (id.indexOf(windowIdPrefix) === 0)
           return id;
       }
-      return pending('Window with the prefix %s is not found.', windowIdPrefix);
+      return pending(
+          caller, 'Window with the prefix %s is not found.', windowIdPrefix);
     });
   }.bind(this));
 };
@@ -100,6 +102,8 @@ RemoteCall.prototype.waitForWindow = function(windowIdPrefix) {
  *     success, false: failed).
  */
 RemoteCall.prototype.closeWindowAndWait = function(windowId) {
+  var caller = getCaller();
+
   // Closes the window.
   return this.callRemoteTestUtil('closeWindow', null, [windowId]).then(
       function(result) {
@@ -113,8 +117,9 @@ RemoteCall.prototype.closeWindowAndWait = function(windowId) {
                 for (var id in windows) {
                   if (id === windowId) {
                     // Window is still available. Continues waiting.
-                    return pending('Window with the prefix %s is not found.',
-                                   windowId);
+                    return pending(
+                        caller, 'Window with the prefix %s is not found.',
+                        windowId);
                   }
                 }
                 // Window is not available. Closing is done successfully.
@@ -132,18 +137,18 @@ RemoteCall.prototype.closeWindowAndWait = function(windowId) {
  * @param {number} width Requested width in pixels.
  * @param {number} height Requested height in pixels.
  */
-RemoteCall.prototype.waitForWindowGeometry =
-    function(windowId, width, height) {
+RemoteCall.prototype.waitForWindowGeometry = function(windowId, width, height) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil('getWindows', null, []).
         then(function(windows) {
       if (!windows[windowId])
-        return pending('Window %s is not found.', windowId);
+        return pending(caller, 'Window %s is not found.', windowId);
       if (windows[windowId].outerWidth !== width ||
           windows[windowId].outerHeight !== height) {
-        return pending('Expected window size is %j, but it is %j',
-                       {width: width, height: height},
-                       windows[windowId]);
+        return pending(
+            caller, 'Expected window size is %j, but it is %j',
+            {width: width, height: height}, windows[windowId]);
       }
     });
   }.bind(this));
@@ -157,8 +162,9 @@ RemoteCall.prototype.waitForWindowGeometry =
  *     element.
  * @return {Promise} Promise to be fulfilled when the element appears.
  */
-RemoteCall.prototype.waitForElement =
-    function(windowId, query, opt_iframeQuery) {
+RemoteCall.prototype.waitForElement = function(
+    windowId, query, opt_iframeQuery) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil(
         'queryAllElements',
@@ -169,8 +175,7 @@ RemoteCall.prototype.waitForElement =
         return elements[0];
       else
         return pending(
-            'Element %s (maybe in iframe %s) is not found.',
-            query,
+            caller, 'Element %s (maybe in iframe %s) is not found.', query,
             opt_iframeQuery);
     });
   }.bind(this));
@@ -184,8 +189,9 @@ RemoteCall.prototype.waitForElement =
  *     element.
  * @return {Promise} Promise to be fulfilled when the element is lost.
  */
-RemoteCall.prototype.waitForElementLost =
-    function(windowId, query, opt_iframeQuery) {
+RemoteCall.prototype.waitForElementLost = function(
+    windowId, query, opt_iframeQuery) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil(
         'queryAllElements',
@@ -193,7 +199,7 @@ RemoteCall.prototype.waitForElementLost =
         [query, opt_iframeQuery]
     ).then(function(elements) {
       if (elements.length > 0)
-        return pending('Elements %j is still exists.', elements);
+        return pending(caller, 'Elements %j is still exists.', elements);
       return true;
     });
   }.bind(this));
@@ -244,12 +250,13 @@ RemoteCall.prototype.getFilesUnderVolume = function(volumeType, names) {
  * @return {!Promise} Promise to be fulfilled when the file had found.
  */
 RemoteCall.prototype.waitForAFile = function(volumeType, name) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.getFilesUnderVolume(volumeType, [name])
         .then(function(urls) {
           if (urls.length === 1)
             return true;
-          return pending('"' + name + '" is not found.');
+          return pending(caller, '"' + name + '" is not found.');
         });
   }.bind(this));
 };
@@ -281,6 +288,7 @@ RemoteCallFilesApp.prototype.__proto__ = RemoteCall.prototype;
 RemoteCallFilesApp.prototype.waitForFiles =
     function(windowId, expected, opt_options) {
   var options = opt_options || {};
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil(
         'getFileList', windowId, []).then(function(files) {
@@ -299,9 +307,8 @@ RemoteCallFilesApp.prototype.waitForFiles =
         }
       }
       if (!chrome.test.checkDeepEq(expected, files)) {
-        return pending('waitForFiles: expected: %j actual %j.',
-                       expected,
-                       files);
+        return pending(
+            caller, 'waitForFiles: expected: %j actual %j.', expected, files);
       }
     });
   }.bind(this));
@@ -316,8 +323,9 @@ RemoteCallFilesApp.prototype.waitForFiles =
  * @param {number} lengthBefore Number of items visible before.
  * @return {Promise} Promise to be fulfilled with the contents of files.
  */
-RemoteCallFilesApp.prototype.waitForFileListChange =
-    function(windowId, lengthBefore) {
+RemoteCallFilesApp.prototype.waitForFileListChange = function(
+    windowId, lengthBefore) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil(
         'getFileList', windowId, []).then(function(files) {
@@ -330,7 +338,8 @@ RemoteCallFilesApp.prototype.waitForFileListChange =
           files.length !== 0) {
         return files;
       } else {
-        return pending('The number of file is %d. Not changed.', lengthBefore);
+        return pending(
+            caller, 'The number of file is %d. Not changed.', lengthBefore);
       }
     });
   }.bind(this));
@@ -343,13 +352,14 @@ RemoteCallFilesApp.prototype.waitForFileListChange =
  * @return {Promise} Promise to be fulfilled when the task appears in the
  *     executed task list.
  */
-RemoteCallFilesApp.prototype.waitUntilTaskExecutes =
-    function(windowId, taskId) {
+RemoteCallFilesApp.prototype.waitUntilTaskExecutes = function(
+    windowId, taskId) {
+  var caller = getCaller();
   return repeatUntil(function() {
     return this.callRemoteTestUtil('getExecutedTasks', windowId, []).
         then(function(executedTasks) {
           if (executedTasks.indexOf(taskId) === -1)
-            return pending('Executed task is %j', executedTasks);
+            return pending(caller, 'Executed task is %j', executedTasks);
         });
   }.bind(this));
 };
@@ -392,13 +402,14 @@ RemoteCallFilesApp.prototype.checkNextTabFocus =
  * @return {Promise} Promise to be fulfilled when the current directory is
  *     changed to expectedPath.
  */
-RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged =
-    function(windowId, expectedPath) {
+RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged = function(
+    windowId, expectedPath) {
+  var caller = getCaller();
   return repeatUntil(function () {
     return this.callRemoteTestUtil('getBreadcrumbPath', windowId, []).then(
       function(path) {
         if(path !== expectedPath)
-          return pending('Expected path is %s', expectedPath);
+          return pending(caller, 'Expected path is %s', expectedPath);
       });
   }.bind(this));
 };
@@ -434,6 +445,7 @@ RemoteCallGallery.prototype.waitForSlideImage =
     expected.height = height;
   if (name)
     expected.name = name;
+  var caller = getCaller();
 
   return repeatUntil(function() {
     var query = '.gallery[mode="slide"] .image-container > .image';
@@ -452,8 +464,9 @@ RemoteCallGallery.prototype.waitForSlideImage =
         actual.name = nameBox.value;
 
       if (!chrome.test.checkDeepEq(expected, actual)) {
-        return pending('Slide mode state, expected is %j, actual is %j.',
-                       expected, actual);
+        return pending(
+            caller, 'Slide mode state, expected is %j, actual is %j.', expected,
+            actual);
       }
       return actual;
     });
