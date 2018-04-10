@@ -745,6 +745,17 @@ void WindowSelector::OnWindowHierarchyChanged(
   if (!IsSelectable(new_window))
     return;
 
+  // If the new window is added when splitscreen is active, do nothing.
+  // SplitViewController will do the right thing to snap the window or end
+  // overview mode.
+  if (Shell::Get()->IsSplitViewModeActive() &&
+      new_window->GetRootWindow() == Shell::Get()
+                                         ->split_view_controller()
+                                         ->GetDefaultSnappedWindow()
+                                         ->GetRootWindow()) {
+    return;
+  }
+
   for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
     if (new_window->parent()->id() == wm::kSwitchableWindowContainerIds[i] &&
         !::wm::GetTransientParent(new_window)) {

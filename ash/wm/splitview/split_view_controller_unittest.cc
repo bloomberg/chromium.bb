@@ -1249,4 +1249,21 @@ TEST_F(SplitViewControllerTest, DoNotEndSplitViewInLockScreen) {
             SplitViewController::BOTH_SNAPPED);
 }
 
+// Test that when split view and overview are both active when a new window is
+// added to the window hierarchy, overview is not ended.
+TEST_F(SplitViewControllerTest, NewWindowTest) {
+  const gfx::Rect bounds(0, 0, 200, 300);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  ToggleOverview();
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+
+  // Now new a window. Test it won't end the overview mode
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+}
+
 }  // namespace ash
