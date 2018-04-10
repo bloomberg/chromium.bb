@@ -27,8 +27,7 @@ class ExecuteScript;
 
 // Tracker for tagging resources as ads based on the call stack scripts.
 // The tracker is maintained per local root.
-class CORE_EXPORT AdTracker final
-    : public GarbageCollectedFinalized<AdTracker> {
+class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
  public:
   // Instrumenting methods.
   // Called when a script module or script gets executed from native code.
@@ -56,7 +55,11 @@ class CORE_EXPORT AdTracker final
 
   void Shutdown();
   explicit AdTracker(LocalFrame*);
-  ~AdTracker();
+  virtual ~AdTracker();
+
+ protected:
+  // Protected for testing.
+  virtual String ScriptAtTopOfStack(ExecutionContext*);
 
  private:
   friend class FrameFetchContextSubresourceFilterTest;
@@ -69,7 +72,7 @@ class CORE_EXPORT AdTracker final
   // Returns true if any script in the pseudo call stack has been identified as
   // an ad earlier. An ad is identified as an ad if AppendToKnownAdScripts has
   // been called on it earlier.
-  bool AnyExecutingScriptsTaggedAsAdResource();
+  bool AnyExecutingScriptsTaggedAsAdResource(ExecutionContext*);
 
   Member<LocalFrame> local_root_;
 

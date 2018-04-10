@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/frame/AdTracker.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/CoreProbeSink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -25,6 +26,13 @@ void AdTracker::Shutdown() {
     return;
   local_root_->GetProbeSink()->removeAdTracker(this);
   local_root_ = nullptr;
+}
+
+String AdTracker::ScriptAtTopOfStack(ExecutionContext* execution_context) {
+  std::unique_ptr<blink::SourceLocation> current_stack_trace =
+      SourceLocation::Capture(execution_context);
+  // TODO(jkarlin): Url() sometimes returns String(), why?
+  return current_stack_trace ? current_stack_trace->Url() : "";
 }
 
 void AdTracker::WillExecuteScript(const String& script_url) {
@@ -76,22 +84,30 @@ void AdTracker::WillSendRequest(ExecutionContext* execution_context,
                                 Resource::Type resource_type) {
   // If the resource is not already marked as an ad, check if any executing
   // script is an ad. If yes, mark this as an ad.
-  if (!request.IsAdResource() && AnyExecutingScriptsTaggedAsAdResource())
+  if (!request.IsAdResource() &&
+      AnyExecutingScriptsTaggedAsAdResource(execution_context))
     request.SetIsAdResource();
 
   // If it is a script marked as an ad, append it to the known ad scripts set.
-  if (resource_type != Resource::kScript || !request.IsAdResource()) {
-    return;
-  }
-  AppendToKnownAdScripts(request.Url());
+  if (resource_type == Resource::kScript && request.IsAdResource())
+    AppendToKnownAdScripts(request.Url());
 }
 
-// Keeping a separate function to easily access from tests.
+// This is a separate function for testing purposes.
 void AdTracker::AppendToKnownAdScripts(const KURL& url) {
   known_ad_scripts_.insert(url.GetString());
 }
 
-bool AdTracker::AnyExecutingScriptsTaggedAsAdResource() {
+bool AdTracker::AnyExecutingScriptsTaggedAsAdResource(
+    ExecutionContext* execution_context) {
+  // The pseudo-stack contains entry points into the stack (e.g., when v8 is
+  // executed) but not the entire stack. It's cheap to retrieve the top of the
+  // stack so scan that as well.
+  String top_script = ScriptAtTopOfStack(execution_context);
+  if (!top_script.IsEmpty() && known_ad_scripts_.Contains(top_script))
+    return true;
+
+  // Scan the pseudo-stack for ad scripts.
   for (const auto& executing_script : executing_scripts_) {
     if (executing_script.is_ad)
       return true;
