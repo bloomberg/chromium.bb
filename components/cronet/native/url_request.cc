@@ -184,6 +184,8 @@ class Cronet_UrlRequestImpl::Callback : public CronetURLRequest::Callback {
                           int64_t received_bytes_count) override;
 
  private:
+  void PostTaskToExecutor(base::OnceClosure task);
+
   // The UrlRequest which owns context that owns the callback.
   Cronet_UrlRequestImpl* url_request_ = nullptr;
 
@@ -312,11 +314,13 @@ Cronet_RESULT Cronet_UrlRequestImpl::Read(Cronet_BufferPtr buffer) {
 
 void Cronet_UrlRequestImpl::Cancel() {
   base::AutoLock lock(lock_);
-  if (started_ && !IsDoneLocked()) {
-    // TODO(https://crbug.com/812334): If request has posted callbacks to
-    // client executor, then it is possible that request will be destroyed
-    // before callback is executed. This issue has to be addressed.
-    DestroyRequestLocked(Cronet_RequestFinishedInfo_FINISHED_REASON_CANCELED);
+  if (started_) {
+    // If request has posted callbacks to client executor, then it is possible
+    // that |request_| will be destroyed before callback is executed. The
+    // callback runnable uses IsDone() to avoid calling client callback in this
+    // case.
+    DestroyRequestUnlessDoneLocked(
+        Cronet_RequestFinishedInfo_FINISHED_REASON_CANCELED);
   }
 }
 
@@ -330,19 +334,26 @@ bool Cronet_UrlRequestImpl::IsDoneLocked() {
   return started_ && request_ == nullptr;
 }
 
-void Cronet_UrlRequestImpl::DestroyRequestLocked(
+bool Cronet_UrlRequestImpl::DestroyRequestUnlessDone(
+    Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason) {
+  base::AutoLock lock(lock_);
+  return DestroyRequestUnlessDoneLocked(finished_reason);
+}
+
+bool Cronet_UrlRequestImpl::DestroyRequestUnlessDoneLocked(
     Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason) {
   lock_.AssertAcquired();
+  if (request_ == nullptr)
+    return true;
   DCHECK(error_ == nullptr ||
          finished_reason == Cronet_RequestFinishedInfo_FINISHED_REASON_FAILED);
-  if (request_ == nullptr)
-    return;
   request_->Destroy(finished_reason ==
                     Cronet_RequestFinishedInfo_FINISHED_REASON_CANCELED);
   // Request can no longer be used as CronetURLRequest::Destroy() will
   // eventually delete |request_| from the network thread, so setting |request_|
   // to nullptr doesn't introduce a memory leak.
   request_ = nullptr;
+  return false;
 }
 
 void Cronet_UrlRequestImpl::GetStatus(
@@ -384,12 +395,16 @@ void Cronet_UrlRequestImpl::Callback::OnReceivedRedirect(
   url_chain_.push_back(new_location);
 
   // Invoke Cronet_UrlRequestCallback_OnRedrectReceived using OnceClosure.
-  Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
-      base::BindOnce(Cronet_UrlRequestCallback_OnRedirectReceived, callback_,
-                     url_request_, url_request_->response_info_.get(),
-                     url_request_->response_info_->url_chain.front().c_str()));
-  // |runnable| is passed to executor, which destroys it after execution.
-  Cronet_Executor_Execute(executor_, runnable);
+  PostTaskToExecutor(base::BindOnce(
+      [](Cronet_UrlRequestCallback* callback,
+         Cronet_UrlRequestImpl* url_request) {
+        if (url_request->IsDone())
+          return;
+        Cronet_UrlRequestCallback_OnRedirectReceived(
+            callback, url_request, url_request->response_info_.get(),
+            url_request->response_info_->url_chain.front().c_str());
+      },
+      callback_, url_request_));
 }
 
 void Cronet_UrlRequestImpl::Callback::OnResponseStarted(
@@ -406,12 +421,17 @@ void Cronet_UrlRequestImpl::Callback::OnResponseStarted(
   url_request_->response_info_ = CreateCronet_UrlResponseInfo(
       url_chain_, http_status_code, http_status_text, headers, was_cached,
       negotiated_protocol, proxy_server, received_byte_count);
+
   // Invoke Cronet_UrlRequestCallback_OnResponseStarted using OnceClosure.
-  Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
-      base::BindOnce(Cronet_UrlRequestCallback_OnResponseStarted, callback_,
-                     url_request_, url_request_->response_info_.get()));
-  // |runnable| is passed to executor, which destroys it after execution.
-  Cronet_Executor_Execute(executor_, runnable);
+  PostTaskToExecutor(base::BindOnce(
+      [](Cronet_UrlRequestCallback* callback,
+         Cronet_UrlRequestImpl* url_request) {
+        if (url_request->IsDone())
+          return;
+        Cronet_UrlRequestCallback_OnResponseStarted(
+            callback, url_request, url_request->response_info_.get());
+      },
+      callback_, url_request_));
 }
 
 void Cronet_UrlRequestImpl::Callback::OnReadCompleted(
@@ -421,30 +441,43 @@ void Cronet_UrlRequestImpl::Callback::OnReadCompleted(
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   IOBufferWithCronet_Buffer* io_buffer =
       reinterpret_cast<IOBufferWithCronet_Buffer*>(buffer.get());
-  Cronet_BufferPtr cronet_buffer = io_buffer->Release();
+  std::unique_ptr<Cronet_Buffer> cronet_buffer(io_buffer->Release());
   base::AutoLock lock(url_request_->lock_);
   url_request_->waiting_on_read_ = true;
   url_request_->response_info_->received_byte_count = received_byte_count;
+
   // Invoke Cronet_UrlRequestCallback_OnReadCompleted using OnceClosure.
-  Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(base::BindOnce(
-      Cronet_UrlRequestCallback_OnReadCompleted, callback_, url_request_,
-      url_request_->response_info_.get(), cronet_buffer, bytes_read));
-  // |runnable| is passed to executor, which destroys it after execution.
-  Cronet_Executor_Execute(executor_, runnable);
+  PostTaskToExecutor(base::BindOnce(
+      [](Cronet_UrlRequestCallback* callback,
+         Cronet_UrlRequestImpl* url_request,
+         std::unique_ptr<Cronet_Buffer> cronet_buffer, int bytes_read) {
+        if (url_request->IsDone())
+          return;
+
+        Cronet_UrlRequestCallback_OnReadCompleted(
+            callback, url_request, url_request->response_info_.get(),
+            cronet_buffer.release(), bytes_read);
+      },
+      callback_, url_request_, std::move(cronet_buffer), bytes_read));
 }
 
 void Cronet_UrlRequestImpl::Callback::OnSucceeded(int64_t received_byte_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
   base::AutoLock lock(url_request_->lock_);
   url_request_->response_info_->received_byte_count = received_byte_count;
+
   // Invoke Cronet_UrlRequestCallback_OnSucceeded using OnceClosure.
-  Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
-      base::BindOnce(Cronet_UrlRequestCallback_OnSucceeded, callback_,
-                     url_request_, url_request_->response_info_.get()));
-  url_request_->DestroyRequestLocked(
-      Cronet_RequestFinishedInfo_FINISHED_REASON_SUCCEEDED);
-  // |runnable| is passed to executor, which destroys it after execution.
-  Cronet_Executor_Execute(executor_, runnable);
+  PostTaskToExecutor(base::BindOnce(
+      [](Cronet_UrlRequestCallback* callback,
+         Cronet_UrlRequestImpl* url_request) {
+        if (url_request->DestroyRequestUnlessDone(
+                Cronet_RequestFinishedInfo_FINISHED_REASON_SUCCEEDED)) {
+          return;
+        }
+        Cronet_UrlRequestCallback_OnSucceeded(
+            callback, url_request, url_request->response_info_.get());
+      },
+      callback_, url_request_));
 }
 
 void Cronet_UrlRequestImpl::Callback::OnError(int net_error,
@@ -458,24 +491,31 @@ void Cronet_UrlRequestImpl::Callback::OnError(int net_error,
 
   url_request_->error_ =
       CreateCronet_Error(net_error, quic_error, error_string);
-  // Invoke Cronet_UrlRequestCallback_OnFailed on client executor.
-  Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(base::BindOnce(
-      Cronet_UrlRequestCallback_OnFailed, callback_, url_request_,
-      url_request_->response_info_.get(), url_request_->error_.get()));
-  url_request_->DestroyRequestLocked(
-      Cronet_RequestFinishedInfo_FINISHED_REASON_FAILED);
-  // |runnable| is passed to executor, which destroys it after execution.
-  Cronet_Executor_Execute(executor_, runnable);
+
+  // Invoke Cronet_UrlRequestCallback_OnFailed using OnceClosure.
+  PostTaskToExecutor(base::BindOnce(
+      [](Cronet_UrlRequestCallback* callback,
+         Cronet_UrlRequestImpl* url_request) {
+        if (url_request->DestroyRequestUnlessDone(
+                Cronet_RequestFinishedInfo_FINISHED_REASON_FAILED)) {
+          return;
+        }
+        Cronet_UrlRequestCallback_OnFailed(callback, url_request,
+                                           url_request->response_info_.get(),
+                                           url_request->error_.get());
+      },
+      callback_, url_request_));
 }
 
 void Cronet_UrlRequestImpl::Callback::OnCanceled() {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  // Invoke Cronet_UrlRequestCallback_OnCanceled on client executor.
-  Cronet_RunnablePtr runnable = new cronet::OnceClosureRunnable(
-      base::BindOnce(Cronet_UrlRequestCallback_OnCanceled, callback_,
-                     url_request_, url_request_->response_info_.get()));
-  // |runnable| is passed to executor, which destroys it after execution.
-  Cronet_Executor_Execute(executor_, runnable);
+  PostTaskToExecutor(base::BindOnce(
+      [](Cronet_UrlRequestCallback* callback,
+         Cronet_UrlRequestImpl* url_request) {
+        Cronet_UrlRequestCallback_OnCanceled(callback, url_request,
+                                             url_request->response_info_.get());
+      },
+      callback_, url_request_));
 }
 
 void Cronet_UrlRequestImpl::Callback::OnDestroyed() {
@@ -502,6 +542,14 @@ void Cronet_UrlRequestImpl::Callback::OnMetricsCollected(
     int64_t sent_bytes_count,
     int64_t received_bytes_count) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
+}
+
+void Cronet_UrlRequestImpl::Callback::PostTaskToExecutor(
+    base::OnceClosure task) {
+  Cronet_RunnablePtr runnable =
+      new cronet::OnceClosureRunnable(std::move(task));
+  // |runnable| is passed to executor, which destroys it after execution.
+  Cronet_Executor_Execute(executor_, runnable);
 }
 
 };  // namespace cronet
