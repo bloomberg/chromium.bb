@@ -3,9 +3,13 @@
 // found in the LICENSE file.
 
 #include <cmath>
+#include <functional>
+#include <string>
 
 #include "chrome/browser/client_hints/client_hints.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -36,6 +40,35 @@
 #endif  // !OS_ANDROID
 
 namespace {
+
+uint8_t randomization_salt = 0;
+
+constexpr size_t kMaxRandomNumbers = 21;
+
+// Returns the randomization salt (weak and insecure) that should be used when
+// adding noise to the network quality metrics. This is known only to the
+// device, and is generated only once. This makes it possible to add the same
+// amount of noise for a given origin.
+uint8_t RandomizationSalt() {
+  if (randomization_salt == 0)
+    randomization_salt = base::RandInt(1, kMaxRandomNumbers);
+  DCHECK_LE(1, randomization_salt);
+  DCHECK_GE(kMaxRandomNumbers, randomization_salt);
+  return randomization_salt;
+}
+
+double GetRandomMultiplier(const std::string& host) {
+  // The random number should be a function of the hostname to reduce
+  // cross-origin fingerprinting. The random number should also be a function
+  // of randomized salt which is known only to the device. This prevents
+  // origin from removing noise from the estimates.
+  unsigned hash = std::hash<std::string>{}(host) + RandomizationSalt();
+  double random_multiplier =
+      0.9 + static_cast<double>((hash % kMaxRandomNumbers)) * 0.01;
+  DCHECK_LE(0.90, random_multiplier);
+  DCHECK_GE(1.10, random_multiplier);
+  return random_multiplier;
+}
 
 bool IsJavaScriptAllowed(Profile* profile, const GURL& url) {
   return HostContentSettingsMapFactory::GetForProfile(profile)
@@ -77,6 +110,61 @@ double GetDeviceScaleFactor() {
 }  // namespace
 
 namespace client_hints {
+
+namespace internal {
+
+unsigned long RoundRtt(const std::string& host,
+                       const base::Optional<base::TimeDelta>& rtt) {
+  // Limit the size of the buckets and the maximum reported value to reduce
+  // fingerprinting.
+  static const size_t kGranularityMsec = 50;
+  static const double kMaxRttMsec = 3.0 * 1000;
+
+  if (!rtt.has_value()) {
+    // RTT is unavailable. So, return the fastest value.
+    return 0;
+  }
+
+  double rtt_msec = static_cast<double>(rtt.value().InMilliseconds());
+  rtt_msec *= GetRandomMultiplier(host);
+  rtt_msec = std::min(rtt_msec, kMaxRttMsec);
+
+  DCHECK_LE(0, rtt_msec);
+  DCHECK_GE(kMaxRttMsec, rtt_msec);
+
+  // Round down to the nearest kBucketSize msec value.
+  return std::round(rtt_msec / kGranularityMsec) * kGranularityMsec;
+}
+
+double RoundMbps(const std::string& host,
+                 const base::Optional<double>& downlink_mbps) {
+  // Limit the size of the buckets and the maximum reported value to reduce
+  // fingerprinting.
+  static const size_t kGranularityKbps = 50;
+  static const double kMaxDownlinkKbps = 10.0 * 1000;
+
+  double downlink_kbps = 0;
+  if (!downlink_mbps.has_value()) {
+    // Throughput is unavailable. So, return the fastest value.
+    downlink_kbps = kMaxDownlinkKbps;
+  } else {
+    downlink_kbps = downlink_mbps.value() * 1000;
+  }
+  downlink_kbps *= GetRandomMultiplier(host);
+
+  downlink_kbps = std::min(downlink_kbps, kMaxDownlinkKbps);
+
+  DCHECK_LE(0, downlink_kbps);
+  DCHECK_GE(kMaxDownlinkKbps, downlink_kbps);
+  // Round down to the nearest kGranularityKbps kbps value.
+  double downlink_kbps_rounded =
+      std::round(downlink_kbps / kGranularityKbps) * kGranularityKbps;
+
+  // Convert from Kbps to Mbps.
+  return downlink_kbps_rounded / 1000;
+}
+
+}  // namespace internal
 
 std::unique_ptr<net::HttpRequestHeaders>
 GetAdditionalNavigationRequestClientHintsHeaders(
@@ -176,26 +264,20 @@ GetAdditionalNavigationRequestClientHintsHeaders(
       UINetworkQualityEstimatorServiceFactory::GetForProfile(
           Profile::FromBrowserContext(context));
 
-  // TODO(crbug.com/826950): Add host specific noise and bucketization to RTT
-  // and downlink values.
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kRtt)) {
-    if (estimator->GetHttpRTT()) {
-      additional_headers->SetHeader(
-          blink::kClientHintsHeaderMapping[static_cast<int>(
-              blink::mojom::WebClientHintsType::kRtt)],
-          base::NumberToString(estimator->GetHttpRTT()->InMilliseconds()));
-    }
+    additional_headers->SetHeader(
+        blink::kClientHintsHeaderMapping[static_cast<int>(
+            blink::mojom::WebClientHintsType::kRtt)],
+        base::NumberToString(
+            internal::RoundRtt(url.host(), estimator->GetHttpRTT())));
   }
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDownlink)) {
-    if (estimator->GetDownstreamThroughputKbps()) {
-      additional_headers->SetHeader(
-          blink::kClientHintsHeaderMapping[static_cast<int>(
-              blink::mojom::WebClientHintsType::kDownlink)],
-          base::NumberToString(
-              ((double)estimator->GetDownstreamThroughputKbps().value()) /
-              1024));
-    }
+    additional_headers->SetHeader(
+        blink::kClientHintsHeaderMapping[static_cast<int>(
+            blink::mojom::WebClientHintsType::kDownlink)],
+        base::NumberToString(internal::RoundMbps(
+            url.host(), estimator->GetDownstreamThroughputKbps())));
   }
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kEct)) {

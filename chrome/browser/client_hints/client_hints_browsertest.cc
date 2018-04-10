@@ -346,14 +346,22 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
       const net::test_server::HttpRequest& request) const {
     // Effective connection type is forced to 2G using command line in these
     // tests.
-    double value = 0.0;
+    int rtt_value = 0.0;
     EXPECT_TRUE(
-        base::StringToDouble(request.headers.find("rtt")->second, &value));
-    EXPECT_LE(0, value);
+        base::StringToInt(request.headers.find("rtt")->second, &rtt_value));
+    EXPECT_LE(0, rtt_value);
+    // Verify that RTT value is a multiple of 50 milliseconds.
+    EXPECT_EQ(0, rtt_value % 50);
+    EXPECT_GE(3000, rtt_value);
 
-    EXPECT_TRUE(
-        base::StringToDouble(request.headers.find("downlink")->second, &value));
-    EXPECT_LE(0, value);
+    double mbps_value = 0.0;
+    EXPECT_TRUE(base::StringToDouble(request.headers.find("downlink")->second,
+                                     &mbps_value));
+    EXPECT_LE(0, mbps_value);
+    // Verify that the mbps value is a multiple of 0.050 mbps.
+    // Allow for small amount of noise due to double to integer conversions.
+    EXPECT_NEAR(0, (static_cast<int>(mbps_value * 1000)) % 50, 1);
+    EXPECT_GE(10.0, mbps_value);
 
     EXPECT_FALSE(request.headers.find("ect")->second.empty());
   }
