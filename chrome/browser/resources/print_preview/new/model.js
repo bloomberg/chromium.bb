@@ -89,151 +89,155 @@ Polymer({
     settings: {
       type: Object,
       notify: true,
-      value: {
-        pages: {
-          value: [1],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          key: '',
-        },
-        copies: {
-          value: '1',
-          unavailableValue: '1',
-          valid: true,
-          available: true,
-          key: '',
-        },
-        collate: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isCollateEnabled',
-        },
-        layout: {
-          value: false, /* portrait */
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isLandscapeEnabled',
-        },
-        color: {
-          value: true, /* color */
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isColorEnabled',
-        },
-        mediaSize: {
-          value: {
-            width_microns: 215900,
-            height_microns: 279400,
+      value: function() {
+        return {
+          pages: {
+            value: [1],
+            unavailableValue: [],
+            valid: true,
+            available: true,
+            key: '',
           },
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          key: 'mediaSize',
-        },
-        margins: {
-          value: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-          unavailableValue: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
-          valid: true,
-          available: true,
-          key: 'marginsType',
-        },
-        customMargins: {
-          value: {
-            marginTop: 0,
-            marginRight: 0,
-            marginBottom: 0,
-            marginLeft: 0,
+          copies: {
+            value: '1',
+            unavailableValue: '1',
+            valid: true,
+            available: true,
+            key: '',
           },
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          key: 'customMargins',
-        },
-        dpi: {
-          value: {},
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          key: 'dpi',
-        },
-        fitToPage: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isFitToPageEnabled',
-        },
-        scaling: {
-          value: '100',
-          unavailableValue: '100',
-          valid: true,
-          available: true,
-          key: 'scaling',
-        },
-        duplex: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isDuplexEnabled',
-        },
-        cssBackground: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isCssBackgroundEnabled',
-        },
-        selectionOnly: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: '',
-        },
-        headerFooter: {
-          value: true,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: 'isHeaderFooterEnabled',
-        },
-        rasterize: {
-          value: false,
-          unavailableValue: false,
-          valid: true,
-          available: true,
-          key: '',
-        },
-        vendorItems: {
-          value: {},
-          unavailableValue: {},
-          valid: true,
-          available: true,
-          key: 'vendorOptions',
-        },
-        // This does not represent a real setting value, and is used only to
-        // expose the availability of the other options settings section.
-        otherOptions: {
-          value: null,
-          unavailableValue: null,
-          valid: true,
-          available: true,
-        },
-        // This does not represent a real settings value, but is used to
-        // propagate the correctly formatted ranges for print tickets.
-        ranges: {
-          value: [],
-          unavailableValue: [],
-          valid: true,
-          available: true,
-          key: '',
-        },
+          collate: {
+            value: true,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isCollateEnabled',
+          },
+          layout: {
+            value: false, /* portrait */
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isLandscapeEnabled',
+          },
+          color: {
+            value: true, /* color */
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isColorEnabled',
+          },
+          mediaSize: {
+            value: {
+              width_microns: 215900,
+              height_microns: 279400,
+            },
+            unavailableValue: {},
+            valid: true,
+            available: true,
+            key: 'mediaSize',
+          },
+          margins: {
+            value: print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+            unavailableValue:
+                print_preview.ticket_items.MarginsTypeValue.DEFAULT,
+            valid: true,
+            available: true,
+            key: 'marginsType',
+          },
+          customMargins: {
+            value: {
+              marginTop: 0,
+              marginRight: 0,
+              marginBottom: 0,
+              marginLeft: 0,
+            },
+            unavailableValue: {},
+            valid: true,
+            available: true,
+            key: 'customMargins',
+          },
+          dpi: {
+            value: {},
+            unavailableValue: {},
+            valid: true,
+            available: true,
+            key: 'dpi',
+          },
+          fitToPage: {
+            value: false,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isFitToPageEnabled',
+          },
+          scaling: {
+            value: '100',
+            unavailableValue: '100',
+            valid: true,
+            available: true,
+            key: 'scaling',
+          },
+          duplex: {
+            value: true,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isDuplexEnabled',
+          },
+          cssBackground: {
+            value: false,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isCssBackgroundEnabled',
+          },
+          selectionOnly: {
+            value: false,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: '',
+          },
+          headerFooter: {
+            value: true,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: 'isHeaderFooterEnabled',
+          },
+          rasterize: {
+            value: false,
+            unavailableValue: false,
+            valid: true,
+            available: true,
+            key: '',
+          },
+          vendorItems: {
+            value: {},
+            unavailableValue: {},
+            valid: true,
+            available: true,
+            key: 'vendorOptions',
+          },
+          // This does not represent a real setting value, and is used only to
+          // expose the availability of the other options settings section.
+          otherOptions: {
+            value: null,
+            unavailableValue: null,
+            valid: true,
+            available: true,
+            key: '',
+          },
+          // This does not represent a real settings value, but is used to
+          // propagate the correctly formatted ranges for print tickets.
+          ranges: {
+            value: [],
+            unavailableValue: [],
+            valid: true,
+            available: true,
+            key: '',
+          },
+        };
       },
     },
 
@@ -247,7 +251,9 @@ Polymer({
     recentDestinations: {
       type: Array,
       notify: true,
-      value: [],
+      value: function() {
+        return [];
+      },
     },
 
     /** @type {print_preview.DocumentInfo} */

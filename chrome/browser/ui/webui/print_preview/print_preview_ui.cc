@@ -516,13 +516,18 @@ content::WebUIDataSource* CreateNewPrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
   AddPrintPreviewStrings(source);
+  AddPrintPreviewImages(source);
   source->SetJsonPath("strings.js");
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
+#else
   for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
     source->AddResourcePath(kPrintPreviewResources[i].name,
                             kPrintPreviewResources[i].value);
   }
-  AddPrintPreviewImages(source);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_NEW_HTML);
+#endif
   SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
   return source;

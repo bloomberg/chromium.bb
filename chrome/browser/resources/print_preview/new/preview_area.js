@@ -298,7 +298,7 @@ Polymer({
     }
   },
 
-  // <if expr="macosx">
+  // <if expr="is_macosx">
   /** Set the preview state to display the "opening in preview" message. */
   setOpeningPdfInPreview: function() {
     assert(cr.isMac);
