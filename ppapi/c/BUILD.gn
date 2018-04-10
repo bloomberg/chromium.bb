@@ -137,7 +137,6 @@ source_set("c") {
     "private/ppb_instance_private.h",
     "private/ppb_isolated_file_system_private.h",
     "private/ppb_net_address_private.h",
-    "private/ppb_output_protection_private.h",
     "private/ppb_pdf.h",
     "private/ppb_platform_verification_private.h",
     "private/ppb_proxy_private.h",

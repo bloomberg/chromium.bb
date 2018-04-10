@@ -10,7 +10,6 @@
 #include "chrome/browser/renderer_host/pepper/pepper_flash_clipboard_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_flash_drm_host.h"
 #include "chrome/browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.h"
-#include "chrome/browser/renderer_host/pepper/pepper_output_protection_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/pepper_platform_verification_message_filter.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "ppapi/host/message_filter_host.h"
@@ -56,13 +55,6 @@ ChromeBrowserPepperHostFactory::CreateResourceHost(
             new PepperPlatformVerificationMessageFilter(host_, instance));
         return std::unique_ptr<ResourceHost>(new MessageFilterHost(
             host_->GetPpapiHost(), instance, resource, pv_filter));
-      }
-      case PpapiHostMsg_OutputProtection_Create::ID: {
-        scoped_refptr<ResourceMessageFilter> output_protection_filter(
-            new PepperOutputProtectionMessageFilter(host_, instance));
-        return std::unique_ptr<ResourceHost>(
-            new MessageFilterHost(host_->GetPpapiHost(), instance, resource,
-                                  output_protection_filter));
       }
     }
   }
