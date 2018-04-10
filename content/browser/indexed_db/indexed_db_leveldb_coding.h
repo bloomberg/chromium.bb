@@ -23,6 +23,14 @@
 
 namespace content {
 
+namespace indexed_db {
+// 0 - Initial version.
+// 1 - Adds UserIntVersion to DatabaseMetaData.
+// 2 - Adds DataVersion to to global metadata.
+// 3 - Adds metadata needed for blob support.
+const constexpr int64_t kLatestKnownSchemaVersion = 3;
+}  // namespace indexed_db
+
 CONTENT_EXPORT extern const unsigned char kMinimumIndexId;
 
 CONTENT_EXPORT std::string MaxIDBKey();
