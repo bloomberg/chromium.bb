@@ -19,7 +19,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV",
-          "rect": [12, 45, 52, 13],
+          "rect": [12, 45, 52, 14],
           "reason": "appeared"
         }
       ]

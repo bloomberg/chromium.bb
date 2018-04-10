@@ -12,7 +12,7 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV",
+          "object": "LayoutBlockFlow DIV id='inner'",
           "rect": [8, 8, 100, 100],
           "reason": "disappeared"
         }

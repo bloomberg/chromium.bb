@@ -18,30 +18,48 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'PASSED'",
-          "rect": [146, 11, 43, 14],
-          "reason": "appeared"
+          "object": "InlineTextBox 'x'",
+          "rect": [8, 219, 100, 101],
+          "reason": "geometry"
         },
         {
-          "object": "InlineTextBox 'PASSED'",
-          "rect": [11, 11, 43, 14],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'FAILED'",
-          "rect": [146, 11, 38, 14],
-          "reason": "disappeared"
-        },
-        {
-          "object": "InlineTextBox 'FAILED'",
-          "rect": [11, 11, 38, 14],
-          "reason": "disappeared"
+          "object": "InlineTextBox 'x'",
+          "rect": [8, 199, 100, 101],
+          "reason": "geometry"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline (relative positioned) SPAN",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutInline (relative positioned) SPAN id='target'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },
@@ -51,27 +69,15 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASSED'",
-      "reason": "full"
-    },
-    {
-      "object": "LayoutBlockFlow DIV",
       "reason": "geometry"
     },
     {
-      "object": "RootInlineBox",
+      "object": "InlineTextBox 'x'",
       "reason": "geometry"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
-    },
-    {
-      "object": "InlineTextBox 'PASSED'",
-      "reason": "full"
+      "reason": "geometry"
     }
   ]
 }

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder_test.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
@@ -459,7 +460,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ClipChangesUpdateOverflowClip) {
       body { margin:0 }
       #div { overflow:hidden; height:0px; }
     </style>
-    <div id='div'></div>
+    <div id='div'>
+      <div style='width: 100px; height: 100px'></div>
+    </div>
   )HTML");
   auto* div = GetDocument().getElementById("div");
   div->setAttribute(HTMLNames::styleAttr, "display:inline-block; width:7px;");
@@ -525,7 +528,9 @@ TEST_P(PaintPropertyTreeUpdateTest, ContainPaintChangesUpdateOverflowClip) {
       body { margin:0 }
       #div { will-change:transform; width:7px; height:6px; }
     </style>
-    <div id='div' style='contain:paint;'></div>
+    <div id='div' style='contain:paint;'>
+      <div style='width: 100px; height: 100px'></div>
+    </div>
   )HTML");
   GetDocument().View()->UpdateAllLifecyclePhases();
   auto* div = GetDocument().getElementById("div");
@@ -1112,6 +1117,45 @@ TEST_P(PaintPropertyTreeUpdateTest, SVGForeignObjectOverflowChange) {
   ASSERT_NE(nullptr, properties);
   EXPECT_EQ(FloatRect(10, 20, 30, 40),
             OverflowClip(*properties)->ClipRect().Rect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OmitOverflowClipOnSelectionChange) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target" style="overflow: hidden">
+      <img style="width: 50px; height: 50px">
+    </div>
+  )HTML");
+
+  EXPECT_FALSE(OverflowClip(*PaintPropertiesForElement("target")));
+
+  GetDocument().GetFrame()->Selection().SelectAll();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(OverflowClip(*PaintPropertiesForElement("target")));
+
+  GetDocument().GetFrame()->Selection().Clear();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(OverflowClip(*PaintPropertiesForElement("target")));
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, OmitOverflowClipOnCaretChange) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="target" contentEditable="true" style="overflow: hidden">
+      <img style="width: 50px; height: 50px">
+    </div>
+  )HTML");
+
+  GetDocument().GetPage()->GetFocusController().SetActive(true);
+  GetDocument().GetPage()->GetFocusController().SetFocused(true);
+  auto* target = GetDocument().getElementById("target");
+  EXPECT_FALSE(OverflowClip(*PaintPropertiesForElement("target")));
+
+  target->focus();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_TRUE(OverflowClip(*PaintPropertiesForElement("target")));
+
+  target->blur();
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(OverflowClip(*PaintPropertiesForElement("target")));
 }
 
 }  // namespace blink

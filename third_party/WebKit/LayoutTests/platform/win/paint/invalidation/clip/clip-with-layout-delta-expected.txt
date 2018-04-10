@@ -43,7 +43,7 @@
           "reason": "disappeared"
         },
         {
-          "object": "InlineTextBox '\u00A0'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 8, 4, 19],
           "reason": "appeared"
         }

@@ -20,12 +20,12 @@
         {
           "object": "LayoutBlockFlow (floating) DIV",
           "rect": [8, 8, 100, 100],
-          "reason": "appeared"
+          "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow (floating) DIV",
+          "object": "LayoutBlockFlow DIV id='target'",
           "rect": [8, 8, 100, 100],
-          "reason": "disappeared"
+          "reason": "appeared"
         }
       ]
     }
