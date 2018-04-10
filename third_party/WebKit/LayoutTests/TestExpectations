@@ -1160,7 +1160,7 @@ crbug.com/591099 virtual/layout_ng_experimental/printing/page-break-widows.html 
 crbug.com/591099 virtual/layout_ng_experimental/printing/page-count-relayout-shrink.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/respect-layout-overflow-from-pagination.html [ Failure ]
 crbug.com/824918 virtual/layout_ng_experimental/printing/setPrinting.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_experimental/printing/single-line-must-not-be-split-into-two-pages.html [ Timeout ]
+crbug.com/591099 virtual/layout_ng_experimental/printing/single-line-must-not-be-split-into-two-pages.html [ Failure Timeout ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/tfoot-repeats-at-bottom-of-each-page-multiple-tables.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/thead-repeats-at-top-of-each-page-multiple-tables.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
