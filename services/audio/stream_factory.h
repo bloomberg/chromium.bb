@@ -27,10 +27,6 @@ class AudioManager;
 class AudioParameters;
 }  // namespace media
 
-namespace service_manager {
-class ServiceContextRef;
-}
-
 namespace audio {
 
 class OutputStream;
@@ -44,8 +40,7 @@ class StreamFactory final : public mojom::StreamFactory {
   explicit StreamFactory(media::AudioManager* audio_manager);
   ~StreamFactory() final;
 
-  void Bind(mojom::StreamFactoryRequest request,
-            std::unique_ptr<service_manager::ServiceContextRef> context_ref);
+  void BindRequest(mojom::StreamFactoryRequest request);
 
   // StreamFactory implementation.
   void CreateOutputStream(
@@ -68,10 +63,7 @@ class StreamFactory final : public mojom::StreamFactory {
 
   media::AudioManager* const audio_manager_;
 
-  mojo::BindingSet<mojom::StreamFactory,
-                   std::unique_ptr<service_manager::ServiceContextRef>>
-      bindings_;
-
+  mojo::BindingSet<mojom::StreamFactory> bindings_;
   OutputStreamSet output_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);
