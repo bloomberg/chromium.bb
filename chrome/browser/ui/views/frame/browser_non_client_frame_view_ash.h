@@ -17,6 +17,10 @@
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace {
+class HostedAppNonClientFrameViewAshTest;
+}
+
 class HostedAppButtonContainer;
 class TabIconView;
 
@@ -86,6 +90,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void OnSplitViewStateChanged(
       ash::mojom::SplitViewState current_state) override;
 
+  HostedAppButtonContainer* GetHostedAppButtonContainerForTesting() const;
+
  protected:
   // BrowserNonClientFrameView:
   AvatarButtonStyle GetAvatarButtonStyle() const override;
@@ -103,7 +109,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            HeaderVisibilityInOverviewAndSplitview);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            HeaderHeightForSnappedBrowserInSplitView);
-  FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
                            V1BackButton);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
@@ -111,6 +116,7 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
                            FrameLayout);
 
+  friend class HostedAppNonClientFrameViewAshTest;
   friend class BrowserFrameHeaderAsh;
 
   // Distance between the right edge of the NonClientFrameView and the tab

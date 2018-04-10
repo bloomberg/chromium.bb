@@ -527,6 +527,11 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
   OnOverviewOrSplitviewModeChanged();
 }
 
+HostedAppButtonContainer*
+BrowserNonClientFrameViewAsh::GetHostedAppButtonContainerForTesting() const {
+  return hosted_app_button_container_;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, protected:
 
