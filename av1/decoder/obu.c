@@ -248,8 +248,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 static uint32_t read_frame_header_obu(AV1Decoder *pbi,
                                       struct aom_read_bit_buffer *rb,
                                       const uint8_t *data,
-                                      const uint8_t **p_data_end) {
-  av1_decode_frame_headers_and_setup(pbi, rb, data, p_data_end);
+                                      const uint8_t **p_data_end,
+                                      int trailing_bits_present) {
+  av1_decode_frame_headers_and_setup(pbi, rb, data, p_data_end,
+                                     trailing_bits_present);
   return (uint32_t)(pbi->uncomp_hdr_size);
 }
 
@@ -512,7 +514,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
         // Only decode first frame header received
         if (!frame_header_received) {
           av1_init_read_bit_buffer(pbi, &rb, data, data_end);
-          frame_header_size = read_frame_header_obu(pbi, &rb, data, p_data_end);
+          frame_header_size = read_frame_header_obu(
+              pbi, &rb, data, p_data_end, obu_header.type != OBU_FRAME);
           frame_header_received = 1;
         }
         decoded_payload_size = frame_header_size;

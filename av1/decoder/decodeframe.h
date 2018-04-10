@@ -35,7 +35,8 @@ void av1_decode_frame(struct AV1Decoder *pbi, const uint8_t *data,
 int av1_decode_frame_headers_and_setup(struct AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb,
                                        const uint8_t *data,
-                                       const uint8_t **p_data_end);
+                                       const uint8_t **p_data_end,
+                                       int trailing_bits_present);
 
 void av1_decode_tg_tiles_and_wrapup(struct AV1Decoder *pbi, const uint8_t *data,
                                     const uint8_t *data_end,

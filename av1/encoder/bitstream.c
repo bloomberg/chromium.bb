@@ -3523,24 +3523,12 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
 
 static uint32_t write_frame_header_obu(AV1_COMP *cpi,
                                        struct aom_write_bit_buffer *saved_wb,
-                                       uint8_t *const dst) {
-  AV1_COMMON *const cm = &cpi->common;
+                                       uint8_t *const dst,
+                                       int append_trailing_bits) {
   struct aom_write_bit_buffer wb = { dst, 0 };
-  uint32_t total_size = 0;
-  uint32_t uncompressed_hdr_size;
-
   write_uncompressed_header_obu(cpi, saved_wb, &wb);
-
-  add_trailing_bits(&wb);
-
-  if (cm->show_existing_frame) {
-    total_size = aom_wb_bytes_written(&wb);
-    return total_size;
-  }
-
-  uncompressed_hdr_size = aom_wb_bytes_written(&wb);
-  total_size = uncompressed_hdr_size;
-  return total_size;
+  if (append_trailing_bits) add_trailing_bits(&wb);
+  return aom_wb_bytes_written(&wb);
 }
 
 static uint32_t write_tile_group_header(uint8_t *const dst, int startTile,
@@ -3607,7 +3595,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
     data += tg_hdr_size;
 
     const uint32_t frame_header_size =
-        write_frame_header_obu(cpi, saved_wb, data);
+        write_frame_header_obu(cpi, saved_wb, data, 0);
     data += frame_header_size;
     total_size += frame_header_size;
 
@@ -3752,8 +3740,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         obu_header_size = curr_tg_data_size;
 
         if (num_tg_hdrs == 1) {
-          curr_tg_data_size +=
-              write_frame_header_obu(cpi, saved_wb, data + curr_tg_data_size);
+          curr_tg_data_size += write_frame_header_obu(
+              cpi, saved_wb, data + curr_tg_data_size, 0);
         }
         curr_tg_data_size += write_tile_group_header(
             data + curr_tg_data_size, tile_idx,
@@ -3927,7 +3915,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
     obu_header_size =
         write_obu_header(OBU_FRAME_HEADER, obu_extension_header, data);
     obu_payload_size =
-        write_frame_header_obu(cpi, &saved_wb, data + obu_header_size);
+        write_frame_header_obu(cpi, &saved_wb, data + obu_header_size, 1);
 
     const size_t length_field_size =
         obu_memmove(obu_header_size, obu_payload_size, data);

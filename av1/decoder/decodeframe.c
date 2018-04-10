@@ -3250,7 +3250,8 @@ void superres_post_decode(AV1Decoder *pbi) {
 int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                                        struct aom_read_bit_buffer *rb,
                                        const uint8_t *data,
-                                       const uint8_t **p_data_end) {
+                                       const uint8_t **p_data_end,
+                                       int trailing_bits_present) {
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &pbi->mb;
@@ -3270,7 +3271,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 
   read_uncompressed_header(pbi, rb);
 
-  av1_check_trailing_bits(pbi, rb);
+  if (trailing_bits_present) av1_check_trailing_bits(pbi, rb);
 
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile
   // or a section of a frame is not allowed.
