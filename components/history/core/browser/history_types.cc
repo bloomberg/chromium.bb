@@ -190,13 +190,7 @@ MostVisitedURL::MostVisitedURL(const GURL& url,
 
 MostVisitedURL::MostVisitedURL(const MostVisitedURL& other) = default;
 
-// TODO(bug 706963) this should be implemented as "= default" when Android
-// toolchain is updated.
-MostVisitedURL::MostVisitedURL(MostVisitedURL&& other) noexcept
-    : url(std::move(other.url)),
-      title(std::move(other.title)),
-      last_forced_time(other.last_forced_time),
-      redirects(std::move(other.redirects)) {}
+MostVisitedURL::MostVisitedURL(MostVisitedURL&& other) noexcept = default;
 
 MostVisitedURL::~MostVisitedURL() {}
 

@@ -20,16 +20,7 @@ URLRow::URLRow(const GURL& url, URLID id) : id_(id), url_(url) {}
 
 URLRow::URLRow(const URLRow& other) = default;
 
-// TODO(bug 706963) this should be implemented as "= default" when Android
-// toolchain is updated.
-URLRow::URLRow(URLRow&& other) noexcept
-    : id_(other.id_),
-      url_(std::move(other.url_)),
-      title_(std::move(other.title_)),
-      visit_count_(other.visit_count_),
-      typed_count_(other.typed_count_),
-      last_visit_(other.last_visit_),
-      hidden_(other.hidden_) {}
+URLRow::URLRow(URLRow&& other) noexcept = default;
 
 URLRow::~URLRow() {
 }
