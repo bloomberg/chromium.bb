@@ -92,7 +92,7 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(-1, navigation.post_id());
   EXPECT_EQ(GURL(), navigation.original_request_url());
   EXPECT_FALSE(navigation.is_overriding_user_agent());
-  EXPECT_TRUE(navigation.timestamp().is_null());
+  EXPECT_EQ(test_data::kTimestamp, navigation.timestamp());
   EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
   EXPECT_EQ(test_data::kHttpStatusCode, navigation.http_status_code());
   // The redirect chain only syncs one way.

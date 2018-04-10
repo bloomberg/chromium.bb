@@ -75,11 +75,9 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   void OnFaviconsChanged(const std::set<GURL>& page_urls,
                          const GURL& icon_url) override;
 
-  // Set |session_tab| from |tab_delegate| and |mtime|. Exposed publicly for
-  // testing.
-  void SetSessionTabFromDelegateForTest(const SyncedTabDelegate& tab_delegate,
-                                        base::Time mtime,
-                                        sessions::SessionTab* session_tab);
+  // Returns tab specifics from |tab_delegate|. Exposed publicly for testing.
+  sync_pb::SessionTab GetTabSpecificsFromDelegateForTest(
+      const SyncedTabDelegate& tab_delegate) const;
 
  private:
   enum ReloadTabsOption { RELOAD_TABS, DONT_RELOAD_TABS };
@@ -112,10 +110,9 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
                                   const sessions::SessionTab& tab,
                                   WriteBatch* batch) const;
 
-  // Set |session_tab| from |tab_delegate| and |mtime|.
-  void SetSessionTabFromDelegate(const SyncedTabDelegate& tab_delegate,
-                                 base::Time mtime,
-                                 sessions::SessionTab* session_tab) const;
+  // Set |session_tab| from |tab_delegate|.
+  sync_pb::SessionTab GetTabSpecificsFromDelegate(
+      const SyncedTabDelegate& tab_delegate) const;
 
   // Updates task tracker with the navigations of |tab_delegate|.
   void UpdateTaskTracker(SyncedTabDelegate* const tab_delegate);

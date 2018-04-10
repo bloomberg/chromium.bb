@@ -32,17 +32,6 @@ bool IsWindowSyncable(const SyncedWindowDelegate& window_delegate) {
          window_delegate.HasWindow();
 }
 
-sync_pb::SessionSpecifics SessionTabToSpecifics(
-    const sessions::SessionTab& session_tab,
-    const std::string& local_tag,
-    int tab_node_id) {
-  sync_pb::SessionSpecifics specifics;
-  session_tab.ToSyncData().Swap(specifics.mutable_tab());
-  specifics.set_session_tag(local_tag);
-  specifics.set_tab_node_id(tab_node_id);
-  return specifics;
-}
-
 // Each sync id should only ever be used once. Previously there existed a race
 // condition which could cause them to be duplicated, see
 // https://crbug.com/639009 for more information. This counts the number of
@@ -114,11 +103,10 @@ LocalSessionEventHandlerImpl::LocalSessionEventHandlerImpl(
 
 LocalSessionEventHandlerImpl::~LocalSessionEventHandlerImpl() {}
 
-void LocalSessionEventHandlerImpl::SetSessionTabFromDelegateForTest(
-    const SyncedTabDelegate& tab_delegate,
-    base::Time mtime,
-    sessions::SessionTab* session_tab) {
-  SetSessionTabFromDelegate(tab_delegate, mtime, session_tab);
+sync_pb::SessionTab
+LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegateForTest(
+    const SyncedTabDelegate& tab_delegate) const {
+  return GetTabSpecificsFromDelegate(tab_delegate);
 }
 
 void LocalSessionEventHandlerImpl::AssociateWindows(ReloadTabsOption option,
@@ -338,25 +326,29 @@ void LocalSessionEventHandlerImpl::AssociateTab(
     return;
   }
 
+  // Get the previously synced url.
   sessions::SessionTab* session_tab =
       session_tracker_->GetTab(current_session_tag_, tab_id);
-
-  // Get the previously synced url.
   int old_index = session_tab->normalized_navigation_index();
   GURL old_url;
   if (session_tab->navigations.size() > static_cast<size_t>(old_index))
     old_url = session_tab->navigations[old_index].virtual_url();
 
-  // Update the tracker's session representation.
-  SetSessionTabFromDelegate(*tab_delegate, base::Time::Now(), session_tab);
-  session_tracker_->GetSession(current_session_tag_)->modified_time =
-      base::Time::Now();
+  // Produce the specifics.
+  auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
+  specifics->set_session_tag(current_session_tag_);
+  specifics->set_tab_node_id(tab_node_id);
+  GetTabSpecificsFromDelegate(*tab_delegate).Swap(specifics->mutable_tab());
+  WriteTasksIntoSpecifics(specifics->mutable_tab());
+
+  // Update the tracker's session representation. Timestamp will be overwriten,
+  // so we set a null time first to prevent the update from being ignored, if
+  // the local clock is skewed.
+  session_tab->timestamp = base::Time();
+  UpdateTrackerWithSpecifics(*specifics, base::Time::Now(), session_tracker_);
+  DCHECK(!session_tab->timestamp.is_null());
 
   // Write to the sync model itself.
-  auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
-  SessionTabToSpecifics(*session_tab, current_session_tag_, tab_node_id)
-      .Swap(specifics.get());
-  WriteTasksIntoSpecifics(specifics->mutable_tab());
   if (existing_tab_node) {
     batch->Update(std::move(specifics));
   } else {
@@ -484,35 +476,31 @@ void LocalSessionEventHandlerImpl::AppendChangeForExistingTab(
   // Rewrite the specifics based on the reassociated SessionTab to preserve
   // the new tab and window ids.
   auto specifics = std::make_unique<sync_pb::SessionSpecifics>();
-  SessionTabToSpecifics(tab, current_session_tag_, sync_id)
-      .Swap(specifics.get());
+  tab.ToSyncData().Swap(specifics->mutable_tab());
+  specifics->set_session_tag(current_session_tag_);
+  specifics->set_tab_node_id(sync_id);
   batch->Update(std::move(specifics));
 }
 
-void LocalSessionEventHandlerImpl::SetSessionTabFromDelegate(
-    const SyncedTabDelegate& tab_delegate,
-    base::Time mtime,
-    sessions::SessionTab* session_tab) const {
-  DCHECK(session_tab);
-  session_tab->window_id = tab_delegate.GetWindowId();
-  session_tab->tab_id = tab_delegate.GetSessionId();
-  session_tab->tab_visual_index = 0;
+sync_pb::SessionTab LocalSessionEventHandlerImpl::GetTabSpecificsFromDelegate(
+    const SyncedTabDelegate& tab_delegate) const {
+  sync_pb::SessionTab specifics;
+  specifics.set_window_id(tab_delegate.GetWindowId().id());
+  specifics.set_tab_id(tab_delegate.GetSessionId().id());
+  specifics.set_tab_visual_index(0);
   // Use -1 to indicate that the index hasn't been set properly yet.
-  session_tab->current_navigation_index = -1;
+  specifics.set_current_navigation_index(-1);
   const SyncedWindowDelegate* window_delegate =
       sessions_client_->GetSyncedWindowDelegatesGetter()->FindById(
           tab_delegate.GetWindowId());
-  session_tab->pinned =
-      window_delegate ? window_delegate->IsTabPinned(&tab_delegate) : false;
-  session_tab->extension_app_id = tab_delegate.GetExtensionAppId();
-  session_tab->user_agent_override.clear();
-  session_tab->timestamp = mtime;
+  specifics.set_pinned(
+      window_delegate ? window_delegate->IsTabPinned(&tab_delegate) : false);
+  specifics.set_extension_app_id(tab_delegate.GetExtensionAppId());
   const int current_index = tab_delegate.GetCurrentEntryIndex();
   const int min_index = std::max(0, current_index - kMaxSyncNavigationCount);
   const int max_index = std::min(current_index + kMaxSyncNavigationCount,
                                  tab_delegate.GetEntryCount());
   bool is_supervised = tab_delegate.ProfileIsSupervised();
-  session_tab->navigations.clear();
 
   for (int i = min_index; i < max_index; ++i) {
     if (!tab_delegate.GetVirtualURLAtIndex(i).is_valid()) {
@@ -523,34 +511,36 @@ void LocalSessionEventHandlerImpl::SetSessionTabFromDelegate(
 
     // Set current_navigation_index to the index in navigations.
     if (i == current_index)
-      session_tab->current_navigation_index = session_tab->navigations.size();
+      specifics.set_current_navigation_index(specifics.navigation_size());
 
-    session_tab->navigations.push_back(serialized_entry);
+    sync_pb::TabNavigation* navigation = specifics.add_navigation();
+    serialized_entry.ToSyncData().Swap(navigation);
+
     if (is_supervised) {
-      session_tab->navigations.back().set_blocked_state(
-          SerializedNavigationEntry::STATE_ALLOWED);
+      navigation->set_blocked_state(
+          sync_pb::TabNavigation_BlockedState_STATE_ALLOWED);
     }
   }
 
   // If the current navigation is invalid, set the index to the end of the
   // navigation array.
-  if (session_tab->current_navigation_index < 0) {
-    session_tab->current_navigation_index = session_tab->navigations.size() - 1;
+  if (specifics.current_navigation_index() < 0) {
+    specifics.set_current_navigation_index(specifics.navigation_size() - 1);
   }
 
   if (is_supervised) {
-    int offset = session_tab->navigations.size();
     const std::vector<std::unique_ptr<const SerializedNavigationEntry>>&
         blocked_navigations = *tab_delegate.GetBlockedNavigations();
     for (size_t i = 0; i < blocked_navigations.size(); ++i) {
-      session_tab->navigations.push_back(*blocked_navigations[i]);
-      session_tab->navigations.back().set_index(offset + i);
-      session_tab->navigations.back().set_blocked_state(
-          SerializedNavigationEntry::STATE_BLOCKED);
+      sync_pb::TabNavigation* navigation = specifics.add_navigation();
+      blocked_navigations[i]->ToSyncData().Swap(navigation);
+      navigation->set_blocked_state(
+          sync_pb::TabNavigation_BlockedState_STATE_BLOCKED);
       // TODO(bauerb): Add categories
     }
   }
-  session_tab->session_storage_persistent_id.clear();
+
+  return specifics;
 }
 
 bool LocalSessionEventHandlerImpl::ScanForTabbedWindow() {

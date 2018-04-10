@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
+#include "components/sync/base/time.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
@@ -210,57 +211,42 @@ class LocalSessionEventHandlerImplTest : public testing::Test {
 };
 
 // Populate the mock tab delegate with some data and navigation
-// entries and make sure that setting a SessionTab from it preserves
-// those entries (and clobbers any existing data).
-TEST_F(LocalSessionEventHandlerImplTest, SetSessionTabFromDelegate) {
+// entries and make sure that populating a SessionTab contains analgous
+// information.
+TEST_F(LocalSessionEventHandlerImplTest, GetTabSpecificsFromDelegate) {
   // Create a tab with three valid entries.
   TestSyncedTabDelegate* tab =
       AddTabWithTime(AddWindow()->GetSessionId(), kFoo1, kTime1);
   tab->Navigate(kBar1, kTime2);
   tab->Navigate(kBaz1, kTime3);
-
-  sessions::SessionTab session_tab;
-  session_tab.window_id.set_id(1);
-  session_tab.tab_id.set_id(1);
-  session_tab.tab_visual_index = 1;
-  session_tab.current_navigation_index = 1;
-  session_tab.pinned = true;
-  session_tab.extension_app_id = "app id";
-  session_tab.user_agent_override = "override";
-  session_tab.timestamp = kTime5;
-  session_tab.navigations.push_back(
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://www.example.com", "Example"));
-  session_tab.session_storage_persistent_id = "persistent id";
-
   InitHandler();
-  handler_->SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
 
-  EXPECT_EQ(tab->GetWindowId(), session_tab.window_id);
-  EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id);
-  EXPECT_EQ(0, session_tab.tab_visual_index);
-  EXPECT_EQ(tab->GetCurrentEntryIndex(), session_tab.current_navigation_index);
-  EXPECT_FALSE(session_tab.pinned);
-  EXPECT_TRUE(session_tab.extension_app_id.empty());
-  EXPECT_TRUE(session_tab.user_agent_override.empty());
-  EXPECT_EQ(kTime4, session_tab.timestamp);
-  ASSERT_EQ(3u, session_tab.navigations.size());
-  EXPECT_EQ(GURL(kFoo1), session_tab.navigations[0].virtual_url());
-  EXPECT_EQ(GURL(kBar1), session_tab.navigations[1].virtual_url());
-  EXPECT_EQ(GURL(kBaz1), session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
-  EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
-  EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
-  EXPECT_EQ(200, session_tab.navigations[0].http_status_code());
-  EXPECT_EQ(200, session_tab.navigations[1].http_status_code());
-  EXPECT_EQ(200, session_tab.navigations[2].http_status_code());
-  EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
-            session_tab.navigations[0].blocked_state());
-  EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
-            session_tab.navigations[1].blocked_state());
-  EXPECT_EQ(SerializedNavigationEntry::STATE_INVALID,
-            session_tab.navigations[2].blocked_state());
-  EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
+  const sync_pb::SessionTab session_tab =
+      handler_->GetTabSpecificsFromDelegateForTest(*tab);
+
+  EXPECT_EQ(tab->GetWindowId().id(), session_tab.window_id());
+  EXPECT_EQ(tab->GetSessionId().id(), session_tab.tab_id());
+  EXPECT_EQ(0, session_tab.tab_visual_index());
+  EXPECT_EQ(tab->GetCurrentEntryIndex(),
+            session_tab.current_navigation_index());
+  EXPECT_FALSE(session_tab.pinned());
+  EXPECT_TRUE(session_tab.extension_app_id().empty());
+  ASSERT_EQ(3, session_tab.navigation_size());
+  EXPECT_EQ(GURL(kFoo1), session_tab.navigation(0).virtual_url());
+  EXPECT_EQ(GURL(kBar1), session_tab.navigation(1).virtual_url());
+  EXPECT_EQ(GURL(kBaz1), session_tab.navigation(2).virtual_url());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTime1),
+            session_tab.navigation(0).timestamp_msec());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTime2),
+            session_tab.navigation(1).timestamp_msec());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTime3),
+            session_tab.navigation(2).timestamp_msec());
+  EXPECT_EQ(200, session_tab.navigation(0).http_status_code());
+  EXPECT_EQ(200, session_tab.navigation(1).http_status_code());
+  EXPECT_EQ(200, session_tab.navigation(2).http_status_code());
+  EXPECT_FALSE(session_tab.navigation(0).has_blocked_state());
+  EXPECT_FALSE(session_tab.navigation(1).has_blocked_state());
+  EXPECT_FALSE(session_tab.navigation(2).has_blocked_state());
 }
 
 // Ensure the current_navigation_index gets set properly when the navigation
@@ -276,14 +262,14 @@ TEST_F(LocalSessionEventHandlerImplTest,
 
   InitHandler();
 
-  sessions::SessionTab session_tab;
-  handler_->SetSessionTabFromDelegateForTest(*tab, kTime6, &session_tab);
+  const sync_pb::SessionTab session_tab =
+      handler_->GetTabSpecificsFromDelegateForTest(*tab);
 
-  EXPECT_EQ(6, session_tab.current_navigation_index);
-  ASSERT_EQ(8u, session_tab.navigations.size());
-  EXPECT_EQ(GURL("http://foo2"), session_tab.navigations[0].virtual_url());
-  EXPECT_EQ(GURL("http://foo3"), session_tab.navigations[1].virtual_url());
-  EXPECT_EQ(GURL("http://foo4"), session_tab.navigations[2].virtual_url());
+  EXPECT_EQ(6, session_tab.current_navigation_index());
+  ASSERT_EQ(8, session_tab.navigation_size());
+  EXPECT_EQ(GURL("http://foo2"), session_tab.navigation(0).virtual_url());
+  EXPECT_EQ(GURL("http://foo3"), session_tab.navigation(1).virtual_url());
+  EXPECT_EQ(GURL("http://foo4"), session_tab.navigation(2).virtual_url());
 }
 
 // Ensure the current_navigation_index gets set to the end of the navigation
@@ -299,11 +285,11 @@ TEST_F(LocalSessionEventHandlerImplTest,
 
   InitHandler();
 
-  sessions::SessionTab session_tab;
-  handler_->SetSessionTabFromDelegateForTest(*tab, kTime6, &session_tab);
+  const sync_pb::SessionTab session_tab =
+      handler_->GetTabSpecificsFromDelegateForTest(*tab);
 
-  EXPECT_EQ(2, session_tab.current_navigation_index);
-  ASSERT_EQ(3u, session_tab.navigations.size());
+  EXPECT_EQ(2, session_tab.current_navigation_index());
+  ASSERT_EQ(3, session_tab.navigation_size());
 }
 
 // Tests that for supervised users blocked navigations are recorded and marked
@@ -330,45 +316,34 @@ TEST_F(LocalSessionEventHandlerImplTest, BlockedNavigations) {
   tab->set_is_supervised(true);
   tab->set_blocked_navigations(blocked_navigations);
 
-  sessions::SessionTab session_tab;
-  session_tab.window_id.set_id(1);
-  session_tab.tab_id.set_id(1);
-  session_tab.tab_visual_index = 1;
-  session_tab.current_navigation_index = 1;
-  session_tab.pinned = true;
-  session_tab.extension_app_id = "app id";
-  session_tab.user_agent_override = "override";
-  session_tab.timestamp = kTime5;
-  session_tab.navigations.push_back(
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://www.example.com", "Example"));
-  session_tab.session_storage_persistent_id = "persistent id";
-
   InitHandler();
-  handler_->SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
+  const sync_pb::SessionTab session_tab =
+      handler_->GetTabSpecificsFromDelegateForTest(*tab);
 
-  EXPECT_EQ(tab->GetWindowId(), session_tab.window_id);
-  EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id);
-  EXPECT_EQ(0, session_tab.tab_visual_index);
-  EXPECT_EQ(0, session_tab.current_navigation_index);
-  EXPECT_FALSE(session_tab.pinned);
-  EXPECT_TRUE(session_tab.extension_app_id.empty());
-  EXPECT_TRUE(session_tab.user_agent_override.empty());
-  EXPECT_EQ(kTime4, session_tab.timestamp);
-  ASSERT_EQ(3u, session_tab.navigations.size());
-  EXPECT_EQ(GURL(kFoo1), session_tab.navigations[0].virtual_url());
-  EXPECT_EQ(url2, session_tab.navigations[1].virtual_url());
-  EXPECT_EQ(url3, session_tab.navigations[2].virtual_url());
-  EXPECT_EQ(kTime1, session_tab.navigations[0].timestamp());
-  EXPECT_EQ(kTime2, session_tab.navigations[1].timestamp());
-  EXPECT_EQ(kTime3, session_tab.navigations[2].timestamp());
-  EXPECT_EQ(SerializedNavigationEntry::STATE_ALLOWED,
-            session_tab.navigations[0].blocked_state());
-  EXPECT_EQ(SerializedNavigationEntry::STATE_BLOCKED,
-            session_tab.navigations[1].blocked_state());
-  EXPECT_EQ(SerializedNavigationEntry::STATE_BLOCKED,
-            session_tab.navigations[2].blocked_state());
-  EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
+  EXPECT_EQ(tab->GetWindowId().id(), session_tab.window_id());
+  EXPECT_EQ(tab->GetSessionId().id(), session_tab.tab_id());
+  EXPECT_EQ(0, session_tab.tab_visual_index());
+  EXPECT_EQ(0, session_tab.current_navigation_index());
+  EXPECT_FALSE(session_tab.pinned());
+  ASSERT_EQ(3, session_tab.navigation_size());
+  EXPECT_EQ(GURL(kFoo1), session_tab.navigation(0).virtual_url());
+  EXPECT_EQ(url2, session_tab.navigation(1).virtual_url());
+  EXPECT_EQ(url3, session_tab.navigation(2).virtual_url());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTime1),
+            session_tab.navigation(0).timestamp_msec());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTime2),
+            session_tab.navigation(1).timestamp_msec());
+  EXPECT_EQ(syncer::TimeToProtoTime(kTime3),
+            session_tab.navigation(2).timestamp_msec());
+  EXPECT_TRUE(session_tab.navigation(0).has_blocked_state());
+  EXPECT_TRUE(session_tab.navigation(1).has_blocked_state());
+  EXPECT_TRUE(session_tab.navigation(2).has_blocked_state());
+  EXPECT_EQ(sync_pb::TabNavigation_BlockedState_STATE_ALLOWED,
+            session_tab.navigation(0).blocked_state());
+  EXPECT_EQ(sync_pb::TabNavigation_BlockedState_STATE_BLOCKED,
+            session_tab.navigation(1).blocked_state());
+  EXPECT_EQ(sync_pb::TabNavigation_BlockedState_STATE_BLOCKED,
+            session_tab.navigation(2).blocked_state());
 }
 
 // Tests that calling AssociateWindowsAndTabs() handles well the case with no

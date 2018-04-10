@@ -188,7 +188,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
 
   navigation.transition_type_ = static_cast<ui::PageTransition>(transition);
 
-  navigation.timestamp_ = base::Time();
+  navigation.timestamp_ = syncer::ProtoTimeToTime(sync_data.timestamp_msec());
   if (sync_data.has_favicon_url())
     navigation.favicon_url_ = GURL(sync_data.favicon_url());
 
