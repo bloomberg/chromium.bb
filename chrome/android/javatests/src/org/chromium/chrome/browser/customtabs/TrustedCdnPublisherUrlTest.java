@@ -248,9 +248,7 @@ public class TrustedCdnPublisherUrlTest {
         String otherTestUrl = mWebServer.setResponse("/other.html", PAGE_WITH_TITLE, null);
         mCustomTabActivityTestRule.loadUrl(otherTestUrl);
 
-        UrlBar urlBar = mCustomTabActivityTestRule.getActivity().findViewById(R.id.url_bar);
-        Assert.assertEquals(UrlFormatter.formatUrlForSecurityDisplay(otherTestUrl, false),
-                urlBar.getText().toString());
+        verifyUrl(UrlFormatter.formatUrlForSecurityDisplay(otherTestUrl, false));
         // TODO(bauerb): The security icon is updated via an animation. Find a way to reliably
         // disable animations and verify the icon.
     }
@@ -298,8 +296,7 @@ public class TrustedCdnPublisherUrlTest {
             return urlBar.getText().toString();
         }));
 
-        ImageView securityButton = newActivity.findViewById(R.id.security_button);
-        Assert.assertEquals(View.INVISIBLE, securityButton.getVisibility());
+        verifySecurityIcon(getDefaultSecurityIcon());
     }
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,
@@ -331,13 +328,16 @@ public class TrustedCdnPublisherUrlTest {
             expectedUrl =
                     String.format(Locale.US, "From %s – delivered by Google", expectedPublisher);
         }
-        verifyTrustedCdnUiState(expectedUrl, expectedSecurityIcon);
+        verifyUrl(expectedUrl);
+        verifySecurityIcon(expectedSecurityIcon);
     }
 
-    private void verifyTrustedCdnUiState(String expectedUrl, int expectedSecurityIcon) {
+    private void verifyUrl(String expectedUrl) {
         UrlBar urlBar = mCustomTabActivityTestRule.getActivity().findViewById(R.id.url_bar);
         Assert.assertEquals(expectedUrl, urlBar.getText().toString());
+    }
 
+    private void verifySecurityIcon(int expectedSecurityIcon) {
         ImageView securityButton =
                 mCustomTabActivityTestRule.getActivity().findViewById(R.id.security_button);
         if (expectedSecurityIcon == 0) {
