@@ -44,8 +44,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionTask : public FidoTask {
 
   // PublicKeyUserEntity field in GetAssertion response is optional with the
   // following constraints:
-  // - If assertion has been made without user verification, user entity must
-  //   not be included.
+  // - If assertion has been made without user verification, user identifiable
+  //   information must not be included.
   // - For resident key credentials, user id of the user entity is mandatory.
   // - When multiple accounts exist for specified RP ID, user entity is
   //   mandatory.
