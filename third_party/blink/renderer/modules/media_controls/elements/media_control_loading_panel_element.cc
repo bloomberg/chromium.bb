@@ -157,14 +157,6 @@ void MediaControlLoadingPanelElement::UpdateDisplayState() {
     return;
   }
 
-  // If the controls are in test mode, we always hide the loading panel. So hide
-  // if necessary and return.
-  if (GetMediaControls().GetTestMode()) {
-    if (state_ != State::kHidden)
-      HideAnimation();
-    return;
-  }
-
   switch (state_) {
     case State::kHidden:
       // If the media controls are loading metadata then we should show the
@@ -210,10 +202,6 @@ void MediaControlLoadingPanelElement::HideAnimation() {
 
 void MediaControlLoadingPanelElement::OnControlsShown() {
   controls_hidden_ = false;
-  UpdateDisplayState();
-}
-
-void MediaControlLoadingPanelElement::OnTestModeUpdated() {
   UpdateDisplayState();
 }
 
