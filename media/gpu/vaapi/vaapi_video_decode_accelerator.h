@@ -149,15 +149,13 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // or return false on failure.
   bool InitializeFBConfig();
 
-  // Callback to be executed once we have a |va_surface| to be output and
-  // an available |picture| to use for output.
-  // Puts contents of |va_surface| into given |picture|, releases the surface
-  // and passes the resulting picture to client to output the given
-  // |visible_rect| part of it.
+  // Callback to be executed once we have a |va_surface| to be output and an
+  // available VaapiPicture in |available_picture_buffers_| for output. Puts
+  // contents of |va_surface| into the latter, releases the surface and passes
+  // the resulting picture to |client_| along with |visible_rect|.
   void OutputPicture(const scoped_refptr<VASurface>& va_surface,
                      int32_t input_id,
-                     gfx::Rect visible_rect,
-                     VaapiPicture* picture);
+                     gfx::Rect visible_rect);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
   void TryOutputPicture();
@@ -227,8 +225,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // requests output, we'll store the request on pending_output_cbs_ queue for
   // later and run it once the client gives us more textures
   // via ReusePictureBuffer().
-  using OutputCB = base::Callback<void(VaapiPicture*)>;
-  base::queue<OutputCB> pending_output_cbs_;
+  base::queue<base::OnceClosure> pending_output_cbs_;
 
   // ChildThread's task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
