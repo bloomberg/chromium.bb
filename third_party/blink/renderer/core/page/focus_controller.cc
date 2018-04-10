@@ -1247,7 +1247,7 @@ void FocusController::SetActive(bool active) {
   }
 }
 
-static void UpdateFocusCandidateIfNeeded(WebFocusType type,
+static void UpdateFocusCandidateIfNeeded(WebFocusType direction,
                                          const FocusCandidate& current,
                                          FocusCandidate& candidate,
                                          FocusCandidate& closest) {
@@ -1262,10 +1262,10 @@ static void UpdateFocusCandidateIfNeeded(WebFocusType type,
 
   // Ignore off screen child nodes of containers that do not scroll
   // (overflow:hidden)
-  if (candidate.is_offscreen && !CanBeScrolledIntoView(type, candidate))
+  if (candidate.is_offscreen && !CanBeScrolledIntoView(direction, candidate))
     return;
 
-  DistanceDataForNode(type, current, candidate);
+  DistanceDataForNode(direction, current, candidate);
   if (candidate.distance == MaxDistance())
     return;
 
@@ -1314,7 +1314,7 @@ static void UpdateFocusCandidateIfNeeded(WebFocusType type,
 void FocusController::FindFocusCandidateInContainer(
     Node& container,
     const LayoutRect& starting_rect,
-    WebFocusType type,
+    WebFocusType direction,
     FocusCandidate& closest,
     const SkipList& already_checked) {
   if (already_checked.Contains(&container))
@@ -1333,31 +1333,32 @@ void FocusController::FindFocusCandidateInContainer(
 
   for (; element;
        element =
-           (IsNavigableContainer(element, type))
+           (IsNavigableContainer(element, direction))
                ? ElementTraversal::NextSkippingChildren(*element, &container)
                : ElementTraversal::Next(*element, &container)) {
     if (element == focused_element)
       continue;
 
-    if (!element->IsKeyboardFocusable() && !IsNavigableContainer(element, type))
+    if (!element->IsKeyboardFocusable() &&
+        !IsNavigableContainer(element, direction))
       continue;
 
     if (already_checked.Contains(element))
       continue;
 
-    FocusCandidate candidate = FocusCandidate(element, type);
+    FocusCandidate candidate = FocusCandidate(element, direction);
     if (candidate.IsNull())
       continue;
 
     candidate.enclosing_scrollable_box = &container;
-    UpdateFocusCandidateIfNeeded(type, current, candidate, closest);
+    UpdateFocusCandidateIfNeeded(direction, current, candidate, closest);
   }
 }
 
 bool FocusController::AdvanceFocusDirectionallyInContainer(
     Node* start_container,
     const LayoutRect& starting_rect,
-    WebFocusType type,
+    WebFocusType direction,
     Node* pruned_sub_tree_root) {
   if (!start_container)
     return false;
@@ -1373,26 +1374,26 @@ bool FocusController::AdvanceFocusDirectionallyInContainer(
     Node* container = stack.back();
 
     FocusCandidate candidate;
-    FindFocusCandidateInContainer(*container, starting_rect, type, candidate,
-                                  already_checked);
+    FindFocusCandidateInContainer(*container, starting_rect, direction,
+                                  candidate, already_checked);
 
     if (candidate.IsNull()) {
       // Nothing to focus in this container, scroll if possible.
       // NOTE: If no scrolling is performed (i.e. ScrollInDirection returns
       // false), the spatial navigation algorithm will skip this container.
-      if (ScrollInDirection(container, type))
+      if (ScrollInDirection(container, direction))
         return true;
 
       stack.pop_back();
       continue;
     }
 
-    if (!IsNavigableContainer(candidate.visible_node, type)) {
+    if (!IsNavigableContainer(candidate.visible_node, direction)) {
       // We found a new focus node, navigate to it.
       Element* element = ToElement(candidate.focusable_node);
       DCHECK(element);
       element->focus(
-          FocusParams(SelectionBehaviorOnFocus::kReset, type, nullptr));
+          FocusParams(SelectionBehaviorOnFocus::kReset, direction, nullptr));
       return true;
     }
 
@@ -1418,10 +1419,10 @@ bool FocusController::AdvanceFocusDirectionallyInContainer(
     stack.push_back(candidate.visible_node);
   }
 
-  return ScrollInDirection(start_container, type);
+  return ScrollInDirection(start_container, direction);
 }
 
-bool FocusController::AdvanceFocusDirectionally(WebFocusType type) {
+bool FocusController::AdvanceFocusDirectionally(WebFocusType direction) {
   // FIXME: Directional focus changes don't yet work with RemoteFrames.
   if (!FocusedOrMainFrame()->IsLocalFrame())
     return false;
@@ -1439,13 +1440,14 @@ bool FocusController::AdvanceFocusDirectionally(WebFocusType type) {
   if (focused_element)
     container = ScrollableAreaOrDocumentOf(focused_element);
 
-  const LayoutRect starting_rect = FindSearchStartPoint(current_frame, type);
+  const LayoutRect starting_rect =
+      FindSearchStartPoint(current_frame, direction);
   Node* pruned_sub_tree_root = nullptr;
   bool consumed = false;
 
   while (!consumed && container) {
-    consumed = AdvanceFocusDirectionallyInContainer(container, starting_rect,
-                                                    type, pruned_sub_tree_root);
+    consumed = AdvanceFocusDirectionallyInContainer(
+        container, starting_rect, direction, pruned_sub_tree_root);
     if (consumed)
       break;
 
