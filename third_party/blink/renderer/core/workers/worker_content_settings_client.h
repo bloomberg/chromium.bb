@@ -64,6 +64,10 @@ class CORE_EXPORT WorkerContentSettingsClient final
 
   static WorkerContentSettingsClient* From(ExecutionContext&);
 
+  WebContentSettingsClient* GetWebContentSettingsClient() {
+    return client_.get();
+  }
+
   void Trace(blink::Visitor* visitor) override {
     Supplement<WorkerClients>::Trace(visitor);
   }
