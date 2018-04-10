@@ -26738,6 +26738,7 @@ from previous Chrome versions.
   <int value="-195029497" label="MediaRemoting:disabled"/>
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
+  <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-181093956" label="ScrollAnchoring:enabled"/>
   <int value="-174319545" label="BulkPrinters:enabled"/>
@@ -27691,6 +27692,7 @@ from previous Chrome versions.
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2119964154" label="enable-download-resumption"/>
+  <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
   <int value="2121550859" label="PreferHtmlOverPlugins:enabled"/>
   <int value="2121776031" label="auto-virtual-keyboard"/>
   <int value="2122023503" label="enable-win32k-lockdown-mimetypes"/>

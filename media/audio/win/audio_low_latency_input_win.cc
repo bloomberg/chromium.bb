@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_features.h"
 #include "media/audio/win/audio_manager_win.h"
 #include "media/audio/win/avrt_wrapper_win.h"
 #include "media/audio/win/core_audio_util_win.h"
@@ -795,14 +796,20 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
 
   // Initialize the audio stream between the client and the device.
   // We connect indirectly through the audio engine by using shared mode.
-  // Note that, |hnsBufferDuration| is set of 0, which ensures that the
-  // buffer is never smaller than the minimum buffer size needed to ensure
-  // that glitches do not occur between the periodic processing passes.
-  // This setting should lead to lowest possible latency.
+  // The buffer duration is normally set to 0, which ensures that the buffer
+  // size is the minimum buffer size needed to ensure that glitches do not occur
+  // between the periodic processing passes. It can be set to 100 ms via a
+  // feature.
+  // Note: if the value is changed, update the description in
+  // chrome/browser/flag_descriptions.cc.
+  REFERENCE_TIME buffer_duration =
+      base::FeatureList::IsEnabled(features::kIncreaseInputAudioBufferSize)
+          ? 100 * 1000 * 10  // 100 ms expressed in 100-ns units.
+          : 0;
   HRESULT hr = audio_client_->Initialize(
-      AUDCLNT_SHAREMODE_SHARED, flags,
-      0,  // hnsBufferDuration
-      0, &input_format_,
+      AUDCLNT_SHAREMODE_SHARED, flags, buffer_duration,
+      0,  // device period, n/a for shared mode.
+      &input_format_,
       device_id_ == AudioDeviceDescription::kCommunicationsDeviceId
           ? &kCommunicationsSessionId
           : nullptr);
