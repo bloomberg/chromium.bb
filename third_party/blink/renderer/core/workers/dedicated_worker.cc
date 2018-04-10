@@ -197,9 +197,13 @@ WorkerClients* DedicatedWorker::CreateWorkerClients() {
     WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(
         ToDocument(GetExecutionContext())->GetFrame());
     client = web_frame->Client()->CreateWorkerContentSettingsClient();
+  } else if (GetExecutionContext()->IsWorkerGlobalScope()) {
+    WebContentSettingsClient* web_worker_content_settings_client =
+        WorkerContentSettingsClient::From(*GetExecutionContext())
+            ->GetWebContentSettingsClient();
+    if (web_worker_content_settings_client)
+      client = web_worker_content_settings_client->Clone();
   }
-  // TODO(japhet): WorkerContentsSettingsClient should be cloned between
-  // worker threads for nested workers.
 
   ProvideContentSettingsClientToWorker(worker_clients, std::move(client));
   return worker_clients;

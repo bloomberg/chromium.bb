@@ -19,6 +19,10 @@ class WebURL;
 // whether each feature is allowed or not.
 class WebContentSettingsClient {
  public:
+  // Only used if this is a WebContentSettingsClient on a worker thread. Clones
+  // this WebContentSettingsClient so it can be used by another worker thread.
+  virtual std::unique_ptr<WebContentSettingsClient> Clone() { return nullptr; }
+
   // Controls whether access to Web Databases is allowed for this frame.
   virtual bool AllowDatabase(const WebString& name,
                              const WebString& display_name,

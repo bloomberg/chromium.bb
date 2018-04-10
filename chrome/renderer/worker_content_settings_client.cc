@@ -31,7 +31,21 @@ WorkerContentSettingsClient::WorkerContentSettingsClient(
                                         ->allow_running_insecure_content();
 }
 
+WorkerContentSettingsClient::WorkerContentSettingsClient(
+    const WorkerContentSettingsClient& other)
+    : routing_id_(other.routing_id_),
+      is_unique_origin_(other.is_unique_origin_),
+      document_origin_url_(other.document_origin_url_),
+      top_frame_origin_url_(other.top_frame_origin_url_),
+      allow_running_insecure_content_(other.allow_running_insecure_content_),
+      sync_message_filter_(other.sync_message_filter_) {}
+
 WorkerContentSettingsClient::~WorkerContentSettingsClient() {}
+
+std::unique_ptr<blink::WebContentSettingsClient>
+WorkerContentSettingsClient::Clone() {
+  return base::WrapUnique(new WorkerContentSettingsClient(*this));
+}
 
 bool WorkerContentSettingsClient::RequestFileSystemAccessSync() {
   if (is_unique_origin_)
