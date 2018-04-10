@@ -111,7 +111,6 @@
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">@color/default_primary_color</color>
     <color name="ntp_bg_incognito">#222222</color>
-    <color name="ntp_list_header_subtext">#969696</color>
     <color name="snippets_publisher_name_color">#646464</color>
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
