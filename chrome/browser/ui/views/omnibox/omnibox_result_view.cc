@@ -121,6 +121,8 @@ class OmniboxSeparatedLineView : public views::View {
   void OnMatchUpdate(const AutocompleteMatch& match);
   void OnHighlightUpdate(const AutocompleteMatch& match);
 
+  bool CanProcessEventsWithinSubtree() const override { return false; }
+
  protected:
   // views::View:
   void Layout() override;
