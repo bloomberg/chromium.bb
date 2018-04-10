@@ -171,20 +171,28 @@ void SynchronousCompositorSyncCallBridge::VSyncCompleteOnUIThread() {
   DCHECK(window_android_in_vsync_);
   window_android_in_vsync_ = nullptr;
 
-  base::AutoLock lock(lock_);
-  if (remote_state_ != RemoteState::READY)
-    return;
+  bool update_state = false;
+  SyncCompositorCommonRendererParams render_params;
+  {
+    base::AutoLock lock(lock_);
+    if (remote_state_ != RemoteState::READY)
+      return;
 
-  // If we haven't received a response yet. Wait for it.
-  if (!begin_frame_response_valid_) {
-    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
-        allow_base_sync_primitives;
-    begin_frame_condition_.Wait();
+    // If we haven't received a response yet. Wait for it.
+    if (!begin_frame_response_valid_) {
+      base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
+          allow_base_sync_primitives;
+      begin_frame_condition_.Wait();
+    }
+    DCHECK(begin_frame_response_valid_ || remote_state_ != RemoteState::READY);
+    begin_frame_response_valid_ = false;
+    if (remote_state_ == RemoteState::READY) {
+      update_state = true;
+      render_params = last_render_params_;
+    }
   }
-  DCHECK(begin_frame_response_valid_ || remote_state_ != RemoteState::READY);
-  begin_frame_response_valid_ = false;
-  if (remote_state_ == RemoteState::READY)
-    host_->UpdateState(last_render_params_);
+  if (update_state)
+    host_->UpdateState(render_params);
 }
 
 void SynchronousCompositorSyncCallBridge::ProcessFrameMetadataOnUIThread(
