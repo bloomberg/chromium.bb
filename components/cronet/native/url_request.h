@@ -46,8 +46,15 @@ class Cronet_UrlRequestImpl : public Cronet_UrlRequest {
   bool IsDoneLocked();
 
   // Helper method to set final status of CronetUrlRequest and clean up the
-  // native request adapter. Must be called under |lock_| held.
-  void DestroyRequestLocked(
+  // native request adapter. Returns true if request is already done, false
+  // request is not done and is destroyed.
+  bool DestroyRequestUnlessDone(
+      Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason);
+
+  // Helper method to set final status of CronetUrlRequest and clean up the
+  // native request adapter. Returns true if request is already done, false
+  // request is not done and is destroyed. Must be called under |lock_| held.
+  bool DestroyRequestUnlessDoneLocked(
       Cronet_RequestFinishedInfo_FINISHED_REASON finished_reason);
 
   // Synchronize access to |request_| and other objects below from different

@@ -40,7 +40,6 @@ class TestUrlRequestCallback {
     // Same as above, but continues to advance the request after posting
     // the cancellation task.
     CANCEL_ASYNC_WITHOUT_PAUSE,
-    THROW_SYNC
   };
 
   class UrlResponseInfo {

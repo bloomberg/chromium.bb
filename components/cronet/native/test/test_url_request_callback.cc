@@ -144,6 +144,7 @@ void TestUrlRequestCallback::OnReadCompleted(Cronet_UrlRequestPtr request,
   }
 
   if (MaybeCancelOrPause(request)) {
+    Cronet_Buffer_Destroy(buffer);
     return;
   }
   StartNextRead(request, buffer);
@@ -197,7 +198,6 @@ void TestUrlRequestCallback::OnCanceled(Cronet_UrlRequestPtr request,
   CHECK(!last_error_);
 
   response_step_ = ON_CANCELED;
-  response_info_ = std::make_unique<UrlResponseInfo>(info);
   on_canceled_called_ = true;
   SignalDone();
   MaybeCancelOrPause(request);
