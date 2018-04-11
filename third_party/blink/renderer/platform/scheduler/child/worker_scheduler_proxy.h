@@ -17,7 +17,7 @@
 
 namespace blink {
 namespace scheduler {
-class WorkerSchedulerImpl;
+class WorkerThreadScheduler;
 
 // Helper class for communication between frame scheduler (main thread) and
 // worker scheduler (worker thread).
@@ -32,7 +32,7 @@ class PLATFORM_EXPORT WorkerSchedulerProxy : public FrameScheduler::Observer {
   ~WorkerSchedulerProxy() override;
 
   void OnWorkerSchedulerCreated(
-      base::WeakPtr<WorkerSchedulerImpl> worker_scheduler);
+      base::WeakPtr<WorkerThreadScheduler> worker_scheduler);
 
   void OnThrottlingStateChanged(
       FrameScheduler::ThrottlingState throttling_state) override;
@@ -50,7 +50,7 @@ class PLATFORM_EXPORT WorkerSchedulerProxy : public FrameScheduler::Observer {
 
  private:
   // Can be accessed only from the worker thread.
-  base::WeakPtr<WorkerSchedulerImpl> worker_scheduler_;
+  base::WeakPtr<WorkerThreadScheduler> worker_scheduler_;
 
   // Const after init on the worker thread.
   scoped_refptr<base::SingleThreadTaskRunner> worker_thread_task_runner_;

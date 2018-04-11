@@ -31,7 +31,7 @@ class WorkerGlobalScopeSchedulerTest : public testing::Test {
  public:
   WorkerGlobalScopeSchedulerTest()
       : mock_task_runner_(new base::TestSimpleTaskRunner()),
-        scheduler_(new WorkerSchedulerImpl(
+        scheduler_(new WorkerThreadScheduler(
             WebThreadType::kTestThread,
             TaskQueueManagerForTest::Create(nullptr,
                                             mock_task_runner_,
@@ -63,7 +63,7 @@ class WorkerGlobalScopeSchedulerTest : public testing::Test {
   base::SimpleTestTickClock clock_;
   scoped_refptr<base::TestSimpleTaskRunner> mock_task_runner_;
 
-  std::unique_ptr<WorkerSchedulerImpl> scheduler_;
+  std::unique_ptr<WorkerThreadScheduler> scheduler_;
   std::unique_ptr<WorkerGlobalScopeScheduler> global_scope_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerGlobalScopeSchedulerTest);
