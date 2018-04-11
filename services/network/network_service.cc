@@ -16,6 +16,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
+#include "net/dns/host_resolver.h"
+#include "net/dns/mapped_host_resolver.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
@@ -55,6 +57,21 @@ CreateNetworkChangeNotifierIfNeeded() {
     return base::WrapUnique(net::NetworkChangeNotifier::Create());
   }
   return nullptr;
+}
+
+std::unique_ptr<net::HostResolver> CreateHostResolver() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(network::switches::kHostResolverRules))
+    return nullptr;
+
+  std::unique_ptr<net::HostResolver> host_resolver(
+      net::HostResolver::CreateDefaultResolver(nullptr));
+  std::unique_ptr<net::MappedHostResolver> remapped_host_resolver(
+      new net::MappedHostResolver(std::move(host_resolver)));
+  remapped_host_resolver->SetRulesFromString(
+      command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+  return std::move(remapped_host_resolver);
 }
 
 }  // namespace
@@ -150,6 +167,8 @@ NetworkService::NetworkService(
       std::make_unique<net::NetworkQualityEstimatorParams>(
           network_quality_estimator_params),
       net_log_);
+
+  host_resolver_ = CreateHostResolver();
 }
 
 NetworkService::~NetworkService() {
