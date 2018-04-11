@@ -73,7 +73,9 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyBorderTopColor:
     case CSSPropertyColor:
     case CSSPropertyColumnRuleColor:
+    case CSSPropertyFloodColor:
     case CSSPropertyOutlineColor:
+    case CSSPropertyStopColor:
     case CSSPropertyTextDecorationColor:
     case CSSPropertyWebkitTextEmphasisColor:
       // Only 'currentcolor' is supported.

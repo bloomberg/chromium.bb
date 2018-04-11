@@ -97,6 +97,19 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
+    case CSSPropertyPaintOrder: {
+      // level 1 only accepts single keywords
+      const auto* value = style_value.ToCSSValue();
+      // only 'normal' is stored as an identifier, the other keywords are
+      // wrapped in a list.
+      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword() &&
+          ToCSSIdentifierValue(value)->GetValueID() != CSSValueNormal) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
+        return list;
+      }
+      break;
+    }
     case CSSPropertyTextDecorationLine: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();
