@@ -14,9 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
+import org.chromium.chrome.browser.browsing_data.TimePeriod;
+import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
+import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -25,12 +30,12 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.base.PageTransition;
 
 /**
- * Tests for UKM monitoring of incognito activity.
+ * Android UKM tests.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-enable-metrics-reporting"})
-public class UkmIncognitoTest {
+public class UkmTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -41,6 +46,8 @@ public class UkmIncognitoTest {
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
+    // TODO(rkaplow): Swap these methods (here and in UkmTest.java) with the JNI methods in
+    // UkmUtilsForTest.
     /*
      * These helper method should stay in sync with the tests within
      * sync_shell/.../chrome/browser/sync/UkmTest.java.
@@ -145,5 +152,50 @@ public class UkmIncognitoTest {
 
         closeIncognitoTab();
         Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+    }
+
+    @Test
+    @SmallTest
+    public void testHistoryDeleteCheck() throws Exception {
+        // Keep in sync with UkmBrowserTest.HistoryDeleteCheck in
+        // chrome/browser/metrics/ukm_browsertest.cc.
+
+        Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
+
+        String originalClientId = getUkmClientId(normalTab);
+
+        // Record some dummy UKM data (adding a Source).
+        final long sourceId = 0x54321;
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Write data under a dummy sourceId and verify it is there.
+            UkmUtilsForTest.recordSourceWithId(sourceId);
+            Assert.assertTrue(UkmUtilsForTest.hasSourceWithId(sourceId));
+        });
+        CallbackHelper callbackHelper = new CallbackHelper();
+
+        // Clear all browsing history.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowsingDataBridge.getInstance().clearBrowsingData(new OnClearBrowsingDataListener() {
+                @Override
+                public void onBrowsingDataCleared() {
+                    callbackHelper.notifyCalled();
+                }
+            }, new int[] {BrowsingDataType.HISTORY}, TimePeriod.ALL_TIME);
+        });
+        callbackHelper.waitForCallback(0);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Verify that UKM is still running.
+            Assert.assertTrue(UkmUtilsForTest.isEnabled());
+            // The source under sourceId should be removed.
+            Assert.assertFalse(UkmUtilsForTest.hasSourceWithId(sourceId));
+        });
+
+        // Client ID should NOT have been reset.
+        Assert.assertEquals("Client id:", originalClientId, getUkmClientId(normalTab));
     }
 }

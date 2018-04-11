@@ -53,9 +53,10 @@ public class UkmTest {
                 () -> UmaSessionStats.unSetMetricsAndCrashReportingForTesting());
     }
 
+    // TODO(rkaplow): Swap these methods with the JNI methods in UkmUtilsForTest.
     /*
      * These helper method should stay in sync with
-     * chrome/browser/metrics/UkmIncognitoTest.java.
+     * chrome/browser/metrics/UkmTest.java.
      */
     public String getElementContent(Tab normalTab, String elementId) throws Exception {
         mSyncTestRule.loadUrlInTab(
