@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/fuchsia/config.gni")
-import("//build/config/sysroot.gni")
 
 # Creates a Fuchsia .far package file.
 #
@@ -35,7 +34,7 @@ template("package") {
   _bundle_target = "${pkg.package_name}__bundle"
 
   # Generates a manifest file based on the GN runtime deps
-  # suitable for "pm" tool consumption.
+  # suitable for "far" tool consumption.
   action(_write_manifest_target) {
     forward_variables_from(invoker,
                            [
@@ -48,7 +47,6 @@ template("package") {
 
     inputs = [
       _runtime_deps_file,
-      "//build/config/fuchsia/sandbox_policy",
     ]
 
     outputs = [
@@ -56,11 +54,6 @@ template("package") {
     ]
 
     data_deps = pkg.deps
-
-    # Include the SDK's core dynamic libraries in the package.
-    data = [
-      "${sysroot}/dist/",
-    ]
 
     args = [
       rebase_path("//"),
