@@ -2958,7 +2958,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
     if (frame_is_sframe(cm)) {
       assert(cm->error_resilient_mode);
-    } else {
+    } else if (cm->frame_type != KEY_FRAME) {
       aom_wb_write_bit(wb, cm->error_resilient_mode);
     }
     aom_wb_write_bit(wb, cm->disable_cdf_update);
@@ -3048,7 +3048,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
     // Write all ref frame order hints if error_resilient_mode == 1
-    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
+    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint &&
+        cm->frame_type != KEY_FRAME) {
       RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Get buffer index

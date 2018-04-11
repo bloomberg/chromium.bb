@@ -2692,7 +2692,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
     cm->cur_frame->showable_frame = cm->showable_frame;
     cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
-    cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
+    cm->error_resilient_mode =
+        frame_is_sframe(cm) || cm->frame_type == KEY_FRAME
+            ? 1
+            : aom_rb_read_bit(rb);
     cm->disable_cdf_update = aom_rb_read_bit(rb);
   }
   if (cm->seq_params.still_picture) {
@@ -2821,7 +2824,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->prev_frame = NULL;
   } else {
     // Read all ref frame order hints if error_resilient_mode == 1
-    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
+    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint &&
+        cm->frame_type != KEY_FRAME) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Read order hint from bit stream
         unsigned int frame_offset =
