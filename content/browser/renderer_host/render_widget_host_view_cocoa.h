@@ -34,8 +34,8 @@ struct DidOverscrollParams;
 
 @protocol RenderWidgetHostViewMacDelegate;
 
-@protocol RenderWidgetHostViewMacOwner
-- (content::RenderWidgetHostViewMac*)renderWidgetHostViewMac;
+@protocol RenderWidgetHostNSViewClientOwner
+- (content::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient;
 @end
 
 // This is the view that lives in the Cocoa view hierarchy. In Windows-land,
@@ -45,7 +45,7 @@ struct DidOverscrollParams;
 // TODO(ccameron): Hide this interface behind RenderWidgetHostNSViewBridge.
 @interface RenderWidgetHostViewCocoa
     : ToolTipBaseView<CommandDispatcherTarget,
-                      RenderWidgetHostViewMacOwner,
+                      RenderWidgetHostNSViewClientOwner,
                       NSTextInputClient> {
  @private
   // The communications channel to the RenderWidgetHostViewMac.
@@ -67,7 +67,7 @@ struct DidOverscrollParams;
   BOOL canBeKeyView_;
   BOOL closeOnDeactivate_;
   std::unique_ptr<content::RenderWidgetHostViewMacEditCommandHelper>
-      editCommand_helper_;
+      editCommandHelper_;
 
   // Is YES if there was a mouse-down as yet unbalanced with a mouse-up.
   BOOL hasOpenMouseDown_;

@@ -1508,6 +1508,61 @@ void RenderWidgetHostViewMac::OnNSViewSyncGetFirstRectForRange(
   }
 }
 
+void RenderWidgetHostViewMac::OnNSViewExecuteEditCommand(
+    const std::string& command) {
+  if (host()->delegate()) {
+    host()->delegate()->ExecuteEditCommand(command, base::nullopt);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewUndo() {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents)
+    web_contents->Undo();
+}
+
+void RenderWidgetHostViewMac::OnNSViewRedo() {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents)
+    web_contents->Redo();
+}
+
+void RenderWidgetHostViewMac::OnNSViewCut() {
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Cut();
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewCopy() {
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Copy();
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewCopyToFindPboard() {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents)
+    web_contents->CopyToFindPboard();
+}
+
+void RenderWidgetHostViewMac::OnNSViewPaste() {
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->Paste();
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewPasteAndMatchStyle() {
+  WebContents* web_contents = GetWebContents();
+  if (web_contents)
+    web_contents->PasteAndMatchStyle();
+}
+
+void RenderWidgetHostViewMac::OnNSViewSelectAll() {
+  if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
+    delegate->SelectAll();
+  }
+}
+
 void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     int32_t target_widget_process_id,
     int32_t target_widget_routing_id,

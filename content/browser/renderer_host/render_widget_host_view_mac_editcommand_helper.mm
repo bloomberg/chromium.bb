@@ -110,14 +110,13 @@ const char* const kEditCommands[] = {
   "yankAndSelect"
 };
 
-
 // This function is installed via the objc runtime as the implementation of all
 // the various editing selectors.
 // The objc runtime hookup occurs in
 // RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass().
 //
 // self - the object we're attached to; it must implement the
-// RenderWidgetHostViewMacOwner protocol.
+// RenderWidgetHostNSViewClientOwner protocol.
 // _cmd - the selector that fired.
 // sender - the id of the object that sent the message.
 //
@@ -130,7 +129,8 @@ const char* const kEditCommands[] = {
 // The WebFrame is in the Chrome glue layer and forwards the message to WebCore.
 void EditCommandImp(id self, SEL _cmd, id sender) {
   // Make sure |self| is the right type.
-  DCHECK([self conformsToProtocol:@protocol(RenderWidgetHostViewMacOwner)]);
+  DCHECK(
+      [self conformsToProtocol:@protocol(RenderWidgetHostNSViewClientOwner)]);
 
   // SEL -> command name string.
   NSString* command_name_ns =
@@ -138,14 +138,10 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
   std::string command([command_name_ns UTF8String]);
 
   // Forward the edit command string down the pipeline.
-  RenderWidgetHostViewMac* rwhv = [(id<RenderWidgetHostViewMacOwner>)self
-      renderWidgetHostViewMac];
-  DCHECK(rwhv);
-
-  RenderWidgetHostDelegate* host_delegate =
-      RenderWidgetHostImpl::From(rwhv->GetRenderWidgetHost())->delegate();
-  if (host_delegate)
-    host_delegate->ExecuteEditCommand(command, base::nullopt);
+  RenderWidgetHostNSViewClient* client = [(
+      id<RenderWidgetHostNSViewClientOwner>)self renderWidgetHostNSViewClient];
+  DCHECK(client);
+  client->OnNSViewExecuteEditCommand(command);
 }
 
 }  // namespace
@@ -212,7 +208,7 @@ void RenderWidgetHostViewMacEditCommandHelper::AddEditingSelectorsToClass(
 
 bool RenderWidgetHostViewMacEditCommandHelper::IsMenuItemEnabled(
     SEL item_action,
-    id<RenderWidgetHostViewMacOwner> owner) {
+    id<RenderWidgetHostNSViewClientOwner> owner) {
   const char* selector_name = sel_getName(item_action);
   // TODO(jeremy): The final form of this function will check state
   // associated with the Browser.
