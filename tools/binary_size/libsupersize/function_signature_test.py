@@ -12,6 +12,31 @@ import function_signature
 
 class AnalyzeTest(unittest.TestCase):
 
+  def testParseJavaFunctionSignature(self):
+    # Java method with no args
+    SIG = 'org.package.WebsitePreferenceBridge java.util.List getCameraInfo()'
+    got_full_name, got_template_name, got_name = (
+        function_signature.ParseJava(SIG))
+    self.assertEqual('WebsitePreferenceBridge#getCameraInfo', got_name)
+    self.assertEqual('WebsitePreferenceBridge#getCameraInfo', got_template_name)
+    self.assertEqual(SIG, got_full_name)
+
+    # Java method with args
+    SIG = 'jp.package.BaseGifImage int readShort(java.io.InputStream)'
+    got_full_name, got_template_name, got_name = (
+        function_signature.ParseJava(SIG))
+    self.assertEqual('BaseGifImage#readShort', got_name)
+    self.assertEqual('BaseGifImage#readShort', got_template_name)
+    self.assertEqual(SIG, got_full_name)
+
+    # Java <init> method
+    SIG = 'jp.package.BaseGifImage$GifHeaderStream <init>(byte[])'
+    got_full_name, got_template_name, got_name = (
+        function_signature.ParseJava(SIG))
+    self.assertEqual('BaseGifImage$GifHeaderStream#<init>', got_name)
+    self.assertEqual('BaseGifImage$GifHeaderStream#<init>', got_template_name)
+    self.assertEqual(SIG, got_full_name)
+
   def testParseFunctionSignature(self):
     def check(ret_part, name_part, params_part, after_part='',
               name_without_templates=None):
