@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
 
 #include "base/run_loop.h"
 #include "base/threading/platform_thread.h"
@@ -51,4 +51,4 @@ class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_LAZY_THREAD_CONTROLLER_FOR_TEST_H_
