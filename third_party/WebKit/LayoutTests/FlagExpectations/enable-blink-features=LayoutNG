@@ -234,8 +234,6 @@ crbug.com/591099 editing/selection/modify_extend/extend_by_character.html [ Fail
 crbug.com/714962 editing/selection/modify_extend/extend_forward_line_crash.html [ Failure ]
 crbug.com/714962 editing/selection/modify_move/move-by-paragraph.html [ Failure ]
 crbug.com/714962 editing/selection/modify_move/move-forward-after-line-break.html [ Failure ]
-crbug.com/591099 editing/selection/move-3875618-fix.html [ Failure ]
-crbug.com/591099 editing/selection/move-3875641-fix.html [ Failure ]
 crbug.com/591099 editing/selection/move-left-right.html [ Pass Timeout ]
 crbug.com/714962 editing/selection/offset-from-point-complex-scripts.html [ Failure ]
 crbug.com/714962 editing/selection/offset-from-point.html [ Failure ]
