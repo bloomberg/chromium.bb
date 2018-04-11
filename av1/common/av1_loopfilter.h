@@ -199,9 +199,8 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
 
 // Apply the loop filter to [start, stop) macro block rows in frame_buffer.
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer,
-                          struct AV1Common *cm,
-                          struct macroblockd_plane *planes, int start, int stop,
-                          int y_only);
+                          struct AV1Common *cm, MACROBLOCKD *xd, int start,
+                          int stop, int y_only);
 
 typedef struct LoopFilterWorkerData {
   YV12_BUFFER_CONFIG *frame_buffer;
