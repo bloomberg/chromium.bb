@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#import "base/message_loop/message_pump_mac.h"
 #include "base/strings/sys_string_conversions.h"
 
 @interface WebMenuRunner (PrivateAPI)
@@ -156,11 +155,7 @@
 
   // Display the menu, and set a flag if a menu item was chosen.
   [cell attachPopUpWithFrame:[dummyView bounds] inView:dummyView];
-  {
-    // Ensure the UI can update while the menu is fading out.
-    base::ScopedPumpMessagesInPrivateModes pump_private;
-    [cell performClickWithFrame:[dummyView bounds] inView:dummyView];
-  }
+  [cell performClickWithFrame:[dummyView bounds] inView:dummyView];
 
   [dummyView removeFromSuperview];
 

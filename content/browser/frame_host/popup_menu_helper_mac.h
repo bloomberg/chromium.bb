@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_POPUP_MENU_HELPER_MAC_H_
 #define CONTENT_BROWSER_FRAME_HOST_POPUP_MENU_HELPER_MAC_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -20,6 +21,10 @@
 #else
 class WebMenuRunner;
 #endif
+
+namespace base {
+class ScopedPumpMessagesInPrivateModes;
+}
 
 namespace content {
 
@@ -70,6 +75,9 @@ class PopupMenuHelper : public NotificationObserver {
   RenderFrameHostImpl* render_frame_host_;
   WebMenuRunner* menu_runner_;
   bool popup_was_hidden_;
+
+  // Controls whether messages can be pumped during the menu fade.
+  std::unique_ptr<base::ScopedPumpMessagesInPrivateModes> pump_in_fade_;
 
   base::WeakPtrFactory<PopupMenuHelper> weak_ptr_factory_;
 
