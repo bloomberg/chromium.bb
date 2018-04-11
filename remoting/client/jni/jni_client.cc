@@ -99,7 +99,7 @@ void JniClient::FetchSecret(
     bool pairing_supported,
     const protocol::SecretFetchedCallback& secret_fetched_callback) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  DCHECK(secret_fetched_callback_);
+  DCHECK(!secret_fetched_callback_);
 
   secret_fetched_callback_ = secret_fetched_callback;
 
@@ -115,7 +115,7 @@ void JniClient::FetchThirdPartyToken(
     const std::string& scopes,
     const protocol::ThirdPartyTokenFetchedCallback& callback) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  DCHECK(third_party_token_fetched_callback_);
+  DCHECK(!third_party_token_fetched_callback_);
 
   third_party_token_fetched_callback_ = callback;
   JNIEnv* env = base::android::AttachCurrentThread();
