@@ -10,11 +10,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/history/favicon_view.h"
 #import "ios/chrome/browser/ui/history/favicon_view_provider.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
+#include "ios/chrome/browser/ui/history/history_util.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -35,27 +35,6 @@ const CGFloat kMinFaviconSize = 16.0;
 const CGFloat kMargin = 16.0;
 // Horizontal spacing between the leading edge of the cell and the text.
 const CGFloat kHeaderMargin = 56.0;
-
-NSString* FormattedTitle(const base::string16& title, const GURL& url) {
-  // Use url as title if no title.
-  bool using_url_as_the_title = false;
-  base::string16 formatted_title(title);
-  if (title.empty()) {
-    using_url_as_the_title = true;
-    formatted_title = url_formatter::FormatUrl(url);
-  }
-  // Since the title can contain BiDi text, mark the text as either RTL or LTR,
-  // depending on the characters in the string. If the URL is used as the title,
-  // mark the title as LTR since URLs are always treated as left to right
-  // strings.
-  if (base::i18n::IsRTL()) {
-    if (using_url_as_the_title)
-      base::i18n::WrapStringWithLTRFormatting(&formatted_title);
-    else
-      base::i18n::AdjustStringForLocaleDirection(&formatted_title);
-  }
-  return base::SysUTF16ToNSString(formatted_title);
-}
 }  // namespace
 
 #pragma mark - LegacyHistoryEntryItem
@@ -106,7 +85,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
                                   minFaviconSize:kMinFaviconSize
                                 largeIconService:largeIconService
                                         delegate:self];
-    _text = [FormattedTitle(entry.title, entry.url) copy];
+    _text = [history::FormattedTitle(entry.title, entry.url) copy];
     _detailText = [base::SysUTF8ToNSString(entry.url.spec()) copy];
     _timeText =
         [base::SysUTF16ToNSString(base::TimeFormatTimeOfDay(entry.time)) copy];
