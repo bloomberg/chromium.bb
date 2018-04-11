@@ -1029,7 +1029,7 @@ void BrowserView::FocusToolbar() {
 
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
-  toolbar_->SetPaneFocus(nullptr);
+  toolbar_button_provider_->FocusToolbar();
 }
 
 ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
@@ -1919,7 +1919,7 @@ void BrowserView::GetAccessiblePanes(std::vector<views::View*>* panes) {
   // (Windows) or Ctrl+Back/Forward (Chrome OS).  If one of these is
   // invisible or has no focusable children, it will be automatically
   // skipped.
-  panes->push_back(toolbar_);
+  panes->push_back(toolbar_button_provider_->GetAsAccessiblePaneView());
   if (bookmark_bar_view_.get())
     panes->push_back(bookmark_bar_view_.get());
   if (infobar_container_)

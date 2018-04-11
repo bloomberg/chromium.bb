@@ -23,6 +23,8 @@ constexpr int kMenuHighlightFadeDurationMs = 800;
 HostedAppMenuButton::HostedAppMenuButton(BrowserView* browser_view)
     : AppMenuButton(this), browser_view_(browser_view) {
   SetInkDropMode(InkDropMode::ON);
+  // Disable focus ring for consistency with sibling buttons and AppMenuButton.
+  SetFocusPainter(nullptr);
   // This name is guaranteed not to change during the lifetime of this button.
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
   // because the menu applies to the entire app.

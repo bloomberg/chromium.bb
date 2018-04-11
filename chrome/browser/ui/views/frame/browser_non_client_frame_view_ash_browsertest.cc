@@ -613,6 +613,7 @@ class HostedAppNonClientFrameViewAshTest
         BrowserActionsBarBrowserTest>::SetUpOnMainThread();
 
     scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
+    HostedAppButtonContainer::DisableAnimationForTesting();
 
     WebApplicationInfo web_app_info;
     web_app_info.app_url = GetAppURL();
@@ -649,6 +650,22 @@ class HostedAppNonClientFrameViewAshTest
     return hosted_app_button_container_->active_icon_color_;
   }
 
+  ContentSettingImageView* GrantGeolocationPermission() {
+    content::RenderFrameHost* frame =
+        app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+    TabSpecificContentSettings* content_settings =
+        TabSpecificContentSettings::GetForFrame(frame->GetProcess()->GetID(),
+                                                frame->GetRoutingID());
+    content_settings->OnGeolocationPermissionSet(GetAppURL().GetOrigin(), true);
+
+    return *std::find_if(
+        content_setting_views_->begin(), content_setting_views_->end(),
+        [](auto v) {
+          return ContentSettingImageModel::ImageType::GEOLOCATION ==
+                 v->GetTypeForTesting();
+        });
+  }
+
   void SimulateClickOnView(views::View* view) {
     const gfx::Point point;
     ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
@@ -683,29 +700,68 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
             GetActiveIconColor(hosted_app_button_container_));
 }
 
+// Tests that the focus toolbar command focuses the app menu button in web app
+// windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       BrowserCommandFocusToolbarAppMenu) {
+  EXPECT_FALSE(app_menu_button_->HasFocus());
+  chrome::ExecuteCommand(app_browser_, IDC_FOCUS_TOOLBAR);
+  EXPECT_TRUE(app_menu_button_->HasFocus());
+}
+
+// Tests that the focus toolbar command focuses content settings icons before
+// the app menu button when present in web app windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       BrowserCommandFocusToolbarGeolocation) {
+  ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
+
+  EXPECT_FALSE(app_menu_button_->HasFocus());
+  EXPECT_FALSE(geolocation_icon->HasFocus());
+
+  chrome::ExecuteCommand(app_browser_, IDC_FOCUS_TOOLBAR);
+
+  EXPECT_FALSE(app_menu_button_->HasFocus());
+  EXPECT_TRUE(geolocation_icon->HasFocus());
+}
+
+// Tests that the show app menu command opens the app menu for web app windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       BrowserCommandShowAppMenu) {
+  EXPECT_EQ(nullptr, GetAppMenu(hosted_app_button_container_));
+  chrome::ExecuteCommand(app_browser_, IDC_SHOW_APP_MENU);
+  EXPECT_NE(nullptr, GetAppMenu(hosted_app_button_container_));
+}
+
+// Tests that the focus next pane command focuses the app menu for web app
+// windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       BrowserCommandFocusNextPane) {
+  EXPECT_FALSE(app_menu_button_->HasFocus());
+  chrome::ExecuteCommand(app_browser_, IDC_FOCUS_NEXT_PANE);
+  EXPECT_TRUE(app_menu_button_->HasFocus());
+}
+
+// Tests that the focus previous pane command focuses the app menu for web app
+// windows.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
+                       BrowserCommandFocusPreviousPane) {
+  EXPECT_FALSE(app_menu_button_->HasFocus());
+  chrome::ExecuteCommand(app_browser_, IDC_FOCUS_PREVIOUS_PANE);
+  EXPECT_TRUE(app_menu_button_->HasFocus());
+}
+
 // Tests that a web app's content settings icons can be interacted with.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ContentSettingIcons) {
-  for (auto* v : *content_setting_views_)
-    EXPECT_FALSE(v->visible());
+  for (auto* view : *content_setting_views_)
+    EXPECT_FALSE(view->visible());
 
-  // Invoke the the geolocation icon to show.
-  content::RenderFrameHost* frame =
-      app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::GetForFrame(frame->GetProcess()->GetID(),
-                                              frame->GetRoutingID());
-  content_settings->OnGeolocationPermissionSet(GetAppURL().GetOrigin(), true);
+  ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
 
-  auto is_visible = [](auto v) { return v->visible(); };
-  EXPECT_EQ(1, std::count_if(content_setting_views_->begin(),
-                             content_setting_views_->end(), is_visible));
-
-  ContentSettingImageView* geolocation_icon =
-      *std::find_if(content_setting_views_->begin(),
-                    content_setting_views_->end(), is_visible);
-  EXPECT_TRUE(ContentSettingImageModel::ImageType::GEOLOCATION ==
-              geolocation_icon->GetTypeForTesting());
+  for (auto* view : *content_setting_views_) {
+    bool is_geolocation_icon = view == geolocation_icon;
+    EXPECT_EQ(is_geolocation_icon, view->visible());
+  }
 
   // Press the geolocation button.
   base::HistogramTester histograms;

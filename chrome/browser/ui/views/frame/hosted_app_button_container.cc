@@ -25,6 +25,8 @@
 
 namespace {
 
+bool g_animation_disabled_for_testing = false;
+
 constexpr base::TimeDelta kContentSettingsFadeInDuration =
     base::TimeDelta::FromMilliseconds(500);
 
@@ -110,6 +112,10 @@ class HostedAppButtonContainer::ContentSettingsContainer
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsContainer);
 };
 
+void HostedAppButtonContainer::DisableAnimationForTesting() {
+  g_animation_disabled_for_testing = true;
+}
+
 const std::vector<ContentSettingImageView*>&
 HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
   return content_settings_container_->GetContentSettingViewsForTesting();
@@ -124,10 +130,12 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
       views::LayoutProvider::Get()->GetDistanceMetric(
           views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
-  SetVisible(false);
-  SetPaintToLayer();
-  layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetOpacity(0);
+  if (!g_animation_disabled_for_testing) {
+    SetVisible(false);
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    layer()->SetOpacity(0);
+  }
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
       ContentSettingImageModel::GenerateContentSettingImageModels();
@@ -198,6 +206,9 @@ void HostedAppButtonContainer::SetPaintAsActive(bool active) {
 
 void HostedAppButtonContainer::StartTitlebarAnimation(
     base::TimeDelta origin_text_slide_duration) {
+  if (g_animation_disabled_for_testing)
+    return;
+
   app_menu_button_->StartHighlightAnimation(origin_text_slide_duration);
 
   fade_in_content_setting_buttons_timer_.Start(
@@ -246,4 +257,12 @@ HostedAppButtonContainer::GetBrowserActionsContainer() {
 
 AppMenuButton* HostedAppButtonContainer::GetAppMenuButton() {
   return app_menu_button_;
+}
+
+void HostedAppButtonContainer::FocusToolbar() {
+  SetPaneFocus(nullptr);
+}
+
+views::AccessiblePaneView* HostedAppButtonContainer::GetAsAccessiblePaneView() {
+  return this;
 }

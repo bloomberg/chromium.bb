@@ -8,6 +8,10 @@
 class AppMenuButton;
 class BrowserActionsContainer;
 
+namespace views {
+class AccessiblePaneView;
+}
+
 // An interface implemented by a view contains and provides access to toolbar
 // buttons in a BrowserView.
 class ToolbarButtonProvider {
@@ -17,6 +21,12 @@ class ToolbarButtonProvider {
 
   // Gets the app menu button.
   virtual AppMenuButton* GetAppMenuButton() = 0;
+
+  // Gives the toolbar focus.
+  virtual void FocusToolbar() = 0;
+
+  // Returns the toolbar as an AccessiblePaneView.
+  virtual views::AccessiblePaneView* GetAsAccessiblePaneView() = 0;
 
   // TODO(calamity): Move other buttons and button actions into here.
  protected:

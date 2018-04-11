@@ -184,6 +184,8 @@ class ToolbarView : public views::AccessiblePaneView,
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   AppMenuButton* GetAppMenuButton() override;
+  void FocusToolbar() override;
+  views::AccessiblePaneView* GetAsAccessiblePaneView() override;
 
   // Used to avoid duplicating the near-identical logic of
   // ToolbarView::CalculatePreferredSize() and ToolbarView::GetMinimumSize().
