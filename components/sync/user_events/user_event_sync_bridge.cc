@@ -72,7 +72,8 @@ UserEventSyncBridge::UserEventSyncBridge(
     std::unique_ptr<ModelTypeChangeProcessor> change_processor,
     GlobalIdMapper* global_id_mapper)
     : ModelTypeSyncBridge(std::move(change_processor)),
-      global_id_mapper_(global_id_mapper) {
+      global_id_mapper_(global_id_mapper),
+      is_sync_starting_or_started_(false) {
   DCHECK(global_id_mapper_);
   std::move(store_factory)
       .Run(USER_EVENTS, base::BindOnce(&UserEventSyncBridge::OnStoreCreated,
@@ -148,10 +149,26 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_event());
 }
 
+void UserEventSyncBridge::OnSyncStarting(
+    const ModelErrorHandler& error_handler,
+    const ModelTypeChangeProcessor::StartCallback& start_callback) {
+  change_processor()->OnSyncStarting(std::move(error_handler), start_callback);
+
+  bool was_sync_starting_or_started = is_sync_starting_or_started_;
+  is_sync_starting_or_started_ = true;
+  if (store_ && change_processor()->IsTrackingMetadata() &&
+      !was_sync_starting_or_started) {
+    ReadAllDataAndResubmit();
+  }
+}
+
 void UserEventSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
   // Sync can only be disabled after initialization.
   DCHECK(deferred_user_events_while_initializing_.empty());
+
+  is_sync_starting_or_started_ = false;
+
   // Delete everything except user consents. With DICE the signout may happen
   // frequently. It is important to report all user consents, thus, they are
   // persisted for some time even after signout.
@@ -187,6 +204,38 @@ void UserEventSyncBridge::OnReadAllDataToDelete(
   store_->CommitWriteBatch(
       std::move(batch),
       base::BindOnce(&UserEventSyncBridge::OnCommit, base::AsWeakPtr(this)));
+}
+
+void UserEventSyncBridge::ReadAllDataAndResubmit() {
+  DCHECK(is_sync_starting_or_started_);
+  DCHECK(change_processor()->IsTrackingMetadata());
+  DCHECK(store_);
+  store_->ReadAllData(base::BindOnce(
+      &UserEventSyncBridge::OnReadAllDataToResubmit, base::AsWeakPtr(this)));
+}
+
+void UserEventSyncBridge::OnReadAllDataToResubmit(
+    const base::Optional<ModelError>& error,
+    std::unique_ptr<RecordList> data_records) {
+  if (!is_sync_starting_or_started_) {
+    // Meanwhile the sync has been disabled. We will try next time.
+    return;
+  }
+  DCHECK(change_processor()->IsTrackingMetadata());
+
+  if (error) {
+    change_processor()->ReportError(*error);
+    return;
+  }
+
+  for (const Record& r : *data_records) {
+    auto specifics = std::make_unique<UserEventSpecifics>();
+    if (specifics->ParseFromString(r.value) &&
+        specifics->event_case() ==
+            UserEventSpecifics::EventCase::kUserConsent) {
+      RecordUserEventImpl(std::move(specifics));
+    }
+  }
 }
 
 void UserEventSyncBridge::RecordUserEvent(
@@ -249,8 +298,6 @@ void UserEventSyncBridge::OnStoreCreated(
     return;
   }
 
-  // TODO(vitaliii): Attempt to resubmit persistently stored user consents
-  // (probably not immediately on startup).
   // TODO(vitaliii): Garbage collect old user consents if sync is disabled.
 
   store_ = std::move(store);
@@ -266,6 +313,9 @@ void UserEventSyncBridge::OnReadAllMetadata(
   } else {
     change_processor()->ModelReadyToSync(this, std::move(metadata_batch));
     DCHECK(change_processor()->IsTrackingMetadata());
+    if (is_sync_starting_or_started_) {
+      ReadAllDataAndResubmit();
+    }
     ProcessQueuedEvents();
   }
 }

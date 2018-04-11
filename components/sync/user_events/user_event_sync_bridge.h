@@ -41,6 +41,9 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
+  void OnSyncStarting(
+      const ModelErrorHandler& error_handler,
+      const ModelTypeChangeProcessor::StartCallback& callback) override;
   void ApplyDisableSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
 
@@ -49,6 +52,7 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
  private:
   void RecordUserEventImpl(
       std::unique_ptr<sync_pb::UserEventSpecifics> specifics);
+  // Record events in the deferred queue and clear the queue.
   void ProcessQueuedEvents();
 
   void OnStoreCreated(const base::Optional<ModelError>& error,
@@ -68,6 +72,14 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
       const base::Optional<ModelError>& error,
       std::unique_ptr<ModelTypeStore::RecordList> data_records);
 
+  // Resubmit all the events persisted in the store to sync events, which were
+  // preserved when sync was disabled. This may resubmit entities that the
+  // processor already knows about (i.e. with metadata), but it is allowed.
+  void ReadAllDataAndResubmit();
+  void OnReadAllDataToResubmit(
+      const base::Optional<ModelError>& error,
+      std::unique_ptr<ModelTypeStore::RecordList> data_records);
+
   void HandleGlobalIdChange(int64_t old_global_id, int64_t new_global_id);
 
   // Persistent storage for in flight events. Should remain quite small, as we
@@ -84,6 +96,8 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
       in_flight_nav_linked_events_;
 
   GlobalIdMapper* global_id_mapper_;
+
+  bool is_sync_starting_or_started_;
 
   DISALLOW_COPY_AND_ASSIGN(UserEventSyncBridge);
 };

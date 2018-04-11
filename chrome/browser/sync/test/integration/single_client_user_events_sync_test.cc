@@ -339,4 +339,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest, FieldTrial) {
       .Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(SingleClientUserEventsSyncTest,
+                       PreserveConsentsOnDisableSync) {
+  const UserEventSpecifics testEvent1 = CreateTestEvent(1);
+  const UserEventSpecifics consent1 = CreateUserConsent(2);
+
+  ASSERT_TRUE(SetupSync());
+  syncer::UserEventService* event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(GetProfile(0));
+  event_service->RecordUserEvent(testEvent1);
+  event_service->RecordUserEvent(consent1);
+
+  ASSERT_TRUE(GetClient(0)->RestartSyncService());
+
+  EXPECT_TRUE(ExpectUserEvents({consent1}));
+}
+
 }  // namespace
