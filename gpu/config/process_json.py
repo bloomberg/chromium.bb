@@ -698,7 +698,7 @@ def process_software_rendering_list(script_dir, output_dir, os_filter):
 
 def process_gpu_driver_bug_list(script_dir, output_dir, os_filter):
   total_features = load_gpu_driver_bug_workarounds(
-      os.path.join(script_dir, 'gpu_driver_bug_workaround_type.h'))
+      os.path.join(output_dir, 'gpu_driver_bug_workaround_autogen.h'))
   process_json_file(
       os.path.join(script_dir, 'gpu_driver_bug_list.json'),
       'GpuDriverBugList',
