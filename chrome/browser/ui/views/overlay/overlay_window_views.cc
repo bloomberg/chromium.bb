@@ -8,15 +8,56 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/window/non_client_view.h"
 
 // static
 std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create() {
   return base::WrapUnique(new OverlayWindowViews());
 }
+
+namespace {
+const int kBorderThickness = 1;
+const int kResizeAreaCornerSize = 16;
+}  // namespace
+
+// OverlayWindow implementation of NonClientFrameView.
+class OverlayWindowFrameView : public views::NonClientFrameView {
+ public:
+  OverlayWindowFrameView() = default;
+  ~OverlayWindowFrameView() override = default;
+
+  // views::NonClientFrameView:
+  gfx::Rect GetBoundsForClientView() const override { return bounds(); }
+  gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const override {
+    return bounds();
+  }
+  int NonClientHitTest(const gfx::Point& point) override {
+    // Outside of the window bounds, do nothing.
+    if (!bounds().Contains(point))
+      return HTNOWHERE;
+
+    // Allow dragging the border of the window to resize. Within the bounds of
+    // the window, allow dragging to reposition the window.
+    int window_component = GetHTComponentForFrame(
+        point, kBorderThickness, kBorderThickness, kResizeAreaCornerSize,
+        kResizeAreaCornerSize, GetWidget()->widget_delegate()->CanResize());
+    return (window_component == HTNOWHERE) ? HTCAPTION : window_component;
+  }
+  void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
+  void ResetWindowControls() override {}
+  void UpdateWindowIcon() override {}
+  void UpdateWindowTitle() override {}
+  void SizeConstraintsChanged() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverlayWindowFrameView);
+};
 
 // OverlayWindow implementation of WidgetDelegate.
 class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
@@ -31,11 +72,18 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   bool CanResize() const override { return true; }
   ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
   base::string16 GetWindowTitle() const override {
+    // While the window title is not shown on the window itself, it is used to
+    // identify the window on the system tray.
     return l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
   }
+  bool ShouldShowWindowTitle() const override { return false; }
   void DeleteDelegate() override { delete this; }
   views::Widget* GetWidget() override { return widget_; }
   const views::Widget* GetWidget() const override { return widget_; }
+  views::NonClientFrameView* CreateNonClientFrameView(
+      views::Widget* widget) override {
+    return new OverlayWindowFrameView();
+  }
 
  private:
   // Owns OverlayWindowWidgetDelegate.
@@ -45,12 +93,12 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
 };
 
 OverlayWindowViews::OverlayWindowViews() {
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateBounds();
   params.keep_on_top = true;
   params.visible_on_all_workspaces = true;
+  params.remove_standard_frame = true;
 
   // Set WidgetDelegate for more control over |widget_|.
   params.delegate = new OverlayWindowWidgetDelegate(this);
