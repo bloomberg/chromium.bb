@@ -225,12 +225,12 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
          decidePolicyForDownload:(nonnull web::DownloadTask*)download
                completionHandler:(nonnull void (^)(NewDownloadPolicy))handler {
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION);
-  NSString* message = l10n_util::GetNSString(
-      IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION_MESSAGE);
+  const int title = IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION;
+  const int message = IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION_MESSAGE;
   [self runConfirmationDialogWithTitle:title
                                message:message
+                          confirmTitle:IDS_OK
+                           cancelTitle:IDS_CANCEL
                      completionHandler:^(BOOL confirmed) {
                        UMA_HISTOGRAM_BOOLEAN("Download.IOSDownloadReplaced",
                                              confirmed);
@@ -292,10 +292,11 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   }
 
   __weak DownloadManagerCoordinator* weakSelf = self;
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_CANCEL_CONFIRMATION);
+  int title = IDS_IOS_DOWNLOAD_MANAGER_CANCEL_CONFIRMATION;
   [self runConfirmationDialogWithTitle:title
-                               message:nil
+                               message:-1
+                          confirmTitle:IDS_IOS_DOWNLOAD_MANAGER_STOP
+                           cancelTitle:IDS_IOS_DOWNLOAD_MANAGER_CONTINUE
                      completionHandler:^(BOOL confirmed) {
                        if (confirmed) {
                          UMA_HISTOGRAM_ENUMERATION(
@@ -356,18 +357,23 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   downloadTask->Cancel();
 }
 
-// Presents UIAlertController with |title|, |message| and two buttons (OK and
-// Cancel). |handler| is called with YES if OK button was tapped and with NO
-// if Cancel button was tapped.
-- (void)runConfirmationDialogWithTitle:(NSString*)title
-                               message:(NSString*)message
+// Presents UIAlertController with |titleID|, |messageID| and two buttons
+// (confirmTitleID and cancelTitleID). |handler| is called with YES if confirm
+// button was tapped and with NO  if Cancel button was tapped. |messageID| is
+// optional and can be -1.
+- (void)runConfirmationDialogWithTitle:(int)titleID
+                               message:(int)messageID
+                          confirmTitle:(int)confirmTitleID
+                           cancelTitle:(int)cancelTitleID
                      completionHandler:(void (^)(BOOL confirmed))handler {
+  NSString* message = messageID != -1 ? l10n_util::GetNSString(messageID) : nil;
+  NSString* title = l10n_util::GetNSString(titleID);
   _confirmationDialog =
       [UIAlertController alertControllerWithTitle:title
                                           message:message
                                    preferredStyle:UIAlertControllerStyleAlert];
   UIAlertAction* OKAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(confirmTitleID)
                                style:UIAlertActionStyleDefault
                              handler:^(UIAlertAction*) {
                                handler(YES);
@@ -375,7 +381,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   [_confirmationDialog addAction:OKAction];
 
   UIAlertAction* cancelAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(cancelTitleID)
                                style:UIAlertActionStyleCancel
                              handler:^(UIAlertAction*) {
                                handler(NO);

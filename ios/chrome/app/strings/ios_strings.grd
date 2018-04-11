@@ -595,7 +595,13 @@ locale.  The strings in this file are specific to iOS.
         Install
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_CANCEL_CONFIRMATION" desc="Alert title to confirm download cancellation [Length: 30em] [iOS only]">
-        Cancel Download?
+        Stop Download?
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_CONTINUE" desc="The title of Continue button in the Stop Download? confirmation dialog [30em]">
+        Continue
+      </message>
+      <message name="IDS_IOS_DOWNLOAD_MANAGER_STOP" desc="The title of Stop button in the Stop Download? confirmation dialog [30em]">
+        Stop
       </message>
       <message name="IDS_IOS_DOWNLOAD_MANAGER_REPLACE_CONFIRMATION" desc="Alert title to confirm download old download replacement [Length: 30em] [iOS only]">
         Start New Download?

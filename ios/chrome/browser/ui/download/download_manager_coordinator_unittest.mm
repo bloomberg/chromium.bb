@@ -698,7 +698,7 @@ TEST_F(DownloadManagerCoordinatorTest, CloseInProgressDownload) {
       isKindOfClass:[UIAlertController class]]);
   UIAlertController* alert = base::mac::ObjCCast<UIAlertController>(
       base_view_controller_.presentedViewController);
-  EXPECT_NSEQ(@"Cancel Download?", alert.title);
+  EXPECT_NSEQ(@"Stop Download?", alert.title);
   EXPECT_FALSE(alert.message);
 
   // Stop to avoid holding a dangling pointer to destroyed task.
