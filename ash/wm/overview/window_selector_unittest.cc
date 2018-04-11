@@ -102,6 +102,16 @@ float GetItemScale(const gfx::Rect& source,
       source.size(), target.size(), top_view_inset, title_height);
 }
 
+// Helper function to get the index of |child|, given its parent window
+// |parent|.
+int IndexOf(aura::Window* child, aura::Window* parent) {
+  aura::Window::Windows children = parent->children();
+  auto it = std::find(children.begin(), children.end(), child);
+  DCHECK(it != children.end());
+
+  return static_cast<int>(std::distance(children.begin(), it));
+}
+
 }  // namespace
 
 // TODO(bruthig): Move all non-simple method definitions out of class
@@ -2607,20 +2617,6 @@ TEST_F(WindowSelectorTest, WindowItemTitleCloseVisibilityOnDrag) {
 
 // Tests that overview widgets are stacked in the correct order.
 TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
-  // Helper function to get the index of |child|, give its parent window
-  // |parent|. Given the same |parent|, the children with higher index will be
-  // stacked above (but not neccessarily directly) the children with lower
-  // index.
-  auto index_of = [](aura::Window* child, aura::Window* parent) {
-    DCHECK(parent->Contains(child));
-
-    aura::Window::Windows children = parent->children();
-    auto it = std::find(children.begin(), children.end(), child);
-    DCHECK(it != children.end());
-
-    return static_cast<int>(std::distance(children.begin(), it));
-  };
-
   // Create three windows, including one minimized.
   const gfx::Rect bounds(10, 10, 200, 200);
   std::unique_ptr<aura::Window> window(CreateWindow(bounds));
@@ -2652,10 +2648,10 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
   // minimized windows will be above non minimized windows, because a widget for
   // the minimized windows is created upon entering overview, and them the
   // window selector item widget is stacked on top of that.
-  EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
-            index_of(widget3->GetNativeWindow(), parent));
-  EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
-            index_of(widget1->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
+            IndexOf(widget3->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
+            IndexOf(widget1->GetNativeWindow(), parent));
 
   // Verify that only minimized windows have minimized widgets in overview.
   EXPECT_FALSE(min_widget1);
@@ -2672,22 +2668,22 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
   // Verify that the item widget is stacked above the window if not minimized.
   // Verify that the item widget is stacked above the minimized widget if
   // minimized.
-  EXPECT_GT(index_of(widget1->GetNativeWindow(), parent),
-            index_of(window.get(), parent));
-  EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
-            index_of(min_widget2->GetNativeWindow(), parent));
-  EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
-            index_of(window3.get(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(window.get(), parent));
+  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
+            IndexOf(min_widget2->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
+            IndexOf(window3.get(), parent));
 
   // Drag the first window. Verify that it's item widget is not stacked above
   // the other two.
   const gfx::Point start_drag = item1->target_bounds().CenterPoint();
   GetEventGenerator().MoveMouseTo(start_drag);
   GetEventGenerator().PressLeftButton();
-  EXPECT_GT(index_of(widget1->GetNativeWindow(), parent),
-            index_of(widget2->GetNativeWindow(), parent));
-  EXPECT_GT(index_of(widget1->GetNativeWindow(), parent),
-            index_of(widget3->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget3->GetNativeWindow(), parent));
 
   // Drag to origin and then back to the start to avoid activating the window or
   // entering splitview.
@@ -2696,10 +2692,58 @@ TEST_F(WindowSelectorTest, OverviewWidgetStackingOrder) {
   GetEventGenerator().ReleaseLeftButton();
 
   // Verify the stacking order is same as before dragging started.
-  EXPECT_GT(index_of(widget2->GetNativeWindow(), parent),
-            index_of(widget3->GetNativeWindow(), parent));
-  EXPECT_GT(index_of(widget3->GetNativeWindow(), parent),
-            index_of(widget1->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
+            IndexOf(widget3->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
+            IndexOf(widget1->GetNativeWindow(), parent));
+}
+
+// Tests that overview widgets are stacked in the correct order.
+TEST_F(WindowSelectorTest, OverviewWidgetStackingOrderWithDragging) {
+  const gfx::Rect bounds(10, 10, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  // Dragging is only allowed in tablet mode.
+  RunAllPendingInMessageLoop();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  ToggleOverview();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+  WindowSelectorItem* item3 = GetWindowItemForWindow(0, window3.get());
+  views::Widget* widget1 = item_widget(item1);
+  views::Widget* widget2 = item_widget(item2);
+  views::Widget* widget3 = item_widget(item3);
+
+  // Initially the highest stacked widget is the most recently used window, in
+  // this case it is the most recently created window.
+  aura::Window* parent = window1->parent();
+  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
+            IndexOf(widget1->GetNativeWindow(), parent));
+
+  // Verify that during drag the dragged item widget is stacked above the other
+  // two.
+  const gfx::Point start_drag = item1->target_bounds().CenterPoint();
+  GetEventGenerator().MoveMouseTo(start_drag);
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseTo(gfx::Point());
+  GetEventGenerator().MoveMouseTo(start_drag);
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget3->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget1->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
+
+  // Verify that after release the ordering is the same as before dragging.
+  GetEventGenerator().ReleaseLeftButton();
+  RunAllPendingInMessageLoop();
+  EXPECT_GT(IndexOf(widget3->GetNativeWindow(), parent),
+            IndexOf(widget2->GetNativeWindow(), parent));
+  EXPECT_GT(IndexOf(widget2->GetNativeWindow(), parent),
+            IndexOf(widget1->GetNativeWindow(), parent));
 }
 
 // Verify that a windows which enter overview mode have a visible backdrop, if

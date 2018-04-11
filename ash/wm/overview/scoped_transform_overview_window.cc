@@ -582,6 +582,7 @@ void ScopedTransformOverviewWindow::CancelAnimationsListener() {
 void ScopedTransformOverviewWindow::OnImplicitAnimationsCompleted() {
   DCHECK(IsNewOverviewUi());
   CreateAndApplyMaskAndShadow();
+  selector_item_->OnDragAnimationCompleted();
 }
 
 void ScopedTransformOverviewWindow::CreateMirrorWindowForMinimizedState() {
