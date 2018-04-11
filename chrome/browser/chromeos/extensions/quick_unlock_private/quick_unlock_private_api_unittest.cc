@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -429,12 +430,12 @@ TEST_F(QuickUnlockPrivateUnitTest, GetAuthTokenInvalid) {
 TEST_F(QuickUnlockPrivateUnitTest, SetLockScreenEnabled) {
   PrefService* pref_service = profile()->GetPrefs();
   bool lock_screen_enabled =
-      pref_service->GetBoolean(prefs::kEnableAutoScreenLock);
+      pref_service->GetBoolean(ash::prefs::kEnableAutoScreenLock);
 
   SetLockScreenEnabled(token(), !lock_screen_enabled);
 
   EXPECT_EQ(!lock_screen_enabled,
-            pref_service->GetBoolean(prefs::kEnableAutoScreenLock));
+            pref_service->GetBoolean(ash::prefs::kEnableAutoScreenLock));
 }
 
 // Verifies that setting lock screen enabled fails to modify the setting with
@@ -442,14 +443,14 @@ TEST_F(QuickUnlockPrivateUnitTest, SetLockScreenEnabled) {
 TEST_F(QuickUnlockPrivateUnitTest, SetLockScreenEnabledFailsWithInvalidToken) {
   PrefService* pref_service = profile()->GetPrefs();
   bool lock_screen_enabled =
-      pref_service->GetBoolean(prefs::kEnableAutoScreenLock);
+      pref_service->GetBoolean(ash::prefs::kEnableAutoScreenLock);
 
   std::string error =
       SetLockScreenEnabledWithInvalidToken(!lock_screen_enabled);
   EXPECT_FALSE(error.empty());
 
   EXPECT_EQ(lock_screen_enabled,
-            pref_service->GetBoolean(prefs::kEnableAutoScreenLock));
+            pref_service->GetBoolean(ash::prefs::kEnableAutoScreenLock));
 }
 
 // Verifies that this returns PIN for GetAvailableModes, unless it is blocked by

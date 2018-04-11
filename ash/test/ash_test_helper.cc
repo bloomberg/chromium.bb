@@ -29,6 +29,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -64,9 +65,6 @@ Config AshTestHelper::config_ = Config::CLASSIC;
 
 AshTestHelper::AshTestHelper(AshTestEnvironment* ash_test_environment)
     : ash_test_environment_(ash_test_environment),
-      test_shell_delegate_(nullptr),
-      dbus_thread_manager_initialized_(false),
-      bluez_dbus_manager_initialized_(false),
       command_line_(std::make_unique<base::test::ScopedCommandLine>()) {
   ui::test::EnableTestConfigForPlatformWindows();
   aura::test::InitializeAuraEventGeneratorDelegate();
@@ -146,6 +144,12 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
       bluez_dbus_manager_initialized_ = true;
     }
 
+    if (!chromeos::PowerPolicyController::IsInitialized()) {
+      chromeos::PowerPolicyController::Initialize(
+          chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
+      power_policy_controller_initialized_ = true;
+    }
+
     // Create CrasAudioHandler for testing since g_browser_process is not
     // created in AshTestBase tests.
     chromeos::CrasAudioHandler::InitializeForTesting();
@@ -222,6 +226,11 @@ void AshTestHelper::TearDown() {
   if (config_ == Config::CLASSIC) {
     chromeos::SystemSaltGetter::Shutdown();
     chromeos::CrasAudioHandler::Shutdown();
+  }
+
+  if (power_policy_controller_initialized_) {
+    chromeos::PowerPolicyController::Shutdown();
+    power_policy_controller_initialized_ = false;
   }
 
   if (bluez_dbus_manager_initialized_) {

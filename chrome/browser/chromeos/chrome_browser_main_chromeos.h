@@ -37,7 +37,6 @@ class LowDiskNotification;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PowerMetricsReporter;
-class PowerPrefs;
 class RendererFreezer;
 class ShutdownPolicyForwarder;
 class WakeOnWifiManager;
@@ -95,7 +94,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<default_app_order::ExternalLoader> app_order_loader_;
   std::unique_ptr<NetworkPrefStateObserver> network_pref_state_observer_;
   std::unique_ptr<ExtensionVolumeObserver> extension_volume_observer_;
-  std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<IdleActionWarningObserver> idle_action_warning_observer_;
   std::unique_ptr<RendererFreezer> renderer_freezer_;
   std::unique_ptr<PowerMetricsReporter> power_metrics_reporter_;

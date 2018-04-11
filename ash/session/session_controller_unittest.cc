@@ -445,7 +445,8 @@ TEST_F(SessionControllerPrefsTest, Observer) {
   EXPECT_EQ(nullptr, observer.last_user_pref_service());
 
   auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+  Shell::RegisterUserProfilePrefs(pref_service->registry(),
+                                  true /* for_test */);
   controller->ProvideUserPrefServiceForTest(kUserAccount1,
                                             std::move(pref_service));
   EXPECT_EQ(controller->GetUserPrefServiceForUser(kUserAccount1),
@@ -472,7 +473,8 @@ TEST_F(SessionControllerPrefsTest, Observer) {
   // becoming initialized.
   observer.clear_last_user_pref_service();
   pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+  Shell::RegisterUserProfilePrefs(pref_service->registry(),
+                                  true /* for_test */);
   controller->ProvideUserPrefServiceForTest(kUserAccount2,
                                             std::move(pref_service));
   EXPECT_EQ(nullptr, observer.last_user_pref_service());

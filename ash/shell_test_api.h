@@ -16,6 +16,7 @@ namespace ash {
 class DragDropController;
 class MessageCenterController;
 class NativeCursorManagerAsh;
+class PowerPrefs;
 class ScreenPositionController;
 class Shell;
 class SystemGestureEventFilter;
@@ -36,6 +37,7 @@ class ShellTestApi : public mojom::ShellTestApi {
   ScreenPositionController* screen_position_controller();
   NativeCursorManagerAsh* native_cursor_manager_ash();
   DragDropController* drag_drop_controller();
+  PowerPrefs* power_prefs();
 
   // Calls the private method.
   void OnLocalStatePrefServiceInitialized(

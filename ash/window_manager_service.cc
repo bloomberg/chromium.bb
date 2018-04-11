@@ -19,6 +19,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -88,6 +89,8 @@ void WindowManagerService::InitializeComponents(bool init_network_handler) {
         chromeos::DBusThreadManager::kShared);
     dbus_thread_manager_initialized_ = true;
   }
+  chromeos::PowerPolicyController::Initialize(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
 
   // See ChromeBrowserMainPartsChromeos for ordering details.
   bluez::BluezDBusManager::Initialize(
@@ -115,6 +118,7 @@ void WindowManagerService::ShutdownComponents() {
     chromeos::NetworkHandler::Shutdown();
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
+  chromeos::PowerPolicyController::Shutdown();
   if (dbus_thread_manager_initialized_)
     chromeos::DBusThreadManager::Shutdown();
 }

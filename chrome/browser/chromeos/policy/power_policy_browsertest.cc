@@ -338,6 +338,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
   proto.mutable_login_screen_power_management()->
       set_login_screen_power_management(kLoginScreenPowerManagementPolicy);
   StoreAndReloadDevicePolicyAndWaitForLoginProfileChange();
+  // Spin the run loop to ensure ash sees pref change.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->policy()));
 }
@@ -407,6 +409,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetLegacyUserPolicy) {
       300);
   user_policy_.payload().mutable_waitforinitialuseractivity()->set_value(true);
   StoreAndReloadUserPolicy();
+  // Spin the run loop to ensure ash sees pref change.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->policy()));
 }
@@ -472,6 +476,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
       kScreenLockDelayPolicy);
 
   StoreAndReloadUserPolicy();
+  // Spin the run loop to ensure ash sees pref change.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(power_management_policy),
             GetDebugString(power_manager_client_->policy()));
 }
@@ -520,6 +526,8 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, AllowScreenWakeLocks) {
   policy.set_battery_idle_action(
       power_manager_client_->policy().battery_idle_action());
   policy.set_reason(power_manager_client_->policy().reason());
+  // Spin the run loop to ensure ash sees pref change.
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GetDebugString(policy),
             GetDebugString(power_manager_client_->policy()));
 }

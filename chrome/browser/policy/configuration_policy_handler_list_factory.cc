@@ -510,7 +510,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 
 #if defined(OS_CHROMEOS)
   { key::kChromeOsLockOnIdleSuspend,
-    prefs::kEnableAutoScreenLock,
+    ash::prefs::kEnableAutoScreenLock,
     base::Value::Type::BOOLEAN },
   { key::kChromeOsReleaseChannel,
     prefs::kChromeOsReleaseChannel,
@@ -543,16 +543,16 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSessionWaitForInitialUserActivity,
     base::Value::Type::BOOLEAN },
   { key::kPowerManagementUsesAudioActivity,
-    prefs::kPowerUseAudioActivity,
+    ash::prefs::kPowerUseAudioActivity,
     base::Value::Type::BOOLEAN },
   { key::kPowerManagementUsesVideoActivity,
-    prefs::kPowerUseVideoActivity,
+    ash::prefs::kPowerUseVideoActivity,
     base::Value::Type::BOOLEAN },
   { key::kAllowScreenWakeLocks,
-    prefs::kPowerAllowScreenWakeLocks,
+    ash::prefs::kPowerAllowScreenWakeLocks,
     base::Value::Type::BOOLEAN },
   { key::kWaitForInitialUserActivity,
-    prefs::kPowerWaitForInitialUserActivity,
+    ash::prefs::kPowerWaitForInitialUserActivity,
     base::Value::Type::BOOLEAN },
   { key::kTermsOfServiceURL,
     prefs::kTermsOfServiceURL,
@@ -719,7 +719,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::DICTIONARY },
 
   { key::kAllowScreenLock,
-    prefs::kAllowScreenLock,
+    ash::prefs::kAllowScreenLock,
     base::Value::Type::BOOLEAN },
 
   { key::kQuickUnlockModeWhitelist,
@@ -1129,44 +1129,45 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
       power_management_idle_legacy_policies;
   power_management_idle_legacy_policies.push_back(
-      std::make_unique<IntRangePolicyHandler>(key::kScreenDimDelayAC,
-                                              prefs::kPowerAcScreenDimDelayMs,
-                                              0, INT_MAX, true));
-  power_management_idle_legacy_policies.push_back(
-      std::make_unique<IntRangePolicyHandler>(key::kScreenOffDelayAC,
-                                              prefs::kPowerAcScreenOffDelayMs,
-                                              0, INT_MAX, true));
-  power_management_idle_legacy_policies.push_back(
-      std::make_unique<IntRangePolicyHandler>(key::kIdleWarningDelayAC,
-                                              prefs::kPowerAcIdleWarningDelayMs,
-                                              0, INT_MAX, true));
-  power_management_idle_legacy_policies.push_back(
       std::make_unique<IntRangePolicyHandler>(
-          key::kIdleDelayAC, prefs::kPowerAcIdleDelayMs, 0, INT_MAX, true));
-  power_management_idle_legacy_policies.push_back(
-      std::make_unique<IntRangePolicyHandler>(
-          key::kScreenDimDelayBattery, prefs::kPowerBatteryScreenDimDelayMs, 0,
+          key::kScreenDimDelayAC, ash::prefs::kPowerAcScreenDimDelayMs, 0,
           INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
       std::make_unique<IntRangePolicyHandler>(
-          key::kScreenOffDelayBattery, prefs::kPowerBatteryScreenOffDelayMs, 0,
+          key::kScreenOffDelayAC, ash::prefs::kPowerAcScreenOffDelayMs, 0,
           INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
       std::make_unique<IntRangePolicyHandler>(
-          key::kIdleWarningDelayBattery, prefs::kPowerBatteryIdleWarningDelayMs,
-          0, INT_MAX, true));
+          key::kIdleWarningDelayAC, ash::prefs::kPowerAcIdleWarningDelayMs, 0,
+          INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
-      std::make_unique<IntRangePolicyHandler>(key::kIdleDelayBattery,
-                                              prefs::kPowerBatteryIdleDelayMs,
+      std::make_unique<IntRangePolicyHandler>(key::kIdleDelayAC,
+                                              ash::prefs::kPowerAcIdleDelayMs,
                                               0, INT_MAX, true));
   power_management_idle_legacy_policies.push_back(
       std::make_unique<IntRangePolicyHandler>(
-          key::kIdleActionAC, prefs::kPowerAcIdleAction,
+          key::kScreenDimDelayBattery,
+          ash::prefs::kPowerBatteryScreenDimDelayMs, 0, INT_MAX, true));
+  power_management_idle_legacy_policies.push_back(
+      std::make_unique<IntRangePolicyHandler>(
+          key::kScreenOffDelayBattery,
+          ash::prefs::kPowerBatteryScreenOffDelayMs, 0, INT_MAX, true));
+  power_management_idle_legacy_policies.push_back(
+      std::make_unique<IntRangePolicyHandler>(
+          key::kIdleWarningDelayBattery,
+          ash::prefs::kPowerBatteryIdleWarningDelayMs, 0, INT_MAX, true));
+  power_management_idle_legacy_policies.push_back(
+      std::make_unique<IntRangePolicyHandler>(
+          key::kIdleDelayBattery, ash::prefs::kPowerBatteryIdleDelayMs, 0,
+          INT_MAX, true));
+  power_management_idle_legacy_policies.push_back(
+      std::make_unique<IntRangePolicyHandler>(
+          key::kIdleActionAC, ash::prefs::kPowerAcIdleAction,
           chromeos::PowerPolicyController::ACTION_SUSPEND,
           chromeos::PowerPolicyController::ACTION_DO_NOTHING, false));
   power_management_idle_legacy_policies.push_back(
       std::make_unique<IntRangePolicyHandler>(
-          key::kIdleActionBattery, prefs::kPowerBatteryIdleAction,
+          key::kIdleActionBattery, ash::prefs::kPowerBatteryIdleAction,
           chromeos::PowerPolicyController::ACTION_SUSPEND,
           chromeos::PowerPolicyController::ACTION_DO_NOTHING, false));
   power_management_idle_legacy_policies.push_back(
@@ -1175,25 +1176,25 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
       screen_lock_legacy_policies;
   screen_lock_legacy_policies.push_back(std::make_unique<IntRangePolicyHandler>(
-      key::kScreenLockDelayAC, prefs::kPowerAcScreenLockDelayMs, 0, INT_MAX,
-      true));
-  screen_lock_legacy_policies.push_back(std::make_unique<IntRangePolicyHandler>(
-      key::kScreenLockDelayBattery, prefs::kPowerBatteryScreenLockDelayMs, 0,
+      key::kScreenLockDelayAC, ash::prefs::kPowerAcScreenLockDelayMs, 0,
       INT_MAX, true));
+  screen_lock_legacy_policies.push_back(std::make_unique<IntRangePolicyHandler>(
+      key::kScreenLockDelayBattery, ash::prefs::kPowerBatteryScreenLockDelayMs,
+      0, INT_MAX, true));
 
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kSAMLOfflineSigninTimeLimit, prefs::kSAMLOfflineSigninTimeLimit, -1,
       INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
-      key::kLidCloseAction, prefs::kPowerLidClosedAction,
+      key::kLidCloseAction, ash::prefs::kPowerLidClosedAction,
       chromeos::PowerPolicyController::ACTION_SUSPEND,
       chromeos::PowerPolicyController::ACTION_DO_NOTHING, false));
   handlers->AddHandler(std::make_unique<IntPercentageToDoublePolicyHandler>(
       key::kPresentationScreenDimDelayScale,
-      prefs::kPowerPresentationScreenDimDelayFactor, 100, INT_MAX, true));
+      ash::prefs::kPowerPresentationScreenDimDelayFactor, 100, INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntPercentageToDoublePolicyHandler>(
       key::kUserActivityScreenDimDelayScale,
-      prefs::kPowerUserActivityScreenDimDelayFactor, 100, INT_MAX, true));
+      ash::prefs::kPowerUserActivityScreenDimDelayFactor, 100, INT_MAX, true));
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kUptimeLimit, prefs::kUptimeLimit, 3600, INT_MAX, true));
   handlers->AddHandler(base::WrapUnique(new IntRangePolicyHandler(

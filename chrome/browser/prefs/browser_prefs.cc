@@ -232,7 +232,6 @@
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
-#include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
@@ -697,10 +696,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
 
-#if defined(OS_CHROMEOS)
-  chromeos::PowerPrefs::RegisterUserProfilePrefs(registry);
-#endif
-
 #if defined(OS_ANDROID)
   ::android::RegisterUserProfilePrefs(registry);
 #endif
@@ -713,8 +708,6 @@ void RegisterScreenshotPrefs(PrefRegistrySimple* registry) {
 #if defined(OS_CHROMEOS)
 void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
-
-  chromeos::PowerPrefs::RegisterLoginProfilePrefs(registry);
 }
 #endif
 

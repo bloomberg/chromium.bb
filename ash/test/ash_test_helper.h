@@ -149,16 +149,18 @@ class AshTestHelper {
   std::unique_ptr<aura::test::EnvWindowTreeClientSetter>
       env_window_tree_client_setter_;
   AshTestEnvironment* ash_test_environment_;  // Not owned.
-  TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
+  TestShellDelegate* test_shell_delegate_ = nullptr;  // Owned by ash::Shell.
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
   std::unique_ptr<::wm::WMState> wm_state_;
   std::unique_ptr<AshTestViewsDelegate> test_views_delegate_;
 
   // Check if DBus Thread Manager was initialized here.
-  bool dbus_thread_manager_initialized_;
+  bool dbus_thread_manager_initialized_ = false;
   // Check if Bluez DBus Manager was initialized here.
-  bool bluez_dbus_manager_initialized_;
+  bool bluez_dbus_manager_initialized_ = false;
+  // Check if PowerPolicyController was initialized here.
+  bool power_policy_controller_initialized_ = false;
 
   aura::TestWindowTreeClientSetup window_tree_client_setup_;
   std::unique_ptr<WindowManagerService> window_manager_service_;

@@ -66,7 +66,8 @@ void TestSessionControllerClient::Reset() {
 
   if (!controller_->GetSigninScreenPrefService()) {
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-    Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+    Shell::RegisterSigninProfilePrefs(pref_service->registry(),
+                                      true /* for_test */);
     controller_->SetSigninScreenPrefServiceForTest(std::move(pref_service));
   }
 }
@@ -149,7 +150,8 @@ void TestSessionControllerClient::ProvidePrefServiceForUser(
   DCHECK(!controller_->GetUserPrefServiceForUser(account_id));
 
   auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+  Shell::RegisterUserProfilePrefs(pref_service->registry(),
+                                  true /* for_test */);
   controller_->ProvideUserPrefServiceForTest(account_id,
                                              std::move(pref_service));
 }

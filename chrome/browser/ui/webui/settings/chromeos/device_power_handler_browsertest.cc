@@ -5,24 +5,39 @@
 #include "chrome/browser/ui/webui/settings/chromeos/device_power_handler.h"
 
 #include <memory>
+#include <utility>
 
-#include "ash/system/power/power_status.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/power/power_prefs.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_web_ui.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::Return;
+using testing::_;
 
 namespace chromeos {
 namespace settings {
+
+namespace {
+
+PrefService* GetPrefs() {
+  return ProfileManager::GetActiveUserProfile()->GetPrefs();
+}
+
+}  // namespace
 
 class TestPowerHandler : public PowerHandler {
  public:
@@ -32,21 +47,24 @@ class TestPowerHandler : public PowerHandler {
   using PowerHandler::set_web_ui;
 };
 
-class PowerHandlerTest : public testing::Test {
- public:
-  PowerHandlerTest() {
-    // This initializes chromeos::DBusThreadManager.
-    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetPowerManagerClient(
-        std::make_unique<chromeos::FakePowerManagerClient>());
-    power_manager_client_ = static_cast<chromeos::FakePowerManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
-    ash::PowerStatus::Initialize();
+class PowerHandlerTest : public InProcessBrowserTest {
+ protected:
+  PowerHandlerTest() = default;
+  ~PowerHandlerTest() override = default;
 
-    chromeos::PowerPrefs::RegisterUserProfilePrefs(prefs_.registry());
+  // InProcessBrowserTest:
+  void SetUpInProcessBrowserTestFixture() override {
+    power_manager_client_ = new chromeos::FakePowerManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetPowerManagerClient(
+        base::WrapUnique(power_manager_client_));
 
-    handler_ = std::make_unique<TestPowerHandler>(&prefs_);
+    // Initialize user policy.
+    ON_CALL(provider_, IsInitializationComplete(_)).WillByDefault(Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
+
+  void SetUpOnMainThread() override {
+    handler_ = std::make_unique<TestPowerHandler>(GetPrefs());
     test_api_ = std::make_unique<PowerHandler::TestAPI>(handler_.get());
     handler_->set_web_ui(&web_ui_);
     handler_->RegisterMessages();
@@ -54,13 +72,11 @@ class PowerHandlerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  ~PowerHandlerTest() override {
+  void TearDownOnMainThread() override {
+    test_api_.reset();
     handler_.reset();
-    ash::PowerStatus::Shutdown();
-    chromeos::DBusThreadManager::Shutdown();
   }
 
- protected:
   // Returns a JSON representation of the contents of the last message sent to
   // WebUI about settings being changed.
   std::string GetLastSettingsChangedMessage() WARN_UNUSED_RESULT {
@@ -113,13 +129,21 @@ class PowerHandlerTest : public testing::Test {
   // Returns the user-set value of the integer pref identified by |name| or -1
   // if the pref is unset.
   int GetIntPref(const std::string& name) {
-    const base::Value* value = prefs_.GetUserPref(name);
-    return value ? value->GetInt() : -1;
+    if (!GetPrefs()->HasPrefPath(name))
+      return -1;
+    return GetPrefs()->GetInteger(name);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  sync_preferences::TestingPrefServiceSyncable prefs_;
-  content::TestWebUI web_ui_;
+  // Sets a policy update which will cause power pref managed change.
+  void SetPolicyForPolicyKey(policy::PolicyMap* policy_map,
+                             const std::string& policy_key,
+                             std::unique_ptr<base::Value> value) {
+    policy_map->Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
+                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+                    std::move(value), nullptr);
+    provider_.UpdateChromePolicy(*policy_map);
+    base::RunLoop().RunUntilIdle();
+  }
 
   // Owned by chromeos::DBusThreadManager.
   chromeos::FakePowerManagerClient* power_manager_client_;
@@ -127,12 +151,16 @@ class PowerHandlerTest : public testing::Test {
   std::unique_ptr<TestPowerHandler> handler_;
   std::unique_ptr<TestPowerHandler::TestAPI> test_api_;
 
+  content::TestWebUI web_ui_;
+
+  policy::MockConfigurationPolicyProvider provider_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PowerHandlerTest);
 };
 
 // Verifies that settings are sent to WebUI when requested.
-TEST_F(PowerHandlerTest, SendInitialSettings) {
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendInitialSettings) {
   test_api_->RequestPowerManagementSettings();
   EXPECT_EQ(
       CreateSettingsChangedString(
@@ -143,7 +171,7 @@ TEST_F(PowerHandlerTest, SendInitialSettings) {
 }
 
 // Verifies that WebUI receives updated settings when the lid state changes.
-TEST_F(PowerHandlerTest, SendSettingsForLidStateChanges) {
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendSettingsForLidStateChanges) {
   power_manager_client_->SetLidState(PowerManagerClient::LidState::NOT_PRESENT,
                                      base::TimeTicks());
   EXPECT_EQ(
@@ -165,10 +193,11 @@ TEST_F(PowerHandlerTest, SendSettingsForLidStateChanges) {
 
 // Verifies that when various prefs are controlled, the corresponding settings
 // are reported as controlled to WebUI.
-TEST_F(PowerHandlerTest, SendSettingsForControlledPrefs) {
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendSettingsForControlledPrefs) {
+  policy::PolicyMap policy_map;
   // Making an arbitrary delay pref managed should result in the idle setting
   // being reported as controlled.
-  prefs_.SetManagedPref(prefs::kPowerAcScreenDimDelayMs,
+  SetPolicyForPolicyKey(&policy_map, policy::key::kScreenDimDelayAC,
                         std::make_unique<base::Value>(10000));
   EXPECT_EQ(
       CreateSettingsChangedString(
@@ -178,8 +207,8 @@ TEST_F(PowerHandlerTest, SendSettingsForControlledPrefs) {
       GetLastSettingsChangedMessage());
 
   // Ditto for making the lid action pref managed.
-  prefs_.SetManagedPref(
-      prefs::kPowerLidClosedAction,
+  SetPolicyForPolicyKey(
+      &policy_map, policy::key::kLidCloseAction,
       std::make_unique<base::Value>(PowerPolicyController::ACTION_SUSPEND));
   EXPECT_EQ(
       CreateSettingsChangedString(
@@ -191,13 +220,11 @@ TEST_F(PowerHandlerTest, SendSettingsForControlledPrefs) {
 
 // Verifies that idle-related prefs are distilled into the proper WebUI
 // settings.
-TEST_F(PowerHandlerTest, SendIdleSettingForPrefChanges) {
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendIdleSettingForPrefChanges) {
   // Set a do-nothing idle action and a nonzero screen-off delay.
-  prefs_.SetUserPref(
-      prefs::kPowerAcIdleAction,
-      std::make_unique<base::Value>(PowerPolicyController::ACTION_DO_NOTHING));
-  prefs_.SetUserPref(prefs::kPowerAcScreenOffDelayMs,
-                     std::make_unique<base::Value>(10000));
+  GetPrefs()->Set(ash::prefs::kPowerAcIdleAction,
+                  base::Value(PowerPolicyController::ACTION_DO_NOTHING));
+  GetPrefs()->Set(ash::prefs::kPowerAcScreenOffDelayMs, base::Value(10000));
   EXPECT_EQ(CreateSettingsChangedString(PowerHandler::IdleBehavior::DISPLAY_OFF,
                                         false /* idle_controlled */,
                                         PowerPolicyController::ACTION_SUSPEND,
@@ -206,8 +233,7 @@ TEST_F(PowerHandlerTest, SendIdleSettingForPrefChanges) {
             GetLastSettingsChangedMessage());
 
   // Now set the delay to zero and check that the setting goes to "display on".
-  prefs_.SetUserPref(prefs::kPowerAcScreenOffDelayMs,
-                     std::make_unique<base::Value>(0));
+  GetPrefs()->Set(ash::prefs::kPowerAcScreenOffDelayMs, base::Value(0));
   EXPECT_EQ(CreateSettingsChangedString(PowerHandler::IdleBehavior::DISPLAY_ON,
                                         false /* idle_controlled */,
                                         PowerPolicyController::ACTION_SUSPEND,
@@ -216,9 +242,8 @@ TEST_F(PowerHandlerTest, SendIdleSettingForPrefChanges) {
             GetLastSettingsChangedMessage());
 
   // Other idle actions should result in an "other" setting.
-  prefs_.SetUserPref(prefs::kPowerAcIdleAction,
-                     std::make_unique<base::Value>(
-                         PowerPolicyController::ACTION_STOP_SESSION));
+  GetPrefs()->Set(ash::prefs::kPowerAcIdleAction,
+                  base::Value(PowerPolicyController::ACTION_STOP_SESSION));
   EXPECT_EQ(CreateSettingsChangedString(
                 PowerHandler::IdleBehavior::OTHER, false /* idle_controlled */,
                 PowerPolicyController::ACTION_SUSPEND,
@@ -227,10 +252,9 @@ TEST_F(PowerHandlerTest, SendIdleSettingForPrefChanges) {
 }
 
 // Verifies that the lid-closed pref's value is sent directly to WebUI.
-TEST_F(PowerHandlerTest, SendLidSettingForPrefChanges) {
-  prefs_.SetUserPref(
-      prefs::kPowerLidClosedAction,
-      std::make_unique<base::Value>(PowerPolicyController::ACTION_SHUT_DOWN));
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SendLidSettingForPrefChanges) {
+  GetPrefs()->Set(ash::prefs::kPowerLidClosedAction,
+                  base::Value(PowerPolicyController::ACTION_SHUT_DOWN));
   EXPECT_EQ(
       CreateSettingsChangedString(
           PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP,
@@ -238,9 +262,8 @@ TEST_F(PowerHandlerTest, SendLidSettingForPrefChanges) {
           false /* lid_closed_controlled */, true /* has_lid */),
       GetLastSettingsChangedMessage());
 
-  prefs_.SetUserPref(prefs::kPowerLidClosedAction,
-                     std::make_unique<base::Value>(
-                         PowerPolicyController::ACTION_STOP_SESSION));
+  GetPrefs()->Set(ash::prefs::kPowerLidClosedAction,
+                  base::Value(PowerPolicyController::ACTION_STOP_SESSION));
   EXPECT_EQ(CreateSettingsChangedString(
                 PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP,
                 false /* idle_controlled */,
@@ -251,59 +274,59 @@ TEST_F(PowerHandlerTest, SendLidSettingForPrefChanges) {
 
 // Verifies that requests from WebUI to update the idle behavior update prefs
 // appropriately.
-TEST_F(PowerHandlerTest, SetIdleBehavior) {
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SetIdleBehavior) {
   // Request the "Keep display on" setting and check that prefs are set
   // appropriately.
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_ON);
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
-            GetIntPref(prefs::kPowerAcIdleAction));
-  EXPECT_EQ(0, GetIntPref(prefs::kPowerAcScreenDimDelayMs));
-  EXPECT_EQ(0, GetIntPref(prefs::kPowerAcScreenOffDelayMs));
-  EXPECT_EQ(0, GetIntPref(prefs::kPowerAcScreenLockDelayMs));
+            GetIntPref(ash::prefs::kPowerAcIdleAction));
+  EXPECT_EQ(0, GetIntPref(ash::prefs::kPowerAcScreenDimDelayMs));
+  EXPECT_EQ(0, GetIntPref(ash::prefs::kPowerAcScreenOffDelayMs));
+  EXPECT_EQ(0, GetIntPref(ash::prefs::kPowerAcScreenLockDelayMs));
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
-            GetIntPref(prefs::kPowerBatteryIdleAction));
-  EXPECT_EQ(0, GetIntPref(prefs::kPowerBatteryScreenDimDelayMs));
-  EXPECT_EQ(0, GetIntPref(prefs::kPowerBatteryScreenOffDelayMs));
-  EXPECT_EQ(0, GetIntPref(prefs::kPowerBatteryScreenLockDelayMs));
+            GetIntPref(ash::prefs::kPowerBatteryIdleAction));
+  EXPECT_EQ(0, GetIntPref(ash::prefs::kPowerBatteryScreenDimDelayMs));
+  EXPECT_EQ(0, GetIntPref(ash::prefs::kPowerBatteryScreenOffDelayMs));
+  EXPECT_EQ(0, GetIntPref(ash::prefs::kPowerBatteryScreenLockDelayMs));
 
   // "Turn off display" should set the idle prefs but clear the screen
   // delays.
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_OFF);
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
-            GetIntPref(prefs::kPowerAcIdleAction));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenDimDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenOffDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenLockDelayMs));
+            GetIntPref(ash::prefs::kPowerAcIdleAction));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcScreenDimDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcScreenOffDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcScreenLockDelayMs));
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
-            GetIntPref(prefs::kPowerBatteryIdleAction));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenDimDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenOffDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenLockDelayMs));
+            GetIntPref(ash::prefs::kPowerBatteryIdleAction));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryScreenDimDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryScreenOffDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryScreenLockDelayMs));
 
   // Now switch to the "Keep display on" setting (to set the prefs again) and
   // check that the "Turn off display and sleep" setting clears all the prefs.
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_ON);
   test_api_->SetIdleBehavior(PowerHandler::IdleBehavior::DISPLAY_OFF_SLEEP);
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcIdleAction));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenDimDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenOffDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerAcScreenLockDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryIdleAction));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenDimDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenOffDelayMs));
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerBatteryScreenLockDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcIdleAction));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcScreenDimDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcScreenOffDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerAcScreenLockDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryIdleAction));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryScreenDimDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryScreenOffDelayMs));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerBatteryScreenLockDelayMs));
 }
 
 // Verifies that requests from WebUI to change the lid behavior update the pref.
-TEST_F(PowerHandlerTest, SetLidBehavior) {
+IN_PROC_BROWSER_TEST_F(PowerHandlerTest, SetLidBehavior) {
   // The "do nothing" setting should update the pref.
   test_api_->SetLidClosedBehavior(PowerPolicyController::ACTION_DO_NOTHING);
   EXPECT_EQ(PowerPolicyController::ACTION_DO_NOTHING,
-            GetIntPref(prefs::kPowerLidClosedAction));
+            GetIntPref(ash::prefs::kPowerLidClosedAction));
 
   // Selecting the "suspend" setting should just clear the pref.
   test_api_->SetLidClosedBehavior(PowerPolicyController::ACTION_SUSPEND);
-  EXPECT_EQ(-1, GetIntPref(prefs::kPowerLidClosedAction));
+  EXPECT_EQ(-1, GetIntPref(ash::prefs::kPowerLidClosedAction));
 }
 
 }  // namespace settings

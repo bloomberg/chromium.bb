@@ -514,7 +514,7 @@ void SessionController::AddUserSession(mojom::UserSessionPtr user_session) {
 
   if (connector_) {
     auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-    Shell::RegisterProfilePrefs(pref_registry.get());
+    Shell::RegisterUserProfilePrefs(pref_registry.get());
     ash::mojom::PrefConnectorPtr pref_connector_connector;
     connector_->BindInterface(mojom::kPrefConnectorServiceName,
                               &pref_connector_connector);
@@ -614,7 +614,7 @@ void SessionController::ConnectToSigninScreenPrefService() {
 
   // Connect to the PrefService for the signin profile.
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
-  Shell::RegisterProfilePrefs(pref_registry.get());
+  Shell::RegisterSigninProfilePrefs(pref_registry.get());
   ash::mojom::PrefConnectorPtr pref_connector_connector;
   connector_->BindInterface(mojom::kPrefConnectorServiceName,
                             &pref_connector_connector);

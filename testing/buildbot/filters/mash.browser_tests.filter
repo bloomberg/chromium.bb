@@ -102,6 +102,16 @@
 # ash::Shell access for LogoutConfirmationController
 -DeviceLocalAccountTest.*
 
+# ash::PowerStatus access. https://crbug.com/770866.
+-PowerHandlerTest.*
+
+# DBusThreadManager initialized for testing in chrome is not recognized as
+# initialized in window manager service. https://crbug.com/830816.
+-PowerPolicyInSessionBrowserTest.AllowScreenWakeLocks
+-PowerPolicyInSessionBrowserTest.SetLegacyUserPolicy
+-PowerPolicyInSessionBrowserTest.SetUserPolicy
+-PowerPolicyLoginScreenBrowserTest.SetDevicePolicy
+
 # TODO: Very slow (>25 seconds) and occasional timeouts.
 -ExecuteScriptApiTest/DestructiveScriptTest.*
 

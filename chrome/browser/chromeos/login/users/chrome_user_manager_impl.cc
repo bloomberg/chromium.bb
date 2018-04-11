@@ -151,8 +151,10 @@ bool GetUserLockAttributes(const user_manager::User* user,
   if (!profile)
     return false;
   PrefService* const prefs = profile->GetPrefs();
-  if (can_lock)
-    *can_lock = user->can_lock() && prefs->GetBoolean(prefs::kAllowScreenLock);
+  if (can_lock) {
+    *can_lock =
+        user->can_lock() && prefs->GetBoolean(ash::prefs::kAllowScreenLock);
+  }
   if (multi_profile_behavior) {
     *multi_profile_behavior =
         prefs->GetString(prefs::kMultiProfileUserBehavior);
