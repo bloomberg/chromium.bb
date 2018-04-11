@@ -762,6 +762,8 @@
       name: "alignment-baseline",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
+      keywords: ["baseline", "alphabetic", "ideographic", "middle", "central", "mathematical"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "align-self",
@@ -892,6 +894,8 @@
       svg: true,
       custom_apply_functions_inherit: true,
       custom_apply_functions_value: true,
+      keywords: ["sub", "super"],
+      typedom_types: ["Keyword", "Percentage", "Length"]
     },
     {
       name: "border-bottom-color",
@@ -1425,6 +1429,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
+      keywords: ["auto", "alphabetic", "ideographic", "middle", "central", "mathematical", "hanging"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "empty-cells",
