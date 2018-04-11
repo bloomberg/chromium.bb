@@ -7,6 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+namespace bookmarks {
+class BookmarkModel;
+}
 namespace feature_engagement {
 class Tracker;
 }
@@ -45,6 +48,8 @@ typedef NS_ENUM(NSInteger, PopupMenuType) {
 // ownership of tracker. Tracker must not be destroyed during lifetime of the
 // object.
 @property(nonatomic, assign) feature_engagement::Tracker* engagementTracker;
+// The bookmarks model to know if the page is bookmarked.
+@property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 
 // Disconnect the mediator.
 - (void)disconnect;

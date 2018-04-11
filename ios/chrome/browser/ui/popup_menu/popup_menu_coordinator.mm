@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -172,6 +173,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.mediator.webStateList = self.webStateList;
   self.mediator.popupMenu = tableViewController;
   self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
+  self.mediator.bookmarkModel =
+      ios::BookmarkModelFactory::GetForBrowserState(self.browserState);
 
   self.presenter = [[PopupMenuPresenter alloc] init];
   self.presenter.baseViewController = self.baseViewController;

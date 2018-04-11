@@ -141,6 +141,10 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       base::RecordAction(UserMetricsAction("MobileMenuReadLater"));
       [self.commandHandler readPageLater];
       break;
+    case PopupMenuActionPageBookmark:
+      base::RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
+      [self.dispatcher bookmarkPage];
+      break;
     case PopupMenuActionFindInPage:
       base::RecordAction(UserMetricsAction("MobileMenuFindInPage"));
       [self.dispatcher showFindInPage];
