@@ -6,12 +6,13 @@
 #define NET_HTTP_HTTP_STREAM_FACTORY_IMPL_JOB_CONTROLLER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/cancelable_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/privacy_mode.h"
 #include "net/http/http_stream_factory_impl_job.h"
-#include "net/http/http_stream_factory_impl_request.h"
+#include "net/http/http_stream_request.h"
 #include "net/socket/next_proto.h"
 
 namespace net {
@@ -27,7 +28,7 @@ class JobControllerPeer;
 // HttpStreamFactoryImpl::JobController manages Request and Job(s).
 class HttpStreamFactoryImpl::JobController
     : public HttpStreamFactoryImpl::Job::Delegate,
-      public HttpStreamFactoryImpl::Request::Helper {
+      public HttpStreamRequest::Helper {
  public:
   JobController(HttpStreamFactoryImpl* factory,
                 HttpStreamRequest::Delegate* delegate,
@@ -52,16 +53,17 @@ class HttpStreamFactoryImpl::JobController
   // Methods below are called by HttpStreamFactoryImpl only.
   // Creates request and hands out to HttpStreamFactoryImpl, this will also
   // create Job(s) and start serving the created request.
-  std::unique_ptr<Request> Start(HttpStreamRequest::Delegate* delegate,
-                                 WebSocketHandshakeStreamBase::CreateHelper*
-                                     websocket_handshake_stream_create_helper,
-                                 const NetLogWithSource& source_net_log,
-                                 HttpStreamRequest::StreamType stream_type,
-                                 RequestPriority priority);
+  std::unique_ptr<HttpStreamRequest> Start(
+      HttpStreamRequest::Delegate* delegate,
+      WebSocketHandshakeStreamBase::CreateHelper*
+          websocket_handshake_stream_create_helper,
+      const NetLogWithSource& source_net_log,
+      HttpStreamRequest::StreamType stream_type,
+      RequestPriority priority);
 
   void Preconnect(int num_streams);
 
-  // From HttpStreamFactoryImpl::Request::Helper.
+  // From HttpStreamRequest::Helper.
   // Returns the LoadState for Request.
   LoadState GetLoadState() const override;
 
@@ -319,7 +321,7 @@ class HttpStreamFactoryImpl::JobController
   // reference and is safe as |request_| will notify |this| JobController
   // when it's destructed by calling OnRequestComplete(), which nulls
   // |request_|.
-  Request* request_;
+  HttpStreamRequest* request_;
 
   HttpStreamRequest::Delegate* const delegate_;
 

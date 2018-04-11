@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/http_stream_factory_impl_request.h"
+#include "net/http/http_stream_request.h"
 
 #include <utility>
 
@@ -11,7 +11,6 @@
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_job_controller.h"
 #include "net/http/http_stream_factory_test_util.h"
-#include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,10 +19,8 @@ using testing::_;
 
 namespace net {
 
-class HttpStreamFactoryImplRequestTest : public ::testing::Test {};
-
 // Make sure that Request passes on its priority updates to its jobs.
-TEST_F(HttpStreamFactoryImplRequestTest, SetPriority) {
+TEST(HttpStreamRequestTest, SetPriority) {
   SequencedSocketData data(nullptr, 0, nullptr, 0);
   data.set_connect_data(MockConnect(ASYNC, OK));
   auto ssl_data = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
@@ -49,10 +46,9 @@ TEST_F(HttpStreamFactoryImplRequestTest, SetPriority) {
       job_controller.get();
   factory->job_controller_set_.insert(std::move(job_controller));
 
-  std::unique_ptr<HttpStreamFactoryImpl::Request> request(
-      job_controller_raw_ptr->Start(
-          &request_delegate, nullptr, NetLogWithSource(),
-          HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY));
+  std::unique_ptr<HttpStreamRequest> request(job_controller_raw_ptr->Start(
+      &request_delegate, nullptr, NetLogWithSource(),
+      HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY));
   EXPECT_TRUE(job_controller_raw_ptr->main_job());
   EXPECT_EQ(DEFAULT_PRIORITY, job_controller_raw_ptr->main_job()->priority());
 

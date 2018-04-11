@@ -19,7 +19,6 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_job_controller.h"
-#include "net/http/http_stream_factory_impl_request.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/quic/core/quic_server_id.h"

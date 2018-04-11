@@ -25,7 +25,6 @@
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_stream_factory_impl.h"
 #include "net/http/http_stream_factory_impl_job.h"
-#include "net/http/http_stream_factory_impl_request.h"
 #include "net/http/http_stream_factory_test_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
@@ -312,7 +311,7 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   std::unique_ptr<HttpNetworkSession> session_;
   HttpStreamFactoryImpl* factory_ = nullptr;
   HttpStreamFactoryImpl::JobController* job_controller_ = nullptr;
-  std::unique_ptr<HttpStreamFactoryImpl::Request> request_;
+  std::unique_ptr<HttpStreamRequest> request_;
   std::unique_ptr<SequencedSocketData> tcp_data_;
   std::unique_ptr<MockQuicData> quic_data_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;

@@ -19,6 +19,7 @@
 #include "net/base/trace_constants.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
+#include "net/http/http_stream_request.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -404,7 +405,7 @@ void SpdySessionPool::OnNewSpdySessionReady(
     auto iter = spdy_session_request_map_.find(spdy_session_key);
     if (iter == spdy_session_request_map_.end())
       return;
-    HttpStreamFactoryImpl::Request* request = *iter->second.begin();
+    HttpStreamRequest* request = *iter->second.begin();
     request->Complete(was_alpn_negotiated, negotiated_protocol, using_spdy);
     RemoveRequestFromSpdySessionRequestMap(request);
     if (request->stream_type() == HttpStreamRequest::BIDIRECTIONAL_STREAM) {
@@ -447,7 +448,7 @@ void SpdySessionPool::ResumePendingRequests(
 
 void SpdySessionPool::AddRequestToSpdySessionRequestMap(
     const SpdySessionKey& spdy_session_key,
-    HttpStreamFactoryImpl::Request* request) {
+    HttpStreamRequest* request) {
   if (request->HasSpdySessionKey())
     return;
   RequestSet& request_set = spdy_session_request_map_[spdy_session_key];
@@ -457,7 +458,7 @@ void SpdySessionPool::AddRequestToSpdySessionRequestMap(
 }
 
 void SpdySessionPool::RemoveRequestFromSpdySessionRequestMap(
-    HttpStreamFactoryImpl::Request* request) {
+    HttpStreamRequest* request) {
   if (!request->HasSpdySessionKey())
     return;
   const SpdySessionKey& spdy_session_key = request->GetSpdySessionKey();

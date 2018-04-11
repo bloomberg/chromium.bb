@@ -34,6 +34,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/dns/dns_protocol.h"

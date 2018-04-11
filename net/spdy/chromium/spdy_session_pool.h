@@ -23,8 +23,8 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/proxy_server.h"
 #include "net/cert/cert_database.h"
-#include "net/http/http_stream_factory_impl_request.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "net/quic/core/quic_versions.h"
 #include "net/spdy/chromium/http2_push_promise_index.h"
 #include "net/spdy/chromium/server_push_delegate.h"
 #include "net/spdy/chromium/spdy_session_key.h"
@@ -43,6 +43,7 @@ namespace net {
 class ClientSocketHandle;
 class HostResolver;
 class HttpServerProperties;
+class HttpStreamRequest;
 class NetLogWithSource;
 class SpdySession;
 class TransportSecurityState;
@@ -185,19 +186,17 @@ class NET_EXPORT SpdySessionPool
 
   // Adds |request| to |spdy_session_request_map_| under |spdy_session_key| Key.
   // Sets |spdy_session_key| as |request|'s SpdySessionKey.
-  void AddRequestToSpdySessionRequestMap(
-      const SpdySessionKey& spdy_session_key,
-      HttpStreamFactoryImpl::Request* request);
+  void AddRequestToSpdySessionRequestMap(const SpdySessionKey& spdy_session_key,
+                                         HttpStreamRequest* request);
 
   // Removes |request| from |spdy_session_request_map_|. No-op if |request| does
   // not have a SpdySessionKey.
-  void RemoveRequestFromSpdySessionRequestMap(
-      HttpStreamFactoryImpl::Request* request);
+  void RemoveRequestFromSpdySessionRequestMap(HttpStreamRequest* request);
 
  private:
   friend class SpdySessionPoolPeer;  // For testing.
 
-  typedef std::set<HttpStreamFactoryImpl::Request*> RequestSet;
+  typedef std::set<HttpStreamRequest*> RequestSet;
   typedef std::map<SpdySessionKey, RequestSet> SpdySessionRequestMap;
   typedef std::set<SpdySession*> SessionSet;
   typedef std::vector<base::WeakPtr<SpdySession> > WeakSessionList;

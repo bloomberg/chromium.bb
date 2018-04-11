@@ -3394,10 +3394,10 @@ TEST_P(QuicNetworkTransactionTest,
   SendRequestAndExpectHttpResponse("hello world");
 }
 
-// When multiple alternative services are advertised,
-// HttpStreamFactoryImpl::RequestStreamInternal() should select the alternative
-// service which uses existing QUIC session if available. If no existing QUIC
-// session can be used, use the first alternative service from the list.
+// When multiple alternative services are advertised, HttpStreamFactoryImpl
+// should select the alternative service which uses existing QUIC session if
+// available. If no existing QUIC session can be used, use the first alternative
+// service from the list.
 TEST_P(QuicNetworkTransactionTest, UseExistingAlternativeServiceForQuic) {
   session_params_.quic_allow_remote_alt_svc = true;
   MockRead http_reads[] = {

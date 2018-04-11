@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/common/service_manager_connection.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"

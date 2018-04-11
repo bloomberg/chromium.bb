@@ -34,7 +34,6 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
-#include "net/http/http_stream_factory_impl_request.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
