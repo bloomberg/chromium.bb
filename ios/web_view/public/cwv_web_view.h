@@ -10,7 +10,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class CWVAutofillController;
 @class CWVScrollView;
 @class CWVTranslationController;
 @class CWVWebViewConfiguration;
