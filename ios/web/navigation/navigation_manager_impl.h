@@ -83,6 +83,9 @@ class NavigationManagerImpl : public NavigationManager {
   virtual void OnNavigationItemChanged() = 0;
   virtual void OnNavigationItemCommitted() = 0;
 
+  // Prepares for the deletion of WKWebView such as caching necessary data.
+  virtual void DetachFromWebView();
+
   // Temporary accessors and content/ class pass-throughs.
   // TODO(stuartmorgan): Re-evaluate this list once the refactorings have
   // settled down.
@@ -171,7 +174,7 @@ class NavigationManagerImpl : public NavigationManager {
   void GoToIndex(int index) final;
   void Reload(ReloadType reload_type, bool check_for_reposts) final;
   void ReloadWithUserAgentType(UserAgentType user_agent_type) final;
-  void LoadIfNecessary() final;
+  void LoadIfNecessary() override;
 
   // Implementation for corresponding NavigationManager getters.
   virtual NavigationItemImpl* GetPendingItemImpl() const = 0;
@@ -222,6 +225,8 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Subclass specific implementation to update session state.
   virtual void FinishGoToIndex(int index, NavigationInitiationType type) = 0;
+  virtual void FinishReload();
+  virtual void FinishLoadURLWithParams();
 
   // Returns true if the subclass uses placeholder URLs and this is such a URL.
   virtual bool IsPlaceholderUrl(const GURL& url) const;

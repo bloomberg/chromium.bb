@@ -3909,6 +3909,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
 
   _webStateImpl->CancelDialogs();
+  self.navigationManagerImpl->DetachFromWebView();
 
   [self abortLoad];
   [_webView removeFromSuperview];
