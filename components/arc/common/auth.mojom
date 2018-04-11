@@ -102,7 +102,7 @@ enum AccountCheckStatus {
 // These values describe the type of the Chrome account to provision.
 [Extensible]
 enum ChromeAccountType {
-  // Next value: 4
+  // Next value: 5
   UNKNOWN = 0,
 
   // Chrome login account type is a user account.
@@ -113,6 +113,9 @@ enum ChromeAccountType {
 
   // Chrome login account type is an Active Directory account.
   ACTIVE_DIRECTORY_ACCOUNT = 3,
+
+  // Chrome login account type is a child account.
+  CHILD_ACCOUNT = 4,
 };
 
 // These values describe the type of the metrics to report.
