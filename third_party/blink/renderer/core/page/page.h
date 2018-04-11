@@ -318,6 +318,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void ReportIntervention(const String& message) override;
   void RequestBeginMainFrameNotExpected(bool new_state) override;
   void SetPageFrozen(bool frozen) override;
+  ukm::UkmRecorder* GetUkmRecorder() override;
+  int64_t GetUkmSourceId() override;
 
   void SetHasHighMediaEngagement(bool value);
 

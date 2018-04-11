@@ -383,5 +383,13 @@ void PageSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
       max_task_starvation_count);
 }
 
+ukm::UkmRecorder* PageSchedulerImpl::GetUkmRecorder() {
+  return delegate_->GetUkmRecorder();
+}
+
+int64_t PageSchedulerImpl::GetUkmSourceId() {
+  return delegate_->GetUkmSourceId();
+}
+
 }  // namespace scheduler
 }  // namespace blink

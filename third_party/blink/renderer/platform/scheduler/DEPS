@@ -30,6 +30,7 @@ include_rules = [
   "+base/threading/sequenced_task_runner_handle.h",
   "+base/threading/thread.h",
   "+base/threading/thread_checker.h",
+  "+services/metrics",
 ]
 
 specific_include_rules = {

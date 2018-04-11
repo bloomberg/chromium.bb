@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
 
+#include <random>
+
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -580,6 +582,25 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // TaskQueueThrottler.
   void VirtualTimeResumed();
 
+  bool ShouldRecordTaskUkm();
+
+  // Probabilistically record all task metadata for the current task.
+  // If task belongs to a per-frame queue, this task is attributed to
+  // a particular Page, otherwise it's attributed to all Pages in the process.
+  void RecordTaskUkm(MainThreadTaskQueue* queue,
+                     const TaskQueue::Task& task,
+                     base::TimeTicks start,
+                     base::TimeTicks end,
+                     base::Optional<base::TimeDelta> thread_time);
+
+  void RecordTaskUkmImpl(MainThreadTaskQueue* queue,
+                         const TaskQueue::Task& task,
+                         base::TimeTicks start,
+                         base::TimeTicks end,
+                         base::Optional<base::TimeDelta> thread_time,
+                         PageSchedulerImpl* page_scheduler,
+                         size_t page_schedulers_to_attribute);
+
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member
   // of MainThreadOnly struct because last might be destructed before we
@@ -722,6 +743,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     int max_virtual_time_task_starvation_count;
     bool virtual_time_stopped;
     bool nested_runloop;
+
+    std::mt19937_64 random_generator;
+    std::uniform_real_distribution<double> uniform_distribution;
   };
 
   struct AnyThread {

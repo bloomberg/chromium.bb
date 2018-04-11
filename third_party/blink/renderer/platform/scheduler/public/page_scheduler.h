@@ -12,6 +12,10 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace ukm {
+class UkmRecorder;
+}
+
 namespace blink {
 
 class PLATFORM_EXPORT PageScheduler {
@@ -23,6 +27,8 @@ class PLATFORM_EXPORT PageScheduler {
     virtual void ReportIntervention(const WTF::String& message) = 0;
     virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
     virtual void SetPageFrozen(bool frozen) = 0;
+    virtual ukm::UkmRecorder* GetUkmRecorder() = 0;
+    virtual int64_t GetUkmSourceId() = 0;
   };
 
   virtual ~PageScheduler() = default;
