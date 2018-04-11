@@ -5,13 +5,16 @@
 #include "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 
 #include "base/memory/ptr_util.h"
+#import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/timer/mock_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
@@ -57,22 +60,26 @@ class FakeConsentAuditor : public consent_auditor::ConsentAuditor {
                        app_locale) {}
   ~FakeConsentAuditor() override {}
 
-  void RecordGaiaConsent(consent_auditor::Feature feature,
+  void RecordGaiaConsent(const std::string& account_id,
+                         consent_auditor::Feature feature,
                          const std::vector<int>& description_grd_ids,
                          int confirmation_string_id,
                          consent_auditor::ConsentStatus status) override {
+    account_id_ = account_id;
     feature_ = feature;
     recorded_ids_ = description_grd_ids;
     confirmation_string_id_ = confirmation_string_id;
     status_ = status;
   }
 
+  const std::string& account_id() const { return account_id_; }
   consent_auditor::Feature feature() const { return feature_; }
   const std::vector<int>& recorded_ids() const { return recorded_ids_; }
   int confirmation_string_id() const { return confirmation_string_id_; }
   consent_auditor::ConsentStatus status() const { return status_; }
 
  private:
+  std::string account_id_;
   consent_auditor::Feature feature_;
   std::vector<int> recorded_ids_;
   int confirmation_string_id_ = -1;
@@ -105,6 +112,8 @@ class ChromeSigninViewControllerTest : public PlatformTest {
     ios::FakeChromeIdentityService* identity_service =
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
     identity_service->AddIdentity(identity_);
+    account_tracker_service_ =
+        ios::AccountTrackerServiceFactory::GetForBrowserState(context_.get());
     fake_consent_auditor_ = static_cast<FakeConsentAuditor*>(
         ConsentAuditorFactory::GetForBrowserState(context_.get()));
     // Setup view controller.
@@ -228,6 +237,7 @@ class ChromeSigninViewControllerTest : public PlatformTest {
   UIWindow* window_;
   ChromeSigninViewController* vc_;
   FakeConsentAuditor* fake_consent_auditor_;
+  AccountTrackerService* account_tracker_service_;
 };
 
 // Tests that all strings on the screen are either part of the consent string
@@ -253,6 +263,10 @@ TEST_F(ChromeSigninViewControllerTest, TestConsentWithOKGOTIT) {
             fake_consent_auditor_->status());
   EXPECT_EQ(consent_auditor::Feature::CHROME_SYNC,
             fake_consent_auditor_->feature());
+  EXPECT_EQ(account_tracker_service_->PickAccountIdForAccount(
+                base::SysNSStringToUTF8([identity_ gaiaID]),
+                base::SysNSStringToUTF8([identity_ userEmail])),
+            fake_consent_auditor_->account_id());
 }
 
 // Tests that RecordGaiaConsent() is not called when the user taps on UNDO.
@@ -278,6 +292,10 @@ TEST_F(ChromeSigninViewControllerTest, TestConsentWithSettings) {
             fake_consent_auditor_->status());
   EXPECT_EQ(consent_auditor::Feature::CHROME_SYNC,
             fake_consent_auditor_->feature());
+  EXPECT_EQ(account_tracker_service_->PickAccountIdForAccount(
+                base::SysNSStringToUTF8([identity_ gaiaID]),
+                base::SysNSStringToUTF8([identity_ userEmail])),
+            fake_consent_auditor_->account_id());
 }
 
 }  // namespace

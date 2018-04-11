@@ -154,12 +154,13 @@ public class ConsentTextTracker {
 
     /**
      * Records the consent.
+     * @param accountId The account for which the consent is valid
      * @param feature {@link ConsentAuditorFeature} that user has consented to
      * @param confirmationView The view that the user clicked when consenting
      * @param consentViews View hierarchies that implement the consent screen
      */
-    public void recordConsent(
-            @ConsentAuditorFeature int feature, TextView confirmationView, View... consentViews) {
+    public void recordConsent(String accountId, @ConsentAuditorFeature int feature,
+            TextView confirmationView, View... consentViews) {
         int consentConfirmation = getConsentStringResource(confirmationView);
 
         ArrayList<Integer> consentDescription = new ArrayList<>();
@@ -177,6 +178,6 @@ public class ConsentTextTracker {
         }
 
         ConsentAuditorBridge.getInstance().recordConsent(
-                feature, consentDescription, consentConfirmation);
+                accountId, feature, consentDescription, consentConfirmation);
     }
 }

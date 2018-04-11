@@ -21,6 +21,7 @@ static void JNI_ConsentAuditorBridge_RecordConsent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile,
+    const JavaParamRef<jstring>& j_account_id,
     jint j_feature,
     const JavaParamRef<jintArray>& j_consent_description,
     jint j_consent_confirmation) {
@@ -29,7 +30,8 @@ static void JNI_ConsentAuditorBridge_RecordConsent(
                                          &consent_description);
   ConsentAuditorFactory::GetForProfile(
       ProfileAndroid::FromProfileAndroid(j_profile))
-      ->RecordGaiaConsent(static_cast<consent_auditor::Feature>(j_feature),
+      ->RecordGaiaConsent(ConvertJavaStringToUTF8(j_account_id),
+                          static_cast<consent_auditor::Feature>(j_feature),
                           consent_description, j_consent_confirmation,
                           consent_auditor::ConsentStatus::GIVEN);
 }

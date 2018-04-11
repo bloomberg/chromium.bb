@@ -13,6 +13,7 @@
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
@@ -22,6 +23,7 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -258,20 +260,24 @@ void ArcTermsOfServiceScreenHandler::HandleAccept(
   pref_handler_->EnableBackupRestore(enable_backup_restore);
   pref_handler_->EnableLocationService(enable_location_services);
 
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   consent_auditor::ConsentAuditor* consent_auditor =
-      ConsentAuditorFactory::GetForProfile(
-          ProfileManager::GetPrimaryUserProfile());
+      ConsentAuditorFactory::GetForProfile(profile);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  DCHECK(signin_manager->IsAuthenticated());
+  std::string account_id = signin_manager->GetAuthenticatedAccountId();
 
   // Record acceptance of Play ToS.
   consent_auditor->RecordGaiaConsent(
-      consent_auditor::Feature::PLAY_STORE,
+      account_id, consent_auditor::Feature::PLAY_STORE,
       ArcSupportHost::ComputePlayToSConsentIds(tos_content),
       IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT, consent_auditor::ConsentStatus::GIVEN);
 
   // If the user - not policy - chose Backup and Restore, record consent.
   if (enable_backup_restore && !backup_restore_managed_) {
     consent_auditor->RecordGaiaConsent(
-        consent_auditor::Feature::BACKUP_AND_RESTORE,
+        account_id, consent_auditor::Feature::BACKUP_AND_RESTORE,
         {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE},
         IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
         consent_auditor::ConsentStatus::GIVEN);
@@ -280,7 +286,7 @@ void ArcTermsOfServiceScreenHandler::HandleAccept(
   // If the user - not policy - chose Location Services, record consent.
   if (enable_location_services && !location_services_managed_) {
     consent_auditor->RecordGaiaConsent(
-        consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
+        account_id, consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
         {IDS_ARC_OPT_IN_LOCATION_SETTING}, IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
         consent_auditor::ConsentStatus::GIVEN);
   }

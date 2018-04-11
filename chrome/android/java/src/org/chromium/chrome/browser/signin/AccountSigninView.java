@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.signin;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
@@ -30,6 +31,7 @@ import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.AccountTrackerService.OnSystemAccountsSeededListener;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
+import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
@@ -797,7 +799,21 @@ public class AccountSigninView extends FrameLayout {
      * @param confirmationView The view that the user clicked when consenting.
      */
     private void recordConsent(TextView confirmationView) {
-        mConsentTextTracker.recordConsent(ConsentAuditorFeature.CHROME_SYNC, confirmationView,
-                findViewById(R.id.signin_confirmation_view), findViewById(R.id.button_bar));
+        // TODO(crbug.com/831257): Provide the account id synchronously from AccountManagerFacade.
+        final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            public String doInBackground(Void... params) {
+                return accountIdProvider.getAccountId(mSelectedAccountName);
+            }
+
+            @Override
+            public void onPostExecute(String accountId) {
+                mConsentTextTracker.recordConsent(accountId, ConsentAuditorFeature.CHROME_SYNC,
+                        confirmationView, findViewById(R.id.signin_confirmation_view),
+                        findViewById(R.id.button_bar));
+            }
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }
