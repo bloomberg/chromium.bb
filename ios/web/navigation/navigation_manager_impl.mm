@@ -130,6 +130,8 @@ void NavigationManagerImpl::SetBrowserState(BrowserState* browser_state) {
   browser_state_ = browser_state;
 }
 
+void NavigationManagerImpl::DetachFromWebView() {}
+
 void NavigationManagerImpl::RemoveTransientURLRewriters() {
   transient_url_rewriters_.clear();
 }
@@ -286,7 +288,7 @@ void NavigationManagerImpl::LoadURLWithParams(
     added_item->SetShouldSkipRepostFormConfirmation(true);
   }
 
-  delegate_->LoadCurrentItem();
+  FinishLoadURLWithParams();
 }
 
 void NavigationManagerImpl::AddTransientURLRewriter(
@@ -321,7 +323,7 @@ void NavigationManagerImpl::Reload(ReloadType reload_type,
     reload_item->SetURL(reload_item->GetOriginalRequestURL());
   }
 
-  delegate_->Reload();
+  FinishReload();
 }
 
 void NavigationManagerImpl::ReloadWithUserAgentType(
@@ -436,6 +438,14 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonAppSpecificItem()
       return item;
   }
   return nullptr;
+}
+
+void NavigationManagerImpl::FinishReload() {
+  delegate_->Reload();
+}
+
+void NavigationManagerImpl::FinishLoadURLWithParams() {
+  delegate_->LoadCurrentItem();
 }
 
 bool NavigationManagerImpl::IsPlaceholderUrl(const GURL& url) const {

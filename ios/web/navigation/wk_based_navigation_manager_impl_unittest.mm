@@ -15,6 +15,7 @@
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/load_committed_details.h"
 #include "ios/web/public/navigation_item.h"
+#include "ios/web/public/reload_type.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
@@ -786,6 +787,150 @@ TEST_F(WKBasedNavigationManagerTest, EmptyWindowOpenNavigation) {
 
   // This is still allowed on a length-1 navigation history.
   manager_->GoToIndex(0);
+}
+
+// Test fixture for detach from web view mode for WKBasedNavigationManagerImpl.
+class WKBasedNavigationManagerDetachedModeTest
+    : public WKBasedNavigationManagerTest {
+ protected:
+  void SetUp() override {
+    // Sets up each test case with a session history of 3 items. The middle item
+    // is the current item.
+    url0_ = GURL("http://www.0.com");
+    url1_ = GURL("http://www.1.com");
+    url2_ = GURL("http://www.2.com");
+
+    [mock_wk_list_ setCurrentURL:@"http://www.1.com"
+                    backListURLs:@[ @"http://www.0.com" ]
+                 forwardListURLs:@[ @"http://www.2.com" ]];
+
+    ASSERT_EQ(url0_, manager_->GetItemAtIndex(0)->GetURL());
+    ASSERT_EQ(url1_, manager_->GetItemAtIndex(1)->GetURL());
+    ASSERT_EQ(url2_, manager_->GetItemAtIndex(2)->GetURL());
+  }
+
+  // Returns the value of the "?session" URL param from |url|.
+  static std::string ExtractRestoredSession(const GURL& url) {
+    std::string session_json;
+    net::GetValueForKeyInQuery(
+        url, wk_navigation_util::kRestoreSessionSessionQueryKey, &session_json);
+    return session_json;
+  }
+
+  GURL url0_;
+  GURL url1_;
+  GURL url2_;
+};
+
+// Tests that all getters return the expected value in detached mode.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, CachedSessionHistory) {
+  manager_->DetachFromWebView();
+  delegate_.RemoveWebView();
+
+  EXPECT_EQ(url1_, manager_->GetVisibleItem()->GetURL());
+  EXPECT_EQ(3, manager_->GetItemCount());
+
+  EXPECT_EQ(url0_, manager_->GetItemAtIndex(0)->GetURL());
+  EXPECT_EQ(url1_, manager_->GetItemAtIndex(1)->GetURL());
+  EXPECT_EQ(url2_, manager_->GetItemAtIndex(2)->GetURL());
+
+  EXPECT_EQ(0, manager_->GetIndexOfItem(manager_->GetItemAtIndex(0)));
+  EXPECT_EQ(1, manager_->GetIndexOfItem(manager_->GetItemAtIndex(1)));
+  EXPECT_EQ(2, manager_->GetIndexOfItem(manager_->GetItemAtIndex(2)));
+
+  EXPECT_EQ(-1, manager_->GetPendingItemIndex());
+  EXPECT_EQ(nullptr, manager_->GetPendingItem());
+
+  EXPECT_EQ(1, manager_->GetLastCommittedItemIndex());
+  EXPECT_EQ(url1_, manager_->GetLastCommittedItem()->GetURL());
+
+  EXPECT_TRUE(manager_->CanGoBack());
+  EXPECT_TRUE(manager_->CanGoForward());
+  EXPECT_TRUE(manager_->CanGoToOffset(0));
+  EXPECT_TRUE(manager_->CanGoToOffset(-1));
+  EXPECT_TRUE(manager_->CanGoToOffset(1));
+
+  EXPECT_EQ(0, manager_->GetIndexForOffset(-1));
+  EXPECT_EQ(1, manager_->GetIndexForOffset(0));
+  EXPECT_EQ(2, manager_->GetIndexForOffset(1));
+
+  NavigationItemList backward_items = manager_->GetBackwardItems();
+  EXPECT_EQ(1UL, backward_items.size());
+  EXPECT_EQ(url0_, backward_items[0]->GetURL());
+
+  NavigationItemList forward_items = manager_->GetForwardItems();
+  EXPECT_EQ(1UL, forward_items.size());
+  EXPECT_EQ(url2_, forward_items[0]->GetURL());
+}
+
+// Tests that detaching from an empty WKWebView works.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, NothingToCache) {
+  delegate_.RemoveWebView();
+  manager_->DetachFromWebView();
+
+  EXPECT_EQ(0, manager_->GetItemCount());
+  EXPECT_EQ(nullptr, manager_->GetVisibleItem());
+  EXPECT_EQ(nullptr, manager_->GetItemAtIndex(0));
+  EXPECT_EQ(nullptr, manager_->GetPendingItem());
+  EXPECT_EQ(-1, manager_->GetLastCommittedItemIndex());
+
+  manager_->Reload(web::ReloadType::NORMAL, false /* check_for_repost */);
+  EXPECT_EQ(nullptr, manager_->GetPendingItem());
+}
+
+// Tests that Reload from detached mode restores cached history.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, Reload) {
+  manager_->DetachFromWebView();
+  delegate_.RemoveWebView();
+
+  manager_->Reload(web::ReloadType::NORMAL, false /* check_for_repost */);
+  EXPECT_EQ(
+      "{\"offset\":-1,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
+      "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
+      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
+  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+}
+
+// Tests that GoToIndex from detached mode restores cached history with updated
+// current item offset.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, GoToIndex) {
+  manager_->DetachFromWebView();
+  delegate_.RemoveWebView();
+
+  manager_->GoToIndex(0);
+  EXPECT_EQ(
+      "{\"offset\":-2,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
+      "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
+      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
+  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+}
+
+// Tests that LoadIfNecessary from detached mode restores cached history.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadIfNecessary) {
+  manager_->DetachFromWebView();
+  delegate_.RemoveWebView();
+
+  manager_->LoadIfNecessary();
+  EXPECT_EQ(
+      "{\"offset\":-1,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
+      "\",\"http://www.1.com/\",\"http://www.2.com/\"]}",
+      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
+  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
+}
+
+// Tests that LoadURLWithParams from detached mode restores backward history and
+// adds the new item at the end.
+TEST_F(WKBasedNavigationManagerDetachedModeTest, LoadURLWithParams) {
+  manager_->DetachFromWebView();
+  delegate_.RemoveWebView();
+
+  NavigationManager::WebLoadParams params(GURL("http://www.3.com"));
+  manager_->LoadURLWithParams(params);
+  EXPECT_EQ(
+      "{\"offset\":0,\"titles\":[\"\",\"\",\"\"],\"urls\":[\"http://www.0.com/"
+      "\",\"http://www.1.com/\",\"http://www.3.com/\"]}",
+      ExtractRestoredSession(manager_->GetPendingItem()->GetURL()));
+  EXPECT_EQ(url0_, manager_->GetPendingItem()->GetVirtualURL());
 }
 
 }  // namespace web
