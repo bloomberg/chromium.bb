@@ -107,7 +107,7 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     constexpr gfx::Size kKSVWindowSize(800, 512);
     gfx::Rect window_bounds(kKSVWindowSize);
     if (context) {
-      window_bounds = context->GetRootWindow()->bounds();
+      window_bounds = context->GetRootWindow()->GetBoundsInScreen();
       window_bounds.ClampToCenteredSize(kKSVWindowSize);
     }
     views::Widget::CreateWindowWithContextAndBounds(new KeyboardShortcutView(),
