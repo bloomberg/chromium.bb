@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,8 +32,12 @@
     return;
   _viewController = [[SKStoreProductViewController alloc] init];
   _viewController.delegate = self;
-  [_viewController loadProductWithParameters:self.iTunesProductParameters
-                             completionBlock:nil];
+  [_viewController
+      loadProductWithParameters:self.iTunesProductParameters
+                completionBlock:^(BOOL result, NSError* _Nullable error) {
+                  UMA_HISTOGRAM_BOOLEAN("IOS.StoreKitLoadedSuccessfully",
+                                        result);
+                }];
   [self.baseViewController presentViewController:_viewController
                                         animated:YES
                                       completion:nil];
