@@ -140,6 +140,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="4145029455188493639">Đã đăng nhập bằng địa chỉ <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đã cài đặt phiên bản mới nhất của phần mềm và thử lại.</translation>
 <translation id="4156740505453712750">Để bảo vệ quyền truy cập vào máy tính này, vui lòng chọn một mã PIN <ph name="BOLD_START" />ít nhất sáu chữ số<ph name="BOLD_END" />. Mã PIN này sẽ được yêu cầu khi kết nối từ một vị trí khác.</translation>
+<translation id="4169432154993690151">Để chọn ảnh hồ sơ, hãy cho phép Chrome Remote Desktop truy cập vào máy ảnh</translation>
 <translation id="4176825807642096119">Mã truy cập</translation>
 <translation id="4207623512727273241">Vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
 <translation id="4227991223508142681">Tiện ích cấp phép máy chủ</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Từ</translation>
 <translation id="677755392401385740">Máy chủ đã khởi động cho người dùng: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Xem/chỉnh sửa</translation>
+<translation id="6913710942997637770">Để chọn ảnh hồ sơ, hãy cho phép Chrome Remote Desktop truy cập vào ảnh</translation>
 <translation id="6930242544192836755">Thời lượng</translation>
 <translation id="6939719207673461467">Hiển thị / ẩn bàn phím.</translation>
 <translation id="6944854424004126054">Khôi phục cửa sổ</translation>

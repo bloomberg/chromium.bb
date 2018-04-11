@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Standardsuchmaschine</translation>
 <translation id="1099282607296956954">Website-Isolierung für jede Website aktivieren</translation>
 <translation id="1117535567637097036">Die über diese Richtlinie festgelegten Protokoll-Handler werden bei der Verarbeitung von Android-Intents nicht verwendet.</translation>
+<translation id="1118093128235245168">Websites dürfen den Nutzer um Zugriff auf ein angeschlossenes USB-Gerät bitten</translation>
 <translation id="1128903365609589950">Konfiguriert das Verzeichnis, in dem die Cachedateien von <ph name="PRODUCT_NAME" /> auf dem Datenträger gespeichert werden.
 
 Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das bereitgestellte Verzeichnis, unabhängig davon, ob der Nutzer die Markierung "--disk-cache-dir" angegeben hat. Um Datenverluste oder andere unerwartete Fehler zu vermeiden, darf diese Richtlinie nicht für das Stammverzeichnis eines Datenträgers oder ein Verzeichnis, das für andere Zwecke verwendet wird, festgelegt werden, da <ph name="PRODUCT_NAME" /> die entsprechenden Inhalte verwaltet.
@@ -69,6 +70,9 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
       Die geringste zulässige Häufigkeit beträgt 60 Sekunden.</translation>
 <translation id="1204263402976895730">Aktivierte Unternehmensdrucker</translation>
+<translation id="1216758672198492382">Mit dieser Richtlinie können Sie festlegen, ob Websites Zugriff auf angeschlossene USB-Geräte erhalten. Der Zugriff kann vollständig blockiert werden oder der Nutzer wird jedes Mal gefragt, wenn eine Website auf angeschlossene USB-Geräte zugreifen möchte.
+
+          Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung "3" verwendet, die vom Nutzer später geändert werden kann.</translation>
 <translation id="1219695476179627719">Gibt an, ob das Gerät auf die von <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> festgelegte Version zurückgesetzt werden soll, obwohl bereits eine neuere Version ausgeführt wird.
 
       Standardwert ist RollbackDisabled.</translation>
@@ -147,11 +151,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> umgeht für die Liste der hier angegebenen Hosts alle Proxys. Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Remote-Bestätigung</translation>
 <translation id="1509692106376861764">Diese Richtlinie wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet.</translation>
-<translation id="1519337829779572350">Diese Einstellung ist veraltet. Verwenden Sie stattdessen "SafeBrowsingExtendedReportingEnabled". Das Aktivieren oder Deaktivieren von "SafeBrowsingExtendedReportingEnabled" entspricht der Einstellung von "SafeBrowsingExtendedReportingOptInAllowed" auf "false".
-
-      Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer nicht mehr festlegen, ob sie ausgewählte Systeminformationen und Seiteninhalte an die Google-Server senden möchten. Ist die Richtlinie auf "true" eingestellt oder nicht konfiguriert, können Nutzer einige Systeminformationen und Seiteninhalte an Safe Browsing senden, um bei der Erfassung schädlicher Apps und Websites zu helfen.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Ermittlung des physischen Standorts des Nutzers durch Websites zulassen</translation>
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="1530812829012954197">Immer die folgenden URL-Muster im Host-Browser darstellen</translation>
@@ -308,6 +307,17 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2113068765175018713">Betriebsdauer der Geräte durch automatische Neustarts begrenzen</translation>
 <translation id="2127599828444728326">Benachrichtigungen auf diesen Websites zulassen</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>
+<translation id="2132732175597591362">Steuert die weiße Liste der URL-Muster, für die Autoplay immer aktiviert ist.
+
+      Wenn Autoplay aktiviert ist, können Videos mit Audioinhalten in <ph name="PRODUCT_NAME" /> ohne die Zustimmung des Nutzers automatisch abgespielt werden.
+
+      Ein URL-Muster muss den unter https://www.chromium.org/administrators/url-blacklist-filter-format beschriebenen Formaten entsprechen.
+
+      Wenn die Richtlinie "AutoplayAllowed" auf "true" gesetzt wird, hat diese Richtlinie keine Auswirkungen.
+
+      Wird die Richtlinie "AutoplayAllowed" auf "false" gesetzt, dürfen die in dieser Richtlinie festgelegten URL-Muster dennoch abgespielt werden.
+
+      Hinweis: Wenn <ph name="PRODUCT_NAME" /> gerade läuft und diese Richtlinie geändert wird, wird sie nur auf Tabs angewendet, die neu geöffnet werden. Aus diesem Grund kann es passieren, dass einige Tabs das zuvor eingestellte Verhalten zeigen.</translation>
 <translation id="2134437727173969994">Sperren des Bildschirms erlauben</translation>
 <translation id="2137064848866899664">Bei Festlegen dieser Richtlinie wird jeder Bildschirm bei
       jedem Neustart und beim erstmaligen Herstellen der Verbindung nach
@@ -574,6 +584,12 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2801230735743888564">Nutzern erlauben, das Easter Egg-Dinosaurierspiel zu spielen, wenn das Gerät offline ist.
 
       Wenn diese Richtlinie auf "false" eingestellt ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht spielen, wenn das Gerät offline ist. Ist es auf "true" eingestellt, können Nutzer das Dinosaurierspiel spielen. Falls die Richtlinie nicht konfiguriert ist, können Nutzer das Easter Egg-Dinosaurierspiel nicht unter einer registrierten Version von Chrome OS spielen, unter anderen Umständen jedoch schon.</translation>
+<translation id="2802085784857530815">Mit dieser Richtlinie können Sie festlegen, ob Nutzer auf Drucker außerhalb des Unternehmens zugreifen dürfen.
+
+      Wenn die Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, können die Nutzer ihre eigenen nativen Drucker hinzufügen, konfigurieren und mit ihnen drucken.
+
+      Wenn die Richtlinie auf "false" gesetzt ist, können die Nutzer keine eigenen Drucker hinzufügen, konfigurieren oder mit ihnen drucken. Sie können auch keine zuvor konfigurierten nativen Drucker verwenden.
+      </translation>
 <translation id="2805707493867224476">Anzeige von Pop-ups für alle Websites zulassen</translation>
 <translation id="2808013382476173118">Aktiviert den Einsatz von STUN-Servern, wenn Remote-Clients versuchen, eine Verbindung zu diesem Computer herzustellen
 
@@ -724,6 +740,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
 <translation id="3264793472749429012">Standardsuchmaschinen-Codierungen</translation>
 <translation id="3273221114520206906">JavaScript-Standardeinstellung</translation>
+<translation id="3284094172359247914">Verwendung der WebUSB API steuern</translation>
 <translation id="3288595667065905535">Release-Kanal</translation>
 <translation id="3292147213643666827">Mithilfe dieser Richtlinie kann <ph name="PRODUCT_NAME" /> als Proxy zwischen <ph name="CLOUD_PRINT_NAME" /> und älteren Druckern fungieren, die an den Computer angeschlossen sind.
 
@@ -802,6 +819,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="350797926066071931">Übersetzung aktivieren</translation>
 <translation id="3512226956150568738">Wenn das Client-Gerätemodell ARC bereits unterstützt hat, bevor die Migration zu ext4 für die ARC-Ausführung erforderlich war, verhält sich diese Option so, als ob "AskUser" (Wert 3) festgelegt wurde. Beachten Sie, dass die ArcEnabled-Richtlinie hierbei auf "true" festgelegt werden muss. In allen anderen Fällen entspricht dieser Wert "DisallowArc" (Wert 0) – beispielsweise, wenn das Gerätemodell ARC zuvor nicht unterstützt hat, oder wenn die ArcEnabled-Richtlinie auf "false" gesetzt wird.</translation>
+<translation id="3524204464536655762">Keine Website darf Zugriff auf USB-Geräte über die WebUSB API anfordern</translation>
 <translation id="3528000905991875314">Alternative Fehlerseiten aktivieren</translation>
 <translation id="3547954654003013442">Proxy-Einstellungen</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
@@ -810,11 +828,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="3646859102161347133">Lupentyp festlegen</translation>
 <translation id="3653237928288822292">Symbol der Standardsuchmaschine</translation>
 <translation id="3660562134618097814">SAML-IdP-Cookies bei der Anmeldung übertragen</translation>
-<translation id="3687282113223807271">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Bei Aktivierung dieser Einstellung können Nutzer von der Hinweisseite aus nicht die schädliche Website besuchen. 
-
-Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer zu der gekennzeichneten Website navigieren, nachdem sie den Warnhinweis gesehen haben.
-
-      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Schwarze Liste für Installation von Erweiterungen konfigurieren</translation>
 <translation id="3711895659073496551">Suspend-Modus</translation>
 <translation id="3736879847913515635">"Person hinzufügen" im Nutzermanager aktivieren</translation>
@@ -906,6 +919,9 @@ Falls die Richtlinie nicht festgelegt wird, bleibt die Varianten-Seed-URL unver�
       Führt Erweiterungen auf, die bei Geräten im Händlermodus automatisch für den Demo-Nutzer installiert werden. Diese Erweiterungen werden auf dem Gerät gespeichert und können anschließend offline installiert werden.
 
        Jeder Eintrag enthält ein Verzeichnis, in dem im Feld "extension-id" die Erweiterungs-ID und im Feld "update-url" die Aktualisierungs-URL angegeben werden müssen.</translation>
+<translation id="3873159954366380945">Mit dieser Einstellung können Sie festlegen, wie lange Benachrichtigungen zum Neustart von <ph name="PRODUCT_NAME" /> angezeigt werden, um ein ausstehendes Update durchzuführen.
+
+      Mit dieser Richtlinieneinstellung kann der Zeitraum in Millisekunden festgelegt werden, in dem ein Nutzer fortschreitend darüber informiert wird, dass <ph name="PRODUCT_NAME" /> oder <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss. Während dieses Zeitraums wird der Nutzer basierend auf der Einstellung der Richtlinie <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> wiederholt über die Notwendigkeit eines Updates informiert. Wenn die Richtlinie nicht festgelegt ist, wird der Standardzeitraum von 345.600.000 Millisekunden (vier Tage) für <ph name="PRODUCT_OS_NAME" /> und 604.800.000 Millisekunden (eine Woche) für alle anderen Plattformen verwendet.</translation>
 <translation id="3877517141460819966">Integrierter Zwei-Faktor-Authentifizierungsmodus</translation>
 <translation id="388237772682176890">Da SPDY/3.1 nicht mehr unterstützt wird, wurde diese Richtlinie in M53 eingestellt und in M54 entfernt.
 
@@ -1249,6 +1265,14 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Diese Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
 <translation id="489803897780524242">Parameter zur Steuerung der Suchbegriffersetzung für den Standardsuchanbieter</translation>
 <translation id="4899708173828500852">Safe Browsing aktivieren</translation>
+<translation id="4899802251198446659">Mit dieser Richtlinie können Sie festlegen, ob Videos mit Ton automatisch und ohne Zustimmung durch den Nutzer in <ph name="PRODUCT_NAME" /> abgespielt werden dürfen.
+
+      Wenn die Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> Medien automatisch abspielen.
+      Wird die Richtlinie auf "false" festgelegt, darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch abspielen. Die Richtlinie "AutoplayWhitelist" kann verwendet werden, um diese Einstellung für bestimmte URL-Muster zu überschreiben.
+      Standardmäßig darf <ph name="PRODUCT_NAME" /> Medien nicht automatisch abspielen. Die Richtlinie "AutoplayWhitelist" kann verwendet werden, um diese Einstellung für bestimmte URL-Muster zu überschreiben.
+
+      Hinweis: Wenn <ph name="PRODUCT_NAME" /> gerade läuft und diese Richtlinie geändert wird, wird sie nur auf Tabs angewendet, die neu geöffnet werden. Aus diesem Grund kann es passieren, dass einige Tabs das zuvor eingestellte Verhalten zeigen.
+      </translation>
 <translation id="4906194810004762807">Aktualisierungsrate für Geräterichtlinien</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4923806312383904642">WebDriver erlauben, nicht kompatible Richtlinien zu überschreiben</translation>
@@ -1283,19 +1307,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wenn der Client über eine längeren Zeitraum offline war, werden Passwörter nicht innerhalb der angegebenen Frist geändert.</translation>
 <translation id="5105313908130842249">Verzögerung für die Bildschirmsperre im Akkubetrieb</translation>
-<translation id="5106504910236139235">Diese Richtlinie aktiviert die erweiterte Berichterstellung bei der Verwendung von Safe Browsing in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern.
-
-      Bei der erweiterten Berichterstellung werden einige Systeminformationen und Seiteninhalte an die Server von Google gesendet, um bei der Erkennung von gefährlichen Apps und Websites zu helfen.
-
-      Wenn diese Einstellung auf "true" gesetzt wird, werden Berichte erstellt und bei Bedarf gesendet (etwa wenn ein Sicherheits-Interstitial angezeigt wird).
-
-      Wird die Richtlinie auf "false" festgelegt, werden grundsätzlich keine Berichte gesendet.
-
-      Wenn diese Richtlinie auf "true" oder "false" festgelegt wird, kann der Nutzer die Einstellung nicht ändern.
-
-      Wenn diese Richtlinie nicht konfiguriert wird, kann der Nutzer die Einstellung ändern und entscheiden, ob Berichte gesendet werden sollen.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Deaktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="5130288486815037971">Legt fest, ob RC4-Verschlüsselungssammlungen in TLS aktiviert sind</translation>
 <translation id="5141670636904227950">Standardtyp für die Lupe festlegen, die auf der Anmeldeseite aktiviert ist</translation>
@@ -1491,20 +1502,6 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
           Ist diese Richtlinie nicht konfiguriert, wird ein Standardwert verwendet.
 
           Der Wert für diese Richtlinie muss in Millisekunden angegeben werden.</translation>
-<translation id="5784370777704871674">Hiermit wird die Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktiviert und verhindert, dass Nutzer diese Einstellung ändern können.
-
-      Wenn Sie diese Einstellung aktivieren, ist Safe Browsing immer aktiv.
-
-      Wenn Sie diese Einstellung deaktivieren, ist Safe Browsing nie aktiv.
-
-
-      Falls Sie diese Einstellung aktivieren oder deaktivieren, können die Nutzer die Einstellung "Phishing- und Malware-Schutz aktivieren" in <ph name="PRODUCT_NAME" /> nicht ändern oder außer Kraft setzen.
-
-      Ist die Richtlinie nicht konfiguriert, wird Safe Browsing aktiviert, aber die Einstellung kann von den Nutzern geändert werden.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.
-
-      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" /> -Domain verbunden sind.</translation>
 <translation id="5809728392451418079">Anzeigename für lokale Gerätekonten festlegen</translation>
 <translation id="5814301096961727113">Standardstatus für das gesprochene Feedback auf der Anmeldeseite festlegen</translation>
 <translation id="5815129011704381141">Nach Update automatisch neu starten</translation>
@@ -1692,11 +1689,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6281043242780654992">Konfiguriert Richtlinien für das native Messaging. Hosts für natives Messaging auf der schwarzen Liste können nur geladen werden, wenn sie auch auf der weißen Liste stehen.</translation>
 <translation id="6282799760374509080">Audioaufzeichnung gestatten oder ablehnen</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Hiermit werden Komponentenupdates für alle Komponenten in <ph name="PRODUCT_NAME" /> aktiviert, sofern diese nicht festgelegt sind oder auf "true" eingestellt wurden.
-
-      Wurde "false" eingestellt, sind Komponentenupdates deaktiviert. Für einige Komponenten gelten diese Richtlinien jedoch nicht: Updates von Komponenten, die keinen ausführbaren Code enthalten, das Browserverhalten nicht maßgeblich verändern oder die Sicherheit nicht gefährden, werden nicht deaktiviert.
-      Beispiele für solche Komponenten sind die "Certificate Revocation Lists" sowie sichere Browserdaten.
-      Weitere Informationen zu Safe Browsing finden Sie auf https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Automatische Vervollständigung des Domainnamens während der Nutzeranmeldung aktivieren</translation>
 <translation id="6315673513957120120">Chrome zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die SSL-Fehler aufweisen. Standardmäßig oder bei Festlegung von "true" für diese Richtlinie ist es Nutzern gestattet, durch diese Seiten mit Warnmeldung zu klicken.
       Wenn für die Richtlinie "false" festgelegt wird, können Nutzer nicht mehr durch diese Seiten klicken.</translation>
@@ -2512,6 +2504,15 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9112897538922695510">Damit können Sie eine Liste mit Protokoll-Handlern registrieren, wobei dies lediglich eine empfohlene Richtlinie sein kann. Für die Eigenschaft |protocol| sollte ein Schema wie "mailto" und für die Eigenschaft |url| das URL-Muster der Anwendung festgelegt werden, die das Schema verwaltet. Das Muster kann "%s" enthalten, was später durch die jeweilige URL ersetzt wird.
 
           Die von der Richtlinie registrierten Protokoll-Handler werden mit den Protokoll-Handlern zusammengeführt, die vom Nutzer registriert wurden, und können gemeinsam verwendet werden. Der Nutzer kann die durch die Richtlinie installierten Protokoll-Handler durch Installieren eines neuen standardmäßigen Handlers überschreiben. Ein von der Richtlinie registrierter Protokoll-Handler kann jedoch nicht entfernt werden.</translation>
+<translation id="9123211093995421438">Gibt die Mindestanzahl der <ph name="PRODUCT_OS_NAME" />-Meilensteine an. Wird diese erreicht, sollte ein Rollback jederzeit von der stabilen Version aus möglich sein.
+
+      Standardwert ist 0 für Kunden- und 4 (ca. ein halbes Jahr) für unternehmenseigene Geräte.
+
+      Durch die Konfiguration dieser Richtlinie wird verhindert, dass der Rollback-Schutz für die angegebene Zahl der Meilensteine angewendet wird.
+
+      Wird für diese Richtlinie ein niedrigerer Wert gewählt, hat dies eine langfristige Auswirkung: Das Gerät kann u. U. nicht auf eine frühere Version zurückgesetzt werden, auch wenn für die Richtlinie später wieder ein höherer Wert festgelegt wird.
+
+      Die tatsächlichen Rollback-Optionen sind möglicherweise auch abhängig vom Board sowie von Patches für schwerwiegende Sicherheitslücken.</translation>
 <translation id="913195841488580904">Zugriff auf aufgelistete URLs blockieren</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" />-Proxy aktivieren</translation>
 <translation id="9136253551939494882">Eine weiße Liste, in der festgelegt wird, welche Modi für das schnelle Entsperren der Nutzer zum Entsperren des Bildschirms konfigurieren und verwenden kann.

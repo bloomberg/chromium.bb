@@ -158,11 +158,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Esta definição está obsoleta. Use SafeBrowsingExtendedReportingEnabled. A ativação ou desativação de SafeBrowsingExtendedReportingEnabled equivale à definição de SafeBrowsingExtendedReportingOptInAllowed como falsa.
-
-      Definir esta política como falsa impede que os usuários optem por enviar algumas informações do sistema e conteúdo da página aos servidores do Google. Se essa configuração for verdadeira ou se não for definida, os usuários poderão enviar algumas informações do sistema e conteúdo da página ao serviço Navegação segura para ajudar a detectar apps e sites perigosos.
-
-      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o serviço Navegação segura.</translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
@@ -847,11 +842,6 @@
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do provedor de pesquisa padrão</translation>
 <translation id="3660562134618097814">Transferir cookies do IDP de SAML durante o login</translation>
-<translation id="3687282113223807271">O serviço "Navegação segura" mostra uma página de aviso quando os usuários navegam em sites que são sinalizados como potencialmente mal-intencionados. A ativação dessa configuração impede que os usuários prossigam de qualquer forma da página de aviso para o site mal-intencionado.
-
-      Se essa configuração for desativada ou não for configurada, os usuários poderão optar por prosseguir para o site sinalizado após o aviso ser exibido.
-
-      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="3709266154059827597">Configurar a lista negra de instalação da extensão</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Ativar adição de uma pessoa no gerenciador de usuários</translation>
@@ -1330,19 +1320,6 @@
 
       As senhas poderão ficar mais antigas que o número de dias especificado se o cliente ficar off-line por um período mais longo.</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
-<translation id="5106504910236139235">Ativa os relatórios estendidos do serviço Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os usuários mudem essa configuração.
-
-      Os relatórios estendidos enviam algumas informações do sistema e conteúdo da página aos servidores do Google para ajudar a detectar apps e sites perigosos.
-
-      Se a configuração for definida como verdadeira, os relatórios serão criados e enviados sempre que necessário (por exemplo, quando um intersticial de segurança é exibido).
-
-      Se a configuração for definida como falsa, os relatórios nunca serão enviados.
-
-      Se essa política for definida como verdadeira ou falsa, o usuário não poderá modificar a configuração.
-
-      Se essa política não for definida, o usuário poderá alterar a configuração e decidir se os relatórios serão ou não enviados.
-
-      Consulte https://developers.google.com/safe-browsing para ver mais informações sobre o serviço Navegação segura.</translation>
 <translation id="5108031557082757679">Impressoras empresariais desativadas</translation>
 <translation id="5130288486815037971">Se os pacotes de criptografia RC4 em TLS estão ativados ou não</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa padrão ativada na tela de login</translation>
@@ -1536,19 +1513,6 @@
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos.</translation>
-<translation id="5784370777704871674">Ativa a política Safe Browsing do <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta definição.
-
-      Se você ativar essa definição, a política Safe Browsing estará sempre ativa.
-
-      Se você desativar essa definição, a política Safe Browsing nunca estará ativa.
-
-      Se você ativar ou desativar essa definição, os usuários não poderão alterar ou modificar a definição "Ativar proteção contra phishing e malware" no <ph name="PRODUCT_NAME" />.
-
-      Se esta política for deixada sem definição, ela será ativada, mas o usuário poderá alterá-la.
-
-      Consulte https://developers.google.com/safe-browsing para encontrar mais informações sobre a política Safe Browsing.
-
-      Essa política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Definir o nome de exibição das contas locais de dispositivo</translation>
 <translation id="5814301096961727113">Definir estado padrão do feedback falado na tela de login</translation>
 <translation id="5815129011704381141">Reinicializar automaticamente após a atualização</translation>
@@ -1736,11 +1700,6 @@
 <translation id="6281043242780654992">Configura políticas para as mensagens nativas. Os hosts de mensagens nativas presentes na lista negra não serão permitidos, a menos que estejam na lista de permissões.</translation>
 <translation id="6282799760374509080">Permitir ou negar captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Ativa atualizações de todos os componentes no <ph name="PRODUCT_NAME" /> quando não está definida ou se definida como True.
-
-      Se a política é definida como False, as atualizações dos componentes são desativadas. Entretanto, alguns componentes são isentos desta política: atualizações em quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a segurança não serão desativadas.
-      Entre os exemplos desses componentes estão as listas de revogação de certificado e os dados de navegação segura.
-      Consulte https://developers.google.com/safe-browsing (em inglês) para saber mais informações sobre o recurso "Navegação segura".</translation>
 <translation id="6310223829319187614">Ativar preenchimento automático do nome de domínio durante login do usuário</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os usuários navegam para sites que têm erros de SSL. Por padrão ou quando esta política é definida como "true", os usuários têm permissão para clicar nessas páginas de aviso.
       A definição desta política como "false" não permite que os usuários cliquem em qualquer página de aviso.</translation>
@@ -2558,6 +2517,15 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
           Os gerenciadores de protocolos registrados pela política são misturados com os registrados pelo usuário, e ambos estão disponíveis para uso. O usuário pode substituir os gerenciadores de protocolos instalados por política, instalando um novo administrador padrão. Entretanto, o usuário não pode remover um gerenciador de protocolos registrado pela política.</translation>
+<translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> em que a reversão deve ser permitida a partir da versão estável a qualquer momento.
+
+      O padrão é 0 para o consumidor, 4 (aproximadamente um semestre) para dispositivos inscritos na empresa.
+
+      A definição desta política impede que a proteção de reversão se aplique a pelo menos esse número de marcos.
+
+      Se essa política for definida para um valor menor, o efeito será permanente: o dispositivo PODE não ser capaz de fazer a reversão para versões anteriores mesmo depois de a política ser redefinida para um valor maior.
+
+      As possibilidades de reversão reais também podem depender dos patches de vulnerabilidade críticos e do modelo.</translation>
 <translation id="913195841488580904">Bloquear acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy do <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Uma lista de permissões que controla quais modos de desbloqueio rápido o usuário pode configurar e usar para desbloquear a tela do dispositivo.

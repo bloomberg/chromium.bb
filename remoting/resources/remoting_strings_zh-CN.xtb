@@ -140,6 +140,7 @@
 <translation id="4145029455188493639">以 <ph name="EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="4155497795971509630">缺少某些必需的组件。请确保您已安装该软件的最新版本，然后重试。</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START" />至少 6 位数<ph name="BOLD_END" />的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
+<translation id="4169432154993690151">要选择个人资料照片，请允许 Chrome 远程桌面访问您的相机</translation>
 <translation id="4176825807642096119">访问代码</translation>
 <translation id="4207623512727273241">请先运行该安装程序，再继续操作。</translation>
 <translation id="4227991223508142681">主机配置实用程序</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">发件人</translation>
 <translation id="677755392401385740">已为用户<ph name="HOST_USERNAME" />启动主机。</translation>
 <translation id="6865175692670882333">查看/修改</translation>
+<translation id="6913710942997637770">要选择个人资料照片，请允许 Chrome 远程桌面访问您的照片</translation>
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>

@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Ainda não foi possível confirmar sua senha. Observação: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair da conta. Use a senha antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">O administrador do dispositivo pode conseguir monitorar sua atividade.</translation>
 <translation id="1734367976349034509">Este dispositivo é gerenciado por uma empresa</translation>
 <translation id="1746730358044914197">Os métodos de entrada são configurados pelo administrador.</translation>
 <translation id="1747827819627189109">Teclado na tela ativado</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Botão de estouro</translation>
 <translation id="1951012854035635156">Assistente</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Configurar idioma</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Desligar</translation>
 <translation id="2012624427112548395">Ctrl+Pesquisa+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2675319268637823299">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />.
     Todos os usuários precisam sair para continuar.</translation>
+<translation id="2696763960464195425">Suas informações serão removidas quando você sair. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Configurar teclado</translation>
 <translation id="2718395828230677721">Modo noturno</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -332,6 +336,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
 <translation id="8734991477317290293">Ele pode estar tentando capturar sua digitação</translation>
+<translation id="8809737090443522491">Digite o nome de um app ou documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">A movimentação de janelas para outra área de trabalho pode resultar em comportamentos inesperados.
 

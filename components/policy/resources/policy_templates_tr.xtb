@@ -35,6 +35,7 @@
 <translation id="1096105751829466145">Varsayılan arama sağlayıcı</translation>
 <translation id="1099282607296956954">Site İzolasyonu'nu her site için etkinleştirme</translation>
 <translation id="1117535567637097036">Bu politika aracılığıyla ayarlanan protokol işleyicileri, Android amaçları işlenirken kullanılmaz.</translation>
+<translation id="1118093128235245168">Sitelerin, bağlı bir USB cihazına erişmek için kullanıcıdan izin istemesine izin ver</translation>
 <translation id="1128903365609589950"><ph name="PRODUCT_NAME" /> uygulamasının önbelleğe alınan dosyaları diskte saklamak için kullanacağı dizini yapılandırır.
 
       Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--disk-cache-dir" bayrağını belirtmiş olup olmamasına bakmaksızın sağlanan dizini kullanır. Veri kaybını veya diğer beklenmeyen hataları önlemek için bu politika, bir birimin kök dizinine veya başka amaçlar için kullanılan bir dizine ayarlanmamalıdır; çünkü <ph name="PRODUCT_NAME" />, dizinin içeriğini yönetir.
@@ -71,6 +72,9 @@
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
       verilen minimum sıklık ise 60 saniyedir.</translation>
 <translation id="1204263402976895730">Etkinleştirilmiş kurumsal yazıcılar</translation>
+<translation id="1216758672198492382">Web sitelerinin bağlı USB cihazlarına erişim sağlamalarına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Erişim tamamıyla engellenebilir veya bir web sitesinin bağlı USB cihazlarına erişim sağlamak istediği her defasında, kullanıcıya onay verip vermediği sorulabilir.
+
+          Bu politika ayarlanmadan bırakılırsa "3" değeri kullanılır ve kullanıcı bu değeri değiştirebilir.</translation>
 <translation id="1219695476179627719">Bu cihazın sonraki bir sürümü çalıştırıyor olması halinde, <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> tarafından ayarlanan sürüme geri döndürülüp döndürülmeyeceğini belirler.
 
       Varsayılan, RollbackDisabled şeklindedir.</translation>
@@ -159,11 +163,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Uzaktan Doğrulama</translation>
 <translation id="1509692106376861764">Bu politika, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır.</translation>
-<translation id="1519337829779572350">Bu ayar kullanımdan kaldırılmıştır, bunun yerine SafeBrowsingExtendedReportingEnabled'ı kullanın. SafeBrowsingExtendedReportingEnabled'ın etkinleştirilmesi veya devre dışı bırakılması, SafeBrowsingExtendedReportingOptInAllowed'ın Yanlış değerine ayarlanmasıyla eşdeğerdir.
-
-      Bu politika yanlış değerine ayarlandığında, kullanıcıların, bazı sistem bilgilerini ve sayfa içeriğini Google sunucularına göndermeyi seçmeleri engellenir. Bu ayar doğru değerine ayarlanırsa veya hiç yapılandırılmazsa kullanıcılar, tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak amacıyla bazı sistem bilgilerini ve sayfa içeriğini Güvenli Tarama'ya gönderebilir.
-
-      Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="1522425503138261032">Sitelerin, kullanıcıların fiziksel konumlarını izlemesine izin ver</translation>
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
@@ -326,6 +325,17 @@
 <translation id="2113068765175018713">Otomatik bir şekilde yeniden başlatarak cihazın açık kalma süresini sınırlandır</translation>
 <translation id="2127599828444728326">Bu sitelerde bildirimlere izin ver</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>
+<translation id="2132732175597591362">URL kalıpları beyaz listesini kontrol ederek otomatik oynatmanın her zaman etkin olmasını sağlar.
+
+      Otomatik oynatma etkinleştirilirse videolar <ph name="PRODUCT_NAME" /> üzerinde kullanıcı onayı gerekmeden otomatik olarak ses içeriğiyle oynatılabilir.
+
+      URL kalıbının, https://www.chromium.org/administrators/url-blacklist-filter-format adresinde belirtilen biçime uygun olması gerekir.
+
+      AutoplayAllowed politikası Doğru değerine ayarlanırsa bu politikanın hükmü olmaz.
+
+      AutoplayAllowed politikası Yanlış değerine ayarlanırsa bu politikada ayarlanan herhangi bir URL kalıbının oynatılmasına izin verilmeye devam edilir.
+
+      <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı yerine getiriyor olabilir.</translation>
 <translation id="2134437727173969994">Ekranı kilitlemeye izin ver</translation>
 <translation id="2137064848866899664">Bu politika ayarlanırsa her bir ekran, her yeniden
       başlatmada ve politika değeri değiştirildikten sonra ilk kez bağlanıldığında
@@ -607,6 +617,12 @@
 <translation id="2801230735743888564">Cihaz çevrimdışıyken kullanıcıların dinozor paskalya yumurtası oyununu oynamasına izin ver.
 
       Bu politika Yanlış seçeneğine ayarlanırsa kullanıcılar, cihaz çevrimdışıyken dinozor paskalya yumurtası oyununu oynayamaz. Bu ayar Doğru seçeneğine ayarlanırsa kullanıcıların dinozor oyununu oynamalarına izin verilir. Bu politika ayarlanmazsa kullanıcıların dinozor paskalya yumurtası oyununu oynamalarına kayıtlı Chrome OS'de izin verilmez, ancak diğer durumlarda izin verilir.</translation>
+<translation id="2802085784857530815">Kullanıcıların şirkete ait olmayan yazıcılara erişip erişemeyeceklerini kontrol etmenize olanak tanır
+
+      Bu politika Doğru değerine ayarlanırsa veya hiç ayarlanmazsa kullanıcılar kendi yerel yazıcılarını kullanarak ekleme, yapılandırma ve yazdırma işlemleri yapabilirler.
+
+      Bu politika Yanlış değerine ayarlanırsa kullanıcılar kendi yerel yazıcılarını ekleyemez ve yapılandıramazlar. Ayrıca kullanıcılar önceden yapılandırılmış yerel yazıcıları kullanarak da yazdırma işlemi yapamazlar.
+      </translation>
 <translation id="2805707493867224476">Tüm sitelerin pop-up göstermesine izin ver</translation>
 <translation id="2808013382476173118">Uzak istemciler bu makineyle bağlantı kurmaya çalıştığında STUN sunucularının kullanılabilmesini sağlar.
 
@@ -764,6 +780,7 @@
           Politika değeri milisaniye olarak belirtilmelidir. Değerler ekran kapanma gecikmesinden (ayarlanmışsa) ve boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="3264793472749429012">Varsayılan arama sağlayıcı kodlamaları</translation>
 <translation id="3273221114520206906">Varsayılan JavaScript ayarı</translation>
+<translation id="3284094172359247914">WebUSB API'sinin kullanımını kontrol et</translation>
 <translation id="3288595667065905535">Yeni sürüm kanalı</translation>
 <translation id="3292147213643666827"><ph name="PRODUCT_NAME" /> ürününün <ph name="CLOUD_PRINT_NAME" /> ile makineye bağlı eski yazıcılar arasında bir proxy olarak çalışmasına olanak sağlar.
 
@@ -843,6 +860,7 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="350797926066071931">Google Çeviri'yi etkinleştir</translation>
 <translation id="3512226956150568738">Müşterinin cihaz modeli, ARC'yi çalıştırmak için ext4'e taşıma işlemi zorunlu olmadan önce ARC'yi destekliyorsa ve ArcEnabled politikası doğru değerine ayarlanmışsa, bu seçenek AskUser (3 değeri) gibi çalışır. Diğer tüm durumlarda (cihaz modeli daha önce ARC'yi desteklemiyorsa veya ArcEnabled politikası yanlış değerine ayarlanmışsa), bu değer DisallowArc'a (0 değeri) eşdeğer olur.</translation>
+<translation id="3524204464536655762">Hiçbir sitenin WebUSB API'si aracılığıyla USB cihazlarına erişim izni istemesine izin verme</translation>
 <translation id="3528000905991875314">Alternatif hata sayfalarını etkinleştir</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3577251398714997599">Araya giren reklamların yer aldığı siteler için reklam ayarı</translation>
@@ -851,11 +869,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="3646859102161347133">Ekran büyüteci türünü ayarla</translation>
 <translation id="3653237928288822292">Varsayılan arama sağlayıcı simgesi</translation>
 <translation id="3660562134618097814">Giriş sırasında SAML IdP çerezlerini aktar</translation>
-<translation id="3687282113223807271">Güvenli Tarama hizmeti, kullanıcıların, kötü amaçlı kod yükleme potansiyeli olduğu işaretlenmiş sitelere gitmesi durumunda bir uyarı sayfası görüntüler. Bu ayar etkinleştirildiğinde kullanıcılar uyarı sayfasından zararlı siteye geçemezler.
-
-      Bu ayar devre dışı bırakılırsa veya yapılandırılmazsa uyarı görüntülendikten sonra kullanıcılar devam ederek işaretli siteyi ziyaret edebilirler.
-
-      Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="3709266154059827597">Uzantı kurulum kara listesini yapılandır</translation>
 <translation id="3711895659073496551">Askıya al</translation>
 <translation id="3736879847913515635">Kullanıcı yöneticisinde kişi eklemeyi etkinleştir</translation>
@@ -949,6 +962,9 @@ Bu politika yanlış seçeneğine ayarlanırsa kiosk oturum bilgileri rapor edil
       Perakende modundaki cihazlar için Demo kullanıcı adına otomatik olarak yüklenmiş uzantıları listeler. Bu uzantılar cihaza kaydedilir ve yüklemeden sonra çevrimdışıyken yüklenebilir.
 
       Her bir liste girişi, 'extension-id' alanında uzantı kimliği ve 'update-url' alanında güncelleme URL'si bulunması gereken bir sözlük içerir.</translation>
+<translation id="3873159954366380945">Bekleyen bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> öğesinin yeniden başlatılmasıyla ilgili bildirimlerin gösterileceği dönemi ayarlamanıza olanak tanır.
+
+      Bu politika ayarı, kullanıcıya bir güncelleme için <ph name="PRODUCT_NAME" /> öğesinin (veya <ph name="PRODUCT_OS_NAME" /> işletim sisteminin) yeniden başlatılması gerektiği bilgisinin kademeli olarak verileceği dönemi milisaniye cinsinden kontrol etmek için kullanılabilir. Bu dönem boyunca, kullanıcıya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasının ayarına dayalı olarak bir güncelleme gerektiği konusunda, tekrarlanan şekilde bilgi verilir. Herhangi bir değer ayarlanmazsa, varsayılan olarak <ph name="PRODUCT_OS_NAME" /> için 345600000 milisaniye (dört gün), diğer tüm platformlar için de 604800000 milisaniye (bir hafta) değeri kullanılır.</translation>
 <translation id="3877517141460819966">Entegre iki etmenli kimlik doğrulama modu</translation>
 <translation id="388237772682176890">SPDY/3.1 desteği kaldırıldığı için bu politika M53 sürümünde kullanımdan kaldırılmış ve M54 sürümünde üründen çıkarılmıştır.
  
@@ -1321,6 +1337,14 @@ politikayı geçersiz kılamaz.
           Bu politika sadece is "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="489803897780524242">Varsayılan arama sağlayıcısı için arama terimi yerleştirmeyi kontrol eden parametre</translation>
 <translation id="4899708173828500852">Güvenli Taramayı etkinleştir</translation>
+<translation id="4899802251198446659">Videoların <ph name="PRODUCT_NAME" /> üzerinde kullanıcı onayı gerekmeden otomatik olarak ses içeriğiyle oynatılıp oynatılamayacağını kontrol etmenize olanak tanır.
+
+      Bu politika Doğru değerine ayarlanırsa <ph name="PRODUCT_NAME" /> öğesinin medyayı otomatik olarak oynatmasına izin verilir.
+      Bu politika Yanlış değerine ayarlanırsa <ph name="PRODUCT_NAME" /> öğesinin medyayı otomatik olarak oynatmasına izin verilmez. AutoplayWhitelist politikası, belirli URL kalıpları için bunu geçersiz kılmak üzere kullanılabilir.
+      Varsayılan olarak <ph name="PRODUCT_NAME" /> öğesinin medyayı otomatik olarak oynatmasına izin verilmez. AutoplayWhitelist politikası, belirli URL kalıpları için bunu geçersiz kılmak üzere kullanılabilir.
+
+      <ph name="PRODUCT_NAME" /> çalışırken bu politika değişirse, değişikliğin yalnızca yeni açılan sekmeler için geçerli olacağını unutmayın. Dolayısıyla bazı sekmeler hâlâ önceki davranışı yerine getiriyor olabilir.
+      </translation>
 <translation id="4906194810004762807">Aygıt Politikası için yenileme hızı</translation>
 <translation id="4917385247580444890">Güçlü</translation>
 <translation id="4923806312383904642">WebDriver'ın Uyumlu Olmayan Politikaları Geçersiz Kılmasına İzin Ver</translation>
@@ -1359,19 +1383,6 @@ politikayı geçersiz kılamaz.
 
       İstemcinin belirtilen gün sayısından daha uzun bir süre boyunca çevrimdışı olması halinde şifrelerin söz konusu gün sayısı geçmesine rağmen değiştirilmeyebileceğini unutmayın.</translation>
 <translation id="5105313908130842249">Pil gücüyle çalışırken ekran kilidi gecikmesi</translation>
-<translation id="5106504910236139235"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama Genişletilmiş Raporlamasını etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini engeller.
-
-      Genişletilmiş Raporlama, tehlikeli uygulama ve sitelerin algılanmasına yardımcı olmak için Google sunucularına bazı sistem bilgileri ve sayfa içeriği gönderir.
-
-      Bu ayar doğru değerine ayarlanırsa, raporlar oluşturulur ve gerekli olduğu zaman (mesela güvenlik geçiş reklamı gösterildiğinde) gönderilir.
-
-      Bu ayar yanlış değerine ayarlanırsa raporlar hiçbir zaman gönderilmez.
-
-      Bu politika doğru veya yanlış değerine ayarlanırsa kullanıcı ayarı değiştiremez.
-
-      Bu politika ayarlanmadan bırakılırsa, kullanıcı ayarı değiştirebilir ve rapor gönderilip gönderilmeyeceğine karar verebilir.
-
-      Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="5108031557082757679">Devre dışı bırakılmış kurumsal cihaz yazıcıları</translation>
 <translation id="5130288486815037971">TLS'deki RC4 şifre paketlerinin etkinleştirilip etkinleştirilmediği</translation>
 <translation id="5141670636904227950">Giriş ekranında varsayılan ekran büyüteci türünü etkin olarak ayarla</translation>
@@ -1586,19 +1597,6 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
-<translation id="5784370777704871674"><ph name="PRODUCT_NAME" /> ürününün Güvenli Tarama özelliğini etkinleştirir ve kullanıcıların bu ayarı değiştirmelerini önler.
-
-      Bu ayarı etkinleştirirseniz Güvenli Tarama her zaman etkin olur.
-
-      Bu ayarı devre dışı bırakırsanız Güvenli Tarama hiçbir zaman etkin olmaz.
-
-      Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar "Kimlik avı ve kötü amaçlı yazılım korumasını etkinleştirme" ayarını <ph name="PRODUCT_NAME" /> içinde değiştiremez veya geçersiz kılamazlar.
-
-      Bu politika ayarlanmadan bırakılırsa, bu özellik etkinleştirilir ancak kullanıcı tarafından değiştirilebilir.
-
-      Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.
-
-      Bu politika, bir <ph name="MS_AD_NAME" /> alan adına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="5809728392451418079">Cihaz-yerel hesaplar için görünen adı ayarla</translation>
 <translation id="5814301096961727113">Giriş ekranında sesli geri bildirimin varsayılan durumunu ayarla</translation>
 <translation id="5815129011704381141">Güncelleme sonrasında otomatik olarak yeniden başlat</translation>
@@ -1797,11 +1795,6 @@ politikayı geçersiz kılamaz.
 <translation id="6281043242780654992">Yerel Mesajlaşma için politikaları yapılandırır. Kara listeye alınan yerel mesajlaşma ana makinelerine, beyaz listeye eklenmedikçe izin verilmez.</translation>
 <translation id="6282799760374509080">Ses yakalamaya izin verme veya reddetme</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Ayarlanmazsa veya Doğru seçeneğine ayarlanırsa <ph name="PRODUCT_NAME" /> ürünündeki tüm bileşenler için bileşen güncellemelerini etkinleştirir.
-
-      Yanlış seçeneğine ayarlanırsa bileşen güncellemeleri devre dışı bırakılır. Ancak, bazı bileşenler bu politikadan muaf tutulur: Yürütülebilir kod içermeyen bileşenlerde yapılan, tarayıcının davranışını önemli ölçüde değiştirmeyen ya da güvenliğinin devre dışı kalmaması için kritik öneme sahip olan güncellemeler.
-      Bu tür bileşenlere örnek olarak sertifika iptal listeleri ve güvenli tarama verileri gösterilebilir.
-      Güvenli Tarama ile ilgili daha fazla bilgi için https://developers.google.com/safe-browsing adresine bakın.</translation>
 <translation id="6310223829319187614">Kullanıcı oturum açarken alan adı otomatik doldurma özelliğini etkinleştir</translation>
 <translation id="6315673513957120120">Kullanıcılar SSL hatalarına neden olan sitelere gittiğinde Chrome bir uyarı iletisi görüntüler. Varsayılan olarak veya bu politika doğru seçeneğine ayarlandığında, kullanıcıların bu uyarı sayfalarını tıklamalarına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa, kullanıcılar uyarı sayfalarını tıklayamazlar.</translation>
@@ -2666,6 +2659,15 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 <translation id="9112897538922695510">Bir protokol işleyicileri listesini kaydetmenize olanak tanır. Bu, yalnızca önerilen bir politika olabilir. |protocol| özelliğinin "mailto" gibi şemaya ayarlanması ve |url| özelliğinin de şemayı işleyen uygulamanın URL kalıbına ayarlanması gerekir. Kalıp bir "%s" makrosu içerebilir; bu durumda, makro işlenen URL tarafından değiştirilir.
 
           Politika tarafından kaydedilen protokol işleyicileri, kullanıcı tarafından kaydedilenlerle birleştirilir ve her ikisi de kullanılabilir. Kullanıcı, yeni bir varsayılan işleyici yükleyerek politika tarafından yüklenen politika işleyicilerini geçersiz kılabilir, ancak politika tarafından kaydedilen bir protokol işleyicisini kaldıramaz.</translation>
+<translation id="9123211093995421438">Herhangi bir zamanda sabit sürümden başlayarak minimum kaç <ph name="PRODUCT_OS_NAME" /> dönüm noktasında geri almaya izin verileceğini belirler.
+
+      Varsayılan sayı, tüketici için 0, şirkete kayıtlı cihazlar için 4'tür (yaklaşık yarım yıl).
+
+      Bu politika ayarlanırsa, en azından bu sayıda dönüm noktasında geri alma korumasının uygulanması engellenir.
+
+      Bu politikanın daha düşük bir değere ayarlanması, kalıcı etki bırakır: Cihaz, politika daha büyük bir değere sıfırlandıktan sonra bile önceki sürümlere geri DÖNEMEYEBİLİR.
+
+      Gerçek geri alma olasılıkları ayrıca pano ve önemli güvenlik açığı yamalarına da bağlı olabilir.</translation>
 <translation id="913195841488580904">URL listesine erişimi engelle</translation>
 <translation id="9135033364005346124"><ph name="CLOUD_PRINT_NAME" /> proxy'sini etkinleştir</translation>
 <translation id="9136253551939494882">Kullanıcının yapılandırabileceği ve kilit ekranının kilidini açmak için kullanabileceği hızlı kilit açma modlarını kontrol eden beyaz liste.

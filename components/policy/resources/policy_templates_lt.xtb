@@ -160,11 +160,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Nuotolinis patvirtinimas</translation>
 <translation id="1509692106376861764">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose.</translation>
-<translation id="1519337829779572350">Šis nustatymas nebenaudojamas, vietoje jo naudokite „SafeBrowsingExtendedReportingEnabled“. „SafeBrowsingExtendedReportingEnabled“ įjungimas arba išjungimas atitinka „SafeBrowsingExtendedReportingOptInAllowed“ nustatymą kaip „False“.
-
-      Nustačius šią politiką kaip „False“ naudotojai nebegalės pasirinkti siųsti tam tikros sistemos informacijos ir puslapių turinio į „Google“ serverius. Jei šis nustatymas nustatytas kaip „True“ arba nesukonfigūruotas, naudotojai galės siųsti tam tikrą sistemos informaciją ir puslapių turinį Saugaus naršymo funkcijai, kad padėtų aptikti pavojingas programas ir svetaines.
-
-      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="1530812829012954197">Visada pateikti šiuos URL šablonus prieglobos naršyklėje</translation>
@@ -326,6 +321,17 @@
 <translation id="2113068765175018713">Apriboti įrenginio veiksenos laiką automatiškai įkeliant operacinę sistemą iš naujo</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
+<translation id="2132732175597591362">Valdo į baltąjį sąrašą įtrauktus URL šablonus, kur automatinis paleidimas bus visada įgalintas.
+
+      Jei automatinis paleidimas įgalintas, sistemoje „<ph name="PRODUCT_NAME" />“ vaizdo įrašus galima leisti automatiškai (be naudotojo sutikimo) su garso turiniu.
+
+      URL šablonas turi būti suformatuotas atsižvelgiant į gaires, pateikiamas adresu https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Jei politika „AutoplayAllowed“ nustatyta į „True“, ši politika neturės jokio poveikio.
+
+      Jei politika „AutoplayAllowed“ nustatyta į „False“, bus galima leisti turinį, atitinkantį šioje politikoje nustatytus URL šablonus.
+
+      Atminkite, kad pakeitus šią politiką veikiant „<ph name="PRODUCT_NAME" />“, ji bus taikoma tik naujuose atidarytuose skirtukuose. Todėl kai kuriuose skirtukuose gali išlikti ankstesnė elgsena.</translation>
 <translation id="2134437727173969994">Leidimas užrakinti ekraną</translation>
 <translation id="2137064848866899664">Jei ši politika nustatyta, kiekvienas ekranas pasukamas
       nurodyta kryptimi kiekvieną kartą paleidus įrenginį iš naujo ir pirmą kartą
@@ -863,11 +869,6 @@
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
 <translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
 <translation id="3660562134618097814">„SAML IdP“ slapukų perkėlimas prisijungiant</translation>
-<translation id="3687282113223807271">Naudojant Saugaus naršymo paslaugą rodomas įspėjimo puslapis, kai naudotojai naršo svetaines, kurios pažymėtos kaip potencialiai kenkėjiškos. Įgalinus šį nustatymą neleidžiama naudotojams iš įspėjimo puslapio tęsti veiksmų kenkėjiškoje svetainėje.
-
-      Jei šis nustatymas išjungtas arba nesukonfigūruotas, naudotojai gali pasirinkti tęsti veiksmus pažymėtoje svetainėje, kai parodomas įspėjimas.
-
-      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigūruoti plėtinių diegimo juodąjį sąrašą</translation>
 <translation id="3711895659073496551">Laikinai sustabdyti</translation>
 <translation id="3736879847913515635">Asmens pridėjimo naudotojų tvarkytuvėje įgalinimas</translation>
@@ -970,6 +971,9 @@
       Nurodomi plėtiniai, kurie automatiškai įdiegiami demonstracinės versijos naudotojui (-ai) įrenginiuose mažmeninės prekybos režimu. Šie plėtiniai išsaugomi įrenginyje ir juos galima įdiegti neprisijungus, baigus diegimą.
 
       Kiekviename sąrašo įraše yra žodynas, į kurį turi būti įtrauktas plėtinio ID lauke „extension-id“ (plėtinio ID) ir naujinio URL lauke „update-url“ (naujinio URL).</translation>
+<translation id="3873159954366380945">Leidžiama nustatyti laikotarpį, kada rodomi pranešimai iš naujo paleisti „<ph name="PRODUCT_NAME" />“, kad būtų pritaikytas laukiantis naujinys.
+
+      Šį politikos nustatymą galima naudoti norint valdyti laikotarpį (milisekundėmis), kada naudotojas pakartotinai informuojamas, kad reikia iš naujo paleisti „<ph name="PRODUCT_NAME" />“ (arba „<ph name="PRODUCT_OS_NAME" />“), kad būtų pritaikytas naujinys. Per šį laikotarpį naudotojui bus pakartotinai pranešama, kad reikia pritaikyti naujinį, atsižvelgiant į politikos „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“ nustatymą. Jei politika nenustatyta, sistemoje „<ph name="PRODUCT_OS_NAME" />“ naudojamas numatytasis 345 600 000 milisekundžių (keturių dienų) laikotarpis, o visose kitose platformose – 604 800 000 milisekundžių (vienos savaitės) laikotarpis.</translation>
 <translation id="3877517141460819966">Integruotas tapatybės nustatymo dviem veiksniais režimas</translation>
 <translation id="388237772682176890">Ši politika nebenaudojama M53 ir pašalinta iš M54, nes nebeteikiamas SPDY/3.1 palaikymas.
 
@@ -1320,6 +1324,14 @@
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="489803897780524242">Parametras, valdantis numatytojo paieškos teikėjo paieškos termino paskirties vietą</translation>
 <translation id="4899708173828500852">Įgalinti saugų naršymą</translation>
+<translation id="4899802251198446659">Leidžiama valdyti, ar sistemoje „<ph name="PRODUCT_NAME" />“ vaizdo įrašus galima leisti automatiškai (be naudotojo sutikimo) su garso įrašo turiniu.
+
+      Jei politika nustatyta į „True“, „<ph name="PRODUCT_NAME" />“ leidžiama automatiškai leisti mediją.
+      Jei politika nustatyta į „False“, „<ph name="PRODUCT_NAME" />“ neleidžiama automatiškai leisti medijos. Naudojant politiką „AutoplayWhitelist“ galima nurodyti nepaisyti šio nustatymo tam tikrus URL šablonus atitinkančiuose puslapiuose.
+      Pagal numatytuosius nustatymus „<ph name="PRODUCT_NAME" />“ neleidžiama automatiškai leisti medijos.
+
+      Atminkite, kad pakeitus šią politiką veikiant „<ph name="PRODUCT_NAME" />“, ji bus taikoma tik naujuose atidarytuose skirtukuose. Todėl kai kuriuose skirtukuose gali išlikti ankstesnė elgsena.
+      </translation>
 <translation id="4906194810004762807">Atnaujinti įrenginio politikos reitingą</translation>
 <translation id="4917385247580444890">Stiprus</translation>
 <translation id="4923806312383904642">Leisti „WebDriver“ perrašyti nesuderinamas politikos nuostatas</translation>
@@ -1358,19 +1370,6 @@
 
       Atminkite, kad slaptažodžiai gali būti senesni nei nurodytas dienų skaičius, jei klientas neprisijungia ilgesnį laikotarpį.</translation>
 <translation id="5105313908130842249">Ekrano užrakto delsa, kai naudojama akumuliatoriaus energija</translation>
-<translation id="5106504910236139235">Įgalinamas „<ph name="PRODUCT_NAME" />“ saugaus naršymo išplėstinių ataskaitų teikimas ir neleidžiama naudotojams keisti šio nustatymo.
-
-      Naudojant išplėstinių ataskaitų teikimo funkciją tam tikra sistemos informacija ir puslapio turinys siunčiami į „Google“ serverius, siekiant aptikti pavojingas programas ir svetaines.
-
-      Jei nustatymas nustatytas kaip „True“, ataskaitos kuriamos ir siunčiamos, kada reikia (pvz., kai rodomas saugos tarpinis puslapis).
-
-      Jei šis nustatymas nustatytas kaip „False“, ataskaitos niekada nesiunčiamos.
-
-      Jei ši politika nustatyta kaip „True“ arba „False“, naudotojas negali keisti nustatymo.
-
-      Jei ši politika nenustatyta, naudotojas gali keisti nustatymą ir nuspręsti, ar siųsti ataskaitas.
-
-      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Išjungti įmonės įrenginių spausdintuvai</translation>
 <translation id="5130288486815037971">Ar įgalinti RC4 šifruotieji programų komplektai TLS</translation>
 <translation id="5141670636904227950">Nustatyti numatytąjį ekrano didinimo tipą, kuris įgalintas prisijungimo ekrane</translation>
@@ -1592,19 +1591,6 @@
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
-<translation id="5784370777704871674">Įgalinama „<ph name="PRODUCT_NAME" />“ saugaus naršymo funkcija; naudotojams šio nustatymo keisti neleidžiama.
-
-      Jei įgalinsite šį nustatymą, Saugaus naršymo funkcija bus visada suaktyvinta.
-
-      Jei šį nustatymą išjungsite, Saugaus naršymo funkcija niekada nebus suaktyvinta.
-
-      Jei šį nustatymą įgalinsite arba išjungsite, naudotojai negalės pakeisti ar nepaisyti „<ph name="PRODUCT_NAME" />“ nustatymo „Suaktyvinti apsaugą nuo sukčiavimo ir kenkėjiškų programų“.
-
-      Nenustačius šios politikos, tai bus įgalinta, bet naudotojas galės tai pakeisti.
-
-      Jei reikia daugiau informacijos apie Saugaus naršymo funkciją, žr. https://developers.google.com/safe-browsing.
-
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="5809728392451418079">Nustatyti įrenginio vietinių paskyrų pateikiamą pavadinimą</translation>
 <translation id="5814301096961727113">Nustatyti numatytąją ekrano skaitymo balsu prisijungimo ekrane būklę</translation>
 <translation id="5815129011704381141">Po atnaujinimo automatiškai įkelti operacinę sistemą iš naujo</translation>
@@ -1803,11 +1789,6 @@
 <translation id="6281043242780654992">Konfigūruoja savosios susirašinėjimo pranešimais programos politiką. Į juodąjį sąrašą įtrauktos savųjų susirašinėjimo pranešimais programų prieglobos nebus leidžiamos, kol nebus įtrauktos į baltąjį sąrašą.</translation>
 <translation id="6282799760374509080">Leisti arba atmesti garso įrašo fiksavimą</translation>
 <translation id="6284362063448764300">1.1 versijos TLS</translation>
-<translation id="6287694548537067861">Įgalinami visų „<ph name="PRODUCT_NAME" />“ komponentų naujiniai, kai nenustatyta arba nustatyta vertė „True“.
-
-      Jei nustatyta vertė „False“, komponentų naujiniai bus išjungti. Tačiau kai kuriems komponentams ši politika netaikoma: komponentų, kuriuose nėra vykdomojo kodo, kurie nežymiai pakeičia naršyklės veikimą arba kurie yra labai svarbūs jos saugai, nėra išjungiami.
-      Tokių komponentų pavyzdžiai yra sertifikatų anuliavimo sąrašai ir saugaus naršymo duomenys.
-      Daugiau informacijos apie Saugų naršymą rasite adresu https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Domeno pavadinimo automatinio užbaigimo prisijungiant naudotojui įgalinimas</translation>
 <translation id="6315673513957120120">„Chrome“ rodo įspėjimo puslapį, kai naudotojai naršo svetaines su SSL klaidomis. Pagal numatytuosius nustatymus arba kai ši politika nustatyta į „true“, naudotojams leidžiama spustelėjus pašalinti šiuos įspėjimo puslapius.
       Kai ši politika nustatyta į „false“, naudotojams neleidžiama spustelėjus pašalinti šių įspėjimo puslapių.</translation>
@@ -2675,6 +2656,15 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="9112897538922695510">Leidžiama registruoti protokolo doroklių sąrašą. Tai gali būti tik rekomenduojama politika. Ypatybė |protocol| turėtų būti nustatyta į schemą, pvz., „mailto“, o ypatybė |url| turėtų būti nustatyta į schemą apdorojančios programos URL šabloną. Šablone gali būti įtrauktas „%s“, kurį pakeis apdorotas URL.
 
           Pagal politiką užregistruotos protokolo doroklės sujungiamos su naudotojo užregistruotomis doroklėmis ir jas abi galima naudoti. Naudotojas gali nepaisyti pagal politiką įdiegtų protokolo doroklių įdiegdamas naują numatytąją doroklę, bet jis negali pašalinti pagal politiką užregistruotos protokolo doroklės.</translation>
+<translation id="9123211093995421438">Nurodomas minimalus „<ph name="PRODUCT_OS_NAME" />“ ankstesnių versijų, kurias bet kada turėtų būti leidžiama grąžinti, skaičius, pradedant nuo stabilios versijos.
+
+      Numatytasis nustatymas klientų užregistruotiems įrenginiams yra 0, įmonių užregistruotiems įrenginiams – 8 (maždaug 1 metai).
+
+       Nustačius šią politiką neleidžiama taikyti grąžinimo apsaugos bent šiam ankstesnių versijų skaičiui.
+
+      Nustačius mažesnę šios politikos vertę, tai taikoma visą laiką: gali būti, kad įrenginyje NEBUS galima grąžinti ankstesnių versijų, net iš naujo nustačius didesnę politikos vertę.
+
+      Faktines grąžinimo galimybes taip pat gali lemti aparatinė įranga ir kritinio pažeidžiamumo pataisos.</translation>
 <translation id="913195841488580904">Blokuoti prieigą prie URL sąrašo</translation>
 <translation id="9135033364005346124">Įgalinti <ph name="CLOUD_PRINT_NAME" /> tarpinį serverį</translation>
 <translation id="9136253551939494882">Baltasis sąrašas, kuriuo valdoma, kuriuos sparčiojo atrakinimo režimus naudotojas gali konfigūruoti ir naudoti norėdamas atrakinti užrakinimo ekraną.

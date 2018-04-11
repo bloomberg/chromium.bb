@@ -520,6 +520,7 @@
 <translation id="177336675152937177">होस्ट किया गया ऐप्स डेटा</translation>
 <translation id="1774349594977710164">आपका फ़ोन आपके अन्य <ph name="DEVICE_TYPE" /> भी अनलॉक कर देता है क्योंकि वे अपने आप सिंक किए हुए होते हैं.</translation>
 <translation id="1774833706453699074">खुले पृष्ठों को बुकमार्क करें...</translation>
+<translation id="1775381402323441512">वीडियो की जानकारी</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="177694132944350798">आपका डेटा <ph name="TIME" /> से आपके Google पासवर्ड के साथ एन्क्रिप्ट किया गया था. सिंक करना शुरू करने के लिए वह डालें.</translation>
 <translation id="1779652936965200207">कृपया यह पासकुंजी "<ph name="DEVICE_NAME" />" पर दर्ज करें:</translation>
@@ -562,6 +563,7 @@
 <translation id="1829192082282182671">ज़ूम &amp;आउट करें</translation>
 <translation id="1830550083491357902">प्रवेश नहीं है</translation>
 <translation id="1832511806131704864">फ़ोन बदलाव अपडेट किया गया</translation>
+<translation id="1834503245783133039">फ़ाइल डाउनलोड नहीं हो सकी: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">खोज साफ़ करें</translation>
 <translation id="1838709767668011582">Google साइट</translation>
 <translation id="1839704667838141620">इस फ़ाइल को साझा करने का तरीका बदलें</translation>
@@ -698,6 +700,7 @@
 <translation id="2079053412993822885">यदि आप अपने प्रमाणपत्रों में से किसी एक को हटाते हैं, तो आप आगे इसका उपयोग स्वयं की पहचान करने के लिए नहीं कर सकते हैं.</translation>
 <translation id="2079545284768500474">वापस लाएं</translation>
 <translation id="2080070583977670716">अधिक सेटिंग</translation>
+<translation id="2084108471225856927">डिवाइस की सेटिंग</translation>
 <translation id="2085470240340828803">"<ph name="FILENAME" />" नाम की फ़ाइल पहले से मौजूद है. आप क्‍या करना चाहते हैं?</translation>
 <translation id="2087822576218954668">प्रिंट: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Google Chrome के ज़रिए सुरक्षित रूप से ब्राउज़ करें</translation>
@@ -1075,6 +1078,7 @@
 <translation id="2653266418988778031">यदि आप किसी प्रमाणन प्राधिकरण (CA) प्रमाणपत्र को हटाते हैं, तो आपका ब्राउज़र उस CA द्वारा जारी किए गए किसी भी प्रमाणपत्र पर विश्‍वास नहीं करेगा.</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="265390580714150011">फ़ील्ड मान</translation>
+<translation id="2654166010170466751">साइटों को भुगतान हैंडलर इंस्टॉल करने की अनुमति दें</translation>
 <translation id="2655386581175833247">उपयोगकर्ता प्रमाणपत्र:</translation>
 <translation id="2660779039299703961">इवेंट</translation>
 <translation id="266079277508604648">प्रिंटर से कनेक्ट नहीं किया जा सका. देखें कि प्रिंटर चालू है और वाई-फ़ाई या USB के ज़रिए आपके Chromebook से कनेक्ट किया हुआ है.</translation>
@@ -1419,10 +1423,12 @@
 <translation id="3130528281680948470">आपका डिवाइस रीसेट कर दिया जाएगा और सभी उपयोगकर्ता खाते तथा स्‍थानीय डेटा निकाल दिया जाएगा. इसे पूर्ववत नहीं किया जा सकता.</translation>
 <translation id="313205617302240621">पासवर्ड भूल गए?</translation>
 <translation id="3135204511829026971">स्क्रीन को घुमाएं</translation>
+<translation id="313963229645891001">फ़ाइल डाउनलोड हो रही है, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">डिफ़ॉल्ट पीला अवतार</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
 <translation id="3141318088920353606">सुन रही है...</translation>
 <translation id="3141917231319778873">दिया गया अनुरोध इसका समर्थन नहीं करता है: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="3143515551205905069">लिंक करना रोक दें</translation>
 <translation id="3143695347784622594">सिस्टम डेटा भेजें. निदान और डिवाइस और इस्तेमाल का डेटा Google को अपने आप भेजें. आप इसे अपनी डिवाइस <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में कभी भी बदल सकते हैं. अगर आप अतिरिक्त वेब और ऐप्लिकेशन गतिविधि को चालू करते हैं, तो यह जानकारी आपके खाते से संग्रहित की जाएगी, ताकि आप इसे मेरी गतिविधि में प्रबंधित कर सकें. <ph name="BEGIN_LINK2" />अधिक जानें<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">हो गया</translation>
 <translation id="3144647712221361880">लिंक को इस रूप में खोलें</translation>
@@ -1545,6 +1551,7 @@
 <translation id="3326821416087822643"><ph name="FILE_NAME" /> ज़िप कर रहा है...</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">ऐप्स की जानकारी</translation>
+<translation id="3335337277364016868">रिकॉर्ड करने का साल</translation>
 <translation id="3335947283844343239">बंद किए गए टैब फिर से खोलें</translation>
 <translation id="3340978935015468852">सेटिंग</translation>
 <translation id="3341703758641437857">फ़ाइल URL तक पहुंचने की अनुमति दें</translation>
@@ -1606,6 +1613,7 @@
 <translation id="3435738964857648380">सुरक्षा</translation>
 <translation id="3435896845095436175">सक्षम करें</translation>
 <translation id="3436038974659740746">कस्टम वर्तनी</translation>
+<translation id="3437801641691368414">बनाने का समय</translation>
 <translation id="3438633801274389918">निंजा</translation>
 <translation id="3439153939049640737"><ph name="HOST" /> को हमेशा अपना माइक्रोफ़ोन एक्सेस करने दें</translation>
 <translation id="3439970425423980614">पूर्वालोकन में PDF खोलें</translation>
@@ -1649,6 +1657,7 @@
 <translation id="3487007233252413104">अनाम फ़ंक्शन</translation>
 <translation id="348780365869651045">AppCache की प्रतीक्षा कर रहा है...</translation>
 <translation id="3488065109653206955">आंशिक रूप से सक्रिय किया गया</translation>
+<translation id="348999362308956431">फ़ाइल डाउनलोड हो गई: <ph name="FILE_NAME" /></translation>
 <translation id="3492788708641132712">सिंक काम नहीं कर रहा है. फिर से प्रवेश करने का प्रयास करें.</translation>
 <translation id="3493881266323043047">मान्यता</translation>
 <translation id="3494769164076977169">जब कोई साइट पहली फ़ाइल के बाद फ़ाइलों को अपने आप डाउनलोड करने का प्रयास करे, तो पूछें (सुझाये गये) </translation>
@@ -1751,6 +1760,7 @@
 <translation id="3646789916214779970">सामान्य थीम पर रीसेट करें</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> का पता चला</translation>
 <translation id="3649138363871392317">फ़ोटो को कैप्चर किया गया था</translation>
+<translation id="3650952250015018111">"<ph name="APP_NAME" />" को इन्हें एक्सेस करने की मंज़ूरी दें:</translation>
 <translation id="3651488188562686558">वाई-फ़ाई से डिसकनेक्ट करें</translation>
 <translation id="3652817283076144888">शुरू हो रहा है</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> को अपना माइक्रोफ़ोन एक्सेस करते रहने दें</translation>
@@ -1863,6 +1873,7 @@
 <translation id="381202950560906753">दूसरा जोड़ें</translation>
 <translation id="3812525830114410218">गलत प्रमाणपत्र</translation>
 <translation id="3813296892522778813">यदि आपको वह चीज़ नहीं मिल रही है जिसे आप खोज रहे हैं, तो <ph name="BEGIN_LINK_CHROMIUM" />Google Chrome सहायता<ph name="END_LINK_CHROMIUM" /> पर जाएं</translation>
+<translation id="3817579325494460411">नहीं दिया गया</translation>
 <translation id="3819007103695653773">सभी साइटों को पृष्ठभूमि पुश संदेश भेजने दें</translation>
 <translation id="3819752733757735746">स्विच एक्सेस (बस एक या दो स्विच से कंप्यूटर नियंत्रित करें)</translation>
 <translation id="3819800052061700452">&amp;पूर्ण स्क्रीन</translation>
@@ -1955,6 +1966,7 @@
 <translation id="394984172568887996">IE से आयात किया गया</translation>
 <translation id="3950820424414687140">प्रवेश करें</translation>
 <translation id="3954354850384043518">जारी है</translation>
+<translation id="3954469006674843813"><ph name="WIDTH" /> गुणा <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> हर्ट्ज़)</translation>
 <translation id="3955193568934677022">साइटों को सुरक्षित सामग्री चलाने दें (अनुशंसित)</translation>
 <translation id="3956702100721821638">Google Play तक नहीं पहुंचा जा सका</translation>
 <translation id="3958088479270651626">बुकमार्क और सेटिंग आयात करें</translation>
@@ -2034,6 +2046,7 @@
 <ph name="EXTENSION_FILE" />￼</translation>
 <translation id="4087470595660267445">अपने Chromebook पर Google Play से ऐप्लिकेशन और गेम इंस्टॉल करें. &lt;a target="_blank" href="<ph name="URL" />"&gt;अधिक जानें&lt;/a&gt;</translation>
 <translation id="4088095054444612037">समूह के लिए स्वीकार करें</translation>
+<translation id="4089235344645910861">सेटिंग सेव की गई. सिंक शुरू हो गया.</translation>
 <translation id="4090103403438682346">सत्यापित एक्सेस सक्षम करें</translation>
 <translation id="4090535558450035482">(यह एक्‍सटेंशन प्रबंधित है और इसे निकाला नहीं जा सकता.)</translation>
 <translation id="4091434297613116013">कागज़ की पत्रक</translation>
@@ -2113,6 +2126,7 @@
 <translation id="4244238649050961491">और अधिक स्टाइलस ऐप ढूंढें</translation>
 <translation id="424546999567421758">अधिक डिस्क उपयोग का पता चला</translation>
 <translation id="424726838611654458">हमेशा Adobe Reader में खोलें</translation>
+<translation id="4247901771970415646"><ph name="USERNAME" /> से सिंक नहीं किया जा सकता</translation>
 <translation id="4249248555939881673">नेटवर्क कनेक्शन के लिए प्रतीक्षारत...</translation>
 <translation id="4249373718504745892">इस पेज को आपके कैमरे और माइक्रोफ़ोन को एक्सेस करने से अवरोधित कर दिया गया है.</translation>
 <translation id="424963718355121712">ऐप्लिकेशन को उस होस्ट से पेश किया जाना चाहिए, जिसे वे प्रभावित करते हैं</translation>
@@ -2150,6 +2164,7 @@
 <translation id="4305227814872083840">लंबा (2 सेकंड)</translation>
 <translation id="4306119971288449206">एप्लिकेशन को सामग्री-प्रकार "<ph name="CONTENT_TYPE" />" के साथ दिया जाना चाहिए</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" />K (<ph name="NUM_KILOBYTES_LIVE" />K लाइव)</translation>
+<translation id="4309915981827077375">सामान्य जानकारी</translation>
 <translation id="4310139701823742692">फ़ाइल का फ़ॉर्मेट गलत है. PPD फ़ाइल देखें और फिर से कोशिश करें.</translation>
 <translation id="431076611119798497">&amp;विवरण</translation>
 <translation id="4312866146174492540">अवरुद्ध करें (डिफ़ॉल्ट)</translation>
@@ -2198,6 +2213,7 @@
 <translation id="4409697491990005945">मार्जिन</translation>
 <translation id="4411578466613447185">कोड हस्ताक्षरकर्ता</translation>
 <translation id="4412698727486357573">सहायता केंद्र</translation>
+<translation id="44141919652824029">"<ph name="APP_NAME" />" को आपके अटैच किए हुए USB डिवाइसों की सूची पाने दें?</translation>
 <translation id="4414232939543644979">नई &amp;गुप्त विंडो</translation>
 <translation id="4415748029120993980">SECG अंडाकार वक्र secp384r1 (अर्थात NIST P-384)</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> को हमेशा कुकी सेट करने की अनुमति दें</translation>
@@ -2291,6 +2307,7 @@
 <translation id="4565377596337484307">पासवर्ड छिपाएं</translation>
 <translation id="4567772783389002344">शब्द जोड़ें</translation>
 <translation id="4568213207643490790">क्षमा करें, इस डिवाइस पर Google खातों की अनुमति नहीं है.</translation>
+<translation id="4568854179928172494">बदलाव करने का समय</translation>
 <translation id="4569747168316751899">जब निष्क्रिय हो</translation>
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" से कनेक्ट होते समय प्रमाणीकरण रद्द हो गया.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फ़ाइल</translation>
@@ -2334,6 +2351,7 @@
 <translation id="4640525840053037973">अपने Google खाते से प्रवेश करें</translation>
 <translation id="4641539339823703554">Chrome सिस्टम का समय सेट करने में असमर्थ था. कृपया नीचे दिया गया समय देखें और आवश्यकता होने पर उसे सही करें.</translation>
 <translation id="4643612240819915418">वीडियो नए टैब में &amp;खोलें</translation>
+<translation id="4644818355646995778">फ़ाइल डाउनलोड हो रही है, <ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">&amp;रखें</translation>
 <translation id="4647090755847581616">&amp;टैब बंद करें</translation>
 <translation id="4647697156028544508">कृपया "<ph name="DEVICE_NAME" />" के लिए पिन दर्ज करें:</translation>
@@ -2628,7 +2646,6 @@
 <translation id="5088534251099454936">RSA सुरक्षित तरीका के साथ PKCS #1 SHA-512</translation>
 <translation id="509429900233858213">कोई गड़बड़ी हुई.</translation>
 <translation id="5094721898978802975">स्थानीय ऐप्स  के साथ सहयोग करते हुए संचार करें</translation>
-<translation id="5095987538085179331">सुरक्षित सामग्री चलाने के लिए <ph name="URL" /> आपके डिवाइस की अद्वितीय रूप से पहचान करना चाहता है</translation>
 <translation id="5097002363526479830">नेटवर्क से कनेक्ट करने में विफल '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5099354524039520280">ऊपर</translation>
 <translation id="5100114659116077956">अपने लिए नवीनतम सुविधाएं लाने के लिए, आपके Chromebox को अपडेट करना होगा.</translation>
@@ -2722,6 +2739,7 @@
 <translation id="5250372599208556903"><ph name="SEARCH_ENGINE_NAME" /> आपको स्थानीय सामग्री देने के लिए आपके स्थान का उपयोग करता है. आप इसे <ph name="SETTINGS_LINK" /> में बदल सकते हैं.</translation>
 <translation id="5252456968953390977">रोमिंग</translation>
 <translation id="5252653240322147470">पिन <ph name="MAXIMUM" /> से कम अंकों का होना चाहिए</translation>
+<translation id="5253070652067921974">निर्माता</translation>
 <translation id="5254368820972107711">निकाली जाने वाली फ़ाइलें दिखाएं</translation>
 <translation id="52550593576409946">कियोस्क ऐप्लिकेशन लॉन्च नहीं किया जा सका.</translation>
 <translation id="5255315797444241226">आपके द्वारा दर्ज किया गया पासफ़्रेज़ गलत है.</translation>
@@ -2791,6 +2809,7 @@
 <translation id="5337771866151525739">किसी तृतीय पक्ष द्वारा इंस्टॉल किया गया.</translation>
 <translation id="5338503421962489998">स्थानीय मेमोरी</translation>
 <translation id="5340217413897845242">अलमारी आइटम 6</translation>
+<translation id="5340638867532133571">साइटों को भुगतान हैंडलर इंस्टॉल करने की अनुमति दें (सुझाव दिया जाता है)</translation>
 <translation id="5341793073192892252">इन कुकी को ब्लॉक कर दिया गया था (तृतीय पक्ष की कुकी बिना किसी अपवाद के ब्लॉक की जा रही हैं)</translation>
 <translation id="5341980496415249280">कृपया इंतज़ार करें, पैक किया जा रहा है...</translation>
 <translation id="5342091991439452114">पिन कम से कम <ph name="MINIMUM" /> अंकों का होना चाहिए</translation>
@@ -2799,6 +2818,7 @@
 <translation id="5353252989841766347">Chrome से पासवर्ड निर्यात करें</translation>
 <translation id="5355097969896547230">फिर से खोजें</translation>
 <translation id="5355926466126177564">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने यह बदल दिया है कि जब आप खोज वाली पट्टी से खोजते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>
+<translation id="5358764674931277">फ़्रेम दर</translation>
 <translation id="5360150013186312835">टूलबार में दिखाएं</translation>
 <translation id="5362741141255528695">निजी कुंजी फ़ाइल को चुनें.</translation>
 <translation id="5363109466694494651">पावरवॉश करें और वापस लाएं</translation>
@@ -2835,6 +2855,7 @@
 <translation id="5414566801737831689">आपके द्वारा देखी जाने वाली वेबसाइटों के आइकन पढ़ें</translation>
 <translation id="5417312524372586921">ब्राउज़र थीम</translation>
 <translation id="5419294236999569767">सिस्टम का समय</translation>
+<translation id="5420438158931847627">लेख और इमेज का पैनापन तय करता है</translation>
 <translation id="5422221874247253874">एक्सेस प्वाइंट</translation>
 <translation id="5422781158178868512">क्षमा करें, आपके बाह्य मेमोरी डिवाइस की पहचान नहीं हो सकी.</translation>
 <translation id="5423849171846380976">सक्रिय हुआ</translation>
@@ -3020,6 +3041,9 @@
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> पर पढ़ने और लिखने की ऐक्‍सेस दी गई है.</translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> पर अपना डेटा पढ़ें</translation>
 <translation id="5684661240348539843">एसेट पहचानकर्ता</translation>
+<translation id="5686799162999241776"><ph name="BEGIN_BOLD" />किसी संग्रह या वर्चुअल डिस्क से डिसकनेक्ट नहीं किया जा सकता<ph name="END_BOLD" />
+   <ph name="LINE_BREAKS" />
+   संग्रह या वर्चुअल डिस्क पर मौजूद सभी फ़ाइलें बंद करें, फिर दोबारा कोशिश करें.</translation>
 <translation id="5687326903064479980">समय क्षेत्र</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="56907980372820799">डेटा लिंक करें</translation>
@@ -3028,6 +3052,7 @@
 <translation id="5694501201003948907">$1 आइटम ज़िप कर रहा है.</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" से दुर्व्यवहार की रिपोर्ट करें</translation>
 <translation id="5699533844376998780">एक्‍सटेंशन "<ph name="EXTENSION_NAME" />" जोड़ा गया.</translation>
+<translation id="5700087501958648444">ऑडियो की जानकारी</translation>
 <translation id="570043786759263127">Google Play ऐप्लिकेशन और सेवाएं</translation>
 <translation id="5700836101007545240">आपके व्यवस्थापक ने कनेक्शन जोड़ने की सुविधा बंद कर दी है</translation>
 <translation id="5701381305118179107">मध्य</translation>
@@ -3585,6 +3610,7 @@
 <translation id="656398493051028875">"<ph name="FILENAME" />" हटा रहा है...</translation>
 <translation id="6567688344210276845">पेज कार्रवाई के लिए '<ph name="ICON" />' आइकन लोड नहीं कर सका.</translation>
 <translation id="657402800789773160">&amp;यह पेज फिर से लोड करें</translation>
+<translation id="6577284282025554716">डाउनलोड रोका गया: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">सिंक किए गए पासवर्ड अपने Google उपयोगकर्ता नाम और पासवर्ड से एन्क्रिप्ट करें</translation>
 <translation id="6580151766480067746">ARC वर्शन</translation>
 <translation id="6581162200855843583">Google डिस्क लिंक</translation>
@@ -3600,6 +3626,7 @@
 <translation id="6596745167571172521">Caps Lock अक्षम करें</translation>
 <translation id="6596816719288285829">IP पता</translation>
 <translation id="6597017209724497268">नमूने</translation>
+<translation id="659934686219830168">आपके इस पेज को छोड़ने के बाद सिंक होना चालू होगा</translation>
 <translation id="6602353599068390226">विंडो को किसी दूसरे डिसप्ले पर ले जाएं</translation>
 <translation id="6602956230557165253">नेविगेट करने के लिए बाईं और दाईं तीर कुंजियों का उपयोग करें.</translation>
 <translation id="660380282187945520">F9</translation>
@@ -3751,6 +3778,7 @@
 <translation id="6829250331733125857">अपने <ph name="DEVICE_TYPE" /> के साथ सहायता प्राप्त करें.</translation>
 <translation id="6829270497922309893">अपने संगठन में नामांकित करें</translation>
 <translation id="682971198310367122">Google निजता नीति</translation>
+<translation id="6829772336900667075"><ph name="APP_NAME" /> खोलें</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="683373380308365518">किसी स्मार्ट और सुरक्षित ब्राउज़र पर जाएं</translation>
 <translation id="6835762382653651563">अपने <ph name="DEVICE_TYPE" /> को अपडेट करने के लिए कृपया इंटरनेट से कनेक्ट करें.</translation>
@@ -3812,6 +3840,7 @@
 <translation id="6945221475159498467">चुनें</translation>
 <translation id="694592694773692225">इस पेज पर रीडायरेक्ट ब्लॉक किया गया.</translation>
 <translation id="6949306908218145636">खुले पृष्ठों को बुकमार्क करें...</translation>
+<translation id="6951153907720526401">भुगतान हैंडलर</translation>
 <translation id="6955446738988643816">पॉपअप का निरीक्षण करें</translation>
 <translation id="6957231940976260713">सेवा का नाम</translation>
 <translation id="696203921837389374">मोबाइल डेटा पर समन्‍वयन सक्षम करें</translation>
@@ -4044,6 +4073,7 @@
 <translation id="7297443947353982503">उपयोगकर्ता नाम/पासवर्ड गलत या EAP-प्रमाणीकरण विफल रहा</translation>
 <translation id="729761647156315797">अपनी भाषा और कीबोर्ड चुनें</translation>
 <translation id="7299337219131431707">मेहमान उपयोग सक्षम करें</translation>
+<translation id="730289542559375723">{NUM_APPLICATIONS,plural, =1{यह ऐप्लिकेशन Chrome को ठीक से काम करने से रोक सकता है.}one{ये ऐप्लिकेशन Chrome को ठीक से काम करने से रोक सकते हैं.}other{ये ऐप्लिकेशन Chrome को ठीक से काम करने से रोक सकते हैं.}}</translation>
 <translation id="7303900363563182677">इस साइट को क्लिपबोर्ड पर कॉपी किए गए लेख और इमेज देखने से ब्लॉक कर दिया गया है</translation>
 <translation id="730515362922783851">स्‍थानीय नेटवर्क या इंटरनेट पर किसी भी डिवाइस से डेटा का अादान-प्रदान करें</translation>
 <translation id="7308002049209013926">नए ऐप और गतिविधियों तक तेज़ी से पहुंचने के लिए लॉन्चर का इस्तेमाल करें. कीबोर्ड से यहां पहुंचने के लिए, Alt + Shift + L दबाएं.</translation>
@@ -4256,6 +4286,7 @@
 <translation id="7629827748548208700">टैब: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">इस प्रकार की फ़ाइलें &amp;हमेशा खोलें</translation>
 <translation id="7632948528260659758">निम्‍न किऑस्क&amp;#0; ऐप्‍स अपडेट होने में विफल रहे:</translation>
+<translation id="763632859238619983">किसी भी साइट को भुगतान हैंडलर इंस्टॉल करने की अनुमति नहीं दें</translation>
 <translation id="7639178625568735185">समझ लिया!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> आपके द्वारा सहेजे गए पासवर्ड से आपको योग्य साइट में अपने आप प्रवेश करा देता है.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालिक)</translation>
@@ -4298,6 +4329,7 @@
 <translation id="7707922173985738739">मोबाइल डेटा का उपयोग करें</translation>
 <translation id="7709152031285164251">विफल - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;कास्ट करें...</translation>
+<translation id="7711920809702896782">इमेज की जानकारी</translation>
 <translation id="7714307061282548371"><ph name="DOMAIN" /> की कुकी को अनुमति दी गई है</translation>
 <translation id="7714464543167945231">प्रमाणपत्र</translation>
 <translation id="7716781361494605745">Netscape प्रमाणन प्राधिकरण नीति URL</translation>
@@ -4416,6 +4448,7 @@
 <translation id="7886917304091689118">Chrome में चल रहा है</translation>
 <translation id="7887334752153342268">डुप्लीकेट</translation>
 <translation id="7887864092952184874">ब्लूटूथ माउस युग्मित किया गया</translation>
+<translation id="7889565820482017512">डिसप्ले का आकार</translation>
 <translation id="7889966925761734854">खोजें</translation>
 <translation id="7892100671754994880">अगला उपयोगकर्ता</translation>
 <translation id="7893008570150657497">आपके कंप्यूटर के फ़ोटो, संगीत, और अन्य मीडिया तक पहुंचें</translation>
@@ -4519,6 +4552,7 @@
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028134359912645720">उन बदलने के साधनों के कीबोर्ड शॉर्टकट देखने के लिए Control, Alt, Shift या Launcher को दबाए रखें.</translation>
+<translation id="8028803902702117856">डाउनलोड हो रही है <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">आकार</translation>
 <translation id="8030656706657716245">प्रिंटर जोड़ें</translation>
 <translation id="8032244173881942855">टैब कास्ट करने में असमर्थ.</translation>
@@ -4636,7 +4670,6 @@
 <translation id="8214489666383623925">फ़ाइल खोलें...</translation>
 <translation id="8214962590150211830">इस व्यक्ति को निकालें</translation>
 <translation id="8217399928341212914">एकाधिक फ़ाइलों के स्वचालित डाउनलोड अवरुद्ध करना जारी रखें</translation>
-<translation id="8222121761382682759">अनइंस्टॉल करें...</translation>
 <translation id="8223479393428528563">इन फ़ाइलों को ऑफ़लाइन उपयोग हेतु सहेजने के लिए, वापस ऑनलाइन आएं, फ़ाइलों पर राइट-क्‍लिक करें और <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्‍प चुनें.</translation>
 <translation id="8226222018808695353">निषिद्ध</translation>
 <translation id="8226619461731305576">सूची</translation>
@@ -4775,6 +4808,7 @@
 <translation id="84613761564611563">नेटवर्क कॉन्फ़िगर UI का अनुरोध किया गया, कृृपया प्रतीक्षा करें...</translation>
 <translation id="8461914792118322307">प्रॉक्सी</translation>
 <translation id="8463215747450521436">इस निगरानी में रखे गए उपयोगकर्ता को प्रबंधक द्वारा हटा दिया गया है या अक्षम कर दिया गया है. यदि आप इस उपयोगकर्ता के रूप में साइन इन करते रहना चाहते हैं, तो कृपया प्रबंधक से संपर्क करें.</translation>
+<translation id="846374874681391779">डाउनलोड बार</translation>
 <translation id="8463955938112983119"><ph name="PLUGIN_NAME" /> बंद किया गया.</translation>
 <translation id="8464132254133862871">यह उपयोगकर्ता खाता सेवा के लिए योग्‍य नहीं है.</translation>
 <translation id="8465252176946159372">मान्य नहीं है</translation>
@@ -4790,6 +4824,7 @@
 <translation id="8477384620836102176">&amp;सामान्य</translation>
 <translation id="8480082892550707549">भले ही आपने पहले इस वेबसाइट से फ़ाइलें डाउनलोड की हैं, फिर भी साइट अस्थायी रूप से असुरक्षित (हैक की हुई) हो सकती है. इस फ़ाइल को बाद में डाउनलोड करने की कोशिश करें.</translation>
 <translation id="8480869669560681089"><ph name="VENDOR_NAME" /> की ओर से अज्ञात डिवाइस</translation>
+<translation id="8481187309597259238">USB अनुमति की पुष्टि करें</translation>
 <translation id="8483248364096924578">IP पता</translation>
 <translation id="8487678622945914333">ज़ूम इन</translation>
 <translation id="8487693399751278191">बुकमार्क अभी आयात करें...</translation>
@@ -5176,6 +5211,7 @@
 <translation id="9094033019050270033">पासवर्ड अपडेट करें</translation>
 <translation id="9094982973264386462">निकालें</translation>
 <translation id="9095253524804455615">निकालें</translation>
+<translation id="9099674669267916096">पेज संख्या</translation>
 <translation id="9100765901046053179">अतिरिक्त सेटिंग</translation>
 <translation id="9101691533782776290">ऐप्स लॉन्च करें</translation>
 <translation id="9102610709270966160">एक्‍सटेंशन सक्षम करें</translation>
@@ -5206,6 +5242,7 @@
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9137916601698928395">लिंक को <ph name="USER" /> के रूप में खोलें</translation>
 <translation id="9138978632494473300">निम्न स्थानों के लिए शॉर्टकट जोड़ें:</translation>
+<translation id="9140067245205650184">आप एक काम नहीं करने वाले विशेषता फ़्लैग का इस्तेमाल कर रहे हैं: <ph name="BAD_FLAG" />. स्थिरता और सुरक्षा पर इससे फ़र्क पड़ेगा.</translation>
 <translation id="9147392381910171771">&amp;विकल्प</translation>
 <translation id="9148058034647219655">बाहर निकलें</translation>
 <translation id="9148116311817999634">सुरक्षा के लिए स्क्रीन लॉक सेट करें</translation>
@@ -5223,6 +5260,7 @@
 <translation id="9161070040817969420">इनके लिए सबफ़्रेम: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">सिस्टम डेटा भेजें. यह डिवाइस फ़िलहाल Google को निदान और डिवाइस और ऐप्लिकेशन के इस्तेमाल का डेटा अपने आप भेजता है. यह सेटिंग डिवाइस के मालिक ने लागू की है. अगर आपने अतिरिक्त वेब और ऐप्लिकेशन गतिविधि चालू की है, तो यह जानकारी आपके खाते से संग्रहित की जाएगी, ताकि आप इसे मेरी गतिविधि में प्रबंधित कर सकें. <ph name="BEGIN_LINK1" />अधिक जानें<ph name="END_LINK1" /></translation>
 <translation id="9169496697824289689">कीबोर्ड शॉर्टकट देखें</translation>
+<translation id="9169931577761441333">होम स्क्रीन पर <ph name="APP_NAME" /> जोड़ें</translation>
 <translation id="9170397650136757332">अब अपने फ़िंगरप्रिंट के सभी अलग-अलग हिस्सों को कैप्चर करने के लिए अपनी अंगुली को धीरे से हिलाएं</translation>
 <translation id="9170848237812810038">&amp;पूर्ववत् करें</translation>
 <translation id="9170884462774788842">आपके कंप्यूटर पर किसी अन्य प्रोग्राम ने एक्सटेंशन जोड़ा है, जो Chrome के काम करने के तरीके को बदल सकता है.</translation>
@@ -5265,6 +5303,7 @@
 <translation id="939736085109172342">नया फ़ोल्डर</translation>
 <translation id="942532530371314860"><ph name="APP_NAME" /> एक Chrome टैब और ऑडियो साझा कर रहा है.</translation>
 <translation id="942954117721265519">इस निर्देशिका में कोई चित्र नहीं है.</translation>
+<translation id="943972244133411984">बदलाव करने वाले</translation>
 <translation id="945522503751344254">सुझाव भेजें</translation>
 <translation id="952992212772159698">सक्रिय नहीं किया गया</translation>
 <translation id="957960681186851048">इस साइट ने अपने आप  कई फ़ाइलें डाउनलोड करने की कोशिश की है</translation>

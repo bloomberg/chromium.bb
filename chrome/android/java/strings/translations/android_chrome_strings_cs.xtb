@@ -284,6 +284,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="3661699943263275414">Weby třetích stran mohou ukládat a číst data souborů cookie</translation>
 <translation id="3662546969139119822">Zde žádná historie není</translation>
 <translation id="3672452749423051839">Návrhy při chybách navigace</translation>
+<translation id="3692944402865947621">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo, protože umístění úložiště není dostupné.</translation>
 <translation id="3712575778697986964">Resetovat Spořič dat?</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
 <translation id="3716182511346448902">Tato stránka využívá příliš mnoho paměti, proto ji Chrome pozastavil.</translation>
@@ -320,6 +321,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4056223980640387499">Sépie</translation>
 <translation id="4062305924942672200">Právní informace</translation>
 <translation id="4084682180776658562">Záložka</translation>
+<translation id="4084712963632273211">Zdroj: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />poskytováno společností Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Staženo: <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Tato funkce může být v konfliktu s prémiovými datovými službami poskytovanými vaším operátorem.</translation>
 <translation id="4095146165863963773">Vymazat data aplikace?</translation>
@@ -369,6 +371,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4550003330909367850">Chcete-li zde zobrazovat či kopírovat hesla, nastavte v tomto zařízení zámek obrazovky.</translation>
 <translation id="4558311620361989323">Zkratky webových stránek</translation>
 <translation id="4565377596337484307">Skrýt heslo</translation>
+<translation id="4570913071927164677">Podrobnosti</translation>
 <translation id="4572422548854449519">Přihlaste se ke spravovanému účtu</translation>
 <translation id="4581964774250883625">Jste v anonymním režimu.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{před # minutou}few{před # minutami}many{před # minuty}other{před # minutami}}</translation>
@@ -545,6 +548,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="60923314841986378">Zbývá: <ph name="HOURS" /> h</translation>
 <translation id="60924377787140961">Brzy se zobrazí další články. Užijte si odpoledne.</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
+<translation id="6111020039983847643">využitá data</translation>
 <translation id="6112702117600201073">Obnovování stránky</translation>
 <translation id="6127379762771434464">Položka byla odstraněna</translation>
 <translation id="6138140242378429169">Optimalizovat stránku pro mobily</translation>
@@ -697,6 +701,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="748127970106343339">Potvrdit vymazání identifikačních údajů zařízení</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">uspořená data</translation>
 <translation id="7498271377022651285">Čekejte prosím…</translation>
 <translation id="7514365320538308">Stáhnout</translation>
 <translation id="751961395872307827">K webu se nelze připojit</translation>

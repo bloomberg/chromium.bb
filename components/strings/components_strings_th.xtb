@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1005145902654145231">เปลี่ยนชื่อเซสชันไม่ได้</translation>
 <translation id="1008557486741366299">ไม่ใช่ตอนนี้</translation>
 <translation id="1015730422737071372">ให้รายละเอียดเพิ่มเติม</translation>
 <translation id="1021110881106174305">บัตรที่ยอมรับ</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">ตัวระบุเอนทิตีไม่ถูกต้อง</translation>
 <translation id="1232569758102978740">ไม่ระบุชื่อ</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" /> <ph name="TYPE_2" /> (ซิงค์แล้ว)</translation>
+<translation id="1256368399071562588">&lt;p&gt;หากคุณพยายามเข้าชมเว็บไซต์ แต่เว็บไซต์ไม่เปิดขึ้นมา ให้ลองแก้ข้อผิดพลาดด้วยขั้นตอนการแก้ปัญหาต่อไปนี้&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;ตรวจสอบที่อยู่เว็บไซต์ว่ามีการพิมพ์ผิดหรือไม่&lt;/li&gt;
+    &lt;li&gt;ตรวจสอบว่าการเชื่อมต่ออินเทอร์เน็ตใช้งานได้ปกติ&lt;/li&gt;
+    &lt;li&gt;ติดต่อเจ้าของเว็บไซต์&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">เรื่องรออ่าน</translation>
 <translation id="1264126396475825575">รายงานข้อขัดข้องเมื่อ <ph name="CRASH_TIME" /> (ยังไม่ได้อัปโหลดหรือละเว้น)</translation>
 <translation id="1270502636509132238">วิธีการรับสินค้า</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
+<translation id="1292701964462482250">"ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chrome เชื่อมต่อกับเว็บอย่างปลอดภัยไม่ได้" (คอมพิวเตอร์ที่ใช้ระบบปฏิบัติการ Windows เท่านั้น)</translation>
 <translation id="1294154142200295408">บรรทัดคำสั่งรูปแบบต่างๆ</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ลองล้างคุกกี้<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">ไม่มีเซสชันที่เลือก</translation>
+<translation id="1323433172918577554">แสดงเพิ่มเติม</translation>
 <translation id="1333989956347591814">ผู้อื่น<ph name="BEGIN_EMPHASIS" />อาจยังมองเห็น<ph name="END_EMPHASIS" />กิจกรรมของคุณ:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />เว็บไซต์ที่คุณเข้าชม
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">ไซต์ที่จะเปิดมีแอปอันตราย</translation>
 <translation id="1374468813861204354">คำแนะนำ</translation>
 <translation id="1375198122581997741">เกี่ยวกับรุ่น</translation>
+<translation id="1376836354785490390">แสดงน้อยลง</translation>
 <translation id="1377321085342047638">หมายเลขบัตร</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> ไม่ส่งข้อมูลใดๆ</translation>
 <translation id="1407135791313364759">เปิดทั้งหมด</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1484290072879560759">เลือกที่อยู่สำหรับจัดส่ง</translation>
 <translation id="1506687042165942984">แสดงสำเนาที่บันทึกไว้ (หรือที่ล้าสมัย) ของหน้านี้</translation>
+<translation id="1507202001669085618">&lt;p&gt;คุณจะเห็นข้อผิดพลาดนี้ หากใช้พอร์ทัล Wi-Fi ที่คุณต้องลงชื่อเข้าใช้ก่อนจึงจะสามารถออนไลน์ได้&lt;/p&gt;
+    &lt;p&gt;ในการแก้ไขข้อผิดพลาด ให้คลิก&lt;strong&gt;เชื่อมต่อ&lt;/strong&gt;บนหน้าเว็บที่คุณพยายามจะเปิด&lt;/p&gt;</translation>
 <translation id="1517433312004943670">ต้องระบุหมายเลขโทรศัพท์</translation>
 <translation id="1517500485252541695">บัตรเครดิตและบัตรเดบิตที่ยอมรับ</translation>
 <translation id="1519264250979466059">วันที่สร้าง</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">การกรอง</translation>
 <translation id="1916770123977586577">โหลดหน้านี้ซ้ำเพื่อใช้การตั้งค่าที่อัปเดตกับไซต์นี้</translation>
 <translation id="1919345977826869612">โฆษณา</translation>
+<translation id="1919367280705858090">ขอความช่วยเหลือเกี่ยวกับข้อความแสดงข้อผิดพลาดที่เจาะจง</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ไม่มี}=1{เว็บไซต์ 1 แห่ง}other{เว็บไซต์ # แห่ง}}</translation>
 <translation id="1927235823738766038">บัตรเครดิตและบัตรเดบิตที่ยอมรับ</translation>
 <translation id="194030505837763158">ไปที่ <ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{ไม่มี}=1{จากเว็บไซต์ 1 แห่ง }other{จากเว็บไซต์ #  แห่ง }}</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
+<translation id="3984550557525787191">มีชื่อเซสชันนี้อยู่แล้ว</translation>
 <translation id="3987940399970879459">ไม่ถึง 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ตรวจสอบไฟร์วอลล์และการกำหนดค่าการป้องกันไวรัส<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">การขัดข้อง</translation>
 <translation id="422022731706691852">ผู้โจมตีที่อยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามหลอกล่อให้คุณติดตั้งโปรแกรมที่ทำให้การท่องเว็บเป็นเรื่องอันตราย (ตัวอย่างเช่น การเปลี่ยนหน้าแรกหรือการแสดงโฆษณาเพิ่มเติมในไซต์ที่คุณเข้าชม) <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;ขั้นตอนที่ 1: ลงชื่อเข้าใช้พอร์ทัล&lt;/h4&gt;
+    &lt;p&gt;เครือข่าย Wi-Fi ในสถานที่หลายแห่งอย่างร้านกาแฟหรือสนามบินจำเป็นต้องให้คุณลงชื่อเข้าใช้ หากต้องการดูหน้าลงชื่อเข้าใช้ โปรดไปที่หน้าเว็บที่ใช้ &lt;code&gt;http://&lt;/code&gt;&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;ไปยังเว็บไซต์ที่ขึ้นต้นด้วย &lt;code&gt;http://&lt;/code&gt; เช่น &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;ในหน้าลงชื่อเข้าใช้ที่เปิดขึ้นมา ให้ลงชื่อเข้าใช้เพื่อใช้อินเทอร์เน็ต&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;ขั้นตอนที่ 2: เปิดหน้าเว็บในโหมดไม่ระบุตัวตน (เฉพาะคอมพิวเตอร์)&lt;/h4&gt;
+    &lt;p&gt;เปิดหน้าเว็บที่คุณได้เข้าชมในหน้าต่างที่ไม่ระบุตัวตน&lt;/p&gt;
+    &lt;p&gt;หากหน้านั้นเปิดขึ้น แสดงว่าส่วนขยาย Chrome ทำงานไม่ถูกต้อง โปรดปิดส่วนขยายเพื่อแก้ไขข้อผิดพลาด&lt;/p&gt;
+    &lt;h4&gt;ขั้นตอนที่ 3: อัปเดตระบบปฏิบัติการ&lt;/h4&gt;
+    &lt;p&gt;ตรวจสอบว่าอุปกรณ์ใช้เวอร์ชันล่าสุด&lt;/p&gt;
+    &lt;h4&gt;ขั้นตอนที่ 4: ปิดโปรแกรมป้องกันไวรัสชั่วคราว&lt;/h4&gt;
+    &lt;p&gt;คุณจะเห็นข้อผิดพลาดนี้ หากคุณมีซอฟต์แวร์ป้องกันไวรัสที่มอบ "การป้องกัน HTTPS" หรือ "การสแกน HTTPS" ซึ่งกำลังขัดขวางการรักษาความปลอดภัยของ Chrome&lt;/p&gt;
+    &lt;p&gt;ในการแก้ไขปัญหานี้ ให้ปิดซอฟต์แวร์ป้องกันไวรัส หากหน้าเว็บทำงานเป็นปกติหลังจากปิดซอฟต์แวร์แล้ว ให้ปิดซอฟต์แวร์นี้เมื่อคุณใช้งานเว็บไซต์ที่มีความปลอดภัย&lt;/p&gt;
+    &lt;p&gt;อย่าลืมเปิดโปรแกรมป้องกันไวรัสอีกครั้ง เมื่อคุณใช้งานเสร็จแล้ว&lt;/p&gt;
+    &lt;h4&gt;ขั้นตอนที่ 5: รับความช่วยเหลือเพิ่มเติม&lt;/h4&gt;
+    &lt;p&gt;หากคุณยังคงเห็นข้อผิดพลาด โปรดติดต่อเจ้าของเว็บไซต์&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยเครือข่าย<ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">ถูกต้อง</translation>
 <translation id="4250431568374086873">การเชื่อมต่อกับเว็บไซต์นี้ไม่ปลอดภัยโดยสมบูรณ์</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">การค้นหาบทความล้มเหลว</translation>
 <translation id="4326324639298822553">ตรวจสอบวันหมดอายุแล้วลองอีกครั้ง</translation>
 <translation id="4331708818696583467">ไม่ปลอดภัย</translation>
+<translation id="4340982228985273705">ไม่มีการตรวจพบว่าคอมพิวเตอร์เครื่องนี้ได้รับการจัดการโดยองค์กร ดังนั้นนโยบายจะติดตั้งเฉพาะส่วนขยายที่โฮสต์ใน Chrome เว็บสโตร์โดยอัตโนมัติ URL การอัปเดตของ Chrome เว็บสโตร์คือ "<ph name="CWS_UPDATE_URL" />"</translation>
 <translation id="4346197816712207223">บัตรเครดิตที่ยอมรับ</translation>
 <translation id="4356973930735388585">ผู้โจมตีในเว็บไซต์นี้อาจพยายามติดตั้งโปรแกรมอันตรายซึ่งจะขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) ลงในคอมพิวเตอร์ของคุณ</translation>
 <translation id="4372948949327679948">ค่า <ph name="VALUE_TYPE" /> ที่คาดไว้</translation>
@@ -567,6 +600,7 @@
 <translation id="5222812217790122047">ต้องระบุอีเมล</translation>
 <translation id="522700295135997067">ไซต์นี้อาจเพิ่งขโมยรหัสผ่านของคุณไป</translation>
 <translation id="5230733896359313003">ที่อยู่ในการจัดส่ง</translation>
+<translation id="5250209940322997802">"เชื่อมต่อกับเครือข่าย"</translation>
 <translation id="5251803541071282808">ระบบคลาวด์</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />ทำตามขั้นตอนการปิดใช้ซอฟต์แวร์ชั่วคราวต่อไปนี้เพื่อให้เข้าสู่เว็บได้ คุณจะต้องมีสิทธิ์ของผู้ดูแลระบบ<ph name="END_PARAGRAPH" />
 
@@ -590,6 +624,7 @@
 <translation id="5332219387342487447">วิธีการจัดส่ง</translation>
 <translation id="5355557959165512791">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากใบรับรองถูกเพิกถอนแล้ว โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจจะใช้งานได้ในภายหลัง</translation>
 <translation id="536296301121032821">ไม่สามารถจัดเก็บการตั้งค่านโยบาย</translation>
+<translation id="5377026284221673050">"นาฬิกาของคุณช้ากว่าปัจจุบัน" หรือ "นาฬิกาของคุณเร็วกว่าปัจจุบัน" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">กลุ่มใบรับรองสำหรับเว็บไซต์นี้มีใบรับรองที่ลงนามโดยใช้ SHA-1</translation>
 <translation id="5402410679244714488">วันที่หมดอายุ: <ph name="EXPIRATION_DATE_ABBR" /> ใช้ล่าสุดกว่า 1 ปีที่ผ่านมา</translation>
 <translation id="540969355065856584">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เนื่องจากใบรับรองความปลอดภัยไม่สามารถใช้ได้ในขณะนี้ ซึ่งอาจเป็นเพราะการกำหนดค่าที่ไม่ถูกต้องหรือมีผู้โจมตีที่ขัดขวางการเชื่อมต่อของคุณ</translation>
@@ -843,6 +878,7 @@
 <translation id="7542403920425041731">เมื่อคุณยืนยันแล้ว จะมีการแชร์รายละเอียดบัตรของคุณกับไซต์นี้</translation>
 <translation id="7542995811387359312">การป้อนหมายเลขบัตรเครดิตอัตโนมัติถูกปิดใช้งานเนื่องจากฟอร์มนี้ไม่ได้ใช้การเชื่อมต่อที่ปลอดภัย</translation>
 <translation id="7543525346216957623">ถามผู้ปกครอง</translation>
+<translation id="7548892272833184391">แก้ไขข้อผิดพลาดในการเชื่อมต่อ</translation>
 <translation id="7549584377607005141">หน้าเว็บนี้ต้องใช้ข้อมูลที่คุณป้อนก่อนหน้านี้เพื่อให้แสดงได้อย่างถูกต้อง คุณสามารถส่งข้อมูลนี้ได้อีกครั้ง แต่การทำเช่นนั้นจะเป็นการทำสิ่งที่หน้าเว็บนี้เคยดำเนินการซ้ำอีกครั้ง</translation>
 <translation id="7552846755917812628">ลองทำตามเคล็ดลับต่อไปนี้:</translation>
 <translation id="7554791636758816595">แท็บใหม่</translation>
@@ -850,6 +886,7 @@
 <translation id="7567204685887185387">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการออกใบรับรองความปลอดภัยปลอม โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="7568593326407688803">หน้าเว็บนี้เป็น<ph name="ORIGINAL_LANGUAGE" />คุณต้องการแปลหรือไม่</translation>
 <translation id="7569952961197462199">นำบัตรเครดิตออกจาก Chrome ไหม</translation>
+<translation id="7575800019233204241">"การเชื่อมต่อของคุณไม่เป็นส่วนตัว" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" หรือ "ข้อผิดพลาดของใบรับรอง SSL"</translation>
 <translation id="7578104083680115302">ชำระเงินบนเว็บไซต์และแอปในอุปกรณ์ต่างๆ ได้อย่างรวดเร็วด้วยบัตรที่คุณได้บันทึกไว้กับ Google</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
@@ -1072,6 +1109,8 @@
 <translation id="973773823069644502">เพิ่มที่อยู่สำหรับนำส่งสินค้า</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{ไม่มี}=1{1 รายการ}other{# รายการ}}</translation>
 <translation id="981121421437150478">ออฟไลน์</translation>
+<translation id="985199708454569384">&lt;p&gt;คุณจะเห็นข้อผิดพลาดนี้หากวันที่และเวลาของคอมพิวเตอร์หรืออุปกรณ์เคลื่อนที่ไม่ถูกต้อง&lt;/p&gt;
+    &lt;p&gt;ในการแก้ไขข้อผิดพลาด ให้เปิดนาฬิกาของอุปกรณ์ ตรวจสอบให้แน่ใจว่าเวลาและวันที่ถูกต้องแล้ว&lt;/p&gt;</translation>
 <translation id="988159990683914416">รุ่นนักพัฒนา</translation>
 <translation id="989988560359834682">แก้ไขที่อยู่</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

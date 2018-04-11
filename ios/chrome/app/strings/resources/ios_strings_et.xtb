@@ -159,6 +159,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="3789841737615482174">Installi</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3897092660631435901">Menüü</translation>
+<translation id="3915450441834151894">Saiditeave</translation>
 <translation id="3928666092801078803">Minu andmete kombineerimine</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
 <translation id="3963231839620026525">Uus ink. vaheleht</translation>
@@ -222,6 +223,7 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Sünkroonimise lubamine</translation>
 <translation id="5244474230056479698">Sünkroonimine aadressiga <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Avage vaheleht, kus saate privaatselt veebi sirvida.</translation>
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="5327248766486351172">Nimi</translation>
@@ -301,6 +303,7 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="6445981559479772097">Sõnum on saadetud.</translation>
 <translation id="6464071786529933911">Ava uuel inkognito lehel</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> üksust on kustutatud</translation>
+<translation id="6528048372317642110">Allalaaditav fail on saadaval</translation>
 <translation id="6541915733953096570">Viimane tund</translation>
 <translation id="6570040839871198836">Vormi aut.täit.</translation>
 <translation id="6656103420185847513">Kausta muutmine</translation>

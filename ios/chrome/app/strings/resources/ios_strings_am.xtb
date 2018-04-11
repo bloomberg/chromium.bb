@@ -159,6 +159,7 @@
 <translation id="3789841737615482174">ጫን  </translation>
 <translation id="385051799172605136">ተመለስ</translation>
 <translation id="3897092660631435901">ምናሌ</translation>
+<translation id="3915450441834151894">የጣቢያ መረጃ</translation>
 <translation id="3928666092801078803">የእኔን ውሂብ አጣምር</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
 <translation id="3963231839620026525">አዲስ ማንነት የማያሳውቅ ትር</translation>
@@ -222,6 +223,7 @@
 <translation id="5197255632782567636">በይነመረብ</translation>
 <translation id="5228579091201413441">ማመሳሰልን አንቃ</translation>
 <translation id="5244474230056479698">ከ<ph name="EMAIL" /> ጋር በማስመር ላይ</translation>
+<translation id="527973086555161537">ድሩን በግል ለማሰስ አንድ ትር ይክፈቱ።</translation>
 <translation id="5300589172476337783">አሳይ</translation>
 <translation id="5317780077021120954">አስቀምጥ</translation>
 <translation id="5327248766486351172">ስም</translation>
@@ -301,6 +303,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6445981559479772097">መልዕክት ተልኳል።</translation>
 <translation id="6464071786529933911">በአዲስ ማንነት የማያሳውቅ ትር ውስጥ ክፈት</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ንጥሎች ተሰርዘዋል</translation>
+<translation id="6528048372317642110">ፋይል ማውረድ ይገኛል</translation>
 <translation id="6541915733953096570">ያለፈው ሰዓት</translation>
 <translation id="6570040839871198836">የራስ-ሙላ ቅጾች</translation>
 <translation id="6656103420185847513">አቃፊ ያርትዑ</translation>
@@ -383,6 +386,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8261506727792406068">ሰርዝ</translation>
 <translation id="8272426682713568063">የብድር ካርዶች</translation>
 <translation id="8281781826761538115">ነባሪ - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8328777765163860529">ሁሉንም ዝጋ</translation>
 <translation id="8381750437846184350">Google ፍለጋን፣ ማስታወቂያዎችን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ ብሎ የአሰሳ ታሪክዎን እንዴት እንደሚጠቀምበት ይቆጣጠሩት</translation>
 <translation id="842017693807136194">በሚከተለው በመለያ ተገብቷል፦</translation>
 <translation id="8428045167754449968">ከተማ / መለስተኛ ከተማ</translation>

@@ -369,6 +369,7 @@
 <translation id="4176463684765177261">已停用</translation>
 <translation id="4188530942454211480">上一个句子</translation>
 <translation id="4191918948604314587">按钮</translation>
+<translation id="419265409837491189">转到上一列</translation>
 <translation id="4202186506458631436">右移</translation>
 <translation id="4206289001967551965">在表格内</translation>
 <translation id="4209770650650780359">按向上或向下箭头即可浏览自动填写建议。</translation>
@@ -419,6 +420,7 @@
 <translation id="4660783501463101648">移除了 Classic。现已无法再通过键盘切换回 ChromeVox Classic。</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">转到下一列</translation>
 <translation id="4688873778442829762">网格</translation>
 <translation id="4693675773662933727">上一个地标</translation>
 <translation id="4696413482802371445">不存在下一个5级标题。</translation>
@@ -434,6 +436,7 @@
 <translation id="4826415162591436065">向前导航</translation>
 <translation id="4826604887384865800">下一个跳转</translation>
 <translation id="4827410568042294688">已取消选中</translation>
+<translation id="4839925464551908214">转到上一行</translation>
 <translation id="4842108708071771135">不存在下一个块引用。</translation>
 <translation id="4844625982113518938">按任意键可听到相应键名的读音。按 Ctrl+W 组合键可关闭学习模式。</translation>
 <translation id="4846428657345567687">欢迎使用 ChromeVox！</translation>
@@ -788,6 +791,7 @@
 <translation id="8186185314313222077">切换全屏模式</translation>
 <translation id="8199231515320852133">读出当前单元格的标题</translation>
 <translation id="820417203470636242">空白单元格。</translation>
+<translation id="820469951249669083">转到下一行</translation>
 <translation id="8215202828671303819">多选</translation>
 <translation id="826991282343985864">行 $1 列 $2</translation>
 <translation id="8276439074553447000">跳转到上一个可设置为焦点的项</translation>

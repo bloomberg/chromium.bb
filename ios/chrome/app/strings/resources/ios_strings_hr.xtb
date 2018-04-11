@@ -159,6 +159,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="3789841737615482174">Instaliraj</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3897092660631435901">Izbornik</translation>
+<translation id="3915450441834151894">Informacije o web-lokaciji</translation>
 <translation id="3928666092801078803">Kombiniranje podataka</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="3963231839620026525">Nova anonimna kartica</translation>
@@ -222,6 +223,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju. Unesite je da biste
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogući sinkronizaciju</translation>
 <translation id="5244474230056479698">Sinkronizacija s računom <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Otvorite karticu da biste pregledavali web u privatnosti.</translation>
 <translation id="5300589172476337783">Prikaži</translation>
 <translation id="5317780077021120954">Spremi</translation>
 <translation id="5327248766486351172">Naziv</translation>
@@ -301,6 +303,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="6445981559479772097">Poruka je poslana.</translation>
 <translation id="6464071786529933911">Otvori na novoj anonimnoj kartici</translation>
 <translation id="6482629121755362506">Broj izbrisanih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="6528048372317642110">Dostupno je preuzimanje datoteka</translation>
 <translation id="6541915733953096570">Od proteklog sata</translation>
 <translation id="6570040839871198836">Autom. popunj.</translation>
 <translation id="6656103420185847513">Uređivanje mape</translation>

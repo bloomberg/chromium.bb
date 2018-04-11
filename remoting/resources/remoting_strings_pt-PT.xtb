@@ -140,6 +140,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="4145029455188493639">Com sessão iniciada como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Faltam alguns componentes necessários. Certifique-se de que tem a versão mais recente do software instalada e tente novamente.</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, escolha um PIN de <ph name="BOLD_START" />pelo menos seis dígitos<ph name="BOLD_END" />. Este PIN será necessário quando ligar a partir de outra localização.</translation>
+<translation id="4169432154993690151">Para escolher uma imagem do perfil, permita que o Ambiente de Trabalho Remoto do Chrome aceda à sua câmara.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="4207623512727273241">Execute o ficheiro de instalação antes de continuar.</translation>
 <translation id="4227991223508142681">Utilitário de administração de anfitriões</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">O anfitrião começou para o utilizador: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Ver/editar</translation>
+<translation id="6913710942997637770">Para escolher uma imagem do perfil, permita que o Ambiente de Trabalho Remoto do Chrome aceda às suas fotos.</translation>
 <translation id="6930242544192836755">Duração</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado.</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>

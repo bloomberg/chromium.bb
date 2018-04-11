@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1005145902654145231">無法重新命名工作階段。</translation>
 <translation id="1008557486741366299">現在不要</translation>
 <translation id="1015730422737071372">提供其他詳細資訊</translation>
 <translation id="1021110881106174305">接受的信用卡</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">實體識別碼錯誤</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" /> (已同步)</translation>
+<translation id="1256368399071562588">&lt;p&gt;如果您無法順利開啟網站，請先嘗試按照以下疑難排解步驟修正相關錯誤：&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;檢查網址是否輸入錯誤。&lt;/li&gt;
+    &lt;li&gt;確認您的網際網路連線正常運作。&lt;/li&gt;
+    &lt;li&gt;與網站擁有者聯絡。&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">閱讀清單</translation>
 <translation id="1264126396475825575">當機報告擷取時間：<ph name="CRASH_TIME" /> (尚未上傳或略過)</translation>
 <translation id="1270502636509132238">取件方式</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
+<translation id="1292701964462482250">「你的電腦上有軟體阻止 Chrome 建立安全的網路連線」(僅限 Windows 電腦)</translation>
 <translation id="1294154142200295408">命令列變化版本</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />試試看清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">你所選的工作階段不存在。</translation>
+<translation id="1323433172918577554">顯示完整清單</translation>
 <translation id="1333989956347591814">以下各方<ph name="BEGIN_EMPHASIS" />可能仍會看到<ph name="END_EMPHASIS" />你的活動：
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />你造訪的網站
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">你要造訪的網站含有不安全的應用程式</translation>
 <translation id="1374468813861204354">建議</translation>
 <translation id="1375198122581997741">關於版本</translation>
+<translation id="1376836354785490390">顯示較少</translation>
 <translation id="1377321085342047638">卡號</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> 未傳送任何資料。</translation>
 <translation id="1407135791313364759">全部開啟</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">列印</translation>
 <translation id="1484290072879560759">選擇運送地址</translation>
 <translation id="1506687042165942984">顯示這個網頁的儲存複本 (亦即現已不再使用的版本)。</translation>
+<translation id="1507202001669085618">&lt;p&gt;如果您使用的 Wi-Fi 入口網站必須先登入才能連上網路，系統就會顯示這則錯誤訊息。&lt;/p&gt;
+    &lt;p&gt;如要修正這個錯誤，請在您要嘗試開啟的網頁上按一下 [連線]&lt;strong&gt;&lt;/strong&gt;。&lt;/p&gt;</translation>
 <translation id="1517433312004943670">必須輸入電話號碼</translation>
 <translation id="1517500485252541695">接受的信用卡和簽帳金融卡</translation>
 <translation id="1519264250979466059">建立日期</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">篩選</translation>
 <translation id="1916770123977586577">如要將你更新過的設定套用到這個網站，請重新載入這個網頁</translation>
 <translation id="1919345977826869612">廣告</translation>
+<translation id="1919367280705858090">瞭解如何修正特定錯誤訊息指出的錯誤</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{無}=1{1 個網站}other{# 個網站}}</translation>
 <translation id="1927235823738766038">接受的信用卡和簽帳金融卡</translation>
 <translation id="194030505837763158">前往 <ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{無}=1{來自 1 個網站 }other{來自 # 個網站 }}</translation>
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 遭到封鎖</translation>
+<translation id="3984550557525787191">已經有相同名稱的工作階段。</translation>
 <translation id="3987940399970879459">不到 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 個網頁}other{附近有 # 個網頁}}</translation>
 <translation id="4030383055268325496">復原新增(&amp;U)</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />檢查防火牆和防毒軟體設定<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">當機</translation>
 <translation id="422022731706691852">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 誘使你安裝對瀏覽體驗有害 (例如變更你的首頁，或是在你造訪的網站上顯示多餘的廣告) 的程式。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;步驟 1：從入口網站登入&lt;/h4&gt;
+    &lt;p&gt;咖啡館或機場等地點的 Wi-Fi 網路必須先登入才能使用。如要查看登入頁面，請造訪使用 &lt;code&gt;http://&lt;/code&gt; 的網頁。&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;前往網址開頭為 &lt;code&gt;http://&lt;/code&gt; 的任何網站，例如 &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;。&lt;/li&gt;
+    &lt;li&gt;在隨即開啟的登入頁面登入後，即可使用網際網路。&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;步驟 2：以無痕模式開啟網頁 (僅適用於電腦)&lt;/h4&gt;
+    &lt;p&gt;使用無痕式視窗開啟您曾造訪的網頁。&lt;/p&gt;
+    &lt;p&gt;如果網頁可以順利開啟，表示有 Chrome 擴充功能並未正常運作。如要修正這項錯誤，請關閉該擴充功能。&lt;/p&gt;
+    &lt;h4&gt;步驟 3：更新您的作業系統&lt;/h4&gt;
+    &lt;p&gt;確認您的裝置已更新至最新版本的作業系統。&lt;/p&gt;
+    &lt;h4&gt;步驟 4：暫時關閉防毒軟體&lt;/h4&gt;
+    &lt;p&gt;如果您的電腦使用任何提供「HTTPS 保護」或「HTTPS 掃描」功能的防毒軟體，導致 Chrome 無法提供安全支援，系統就會顯示這則錯誤訊息。&lt;/p&gt;
+    &lt;p&gt;如要修正這個問題，請關閉防毒軟體。如果這麼做可以順利解決問題，代表您必須關閉防毒軟體，才能使用安全網站。&lt;/p&gt;
+    &lt;p&gt;事後請記得再次開啟防毒程式。&lt;/p&gt;
+    &lt;h4&gt;步驟 5：尋求更多協助&lt;/h4&gt;
+    &lt;p&gt;如果您仍看見錯誤訊息，請與網站擁有者聯絡。&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />嘗試執行網路診斷<ph name="END_LINK" />。</translation>
 <translation id="4235360514405112390">有效</translation>
 <translation id="4250431568374086873">你與這個網站的連線可能有安全漏洞</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">找不到文章</translation>
 <translation id="4326324639298822553">請檢查信用卡到期日，然後再試一次</translation>
 <translation id="4331708818696583467">不安全</translation>
+<translation id="4340982228985273705">系統偵測結果顯示這台電腦未受企業管理，因此政策只能自動安裝透過 Chrome 線上應用程式商店代管的擴充功能。Chrome 線上應用程式商店更新網址為「<ph name="CWS_UPDATE_URL" />」。</translation>
 <translation id="4346197816712207223">接受的信用卡</translation>
 <translation id="4356973930735388585">攻擊者可能會試圖透過這個網站在你的電腦上安裝危險程式，藉此竊取或刪除你的資訊 (例如相片、密碼、郵件和信用卡資料)。</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
@@ -567,6 +600,7 @@
 <translation id="5222812217790122047">請輸入電子郵件地址</translation>
 <translation id="522700295135997067">這個網站剛剛可能竊取了你的密碼</translation>
 <translation id="5230733896359313003">運送地址</translation>
+<translation id="5250209940322997802">「連線至網路」</translation>
 <translation id="5251803541071282808">雲端</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />請按照以下步驟暫時停用該軟體，以便順利連上網路。你需要管理員權限。<ph name="END_PARAGRAPH" />
 
@@ -590,6 +624,7 @@
 <translation id="5332219387342487447">運送方式</translation>
 <translation id="5355557959165512791">目前無法造訪 <ph name="SITE" />，因為這個網站的憑證已遭撤銷。網路錯誤和攻擊行為通常是暫時性的，因此這個網頁可能稍後就會恢復正常狀態。</translation>
 <translation id="536296301121032821">無法儲存政策設定</translation>
+<translation id="5377026284221673050">「你的時鐘時間過慢」、「你的時鐘時間過快」或 &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">這個網站的憑證鏈結包含使用 SHA-1 進行簽署的憑證。</translation>
 <translation id="5402410679244714488">到期日：<ph name="EXPIRATION_DATE_ABBR" />，距離上次使用已超過 1 年</translation>
 <translation id="540969355065856584">這個伺服器無法證明所屬網域為 <ph name="DOMAIN" />；其安全性憑證目前無效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線所致。</translation>
@@ -843,6 +878,7 @@
 <translation id="7542403920425041731">經過你確認後，這個網站就會取得你的信用卡詳細資料。</translation>
 <translation id="7542995811387359312">由於這個表單並未採用加密連線方式，所以信用卡自動填入功能已停用。</translation>
 <translation id="7543525346216957623">請徵求家長同意</translation>
+<translation id="7548892272833184391">修正連線錯誤</translation>
 <translation id="7549584377607005141">這個網頁需要使用你先前輸入的資料才能正確顯示。你可以重新傳送這些資料，不過這麼做會重複執行這個網頁先前執行過的任何動作。</translation>
 <translation id="7552846755917812628">嘗試按照下列提示操作：</translation>
 <translation id="7554791636758816595">新增分頁</translation>
@@ -850,6 +886,7 @@
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證是以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="7568593326407688803">此網頁為<ph name="ORIGINAL_LANGUAGE" />你要翻譯網頁內容嗎？</translation>
 <translation id="7569952961197462199">要從 Chrome 中移除信用卡嗎？</translation>
+<translation id="7575800019233204241">「你的連線不是私人連線」、「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」或「SSL 憑證錯誤」</translation>
 <translation id="7578104083680115302">在不同的裝置上透過各個網站和應用程式消費時，使用您讓 Google 儲存的信用卡資料即可快速付款。</translation>
 <translation id="7588950540487816470">實體化網路</translation>
 <translation id="7592362899630581445">伺服器憑證的名稱不符合限制。</translation>
@@ -1071,6 +1108,8 @@
 <translation id="973773823069644502">新增快遞地址</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{無}=1{1 個項目}other{# 個項目}}</translation>
 <translation id="981121421437150478">離線</translation>
+<translation id="985199708454569384">&lt;p&gt;如果畫面顯示這則錯誤訊息，表示您電腦或行動裝置的日期或時間不正確。&lt;/p&gt;
+    &lt;p&gt;如要修正這項錯誤，請開啟裝置的時鐘，確認時間和日期是否正確無誤。&lt;/p&gt;</translation>
 <translation id="988159990683914416">開發人員版本</translation>
 <translation id="989988560359834682">編輯地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

@@ -370,6 +370,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4176463684765177261">Désactivé</translation>
 <translation id="4188530942454211480">Phrase précédente</translation>
 <translation id="4191918948604314587">Un bouton</translation>
+<translation id="419265409837491189">Accéder à la colonne précédente</translation>
 <translation id="4202186506458631436">Déplacer vers la droite</translation>
 <translation id="4206289001967551965">Dans le tableau</translation>
 <translation id="4209770650650780359">Appuyez sur la flèche vers le haut ou vers le bas pour accéder aux saisies semi-automatiques.</translation>
@@ -420,6 +421,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4660783501463101648">Version classique supprimée. Il est désormais impossible de basculer vers la version classique de ChromeVox par le biais de la touche du clavier initialement prévue à cet effet.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Accéder à la colonne suivante</translation>
 <translation id="4688873778442829762">grille</translation>
 <translation id="4693675773662933727">Repère précédent</translation>
 <translation id="4696413482802371445">Aucun titre de niveau 5 suivant</translation>
@@ -435,6 +437,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="4826415162591436065">Navigation vers le bas</translation>
 <translation id="4826604887384865800">Renvoi suivant</translation>
 <translation id="4827410568042294688">désélectionné</translation>
+<translation id="4839925464551908214">Accéder à la ligne précédente</translation>
 <translation id="4842108708071771135">Aucun bloc de citation suivant</translation>
 <translation id="4844625982113518938">Appuyez sur n'importe quelle touche pour connaître son nom. Pour fermer le mode d'apprentissage, appuyez sur Ctrl+W.</translation>
 <translation id="4846428657345567687">Bienvenue dans ChromeVox !</translation>
@@ -789,6 +792,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8186185314313222077">activer/désactiver le mode plein écran</translation>
 <translation id="8199231515320852133">Énoncer les en-têtes de la cellule actuelle</translation>
 <translation id="820417203470636242">Cellule vide</translation>
+<translation id="820469951249669083">Accéder à la ligne suivante</translation>
 <translation id="8215202828671303819">Sélection multiple</translation>
 <translation id="826991282343985864">l$1c$2</translation>
 <translation id="8276439074553447000">Renvoyer à l'élément précédent pouvant être agrandi</translation>

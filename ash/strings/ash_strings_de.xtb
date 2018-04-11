@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Ihr Passwort konnte immer noch nicht bestätigt werden. Hinweis: Falls Sie Ihr Passwort kürzlich geändert haben, wird Ihr neues Passwort übernommen, sobald Sie sich abmelden. Bitte verwenden Sie hier das alte Passwort.</translation>
 <translation id="1677472565718498478">Verbleibende Zeit: <ph name="TIME" /> h</translation>
 <translation id="1698760176351776263">IPv6-Adresse: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Der Geräteadministrator kann Ihre Aktivitäten möglicherweise überwachen.</translation>
 <translation id="1734367976349034509">Dieses Gerät wird vom Unternehmen verwaltet</translation>
 <translation id="1746730358044914197">Die Eingabemethoden werden von Ihrem Administrator konfiguriert.</translation>
 <translation id="1747827819627189109">Bildschirmtastatur aktiviert</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Überlaufschaltfläche</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Sprache festlegen</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
 <translation id="2012624427112548395">Strg + Suche + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2675319268637823299">Ein Administrator hat die Mehrfachanmeldung für <ph name="USER_EMAIL" /> deaktiviert.
     Alle Nutzer müssen sich abmelden, um fortfahren zu können.</translation>
+<translation id="2696763960464195425">Ihre Informationen werden bei der Abmeldung entfernt. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Tastatur einrichten</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
 <translation id="7131634465328662194">Sie werden automatisch abgemeldet.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
+<translation id="7165511658052620796">(TEMP) WebUI-Login anzeigen; bei Verwendung von Dateifehler (crbug.com) oder Feedback (Alt + Umschalt + i)</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
@@ -329,6 +334,7 @@ Nutzen Sie diese Funktion nur mit vertrauenswürdigen Konten.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Schwachstrom-Ladegerät angeschlossen</translation>
 <translation id="8734991477317290293">Möglicherweise versucht jemand, darüber Ihre Tastatureingaben zu erfassen</translation>
+<translation id="8809737090443522491">Namen einer App oder eines Dokuments eingeben</translation>
 <translation id="8814190375133053267">WLAN</translation>
 <translation id="8814715559352963456">Durch das Verschieben des Fensters auf einen anderen Desktop kann unerwartetes Verhalten auftreten.
 

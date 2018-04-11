@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1005145902654145231">无法重命名会话。</translation>
 <translation id="1008557486741366299">以后再说</translation>
 <translation id="1015730422737071372">提供其他详细信息</translation>
 <translation id="1021110881106174305">接受的信用卡</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">实体标识符有误</translation>
 <translation id="1232569758102978740">无标题</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" />（已同步）</translation>
+<translation id="1256368399071562588">&lt;p&gt;如果您尝试访问某个网站，但无法打开，请先尝试按照以下问题排查步骤操作，修正该错误：&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;检查网址是否有拼写错误。&lt;/li&gt;
+    &lt;li&gt;确保您的互联网连接正常。&lt;/li&gt;
+    &lt;li&gt;与网站所有者联系。&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">阅读清单</translation>
 <translation id="1264126396475825575">崩溃报告获取时间：<ph name="CRASH_TIME" />（该报告尚未上传或已被忽略）</translation>
 <translation id="1270502636509132238">取货方式</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="1292701964462482250">“您计算机上的软件导致 Chrome 无法安全地连接到网络”（仅限 Windows 计算机）</translation>
 <translation id="1294154142200295408">命令行变体</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">所选会话不存在。</translation>
+<translation id="1323433172918577554">展开</translation>
 <translation id="1333989956347591814">以下各方<ph name="BEGIN_EMPHASIS" />可能仍会看到<ph name="END_EMPHASIS" />您的活动：
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />您访问的网站
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">您要访问的网站包含危险应用</translation>
 <translation id="1374468813861204354">建议</translation>
 <translation id="1375198122581997741">关于版本</translation>
+<translation id="1376836354785490390">收起</translation>
 <translation id="1377321085342047638">卡号</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> 未发送任何数据。</translation>
 <translation id="1407135791313364759">全部打开</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">打印</translation>
 <translation id="1484290072879560759">选择送货地址</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
+<translation id="1507202001669085618">&lt;p&gt;如果您正在使用一个必须登录才能访问互联网的 Wi-Fi 门户，您就会看到这条错误消息。&lt;/p&gt;
+    &lt;p&gt;要修正该错误，请在您尝试打开的网页上点击&lt;strong&gt;连接&lt;/strong&gt;。&lt;/p&gt;</translation>
 <translation id="1517433312004943670">必须提供电话号码</translation>
 <translation id="1517500485252541695">接受的信用卡和借记卡</translation>
 <translation id="1519264250979466059">构建日期</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">过滤</translation>
 <translation id="1916770123977586577">要将您更新后的设置应用到此网站，请重新加载此页面</translation>
 <translation id="1919345977826869612">广告</translation>
+<translation id="1919367280705858090">获取具体错误消息的有关帮助</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
 <translation id="1927235823738766038">接受的信用卡和借记卡</translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
@@ -418,6 +432,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
+<translation id="3984550557525787191">此会话名称已存在。</translation>
 <translation id="3987940399970879459">小于 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
@@ -448,6 +463,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />检查防火墙和防病毒配置<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">崩溃</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 上的攻击者可能会试图骗您安装有损浏览体验的程序（例如更改您的主页或在您访问的网站上显示额外的广告）。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;第 1 步：登录门户&lt;/h4&gt;
+    &lt;p&gt;咖啡馆或机场等地方的 Wi-Fi 网络会要求用户进行登录。您只需随意访问一个采用 &lt;code&gt;http://&lt;/code&gt; 作为网址开头的网页，即可看到登录页面。&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;前往任一个采用 &lt;code&gt;http://&lt;/code&gt; 作为网址开头的网站，例如 &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;。&lt;/li&gt;
+    &lt;li&gt;在随即打开的登录页面中，登录以使用互联网。&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;第 2 步：在无痕模式下打开该网页（仅限计算机）&lt;/h4&gt;
+    &lt;p&gt;在无痕式窗口中打开您在第 1 步中访问的那个网页。&lt;/p&gt;
+    &lt;p&gt;如果该页面顺利打开了，则说明某款 Chrome 扩展程序出现了异常。要想修正该错误，请关闭这款扩展程序。&lt;/p&gt;
+    &lt;h4&gt;第 3 步：更新您的操作系统&lt;/h4&gt;
+    &lt;p&gt;确保您的设备运行的是最新版操作系统。&lt;/p&gt;
+    &lt;h4&gt;第 4 步：暂时关闭您的防病毒软件&lt;/h4&gt;
+    &lt;p&gt;如果您安装了可提供“HTTPS 保护”或“HTTPS 扫描”功能的防病毒软件，您就会看到这条错误消息。此类防病毒软件会阻止 Chrome 提供安全保护。&lt;/p&gt;
+    &lt;p&gt;要想解决该问题，请关闭您的防病毒软件。如果关闭防病毒软件后该网页可以正常打开，那么当您使用安全网站时，请一定关闭此软件。&lt;/p&gt;
+    &lt;p&gt;事后请记得要重新开启您的防病毒程序。&lt;/p&gt;
+    &lt;h4&gt;第 5 步：获取额外帮助&lt;/h4&gt;
+    &lt;p&gt;如果您仍会看到这条错误消息，请与网站所有者联系。&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />尝试运行网络诊断<ph name="END_LINK" />。</translation>
 <translation id="4235360514405112390">有效</translation>
 <translation id="4250431568374086873">您与此网站之间建立的连接并非完全安全</translation>
@@ -564,6 +596,7 @@
 <translation id="5222812217790122047">需要提供电子邮件地址</translation>
 <translation id="522700295135997067">此网站可能刚刚盗取了您的密码</translation>
 <translation id="5230733896359313003">送货地址</translation>
+<translation id="5250209940322997802">“连接到网络”</translation>
 <translation id="5251803541071282808">云端</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />按照下述步骤操作可临时停用此类软件，以便您能够连接到网络。您需要具有管理员权限。<ph name="END_PARAGRAPH" />
 
@@ -587,6 +620,7 @@
 <translation id="5332219387342487447">送货方式</translation>
 <translation id="5355557959165512791">您目前无法访问 <ph name="SITE" />，因为此证书已被撤消。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
+<translation id="5377026284221673050">“您的时钟慢了”、“您的时钟快了”或“&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
 <translation id="5402410679244714488">到期日期：<ph name="EXPIRATION_DATE_ABBR" />；距离上次使用已超过 1 年</translation>
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -839,6 +873,7 @@
 <translation id="7542403920425041731">一旦您予以确认，系统便会将您的信用卡详情共享给此网站。</translation>
 <translation id="7542995811387359312">由于该表单不使用安全连接，因此自动填写信用卡信息的功能已停用。</translation>
 <translation id="7543525346216957623">请先征得您父亲/母亲的许可</translation>
+<translation id="7548892272833184391">修正网络连接错误</translation>
 <translation id="7549584377607005141">此网页需要使用您之前输入的数据才能正常显示。您可以重新发送这些数据，不过，这么做会重复执行此网页之前执行过的所有操作。</translation>
 <translation id="7552846755917812628">请尝试按以下提示操作：</translation>
 <translation id="7554791636758816595">新标签页</translation>
@@ -846,6 +881,7 @@
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="7568593326407688803">此网页为<ph name="ORIGINAL_LANGUAGE" />网页，是否需要翻译？</translation>
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
+<translation id="7575800019233204241">“您的连接不是私密连接”、“&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”或“SSL 证书错误”</translation>
 <translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
 <translation id="7588950540487816470">实物网</translation>
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
@@ -1068,6 +1104,8 @@
 <translation id="973773823069644502">添加速递地址</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{无}=1{1 项内容}other{# 项内容}}</translation>
 <translation id="981121421437150478">离线</translation>
+<translation id="985199708454569384">&lt;p&gt;如果您的计算机或移动设备的日期与时间不准确，您就会看到这条错误消息。&lt;/p&gt;
+    &lt;p&gt;要修正该错误，请打开您设备的时钟，并确保日期与时间正确无误。&lt;/p&gt;</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
 <translation id="989988560359834682">修改地址</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

@@ -6,6 +6,7 @@
 <translation id="1134347825771908369">Wycisz dźwięk</translation>
 <translation id="1195667586424773550">Przeciągnij link na pasek adresu na karcie</translation>
 <translation id="1204450209689312104">Otwórz nowe okno w trybie incognito</translation>
+<translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Wydrukuj bieżącą stronę</translation>
 <translation id="1383876407941801731">Szukaj</translation>
@@ -22,7 +23,10 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> lub <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Przejdź do następnej karty</translation>
 <translation id="2010818616644390445">Przejdź do ostatniej karty w oknie</translation>
+<translation id="2040706009561734834">Otwórz/zamknij menu z aplikacjami</translation>
+<translation id="2045117674524495717">Informacje o skrótach klawiszowych</translation>
 <translation id="2088054208777350526">Znajdź skróty klawiszowe</translation>
+<translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> lub <ph name="F" /></translation>
 <translation id="2145908266289632567">Edytowanie tekstu</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> od 1 do =</translation>
 <translation id="2181097965834437145">Pokaż lub ukryj pasek zakładek</translation>
@@ -35,6 +39,7 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Przewiń stronę internetową w dół</translation>
 <translation id="2568632782096378307">Przywróć domyślną rozdzielczość ekranu</translation>
+<translation id="2596078834055697711">Zrób zrzut ekranu okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="TAB" /> lub <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Zapisz bieżącą stronę internetową jako zakładkę</translation>
 <translation id="2750942583782703988">Ponownie załaduj bieżącą stronę</translation>
@@ -61,6 +66,7 @@
 <translation id="3649256019230929621">Minimalizuj okno</translation>
 <translation id="3655154169297074232">Karty i okna</translation>
 <translation id="3668361878347172356">Ponów ostatnią czynność</translation>
+<translation id="3710784500737332588">Otwórz Centrum pomocy</translation>
 <translation id="3720939646656082033">Otwórz link w nowej karcie i przełącz się na nią</translation>
 <translation id="3725795051337497754">Zamknij bieżącą kartę</translation>
 <translation id="3751033133896282964">Cofnij ostatnią czynność</translation>
@@ -79,11 +85,15 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> lub <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Tryb przeglądu</translation>
 <translation id="4472417192667361414">Ustawienia systemu i wyświetlania</translation>
+<translation id="4484292984055789039">Przełącz na poprzednią metodę wprowadzania tekstu</translation>
 <translation id="4556221320735744018">Wyświetl pomoc do skrótów klawiszowych</translation>
 <translation id="4628718545549558538">Otwórz pasek stanu (tam, gdzie widać obraz konta)</translation>
 <translation id="4642092649622328492">Zrób zrzut części ekranu</translation>
+<translation id="4698850295812410683">Pokaż narzędzia rysika</translation>
 <translation id="4801989101741319327">Przejdź na koniec następnego słowa</translation>
 <translation id="4916163929714267752">Otwórz link w nowym oknie</translation>
+<translation id="5002047168347153398">Przenieś fokus do nieaktywnego wyskakującego okienka, by było łatwiej dostępne</translation>
+<translation id="5030659775136592441">Pokaż menedżera zakładek</translation>
 <translation id="5034421018520995080">Przejdź na górę strony</translation>
 <translation id="5042305953558921026">Klawisz trybu przeglądu</translation>
 <translation id="5104462712192763270">Zapisz bieżącą stronę</translation>
@@ -100,12 +110,14 @@
 <translation id="5757111373163288447">Otwórz link w tej karcie</translation>
 <translation id="5757474750054631686">Przyciemnij klawiaturę (dotyczy tylko klawiatur podświetlanych)</translation>
 <translation id="587531134027443617">Usuń poprzednie słowo</translation>
+<translation id="5899919361772749550">Pokaż lub ukryj konsolę Narzędzi dla programistów</translation>
 <translation id="5921745308587794300">Obróć okno</translation>
 <translation id="5975083100439434680">Pomniejsz</translation>
 <translation id="6022924867608035986">Wyczyść tekst w polu wyszukiwania</translation>
 <translation id="6045998054441862242">Włącz tryb wysokiego kontrastu</translation>
 <translation id="6052614013050385269">Kliknij link prawym przyciskiem myszy</translation>
 <translation id="6129953537138746214">Spacja</translation>
+<translation id="613146727819833328">Przenieś okno na środek</translation>
 <translation id="6143669479988153888">Powiększ widok strony</translation>
 <translation id="6185696379715117369">Strona do góry</translation>
 <translation id="6228457605945141550">Zmniejsz jasność</translation>
@@ -121,30 +133,39 @@
 <translation id="6556040137485212400">Otwórz okno, które było nieużywane przez najdłuższy czas</translation>
 <translation id="666343722268997814">Otwórz menu prawego przycisku myszy dla zaznaczonego elementu</translation>
 <translation id="6671538777808758331">Przejdź do następnego wyrażenia pasującego do zapytania</translation>
+<translation id="6681606577947445973"><ph name="REFRESH" /> lub <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">Zadokuj okno po lewej stronie</translation>
 <translation id="6692847073476874842">Otwórz podgląd pliku w aplikacji Pliki</translation>
 <translation id="671928215901716392">Zablokuj ekran</translation>
 <translation id="6727005317916125192">Poprzedni panel</translation>
 <translation id="6740781404993465795">Wybierz następne słowo lub znak</translation>
 <translation id="6760706756348334449">Zmniejsz głośność</translation>
+<translation id="6941333068993625698">Prześlij opinię</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="7020813747703216897">Nie znaleziono pasujących wyników</translation>
 <translation id="7025325401470358758">Następny panel</translation>
+<translation id="7077383985738259936">Przenieś fokus na pasek zakładek (jeśli jest widoczny)</translation>
 <translation id="7237562915163138771">Wpisz adres internetowy w pasku adresu i naciśnij <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
+<translation id="7254764037241667478">Przełącz urządzenie w tryb uśpienia (wstrzymania)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> lub <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="743754632698445141">Odepnij aplikację</translation>
 <translation id="7439718573248533901">Usuń następny znak (usuwanie do przodu)</translation>
+<translation id="7449669175878568981">Uruchamia lub zatrzymuje dyktowanie (wpisywanie głosem)</translation>
 <translation id="766326951329901120">Wklej zawartość schowka jako zwykły tekst</translation>
 <translation id="7724603315864178912">Wytnij</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, a następnie <ph name="SPACE" /> lub <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Otwórz plik w przeglądarce</translation>
+<translation id="7822267121073044318">Przełącz na następną metodę wprowadzania tekstu</translation>
 <translation id="7917881398263220094">Zatrzymaj wczytywanie bieżącej strony</translation>
 <translation id="7952165122793773711">Przejdź do karty 1–8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> lub <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
+<translation id="8104889575691864804">Pokaż menu aplikacji</translation>
 <translation id="8130528849632411619">Przejdź na początek dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> lub <ph name="E" /></translation>
 <translation id="8232835244134740473">Przełączaj fokus między: paskiem stanu (tam, gdzie widać obraz konta), Menu z aplikacjami, paskiem adresu, paskiem zakładek (jeśli jest widoczny), otwartą aktualnie stroną, paskiem pobranych plików (jeśli jest widoczny).</translation>
 <translation id="8234414138295101081">Obróć ekran o 90 stopni</translation>
+<translation id="8264941229485248811">Pokaż lub ukryj inspektora z Narzędzi dla programistów</translation>
 <translation id="836869401750819675">Otwórz stronę Pobrane pliki</translation>
 <translation id="8388247778047144397">Przeciągnij link na pusty obszar na pasku kart</translation>
 <translation id="8389638407792712197">Otwórz nowe okno</translation>
@@ -159,8 +180,11 @@
 <translation id="88986195241502842">Strona w dół</translation>
 <translation id="8903921497873541725">Powiększ</translation>
 <translation id="8924883688469390268">Przełącz do poprzedniego użytkownika</translation>
+<translation id="8951768610999698672">Powiększ lub pomniejsz elementy na ekranie</translation>
 <translation id="8977648847395357314">Zaznacz zawartość paska adresu</translation>
+<translation id="8982190978301344584">Wyświetl menu z listą dostępnych IME</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> od 1 do 8</translation>
+<translation id="9005984960510803406">Otwórz okno terminala Crosh</translation>
 <translation id="9041599225465145264">Wklej zawartość schowka</translation>
 <translation id="9052808072970550123">Przełącz do następnego użytkownika</translation>
 <translation id="906458777597946297">Maksymalizuj okno</translation>
@@ -169,5 +193,6 @@
 <translation id="9179672198516322668">Popularne skróty</translation>
 <translation id="93603345341560814">Naciśnij <ph name="SHIFT" /> i kliknij link</translation>
 <translation id="945383118875625837">Przeciągnij link na pasek zakładek</translation>
+<translation id="969054500339500113">Przenieś fokus na pasek menu</translation>
 <translation id="98120814841227350">Przejdź na koniec dokumentu</translation>
 </translationbundle>

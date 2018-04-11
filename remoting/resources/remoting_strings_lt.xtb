@@ -140,6 +140,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="4145029455188493639">Prisijungta kaip <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Trūksta kai kurių būtinų komponentų. Įsitikinkite, kad įdiegėte naujausios versijos programinę įrangą, ir bandykite dar kartą.</translation>
 <translation id="4156740505453712750">Jei norite apsaugoti prieigą prie šio kompiuterio, pasirinkite <ph name="BOLD_START" />bent šešių skaitmenų<ph name="BOLD_END" /> PIN kodą. Šio PIN kodo reikės prisijungiant iš kitos vietos.</translation>
+<translation id="4169432154993690151">Kad galėtumėte pasirinkti profilio nuotrauką, leiskite „Chrome“ nuotoliniam kompiuterio valdymui pasiekti fotoaparatą</translation>
 <translation id="4176825807642096119">Prieigos kodas</translation>
 <translation id="4207623512727273241">Paleiskite diegimo programą prieš tęsdami.</translation>
 <translation id="4227991223508142681">Prieglobos aprūpinimo paslaugų programa</translation>
@@ -257,6 +258,7 @@ AK</translation>
 <translation id="6748108480210050150">Nuo</translation>
 <translation id="677755392401385740">Pradėta naudotojo priegloba: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Žiūrėti / redaguoti</translation>
+<translation id="6913710942997637770">Kad galėtumėte pasirinkti profilio nuotrauką, leiskite „Chrome“ nuotoliniam kompiuterio valdymui pasiekti nuotraukas</translation>
 <translation id="6930242544192836755">Trukmė</translation>
 <translation id="6939719207673461467">Rodyti / slėpti klaviatūrą.</translation>
 <translation id="6944854424004126054">Atkurti langą</translation>

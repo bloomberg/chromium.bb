@@ -159,6 +159,7 @@
 <translation id="3789841737615482174">התקן</translation>
 <translation id="385051799172605136">חזור</translation>
 <translation id="3897092660631435901">תפריט</translation>
+<translation id="3915450441834151894">פרטי אתר</translation>
 <translation id="3928666092801078803">שילוב הנתונים שלי</translation>
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="3963231839620026525">כרטיסייה חדשה לגלישה בסתר</translation>
@@ -222,6 +223,7 @@
 <translation id="5197255632782567636">אינטרנט</translation>
 <translation id="5228579091201413441">הפעל סנכרון</translation>
 <translation id="5244474230056479698">מסנכרן ל-<ph name="EMAIL" /></translation>
+<translation id="527973086555161537">ניתן לפתוח כרטיסייה כדי לגלוש בפרטיות באינטרנט.</translation>
 <translation id="5300589172476337783">הצג</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
@@ -301,6 +303,7 @@
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
 <translation id="6464071786529933911">פתח בכרטיסיית גלישה בסתר חדשה</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
+<translation id="6528048372317642110">הורדת הקבצים זמינה</translation>
 <translation id="6541915733953096570">מהשעה האחרונה</translation>
 <translation id="6570040839871198836">מילוי אוטומטי של טפסים</translation>
 <translation id="6656103420185847513">ערוך תיקייה</translation>

@@ -137,6 +137,7 @@
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Осталась 1 минута}one{Осталась # минута}few{Осталось # минуты}many{Осталось # минут}other{Осталось # минуты}}</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> ТБ</translation>
+<translation id="7507604095951736240">Эмодзи</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="7814458197256864873">&amp;Копировать</translation>

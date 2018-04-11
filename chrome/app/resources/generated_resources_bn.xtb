@@ -2597,7 +2597,6 @@
 <translation id="5088534251099454936">RSA এনক্রিপশানের সাথে PKCS #1 SHA-512</translation>
 <translation id="509429900233858213">একটি ত্রুটি ঘটেছে৷</translation>
 <translation id="5094721898978802975">সহযোগী ন্যাটিভ অ্যাপ্লিকেশানগুলির সাথে যোগাযোগ করুন</translation>
-<translation id="5095987538085179331">সুরক্ষিত কন্টেন্ট চালানোর জন্য <ph name="URL" /> আপনার ডিভাইসকে স্বতন্ত্র ভাবে শনাক্ত করতে চায়</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />': <ph name="DETAILS" /> নেটওয়ার্কে সংযোগ করা গেল না </translation>
 <translation id="5099354524039520280">উপরে</translation>
 <translation id="5100114659116077956">সর্বশেষ বৈশিষ্ট্যগুলি আপনার কাছে নিয়ে আসতে, আপনার Chromebox আপডেট করতে হবে৷</translation>
@@ -4572,7 +4571,6 @@
 <translation id="8214489666383623925">ফাইল খুলুন...</translation>
 <translation id="8214962590150211830">এই ব্যক্তিকে সরান</translation>
 <translation id="8217399928341212914">একাধিক ফাইলের স্বয়ংক্রিয় ডাউনলোডগুলির অবরুদ্ধ করা অবিরত রাখুন</translation>
-<translation id="8222121761382682759">আনইনস্টল করুন...</translation>
 <translation id="8223479393428528563">অফলাইনে ব্যবহারের জন্য এই ফাইলগুলি সংরক্ষণ করতে, অনলাইনে ফিরে আসুন, ফাইলগুলিতে ডান-ক্লিক করুন এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটি নির্বাচন করুন৷</translation>
 <translation id="8226222018808695353">নিষিদ্ধ</translation>
 <translation id="8226619461731305576">অপেক্ষমাণ</translation>

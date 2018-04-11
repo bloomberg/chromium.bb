@@ -284,6 +284,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3661699943263275414">Tredjepartswebsites kan gemme og læse cookiedata</translation>
 <translation id="3662546969139119822">Der er ingen historik her</translation>
 <translation id="3672452749423051839">Forslag ved navigationsfejl</translation>
+<translation id="3692944402865947621"><ph name="FILE_NAME" /> blev ikke downloadet, da lagerplaceringen ikke er tilgængelig.</translation>
 <translation id="3712575778697986964">Vil du nulstille Datasparefunktion?</translation>
 <translation id="3714981814255182093">Åbn søgefeltet</translation>
 <translation id="3716182511346448902">Denne side anvender for meget hukommelse, så Chrome har sat den på pause.</translation>
@@ -320,6 +321,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4084682180776658562">Bogmærke</translation>
+<translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />leveret af Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB er downloadet</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>
 <translation id="4095146165863963773">Vil du slette appdata?</translation>
@@ -369,6 +371,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="4550003330909367850">Indstil en skærmlås på denne enhed for at se eller kopiere din adgangkode her.</translation>
 <translation id="4558311620361989323">Genveje på websider</translation>
 <translation id="4565377596337484307">Skjul adgangskode</translation>
+<translation id="4570913071927164677">Oplysninger</translation>
 <translation id="4572422548854449519">Log ind på administreret konto</translation>
 <translation id="4581964774250883625">Du er nu i inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{For # minut siden}one{For # minut siden}other{For # minutter siden}}</translation>
@@ -545,6 +548,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="60923314841986378"><ph name="HOURS" /> timer tilbage</translation>
 <translation id="60924377787140961">Der vises snart flere artikler. Hav en god eftermiddag!</translation>
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
+<translation id="6111020039983847643">dataforbrug</translation>
 <translation id="6112702117600201073">Opdaterer siden</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6138140242378429169">Gør siden mobilvenlig</translation>
@@ -697,6 +701,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="748127970106343339">Bekræft sletning af loginoplysningerne for enheden</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Opdateret <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">databesparelse</translation>
 <translation id="7498271377022651285">Vent…</translation>
 <translation id="7514365320538308">Download</translation>
 <translation id="751961395872307827">Der kunne ikke oprettes forbindelse til websitet</translation>

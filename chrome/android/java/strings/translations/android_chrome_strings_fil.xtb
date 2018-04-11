@@ -284,6 +284,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="3661699943263275414">Maaaring mag-save at magbasa ng data ng cookie ang mga third-party na website</translation>
 <translation id="3662546969139119822">Walang history rito</translation>
 <translation id="3672452749423051839">Mga suhestyon para sa error sa pag-navigate</translation>
+<translation id="3692944402865947621">Hindi na-download ang <ph name="FILE_NAME" /> dahil hindi maabot ang lokasyon ng storage.</translation>
 <translation id="3712575778697986964">I-reset ang Data Saver?</translation>
 <translation id="3714981814255182093">Buksan ang Bar sa Paghahanap</translation>
 <translation id="3716182511346448902">Masyadong malaki ang ginagamit na memory ng page na ito kaya na-pause ito ng Chrome.</translation>
@@ -320,6 +321,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Impormasyong legal</translation>
 <translation id="4084682180776658562">Bookmark</translation>
+<translation id="4084712963632273211">Mula sa <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />ihinatid ng Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB na mga na-download</translation>
 <translation id="4089831646916293264">Maaaring makasagabal ang feature na ito sa pag-access ng mga premium na data service mula sa iyong carrier.</translation>
 <translation id="4095146165863963773">I-delete ang data ng app?</translation>
@@ -369,6 +371,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4550003330909367850">Upang tingnan o kopyahin ang iyong password dito, magtakda ng lock ng screen sa device na ito.</translation>
 <translation id="4558311620361989323">Mga shortcut ng webpage</translation>
 <translation id="4565377596337484307">Itago ang password</translation>
+<translation id="4570913071927164677">Mga Detalye</translation>
 <translation id="4572422548854449519">Mag-sign in sa pinamamahalaang account</translation>
 <translation id="4581964774250883625">Naging incognito ka.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto ang nakalipas}one{# minuto ang nakalipas}other{# na minuto ang nakalipas}}</translation>
@@ -545,6 +548,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="60923314841986378"><ph name="HOURS" /> (na) oras na lang ang natitira</translation>
 <translation id="60924377787140961">Marami pang artikulo ang malapit nang lumabas. I-enjoy ang iyong hapon!</translation>
 <translation id="6108923351542677676">Kasalukuyang sine-setup…</translation>
+<translation id="6111020039983847643">nagamit na data</translation>
 <translation id="6112702117600201073">Nire-refresh ang page</translation>
 <translation id="6127379762771434464">Inalis ang item</translation>
 <translation id="6138140242378429169">Gawing pang-mobile ang page</translation>
@@ -697,6 +701,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="748127970106343339">Kumpirmahin ang pagde-delete ng kredensyal ng device</translation>
 <translation id="7481312909269577407">Sumulong</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Na-update <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">natipid na data</translation>
 <translation id="7498271377022651285">Mangyaring maghintay…</translation>
 <translation id="7514365320538308">I-download</translation>
 <translation id="751961395872307827">Hindi makakonekta sa site</translation>

@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
 <translation id="1099282607296956954">Attiva isolamento sito per ogni sito</translation>
 <translation id="1117535567637097036">I gestori di protocollo impostati tramite questa norma non sono utilizzati durante la gestione degli intent di Android.</translation>
+<translation id="1118093128235245168">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo USB collegato</translation>
 <translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
 
       Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--disk-cache-dir". Per evitare perdite di dati o altri errori imprevisti, la norma non deve essere impostata su una directory radice del volume o su una directory utilizzata per altri scopi, poiché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
@@ -69,6 +70,9 @@
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
+<translation id="1216758672198492382">Ti permette di stabilire se consentire o meno ai siti web di accedere ai dispositivi USB collegati. L'accesso può essere bloccato completamente oppure l'utente può ricevere una richiesta ogni volta che un sito web vuole accedere ai dispositivi USB collegati.
+
+          Se questa norma non viene impostata, verrà utilizzato il valore "3", che potrà essere modificato dall'utente.</translation>
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
       L'impostazione predefinita è RollbackDisabled.</translation>
@@ -154,11 +158,6 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Questa impostazione è obsoleta. Utilizza invece SafeBrowsingExtendedReportingEnabled. L'attivazione o la disattivazione di SafeBrowsingExtendedReportingEnabled equivale a impostare SafeBrowsingExtendedReportingOptInAllowed su false.
-
-      L'impostazione di questa norma su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni di sistema e i contenuti della pagina. Se questa impostazione viene configurata su true o non viene configurata, gli utenti potranno inviare alcune informazioni di sistema e i contenuti della pagina a Navigazione sicura per contribuire a rilevare app e siti pericolosi.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="1522425503138261032">Consenti ai siti di monitorare la posizione fisica degli utenti</translation>
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
@@ -306,6 +305,17 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
+<translation id="2132732175597591362">Consente di definire la whitelist di pattern URL su cui la riproduzione automatica sarà sempre attiva.
+
+      Se viene attivata la riproduzione automatica, i video possono essere riprodotti automaticamente (senza il consenso dell'utente) con i contenuti audio in <ph name="PRODUCT_NAME" />.
+
+      Il formato dei pattern URL deve essere quello indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Se la norma AutoplayAllowed viene impostata su True, questa norma non avrà effetto.
+
+      Se la norma AutoplayAllowed viene impostata su False, sarà consentita la riproduzione dei pattern URL definiti in questa norma.
+
+      Tieni presente che se questa norma viene cambiata mentre <ph name="PRODUCT_NAME" /> è in esecuzione, la norma viene applicata soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
 <translation id="2137064848866899664">Se la norma viene impostata, ogni schermo viene ruotato secondo l'orientamento specificato, a ogni riavvio e la prima volta che viene collegato in seguito alla modifica della norma. Dopo aver eseguito l'accesso, gli utenti possono modificare la rotazione dello schermo tramite la pagina delle impostazioni ma, al successivo riavvio, la loro impostazione viene sostituita dal valore della norma.
 
@@ -565,6 +575,12 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2801230735743888564">Consente di attivare il gioco del dinosauro quando il dispositivo è offline.
 
       Se questa norma viene impostata su False, gli utenti non potranno giocare al gioco del dinosauro quando il dispositivo è offline. Se viene impostata su True, gli utenti potranno giocare. Se la norma non viene impostata, gli utenti non potranno giocare al gioco del dinosauro su sistemi Chrome OS registrati, ma potranno giocarvi in altre circostanze.</translation>
+<translation id="2802085784857530815">Ti consente di stabilire se permettere o meno agli utenti di accedere a stampanti non aziendali
+
+      Se la norma viene impostata su True o non viene impostata, gli utenti potranno aggiungere, configurare e usare le proprie stampanti native.
+
+      Se la norma viene impostata su False, gli utenti non potranno aggiungere e configurare le proprie stampanti native. Non potranno neanche stampare con eventuali stampanti native configurate in precedenza.
+      </translation>
 <translation id="2805707493867224476">Consenti la visualizzazione di popup in tutti i siti</translation>
 <translation id="2808013382476173118">Consente di attivare l'utilizzo di server STUN quando i client remoti tentano di stabilire una connessione con questo computer.
 
@@ -715,6 +731,7 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di disattivazione dello schermo (se impostato) e al ritardo di inattività.</translation>
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
 <translation id="3273221114520206906">Impostazione JavaScript predefinita</translation>
+<translation id="3284094172359247914">Controlla l'utilizzo dell'API WebUSB</translation>
 <translation id="3288595667065905535">Canale di rilascio</translation>
 <translation id="3292147213643666827">Consente a <ph name="PRODUCT_NAME" /> di fungere da proxy tra <ph name="CLOUD_PRINT_NAME" /> e le stampanti preesistenti collegate al computer.
 
@@ -794,6 +811,7 @@ Questa norma è facoltativa. Se non viene impostata, non verrà utilizzata la ri
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
 <translation id="3512226956150568738">Se il modello del dispositivo client supportava già ARC prima che fosse necessaria la migrazione a ext4 per eseguire ARC e se la norma ArcEnabled è impostata su true, questa opzione si comporterà come AskUser (valore 3). In tutti gli altri casi (se il modello del dispositivo non supportava ARC in precedenza o se la norma ArcEnabled è impostata su false), questo valore equivale a DisallowArc (valore 0).</translation>
+<translation id="3524204464536655762">Non consentire ai siti di richiedere l'accesso ai dispositivi USB tramite l'API WebUSB</translation>
 <translation id="3528000905991875314">Attiva pagine di errore sostitutive</translation>
 <translation id="3547954654003013442">Impostazioni proxy</translation>
 <translation id="3577251398714997599">Impostazione annunci per i siti con annunci invasivi</translation>
@@ -802,11 +820,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3646859102161347133">Impostazione tipo di ingrandimento dello schermo</translation>
 <translation id="3653237928288822292">Icona del provider di ricerca predefinito</translation>
 <translation id="3660562134618097814">Trasferisci i cookie dell'IdP SAML durante l'accesso</translation>
-<translation id="3687282113223807271">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
-
-      Se questa impostazione viene disattivata o non viene configurata, gli utenti possono scegliere di visitare il sito segnalato dopo che è stato mostrato l'avviso.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="3709266154059827597">Configura blacklist per l'installazione delle estensioni</translation>
 <translation id="3711895659073496551">Sospensione</translation>
 <translation id="3736879847913515635">Attiva la funzione Aggiungi persona in Gestione utenti</translation>
@@ -898,6 +911,9 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Consente di elencare le estensioni che vengono installate automaticamente per gli utenti Demo di dispositivi in modalità retail. Queste estensioni vengono salvate sul dispositivo e possono essere installate offline, dopo l'installazione.
 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
+<translation id="3873159954366380945">Ti consente di impostare il periodo di tempo durante il quale mostrare le notifiche relative al riavvio di <ph name="PRODUCT_NAME" /> per applicare un aggiornamento in attesa.
+
+      È possibile usare l'impostazione di questa norma per stabilire in millisecondi per quanto tempo un utente viene progressivamente informato della necessità di riavviare <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per applicare un aggiornamento. Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento in base all'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se non viene definito un periodo, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per tutte le altre piattaforme.</translation>
 <translation id="3877517141460819966">Modalità di autenticazione a due fattori integrata</translation>
 <translation id="388237772682176890">Questa norma è stata ritirata in M53 e rimossa in M54 perché è stato rimosso il supporto di SPDY/3.1.
 
@@ -1231,6 +1247,14 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="489803897780524242">Parametro di controllo sostituzione termini di ricerca per fornitore ricerca predefinito</translation>
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
+<translation id="4899802251198446659">Ti consente di stabilire se permettere o meno la riproduzione automatica dei video (senza il consenso dell'utente) con i contenuti audio in <ph name="PRODUCT_NAME" />.
+
+      Se la norma viene impostata su True, in <ph name="PRODUCT_NAME" /> è consentita la riproduzione automatica dei contenuti multimediali.
+      Se la norma viene impostata su False, in <ph name="PRODUCT_NAME" /> non è consentita la riproduzione automatica dei contenuti multimediali. È possibile usare la norma AutoplayWhitelist in sostituzione a questa norma per alcuni pattern URL.
+      Per impostazione predefinita, la riproduzione automatica di contenuti multimediali in <ph name="PRODUCT_NAME" /> non è consentita. È possibile usare la norma AutoplayWhitelist in sostituzione a questa norma per alcuni pattern URL.
+
+      Tieni presente che se questa norma viene cambiata mentre <ph name="PRODUCT_NAME" /> è in esecuzione, la norma viene applicata soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.
+      </translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4923806312383904642">Consenti a WebDriver di eseguire l'override delle norme non compatibili</translation>
@@ -1265,19 +1289,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Tieni presente che le password potrebbero durare più a lungo rispetto ai giorni specificati se il client è offline per un periodo più lungo di tempo.</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
-<translation id="5106504910236139235">Attiva i rapporti estesi su Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
-
-      I rapporti estesi inviano ai server di Google alcune informazioni di sistema e i contenuti della pagina per contribuire a rilevare app e siti pericolosi.
-
-      Se l'impostazione è configurata su true, i rapporti verranno creati e inviati a seconda delle necessità (ad esempio, quando viene mostrato un annuncio interstitial di sicurezza).
-
-      Se l'impostazione è configurata su false, i rapporti non vengono inviati.
-
-      Se la norma è impostata su true o false, l'utente non potrà modificare l'impostazione.
-
-      Se la norma non viene impostata, l'utente potrà modificare l'impostazione e decidere se inviare rapporti o meno.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="5108031557082757679">Stampanti aziendali associate ai dispositivi disattivate</translation>
 <translation id="5130288486815037971">Attiva o meno i pacchetti di crittografia RC4 in TLS</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
@@ -1470,19 +1481,6 @@ Se questa norma viene impostata, consente di specificare il periodo di tempo per
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi.</translation>
-<translation id="5784370777704871674">Abilita la funzione Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
-
-      Se attivi questa impostazione, la Navigazione sicura è sempre attiva.
-
-      Se la disattivi, la Navigazione sicura non è mai attiva.
-
-      Se attivi o disattivi l'impostazione, gli utenti non possono modificare o sostituire l'impostazione "Attiva protezione contro phishing e malware" in <ph name="PRODUCT_NAME" />.
-
-      Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.
-
-      Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>
 <translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
 <translation id="5815129011704381141">Riavvia automaticamente dopo l'aggiornamento</translation>
@@ -1667,11 +1665,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6281043242780654992">Consente di configurare le norme per i messaggi nativi. Gli host di messaggi nativi non autorizzati non saranno consentiti se non vengono aggiunti alla whitelist.</translation>
 <translation id="6282799760374509080">Consenti o nega acquisizione audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Se questa norma non viene impostata o viene impostata su True, consente gli aggiornamenti di tutti i componenti di <ph name="PRODUCT_NAME" />.
-
-      Se viene impostata su False, gli aggiornamenti dei componenti vengono disattivati. Tuttavia, alcuni componenti sono esclusi da questa norma: gli aggiornamenti dei componenti che non contengono codice eseguibile, che non alterano in modo significativo il comportamento del browser o che sono fondamentali per la sicurezza non vengono disattivati.
-      Esempi di tali componenti sono gli elenchi di revoche di certificati e i dati di Navigazione sicura.
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="6310223829319187614">Consente il completamento automatico del nome di dominio durante l'accesso dell'utente</translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>

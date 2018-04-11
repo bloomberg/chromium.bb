@@ -369,6 +369,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4176463684765177261">Disabilitato</translation>
 <translation id="4188530942454211480">Frase precedente</translation>
 <translation id="4191918948604314587">Un pulsante</translation>
+<translation id="419265409837491189">Consente di andare alla colonna precedente</translation>
 <translation id="4202186506458631436">Sposta a destra</translation>
 <translation id="4206289001967551965">Sei all'interno della tabella</translation>
 <translation id="4209770650650780359">Premi la freccia su o giù per visualizzare i completamenti automatici.</translation>
@@ -419,6 +420,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4660783501463101648">Rimozione di Classic. La funzione di attivazione/disattivazione della tastiera per passare nuovamente a ChromeVox Classic è stata rimossa.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Consente di andare alla colonna successiva</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Punto di riferimento precedente</translation>
 <translation id="4696413482802371445">Nessuna intestazione livello 5 successiva.</translation>
@@ -434,6 +436,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4826415162591436065">Spostati avanti</translation>
 <translation id="4826604887384865800">Collegamento successivo</translation>
 <translation id="4827410568042294688">non selezionato</translation>
+<translation id="4839925464551908214">Consente di andare alla riga precedente</translation>
 <translation id="4842108708071771135">Nessuna citazione lunga successiva.</translation>
 <translation id="4844625982113518938">Premi un tasto qualsiasi per conoscerne il nome. Premi CTRL + W per chiudere la modalità di apprendimento.</translation>
 <translation id="4846428657345567687">Un benvenuto in ChromeVox!</translation>
@@ -788,6 +791,7 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="8186185314313222077">attiva/disattiva schermo intero</translation>
 <translation id="8199231515320852133">Pronuncia le intestazioni della cella corrente</translation>
 <translation id="820417203470636242">Cella vuota.</translation>
+<translation id="820469951249669083">Consente di andare alla riga successiva</translation>
 <translation id="8215202828671303819">Selezione multipla</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Passa a elemento attivabile precedente</translation>

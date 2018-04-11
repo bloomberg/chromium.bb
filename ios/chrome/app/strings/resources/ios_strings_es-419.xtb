@@ -159,6 +159,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3897092660631435901">Menú</translation>
+<translation id="3915450441834151894">Información del sitio</translation>
 <translation id="3928666092801078803">Combinar mis datos</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="3963231839620026525">Nueva pestaña de incógnito</translation>
@@ -222,6 +223,7 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Habilitar sincronización</translation>
 <translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Abre una pestaña para navegar en la Web de forma privada.</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -301,6 +303,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6464071786529933911">Abrir en una pestaña de incógnito nueva</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
+<translation id="6528048372317642110">La descarga del archivo está disponible</translation>
 <translation id="6541915733953096570">La última hora</translation>
 <translation id="6570040839871198836">Autocompletar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>

@@ -159,6 +159,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="3789841737615482174">Installer</translation>
 <translation id="385051799172605136">Tilbake</translation>
 <translation id="3897092660631435901">Meny</translation>
+<translation id="3915450441834151894">Opplysninger om nettstedet</translation>
 <translation id="3928666092801078803">Kombiner dataene mine</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3963231839620026525">Ny inkognitofane</translation>
@@ -222,6 +223,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering. Skriv den inn
 <translation id="5197255632782567636">Internett</translation>
 <translation id="5228579091201413441">Slå på synkronisering</translation>
 <translation id="5244474230056479698">Synkroniserer til <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Åpne en fane for å surfe privat på nettet.</translation>
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5327248766486351172">Navn</translation>
@@ -301,6 +303,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="6445981559479772097">Melding sendt.</translation>
 <translation id="6464071786529933911">Åpne i en ny inkognitofane</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer slettet</translation>
+<translation id="6528048372317642110">Filnedlasting er tilgjengelig</translation>
 <translation id="6541915733953096570">Den siste timen</translation>
 <translation id="6570040839871198836">Fyll ut skjemaer automatisk</translation>
 <translation id="6656103420185847513">Mapperedigering</translation>

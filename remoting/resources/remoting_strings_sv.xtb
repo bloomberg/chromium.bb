@@ -140,6 +140,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="4145029455188493639">Inloggad som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Vissa obligatoriska komponenter saknas. Kontrollera att du har installerat den senaste versionen av programvaran och försök igen.</translation>
 <translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START" />minst sex siffror<ph name="BOLD_END" />. PIN-koden krävs när du ansluter från en annan plats.</translation>
+<translation id="4169432154993690151">Ge Chrome Remote Desktop åtkomst till kameran om du vill välja profilbild</translation>
 <translation id="4176825807642096119">Åtkomstkod</translation>
 <translation id="4207623512727273241">Kör installationsprogrammet innan du fortsätter.</translation>
 <translation id="4227991223508142681">Verktyg för värdprovisionering</translation>
@@ -259,6 +260,7 @@ dator</translation>
 <translation id="6748108480210050150">Från</translation>
 <translation id="677755392401385740">Värd startad för användaren: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Visa/redigera</translation>
+<translation id="6913710942997637770">Ge Chrome Remote Desktop åtkomst till dina foton om du vill välja en profilbild</translation>
 <translation id="6930242544192836755">Varaktighet</translation>
 <translation id="6939719207673461467">Visa/dölj tangentbordet.</translation>
 <translation id="6944854424004126054">Återställ fönstret</translation>

@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="1099282607296956954">Activer l'isolation des sites pour tous les sites</translation>
 <translation id="1117535567637097036">Les gestionnaires de protocoles définis par cette règle ne sont pas utilisés pour gérer les intents Android.</translation>
+<translation id="1118093128235245168">Autoriser les sites à demander à l'utilisateur d'accorder l'accès à un appareil USB connecté</translation>
 <translation id="1128903365609589950">Cette règle permet de configurer le répertoire utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers mis en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilisera le répertoire fourni, que l'utilisateur ait ou non spécifié l'indicateur "--disk-cache-dir". Pour éviter la perte de données ou d'autres erreurs inattendues, ne définissez pas cette règle sur le répertoire racine d'un volume ni sur un répertoire utilisé à d'autres fins, car <ph name="PRODUCT_NAME" /> pourra gérer son contenu.
@@ -71,6 +72,9 @@
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
       est de 3 heures. Le délai minimal autorisé est de 60 secondes.</translation>
 <translation id="1204263402976895730">Imprimantes d'entreprise activées</translation>
+<translation id="1216758672198492382">Permet de définir si les sites Web sont autorisés à accéder aux appareils USB connectés. Soit l'accès est complètement bloqué, soit l'utilisateur reçoit un message chaque fois qu'un site Web souhaite accéder aux appareils USB connectés.
+
+          Si cette règle n'est pas configurée, la valeur "3" est utilisée et peut être modifiée par l'utilisateur.</translation>
 <translation id="1219695476179627719">Spécifie si la version définie par <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> doit être rétablie sur l'appareil s'il exécute une version ultérieure.
 
       La valeur par défaut est RollbackDisabled.</translation>
@@ -159,11 +163,6 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Attestation à distance</translation>
 <translation id="1509692106376861764">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Cette règle est obsolète. (Utilisez à la place celle intitulée "SafeBrowsingExtendedReportingEnabled". L'activation ou la désactivation de cette dernière équivaut à définir "SafeBrowsingExtendedReportingOptInAllowed" sur "False".)
-
-      Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. En revanche, si cette règle est définie sur "True" ou si elle n'est pas configurée, les utilisateurs sont autorisés à envoyer des informations système et le contenu de pages au service de navigation sécurisée afin de contribuer à la détection des applications et des sites dangereux.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Autoriser les sites à suivre la position géographique des utilisateurs</translation>
 <translation id="152657506688053119">Liste d'URL alternatives pour le moteur de recherche par défaut</translation>
 <translation id="1530812829012954197">Toujours rendre les formats d'URL suivants dans le navigateur hôte</translation>
@@ -326,6 +325,17 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
+<translation id="2132732175597591362">Permet de contrôler la lecture automatique pour tous les formats d'URL de la liste blanche.
+
+      Si la lecture automatique est activée, les vidéos et leur contenu audio pourront être lus automatiquement (sans demander l'autorisation de l'utilisateur) dans <ph name="PRODUCT_NAME" />.
+
+      Un format d'URL doit correspondre aux critères mentionnés sur cette page : https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Si la règle AutoplayAllowed est définie sur "True", cette règle sera sans effet.
+
+      Si la règle AutoplayAllowed est définie sur "False", tous les formats d'URL définis par cette règle bénéficieront de la lecture automatique.
+
+      Notez que si cette règle est modifiée pendant que <ph name="PRODUCT_NAME" /> est en cours d'utilisation, elle ne s'applique qu'aux onglets ouverts après cette modification. Il est donc possible que les autres onglets appliquent encore l'ancien paramètre.</translation>
 <translation id="2134437727173969994">Autoriser le verrouillage de l'écran</translation>
 <translation id="2137064848866899664">Si cette règle est définie, chaque écran pivote en fonction de
       l'orientation spécifiée à chaque redémarrage et lors de sa première
@@ -615,6 +625,12 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2801230735743888564">Autoriser les utilisateurs à jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté.
 
 Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer au jeu Easter Egg du dinosaure lorsque l'appareil est déconnecté. Si ce paramètre est défini sur "True", les utilisateurs sont autorisés à jouer au jeu des dinosaures. Si cette règle n'est pas définie, les utilisateurs ne sont pas autorisés à jouer au jeu Easter Egg du dinosaure sur les appareils équipés de Chrome OS et enregistrés, mais ils peuvent y jouer dans d'autres circonstances.</translation>
+<translation id="2802085784857530815">Permet de contrôler si les utilisateurs peuvent accéder aux imprimantes n'appartenant pas à l'entreprise.
+
+      Si cette règle est définie sur "True", ou n'est pas configurée, les utilisateurs pourront ajouter et configurer leurs propres imprimantes en natif, et les utiliser pour lancer des impressions.
+
+      Si cette règle est définie sur "False", les utilisateurs ne pourront pas ajouter ni configurer leurs propres imprimantes en natif. Ils ne pourront pas non plus utiliser d'imprimante préalablement configurée en natif pour lancer des impressions.
+      </translation>
 <translation id="2805707493867224476">Autoriser tous les sites à afficher des fenêtres pop-up</translation>
 <translation id="2808013382476173118">Permet l'utilisation de serveurs STUN lorsque les clients distants tentent d'établir une connexion avec ce poste.
 
@@ -777,6 +793,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
 <translation id="3264793472749429012">Codages du moteur de recherche par défaut</translation>
 <translation id="3273221114520206906">Paramètre JavaScript par défaut</translation>
+<translation id="3284094172359247914">Contrôler l'utilisation de l'API WebUSB</translation>
 <translation id="3288595667065905535">Version disponible</translation>
 <translation id="3292147213643666827">Permet à <ph name="PRODUCT_NAME" /> de faire office de proxy entre <ph name="CLOUD_PRINT_NAME" /> et les imprimantes existantes connectées à la machine.
 
@@ -861,6 +878,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
 <translation id="3512226956150568738">Si le modèle de l'appareil client était déjà compatible avec ARC avant que la migration vers ext4 soit nécessaire pour exécuter ARC, et si la règle "ArcEnabled" est définie sur "true", cette option se comportera comme "AskUser" (valeur 3). Dans tous les autres cas (si le modèle de l'appareil n'était pas compatible avec ARC auparavant, ou si la règle "ArcEnabled" est définie sur "false"), cette valeur est équivalente à "DisallowArc" (valeur 0).</translation>
+<translation id="3524204464536655762">Interdire à tous les sites de demander l'accès à des appareils USB via l'API WebUSB</translation>
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3577251398714997599">Paramètre des annonces pour les sites présentant des annonces intrusives</translation>
@@ -869,11 +887,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3646859102161347133">Définir le type de loupe</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
 <translation id="3660562134618097814">Transférer des cookies de fournisseurs d'identité SAML lors de la connexion</translation>
-<translation id="3687282113223807271">Dans le cadre du service de navigation sécurisée, une page d'avertissement est affichée lorsque les utilisateurs essaient d'accéder à des sites potentiellement malveillants. L'activation de ce paramètre empêche les utilisateurs de poursuivre leur navigation sur ces sites lorsqu'un tel message s'affiche.
-
-      En cas de désactivation ou de non-configuration de ce paramètre, les utilisateurs ont la possibilité d'accéder aux sites potentiellement malveillants après l'affichage de l'avertissement.
-
-      Consultez la page https://developers.google.com/safe-browsing pour en savoir plus sur la navigation sécurisée.</translation>
 <translation id="3709266154059827597">Configurer la liste noire d'installation des extensions</translation>
 <translation id="3711895659073496551">Arrêter</translation>
 <translation id="3736879847913515635">Autoriser l'ajout de personnes dans le gestionnaire d'utilisateurs</translation>
@@ -976,6 +989,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
        Elle répertorie les extensions qui sont automatiquement installées pour l'utilisateur de la démonstration sur les appareils en mode "point de vente". Celles-ci sont enregistrées dans l'appareil. Elles peuvent être installées hors connexion, une fois l'installation terminée.
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
+<translation id="3873159954366380945">Permet de définir la période de notifications de relancement de <ph name="PRODUCT_NAME" /> pour l'application d'une mise à jour en attente.
+
+      Cette règle permet de contrôler la durée, en millisecondes, de la période durant laquelle un utilisateur est tenu informé que <ph name="PRODUCT_NAME" /> doit être relancé (ou que <ph name="PRODUCT_OS_NAME" /> doit être redémarré) en raison d'une mise à jour. Durant cette période, l'utilisateur recevra des notifications répétées l'informant de la nécessité d'une mise à jour, suivant la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Par défaut, la période définie est de 345 600 000 millisecondes (quatre jours) pour <ph name="PRODUCT_OS_NAME" /> et de 604 800 000 millisecondes (une semaine) pour toutes les autres plates-formes.</translation>
 <translation id="3877517141460819966">Mode d'authentification à deux facteurs intégré</translation>
 <translation id="388237772682176890">Cette règle a été abandonnée dans la version M53 et supprimée dans la version M54, car le protocole SPDY 3.1 n'est plus pris en charge.
 
@@ -1328,6 +1344,14 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="489803897780524242">Paramètre contrôlant le positionnement des termes de recherche pour le moteur de recherche par défaut</translation>
 <translation id="4899708173828500852">Activer la navigation sécurisée</translation>
+<translation id="4899802251198446659">Permet de contrôler si les vidéos et leur contenu audio peuvent être lus automatiquement (sans demander l'autorisation de l'utilisateur) dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à lire automatiquement du contenu multimédia.
+      Si cette règle est définie sur "False", <ph name="PRODUCT_NAME" /> n'est pas autorisé à lire automatiquement du contenu multimédia. La règle AutoplayWhitelist peut permettre d'ignorer ce paramètre pour certains formats d'URL.
+      Par défaut, <ph name="PRODUCT_NAME" /> n'est pas autorisé à lire automatiquement du contenu multimédia. La règle AutoplayWhitelist peut permettre d'ignorer ce paramètre pour certains formats d'URL.
+
+      Notez que si cette règle est modifiée pendant que <ph name="PRODUCT_NAME" /> est en cours d'utilisation, elle ne s'applique qu'aux onglets ouverts après cette modification. Il est donc possible que les autres onglets appliquent encore l'ancien paramètre.
+      </translation>
 <translation id="4906194810004762807">Fréquence d'actualisation des règles de l'appareil</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4923806312383904642">Autoriser WebDriver à ignorer les règles incompatibles</translation>
@@ -1366,19 +1390,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Notez que la validité des mots de passe peut dépasser le délai spécifié en cas de mise hors connexion du client pendant une période plus longue.</translation>
 <translation id="5105313908130842249">Délai de verrouillage de l'écran (batterie)</translation>
-<translation id="5106504910236139235">Active la création de rapports détaillées dans le cadre de la navigation sécurisée dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier cette règle.
-
-      Ces rapports détaillés fournissent aux serveurs Google des informations système et du contenu de pages qui aident à détecter les applications et les sites dangereux.
-
-      Si cette règle est définie sur "True", des rapports sont créés et envoyés si nécessaire (ex. : lorsqu'un interstitiel de sécurité est affiché).
-
-      Si cette règle est définie sur "False", aucun rapport n'est envoyé.
-
-      Si cette règle est définie sur "True" ou "False", l'utilisateur ne peut pas modifier le paramètre correspondant.
-
-      Si cette règle n'est pas définie, l'utilisateur peut la configurer afin de spécifier si des rapports doivent être envoyés ou non.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Imprimantes d'appareils d'entreprise désactivées</translation>
 <translation id="5130288486815037971">Activation ou non des suites de chiffrement RC4 dans TLS</translation>
 <translation id="5141670636904227950">Activer la loupe plein écran sur l'écran de connexion</translation>
@@ -1600,19 +1611,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
                       Si cette règle n'est pas définie, une durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
-<translation id="5784370777704871674">Active la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Si vous activez ce paramètre, la navigation sécurisée est active en permanence.
-
-      Si vous désactivez ce paramètre, la navigation sécurisée n'est jamais active.
-
-      Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni remplacer le paramètre "Activer la protection contre le hameçonnage et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas configurée, la navigation sécurisée est activée, mais les utilisateurs peuvent modifier ce paramètre.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.
-
-      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Définir le nom à afficher pour les comptes locaux des appareils</translation>
 <translation id="5814301096961727113">Définir l'état par défaut des commentaires audio sur l'écran de connexion</translation>
 <translation id="5815129011704381141">Redémarrer automatiquement après une mise à jour</translation>
@@ -1813,11 +1811,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6281043242780654992">Cette règle permet de configurer le comportement de la messagerie native. Les hôtes de messagerie native qui figurent sur la liste noire ne sont pas autorisés tant qu'ils n'ont pas été ajoutés à la liste blanche.</translation>
 <translation id="6282799760374509080">Autoriser ou interdire la capture audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Active la mise à jour de tous les composants de <ph name="PRODUCT_NAME" /> en cas d'absence de réglage ou de réglage sur "True".
-
-      En cas de réglage sur "False", la mise à jour des composants est désactivée. Toutefois, certains composants échappent à cette règle : les mises à jour des composants sans code exécutable, qui n'affectent pas de façon significative le comportement du navigateur ou qui sont essentiels à la sécurité du navigateur ne seront pas désactivées.
-      Ces composants peuvent inclure les listes de révocation de certificats et les données de navigation sécurisée.
-      Consultez la page https://developers.google.com/safe-browsing pour en savoir plus sur la navigation sécurisée.</translation>
 <translation id="6310223829319187614">Activer la saisie automatique du nom de domaine lors de la connexion de l'utilisateur</translation>
 <translation id="6315673513957120120">Chrome affiche une page d'avertissement lorsque les utilisateurs naviguent vers des sites présentant des erreurs SSL. Par défaut, ou quand cette règle est définie sur "True", les utilisateurs sont autorisés à poursuivre leur navigation vers la page concernée.
       Définir cette règle sur "False" empêche les utilisateurs de poursuivre leur navigation au-delà de la page d'avertissement.</translation>
@@ -2689,6 +2682,15 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>
+<translation id="9123211093995421438">Spécifie le nombre minimal de versions intermédiaires <ph name="PRODUCT_OS_NAME" /> autorisées pour le rollback à partir de la version stable.
+
+      La valeur par défaut s'élève à 0 pour les particuliers et à 4 (environ la moitié d'un an) pour les appareils enregistrés par les entreprises.
+
+      La définition de cette règle empêche la protection contre le rollback de s'appliquer pour le nombre de versions intermédiaires spécifiées.
+
+      La sélection d'une valeur inférieure pour cette règle a un effet permanent : il n'est pas toujours possible de rétablir une version précédente, même en définissant une valeur supérieure.
+
+      Dans certains cas, les possibilités de rollback réelles dépendent également du modèle d'appareil et des correctifs de vulnérabilité essentiels.</translation>
 <translation id="913195841488580904">Bloquer l'accès à une liste d'URL</translation>
 <translation id="9135033364005346124">Activer le proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Une liste blanche permet de contrôler les modes de déverrouillage rapide qui peuvent être configurés et utilisés par l'utilisateur pour déverrouiller l'écran de verrouillage.

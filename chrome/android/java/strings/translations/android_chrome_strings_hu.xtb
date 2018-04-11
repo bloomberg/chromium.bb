@@ -284,6 +284,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="3661699943263275414">A hamardik felek webhelyei menthetik és olvashatják a cookie-adatokat</translation>
 <translation id="3662546969139119822">Nincsenek előzmények</translation>
 <translation id="3672452749423051839">Navigálási hibákkal kapcsolatos javaslatok</translation>
+<translation id="3692944402865947621">A(z) <ph name="FILE_NAME" /> fájl letöltése sikertelen, mert nem lehet elérni a tárhelyet.</translation>
 <translation id="3712575778697986964">Alaphelyzetbe állítja az Adatforgalom-csökkentőt?</translation>
 <translation id="3714981814255182093">A keresősáv megnyitása</translation>
 <translation id="3716182511346448902">Ez az oldal túl sok memóriát használ, ezért a Chrome szünetelteti.</translation>
@@ -320,6 +321,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4056223980640387499">Szépia</translation>
 <translation id="4062305924942672200">Jogi információk</translation>
 <translation id="4084682180776658562">Könyvjelző</translation>
+<translation id="4084712963632273211">A következőtől: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />megjelenítette a Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB letöltve</translation>
 <translation id="4089831646916293264">Ez a funkció megakadályozhatja a szolgáltatója által kínált prémium adatszolgáltatásokhoz való hozzáférést.</translation>
 <translation id="4095146165863963773">Törli az alkalmazásadatokat?</translation>
@@ -369,6 +371,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4550003330909367850">A jelszó megtekintéséhez vagy idemásolásához állítson be képernyőzárat az eszközön.</translation>
 <translation id="4558311620361989323">Weboldalakkal kapcsolatos billentyűparancsok</translation>
 <translation id="4565377596337484307">Jelszó elrejtése</translation>
+<translation id="4570913071927164677">Részletek</translation>
 <translation id="4572422548854449519">Bejelentkezés a kezelt fiókba</translation>
 <translation id="4581964774250883625">Ön inkognitómódra váltott.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# perce}other{# perce}}</translation>
@@ -545,6 +548,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="60923314841986378"><ph name="HOURS" /> óra van hátra</translation>
 <translation id="60924377787140961">Hamarosan további cikkek jelennek meg. Kellemes délutánt kívánunk!</translation>
 <translation id="6108923351542677676">A telepítés folyamatban...</translation>
+<translation id="6111020039983847643">használt adatmennyiség</translation>
 <translation id="6112702117600201073">Oldal frissítése</translation>
 <translation id="6127379762771434464">Elem eltávolítva</translation>
 <translation id="6138140242378429169">Az oldal mobilbaráttá alakítása</translation>
@@ -697,6 +701,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="748127970106343339">Eszközhitelesítési adatok törlésének megerősítése</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Frissítve: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">megtakarított adatmennyiség</translation>
 <translation id="7498271377022651285">Kérjük, várjon…</translation>
 <translation id="7514365320538308">Letöltés</translation>
 <translation id="751961395872307827">Nem lehet csatlakozni a webhelyhez</translation>

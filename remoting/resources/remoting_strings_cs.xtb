@@ -140,6 +140,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="4145029455188493639">Jste přihlášeni pomocí účtu <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Chybí některé povinné komponenty. Zkontrolujte, zda máte nainstalovanou nejnovější verzi softwaru, a zkuste to znovu.</translation>
 <translation id="4156740505453712750">Pokud chcete přístup k tomuto počítači zabezpečit, zvolte prosím kód PIN v délce <ph name="BOLD_START" />alespoň šesti číslic<ph name="BOLD_END" />. Tento kód PIN bude vyžadován při připojení z jiného místa.</translation>
+<translation id="4169432154993690151">Chcete-li zvolit profilovou fotku, povolte Vzdálené ploše Chrome přístup k fotoaparátu</translation>
 <translation id="4176825807642096119">Přístupový kód</translation>
 <translation id="4207623512727273241">Před pokračováním prosím spusťte stažený instalační program.</translation>
 <translation id="4227991223508142681">Nástroj pro správu hostitele</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Pro následujícího uživatele bylo zahájeno hostování: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Zobrazit/upravit</translation>
+<translation id="6913710942997637770">Chcete-li zvolit profilovou fotku, povolte Vzdálené ploše Chrome přístup k fotkám</translation>
 <translation id="6930242544192836755">Délka</translation>
 <translation id="6939719207673461467">Zobrazit či skrýt klávesnici</translation>
 <translation id="6944854424004126054">Obnovit okno</translation>

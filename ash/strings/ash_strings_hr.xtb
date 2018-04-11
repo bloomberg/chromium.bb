@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 adresa: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Administrator uređaja možda će moći nadzirati vašu aktivnost.</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja tvrtka</translation>
 <translation id="1746730358044914197">Načine unosa konfigurira administrator.</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Gumb dodatnog izbornika</translation>
 <translation id="1951012854035635156">Asistent</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Postavite jezik</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2012624427112548395">Ctrl + Search + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Pošalji</translation>
 <translation id="2675319268637823299">Administrator je onemogućio višestruku prijavu za <ph name="USER_EMAIL" />.
     Svi se korisnici moraju odjaviti za nastavak.</translation>
+<translation id="2696763960464195425">Vaši će podaci biti uklonjeni kada se odjavite. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Postavite tipkovnicu</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="7098389117866926363">USB-C uređaj (lijevi priključak sa stražnje strane)</translation>
 <translation id="7131634465328662194">Odjavit ćete se automatski.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
+<translation id="7165511658052620796">(TEMP) Prikaži prijavu u sučelje WebUI; ako je korištena programska pogreška datoteke (crbug.com) ili povratne informacije (alt+shift+i)</translation>
 <translation id="7168224885072002358">Vraćanje na staru razlučivost za <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje da biste upotrebljavali podijeljeni zaslon</translation>
@@ -329,6 +334,7 @@ Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je punjač male snage</translation>
 <translation id="8734991477317290293">Možda pokušava ukrasti podatke o pritisnutim tipkama</translation>
+<translation id="8809737090443522491">Unesite naziv aplikacije ili dokumenta</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Premještanje prozora na drugu radnu površinu može dovesti do neočekivanog ponašanja.
 

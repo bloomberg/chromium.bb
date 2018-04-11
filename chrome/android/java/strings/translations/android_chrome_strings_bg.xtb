@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">Уебсайтовете на трети страни могат да запазват „бисквитки“ и да четат данни от такива</translation>
 <translation id="3662546969139119822">Тук няма история</translation>
 <translation id="3672452749423051839">Предложения в случай на грешки при сърфиране</translation>
+<translation id="3692944402865947621">Изтеглянето на <ph name="FILE_NAME" /> не бе успешно, тъй като няма достъп до местоположението за съхранение.</translation>
 <translation id="3712575778697986964">Да се нулира ли статистиката от Икономия на данни?</translation>
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
 <translation id="3716182511346448902">Тази страница използва твърде много памет, така че Chrome я постави на пауза.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4062305924942672200">Правна информация</translation>
 <translation id="4084682180776658562">Отметка</translation>
+<translation id="4084712963632273211">От <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />показва се от Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Изтеглени файлове: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="4089831646916293264">Тази функция може да възпрепятства достъпа до предоставените от оператора ви платени услуги за данни.</translation>
 <translation id="4095146165863963773">Да се изтрият ли данните на приложенията?</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">За да видите или копирате паролата си тук, задайте опция за заключване на екрана на това устройство.</translation>
 <translation id="4558311620361989323">Комбинации за уеб страници</translation>
 <translation id="4565377596337484307">Скриване на паролата</translation>
+<translation id="4570913071927164677">Подробности</translation>
 <translation id="4572422548854449519">Вход в управляван профил</translation>
 <translation id="4581964774250883625">Преминахте в режим „инкогнито“.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{преди # минута}other{преди # минути}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378">Остават <ph name="HOURS" /> часа</translation>
 <translation id="60924377787140961">Скоро ще се покажат още статии. Приятен следобед!</translation>
 <translation id="6108923351542677676">Извършва се настройване…</translation>
+<translation id="6111020039983847643">използвани данни</translation>
 <translation id="6112702117600201073">Опресняване на страницата</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
 <translation id="6138140242378429169">Направете страницата удобна за мобилни устройства</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">Потвърждаване на изтриването на идентификационните данни на устройството</translation>
 <translation id="7481312909269577407">Препращане</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Актуализирано: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">спестени данни</translation>
 <translation id="7498271377022651285">Моля, изчакайте...</translation>
 <translation id="7514365320538308">Изтегляне</translation>
 <translation id="751961395872307827">Не може да се установи връзка със сайта</translation>

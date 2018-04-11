@@ -369,6 +369,7 @@
 <translation id="4176463684765177261">ปิดการใช้งานแล้ว</translation>
 <translation id="4188530942454211480">ประโยคก่อนหน้า</translation>
 <translation id="4191918948604314587">ปุ่ม</translation>
+<translation id="419265409837491189">ไปที่คอลัมน์ก่อนหน้า</translation>
 <translation id="4202186506458631436">เลื่อนไปทางขวา</translation>
 <translation id="4206289001967551965">ภายในตาราง</translation>
 <translation id="4209770650650780359">กดลูกศรขึ้นหรือลงเพื่อเติมคำอัตโนมัติ</translation>
@@ -419,6 +420,7 @@
 <translation id="4660783501463101648">นำเวอร์ชันคลาสสิกออกแล้ว ระบบนำการสลับแป้นพิมพ์เพื่อสลับกลับไปยัง ChromeVox คลาสสิกออกแล้ว</translation>
 <translation id="4661075872484491155">แผนผัง</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">ไปที่คอลัมน์ถัดไป</translation>
 <translation id="4688873778442829762">ตาราง</translation>
 <translation id="4693675773662933727">จุดสังเกตก่อนหน้า</translation>
 <translation id="4696413482802371445">ไม่มีส่วนหัวระดับ 5 ถัดไป</translation>
@@ -434,6 +436,7 @@
 <translation id="4826415162591436065">นำทางไปข้างหน้า</translation>
 <translation id="4826604887384865800">การข้ามถัดไป</translation>
 <translation id="4827410568042294688">ไม่ได้เลือก</translation>
+<translation id="4839925464551908214">ไปที่แถวก่อนหน้า</translation>
 <translation id="4842108708071771135">ไม่มีข้อความที่ยกมาถัดไป</translation>
 <translation id="4844625982113518938">กดปุ่มใดก็ได้เพื่อเรียนรู้ชื่อของปุ่มนั้น Ctrl+W จะปิดโหมดการเรียนรู้</translation>
 <translation id="4846428657345567687">ยินดีต้อนรับสู่ ChromeVox</translation>
@@ -788,6 +791,7 @@
 <translation id="8186185314313222077">เปลี่ยนเป็นเต็มหน้าจอ</translation>
 <translation id="8199231515320852133">แจ้งส่วนหัวของเซลล์ปัจจุบัน</translation>
 <translation id="820417203470636242">เซลล์ว่างเปล่า</translation>
+<translation id="820469951249669083">ไปที่แถวถัดไป</translation>
 <translation id="8215202828671303819">เลือกหลายรายการ</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">ข้ามไปยังรายการที่สามารถโฟกัสก่อนหน้า</translation>

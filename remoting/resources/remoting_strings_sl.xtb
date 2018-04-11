@@ -138,6 +138,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="4145029455188493639">Prijavljen kot <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Ni nekaterih zahtevanih delov. Preverite, ali imate najnovejšo različico programske opreme in poskusite znova.</translation>
 <translation id="4156740505453712750">Če želite zaščititi dostop do tega računalnika, izberite vsaj <ph name="BOLD_START" />šestmestni<ph name="BOLD_END" /> PIN. Ta bo zahtevan pri povezovanju z drugega mesta.</translation>
+<translation id="4169432154993690151">Če želite izbrati sliko profila, omogočite Oddaljenemu namizju za Chrome dostop do fotoaparata.</translation>
 <translation id="4176825807642096119">Koda za dostop</translation>
 <translation id="4207623512727273241">Zaženite namestitveni program, preden nadaljujete.</translation>
 <translation id="4227991223508142681">Orodje za pripravljanje gostitelja</translation>
@@ -245,6 +246,7 @@ PC</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Gostitelj zagnan za uporabnika: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Ogled/urejanje</translation>
+<translation id="6913710942997637770">Če želite izbrati sliko profila, omogočite Oddaljenemu namizju za Chrome dostop do fotografij.</translation>
 <translation id="6930242544192836755">Trajanje</translation>
 <translation id="6939719207673461467">Pokaži/skrij tipkovnico.</translation>
 <translation id="6944854424004126054">Obnovi okno</translation>

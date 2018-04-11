@@ -159,6 +159,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="3789841737615482174">Instal·la</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3897092660631435901">Menú</translation>
+<translation id="3915450441834151894">Informació del lloc web</translation>
 <translation id="3928666092801078803">Combina les meves dades</translation>
 <translation id="3950820424414687140">Inicia la sessió</translation>
 <translation id="3963231839620026525">Pestanya d'incògnit nova</translation>
@@ -222,6 +223,7 @@ Les vostres dades estan encriptades amb la vostra frase de contrasenya de sincro
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
 <translation id="5244474230056479698">S'està sincronitzant amb <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Obre una pestanya per navegar pel web de manera privada.</translation>
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5317780077021120954">Desa</translation>
 <translation id="5327248766486351172">Nom</translation>
@@ -301,6 +303,7 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="6445981559479772097">Missatge enviat.</translation>
 <translation id="6464071786529933911">Obre en una pestanya d'incògnit</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elements suprimits</translation>
+<translation id="6528048372317642110">La baixada de fitxers està disponible</translation>
 <translation id="6541915733953096570">L'última hora</translation>
 <translation id="6570040839871198836">Emplenament automàtic</translation>
 <translation id="6656103420185847513">Edició de la carpeta</translation>

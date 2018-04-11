@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">Сторонні веб-сайти можуть зберігати та розпізнавати дані файлів cookie</translation>
 <translation id="3662546969139119822">Немає історії</translation>
 <translation id="3672452749423051839">Пропозиції у випадку помилок навігації</translation>
+<translation id="3692944402865947621">Не вдалося завантажити файл <ph name="FILE_NAME" />. Місце зберігання недоступне.</translation>
 <translation id="3712575778697986964">Скинути дані Заощадження трафіку?</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
 <translation id="3716182511346448902">Ця сторінка займає велику кількість пам’яті, тому Chrome призупинив її роботу.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">Сепія</translation>
 <translation id="4062305924942672200">Правова інформація</translation>
 <translation id="4084682180776658562">Закладка</translation>
+<translation id="4084712963632273211">Видавець: <ph name="PUBLISHER_ORIGIN" />, <ph name="BEGIN_DEEMPHASIZED" />доставлено Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Завантажено <ph name="MEGABYTES" /> МБ</translation>
 <translation id="4089831646916293264">Ця функція може перешкоджати доступу до платних служб передавання даних, які надаються вашим оператором.</translation>
 <translation id="4095146165863963773">Видалити дані додатка?</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">Щоб переглядати та копіювати пароль тут, налаштуйте на цьому пристрої блокування екрана.</translation>
 <translation id="4558311620361989323">Комбінації клавіш для роботи з веб-сторінками</translation>
 <translation id="4565377596337484307">Сховати пароль</translation>
+<translation id="4570913071927164677">Деталі</translation>
 <translation id="4572422548854449519">Увійдіть у керований обліковий запис</translation>
 <translation id="4581964774250883625">Ви перейшли в режим анонімного перегляду.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# хвилину тому}one{# хвилину тому}few{# хвилини тому}many{# хвилин тому}other{# хвилини тому}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378">Залишилося <ph name="HOURS" /> год</translation>
 <translation id="60924377787140961">Згодом тут з’являться інші статті. Гарного дня.</translation>
 <translation id="6108923351542677676">Виконується налаштування…</translation>
+<translation id="6111020039983847643">використаний трафік</translation>
 <translation id="6112702117600201073">Оновлення сторінки</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6138140242378429169">Налаштувати сторінку для мобільних пристроїв</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">Підтвердити видалення облікових даних пристрою</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (оновлено: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">заощаджений трафік</translation>
 <translation id="7498271377022651285">Зачекайте…</translation>
 <translation id="7514365320538308">Завантажити</translation>
 <translation id="751961395872307827">Немає з’єднання із сайтом</translation>

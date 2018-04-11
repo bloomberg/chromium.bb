@@ -140,6 +140,7 @@
 <translation id="4145029455188493639">התחברת באמצעות חשבון <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">חלק מהרכיבים הדרושים חסרים. ודא שהתקנת את הגרסה העדכנית ביותר של התוכנה ונסה שוב.</translation>
 <translation id="4156740505453712750">‏כדי להגן על הגישה למחשב זה, בחר PIN באורך <ph name="BOLD_START" />שש ספרות לפחות<ph name="BOLD_END" />. PIN זה יידרש בעת התחברות ממיקום אחר.</translation>
+<translation id="4169432154993690151">‏כדי לבחור תמונת פרופיל, צריך לאפשר ל-Chrome Remote Desktop גישה למצלמה שלך</translation>
 <translation id="4176825807642096119">קוד גישה</translation>
 <translation id="4207623512727273241">הפעל את המתקין לפני שתמשיך.</translation>
 <translation id="4227991223508142681">Host Provisioning Utility</translation>
@@ -257,6 +258,7 @@ Chrome
 <translation id="6748108480210050150">מאת</translation>
 <translation id="677755392401385740">המארח הופעל עבור המשתמש: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">הצג/ערוך</translation>
+<translation id="6913710942997637770">‏כדי לבחור תמונת פרופיל, צריך לאפשר ל-Chrome Remote Desktop גישה לתמונות שלך</translation>
 <translation id="6930242544192836755">משך החיבור</translation>
 <translation id="6939719207673461467">הצג/הסתר מקלדת.</translation>
 <translation id="6944854424004126054">שחזר חלון</translation>

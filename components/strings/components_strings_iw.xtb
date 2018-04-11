@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="1005145902654145231">שינוי השם של הסשן נכשל.</translation>
 <translation id="1008557486741366299">לא עכשיו</translation>
 <translation id="1015730422737071372">ספק פרטים נוספים</translation>
 <translation id="1021110881106174305">כרטיסים מאושרים</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">מזהה יישות שגוי</translation>
 <translation id="1232569758102978740">ללא שם</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (מסונכרנים)</translation>
+<translation id="1256368399071562588">‏&lt;p&gt;אם האתר שמנסים להיכנס אליו לא נפתח, מומלץ לנסות לפתור את הבעיה בעזרת השלבים הבאים:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;בודקים אם יש שגיאות הקלדה בכתובת האתר.&lt;/li&gt;
+    &lt;li&gt;מוודאים שהחיבור לאינטרנט תקין.&lt;/li&gt;
+    &lt;li&gt;פונים אל בעלי האתר.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">רשימת קריאה</translation>
 <translation id="1264126396475825575">דוח הקריסה תועד ב-<ph name="CRASH_TIME" /> (עדיין לא העלית אותו או בחרת להתעלם ממנו)</translation>
 <translation id="1270502636509132238">שיטת איסוף</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
+<translation id="1292701964462482250">‏"יש תוכנה במחשב שלך שמונעת מ-Chrome להתחבר באופן מאובטח אל האינטרנט" (מחשבי Windows בלבד)</translation>
 <translation id="1294154142200295408">וריאציות של שורת פקודה</translation>
 <translation id="129553762522093515">נסגרו לאחרונה</translation>
 <translation id="129863573139666797">‏<ph name="BEGIN_LINK" />נסה לנקות את קובצי ה-Cookie<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">הסשן שנבחר לא קיים.</translation>
+<translation id="1323433172918577554">הצגת פריטים נוספים</translation>
 <translation id="1333989956347591814">הפעילות שלך <ph name="BEGIN_EMPHASIS" />עדיין עשויה להיות מוצגת<ph name="END_EMPHASIS" /> בפני:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />אתרים שאליהם נכנסת
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">האתר שאתה עומד לעבור אליו מכיל יישומים מסוכנים</translation>
 <translation id="1374468813861204354">הצעות</translation>
 <translation id="1375198122581997741">מידע על הגרסה</translation>
+<translation id="1376836354785490390">הצגת פחות פריטים</translation>
 <translation id="1377321085342047638">מספר כרטיס</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> לא שלח נתונים.</translation>
 <translation id="1407135791313364759">פתח הכל</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">הדפס</translation>
 <translation id="1484290072879560759">בחירת כתובת למשלוח</translation>
 <translation id="1506687042165942984">הצג עותק שמור (כלומר, ידוע שהוא עדכני) של הדף הזה.</translation>
+<translation id="1507202001669085618">‏&lt;p&gt;השגיאה הזו תוצג אם נעשה שימוש בפורטל Wi-Fi שבו צריך להיכנס לחשבון לפני התחברות לאינטרנט.&lt;/p&gt;
+    &lt;p&gt;כדי לתקן את השגיאה, יש ללחוץ על &lt;strong&gt;התחברות&lt;/strong&gt; בדף שמנסים לפתוח.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">יש צורך במספר טלפון</translation>
 <translation id="1517500485252541695">כרטיסי אשראי וחיוב שהסוחר מקבל</translation>
 <translation id="1519264250979466059">‏תאריך ה-Build</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">סינון</translation>
 <translation id="1916770123977586577">כדי להחיל על האתר את ההגדרות המעודכנות, טען מחדש את הדף</translation>
 <translation id="1919345977826869612">מודעות</translation>
+<translation id="1919367280705858090">עזרה לגבי הודעות שגיאה ספציפיות</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ללא}=1{אתר אחד}two{שני אתרים}many{# אתרים}other{# אתרים}}</translation>
 <translation id="1927235823738766038">כרטיסי אשראי וחיוב שהסוחר מקבל</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{ללא}=1{מאתר אחד }two{משני אתרים }many{מ-# אתרים }other{מ-# אתרים }}</translation>
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> חסום</translation>
+<translation id="3984550557525787191">שם הסשן כבר קיים.</translation>
 <translation id="3987940399970879459">‏פחות מ-‎1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{דף אינטרנט קרוב אחד}two{# דפי אינטרנט קרובים}many{# דפי אינטרנט קרובים}other{# דפי אינטרנט קרובים}}</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />לבדוק את תצורת האנטי-וירוס וחומת האש<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">קריסה</translation>
 <translation id="422022731706691852">תוקפים באתר <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להונות אותך כדי לגרום לך להתקין תוכנות שיפגעו בחוויית הגלישה שלך (למשל, על-ידי החלפת דף הבית או הצגת מודעות נוספות באתרים שתיכנס אליהם). <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">‏&lt;h4&gt;שלב ראשון: כניסה לפורטל&lt;/h4&gt;
+    &lt;p&gt;כדי להשתמש ברשתות Wi-Fi במקומות כמו בתי קפה ושדות תעופה, צריך להיכנס לפורטל ייעודי. כדי לראות את דף הכניסה צריך להיכנס לדף שהכתובת שלו מתחילה ב-&lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;עוברים לאתר כלשהו שהכתובת שלו מתחילה ב-&lt;code&gt;http://&lt;/code&gt;, כמו &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;בדף הכניסה שנפתח, מזינים את פרטי הכניסה כדי להשתמש באינטרנט.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;שלב שני: פתיחת הדף במצב גלישה בסתר (מחשבים בלבד)&lt;/h4&gt;
+    &lt;p&gt;פותחים את הדף שאליו רוצים להיכנס בחלון גלישה בסתר.&lt;/p&gt;
+    &lt;p&gt;אם הדף הנפתח, יש בעיה בתוסף של Chrome. כדי לפתור את השגיאה צריך להשבית את התוסף.&lt;/p&gt;
+    &lt;h4&gt;שלב שלישי: עדכון מערכת ההפעלה&lt;/h4&gt;
+    &lt;p&gt;מוודאים שמערכת ההפעלה במכשיר מעודכנת.&lt;/p&gt;
+    &lt;h4&gt;שלב רביעי: השבתה זמנית של האנטי-וירוס&lt;/h4&gt;
+    &lt;p&gt;השגיאה זו תוצג אם במחשב מותקנת תוכנת אנטי-וירוס שמספקת "הגנת HTTPS" או "סריקת HTTPS". תוכנת האנטי-וירוס מונעת מ-Chrome לספק אבטחה.&lt;/p&gt;
+    &lt;p&gt;כדי לפתור את הבעיה, יש לכבות את תוכנת האנטי-וירוס. אם הדף פועל לאחר כיבוי התוכנה, יש לכבות אותה בזמן השימוש באתרים מאובטחים.&lt;/p&gt;
+    &lt;p&gt;חשוב להפעיל שוב את האנטי-וירוס בסיום.&lt;/p&gt;
+    &lt;h4&gt;שלב חמישי: סיוע נוסף&lt;/h4&gt;
+    &lt;p&gt;אם השגיאה עדיין מופיעה, יש לפנות לבעלי האתר.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />נסה להפעיל את אבחון הרשת<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">תקף</translation>
 <translation id="4250431568374086873">החיבור שלך לאתר הזה לא מאובטח בצורה מלאה</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
 <translation id="4326324639298822553">בדוק את תאריך התפוגה ונסה שוב</translation>
 <translation id="4331708818696583467">לא מאובטח</translation>
+<translation id="4340982228985273705">‏המחשב לא זוהה כמכשיר המנוהל על ידי הארגון, כך שלפי המדיניות מותר להתקין אוטומטית רק תוספים מחנות האינטרנט של Chrome. כתובת האתר העדכנית של חנות האינטרנט של Chrome היא "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">כרטיסי אשראי שהסוחר מקבל</translation>
 <translation id="4356973930735388585">תוקפים באתר הזה עשויים לנסות להתקין במחשב שלך תוכניות מסוכנות שגונבות או מוחקות מידע שלך (לדוגמה: תמונות, סיסמאות, הודעות ופרטי כרטיסי אשראי).</translation>
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE" />.</translation>
@@ -571,6 +604,7 @@ Del</translation>
 <translation id="5222812217790122047">אימייל (חובה)</translation>
 <translation id="522700295135997067">ייתכן שהאתר הזה גנב עכשיו את הזהות שלך</translation>
 <translation id="5230733896359313003">כתובת למשלוח</translation>
+<translation id="5250209940322997802">"יש להתחבר לרשת"</translation>
 <translation id="5251803541071282808">ענן</translation>
 <translation id="5281113152797308730">‏<ph name="BEGIN_PARAGRAPH" />בצע את השלבים הבאים על מנת להשבית את התוכנה באופן זמני, כדי שתוכל להתחבר לאינטרנט. יש צורך בהרשאות מנהל מערכת.<ph name="END_PARAGRAPH" />
 
@@ -594,6 +628,7 @@ Del</translation>
 <translation id="5332219387342487447">שיטת משלוח</translation>
 <translation id="5355557959165512791">נכון לעכשיו אי אפשר לבקר באתר <ph name="SITE" /> מאחר שהאישור שלו בוטל. שגיאות רשת ומתקפות הן בדרך כלל זמניות, כך שהדף הזה יחזור כנראה לפעול מאוחר יותר.</translation>
 <translation id="536296301121032821">אחסון הגדרות המדיניות נכשל</translation>
+<translation id="5377026284221673050">‏"השעון שלך מאחר", "השעון שלך מקדים" או "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">‏שרשרת האישורים של האתר הזה כוללת אישור שנחתם באמצעות SHA-1.</translation>
 <translation id="5402410679244714488">תאריך תפוגה: <ph name="EXPIRATION_DATE_ABBR" />, שימוש אחרון היה לפני שנה</translation>
 <translation id="540969355065856584">שרת זה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אינו תקף כעת. הסיבה לכך עשויה להיות תצורה שגויה או שתוקף מיירט את החיבור שלך.</translation>
@@ -848,6 +883,7 @@ Del</translation>
 <translation id="7542403920425041731">ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
 <translation id="7542995811387359312">מילוי אוטומטי של פרטי כרטיס אשראי מושבת כיוון שטופס זה אינו משתמש בחיבור מאובטח.</translation>
 <translation id="7543525346216957623">יש לבקש רשות מההורים</translation>
+<translation id="7548892272833184391">פתרון שגיאות חיבור</translation>
 <translation id="7549584377607005141">דף אינטרנט זה זקוק לנתונים שהזנת קודם לכן כדי שהוא יוצג כראוי. אתה יכול לשלוח שוב את הנתונים, אך פעולה זו תגרום לחזרה על כל פעולה שדף זה ביצע בעבר.</translation>
 <translation id="7552846755917812628">אולי הטיפים האלו יעזרו לך:</translation>
 <translation id="7554791636758816595">כרטיסייה חדשה</translation>
@@ -855,6 +891,7 @@ Del</translation>
 <translation id="7567204685887185387">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו נופק כהונאה. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="7568593326407688803">זהו דף ב<ph name="ORIGINAL_LANGUAGE" />האם ברצונך לתרגם אותו?</translation>
 <translation id="7569952961197462199">‏האם להסיר את כרטיס האשראי מ-Chrome?</translation>
+<translation id="7575800019233204241">‏"החיבור שלך אינך פרטי" או "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" או "שגיאת אישור SSL"</translation>
 <translation id="7578104083680115302">‏שלם במהירות באתרים ובאפליקציות בכל המכשירים באמצעות כרטיסים ששמרת ב-Google.</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
@@ -1077,6 +1114,8 @@ Del</translation>
 <translation id="973773823069644502">הוספת כתובת למסירה</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{ללא}=1{פריט אחד}two{שני פריטים}many{# פריטים}other{# פריטים}}</translation>
 <translation id="981121421437150478">לא מקוון</translation>
+<translation id="985199708454569384">‏&lt;p&gt;השגיאה הזו תוצג אם התאריך והשעה במחשב או בנייד אינם מדויקים.&lt;/p&gt;
+    &lt;p&gt;כדי לפתור את השגיאה, פותחים את השעון של המכשיר ומוודאים שהשעה והתאריך נכונים.&lt;/p&gt;</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 <translation id="989988560359834682">ערוך כתובת</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

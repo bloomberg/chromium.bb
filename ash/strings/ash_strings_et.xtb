@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Kahjuks ei saanud teie parooli kinnitada. Märkus: kui muutsite parooli hiljuti, rakendub uus parool pärast väljalogimist. Kasutage siin vana parooli.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tühjenemiseni</translation>
 <translation id="1698760176351776263">IPv6-aadress: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Seadme administraator saab võib-olla teie tegevust jälgida.</translation>
 <translation id="1734367976349034509">Seda seadet haldab ettevõte</translation>
 <translation id="1746730358044914197">Sisestusmeetodid seadistab teie administraator.</translation>
 <translation id="1747827819627189109">Ekraanil kuvatav klaviatuur on lubatud</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Ülevoolunupp</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Valige keel</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Lülita välja</translation>
 <translation id="2012624427112548395">Ctrl + otsinguklahv + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2675319268637823299">Administraator on keelanud e-posti aadressi <ph name="USER_EMAIL" /> puhul mitmele kontole sisselogimise.
     Jätkamiseks peavad kõik kasutajad välja logima.</translation>
+<translation id="2696763960464195425">Teie teave eemaldatakse väljalogimisel. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Valige klaviatuur</translation>
 <translation id="2718395828230677721">Öövalgus</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="7098389117866926363">C-tüüpi USB-seade (vasakpoolne port taga)</translation>
 <translation id="7131634465328662194">Teid logitakse automaatselt välja.</translation>
 <translation id="7165278925115064263">Alt + Tõstuklahv + K</translation>
+<translation id="7165511658052620796">(AJUTINE) Kuva WebUI sisselogimine; kasutamise teatage veast (crbug.com) või saatke tagasisidet (Alt + tõstuklahv + I)</translation>
 <translation id="7168224885072002358">Ekraan ennistatakse vanale eraldusvõimele <ph name="TIMEOUT_SECONDS" /> pärast</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
 <translation id="726276584504105859">Jagatud ekraani kasutamiseks lohistage siia</translation>
@@ -329,6 +334,7 @@ Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Väikese energiakuluga laadija on ühendatud</translation>
 <translation id="8734991477317290293">See võib üritada varastada teie klahvivajutusi</translation>
+<translation id="8809737090443522491">Sisestage rakenduse või dokumendi nimi</translation>
 <translation id="8814190375133053267">WiFi</translation>
 <translation id="8814715559352963456">Kui teisaldate aknad teisele töölauale, võib tagajärjeks olla ootamatu toimimine.
 

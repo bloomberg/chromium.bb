@@ -370,6 +370,7 @@
 <translation id="4176463684765177261">Онемогућено</translation>
 <translation id="4188530942454211480">Претходна реченица</translation>
 <translation id="4191918948604314587">Дугме</translation>
+<translation id="419265409837491189">Идите на претходну колону</translation>
 <translation id="4202186506458631436">Премештање удесно</translation>
 <translation id="4206289001967551965">Унутар табеле</translation>
 <translation id="4209770650650780359">За аутоматско довршавање притисните стрелицу нагоре или надоле.</translation>
@@ -420,6 +421,7 @@
 <translation id="4660783501463101648">Classic је уклоњен. Тастери за укључивање/искључивање који омогућавају враћање на ChromeVox Classic су уклоњени.</translation>
 <translation id="4661075872484491155">стабло</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Идите на следећу колону</translation>
 <translation id="4688873778442829762">мрежа</translation>
 <translation id="4693675773662933727">Претходно обележје</translation>
 <translation id="4696413482802371445">Нема следећег заглавља 5. нивоа.</translation>
@@ -435,6 +437,7 @@
 <translation id="4826415162591436065">Кретање унапред</translation>
 <translation id="4826604887384865800">Следећи прелазак</translation>
 <translation id="4827410568042294688">избор је опозван</translation>
+<translation id="4839925464551908214">Идите на претходни ред</translation>
 <translation id="4842108708071771135">Нема следећег издвојеног цитата.</translation>
 <translation id="4844625982113518938">Притисните било који тастер да бисте сазнали његов назив. Притиском тастера Ctrl + W затварате режим за учење.</translation>
 <translation id="4846428657345567687">Добро дошли у ChromeVox!</translation>
@@ -789,6 +792,7 @@
 <translation id="8186185314313222077">укључи/искључи цео екран</translation>
 <translation id="8199231515320852133">Објављивање заглавља актуелне ћелије</translation>
 <translation id="820417203470636242">Празна ћелија.</translation>
+<translation id="820469951249669083">Идите на следећи ред</translation>
 <translation id="8215202828671303819">Вишеструки избор</translation>
 <translation id="826991282343985864">р$1к$2</translation>
 <translation id="8276439074553447000">Прелазак на претходну ставку која може да се фокусира</translation>

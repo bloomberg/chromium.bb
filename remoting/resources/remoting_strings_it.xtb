@@ -140,6 +140,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="4145029455188493639">Accesso eseguito come <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Mancano alcuni componenti obbligatori. Verifica che sia installata la versione più recente del software e riprova.</translation>
 <translation id="4156740505453712750">Per proteggere l'accesso a questo computer, scegli un PIN di <ph name="BOLD_START" />almeno sei cifre<ph name="BOLD_END" />. Questo PIN sarà richiesto quando ti connetti da un'altra posizione.</translation>
+<translation id="4169432154993690151">Per scegliere un'immagine del profilo, consenti a Chrome Remote Desktop di accedere alla videocamera</translation>
 <translation id="4176825807642096119">Codice di accesso</translation>
 <translation id="4207623512727273241">Esegui il programma di installazione prima di continuare.</translation>
 <translation id="4227991223508142681">Utilità di provisioning degli host</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Da</translation>
 <translation id="677755392401385740">Host avviato per utente: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Visualizza/modifica</translation>
+<translation id="6913710942997637770">Per scegliere un'immagine del profilo, consenti a Chrome Remote Desktop di accedere alle tue foto</translation>
 <translation id="6930242544192836755">Durata</translation>
 <translation id="6939719207673461467">Mostra/nascondi tastiera.</translation>
 <translation id="6944854424004126054">Ripristina finestra</translation>

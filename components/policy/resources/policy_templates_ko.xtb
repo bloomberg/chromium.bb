@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">기본 검색 공급자</translation>
 <translation id="1099282607296956954">모든 사이트에 사이트 격리 사용 설정</translation>
 <translation id="1117535567637097036">Android 인텐트를 처리할 때 이 정책을 통해 설정된 프로토콜 핸들러는 사용되지 않습니다.</translation>
+<translation id="1118093128235245168">사이트에서 사용자에게 연결된 USB 기기의 액세스 권한을 부여할지 묻도록 허용합니다.</translation>
 <translation id="1128903365609589950"><ph name="PRODUCT_NAME" />이(가) 캐시된 파일을 디스크에 저장할 때 사용할 디렉토리를 설정합니다.
 
       이 정책을 설정하면 사용자가 '--disk-cache-dir' 플래그를 지정했는지 여부와 상관없이 <ph name="PRODUCT_NAME" />이(가) 제공된 디렉토리를 사용합니다. 데이터 손실이나 예기치 못한 오류를 방지하려면 이 정책을 볼륨의 루트 디렉토리나 다른 목적으로 사용되는 디렉토리에 지정해서는 안 됩니다. <ph name="PRODUCT_NAME" />이(가) 디렉토리의 콘텐츠를 관리하기 때문입니다.
@@ -73,6 +74,9 @@
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
 <translation id="1204263402976895730">사용 설정된 엔터프라이즈 프린터</translation>
+<translation id="1216758672198492382">연결된 USB 기기에 관한 웹사이트의 액세스 허용 여부를 설정할 수 있습니다. 액세스를 완전히 차단하거나 웹사이트에서 연결된 USB 기기에 액세스하려고 할 때마다 사용자에게 확인을 요청할 수 있습니다.
+
+          이 정책을 설정하지 않으면 '3'으로 설정되며 사용자가 변경할 수 있습니다.</translation>
 <translation id="1219695476179627719">기기가 이미 이후 버전을 실행하는 경우 기기를 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />에 설정된 버전으로 롤백할지 여부를 지정합니다.
 
       기본값은 RollbackDisabled입니다.</translation>
@@ -160,11 +164,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">원격 인증</translation>
 <translation id="1509692106376861764">이 정책은 <ph name="PRODUCT_NAME" /> 버전 29를 기준으로 지원 중단되었습니다.</translation>
-<translation id="1519337829779572350">이 설정은 지원이 중단되었습니다. 대신 SafeBrowsingExtendedReportingEnabled를 사용하세요. SafeBrowsingExtendedReportingEnabled를 사용 또는 사용 중지하려면 SafeBrowsingExtendedReportingOptInAllowed를 False로 설정합니다.
-
-      이 정책을 False로 설정하면 사용자가 일부 시스템 정보 및 페이지 콘텐츠를 Google 서버로 전송할 수 없게 됩니다. 이 설정을 True로 설정하거나 구성하지 않으면 사용자가 위험한 앱 및 사이트를 감지하기 위해 일부 시스템 정보와 페이지 콘텐츠를 세이프 브라우징으로 전송할 수 있습니다.
-
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="1522425503138261032">사이트에서 사용자 실제 위치를 추적하도록 허용</translation>
 <translation id="152657506688053119">기본 검색 공급자의 대체 URL 목록</translation>
 <translation id="1530812829012954197">호스트 브라우저에서 다음 URL 패턴을 항상 렌더링</translation>
@@ -326,6 +325,17 @@
 <translation id="2113068765175018713">자동으로 재부팅하여 기기 가동 시간 제한</translation>
 <translation id="2127599828444728326">이 사이트에서 알림 허용</translation>
 <translation id="2131902621292742709">배터리 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
+<translation id="2132732175597591362">자동재생을 항상 사용하도록 설정할 URL 패턴의 허용 목록을 제어합니다.
+
+      자동재생이 사용 설정되면 <ph name="PRODUCT_NAME" />에서 오디오 콘텐츠가 포함된 동영상이 사용자 동의 없이 자동으로 재생될 수 있습니다.
+
+      URL 패턴은 https://www.chromium.org/administrators/url-blacklist-filter-format 페이지에 따라 형식이 지정되어야 합니다.
+
+      AutoplayAllowed 정책을 True로 설정하면 이 정책은 아무 효과가 없습니다.
+
+      AutoplayAllowed 정책을 False로 설정하면 이 정책에 설정된 URL 패턴이 계속 재생되도록 허용됩니다.
+
+      <ph name="PRODUCT_NAME" />이(가) 실행 중이며 이 정책이 변경되면 새로 열린 탭에만 변경사항이 적용됩니다. 따라서 일부 탭에서는 이전과 같은 행동이 계속 나타날 수 있습니다.</translation>
 <translation id="2134437727173969994">화면 잠금 허용</translation>
 <translation id="2137064848866899664">이 정책이 설정되면 각 디스플레이는
       재부팅될 때마다, 그리고 정책 값이 변경된 후
@@ -607,6 +617,12 @@
 <translation id="2801230735743888564">기기가 오프라인일 때 사용자가 공룡 부활절 달걀 게임을 플레이할 수 있도록 허용합니다.
 
       이 정책이 'false'로 설정되면 사용자는 기기가 오프라인일 때 공룡 부활절 달걀 게임을 플레이할 수 없습니다. 이 설정이 'true'로 설정되면 사용자는 공룡 게임을 플레이할 수 있습니다. 이 정책이 설정되지 않은 경우 사용자는 등록된 Chrome OS에서 공룡 부활절 달걀 게임을 플레이할 수 없지만, 다른 상황에서는 플레이할 수 있습니다.</translation>
+<translation id="2802085784857530815">사용자가 엔터프라이즈 프린터가 아닌 프린터에 액세스할 수 있는지 여부를 제어할 수 있습니다.
+
+      이 정책이 True로 설정되거나 설정되지 않으면 사용자가 기본 프린터를 추가, 구성, 인쇄할 수 있게 됩니다.
+
+      이 정책이 False로 설정되어 있으면 사용자가 기본 프린터를 추가하고 구성할 수 없으며 이전에 구성된 기본 프린터로 인쇄할 수도 없게 됩니다.
+      </translation>
 <translation id="2805707493867224476">모든 사이트에서 팝업 표시 허용</translation>
 <translation id="2808013382476173118">원격 클라이언트가 이 컴퓨터에 연결하려고 할 때 STUN 서버를 사용 설정합니다.
 
@@ -769,6 +785,7 @@
           정책 값은 밀리초 단위로 지정해야 하며, 화면 꺼짐 지연 시간(설정된 경우) 및 유휴 지연 시간보다 작거나 같도록 값이 잘립니다.</translation>
 <translation id="3264793472749429012">기본 검색 공급자 인코딩</translation>
 <translation id="3273221114520206906">기본 자바 스크립트 설정</translation>
+<translation id="3284094172359247914">WebUSB API 사용 조정</translation>
 <translation id="3288595667065905535">배포 채널</translation>
 <translation id="3292147213643666827"><ph name="CLOUD_PRINT_NAME" />와(과) 컴퓨터에 연결된 기존 프린터 사이의 프록시로 작동하도록 <ph name="PRODUCT_NAME" />을(를) 설정합니다.
 
@@ -853,6 +870,7 @@
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정된 경우에만 적용됩니다.</translation>
 <translation id="350797926066071931">Google 번역 사용</translation>
 <translation id="3512226956150568738">클라이언트 기기 모델에서 ARC를 실행하기 위해 ext4로 이전해야 했던 시점 전에 ARC를 이미 지원했으며 ArcEnabled 정책이 true로 설정된 경우, 이 옵션은 AskUser(값 3)로 작동합니다. 다른 모든 경우(기기 모델이 이전에 ARC를 지원하지 않았거나 ArcEnabled 정책이 false로 설정된 경우), 이 값은 DisallowArc(값 0)와 동일합니다.</translation>
+<translation id="3524204464536655762">어떤 사이트든지 WebUSB API를 통해 USB 기기의 액세스를 요청하도록 허용하지 않습니다.</translation>
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3577251398714997599">방해가 되는 광고가 포함된 사이트의 광고 설정</translation>
@@ -861,11 +879,6 @@
 <translation id="3646859102161347133">화면 돋보기 유형 설정</translation>
 <translation id="3653237928288822292">기본 검색 공급자 아이콘</translation>
 <translation id="3660562134618097814">로그인 중 SAML IdP 쿠키 전송</translation>
-<translation id="3687282113223807271">세이프 브라우징 서비스에서는 사용자가 악성 사이트로 신고된 사이트로 이동할 때 경고 페이지를 표시합니다. 이 설정을 사용하면 사용자가 경고 페이지를 무시하고 악성 사이트로 이동할 수 없게 됩니다.
-
-      이 설정을 사용 중지하거나 구성하지 않으면 사용자가 경고 페이지를 무시하고 신고된 사이트로 이동할 수 있습니다.
-
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="3709266154059827597">확장 프로그램 설치 차단목록 설정</translation>
 <translation id="3711895659073496551">일시중지</translation>
 <translation id="3736879847913515635">사용자 관리자에서 사용자 추가 허용</translation>
@@ -962,6 +975,9 @@
       판매 모드인 기기의 경우 데모 사용자에게 자동으로 설치되는 확장 프로그램을 표시합니다. 이러한 확장 프로그램은 기기에 저장되며 오프라인 상태일 때 설치할 수 있습니다.
 
       각 목록 항목에는 '확장 프로그램 ID' 입력란에 확장 프로그램 ID를, 'url 업데이트' 입력란에 업데이트 URL을 포함해야 하는 사전이 포함됩니다.</translation>
+<translation id="3873159954366380945">대기 중인 업데이트를 적용하기 위해 <ph name="PRODUCT_NAME" /> 재실행 알림이 표시되는 기간을 설정할 수 있습니다.
+
+      이 정책 설정을 사용하면 업데이트를 위해 <ph name="PRODUCT_NAME" />을(를) 재실행하거나 <ph name="PRODUCT_OS_NAME" />을(를) 재시작해야 한다는 알림을 사용자에게 반복적으로 표시할 기간을 밀리초 단위로 관리할 수 있습니다. 이 기간 동안 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 정책의 설정에 따라 업데이트가 필요하다는 알림이 사용자에게 반복적으로 표시됩니다. 이 정책을 설정하지 않으면 <ph name="PRODUCT_OS_NAME" />에는 345,600,000밀리초(4일)가 사용되고 다른 모든 플랫폼에는 604,800,000밀리초(일주일)가 사용됩니다.</translation>
 <translation id="3877517141460819966">통합된 2단계 인증 모드</translation>
 <translation id="388237772682176890">SPDY/3.1 지원이 삭제되어 이 정책은 M53에서 지원 중단되고 M54에서 삭제되었습니다.
 
@@ -1313,6 +1329,14 @@
           이 정책은 'DefaultSearchProviderEnabled' 정책을 사용하도록 설정한 경우에만 적용됩니다.</translation>
 <translation id="489803897780524242">기본 검색 공급자의 검색어 위치를 조정하는 매개변수</translation>
 <translation id="4899708173828500852">세이프 브라우징 사용</translation>
+<translation id="4899802251198446659"><ph name="PRODUCT_NAME" />에서 오디오 콘텐츠가 포함된 동영상을 사용자 동의 없이 자동 재생할지 제어할 수 있습니다.
+
+      이 정책을 True로 설정하면 <ph name="PRODUCT_NAME" />에서 미디어를 자동재생할 수 있습니다.
+      이 정책을 False로 설정하면 <ph name="PRODUCT_NAME" />에서 미디어를 자동재생할 수 없습니다. AutoplayWhitelist 정책은 특정 URL 패턴에서 이 정책을 무시하는 데 사용될 수 있습니다.
+      기본적으로 <ph name="PRODUCT_NAME" />에서는 미디어를 자동재생할 수 없습니다. AutoplayWhitelist 정책은 특정 URL 패턴에서 이 정책을 무시하는 데 사용될 수 있습니다.
+
+      <ph name="PRODUCT_NAME" />이(가) 실행 중이며 이 정책이 변경되면 새로 열린 탭에만 변경사항이 적용됩니다. 따라서 일부 탭에서는 이전과 같은 행동이 계속 나타날 수 있습니다.
+      </translation>
 <translation id="4906194810004762807">기기 정책 새로고침 빈도</translation>
 <translation id="4917385247580444890">강력</translation>
 <translation id="4923806312383904642">WebDriver가 호환되지 않는 정책을 재정의하도록 허용</translation>
@@ -1351,19 +1375,6 @@
 
       클라이언트가 오랜 기간 동안 오프라인 상태를 유지하는 경우 비밀번호가 지정된 일수보다 오래 변경되지 않을 수도 있습니다.</translation>
 <translation id="5105313908130842249">배터리 전원으로 실행할 때 화면 잠금 지연</translation>
-<translation id="5106504910236139235"><ph name="PRODUCT_NAME" />의 세이프 브라우징 확장 보고를 사용하고 사용자가 이 설정을 변경할 수 없게 합니다.
-
-      확장 보고에서는 위험한 앱 및 사이트를 감지하는 데 도움이 되도록 Google 서버에 일부 시스템 정보 및 페이지 콘텐츠를 전송합니다.
-
-      이 설정을 True로 설정하면 보고서가 생성되며 필요할 때(예: 보안 화면 표시)마다 전송됩니다.
-
-      이 설정을 False로 설정하면 보고서가 전송되지 않습니다.
-
-      이 정책을 True 또는 False로 설정하면 사용자가 이 설정을 수정할 수 없습니다.
-
-      이 정책을 설정하지 않으면 사용자가 이 설정을 변경하고 보고서 전송 여부를 결정할 수 있습니다.
-
-      세이프 브라우징에 관한 자세한 내용은 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="5108031557082757679">사용 중지된 엔터프라이즈 기기 프린터</translation>
 <translation id="5130288486815037971">TLS RC4 암호화 기술이 사용하도록 설정되었는지 여부</translation>
 <translation id="5141670636904227950">로그인 화면에서 기본 화면 돋보기 유형을 사용하도록 설정</translation>
@@ -1581,19 +1592,6 @@
           이 정책이 설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
 
           정책 값은 밀리초 단위로 지정해야 합니다.</translation>
-<translation id="5784370777704871674"><ph name="PRODUCT_NAME" />의 세이프 브라우징 기능을 사용 설정하고 사용자가 이 설정을 변경하지 못하게 합니다.
-
-      이 설정을 켜면 세이프 브라우징이 항상 활성화됩니다.
-
-      이 설정을 끄면 세이프 브라우징이 활성화되지 않습니다.
-
-      이 설정을 켜거나 끄면 사용자가 <ph name="PRODUCT_NAME" />에서 '피싱 및 멀웨어 차단 사용' 설정을 변경하거나 재정의할 수 없습니다.
-
-      이 정책은 설정하지 않아도 켜지지만, 이 경우 사용자가 설정을 변경할 수 있습니다.
-
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 확인하세요.
-
-      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입되어 있지 않은 Windows 인스턴스에는 사용할 수 없습니다.</translation>
 <translation id="5809728392451418079">기기 로컬 계정용 표시 이름 설정</translation>
 <translation id="5814301096961727113">로그인 화면에서 음성 피드백의 기본 상태를 설정</translation>
 <translation id="5815129011704381141">업데이트 후 자동 재부팅</translation>
@@ -1793,11 +1791,6 @@
 <translation id="6281043242780654992">기본 메시지의 정책을 설정합니다. 차단된 기본 메시지 호스트는 허용 목록에 추가되지 않는 한 허용되지 않습니다.</translation>
 <translation id="6282799760374509080">오디오 캡처 허용 또는 거부</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">설정하지 않거나 True로 설정한 경우, <ph name="PRODUCT_NAME" />의 모든 구성요소에 구성요소 업데이트를 사용합니다.
-
-      False로 설정하면 구성요소 업데이트가 사용 중지됩니다. 하지만 일부 구성요소는 이 정책에서 제외됩니다. 예를 들어 실행 코드가 포함되지 않거나, 브라우저 작동 방식을 심각하게 변경하지 않거나, 보안에 중요한 구성요소 업데이트는 사용 중지되지 않습니다.
-      이와 같은 구성요소의 예로는 인증서 해지 목록 및 세이프 브라우징 데이터가 있습니다.
-      세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing을 참조하세요.</translation>
 <translation id="6310223829319187614">사용자가 로그인할 때 도메인 이름 자동완성 기능을 사용합니다.</translation>
 <translation id="6315673513957120120">사용자가 SSL 오류가 있는 사이트를 탐색하면 Chrome에서 경고 페이지를 표시합니다. 기본적으로 또는 이 정책이 'true'로 설정된 경우 사용자는 이 경고 페이지를 클릭하여 탐색할 수 있습니다.
       이 정책을 'false'로 설정하면 사용자가 경고 페이지를 클릭하여 탐색할 수 없습니다.</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1005145902654145231">Seansi ümbernimetamine ebaõnnestus.</translation>
 <translation id="1008557486741366299">Mitte praegu</translation>
 <translation id="1015730422737071372">Esitage lisateavet</translation>
 <translation id="1021110881106174305">Aktsepteeritud kaardid</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Üksuse vale identifikaator</translation>
 <translation id="1232569758102978740">Pealkirjata</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sünkroonitud)</translation>
+<translation id="1256368399071562588">&lt;p&gt;Kui üritate külastada veebisaiti ja see ei avane, proovige vea parandamiseks esmalt neid veaotsingu toiminguid.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Veenduge, et veebiaadressis poleks kirjavigu.&lt;/li&gt;
+    &lt;li&gt;Veenduge, et Interneti-ühendus töötaks tavapäraselt.&lt;/li&gt;
+    &lt;li&gt;Võtke ühendust veebisaidi omanikuga.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Lugemisloend</translation>
 <translation id="1264126396475825575">Krahhiaruanne talletati <ph name="CRASH_TIME" /> (ei ole veel üles laaditud ega eiratud)</translation>
 <translation id="1270502636509132238">Kättesaamisviis</translation>
 <translation id="1285320974508926690">Ära kunagi seda saiti tõlgi</translation>
+<translation id="1292701964462482250">„Teie arvutis olev tarkvara ei luba Chrome'il veebiga turvaliselt ühendust luua” (ainult Windowsi arvutid)</translation>
 <translation id="1294154142200295408">Käsurea variatsioonid</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Kustutage küpsisefailid<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">Valitud seanssi ei ole olemas.</translation>
+<translation id="1323433172918577554">Kuva rohkem</translation>
 <translation id="1333989956347591814">Teie tegevused <ph name="BEGIN_EMPHASIS" />võivad siiski olla nähtavad<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />teie külastatud veebisaitidele;
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">Sait, mille soovite avada, sisaldab ohtlikke rakendusi</translation>
 <translation id="1374468813861204354">soovitused</translation>
 <translation id="1375198122581997741">Teave versiooni kohta</translation>
+<translation id="1376836354785490390">Kuva vähem</translation>
 <translation id="1377321085342047638">Kaardinr</translation>
 <translation id="139305205187523129">Host <ph name="HOST_NAME" /> ei saatnud andmeid.</translation>
 <translation id="1407135791313364759">Ava kõik</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">Printimine</translation>
 <translation id="1484290072879560759">Valige tarneaadress</translation>
 <translation id="1506687042165942984">Lehe salvestatud (s.t teadaolevalt aegunud) koopia kuvamine.</translation>
+<translation id="1507202001669085618">&lt;p&gt;Seda viga näete juhul, kui kasutate WiFi-portaali, kuhu tuleb enne võrguühenduse loomist sisse logida.&lt;/p&gt;
+    &lt;p&gt;Vea parandamiseks klõpsake avataval lehel käsul &lt;strong&gt;Loo ühendus&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Telefoninumber on nõutav</translation>
 <translation id="1517500485252541695">Aktsepteeritavad krediit- ja deebetkaardid</translation>
 <translation id="1519264250979466059">Järgu kuupäev</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Filtreerimine</translation>
 <translation id="1916770123977586577">Laadige leht uuesti, et rakendada värskendatud seaded saidile</translation>
 <translation id="1919345977826869612">Reklaamid</translation>
+<translation id="1919367280705858090">Konkreetse veateate puhul abi hankimine</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ühtegi}=1{1 sait}other{# saiti}}</translation>
 <translation id="1927235823738766038">Aktsepteeritavad krediit- ja deebetkaardid</translation>
 <translation id="194030505837763158">Avage <ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Ükski}=1{1 saidilt }other{# saidilt }}</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> on blokeeritud</translation>
+<translation id="3984550557525787191">Seansi nimi on juba olemas.</translation>
 <translation id="3987940399970879459">Alla 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Läheduses on 1 veebileht}other{Läheduses on # veebilehte}}</translation>
 <translation id="4030383055268325496">&amp;Võta lisamine tagasi</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollige tulemüüri ja viirusetõrje seadistusi<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Krahhid</translation>
 <translation id="422022731706691852">Saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> asuvad ründajad võivad proovida meelitada teid installima programme, mis kahjustavad sirvimiskogemust (nt muudavad avalehte või kuvavad külastatavatel saitidel lisareklaame). <ph name="BEGIN_LEARN_MORE_LINK" />Lisateave<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;1. toiming: logige portaali sisse&lt;/h4&gt;
+    &lt;p&gt;Mõningates kohtades, näiteks kohvikutes ja lennujaamades tuleb teil WiFi-võrku sisse logida. Sisselogimislehe avamiseks külastage aadressi, mille alguses on &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Minge mis tahes veebisaidile, mille aadressi alguses on &lt;code&gt;http://&lt;/code&gt;, näiteks &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Interneti kasutamiseks logige avataval lehel sisse.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;2. toiming: avage leht inkognito režiimis (ainult arvutis)&lt;/h4&gt;
+    &lt;p&gt;Avage leht, mida külastasite inkognito aknas.&lt;/p&gt;
+    &lt;p&gt;Kui leht avaneb, ei tööta Chrome'i laiendus õigesti. Vea parandamiseks lülitage laiendus välja.&lt;/p&gt;
+    &lt;h4&gt;3. toiming: värskendage operatsioonisüsteemi&lt;/h4&gt;
+    &lt;p&gt;Veenduge, et seade oleks ajakohane.&lt;/p&gt;
+    &lt;h4&gt;4. toiming: lülitage viirusetõrje ajutiselt välja&lt;/h4&gt;
+    &lt;p&gt;Näete seda viga juhul, kui teie viirusetõrjetarkvara pakub HTTPS-i kaitse või HTTPS-i skannimise funktsiooni. Viirusetõrje takistab Chrome'i turvafunktsioonide pakkumist.&lt;/p&gt;
+    &lt;p&gt;Probleemi lahendamiseks lülitage oma viirusetõrjetarkvara välja. Kui pärast tarkvara väljalülitamist leht töötab, lülitage turvaliste saitide kasutamisel ka edaspidi tarkvara välja.&lt;/p&gt;
+    &lt;p&gt;Kui olete lõpetanud, lülitage kindlasti viirusetõrjeprogramm uuesti sisse.&lt;/p&gt;
+    &lt;h4&gt;5. toiming: hankige abi&lt;/h4&gt;
+    &lt;p&gt;Kui viga ei kao, võtke ühendust veebisaidi omanikuga.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Proovige käitada võrgudiagnostikat<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Kehtiv</translation>
 <translation id="4250431568374086873">Teie ühendus selle saidiga pole täielikult turvaline</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
 <translation id="4326324639298822553">Kontrollige aegumiskuupäeva ja proovige uuesti</translation>
 <translation id="4331708818696583467">Pole turvaline</translation>
+<translation id="4340982228985273705">Tuvastati, et tegemist ei ole ettevõtte hallatava arvutiga, seega saab reegel installida ainult Chrome'i veebipoes hostitavaid laiendusi. Chrome'i veebipoe värskenduse URL on „<ph name="CWS_UPDATE_URL" />”.</translation>
 <translation id="4346197816712207223">Aktsepteeritavad krediitkaardid</translation>
 <translation id="4356973930735388585">Saidil olevad ründajad võivad proovida installida teie arvutisse ohtlikke programme, mis varastavad teie teavet või kustutavad selle (nt fotod, paroolid, sõnumid ja krediitkaardiandmed).</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
@@ -567,6 +600,7 @@
 <translation id="5222812217790122047">E-posti aadress on nõutav</translation>
 <translation id="522700295135997067">See sait võis äsja varastada teie parooli</translation>
 <translation id="5230733896359313003">Tarneaadress</translation>
+<translation id="5250209940322997802">„Looge võrguühendus”</translation>
 <translation id="5251803541071282808">Pilv</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Tarkvara ajutiseks keelamiseks ja veebi pääsemiseks järgige neid toiminguid. Teil on vaja administraatoriõigusi.<ph name="END_PARAGRAPH" />
 
@@ -590,6 +624,7 @@
 <translation id="5332219387342487447">Tarneviis</translation>
 <translation id="5355557959165512791">Te ei saa saiti <ph name="SITE" /> praegu külastada, sest selle sertifikaat on tühistatud. Võrguvead ja -rünnakud on tavaliselt ajutised, nii et leht tõenäoliselt hiljem töötab.</translation>
 <translation id="536296301121032821">Reegli seadete talletamine ebaõnnestus</translation>
+<translation id="5377026284221673050">„Teie kell on ajast maas” või „Teie kell on ajast ees” või „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5386426401304769735">Selle saidi sertifikaadiahel sisaldab sertifikaati, mis on allkirjastatud SHA-1-ga.</translation>
 <translation id="5402410679244714488">Aegub: <ph name="EXPIRATION_DATE_ABBR" />, viimati kasutati üle aasta tagasi</translation>
 <translation id="540969355065856584">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />; selle turvasertifikaat pole praegu kehtiv. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
@@ -843,6 +878,7 @@
 <translation id="7542403920425041731">Kui selle kinnitate, jagatakse teie kaardi üksikasju selle saidiga.</translation>
 <translation id="7542995811387359312">Automaatne krediitkaardi täide on keelatud, sest see vorm ei kasuta turvalist ühendust.</translation>
 <translation id="7543525346216957623">Küsige vanematelt abi</translation>
+<translation id="7548892272833184391">Ühendusvigade parandamine</translation>
 <translation id="7549584377607005141">See veebileht vajab korralikult kuvamiseks varem sisestatud andmeid. Võite need andmed uuesti saata, kuid seda tehes kordate lehe iga eelnevat toimingut.</translation>
 <translation id="7552846755917812628">Proovige järgmiseid nõuandeid.</translation>
 <translation id="7554791636758816595">Uus vaheleht</translation>
@@ -850,6 +886,7 @@
 <translation id="7567204685887185387">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />, selle turvasertifikaat võib olla väljastatud pettuse teel. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="7568593326407688803">See leht on keeles<ph name="ORIGINAL_LANGUAGE" />Kas soovite seda tõlkida?</translation>
 <translation id="7569952961197462199">Kas eemaldada Chrome'ist krediitkaart?</translation>
+<translation id="7575800019233204241">„Teie ühendus ei ole privaatne” või „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;” või „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;” või „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;” või „SSL-i sertifikaadi viga”</translation>
 <translation id="7578104083680115302">Google'i salvestatud kaartide abil saate eri seadmetes saitidel ja rakendustes kiirelt maksta.</translation>
 <translation id="7588950540487816470">Füüsiline veeb</translation>
 <translation id="7592362899630581445">Serveri sertifikaat rikub nime piiranguid.</translation>
@@ -1071,6 +1108,8 @@
 <translation id="973773823069644502">Lisage kohaletoimetamisaadress</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Ühtegi}=1{1 üksus}other{# üksust}}</translation>
 <translation id="981121421437150478">Võrguühenduseta</translation>
+<translation id="985199708454569384">&lt;p&gt;Seda viga näete juhul, kui teie arvuti või mobiilseadme kuupäev ja kellaaeg pole õiged.&lt;/p&gt;
+    &lt;p&gt;Vea parandamiseks avage seadme kell ning veenduge, et kellaaeg ja kuupäev oleksid õiged.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Arendaja järk</translation>
 <translation id="989988560359834682">Aadressi muutmine</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

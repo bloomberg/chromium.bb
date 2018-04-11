@@ -284,6 +284,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="3661699943263275414">I siti web di terze parti possono salvare e leggere i dati dei cookie</translation>
 <translation id="3662546969139119822">Nessuna cronologia presente</translation>
 <translation id="3672452749423051839">Suggerimenti per gli errori di navigazione</translation>
+<translation id="3692944402865947621">Download di <ph name="FILE_NAME" /> non riuscito perché non è possibile trovare il percorso di archiviazione.</translation>
 <translation id="3712575778697986964">Vuoi reimpostare il Risparmio dati?</translation>
 <translation id="3714981814255182093">Apri la barra Trova</translation>
 <translation id="3716182511346448902">Questa pagina è stata messa in pausa da Chromium perché utilizza troppa memoria.</translation>
@@ -320,6 +321,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4056223980640387499">Seppia</translation>
 <translation id="4062305924942672200">Informazioni legali</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
+<translation id="4084712963632273211">Di <ph name="PUBLISHER_ORIGIN" /> - <ph name="BEGIN_DEEMPHASIZED" />pubblicata da Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB per i download</translation>
 <translation id="4089831646916293264">Questa funzione potrebbe interferire con l'accesso ai servizi di dati premium forniti dal tuo operatore.</translation>
 <translation id="4095146165863963773">Eliminare i dati delle app?</translation>
@@ -369,6 +371,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="4550003330909367850">Per visualizzare o copiare la password qui, imposta il blocco schermo sul dispositivo.</translation>
 <translation id="4558311620361989323">Scorciatoie delle pagine web</translation>
 <translation id="4565377596337484307">Nascondi password</translation>
+<translation id="4570913071927164677">Dettagli</translation>
 <translation id="4572422548854449519">Accedi all'account gestito</translation>
 <translation id="4581964774250883625">Sei passato alla navigazione in incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minuto fa}other{# minuti fa}}</translation>
@@ -545,6 +548,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="60923314841986378"><ph name="HOURS" /> ore rimanenti</translation>
 <translation id="60924377787140961">A breve verranno visualizzati altri articoli. Buon pomeriggio.</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>
+<translation id="6111020039983847643">Dati utilizzati</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6138140242378429169">Ottimizza la pagina per i dispositivi mobili</translation>
@@ -697,6 +701,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">Dati risparmiati</translation>
 <translation id="7498271377022651285">Attendi…</translation>
 <translation id="7514365320538308">Scarica</translation>
 <translation id="751961395872307827">Impossibile connettersi al sito</translation>

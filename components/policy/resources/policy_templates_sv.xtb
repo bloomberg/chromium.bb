@@ -165,11 +165,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
 <translation id="1509692106376861764">Den här principen gäller inte från version 29 av <ph name="PRODUCT_NAME" /> och senare.</translation>
-<translation id="1519337829779572350">Inställningen har fasats ut. Använd SafeBrowsingExtendedReportingEnabled i stället. Att aktivera eller inaktivera SafeBrowsingExtendedReportingEnabled motsvarar att ställa in SafeBrowsingExtendedReportingOptInAllowed på falskt.
-
-      Om den här policyn är inställd på falskt kan inte användare välja att skicka viss systeminformation och visst sidinnehåll till Googles servrar. Om inställningen är inställd på sant eller inte har konfigurerats kan användare skicka viss systeminformation och visst sidinnehåll till Säker webbsökning i syfte att identifiera skadliga appar och webbplatser.
-
-      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
 <translation id="152657506688053119">Lista över alternativa webbadresser för standardsökleverantören.</translation>
 <translation id="1530812829012954197">Rendera alltid följande webbadressmönster i värdwebbläsaren</translation>
@@ -331,6 +326,17 @@
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
+<translation id="2132732175597591362">Styr vitlista över webbadressmallar som automatisk uppspelning alltid är aktiverad för.
+
+      Om automatisk uppspelning är aktiverat kan videor spelas upp automatiskt (utan användarens tillstånd) tillsammans med ljudinnehåll <ph name="PRODUCT_NAME" />.
+
+      Webbadressmallar måste formateras i enlighet med https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Om principen AutoplayAllowed är inställd på sant gäller inte värdet för den här principen.
+
+      Om principen AutoplayAllowed är inställd på falskt kan alla webbadressmallar som anges i den här principen fortfarande spela upp media automatiskt.
+
+      Observera att om <ph name="PRODUCT_NAME" /> körs när principen ändras tillämpas den endast på nya flikar som öppnas. Därför kan den tidigare inställningen gälla för vissa flikar.</translation>
 <translation id="2134437727173969994">Tillåt att skärmen låses</translation>
 <translation id="2137064848866899664">När den här principen har ställts in roteras alla skärmar till
       den angivna riktningen vid varje omstart och första gången som skärmen
@@ -876,11 +882,6 @@
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
-<translation id="3687282113223807271">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
-
-      Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.
-
-      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3736879847913515635">Gör att en person kan läggas till i användarhanteraren</translation>
@@ -983,6 +984,9 @@
       Anger tillägg som installeras automatiskt för demoanvändaren för enheter i återförsäljarläge. Dessa tillägg sparas i enheten och kan installeras offline efter installationen.
 
       Varje post i listan innehåller en ordbok som måste innehålla tilläggets ID i fältet extension-id och dess uppdateringsadress i fältet update-url.</translation>
+<translation id="3873159954366380945">Gör att du kan ställa in under hur lång tid som uppmaningar om att starta om <ph name="PRODUCT_NAME" /> ska visas när en uppdatering väntar.
+
+      Med den här principen kan du ställa in under hur lång tid (i millisekunder) som användaren ska få upprepade aviseringar om att <ph name="PRODUCT_NAME" /> (eller <ph name="PRODUCT_OS_NAME" />) behöver startas om på grund av en uppdatering. Under den tiden visas upprepade uppmaningar att starta om för användaren utifrån principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy. Om principen lämnas utan inställning används standardperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" /> och 604 800 000 millisekunder (en vecka) används för alla andra plattformar.</translation>
 <translation id="3877517141460819966">Läget för integrerad tvåfaktorsautentisering</translation>
 <translation id="388237772682176890">Den här principen har fasats ut i M53 och tagits bort från M54, eftersom stödet för SPDY/3.1 har tagits bort.
 
@@ -1334,6 +1338,14 @@
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="489803897780524242">Parameter som styr sökordsplacering för standardsökleverantören</translation>
 <translation id="4899708173828500852">Aktivera Säker webbsökning</translation>
+<translation id="4899802251198446659">Ger dig möjlighet att styra om videor får spelas upp automatiskt (utan användarens tillstånd) tillsammans med ljudinnehåll i <ph name="PRODUCT_NAME" />.
+
+      Om principen är inställd på sant får <ph name="PRODUCT_NAME" /> spela upp media automatiskt.
+      Om principen är inställd på falskt får <ph name="PRODUCT_NAME" /> inte spela upp media automatiskt. Inställningen kan åsidosättas med för vissa webbadressmallar med hjälp av principen AutoplayWhitelist.
+      <ph name="PRODUCT_NAME" /> får inte spela upp media automatiskt som standard. Inställningen kan åsidosättas med för vissa webbadressmallar med hjälp av principen AutoplayWhitelist.
+
+      Observera att om <ph name="PRODUCT_NAME" /> körs när principen ändras tillämpas den endast på nya flikar som öppnas. Därför kan den tidigare inställningen gälla för vissa flikar.
+      </translation>
 <translation id="4906194810004762807">Uppdateringsfrekvens för enhetspolicy</translation>
 <translation id="4917385247580444890">Stark</translation>
 <translation id="4923806312383904642">Tillåt att inkompatibla principer åsidosätts med WebDriver</translation>
@@ -1372,19 +1384,6 @@
 
       Observera att om klienten har varit offline en längre tid kan lösenorden vara äldre än det angivna antalet dagar.</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
-<translation id="5106504910236139235">Aktiverar Utökad rapportering för Säker webbsökning för <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
-
-      Med Utökad rapportering skickas viss systeminformation och sidinnehåll till Googles servrar i syfte att identifiera skadliga appar och webbplatser.
-
-      Om inställningen är inställd på sant skapas rapporter och skickas vid behov (till exempel när mellansideannons om säkerhet visas).
-
-      Om inställningen är inställd på falskt skickas inga rapporter.
-
-      Om principen är inställd på sant eller falskt kan användare inte ändra inställningen.
-
-      Om inget värde har angetts för principen kan användare ändra inställningen och bestämma om rapporter ska skickas eller inte.
-
-      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Inaktiverade skrivare för företagsenheter</translation>
 <translation id="5130288486815037971">Om RC4-krypteringssviter i TLS är aktiverade eller inte</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
@@ -1605,19 +1604,6 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
-<translation id="5784370777704871674">Aktiverar funktionen Säker webbsökning i <ph name="PRODUCT_NAME" /> och hindrar användarna från att ändra inställningen.
-
-      Om du aktiverar inställningen är Säker webbsökning alltid aktiverad.
-
-      Om du inaktiverar inställningen är Säker webbsökning aldrig aktiverad.
-
-      Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra eller åsidosätta inställningen Aktivera skydd mot lösenordsfiske och skadlig programvara i <ph name="PRODUCT_NAME" />.
-
-      Om ett värde inte anges för principen är den aktiverad, men användarna kan ändra den.
-
-      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.
-
-      Principen är inte tillgänglig för Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="5809728392451418079">Ange visningsnamnet för lokala konton på enheten</translation>
 <translation id="5814301096961727113">Ange standardtillståndet för talad feedback på inloggningsskärmen</translation>
 <translation id="5815129011704381141">Starta om automatiskt efter uppdatering</translation>
@@ -1818,11 +1804,6 @@
 <translation id="6281043242780654992">Konfigurerar principer för Native Messaging. Om en värd för Native Messaging står på svarta listan är den förbjuden såvida den inte står på vitlistan.</translation>
 <translation id="6282799760374509080">Tillåta eller neka ljudinspelning</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Aktiverar komponentuppdateringar för alla komponenter i <ph name="PRODUCT_NAME" /> när principen inte är angiven eller när den är inställd på sant.
-
-      Om den är inställd på falskt är komponentuppdateringar inaktiverade. Vissa komponenter undantas dock från principen. Uppdateringar för komponenter som inte innehåller körbar kod eller inte märkbart förändrar webbläsarens funktion eller är viktiga för dess säkerhet inaktiveras inte.
-      Exempel på sådana komponenter är uppgifter om listor över återkallade certifikat och uppgifter från Säker webbsökning.
-      Läs mer om Säker webbsökning på https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Aktivera autoslutför av domännamn vid användarinloggning</translation>
 <translation id="6315673513957120120">Chrome visar en varningssida när användare besöker webbplatser med SSL-fel. Som standardinställning eller om den här principen är inställd på sant ges användare möjligheten att klicka sig förbi dessa varningssidor.
       Om principen är inställd på falskt hindras användare från att klicka sig förbi varningssidor.</translation>
@@ -2689,6 +2670,15 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>
+<translation id="9123211093995421438">Anger det lägsta antalet milstolpar som det ska gå att återställa <ph name="PRODUCT_OS_NAME" /> till, räknat från den aktuella stabila versionen.
+
+      Standardvärdet är 0 för konsumenter och 4 (ungefär ett halvår) för företagsregistrerade enheter.
+
+      När den här principen har aktiverats upphävs återställningsskyddet för minst det här antalet milstolpar.
+
+      Om principen ställs in på ett lägre värde gäller det värdet permanent: det KANSKE inte går att återställa tidigare versioner än så på enheten ens om principen ändras till ett högre värde.
+
+      Vilka möjligheter till återställning som finns kan också bero på moderkortet och kritiska säkerhetskorrigeringar.</translation>
 <translation id="913195841488580904">Blockera åtkomst till en lista med webbadresser</translation>
 <translation id="9135033364005346124">Aktivera <ph name="CLOUD_PRINT_NAME" />-proxy</translation>
 <translation id="9136253551939494882">En vitlista över vilka snabbupplåsningslägen användaren kan konfigurera och använda för att låsa upp låsskärmen.

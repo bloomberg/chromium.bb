@@ -43,6 +43,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, sedan <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Sparar den aktuella webbsidan som ett bokmärke</translation>
 <translation id="2750942583782703988">Läs in den aktuella sidan igen</translation>
+<translation id="2764005613199379871">Flytta fokus till sökadressfältet</translation>
 <translation id="2789868185375229787">Zooma ut</translation>
 <translation id="2804480015716812239">Tryck på <ph name="ALT" /> och klicka på en länk</translation>
 <translation id="2830827904629746450">Docka ett fönster till höger</translation>
@@ -54,6 +55,7 @@
 <translation id="3105917916468784889">Ta skärmbild</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokusera på adressfältet</translation>
+<translation id="3256109297135787951">Ta bort markeringen från ett objekt på hyllan</translation>
 <translation id="3288816184963444640">Stäng aktuellt fönster</translation>
 <translation id="3407560819924487926">Öppna aktivitetshanteraren</translation>
 <translation id="3422679037938588196">Hitta föregående träff för sökningen</translation>
@@ -68,6 +70,7 @@
 <translation id="3720939646656082033">Öppna länken på en ny flik och byt till den nya fliken</translation>
 <translation id="3725795051337497754">Stäng den aktuella fliken</translation>
 <translation id="3751033133896282964">Ångra den senaste åtgärden</translation>
+<translation id="3792178297143798024">Öppna det markerade objektet på hyllan</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 till 8</translation>
 <translation id="3837047332182291558">Starkare belysning (endast tangentbord med belysning underifrån)</translation>
 <translation id="3976863468609830880">Klicka på den sista ikonen i översikten</translation>
@@ -127,6 +130,7 @@
 <translation id="6435207348963613811">Markera föregående objekt på hyllan</translation>
 <translation id="6445033640292336367">Återställ flikens ursprungliga position</translation>
 <translation id="649811797655257835">Välj en fil och tryck på <ph name="SPACE" /></translation>
+<translation id="6556040137485212400">Öppna det fönster som inte har använts på längst tid</translation>
 <translation id="666343722268997814">Öppna högerklicksmenyn för markerat objekt</translation>
 <translation id="6671538777808758331">Hitta nästa träff för sökningen</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> eller <ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="R" /></translation>
@@ -153,11 +157,13 @@
 <translation id="7787242579016742662">Öppna en fil i webbläsaren</translation>
 <translation id="7822267121073044318">Byt till inmatningsmetoden för nästa språk</translation>
 <translation id="7917881398263220094">Sluta läsa in den aktuella sidan</translation>
+<translation id="7952165122793773711">Öppna flik 1–8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> eller <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8104889575691864804">Visa appmenyn</translation>
 <translation id="8130528849632411619">Till början av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
+<translation id="8232835244134740473">Flytta fokus mellan: statusfältet (där kontobilden visas), översikten, adressfältet, bokmärkesfältet (om det visas), webbsidan som är öppen, nedladdningsfältet (om det visas)</translation>
 <translation id="8234414138295101081">Rotera skärmen 90 grader</translation>
 <translation id="8264941229485248811">Visa eller dölj Utvecklarverktyg-inspektören</translation>
 <translation id="836869401750819675">Öppna sidan Nedladdningar</translation>

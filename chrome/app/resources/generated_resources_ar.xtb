@@ -968,7 +968,7 @@
 <translation id="2508428939232952663">‏حساب متجر Google Play</translation>
 <translation id="2509495747794740764">يجب أن تمثل قيمة التدرج رقمًا يتراوح بين 10 و200.</translation>
 <translation id="2509566264613697683">8 أضعاف</translation>
-<translation id="2512222046227390255">الملء التلقائي للنماذج</translation>
+<translation id="2512222046227390255">املأ النماذج تلقائيًا</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">فحص</translation>
 <translation id="2518024842978892609">استخدام شهادات العملاء لديك</translation>
@@ -2598,7 +2598,6 @@
 <translation id="5088534251099454936">‏PKCS #1 SHA-512 مع تشفير RSA</translation>
 <translation id="509429900233858213">حدث خطأ.</translation>
 <translation id="5094721898978802975">الاتصال بتطبيقات التعاون الأصلية</translation>
-<translation id="5095987538085179331">يريد <ph name="URL" /> تعريف جهازك بشكلٍ فريد لتشغيل محتوى محمي.</translation>
 <translation id="5097002363526479830">تعذّر الاتصال بشبكة "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5099354524039520280">لأعلى</translation>
 <translation id="5100114659116077956">‏لكي تحصل على أحدث العناصر، يلزم تحديث Chromebox.</translation>
@@ -4581,7 +4580,6 @@
 <translation id="8214489666383623925">فتح ملف...</translation>
 <translation id="8214962590150211830">إزالة هذا الشخص</translation>
 <translation id="8217399928341212914">متابعة حظر التنزيلات التلقائية لعدة ملفات</translation>
-<translation id="8222121761382682759">إلغاء التثبيت...</translation>
 <translation id="8223479393428528563">لحفظ هذه الملفات بلا اتصال، عليك العودة للاتصال انقر بزر الماوس الأيمن على الملفات، وحدد خيار <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8226222018808695353">محظور </translation>
 <translation id="8226619461731305576">اللائحة</translation>

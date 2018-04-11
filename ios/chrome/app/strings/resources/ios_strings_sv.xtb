@@ -159,6 +159,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="3789841737615482174">Installera</translation>
 <translation id="385051799172605136">Bakåt</translation>
 <translation id="3897092660631435901">Meny</translation>
+<translation id="3915450441834151894">Webbplatsinformation</translation>
 <translation id="3928666092801078803">Slå ihop data</translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="3963231839620026525">Ny inkognitoflik</translation>
@@ -222,6 +223,7 @@ Din data har krypterats med lösenfrasen för synkronisering. Ange den om du vil
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Aktivera synkronisering</translation>
 <translation id="5244474230056479698">Synkroniseras med <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Öppna en flik om du vill surfa privat på webben.</translation>
 <translation id="5300589172476337783">Visa</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5327248766486351172">Namn</translation>
@@ -301,6 +303,7 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="6445981559479772097">SMS skickat.</translation>
 <translation id="6464071786529933911">Öppna i ny inkognitoflik</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> objekt har tagits bort</translation>
+<translation id="6528048372317642110">Filnedladdning är tillgängligt</translation>
 <translation id="6541915733953096570">Senaste timmen</translation>
 <translation id="6570040839871198836">Autofyll formulär</translation>
 <translation id="6656103420185847513">Redigera mapp</translation>

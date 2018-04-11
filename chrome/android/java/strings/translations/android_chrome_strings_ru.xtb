@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">Сторонние веб-сайты могут сохранять и читать файлы cookie</translation>
 <translation id="3662546969139119822">Нет записей</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
+<translation id="3692944402865947621">Не удалось скачать файл <ph name="FILE_NAME" />, так как хранилище недоступно.</translation>
 <translation id="3712575778697986964">Сбросить статистику?</translation>
 <translation id="3714981814255182093">Открыть панель поиска</translation>
 <translation id="3716182511346448902">Эта страница расходовала слишком много памяти, поэтому работа ее скриптов была приостановлена.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4062305924942672200">Юридическая информация</translation>
 <translation id="4084682180776658562">Закладка</translation>
+<translation id="4084712963632273211">Контент сайта <ph name="PUBLISHER_ORIGIN" />. <ph name="BEGIN_DEEMPHASIZED" />Получен с помощью Google<ph name="END_DEEMPHASIZED" />.</translation>
 <translation id="4084836577264234537">Скачанные файлы: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="4089831646916293264">Эта функция может мешать доступу к премиум-службам, которые предоставляет ваш оператор связи.</translation>
 <translation id="4095146165863963773">Удалить данные приложения?</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">Чтобы просмотреть или скопировать пароль, включите блокировку экрана на этом устройстве.</translation>
 <translation id="4558311620361989323">Работа с веб-страницами</translation>
 <translation id="4565377596337484307">Скрыть пароль</translation>
+<translation id="4570913071927164677">Сведения</translation>
 <translation id="4572422548854449519">Войдите в управляемый аккаунт</translation>
 <translation id="4581964774250883625">Вы перешли в режим инкогнито</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378">Осталось <ph name="HOURS" /> ч.</translation>
 <translation id="60924377787140961">Другие статьи скоро появятся. Хорошего дня!</translation>
 <translation id="6108923351542677676">Настройка…</translation>
+<translation id="6111020039983847643">использовано</translation>
 <translation id="6112702117600201073">Обновление страницы</translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6138140242378429169">Адаптировать страницу для мобильных устройств</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">Подтвердите удаление учетных данных устройства</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (последнее обновление: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">сэкономлено</translation>
 <translation id="7498271377022651285">Подождите…</translation>
 <translation id="7514365320538308">Скачать</translation>
 <translation id="751961395872307827">Не удалось подключиться к сайту</translation>

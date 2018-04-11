@@ -160,11 +160,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Attālinātā apstiprināšana</translation>
 <translation id="1509692106376861764">Šīs politikas darbība tika pārtraukta ar <ph name="PRODUCT_NAME" /> versiju 29.</translation>
-<translation id="1519337829779572350">Šis iestatījums ir pārtraukts, tā vietā izmantojiet SafeBrowsingExtendedReportingEnabled. SafeBrowsingExtendedReportingEnabled iespējošana vai atspējošana ir ekvivalenta SafeBrowsingExtendedReportingOptInAllowed vērtības iestatīšanai kā “False”.
-
-      Iestatot šai politikai vērtību “False”, lietotājiem tiek liegta iespēja Google serveriem nosūtīt sistēmas informāciju un lapas saturu. Ja šī vērtība ir “True” vai nav konfigurēta, lietotāji varēs nosūtīt sistēmas informāciju un lapas saturu funkcijai Droša pārlūkošana, lai palīdzētu noteikt bīstamas lietotnes un vietnes.
-
-      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Atļaut vietnēm izsekot lietotāju fizisko atrašanās vietu</translation>
 <translation id="152657506688053119">Noklusējuma meklētājprogrammas alternatīvo vietrāžu URL saraksts</translation>
 <translation id="1530812829012954197">Norādītās URL struktūras vienmēr tiek renderētas ar saimniekdatora pārlūku</translation>
@@ -325,6 +320,17 @@
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
+<translation id="2132732175597591362">Pārvalda URL rakstu balto sarakstu ar vietnēm, kurās atskaņošana vienmēr būs iespējota.
+
+      Ja automātiskā atskaņošana ir iespējota, videoklipi tiks atskaņoti automātiski (bez lietotāja piekrišanas), izmantojot pārlūkā <ph name="PRODUCT_NAME" /> ietverto audio saturu.
+
+      URL rakstam ir jābūt formatētam atbilstīgi norādījumiem vietnē https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Ja politikai AutoplayAllowed ir iestatīta vērtība “True”, tad šī politika nedarbosies.
+
+      Ja politikai AutoplayAllowed ir iestatīta vērtība “False”, tad šai politikai iestatītajiem URL rakstiem atskaņošana tiks atļauta.
+
+      Ņemiet vērā: ja darbojas <ph name="PRODUCT_NAME" /> un šīs politikas vērtība tiek mainīta, tā tiks piemērota tikai jaunākajām atvērtajām cilnēm. Tādējādi dažās cilnēs joprojām var tikt novērota iepriekšējā rīcība.</translation>
 <translation id="2134437727173969994">Atļaut ekrāna bloķēšanu</translation>
 <translation id="2137064848866899664">Ja šī politika ir iestatīta, katrs ekrāns tiek pagriezts
       iestatītajā virzienā ikreiz, kad ierīce tiek atkārtoti palaista,
@@ -862,11 +868,6 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
 <translation id="3646859102161347133">Ekrāna lupas veida iestatīšana</translation>
 <translation id="3653237928288822292">Noklusējuma meklētājprogrammas ikona</translation>
 <translation id="3660562134618097814">SAML identitātes nodrošinātāja sīkfailu pārsūtīšana pieteikšanās laikā</translation>
-<translation id="3687282113223807271">Kad lietotāji pāriet uz vietnēm, kas ir atzīmētas kā iespējami ļaunprātīgas, tiek rādīta funkcijas Droša pārlūkošana brīdinājuma lapa. Ja šis iestatījums ir iespējots, lietotāji nevar pāriet no brīdinājuma lapas uz ļaunprātīgo vietni.
-
-      Ja šis iestatījums ir atspējots vai nav konfigurēts, lietotāji pēc brīdinājuma saņemšanas var pāriet uz vietni, kas atzīmēta kā nevēlama.
-
-      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurē paplašinājumu instalēšanas melno sarakstu</translation>
 <translation id="3711895659073496551">Darbības apturēšana</translation>
 <translation id="3736879847913515635">Iespēja pievienot personu lietotāju pārvaldniekā</translation>
@@ -966,6 +967,9 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Norāda paplašinājumus, kas tiek automātiski instalēti demonstrācijas lietotājam ierīcēs, kurās atvērts mazumtirdzniecības režīms. Šie paplašinājumi tiek saglabāti ierīcē, un pēc instalēšanas tos var instalēt bezsaistē.
 
       Katrā saraksta ierakstā ir ietverta vārdnīca, kurai laukā “extension-id” ir jāiekļauj paplašinājuma ID, bet laukā “update-url”  — tā atjaunināšanas URL.</translation>
+<translation id="3873159954366380945">Ļauj iestatīt laika periodu, kurā tiek rādīti <ph name="PRODUCT_NAME" /> atkārtotas palaišanas paziņojumi, lai veiktu neapstrādātu atjauninājumu.
+
+      Šīs politikas iestatījumus var izmantot, lai kontrolētu laika periodu (milisekundēs), kurā lietotājs tiek pakāpeniski informēts, ka pārlūks <ph name="PRODUCT_NAME" /> ir atkārtoti jāpalaiž (vai ka pārlūks <ph name="PRODUCT_OS_NAME" /> ir jārestartē) atjaunināšanas nolūkā. Šajā laika periodā lietotājs tiks atkārtoti informēts par to, ka jāveic atjaunināšana, pamatojoties uz politikas <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> iestatījumu. Ja šī politika nav iestatīta, tiek izmantots noklusējuma periods — 345 600 000 milisekundes (četras dienas) operētājsistēmai <ph name="PRODUCT_OS_NAME" /> un 604 800 000 milisekundes (viena nedēļa) parējām platformām.</translation>
 <translation id="3877517141460819966">Integrētais divfaktoru autentificēšanas režīms</translation>
 <translation id="388237772682176890">Šī politika ir novecojusi versijā M53 un noņemta no versijas M54, jo ir noņemts protokola SPDY/3.1 atbalsts.
 
@@ -1316,6 +1320,14 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="489803897780524242">Parametrs, kas nosaka meklēšanas vienuma izvietojumu noklusējuma meklētājprogrammā</translation>
 <translation id="4899708173828500852">Iespējo drošu pārlūkošanu</translation>
+<translation id="4899802251198446659">Atļauj kontrolēt, vai videoklipus var atskaņot automātiski kopā ar <ph name="PRODUCT_NAME" /> audio saturu (bez lietotāja piekrišanas).
+
+      Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_NAME" /> ir atļauts automātiski atskaņot multivides saturu.
+      Ja politikai ir iestatīta vērtība “False”, <ph name="PRODUCT_NAME" /> nav atļauts automātiski atskaņot multivides saturu. Politiku AutoplayWhitelist var izmantot šīs politikas ignorēšanai noteiktiem URL rakstiem.
+      Pēc noklusējuma <ph name="PRODUCT_NAME" /> ir liegta automātiska multivides satura atskaņošana. Politiku AutoplayWhitelist var izmantot šīs politikas ignorēšanai noteiktiem URL rakstiem.
+
+      Ņemiet vērā: ja darbojas <ph name="PRODUCT_NAME" /> un šīs politikas vērtība tiek mainīta, tā tiks piemērota tikai jaunākajām atvērtajām cilnēm. Tādējādi dažās cilnēs joprojām var tikt novērota iepriekšējā rīcība.
+      </translation>
 <translation id="4906194810004762807">Ierīces politikas atsvaidzes ātrums</translation>
 <translation id="4917385247580444890">Spēcīgs</translation>
 <translation id="4923806312383904642">Atļaut funkcijai WebDriver ignorēt nesaderīgās politikas</translation>
@@ -1354,19 +1366,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ņemiet vērā, ka paroļu vecums var pārsniegt norādīto dienu skaitu, ja klientdators ilgstoši ir bijis bezsaistē.</translation>
 <translation id="5105313908130842249">Aizkave līdz ekrāna bloķēšanai, ja ierīce darbojas ar akumulatora jaudu</translation>
-<translation id="5106504910236139235">Iespējo <ph name="PRODUCT_NAME" /> drošas pārlūkošanas paplašināto ziņošanu un novērš lietotājiem iespēju mainīt šo iestatījumu.
-
-      Paplašinātā ziņošana nosūta Google serveriem sistēmas informāciju un lapas saturu, lai palīdzētu konstatēt bīstamas lietotnes un vietnes.
-
-      Ja iestatījuma vērtība ir “True”, pārskati tiks veidoti un sūtīti, kad nepieciešams (piemēram, kad tiek rādīta drošības iespiestā reklāma).
-
-      Ja iestatījuma vērtība ir “False”, pārskati netiks sūtīti nekad.
-
-      Ja politikai ir iestatīta vērtība “True” vai “False”, lietotājs nevarēs mainīt iestatījumu.
-
-      Ja politikas vērtība nav iestatīta, lietotājs varēs mainīt iestatījumu un izlemt, vai sūtīt pārskatus.
-
-      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Atspējoti uzņēmuma ierīču printeri</translation>
 <translation id="5130288486815037971">RC4 šifra komplektu iespējošana standartā TLS</translation>
 <translation id="5141670636904227950">Pieteikšanās ekrānā iespējotā ekrāna lupas noklusējuma veida iestatīšana</translation>
@@ -1589,19 +1588,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
-<translation id="5784370777704871674">Iespējo <ph name="PRODUCT_NAME" /> funkciju “Droša pārlūkošana” un neļauj lietotājiem mainīt šo iestatījumu.
-
-      Ja šis iestatījums ir iespējots, funkcija “Droša pārlūkošana” vienmēr ir ieslēgta.
-
-      Ja šis iestatījums ir atspējots, funkcija “Droša pārlūkošana” vienmēr ir izslēgta.
-
-      Ja jūs iespējojat vai atspējojat šo iestatījumu, lietotāji nevar mainīt vai ignorēt <ph name="PRODUCT_NAME" /> iestatījumu “Iespējot aizsardzību pret pikšķerēšanu un ļaunprātīgu programmatūru”.
-
-      Ja šī politika nav iestatīta, iestatījums tiek iespējots, bet lietotāji to var mainīt.
-
-      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.
-
-      Šī politika nav pieejama Windows instancēs, kas nav savienotas ar <ph name="MS_AD_NAME" /> domēnu.</translation>
 <translation id="5809728392451418079">Ierīces lokālo kontu parādāmā vārda iestatīšana</translation>
 <translation id="5814301096961727113">Mutisko atsauksmju noklusējuma statusa iestatīšana pieteikšanās ekrānā</translation>
 <translation id="5815129011704381141">Automātiski atsāknēt pēc atjaunināšanas</translation>
@@ -1797,11 +1783,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6281043242780654992">Konfigurējiet vietējās ziņojumapmaiņas politikas. Melnajā sarakstā iekļauto vietējās ziņojumapmaiņas saimniekdatoru darbība netiks atļauta, ja vien tie nebūs iekļauti baltajā sarakstā.</translation>
 <translation id="6282799760374509080">Audio tveršanas ļaušana vai noraidīšana</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Iespējo komponentu atjauninājumus visiem produkta <ph name="PRODUCT_NAME" /> komponentiem, ja šī politika nav iestatīta vai tās iestatījums ir “True”.
-
-      Ja šīs politikas iestatījums ir “False”, komponentu atjauninājumi ir atspējoti. Tomēr uz dažiem komponentiem šī politika neattiecas: netiks atspējoti atjauninājumi tiem komponentiem, kas nesatur izpildāmu kodu, būtiski nemaina pārlūka darbību vai kas ir kritiski nepieciešami.
-      Šādu komponentu piemēri: sertifikātu atsaukšanas saraksti un drošas pārlūkošanas dati.
-      Plašāku informāciju par funkciju Droša pārlūkošana skatiet vietnē https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Domēna nosaukuma automātiskās pabeigšanas iespējošana lietotāja pierakstīšanās laikā</translation>
 <translation id="6315673513957120120">Ja lietotāji atver vietnes, kurās ir SSL kļūdas, pārlūkā Chrome tiek parādīta brīdinājuma lapa. Pēc noklusējuma, kā arī tad, ja šai politikai ir iestatīta vērtība Patiesa, lietotājiem ir atļauts no brīdinājuma lapas pāriet uz vietni.
       Ja politikai ir iestatīta vērtība Nepatiesa, lietotājiem tiek liegts no brīdinājuma lapas pāriet uz vietni.</translation>

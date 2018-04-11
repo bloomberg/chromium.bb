@@ -158,6 +158,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="3789841737615482174">Namesti</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3897092660631435901">Meni</translation>
+<translation id="3915450441834151894">Podatki o spletnem mestu</translation>
 <translation id="3928666092801078803">Združevanje podatkov</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="3963231839620026525">New Incognito Tab</translation>
@@ -220,6 +221,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Omogoči sinhronizacijo</translation>
 <translation id="5244474230056479698">Syncing to <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Open a tab to browse the web privately.</translation>
 <translation id="5300589172476337783">Pokaži</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5327248766486351172">Ime</translation>
@@ -299,6 +301,7 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="6445981559479772097">Sporočilo poslano.</translation>
 <translation id="6464071786529933911">Open in New Incognito Tab</translation>
 <translation id="6482629121755362506">Št. izbrisanih elementov: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="6528048372317642110">File download is available</translation>
 <translation id="6541915733953096570">Past Hour</translation>
 <translation id="6570040839871198836">Obrazci s samod. izpolnj.</translation>
 <translation id="6656103420185847513">Urejanje mape</translation>

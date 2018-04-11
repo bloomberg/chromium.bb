@@ -370,6 +370,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4176463684765177261">Deaktivert</translation>
 <translation id="4188530942454211480">Forrige setning</translation>
 <translation id="4191918948604314587">En knapp</translation>
+<translation id="419265409837491189">Gå til den forrige kolonnen</translation>
 <translation id="4202186506458631436">Flytt til høyre</translation>
 <translation id="4206289001967551965">Inne i tabellen</translation>
 <translation id="4209770650650780359">Trykk på opp- eller nedoverpilen for å bytte mellom automatiske fullføringer.</translation>
@@ -420,6 +421,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4660783501463101648">Classic er fjernet. Tasten for å bytte tilbake til ChromeVox Classic er fjernet.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Gå til den neste kolonnen</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Forrige landemerke</translation>
 <translation id="4696413482802371445">Det finnes ikke flere overskrifter på nivå 5.</translation>
@@ -435,6 +437,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4826415162591436065">Naviger fremover</translation>
 <translation id="4826604887384865800">Neste hopp</translation>
 <translation id="4827410568042294688">fjernet fra utvalget</translation>
+<translation id="4839925464551908214">Gå til den forrige raden</translation>
 <translation id="4842108708071771135">Det finnes ikke flere blokksitat-elementer.</translation>
 <translation id="4844625982113518938">Trykk på en hvilken som helst tast for å finne ut hva den heter. Du kan lukke læremodusen ved å trykke på Ctrl+W.</translation>
 <translation id="4846428657345567687">Velkommen til ChromeVox!</translation>
@@ -789,6 +792,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8186185314313222077">slå av/på fullskjerm</translation>
 <translation id="8199231515320852133">Kunngjør overskriftene i den nåværende cellen</translation>
 <translation id="820417203470636242">Tom celle.</translation>
+<translation id="820469951249669083">Gå til den neste raden</translation>
 <translation id="8215202828671303819">Flervalg</translation>
 <translation id="826991282343985864">r$1k$2</translation>
 <translation id="8276439074553447000">Gå til forrige fokuserbare element</translation>

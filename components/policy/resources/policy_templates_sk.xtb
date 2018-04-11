@@ -33,6 +33,7 @@
 <translation id="1096105751829466145">Predvolený poskytovateľ vyhľadávania</translation>
 <translation id="1099282607296956954">Povolenie izolácie všetkých webov</translation>
 <translation id="1117535567637097036">Obslužné nástroje protokolov nastavené prostredníctvom tohto pravidla sa nepoužívajú pri spracovávaní intencií Androidu.</translation>
+<translation id="1118093128235245168">Povoliť webom žiadať používateľa o prístup k pripojenému zariadeniu USB</translation>
 <translation id="1128903365609589950">Umožňuje nakonfigurovať adresár, ktorý <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
 
       Ak toto pravidlo nastavíte, <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ uviedol príznak „--disk-cache-dir“. Ak chcete zabrániť strate dát alebo iným neočakávaných chybám, nemali by ste v rámci tohto pravidla nastaviť hlavný adresár zväzku alebo adresár používaný na iné účely, pretože <ph name="PRODUCT_NAME" /> spravuje jeho obsah.
@@ -68,6 +69,9 @@
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia 3 hodiny. Minimálna
       povolená frekvencia je 60 sekúnd.</translation>
 <translation id="1204263402976895730">Povolené podnikové tlačiarne</translation>
+<translation id="1216758672198492382">Umožňuje nastaviť, či môžu weby získať prístup k pripojeným zariadeniam USB. Prístup môže byť úplne zablokovaný alebo je možné používateľa požiadať, keď chce web získať prístup k pripojeným zariadeniam USB.
+
+          Ak toto pravidlo ponecháte nenastavené, použije sa hodnota 3 a používateľ ju bude môcť zmeniť.</translation>
 <translation id="1219695476179627719">Určuje, či má byť zariadenie vrátené na verziu nastavenú pravidlom <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, ak už používa novšiu verziu.
 
       Predvolene je pravidlo zakázané (hodnota RollbackDisabled).</translation>
@@ -155,11 +159,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Diaľkové overenie</translation>
 <translation id="1509692106376861764">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29.</translation>
-<translation id="1519337829779572350">Podpora tohto nastavenia bola ukončená, použite namiesto neho SafeBrowsingExtendedReportingEnabled. Povolenie alebo zakázanie parametra SafeBrowsingExtendedReportingEnabled je rovnaké ako nastavenie parametra SafeBrowsingExtendedReportingOptInAllowed na hodnotu False.
-
-      Nastavením tohto pravidla na možnosť False zabránite používateľom odosielať určité informácie o systéme a obsah stránok na servery Google. Ak toto pravidlo nastavíte na možnosť True alebo ak ho ponecháte nenastavené, používatelia budú môcť odosielať určité informácie o systéme a obsah stránok do funkcie Bezpečné prehliadanie, ktorá pomáha zisťovať nebezpečné aplikácie a weby.
-
-      Ďalšie informácie o Bezpečnom prehliadaní nájdete na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Povoliť stránkam sledovať fyzickú polohu používateľov</translation>
 <translation id="152657506688053119">Zoznam alternatívnych webových adries pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="1530812829012954197">Vždy vykresliť nasledujúce vzory webových adries v hostiteľskom prehliadači</translation>
@@ -313,6 +312,17 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2113068765175018713">Obmedziť časové obdobie prevádzky zariadenia automatickým reštartovaním</translation>
 <translation id="2127599828444728326">Povoliť upozornenia na týchto webových stránkach</translation>
 <translation id="2131902621292742709">Oneskorenie zníženia jasu obrazovky pri napájaní z batérie</translation>
+<translation id="2132732175597591362">Umožňuje ovládať bielu listinu vzorov webových adries, ktorých automatické prehrávanie bude vždy povolené.
+
+      Ak je automatické prehrávanie povolené, videá sa môžu prehrávať automaticky (bez súhlasu používateľa) so zvukovým obsahom v prehliadači <ph name="PRODUCT_NAME" />.
+
+      Vzor webovej adresy musí byť formátovaný podľa pokynov na adrese https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Ak pravidlo AutoplayAllowed nastavíte na hodnotu True, nebude platiť.
+
+      Ak ho nastavíte na hodnotu False, ľubovoľné vzory webových adries nastavené v tomto pravidle sa budú môcť prehrávať.
+
+      Upozorňujeme, že ak toto pravidlo zmeníte, keď je prehliadač <ph name="PRODUCT_NAME" />, použije sa iba na nové otvorené karty. Pri niektorých kartách si budete môcť stále všimnúť predchádzajúce správanie.</translation>
 <translation id="2134437727173969994">Povoliť uzamykanie obrazovky</translation>
 <translation id="2137064848866899664">Ak nastavíte toto pravidlo, všetky obrazovky budú otočené
       určeným smerom, keď ich reštartujete alebo prvýkrát pripojíte
@@ -597,6 +607,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2801230735743888564">Povoľte používateľom hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline.
 
       Ak je toto pravidlo nastavené na hodnotu False, používatelia nebudú môcť hrať veľkonočnú hru s dinosaurom, keď je zariadenie offline. Ak je toto pravidlo nastavené na hodnotu True, používatelia môžu hrať hru s dinosaurom. Ak toto pravidlo nie je nastavené, v zaregistrovanom systéme Chrome OS používatelia veľkonočnú hru s dinosaurom hrať nemôžu, ale za všetkých iných okolností ju hrať môžu.</translation>
+<translation id="2802085784857530815">Umožňuje ovládať, či používatelia môžu používať tlačiarne, ktoré nepatria podniku.
+
+      Ak toto pravidlo nastavíte na hodnotu True alebo ho nenastavíte, používatelia budú môcť pridávať a konfigurovať vlastné natívne tlačiarne a tlačiť pomocou nich.
+
+      Ak je toto pravidlo nastavené na hodnotu False, používatelia nebudú môcť pridávať a konfigurovať vlastné natívne tlačiarne. Nebudú môcť ani tlačiť pomocou všetkých v minulosti nakonfigurovaných natívnych tlačiarní.
+      </translation>
 <translation id="2805707493867224476">Povoliť všetkým webovým stránkam zobrazovať kontextové okná</translation>
 <translation id="2808013382476173118">Povoľuje použitie serverov typu STUN, keď sa vzdialení klienti pokúšajú nadviazať spojenie s týmto počítačom.
 
@@ -754,6 +770,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie alebo rovnaké ako oneskorenie vypnutia obrazovky (pokiaľ je nastavené) a oneskorenie režimu nečinnosti.</translation>
 <translation id="3264793472749429012">Kódovania predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3273221114520206906">Predvolené nastavenie kódu JavaScript</translation>
+<translation id="3284094172359247914">Ovládať používanie rozhrania WebUSB API</translation>
 <translation id="3288595667065905535">Kanál verzie</translation>
 <translation id="3292147213643666827">Umožňuje prehliadaču <ph name="PRODUCT_NAME" /> fungovať ako server proxy medzi službou <ph name="CLOUD_PRINT_NAME" /> a staršími tlačiarňami pripojenými k počítaču.
 
@@ -835,6 +852,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="350797926066071931">Povoliť službu Translate</translation>
 <translation id="3512226956150568738">Ak model klientskeho zariadenia podporoval ARC už predtým, ako bolo na spustenie ARC potrebné migrovať na ext4, a ak je pravidlo ArcEnabled nastavené na hodnotu True, táto možnosť sa bude správať ako parameter AskUser (hodnota 3). Vo všetkých ostatných prípadoch (ak model zariadenia predtým ARC nepodporoval alebo ak je pravidlo ArcEnabled nastavené na hodnotu False), táto hodnota sa bude zhodovať s parametrom DisallowArc (hodnota 0).</translation>
+<translation id="3524204464536655762">Nepovoliť žiadnemu webu požadovať prístup k zariadeniam USB prostredníctvom rozhrania WebUSB API</translation>
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3577251398714997599">Nastavenie reklám pre weby s obťažujúcimi reklamami</translation>
@@ -843,11 +861,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3646859102161347133">Nastavenie typu lupy obrazovky</translation>
 <translation id="3653237928288822292">Ikona predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="3660562134618097814">Preniesť súbory cookie poskytovateľa identity SAML počas prihlásenia</translation>
-<translation id="3687282113223807271">Keď používateľ prejde na weby, ktoré sú nahlásené ako potenciálne škodlivé, služba Bezpečné prehliadanie zobrazí stránku s upozornením. Povolenie tohto nastavenia zabráni používateľom pokračovať zo stránky s upozornením na škodlivý web.
-
-      Ak je toto nastavenie zakázané alebo ak nie je nakonfigurované, používatelia môžu pokračovať na nahlásený web aj po zobrazení upozornenia.
-
-      Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfigurovať zoznam rozšírení, ktorých inštalácia je zakázaná</translation>
 <translation id="3711895659073496551">Režim spánku</translation>
 <translation id="3736879847913515635">Povoliť pridanie osoby pomocou správcu používateľov</translation>
@@ -944,6 +957,9 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Zoznam rozšírení, ktoré sa automaticky nainštalujú pre používateľa ukážky v zariadeniach v režime predaja. Tieto rozšírenia sa uložia v zariadení a po inštalácii môžu byť nainštalované v režime offline.
 
       Každý záznam v zozname obsahuje adresár, ktorý musí zahŕňať ID rozšírenia v poli „extension-id“ a jeho webovú adresu pre aktualizácie v poli „update-url“.</translation>
+<translation id="3873159954366380945">Umožňuje nastaviť časové obdobie, počas ktorého sa zobrazujú upozornenia na opätovné spustenie prehliadača <ph name="PRODUCT_NAME" />, aby sa použila čakajúca aktualizácia.
+
+      Pomocou tohto nastavenia pravidla môžete ovládať časové obdobie (v milisekundách), počas ktorého je používateľ postupne informovaný o tom, že <ph name="PRODUCT_NAME" /> musí znova spustiť (alebo že sa <ph name="PRODUCT_OS_NAME" /> musí reštartovať), aby mohol použiť aktualizáciu. V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie na základe nastavenia pravidla <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre prehliadač <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre všetky ostatné platformy.</translation>
 <translation id="3877517141460819966">Režim integrovaného druhého faktora overenia totožnosti</translation>
 <translation id="388237772682176890">Podpora tohto pravidla bola ukončená vo verzii M53. Toto pravidlo bolo odstránené vo verzii M54, pretože bola ukončená podpora protokolu SPDY/3.1.
 
@@ -1296,6 +1312,14 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="489803897780524242">Parameter kontrolujúci umiestnenie vyhľadávacích výrazov pre predvoleného poskytovateľa vyhľadávania</translation>
 <translation id="4899708173828500852">Povoliť Bezpečné prehliadanie</translation>
+<translation id="4899802251198446659">Umožňuje ovládať, či sa majú videá prehrávať automaticky (bez súhlasu používateľa) so zvukovým obsahom v prehliadači <ph name="PRODUCT_NAME" />.
+
+      Ak toto pravidlo nastavíte na hodnotu True, v prehliadači <ph name="PRODUCT_NAME" /> je povolené automatické prehrávanie médií.
+      Ak ho nastavíte na hodnotu False, v prehliadači <ph name="PRODUCT_NAME" /> je zakázané automatické prehrávanie médií. Toto správanie môžete v prípade určitých vzorov webových adries prepísať pomocou pravidla AutoplayWhitelistr.
+      Predvolene je v prehliadači <ph name="PRODUCT_NAME" /> automatické prehrávanie médií zakázané. Toto správanie môžete v prípade určitých vzorov webových adries prepísať pomocou pravidla AutoplayWhitelistr.
+
+      Upozorňujeme, že ak toto pravidlo zmeníte, keď je prehliadač <ph name="PRODUCT_NAME" /> spustený, použije sa iba v prípade nových otvorených kariet. Pri niektorých kartách si preto budete môcť všimnúť predchádzajúce správanie.
+      </translation>
 <translation id="4906194810004762807">Frekvencia obnovenia pravidiel pre zariadenie</translation>
 <translation id="4917385247580444890">Silné</translation>
 <translation id="4923806312383904642">Povolenie pre WebDriver prepisovať nekompatibilné pravidlá</translation>
@@ -1334,19 +1358,6 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 
       Upozorňujeme, že heslá môžu byť staršie ako zadaný počet dní, ak je klient dlhší čas offline.</translation>
 <translation id="5105313908130842249">Oneskorenie uzamknutia obrazovky pri napájaní z batérie</translation>
-<translation id="5106504910236139235">Umožňuje povoliť rozšírené hlásenia Bezpečného prehliadania v prehliadači <ph name="PRODUCT_NAME" /> a zabrániť používateľom toto nastavenie meniť.
-
-      Prostredníctvom rozšírených hlásení sa na servery Googlu odosielajú niektoré informácie o systéme a obsah stránok, ktoré sa používajú na rozpoznávanie nebezpečných aplikácií a webov.
-
-      Ak pre toto nastavenie zadáte hodnotu True, hlásenia sa budú vytvárať a podľa potreby odosielať (napríklad po zobrazení bezpečnostnej intersticiálnej reklamy).
-
-      Ak ho nastavíte na hodnotu False, hlásenia sa nebudú odosielať.
-
-      Ak ho nastavíte na hodnotu True alebo False, používateľ ho nebude môcť upraviť.
-
-      Ak toto pravidlo ponecháte nenastavené, používateľ ho bude môcť zmeniť a rozhodovať, či sa majú hlásenia odosielať.
-
-      Ďalšie informácie o Bezpečnom prehliadaní nájdete na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Zakázané podnikové tlačiarne zariadenia</translation>
 <translation id="5130288486815037971">Ovláda, či sú v protokole TLS povolené šifrovacie súpravy RC4</translation>
 <translation id="5141670636904227950">Nastaviť predvolený typ lupy obrazovky, ktorý je povolený na prihlasovacej obrazovke</translation>
@@ -1560,19 +1571,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
           Ak toto pravidlo nastavené nie je, použije sa predvolená doba.
 
           Hodnota pravidla by mala byť uvedená v milisekundách.</translation>
-<translation id="5784370777704871674">Povolí v prehliadači <ph name="PRODUCT_NAME" /> funkciu Bezpečné prehliadanie a bráni používateľom toto nastavenie zmeniť.
-
-      Ak toto nastavenie povolíte, Bezpečné prehliadanie bude stále aktívne.
-
-      Ak toto nastavenie zakážete, Bezpečné prehliadanie zostane za všetkých okolností neaktívne.
-
-      Ak toto nastavenie povolíte alebo zakážete, používatelia nebudú môcť v prehliadači <ph name="PRODUCT_NAME" /> zmeniť ani prekonať nastavenie Povoliť ochranu pred phishingom a škodlivým softvérom.
-
-      Ak toto pravidlo ponecháte nenastavené, povolí sa, no používateľ to bude môcť zmeniť.
-
-      Ďalšie informácie o Bezpečnom prehliadaní nájdete na adrese https://developers.google.com/safe-browsing.
-
-      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú v doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Nastaviť zobrazovaný názov pre miestne účty na zariadení</translation>
 <translation id="5814301096961727113">Nastaviť predvolený stav hlasovej odozvy na prihlasovacej obrazovke</translation>
 <translation id="5815129011704381141">Automaticky reštartovať po aktualizácii</translation>
@@ -1771,11 +1769,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6281043242780654992">Umožňuje konfiguráciu pravidiel pre odosielanie natívnych správ. Hostitelia pre odosielanie natívnych správ, ktorí sú na zozname zakázaných položiek, budú povolení iba v prípade, že budú pridaní na bielu listinu.</translation>
 <translation id="6282799760374509080">Povoliť alebo zakázať zaznamenávanie zvuku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Umožňuje povoliť aktualizácie všetkých komponentov v prehliadači <ph name="PRODUCT_NAME" />, keď nie je nastavené alebo je nastavené na možnosť True.
-
-      Ak ho nastavíte na možnosť False, aktualizácie komponentov budú zakázané. Na niektoré komponenty sa však toto pravidlo nevzťahuje: nebudú zakázané aktualizácie komponentov bez spustiteľného kódu ani také, ktoré podstatne nezmenia správanie prehliadača alebo sú dôležité pre jeho zabezpečenie.
-      Medzi príklady týchto komponentov patria zoznamy zrušení certifikátov a dáta bezpečného prehliadania.
-      Ďalšie informácie o Bezpečnom prehliadaní získate na adrese https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Povolenie automatického dopĺňania názvu domény počas prihlasovania používateľa</translation>
 <translation id="6315673513957120120">Keď používateľ prejde na weby, ktoré obsahujú chyby protokolu SSL, Chrome zobrazí stránku s upozornením. V predvolenom nastavení alebo vtedy, keď je toto pravidlo nastavené na možnosť True, môžu používatelia preskočiť tieto stránky s upozornením prostredníctvom kliknutia.
       Nastavením tohto pravidla na možnosť False zakážete používateľom, aby mohli stránku s upozornením preskočiť kliknutím.</translation>
@@ -2640,6 +2633,15 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 
           Obslužné nástroje protokolu, ktoré sú registrované týmto pravidlom, budú zlúčené s nástrojmi registrovanými používateľom a budú všetky k dispozícii na použitie. Používateľ môže prepísať obslužné nástroje protokolu nainštalované pravidlom inštaláciou nového predvoleného obslužného nástroja. Obslužný protokol registrovaný pravidlom však nie je možné odstrániť.</translation>
+<translation id="9123211093995421438">Umožňuje stanoviť minimálny počet míľnikov, od ktorého sa má kedykoľvek spustiť vrátenie systému <ph name="PRODUCT_OS_NAME" /> na stabilnú verziu.
+
+      Pre spotrebiteľa je predvolená hodnota 0, pre podnikové registrované zariadenia je to 4 (približne polrok).
+
+      Nastavením tohto pravidla zabránite použitiu ochrany pred vrátením minimálne počas obdobia určeného týmto počtom míľnikov.
+
+      Nastavenie tohto pravidla na nižšiu hodnotu má trvalý dôsledok: zariadenie sa MOŽNO nebude môcť vrátiť na skoršie verzie, aj keď pravidlo znova nastavíte na vyššiu hodnotu.
+
+      Možnosti skutočného vrátenia môžu tiež závisieť od dosky a opráv závažných chýb zabezpečenia.</translation>
 <translation id="913195841488580904">Blokovať prístup k zoznamu webových adries</translation>
 <translation id="9135033364005346124">Povoliť server proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Biela listina ovládajúca, ktoré režimy rýchleho odomknutia môže používateľ nakonfigurovať a použiť na odomknutie uzamknutej obrazovky.

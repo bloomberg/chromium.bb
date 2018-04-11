@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Proveïdor de cerca predeterminat</translation>
 <translation id="1099282607296956954">Activa l'aïllament de tots els llocs web</translation>
 <translation id="1117535567637097036">Els gestors de protocols establerts a través d'aquesta política no s'utilitzen quan es gestionen els intents d'Android.</translation>
+<translation id="1118093128235245168">Permet que els llocs web demanin a l'usuari que garanteixi accés a un dispositiu USB connectat</translation>
 <translation id="1128903365609589950">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--disk-cache-dir" o no. Per evitar la pèrdua de dades o altres errors inesperats, aquesta política no s'ha d'establir al directori arrel del volum ni en un directori utilitzat per a altres finalitats, ja que <ph name="PRODUCT_NAME" /> n'administra els continguts.
@@ -69,6 +70,9 @@
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
       predeterminada. La freqüència mínima permesa és de 60 segons.</translation>
 <translation id="1204263402976895730">Impressores d'empresa activades</translation>
+<translation id="1216758672198492382">Permet definir si els llocs web poden obtenir accés a dispositius USB connectats. L'accés es pot bloquejar completament o es pot consultar a l'usuari cada cop que un lloc web vulgui obtenir accés a dispositius USB connectats.
+
+          Si aquesta política no es defineix, es farà servir el valor "3" i l'usuari podrà canviar-lo.</translation>
 <translation id="1219695476179627719">Indica si cal que el dispositiu torni a la versió establerta per la política <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> si ja s'hi executa una versió posterior.
 
       L'opció predeterminada és RollbackDisabled.</translation>
@@ -154,11 +158,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Testimoni remot</translation>
 <translation id="1509692106376861764">Aquesta política no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Aquesta opció de configuració està obsoleta, però pots utilitzar SafeBrowsingExtendedReportingEnabled. Activar o desactivar SafeBrowsingExtendedReportingEnabled és el mateix que establir SafeBrowsingExtendedReportingOptInAllowed en "false".
-
-      Si aquesta política s'estableix en "false", els usuaris no podran decidir si volen que s'enviï informació del sistema i contingut de les pàgines als servidors de Google. Si aquesta opció de configuració s'estableix en "true" o no s'estableix, els usuaris podran enviar aquestes dades a Navegació segura per ajudar a detectar aplicacions i llocs perillosos.
-
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Permet que els llocs facin un seguiment de la ubicació física dels usuaris</translation>
 <translation id="152657506688053119">Llista d'URL alternatius per al proveïdor de cerca predeterminat</translation>
 <translation id="1530812829012954197">Renderitza sempre els patrons d'URL següents al navegador de l'amfitrió</translation>
@@ -310,6 +309,17 @@
 <translation id="2113068765175018713">Limita el temps d'activitat del dispositiu mitjançant el reinici automàtic</translation>
 <translation id="2127599828444728326">Permet les notificacions en aquests llocs</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>
+<translation id="2132732175597591362">Controla la llista blanca de patrons d'URL en què la reproducció automàtica estarà sempre activada.
+
+      Si la reproducció automàtica està activada, els vídeos es poden reproduir automàticament (sense el consentiment de l'usuari) amb contingut d'àudio a <ph name="PRODUCT_NAME" />.
+
+      Els patrons d'URL han de tenir el format que s'indica a la pàgina https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Si la política AutoplayAllowed s'estableix en "true", aquesta política no tindrà efecte.
+
+      Si la política AutoplayAllowed s'estableix en "false", es podran continuar reproduint vídeos en qualsevol patró d'URL establert en aquesta política.
+
+      Tingues en compte que si <ph name="PRODUCT_NAME" /> s'està executant i aquesta política es modifica, només s'aplicarà a les noves pestanyes obertes. Per tant, és possible que algunes pestanyes continuïn presentant el comportament anterior.</translation>
 <translation id="2134437727173969994">Permet bloquejar la pantalla</translation>
 <translation id="2137064848866899664">Si aquesta política s'estableix, després de cada reinici es giren totes les
       visualitzacions segons l'orientació especificada. També es giren la primera vegada
@@ -576,6 +586,11 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="2801230735743888564">Permet que els usuaris juguin al joc del dinosaure que apareix per sorpresa quan el dispositiu està sense connexió.
 
        Si aquesta política s'estableix en "false", els usuaris no podran jugar-hi quan el dispositiu estigui sense connexió. En canvi, si s'estableix en "true", els usuaris podran jugar-hi. Si es deixa sense establir, els usuaris no podran jugar a aquest joc en un dispositiu Chrome OS inscrit, però sí que ho podran fer en altres circumstàncies.</translation>
+<translation id="2802085784857530815">Permet controlar si els usuaris poden accedir a impressores que no són d'empresa
+      Si la política s'estableix en "true" o no es defineix, els usuaris podran afegir les seves pròpies impressores natives, configurar-les i utilitzar-les per imprimir.
+
+      Si la política s'estableix en "false", els usuaris no podran afegir ni configurar les seves pròpies impressores natives. Tampoc no podran imprimir utilitzant cap impressora nativa configurada anteriorment.
+      </translation>
 <translation id="2805707493867224476">Permet que tots els llocs mostrin finestres emergents</translation>
 <translation id="2808013382476173118">Activa l'ús de servidors STUN quan els clients remots proven d'establir una connexió a aquest ordinador.
 
@@ -728,6 +743,7 @@ Si aquesta política no es defineix, els usuaris podran canviar l'ús del client
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
 <translation id="3264793472749429012">Codificacions del proveïdor de cerca predeterminat</translation>
 <translation id="3273221114520206906">Configuració de JavaScript predeterminada</translation>
+<translation id="3284094172359247914">Controla l'ús de l'API WebUSB</translation>
 <translation id="3288595667065905535">Canal de la versió</translation>
 <translation id="3292147213643666827">Activa <ph name="PRODUCT_NAME" /> perquè actuï com a servidor intermediari entre <ph name="CLOUD_PRINT_NAME" /> i les impressores heretades connectades a l'ordinador.
 
@@ -808,6 +824,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="350797926066071931">Activa Google Traductor</translation>
 <translation id="3512226956150568738">Si el model de dispositiu del client ja admetia ARC abans que la migració a ext4 fos necessària per executar ARC, i si la política ArcEnabled s'estableix en "true", aquesta opció es comportarà com AskUser (valor 3). En la resta de casos (si abans el model de dispositiu no admetia ARC o si la política ArcEnabled s'estableix en "false"), aquest valor és equivalent a DisallowArc (valor 0).</translation>
+<translation id="3524204464536655762">No permet que cap lloc web sol·liciti accés a dispositius USB mitjançant l'API WebUSB</translation>
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3577251398714997599">Configuració d'anuncis per als llocs web amb anuncis intrusius</translation>
@@ -816,11 +833,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
 <translation id="3660562134618097814">Transfereix les galetes del proveïdor d'identitat SAML durant l'inici de sessió</translation>
-<translation id="3687282113223807271">El servei Navegació segura mostra una pàgina d'advertiment quan els usuaris naveguen a llocs marcats com a potencialment maliciosos. En activar aquesta opció de configuració, els usuaris no poden accedir de cap manera a un lloc maliciós des del lloc web d'advertiment.
-
-      Si aquesta opció de configuració es desactiva o no es defineix, els usuaris poden decidir si volen accedir al lloc marcat després de veure l'advertiment.
-
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Configura la llista negra d'instal·lació d'extensions</translation>
 <translation id="3711895659073496551">Suspèn</translation>
 <translation id="3736879847913515635">Activa l'opció Afegeix una persona al gestor d'usuaris</translation>
@@ -913,6 +925,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
      Especifica les extensions que s'instal·len automàticament per a l'usuari de la demostració en els dispositius en mode de venda. Aquestes extensions es desen al dispositiu i es poden instal·lar fora de línia, després de la instal·lació.
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
+<translation id="3873159954366380945">Et permet establir el període de temps durant el qual es mostren les notificacions per reiniciar <ph name="PRODUCT_NAME" /> a fi d'aplicar una actualització pendent.
+
+      Aquesta política es pot utilitzar per controlar el període de temps, en mil·lisegons, durant el qual s'informa l'usuari de manera progressiva que cal reiniciar <ph name="PRODUCT_NAME" /> (o <ph name="PRODUCT_OS_NAME" />) per aplicar una actualització. Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat d'actualitzar el navegador en funció de com estigui configurada la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si la política no s'estableix, s'utilitza el període predeterminat de 345.600.000 mil·lisegons (quatre dies) per a <ph name="PRODUCT_OS_NAME" /> i de 604.800.000 mil·lisegons (una setmana) per a la resta de plataformes.</translation>
 <translation id="3877517141460819966">Mode d'autenticació de dos factors integrat</translation>
 <translation id="388237772682176890">Aquesta política es considera obsoleta a M53 i s'ha suprimit a M54, perquè el protocol SPDY/3.1 ja no s'admet.
 
@@ -1244,6 +1259,14 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="489803897780524242">Paràmetre que controla l'emplaçament del terme de cerca del proveïdor de cerca predeterminat</translation>
 <translation id="4899708173828500852">Activa Navegació segura</translation>
+<translation id="4899802251198446659">Et permet controlar si els vídeos es poden reproduir automàticament (sense el consentiment de l'usuari) amb contingut d'àudio a <ph name="PRODUCT_NAME" />.
+
+      Si la política s'estableix en "true", <ph name="PRODUCT_NAME" /> podrà reproduir contingut multimèdia automàticament.
+      Si la política s'estableix en "false", <ph name="PRODUCT_NAME" /> no podrà reproduir contingut multimèdia automàticament. La política AutoplayWhitelist es pot utilitzar per substituir aquest comportament en certs patrons d'URL.
+      De manera predeterminada, <ph name="PRODUCT_NAME" /> no pot reproduir contingut multimèdia automàticament. La política AutoplayWhitelist es pot utilitzar per substituir aquest comportament en certs patrons d'URL.
+
+      Tingues en compte que si <ph name="PRODUCT_NAME" /> s'està executant i aquesta política es modifica, només s'aplicarà a les noves pestanyes obertes. Per tant, és possible que algunes pestanyes continuïn presentant el comportament anterior.
+      </translation>
 <translation id="4906194810004762807">Freqüència d'actualització de la política de dispositiu</translation>
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4923806312383904642">Permet que WebDriver substitueixi les polítiques no compatibles</translation>
@@ -1278,19 +1301,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Tingues en compte que les contrasenyes poden tenir una antiguitat superior al nombre de dies especificat si el dispositiu del client ha estat sense connexió durant un període més llarg de temps.</translation>
 <translation id="5105313908130842249">Retard del bloqueig de pantalla quan s'utilitza bateria</translation>
-<translation id="5106504910236139235">Activa els informes ampliats de Navegació segura a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
-
-      Els informes ampliats envien informació del sistema i contingut de la pàgina als servidors de Google per ajudar a detectar aplicacions i llocs web perillosos.
-
-      Si l'opció de configuració s'estableix en "true", es crearan i s'enviaran informes sempre que sigui necessari (per exemple, quan es mostra un intersticial de seguretat).
-
-      Si l'opció de configuració s'estableix en "false", no s'enviaran mai informes.
-
-      Tant si aquesta política s'estableix en "true" com en "false", l'usuari no la podrà modificar.
-
-      Si aquesta política es deixa sense establir, l'usuari podrà canviar l'opció de configuració i decidir si vol enviar informes o no.
-
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Impressores desactivades per a dispositius d'empresa</translation>
 <translation id="5130288486815037971">Si els sistemes de xifratge RC4 de TLS estan activats</translation>
 <translation id="5141670636904227950">Estableix el tipus de lupa predeterminat activat a la pantalla d'inici de sessió</translation>
@@ -1483,19 +1493,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
-<translation id="5784370777704871674">Activa la funció Navegació segura a <ph name="PRODUCT_NAME" /> i evita que els usuaris canviïn aquesta opció de configuració.
-
-      Si actives aquesta opció de configuració, Navegació segura sempre estarà activa.
-
-      Si desactives aquesta opció de configuració, Navegació segura no estarà mai activa.
-
-      Si actives o desactives aquesta opció de configuració, els usuaris no podran canviar ni substituir l'opció de configuració "Activa la protecció contra pesca i programari maliciós" a <ph name="PRODUCT_NAME" />.
-
-      Si aquesta política no es defineix, aquesta opció de configuració s'activarà però l'usuari la podrà canviar.
-
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.
-
-      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Defineix el nom de visualització per als comptes locals del dispositiu</translation>
 <translation id="5814301096961727113">Estableix l'estat predeterminat dels comentaris de veu a la pantalla d'inici de sessió</translation>
 <translation id="5815129011704381141">Reinicia automàticament després d'actualitzar</translation>
@@ -1682,11 +1679,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6281043242780654992">Configura les polítiques per a la missatgeria nativa. Només es permetran els amfitrions de missatgeria nativa afegits a la llista negra si també apareixen a la llista blanca.</translation>
 <translation id="6282799760374509080">Permet o bloqueja la captura d'àudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Si no s'estableix cap valor o s'estableix en "true", activa les actualitzacions de tots els components a <ph name="PRODUCT_NAME" />.
-
-      Si s'estableix en "false", les actualitzacions dels components es desactiven. Tanmateix, aquesta política no afecta tots els components, com ara els que no contenen codi executable, els que no afecten de manera considerable el funcionament del navegador o els que són essencials per protegir-lo.
-      Aquests components inclouen, entre d'altres, les llistes de revocació de certificats i les dades de navegació segura.
-      Per obtenir més informació sobre Navegació segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Activa la funció de compleció automàtica del nom de domini durant l'inici de sessió de l'usuari</translation>
 <translation id="6315673513957120120">Chrome mostra una pàgina d'advertiment quan els usuaris accedeixen a llocs que tenen errors de SSL. De manera predeterminada o quan aquesta política s'estableix en "true", els usuaris poden fer clic per tancar aquestes pàgines d'advertiment.
       Si aquesta política s'estableix en "false", els usuaris no poden fer clic per tancar les pàgines d'advertiment.</translation>

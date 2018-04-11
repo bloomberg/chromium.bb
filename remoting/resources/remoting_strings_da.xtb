@@ -140,6 +140,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="4145029455188493639">Du er logget ind som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nogle obligatoriske komponenter mangler. Kontrollér, at du har installeret den nyeste version af softwaren, og prøv igen.</translation>
 <translation id="4156740505453712750">Beskyt adgangen til denne computer ved at vælge en pinkode på <ph name="BOLD_START" />mindst seks cifre<ph name="BOLD_END" />. Denne pinkode skal indtastes, når du opretter forbindelse fra et andet sted.</translation>
+<translation id="4169432154993690151">Giv Chrome Fjernskrivebord adgang til dit kamera for at vælge et profilbillede</translation>
 <translation id="4176825807642096119">Adgangskode</translation>
 <translation id="4207623512727273241">Kør installationsprogrammet, før du fortsætter.</translation>
 <translation id="4227991223508142681">Host-værktøj til oprettelse</translation>
@@ -257,6 +258,7 @@ Pc</translation>
 <translation id="6748108480210050150">Fra</translation>
 <translation id="677755392401385740">Host er startet for bruger: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Vis/rediger</translation>
+<translation id="6913710942997637770">Giv Chrome Fjernskrivebord adgang til dine billeder for at vælge et profilbillede</translation>
 <translation id="6930242544192836755">Varighed</translation>
 <translation id="6939719207673461467">Vis/skjul tastatur.</translation>
 <translation id="6944854424004126054">Gendan vinduet</translation>

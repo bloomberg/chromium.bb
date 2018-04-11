@@ -140,6 +140,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="4145029455188493639">Accediste como <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Faltan algunos de los componentes necesarios. Asegúrate de tener instalada la última versión del software y vuelve a intentarlo.</translation>
 <translation id="4156740505453712750">Debes elegir un PIN de <ph name="BOLD_START" />al menos seis dígitos<ph name="BOLD_END" /> para proteger el acceso a esta computadora. Se solicitará ese PIN cada vez que se establezca una conexión con esa computadora desde otra ubicación.</translation>
+<translation id="4169432154993690151">Para elegir una imagen de perfil, permite que Escritorio remoto de Chrome acceda a la cámara</translation>
 <translation id="4176825807642096119">Código de acceso</translation>
 <translation id="4207623512727273241">Ejecuta el instalador antes de continuar.</translation>
 <translation id="4227991223508142681">Utilidad de aprovisionamiento de host</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">Host iniciado para usuario: <ph name="HOST_USERNAME" /></translation>
 <translation id="6865175692670882333">Ver o editar</translation>
+<translation id="6913710942997637770">Para elegir una imagen de perfil, permite que Escritorio remoto de Chrome acceda a las fotos</translation>
 <translation id="6930242544192836755">Duración</translation>
 <translation id="6939719207673461467">Mostrar u ocultar teclado</translation>
 <translation id="6944854424004126054">Restaurar ventana</translation>

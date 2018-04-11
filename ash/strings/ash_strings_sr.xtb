@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Жао нам је, верификација лозинке још увек није успела. Напомена: ако сте недавно променили лозинку, нова лозинка ће се применити када се одјавите. Овде користите стару лозинку.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
 <translation id="1698760176351776263">IPv6 адреса: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Администратор уређаја може да надгледа ваше активности.</translation>
 <translation id="1734367976349034509">Овим уређајем управља предузеће</translation>
 <translation id="1746730358044914197">Методе уноса конфигурише администратор.</translation>
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Дугме за додатне опције</translation>
 <translation id="1951012854035635156">Помоћник</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Подесите језик</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Искључи</translation>
 <translation id="2012624427112548395">Ctrl + тастер за претрагу + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2675319268637823299">Администратор је забранио вишеструко пријављивање за <ph name="USER_EMAIL" />.
     Сви корисници морају да се одјаве да бисмо наставили са сесијом.</translation>
+<translation id="2696763960464195425">Информације ће бити уклоњене када се одјавите. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Подесите тастатуру</translation>
 <translation id="2718395828230677721">Ноћно светло</translation>
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="2761704814324807722">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
 <translation id="7131634465328662194">Одјавићемо вас аутоматски.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
+<translation id="7165511658052620796">(TEMP) Прикажи пријављивање на WebUI; ако су коришћени датотека са грешком (crbug.com) или повратне информације (alt+shift+i)</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
 <translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
@@ -329,6 +334,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
 <translation id="8734991477317290293">Можда покушава да украде вашу комбинацију тастера</translation>
+<translation id="8809737090443522491">Унесите назив апликације или документа</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Премештање прозора на други рачунар може да доведе до неочекиваног понашања.
 

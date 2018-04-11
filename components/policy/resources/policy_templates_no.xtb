@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="1099282607296956954">Slå på nettstedsisolering for alle nettsteder</translation>
 <translation id="1117535567637097036">Protokollbehandlere som angis via denne regelen, brukes ikke når Android-intensjoner behandles.</translation>
+<translation id="1118093128235245168">La nettsteder be brukeren om tilgang til tilkoblede USB-enheter</translation>
 <translation id="1128903365609589950">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke for å lagre bufrede filer på disken.
 
       Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uavhengig av om brukeren har spesifisert flagget «--disk-cache-dir» eller ikke. For å unngå tap av data eller andre uventede feil skal ikke denne regelen settes til rotkatalogen for et volum eller til en katalog som brukes til andre formål, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
@@ -73,6 +74,9 @@
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
       Korteste tillatte frekvens er 60 sekunder.</translation>
 <translation id="1204263402976895730">Aktiverte bedriftsskrivere</translation>
+<translation id="1216758672198492382">Gjør det mulig å velge om nettsteder kan få tilgang til tilkoblede USB-enheter. Tilgangen kan blokkeres helt, eller brukeren kan bli spurt hver gang et nettsted vil ha tilgang til tilkoblede USB-enheter.
+
+          Hvis denne regelen ikke angis, brukes «3», og brukeren kan endre denne innstillingen.</translation>
 <translation id="1219695476179627719">Spesifiserer om enheten skal rulles tilbake til versjonen som er angitt av <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, hvis den allerede kjører en nyere versjon.
 
       Standardverdien er RollbackDisabled.</translation>
@@ -160,11 +164,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Ekstern attestering</translation>
 <translation id="1509692106376861764">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29.</translation>
-<translation id="1519337829779572350">Denne innstillingen er avviklet. Bruk SafeBrowsingExtendedReportingEnabled i stedet. Å aktivere eller deaktivere SafeBrowsingExtendedReportingEnabled tilsvarer å angi SafeBrowsingExtendedReportingOptInAllowed som «false» (usann).
-
-      Hvis denne regelen angis som «false» (usann), kan ikke brukerne velge å sende enkelte typer systeminformasjon og sideinnhold til Googles tjenere. Hvis denne innstillingen er «true» (sann) eller ikke er konfigurert, kan brukerne sende enkelte typer systeminformasjon og sideinnhold til Safe Browsing for å bidra til å oppdage farlige apper og nettsteder.
-
-      Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing</translation>
 <translation id="1522425503138261032">Tillat nettsteder å spore brukernes fysiske plassering</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="1530812829012954197">Alltid gjengi følgende nettadressemønstre i vertsnettleseren</translation>
@@ -324,6 +323,17 @@
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
+<translation id="2132732175597591362">Kontrollerer godkjenningslisten for nettadresser hvor autoavspilling alltid er aktivert.
+
+      Hvis autoavspilling er aktivert, kan videoer spilles av automatisk (uten brukernes samtykke) med lydinnhold i <ph name="PRODUCT_NAME" />.
+
+      Nettadressemønstrene må formateres i henhold til informasjonen på https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Hvis AutoplayAllowed-regelen er satt til «true» (sann), har denne regelen ingen effekt.
+
+      Hvis AutoplayAllowed-regelen er satt til «false» (usann), kan alle nettadressemønstre angitt i denne regelen spille av.
+
+      Hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, gjelder endringen bare for nye faner som åpnes. Det kan derfor hende at enkelte faner fortsatt følger den tidligere regelen.</translation>
 <translation id="2134437727173969994">Tillat låsing av skjermen</translation>
 <translation id="2137064848866899664">Hvis denne regelen er angitt, roteres alle skjermer til den
       spesifiserte retningen hver gang enheten starter, og første gang den kobles
@@ -597,6 +607,12 @@
 <translation id="2801230735743888564">Gir brukerne mulighet til å spille dinosaurspill-påskeegget når enheten ikke er koblet til.
 
       Hvis denne regelen er satt til false (usann), kan ikke brukerne spille dinosaurspillet når enheten ikke er koblet til. Hvis regelen er satt til true (sann), kan brukerne spille dinosaurspillet. Hvis denne regelen ikke er angitt, kan ikke brukerne spille dinosaurspillet på registrerte Chrome OS-installasjoner, men de kan spille det i andre situasjoner.</translation>
+<translation id="2802085784857530815">Lar deg styre om brukere har tilgang til ikke-bedriftsskrivere
+
+      Hvis regelen er satt til «True» (sann), eller ikke er angitt i det hele tatt, kan brukere legge til, konfigurere og skrive ut med egne integrerte skrivere.
+
+      Hvis regelen er satt til «False» (usann), kan ikke brukere legge til eller konfigurere egne integrerte skrivere. De kan heller ikke skrive ut på integrerte skrivere som er konfigurert tidligere.
+      </translation>
 <translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
 <translation id="2808013382476173118">Aktiverer bruk av STUN-servere når eksterne klienter prøver å opprette forbindelse til denne maskinen.
 
@@ -752,6 +768,7 @@
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
 <translation id="3264793472749429012">Kodinger av standard søkeleverandør</translation>
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
+<translation id="3284094172359247914">Kontrollér bruken av WebUSB API</translation>
 <translation id="3288595667065905535">Utgivelseskanal</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME" /> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3307746730474515290">Kontrollerer hvilke typer apper/utvidelser som kan installeres, og begrenser tilgang under kjøring.
@@ -835,6 +852,7 @@
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="350797926066071931">Aktiver oversettelse</translation>
 <translation id="3512226956150568738">Hvis klientens enhetsmodell allerede støttet ARC før overføringen til ext4 var nødvendig for å kjøre ARC, og hvis ArcEnabled-regelen er satt til sann, har dette alternativet samme effekt som AskUser (verdi 3). I alle andre tilfeller (hvis enhetsmodellen ikke støttet ARC tidligere, eller hvis ArcEnabled-regelen er satt til usann), tilsvarer denne verdien DisallowArc (verdi 0).</translation>
+<translation id="3524204464536655762">Ikke la noen nettsteder be om tilgang til USB-enheter via WebUSB API</translation>
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3577251398714997599">Annonseinnstillinger for nettsteder med forstyrrende annonser</translation>
@@ -843,11 +861,6 @@
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
 <translation id="3660562134618097814">Overfør SAML IdP-informasjonskapsler ved pålogging</translation>
-<translation id="3687282113223807271">Safe Browsing-tjenesten viser en advarselsside når brukere navigerer til nettsteder som er merket som potensielt skadelige. Hvis du slår på denne innstillingen, hindres brukerne i å ignorere advarselssiden og gå videre til det skadelige nettstedet.
-
-      Hvis denne innstillingen er slått av eller ikke er konfigurert, kan brukerne velge å gå videre til det rapporterte nettstedet etter å ha sett advarselen.
-
-      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="3709266154059827597">Konfigurer installasjonssperrelisten for utvidelser</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Slå på «Legg til person» i brukeradministreringen</translation>
@@ -942,6 +955,9 @@
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
 
       Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse.</translation>
+<translation id="3873159954366380945">Lar deg angi hvor lenge varsler for omstart av <ph name="PRODUCT_NAME" /> skal vises når det finnes en oppdatering som ikke er installert ennå.
+
+      Denne regelen kan brukes til å styre tidsperioden (i millisekunder) brukeren skal informeres om at <ph name="PRODUCT_NAME" /> må startes på nytt (eller <ph name="PRODUCT_OS_NAME" /> må startes på nytt) på grunn av en oppdatering. I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. Dette er basert på innstillingen for regelen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Hvis denne regelen ikke er angitt, brukes standardperioden på 345 600 000 millisekunder (fire dager) for <ph name="PRODUCT_OS_NAME" /> og 604 800 000 millisekunder (én uke) for alle andre plattformer.</translation>
 <translation id="3877517141460819966">Modus for integrert tofaktor-autentisering</translation>
 <translation id="388237772682176890">Denne regelen ble avviklet i M53 og fjernet i M54, fordi støtten for SPDY/3.1 ble fjernet.
 
@@ -1284,6 +1300,14 @@
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="489803897780524242">Parametret som kontrollerer søkeordplasseringen for standardsøkemotoren</translation>
 <translation id="4899708173828500852">Aktiver Safe Browsing</translation>
+<translation id="4899802251198446659">Lar deg styre om videoer kan spilles av automatisk (uten brukernes samtykke) med lydinnhold i <ph name="PRODUCT_NAME" />.
+
+      Hvis regelen er angitt som «true» (sann), kan <ph name="PRODUCT_NAME" /> spille av medier automatisk.
+      Hvis regelen er angitt som «false» (usann), kan ikke <ph name="PRODUCT_NAME" /> spille av medier automatisk. AutoplayWhitelist-regelen kan brukes til å overstyre dette for noen nettadressemønstre.
+      Som standard kan ikke <ph name="PRODUCT_NAME" /> spille av medier automatisk. AutoplayWhitelist-regelen kan brukes til å overstyre dette for noen nettadressemønstre.
+
+      Hvis <ph name="PRODUCT_NAME" /> kjører og denne regelen endres, gjelder endringen bare for nye faner som åpnes. Det kan derfor hende at enkelte faner fortsatt følger den tidligere regelen.
+      </translation>
 <translation id="4906194810004762807">Oppdateringsfrekvens for enhetsinnstilling</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4923806312383904642">Tillat at WebDriver overstyrer inkompatible regler</translation>
@@ -1318,19 +1342,6 @@
 
       Vær oppmerksom på at passord kan bli eldre enn det spesifiserte antallet dager hvis klienten har vært uten nett over lengre tid.</translation>
 <translation id="5105313908130842249">Forsinkelse for låst skjerm når enheten kjører på batteristrøm</translation>
-<translation id="5106504910236139235">Slår på utvidet rapportering for Safe Browsing i <ph name="PRODUCT_NAME" /> og hindrer at brukerne kan endre denne innstillingen.
-
-      Utvidet rapportering sender noe systeminformasjon og sideinnhold til Googles tjenere for å bidra til å oppdage farlige apper og nettsteder.
-
-      Hvis innstillingen er angitt som «true» (sann), blir rapporter opprettet og sendt etter behov (for eksempel når det vises sikkerhetsrelaterte interstitial-elementer).
-
-      Hvis innstillingen er angitt som «false» (usann), sendes det aldri rapporter.
-
-      Hvis denne regelen er angitt som «true» (sann) eller «false» (usann), kan ikke brukerne endre innstillingen.
-
-      Hvis denne regelen ikke er angitt, kan brukerne endre innstillingen og bestemme om rapporter skal sendes eller ikke.
-
-      Du kan finne ut mer om Safe Browsing på https://developers.google.com/safe-browsing</translation>
 <translation id="5108031557082757679">Deaktiverte bedriftsskrivere</translation>
 <translation id="5130288486815037971">Definerer om RC4-chifferserier i TLS er slått på</translation>
 <translation id="5141670636904227950">Angi standard skjermforstørrelsestype som er aktivert på påloggingssiden</translation>
@@ -1547,19 +1558,6 @@
           Når innstillingen ikke er konfigurert, brukes standard tidslengde.
 
           Innstillingsverdien må angis i millisekunder.</translation>
-<translation id="5784370777704871674">Aktiverer Safe Browsing-funksjonen i <ph name="PRODUCT_NAME" /> og hindrer brukere i å endre denne innstillingen.
-
-      Hvis du aktiverer denne innstillingen, er Safe Browsing alltid aktiv.
-
-      Hvis du deaktiverer denne innstillingen, er Safe Browsing aldri aktiv.
-
-      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukere endre eller overstyre innstillingen for «Aktiver beskyttelse mot nettfisking og skadelig programvare» i <ph name="PRODUCT_NAME" />.
-
-      Hvis denne regelen ikke angis, blir dette aktivert, men brukeren kan endre det.
-
-      Du finner mer informasjon om Safe Browsing på https://developers.google.com/safe-browsing.
-
-      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="5809728392451418079">Angi skjermnavn for lokale kontoer på enheten</translation>
 <translation id="5814301096961727113">Angi standard tilstand for muntlig tilbakemelding på påloggingssiden</translation>
 <translation id="5815129011704381141">Start automatisk på nytt etter oppdatering</translation>
@@ -1759,11 +1757,6 @@
 <translation id="6281043242780654992">Konfigurer innstillinger for innebygde meldinger. Innebygde meldingsverter som er svartelistet tillates ikke med mindre de godkjennes.</translation>
 <translation id="6282799760374509080">Tillat eller avvis lydopptak</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Slår på komponentoppdateringer for alle komponenter i <ph name="PRODUCT_NAME" /> når regelen ikke er angitt eller er angitt som «True» (sann).
-
-      Hvis regelen angis som «False» (usann), slås komponentoppdateringer av. Enkelte komponenter er imidlertid unntatt fra denne regelen, og oppdateringer slås ikke av for disse. Dette gjelder oppdateringer av komponenter som er avgjørende for sikkerheten, eller som ikke inneholder kjørbar kode eller endrer nettleserens atferd betydelig.
-      Noen eksempler på slike komponenter er Safe Browsing-data og listene over tilbaketrukne sertifikater.
-      Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="6310223829319187614">Slå på autofullføring av domenenavn ved brukerpålogging</translation>
 <translation id="6315673513957120120">Brukerne ser advarselssider i Chrome når de åpner nettsteder med SSL-feil. Som standard, eller når denne regelen er satt til true (sann), kan brukerne klikke seg forbi disse advarselssidene.
       Hvis denne regelen settes til false (usann), kan ikke brukerne klikke seg forbi advarselssider.</translation>
@@ -2616,6 +2609,15 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>
+<translation id="9123211093995421438">Angir det laveste antallet <ph name="PRODUCT_OS_NAME" />-milepæler rollback skal tillates for, med start i den til enhver tid stabile versjonen.
+
+      Standarden er 0 for forbrukerregistrerte enheter og 4 (ca. et halvt år) for bedriftsregistrerte enheter.
+
+      Hvis denne regelen er aktivert, forhindrer den at rollback-beskyttelsen aktiveres for minst dette antallet milepæler.
+
+      Denne regelen kan settes til en lavere verdi, men dette har en permanent effekt: Det KAN bli umulig å utføre rollback til tidligere versjoner på enheten – selv ikke etter at regelen tilbakestilles til en høyere verdi.
+
+       De faktiske mulighetene for rollback kan også avhenge av modellen samt patcher av kritiske sårbarheter.</translation>
 <translation id="913195841488580904">Blokker tilgang til en liste over nettadresser</translation>
 <translation id="9135033364005346124">Aktiver mellomtjener for <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Denne godkjenningslisten kontrollerer hvilke moduser for hurtigopplåsing brukerne kan konfigurere og bruke til å låse opp låseskjermen.

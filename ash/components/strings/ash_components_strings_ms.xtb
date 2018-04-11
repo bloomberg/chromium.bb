@@ -6,6 +6,7 @@
 <translation id="1134347825771908369">Redamkan kelantangan</translation>
 <translation id="1195667586424773550">Seret pautan ke bar alamat tab</translation>
 <translation id="1204450209689312104">Buka tetingkap baharu dalam mod inkognito</translation>
+<translation id="1290373024480130896"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="MODIFIER3" /><ph name="SEPARATOR3" /><ph name="KEY" /></translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1299858300159559687">Cetak halaman semasa anda</translation>
 <translation id="1383876407941801731">Carian</translation>
@@ -22,7 +23,10 @@
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kemudian <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> atau <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Pergi ke tab seterusnya</translation>
 <translation id="2010818616644390445">Pergi ke tab terakhir dalam tetingkap</translation>
+<translation id="2040706009561734834">Buka/tutup pelancar</translation>
+<translation id="2045117674524495717">Pembantu Pintasan Papan Kekunci</translation>
 <translation id="2088054208777350526">Cari pintasan papan kekunci</translation>
+<translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> atau <ph name="F" /></translation>
 <translation id="2145908266289632567">Suntingan Teks</translation>
 <translation id="215292019801409139"><ph name="SEARCH" /><ph name="SEPARATOR" /> 1 hingga =</translation>
 <translation id="2181097965834437145">Tunjukkan atau sembunyikan bar penanda halaman</translation>
@@ -35,6 +39,7 @@
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Tatal ke bawah halaman web</translation>
 <translation id="2568632782096378307">Tetapkan semula peleraian skrin kepada nilai lalai</translation>
+<translation id="2596078834055697711">Ambil tangkapan skrin tetingkap</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kemudian <ph name="TAB" /> atau <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Simpan halaman web semasa anda sebagai penanda halaman</translation>
 <translation id="2750942583782703988">Muat semula halaman semasa anda</translation>
@@ -61,6 +66,7 @@
 <translation id="3649256019230929621">Minimumkan tetingkap</translation>
 <translation id="3655154169297074232">Tab &amp; Tetingkap</translation>
 <translation id="3668361878347172356">Buat semula tindakan terakhir anda</translation>
+<translation id="3710784500737332588">Buka Pusat Bantuan</translation>
 <translation id="3720939646656082033">Buka pautan dalam tab baharu dan beralih ke tab yang baharu</translation>
 <translation id="3725795051337497754">Tutup tab semasa</translation>
 <translation id="3751033133896282964">Buat asal tindakan terakhir anda</translation>
@@ -79,11 +85,15 @@
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> atau <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Mod ikhtisar</translation>
 <translation id="4472417192667361414">Tetapan Sistem &amp; Paparan</translation>
+<translation id="4484292984055789039">Bertukar kepada kaedah masukan bahasa yang sebelumnya</translation>
 <translation id="4556221320735744018">Lihat Pembantu Pintasan Papan Kekunci</translation>
 <translation id="4628718545549558538">Buka area status (tempat gambar akaun anda dipaparkan)</translation>
 <translation id="4642092649622328492">Ambil tangkapan skrin separa</translation>
+<translation id="4698850295812410683">Tunjukkan alatan stilus</translation>
 <translation id="4801989101741319327">Alihkan ke akhir perkataan seterusnya</translation>
 <translation id="4916163929714267752">Buka pautan dalam tetingkap baharu</translation>
+<translation id="5002047168347153398">Fokuskan tetingkap timbul tidak aktif untuk kebolehaksesan</translation>
+<translation id="5030659775136592441">Tunjukkan pengurus penanda halaman</translation>
 <translation id="5034421018520995080">Pergi ke bahagian atas halaman</translation>
 <translation id="5042305953558921026">Kekunci mod ikhtisar</translation>
 <translation id="5104462712192763270">Simpan halaman semasa anda</translation>
@@ -100,12 +110,14 @@
 <translation id="5757111373163288447">Buka pautan dalam tab</translation>
 <translation id="5757474750054631686">Malapkan papan kekunci (untuk papan kekunci bercahaya belakang sahaja)</translation>
 <translation id="587531134027443617">Padamkan perkataan sebelumnya</translation>
+<translation id="5899919361772749550">Tunjukkan atau sembunyikan konsol Alatan Pembangun</translation>
 <translation id="5921745308587794300">Putar tetingkap</translation>
 <translation id="5975083100439434680">Zum keluar</translation>
 <translation id="6022924867608035986">Kosongkan teks kotak carian</translation>
 <translation id="6045998054441862242">Hidupkan mod kontras tinggi</translation>
 <translation id="6052614013050385269">Klik kanan pautan</translation>
 <translation id="6129953537138746214">Ruang</translation>
+<translation id="613146727819833328">Alihkan tetingkap ke tengah</translation>
 <translation id="6143669479988153888">Zum masuk pada halaman</translation>
 <translation id="6185696379715117369">Halaman atas</translation>
 <translation id="6228457605945141550">Kurangkan kecerahan</translation>
@@ -118,32 +130,42 @@
 <translation id="6435207348963613811">Serlahkan item sebelumnya pada rak anda</translation>
 <translation id="6445033640292336367">Kembalikan tab ke kedudukan asal</translation>
 <translation id="649811797655257835">Pilih fail, kemudian tekan <ph name="SPACE" /></translation>
+<translation id="6556040137485212400">Buka tetingkap yang tidak digunakan untuk tempoh yang paling lama</translation>
 <translation id="666343722268997814">Buka menu klik kanan untuk item yang diserlahkan</translation>
 <translation id="6671538777808758331">Pergi ke padanan seterusnya untuk carian anda</translation>
+<translation id="6681606577947445973"><ph name="REFRESH" /> atau <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
 <translation id="6690765639083431875">Dokkan tetingkap di sebelah kiri</translation>
 <translation id="6692847073476874842">Pratonton fail dalam apl Fail</translation>
 <translation id="671928215901716392">Kunci skrin</translation>
 <translation id="6727005317916125192">Anak tetingkap sebelumnya</translation>
 <translation id="6740781404993465795">Pilih perkataan atau huruf seterusnya</translation>
 <translation id="6760706756348334449">Kurangkan kelantangan</translation>
+<translation id="6941333068993625698">Serahkan maklum balas</translation>
 <translation id="6981982820502123353">Kebolehcapaian</translation>
 <translation id="7020813747703216897">Tiada hasil yang sepadan ditemui</translation>
 <translation id="7025325401470358758">Anak tetingkap seterusnya</translation>
+<translation id="7077383985738259936">Fokuskan pada atau Serlahkan bar penanda halaman (jika ditunjukkan)</translation>
 <translation id="7237562915163138771">Taipkan alamat web dalam bar alamat, kemudian tekan <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /></translation>
+<translation id="7254764037241667478">Letakkan peranti dalam mod tidur (tergantung)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> atau <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>
+<translation id="743754632698445141">Nyahsemat apl</translation>
 <translation id="7439718573248533901">Padamkan huruf seterusnya (memadam ke hadapan)</translation>
+<translation id="7449669175878568981">Memulakan atau menghentikan imlak (menaip perkara yang anda sebutkan)</translation>
 <translation id="766326951329901120">Tampal kandungan dari papan keratan sebagai teks biasa</translation>
 <translation id="7724603315864178912">Potong</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, kemudian <ph name="SPACE" /> atau <ph name="ENTER" /></translation>
 <translation id="7787242579016742662">Buka fail dalam penyemak imbas</translation>
+<translation id="7822267121073044318">Bertukar kepada kaedah masukan bahasa yang seterusnya</translation>
 <translation id="7917881398263220094">Hentikan pemuatan halaman semasa anda</translation>
 <translation id="7952165122793773711">Pergi ke tab 1 hingga 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> atau <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Kosongkan data semakan imbas</translation>
+<translation id="8104889575691864804">Tunjukkan menu apl</translation>
 <translation id="8130528849632411619">Pergi ke bahagian permulaan dokumen</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> atau <ph name="E" /></translation>
 <translation id="8232835244134740473">Tukar fokus antara: Area status (tempat gambar akaun anda dipaparkan), Pelancar, bar Alamat, bar Penanda Halaman (jika kelihatan), Halaman web yang dibuka dan bar Muat Turun (jika kelihatan).</translation>
 <translation id="8234414138295101081">Putar skrin 90 darjah</translation>
+<translation id="8264941229485248811">Tunjukkan atau sembunyikan pemeriksa Alatan Pembangun</translation>
 <translation id="836869401750819675">Buka halaman Muat Turun</translation>
 <translation id="8388247778047144397">Seret pautan ke bahagian kosong pada jalur tab</translation>
 <translation id="8389638407792712197">Buka tetingkap baharu</translation>
@@ -158,8 +180,11 @@
 <translation id="88986195241502842">Halaman bawah</translation>
 <translation id="8903921497873541725">Zum masuk</translation>
 <translation id="8924883688469390268">Beralih kepada pengguna sebelumnya</translation>
+<translation id="8951768610999698672">Besarkan atau kecilkan item pada skrin anda</translation>
 <translation id="8977648847395357314">Pilih kandungan dalam bar alamat</translation>
+<translation id="8982190978301344584">Tunjukkan menu yang memaparkan senarai IME yang tersedia</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 hingga 8</translation>
+<translation id="9005984960510803406">Buka tetingkap Crosh</translation>
 <translation id="9041599225465145264">Tampal kandungan daripada papan keratan</translation>
 <translation id="9052808072970550123">Beralih kepada pengguna seterusnya</translation>
 <translation id="906458777597946297">Maksimumkan tetingkap</translation>
@@ -168,5 +193,6 @@
 <translation id="9179672198516322668">Pintasan Popular</translation>
 <translation id="93603345341560814">Tekan <ph name="SHIFT" /> dan klik pautan</translation>
 <translation id="945383118875625837">Seret pautan ke bar penanda halaman</translation>
+<translation id="969054500339500113">Letakkan fokus pada bar menu</translation>
 <translation id="98120814841227350">Pergi ke bahagian hujung dokumen</translation>
 </translationbundle>

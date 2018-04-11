@@ -370,6 +370,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4176463684765177261">Desativado</translation>
 <translation id="4188530942454211480">Frase anterior</translation>
 <translation id="4191918948604314587">Um botão</translation>
+<translation id="419265409837491189">Ir para a coluna anterior</translation>
 <translation id="4202186506458631436">Mover para a direita</translation>
 <translation id="4206289001967551965">Dentro da tabela</translation>
 <translation id="4209770650650780359">Prima a seta para cima ou para baixo para os preenchimentos automáticos.</translation>
@@ -420,6 +421,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4660783501463101648">A opção Classic foi removida. O interruptor do teclado para voltar ao ChromeVox Classic foi removido.</translation>
 <translation id="4661075872484491155">árvore</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Ir para a coluna seguinte</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Ponto de referência anterior</translation>
 <translation id="4696413482802371445">Não existe nenhum título de nível 5 seguinte.</translation>
@@ -435,6 +437,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4826415162591436065">Navegar para a frente</translation>
 <translation id="4826604887384865800">Avanço seguinte</translation>
 <translation id="4827410568042294688">não selecionado</translation>
+<translation id="4839925464551908214">Ir para a linha anterior</translation>
 <translation id="4842108708071771135">Não existe nenhum blockquote seguinte.</translation>
 <translation id="4844625982113518938">Prima qualquer tecla para saber o respetivo nome. Ctrl + W fecha o modo de aprendizagem.</translation>
 <translation id="4846428657345567687">Bem-vindo ao ChromeVox!</translation>
@@ -789,6 +792,7 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8186185314313222077">ativar/desativar ecrã inteiro</translation>
 <translation id="8199231515320852133">Anunciar os cabeçalhos da célula atual</translation>
 <translation id="820417203470636242">Célula vazia.</translation>
+<translation id="820469951249669083">Ir para a linha seguinte</translation>
 <translation id="8215202828671303819">Seleção múltipla</translation>
 <translation id="826991282343985864">l$1c$2</translation>
 <translation id="8276439074553447000">Ir para o anterior item a focar</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1005145902654145231">Seje ni bilo mogoče preimenovati.</translation>
 <translation id="1008557486741366299">Ne zdaj</translation>
 <translation id="1015730422737071372">Navedite dodatne podrobnosti</translation>
 <translation id="1021110881106174305">Sprejete kartice</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Napačni identifikator subjekta</translation>
 <translation id="1232569758102978740">Brez naslova</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinhronizirano)</translation>
+<translation id="1256368399071562588">&lt;p&gt;Če poskušate obiskati spletno mesto in se ne odpre, napako najprej poskusite odpraviti s tem postopkom za odpravljanje težav:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Preverite, ali je spletni naslov napačno zapisan.&lt;/li&gt;
+    &lt;li&gt;Preverite, ali internetna povezava deluje kot običajno.&lt;/li&gt;
+    &lt;li&gt;Obrnite se na lastnika spletnega mesta.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Bralni seznam</translation>
 <translation id="1264126396475825575">Poročilo o zrušitvi je bilo zajeto takrat: <ph name="CRASH_TIME" /> (ni še naloženo ali je prezrto)</translation>
 <translation id="1270502636509132238">Način prevzema</translation>
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
+<translation id="1292701964462482250">»Programska oprema v računalniku Chromu preprečuje vzpostavitev varne povezave s spletom« (samo računalniki s sistemom Windows)</translation>
 <translation id="1294154142200295408">Različice ukazne vrstice</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Poskusite izbrisati piškotke<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">Izbrana seja ne obstaja.</translation>
+<translation id="1323433172918577554">Pokaži več</translation>
 <translation id="1333989956347591814">Vaša dejavnost <ph name="BEGIN_EMPHASIS" />je morda še vedno vidna<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />spletnim mestom, ki jih obiščete,
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">Spletno mesto vsebuje nevarne aplikacije</translation>
 <translation id="1374468813861204354">predlogi</translation>
 <translation id="1375198122581997741">O različici</translation>
+<translation id="1376836354785490390">Pokaži manj</translation>
 <translation id="1377321085342047638">Card Number</translation>
 <translation id="139305205187523129">Spletno mesto <ph name="HOST_NAME" /> ni poslalo nobenih podatkov.</translation>
 <translation id="1407135791313364759">Odpri vse</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">Natisni</translation>
 <translation id="1484290072879560759">Izbira naslova za pošiljanje</translation>
 <translation id="1506687042165942984">Prikaži shranjeno (zastarelo) kopijo te strani.</translation>
+<translation id="1507202001669085618">&lt;p&gt;Ta napaka se prikaže, če uporabljate portal Wi-Fi, ki pred uporabo spleta zahteva prijavo.&lt;/p&gt;
+    &lt;p&gt;Napravo odpravite tako, da na strani, ki jo poskušate odpreti, kliknete &lt;strong&gt;Poveži&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Telefonska številka je obvezna</translation>
 <translation id="1517500485252541695">Sprejete kreditne in debetne kartice</translation>
 <translation id="1519264250979466059">Datum gradnje</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Filtriranje</translation>
 <translation id="1916770123977586577">Če želite uporabiti posodobljene nastavitve za to spletno mesto, znova naložite to stran</translation>
 <translation id="1919345977826869612">Oglasi</translation>
+<translation id="1919367280705858090">Pomoč pri določenem sporočilu o napaki</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Brez}=1{1 spletno mesto}one{# spletno mesto}two{# spletni mesti}few{# spletna mesta}other{# spletnih mest}}</translation>
 <translation id="1927235823738766038">Sprejete kreditne in debetne kartice</translation>
 <translation id="194030505837763158">Pojdite na <ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Brez}=1{1 spletno mesto }one{# spletno mesto }two{# spletni mesti }few{# spletna mesta }other{# spletnih mest }}</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3973234410852337861">Spletno mesto <ph name="HOST_NAME" /> je blokirano</translation>
+<translation id="3984550557525787191">To ime seje že obstaja.</translation>
 <translation id="3987940399970879459">Manj kot 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 spletna stran v bližini}one{# spletna stran v bližini}two{# spletni strani v bližini}few{# spletne strani v bližini}other{# spletnih strani v bližini}}</translation>
 <translation id="4030383055268325496">&amp;Razveljavi dodajanje</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />preveriti požarni zid in konfiguracije protivirusnega programa<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Zrušitve</translation>
 <translation id="422022731706691852">Napadalci na spletnem mestu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vas bodo morda poskusili zavesti, da bi namestili programe, ki škodljivo vplivajo na brskanje (na primer tako, da spremenijo vašo domačo stran ali na spletnih mestih, ki jih obiščete, prikazujejo dodatne oglase). <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;1. korak: prijavite se v portal&lt;/h4&gt;
+    &lt;p&gt;V omrežja Wi-Fi na mestih, kot so kavarne ali letališča, se morate prijaviti. Če želite prikazati stran za prijavo, obiščite stran, ki uporablja &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Odprite poljubno spletno mesto, ki se začne s &lt;code&gt;http://&lt;/code&gt;, kot je &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Na strani za prijavo, ki se odpre, se prijavite za uporabo interneta.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;2. korak: odprite stran v načinu brez beleženja zgodovine (samo računalnik)&lt;/h4&gt;
+    &lt;p&gt;Odprite stran, ki ste jo obiskali, v oknu brez beleženja zgodovine.&lt;/p&gt;
+    &lt;p&gt;Če se stran odpre, imate razširitev za Chrome, ki ne deluje pravilno. Napako odpravite tako, da izklopite razširitev.&lt;/p&gt;
+    &lt;h4&gt;3. korak: posodobite operacijski sistem&lt;/h4&gt;
+    &lt;p&gt;Poskrbite, da je naprava posodobljena.&lt;/p&gt;
+    &lt;h4&gt;4. korak: začasno izklopite protivirusno programsko opremo&lt;/h4&gt;
+    &lt;p&gt;Ta napaka bo prikazana, če imate protivirusno programsko opremo, ki ponuja »zaščito HTTPS« ali »pregledovanje HTTPS«. Protivirusna programska oprema Chromu preprečuje zagotavljanje varnosti.&lt;/p&gt;
+    &lt;p&gt;Napako odpravite tako, da izklopite protivirusno programsko opremo. Če stran deluje, ko programsko opremo izklopite, izklopite to programsko opremo, ko uporabljate varna spletna mesta.&lt;/p&gt;
+    &lt;p&gt;Ko končate, ne pozabite spet vklopiti protivirusne programske opreme.&lt;/p&gt;
+    &lt;h4&gt;5. korak: poiščite dodatno pomoč&lt;/h4&gt;
+    &lt;p&gt;Če je napaka še vedno prikazana, se obrnite na lastnika spletnega mesta.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Poskušajte zagnati orodje za omrežno diagnostiko<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Veljavno</translation>
 <translation id="4250431568374086873">Povezava s tem mestom ni povsem varna.</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">Članka ni bilo mogoče najti</translation>
 <translation id="4326324639298822553">Preverite datum poteka veljavnosti in poskusite znova.</translation>
 <translation id="4331708818696583467">Ni varno</translation>
+<translation id="4340982228985273705">Ta računalnik ni zaznan kot računalnik, ki ga upravlja podjetje, zato lahko pravilnik samodejno namesti samo razširitve, ki gostujejo v Spletni trgovini Chrome. URL za posodobitve v Spletni trgovini Chrome je »<ph name="CWS_UPDATE_URL" />«.</translation>
 <translation id="4346197816712207223">Sprejete kreditne kartice</translation>
 <translation id="4356973930735388585">Napadalci na tem spletnem mestu lahko poskusijo v vašem računalniku namestiti nevarne programe, ki kradejo ali brišejo podatke (na primer fotografije, gesla, sporočila in podatke kreditnih kartic).</translation>
 <translation id="4372948949327679948">Pričakovana vrednost je vrste <ph name="VALUE_TYPE" />.</translation>
@@ -567,6 +600,7 @@
 <translation id="5222812217790122047">E-poštni naslov je obvezen</translation>
 <translation id="522700295135997067">To spletno mesto vam je morda pravkar ukradlo geslo</translation>
 <translation id="5230733896359313003">Naslov za pošiljanje</translation>
+<translation id="5250209940322997802">»Vzpostavite povezavo z omrežjem«</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Upoštevajte ta navodila, če želite začasno onemogočiti programsko opremo, da se boste lahko povezali v splet. Potrebujete skrbniške pravice.<ph name="END_PARAGRAPH" />
 
@@ -590,6 +624,7 @@
 <translation id="5332219387342487447">Način pošiljanja</translation>
 <translation id="5355557959165512791">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj je to potrdilo preklicano. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="536296301121032821">Nastavitev pravilnika ni bilo mogoče shraniti</translation>
+<translation id="5377026284221673050">Ura zaostaja« ali »Ura prehiteva« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;«</translation>
 <translation id="5386426401304769735">Veriga potrdil za to spletno mesto vsebuje potrdilo, podpisano z algoritmom SHA-1.</translation>
 <translation id="5402410679244714488">Datum poteka: <ph name="EXPIRATION_DATE_ABBR" />, zadnja uporaba pred več kot enim letom</translation>
 <translation id="540969355065856584">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo trenutno ni veljavno. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
@@ -843,6 +878,7 @@
 <translation id="7542403920425041731">Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kartici.</translation>
 <translation id="7542995811387359312">Samodejno izpolnjevanje podatkov o kreditni kartici je onemogočeno, ker ta obrazec ne uporablja varne povezave.</translation>
 <translation id="7543525346216957623">Prosi starša</translation>
+<translation id="7548892272833184391">Odpravljanje napak s povezavo</translation>
 <translation id="7549584377607005141">Za pravilen prikaz te strani so potrebni podatki, ki ste jih vnesli prej. Podatke lahko pošljete še enkrat, vendar se bodo s tem ponovila vsa prejšnja dejanja strani.</translation>
 <translation id="7552846755917812628">Poskusite te nasvete:</translation>
 <translation id="7554791636758816595">Nov zavihek</translation>
@@ -850,6 +886,7 @@
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="7568593326407688803">Ta stran je v jeziku:<ph name="ORIGINAL_LANGUAGE" />Jo želite prevesti?</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
+<translation id="7575800019233204241">»Vaša povezava ni zasebna« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;« ali »Napaka v potrdilu SSL«</translation>
 <translation id="7578104083680115302">Hitro plačevanje na spletnih mestih in v aplikacijah v vseh napravah s karticami, ki ste jih shranili v Googlu.</translation>
 <translation id="7588950540487816470">Fizični splet</translation>
 <translation id="7592362899630581445">Strežnikovo potrdilo krši omejitve imen.</translation>
@@ -1071,6 +1108,8 @@
 <translation id="973773823069644502">Dodajanje naslova za dostavo</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Brez}=1{1 element}one{# element}two{# elementa}few{# elementi}other{# elementov}}</translation>
 <translation id="981121421437150478">Brez povezave</translation>
+<translation id="985199708454569384">&lt;p&gt;Ta napaka se prikaže, če datum in ura v računalniku ali mobilni napravi nista točna.&lt;/p&gt;
+    &lt;p&gt;Napako odpravite tako, da v napravi odprete uro ter se prepričate, da sta ura in datum pravilna.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Različica za razvijalce</translation>
 <translation id="989988560359834682">Uredi naslov</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

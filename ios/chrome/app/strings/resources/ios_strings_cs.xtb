@@ -159,6 +159,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="3789841737615482174">Instalovat</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3897092660631435901">Nabídka</translation>
+<translation id="3915450441834151894">Informace o stránkách</translation>
 <translation id="3928666092801078803">Sloučit má data</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="3963231839620026525">Nová anonymní karta</translation>
@@ -222,6 +223,7 @@ Vaše data jsou šifrována pomocí heslové fráze pro synchronizaci. Chcete-li
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Aktivace synchronizace</translation>
 <translation id="5244474230056479698">Údaje se synchronizují do účtu <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Chcete-li prohlížet internet v soukromí, otevřete novou anonymní kartu.</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Název</translation>
@@ -301,6 +303,7 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="6445981559479772097">Zpráva odeslána</translation>
 <translation id="6464071786529933911">Otevřít v nové anonymní kartě</translation>
 <translation id="6482629121755362506">Počet smazaných položek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="6528048372317642110">Je k dispozici soubor ke stažení</translation>
 <translation id="6541915733953096570">Z uplynulé hodiny</translation>
 <translation id="6570040839871198836">Autom. vyplňování formulářů</translation>
 <translation id="6656103420185847513">Úprava složky</translation>

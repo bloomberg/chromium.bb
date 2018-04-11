@@ -370,6 +370,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4176463684765177261">Inaktiverad</translation>
 <translation id="4188530942454211480">Föregående mening</translation>
 <translation id="4191918948604314587">En knapp</translation>
+<translation id="419265409837491189">Tillbaka till föregående kolumn</translation>
 <translation id="4202186506458631436">Flytta åt höger</translation>
 <translation id="4206289001967551965">I tabellen</translation>
 <translation id="4209770650650780359">Du kan välja autoslutföranden med uppåtpil eller nedåtpil.</translation>
@@ -420,6 +421,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4660783501463101648">Klassisk Chromevox har tagits bort. Det går inte längre att aktivera och inaktivera klassisk Chromevox med tangentbordet.</translation>
 <translation id="4661075872484491155">träd</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Fortsätt till nästa kolumn</translation>
 <translation id="4688873778442829762">rutnät</translation>
 <translation id="4693675773662933727">Föregående landmärke</translation>
 <translation id="4696413482802371445">Det finns inga fler rubriker på nivå 5.</translation>
@@ -435,6 +437,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4826415162591436065">Navigera framåt</translation>
 <translation id="4826604887384865800">Nästa hopp</translation>
 <translation id="4827410568042294688">omarkerad</translation>
+<translation id="4839925464551908214">Tillbaka till föregående rad</translation>
 <translation id="4842108708071771135">Det finns inga fler citatblock.</translation>
 <translation id="4844625982113518938">Tryck på en tangent när du vill veta vad den heter. Du stänger inlärningsläget med Ctrl + W.</translation>
 <translation id="4846428657345567687">Välkommen till ChromeVox!</translation>
@@ -789,6 +792,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8186185314313222077">helskärmsläge av/på</translation>
 <translation id="8199231515320852133">Läs upp rubriker för den aktuella cellen</translation>
 <translation id="820417203470636242">Tom cell.</translation>
+<translation id="820469951249669083">Fortsätt till nästa rad</translation>
 <translation id="8215202828671303819">Flerval</translation>
 <translation id="826991282343985864">r$1 k$2</translation>
 <translation id="8276439074553447000">Hoppa till föregående fokuserbara objekt</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1005145902654145231">Přejmenování relace se nezdařilo.</translation>
 <translation id="1008557486741366299">Teď ne</translation>
 <translation id="1015730422737071372">Zadejte další podrobnosti</translation>
 <translation id="1021110881106174305">Přijímané karty</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Nesprávný identifikátor subjektu</translation>
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (synchronizováno)</translation>
+<translation id="1256368399071562588">&lt;p&gt;Pokud se pokoušíte navštívit konkrétní web, ale ten se neotevírá, nejdříve chybu zkuste opravit provedením těchto kroků:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Zkontrolujte, zda ve webové adrese nemáte překlepy.&lt;/li&gt;
+    &lt;li&gt;Zkontrolujte, zda připojení k internetu normálně funguje.&lt;/li&gt;
+    &lt;li&gt;Kontaktujte vlastníka webu.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Seznam četby</translation>
 <translation id="1264126396475825575">Zpráva o selhání pořízená <ph name="CRASH_TIME" /> (dosud nenahrána nebo ignorována)</translation>
 <translation id="1270502636509132238">Způsob vyzvednutí</translation>
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
+<translation id="1292701964462482250">Software na počítači Chromu brání v bezpečném připojení k webu (pouze počítače se systémem Windows)</translation>
 <translation id="1294154142200295408">Varianty pro příkazový řádek</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Zkuste vymazat soubory cookie<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">Vybraná relace neexistuje.</translation>
+<translation id="1323433172918577554">Zobrazit více</translation>
 <translation id="1333989956347591814">Vaše aktivita <ph name="BEGIN_EMPHASIS" />může být nadále viditelná<ph name="END_EMPHASIS" /> pro následující subjekty:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />navštívené weby,
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">Web, na který se chystáte přejít, obsahuje nebezpečné aplikace</translation>
 <translation id="1374468813861204354">návrhy</translation>
 <translation id="1375198122581997741">O verzi aplikace</translation>
+<translation id="1376836354785490390">Zobrazit méně</translation>
 <translation id="1377321085342047638">Číslo karty</translation>
 <translation id="139305205187523129">Web <ph name="HOST_NAME" /> neodeslal žádná data.</translation>
 <translation id="1407135791313364759">Otevřít vše</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">Tisk</translation>
 <translation id="1484290072879560759">Vybrat dodací adresu</translation>
 <translation id="1506687042165942984">Zobrazí uloženou (tj. neaktuální) kopii této stránky</translation>
+<translation id="1507202001669085618">&lt;p&gt;Tato chyba se zobrazí při použití portálu Wi-Fi, na kterém je třeba se před přístupem na internet přihlásit.&lt;/p&gt;
+    &lt;p&gt;Chybu odstraníte tím, že na stránce, kterou se snažíte otevřít, kliknete na &lt;strong&gt;Připojení&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Je vyžadováno telefonní číslo</translation>
 <translation id="1517500485252541695">Přijímané kreditní a debetní karty</translation>
 <translation id="1519264250979466059">Datum sestavení</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Filtrování</translation>
 <translation id="1916770123977586577">Chcete-li pro tento web použít aktualizovaná nastavení, načtěte tuto stránku znovu</translation>
 <translation id="1919345977826869612">Reklamy</translation>
+<translation id="1919367280705858090">Nápověda ke konkrétní chybové zprávě</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Žádné}=1{1 web}few{# weby}many{# webu}other{# webů}}</translation>
 <translation id="1927235823738766038">Přijímané kreditní a debetní karty</translation>
 <translation id="194030505837763158">Přejít na odkaz <ph name="LINK" /></translation>
@@ -417,6 +431,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Žádné}=1{Z 1 webu }few{Z # webů }many{Z # webu }other{Z # webů }}</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3973234410852337861">Web <ph name="HOST_NAME" /> je blokován</translation>
+<translation id="3984550557525787191">Tento název relace již existuje.</translation>
 <translation id="3987940399970879459">Méně než 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 webová stránka v okolí}few{# webové stránky v okolí}many{# webové stránky v okolí}other{# webových stránek v okolí}}</translation>
 <translation id="4030383055268325496">&amp;Vrátit přidání zpět</translation>
@@ -447,6 +462,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Zkontrolovat konfiguraci firewallu a antivirového softwaru<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Selhání</translation>
 <translation id="422022731706691852">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> by se mohli pokusit přimět vás k instalaci programů, které nepříznivě ovlivní procházení webu (například změní vaši domovskou stránku nebo na navštěvovaných stránkách budou zobrazovat další reklamy). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;Krok 1: Přihlaste se do portálu&lt;/h4&gt;
+    &lt;p&gt;Wi-Fi sítě v místech, jako jsou kavárny nebo letiště, vyžadují přihlášení. Chcete-li zobrazit přihlašovací stránku, přejděte na stránku, která používá schéma &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Přejděte na libovolný web začínající schématem &lt;code&gt;http://&lt;/code&gt;, například &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Na přihlašovací stránce, která se otevře, se přihlaste, abyste mohli používat internet.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;Krok 2: Otevřete stránku v anonymním režimu (pouze na počítači)&lt;/h4&gt;
+    &lt;p&gt;V anonymním okně otevřete stránku, na kterou chcete přejít.&lt;/p&gt;
+    &lt;p&gt;Pokud se otevře, znamená to, že chybu způsobuje některé rozšíření Chromu. Odstraníte ji vypnutím příslušného rozšíření.&lt;/p&gt;
+    &lt;h4&gt;Krok 3: Aktualizujte operační systém&lt;/h4&gt;
+    &lt;p&gt;Zkontrolujte, zda je vaše zařízení aktuální.&lt;/p&gt;
+    &lt;h4&gt;Krok 4: Dočasně vypněte antivirus&lt;/h4&gt;
+    &lt;p&gt;Tato chyba se zobrazuje, pokud máte antivirový software s funkcí ochrany HTTPS nebo kontroly HTTPS. Antivirový software v takovém případě Chromu znemožňuje poskytovat zabezpečení.&lt;/p&gt;
+    &lt;p&gt;Problém vyřešíte tím, že antivirový software vypnete. Pokud po vypnutí antiviru bude stránka fungovat, vypněte jej při každé návštěvě zabezpečeného webu.&lt;/p&gt;
+    &lt;p&gt;Až budete hotovi, nezapomeňte antivirový program zase zapnout.&lt;/p&gt;
+    &lt;h4&gt;Krok 5: Požádejte o další pomoc&lt;/h4&gt;
+    &lt;p&gt;Pokud se chyba zobrazuje i nadále, kontaktujte vlastníka webu.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Zkuste spustit Diagnostiku sítě<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Platný</translation>
 <translation id="4250431568374086873">Spojení s tímto webem není plně zabezpečené</translation>
@@ -462,6 +494,7 @@
 <translation id="4325863107915753736">Článek nebyl nalezen</translation>
 <translation id="4326324639298822553">Zkontrolujte datum vypršení platnosti a zkuste to znovu.</translation>
 <translation id="4331708818696583467">Nezabezpečeno</translation>
+<translation id="4340982228985273705">Tento počítač nebyl rozpoznán jako spravovaný organizací, proto lze pomocí zásad automaticky instalovat pouze rozšíření hostovaná v Internetovém obchodě Chrome. Adresa URL Internetového obchodu Chrome pro aktualizace je <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Přijímané kreditní karty</translation>
 <translation id="4356973930735388585">Útočníci, kteří se aktuálně nacházejí na tomto webu, se mohou pokusit nainstalovat vám do počítače nebezpečné programy, které mohou ukrást nebo smazat vaše informace (například fotky, hesla, zprávy nebo platební karty).</translation>
 <translation id="4372948949327679948">Očekávána hodnota <ph name="VALUE_TYPE" />.</translation>
@@ -563,6 +596,7 @@
 <translation id="5222812217790122047">Je nutné zadat e-mail</translation>
 <translation id="522700295135997067">Tento web vám možná právě odcizil heslo</translation>
 <translation id="5230733896359313003">Dodací adresa</translation>
+<translation id="5250209940322997802">Připojit k síti</translation>
 <translation id="5251803541071282808">Cloud</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Abyste se mohli dostat na web, podle těchto pokynů software dočasně zakažte. Budete potřebovat administrátorská práva.<ph name="END_PARAGRAPH" />
 
@@ -586,6 +620,7 @@
 <translation id="5332219387342487447">Způsob dopravy</translation>
 <translation id="5355557959165512791">Web <ph name="SITE" /> teď nemůžete navštívit, protože jeho certifikát byl zrušen. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="536296301121032821">Ukládání nastavení zásady se nezdařilo</translation>
+<translation id="5377026284221673050">Vaše hodiny se zpožďují, Vaše hodiny jdou napřed nebo &lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;</translation>
 <translation id="5386426401304769735">Řetězec certifikátů tohoto webu obsahuje certifikát podepsaný algoritmem SHA-1.</translation>
 <translation id="5402410679244714488">Platnost do: <ph name="EXPIRATION_DATE_ABBR" />, naposledy použito více než před rokem</translation>
 <translation id="540969355065856584">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát v tuto chvíli není platný. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
@@ -838,6 +873,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7542403920425041731">Po ověření budou údaje o kartě sdíleny s tímto webem.</translation>
 <translation id="7542995811387359312">Automatické vyplňování údajů platební karty je deaktivováno, protože tento formulář nepoužívá zabezpečené připojení.</translation>
 <translation id="7543525346216957623">Požádej rodiče</translation>
+<translation id="7548892272833184391">Oprava chyb připojení</translation>
 <translation id="7549584377607005141">Tato stránka potřebuje ke správnému zobrazení data, která jste zadali dříve. Tyto údaje můžete odeslat znovu, ale zopakujete tím všechny akce, které tato stránka již předtím provedla.</translation>
 <translation id="7552846755917812628">Vyzkoušejte následující tipy:</translation>
 <translation id="7554791636758816595">Nová karta</translation>
@@ -845,6 +881,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7567204685887185387">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Jeho bezpečnostní certifikát byl zřejmě vydán podvodně. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="7568593326407688803">Tato stránka je v jazyce<ph name="ORIGINAL_LANGUAGE" />Chcete ji přeložit?</translation>
 <translation id="7569952961197462199">Odstranit platební kartu z Chromu?</translation>
+<translation id="7575800019233204241">Vaše připojení není soukromé nebo &lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt; nebo &lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt; nebo &lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt; nebo Chyba certifikátu SSL</translation>
 <translation id="7578104083680115302">Plaťte na webech a v aplikacích v různých zařízeních rychle pomocí karet uložených na Googlu.</translation>
 <translation id="7588950540487816470">Fyzický web</translation>
 <translation id="7592362899630581445">Certifikát serveru porušuje omezení názvů domén.</translation>
@@ -1067,6 +1104,8 @@ Kontaktujte administrátora systému.</translation>
 <translation id="973773823069644502">Přidat adresu doručení</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Žádné}=1{1 položka}few{# položky}many{# položky}other{# položek}}</translation>
 <translation id="981121421437150478">Offline</translation>
+<translation id="985199708454569384">&lt;p&gt;Tato chyba se zobrazuje, pokud máte v počítači nebo mobilním zařízení nastaveno nepřesné datum a čas.&lt;/p&gt;
+    &lt;p&gt;Chcete-li tuto chybu odstranit, otevřete v zařízení hodiny. Zkontrolujte, zda jsou datum a čas nastaveny správně.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Vývojářské sestavení</translation>
 <translation id="989988560359834682">Upravit adresu</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

@@ -284,6 +284,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="3661699943263275414">Websites Dritter können Cookiedaten speichern und lesen.</translation>
 <translation id="3662546969139119822">Kein Verlauf vorhanden</translation>
 <translation id="3672452749423051839">Vorschläge bei Navigationsfehlern</translation>
+<translation id="3692944402865947621">Download von <ph name="FILE_NAME" /> fehlgeschlagen, weil der Speicherort nicht erreichbar ist.</translation>
 <translation id="3712575778697986964">Datensparmodus zurücksetzen?</translation>
 <translation id="3714981814255182093">Suchleiste öffnen</translation>
 <translation id="3716182511346448902">Diese Seite benötigt zu viel Arbeitsspeicher und wurde daher von Chrome angehalten.</translation>
@@ -320,6 +321,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="4084682180776658562">Lesezeichen</translation>
+<translation id="4084712963632273211">Von <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />bereitgestellt durch Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB heruntergeladen</translation>
 <translation id="4089831646916293264">Diese Funktion beeinträchtigt möglicherweise den Zugang zu Premium-Datendiensten, die von Ihrem Mobilfunkanbieter bereitgestellt werden.</translation>
 <translation id="4095146165863963773">App-Daten löschen?</translation>
@@ -370,6 +372,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4550003330909367850">Um Ihr Passwort hier anzeigen zu lassen oder zu kopieren, legen Sie eine Displaysperre für dieses Gerät fest.</translation>
 <translation id="4558311620361989323">Tastenkombinationen für Webseiten</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
+<translation id="4570913071927164677">Details</translation>
 <translation id="4572422548854449519">In verwaltetem Konto anmelden</translation>
 <translation id="4581964774250883625">Sie befinden sich jetzt im Inkognitomodus.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Vor # Minute}other{Vor # Minuten}}</translation>
@@ -546,6 +549,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="60923314841986378"><ph name="HOURS" /> Stunden übrig</translation>
 <translation id="60924377787140961">Weitere Artikel werden in Kürze erscheinen. Schönen Tag noch!</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
+<translation id="6111020039983847643">Genutzte Datenmenge</translation>
 <translation id="6112702117600201073">Aktualisierung der Seite</translation>
 <translation id="6127379762771434464">Eintrag entfernt</translation>
 <translation id="6138140242378429169">Für Mobilgeräte optimierte Seite</translation>
@@ -698,6 +702,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="748127970106343339">Löschen der Anmeldedaten des Geräts bestätigen</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualisiert <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">Eingesparte Datenmenge</translation>
 <translation id="7498271377022651285">Bitte warten...</translation>
 <translation id="7514365320538308">Herunterladen</translation>
 <translation id="751961395872307827">Keine Verbindung zur Website möglich</translation>

@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">第三方網站可以儲存及讀取 Cookie 資料</translation>
 <translation id="3662546969139119822">這裡沒有任何紀錄</translation>
 <translation id="3672452749423051839">瀏覽錯誤建議</translation>
+<translation id="3692944402865947621">無法連線至儲存位置，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="3712575778697986964">確定要重設 Data Saver 嗎？</translation>
 <translation id="3714981814255182093">開啟搜尋列</translation>
 <translation id="3716182511346448902">這個網頁使用了過多記憶體，因此遭到 Chrome 暫停。</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">深褐色調</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="4084682180776658562">書籤</translation>
+<translation id="4084712963632273211">發佈者：<ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />由 Google 所提供<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">下載內容佔 <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">這項功能可能會讓您無法存取電信業者提供的付費數據服務。</translation>
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">如要在這裡查看或複製你的密碼，請為這個裝置設定螢幕鎖定功能。</translation>
 <translation id="4558311620361989323">網頁快速鍵</translation>
 <translation id="4565377596337484307">隱藏密碼</translation>
+<translation id="4570913071927164677">詳細資料</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
 <translation id="4581964774250883625">你已啟用無痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378">還剩 <ph name="HOURS" /> 小時</translation>
 <translation id="60924377787140961">系統即將顯示更多文章供你閱覽，陪你度過美好的午後時光！</translation>
 <translation id="6108923351542677676">設定中…</translation>
+<translation id="6111020039983847643">數據用量</translation>
 <translation id="6112702117600201073">重新整理網頁</translation>
 <translation id="6127379762771434464">已移除項目</translation>
 <translation id="6138140242378429169">讓網頁適合透過行動裝置瀏覽</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">確認刪除裝置憑證</translation>
 <translation id="7481312909269577407">往前</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (上次更新時間：<ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">節省的流量</translation>
 <translation id="7498271377022651285">請稍候…</translation>
 <translation id="7514365320538308">下載</translation>
 <translation id="751961395872307827">無法連線至網站</translation>
