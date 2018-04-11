@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_CONCIERGE_CLIENT_H_
 
+#include "base/observer_list.h"
 #include "chromeos/dbus/concierge_client.h"
 
 namespace chromeos {
@@ -14,6 +15,16 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
  public:
   FakeConciergeClient();
   ~FakeConciergeClient() override;
+
+  // Adds an observer.
+  void AddObserver(Observer* observer) override;
+
+  // Removes an observer if added.
+  void RemoveObserver(Observer* observer) override;
+
+  // IsContainerStartedSignalConnected must return true before StartContainer
+  // is called.
+  bool IsContainerStartedSignalConnected() override;
 
   // Fake version of the method that creates a disk image for the Termina VM.
   // Sets fake_create_disk_image_called. |callback| is called after the method
@@ -63,6 +74,12 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool start_termina_vm_called() const { return start_termina_vm_called_; }
   // Indicates whether StopVm has been called
   bool stop_vm_called() const { return stop_vm_called_; }
+  // Indicates whether StartContainer has been called
+  bool start_container_called() const { return start_container_called_; }
+  // Set ContainerStartedSignalConnected state
+  void set_container_started_signal_connected(bool connected) {
+    is_signal_connected_ = connected;
+  }
 
  protected:
   void Init(dbus::Bus* bus) override {}
@@ -71,6 +88,10 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   bool create_disk_image_called_ = false;
   bool start_termina_vm_called_ = false;
   bool stop_vm_called_ = false;
+  bool start_container_called_ = false;
+  bool is_signal_connected_ = true;
+  base::ObserverList<Observer> observer_list_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeConciergeClient);
 };
 

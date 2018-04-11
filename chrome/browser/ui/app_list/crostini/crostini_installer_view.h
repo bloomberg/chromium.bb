@@ -68,7 +68,7 @@ class CrostiniInstallerView : public views::DialogDelegateView {
 
   void ShowLoginShell();
 
-  void StepProgressBar();
+  void StepProgress();
 
   enum class State {
     PROMPT,  // Prompting the user to allow installation.

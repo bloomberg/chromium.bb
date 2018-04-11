@@ -13,6 +13,12 @@
 
 namespace crostini {
 
+namespace {
+const char kVmName[] = "vm_name";
+const char kContainerName[] = "container_name";
+const char kContainerUserName[] = "container_username";
+}  // namespace
+
 class CrostiniManagerTest : public testing::Test {
  public:
   void CreateDiskImageClientErrorCallback(
@@ -39,6 +45,14 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
+  void StartContainerClientErrorCallback(
+      base::OnceClosure closure,
+      crostini::ConciergeClientResult result) {
+    EXPECT_FALSE(fake_concierge_client_->start_container_called());
+    EXPECT_EQ(result, crostini::ConciergeClientResult::CLIENT_ERROR);
+    std::move(closure).Run();
+  }
+
   void CreateDiskImageSuccessCallback(base::OnceClosure closure,
                                       crostini::ConciergeClientResult result,
                                       const base::FilePath& file_path) {
@@ -55,6 +69,12 @@ class CrostiniManagerTest : public testing::Test {
   void StopVmSuccessCallback(base::OnceClosure closure,
                              crostini::ConciergeClientResult result) {
     EXPECT_TRUE(fake_concierge_client_->stop_vm_called());
+    std::move(closure).Run();
+  }
+
+  void StartContainerSuccessCallback(base::OnceClosure closure,
+                                     crostini::ConciergeClientResult result) {
+    EXPECT_TRUE(fake_concierge_client_->start_container_called());
     std::move(closure).Run();
   }
 
@@ -87,7 +107,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageNameError) {
 }
 
 TEST_F(CrostiniManagerTest, CreateDiskImageCryptohomeError) {
-  const base::FilePath& disk_path = base::FilePath("debian");
+  const base::FilePath& disk_path = base::FilePath(kVmName);
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->CreateDiskImage(
       "", disk_path, vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT,
@@ -97,7 +117,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageCryptohomeError) {
 }
 
 TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
-  const base::FilePath& disk_path = base::FilePath("debian");
+  const base::FilePath& disk_path = base::FilePath(kVmName);
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->CreateDiskImage(
       "i_dont_know_what_cryptohome_id_is", disk_path,
@@ -108,7 +128,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageStorageLocationError) {
 }
 
 TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
-  const base::FilePath& disk_path = base::FilePath("debian");
+  const base::FilePath& disk_path = base::FilePath(kVmName);
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->CreateDiskImage(
       "i_dont_know_what_cryptohome_id_is", disk_path,
@@ -119,7 +139,7 @@ TEST_F(CrostiniManagerTest, CreateDiskImageSuccess) {
 }
 
 TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
-  const base::FilePath& disk_path = base::FilePath("debian");
+  const base::FilePath& disk_path = base::FilePath(kVmName);
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->StartTerminaVm(
       "", disk_path,
@@ -132,17 +152,17 @@ TEST_F(CrostiniManagerTest, StartTerminaVmDiskPathError) {
   const base::FilePath& disk_path = base::FilePath();
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->StartTerminaVm(
-      "debian", disk_path,
+      kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmClientErrorCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();
 }
 
 TEST_F(CrostiniManagerTest, StartTerminaVmSuccess) {
-  const base::FilePath& disk_path = base::FilePath("debian");
+  const base::FilePath& disk_path = base::FilePath(kVmName);
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->StartTerminaVm(
-      "debian", disk_path,
+      kVmName, disk_path,
       base::BindOnce(&CrostiniManagerTest::StartTerminaVmSuccessCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();
@@ -159,8 +179,54 @@ TEST_F(CrostiniManagerTest, StopVmNameError) {
 TEST_F(CrostiniManagerTest, StopVmSuccess) {
   base::RunLoop loop;
   crostini::CrostiniManager::GetInstance()->StopVm(
-      "debian", base::BindOnce(&CrostiniManagerTest::StopVmSuccessCallback,
-                               base::Unretained(this), loop.QuitClosure()));
+      kVmName, base::BindOnce(&CrostiniManagerTest::StopVmSuccessCallback,
+                              base::Unretained(this), loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerVmNameError) {
+  base::RunLoop loop;
+  crostini::CrostiniManager::GetInstance()->StartContainer(
+      "", kContainerName, kContainerUserName,
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerContainerNameError) {
+  base::RunLoop loop;
+  crostini::CrostiniManager::GetInstance()->StartContainer(
+      kVmName, "", kContainerUserName,
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerContainerUserNameError) {
+  base::RunLoop loop;
+  crostini::CrostiniManager::GetInstance()->StartContainer(
+      kVmName, kContainerName, "",
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerSignalNotConnectedError) {
+  base::RunLoop loop;
+  fake_concierge_client_->set_container_started_signal_connected(false);
+  crostini::CrostiniManager::GetInstance()->StartContainer(
+      kVmName, kContainerName, kContainerUserName,
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerSuccess) {
+  base::RunLoop loop;
+  crostini::CrostiniManager::GetInstance()->StartContainer(
+      kVmName, kContainerName, kContainerUserName,
+      base::BindOnce(&CrostiniManagerTest::StartContainerSuccessCallback,
+                     base::Unretained(this), loop.QuitClosure()));
   loop.Run();
 }
 

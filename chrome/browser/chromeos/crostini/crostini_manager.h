@@ -5,11 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_CROSTINI_CROSTINI_MANAGER_H_
 
+#include <map>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "chromeos/dbus/concierge/service.pb.h"
+#include "chromeos/dbus/concierge_client.h"
+
+class Profile;
 
 namespace crostini {
 
@@ -31,7 +37,7 @@ enum class ConciergeClientResult {
 // CrostiniManager is a singleton which is used to check arguments for the
 // ConciergeClient. ConciergeClient is dedicated to communication with the
 // Concierge service and should remain as thin as possible.
-class CrostiniManager {
+class CrostiniManager : public chromeos::ConciergeClient::Observer {
  public:
   // The type of the callback for CrostiniManager::StartVmConcierge.
   using StartVmConciergeCallback =
@@ -104,6 +110,17 @@ class CrostiniManager {
                                   std::string desktop_file_id,
                                   LaunchContainerApplicationCallback callback);
 
+  // Launches the crosh-in-a-window that displays a shell in an already running
+  // container on a VM.
+  void LaunchContainerTerminal(Profile* profile,
+                               const std::string& vm_name,
+                               const std::string& container_name,
+                               const std::string& container_username);
+
+  // ConciergeClient::Observer:
+  void OnContainerStarted(
+      const vm_tools::concierge::ContainerStartedSignal& signal) override;
+
   // Returns the singleton instance of CrostiniManager.
   static CrostiniManager* GetInstance();
 
@@ -111,7 +128,7 @@ class CrostiniManager {
   friend struct base::DefaultSingletonTraits<CrostiniManager>;
 
   CrostiniManager();
-  ~CrostiniManager();
+  ~CrostiniManager() override;
 
   // Callback for ConciergeClient::CreateDiskImage. Called after the Concierge
   // service method finishes.
@@ -137,6 +154,8 @@ class CrostiniManager {
   // Callback for CrostiniManager::StartContainer. Called after the Concierge
   // service finishes.
   void OnStartContainer(
+      std::string vm_name,
+      std::string container_name,
       StartContainerCallback callback,
       base::Optional<vm_tools::concierge::StartContainerResponse> response);
 
@@ -153,6 +172,11 @@ class CrostiniManager {
       vm_tools::concierge::CreateDiskImageRequest request,
       CreateDiskImageCallback callback,
       int64_t free_disk_size);
+
+  // Pending StartContainer callbacks are keyed by <vm_name, container_name>
+  // string pairs.
+  std::multimap<std::pair<std::string, std::string>, StartContainerCallback>
+      start_container_callbacks_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
