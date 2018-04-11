@@ -166,6 +166,10 @@ class LocationBarView : public LocationBar,
   // not where the icons are shown).
   gfx::Point GetOmniboxViewOrigin() const;
 
+  // Returns the inset from the edge of the location bar where text begins when
+  // only a location icon is showing (no security chip or keyword bubble).
+  int GetTextInsetForNormalInputStart() const;
+
   // Shows |text| as an inline autocompletion.  This is useful for IMEs, where
   // we can't show the autocompletion inside the actual OmniboxView.  See
   // comments on |ime_inline_autocomplete_view_|.

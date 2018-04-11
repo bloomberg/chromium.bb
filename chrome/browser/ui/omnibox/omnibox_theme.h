@@ -20,6 +20,7 @@ enum class OmniboxPart {
 
   RESULTS_BACKGROUND,  // Background of the results dropdown.
   RESULTS_ICON,
+  RESULTS_SEPARATOR,  // Separator between the input row and the results rows.
   RESULTS_TEXT_DEFAULT,
   RESULTS_TEXT_DIMMED,
   RESULTS_TEXT_INVISIBLE,

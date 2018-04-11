@@ -342,6 +342,15 @@ gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
   return origin;
 }
 
+int LocationBarView::GetTextInsetForNormalInputStart() const {
+  // Note that this does not need to account for the internal Textfield border,
+  // since that's subtracted during layout.
+  return GetHorizontalEdgeThickness() +
+         GetLayoutConstant(LOCATION_BAR_ICON_SIZE) +
+         2 * GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING) +
+         GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+}
+
 void LocationBarView::SetImeInlineAutocompletion(const base::string16& text) {
   ime_inline_autocomplete_view_->SetText(text);
   ime_inline_autocomplete_view_->SetVisible(!text.empty());
