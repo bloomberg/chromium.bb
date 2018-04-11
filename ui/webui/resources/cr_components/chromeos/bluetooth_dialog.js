@@ -422,9 +422,9 @@ Polymer({
         (pairing == PairingEventType.DISPLAY_PASSKEY ||
          pairing == PairingEventType.KEYS_ENTERED ||
          pairing == PairingEventType.CONFIRM_PASSKEY)) {
-      var passkeyString = String(this.pairingEvent_.passkey);
-      if (index < passkeyString.length)
-        digit = passkeyString[index];
+      var passkeyString =
+          String(this.pairingEvent_.passkey).padStart(this.digits_.length, '0');
+      digit = passkeyString[index];
     }
     return digit;
   },
