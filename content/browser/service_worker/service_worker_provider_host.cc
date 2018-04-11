@@ -146,6 +146,28 @@ ServiceWorkerMetrics::EventType PurposeToEventType(
   return ServiceWorkerMetrics::EventType::UNKNOWN;
 }
 
+// TODO(crbug/831255): Temporary debugging for the linked bug.
+std::string URLStringForBadMessage(const GURL& url) {
+  return url.possibly_invalid_spec().substr(0, 64);
+}
+
+// TODO(crbug/831255): Temporary debugging for the linked bug.
+std::string ProviderTypeStringForBadMessage(
+    blink::mojom::ServiceWorkerProviderType type) {
+  switch (type) {
+    case blink::mojom::ServiceWorkerProviderType::kUnknown:
+      return "unknown";
+    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
+      return "shared";
+    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker:
+      return "service";
+    case blink::mojom::ServiceWorkerProviderType::kForWindow:
+      return "window";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 }  // anonymous namespace
 
 // static
@@ -1101,17 +1123,41 @@ bool ServiceWorkerProviderHost::IsValidRegisterMessage(
     *out_error = ServiceWorkerConsts::kBadMessageFromNonWindow;
     return false;
   }
-  if (!options.scope.is_valid() || !script_url.is_valid()) {
-    *out_error = ServiceWorkerConsts::kBadMessageInvalidURL;
+  // TODO(crbug/831255): Temporary detailed messages for the linked bug.
+  // These message are compact since there are only 256 characters available.
+  const std::string provider_str =
+      ProviderTypeStringForBadMessage(provider_type());
+  std::stringstream stream;
+  if (!document_url_.is_valid()) {
+    stream << "SWPH_REGISTER_INVALID_DOCUMENT:" << provider_str
+           << "d=" << URLStringForBadMessage(document_url_);
+    *out_error = stream.str();
     return false;
   }
+  if (!options.scope.is_valid()) {
+    stream << "SWPH_REGISTER_INVALID_SCOPE:" << provider_str
+           << "p=" << URLStringForBadMessage(options.scope);
+    *out_error = stream.str();
+    return false;
+  }
+  if (!script_url.is_valid()) {
+    stream << "SWPH_REGISTER_INVALID_SCRIPT: " << provider_str
+           << "s=" << URLStringForBadMessage(script_url);
+    *out_error = stream.str();
+    return false;
+  }
+
   if (ServiceWorkerUtils::ContainsDisallowedCharacter(options.scope, script_url,
                                                       out_error)) {
     return false;
   }
-  std::vector<GURL> urls = {document_url(), options.scope, script_url};
+  std::vector<GURL> urls = {document_url_, options.scope, script_url};
   if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    *out_error = ServiceWorkerConsts::kBadMessageImproperOrigins;
+    stream << "SWPH_REGISTER:" << provider_str
+           << ",d=" << URLStringForBadMessage(document_url_)
+           << ",p=" << URLStringForBadMessage(options.scope)
+           << ",s=" << URLStringForBadMessage(script_url);
+    *out_error = stream.str();
     return false;
   }
 
