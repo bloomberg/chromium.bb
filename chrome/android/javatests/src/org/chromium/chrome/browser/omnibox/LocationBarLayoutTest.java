@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
-import org.chromium.chrome.browser.toolbar.ToolbarModelImpl;
+import org.chromium.chrome.browser.toolbar.ToolbarModel;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -62,7 +62,7 @@ public class LocationBarLayoutTest {
 
     private TestToolbarModel mTestToolbarModel;
 
-    private class TestToolbarModel extends ToolbarModelImpl {
+    private class TestToolbarModel extends ToolbarModel {
         private String mCurrentUrl;
         private String mEditingText;
         private String mDisplayText;

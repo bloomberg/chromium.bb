@@ -13,11 +13,15 @@
 #include "jni/ToolbarModel_jni.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
-ToolbarModelAndroid::ToolbarModelAndroid(JNIEnv* env, jobject jdelegate)
-    : toolbar_model_(new ToolbarModelImpl(this, content::kMaxURLDisplayChars)),
-      weak_java_delegate_(env, jdelegate) {}
+ToolbarModelAndroid::ToolbarModelAndroid(JNIEnv* env,
+                                         const JavaRef<jobject>& obj)
+    : toolbar_model_(
+          std::make_unique<ToolbarModelImpl>(this,
+                                             content::kMaxURLDisplayChars)),
+      java_object_(obj) {}
 
 ToolbarModelAndroid::~ToolbarModelAndroid() {
 }
@@ -43,18 +47,12 @@ ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetURLForDisplay(
 
 content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jdelegate = weak_java_delegate_.get(env);
-  if (!jdelegate.obj())
-    return NULL;
   ScopedJavaLocalRef<jobject> jweb_contents =
-      Java_ToolbarModelDelegate_getActiveWebContents(env, jdelegate);
+      Java_ToolbarModel_getActiveWebContents(env, java_object_);
   return content::WebContents::FromJavaWebContents(jweb_contents);
 }
 
 // static
-jlong JNI_ToolbarModel_Init(JNIEnv* env,
-                            const JavaParamRef<jobject>& obj,
-                            const JavaParamRef<jobject>& delegate) {
-  ToolbarModelAndroid* toolbar_model = new ToolbarModelAndroid(env, delegate);
-  return reinterpret_cast<intptr_t>(toolbar_model);
+jlong JNI_ToolbarModel_Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  return reinterpret_cast<intptr_t>(new ToolbarModelAndroid(env, obj));
 }

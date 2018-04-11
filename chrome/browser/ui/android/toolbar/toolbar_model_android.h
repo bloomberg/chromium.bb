@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
@@ -21,7 +20,7 @@ class WebContents;
 // Owns a ToolbarModel and provides a way for Java to interact with it.
 class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
  public:
-  explicit ToolbarModelAndroid(JNIEnv* env, jobject jdelegate);
+  ToolbarModelAndroid(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
   ~ToolbarModelAndroid() override;
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -37,7 +36,7 @@ class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
 
  private:
   std::unique_ptr<ToolbarModel> toolbar_model_;
-  JavaObjectWeakGlobalRef weak_java_delegate_;
+  base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelAndroid);
 };
