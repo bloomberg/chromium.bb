@@ -585,8 +585,11 @@ void av1_loop_filter_init(AV1_COMMON *cm) {
     memset(lfi->lfthr[lvl].hev_thr, (lvl >> 4), SIMD_WIDTH);
 }
 
-void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
-                                int default_filt_lvl_r, int plane) {
+// Update the loop filter for the current frame.
+// This should be called before loop_filter_rows(),
+// av1_loop_filter_frame() calls this function directly.
+static void loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
+                                   int default_filt_lvl_r, int plane) {
   int seg_id;
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;
@@ -1484,55 +1487,11 @@ typedef struct {
   unsigned int m4x4;
 } FilterMasks;
 
-static const uint32_t av1_transform_masks[NUM_EDGE_DIRS][TX_SIZES_ALL] = {
-  {
-      4 - 1,   // TX_4X4
-      8 - 1,   // TX_8X8
-      16 - 1,  // TX_16X16
-      32 - 1,  // TX_32X32
-      64 - 1,  // TX_64X64
-      4 - 1,   // TX_4X8
-      8 - 1,   // TX_8X4
-      8 - 1,   // TX_8X16
-      16 - 1,  // TX_16X8
-      16 - 1,  // TX_16X32
-      32 - 1,  // TX_32X16
-      32 - 1,  // TX_32X64
-      64 - 1,  // TX_64X32
-      4 - 1,   // TX_4X16
-      16 - 1,  // TX_16X4
-      8 - 1,   // TX_8X32
-      32 - 1,  // TX_32X8
-      16 - 1,  // TX_16X64
-      64 - 1,  // TX_64X16
-  },
-  {
-      4 - 1,   // TX_4X4
-      8 - 1,   // TX_8X8
-      16 - 1,  // TX_16X16
-      32 - 1,  // TX_32X32
-      64 - 1,  // TX_64X64
-      8 - 1,   // TX_4X8
-      4 - 1,   // TX_8X4
-      16 - 1,  // TX_8X16
-      8 - 1,   // TX_16X8
-      32 - 1,  // TX_16X32
-      16 - 1,  // TX_32X16
-      64 - 1,  // TX_32X64
-      32 - 1,  // TX_64X32
-      16 - 1,  // TX_4X16
-      4 - 1,   // TX_16X4
-      32 - 1,  // TX_8X32
-      8 - 1,   // TX_32X8
-      64 - 1,  // TX_16X64
-      16 - 1,  // TX_64X16
-  }
-};
-
-static TX_SIZE av1_get_transform_size(
-    const MACROBLOCKD *const xd, const MB_MODE_INFO *const mbmi,
-    const EDGE_DIR edge_dir, const int mi_row, const int mi_col,
-    const int plane, const struct macroblockd_plane *plane_ptr) {
+static TX_SIZE get_transform_size(const MACROBLOCKD *const xd,
+                                  const MB_MODE_INFO *const mbmi,
+                                  const EDGE_DIR edge_dir, const int mi_row,
+                                  const int mi_col, const int plane,
+                                  const struct macroblockd_plane *plane_ptr) {
   assert(mbmi != NULL);
   if (xd->lossless[mbmi->segment_id]) return TX_4X4;
 
@@ -1569,7 +1528,7 @@ typedef struct AV1_DEBLOCKING_PARAMETERS {
   const uint8_t *hev_thr;
 } AV1_DEBLOCKING_PARAMETERS;
 
-// Return TX_SIZE from av1_get_transform_size(), so it is plane and direction
+// Return TX_SIZE from get_transform_size(), so it is plane and direction
 // awared
 static TX_SIZE set_lpf_parameters(
     AV1_DEBLOCKING_PARAMETERS *const params, const ptrdiff_t mode_step,
@@ -1602,13 +1561,14 @@ static TX_SIZE set_lpf_parameters(
   // it not set up.
   if (mbmi == NULL) return TX_INVALID;
 
-  const TX_SIZE ts = av1_get_transform_size(xd, mi[0], edge_dir, mi_row, mi_col,
-                                            plane, plane_ptr);
+  const TX_SIZE ts =
+      get_transform_size(xd, mi[0], edge_dir, mi_row, mi_col, plane, plane_ptr);
 
   {
     const uint32_t coord = (VERT_EDGE == edge_dir) ? (x) : (y);
-    const int32_t tu_edge =
-        (coord & av1_transform_masks[edge_dir][ts]) ? (0) : (1);
+    const uint32_t transform_masks =
+        edge_dir == VERT_EDGE ? tx_size_wide[ts] - 1 : tx_size_high[ts] - 1;
+    const int32_t tu_edge = (coord & transform_masks) ? (0) : (1);
 
     if (!tu_edge) return ts;
 
@@ -1626,7 +1586,7 @@ static TX_SIZE set_lpf_parameters(
               (VERT_EDGE == edge_dir) ? (mi_row) : (mi_row - (1 << scale_vert));
           const int pv_col =
               (VERT_EDGE == edge_dir) ? (mi_col - (1 << scale_horz)) : (mi_col);
-          const TX_SIZE pv_ts = av1_get_transform_size(
+          const TX_SIZE pv_ts = get_transform_size(
               xd, mi_prev, edge_dir, pv_row, pv_col, plane, plane_ptr);
 
           const uint32_t pv_lvl =
@@ -1904,8 +1864,8 @@ static void loop_filter_block_plane_horz(AV1_COMMON *const cm,
 }
 #endif  // LOOP_FILTER_BITMASK
 
-void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
-                          MACROBLOCKD *xd, int start, int stop, int plane) {
+static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
+                             MACROBLOCKD *xd, int start, int stop, int plane) {
   struct macroblockd_plane *pd = xd->plane;
   const int num_planes = av1_num_planes(cm);
   const int col_start = 0;
@@ -1976,7 +1936,6 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r,
-                             plane);
-  av1_loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row, plane);
+  loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r, plane);
+  loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row, plane);
 }
