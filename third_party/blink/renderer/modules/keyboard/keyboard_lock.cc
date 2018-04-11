@@ -7,6 +7,8 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -19,8 +21,8 @@ namespace {
 
 constexpr char kFrameDetachedErrorMsg[] = "Current frame is detached.";
 
-constexpr char kPreviousLockCallNotCompletedErrorMsg[] =
-    "Last lock() call has not finished yet.";
+constexpr char kPromisePreemptedErrorMsg[] =
+    "This request has been superseded by a subsequent lock() method call.";
 
 constexpr char kNoValidKeyCodesErrorMsg[] =
     "No valid key codes passed into lock().";
@@ -38,23 +40,18 @@ KeyboardLock::~KeyboardLock() = default;
 ScriptPromise KeyboardLock::lock(ScriptState* state,
                                  const Vector<String>& keycodes) {
   DCHECK(state);
-  if (request_keylock_resolver_) {
-    // TODO(joedow): Reject with a DOMException once it has been defined in the
-    // spec. See https://github.com/w3c/keyboard-lock/issues/18.
-    return ScriptPromise::Reject(
-        state,
-        V8String(state->GetIsolate(), kPreviousLockCallNotCompletedErrorMsg));
-  }
 
   if (!EnsureServiceConnected()) {
-    return ScriptPromise::Reject(
-        state, V8String(state->GetIsolate(), kFrameDetachedErrorMsg));
+    return ScriptPromise::RejectWithDOMException(
+        state,
+        DOMException::Create(kInvalidStateError, kFrameDetachedErrorMsg));
   }
 
   request_keylock_resolver_ = ScriptPromiseResolver::Create(state);
   service_->RequestKeyboardLock(
       keycodes,
-      WTF::Bind(&KeyboardLock::LockRequestFinished, WrapPersistent(this)));
+      WTF::Bind(&KeyboardLock::LockRequestFinished, WrapPersistent(this),
+                WrapPersistent(request_keylock_resolver_.Get())));
   return request_keylock_resolver_->Promise();
 }
 
@@ -81,20 +78,32 @@ bool KeyboardLock::EnsureServiceConnected() {
 }
 
 void KeyboardLock::LockRequestFinished(
+    ScriptPromiseResolver* resolver,
     mojom::KeyboardLockRequestResult result) {
   DCHECK(request_keylock_resolver_);
+
+  // If |resolver| is not the current promise, then reject the promise.
+  if (resolver != request_keylock_resolver_) {
+    resolver->Reject(
+        DOMException::Create(kAbortError, kPromisePreemptedErrorMsg));
+    return;
+  }
+
   switch (result) {
     case mojom::KeyboardLockRequestResult::kSuccess:
       request_keylock_resolver_->Resolve();
       break;
     case mojom::KeyboardLockRequestResult::kFrameDetachedError:
-      request_keylock_resolver_->Reject(kFrameDetachedErrorMsg);
+      request_keylock_resolver_->Reject(
+          DOMException::Create(kInvalidStateError, kFrameDetachedErrorMsg));
       break;
     case mojom::KeyboardLockRequestResult::kNoValidKeyCodesError:
-      request_keylock_resolver_->Reject(kNoValidKeyCodesErrorMsg);
+      request_keylock_resolver_->Reject(
+          DOMException::Create(kInvalidAccessError, kNoValidKeyCodesErrorMsg));
       break;
     case mojom::KeyboardLockRequestResult::kChildFrameError:
-      request_keylock_resolver_->Reject(kChildFrameErrorMsg);
+      request_keylock_resolver_->Reject(
+          DOMException::Create(kInvalidStateError, kChildFrameErrorMsg));
       break;
   }
   request_keylock_resolver_ = nullptr;

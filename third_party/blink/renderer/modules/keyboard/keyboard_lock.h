@@ -34,7 +34,8 @@ class KeyboardLock final : public GarbageCollectedFinalized<KeyboardLock>,
   // Returns true if |service_| is initialized and ready to be called.
   bool EnsureServiceConnected();
 
-  void LockRequestFinished(mojom::KeyboardLockRequestResult);
+  void LockRequestFinished(ScriptPromiseResolver*,
+                           mojom::KeyboardLockRequestResult);
 
   mojom::blink::KeyboardLockServicePtr service_;
   Member<ScriptPromiseResolver> request_keylock_resolver_;
