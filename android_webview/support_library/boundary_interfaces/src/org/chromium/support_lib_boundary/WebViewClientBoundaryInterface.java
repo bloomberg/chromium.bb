@@ -13,7 +13,7 @@ import java.lang.reflect.InvocationHandler;
 /**
  * Boundary interface for WebViewClientCompat.
  */
-public interface WebViewClientBoundaryInterface {
+public interface WebViewClientBoundaryInterface extends FeatureFlagHolderBoundaryInterface {
     void onPageCommitVisible(WebView view, String url);
     void onReceivedError(WebView view, WebResourceRequest request,
             /* WebResourceError */ InvocationHandler error);
