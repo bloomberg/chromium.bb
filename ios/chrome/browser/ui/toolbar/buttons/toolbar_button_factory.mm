@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_resource_macros.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -40,6 +41,10 @@ typedef NS_ENUM(NSInteger, ToolbarButtonState) {
 
 // Number of style used for the buttons.
 const int styleCount = 2;
+// Omnibox background.
+const CGFloat kOmniboxBackgroundHeight = 38;
+const CGFloat kOmniboxBackgroundCornerRadius = 13;
+const CGFloat kOmniboxBackgroundAlpha = 0.05;
 }  // namespace
 
 @implementation ToolbarButtonFactory
@@ -424,11 +429,24 @@ const int styleCount = 2;
   ToolbarButton* omniboxButton = [ToolbarButton
       toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_search"]];
 
-  [self configureButton:omniboxButton width:kAdaptiveToolbarButtonWidth];
+  [self configureButton:omniboxButton width:kOmniboxButtonWidth];
   [omniboxButton addTarget:self.dispatcher
                     action:@selector(focusOmniboxFromSearchButton)
           forControlEvents:UIControlEventTouchUpInside];
   omniboxButton.accessibilityIdentifier = kToolbarOmniboxButtonIdentifier;
+
+  UIView* background = [[UIView alloc] init];
+  background.translatesAutoresizingMaskIntoConstraints = NO;
+  background.userInteractionEnabled = NO;
+  background.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kOmniboxBackgroundAlpha];
+  background.layer.cornerRadius = kOmniboxBackgroundCornerRadius;
+  [omniboxButton addSubview:background];
+  AddSameCenterConstraints(omniboxButton, background);
+  [background.heightAnchor constraintEqualToConstant:kOmniboxBackgroundHeight]
+      .active = YES;
+  [background.widthAnchor constraintEqualToAnchor:omniboxButton.widthAnchor]
+      .active = YES;
 
   omniboxButton.visibilityMask =
       self.visibilityConfiguration.omniboxButtonVisibility;

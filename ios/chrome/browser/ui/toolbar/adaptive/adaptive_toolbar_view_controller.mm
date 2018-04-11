@@ -146,9 +146,7 @@
 }
 
 - (void)setSearchIcon:(UIImage*)searchIcon {
-  if (IconForSearchButton() == ToolbarSearchButtonIconMagnifying)
-    return;
-  [self.view.omniboxButton setImage:searchIcon forState:UIControlStateNormal];
+  // TODO(crbug.com/831113):Remove this method.
 }
 
 #pragma mark - NewTabPageControllerDelegate

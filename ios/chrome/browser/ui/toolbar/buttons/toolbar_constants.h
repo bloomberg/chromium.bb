@@ -49,6 +49,7 @@ extern const CGFloat kProgressBarHeight;
 extern const CGFloat kToolsMenuButtonWidth;
 extern const CGFloat kAdaptiveToolbarButtonHeight;
 extern const CGFloat kAdaptiveToolbarButtonWidth;
+extern const CGFloat kOmniboxButtonWidth;
 extern const CGFloat kToolbarButtonWidth;
 extern const CGFloat kLeadingLocationBarButtonWidth;
 extern const CGFloat kToolbarButtonTitleNormalColor;
