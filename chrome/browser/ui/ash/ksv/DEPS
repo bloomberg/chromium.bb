@@ -5,6 +5,7 @@ include_rules = [
   "-ash",
   "-chrome",
   "+ash/components/shortcut_viewer",
+  "+ash/shell.h",
   "+ash/wm/window_util.h",
   "+chrome/browser/ui/ash/ksv",
 ]
