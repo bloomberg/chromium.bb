@@ -53,7 +53,7 @@ scoped_refptr<NGLayoutResult> NGUnpositionedListMarker::Layout(
 bool NGUnpositionedListMarker::AddToBox(
     const NGConstraintSpace& space,
     const NGPhysicalFragment& content,
-    NGLogicalOffset offset,
+    NGLogicalOffset* content_offset,
     NGFragmentBuilder* container_builder) const {
   // Compute the baseline of the child content.
   FontBaseline baseline_type = IsHorizontalWritingMode(space.GetWritingMode())
@@ -84,20 +84,25 @@ bool NGUnpositionedListMarker::AddToBox(
   // Compute the inline offset of the marker.
   NGBoxFragment marker_fragment(space.GetWritingMode(),
                                 marker_physical_fragment);
-  offset.inline_offset = InlineOffset(marker_fragment.InlineSize());
+  NGLogicalSize maker_size = marker_fragment.Size();
+  NGLogicalOffset marker_offset(InlineOffset(maker_size.inline_size),
+                                content_offset->block_offset);
 
-  // Compute the block offset of the marker by aligning the baseline of the
-  // marker to the first baseline of the content.
+  // Adjust the block offset to align baselines of the marker and the content.
   NGLineHeightMetrics marker_metrics = marker_fragment.BaselineMetrics(
       {NGBaselineAlgorithmType::kAtomicInline, baseline_type}, space);
-
-  // |offset.block_offset| is at the top of the content. Adjust it to the top of
-  // the list marker by adding the differences of the ascent between content's
-  // first line and the list marker.
-  offset.block_offset += content_metrics.ascent - marker_metrics.ascent;
+  LayoutUnit baseline_adjust = content_metrics.ascent - marker_metrics.ascent;
+  if (baseline_adjust >= 0) {
+    marker_offset.block_offset += baseline_adjust;
+  } else {
+    // If the ascent of the marker is taller than the ascent of the content,
+    // push the content down.
+    content_offset->block_offset -= baseline_adjust;
+  }
 
   DCHECK(container_builder);
-  container_builder->AddChild(std::move(marker_layout_result), offset);
+  container_builder->AddChild(std::move(marker_layout_result), marker_offset);
+
   return true;
 }
 

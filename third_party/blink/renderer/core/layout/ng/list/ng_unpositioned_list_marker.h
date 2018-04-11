@@ -45,8 +45,8 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   // that the child content does not have a baseline to align to, and that
   // caller should try next child, or "WithoutLineBoxes" version.
   bool AddToBox(const NGConstraintSpace&,
-                const NGPhysicalFragment&,
-                NGLogicalOffset,
+                const NGPhysicalFragment& content,
+                NGLogicalOffset* content_offset,
                 NGFragmentBuilder*) const;
 
   // Add a fragment for an outside list marker when the list item has no line

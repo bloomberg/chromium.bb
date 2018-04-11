@@ -188,7 +188,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void AddPositionedFloats(const Vector<NGPositionedFloat>& positioned_floats);
 
   // Positions a list marker for the specified block content.
-  void PositionListMarker(const NGLayoutResult&, const NGLogicalOffset&);
+  void PositionOrPropagateListMarker(const NGLayoutResult&, NGLogicalOffset*);
 
   // Positions a list marker when the block does not have any line boxes.
   void PositionListMarkerWithoutLineBoxes();
