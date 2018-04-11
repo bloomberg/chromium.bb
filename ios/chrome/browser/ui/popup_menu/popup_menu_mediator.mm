@@ -94,6 +94,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @property(nonatomic, strong) PopupMenuToolsItem* bookmarkItem;
 @property(nonatomic, strong) PopupMenuToolsItem* findInPageItem;
 @property(nonatomic, strong) PopupMenuToolsItem* siteInformationItem;
+@property(nonatomic, strong) PopupMenuToolsItem* requestDesktopSiteItem;
+@property(nonatomic, strong) PopupMenuToolsItem* requestMobileSiteItem;
 @property(nonatomic, strong) PopupMenuToolsItem* readingListItem;
 // Array containing all the nonnull items/
 @property(nonatomic, strong) NSArray<TableViewItem*>* specificItems;
@@ -117,6 +119,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 @synthesize bookmarkItem = _bookmarkItem;
 @synthesize findInPageItem = _findInPageItem;
 @synthesize siteInformationItem = _siteInformationItem;
+@synthesize requestDesktopSiteItem = _requestDesktopSiteItem;
+@synthesize requestMobileSiteItem = _requestMobileSiteItem;
 @synthesize readingListItem = _readingListItem;
 @synthesize specificItems = _specificItems;
 
@@ -357,6 +361,10 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       [specificItems addObject:self.findInPageItem];
     if (self.siteInformationItem)
       [specificItems addObject:self.siteInformationItem];
+    if (self.requestDesktopSiteItem)
+      [specificItems addObject:self.requestDesktopSiteItem];
+    if (self.requestMobileSiteItem)
+      [specificItems addObject:self.requestMobileSiteItem];
     if (self.readingListItem)
       [specificItems addObject:self.readingListItem];
     self.specificItems = specificItems;
@@ -411,10 +419,15 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 // Updates the popup menu to have its state in sync with the current page
 // status.
 - (void)updatePopupMenu {
+  [self updateReloadStopItem];
   self.readLaterItem.enabled = [self isCurrentURLWebURL];
   [self updateBookmarkItem];
   self.findInPageItem.enabled = [self isFindInPageEnabled];
-  [self updateReloadStopItem];
+  self.siteInformationItem.enabled = [self isCurrentURLWebURL];
+  self.requestDesktopSiteItem.enabled =
+      [self userAgentType] == web::UserAgentType::MOBILE;
+  self.requestMobileSiteItem.enabled =
+      [self userAgentType] == web::UserAgentType::DESKTOP;
 
   // Reload the items.
   [self.popupMenu reconfigureCellsForItems:self.specificItems];
@@ -591,19 +604,19 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
   if ([self userAgentType] != web::UserAgentType::DESKTOP) {
     // Request Desktop Site.
-    PopupMenuToolsItem* requestDesktopSite = CreateTableViewItem(
+    self.requestDesktopSiteItem = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, PopupMenuActionRequestDesktop,
         @"popup_menu_request_desktop_site", kToolsMenuRequestDesktopId);
     // Disable the action if the user agent is not mobile.
-    requestDesktopSite.enabled =
+    self.requestDesktopSiteItem.enabled =
         [self userAgentType] == web::UserAgentType::MOBILE;
-    [actionsArray addObject:requestDesktopSite];
+    [actionsArray addObject:self.requestDesktopSiteItem];
   } else {
     // Request Mobile Site.
-    TableViewItem* requestMobileSite = CreateTableViewItem(
+    self.requestMobileSiteItem = CreateTableViewItem(
         IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, PopupMenuActionRequestMobile,
         @"popup_menu_request_mobile_site", kToolsMenuRequestMobileId);
-    [actionsArray addObject:requestMobileSite];
+    [actionsArray addObject:self.requestMobileSiteItem];
   }
 
   // Site Information.
