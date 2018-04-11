@@ -827,6 +827,9 @@ void MediaControlsImpl::SetTestMode(bool enable) {
 void MediaControlsImpl::MaybeShow() {
   panel_->SetIsWanted(true);
   panel_->SetIsDisplayed(true);
+
+  UpdateCurrentTimeDisplay();
+
   if (overlay_play_button_ && !is_paused_for_scrubbing_)
     overlay_play_button_->UpdateDisplayType();
   // Only make the controls visible if they won't get hidden by OnTimeUpdate.
@@ -988,7 +991,8 @@ void MediaControlsImpl::EndScrubbing() {
 }
 
 void MediaControlsImpl::UpdateCurrentTimeDisplay() {
-  current_time_display_->SetCurrentValue(MediaElement().currentTime());
+  if (panel_->IsWanted())
+    current_time_display_->SetCurrentValue(MediaElement().currentTime());
 }
 
 void MediaControlsImpl::ToggleTextTrackList() {
