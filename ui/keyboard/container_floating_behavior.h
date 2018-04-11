@@ -49,7 +49,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
                     const gfx::Size& keyboard_size) const override;
   void SavePosition(const gfx::Rect& keyboard_bounds,
                     const gfx::Size& screen_size) override;
-  bool HandlePointerEvent(const ui::LocatedEvent& event,
+  void HandlePointerEvent(const ui::LocatedEvent& event,
                           const gfx::Rect& display_bounds) override;
   void SetCanonicalBounds(aura::Window* container,
                           const gfx::Rect& display_bounds) override;
