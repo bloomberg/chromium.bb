@@ -26,8 +26,8 @@
   overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
   TestRunner.addResult('--------------------------------------------------------');
-  var selectionData = timeline._currentModelSelectionData();
-  TestRunner.addResult('time range = ' + selectionData.windowStartTime + ' - ' + selectionData.windowEndTime);
+  const window = timeline._performanceModel.window();
+  TestRunner.addResult(`time range = ${window.left} - ${window.right}`);
   TestRunner.completeTest();
 
   function dumpFlameChartRecordsCountForRange(windowLeft, windowRight) {
@@ -36,8 +36,8 @@
     overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
     mainView.update();
     TestRunner.addResult('range = ' + windowLeft + ' - ' + windowRight);
-    var selectionData = timeline._currentModelSelectionData();
-    TestRunner.addResult('time range = ' + selectionData.windowStartTime + ' - ' + selectionData.windowEndTime);
+    const window = timeline._performanceModel.window();
+    TestRunner.addResult(`time range = ${window.left} - ${window.right}`);
     TestRunner.addResult('');
   }
 
