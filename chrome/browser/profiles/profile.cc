@@ -214,10 +214,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kMediaRouterMediaRemotingEnabled, true);
   registry->RegisterListPref(prefs::kMediaRouterTabMirroringSources);
 
-#if defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kAllowScreenLock, true);
-#endif
-
   registry->RegisterDictionaryPref(prefs::kWebShareVisitedTargets);
   registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
 }

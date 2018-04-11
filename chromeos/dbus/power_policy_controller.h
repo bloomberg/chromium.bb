@@ -93,6 +93,10 @@ class CHROMEOS_EXPORT PowerPolicyController
   // been modified by preferences.
   static const char kPrefsReason[];
 
+  bool honor_screen_wake_locks_for_test() const {
+    return honor_screen_wake_locks_;
+  }
+
   // Updates |prefs_policy_| with |values| and sends an updated policy.
   void ApplyPrefs(const PrefValues& values);
 
@@ -127,8 +131,6 @@ class CHROMEOS_EXPORT PowerPolicyController
  private:
   explicit PowerPolicyController(PowerManagerClient* client);
   ~PowerPolicyController() override;
-
-  friend class PowerPrefsTest;
 
   // Details about a wake lock added via Add*WakeLock().
   // SCREEN and DIM will keep the screen on and prevent it from locking.

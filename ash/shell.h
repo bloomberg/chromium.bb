@@ -129,6 +129,7 @@ class PeripheralBatteryNotifier;
 class PersistentWindowController;
 class PowerButtonController;
 class PowerEventObserver;
+class PowerPrefs;
 class ProjectingObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
@@ -267,12 +268,14 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Registers all ash related local state prefs to the given |registry|.
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
-  // Registers all ash related user profile prefs to the given |registry|.
-  // Can be called before Shell is initialized. When |for_test| is true this
-  // registers foreign user profile prefs (e.g. chrome prefs) as if they are
-  // owned by ash. This allows test code to read the pref values.
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry,
-                                   bool for_test = false);
+  // Registers all ash related signin/user profile prefs to the given
+  // |registry|. Can be called before Shell is initialized. When |for_test| is
+  // true this registers foreign user profile prefs (e.g. chrome prefs) as if
+  // they are owned by ash. This allows test code to read the pref values.
+  static void RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
+                                         bool for_test = false);
+  static void RegisterUserProfilePrefs(PrefRegistrySimple* registry,
+                                       bool for_test = false);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -760,6 +763,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<PeripheralBatteryNotifier> peripheral_battery_notifier_;
   std::unique_ptr<PowerEventObserver> power_event_observer_;
+  std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
   std::unique_ptr<VideoActivityNotifier> video_activity_notifier_;
   std::unique_ptr<StickyKeysController> sticky_keys_controller_;

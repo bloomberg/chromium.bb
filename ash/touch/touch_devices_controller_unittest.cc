@@ -198,7 +198,8 @@ TEST_F(TouchDevicesControllerPrefsTest, RecordUma) {
 
   // Simulate active user pref service is changed.
   auto pref_service = std::make_unique<TestingPrefServiceSimple>();
-  Shell::RegisterProfilePrefs(pref_service->registry(), true /* for_test */);
+  Shell::RegisterUserProfilePrefs(pref_service->registry(),
+                                  true /* for_test */);
   Shell::Get()->session_controller()->ProvideUserPrefServiceForTest(
       kUserAccount1, std::move(pref_service));
   histogram_tester.ExpectTotalCount("Touchpad.TapDragging.Started", 1);

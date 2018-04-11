@@ -73,7 +73,7 @@ bool IsSettingReadOnly(const std::string& pref_name) {
   if (pref_name == chromeos::kSystemTimezone)
     return chromeos::system::PerUserTimezoneEnabled();
   // enable_screen_lock must be changed through the quickUnlockPrivate API.
-  if (pref_name == ::prefs::kEnableAutoScreenLock)
+  if (pref_name == ash::prefs::kEnableAutoScreenLock)
     return true;
 #endif
   return false;
@@ -259,7 +259,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[chromeos::kAccountsPrefUsers] =
       settings_api::PrefType::PREF_TYPE_LIST;
   // kEnableAutoScreenLock is read-only.
-  (*s_whitelist)[::prefs::kEnableAutoScreenLock] =
+  (*s_whitelist)[ash::prefs::kEnableAutoScreenLock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::prefs::kEnableQuickUnlockFingerprint] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

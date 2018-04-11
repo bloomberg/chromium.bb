@@ -387,11 +387,13 @@ DeprecatedIdleActionHandler::~DeprecatedIdleActionHandler() {}
 void DeprecatedIdleActionHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                       PrefValueMap* prefs) {
   const base::Value* value = policies.GetValue(policy_name());
-  if (value && EnsureInRange(value, NULL, NULL)) {
-    if (!prefs->GetValue(prefs::kPowerAcIdleAction, NULL))
-      prefs->SetValue(prefs::kPowerAcIdleAction, value->CreateDeepCopy());
-    if (!prefs->GetValue(prefs::kPowerBatteryIdleAction, NULL))
-      prefs->SetValue(prefs::kPowerBatteryIdleAction, value->CreateDeepCopy());
+  if (value && EnsureInRange(value, nullptr, nullptr)) {
+    if (!prefs->GetValue(ash::prefs::kPowerAcIdleAction, nullptr))
+      prefs->SetValue(ash::prefs::kPowerAcIdleAction, value->CreateDeepCopy());
+    if (!prefs->GetValue(ash::prefs::kPowerBatteryIdleAction, nullptr)) {
+      prefs->SetValue(ash::prefs::kPowerBatteryIdleAction,
+                      value->CreateDeepCopy());
+    }
   }
 }
 
@@ -422,35 +424,41 @@ void PowerManagementIdleSettingsPolicyHandler::ApplyPolicySettings(
 
   value = GetValue(dict, kScreenDimDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenDimDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerAcScreenDimDelayMs, std::move(value));
   value = GetValue(dict, kScreenOffDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenOffDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerAcScreenOffDelayMs, std::move(value));
   value = GetValue(dict, kIdleWarningDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleWarningDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerAcIdleWarningDelayMs, std::move(value));
   value = GetValue(dict, kIdleDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerAcIdleDelayMs, std::move(value));
   value = GetAction(dict, kIdleActionAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcIdleAction, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerAcIdleAction, std::move(value));
 
   value = GetValue(dict, kScreenDimDelayBattery);
-  if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenDimDelayMs, std::move(value));
+  if (value) {
+    prefs->SetValue(ash::prefs::kPowerBatteryScreenDimDelayMs,
+                    std::move(value));
+  }
   value = GetValue(dict, kScreenOffDelayBattery);
-  if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenOffDelayMs, std::move(value));
+  if (value) {
+    prefs->SetValue(ash::prefs::kPowerBatteryScreenOffDelayMs,
+                    std::move(value));
+  }
   value = GetValue(dict, kIdleWarningDelayBattery);
-  if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleWarningDelayMs, std::move(value));
+  if (value) {
+    prefs->SetValue(ash::prefs::kPowerBatteryIdleWarningDelayMs,
+                    std::move(value));
+  }
   value = GetValue(dict, kIdleDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerBatteryIdleDelayMs, std::move(value));
   value = GetAction(dict, kIdleActionBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryIdleAction, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerBatteryIdleAction, std::move(value));
 }
 
 ScreenLockDelayPolicyHandler::ScreenLockDelayPolicyHandler(
@@ -479,10 +487,11 @@ void ScreenLockDelayPolicyHandler::ApplyPolicySettings(
 
   value = GetValue(dict, kScreenLockDelayAC);
   if (value)
-    prefs->SetValue(prefs::kPowerAcScreenLockDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerAcScreenLockDelayMs, std::move(value));
   value = GetValue(dict, kScreenLockDelayBattery);
   if (value)
-    prefs->SetValue(prefs::kPowerBatteryScreenLockDelayMs, std::move(value));
+    prefs->SetValue(ash::prefs::kPowerBatteryScreenLockDelayMs,
+                    std::move(value));
 }
 
 }  // namespace policy

@@ -85,7 +85,6 @@
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
-#include "chrome/browser/chromeos/power/power_prefs.h"
 #include "chrome/browser/chromeos/power/renderer_freezer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/resource_reporter/resource_reporter.h"
@@ -327,8 +326,11 @@ class DBusServices {
         DBusThreadManager::Get()->GetSystemBus(),
         chromeos::DBusThreadManager::Get()->IsUsingFakes());
 
-    PowerPolicyController::Initialize(
-        DBusThreadManager::Get()->GetPowerManagerClient());
+    if (GetAshConfig() != ash::Config::MASH) {
+      // In Mash, power policy is sent to powerd by ash.
+      PowerPolicyController::Initialize(
+          DBusThreadManager::Get()->GetPowerManagerClient());
+    }
 
     CrosDBusService::ServiceProviderList service_providers;
     CrosDBusService::ServiceProviderList display_service_providers;
@@ -467,7 +469,8 @@ class DBusServices {
     finch_features_service_.reset();
     vm_applications_service_.reset();
     PowerDataCollector::Shutdown();
-    PowerPolicyController::Shutdown();
+    if (GetAshConfig() != ash::Config::MASH)
+      PowerPolicyController::Shutdown();
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
   }
@@ -818,10 +821,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     WizardController::SetZeroDelays();
   }
 
-  power_prefs_ = std::make_unique<PowerPrefs>(
-      PowerPolicyController::Get(),
-      DBusThreadManager::Get()->GetPowerManagerClient());
-
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
 
   // On Chrome OS, Chrome does not exit when all browser windows are closed.
@@ -1127,7 +1126,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // DBusThreadManager is shut down.
   network_pref_state_observer_.reset();
   extension_volume_observer_.reset();
-  power_prefs_.reset();
   power_metrics_reporter_.reset();
   renderer_freezer_.reset();
   wake_on_wifi_manager_.reset();

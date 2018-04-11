@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/env.h"
@@ -50,6 +51,11 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
     ui::ContextFactory* context_factory,
     ui::ContextFactoryPrivate* context_factory_private) {
   chromeos::DBusThreadManager::Initialize();
+  // ash::Shell::CreateInstance needs chromeos::PowerPolicyController
+  // initialized. In classic ash, it is initialized in chrome process. In mash,
+  // it is initialized by window manager service.
+  chromeos::PowerPolicyController::Initialize(
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
       chromeos::DBusThreadManager::Get()->IsUsingFakes());
@@ -78,6 +84,7 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
   bluez::BluezDBusManager::Shutdown();
+  chromeos::PowerPolicyController::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 }
 

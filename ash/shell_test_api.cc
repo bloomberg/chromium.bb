@@ -48,6 +48,10 @@ DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
 }
 
+PowerPrefs* ShellTestApi::power_prefs() {
+  return shell_->power_prefs_.get();
+}
+
 void ShellTestApi::OnLocalStatePrefServiceInitialized(
     std::unique_ptr<PrefService> pref_service) {
   shell_->OnLocalStatePrefServiceInitialized(std::move(pref_service));

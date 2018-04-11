@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
@@ -288,7 +289,7 @@ QuickUnlockPrivateSetLockScreenEnabledFunction::Run() {
   if (params->token != quick_unlock_storage->GetAuthToken())
     return RespondNow(Error(kAuthTokenInvalid));
 
-  profile->GetPrefs()->SetBoolean(prefs::kEnableAutoScreenLock,
+  profile->GetPrefs()->SetBoolean(ash::prefs::kEnableAutoScreenLock,
                                   params->enabled);
 
   return RespondNow(ArgumentList(

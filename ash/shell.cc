@@ -95,6 +95,7 @@
 #include "ash/system/power/peripheral_battery_notifier.h"
 #include "ash/system/power/power_button_controller.h"
 #include "ash/system/power/power_event_observer.h"
+#include "ash/system/power/power_prefs.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/power/video_activity_notifier.h"
 #include "ash/system/screen_layout_observer.h"
@@ -148,6 +149,7 @@
 #include "base/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/system/devicemode.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -224,6 +226,21 @@ class AshVisibilityController : public ::wm::VisibilityController {
 
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
+
+// Registers prefs whose default values are same in user and signin prefs.
+void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
+  AccessibilityController::RegisterProfilePrefs(registry, for_test);
+  BluetoothPowerController::RegisterProfilePrefs(registry);
+  DockedMagnifierController::RegisterProfilePrefs(registry);
+  LoginScreenController::RegisterProfilePrefs(registry, for_test);
+  LogoutButtonTray::RegisterProfilePrefs(registry);
+  NightLightController::RegisterProfilePrefs(registry);
+  PaletteTray::RegisterProfilePrefs(registry);
+  PaletteWelcomeBubble::RegisterProfilePrefs(registry);
+  ShelfController::RegisterProfilePrefs(registry);
+  TouchDevicesController::RegisterProfilePrefs(registry);
+  CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
+}
 
 }  // namespace
 
@@ -385,18 +402,17 @@ void Shell::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 // static
-void Shell::RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
-  AccessibilityController::RegisterProfilePrefs(registry, for_test);
-  BluetoothPowerController::RegisterProfilePrefs(registry);
-  DockedMagnifierController::RegisterProfilePrefs(registry);
-  LoginScreenController::RegisterProfilePrefs(registry, for_test);
-  LogoutButtonTray::RegisterProfilePrefs(registry);
-  NightLightController::RegisterProfilePrefs(registry);
-  PaletteTray::RegisterProfilePrefs(registry);
-  PaletteWelcomeBubble::RegisterProfilePrefs(registry);
-  ShelfController::RegisterProfilePrefs(registry);
-  TouchDevicesController::RegisterProfilePrefs(registry);
-  CapsLockNotificationController::RegisterProfilePrefs(registry, for_test);
+void Shell::RegisterSigninProfilePrefs(PrefRegistrySimple* registry,
+                                       bool for_test) {
+  RegisterProfilePrefs(registry, for_test);
+  PowerPrefs::RegisterSigninProfilePrefs(registry, for_test);
+}
+
+// static
+void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
+                                     bool for_test) {
+  RegisterProfilePrefs(registry, for_test);
+  PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -775,6 +791,7 @@ Shell::~Shell() {
   event_client_.reset();
   toplevel_window_event_handler_.reset();
   visibility_controller_.reset();
+  power_prefs_.reset();
 
   tray_action_.reset();
 
@@ -1046,6 +1063,10 @@ void Shell::Init(ui::ContextFactory* context_factory,
 
   sticky_keys_controller_.reset(new StickyKeysController);
   screen_pinning_controller_ = std::make_unique<ScreenPinningController>();
+
+  power_prefs_ = std::make_unique<PowerPrefs>(
+      chromeos::PowerPolicyController::Get(),
+      chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
 
   backlights_forced_off_setter_ = std::make_unique<BacklightsForcedOffSetter>();
 

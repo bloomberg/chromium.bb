@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -96,7 +96,7 @@ bool WebUIScreenLocker::ShouldPreloadLockScreen() {
   // Note that |profile| can be null in tests.
   return base::FeatureList::IsEnabled(features::kPreloadLockScreen) &&
          profile &&
-         profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock);
+         profile->GetPrefs()->GetBoolean(ash::prefs::kEnableAutoScreenLock);
 }
 
 // static

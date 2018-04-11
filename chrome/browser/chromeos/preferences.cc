@@ -326,6 +326,14 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kRestoreLastLockScreenNote, true);
   registry->RegisterDictionaryPref(prefs::kNoteTakingAppsLockScreenToastShown);
 
+  // TODO(warx): Move prefs::kAllowScreenLock and prefs::kEnableAutoScreenLock
+  // registration to ash, which requires refactoring in SessionControllerClient.
+  registry->RegisterBooleanPref(ash::prefs::kAllowScreenLock, true,
+                                PrefRegistry::PUBLIC);
+  registry->RegisterBooleanPref(
+      ash::prefs::kEnableAutoScreenLock, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
 

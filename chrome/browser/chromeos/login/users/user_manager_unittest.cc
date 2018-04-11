@@ -6,6 +6,7 @@
 #include <cstring>
 #include <memory>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -259,7 +260,7 @@ TEST_F(UserManagerTest, ScreenLockAvailability) {
   EXPECT_EQ(1U, user_manager::UserManager::Get()->GetUnlockUsers().size());
 
   // The user is not allowed to lock the screen.
-  profile->GetPrefs()->SetBoolean(prefs::kAllowScreenLock, false);
+  profile->GetPrefs()->SetBoolean(ash::prefs::kAllowScreenLock, false);
   EXPECT_FALSE(user_manager::UserManager::Get()->CanCurrentUserLock());
   EXPECT_EQ(0U, user_manager::UserManager::Get()->GetUnlockUsers().size());
 
