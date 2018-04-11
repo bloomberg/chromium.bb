@@ -105,23 +105,6 @@ MediaControlElementType AccessibilityMediaControl::ControlType() const {
       GetLayoutObject()->GetNode());
 }
 
-bool AccessibilityMediaControl::OnNativeScrollToGlobalPointAction(
-    const IntPoint& point) const {
-  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
-  return AXLayoutObject::OnNativeScrollToGlobalPointAction(point);
-}
-
-bool AccessibilityMediaControl::OnNativeScrollToMakeVisibleAction() const {
-  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
-  return AXLayoutObject::OnNativeScrollToMakeVisibleAction();
-}
-
-bool AccessibilityMediaControl::OnNativeScrollToMakeVisibleWithSubFocusAction(
-    const IntRect& rect) const {
-  MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(GetElement());
-  return AXLayoutObject::OnNativeScrollToMakeVisibleWithSubFocusAction(rect);
-}
-
 String AccessibilityMediaControl::TextAlternative(
     bool recursive,
     bool in_aria_labelled_by_traversal,

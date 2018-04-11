@@ -54,11 +54,6 @@ class AccessibilityMediaControl : public AXLayoutObject {
                      AXDescriptionFrom&,
                      AXObjectVector* description_objects) const override;
 
-  bool OnNativeScrollToGlobalPointAction(const IntPoint&) const override;
-  bool OnNativeScrollToMakeVisibleAction() const override;
-  bool OnNativeScrollToMakeVisibleWithSubFocusAction(
-      const IntRect&) const override;
-
  protected:
   AccessibilityMediaControl(LayoutObject*, AXObjectCacheImpl&);
   MediaControlElementType ControlType() const;
