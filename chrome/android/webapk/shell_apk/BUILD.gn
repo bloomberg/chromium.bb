@@ -9,6 +9,8 @@ import("shell_apk_version.gni")
 shell_apk_manifest = "$target_gen_dir/shell_apk_manifest/AndroidManifest.xml"
 unbound_shell_apk_manifest =
     "$target_gen_dir/unbound_shell_apk_manifest/AndroidManifest.xml"
+maps_go_apk_manifest =
+    "$target_gen_dir/maps_go_apk_manifest/AndroidManifest.xml"
 
 manifest_processor_template("shell_apk_manifest") {
   input = "AndroidManifest.xml"
@@ -26,6 +28,14 @@ manifest_processor_template("unbound_shell_apk_manifest") {
   extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
 }
 
+manifest_processor_template("maps_go_apk_manifest") {
+  input = "AndroidManifest.xml"
+  config_file = "maps_go_manifest_config.json"
+  output = maps_go_apk_manifest
+
+  extra_variables = [ "shell_apk_version=$template_shell_apk_version" ]
+}
+
 android_resources("shell_apk_resources") {
   resource_dirs = [ "res" ]
   custom_package = "org.chromium.webapk.shell_apk"
@@ -38,16 +48,12 @@ android_resources("shell_apk_resources") {
 # old copy of the runtime library.
 android_library("compiled_in_runtime_library_java") {
   chromium_code = false
-  java_files = [
-    "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java",
- ]
+  java_files = [ "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.java" ]
 }
 
 # Split out as a separate target so that it can be tested from chrome_public_test_apk
 android_library("dex_loader_java") {
-  java_files = [
-    "src/org/chromium/webapk/shell_apk/DexLoader.java",
-  ]
+  java_files = [ "src/org/chromium/webapk/shell_apk/DexLoader.java" ]
 }
 
 android_library("webapk_java") {
@@ -165,6 +171,12 @@ webapk_tmpl("webapk") {
   android_manifest = shell_apk_manifest
   android_manifest_dep = ":shell_apk_manifest"
   apk_name = "WebApk"
+}
+
+webapk_tmpl("maps_go_webapk") {
+  android_manifest = maps_go_apk_manifest
+  android_manifest_dep = ":maps_go_apk_manifest"
+  apk_name = "MapsWebApk"
 }
 
 webapk_tmpl("unbound_webapk") {
