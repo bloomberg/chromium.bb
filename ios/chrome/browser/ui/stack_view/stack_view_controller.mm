@@ -2292,8 +2292,11 @@ NSString* const kTransitionToolbarAnimationKey =
     cardView = card.view;
   } else {
     // The recognizer is one of those attached to the card.
-    DCHECK([recognizer.view isKindOfClass:[CardView class]]);
-    cardView = (CardView*)recognizer.view;
+    // See https://crbug.com/393230 where recognizer.view may not be a CardView
+    // type. In that case, early return with a NO to avoid unnecessary crash.
+    cardView = base::mac::ObjCCastStrict<CardView>(recognizer.view);
+    if (!cardView)
+      return NO;
     card = [self cardForView:cardView];
   }
 
