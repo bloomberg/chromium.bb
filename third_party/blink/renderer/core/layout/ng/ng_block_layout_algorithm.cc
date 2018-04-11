@@ -730,11 +730,11 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
     container_builder_.SetPreviousBreakAfter(break_after);
   }
 
+  PositionOrPropagateListMarker(*layout_result, &logical_offset);
+
   intrinsic_block_size_ =
       std::max(intrinsic_block_size_,
                logical_offset.block_offset + fragment.BlockSize());
-
-  PositionListMarker(*layout_result, logical_offset);
 
   container_builder_.AddChild(layout_result, logical_offset);
   container_builder_.PropagateBreak(layout_result);
@@ -1058,6 +1058,8 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
     container_builder_.SetPreviousBreakAfter(break_after);
   }
 
+  PositionOrPropagateListMarker(*layout_result, &logical_offset);
+
   // Only modify intrinsic_block_size_ if the fragment is non-empty block.
   //
   // Empty blocks don't immediately contribute to our size, instead we wait to
@@ -1072,8 +1074,6 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
         std::max(intrinsic_block_size_,
                  logical_offset.block_offset + fragment.BlockSize());
   }
-
-  PositionListMarker(*layout_result, logical_offset);
 
   container_builder_.AddChild(layout_result, logical_offset);
   if (child.IsBlock())
@@ -1838,13 +1838,14 @@ LayoutUnit NGBlockLayoutAlgorithm::CalculateMinimumBlockSize(
   return NGSizeIndefinite;
 }
 
-void NGBlockLayoutAlgorithm::PositionListMarker(
+void NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
     const NGLayoutResult& layout_result,
-    const NGLogicalOffset& content_offset) {
+    NGLogicalOffset* content_offset) {
   // If this is not a list-item, propagate unpositioned list markers to
   // ancestors.
   if (!node_.IsListItem()) {
     if (layout_result.UnpositionedListMarker()) {
+      DCHECK(!container_builder_.UnpositionedListMarker());
       container_builder_.SetUnpositionedListMarker(
           layout_result.UnpositionedListMarker());
     }
