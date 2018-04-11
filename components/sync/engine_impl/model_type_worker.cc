@@ -130,20 +130,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     if (!update_entity->server_defined_unique_tag().empty())
       continue;
 
-    // Normal updates are handled here.
-    const std::string& client_tag_hash =
-        update_entity->client_defined_unique_tag();
-
-    // TODO(crbug.com/516866): this wouldn't be true for bookmarks.
-    DCHECK(!client_tag_hash.empty());
-
-    WorkerEntityTracker* entity = GetOrCreateEntityTracker(client_tag_hash);
-
-    if (!entity->UpdateContainsNewVersion(update_entity->version())) {
-      status->increment_num_reflected_updates_downloaded_by(1);
-      ++counters->num_reflected_updates_received;
-    }
-
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
       ++counters->num_tombstone_updates_received;
@@ -153,17 +139,18 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     switch (PopulateUpdateResponseData(cryptographer_.get(), *update_entity,
                                        &response_data)) {
       case SUCCESS:
-        entity->ReceiveUpdate(response_data);
         pending_updates_.push_back(response_data);
         break;
-      case DECRYPTION_PENDING:
+      case DECRYPTION_PENDING: {
+        auto entity = std::make_unique<WorkerEntityTracker>();
         entity->ReceiveEncryptedUpdate(response_data);
+        entries_pending_decryption_[update_entity->id_string()] =
+            std::move(entity);
         has_encrypted_updates_ = true;
         break;
+      }
       case FAILED_TO_DECRYPT:
-        // Failed to decrypt the entity. Likely it is corrupt. Drop the entity
-        // and move on.
-        entities_.erase(client_tag_hash);
+        // Failed to decrypt the entity. Likely it is corrupt. Move on.
         break;
     }
   }
@@ -273,9 +260,7 @@ void ModelTypeWorker::ApplyPendingUpdates() {
   debug_info_emitter_->EmitUpdateCountersUpdate();
   debug_info_emitter_->EmitStatusCountersUpdate();
 
-  DCHECK_EQ(pending_updates_.size(), entities_.size());
   pending_updates_.clear();
-  entities_.clear();
 }
 
 void ModelTypeWorker::NudgeForCommit() {
@@ -298,7 +283,10 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   // cryptographer has pending keys).
   if (!CanCommitItems())
     return std::unique_ptr<CommitContribution>();
-  DCHECK(entities_.empty());
+
+  // Client shouldn't be committing data to server when it hasn't processed all
+  // updates it received.
+  DCHECK(entries_pending_decryption_.empty());
 
   // Request model type for local changes.
   scoped_refptr<GetLocalChangesRequest> request =
@@ -330,16 +318,10 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
   model_type_processor_->OnCommitCompleted(model_type_state_, *response_list);
 }
 
-void ModelTypeWorker::CleanupAfterCommit() {
-  // Clear all tracked entities. The ones that didn't get committed will be
-  // retried next time by the processor.
-  entities_.clear();
-}
-
 void ModelTypeWorker::AbortMigration() {
   DCHECK(!model_type_state_.initial_sync_done());
   model_type_state_ = sync_pb::ModelTypeState();
-  entities_.clear();
+  entries_pending_decryption_.clear();
   pending_updates_.clear();
   has_encrypted_updates_ = false;
   nudge_handler_->NudgeForInitialDownload(type_);
@@ -349,7 +331,7 @@ size_t ModelTypeWorker::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
   memory_usage += EstimateMemoryUsage(model_type_state_);
-  memory_usage += EstimateMemoryUsage(entities_);
+  memory_usage += EstimateMemoryUsage(entries_pending_decryption_);
   memory_usage += EstimateMemoryUsage(pending_updates_);
   return memory_usage;
 }
@@ -388,31 +370,33 @@ bool ModelTypeWorker::UpdateEncryptionKeyName() {
 
 void ModelTypeWorker::DecryptStoredEntities() {
   has_encrypted_updates_ = false;
-  for (const auto& kv : entities_) {
+  for (const auto& kv : entries_pending_decryption_) {
     WorkerEntityTracker* entity = kv.second.get();
-    if (entity->HasEncryptedUpdate()) {
-      const UpdateResponseData& encrypted_update = entity->GetEncryptedUpdate();
-      EntityDataPtr data = encrypted_update.entity;
-      DCHECK(data->specifics.has_encrypted());
+    DCHECK(entity->HasEncryptedUpdate());
+    const UpdateResponseData& encrypted_update = entity->GetEncryptedUpdate();
+    EntityDataPtr data = encrypted_update.entity;
+    DCHECK(data->specifics.has_encrypted());
 
-      if (cryptographer_->CanDecrypt(data->specifics.encrypted())) {
-        sync_pb::EntitySpecifics specifics;
-        if (DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
-          UpdateResponseData decrypted_update;
-          decrypted_update.response_version = encrypted_update.response_version;
-          // Copy the encryption_key_name from data->specifics before it gets
-          // overriden in data->UpdateSpecifics().
-          decrypted_update.encryption_key_name =
-              data->specifics.encrypted().key_name();
-          decrypted_update.entity = data->UpdateSpecifics(specifics);
-          pending_updates_.push_back(decrypted_update);
+    if (cryptographer_->CanDecrypt(data->specifics.encrypted())) {
+      sync_pb::EntitySpecifics specifics;
+      if (DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
+        UpdateResponseData decrypted_update;
+        decrypted_update.response_version = encrypted_update.response_version;
+        // Copy the encryption_key_name from data->specifics before it gets
+        // overriden in data->UpdateSpecifics().
+        decrypted_update.encryption_key_name =
+            data->specifics.encrypted().key_name();
+        decrypted_update.entity = data->UpdateSpecifics(specifics);
+        pending_updates_.push_back(decrypted_update);
 
-          entity->ClearEncryptedUpdate();
-        }
-      } else {
-        has_encrypted_updates_ = true;
+        entity->ClearEncryptedUpdate();
       }
+    } else {
+      has_encrypted_updates_ = true;
     }
+  }
+  if (!has_encrypted_updates_) {
+    entries_pending_decryption_.clear();
   }
 }
 
@@ -433,28 +417,6 @@ bool ModelTypeWorker::DecryptSpecifics(const Cryptographer& cryptographer,
     return false;
   }
   return true;
-}
-
-WorkerEntityTracker* ModelTypeWorker::GetEntityTracker(
-    const std::string& tag_hash) {
-  auto it = entities_.find(tag_hash);
-  return it != entities_.end() ? it->second.get() : nullptr;
-}
-
-WorkerEntityTracker* ModelTypeWorker::CreateEntityTracker(
-    const std::string& tag_hash) {
-  DCHECK(entities_.find(tag_hash) == entities_.end());
-  std::unique_ptr<WorkerEntityTracker> entity =
-      std::make_unique<WorkerEntityTracker>(tag_hash);
-  WorkerEntityTracker* entity_ptr = entity.get();
-  entities_[tag_hash] = std::move(entity);
-  return entity_ptr;
-}
-
-WorkerEntityTracker* ModelTypeWorker::GetOrCreateEntityTracker(
-    const std::string& tag_hash) {
-  WorkerEntityTracker* entity = GetEntityTracker(tag_hash);
-  return entity ? entity : CreateEntityTracker(tag_hash);
 }
 
 GetLocalChangesRequest::GetLocalChangesRequest(
