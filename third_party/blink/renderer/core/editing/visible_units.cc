@@ -1134,7 +1134,7 @@ static bool IsVisuallyEquivalentCandidateAlgorithm(
   if (layout_object->IsLayoutBlockFlow() || layout_object->IsFlexibleBox() ||
       layout_object->IsLayoutGrid()) {
     if (ToLayoutBlock(layout_object)->LogicalHeight() ||
-        IsHTMLBodyElement(*anchor_node)) {
+        anchor_node->GetDocument().body() == anchor_node) {
       if (!HasRenderedNonAnonymousDescendantsWithHeight(layout_object))
         return position.AtFirstEditingPositionForNode();
       return HasEditableStyle(*anchor_node) && AtEditingBoundary(position);
