@@ -8,7 +8,6 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/focus_client.h"

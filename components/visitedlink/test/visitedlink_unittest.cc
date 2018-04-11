@@ -14,7 +14,6 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"

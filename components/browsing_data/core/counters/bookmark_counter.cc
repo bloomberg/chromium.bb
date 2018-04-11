@@ -4,7 +4,6 @@
 
 #include "components/browsing_data/core/counters/bookmark_counter.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"

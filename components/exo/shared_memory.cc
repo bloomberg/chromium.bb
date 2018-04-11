@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/exo/buffer.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_shared_memory.h"

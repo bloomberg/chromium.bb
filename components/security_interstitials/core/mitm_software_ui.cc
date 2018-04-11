@@ -5,7 +5,6 @@
 #include "components/security_interstitials/core/mitm_software_ui.h"
 
 #include "base/i18n/time_formatting.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/security_interstitials/core/common_string_util.h"

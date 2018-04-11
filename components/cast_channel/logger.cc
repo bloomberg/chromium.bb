@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/cast_socket.h"

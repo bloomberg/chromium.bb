@@ -5,7 +5,6 @@
 #import "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
 
 #import "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #import "components/image_fetcher/ios/webp_decoder.h"
 #include "net/http/http_response_headers.h"

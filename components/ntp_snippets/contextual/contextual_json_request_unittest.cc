@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/values.h"

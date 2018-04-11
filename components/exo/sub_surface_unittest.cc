@@ -4,7 +4,6 @@
 
 #include "components/exo/sub_surface.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"

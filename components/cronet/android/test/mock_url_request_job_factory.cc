@@ -4,7 +4,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/MockUrlRequestJobFactory_jni.h"
 #include "net/test/url_request/ssl_certificate_error_job.h"

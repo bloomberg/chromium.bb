@@ -4,7 +4,6 @@
 
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 

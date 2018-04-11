@@ -5,7 +5,6 @@
 #include "components/history/core/test/history_service_test_util.h"
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"

@@ -4,7 +4,6 @@
 
 #include "components/viz/common/gpu/context_cache_controller.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/viz/test/test_context_support.h"
 #include "testing/gmock/include/gmock/gmock.h"

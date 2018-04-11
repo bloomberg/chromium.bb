@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/suggestions/proto/suggestions.pb.h"

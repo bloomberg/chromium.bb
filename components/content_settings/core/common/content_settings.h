@@ -11,7 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"

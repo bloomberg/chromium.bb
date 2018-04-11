@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/payments/core/payment_currency_amount.h"
 #include "components/payments/core/payment_details.h"
 #include "components/payments/core/payment_details_modifier.h"

@@ -14,7 +14,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "base/process/process.h"

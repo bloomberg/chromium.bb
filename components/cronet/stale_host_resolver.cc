@@ -5,7 +5,6 @@
 #include "components/cronet/stale_host_resolver.h"
 
 #include "base/callback_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"

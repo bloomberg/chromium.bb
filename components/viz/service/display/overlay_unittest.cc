@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/resources/display_resource_provider.h"
 #include "cc/resources/layer_tree_resource_provider.h"

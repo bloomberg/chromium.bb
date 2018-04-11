@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SAFE_BROWSING_DB_WHITELIST_CHECKER_CLIENT_H_
 #define COMPONENTS_SAFE_BROWSING_DB_WHITELIST_CHECKER_CLIENT_H_
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing/db/database_manager.h"

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 

@@ -8,7 +8,6 @@
 #include <limits>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"

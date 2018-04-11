@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/request_priority.h"
 #include "net/nqe/effective_connection_type.h"

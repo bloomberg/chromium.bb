@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 
 namespace policy {

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"

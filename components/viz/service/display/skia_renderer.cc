@@ -6,7 +6,6 @@
 
 #include "base/bits.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/render_surface_filters.h"

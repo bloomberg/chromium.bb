@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/core/downloads/download_notifying_observer.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/client_policy_controller.h"

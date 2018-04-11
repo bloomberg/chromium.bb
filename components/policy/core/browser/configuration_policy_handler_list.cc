@@ -5,7 +5,6 @@
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/policy_error_map.h"
