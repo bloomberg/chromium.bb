@@ -19,10 +19,12 @@ FakeConsentAuditor::FakeConsentAuditor(
 FakeConsentAuditor::~FakeConsentAuditor() {}
 
 void FakeConsentAuditor::RecordGaiaConsent(
+    const std::string& account_id,
     consent_auditor::Feature feature,
     const std::vector<int>& description_grd_ids,
     int confirmation_grd_id,
     consent_auditor::ConsentStatus status) {
+  account_id_ = account_id;
   std::vector<int> ids = description_grd_ids;
   ids.push_back(confirmation_grd_id);
   recorded_id_vectors_.push_back(std::move(ids));

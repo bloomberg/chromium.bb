@@ -81,10 +81,13 @@ void ConsentAuditor::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void ConsentAuditor::RecordGaiaConsent(
+    const std::string& account_id,
     Feature feature,
     const std::vector<int>& description_grd_ids,
     int confirmation_grd_id,
     ConsentStatus status) {
+  DCHECK(!account_id.empty()) << "No signed-in account specified.";
+
   if (!base::FeatureList::IsEnabled(switches::kSyncUserConsentEvents))
     return;
 
@@ -105,8 +108,7 @@ void ConsentAuditor::RecordGaiaConsent(
 
   // TODO(msramek): Pass in the actual account id.
   std::unique_ptr<sync_pb::UserEventSpecifics> specifics = ConstructUserConsent(
-      /* account_id = */ std::string(), feature, description_grd_ids,
-      confirmation_grd_id, status);
+      account_id, feature, description_grd_ids, confirmation_grd_id, status);
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
 

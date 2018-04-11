@@ -28,6 +28,9 @@ const char kLocalConsentLocaleKey[] = "locale";
 const char kCurrentAppVersion[] = "1.2.3.4";
 const char kCurrentAppLocale[] = "en-US";
 
+// Fake account ID for testing.
+const char kAccountId[] = "testing_account_id";
+
 // A helper function to load the |description|, |confirmation|, |version|,
 // and |locale|, in that order, from a record for the |feature| in
 // the |consents| dictionary.
@@ -161,7 +164,7 @@ TEST_F(ConsentAuditorTest, LocalConsentPrefRepresentation) {
 }
 
 TEST_F(ConsentAuditorTest, RecordingEnabled) {
-  consent_auditor()->RecordGaiaConsent(Feature::CHROME_SYNC, {}, 0,
+  consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
                                        ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
@@ -170,7 +173,7 @@ TEST_F(ConsentAuditorTest, RecordingEnabled) {
 TEST_F(ConsentAuditorTest, RecordingDisabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(switches::kSyncUserConsentEvents);
-  consent_auditor()->RecordGaiaConsent(Feature::CHROME_SYNC, {}, 0,
+  consent_auditor()->RecordGaiaConsent(kAccountId, Feature::CHROME_SYNC, {}, 0,
                                        ConsentStatus::GIVEN);
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(0U, events.size());
@@ -181,8 +184,8 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   int kConfirmationMessageId = 47;
   base::Time t1 = base::Time::Now();
   consent_auditor()->RecordGaiaConsent(
-      Feature::CHROME_SYNC, kDescriptionMessageIds, kConfirmationMessageId,
-      ConsentStatus::GIVEN);
+      kAccountId, Feature::CHROME_SYNC, kDescriptionMessageIds,
+      kConfirmationMessageId, ConsentStatus::GIVEN);
   base::Time t2 = base::Time::Now();
   auto& events = user_event_service()->GetRecordedUserEvents();
   EXPECT_EQ(1U, events.size());
@@ -191,9 +194,7 @@ TEST_F(ConsentAuditorTest, RecordGaiaConsent) {
   EXPECT_FALSE(events[0].has_navigation_id());
   EXPECT_TRUE(events[0].has_user_consent());
   auto& consent = events[0].user_consent();
-  // TODO(crbug.com/781765): The |account_id| is not passed into
-  // ConsentAuditor yet.
-  EXPECT_EQ("", consent.account_id());
+  EXPECT_EQ(kAccountId, consent.account_id());
   EXPECT_EQ(UserEventSpecifics::UserConsent::CHROME_SYNC, consent.feature());
   EXPECT_EQ(3, consent.description_grd_ids_size());
   EXPECT_EQ(kDescriptionMessageIds[0], consent.description_grd_ids(0));

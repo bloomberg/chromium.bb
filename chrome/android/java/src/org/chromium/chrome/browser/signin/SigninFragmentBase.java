@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -23,6 +24,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerResult;
@@ -242,8 +244,21 @@ public abstract class SigninFragmentBase
      * @param confirmationView The view that the user clicked when consenting.
      */
     private void recordConsent(TextView confirmationView) {
-        mConsentTextTracker.recordConsent(
-                ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
+        // TODO(crbug.com/831257): Provide the account id synchronously from AccountManagerFacade.
+        final AccountIdProvider accountIdProvider = AccountIdProvider.getInstance();
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            public String doInBackground(Void... params) {
+                return accountIdProvider.getAccountId(mSelectedAccountName);
+            }
+
+            @Override
+            public void onPostExecute(String accountId) {
+                mConsentTextTracker.recordConsent(
+                        accountId, ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
+            }
+        }
+                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void showAccountPicker() {

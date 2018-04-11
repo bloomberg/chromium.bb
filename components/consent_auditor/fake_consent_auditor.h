@@ -24,10 +24,13 @@ class FakeConsentAuditor : public ConsentAuditor {
                      syncer::UserEventService* user_event_service);
   ~FakeConsentAuditor() override;
 
-  void RecordGaiaConsent(consent_auditor::Feature feature,
+  void RecordGaiaConsent(const std::string& account_id,
+                         consent_auditor::Feature feature,
                          const std::vector<int>& description_grd_ids,
                          int confirmation_grd_id,
                          consent_auditor::ConsentStatus status) override;
+
+  const std::string& account_id() const { return account_id_; }
 
   const std::vector<std::vector<int>>& recorded_id_vectors() {
     return recorded_id_vectors_;
@@ -40,6 +43,7 @@ class FakeConsentAuditor : public ConsentAuditor {
   }
 
  private:
+  std::string account_id_;
   std::vector<std::vector<int>> recorded_id_vectors_;
   std::vector<Feature> recorded_features_;
   std::vector<ConsentStatus> recorded_statuses_;

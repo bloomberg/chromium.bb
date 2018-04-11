@@ -117,6 +117,8 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
   int consent_confirmation_id = iter->second;
 
   ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
+      SigninManagerFactory::GetForProfile(profile_)
+          ->GetAuthenticatedAccountId(),
       consent_auditor::Feature::CHROME_SYNC, consent_text_ids,
       consent_confirmation_id, consent_auditor::ConsentStatus::GIVEN);
 }

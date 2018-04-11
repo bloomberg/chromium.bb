@@ -17,11 +17,13 @@
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/consent_auditor/consent_auditor.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -235,8 +237,13 @@ enum AuthenticationState {
   int consent_confirmation_id = showAccountsSettings
                                     ? _confirmationVC.openSettingsStringId
                                     : [self acceptSigninButtonStringId];
+  std::string account_id =
+      ios::AccountTrackerServiceFactory::GetForBrowserState(_browserState)
+          ->PickAccountIdForAccount(
+              base::SysNSStringToUTF8([_selectedIdentity gaiaID]),
+              base::SysNSStringToUTF8([_selectedIdentity userEmail]));
   ConsentAuditorFactory::GetForBrowserState(_browserState)
-      ->RecordGaiaConsent(consent_auditor::Feature::CHROME_SYNC,
+      ->RecordGaiaConsent(account_id, consent_auditor::Feature::CHROME_SYNC,
                           consent_text_ids, consent_confirmation_id,
                           consent_auditor::ConsentStatus::GIVEN);
   _didAcceptSignIn = YES;

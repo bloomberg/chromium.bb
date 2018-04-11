@@ -50,7 +50,6 @@ enum class ConsentStatus { NOT_GIVEN, GIVEN };
 
 class ConsentAuditor : public KeyedService {
  public:
-
   ConsentAuditor(PrefService* pref_service,
                  syncer::UserEventService* user_event_service,
                  const std::string& app_version,
@@ -63,11 +62,13 @@ class ConsentAuditor : public KeyedService {
   // Registers the preferences needed by this service.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-  // Records a consent for |feature| for the signed-in GAIA account.
+  // Records a consent for |feature| for the signed-in GAIA account with
+  // the ID |account_id| (as defined in AccountInfo).
   // Consent text consisted of strings with |consent_grd_ids|, and the UI
   // element the user clicked had the ID |confirmation_grd_id|.
   // Whether the consent was GIVEN or NOT_GIVEN is passed as |status|.
-  virtual void RecordGaiaConsent(Feature feature,
+  virtual void RecordGaiaConsent(const std::string& account_id,
+                                 Feature feature,
                                  const std::vector<int>& description_grd_ids,
                                  int confirmation_grd_id,
                                  ConsentStatus status);
