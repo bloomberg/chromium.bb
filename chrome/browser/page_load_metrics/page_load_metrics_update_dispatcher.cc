@@ -438,7 +438,7 @@ void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
     return;
   }
 
-  client_->OnSubFrameTimingChanged(new_timing);
+  client_->OnSubFrameTimingChanged(render_frame_host, new_timing);
 
   base::TimeDelta navigation_start_offset = it->second;
   PageLoadTimingMerger merger(pending_merged_page_timing_.get());

@@ -144,17 +144,17 @@ class PageLoadMetricsWaiter
     EXPECT_TRUE(expectations_satisfied());
   }
 
-  void OnTimingUpdated(bool is_subframe,
+  void OnTimingUpdated(content::RenderFrameHost* subframe_rfh,
                        const page_load_metrics::mojom::PageLoadTiming& timing,
                        const page_load_metrics::PageLoadExtraInfo& extra_info) {
     if (expectations_satisfied())
       return;
 
     const page_load_metrics::mojom::PageLoadMetadata& metadata =
-        is_subframe ? extra_info.subframe_metadata
-                    : extra_info.main_frame_metadata;
+        subframe_rfh ? extra_info.subframe_metadata
+                     : extra_info.main_frame_metadata;
     TimingFieldBitSet matched_bits = GetMatchedBits(timing, metadata);
-    if (is_subframe) {
+    if (subframe_rfh) {
       subframe_expected_fields_.ClearMatching(matched_bits);
     } else {
       page_expected_fields_.ClearMatching(matched_bits);
@@ -200,11 +200,11 @@ class PageLoadMetricsWaiter
         : waiter_(waiter) {}
 
     void OnTimingUpdate(
-        bool is_subframe,
+        content::RenderFrameHost* subframe_rfh,
         const page_load_metrics::mojom::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& extra_info) override {
       if (waiter_)
-        waiter_->OnTimingUpdated(is_subframe, timing, extra_info);
+        waiter_->OnTimingUpdated(subframe_rfh, timing, extra_info);
     }
 
     void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
