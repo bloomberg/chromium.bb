@@ -8,8 +8,13 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+namespace remoting {
+struct KeypressInfo;
+}  // namespace remoting
+
 @protocol ClientKeyboardDelegate<NSObject>
 - (void)clientKeyboardShouldSend:(NSString*)text;
+- (void)clientKeyboardShouldSendKey:(const remoting::KeypressInfo&)key;
 - (void)clientKeyboardShouldDelete;
 @end
 
