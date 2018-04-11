@@ -795,7 +795,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                       const volatile GLuint* client_ids);
   void DeleteSyncHelper(GLuint sync);
 
-  bool UnmapBufferHelper(Buffer* buffer);
+  bool UnmapBufferHelper(Buffer* buffer, GLenum target);
 
   // Workarounds
   void OnFboChanged() const;
@@ -4415,7 +4415,22 @@ void GLES2DecoderImpl::DeleteBuffersHelper(GLsizei n,
     GLuint client_id = client_ids[ii];
     Buffer* buffer = GetBuffer(client_id);
     if (buffer && !buffer->IsDeleted()) {
-      UnmapBufferHelper(buffer);
+      if (buffer->GetMappedRange()) {
+        // The buffer is not guaranteed to still be bound to any binding point,
+        // even though it is mapped. If it is not bound, we will need to bind
+        // it temporarily in order to unmap it.
+        GLenum target = buffer->initial_target();
+        Buffer* currently_bound =
+            buffer_manager()->GetBufferInfoForTarget(&state_, target);
+        if (currently_bound != buffer) {
+          api()->glBindBufferFn(target, buffer->service_id());
+        }
+        UnmapBufferHelper(buffer, target);
+        if (currently_bound != buffer) {
+          api()->glBindBufferFn(
+              target, currently_bound ? currently_bound->service_id() : 0);
+        }
+      }
       state_.RemoveBoundBuffer(buffer);
       buffer_manager()->RemoveBuffer(client_id);
     }
@@ -18708,7 +18723,7 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   return error::kNoError;
 }
 
-bool GLES2DecoderImpl::UnmapBufferHelper(Buffer* buffer) {
+bool GLES2DecoderImpl::UnmapBufferHelper(Buffer* buffer, GLenum target) {
   DCHECK(buffer);
   const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
   if (!mapped_range)
@@ -18729,7 +18744,7 @@ bool GLES2DecoderImpl::UnmapBufferHelper(Buffer* buffer) {
   buffer->RemoveMappedRange();
   if (WasContextLost())
     return true;
-  GLboolean rt = api()->glUnmapBufferFn(buffer->initial_target());
+  GLboolean rt = api()->glUnmapBufferFn(target);
   if (rt == GL_FALSE) {
     // At this point, we have already done the necessary validation, so
     // GL_FALSE indicates data corruption.
@@ -18771,7 +18786,7 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "buffer is unmapped");
     return error::kNoError;
   }
-  if (!UnmapBufferHelper(buffer))
+  if (!UnmapBufferHelper(buffer, target))
     return error::kLostContext;
   return error::kNoError;
 }

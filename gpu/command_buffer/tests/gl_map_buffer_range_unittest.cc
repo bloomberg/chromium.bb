@@ -551,6 +551,64 @@ TEST_F(ES3MapBufferRangeTest, CopyBufferSubData) {
   }
 }
 
+TEST_F(ES3MapBufferRangeTest, Delete) {
+  // Test that we can unbind a mapped buffer and deleting it still unmaps it.
+  if (ShouldSkipTest())
+    return;
+
+  const int kNumBuffers = 3;
+  const int kSize = sizeof(GLuint);
+
+  GLuint buffers[kNumBuffers];
+  glGenBuffers(kNumBuffers, buffers);
+  // Set each buffer to contain its name.
+  for (int i = 0; i < kNumBuffers; ++i) {
+    EXPECT_NE(0u, buffers[i]);
+    glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLuint), &buffers[i], GL_STREAM_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
+
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+
+  glBindBuffer(GL_ARRAY_BUFFER, buffers[2]);
+
+  // Use a different binding point to map the buffer than we originally used,
+  // to test if we are improperly using Buffer::initial_target() anywhere.
+  glBindBuffer(GL_COPY_READ_BUFFER, buffers[0]);
+  const GLuint* map_ptr_0 = static_cast<GLuint*>(
+      glMapBufferRange(GL_COPY_READ_BUFFER, 0, kSize, GL_MAP_READ_BIT));
+  ASSERT_NE(nullptr, map_ptr_0);
+  EXPECT_EQ(buffers[0], *map_ptr_0);
+  glBindBuffer(GL_COPY_READ_BUFFER, buffers[1]);
+
+  // The buffer is no longer bound. Delete it.
+  glDeleteBuffers(1, &buffers[0]);
+
+  GLint copy_read_buffer = 0;
+  glGetIntegerv(GL_COPY_READ_BUFFER_BINDING, &copy_read_buffer);
+  EXPECT_EQ(copy_read_buffer, (GLint)buffers[1]);
+  GLint array_buffer = 0;
+  glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &array_buffer);
+  EXPECT_EQ(array_buffer, (GLint)buffers[2]);
+
+  // Make sure buffers[1] [2] are truly still bound by mapping them and
+  // checking the contents.
+  const GLuint* map_ptr_1 = static_cast<GLuint*>(
+      glMapBufferRange(GL_COPY_READ_BUFFER, 0, kSize, GL_MAP_READ_BIT));
+  ASSERT_NE(nullptr, map_ptr_1);
+  EXPECT_EQ(buffers[1], *map_ptr_1);
+  glUnmapBuffer(GL_COPY_READ_BUFFER);
+
+  const GLuint* map_ptr_2 = static_cast<GLuint*>(
+      glMapBufferRange(GL_ARRAY_BUFFER, 0, kSize, GL_MAP_READ_BIT));
+  ASSERT_NE(nullptr, map_ptr_2);
+  EXPECT_EQ(buffers[2], *map_ptr_2);
+  glUnmapBuffer(GL_ARRAY_BUFFER);
+
+  GLTestHelper::CheckGLError("no errors", __LINE__);
+}
+
 // TODO(zmo): add tests for uniform buffer mapping.
 
 }  // namespace gpu
