@@ -22,16 +22,15 @@ class Thread;
 namespace blink {
 namespace scheduler {
 
-// TODO(yutak): Rename this class to CompositorThreadScheduler.
-class PLATFORM_EXPORT CompositorWorkerScheduler
+class PLATFORM_EXPORT CompositorThreadScheduler
     : public NonMainThreadScheduler,
       public SingleThreadIdleTaskRunner::Delegate {
  public:
-  CompositorWorkerScheduler(
+  CompositorThreadScheduler(
       base::Thread* thread,
       std::unique_ptr<TaskQueueManager> task_queue_manager);
 
-  ~CompositorWorkerScheduler() override;
+  ~CompositorThreadScheduler() override;
 
   // WorkerScheduler:
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
@@ -65,7 +64,7 @@ class PLATFORM_EXPORT CompositorWorkerScheduler
 
   CompositorMetricsHelper compositor_metrics_helper_;
 
-  DISALLOW_COPY_AND_ASSIGN(CompositorWorkerScheduler);
+  DISALLOW_COPY_AND_ASSIGN(CompositorThreadScheduler);
 };
 
 }  // namespace scheduler
