@@ -8086,7 +8086,7 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
 
     GrContext* gr_context = context_provider->GrContext();
     ASSERT_TRUE(gr_context);
-    const uint32_t max_texture_size = gr_context->caps()->maxTextureSize();
+    const uint32_t max_texture_size = gr_context->maxTextureSize();
     ASSERT_GT(static_cast<uint32_t>(large_image_size_.width()),
               max_texture_size);
   }

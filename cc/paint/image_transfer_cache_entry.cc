@@ -124,7 +124,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
   // Depending on whether the pixmap will fit in a GPU texture, either create
   // a software or GPU SkImage.
-  uint32_t max_size = context->caps()->maxTextureSize();
+  uint32_t max_size = context->maxTextureSize();
   bool fits_on_gpu = width <= max_size && height <= max_size;
   if (fits_on_gpu) {
     sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
