@@ -4311,19 +4311,16 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (isPassKit ||
         base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
       // Discard the pending item to ensure that the current URL is not
-      // different from what is displayed on the view. If there is no previous
-      // committed URL, which can happen when a link is opened in a new tab via
-      // a context menu or window.open, the pending entry should not be
-      // discarded so that the NavigationManager is never empty. Also, URLs
-      // loaded in a native view should be excluded to avoid an ugly animation
-      // where the web view is inserted and quickly removed.
+      // different from what is displayed on the view. URL loaded in a native
+      // view should be excluded to avoid an ugly animation where the web view
+      // is inserted and quickly removed.
       GURL lastCommittedURL = self.webState->GetLastCommittedURL();
-      BOOL isFirstLoad = lastCommittedURL.is_empty();
       BOOL previousItemWasLoadedInNativeView =
           [self shouldLoadURLInNativeView:lastCommittedURL];
-      if (!isFirstLoad && !previousItemWasLoadedInNativeView)
+      if (!previousItemWasLoadedInNativeView)
         self.navigationManagerImpl->DiscardNonCommittedItems();
     }
+    _webStateImpl->SetIsLoading(false);
   }
 
   handler(allowNavigation ? WKNavigationResponsePolicyAllow

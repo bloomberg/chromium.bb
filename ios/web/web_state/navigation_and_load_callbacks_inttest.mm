@@ -1185,6 +1185,8 @@ TEST_F(NavigationAndLoadCallbacksTest, DownloadNavigation) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
     return !web_state()->IsLoading();
   }));
+
+  EXPECT_FALSE(web_state()->GetNavigationManager()->GetPendingItem());
 }
 
 // Tests failed load after the navigation is sucessfully finished.
