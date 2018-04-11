@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 
 namespace blink {
 
@@ -115,17 +114,6 @@ HTMLDivElement* MediaControlElementsHelper::CreateDivWithId(
   element->setAttribute("id", id);
   parent->ParserAppendChild(element);
   return element;
-}
-
-// static
-void MediaControlElementsHelper::NotifyMediaControlAccessibleFocus(
-    Element* element) {
-  const HTMLMediaElement* media_element = ToParentMediaElement(element);
-  if (!media_element || !media_element->GetMediaControls())
-    return;
-
-  static_cast<MediaControlsImpl*>(media_element->GetMediaControls())
-      ->OnAccessibleFocus();
 }
 
 }  // namespace blink
