@@ -52,7 +52,6 @@
 // view: http://dev.chromium.org/developers/design-documents/browser-window
 
 class BookmarkBarView;
-class BrowserViewButtonProvider;
 class Browser;
 class BrowserViewLayout;
 class ContentsLayoutManager;
@@ -63,6 +62,7 @@ class InfoBarContainerView;
 class LocationBarView;
 class StatusBubbleViews;
 class TabStrip;
+class ToolbarButtonProvider;
 class ToolbarView;
 class TopContainerView;
 class WebContentsCloseHandler;
@@ -260,8 +260,10 @@ class BrowserView : public BrowserWindow,
 
   // Sets the button provider for this BrowserView. Must be called before
   // InitViews() which sets the ToolbarView as the default button provider.
-  void SetButtonProvider(BrowserViewButtonProvider* provider);
-  BrowserViewButtonProvider* button_provider() { return button_provider_; }
+  void SetToolbarButtonProvider(ToolbarButtonProvider* provider);
+  ToolbarButtonProvider* toolbar_button_provider() {
+    return toolbar_button_provider_;
+  }
 
   // Overridden from BrowserWindow:
   void Show() override;
@@ -684,9 +686,9 @@ class BrowserView : public BrowserWindow,
   // Handled by ContentsLayoutManager.
   views::View* contents_container_ = nullptr;
 
-  // Provides access to the buttons this browser view uses. Buttons may appear
-  // in the frame or in the toolbar.
-  BrowserViewButtonProvider* button_provider_ = nullptr;
+  // Provides access to the toolbar buttons this browser view uses. Buttons may
+  // appear in a hosted app frame or in a tabbed UI toolbar.
+  ToolbarButtonProvider* toolbar_button_provider_ = nullptr;
 
   // Tracks and stores the last focused view which is not the
   // devtools_web_view_ or any of its children. Used to restore focus once

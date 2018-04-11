@@ -280,7 +280,7 @@ void BrowserActionsContainer::ShowToolbarActionBubble(
       anchored_to_action_view = true;
     } else {
       anchor_view = BrowserView::GetBrowserViewForBrowser(browser_)
-                        ->button_provider()
+                        ->toolbar_button_provider()
                         ->GetAppMenuButton();
     }
   } else {

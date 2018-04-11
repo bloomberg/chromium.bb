@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/views/view.h"
@@ -28,7 +28,7 @@ class MenuButton;
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::View,
                                  public BrowserActionsContainer::Delegate,
-                                 public BrowserViewButtonProvider {
+                                 public ToolbarButtonProvider {
  public:
   // |active_icon_color| and |inactive_icon_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
@@ -69,7 +69,7 @@ class HostedAppButtonContainer : public views::View,
       Browser* browser,
       ToolbarActionsBar* main_bar) const override;
 
-  // BrowserViewButtonProvider:
+  // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   AppMenuButton* GetAppMenuButton() override;
 

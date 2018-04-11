@@ -53,7 +53,7 @@ views::View* GetGlobalErrorBubbleAnchorView(Browser* browser) {
     return nullptr;
 #endif
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  return browser_view->button_provider()->GetAppMenuButton();
+  return browser_view->toolbar_button_provider()->GetAppMenuButton();
 }
 
 gfx::Rect GetGlobalErrorBubbleAnchorRect(Browser* browser) {

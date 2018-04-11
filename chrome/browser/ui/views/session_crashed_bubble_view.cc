@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -94,7 +94,7 @@ views::View* GetSessionCrashedBubbleAnchorView(Browser* browser) {
     return nullptr;
 #endif
   return BrowserView::GetBrowserViewForBrowser(browser)
-      ->button_provider()
+      ->toolbar_button_provider()
       ->GetAppMenuButton();
 }
 #else  // OS_MACOSX && !MAC_VIEWS_BROWSER

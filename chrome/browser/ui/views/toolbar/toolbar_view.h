@@ -13,7 +13,7 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
-#include "chrome/browser/ui/views/frame/browser_view_button_provider.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/upgrade_observer.h"
@@ -54,7 +54,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public views::ButtonListener,
                     public AppMenuIconController::Delegate,
                     public UpgradeObserver,
-                    public BrowserViewButtonProvider {
+                    public ToolbarButtonProvider {
  public:
   // The view class name.
   static const char kViewClassName[];
@@ -141,7 +141,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // UpgradeObserver implementation.
+  // UpgradeObserver toolbar_button_view_provider.
   void OnOutdatedInstall() override;
   void OnOutdatedInstallNoAutoUpdate() override;
   void OnCriticalUpgradeInstalled() override;
@@ -181,7 +181,7 @@ class ToolbarView : public views::AccessiblePaneView,
                       AppMenuIconController::Severity severity,
                       bool animate) override;
 
-  // BrowserViewButtonProvider:
+  // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   AppMenuButton* GetAppMenuButton() override;
 
