@@ -37,7 +37,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
@@ -261,6 +260,25 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         }
     }
 
+    /**  Parameters to configure the view of the page info popup. */
+    private static class PageInfoViewParams {
+        public boolean permissionsListShown = true;
+        public boolean instantAppButtonShown = true;
+        public boolean siteSettingsButtonShown = true;
+        public boolean openOnlineButtonShown = true;
+
+        public Runnable urlTitleClickCallback;
+        public Runnable urlTitleLongClickCallback;
+        public Runnable instantAppButtonClickCallback;
+        public Runnable siteSettingsButtonClickCallback;
+        public Runnable openOnlineButtonClickCallback;
+
+        // TODO: Refactor profile out of ElidedUrlTextView and PageInfoViewParams.
+        public Profile profile;
+        public boolean alwaysShowFullUrl;
+        public CharSequence url;
+    }
+
     // Delay enter to allow the triggering button to animate before we cover it.
     private static final int ENTER_START_DELAY = 100;
     private static final int FADE_DURATION = 200;
@@ -278,16 +296,16 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
     private long mNativePageInfoPopup;
 
     // The outer container, filled with the layout from page_info.xml.
-    private final LinearLayout mContainer;
+    private LinearLayout mContainer;
 
     // UI elements in the dialog.
-    private final ElidedUrlTextView mUrlTitle;
-    private final TextView mConnectionSummary;
-    private final TextView mConnectionMessage;
-    private final LinearLayout mPermissionsList;
-    private final Button mInstantAppButton;
-    private final Button mSiteSettingsButton;
-    private final Button mOpenOnlineButton;
+    private ElidedUrlTextView mUrlTitle;
+    private TextView mConnectionSummary;
+    private TextView mConnectionMessage;
+    private LinearLayout mPermissionsList;
+    private Button mInstantAppButton;
+    private Button mSiteSettingsButton;
+    private Button mOpenOnlineButton;
 
     // The dialog the container is placed in.
     // mSheetDialog is set if the dialog appears as a sheet. Otherwise, mModalDialog is set.
@@ -330,9 +348,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
     // The name of the content publisher, if any.
     private String mContentPublisher;
 
-    // The intent associated with the instant app for this URL (or null if one does not exist).
-    private Intent mInstantAppIntent;
-
     // Observer for dismissing dialog if web contents get destroyed, navigate etc.
     private WebContentsObserver mWebContentsObserver;
 
@@ -353,6 +368,7 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         mTab = tab;
         mIsBottomPopup = mTab.getActivity().getBottomSheet() != null;
         mOfflinePageState = offlinePageState;
+        PageInfoViewParams viewParams = new PageInfoViewParams();
 
         if (mOfflinePageState != NOT_OFFLINE_PAGE) {
             mOfflinePageCreationDate = offlinePageCreationDate;
@@ -360,62 +376,25 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         mWindowAndroid = mTab.getWebContents().getTopLevelNativeWindow();
         mContentPublisher = publisher;
 
-        // Find the container and all it's important subviews.
-        mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(
-                R.layout.page_info, null);
-        mContainer.setVisibility(View.INVISIBLE);
-        mContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(
-                    View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
-                // Trigger the entrance animations once the main container has been laid out and has
-                // a height.
-                mContainer.removeOnLayoutChangeListener(this);
-                mContainer.setVisibility(View.VISIBLE);
-                createAllAnimations(true).start();
-            }
-        });
-
-        mUrlTitle = (ElidedUrlTextView) mContainer.findViewById(R.id.page_info_url);
-        mUrlTitle.setProfile(mTab.getProfile());
-        mUrlTitle.setAlwaysShowFullUrl(mIsBottomPopup);
-        mUrlTitle.setOnClickListener(this);
+        viewParams.profile = mTab.getProfile();
+        viewParams.alwaysShowFullUrl = mIsBottomPopup;
+        viewParams.urlTitleClickCallback = () -> {
+            // Expand/collapse the displayed URL title.
+            mUrlTitle.toggleTruncation();
+        };
         // Long press the url text to copy it to the clipboard.
-        mUrlTitle.setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                ClipboardManager clipboard = (ClipboardManager) mContext
-                        .getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("url", mFullUrl);
-                clipboard.setPrimaryClip(clip);
-                Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        });
-
-        mConnectionSummary = (TextView) mContainer
-                .findViewById(R.id.page_info_connection_summary);
-        mConnectionMessage = (TextView) mContainer
-                .findViewById(R.id.page_info_connection_message);
-        mPermissionsList = (LinearLayout) mContainer
-                .findViewById(R.id.page_info_permissions_list);
-
-        mInstantAppButton =
-                (Button) mContainer.findViewById(R.id.page_info_instant_app_button);
-        mInstantAppButton.setOnClickListener(this);
-
-        mSiteSettingsButton =
-                (Button) mContainer.findViewById(R.id.page_info_site_settings_button);
-        mSiteSettingsButton.setOnClickListener(this);
-
-        mOpenOnlineButton =
-                (Button) mContainer.findViewById(R.id.page_info_open_online_button);
-        mOpenOnlineButton.setOnClickListener(this);
+        viewParams.urlTitleLongClickCallback = () -> {
+            ClipboardManager clipboard =
+                    (ClipboardManager) mContext.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("url", mFullUrl);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(mContext, R.string.url_copied, Toast.LENGTH_SHORT).show();
+        };
 
         mDisplayedPermissions = new ArrayList<PageInfoPermissionEntry>();
 
         // Hide the permissions list for sites with no permissions.
-        setVisibilityOfPermissionsList(false);
+        viewParams.permissionsListShown = false;
 
         // Work out the URL and connection message and status visibility.
         mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
@@ -445,42 +424,82 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
                             mTab.getProfile(), displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
-                        new TextAppearanceSpan(mUrlTitle.getContext(), R.style.RobotoMediumStyle),
-                        0, emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                        new TextAppearanceSpan(mContext, R.style.RobotoMediumStyle), 0,
+                        emphasizeResponse.schemeLength, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
             }
         }
-        mUrlTitle.setText(displayUrlBuilder);
+        viewParams.url = displayUrlBuilder;
 
         if (mParsedUrl == null || mParsedUrl.getScheme() == null || isShowingOfflinePage()
                 || !(mParsedUrl.getScheme().equals(UrlConstants.HTTP_SCHEME)
                            || mParsedUrl.getScheme().equals(UrlConstants.HTTPS_SCHEME))) {
-            mSiteSettingsButton.setVisibility(View.GONE);
+            viewParams.siteSettingsButtonShown = false;
+        } else {
+            viewParams.siteSettingsButtonClickCallback = () -> {
+                // Delay while the PageInfoPopup closes.
+                runAfterDismiss(() -> {
+                    recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
+                    Bundle fragmentArguments =
+                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl);
+                    Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
+                            mContext, SingleWebsitePreferences.class.getName());
+                    preferencesIntent.putExtra(
+                            Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
+                    // Disabling StrictMode to avoid violations (https://crbug.com/819410).
+                    try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                        mContext.startActivity(preferencesIntent);
+                    }
+                });
+            };
         }
 
         if (isShowingOfflinePage()) {
             boolean isConnected = OfflinePageUtils.isConnected();
             RecordHistogram.recordBooleanHistogram(
                     "OfflinePages.WebsiteSettings.OpenOnlineButtonVisible", isConnected);
-            if (!isConnected) mOpenOnlineButton.setVisibility(View.GONE);
+            if (isConnected) {
+                viewParams.openOnlineButtonClickCallback = () -> {
+                    runAfterDismiss(() -> {
+                        // Attempt to reload to an online version of the viewed offline web page.
+                        // This attempt might fail if the user is offline, in which case an offline
+                        // copy will be reloaded.
+                        RecordHistogram.recordBooleanHistogram(
+                                "OfflinePages.WebsiteSettings.ConnectedWhenOpenOnlineButtonClicked",
+                                OfflinePageUtils.isConnected());
+                        OfflinePageUtils.reload(mTab);
+                    });
+                };
+            } else {
+                viewParams.openOnlineButtonShown = false;
+            }
         } else {
-            mOpenOnlineButton.setVisibility(View.GONE);
+            viewParams.openOnlineButtonShown = false;
         }
 
         InstantAppsHandler instantAppsHandler = InstantAppsHandler.getInstance();
         if (!mIsInternalPage && !isShowingOfflinePage()
                 && instantAppsHandler.isInstantAppAvailable(mFullUrl, false /* checkHoldback */,
                            false /* includeUserPrefersBrowser */)) {
-            mInstantAppIntent = instantAppsHandler.getInstantAppIntentForUrl(mFullUrl);
+            final Intent instantAppIntent = instantAppsHandler.getInstantAppIntentForUrl(mFullUrl);
+            viewParams.instantAppButtonClickCallback = () -> {
+                try {
+                    mContext.startActivity(instantAppIntent);
+                    RecordUserAction.record("Android.InstantApps.LaunchedFromWebsiteSettingsPopup");
+                } catch (ActivityNotFoundException e) {
+                    mInstantAppButton.setEnabled(false);
+                }
+            };
             RecordUserAction.record("Android.InstantApps.OpenInstantAppButtonShown");
         } else {
-            mInstantAppIntent = null;
-            mInstantAppButton.setVisibility(View.GONE);
+            viewParams.instantAppButtonShown = false;
         }
 
         // On smaller screens, place the dialog at the top of the screen, and remove its border.
         if (isSheet()) {
             createSheetDialog();
         }
+
+        initializePageInfoView(viewParams);
 
         // This needs to come after other member initialization.
         mNativePageInfoPopup = nativeInit(this, mTab.getWebContents());
@@ -796,35 +815,7 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
 
     @Override
     public void onClick(View view) {
-        if (view == mSiteSettingsButton) {
-            // Delay while the PageInfoPopup closes.
-            runAfterDismiss(new Runnable() {
-                @Override
-                public void run() {
-                    recordAction(PageInfoAction.PAGE_INFO_SITE_SETTINGS_OPENED);
-                    Bundle fragmentArguments =
-                            SingleWebsitePreferences.createFragmentArgsForSite(mFullUrl);
-                    Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
-                            mContext, SingleWebsitePreferences.class.getName());
-                    preferencesIntent.putExtra(
-                            Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArguments);
-                    // Disabling StrictMode to avoid violations (https://crbug.com/819410).
-                    try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                        mContext.startActivity(preferencesIntent);
-                    }
-                }
-            });
-        } else if (view == mInstantAppButton) {
-            try {
-                mContext.startActivity(mInstantAppIntent);
-                RecordUserAction.record("Android.InstantApps.LaunchedFromWebsiteSettingsPopup");
-            } catch (ActivityNotFoundException e) {
-                mInstantAppButton.setEnabled(false);
-            }
-        } else if (view == mUrlTitle) {
-            // Expand/collapse the displayed URL title.
-            mUrlTitle.toggleTruncation();
-        } else if (view == mConnectionMessage) {
+        if (view == mConnectionMessage) {
             runAfterDismiss(() -> {
                 // TODO(crbug.com/819883): Port the connection info popup to VR.
                 // TODO(crbug.com/826749): Track how often users encounter this via UMA.
@@ -876,19 +867,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
                     }
                     settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mContext.startActivity(settingsIntent);
-                }
-            });
-        } else if (view == mOpenOnlineButton) {
-            runAfterDismiss(new Runnable() {
-                @Override
-                public void run() {
-                    // Attempt to reload to an online version of the viewed offline web page. This
-                    // attempt might fail if the user is offline, in which case an offline copy will
-                    // be reloaded.
-                    RecordHistogram.recordBooleanHistogram(
-                            "OfflinePages.WebsiteSettings.ConnectedWhenOpenOnlineButtonClicked",
-                            OfflinePageUtils.isConnected());
-                    OfflinePageUtils.reload(mTab);
                 }
             });
         }
@@ -1084,6 +1062,56 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
             ConnectionInfoPopup.show(mContext, mTab.getWebContents());
         }
+    }
+
+    private void initializePageInfoView(PageInfoViewParams params) {
+        // Find the container and all it's important subviews.
+        mContainer = (LinearLayout) LayoutInflater.from(mContext).inflate(R.layout.page_info, null);
+        mContainer.setVisibility(View.INVISIBLE);
+        mContainer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(
+                    View v, int l, int t, int r, int b, int ol, int ot, int or, int ob) {
+                // Trigger the entrance animations once the main container has been laid out and has
+                // a height.
+                mContainer.removeOnLayoutChangeListener(this);
+                mContainer.setVisibility(View.VISIBLE);
+                createAllAnimations(true).start();
+            }
+        });
+
+        mUrlTitle = (ElidedUrlTextView) mContainer.findViewById(R.id.page_info_url);
+        mConnectionSummary = (TextView) mContainer.findViewById(R.id.page_info_connection_summary);
+        mConnectionMessage = (TextView) mContainer.findViewById(R.id.page_info_connection_message);
+        mPermissionsList = (LinearLayout) mContainer.findViewById(R.id.page_info_permissions_list);
+        mInstantAppButton = (Button) mContainer.findViewById(R.id.page_info_instant_app_button);
+        mSiteSettingsButton = (Button) mContainer.findViewById(R.id.page_info_site_settings_button);
+        mOpenOnlineButton = (Button) mContainer.findViewById(R.id.page_info_open_online_button);
+
+        mUrlTitle.setProfile(params.profile);
+        mUrlTitle.setAlwaysShowFullUrl(params.alwaysShowFullUrl);
+        mUrlTitle.setText(params.url);
+        if (params.urlTitleLongClickCallback != null) {
+            mUrlTitle.setOnLongClickListener((View v) -> {
+                params.urlTitleLongClickCallback.run();
+                return true;
+            });
+        }
+
+        initializePageInfoViewChild(mUrlTitle, true, params.urlTitleClickCallback);
+        initializePageInfoViewChild(mPermissionsList, params.permissionsListShown, null);
+        initializePageInfoViewChild(mInstantAppButton, params.instantAppButtonShown,
+                params.instantAppButtonClickCallback);
+        initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown,
+                params.siteSettingsButtonClickCallback);
+        initializePageInfoViewChild(mOpenOnlineButton, params.openOnlineButtonShown,
+                params.openOnlineButtonClickCallback);
+    }
+
+    private void initializePageInfoViewChild(View child, boolean shown, Runnable clickCallback) {
+        child.setVisibility(shown ? View.VISIBLE : View.GONE);
+        if (clickCallback == null) return;
+        child.setOnClickListener((View v) -> { clickCallback.run(); });
     }
 
     /**
