@@ -113,18 +113,18 @@ void ModuleMap::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(it.value);
 }
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
 void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
                                         ModuleGraphLevel level,
                                         SingleModuleClient* client) {
-  // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-single-module-script
-
-  // Step 1. "Let moduleMap be module map settings object's module map."
-  // [spec text]
+  // Step 1. Let moduleMap be module map settings object's module map. [spec
+  // text]
+  //
   // Note: |this| is the ModuleMap.
 
-  // Step 2. "If moduleMap[url] is "fetching", wait in parallel until that
+  // Step 2. If moduleMap[url] is "fetching", wait in parallel until that
   // entry's value changes, then queue a task on the networking task source to
-  // proceed with running the following steps." [spec text]
+  // proceed with running the following steps. [spec text]
   MapImpl::AddResult result = map_.insert(request.Url(), nullptr);
   TraceWrapperMember<Entry>& entry = result.stored_value->value;
   if (result.is_new_entry) {
@@ -136,10 +136,11 @@ void ModuleMap::FetchSingleModuleScript(const ModuleScriptFetchRequest& request,
   }
   DCHECK(entry);
 
-  // Step 3. "If moduleMap[url] exists, asynchronously complete this algorithm
-  // with moduleMap[url], and abort these steps." [spec text]
-  // Step 11. "Set moduleMap[url] to module script, and asynchronously complete
-  // this algorithm with module script." [spec text]
+  // Step 3. If moduleMap[url] exists, asynchronously complete this algorithm
+  // with moduleMap[url], and abort these steps. [spec text]
+  //
+  // Step 11. Set moduleMap[url] to module script, and asynchronously complete
+  // this algorithm with module script. [spec text]
   if (client)
     entry->AddClient(client);
 }

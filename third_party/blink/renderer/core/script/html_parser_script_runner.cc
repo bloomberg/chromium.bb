@@ -190,8 +190,10 @@ bool HTMLParserScriptRunner::IsParserBlockingScriptReady() {
 // This has two callers and corresponds to different concepts in the spec:
 // - When called from executeParsingBlockingScripts(), this corresponds to some
 //   steps of the "Otherwise" Clause of 'An end tag whose tag name is "script"'
+//   [scriptEndTag]
 //   https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 // - When called from executeScriptsWaitingForParsing(), this corresponds
+//   [ESB]
 //   https://html.spec.whatwg.org/multipage/scripting.html#execute-the-script-block
 //   and thus currently this function does more than specced.
 // TODO(hiroshige): Make the spec and implementation consistent.
@@ -214,15 +216,16 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
     }
   }
 
-  // 1. "Let the script be the pending parsing-blocking script.
-  //     There is no longer a pending parsing-blocking script."
+  // [scriptEndTag] Step B.1. Let the script be the pending parsing-blocking
+  // script. There is no longer a pending parsing-blocking script. [spec text]
   if (pending_script_type == ScriptStreamer::kParsingBlocking) {
     parser_blocking_script_ = nullptr;
   }
 
   if (pending_script->GetElement()->Loader()) {
-    // 7. "Increment the parser's script nesting level by one (it should be
-    //     zero before this step, so this sets it to one)."
+    // [scriptEndTag] Step B.7. Increment the parser's script nesting level by
+    // one (it should be zero before this step, so this sets it to one). [spec
+    // text]
     HTMLParserReentryPermit::ScriptNestingLevelIncrementer
         nesting_level_incrementer =
             reentry_permit_->IncrementScriptNestingLevel();
@@ -230,14 +233,14 @@ void HTMLParserScriptRunner::ExecutePendingScriptAndDispatchEvent(
     IgnoreDestructiveWriteCountIncrementer
         ignore_destructive_write_count_incrementer(document_);
 
-    // 8. "Execute the script."
+    // [scriptEndTag] Step B.8. Execute the script. [spec text]
     DCHECK(IsExecutingScript());
     DoExecuteScript(pending_script, DocumentURLForScriptExecution(document_));
 
-    // 9. "Decrement the parser's script nesting level by one.
-    //     If the parser's script nesting level is zero
-    //     (which it always should be at this point),
-    //     then set the parser pause flag to false."
+    // [scriptEndTag] Step B.9. Decrement the parser's script nesting level by
+    // one. If the parser's script nesting level is zero (which it always should
+    // be at this point), then set the parser pause flag to false. [spec text]
+    //
     // This is implemented by ~ScriptNestingLevelIncrementer().
   }
 
@@ -289,18 +292,21 @@ void HTMLParserScriptRunner::ProcessScriptElement(
 
   bool had_preload_scanner = host_->HasPreloadScanner();
 
-  // Initial steps of 'An end tag whose tag name is "script"'.
+  // Spec: An end tag whose tag name is "script" ... [spec text]
+  //
   // Try to execute the script given to us.
   ProcessScriptElementInternal(script_element, script_start_position);
 
-  // "At this stage, if there is a pending parsing-blocking script, then:"
+  // Spec: ... At this stage, if there is a pending parsing-blocking script,
+  // then: [spec text]
   if (HasParserBlockingScript()) {
-    // - "If the script nesting level is not zero:"
+    // Step A. If the script nesting level is not zero: ... [spec text]
     if (IsExecutingScript()) {
-      // "Set the parser pause flag to true, and abort the processing of any
-      //  nested invocations of the tokenizer, yielding control back to the
-      //  caller. (Tokenization will resume when the caller returns to the
-      //  "outer" tree construction stage.)"
+      // Step A. ... Set the parser pause flag to true, and abort the processing
+      // of any nested invocations of the tokenizer, yielding control back to
+      // the caller. (Tokenization will resume when the caller returns to the
+      // "outer" tree construction stage.) [spec text]
+      //
       // TODO(hiroshige): set the parser pause flag to true here.
 
       // Unwind to the outermost HTMLParserScriptRunner::processScriptElement
@@ -330,11 +336,11 @@ bool HTMLParserScriptRunner::HasParserBlockingScript() const {
 // The "Otherwise" Clause of 'An end tag whose tag name is "script"'
 // https://html.spec.whatwg.org/multipage/parsing.html#scriptEndTag
 void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
-  // 3. "If (1) the parser's Document has a style sheet that is blocking scripts
-  //     or (2) the script's "ready to be parser-executed" flag is not set:
-  //     spin the event loop
-  //     until the parser's Document has no style sheet that is blocking scripts
-  //     and the script's "ready to be parser-executed" flag is set."
+  // Step B.3. If the parser's Document has a style sheet that is blocking
+  // scripts or the script's "ready to be parser-executed" flag is not set: spin
+  // the event loop until the parser's Document has no style sheet that is
+  // blocking scripts and the script's "ready to be parser-executed" flag is
+  // set. [spec text]
   //
   // These conditions correspond to isParserBlockingScriptReady() and
   // if it is false, executeParsingBlockingScripts() will be called later
@@ -346,18 +352,20 @@ void HTMLParserScriptRunner::ExecuteParsingBlockingScripts() {
     DCHECK(!IsExecutingScript());
     DCHECK(document_->IsScriptExecutionReady());
 
-    // 6. "Let the insertion point be just before the next input character."
+    // Step B.6. Let the insertion point be just before the next input
+    // character. [spec text]
     InsertionPointRecord insertion_point_record(host_->InputStream());
 
     // 1., 7.--9.
     ExecutePendingScriptAndDispatchEvent(parser_blocking_script_,
                                          ScriptStreamer::kParsingBlocking);
 
-    // 10. "Let the insertion point be undefined again."
+    // Step B.10. Let the insertion point be undefined again. [spec text]
+    //
     // Implemented as ~InsertionPointRecord().
 
-    // 11. "If there is once again a pending parsing-blocking script, then
-    //      repeat these steps from step 1."
+    // Step B.11. If there is once again a pending parsing-blocking script, then
+    // repeat these steps from step 1. [spec text]
   }
 }
 
@@ -380,9 +388,10 @@ void HTMLParserScriptRunner::ExecuteScriptsWaitingForResources() {
   ExecuteParsingBlockingScripts();
 }
 
-// Step 3 of https://html.spec.whatwg.org/multipage/parsing.html#the-end:
-// "If the list of scripts that will execute when the document has
-//  finished parsing is not empty, run these substeps:"
+// https://html.spec.whatwg.org/multipage/parsing.html#stop-parsing
+//
+// Step 3. If the list of scripts that will execute when the document has
+// finished parsing is not empty, run these substeps: [spec text]
 bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
   TRACE_EVENT0("blink",
                "HTMLParserScriptRunner::executeScriptsWaitingForParsing");
@@ -392,10 +401,11 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
     DCHECK(!HasParserBlockingScript());
     DCHECK(scripts_to_execute_after_parsing_.front()->IsExternalOrModule());
 
-    // 1. "Spin the event loop until the first script in the list of scripts
-    //     that will execute when the document has finished parsing
-    //     has its "ready to be parser-executed" flag set and
-    //     the parser's Document has no style sheet that is blocking scripts."
+    // Step 3.1. Spin the event loop until the first script in the list of
+    // scripts that will execute when the document has finished parsing has its
+    // "ready to be parser-executed" flag set and the parser's Document has no
+    // style sheet that is blocking scripts. [spec text]
+    //
     // TODO(hiroshige): Is the latter part checked anywhere?
     if (!scripts_to_execute_after_parsing_.front()->IsReady()) {
       scripts_to_execute_after_parsing_.front()->WatchForLoad(this);
@@ -406,33 +416,32 @@ bool HTMLParserScriptRunner::ExecuteScriptsWaitingForParsing() {
       return false;
     }
 
-    // 3. "Remove the first script element from the list of scripts that will
-    //     execute when the document has finished parsing (i.e. shift out the
-    //     first entry in the list)."
+    // Step 3.3. Remove the first script element from the list of scripts that
+    // will execute when the document has finished parsing (i.e. shift out the
+    // first entry in the list). [spec text]
     PendingScript* first = scripts_to_execute_after_parsing_.TakeFirst();
 
-    // 2. "Execute the first script in the list of scripts that will execute
-    //     when the document has finished parsing."
+    // Step 3.2. Execute the first script in the list of scripts that will
+    // execute when the document has finished parsing. [spec text]
     ExecutePendingScriptAndDispatchEvent(first, ScriptStreamer::kDeferred);
 
     // FIXME: What is this m_document check for?
     if (!document_)
       return false;
 
-    // 4. "If the list of scripts that will execute when the document has
-    //     finished parsing is still not empty, repeat these substeps again
-    //     from substep 1."
+    // Step 3.4. If the list of scripts that will execute when the document has
+    // finished parsing is still not empty, repeat these substeps again from
+    // substep 1. [spec text]
   }
   return true;
 }
 
-// 2nd Clause, Step 23 of
 // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 void HTMLParserScriptRunner::RequestParsingBlockingScript(
     ScriptLoader* script_loader) {
-  // "The element is the pending parsing-blocking script of the Document of
-  //  the parser that created the element.
-  //  (There can only be one such script per Document at a time.)"
+  // Step 25.B. ... The element is the pending parsing-blocking script of the
+  // Document of the parser that created the element. (There can only be one
+  // such script per Document at a time.) ... [spec text]
   CHECK(!ParserBlockingScript());
   parser_blocking_script_ = script_loader->TakePendingScript();
   if (!ParserBlockingScript())
@@ -450,7 +459,6 @@ void HTMLParserScriptRunner::RequestParsingBlockingScript(
   }
 }
 
-// 1st Clause, Step 23 of
 // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
 void HTMLParserScriptRunner::RequestDeferredScript(
     ScriptLoader* script_loader) {
@@ -465,9 +473,9 @@ void HTMLParserScriptRunner::RequestDeferredScript(
 
   DCHECK(pending_script->IsExternalOrModule());
 
-  // "Add the element to the end of the list of scripts that will execute
-  //  when the document has finished parsing associated with the Document
-  //  of the parser that created the element."
+  // Step 25.A. ... Add the element to the end of the list of scripts that will
+  // execute when the document has finished parsing associated with the Document
+  // of the parser that created the element. ... [spec text]
   scripts_to_execute_after_parsing_.push_back(pending_script);
 }
 
@@ -494,44 +502,46 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
     if (!IsExecutingScript())
       Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
 
-    // "Let the old insertion point have the same value as the current
-    //  insertion point.
-    //  Let the insertion point be just before the next input character."
+    // Spec: ... Let the old insertion point have the same value as the current
+    // insertion point. Let the insertion point be just before the next input
+    // character. ... [spec text]
     InsertionPointRecord insertion_point_record(host_->InputStream());
 
-    // "Increment the parser's script nesting level by one."
+    // Spec: ... Increment the parser's script nesting level by one. ... [spec
+    // text]
     HTMLParserReentryPermit::ScriptNestingLevelIncrementer
         nesting_level_incrementer =
             reentry_permit_->IncrementScriptNestingLevel();
 
-    // "Prepare the script. This might cause some script to execute, which
-    //  might cause new characters to be inserted into the tokenizer, and
-    //  might cause the tokenizer to output more tokens, resulting in a
-    //  reentrant invocation of the parser."
+    // Spec: ... Prepare the script. This might cause some script to execute,
+    // which might cause new characters to be inserted into the tokenizer, and
+    // might cause the tokenizer to output more tokens, resulting in a reentrant
+    // invocation of the parser. ... [spec text]
     script_loader->PrepareScript(script_start_position);
 
-    // A part of Step 23 of
-    // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script:
+    // [PS]
+    // https://html.spec.whatwg.org/multipage/scripting.html#prepare-a-script
     if (!script_loader->WillBeParserExecuted())
       return;
 
     if (script_loader->WillExecuteWhenDocumentFinishedParsing()) {
-      // 1st Clause of Step 23.
+      // [PS] Step 25.A.
       RequestDeferredScript(script_loader);
     } else if (script_loader->ReadyToBeParserExecuted()) {
-      // 5th Clause of Step 23.
-      // "If ... it's an HTML parser
-      //  whose script nesting level is not greater than one"
+      // [PS] Step 25.E. ... it's an HTML parser whose script nesting level is
+      // not greater than one, ... [spec text]
       if (reentry_permit_->ScriptNestingLevel() == 1u) {
-        // "The element is the pending parsing-blocking script of the
-        //  Document of the parser that created the element.
-        //  (There can only be one such script per Document at a time.)"
+        // [PS] Step 25.E. ... The element is the pending parsing-blocking
+        // script of the Document of the parser that created the element. (There
+        // can only be one such script per Document at a time.) ... [spec text]
         CHECK(!parser_blocking_script_);
         parser_blocking_script_ = script_loader->TakePendingScript();
       } else {
-        // 6th Clause of Step 23.
-        // "Immediately execute the script block,
-        //  even if other scripts are already executing."
+        // [PS] Step 25.F. Otherwise
+        //
+        // Immediately execute the script block, even if other scripts are
+        // already executing. [spec text]
+        //
         // TODO(hiroshige): Merge the block into ScriptLoader::prepareScript().
         DCHECK_GT(reentry_permit_->ScriptNestingLevel(), 1u);
         if (parser_blocking_script_)
@@ -541,16 +551,19 @@ void HTMLParserScriptRunner::ProcessScriptElementInternal(
                         DocumentURLForScriptExecution(document_));
       }
     } else {
-      // 2nd Clause of Step 23.
+      // [PS] Step 25.B.
       RequestParsingBlockingScript(script_loader);
     }
 
-    // "Decrement the parser's script nesting level by one.
-    //  If the parser's script nesting level is zero, then set the parser
-    //  pause flag to false."
+    // Spec: ... Decrement the parser's script nesting level by one. If the
+    // parser's script nesting level is zero, then set the parser pause flag to
+    // false. ... [spec text]
+    //
     // Implemented by ~ScriptNestingLevelIncrementer().
 
-    // "Let the insertion point have the value of the old insertion point."
+    // Spec: ... Let the insertion point have the value of the old insertion
+    // point. ... [spec text]
+    //
     // Implemented by ~InsertionPointRecord().
   }
 }
