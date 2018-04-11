@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Aún no se ha podido verificar tu contraseña. Nota: Si has cambiado la contraseña recientemente, la nueva contraseña se aplicará una vez que hayas cerrado sesión. Utiliza la antigua contraseña aquí.</translation>
 <translation id="1677472565718498478">Queda: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Dirección IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Es posible que el administrador del dispositivo pueda supervisar tu actividad.</translation>
 <translation id="1734367976349034509">Este es un dispositivo administrado por la empresa</translation>
 <translation id="1746730358044914197">El administrador configura los métodos de introducción.</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Botón de menú adicional</translation>
 <translation id="1951012854035635156">Asistente</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Elegir el idioma</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Apagar</translation>
 <translation id="2012624427112548395">Ctrl + Tecla de búsqueda + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2675319268637823299">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
     Todos los usuarios deben cerrar sesión para continuar.</translation>
+<translation id="2696763960464195425">Tu información se eliminará cuando cierres la sesión. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Elegir el teclado</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
 <translation id="7131634465328662194">Tu sesión se cerrará automáticamente.</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
+<translation id="7165511658052620796">(TEMP) Show webui login; if used file bug (crbug.com) or feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
@@ -329,6 +334,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8734991477317290293">Es posible que esté intentando captar tus pulsaciones de teclas</translation>
+<translation id="8809737090443522491">Escribe el nombre de una aplicación o un documento</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Si mueves ventanas a otro escritorio, es posible que se produzca un comportamiento inesperado.
 

@@ -597,7 +597,7 @@
 <translation id="5190835502935405962">Bogmærkelinje</translation>
 <translation id="5201306358585911203">En integreret side på denne side siger</translation>
 <translation id="5205222826937269299">Navn påkrævet</translation>
-<translation id="5222812217790122047">E-mail påkrævet</translation>
+<translation id="5222812217790122047">Mail påkrævet</translation>
 <translation id="522700295135997067">Dette website kan have stjålet din adgangskode</translation>
 <translation id="5230733896359313003">Leveringsadresse</translation>
 <translation id="5250209940322997802">"Opret forbindelse til netværk"</translation>
@@ -668,7 +668,7 @@
 <translation id="5631439013527180824">Ugyldigt token for enhedsadministration</translation>
 <translation id="5633066919399395251">Brugere med ondsindede hensigter, der i øjeblikket er på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, kan forsøge at installere farlige programmer på din computer, der stjæler eller sletter dine oplysninger (f.eks. fotos, adgangskoder, beskeder og kreditkort). <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Vildledende indhold er blokeret.</translation>
-<translation id="5659593005791499971">E-mail</translation>
+<translation id="5659593005791499971">Mail</translation>
 <translation id="5675650730144413517">Denne side virker ikke</translation>
 <translation id="5685654322157854305">Tilføj leveringsadresse</translation>
 <translation id="5689199277474810259">Eksportér i JSON</translation>

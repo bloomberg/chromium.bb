@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">يمكن للمواقع الإلكترونية التابعة لجهات خارجية حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
 <translation id="3662546969139119822">لا يوجد سجلّ هنا</translation>
 <translation id="3672452749423051839">اقتراحات أخطاء التنقل</translation>
+<translation id="3692944402865947621">تعذّر تنزيل <ph name="FILE_NAME" /> نظرًا لعدم إمكانية الوصول إلى موقع سعة التخزين.</translation>
 <translation id="3712575778697986964">أترغب في إعادة ضبط توفير البيانات؟</translation>
 <translation id="3714981814255182093">فتح شريط البحث</translation>
 <translation id="3716182511346448902">‏تستهلك هذه الصفحة مساحة كبيرة من الذاكرة، لذلك أوقفها Chrome مؤقتًا.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
 <translation id="4084682180776658562">إشارة</translation>
+<translation id="4084712963632273211">‏من <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />تعرضه Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">تم تنزيل <ph name="MEGABYTES" /> ميغابايت</translation>
 <translation id="4089831646916293264">قد تتداخل هذه الميزة مع إمكانية الوصول إلى خدمات البيانات المتميزة التي يقدّمها مشغّل شبكة الجوال.</translation>
 <translation id="4095146165863963773">هل ترغب في حذف بيانات التطبيق؟</translation>
@@ -370,6 +372,7 @@
 <translation id="4550003330909367850">عيّن قفل الشاشة على هذا الجهاز لعرض كلمة المرور أو نسخها هنا.</translation>
 <translation id="4558311620361989323">اختصارات صفحة الويب</translation>
 <translation id="4565377596337484307">إخفاء كلمة المرور</translation>
+<translation id="4570913071927164677">التفاصيل</translation>
 <translation id="4572422548854449519">تسجيل الدخول إلى الحساب المدار</translation>
 <translation id="4581964774250883625">لقد انتقلت إلى التصفح المتخفي.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{قبل دقيقة واحدة (#)}zero{قبل # دقيقة}two{قبل دقيقتين (#)}few{قبل # دقائق}many{قبل # دقيقة}other{قبل # دقيقة}}</translation>
@@ -546,6 +549,7 @@
 <translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
 <translation id="60924377787140961">ستظهر المزيد من المقالات قريبًا. استمتع بقضاء وقت الظهيرة!</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
+<translation id="6111020039983847643">البيانات المُستخدَمة</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6138140242378429169">جعل الصفحة متوافقة مع الجوّال</translation>
@@ -698,6 +702,7 @@
 <translation id="748127970106343339">تأكيد حذف بيانات اعتماد الجهاز</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (تم التحديث منذ <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">البيانات التي تم توفيرها</translation>
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7514365320538308">تنزيل</translation>
 <translation id="751961395872307827">يتعذّر الاتصال بالموقع</translation>

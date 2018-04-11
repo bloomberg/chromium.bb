@@ -1075,6 +1075,7 @@ Sidhani ikiwa tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="2653266418988778031">Ukifuta cheti cha Mamlaka ya Uthibitishaji (CA), kivinjari chako hakitaamini tena cheti chochote kitakachotolewa na CA hiyo.</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
 <translation id="265390580714150011">Thamani ya Uga</translation>
+<translation id="2654166010170466751">Ruhusu tovuti zisakinishe vidhibiti vya malipo</translation>
 <translation id="2655386581175833247">Cheti cha mtumiaji:</translation>
 <translation id="2660779039299703961">Tukio</translation>
 <translation id="266079277508604648">Imeshindwa kuunganisha kwenye printa. Hakikisha kuwa printa imewashwa na imeunganishwa kwenye Chromebook yako kwa kutumia Wi-Fi au USB.</translation>
@@ -1424,6 +1425,7 @@ Tembelea <ph name="BEGIN_LINK" />Kituo chetu cha Usaidizi<ph name="END_LINK" /> 
 <translation id="3140353188828248647">Lenga upau anwani</translation>
 <translation id="3141318088920353606">Inasikiliza...</translation>
 <translation id="3141917231319778873">Ombi hili maalum halitumiki kwenye: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="3143515551205905069">Ghairi usawazishaji</translation>
 <translation id="3143695347784622594">Tuma data ya mfumo. Tuma kiotomatiki data ya uchanganuzi na matumizi ya programu na kifaa kwa Google. Unaweza kubadilisha hali hii wakati wowote katika <ph name="BEGIN_LINK1" />mipangilio<ph name="END_LINK1" /> ya kifaa chako. Ukiwasha Historia ya Shughuli kwenye Wavuti na Programu, maelezo haya yatahifadhiwa katika akaunti yako ili uweze kuyadhibiti katika Shughuli Zangu. <ph name="BEGIN_LINK2" />Pata maelezo zaidi<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">IMEKAMILIKA</translation>
 <translation id="3144647712221361880">Fungua kiungo ukitumia</translation>
@@ -2800,6 +2802,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5337771866151525739">Imesakinishwa na mhusika mwingine.</translation>
 <translation id="5338503421962489998">Hifadhi ya ndani</translation>
 <translation id="5340217413897845242">Kipengee cha kabati cha 6</translation>
+<translation id="5340638867532133571">Ruhusu tovuti zisakinishe vidhibiti vya malipo (inapendekezwa)</translation>
 <translation id="5341793073192892252">Vidakuzi vifuatavyo vilizuiwa (vidakuzi vyote vya washirika wengine vinazuiwa)</translation>
 <translation id="5341980496415249280">Tafadhali subiri, inapakia...</translation>
 <translation id="5342091991439452114">Lazima PIN iwe na angalau tarakimu <ph name="MINIMUM" /></translation>
@@ -3616,6 +3619,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6596745167571172521">Zima Herufi Kubwa</translation>
 <translation id="6596816719288285829">Anwani ya IP</translation>
 <translation id="6597017209724497268">Sampuli</translation>
+<translation id="659934686219830168">Itaanza kusawazisha utakapofunga ukurasa huu</translation>
 <translation id="6602353599068390226">hamishia dirisha kwenye skrini nyingine</translation>
 <translation id="6602956230557165253">Tumia vitufe vya mshale wa kushoto na kulia kutalii.</translation>
 <translation id="660380282187945520">F9</translation>
@@ -3767,6 +3771,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6829250331733125857">Pata usaidizi wa <ph name="DEVICE_TYPE" /> yako.</translation>
 <translation id="6829270497922309893">Jisajili katika shirika lako</translation>
 <translation id="682971198310367122">Sera ya faragha ya Google</translation>
+<translation id="6829772336900667075">Fungua <ph name="APP_NAME" /></translation>
 <translation id="6831043979455480757">Tafsiri</translation>
 <translation id="683373380308365518">Badilisha ili utumie kivinjari mahiri na salama</translation>
 <translation id="6835762382653651563">Tafadhali unganisha kwenye Intaneti ili usasishe <ph name="DEVICE_TYPE" /> yako.</translation>
@@ -3828,6 +3833,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6945221475159498467">Chagua</translation>
 <translation id="694592694773692225">Uelekezaji kwingine kwenye ukurasa huu umezuiwa.</translation>
 <translation id="6949306908218145636">Alamisha Kurasa Zilizowazi...</translation>
+<translation id="6951153907720526401">Vidhibiti vya Malipo</translation>
 <translation id="6955446738988643816">Kagua Dirisha Ibukizi</translation>
 <translation id="6957231940976260713">Jina la huduma</translation>
 <translation id="696203921837389374">Washa inasawazisha kwenye data ya kifaa cha mkononi</translation>
@@ -4272,6 +4278,7 @@ Kusakinisha <ph name="APP_NAME" /> kutapakua data ya <ph name="DOWNLOAD_SIZE" />
 <translation id="7629827748548208700">Kichupo: <ph name="TAB_NAME" /></translation>
 <translation id="7631887513477658702">Fungua Faili za Aina Hii Kil&amp;a Wakati</translation>
 <translation id="7632948528260659758">Programu zifuatazo za kioski zimeshindwa kusasisha:</translation>
+<translation id="763632859238619983">Usiruhusu tovuti zozote zisakinishe vidhibiti vya malipo</translation>
 <translation id="7639178625568735185">Nimepata!</translation>
 <translation id="764017888128728"><ph name="PASSWORD_MANAGER_BRAND" /> hukuwezesha kuingia katika tovuti zinazofaa kiotomatiki kwa manenosiri uliyohifadhi.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (mmiliki)</translation>
@@ -5229,6 +5236,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="9137013805542155359">Onyesha asili</translation>
 <translation id="9137916601698928395">Fungua kiungo ukitumia <ph name="USER" /></translation>
 <translation id="9138978632494473300">Ongeza njia za mkato kwenye sehemu zifuatazo:</translation>
+<translation id="9140067245205650184">Unatumia kitia alama cha kipengele kisichoruhusiwa: <ph name="BAD_FLAG" />. Uthabiti na usalama utaathirika.</translation>
 <translation id="9147392381910171771">&amp;Chaguo</translation>
 <translation id="9148058034647219655">Ondoka</translation>
 <translation id="9148116311817999634">Kwa usalama wako, weka mbinu ya kufungua skrini</translation>
@@ -5246,6 +5254,7 @@ Huenda watu wengine wenye miunganisho ya polepole hawataona maudhui yako.</trans
 <translation id="9161070040817969420">Fremu ndogo za: <ph name="PARENT_SITE" /></translation>
 <translation id="916501514001398070">Tuma data ya mfumo. Tuma kiotomatiki data ya uchanganuzi na matumizi ya kifaa na programu kwa Google. Mipangilio hii husimamiwa na mmiliki. Ukiwasha Historia ya Shughuli kwenye Wavuti na Programu, maelezo haya yatahifadhiwa kwenye akaunti yako ili uweze kuyadhibiti katika Shughuli Zangu. <ph name="BEGIN_LINK1" />Pata Maelezo Zaidi<ph name="END_LINK1" /></translation>
 <translation id="9169496697824289689">Angalia njia za mkato za kibodi</translation>
+<translation id="9169931577761441333">Ongeza <ph name="APP_NAME" /> kwenye Skrini ya Mwanzo</translation>
 <translation id="9170397650136757332">Sasa sogeza kidole chako taratibu ili kupiga picha sehemu zote za alama ya kidole chako</translation>
 <translation id="9170848237812810038">&amp;Tendua</translation>
 <translation id="9170884462774788842">Programu nyingine kwenye kompyuta yako iliongeza mandhari ambayo yanaweza kubadilisha jinsi Chrome inavyofanya kazi.</translation>

@@ -168,6 +168,7 @@
 <translation id="4002066346123236978">标题</translation>
 <translation id="4038354071007134711">此设备上没有可以打开该文件的应用。</translation>
 <translation id="4049507953662678203">请确保已连接到网络，然后重试。</translation>
+<translation id="4084682180776658562">已保存的书签</translation>
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="4121993058175073134">要发送净导出数据，请在“设置”应用中指定您的电子邮件帐号。</translation>
 <translation id="4124987746317609294">时间范围</translation>
@@ -429,7 +430,6 @@
 <translation id="9083392325882095631">有1个书签</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
-<translation id="915371508759614899">取消下载？</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9203116392574189331">Handoff</translation>

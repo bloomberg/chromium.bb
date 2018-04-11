@@ -168,6 +168,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4038354071007134711">Ingen apps på denne enhed, der kan åbne filen.</translation>
 <translation id="4049507953662678203">Sørg for, at du har forbindelse til et netværk, og prøv igen.</translation>
+<translation id="4084682180776658562">Bogmærke</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
 <translation id="4121993058175073134">For at sende oplysninger om nettoeksporten skal du konfigurere din e-mailkonto i appen Indstillinger.</translation>
 <translation id="4124987746317609294">Tidsinterval</translation>
@@ -236,9 +237,9 @@ Dine data er krypteret med din adgangssætning til synkronisering. Indtast den f
 
 Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enheder skal benytte den samme iCloud-konto.</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
-<translation id="5619279135193775234">E-mail</translation>
+<translation id="5619279135193775234">Mail</translation>
 <translation id="5626245204502895507">Filen kunne ikke downloades på nuværende tidspunkt.</translation>
-<translation id="5659593005791499971">E-mail</translation>
+<translation id="5659593005791499971">Mail</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5728700505257787410">Der var et problem med at logge ind på din konto.</translation>
@@ -429,7 +430,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
-<translation id="915371508759614899">Vil du annullere downloaden?</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

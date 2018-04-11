@@ -168,6 +168,7 @@
 <translation id="4002066346123236978">Название</translation>
 <translation id="4038354071007134711">Нет приложения, чтобы открыть этот файл.</translation>
 <translation id="4049507953662678203">Проверьте подключение к Интернету и повторите попытку.</translation>
+<translation id="4084682180776658562">Закладка</translation>
 <translation id="411254640334432676">Ошибка при скачивании</translation>
 <translation id="4121993058175073134">Чтобы отправлять очищенные данные для экспорта, задайте соответствующие параметры аккаунта электронной почты в приложении "Настройки".</translation>
 <translation id="4124987746317609294">Временной диапазон</translation>
@@ -429,7 +430,6 @@
 <translation id="9083392325882095631">Закладок: 1</translation>
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9148126808321036104">Повторите вход</translation>
-<translation id="915371508759614899">Отменить скачивание?</translation>
 <translation id="9157836665414082580">Блокировать диалоговые окна</translation>
 <translation id="9188680907066685419">Выход из управляемого аккаунта</translation>
 <translation id="9203116392574189331">Handoff</translation>

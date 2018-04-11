@@ -2548,6 +2548,15 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9112897538922695510">Permite-lhe registar uma lista de controladores de protocolos. Esta apenas pode ser uma política recomendada. A propriedade |protocol| deve ser definida para um esquema como "mailto" e a propriedade |url| deve ser definida para o padrão do URL da aplicação que controla o esquema. O padrão pode incluir um "%s" que, caso esteja presente, é substituído pelo URL controlado.
 
           Os controladores de protocolos registados pela política são unidos com os que são registados pelo utilizador e ambos estão disponíveis para utilização. O utilizador pode substituir os controladores de protocolos instalados pela política ao instalar um novo controlador predefinido, mas não pode remover um controlador de protocolos registado pela política.</translation>
+<translation id="9123211093995421438">Especifica o número mínimo de marcos do <ph name="PRODUCT_OS_NAME" /> que devem ser autorizados para reversão a partir da versão estável a qualquer momento.
+
+      A predefinição é 0 para consumidores e 4 (aprox. meio ano) para dispositivos inscritos através de empresas.
+
+      A definição desta política evita que a proteção de reversão seja aplicada a, pelo menos, este número de marcos.
+
+      A definição desta política com um valor inferior tem um efeito permanente: o dispositivo PODE não conseguir efetuar a reversão para versões anteriores, mesmo depois de a política ser reposta para um valor superior.
+
+      As possibilidades reais de reversão também podem depender de patches de vulnerabilidades críticas e do dispositivo.</translation>
 <translation id="913195841488580904">Bloquear o acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Uma lista de autorizações que controla os modos de desbloqueio rápido que o utilizador pode configurar e utilizar para desbloquear o ecrã de bloqueio.

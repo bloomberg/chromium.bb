@@ -137,6 +137,7 @@
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{يتبقى دقيقة واحدة}zero{يتبقى # من الدقائق}two{يتبقى دقيقتان (#)}few{يتبقى # دقائق}many{يتبقى # دقيقة}other{يتبقى # من الدقائق}}</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> تيرابايت</translation>
+<translation id="7507604095951736240">الرموز التعبيرية</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="7814458197256864873">&amp;نسخ</translation>

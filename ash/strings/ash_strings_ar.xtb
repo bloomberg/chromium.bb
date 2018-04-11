@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">عذرًا، لا يمكن التحقق من كلمة المرور حتى الآن. ملاحظة: في حال تغيير كلمة المرور مؤخرًا، سيتم تطبيق كلمة المرور الجديدة بعد تسجيل الخروج، يُرجى استخدام كلمة المرور القديمة هنا.</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
 <translation id="1698760176351776263">‏عنوان IPv6:‏ <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">قد يتمكن مشرف الجهاز من مراقبة نشاطك.</translation>
 <translation id="1734367976349034509">يخضع هذا الجهاز لإدارة المؤسسة</translation>
 <translation id="1746730358044914197">تتم تهيئة طرق الإدخال بواسطة المشرف.</translation>
 <translation id="1747827819627189109">تم تمكين لوحة المفاتيح على الشاشة</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">زر تجاوز السعة</translation>
 <translation id="1951012854035635156">المساعد</translation>
 <translation id="1957803754585243749">0 درجة</translation>
+<translation id="1957958912175573503">تعيين اللغة</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">إيقاف التشغيل</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2675319268637823299">منع أحد المشرفين الدخول المتعدد لـ <ph name="USER_EMAIL" />.
     يجب على جميع المستخدمين تسجيل الخروج للمتابعة.</translation>
+<translation id="2696763960464195425">ستتم إزالة معلوماتك عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">تعيين لوحة المفاتيح</translation>
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
@@ -331,6 +335,7 @@
 <translation id="8673028979667498656">270 درجة</translation>
 <translation id="8676770494376880701">تمّ توصيل شاحن منخفض الطاقة</translation>
 <translation id="8734991477317290293">قد تحاول لوحة المفاتيح سرقة ضغطات المفاتيح.</translation>
+<translation id="8809737090443522491">كتابة اسم التطبيق أو المستند</translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
 <translation id="8814715559352963456">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع.
 

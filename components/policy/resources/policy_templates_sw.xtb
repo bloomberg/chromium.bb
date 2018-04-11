@@ -315,6 +315,17 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2113068765175018713">Wekea kifaa vizuizi vya muda wa kuwaka kwa kuzima na kuwasha kiotomatiki</translation>
 <translation id="2127599828444728326">Ruhusu arifa katika tovuti hizi</translation>
 <translation id="2131902621292742709">Ufifili wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
+<translation id="2132732175597591362">Hudhibiti ruwaza za URL zilizoidhinishwa ambako kipengele cha kucheza kiotomatiki kitawaka kila wakati.
+
+      Kama kipengele cha kucheza kiotomatiki kimewashwa basi video zinaweza kucheza kiotomatiki (bila idhini ya mtumiaji) katika maudhui ya sauti kwenye <ph name="PRODUCT_NAME" />.
+
+      Ruwaza ya URL imeumbizwa kulingana na https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Ikiwa sera ya Kucheza Kiotomatiki imewewa kuwa Ndivyo, basi sera hii haina athari yoyote.
+
+      Ikiwa sera ya Kucheza Kiotomatiki imewekwa kuwa Sivyo, basi ruwaza yoyote ya URL iliyowekwa katika sera hii bado itaruhusiwa kucheza.
+
+      Kumbuka kuwa kama <ph name="PRODUCT_NAME" /> inafanya kazi na sera hii ibadilike, sera itatumika tu kwenye vichupo vinavyofunguliwa baada ya hatua hii. Kwa hivyo baadhi ya vichupo huenda vitatumia sera ya awali.</translation>
 <translation id="2134437727173969994">Ruhusu kufunga skrini</translation>
 <translation id="2137064848866899664">Sera hii ikiwekwa, kila onyesho litazungushwa hadi
       mkao uliobainishwa kila inapowashwa tena, na mara ya kwanza inapounganishwa
@@ -952,6 +963,9 @@ Sera hii isipowekwa, mtumiaji bado anaweza kusakinisha kiendelezi chochote katik
       Inaorodhesha viendelezi ambavyo vinasakinishwa kiotomatiki kwa mtumiaji wa Onyesho, kwa vifaa katika modi ya rejareja. Viendelezi hivi vinahifadhiwa katika kifaa na vinaweza kusakinishwa nje ya mtandao, baada ya usakinishaji.
 
       Kila ingizo la orodha lina kamusi ambayo ni lazima ijumuishe Kitambulisho cha kirefusho katika uga wa 'kitambulisho cha kirefusho', na URL sasishi yake katika uga wa 'url-sasishi'.</translation>
+<translation id="3873159954366380945">Hukuruhusu uweke kipindi ambapo arifa za kufunguliwa upya kwa <ph name="PRODUCT_NAME" /> huonyeshwa ili sasisho linalosubiri liwekwe.
+
+      Mipangilio ya sera hii inaweza kutumiwa kudhibiti kipindi, katika milisekunde, ambapo mtumiaji anaarifiwa mara kwa mara kwamba ni lazima afungue <ph name="PRODUCT_NAME" /> upya (au ni lazima azime kisha awashe <ph name="PRODUCT_OS_NAME" />) ili apate sasisho. Katika kipindi hiki, mtumiaji ataarifiwe mara kwa mara kuhusu umuhimu wa kusasisha, kulingana na mipangilio ya sera ya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Kama sera haijawekwa, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) kitatumika katika <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moja) kitatumika katika mifumo yote mingine.</translation>
 <translation id="3877517141460819966">Hali ya uthibitishaji wa hatua mbili iliyowekwa</translation>
 <translation id="388237772682176890">Sera imeacha kufanya kazi katika M53 na imeondolewa katika M54, kwa sababu matumizi ya SPDY/3.1 yameondolewa.
 
@@ -1289,6 +1303,14 @@ Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kio
           Sera hii inatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="489803897780524242">Kigezo kinachodhibiti uwekaji wa hoja ya utafutaji kwa mtoa huduma ya utafutaji chaguo-msingi</translation>
 <translation id="4899708173828500852">Wezesha Kuvinjari Salama</translation>
+<translation id="4899802251198446659">Hukuruhusu udhibiti ikiwa video zinaweza kucheza kiotomatiki (bila idhini ya mtumiaji) katika maudhui ya sauti kwenye <ph name="PRODUCT_NAME" />.
+
+      Kama sera imewekwa kuwa Ndivyo, <ph name="PRODUCT_NAME" /> inaruhusiwa kucheza maudhui kiotomatiki.
+      Kama sera imewekwa kuwa Sivyo, <ph name="PRODUCT_NAME" /> hairuhusiwi kucheza maudhui kiotomatiki. Sera ya Orodha Zilizoidhinishwa Kucheza Kiotomatiki inaweza kutumiwa kufuta hali hii katika ruwaza fulani za URL.
+      Kwa chaguomsingi, <ph name="PRODUCT_NAME" /> hairuhusiwi kucheza maudhui kiotomatiki. Sera ya Orodha Zilizoidhinishwa Kucheza Kiotomatiki inaweza kutumiwa kufuta hali hii katika ruwaza fulani za URL.
+
+      Kumbuka kwamba kama <ph name="PRODUCT_NAME" /> inatumika na sera hii ibadilike, itatumika tu kwenye vichupo vinavyofunguliwa baada ya hatua hii. Kwa hivyo baadhi ya vichupo huenda vitatumia sera ya awali.
+      </translation>
 <translation id="4906194810004762807">Onyesha upya kiwango cha Sera ya Kifaa</translation>
 <translation id="4917385247580444890">Thabiti</translation>
 <translation id="4923806312383904642">Ruhusu WebDriver Ifute Sera Ambazo Hazioani</translation>

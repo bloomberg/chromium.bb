@@ -24,7 +24,6 @@
 <translation id="1996162290124031907">رفتن به برگه بعدی</translation>
 <translation id="2010818616644390445">رفتن به آخرین برگه در پنجره</translation>
 <translation id="2040706009561734834">باز کردن/بستن راه‌انداز</translation>
-<translation id="2045117674524495717">راهنمای میان‌بر صفحه‌کلید</translation>
 <translation id="2088054208777350526">جستجوی میان‌برهای صفحه‌کلید</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> یا <ph name="F" /></translation>
 <translation id="2145908266289632567">ویرایش نوشتار</translation>
@@ -92,7 +91,7 @@
 <translation id="4698850295812410683">نمایش ابزار قلم</translation>
 <translation id="4801989101741319327">حرکت به انتهای کلمه بعد</translation>
 <translation id="4916163929714267752">بازکردن پیوند در پنجره جدید</translation>
-<translation id="5002047168347153398">فوکوس پنجره بازشو غیرفعال برای دسترس‌پذیری</translation>
+<translation id="5002047168347153398">تمرکز بر پنجره بازشو غیرفعال برای دسترس‌پذیری</translation>
 <translation id="5030659775136592441">نمایش مدیر نشانک</translation>
 <translation id="5034421018520995080">رفتن به بالای صفحه</translation>
 <translation id="5042305953558921026">کلید حالت نمای کلی</translation>
@@ -144,7 +143,7 @@
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="7020813747703216897">هیچ نتیجه منطبقی پیدا نشد</translation>
 <translation id="7025325401470358758">چارچوب بعدی</translation>
-<translation id="7077383985738259936">فوکوس یا برجسته کردن نوار نشانک‌ها (اگر نشان داده شده باشد)</translation>
+<translation id="7077383985738259936">تمرکز یا برجسته کردن نوار نشانک‌ها (اگر نشان داده شده باشد)</translation>
 <translation id="7237562915163138771">نشانی وبی را در نوار نشانی تایپ کنید و سپس <ph name="ALT" /><ph name="SEPARATOR" /><ph name="ENTER" /> را فشار دهید</translation>
 <translation id="7254764037241667478">قرار دادن دستگاه در حالت خواب (تعلیق)</translation>
 <translation id="7379254767514753910"><ph name="ALT" /> یا <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="UP" /></translation>

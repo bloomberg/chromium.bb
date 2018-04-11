@@ -168,6 +168,7 @@ Některé webové stránky na tento požadavek mohou reagovat například tím, 
 <translation id="4002066346123236978">Název</translation>
 <translation id="4038354071007134711">Soubor nelze otevřít pomocí žádné aplikace v tomto zařízení.</translation>
 <translation id="4049507953662678203">Zkontrolujte, zda jste připojeni k síti a zkuste to znovu.</translation>
+<translation id="4084682180776658562">Záložka</translation>
 <translation id="411254640334432676">Stahování se nezdařilo.</translation>
 <translation id="4121993058175073134">Chcete-li odesílat data nástroje net-export, nakonfigurujte e-mailový účet v aplikaci Nastavení.</translation>
 <translation id="4124987746317609294">Časové období</translation>
@@ -429,7 +430,6 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Je vyžadována heslová fráze</translation>
 <translation id="9148126808321036104">Znovu přihlásit</translation>
-<translation id="915371508759614899">Zrušit stahování?</translation>
 <translation id="9157836665414082580">Potlačit dialogová okna</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>

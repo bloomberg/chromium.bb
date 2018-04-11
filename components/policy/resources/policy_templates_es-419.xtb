@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Proveedor de búsqueda predeterminado</translation>
 <translation id="1099282607296956954">Permite el aislamiento de todos los sitios</translation>
 <translation id="1117535567637097036">Los controladores de protocolo establecidos mediante esta política no se usan cuando se controlan intents en Android.</translation>
+<translation id="1118093128235245168">Permite que los sitios soliciten al usuario que otorgue acceso a un dispositivo USB conectado</translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar archivos en caché en el disco.
 
       Si estableces esta política, <ph name="PRODUCT_NAME" /> usará el directorio proporcionado más allá de que el usuario haya especificado la marca '--disk-cache-dir' o no. Para evitar la pérdida de datos u otros errores inesperados, no debes configurar un directorio con otro uso o el directorio raíz de un volumen en esta política, porque <ph name="PRODUCT_NAME" /> administra su contenido.
@@ -72,6 +73,9 @@
 
       Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia mínima permitida es de 60 segundos.</translation>
 <translation id="1204263402976895730">Impresoras empresariales habilitadas</translation>
+<translation id="1216758672198492382">Te permite establecer si los sitios web pueden acceder a dispositivos USB conectados. El acceso se puede bloquear por completo o se puede preguntar al usuario cada vez que un sitio web desea acceder a dispositivos USB conectados.
+
+          Si no se configura esta política, se usará el valor "3", y el usuario podrá cambiarlo.</translation>
 <translation id="1219695476179627719">Especifica si el dispositivo debe volver a la versión que se establece en <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, si ya ejecuta una versión más reciente.
 
       El valor predeterminado es RollbackDisabled.</translation>
@@ -582,6 +586,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2801230735743888564">Permitir que los usuarios jueguen con el huevo de pascua del dinosaurio cuando el dispositivo se encuentra sin conexión
 
       Si esta política se configura en False, los usuarios no podrán jugar con el huevo de pascua del dinosaurio cuando el dispositivo se encuentre sin conexión. Si esta configuración se establece en True, los usuarios podrán jugar con el dinosaurio. Si esta política no se configura, los usuarios no podrán jugar con el huevo de pascua del dinosaurio en el Sistema operativo Chrome registrado, pero se les permitirá jugar en otras circunstancias.</translation>
+<translation id="2802085784857530815">Te permite controlar si los usuarios pueden acceder a impresoras no empresariales
+
+      Si la política se establece como verdadera o no se establece, los usuarios podrán agregar sus propias impresoras nativas, configurarlas y realizar impresiones con ellas.
+
+      Si se establece como falsa, los usuarios no podrán agregar sus propias impresoras nativas ni configurarlas. Tampoco podrán realizar impresiones con ninguna impresora nativa que se haya configurado anteriormente.
+      </translation>
 <translation id="2805707493867224476">Permitir que todos los sitios muestren ventanas emergentes.</translation>
 <translation id="2808013382476173118">Habilita el uso de servidores STUN cuando los clientes remotos intentan establecer una conexión con esta computadora.
 
@@ -738,6 +748,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           El valor de la política debe especificarse en milisegundos. Los valores se establecerán para que sean inferiores o equivalentes a la demora de pantalla apagada (si se configuró) y la demora de inactividad.</translation>
 <translation id="3264793472749429012">Codificación del proveedor de búsqueda predeterminado</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
+<translation id="3284094172359247914">Controla el uso de la API de WebUSB</translation>
 <translation id="3288595667065905535">Canal de versión</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> funcione como proxy entre <ph name="CLOUD_PRINT_NAME" /> e impresoras anteriores conectadas a la computadora.
       Si se habilita o no se configura esta opción, los usuarios pueden habilitar el proxy de Google Cloud Print si realizan la autenticación con su cuenta de Google.
@@ -821,6 +832,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar Traductor de Google</translation>
 <translation id="3512226956150568738">Si el modelo del dispositivo del cliente ya era compatible con ARC, la migración a ext4 era necesaria para ejecutar ARC y se establece la política ArcEnabled como verdadera, esta opción se comportará como AskUser (valor 3). En los demás casos (si el modelo del dispositivo no era compatible con ARC o se establece la política ArcEnabled como falsa), este valor es equivalente a DisallowArc (valor 0).</translation>
+<translation id="3524204464536655762">No permitir que ningún sitio solicite acceso a dispositivos USB a través de la API de WebUSB</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3577251398714997599">Configuración de anuncios para sitios con anuncios intrusivos</translation>

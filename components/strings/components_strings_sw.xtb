@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1005145902654145231">Imeshindwa kubadilisha jina la kipindi</translation>
 <translation id="1008557486741366299">Sio Sasa</translation>
 <translation id="1015730422737071372">Toa maelezo ya ziada</translation>
 <translation id="1021110881106174305">Kadi zinazokubaliwa</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Kitambulisho cha huluki kisicho halali</translation>
 <translation id="1232569758102978740">Hakina Jina</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (zimesawazishwa)</translation>
+<translation id="1256368399071562588">&lt;p&gt;Ukijaribu kutembelea tovuti na haifunguki, jaribu kwanza kurekebisha hitilafu kwa kutumia hatua hizi za utatuzi:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Angalia anwani ya tovuti kama ina makosa ya maendelezo .&lt;/li&gt;
+    &lt;li&gt;Hakikisha kuwa muunganisho wako wa intaneti unafanya kazi kama kawaida.&lt;/li&gt;
+    &lt;li&gt;Wasiliana na mmiliki wa tovuti.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Orodha ya kusoma</translation>
 <translation id="1264126396475825575">Ripoti ya kuacha kufanya kazi iliyochukuliwa <ph name="CRASH_TIME" /> (haijapakiwa au imepuuzwa)</translation>
 <translation id="1270502636509132238">Mbinu ya Kuchukua</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
+<translation id="1292701964462482250">"Programu kwenye kompyuta yako inazuia Chrome iunganishe salama kwenye wavuti" (kompyuta za Windows pekee)</translation>
 <translation id="1294154142200295408">Tofauti za miundo ya amri</translation>
 <translation id="129553762522093515">Vilivyofungwa hivi karibuni</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Jaribu kufuta vidakuzi kwenye kivinjari chako<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">Kipindi ulichochagua hakipo.</translation>
+<translation id="1323433172918577554">Onyesha Zaidi</translation>
 <translation id="1333989956347591814">Huenda bado shughuli zako <ph name="BEGIN_EMPHASIS" />Zitaonwa<ph name="END_EMPHASIS" /> na:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Tovuti utakazotembelea
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">Kuna programu hasidi kwenye tovuti unayotaka kuifungua</translation>
 <translation id="1374468813861204354">mapendekezo</translation>
 <translation id="1375198122581997741">Kuhusu Toleo</translation>
+<translation id="1376836354785490390">Onyesha Chache</translation>
 <translation id="1377321085342047638">Nambari ya Kadi</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> haikutuma data yoyote.</translation>
 <translation id="1407135791313364759">Fungua zote</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">Chapisha</translation>
 <translation id="1484290072879560759">Chagua Anwani ya Mahali Bidhaa Zitakapopelekwa</translation>
 <translation id="1506687042165942984">Onyesha nakala iliyohifadhiwa (yaani inayojulikana kwisha muda) ya ukurasa huu.</translation>
+<translation id="1507202001669085618">&lt;p&gt;Utaona hitilafu hii kama unatumia mtandao wa Wi-Fi ambapo unatakiwa kuingia katika akaunti kabla ya kwenda mtandaoni.&lt;/p&gt;
+    &lt;p&gt;Ili urekebishe hitilafu, bofya &lt;strong&gt;Unganisha&lt;/strong&gt; kwenye ukurasa unaojaribu kufungua.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Nambari ya simu inahitajika</translation>
 <translation id="1517500485252541695">Kadi za mikopo na za malipo zinazokubaliwa</translation>
 <translation id="1519264250979466059">Unda Tarehe</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Kuchuja</translation>
 <translation id="1916770123977586577">Pakia upya ukurasa huu ili mipangilio iliyosasishwa itumike katika tovuti hii</translation>
 <translation id="1919345977826869612">Matangazo</translation>
+<translation id="1919367280705858090">Pata usaidizi kwa kutumia ujumbe mahususi kuhusu hitilafu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Hamna}=1{Tovuti 1}other{Tovuti #}}</translation>
 <translation id="1927235823738766038">Kadi za Mikopo na za Malipo Zinazokubaliwa</translation>
 <translation id="194030505837763158">Nenda kwenye <ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Hamna}=1{Kutoka kwenye tovuti 1 }other{Kutoka kwenye tovuti # }}</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> imezuiwa.</translation>
+<translation id="3984550557525787191">Tayari jina la kipindi hiki lipo.</translation>
 <translation id="3987940399970879459">Chini ya MB 1</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kuangalia mipangilio ya kinga-mtandao na kinga-virusi<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Mivurugo</translation>
 <translation id="422022731706691852">Wavamizi kwenye <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> huenda wakajaribu kukuhadaa kusakinisha programu inayoathiri hali yako ya kuvinjari (kwa mfano, kwa kubadilisha ukurasa wako wa kwanza au kuonyesha matangazo ya ziada kwenye tovuti unazotembelea). <ph name="BEGIN_LEARN_MORE_LINK" />Pata maelezo zaidi<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;Hatua ya 1: Ingia katika akaunti ya tovuti&lt;/h4&gt;
+    &lt;p&gt;Unatakiwa uingie katika akaunti ikiwa unatumia mitandao ya Wi-Fi katika maeneo kama vile mikahawa au viwanja vya ndege. Ili uangalie ukurasa wa kuingia katika akaunti, tembelea ukurasa ambao unatumia &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Nenda kwenye tovuti yoyote inayoanza kwa &lt;code&gt;http://&lt;/code&gt;, kama vile &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Ingia katika akaunti ili utumie intaneti kupitia ukurasa unaofunguka wa kuingia katika akaunti.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;Hatua ya 2: Fungua ukurasa katika Hali fiche (kwenye kompyuta pekee)&lt;/h4&gt;
+    &lt;p&gt;Fungua ukurasa uliokuwa ukitembelea katika Dirisha Fiche.&lt;/p&gt;
+    &lt;p&gt;Ukurasa ukifunguka, itamaanisha kuwa kiendelezi cha Chrome hakifanyi kazi vizuri. Zima kiendelezi ili urekebishe hitilafu hii.&lt;/p&gt;
+    &lt;h4&gt;Hatua ya 3: Sasisha mfumo wako wa uendeshaji&lt;/h4&gt;
+    &lt;p&gt;Hakikisha kuwa kifaa chako kinatumia toleo jipya.&lt;/p&gt;
+    &lt;h4&gt;Hatua ya 4: Zima kingavirusi yako kwa muda&lt;/h4&gt;
+    &lt;p&gt;Utaona hitilafu hii kama una programu ya kingavirusi ambayo inatoa "ulinzi wa HTTPS" au "ukaguzi wa HTTPS." Kingavirusi huzuia Chrome isidumishe usalama.&lt;/p&gt;
+    &lt;p&gt;Zima programu yako ya kingavirusi ili urekebishe tatizo hili. Kama ukurasa utafanya kazi baada ya kuzima programu, zima programu hii wakati utatumia tovuti salama.&lt;/p&gt;
+    &lt;p&gt;Kumbuka kuwasha tena programu yako ya kingavirusi unapomaliza.&lt;/p&gt;
+    &lt;h4&gt;Hatua ya 5: Pata usaidizi wa ziada&lt;/h4&gt;
+    &lt;p&gt;Kama bado unaona hitilafu, wasiliana na mmiliki wa tovuti.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Mtandao<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Halali</translation>
 <translation id="4250431568374086873">Muunganisho wako kwenye tovuti hii si salama kabisa</translation>
@@ -568,6 +600,7 @@
 <translation id="5222812217790122047">Anwani ya barua pepe inahitajika</translation>
 <translation id="522700295135997067">Huenda tovuti hii imeiba nenosiri lako</translation>
 <translation id="5230733896359313003">Anwani ya Mahali Bidhaa Zitakapopelekwa</translation>
+<translation id="5250209940322997802">"Unganisha kwenye mtandao"</translation>
 <translation id="5251803541071282808">Wingu</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Zifuate hatua hizi za kuisitisha programu kwa muda ili ufike kwenye wavuti. Utahitaji mamlaka ya msimamizi.<ph name="END_PARAGRAPH" />
 
@@ -591,6 +624,7 @@
 <translation id="5332219387342487447">Mbinu ya Usafirishaji</translation>
 <translation id="5355557959165512791">Huwezi kutembelea <ph name="SITE" /> sasa hivi kwa sababu cheti chake kimebatilishwa. Hitilafu na uvamizi wa mtandao kwa kawaida huwa wa muda, kwa hivyo huenda ukurasa huu utafanya kazi baadaye.</translation>
 <translation id="536296301121032821">Imeshindwa kuhifadhi mipangilio ya sera</translation>
+<translation id="5377026284221673050">"Saa yako iko nyuma" au "Saa yako iko mbele" au "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Msururu wa cheti wa tovuti hii una cheti kilichotiwa sahihi kwa kutumia SHA-1.</translation>
 <translation id="5402410679244714488">Muda wa kutumia utakwisha: <ph name="EXPIRATION_DATE_ABBR" />, ilitumika mwisho zaidi ya mwaka mmoja uliopita</translation>
 <translation id="540969355065856584">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama si sahihi kwa sasa. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
@@ -844,6 +878,7 @@
 <translation id="7542403920425041731">Baada ya kuthibitisha, maelezo ya kadi yako yatashirikiwa na tovuti hii.</translation>
 <translation id="7542995811387359312">Mjazo otomatiki wa kadi ya mkopo umelemazwa kwa sababu fomu hii haitumii muunganisho salama.</translation>
 <translation id="7543525346216957623">Muulize mzazi wako</translation>
+<translation id="7548892272833184391">Rekebisha hitilafu za muunganisho</translation>
 <translation id="7549584377607005141">Ukurasa huu wa wavuti unahitaji data ambayo uliingiza mapema ili ionyeshwe inavyostahili. Unaweza kutuma tena data hii, lakini kwa kufanya hivyo utarudia hatua yoyote ambayo ukurasa huu ulifanya hapo awali.</translation>
 <translation id="7552846755917812628">Jaribu vidokezo vinavyofuata:</translation>
 <translation id="7554791636758816595">Kichupo Kipya</translation>
@@ -851,6 +886,7 @@
 <translation id="7567204685887185387">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; huenda cheti chake cha usalama kimetolewa kwa njia ya ulaghai. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="7568593326407688803">Ukurasa huu umeandikwa kwa<ph name="ORIGINAL_LANGUAGE" />Je, ungependa kuutafsiri?</translation>
 <translation id="7569952961197462199">Ungependa kuondoa kadi ya malipo kutoka kwenye Chrome?</translation>
+<translation id="7575800019233204241">"Muunganisho wako si wa faragha" au "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" au "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" au "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" au "hitilafu ya cheti cha SSL"</translation>
 <translation id="7578104083680115302">Lipa haraka kwenye tovuti na programu katika vifaa vyote ukitumia kadi ulizohifadhi kwenye Google.</translation>
 <translation id="7588950540487816470">Wavuti Kila Mahali</translation>
 <translation id="7592362899630581445">Cheti cha seva kinakiuka vikwazo vya jina.</translation>
@@ -1073,6 +1109,8 @@
 <translation id="973773823069644502">Chagua Mahali Bidhaa Itakapopelekwa</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Hamna}=1{Kipengee 1}other{Vipengee #}}</translation>
 <translation id="981121421437150478">Nje ya mtandao</translation>
+<translation id="985199708454569384">&lt;p&gt;Utaona hitilafu hii kwenye kompyuta au simu yako kwa sababu tarehe na wakati wa kifaa chako si sahihi.&lt;/p&gt;
+    &lt;p&gt;Ili urekebishe hitilafu, fungua saa ya kifaa chako. Hakikisha kuwa tarehe na wakati ni sahihi.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Muundo wa Wasanidi Programu</translation>
 <translation id="989988560359834682">Badilisha Anwani</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

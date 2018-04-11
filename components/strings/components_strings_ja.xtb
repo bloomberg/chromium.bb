@@ -498,6 +498,7 @@
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
 <translation id="4326324639298822553">有効期限の「日」を確認してもう一度お試しください</translation>
 <translation id="4331708818696583467">保護されていない通信</translation>
+<translation id="4340982228985273705">このパソコンは企業の管理対象として検出されていないため、ポリシーで自動的にインストールできるのは Chrome ウェブストアでホストされている拡張機能のみとなります。Chrome ウェブストアの更新 URL は「<ph name="CWS_UPDATE_URL" />」です。</translation>
 <translation id="4346197816712207223">利用可能なクレジット カード</translation>
 <translation id="4356973930735388585">このサイトを利用すると、悪意のあるユーザーによって、危険なプログラム（写真、パスワード、メッセージ、クレジット カード番号などの情報を盗み取るか削除するプログラム）がお使いのパソコンにインストールされる可能性があります。</translation>
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> 値が想定されます。</translation>

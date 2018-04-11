@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Noklusējuma meklētājprogramma</translation>
 <translation id="1099282607296956954">Iespējot izolāciju visām vietnēm</translation>
 <translation id="1117535567637097036">Protokolu apdarinātāji, kas iestatīti, izmantojot šo politiku, netiek lietoti, kad tiek apstrādāti Android nolūki.</translation>
+<translation id="1118093128235245168">Atļaut vietnēm pieprasīt, lai lietotājs piešķirtu piekļuvi pievienotajai USB ierīcei</translation>
 <translation id="1128903365609589950">Konfigurē direktoriju, kuru <ph name="PRODUCT_NAME" /> izmantos kešatmiņā ievietoto failu glabāšanai diskā.
 
       Ja iestatīsiet šo politiku, <ph name="PRODUCT_NAME" /> izmantos nodrošināto direktoriju neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--disk-cache-dir”. Lai izvairītos no datu zuduma vai neparedzētām kļūdām, šai politikai nav jābūt iestatītai sējuma saknes direktorijā vai direktorijā, kas tiek izmantots citiem mērķiem, jo <ph name="PRODUCT_NAME" /> pārvalda tā saturu.
@@ -73,6 +74,9 @@
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
       3 stundas. Minimālais atļautais biežums ir 60 sekundes.</translation>
 <translation id="1204263402976895730">Iespējotie uzņēmuma printeri</translation>
+<translation id="1216758672198492382">Ļauj iestatīt, vai vietnēm ir atļauts iegūt piekļuvi pievienotajām USB ierīcēm. Piekļuvi var pilnībā bloķēt vai lietotājam var tikt parādīta uzvedne ar jautājumu katru reizi, kad vietne vēlas iegūt piekļuvi pievienotajām USB ierīcēm.
+
+          Ja šī politika nav iestatīta, tiks izmantota vērtība “3”, un lietotājs to varēs mainīt.</translation>
 <translation id="1219695476179627719">Šī politika norāda, vai jāveic ierīces atrite uz versiju, ko iestata <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, ja ierīcē jau darbojas vēlāka versija.
 
       Noklusējuma vērtība ir RollbackDisabled.</translation>
@@ -616,6 +620,12 @@
 <translation id="2801230735743888564">Ļaujiet lietotājiem spēlēt dinozauru spēli, kad ierīce ir bezsaistē.
 
       Ja šai politikai ir iestatīta vērtība Nepatiesa, lietotāji nevarēs spēlēt dinozauru spēli, kad ierīce būs bezsaistē. Ja iestatījums ir Patiesa, lietotāji varēs spēlēt dinozauru spēli. Ja politika nav iestatīta, lietotāji nevarēs spēlēt dinozauru spēli reģistrētās Chrome OS ierīcēs, taču varēs spēlēt visos citos gadījumos.</translation>
+<translation id="2802085784857530815">Ļauj kontrolēt, vai lietotāji var piekļūt printeriem, kas nepieder uzņēmumam.
+
+      Ja politikai ir iestatīta vērtība “True” vai ja politikai vērtība nav iestatīta, lietotāji varēs pievienot, konfigurēt un drukāt, izmantojot savus vietējos printerus.
+
+      Ja politikai ir iestatīta vērtība “False”, lietotāji nevarēs pievienot un konfigurēt savus vietējos printerus. Tāpat lietotāji nevarēs drukāšanai izmantot iepriekš konfigurētos vietējos printerus.
+      </translation>
 <translation id="2805707493867224476">Atļaut visām vietnēm rādīt uznirstošos logus</translation>
 <translation id="2808013382476173118">Iespējo STUN serveru lietošanu, kad attālie klienti cenšas izveidot savienojumu ar ierīci.
 
@@ -778,6 +788,7 @@
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz ekrāna izslēgšanai (ja tāda ir iestatīta) un dīkstāvei vai kas ir vienādas ar to.</translation>
 <translation id="3264793472749429012">Noklusējuma meklētājprogrammas kodējumi</translation>
 <translation id="3273221114520206906">Noklusējuma JavaScript iestatījums</translation>
+<translation id="3284094172359247914">WebUSB API lietojuma pārvaldība</translation>
 <translation id="3288595667065905535">Izlaišanas versija</translation>
 <translation id="3292147213643666827">Ļauj <ph name="PRODUCT_NAME" /> darboties kā starpniekserverim starp <ph name="CLOUD_PRINT_NAME" /> un ierīcei pievienotiem mantotiem printeriem.
 
@@ -860,6 +871,7 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Iespējo Tulkotāju</translation>
 <translation id="3512226956150568738">Ja klienta ierīces modelis jau atbalstīja ARC pirms migrācijas uz ext4, kas bija nepieciešama, lai izpildītu ARC, un ja politika ArcEnabled ir iestatīta kā “true”, šī opcija darbosies kā politikas AskUser vērtība (vērtība 3). Visos citos gadījumos (ja ierīces modelis iepriekš neatbalstīja ARC vai ja politika ArcEnabled ir iestatīta kā “false”), šī vērtība ir ekvivalenta politikas DisallowArc vērtībai (vērtība 0).</translation>
+<translation id="3524204464536655762">Neatļaut nevienai vietnei pieprasīt piekļuvi pievienotajām USB ierīcēm, izmantojot WebUSB API</translation>
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="3577251398714997599">Reklāmu iestatījumi vietnēm, kurās tiek rādītas traucējošas reklāmas</translation>
@@ -2651,6 +2663,15 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 
           Politikas reģistrētie protokolu apdarinātāji tiek apvienoti ar lietotāja reģistrētajiem, un tie visi ir pieejami lietošanai. Lietotājs var ignorēt politikas instalētos protokolu apdarinātājus, instalējot jaunu noklusējuma apdarinātāju, bet nevar noņemt politikas reģistrētu protokola apdarinātāju.</translation>
+<translation id="9123211093995421438">Norāda minimālo <ph name="PRODUCT_OS_NAME" /> versiju skaitu, cik atļauts atritināt no stabilās versijas.
+
+      Noklusējuma iestatījums ir “0” patērētāju ierīcēm un “4” (aptuveni seši mēneši) uzņēmumu reģistrētām ierīcēm.
+
+      Iestatot šo politiku, aizsardzība pret atriti nav spēkā vismaz šim versiju skaitam.
+
+      Politikai iestatot zemāku vērtību, ietekme ir pastāvīga: ierīcē NEVARĒS veikt atriti uz vecāku versiju, pat ja pēc tam politikā tiks atiestatīta augstāka vērtība.
+
+      Faktiskās atrites iespējas var būt atkarīgas no plates un kritiskas ievainojamības ielāpiem.</translation>
 <translation id="913195841488580904">Bloķēt piekļuvi vietrāžu URL sarakstam</translation>
 <translation id="9135033364005346124">Iespējo <ph name="CLOUD_PRINT_NAME" /> starpniekserveri</translation>
 <translation id="9136253551939494882">Baltais saraksts, ar kuru tiek kontrolēts, kurus ātrās atbloķēšanas režīmus lietotājs var konfigurēt un lietot, lai atbloķētu bloķēšanas ekrānu.

@@ -24,7 +24,6 @@
 <translation id="1996162290124031907">Aceder ao separador seguinte</translation>
 <translation id="2010818616644390445">Ir para o último separador na janela</translation>
 <translation id="2040706009561734834">Abrir/fechar o iniciador</translation>
-<translation id="2045117674524495717">Ajuda dos atalhos de teclado</translation>
 <translation id="2088054208777350526">Procurar atalhos de teclado</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> ou <ph name="F" /></translation>
 <translation id="2145908266289632567">Edição de texto</translation>
@@ -43,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e, em seguida, <ph name="TAB" /> ou <ph name="RIGHT" />.</translation>
 <translation id="2699509451653686398">Guardar a página Web atual como um marcador</translation>
 <translation id="2750942583782703988">Atualizar a página atual</translation>
+<translation id="2764005613199379871">Focar a barra de endereço da pesquisa</translation>
 <translation id="2789868185375229787">Reduzir a página</translation>
 <translation id="2804480015716812239">Prima <ph name="ALT" /> e clique num link.</translation>
 <translation id="2830827904629746450">Ancorar uma janela à direita</translation>
@@ -54,6 +54,7 @@
 <translation id="3105917916468784889">Criar captura de ecrã</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Focar barra de endereço</translation>
+<translation id="3256109297135787951">Remover o realce de um item na prateleira</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
 <translation id="3407560819924487926">Abrir o Gestor de tarefas</translation>
 <translation id="3422679037938588196">Ir para a correspondência anterior da pesquisa</translation>
@@ -68,6 +69,7 @@
 <translation id="3720939646656082033">Abrir o link num novo separador e mudar para o novo separador</translation>
 <translation id="3725795051337497754">Fechar o separador atual</translation>
 <translation id="3751033133896282964">Anular a última ação</translation>
+<translation id="3792178297143798024">Abrir o item realçado na prateleira</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Aumentar o brilho do teclado (apenas para teclados retroiluminados)</translation>
 <translation id="3976863468609830880">Clicar no último ícone da prateleira</translation>
@@ -154,11 +156,13 @@
 <translation id="7787242579016742662">Abrir um ficheiro no navegador</translation>
 <translation id="7822267121073044318">Mudar para o idioma do método de introdução seguinte</translation>
 <translation id="7917881398263220094">Parar o carregamento da página atual</translation>
+<translation id="7952165122793773711">Ir para os separadores 1 a 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ou <ph name="MINUS" />.</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8104889575691864804">Mostrar o menu de aplicações</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
+<translation id="8232835244134740473">Mudar o foco entre: a área de estado (onde é apresentada a sua imagem da conta), o Iniciador, a barra de endereço, a barra de marcadores (se estiver visível), a página Web que está aberta e a barra de transferências (se visível).</translation>
 <translation id="8234414138295101081">Rodar o ecrã 90 graus</translation>
 <translation id="8264941229485248811">Mostrar ou ocultar o inspetor das Ferramentas do programador</translation>
 <translation id="836869401750819675">Abrir a página Transferências</translation>

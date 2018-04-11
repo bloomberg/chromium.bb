@@ -167,6 +167,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4038354071007134711">Nobena aplikacija v tej napravi ne more odpreti datoteke.</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
+<translation id="4084682180776658562">Zaznamek</translation>
 <translation id="411254640334432676">Prenos ni uspel.</translation>
 <translation id="4121993058175073134">Če želite pošiljati podatke net-export, v aplikaciji Nastavitve konfigurirajte e-poštni račun.</translation>
 <translation id="4124987746317609294">Časovno obdobje</translation>
@@ -427,7 +428,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Zahtevano je geslo</translation>
 <translation id="9148126808321036104">Prijavite se znova</translation>
-<translation id="915371508759614899">Želite preklicati prenos?</translation>
 <translation id="9157836665414082580">Onemogoči pogovorna okna</translation>
 <translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
 <translation id="9203116392574189331">Handoff</translation>

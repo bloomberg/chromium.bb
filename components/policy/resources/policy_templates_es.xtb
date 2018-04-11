@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Proveedor de búsquedas predeterminadas</translation>
 <translation id="1099282607296956954">Habilitar el aislamiento de todos los sitios web</translation>
 <translation id="1117535567637097036">Los controladores de protocolo configurados a través de esta política no se utilizan al procesar los intents de Android.</translation>
+<translation id="1118093128235245168">Permitir que los sitios web pidan permiso al usuario para acceder a un dispositivo USB conectado</translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> utilizará para guardar los archivos almacenados en la memoria caché en el disco.
 
       Si se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el directorio proporcionado independientemente de que el usuario haya especificado el indicador "--disk-cache-dir". Para evitar la pérdida de datos u otros errores inesperados, esta política no debe establecerse en el directorio raíz del volumen o en un directorio utilizado para otros fines, ya que <ph name="PRODUCT_NAME" /> administra sus contenidos.
@@ -72,6 +73,9 @@ Si esta política se establece en False, no se informará sobre el estado del co
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
 <translation id="1204263402976895730">Impresoras de empresa habilitadas</translation>
+<translation id="1216758672198492382">Permite establecer si los sitios web pueden acceder a los dispositivos USB conectados. El acceso se puede bloquear por completo, o se le puede preguntar al usuario cada vez que un sitio web quiera acceder a los dispositivos USB conectados.
+
+          Si no se le asigna ningún valor a esta política, se usará el "3" y el usuario podrá cambiarlo.</translation>
 <translation id="1219695476179627719">Especifica si el dispositivo debería volver a instalar la versión establecida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> si utiliza una versión posterior.
 
       El valor predeterminado es RollbackDisabled.</translation>
@@ -316,6 +320,17 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
+<translation id="2132732175597591362">Controla la lista blanca de patrones de URL en los que la reproducción automática siempre estará habilitada.
+
+      Si la reproducción automática está habilitada, los vídeos se reproducirán automáticamente con audio en <ph name="PRODUCT_NAME" /> (sin el consentimiento del usuario).
+
+      Hay que formatear un patrón de URL según lo especificado en https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Si se le asigna el valor "True" a la política AutoplayAllowed, esta política no tendrá ningún efecto.
+
+      Si se le asigna el valor "False" a la política AutoplayAllowed, los patrones de URL establecidos en esta política seguirán teniendo permiso para reproducirse.
+
+      Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando y esta política cambia, dichos cambios se aplicarán a las pestañas que se abran a partir de ese momento Por tanto, es posible que algunas pestañas aún conserven el comportamiento anterior.</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
 <translation id="2137064848866899664">Si se establece esta política, se girará cada pantalla a la
       orientación especificada cada vez que se reinicie el dispositivo y la primera vez que se conecte
@@ -599,6 +614,12 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2801230735743888564">Permite que los usuarios jueguen al juego del huevo de pascua de dinosaurio sin conexión.
 
       Si se asigna el valor False a esta política, los usuarios no podrán jugar al juego del huevo de pascua de dinosaurio sin conexión. Si se le asigna el valor True, los usuarios podrán jugar al juego del dinosaurio. Si no se establece esta política, los usuarios no podrán jugar a este juego en el dispositivo Chrome OS registrado, aunque podrán hacerlo en otras circunstancias.</translation>
+<translation id="2802085784857530815">Permite controlar si los usuarios pueden acceder a impresoras que no sean de empresa
+
+      Si se le asigna el valor "True" a esta política o no se configura, los usuarios podrán añadir y configurar sus propias impresoras nativas y usarlas para imprimir.
+
+      Si se le asigna el valor "False" a la política, los usuarios no podrán añadir ni configurar sus propias impresoras nativas ni usarlas para imprimir. Tampoco podrán imprimir con ninguna impresora nativa que hayan configurado previamente.
+      </translation>
 <translation id="2805707493867224476">Permitir que todos los sitios muestren ventanas emergentes</translation>
 <translation id="2808013382476173118">Habilita el uso de servidores STUN cuando los clientes remotos intentan establecer conexión con este ordenador.
 
@@ -758,6 +779,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
+<translation id="3284094172359247914">Controlar el uso de la API WebUSB</translation>
 <translation id="3288595667065905535">Canal de versiones</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> actúe como proxy entre <ph name="CLOUD_PRINT_NAME" /> y las impresoras anteriores conectadas al ordenador.
 
@@ -842,6 +864,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Habilitar el Traductor</translation>
 <translation id="3512226956150568738">Si el modelo de dispositivo del cliente ya admitía ARC antes de que fuera necesario realizar la migración a ext4 para ejecutar ese formato y si se ha asignado el valor "True" a la política ArcEnabled, esta opción se comportará como AskUser (valor 3). En el resto de los casos (si el modelo de dispositivo no admitía ARC antes o si se ha asignado el valor "False" a la política ArcEnabled), este valor es equivalente a DisallowArc (valor 0).</translation>
+<translation id="3524204464536655762">No permitir que los sitios web soliciten acceso a dispositivos USB a través de la API WebUSB</translation>
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3577251398714997599">Configuración de anuncios de sitios web con anuncios invasivos</translation>
@@ -952,6 +975,9 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Permite mostrar las extensiones que están instaladas de forma automática en una sesión de demostración para dispositivos que se encuentren en modo comercial. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión una vez que se ha completado el proceso de instalación.
 
       Cada entrada de la lista contiene un diccionario, que debe incluir el ID de la extensión en el campo "extension-id" y una URL de actualización en el campo "update-url".</translation>
+<translation id="3873159954366380945">Permite definir cada cuánto tiempo muestra <ph name="PRODUCT_NAME" /> las notificaciones de reinicio para aplicar una actualización pendiente.
+
+      Puedes utilizar esta opción de la política para controlar el periodo (en milisegundos) en el que se informa al usuario de forma progresiva de que debe reiniciar <ph name="PRODUCT_NAME" /> (o de que debe reiniciar <ph name="PRODUCT_OS_NAME" />) para aplicar una actualización. En este periodo, el usuario recibe una notificación de forma periódica indicando que es necesario aplicar una actualización de acuerdo con el ajuste de la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se le asigna ningún valor, se utiliza el periodo predeterminado, que es de 345.600.000 milisegundos (cuatro días) para <ph name="PRODUCT_OS_NAME" /> y 604.800.000 milisegundos (una semana) para el resto de plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
 <translation id="388237772682176890">Esta política está obsoleta en M53 y se ha quitado de M54, ya que se ha retirado la compatibilidad con SPDY/3.1.
 
@@ -1302,6 +1328,14 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="489803897780524242">Parámetro que controla el emplazamiento de los términos de búsqueda para el proveedor de búsquedas predeterminado</translation>
 <translation id="4899708173828500852">Habilitar la Navegación Segura</translation>
+<translation id="4899802251198446659">Permite controlar si los vídeos se pueden reproducir automáticamente (sin el consentimiento de los usuarios) con contenido de audio en <ph name="PRODUCT_NAME" />.
+
+      Si se le asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia automáticamente.
+      Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no podrá reproducir contenido multimedia automáticamente. La política AutoplayWhitelist se puede usar para anular este valor en determinados patrones de URL.
+      De forma predeterminada, <ph name="PRODUCT_NAME" /> no puede reproducir contenido multimedia automáticamente. La política AutoplayWhitelist se puede usar para anular este valor en determinados patrones de URL.
+
+      Ten en cuenta que, si <ph name="PRODUCT_NAME" /> se está ejecutando y esta política cambia, solo se aplicará a las nuevas pestañas que abras. Por lo tanto, en algunas pestañas se seguirá el comportamiento anterior.
+      </translation>
 <translation id="4906194810004762807">Frecuencia de actualización de Device Policy</translation>
 <translation id="4917385247580444890">Buena</translation>
 <translation id="4923806312383904642">Permitir que WebDriver anule las políticas incompatibles</translation>
@@ -2623,6 +2657,15 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 
 Los controladores de protocolos registrados por la política se combinan con los registrados por el usuario, y ambos pueden utilizarse. El usuario puede anular los controladores de protocolos instalados por la política. Para ello, debe instalar un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>
+<translation id="9123211093995421438">Especifica el número mínimo de restauraciones de eventos clave de <ph name="PRODUCT_OS_NAME" /> que se deberían permitir desde la versión estable en cualquier momento.
+
+      El valor predeterminado es 0 para dispositivos de consumo y 4 (aproximadamente medio año) para los dispositivos registrados por empresas.
+
+      Si se configura esta política, la protección de reversión no se aplicará al menos a ese número de eventos clave.
+
+      Si se asigna un valor inferior a esta política, el efecto será permanente: el dispositivo no podrá volver a instalar versiones anteriores aunque se le vuelva a asignar un valor superior a la política.
+
+      Las posibilidades reales de reversión también dependen de la placa base y de los parches de vulnerabilidad grave.</translation>
 <translation id="913195841488580904">Bloquear el acceso a una lista de URL</translation>
 <translation id="9135033364005346124">Habilitar el proxy de <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Una lista blanca que controla los modos de desbloqueo rápido que el usuario puede configurar para desbloquear la pantalla de bloqueo.

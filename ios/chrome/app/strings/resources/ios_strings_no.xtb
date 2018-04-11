@@ -168,6 +168,7 @@ Noen nettsteder kan for eksempel svare på forespørselen ved å vise deg annons
 <translation id="4002066346123236978">Tittel</translation>
 <translation id="4038354071007134711">Ingen apper på denne enheten kan åpne filen.</translation>
 <translation id="4049507953662678203">Sørg for at du er koblet til et nettverk, og prøv igjen.</translation>
+<translation id="4084682180776658562">Legg til bokmerke</translation>
 <translation id="411254640334432676">Nedlastingen mislyktes.</translation>
 <translation id="4121993058175073134">For å sende data for netteksport må du konfigurere e-postkontoen din i Innstillinger-appen.</translation>
 <translation id="4124987746317609294">Tidsperiode</translation>
@@ -429,7 +430,6 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9148126808321036104">Logg på igjen</translation>
-<translation id="915371508759614899">Vil du avbryte nedlastingen?</translation>
 <translation id="9157836665414082580">Ignorer dialogbokser</translation>
 <translation id="9188680907066685419">Logg av administrert konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

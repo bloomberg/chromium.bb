@@ -168,6 +168,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="4002066346123236978">Pealkiri</translation>
 <translation id="4038354071007134711">Seadme ükski rakendus ei saa seda faili avada.</translation>
 <translation id="4049507953662678203">Veenduge, et oleksite võrguga ühendatud, ja proovige uuesti.</translation>
+<translation id="4084682180776658562">Järjehoidja</translation>
 <translation id="411254640334432676">Allalaadimine ebaõnnestus.</translation>
 <translation id="4121993058175073134">Netiekspordi andmete saatmiseks seadistage meilikonto rakenduses Seaded.</translation>
 <translation id="4124987746317609294">Ajavahemik</translation>
@@ -429,7 +430,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="9083392325882095631">1 üksus</translation>
 <translation id="9100610230175265781">Parool on vajalik</translation>
 <translation id="9148126808321036104">Logige uuesti sisse</translation>
-<translation id="915371508759614899">Kas tühistada allalaadimine?</translation>
 <translation id="9157836665414082580">Blokeeri dialoogid</translation>
 <translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
 <translation id="9203116392574189331">Handoff</translation>
