@@ -679,6 +679,11 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
   if (confirm_preview_wallpaper_callback_ && !preview_mode)
     return;
 
+  if (preview_mode) {
+    for (auto& observer : observers_)
+      observer.OnWallpaperPreviewStarted();
+  }
+
   // 1x1 wallpaper should be stretched to fill the entire screen.
   // (WALLPAPER_LAYOUT_TILE also serves this purpose.)
   if (image.width() == 1 && image.height() == 1)

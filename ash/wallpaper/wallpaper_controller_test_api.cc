@@ -11,6 +11,19 @@
 
 namespace ash {
 
+namespace {
+
+const WallpaperInfo kTestWallpaperInfo = {"", WALLPAPER_LAYOUT_CENTER, DEFAULT,
+                                          base::Time::Now().LocalMidnight()};
+
+gfx::ImageSkia CreateImageWithColor(const SkColor color) {
+  gfx::Canvas canvas(gfx::Size(5, 5), 1.0f, true);
+  canvas.DrawColor(color);
+  return gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
+}
+
+}  // namespace
+
 WallpaperControllerTestApi::WallpaperControllerTestApi(
     WallpaperController* controller)
     : controller_(controller) {}
@@ -18,17 +31,15 @@ WallpaperControllerTestApi::WallpaperControllerTestApi(
 WallpaperControllerTestApi::~WallpaperControllerTestApi() = default;
 
 SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
-  const SkColor color = SkColorSetRGB(60, 40, 40);
-  const SkColor expected_color = SkColorSetRGB(18, 12, 12);
+  controller_->ShowWallpaperImage(
+      CreateImageWithColor(SkColorSetRGB(60, 40, 40)), kTestWallpaperInfo,
+      false /*preview_mode=*/);
+  return SkColorSetRGB(18, 12, 12);
+}
 
-  gfx::Canvas canvas(gfx::Size(5, 5), 1.0f, true);
-  canvas.DrawColor(color);
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(canvas.GetBitmap());
-  WallpaperInfo info("", WALLPAPER_LAYOUT_CENTER, DEFAULT,
-                     base::Time::Now().LocalMidnight());
-  controller_->ShowWallpaperImage(image, info, false /*preview_mode=*/);
-
-  return expected_color;
+void WallpaperControllerTestApi::StartWallpaperPreview() {
+  controller_->ShowWallpaperImage(CreateImageWithColor(SK_ColorBLUE),
+                                  kTestWallpaperInfo, true /*preview_mode=*/);
 }
 
 }  // namespace ash

@@ -28,9 +28,20 @@ enum class WindowPinType;
 enum class WindowStateType;
 }
 
+enum class BackdropWindowMode {
+  kEnabled,   // The window needs a backdrop shown behind it.
+  kDisabled,  // The window should never have a backdrop.
+  kAuto,  // The window manager decides if the window should have a backdrop.
+};
+
 // Shell-specific window property keys for use by ash and its clients.
 
 // Alphabetical sort.
+
+// A property key to specify if the window should (or should not) have a
+// backdrop window (typically black) that covers the desktop behind the window.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
+    kBackdropWindowMode;
 
 // If true, will send system keys to the window for dispatch.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const

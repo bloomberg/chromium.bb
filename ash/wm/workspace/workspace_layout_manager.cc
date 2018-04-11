@@ -9,6 +9,7 @@
 
 #include "ash/keyboard/keyboard_observer_register.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -222,7 +223,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
       if (window->parent() != container)
         container->AddChild(window);
     }
-  } else if (key == aura::client::kHasBackdrop) {
+  } else if (key == kBackdropWindowMode) {
     backdrop_controller_->UpdateBackdrop();
   }
 }

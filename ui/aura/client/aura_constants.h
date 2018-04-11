@@ -77,10 +77,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const kDrawAttentionKey;
 // A property key to store the focus client on the window.
 AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
 
-// A bool property key to specify if the window should have a backdrop window
-// (typically black) that covers the desktop behind the window.
-AURA_EXPORT extern const WindowProperty<bool>* const kHasBackdrop;
-
 // A bool property key to specify if the window has a icon set for displaying in
 // overivew mode.
 AURA_EXPORT extern const WindowProperty<bool>* const kHasOverviewIcon;

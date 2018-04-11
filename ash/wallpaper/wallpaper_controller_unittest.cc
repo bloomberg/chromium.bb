@@ -19,6 +19,7 @@
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -1873,6 +1874,11 @@ TEST_F(WallpaperControllerTest, ConfirmPreviewWallpaper) {
       account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
   EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
 
+  // Simulate opening the wallpaper picker window.
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
+
   // Set a custom wallpaper for the user and enable preview. Verify that the
   // wallpaper is changed to the expected color.
   const WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER;
@@ -1954,6 +1960,11 @@ TEST_F(WallpaperControllerTest, CancelPreviewWallpaper) {
       account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
   EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
 
+  // Simulate opening the wallpaper picker window.
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
+
   // Set a custom wallpaper for the user and enable preview. Verify that the
   // wallpaper is changed to the expected color.
   const WallpaperLayout layout = WALLPAPER_LAYOUT_CENTER;
@@ -2023,6 +2034,11 @@ TEST_F(WallpaperControllerTest, WallpaperSyncedDuringPreview) {
   EXPECT_TRUE(controller_->GetUserWallpaperInfo(
       account_id_1, &user_wallpaper_info, false /*is_ephemeral=*/));
   EXPECT_EQ(user_wallpaper_info, default_wallpaper_info);
+
+  // Simulate opening the wallpaper picker window.
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
 
   // Set a custom wallpaper for the user and enable preview. Verify that the
   // wallpaper is changed to the expected color.

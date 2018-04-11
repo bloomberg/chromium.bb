@@ -891,9 +891,12 @@ void ClientControlledShellSurface::UpdateBackdrop() {
   bool enable_backdrop =
       (widget_->IsFullscreen() || widget_->IsMaximized()) &&
       !widget_->GetWindowBoundsInScreen().Contains(display.work_area());
+  ash::BackdropWindowMode target_backdrop_mode =
+      enable_backdrop ? ash::BackdropWindowMode::kEnabled
+                      : ash::BackdropWindowMode::kAuto;
 
-  if (window->GetProperty(aura::client::kHasBackdrop) != enable_backdrop)
-    window->SetProperty(aura::client::kHasBackdrop, enable_backdrop);
+  if (window->GetProperty(ash::kBackdropWindowMode) != target_backdrop_mode)
+    window->SetProperty(ash::kBackdropWindowMode, target_backdrop_mode);
 }
 
 void ClientControlledShellSurface::
