@@ -1068,6 +1068,53 @@ TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   EXPECT_TRUE(IsCursorHidden());
 }
 
+TEST_F(MediaControlsImplTestWithMockScheduler, AccessibleFocusShowsControls) {
+  EnsureSizing();
+
+  Element* panel = MediaControls().PanelElement();
+
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  MediaControls().OnAccessibleFocus();
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_FALSE(IsElementVisible(*panel));
+
+  MediaControls().OnAccessibleFocus();
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+}
+
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       AccessibleFocusKeepsControlsHiddenButDisplayed) {
+  EnsureSizing();
+
+  Element* panel = MediaControls().PanelElement();
+
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  MediaControls().OnAccessibleFocus();
+  platform_->RunForPeriodSeconds(4);
+  EXPECT_FALSE(IsElementVisible(*panel));
+
+  const CSSPropertyValueSet* inline_style = panel->InlineStyle();
+  ASSERT_TRUE(inline_style);
+
+  EXPECT_NE("none", inline_style->GetPropertyValue(CSSPropertyDisplay));
+  EXPECT_TRUE(inline_style->HasProperty(CSSPropertyOpacity));
+  EXPECT_EQ(0.0, inline_style->GetPropertyValue(CSSPropertyOpacity).ToDouble());
+}
+
 TEST_F(MediaControlsImplTest,
        RemovingFromDocumentRemovesListenersAndCallbacks) {
   auto page_holder = DummyPageHolder::Create();

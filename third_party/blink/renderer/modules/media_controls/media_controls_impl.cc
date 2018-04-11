@@ -1247,6 +1247,17 @@ void MediaControlsImpl::MaybeToggleControlsFromTap() {
   }
 }
 
+void MediaControlsImpl::OnAccessibleFocus() {
+  panel_->SetKeepDisplayedForAccessibility(true);
+
+  if (!MediaElement().ShouldShowControls())
+    return;
+
+  keep_showing_until_timer_fires_ = true;
+  StartHideMediaControlsTimer();
+  MaybeShow();
+}
+
 void MediaControlsImpl::DefaultEventHandler(Event* event) {
   HTMLDivElement::DefaultEventHandler(event);
 
@@ -1275,15 +1286,17 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
   if ((event->type() == EventTypeNames::pointerover ||
        event->type() == EventTypeNames::pointermove ||
        event->type() == EventTypeNames::pointerout) &&
-      !is_touch_interaction_)
+      !is_touch_interaction_) {
     HandlePointerEvent(event);
+  }
 
   // If the user is interacting with the controls via the keyboard, don't hide
   // the controls. This will fire when the user tabs between controls (focusin)
   // or when they seek either the timeline or volume sliders (input).
   if (event->type() == EventTypeNames::focusin ||
-      event->type() == EventTypeNames::input)
+      event->type() == EventTypeNames::input) {
     ResetHideMediaControlsTimer();
+  }
 
   if (event->IsKeyboardEvent() &&
       !IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
