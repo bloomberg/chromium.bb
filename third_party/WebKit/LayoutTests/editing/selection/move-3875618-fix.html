@@ -1,37 +1,45 @@
-<html> 
-<head>
-
-<style>
-.editing { 
-    border: 2px solid red; 
-    padding: 12px; 
-    font-size: 24px; 
-}
-.cell { 
-    padding: 12px; 
-    font-size: 24px;
-    height: 48px; 
-}
-</style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>',
+        '^line 1<br>',
+        '|line 2',
+      '</div>',
+      '<div>line 3</div>',
+    '</div>',
+  ],
+  selection => selection.modify('move', 'forward', 'line'),
+  [
+    '<div contenteditable>',
+      '<div>',
+        'line 1<br>',
+        '|line 2',
+      '</div>',
+      '<div>line 3</div>',
+    '</div>',
+  ],
+  '1. Move forward line after BR');
 
-function editingTest() {
-    extendSelectionForwardByLineCommand();
-    moveSelectionForwardByLineCommand();
-}
-
+selection_test(
+  [
+    '<div contenteditable>',
+      '<div>^line 1</div>',
+      '<div>|line 2</div>',
+      '<div>line 3</div>',
+    '</div>',
+  ],
+  selection => selection.modify('move', 'forward', 'line'),
+  [
+    '<div contenteditable>',
+      '<div>line 1</div>',
+      '<div>|line 2</div>',
+      '<div>line 3</div>',
+    '</div>',
+  ],
+  '2. Move forward line from start of DIV');
 </script>
-
-<title>Editing Test</title> 
-</head> 
-<body contenteditable id="root" class="editing">
-<div id="test">There is a tide<br>in the affairs of men</div><div>Which taken at the flood</div>
-
-<script>
-runEditingTest();
-</script>
-
-</body>
-</html>
