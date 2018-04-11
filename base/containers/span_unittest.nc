@@ -66,6 +66,14 @@ void WontCompile() {
   span<int> span(set);
 }
 
+#elif defined(NCTEST_AS_WRITABLE_BYTES_WITH_CONST_CONTAINER_DISALLOWED)  // [r"fatal error: no matching function for call to 'as_writable_bytes'"]
+
+// as_writable_bytes should not be possible for a const container.
+void WontCompile() {
+  const std::vector<int> v = {1, 2, 3};
+  span<uint8_t> bytes = as_writable_bytes(make_span(v));
+}
+
 #elif defined(NCTEST_MAKE_SPAN_FROM_SET_CONVERSION_DISALLOWED)  // [r"fatal error: no matching function for call to 'make_span'"]
 
 // A std::set() should not satisfy the requirements for conversion to a span.
