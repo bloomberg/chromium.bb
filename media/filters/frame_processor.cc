@@ -21,6 +21,8 @@ const int kMaxAudioNonKeyframeWarnings = 10;
 const int kMaxNumKeyframeTimeGreaterThanDependantWarnings = 1;
 const int kMaxMuxedSequenceModeWarnings = 1;
 const int kMaxSkippedEmptyFrameWarnings = 5;
+const int kMaxPartialDiscardWarnings = 5;
+const int kMaxDroppedFrameWarnings = 10;
 
 // Helper class to capture per-track details needed by a frame processor. Some
 // of this information may be duplicated in the short-term in the associated
@@ -595,13 +597,13 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
 
   // See if a partial discard can be done around |append_window_start|.
   if (buffer->timestamp() < append_window_start) {
-    DVLOG(1) << "Truncating buffer which overlaps append window start."
-             << " presentation_timestamp "
-             << buffer->timestamp().InMicroseconds()
-             << "us frame_end_timestamp "
-             << frame_end_timestamp.InMicroseconds()
-             << "us append_window_start "
-             << append_window_start.InMicroseconds() << "us";
+    LIMITED_MEDIA_LOG(INFO, media_log_, num_partial_discard_warnings_,
+                      kMaxPartialDiscardWarnings)
+        << "Truncating audio buffer which overlaps append window start."
+        << " PTS " << buffer->timestamp().InMicroseconds()
+        << "us frame_end_timestamp " << frame_end_timestamp.InMicroseconds()
+        << "us append_window_start " << append_window_start.InMicroseconds()
+        << "us";
 
     // Mark the overlapping portion of the buffer for discard.
     buffer->set_discard_padding(std::make_pair(
@@ -619,12 +621,14 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
 
   // See if a partial discard can be done around |append_window_end|.
   if (frame_end_timestamp > append_window_end) {
-    DVLOG(1) << "Truncating buffer which overlaps append window end."
-             << " presentation_timestamp "
-             << buffer->timestamp().InMicroseconds()
-             << "us frame_end_timestamp "
-             << frame_end_timestamp.InMicroseconds() << "us append_window_end "
-             << append_window_end.InMicroseconds() << "us";
+    LIMITED_MEDIA_LOG(INFO, media_log_, num_partial_discard_warnings_,
+                      kMaxPartialDiscardWarnings)
+        << "Truncating audio buffer which overlaps append window end."
+        << " PTS " << buffer->timestamp().InMicroseconds()
+        << "us frame_end_timestamp " << frame_end_timestamp.InMicroseconds()
+        << "us append_window_end " << append_window_end.InMicroseconds() << "us"
+        << (buffer->is_duration_estimated() ? " (frame duration is estimated)"
+                                            : "");
 
     // Mark the overlapping portion of the buffer for discard.
     buffer->set_discard_padding(
@@ -841,6 +845,7 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
     //       |append_window_end|, for streams which support partial trimming.
     frame->set_timestamp(presentation_timestamp);
     frame->SetDecodeTimestamp(decode_timestamp);
+
     if (track_buffer->stream()->supports_partial_append_window_trimming() &&
         HandlePartialAppendWindowTrimming(append_window_start,
                                           append_window_end,
@@ -857,7 +862,16 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
     if (presentation_timestamp < append_window_start ||
         frame_end_timestamp > append_window_end) {
       track_buffer->set_needs_random_access_point(true);
-      DVLOG(3) << "Dropping frame that is outside append window.";
+
+      LIMITED_MEDIA_LOG(INFO, media_log_, num_dropped_frame_warnings_,
+                        kMaxDroppedFrameWarnings)
+          << "Dropping " << frame->GetTypeName() << " frame (DTS "
+          << decode_timestamp.InMicroseconds() << "us PTS "
+          << presentation_timestamp.InMicroseconds() << "us,"
+          << frame_end_timestamp.InMicroseconds()
+          << "us) that is outside append window ["
+          << append_window_start.InMicroseconds() << "us,"
+          << append_window_end.InMicroseconds() << "us).";
       return true;
     }
 
