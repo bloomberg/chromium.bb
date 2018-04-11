@@ -265,6 +265,7 @@
     <style name="AlertDialogContent">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAlignment">viewStart</item>
         <item name="android:paddingStart">@dimen/dialog_padding_sides</item>
         <item name="android:paddingEnd">@dimen/dialog_padding_sides</item>
         <item name="android:paddingTop">@dimen/dialog_padding_top</item>
