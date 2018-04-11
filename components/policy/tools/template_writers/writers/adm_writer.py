@@ -8,6 +8,7 @@ from writers import template_writer
 import re
 
 NEWLINE = '\r\n'
+POLICY_LIST_URL = '''https://www.chromium.org/administrators/policy-list-3'''
 
 
 def GetWriter(config):
@@ -146,7 +147,8 @@ class AdmWriter(template_writer.TemplateWriter):
     builder.AddLine('POLICY !!%s' % policy_name, 1)
     self._WriteSupported(builder)
     policy_explain_name = self._Escape(policy['name'] + '_Explain')
-    self._AddGuiString(policy_explain_name, policy['desc'])
+    policy_explain = self._GetPolicyExplanation(policy)
+    self._AddGuiString(policy_explain_name, policy_explain)
     builder.AddLine('EXPLAIN !!' + policy_explain_name)
 
     if policy['type'] == 'main':
@@ -158,6 +160,24 @@ class AdmWriter(template_writer.TemplateWriter):
 
     builder.AddLine('END POLICY', -1)
     builder.AddLine()
+
+  def _GetPolicyExplanation(self, policy):
+    '''Returns the explanation for a given policy.
+    Includes a link to the relevant documentation on chromium.org.
+    '''
+    policy_desc = policy.get('desc')
+    reference_url = POLICY_LIST_URL + '#' + policy['name']
+    reference_link_text = self._GetLocalizedMessage('reference_link')
+    reference_link_text = reference_link_text.replace('$6', reference_url)
+
+    if policy_desc is not None:
+      return policy_desc + '\n\n' + reference_link_text
+    else:
+      return reference_link_text
+
+  def _GetLocalizedMessage(self, msg_id):
+    '''Returns the localized message of the given message ID.'''
+    return self.messages['doc_' + msg_id]['text']
 
   def WriteComment(self, comment):
     self.lines.AddLine('; ' + comment)
