@@ -160,6 +160,8 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 }
 
 void DelegatedFrameHostAndroid::DestroyDelegatedContent() {
+  // TakeFallbackContentFrom() can populate |content_layer_| when
+  // |surface_info_| is invalid.
   if (content_layer_) {
     content_layer_->RemoveFromParent();
     content_layer_ = nullptr;
