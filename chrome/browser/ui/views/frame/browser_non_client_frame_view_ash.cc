@@ -145,6 +145,10 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
+  if (frame() && frame()->GetNativeWindow() &&
+      frame()->GetNativeWindow()->HasObserver(this)) {
+    frame()->GetNativeWindow()->RemoveObserver(this);
+  }
   if (TabletModeClient::Get())
     TabletModeClient::Get()->RemoveObserver(this);
   ash::Shell::Get()->RemoveShellObserver(this);
@@ -188,6 +192,8 @@ void BrowserNonClientFrameViewAsh::Init() {
   // TabletModeClient may not be initialized during unit tests.
   if (TabletModeClient::Get())
     TabletModeClient::Get()->AddObserver(this);
+
+  frame()->GetNativeWindow()->AddObserver(this);
 }
 
 ash::mojom::SplitViewObserverPtr
@@ -525,6 +531,21 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
     ash::mojom::SplitViewState current_state) {
   split_view_state_ = current_state;
   OnOverviewOrSplitviewModeChanged();
+}
+
+void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
+  DCHECK_EQ(frame()->GetNativeWindow(), window);
+  window->RemoveObserver(this);
+}
+
+void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
+                                                           const void* key,
+                                                           intptr_t old) {
+  DCHECK_EQ(frame()->GetNativeWindow(), window);
+  if (key != aura::client::kShowStateKey)
+    return;
+  frame_header_->OnShowStateChanged(
+      window->GetProperty(aura::client::kShowStateKey));
 }
 
 HostedAppButtonContainer*

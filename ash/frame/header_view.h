@@ -13,6 +13,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/view.h"
 
 namespace gfx {
@@ -76,6 +77,9 @@ class ASH_EXPORT HeaderView : public views::View,
   void SetFrameColors(SkColor active_frame_color, SkColor inactive_frame_color);
   SkColor GetActiveFrameColor() const;
   SkColor GetInactiveFrameColor() const;
+
+  // Called when the target widget show state changed.
+  void OnShowStateChanged(ui::WindowShowState show_state);
 
   // views::View:
   void Layout() override;

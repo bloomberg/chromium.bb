@@ -51,6 +51,7 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   void SetHeaderHeightForPainting(int height) override;
   void SchedulePaintForTitle() override;
   void SetPaintAsActive(bool paint_as_active) override;
+  void OnShowStateChanged(ui::WindowShowState show_state) override;
 
   void set_left_header_view(views::View* left_header_view) {
     left_header_view_ = left_header_view;

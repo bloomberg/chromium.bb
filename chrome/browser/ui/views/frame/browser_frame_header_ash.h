@@ -53,10 +53,14 @@ class BrowserFrameHeaderAsh : public ash::FrameHeader,
   void SetHeaderHeightForPainting(int height) override;
   void SchedulePaintForTitle() override;
   void SetPaintAsActive(bool paint_as_active) override;
+  void OnShowStateChanged(ui::WindowShowState show_state) override;
 
  private:
   // gfx::AnimationDelegate override:
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  // Does the actual work of layouting header.
+  void LayoutHeaderInternal();
 
   // Paints the frame image for the |active| state based on the current value of
   // the activation animation.

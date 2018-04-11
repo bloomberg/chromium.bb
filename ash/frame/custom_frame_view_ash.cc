@@ -519,17 +519,23 @@ void CustomFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
                                                  const void* key,
                                                  intptr_t old) {
   DCHECK_EQ(frame_->GetNativeWindow(), window);
-  if (key != ash::kFrameActiveColorKey && key != ash::kFrameInactiveColorKey)
+  if (key == aura::client::kShowStateKey) {
+    header_view_->OnShowStateChanged(
+        window->GetProperty(aura::client::kShowStateKey));
     return;
+  }
 
   if (key == ash::kFrameActiveColorKey) {
     header_view_->SetFrameColors(window->GetProperty(ash::kFrameActiveColorKey),
                                  header_view_->GetInactiveFrameColor());
     return;
   }
-  header_view_->SetFrameColors(
-      header_view_->GetActiveFrameColor(),
-      window->GetProperty(ash::kFrameInactiveColorKey));
+
+  if (key == ash::kFrameInactiveColorKey) {
+    header_view_->SetFrameColors(
+        header_view_->GetActiveFrameColor(),
+        window->GetProperty(ash::kFrameInactiveColorKey));
+  }
 }
 
 const views::View* CustomFrameViewAsh::GetAvatarIconViewForTest() const {
