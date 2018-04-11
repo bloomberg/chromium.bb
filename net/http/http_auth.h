@@ -88,12 +88,16 @@ class NET_EXPORT_PRIVATE HttpAuth {
     IDENT_SRC_DEFAULT_CREDENTIALS,
   };
 
+  // Identifier for auth scheme.
+  //
+  // The values are used for calculating UMA buckets. Add but don't remove or
+  // reuse.
   enum Scheme {
     AUTH_SCHEME_BASIC = 0,
     AUTH_SCHEME_DIGEST,
     AUTH_SCHEME_NTLM,
     AUTH_SCHEME_NEGOTIATE,
-    AUTH_SCHEME_SPDYPROXY,
+    AUTH_SCHEME_SPDYPROXY,  // No longer used.
     AUTH_SCHEME_MOCK,
     AUTH_SCHEME_MAX,
   };
