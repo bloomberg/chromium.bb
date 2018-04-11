@@ -37,8 +37,8 @@ class AshWindowTreeHostMus : public AshWindowTreeHost,
   void SetRootTransform(const gfx::Transform& transform) override;
   gfx::Transform GetRootTransform() const override;
   gfx::Transform GetInverseRootTransform() const override;
-  void UpdateRootWindowSizeInPixels(
-      const gfx::Size& host_size_in_pixels) override;
+  gfx::Rect GetTransformedRootWindowBoundsInPixels(
+      const gfx::Size& host_size_in_pixels) const override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
  private:

@@ -100,8 +100,8 @@ class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
   void DispatchEvent(ui::Event* event) override;
 
   // aura::WindowTreeHost implementation
-  void UpdateRootWindowSizeInPixels(
-      const gfx::Size& host_size_in_pixels) override;
+  gfx::Rect GetTransformedRootWindowBoundsInPixels(
+      const gfx::Size& size_in_pixels) const override;
 
  private:
   const bool enable_input_;
@@ -128,13 +128,12 @@ void CastWindowTreeHost::DispatchEvent(ui::Event* event) {
   WindowTreeHostPlatform::DispatchEvent(event);
 }
 
-void CastWindowTreeHost::UpdateRootWindowSizeInPixels(
-    const gfx::Size& host_size_in_pixels) {
-  aura::WindowTreeHost::UpdateRootWindowSizeInPixels(host_size_in_pixels);
-  gfx::Rect window_bounds = window()->bounds();
-  gfx::RectF new_bounds = gfx::RectF(window_bounds);
-  new_bounds.set_origin(gfx::PointF(0, 0));
-  window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
+gfx::Rect CastWindowTreeHost::GetTransformedRootWindowBoundsInPixels(
+    const gfx::Size& host_size_in_pixels) const {
+  gfx::RectF new_bounds(WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
+      host_size_in_pixels));
+  new_bounds.set_origin(gfx::PointF());
+  return gfx::ToEnclosingRect(new_bounds);
 }
 
 // A layout manager owned by the root window.

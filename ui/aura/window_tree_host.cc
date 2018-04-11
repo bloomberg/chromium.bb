@@ -118,11 +118,9 @@ gfx::Transform WindowTreeHost::GetInverseRootTransformForLocalEventCoordinates()
 
 void WindowTreeHost::UpdateRootWindowSizeInPixels(
     const gfx::Size& host_size_in_pixels) {
-  gfx::Rect bounds(host_size_in_pixels.width(), host_size_in_pixels.height());
-  gfx::RectF new_bounds =
-      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
-  window()->layer()->transform().TransformRect(&new_bounds);
-  window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
+  gfx::Rect transformed_bounds_in_pixels =
+      GetTransformedRootWindowBoundsInPixels(host_size_in_pixels);
+  window()->SetBounds(transformed_bounds_in_pixels);
   window()->SetDeviceScaleFactor(device_scale_factor_);
 }
 
@@ -406,6 +404,15 @@ void WindowTreeHost::OnDisplayMetricsChanged(const display::Display& display,
       compositor_->SetDisplayColorSpace(display.color_space());
     }
   }
+}
+
+gfx::Rect WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
+    const gfx::Size& size_in_pixels) const {
+  gfx::Rect bounds(size_in_pixels);
+  gfx::RectF new_bounds =
+      gfx::ScaleRect(gfx::RectF(bounds), 1.0f / device_scale_factor_);
+  window()->layer()->transform().TransformRect(&new_bounds);
+  return gfx::ToEnclosingRect(new_bounds);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

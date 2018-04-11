@@ -12,6 +12,7 @@
 
 namespace gfx {
 class Insets;
+class Rect;
 class Size;
 class Transform;
 }
@@ -45,10 +46,9 @@ class ASH_EXPORT TransformerHelper {
   gfx::Transform GetTransform() const;
   gfx::Transform GetInverseTransform() const;
 
-  // Updates the root window size based on the host size and
+  // Returns the transformed root window bounds based on the host size and
   // current transform.
-  void UpdateWindowSizeAndScale(const gfx::Size& host_size,
-                                float device_scale_factor);
+  gfx::Rect GetTransformedWindowBounds(const gfx::Size& host_size) const;
 
  private:
   AshWindowTreeHost* ash_host_;

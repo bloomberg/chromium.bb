@@ -112,10 +112,9 @@ gfx::Transform AshWindowTreeHostMus::GetInverseRootTransform() const {
   return transformer_helper_->GetInverseTransform();
 }
 
-void AshWindowTreeHostMus::UpdateRootWindowSizeInPixels(
-    const gfx::Size& host_size_in_pixels) {
-  transformer_helper_->UpdateWindowSizeAndScale(host_size_in_pixels,
-                                                device_scale_factor());
+gfx::Rect AshWindowTreeHostMus::GetTransformedRootWindowBoundsInPixels(
+    const gfx::Size& host_size_in_pixels) const {
+  return transformer_helper_->GetTransformedWindowBounds(host_size_in_pixels);
 }
 
 void AshWindowTreeHostMus::OnCursorVisibilityChangedNative(bool show) {
