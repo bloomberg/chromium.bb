@@ -161,7 +161,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   content_text->SetDrawPhase(kPhaseForeground);
   content_text->SetType(kTypeOmniboxSuggestionContentText);
   content_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
-  content_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
+  content_text->SetFieldWidth(kSuggestionTextFieldWidthDMM);
   content_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   Text* p_content_text = content_text.get();
 
@@ -170,7 +170,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   description_text->SetDrawPhase(kPhaseForeground);
   description_text->SetType(kTypeOmniboxSuggestionDescriptionText);
   description_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
-  description_text->SetSize(kSuggestionTextFieldWidthDMM, 0);
+  description_text->SetFieldWidth(kSuggestionTextFieldWidthDMM);
   description_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   Text* p_description_text = description_text.get();
 
@@ -237,11 +237,8 @@ void OnSuggestionModelAdded(UiScene* scene,
               base::Unretained(element_binding)),
           VR_BIND_LAMBDA(
               [](Text* v, const base::string16& text) {
-                v->SetVisibleImmediately(!text.empty());
-                v->set_requires_layout(!text.empty());
-                if (!text.empty()) {
-                  v->SetText(text);
-                }
+                v->SetVisible(!text.empty());
+                v->SetText(text);
               },
               base::Unretained(p_description_text))));
   element_binding->bindings().push_back(
@@ -473,6 +470,7 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
       LinearLayout, layout.get(), set_direction));
 
   auto spacer = std::make_unique<UiElement>();
+  spacer->SetType(kTypeSpacer);
   spacer->SetVisible(true);
   spacer->set_requires_layout(true);
   spacer->SetSize(kControllerLabelSpacerSize, kControllerLabelSpacerSize);
@@ -639,7 +637,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
                             UiUnsupportedMode::kUnhandledCodePoint)
 
             );
-    url_text->SetSize(kWebVrPermissionTextWidth, 0);
+    url_text->SetFieldWidth(kWebVrPermissionTextWidth);
     url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model,
                                       model->toolbar_state.gurl, UrlText,
                                       url_text.get(), SetUrl));
@@ -657,7 +655,7 @@ std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
     text_element->SetLayoutMode(kMultiLineFixedWidth);
     text_element->SetAlignment(UiTexture::kTextAlignmentLeft);
     text_element->SetColor(SK_ColorWHITE);
-    text_element->SetSize(kWebVrPermissionTextWidth, 0.0f);
+    text_element->SetFieldWidth(kWebVrPermissionTextWidth);
     if (spec.signal)
       BindIndicatorText(model, text_element.get(), spec);
     else
@@ -822,7 +820,6 @@ std::unique_ptr<TransientElement> CreateTextToast(
   text_element->SetLayoutMode(kSingleLine);
   text_element->SetColor(SK_ColorWHITE);
   text_element->set_owner_name_for_test(toast_name);
-  text_element->SetSize(0.0f, kToastTextFontHeightDMM);
   text_element->SetType(kTypeToastText);
   text_element->SetText(text);
 
@@ -1022,7 +1019,7 @@ void UiSceneCreator::CreateExitWarning() {
   exit_warning_text->SetDrawPhase(kPhaseForeground);
   exit_warning_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_BROWSER_UNSUPPORTED_PAGE));
-  exit_warning_text->SetSize(kExitWarningTextWidthDMM, 0);
+  exit_warning_text->SetFieldWidth(kExitWarningTextWidthDMM);
   exit_warning_text->SetVisible(true);
   VR_BIND_COLOR(model_, exit_warning_text.get(),
                 &ColorScheme::exit_warning_foreground, &Text::SetColor);
@@ -1145,7 +1142,6 @@ void UiSceneCreator::CreateSystemIndicators() {
     text_element->SetLayoutMode(kSingleLine);
     text_element->SetColor(SK_ColorWHITE);
     text_element->set_owner_name_for_test(element->name());
-    text_element->SetSize(0.0f, kWebVrPermissionFontHeight);
     text_element->SetType(kTypeLabel);
     BindIndicatorText(model_, text_element.get(), spec);
     VR_BIND_COLOR(model_, text_element.get(),
@@ -1381,7 +1377,7 @@ void UiSceneCreator::CreateSplashScreenForDirectWebVrLaunch() {
   text->SetText(l10n_util::GetStringUTF16(IDS_VR_RUNNING_IN_CHROME_MESSAGE));
   text->SetName(kSplashScreenText);
   text->SetDrawPhase(kPhaseForeground);
-  text->SetSize(kSplashScreenTextWidthDMM, 0);
+  text->SetFieldWidth(kSplashScreenTextWidthDMM);
   text->SetTranslate(0, kSplashScreenTextVerticalOffsetDMM, 0);
   text_scaler->AddChild(std::move(text));
   scene_->AddUiElement(kSplashScreenTransientParent, std::move(text_scaler));
@@ -1447,8 +1443,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_text->SetColor(
       model_->color_scheme().web_vr_timeout_message_foreground);
   timeout_text->SetAlignment(UiTexture::kTextAlignmentLeft);
-  timeout_text->SetSize(kTimeoutMessageTextWidthDMM,
-                        kTimeoutMessageTextHeightDMM);
+  timeout_text->SetFieldWidth(kTimeoutMessageTextWidthDMM);
   timeout_text->set_hit_testable(true);
 
   auto button_scaler =
@@ -1477,8 +1472,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   timeout_button_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_EXIT_BUTTON_LABEL));
   timeout_button_text->SetColor(model_->color_scheme().web_vr_timeout_spinner);
-  timeout_button_text->SetSize(kTimeoutButtonTextWidthDMM,
-                               kTimeoutButtonTextHeightDMM);
+  timeout_button_text->SetFieldWidth(kTimeoutButtonTextWidthDMM);
   timeout_button_text->set_y_anchoring(BOTTOM);
   timeout_button_text->SetTranslate(0, -kTimeoutButtonTextVerticalOffsetDMM, 0);
   timeout_button_text->set_hit_testable(true);
@@ -1653,7 +1647,7 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   speech_result->SetName(kSpeechRecognitionResultText);
   speech_result->SetDrawPhase(kPhaseForeground);
   speech_result->SetTranslate(0.f, kSpeechRecognitionResultTextYOffset, 0.f);
-  speech_result->SetSize(kVoiceSearchRecognitionResultTextWidth, 0);
+  speech_result->SetFieldWidth(kVoiceSearchRecognitionResultTextWidth);
   speech_result->SetAlignment(UiTexture::kTextAlignmentCenter);
   VR_BIND_COLOR(model_, speech_result.get(), &ColorScheme::prompt_foreground,
                 &Text::SetColor);
@@ -2118,7 +2112,7 @@ void UiSceneCreator::CreateUrlBar() {
       base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
                           base::Unretained(browser_),
                           UiUnsupportedMode::kUnhandledCodePoint));
-  url_text->SetSize(kUrlBarUrlWidthDMM, 0);
+  url_text->SetFieldWidth(kUrlBarUrlWidthDMM);
   VR_BIND_VISIBILITY(url_text, model->toolbar_state.should_display_url);
   url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model_,
                                     model->toolbar_state.gurl, UrlText,
@@ -2139,7 +2133,7 @@ void UiSceneCreator::CreateUrlBar() {
   hint_text->set_contributes_to_parent_bounds(false);
   hint_text->set_x_anchoring(LEFT);
   hint_text->set_x_centering(LEFT);
-  hint_text->SetSize(kUrlBarUrlWidthDMM, kUrlBarHeightDMM);
+  hint_text->SetFieldWidth(kUrlBarUrlWidthDMM);
   hint_text->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
   hint_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
@@ -2276,14 +2270,14 @@ void UiSceneCreator::CreateOverflowMenu() {
     auto layout = std::make_unique<LinearLayout>(LinearLayout::kRight);
     layout->SetType(kTypeOverflowMenuItem);
     layout->SetDrawPhase(kPhaseNone);
-    layout->set_layout_length(kOverflowMenuMinimumWidth -
-                              2 * kOverflowMenuItemXPadding);
 
     auto text =
         Create<Text>(kNone, kPhaseForeground, kSuggestionContentTextHeightDMM);
     text->SetDrawPhase(kPhaseForeground);
     text->SetText(l10n_util::GetStringUTF16(std::get<1>(item)));
-    text->SetLayoutMode(TextLayoutMode::kSingleLine);
+    text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
+    text->SetFieldWidth(kOverflowMenuMinimumWidth -
+                        2 * kOverflowMenuItemXPadding);
     text->SetAlignment(UiTexture::kTextAlignmentLeft);
     text->AddBinding(VR_BIND_FUNC(
         SkColor, Model, model_, model->color_scheme().url_bar_button.foreground,
@@ -2293,7 +2287,6 @@ void UiSceneCreator::CreateOverflowMenu() {
     auto spacer = Create<Rect>(kNone, kPhaseNone);
     spacer->SetType(kTypeSpacer);
     spacer->SetSize(0, kOverflowMenuItemHeight);
-    spacer->set_resizable_by_layout(true);
     layout->AddChild(std::move(spacer));
 
     auto background = Create<Button>(std::get<0>(item), kPhaseForeground,
@@ -2599,9 +2592,6 @@ void UiSceneCreator::CreateOmnibox() {
       kOmniboxSuggestionsOuterLayout, kPhaseNone, LinearLayout::kUp);
   VR_BIND_VISIBILITY(suggestions_outer_layout,
                      !model->omnibox_suggestions.empty());
-  suggestions_outer_layout->AddBinding(VR_BIND_FUNC(
-      bool, Model, model_, !model->omnibox_suggestions.empty(), LinearLayout,
-      suggestions_outer_layout.get(), set_requires_layout));
   suggestions_outer_layout->AddChild(std::move(omnibox_suggestion_divider));
   suggestions_outer_layout->AddChild(
       CreateSpacer(kOmniboxWidthDMM, kSuggestionVerticalPaddingDMM));

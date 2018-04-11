@@ -240,10 +240,6 @@ void UiElement::UpdateInput(const EditedText& info) {
   NOTREACHED();
 }
 
-bool UiElement::PrepareToDraw() {
-  return false;
-}
-
 bool UiElement::DoBeginFrame(const base::TimeTicks& time,
                              const gfx::Transform& head_pose) {
   set_update_phase(UiElement::kDirty);
@@ -277,6 +273,14 @@ bool UiElement::OnBeginFrame(const base::TimeTicks& time,
   return false;
 }
 
+bool UiElement::PrepareToDraw() {
+  return false;
+}
+
+bool UiElement::UpdateTexture() {
+  return false;
+}
+
 bool UiElement::IsHitTestable() const {
   return IsVisible() && hit_testable_;
 }
@@ -302,12 +306,12 @@ bool UiElement::IsVisible() const {
   return opacity() > 0.0f && computed_opacity() > 0.0f;
 }
 
-bool UiElement::IsOrWillBeVisible() const {
-  return IsVisible() || GetTargetOpacity() > 0.0f;
+bool UiElement::IsOrWillBeLocallyVisible() const {
+  return opacity() > 0.0f || GetTargetOpacity() > 0.0f;
 }
 
 gfx::SizeF UiElement::size() const {
-  DCHECK_LE(kUpdatedTexturesAndSizes, phase_);
+  DCHECK_LE(kUpdatedSize, phase_);
   return size_;
 }
 
@@ -430,7 +434,7 @@ float UiElement::ComputeTargetOpacity() const {
 }
 
 float UiElement::computed_opacity() const {
-  DCHECK_LE(kUpdatedComputedOpacity, phase_);
+  DCHECK_LE(kUpdatedComputedOpacity, phase_) << DebugName();
   return computed_opacity_;
 }
 
@@ -614,8 +618,8 @@ void UiElement::SetSounds(Sounds sounds, AudioDelegate* delegate) {
 
 void UiElement::OnUpdatedWorldSpaceTransform() {}
 
+// TODO(cgrant): Remove this method, and use bindings instead.
 gfx::SizeF UiElement::stale_size() const {
-  DCHECK_LE(kUpdatedBindings, phase_);
   return size_;
 }
 
@@ -650,15 +654,15 @@ void UiElement::AddBinding(std::unique_ptr<BindingBase> binding) {
 }
 
 void UiElement::UpdateBindings() {
-  bool should_recur = IsOrWillBeVisible();
+  bool should_recur = IsOrWillBeLocallyVisible();
   updated_bindings_this_frame_ = false;
   for (auto& binding : bindings_) {
     if (binding->Update())
       updated_bindings_this_frame_ = true;
   }
-  should_recur |= IsOrWillBeVisible();
+  should_recur |= IsOrWillBeLocallyVisible();
 
-  set_update_phase(UiElement::kUpdatedBindings);
+  set_update_phase(kUpdatedBindings);
   if (!should_recur)
     return;
 
@@ -769,8 +773,9 @@ bool UiElement::SizeAndLayOut() {
   for (auto& child : children_)
     changed |= child->SizeAndLayOut();
   changed |= PrepareToDraw();
+  set_update_phase(kUpdatedSize);
   DoLayOutChildren();
-  set_update_phase(UiElement::kUpdatedLayout);
+  set_update_phase(kUpdatedLayout);
   return changed;
 }
 
@@ -787,6 +792,9 @@ void UiElement::DoLayOutChildren() {
   bool requires_relayout = false;
   gfx::RectF bounds;
   for (auto& child : children_) {
+    if (!child->IsVisible())
+      continue;
+
     gfx::RectF outer_bounds(child->size());
     gfx::RectF inner_bounds(child->size());
     if (!child->bounds_contain_padding_) {
@@ -798,10 +806,9 @@ void UiElement::DoLayOutChildren() {
       DCHECK(!child->contributes_to_parent_bounds());
       requires_relayout = true;
     }
-    if (!child->IsVisible() || size.IsEmpty() ||
-        !child->contributes_to_parent_bounds()) {
+    if (size.IsEmpty() || !child->contributes_to_parent_bounds())
       continue;
-    }
+
     gfx::Vector2dF delta =
         outer_bounds.CenterPoint() - inner_bounds.CenterPoint();
     gfx::Point3F child_center(child->local_origin() - delta);
@@ -836,8 +843,10 @@ void UiElement::DoLayOutChildren() {
 }
 
 void UiElement::LayOutChildren() {
-  DCHECK_LE(kUpdatedTexturesAndSizes, phase_);
+  DCHECK_LE(kUpdatedSize, phase_);
   for (auto& child : children_) {
+    if (!child->IsVisible())
+      continue;
     // To anchor a child, use the parent's size to find its edge.
     float x_offset = 0.0f;
     if (child->x_anchoring() == LEFT) {

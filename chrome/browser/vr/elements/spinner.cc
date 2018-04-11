@@ -39,16 +39,8 @@ class SpinnerTexture : public UiTexture {
   void SetColor(SkColor color) { SetAndDirty(&color_, color); }
 
  private:
-  gfx::Size GetPreferredTextureSize(int width) const override {
-    return gfx::Size(width, width);
-  }
-
-  gfx::SizeF GetDrawnSize() const override { return size_; }
-
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override {
     float thickness = kThicknessFactor * texture_size.width();
-    size_.set_height(texture_size.height());
-    size_.set_width(texture_size.width());
     SkPaint paint;
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeCap(SkPaint::kRound_Cap);
@@ -65,15 +57,15 @@ class SpinnerTexture : public UiTexture {
   float angle_sweep_ = 0.0f;
   float angle_start_ = 0.0f;
   float rotation_ = 0.0f;
-  gfx::SizeF size_;
   SkColor color_ = SK_ColorWHITE;
 
   DISALLOW_COPY_AND_ASSIGN(SpinnerTexture);
 };
 
-Spinner::Spinner(int maximum_width)
-    : TexturedElement(maximum_width),
-      texture_(std::make_unique<SpinnerTexture>()) {
+Spinner::Spinner(int texture_width)
+    : TexturedElement(),
+      texture_(std::make_unique<SpinnerTexture>()),
+      texture_width_(texture_width) {
   std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve(
       cc::KeyframedFloatAnimationCurve::Create());
 
@@ -127,6 +119,10 @@ void Spinner::SetColor(SkColor color) {
 
 UiTexture* Spinner::GetTexture() const {
   return texture_.get();
+}
+
+gfx::Size Spinner::MeasureTextureSize() {
+  return gfx::Size(texture_width_, texture_width_);
 }
 
 void Spinner::NotifyClientFloatAnimated(float value,

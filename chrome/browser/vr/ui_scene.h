@@ -54,8 +54,11 @@ class UiScene {
   UiElement* GetUiElementByName(UiElementName name) const;
 
   typedef std::vector<const UiElement*> Elements;
+  typedef std::vector<UiElement*> MutableElements;
 
   std::vector<UiElement*>& GetAllElements();
+  Elements GetVisibleElements();
+  MutableElements GetVisibleElementsMutable();
   Elements GetVisibleElementsToDraw();
   Elements GetVisibleWebVrOverlayElementsToDraw();
 

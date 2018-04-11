@@ -21,7 +21,7 @@ class VectorIconTexture;
 
 class VectorIcon : public TexturedElement {
  public:
-  explicit VectorIcon(int maximum_width_pixels);
+  explicit VectorIcon(int texture_width);
   ~VectorIcon() override;
 
   // TODO(vollick): should just use TexturedElement::SetForegroundColor.
@@ -40,7 +40,11 @@ class VectorIcon : public TexturedElement {
   UiTexture* GetTexture() const override;
 
  private:
+  gfx::Size MeasureTextureSize() override;
+
   std::unique_ptr<VectorIconTexture> texture_;
+  int texture_width_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(VectorIcon);
 };
 

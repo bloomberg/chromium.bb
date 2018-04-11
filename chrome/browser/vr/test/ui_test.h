@@ -94,6 +94,8 @@ class UiTest : public testing::Test {
   // require all intermediate frames to be called. Tests that require this
   // should simulate the required intermediate frames.
   bool RunFor(base::TimeDelta delta);
+  bool RunForMs(float milliseconds);
+  bool RunForSeconds(float seconds);
 
   // A wrapper to call scene_->OnBeginFrame.
   bool OnBeginFrame() const;

@@ -32,7 +32,7 @@ class TextPerfTest : public testing::Test {
     provider_ = std::make_unique<GaneshSurfaceProvider>();
 
     text_element_ = std::make_unique<Text>(kFontHeightMeters);
-    text_element_->SetSize(kTextWidthMeters, 0);
+    text_element_->SetFieldWidth(kTextWidthMeters);
     text_element_->Initialize(provider_.get());
   }
 
@@ -50,7 +50,8 @@ class TextPerfTest : public testing::Test {
   }
 
   void RenderAndLapTimer() {
-    static_cast<UiElement*>(text_element_.get())->PrepareToDraw();
+    text_element_->PrepareToDrawForTest();
+    text_element_->UpdateTexture();
     // Make sure all GL commands are applied before we measure the time.
     glFinish();
     timer_.NextLap();
@@ -84,28 +85,6 @@ TEST_F(TextPerfTest, RenderLoremIpsum700Chars) {
     RenderAndLapTimer();
   }
   PrintResults("render_lorem_ipsum_700_chars");
-}
-
-TEST_F(TextPerfTest, RenderLoremIpsum100Chars_NoTextChange) {
-  base::string16 text = base::UTF8ToUTF16(kLoremIpsum100Chars);
-  text_element_->SetText(text);
-  TexturedElement::SetRerenderIfNotDirtyForTesting();
-  timer_.Reset();
-  for (size_t i = 0; i < kNumberOfRuns; i++) {
-    RenderAndLapTimer();
-  }
-  PrintResults("render_lorem_ipsum_100_chars_no_text_change");
-}
-
-TEST_F(TextPerfTest, RenderLoremIpsum700Chars_NoTextChange) {
-  base::string16 text = base::UTF8ToUTF16(kLoremIpsum700Chars);
-  text_element_->SetText(text);
-  TexturedElement::SetRerenderIfNotDirtyForTesting();
-  timer_.Reset();
-  for (size_t i = 0; i < kNumberOfRuns; i++) {
-    RenderAndLapTimer();
-  }
-  PrintResults("render_lorem_ipsum_700_chars_no_text_change");
 }
 
 }  // namespace vr

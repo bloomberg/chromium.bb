@@ -17,7 +17,7 @@ class SpinnerTexture;
 
 class Spinner : public TexturedElement {
  public:
-  explicit Spinner(int maximum_width);
+  explicit Spinner(int texture_width);
   ~Spinner() override;
 
   void SetColor(SkColor color);
@@ -26,10 +26,14 @@ class Spinner : public TexturedElement {
   UiTexture* GetTexture() const override;
 
  private:
+  gfx::Size MeasureTextureSize() override;
+
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
                                  cc::KeyframeModel* keyframe_model) override;
   std::unique_ptr<SpinnerTexture> texture_;
+  int texture_width_;
+
   DISALLOW_COPY_AND_ASSIGN(Spinner);
 };
 

@@ -20,8 +20,7 @@ class PromptTexture : public UiTexture {
                 int primary_button_message_id,
                 int secondary_button_message_id);
   ~PromptTexture() override;
-  gfx::Size GetPreferredTextureSize(int width) const override;
-  gfx::SizeF GetDrawnSize() const override;
+  gfx::Size GetPreferredTextureSize(int width) const;
 
   void SetPrimaryButtonHovered(bool hovered);
   void SetPrimaryButtonPressed(bool pressed);

@@ -15,25 +15,28 @@ TEST(Text, MultiLine) {
 
   // Create an initialize a text element with a long string.
   auto text = std::make_unique<Text>(0.020);
-  text->SetSize(kInitialSize, 0);
+  text->SetFieldWidth(kInitialSize);
   text->SetText(base::UTF8ToUTF16(std::string(1000, 'x')));
 
   // Make sure we get multiple lines of rendered text from the string.
-  size_t initial_num_lines = text->LayOutTextForTest().size();
-  auto initial_size = text->GetTextureSizeForTest();
+  text->PrepareToDrawForTest();
+  size_t initial_num_lines = text->LinesForTest().size();
+  auto initial_size = text->texture_size_for_test();
   EXPECT_GT(initial_num_lines, 1u);
   EXPECT_GT(initial_size.height(), 0.f);
 
   // Reduce the field width, and ensure that the number of lines increases along
   // with the texture height.
-  text->SetSize(kInitialSize / 2, 0);
-  EXPECT_GT(text->LayOutTextForTest().size(), initial_num_lines);
-  EXPECT_GT(text->GetTextureSizeForTest().height(), initial_size.height());
+  text->SetFieldWidth(kInitialSize / 2);
+  text->PrepareToDrawForTest();
+  EXPECT_GT(text->LinesForTest().size(), initial_num_lines);
+  EXPECT_GT(text->texture_size_for_test().height(), initial_size.height());
 
   // Enforce single-line rendering.
   text->SetLayoutMode(kSingleLineFixedWidth);
-  EXPECT_EQ(text->LayOutTextForTest().size(), 1u);
-  EXPECT_LT(text->GetTextureSizeForTest().height(), initial_size.height());
+  text->PrepareToDrawForTest();
+  EXPECT_EQ(text->LinesForTest().size(), 1u);
+  EXPECT_LT(text->texture_size_for_test().height(), initial_size.height());
 }
 
 TEST(Text, Formatting) {

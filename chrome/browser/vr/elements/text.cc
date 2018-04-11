@@ -97,7 +97,7 @@ void TextFormattingAttribute::Apply(RenderTextWrapper* render_text) const {
 
 class TextTexture : public UiTexture {
  public:
-  TextTexture() = default;
+  explicit TextTexture(Text* element) : element_(element) {}
 
   ~TextTexture() override {}
 
@@ -134,20 +134,11 @@ class TextTexture : public UiTexture {
     SetAndDirty(&selection_end_, end);
   }
 
-  int GetCursorPositionFromPoint(const gfx::PointF& point) const {
-    DCHECK_EQ(lines().size(), 1u);
-    gfx::Point pixel_position(point.x() * GetDrawnSize().width(),
-                              point.y() * GetDrawnSize().height());
-    return lines().front()->FindCursorPosition(pixel_position).caret_pos();
-  }
-
   void SetShadowsEnabled(bool enabled) {
     SetAndDirty(&shadows_enabled_, enabled);
   }
 
   void SetTextWidth(float width) { SetAndDirty(&text_width_, width); }
-
-  gfx::SizeF GetDrawnSize() const override { return size_; }
 
   gfx::Rect get_cursor_bounds() { return cursor_bounds_; }
 
@@ -155,7 +146,7 @@ class TextTexture : public UiTexture {
   // the texture. This allows for deeper unit testing of the Text element
   // without having to mock canvases and simulate frame rendering. The state of
   // the texture is modified here.
-  void LayOutText();
+  gfx::Size LayOutText();
 
   const std::vector<std::unique_ptr<gfx::RenderText>>& lines() const {
     return lines_;
@@ -182,12 +173,6 @@ class TextTexture : public UiTexture {
   }
 
  private:
-  void OnMeasureSize() override { LayOutText(); }
-
-  gfx::Size GetPreferredTextureSize(int width) const override {
-    return gfx::Size(GetDrawnSize().width(), GetDrawnSize().height());
-  }
-
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override;
 
   gfx::SizeF size_;
@@ -206,6 +191,7 @@ class TextTexture : public UiTexture {
   gfx::Rect cursor_bounds_;
   bool shadows_enabled_ = false;
   std::vector<std::unique_ptr<gfx::RenderText>> lines_;
+  Text* element_ = nullptr;
 
   base::RepeatingCallback<void()> unhandled_codepoint_callback_;
   base::RepeatingCallback<void(gfx::RenderText*)> render_text_created_callback_;
@@ -218,7 +204,7 @@ class TextTexture : public UiTexture {
 };
 
 Text::Text(float font_height_dmms)
-    : TexturedElement(0), texture_(std::make_unique<TextTexture>()) {
+    : TexturedElement(), texture_(std::make_unique<TextTexture>(this)) {
   texture_->SetFontHeightInDmm(font_height_dmms);
 }
 
@@ -230,6 +216,11 @@ void Text::SetFontHeightInDmm(float font_height_dmms) {
 
 void Text::SetText(const base::string16& text) {
   texture_->SetText(text);
+}
+
+void Text::SetFieldWidth(float width) {
+  field_width_ = width;
+  texture_->SetTextWidth(width);
 }
 
 void Text::SetColor(SkColor color) {
@@ -270,43 +261,28 @@ gfx::RectF Text::GetCursorBounds() const {
   // override the width here to be a percentage of height for the sake of
   // arbitrary texture sizes.
   gfx::Rect bounds = texture_->get_cursor_bounds();
-  float scale = size().width() / texture_->GetDrawnSize().width();
+  float scale = size().width() / text_texture_size_.width();
   return gfx::RectF(
       bounds.CenterPoint().x() * scale, bounds.CenterPoint().y() * scale,
       bounds.height() * scale * kCursorWidthRatio, bounds.height() * scale);
 }
 
 int Text::GetCursorPositionFromPoint(const gfx::PointF& point) const {
-  return texture_->GetCursorPositionFromPoint(point);
+  DCHECK_EQ(texture_->lines().size(), 1u);
+  gfx::Point pixel_position(point.x() * text_texture_size_.width(),
+                            point.y() * text_texture_size_.height());
+  return texture_->lines()
+      .front()
+      ->FindCursorPosition(pixel_position)
+      .caret_pos();
 }
 
 void Text::SetShadowsEnabled(bool enabled) {
   texture_->SetShadowsEnabled(enabled);
 }
 
-void Text::OnSetSize(const gfx::SizeF& size) {
-  if (IsFixedWidthLayout(text_layout_mode_))
-    texture_->SetTextWidth(size.width());
-}
-
-void Text::UpdateElementSize() {
-  gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  // Width calculated from PixelToDmm may be different from the width saved in
-  // stale_size due to float percision. So use the value in stale_size for fixed
-  // width text layout.
-  float width = IsFixedWidthLayout(text_layout_mode_)
-                    ? stale_size().width()
-                    : PixelToDmm(drawn_size.width());
-  SetSize(width, PixelToDmm(drawn_size.height()));
-}
-
-const std::vector<std::unique_ptr<gfx::RenderText>>& Text::LayOutTextForTest() {
-  texture_->LayOutText();
+const std::vector<std::unique_ptr<gfx::RenderText>>& Text::LinesForTest() {
   return texture_->lines();
-}
-
-gfx::SizeF Text::GetTextureSizeForTest() const {
-  return texture_->GetDrawnSize();
 }
 
 void Text::SetUnsupportedCodePointsForTest(bool unsupported) {
@@ -337,11 +313,23 @@ UiTexture* Text::GetTexture() const {
   return texture_.get();
 }
 
-void TextTexture::LayOutText() {
+gfx::Size Text::MeasureTextureSize() {
+  text_texture_size_ = texture_->LayOutText();
+
+  // Adjust the actual size of the element to match the texture.
+  float width = IsFixedWidthLayout(text_layout_mode_)
+                    ? field_width_
+                    : PixelToDmm(text_texture_size_.width());
+  TexturedElement::SetSize(width, PixelToDmm(text_texture_size_.height()));
+
+  return text_texture_size_;
+}
+
+gfx::Size TextTexture::LayOutText() {
   int pixel_font_height = DmmToPixel(font_height_dmms_);
   gfx::Rect text_bounds;
-  if (text_layout_mode_ == kSingleLineFixedWidth ||
-      text_layout_mode_ == kMultiLineFixedWidth) {
+  if (IsFixedWidthLayout(text_layout_mode_)) {
+    DCHECK(text_width_ > 0.f) << element_->DebugName();
     text_bounds.set_width(DmmToPixel(text_width_));
   }
 
@@ -400,11 +388,12 @@ void TextTexture::LayOutText() {
   }
 
   // Note, there is no padding here whatsoever.
-  size_ = gfx::SizeF(text_bounds.size());
   if (parameters.shadows_enabled) {
     texture_offset_ = gfx::Vector2d(gfx::ToFlooredInt(parameters.shadow_size),
                                     gfx::ToFlooredInt(parameters.shadow_size));
   }
+
+  return text_bounds.size();
 }
 
 void TextTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
