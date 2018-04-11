@@ -49,12 +49,7 @@ class PLATFORM_EXPORT ShapeResultBuffer {
                                           unsigned from,
                                           unsigned to);
 
-  struct RunFontData {
-    SimpleFontData* font_data_;
-    size_t glyph_count_;
-  };
-
-  Vector<RunFontData> GetRunFontData() const;
+  Vector<ShapeResult::RunFontData> GetRunFontData() const;
 
   GlyphData EmphasisMarkGlyphData(const FontDescription&) const;
 
