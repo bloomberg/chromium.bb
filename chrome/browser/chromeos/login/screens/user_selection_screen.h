@@ -72,7 +72,8 @@ class UserSelectionScreen
   void InitEasyUnlock();
 
   // proximity_auth::ScreenlockBridge::LockHandler implementation:
-  void ShowBannerMessage(const base::string16& message) override;
+  void ShowBannerMessage(const base::string16& message,
+                         bool is_warning) override;
   void ShowUserPodCustomIcon(
       const AccountId& account_id,
       const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions& icon)

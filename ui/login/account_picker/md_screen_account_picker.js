@@ -366,9 +366,10 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * this function updates the message in the banner. This function is used
      * by the chrome.screenlockPrivate.showMessage API.
      * @param {string} message Text to be displayed or empty to hide the banner.
+     * @param {boolean} isWarning True if the given message is a warning.
      */
-    showBannerMessage: function(message) {
-      $('pod-row').showBannerMessage(message);
+    showBannerMessage: function(message, isWarning) {
+      $('pod-row').showBannerMessage(message, isWarning);
     },
 
     /**

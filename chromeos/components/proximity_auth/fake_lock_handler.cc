@@ -10,7 +10,8 @@ FakeLockHandler::FakeLockHandler() {}
 
 FakeLockHandler::~FakeLockHandler() {}
 
-void FakeLockHandler::ShowBannerMessage(const base::string16& message) {}
+void FakeLockHandler::ShowBannerMessage(const base::string16& message,
+                                        bool is_warning) {}
 
 void FakeLockHandler::ShowUserPodCustomIcon(
     const AccountId& account_id,

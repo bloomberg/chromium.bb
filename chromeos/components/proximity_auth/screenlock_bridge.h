@@ -106,7 +106,8 @@ class ScreenlockBridge {
     enum ScreenType { SIGNIN_SCREEN = 0, LOCK_SCREEN = 1, OTHER_SCREEN = 2 };
 
     // Displays |message| in a banner on the lock screen.
-    virtual void ShowBannerMessage(const base::string16& message) = 0;
+    virtual void ShowBannerMessage(const base::string16& message,
+                                   bool is_warning) = 0;
 
     // Shows a custom icon in the user pod on the lock screen.
     virtual void ShowUserPodCustomIcon(

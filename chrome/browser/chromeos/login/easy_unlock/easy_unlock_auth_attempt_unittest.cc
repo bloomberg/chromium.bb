@@ -123,7 +123,8 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   }
 
   // proximity_auth::ScreenlockBridge::LockHandler implementation:
-  void ShowBannerMessage(const base::string16& message) override {
+  void ShowBannerMessage(const base::string16& message,
+                         bool is_warning) override {
     ADD_FAILURE() << "Should not be reached.";
   }
 

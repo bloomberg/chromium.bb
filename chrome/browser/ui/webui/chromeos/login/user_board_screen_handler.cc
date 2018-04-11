@@ -65,8 +65,9 @@ void UserBoardScreenHandler::SetPublicSessionLocales(
          *locales, default_locale, multiple_recommended_locales);
 }
 
-void UserBoardScreenHandler::ShowBannerMessage(const base::string16& message) {
-  CallJS("login.AccountPickerScreen.showBannerMessage", message);
+void UserBoardScreenHandler::ShowBannerMessage(const base::string16& message,
+                                               bool is_warning) {
+  CallJS("login.AccountPickerScreen.showBannerMessage", message, is_warning);
 }
 
 void UserBoardScreenHandler::ShowUserPodCustomIcon(

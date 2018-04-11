@@ -575,7 +575,7 @@ html[dir=rtl] .user-type-icon-area {
 }
 
 .fingerprint-icon-container.failed .fingerprint-icon-image {
-  background-image: url(../../webui/resources/images/fingerprint_failed.svg);
+  background-image: url(../../webui/resources/images/icon_error_outline.svg);
 }
 
 .pod input[type='password'].hidden::-webkit-input-placeholder {
