@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
 
@@ -44,7 +45,8 @@ class BackdropDelegate;
 // 3) Active ARC window when the spoken feedback is enabled.
 class BackdropController : public ShellObserver,
                            public AccessibilityObserver,
-                           public SplitViewController::Observer {
+                           public SplitViewController::Observer,
+                           public WallpaperControllerObserver {
  public:
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
@@ -77,6 +79,10 @@ class BackdropController : public ShellObserver,
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
                                SplitViewController::State state) override;
   void OnSplitViewDividerPositionChanged() override;
+
+  // WallpaperControllerObserver:
+  void OnWallpaperDataChanged() override;
+  void OnWallpaperPreviewStarted() override;
 
  private:
   friend class WorkspaceControllerTestApi;

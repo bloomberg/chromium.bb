@@ -21,6 +21,9 @@ class ASH_EXPORT WallpaperControllerObserver {
   // Invoked when the blur state of the wallpaper changes.
   virtual void OnWallpaperBlurChanged() {}
 
+  // Invoked when the wallpaper preview mode starts.
+  virtual void OnWallpaperPreviewStarted() {}
+
  protected:
   virtual ~WallpaperControllerObserver() {}
 };

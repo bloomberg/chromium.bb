@@ -10,7 +10,9 @@
 #include "ash/accessibility/accessibility_delegate.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/backdrop_delegate.h"
 #include "base/auto_reset.h"
@@ -68,10 +70,12 @@ BackdropController::BackdropController(aura::Window* container)
   DCHECK(container_);
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->accessibility_controller()->AddObserver(this);
+  Shell::Get()->wallpaper_controller()->AddObserver(this);
 }
 
 BackdropController::~BackdropController() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
   // TODO: animations won't work right with mus: http://crbug.com/548396.
   Hide();
@@ -178,6 +182,14 @@ void BackdropController::OnSplitViewDividerPositionChanged() {
   UpdateBackdrop();
 }
 
+void BackdropController::OnWallpaperDataChanged() {}
+
+void BackdropController::OnWallpaperPreviewStarted() {
+  wm::GetActiveWindow()->SetProperty(kBackdropWindowMode,
+                                     BackdropWindowMode::kDisabled);
+  UpdateBackdrop();
+}
+
 void BackdropController::EnsureBackdropWidget() {
   if (backdrop_)
     return;
@@ -234,9 +246,12 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
 }
 
 bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
-  if (window->GetAllPropertyKeys().count(aura::client::kHasBackdrop) &&
-      window->GetProperty(aura::client::kHasBackdrop)) {
-    return true;
+  if (window->GetAllPropertyKeys().count(kBackdropWindowMode)) {
+    BackdropWindowMode backdrop_mode = window->GetProperty(kBackdropWindowMode);
+    if (backdrop_mode == BackdropWindowMode::kEnabled)
+      return true;
+    if (backdrop_mode == BackdropWindowMode::kDisabled)
+      return false;
   }
 
   // If |window| is the current active window and is an ARC app window, |window|

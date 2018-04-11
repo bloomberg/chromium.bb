@@ -14,6 +14,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller.h"
@@ -25,6 +26,7 @@
 #include "ash/shell_observer.h"
 #include "ash/shell_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -1233,56 +1235,61 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   window3->Show();
   EXPECT_FALSE(test_helper.GetBackdropWindow());
 
-  window2->SetProperty(aura::client::kHasBackdrop, true);
+  window2->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
   aura::Window* backdrop = test_helper.GetBackdropWindow();
   EXPECT_TRUE(backdrop);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], window1.get());
-    EXPECT_EQ(children[1], backdrop);
-    EXPECT_EQ(children[2], window2.get());
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(backdrop, children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Setting the property to the one below the backdrop window shouldn't change
   // the state.
-  window1->SetProperty(aura::client::kHasBackdrop, true);
+  window1->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], window1.get());
-    EXPECT_EQ(children[1], backdrop);
-    EXPECT_EQ(children[2], window2.get());
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(backdrop, children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Setting the property to the top will move the backdrop up.
-  window3->SetProperty(aura::client::kHasBackdrop, true);
+  window3->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], window1.get());
-    EXPECT_EQ(children[1], window2.get());
-    EXPECT_EQ(children[2], backdrop);
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(window2.get(), children[1]);
+    EXPECT_EQ(backdrop, children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Clearing the property in the middle will not change the backdrop position.
-  window2->ClearProperty(aura::client::kHasBackdrop);
+  window2->ClearProperty(kBackdropWindowMode);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], window1.get());
-    EXPECT_EQ(children[1], window2.get());
-    EXPECT_EQ(children[2], backdrop);
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(window2.get(), children[1]);
+    EXPECT_EQ(backdrop, children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Clearing the property on top will move the backdrop to bottom.
-  window3->ClearProperty(aura::client::kHasBackdrop);
+  window3->ClearProperty(kBackdropWindowMode);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], backdrop);
-    EXPECT_EQ(children[1], window1.get());
-    EXPECT_EQ(children[2], window2.get());
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(backdrop, children[0]);
+    EXPECT_EQ(window1.get(), children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Toggle overview.
@@ -1296,10 +1303,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   EXPECT_TRUE(backdrop);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], backdrop);
-    EXPECT_EQ(children[1], window1.get());
-    EXPECT_EQ(children[2], window2.get());
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(backdrop, children[0]);
+    EXPECT_EQ(window1.get(), children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Enabling the backdrop delegate for tablet mode will put the
@@ -1307,10 +1315,11 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   ShowTopWindowBackdropForContainer(default_container(), true);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], window1.get());
-    EXPECT_EQ(children[1], window2.get());
-    EXPECT_EQ(children[2], backdrop);
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(window2.get(), children[1]);
+    EXPECT_EQ(backdrop, children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Toggle overview with the delegate.
@@ -1322,20 +1331,86 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, BackdropTest) {
   backdrop = test_helper.GetBackdropWindow();
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], window1.get());
-    EXPECT_EQ(children[1], window2.get());
-    EXPECT_EQ(children[2], backdrop);
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(window2.get(), children[1]);
+    EXPECT_EQ(backdrop, children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
   }
 
   // Removing the delegate will move the backdrop back to window1.
   ShowTopWindowBackdropForContainer(default_container(), false);
   {
     aura::Window::Windows children = window1->parent()->children();
-    EXPECT_EQ(children[0], backdrop);
-    EXPECT_EQ(children[1], window1.get());
-    EXPECT_EQ(children[2], window2.get());
-    EXPECT_EQ(children[3], window3.get());
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(backdrop, children[0]);
+    EXPECT_EQ(window1.get(), children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
+  }
+
+  // Re-enable the backdrop delegate for tablet mode. Clearing the property is a
+  // no-op when the delegate is enabled.
+  ShowTopWindowBackdropForContainer(default_container(), true);
+  window3->ClearProperty(kBackdropWindowMode);
+  ShowTopWindowBackdropForContainer(default_container(), true);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(window2.get(), children[1]);
+    EXPECT_EQ(backdrop, children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
+  }
+
+  // Setting the property explicitly to kDisabled will move the backdrop to
+  // window2.
+  window3->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
+  {
+    aura::Window::Windows children = window1->parent()->children();
+    EXPECT_EQ(4U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(backdrop, children[1]);
+    EXPECT_EQ(window2.get(), children[2]);
+    EXPECT_EQ(window3.get(), children[3]);
+  }
+}
+
+TEST_F(WorkspaceLayoutManagerBackdropTest,
+       DoNotShowBackdropDuringWallpaperPreview) {
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
+  WallpaperControllerTestApi wallpaper_test_api(
+      Shell::Get()->wallpaper_controller());
+
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  std::unique_ptr<aura::Window> window1(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
+
+  // Enable the backdrop delegate for tablet mode. The backdrop is shown behind
+  // the wallpaper picker window.
+  ShowTopWindowBackdropForContainer(default_container(), true);
+  aura::Window* backdrop = test_helper.GetBackdropWindow();
+  {
+    aura::Window::Windows children =
+        wallpaper_picker_window->parent()->children();
+    EXPECT_EQ(3U, children.size());
+    EXPECT_EQ(window1.get(), children[0]);
+    EXPECT_EQ(backdrop, children[1]);
+    EXPECT_EQ(wallpaper_picker_window.get(), children[2]);
+  }
+
+  // Start wallpaper preview. The backdrop should move to window1.
+  wallpaper_test_api.StartWallpaperPreview();
+  {
+    aura::Window::Windows children =
+        wallpaper_picker_window->parent()->children();
+    EXPECT_EQ(3U, children.size());
+    EXPECT_EQ(backdrop, children[0]);
+    EXPECT_EQ(window1.get(), children[1]);
+    EXPECT_EQ(wallpaper_picker_window.get(), children[2]);
   }
 }
 
@@ -1352,7 +1427,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest, SpokenFeedbackFullscreenBackground) {
       &delegate, 0, gfx::Rect(0, 0, 100, 100)));
   window->Show();
 
-  window->SetProperty(aura::client::kHasBackdrop, true);
+  window->SetProperty(kBackdropWindowMode, BackdropWindowMode::kEnabled);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
   ui::test::EventGenerator& generator = GetEventGenerator();

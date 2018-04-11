@@ -13,9 +13,14 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowPinType)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
                                        ash::mojom::WindowStateType)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_PUBLIC_EXPORT,
+                                       ash::BackdropWindowMode)
 
 namespace ash {
 
+DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
+                             kBackdropWindowMode,
+                             BackdropWindowMode::kAuto);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPanelAttachedKey, true);
