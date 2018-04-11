@@ -919,23 +919,59 @@ TEST_F(SingleTreeTrackerTest,
 // Test that entries are no longer pending after a network state
 // change.
 TEST_F(SingleTreeTrackerTest, DiscardsPendingEntriesAfterNetworkChange) {
-  CreateTreeTrackerWithDefaultDnsExpectation();
+  // Setup expectations for 2 SCTs to pass inclusion checking.
+  // However, the first should be cancelled half way through (when the network
+  // change occurs) and the second should be throttled (and then cancelled) so,
+  // by the end of test, neither should actually have passed the checks.
+  std::vector<std::string> audit_proof;
+  FillVectorWithValidAuditProofForTreeOfSize2(&audit_proof);
+
+  ASSERT_TRUE(mock_dns_.ExpectLeafIndexRequestAndResponse(
+      Base32LeafHash(chain_.get(), cert_sct_.get()) + ".hash." +
+          kDNSRequestSuffix,
+      0));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      std::string("0.0.2.tree.") + kDNSRequestSuffix, audit_proof.begin(),
+      audit_proof.begin() + 1));
+
+  scoped_refptr<SignedCertificateTimestamp> second_sct(GetSCT());
+  second_sct->timestamp -= base::TimeDelta::FromHours(1);
+
+  ASSERT_TRUE(mock_dns_.ExpectLeafIndexRequestAndResponse(
+      Base32LeafHash(chain_.get(), second_sct.get()) + ".hash." +
+          kDNSRequestSuffix,
+      1));
+  ASSERT_TRUE(mock_dns_.ExpectAuditProofRequestAndResponse(
+      std::string("0.1.2.tree.") + kDNSRequestSuffix, audit_proof.begin(),
+      audit_proof.begin() + 1));
+
+  CreateTreeTracker();
   AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
                 net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
 
-  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
+  // Provide an STH to the tree_tracker_.
+  SignedTreeHead sth;
+  GetSignedTreeHeadForTreeOfSize2(&sth);
+  tree_tracker_->NewSTHObserved(sth);
 
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_PENDING_NEWER_STH,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
+  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), second_sct.get());
+
+  for (auto sct : {cert_sct_, second_sct}) {
+    EXPECT_EQ(
+        SingleTreeTracker::SCT_PENDING_INCLUSION_CHECK,
+        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()));
+  }
 
   net_change_notifier_->NotifyObserversOfNetworkChangeForTests(
       net::NetworkChangeNotifier::CONNECTION_UNKNOWN);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(
-      SingleTreeTracker::SCT_NOT_OBSERVED,
-      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+  for (auto sct : {cert_sct_, second_sct}) {
+    EXPECT_EQ(
+        SingleTreeTracker::SCT_NOT_OBSERVED,
+        tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), sct.get()));
+  }
 }
 
 }  // namespace certificate_transparency

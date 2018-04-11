@@ -237,7 +237,9 @@ SingleTreeTracker::SingleTreeTracker(
       &SingleTreeTracker::OnMemoryPressure, base::Unretained(this))));
 }
 
-SingleTreeTracker::~SingleTreeTracker() = default;
+SingleTreeTracker::~SingleTreeTracker() {
+  ResetPendingQueue();
+}
 
 void SingleTreeTracker::OnSCTVerified(base::StringPiece hostname,
                                       net::X509Certificate* cert,
@@ -356,7 +358,12 @@ void SingleTreeTracker::NewSTHObserved(const SignedTreeHead& sth) {
 }
 
 void SingleTreeTracker::ResetPendingQueue() {
-  pending_entries_.clear();
+  // Move entries out of pending_entries_ prior to deleting them, in case any
+  // have inclusion checks in progress. Cancelling those checks would invoke the
+  // cancellation callback (ProcessPendingEntries()), which would attempt to
+  // access pending_entries_ while it was in the process of being deleted.
+  std::map<EntryToAudit, EntryAuditState, OrderByTimestamp> pending_entries;
+  pending_entries_.swap(pending_entries);
 }
 
 SingleTreeTracker::SCTInclusionStatus
