@@ -114,7 +114,7 @@ void JNI_ContentChildProcessServiceDelegate_InternalInitChildProcess(
   gpu::ScopedSurfaceRequestConduit::SetInstance(
       g_child_process_surface_manager.Pointer());
 
-  base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
+  base::android::MemoryPressureListenerAndroid::Initialize(env);
 }
 
 }  // namespace

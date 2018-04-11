@@ -17,8 +17,8 @@ import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.Callback;
 import org.chromium.base.MemoryPressureLevel;
-import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.memory.MemoryPressureMonitor;
 
 import java.util.List;
 
@@ -71,7 +71,7 @@ public class SharedStatics {
 
     public void freeMemoryForTests() {
         if (ActivityManager.isRunningInTestHarness()) {
-            MemoryPressureListener.onMemoryPressure(MemoryPressureLevel.CRITICAL);
+            MemoryPressureMonitor.INSTANCE.notifyPressure(MemoryPressureLevel.CRITICAL);
         }
     }
 

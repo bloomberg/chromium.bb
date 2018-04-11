@@ -8,7 +8,7 @@
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
-  base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
+  base::android::MemoryPressureListenerAndroid::Initialize(
       base::android::AttachCurrentThread());
 }
 
