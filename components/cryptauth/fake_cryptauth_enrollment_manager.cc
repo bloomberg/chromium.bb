@@ -22,6 +22,7 @@ void FakeCryptAuthEnrollmentManager::FinishActiveEnrollment(
 
   if (success) {
     last_enrollment_time_ = enrollment_finish_time;
+    is_enrollment_valid_ = true;
     is_recovering_from_failure_ = false;
   } else {
     is_recovering_from_failure_ = true;
