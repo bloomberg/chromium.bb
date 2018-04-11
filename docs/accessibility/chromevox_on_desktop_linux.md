@@ -59,6 +59,12 @@ manager key combo conflicts) by doing something like
 startx out/cros/chrome
 ```
 
+NOTE: if you decide to run Chrome OS under linux within a window manager, you
+are subject to its keybindings which will most certainly conflict with
+ChromeVox. The Search key (which gets mapped from LWIN/key code 91), usually
+gets assigned to numerous shortcut combinations. You can manually disable all
+such combinations, or run under X as described above.
+
 ## Speech
 
 If you want speech, you just need to copy the speech synthesis data files to
