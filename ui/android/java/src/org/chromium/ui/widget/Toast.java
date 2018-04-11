@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import org.chromium.base.SysUtils;
-import org.chromium.ui.widget.popups.UiWidgetFactory;
 
 /**
  * Toast wrapper, makes sure toasts are not HW accelerated on low-end devices and presented
