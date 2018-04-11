@@ -6,6 +6,13 @@ compositing and gpu presentation.
 See [//services/viz](../../services/viz/README.md) for more information about
 Viz overall.
 
+For understanding compositing related terminology, check out
+[//cc](../../cc/README.md). For understanding display compositor's position in
+the graphics stack, check out
+[Compositor Stack slides](https://docs.google.com/presentation/d/1ou3qdnFhKdjR6gKZgDwx3YHDwVUF7y8eoqM3rhErMMQ/edit?usp=sharing).
+For more comprehensive list of design docs relating to Viz, check out
+[WIP list of design doc](https://crbug.com/821901).
+
 **Table of Contents**
 1. [Terminology](#terminology)
 2. [Directory structure](#directory-structure)
