@@ -29,7 +29,7 @@ class SerializedScriptValue;
 class SharedBuffer;
 
 const base::Feature kIndexedDBLargeValueWrapping{
-    "IndexedDBLargeValueWrapping", base::FEATURE_ENABLED_BY_DEFAULT};
+    "IndexedDBLargeValueWrapping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Logic for serializing V8 values for storage in IndexedDB.
 //
