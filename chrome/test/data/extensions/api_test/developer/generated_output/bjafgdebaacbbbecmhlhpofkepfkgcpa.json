@@ -11,7 +11,7 @@
       "isEnabled": false
    },
    "fileAccess": {
-      "isActive": false,
+      "isActive": true,
       "isEnabled": false
    },
    "homePage": {

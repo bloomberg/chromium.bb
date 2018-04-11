@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -11,12 +12,12 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/developer_private/inspectable_views_finder.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
@@ -146,19 +147,12 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
   std::unique_ptr<developer::ExtensionInfo> CreateExtensionInfoFromPath(
       const base::FilePath& extension_path,
       Manifest::Location location) {
-    std::string error;
-
-    base::FilePath manifest_path = extension_path.Append(kManifestFilename);
-    std::unique_ptr<base::DictionaryValue> extension_data =
-        DeserializeJSONTestData(manifest_path, &error);
-    EXPECT_EQ(std::string(), error);
-
-    scoped_refptr<Extension> extension(Extension::Create(
-        extension_path, location, *extension_data, Extension::REQUIRE_KEY,
-        &error));
+    ChromeTestExtensionLoader loader(browser_context());
+    loader.set_location(location);
+    loader.set_creation_flags(Extension::REQUIRE_KEY);
+    scoped_refptr<const Extension> extension =
+        loader.LoadExtension(extension_path);
     CHECK(extension.get());
-    service()->AddExtension(extension.get());
-    EXPECT_EQ(std::string(), error);
 
     return GenerateExtensionInfo(extension->id());
   }
@@ -245,21 +239,21 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   service()->AddExtension(extension.get());
   ErrorConsole* error_console = ErrorConsole::Get(profile());
   const GURL kContextUrl("http://example.com");
-  error_console->ReportError(base::WrapUnique(new RuntimeError(
+  error_console->ReportError(std::make_unique<RuntimeError>(
       extension->id(), false, base::UTF8ToUTF16("source"),
       base::UTF8ToUTF16("message"),
       StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
                                base::UTF8ToUTF16("function"))),
-      kContextUrl, logging::LOG_ERROR, 1, 1)));
-  error_console->ReportError(base::WrapUnique(
-      new ManifestError(extension->id(), base::UTF8ToUTF16("message"),
-                        base::UTF8ToUTF16("key"), base::string16())));
-  error_console->ReportError(base::WrapUnique(new RuntimeError(
+      kContextUrl, logging::LOG_ERROR, 1, 1));
+  error_console->ReportError(std::make_unique<ManifestError>(
+      extension->id(), base::UTF8ToUTF16("message"), base::UTF8ToUTF16("key"),
+      base::string16()));
+  error_console->ReportError(std::make_unique<RuntimeError>(
       extension->id(), false, base::UTF8ToUTF16("source"),
       base::UTF8ToUTF16("message"),
       StackTrace(1, StackFrame(1, 1, base::UTF8ToUTF16("source"),
                                base::UTF8ToUTF16("function"))),
-      kContextUrl, logging::LOG_VERBOSE, 1, 1)));
+      kContextUrl, logging::LOG_VERBOSE, 1, 1));
 
   // It's not feasible to validate every field here, because that would be
   // a duplication of the logic in the method itself. Instead, test a handful
@@ -481,9 +475,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoLockedAllUrls) {
 // Tests that blacklisted extensions are returned by the ExtensionInfoGenerator.
 TEST_F(ExtensionInfoGeneratorUnitTest, Blacklisted) {
   const scoped_refptr<const Extension> extension1 = CreateExtension(
-      "test1", base::WrapUnique(new base::ListValue()), Manifest::INTERNAL);
+      "test1", std::make_unique<base::ListValue>(), Manifest::INTERNAL);
   const scoped_refptr<const Extension> extension2 = CreateExtension(
-      "test2", base::WrapUnique(new base::ListValue()), Manifest::INTERNAL);
+      "test2", std::make_unique<base::ListValue>(), Manifest::INTERNAL);
 
   std::string id1 = extension1->id();
   std::string id2 = extension2->id();
