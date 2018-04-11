@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -246,4 +246,4 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_IDLE_HELPER_H_

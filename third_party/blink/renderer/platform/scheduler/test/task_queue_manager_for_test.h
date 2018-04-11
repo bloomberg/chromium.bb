@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
 
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
@@ -44,4 +44,4 @@ class TaskQueueManagerForTest : public TaskQueueManagerImpl {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_

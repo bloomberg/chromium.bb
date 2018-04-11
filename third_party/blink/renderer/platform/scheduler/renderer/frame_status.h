@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
 
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -82,4 +82,4 @@ PLATFORM_EXPORT FrameStatus GetFrameStatus(FrameScheduler* frame_scheduler);
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_RENDERER_FRAME_STATUS_H_

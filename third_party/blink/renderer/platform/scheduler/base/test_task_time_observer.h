@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
 
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_time_observer.h"
@@ -20,4 +20,4 @@ class TestTaskTimeObserver : public TaskTimeObserver {
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_TIME_OBSERVER_H_
