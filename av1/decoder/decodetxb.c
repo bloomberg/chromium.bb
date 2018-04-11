@@ -145,7 +145,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *const xd,
   memset(levels_buf, 0,
          sizeof(*levels_buf) *
              ((width + TX_PAD_HOR) * (height + TX_PAD_VER) + TX_PAD_END));
-  av1_read_tx_type(cm, xd, blk_row, blk_col, plane, tx_size, r);
+  if (plane == AOM_PLANE_Y) {
+    // only y plane's tx_type is transmitted
+    av1_read_tx_type(cm, xd, blk_row, blk_col, tx_size, r);
+  }
   const TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col,
                                           tx_size, cm->reduced_tx_set_used);
   const TX_CLASS tx_class = tx_type_to_class[tx_type];

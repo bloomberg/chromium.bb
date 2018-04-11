@@ -606,13 +606,11 @@ static void read_filter_intra_mode_info(const AV1_COMMON *const cm,
 }
 
 void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd, int blk_row,
-                      int blk_col, int plane, TX_SIZE tx_size, aom_reader *r) {
+                      int blk_col, TX_SIZE tx_size, aom_reader *r) {
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int inter_block = is_inter_block(mbmi);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-  // only y plane's tx_type is transmitted
-  if (plane > 0) return;
   const int txk_type_idx =
       av1_get_txk_type_index(mbmi->sb_type, blk_row, blk_col);
   TX_TYPE *tx_type = &mbmi->txk_type[txk_type_idx];
