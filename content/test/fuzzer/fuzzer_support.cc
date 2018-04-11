@@ -8,7 +8,6 @@
 
 #include "base/feature_list.h"
 #include "base/i18n/icu_util.h"
-#include "base/memory/ptr_util.h"
 #include "gin/v8_initializer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 

@@ -4,7 +4,6 @@
 
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

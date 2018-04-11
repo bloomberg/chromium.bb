@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"

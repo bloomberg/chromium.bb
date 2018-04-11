@@ -5,7 +5,6 @@
 #include "content/public/test/test_browser_thread.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"

@@ -7,7 +7,6 @@
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/loader/null_resource_controller.h"

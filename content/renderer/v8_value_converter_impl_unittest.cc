@@ -11,7 +11,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/values_test_util.h"

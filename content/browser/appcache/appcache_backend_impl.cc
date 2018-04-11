@@ -4,7 +4,6 @@
 
 #include "content/browser/appcache/appcache_backend_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_group.h"
 #include "content/browser/appcache/appcache_service_impl.h"

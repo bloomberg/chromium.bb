@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/mojo_audio_output_ipc.h"

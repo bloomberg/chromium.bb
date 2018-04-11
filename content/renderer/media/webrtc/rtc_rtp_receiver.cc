@@ -5,7 +5,6 @@
 #include "content/renderer/media/webrtc/rtc_rtp_receiver.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "content/renderer/media/webrtc/rtc_rtp_contributing_source.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"

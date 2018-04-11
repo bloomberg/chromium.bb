@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "content/public/common/content_client.h"
 #include "services/service_manager/embedder/embedded_service_runner.h"
 

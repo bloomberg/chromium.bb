@@ -6,7 +6,6 @@
 
 #include "base/android/build_info.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "content/public/browser/navigation_controller.h"

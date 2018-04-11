@@ -5,7 +5,6 @@
 #include "content/browser/devtools/devtools_manager.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_http_handler.h"

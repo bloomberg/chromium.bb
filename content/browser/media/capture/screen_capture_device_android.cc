@@ -5,7 +5,6 @@
 #include "content/browser/media/capture/screen_capture_device_android.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "media/capture/content/android/screen_capture_machine_android.h"
 
 namespace content {

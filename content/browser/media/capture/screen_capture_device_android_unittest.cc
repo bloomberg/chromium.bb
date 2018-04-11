@@ -4,7 +4,6 @@
 
 #include "content/browser/media/capture/screen_capture_device_android.h"
 
-#include "base/memory/ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

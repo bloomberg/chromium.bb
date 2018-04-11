@@ -7,7 +7,6 @@
 #include <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"

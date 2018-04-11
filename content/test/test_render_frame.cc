@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/debug/stack_trace.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"

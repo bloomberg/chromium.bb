@@ -5,7 +5,6 @@
 #include "content/browser/streams/stream_context.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

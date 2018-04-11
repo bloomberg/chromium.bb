@@ -5,7 +5,6 @@
 #include "content/public/common/url_fetcher.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "content/common/net/url_request_user_data.h"
 #include "net/url_request/url_fetcher.h"
 

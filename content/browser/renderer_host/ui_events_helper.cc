@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/memory/ptr_util.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "ui/events/base_event_utils.h"

@@ -4,7 +4,6 @@
 
 #include "content/browser/net/network_quality_observer_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/view_messages.h"

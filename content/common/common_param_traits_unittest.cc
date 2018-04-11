@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "content/common/resource_messages.h"
 #include "content/public/common/content_constants.h"

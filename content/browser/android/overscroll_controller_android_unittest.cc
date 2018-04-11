@@ -5,7 +5,6 @@
 #include "content/browser/android/overscroll_controller_android.h"
 #include <memory>
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"

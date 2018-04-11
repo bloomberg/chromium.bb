@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input_messages.h"
 #include "ipc/ipc_message.h"

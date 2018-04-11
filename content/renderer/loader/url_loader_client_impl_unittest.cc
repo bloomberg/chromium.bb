@@ -5,7 +5,6 @@
 #include "content/renderer/loader/url_loader_client_impl.h"
 
 #include <vector>
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"

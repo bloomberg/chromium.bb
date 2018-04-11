@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_BUILDABLE_VIDEO_CAPTURE_DEVICE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_BUILDABLE_VIDEO_CAPTURE_DEVICE_H_
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/common/media_stream_request.h"

@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "content/test/test_render_frame_host.h"
 
 namespace content {

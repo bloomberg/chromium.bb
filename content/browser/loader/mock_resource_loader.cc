@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/loader/resource_controller.h"
 #include "content/browser/loader/resource_handler.h"

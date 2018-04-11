@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/input/input_event_dispatch_type.h"

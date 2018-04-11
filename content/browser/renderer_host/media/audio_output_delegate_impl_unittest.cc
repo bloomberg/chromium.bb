@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/sync_socket.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"

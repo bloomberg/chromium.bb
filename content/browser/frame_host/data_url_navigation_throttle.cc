@@ -5,7 +5,6 @@
 #include "content/browser/frame_host/data_url_navigation_throttle.h"
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"

@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"

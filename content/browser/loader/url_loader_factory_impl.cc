@@ -4,7 +4,6 @@
 
 #include "content/browser/loader/url_loader_factory_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_requester_info.h"
 #include "content/public/browser/browser_thread.h"

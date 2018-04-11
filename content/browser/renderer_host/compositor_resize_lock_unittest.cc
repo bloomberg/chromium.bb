@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/null_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

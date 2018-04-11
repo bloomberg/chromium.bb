@@ -5,7 +5,6 @@
 #include "content/public/test/slow_download_http_response.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 

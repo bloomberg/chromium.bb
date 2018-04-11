@@ -5,7 +5,6 @@
 #include "content/shell/browser/layout_test/layout_test_bluetooth_chooser_factory.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/render_frame_host.h"
 #include "url/origin.h"

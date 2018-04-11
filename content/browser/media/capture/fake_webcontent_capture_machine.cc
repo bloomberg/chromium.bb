@@ -5,7 +5,6 @@
 #include "content/browser/media/capture/fake_webcontent_capture_machine.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace content {
 

@@ -9,7 +9,6 @@
 
 #include "base/containers/id_map.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/common/service_worker/service_worker_types.h"

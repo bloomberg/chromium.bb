@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "crypto/ec_private_key.h"
 
 namespace content {

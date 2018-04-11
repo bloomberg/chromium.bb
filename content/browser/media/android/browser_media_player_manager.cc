@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/public/test/cache_test_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"

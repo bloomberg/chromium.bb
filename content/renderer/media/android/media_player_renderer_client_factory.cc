@@ -4,7 +4,6 @@
 
 #include "content/renderer/media/android/media_player_renderer_client_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/renderer/media/android/media_player_renderer_client.h"
 #include "media/mojo/clients/mojo_renderer.h"
 

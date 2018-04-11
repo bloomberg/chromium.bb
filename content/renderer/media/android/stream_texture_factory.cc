@@ -5,7 +5,6 @@
 #include "content/renderer/media/android/stream_texture_factory.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
