@@ -11830,6 +11830,10 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'desc': '''Text pointing the user to a help article for complex policies on Windows''',
       'text': '''encoded as a JSON string, for details see <ph name="COMPLEX_POLICIES_URL">https://www.chromium.org/administrators/complex-policies-on-windows<ex>https://www.chromium.org/administrators/complex-policies-on-windows</ex></ph>''',
     },
+    'doc_reference_link': {
+      'desc': '''Text pointing the user to the reference page for this policy, which may have more info (since it doesn't have a size limit)''',
+      'text': '''Reference: <ph name="REFERENCE_URL">$6<ex>https://www.chromium.org/administrators/policy-list-3#WallpaperImage</ex></ph>''',
+    },
   },
   'placeholders': [],
 }

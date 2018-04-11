@@ -68,21 +68,24 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     '''
     policy_type = policy['type']
     policy_name = policy['name']
-    if 'caption' in policy:
-      policy_caption = policy['caption']
+    policy_caption = policy.get('caption', policy_name)
+    policy_label = policy.get('label', policy_name)
+
+    policy_desc = policy.get('desc')
+    example_value_text = self._GetExampleValueText(policy.get('example_value'))
+
+    if policy_desc is not None and example_value_text is not None:
+      policy_explain = policy_desc + '\n\n' + example_value_text
+    elif policy_desc is not None:
+      policy_explain = policy_desc
+    elif example_value_text is not None:
+      policy_explain = example_value_text
     else:
-      policy_caption = policy_name
-    if 'desc' in policy:
-      policy_description = policy['desc']
-    else:
-      policy_description = policy_name
-    if 'label' in policy:
-      policy_label = policy['label']
-    else:
-      policy_label = policy_name
+      # No explanation found at all.
+      policy_explain = policy_name
 
     self._AddString(policy_name, policy_caption)
-    self._AddString(policy_name + '_Explain', policy_description)
+    self._AddString(policy_name + '_Explain', policy_explain)
     presentation_elem = self.AddElement(
         self._presentation_table_elem, 'presentation', {'id': policy_name})
 
@@ -148,6 +151,22 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
                         strings[category])
         self._AddString(category, string)
 
+  def _GetExampleValueText(self, example_value):
+    '''Generates a string that describes the example value, if needed.
+    Returns None if no string is needed. For instance, if the setting is a
+    boolean, the user can only select true or false, so example text is not
+    useful.'''
+    if isinstance(example_value, str):
+      return self._GetLocalizedMessage('example_value') + ' ' + example_value
+    if isinstance(example_value, list):
+      value_as_text = '\n'.join([str(v) for v in example_value])
+      return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
+    return None
+
+  def _GetLocalizedMessage(self, msg_id):
+    '''Returns the localized message of the given message ID.'''
+    return self.messages['doc_' + msg_id]['text']
+
   def BeginTemplate(self):
     dom_impl = minidom.getDOMImplementation('')
     self._doc = dom_impl.createDocument(None, 'policyDefinitionResources',
@@ -182,3 +201,5 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     # names correctly.
     # TODO(markusheintz): Find a better formatting that works with gpedit.
     return self._doc.toxml()
+
+

@@ -15,6 +15,18 @@ import unittest
 
 from writers import writer_unittest_common
 
+MESSAGES = '''
+  {
+    'win_supported_win7': {
+      'text': 'Microsoft Windows 7 or later', 'desc': 'blah'
+    },
+    'doc_recommended': {
+      'text': 'Recommended', 'desc': 'bleh'
+    },
+    'doc_reference_link': {
+      'text': 'Reference: $6', 'desc': 'bleh'
+    },
+  }'''
 
 class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for AdmWriter.'''
@@ -47,15 +59,8 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
       {
         'policy_definitions': [],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least "Windows 3.11', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium': '1',}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -71,7 +76,7 @@ class AdmWriterUnittest(writer_unittest_common.WriterUnittestCommon):
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least "Windows 3.11"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"''')
     self.CompareOutputs(output, expected_output)
@@ -82,15 +87,8 @@ chromium_recommended="Chromium - Recommended"''')
       {
         'policy_definitions': [],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least "Windows 3.11', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(
         policy_json, {'_chromium': '1', 'version':'39.0.0.0'}, 'adm')
     expected_output = '; chromium version: 39.0.0.0\n' + \
@@ -107,7 +105,7 @@ chromium_recommended="Chromium - Recommended"''')
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least "Windows 3.11"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"''')
     self.CompareOutputs(output, expected_output)
@@ -127,15 +125,8 @@ chromium_recommended="Chromium - Recommended"''')
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.12', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -175,12 +166,13 @@ chromium_recommended="Chromium - Recommended"''')
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.12"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 MainPolicy_Policy="Caption of main."
-MainPolicy_Explain="Description of main."''')
+MainPolicy_Explain="Description of main.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
     self.CompareOutputs(output, expected_output)
 
   def testMainPolicyRecommendedOnly(self):
@@ -201,15 +193,8 @@ MainPolicy_Explain="Description of main."''')
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.12', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -239,12 +224,13 @@ MainPolicy_Explain="Description of main."''')
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.12"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 MainPolicy_Policy="Caption of main."
-MainPolicy_Explain="Description of main."''')
+MainPolicy_Explain="Description of main.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
     self.CompareOutputs(output, expected_output)
 
   def testStringPolicy(self):
@@ -263,15 +249,8 @@ With a newline.""",
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.13', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -311,11 +290,12 @@ With a newline.""",
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.13"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 StringPolicy_Policy="Caption of policy."
-StringPolicy_Explain="Description of group.\\nWith a newline."
+StringPolicy_Explain="Description of group.\\nWith a newline.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#StringPolicy"
 StringPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -335,15 +315,8 @@ StringPolicy_Part="Caption of policy."
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.13', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -383,11 +356,12 @@ StringPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.13"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 IntPolicy_Policy="Caption of policy."
-IntPolicy_Explain="Description of policy."
+IntPolicy_Explain="Description of policy.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#IntPolicy"
 IntPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -419,15 +393,8 @@ IntPolicy_Part="Caption of policy."
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.14', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -477,12 +444,13 @@ IntPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.14"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 EnumPolicy_Policy="Caption of policy."
-EnumPolicy_Explain="Description of policy."
+EnumPolicy_Explain="Description of policy.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy"
 EnumPolicy_Part="Caption of policy."
 ProxyServerDisabled_DropDown="Option1"
 ProxyServerAutoDetect_DropDown="Option2"
@@ -510,15 +478,8 @@ ProxyServerAutoDetect_DropDown="Option2"
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.14', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -568,12 +529,13 @@ ProxyServerAutoDetect_DropDown="Option2"
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.14"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 EnumPolicy_Policy="Caption of policy."
-EnumPolicy_Explain="Description of policy."
+EnumPolicy_Explain="Description of policy.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy"
 EnumPolicy_Part="Caption of policy."
 ProxyServerDisabled_DropDown="Option1"
 ProxyServerAutoDetect_DropDown="Option2"
@@ -597,15 +559,8 @@ With a newline.""",
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.15', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        },
-      }'''
+        'messages': %s,
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -645,11 +600,12 @@ With a newline.""",
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.15"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
-ListPolicy_Explain="Description of list policy.\\nWith a newline."
+ListPolicy_Explain="Description of list policy.\\nWith a newline.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#ListPolicy"
 ListPolicy_Part="Label of list policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -677,15 +633,8 @@ With a newline.""",
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.15', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        },
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -725,11 +674,12 @@ With a newline.""",
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.15"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ListPolicy_Policy="Caption of list policy."
-ListPolicy_Explain="Description of list policy.\\nWith a newline."
+ListPolicy_Explain="Description of list policy.\\nWith a newline.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#ListPolicy"
 ListPolicy_Part="Label of list policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -749,15 +699,8 @@ ListPolicy_Part="Label of list policy."
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.13', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -797,11 +740,13 @@ ListPolicy_Part="Label of list policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.13"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 DictionaryPolicy_Policy="Caption of policy."
-DictionaryPolicy_Explain="Description of group."
+DictionaryPolicy_Explain="Description of group.\\n\\n\
+Reference: https://www.chromium.org/administrators/\
+policy-list-3#DictionaryPolicy"
 DictionaryPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -821,15 +766,8 @@ DictionaryPolicy_Part="Caption of policy."
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.13', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -869,11 +807,12 @@ DictionaryPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.13"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ExternalPolicy_Policy="Caption of policy."
-ExternalPolicy_Explain="Description of group."
+ExternalPolicy_Explain="Description of group.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#ExternalPolicy"
 ExternalPolicy_Part="Caption of policy."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -900,15 +839,8 @@ ExternalPolicy_Part="Caption of policy."
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.16', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -924,7 +856,7 @@ ExternalPolicy_Part="Caption of policy."
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.16"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 ''')
@@ -944,15 +876,8 @@ chromium_recommended="Chromium - Recommended"
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.12', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -982,12 +907,13 @@ chromium_recommended="Chromium - Recommended"
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.12"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 MainPolicy_Policy="Caption of main."
-MainPolicy_Explain="Description of main."''')
+MainPolicy_Explain="Description of main.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#MainPolicy"''')
     self.CompareOutputs(output, expected_output)
 
   def testPolicyGroup(self):
@@ -1021,15 +947,8 @@ With a newline."""
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.16', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_chromium' : '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -1087,15 +1006,17 @@ With a newline."""
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.16"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 chromium="Chromium"
 chromium_recommended="Chromium - Recommended"
 Group1_Category="Caption of group."
 Policy1_Policy="Caption of policy1."
-Policy1_Explain="Description of policy1.\\nWith a newline."
+Policy1_Explain="Description of policy1.\\nWith a newline.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#Policy1"
 Policy1_Part="Caption of policy1."
 Policy2_Policy="Caption of policy2."
-Policy2_Explain="Description of policy2.\\nWith a newline."
+Policy2_Explain="Description of policy2.\\nWith a newline.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#Policy2"
 Policy2_Part="Caption of policy2."
 ''')
     self.CompareOutputs(output, expected_output)
@@ -1128,15 +1049,8 @@ Policy2_Part="Caption of policy2."
           },
         ],
         'placeholders': [],
-        'messages': {
-          'win_supported_win7': {
-            'text': 'At least Windows 3.14', 'desc': 'blah'
-          },
-          'doc_recommended': {
-            'text': 'Recommended', 'desc': 'bleh'
-          }
-        }
-      }'''
+        'messages': %s
+      }''' % MESSAGES
     output = self.GetOutput(policy_json, {'_google_chrome': '1'}, 'adm')
     expected_output = self.ConstructOutput(
         ['MACHINE', 'USER'], '''
@@ -1184,16 +1098,18 @@ Policy2_Part="Caption of policy2."
 
 
 ''', '''[Strings]
-SUPPORTED_WIN7="At least Windows 3.14"
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
 Google:Cat_Google="Google"
 googlechrome="Google Chrome"
 googlechrome_recommended="Google Chrome - Recommended"
 EnumPolicy_A_Policy="Caption of policy A."
-EnumPolicy_A_Explain="Description of policy A."
+EnumPolicy_A_Explain="Description of policy A.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy.A"
 EnumPolicy_A_Part="Caption of policy A."
 tls1_2_DropDown="tls1.2"
 EnumPolicy_B_Policy="Caption of policy B."
-EnumPolicy_B_Explain="Description of policy B."
+EnumPolicy_B_Explain="Description of policy B.\\n\\n\
+Reference: https://www.chromium.org/administrators/policy-list-3#EnumPolicy.B"
 EnumPolicy_B_Part="Caption of policy B."
 ''')
     self.CompareOutputs(output, expected_output)
