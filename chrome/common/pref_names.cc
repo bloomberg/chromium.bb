@@ -344,6 +344,8 @@ const char kWebKitWebSecurityEnabled[] = "webkit.webprefs.web_security_enabled";
 const char kWebKitDomPasteEnabled[] = "webkit.webprefs.dom_paste_enabled";
 const char kWebKitTextAreasAreResizable[] =
     "webkit.webprefs.text_areas_are_resizable";
+const char kWebKitJavascriptCanAccessClipboard[] =
+    "webkit.webprefs.javascript_can_access_clipboard";
 const char kWebkitTabsToLinks[] = "webkit.webprefs.tabs_to_links";
 const char kWebKitAllowRunningInsecureContent[] =
     "webkit.webprefs.allow_running_insecure_content";

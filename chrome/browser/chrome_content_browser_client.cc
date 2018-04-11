@@ -2754,6 +2754,8 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->dom_paste_enabled =
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
+  web_prefs->javascript_can_access_clipboard =
+      prefs->GetBoolean(prefs::kWebKitJavascriptCanAccessClipboard);
   web_prefs->tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);
 
   if (!prefs->GetBoolean(prefs::kWebKitJavascriptEnabled))

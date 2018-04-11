@@ -154,6 +154,7 @@ extern const char kWebKitLoadsImagesAutomatically[];
 extern const char kWebKitPluginsEnabled[];
 extern const char kWebKitDomPasteEnabled[];
 extern const char kWebKitTextAreasAreResizable[];
+extern const char kWebKitJavascriptCanAccessClipboard[];
 extern const char kWebkitTabsToLinks[];
 extern const char kWebKitAllowRunningInsecureContent[];
 #if defined(OS_ANDROID)

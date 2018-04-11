@@ -487,6 +487,8 @@ void PrefsTabHelper::RegisterProfilePrefs(
                                 pref_defaults.dom_paste_enabled);
   registry->RegisterBooleanPref(prefs::kWebKitTextAreasAreResizable,
                                 pref_defaults.text_areas_are_resizable);
+  registry->RegisterBooleanPref(prefs::kWebKitJavascriptCanAccessClipboard,
+                                pref_defaults.javascript_can_access_clipboard);
   registry->RegisterBooleanPref(prefs::kWebkitTabsToLinks,
                                 pref_defaults.tabs_to_links);
   registry->RegisterBooleanPref(prefs::kWebKitAllowRunningInsecureContent,
