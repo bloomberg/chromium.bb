@@ -258,8 +258,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   std::unique_ptr<DEVMODE, base::FreeDeleter> user_settings =
       CreateDevMode(printer_handle.Get(), nullptr);
   if (user_settings) {
-    if (user_settings->dmFields & DM_COLOR)
-      caps.color_default = (user_settings->dmColor == DMCOLOR_COLOR);
+    caps.color_default = IsDevModeWithColor(user_settings.get());
 
     if (user_settings->dmFields & DM_DUPLEX) {
       switch (user_settings->dmDuplex) {
