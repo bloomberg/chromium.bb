@@ -717,6 +717,9 @@ network::mojom::NetworkContext* StoragePartitionImpl::GetNetworkContext() {
     network_context_ = GetContentClient()->browser()->CreateNetworkContext(
         browser_context_, is_in_memory_, relative_partition_path_);
     if (!network_context_) {
+      // TODO(mmenke): Remove once https://crbug.com/827928 is fixed.
+      CHECK(url_request_context_);
+
       DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
       DCHECK(!network_context_owner_);
       network_context_owner_ = std::make_unique<NetworkContextOwner>();
