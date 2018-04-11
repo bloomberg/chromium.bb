@@ -46,6 +46,11 @@ gfx::Vector3dF GetEffectiveUpVector(const gfx::Vector3dF& forward,
 Repositioner::Repositioner() = default;
 Repositioner::~Repositioner() = default;
 
+bool Repositioner::ShouldUpdateWorldSpaceTransform(
+    bool parent_transform_changed) const {
+  return true;
+}
+
 gfx::Transform Repositioner::LocalTransform() const {
   return transform_;
 }

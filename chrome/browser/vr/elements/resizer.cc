@@ -88,4 +88,9 @@ void Resizer::DumpGeometry(std::ostringstream* os) const {
 }
 #endif
 
+bool Resizer::ShouldUpdateWorldSpaceTransform(
+    bool parent_transform_changed) const {
+  return true;
+}
+
 }  // namespace vr
