@@ -91,6 +91,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
+  ukm::UkmRecorder* GetUkmRecorder();
+  int64_t GetUkmSourceId();
+
   base::WeakPtr<PageSchedulerImpl> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

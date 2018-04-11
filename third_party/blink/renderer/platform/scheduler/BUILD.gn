@@ -154,6 +154,7 @@ blink_platform_sources("scheduler") {
     "//base",
     "//cc",
     "//device/base/synchronization",
+    "//services/metrics/public/cpp:ukm_builders",
     "//third_party/blink/renderer/platform:make_platform_generated",
     "//third_party/blink/renderer/platform/wtf",
   ]

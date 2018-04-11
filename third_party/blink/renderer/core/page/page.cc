@@ -820,6 +820,20 @@ void Page::SetPageFrozen(bool frozen) {
                                              : PageLifecycleState::kHidden);
 }
 
+ukm::UkmRecorder* Page::GetUkmRecorder() {
+  Frame* frame = MainFrame();
+  if (!frame->IsLocalFrame())
+    return nullptr;
+  return ToLocalFrame(frame)->GetDocument()->UkmRecorder();
+}
+
+int64_t Page::GetUkmSourceId() {
+  Frame* frame = MainFrame();
+  if (!frame->IsLocalFrame())
+    return -1;
+  return ToLocalFrame(frame)->GetDocument()->UkmSourceID();
+}
+
 void Page::SetHasHighMediaEngagement(bool value) {
   has_high_media_engagement_ = value;
 }

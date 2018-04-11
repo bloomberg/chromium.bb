@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
 #include <memory>
+
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
 #include "base/feature_list.h"
@@ -19,6 +20,7 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/renderer_process_type.h"
@@ -57,6 +59,7 @@ constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kQueueingTimeWindowDuration =
     base::TimeDelta::FromSeconds(1);
+const double kSamplingRateForTaskUkm = 0.0001;
 
 // Field trial name.
 const char kWakeUpThrottlingTrial[] = "RendererSchedulerWakeUpThrottling";
@@ -519,7 +522,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       virtual_time_pause_count(0),
       max_virtual_time_task_starvation_count(0),
       virtual_time_stopped(false),
-      nested_runloop(false) {}
+      nested_runloop(false),
+      uniform_distribution(0.0f, 1.0f) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -2492,6 +2496,65 @@ void RendererSchedulerImpl::OnTaskCompleted(
   main_thread_only().task_description_for_tracing = base::nullopt;
 }
 
+void RendererSchedulerImpl::RecordTaskUkm(
+    MainThreadTaskQueue* queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start,
+    base::TimeTicks end,
+    base::Optional<base::TimeDelta> thread_time) {
+  if (!ShouldRecordTaskUkm())
+    return;
+
+  if (queue && queue->GetFrameScheduler()) {
+    RecordTaskUkmImpl(queue, task, start, end, thread_time,
+                      static_cast<PageSchedulerImpl*>(
+                          queue->GetFrameScheduler()->GetPageScheduler()),
+                      1);
+    return;
+  }
+
+  for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
+    RecordTaskUkmImpl(queue, task, start, end, thread_time, page_scheduler,
+                      main_thread_only().page_schedulers.size());
+  }
+}
+
+void RendererSchedulerImpl::RecordTaskUkmImpl(
+    MainThreadTaskQueue* queue,
+    const TaskQueue::Task& task,
+    base::TimeTicks start,
+    base::TimeTicks end,
+    base::Optional<base::TimeDelta> thread_time,
+    PageSchedulerImpl* page_scheduler,
+    size_t page_schedulers_to_attribute) {
+  ukm::UkmRecorder* ukm_recorder = page_scheduler->GetUkmRecorder();
+  // OOPIFs are not supported.
+  if (!ukm_recorder)
+    return;
+
+  ukm::builders::RendererSchedulerTask builder(
+      page_scheduler->GetUkmSourceId());
+
+  builder.SetPageSchedulers(page_schedulers_to_attribute);
+  builder.SetRendererBackgrounded(main_thread_only().renderer_backgrounded);
+  builder.SetRendererHidden(main_thread_only().renderer_hidden);
+  builder.SetRendererAudible(main_thread_only().is_audio_playing);
+  builder.SetUseCase(
+      static_cast<int>(main_thread_only().current_use_case.get()));
+  builder.SetTaskType(task.task_type());
+  builder.SetQueueType(static_cast<int>(
+      queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kDetached));
+  builder.SetFrameStatus(static_cast<int>(
+      GetFrameStatus(queue ? queue->GetFrameScheduler() : nullptr)));
+  builder.SetTaskDuration((end - start).InMicroseconds());
+
+  if (thread_time) {
+    builder.SetTaskDuration(thread_time->InMicroseconds());
+  }
+
+  builder.Record(ukm_recorder);
+}
+
 void RendererSchedulerImpl::OnBeginNestedRunLoop() {
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
   seqlock_queueing_time_estimator_.data.OnBeginNestedRunLoop();
@@ -2622,6 +2685,12 @@ void RendererSchedulerImpl::OnTraceLogDisabled() {}
 
 base::WeakPtr<RendererSchedulerImpl> RendererSchedulerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+bool RendererSchedulerImpl::ShouldRecordTaskUkm() {
+  // This function returns true with probability of kSamplingRateForTaskUkm.
+  return main_thread_only().uniform_distribution(
+             main_thread_only().random_generator) < kSamplingRateForTaskUkm;
 }
 
 // static
