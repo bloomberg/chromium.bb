@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <i915_drm.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -49,6 +50,31 @@ static uint32_t i915_get_gen(int device_id)
 	return 4;
 }
 
+/*
+ * We allow allocation of ARGB formats for SCANOUT if the corresponding XRGB
+ * formats supports it. It's up to the caller (chrome ozone) to ultimately not
+ * scan out ARGB if the display controller only supports XRGB, but we'll allow
+ * the allocation of the bo here.
+ */
+static bool format_compatible(const struct combination *combo, uint32_t format)
+{
+	if (combo->format == format)
+		return true;
+
+	switch (format) {
+	case DRM_FORMAT_XRGB8888:
+		return combo->format == DRM_FORMAT_ARGB8888;
+	case DRM_FORMAT_XBGR8888:
+		return combo->format == DRM_FORMAT_ABGR8888;
+	case DRM_FORMAT_RGBX8888:
+		return combo->format == DRM_FORMAT_RGBA8888;
+	case DRM_FORMAT_BGRX8888:
+		return combo->format == DRM_FORMAT_BGRA8888;
+	default:
+		return false;
+	}
+}
+
 static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 {
 	uint32_t i;
@@ -60,7 +86,7 @@ static int i915_add_kms_item(struct driver *drv, const struct kms_item *item)
 	 */
 	for (i = 0; i < drv_array_size(drv->combos); i++) {
 		combo = (struct combination *)drv_array_at_idx(drv->combos, i);
-		if (combo->format != item->format)
+		if (!format_compatible(combo, item->format))
 			continue;
 
 		if (item->modifier == DRM_FORMAT_MOD_LINEAR &&
