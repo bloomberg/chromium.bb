@@ -63,6 +63,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -591,8 +592,12 @@ void DownloadManagerImpl::StartDownload(
           stream->IsEmpty()));
   DVLOG(20) << __func__ << "() result="
             << download::DownloadInterruptReasonToString(info->result);
-  if (new_download)
+  if (new_download) {
     download::RecordDownloadConnectionSecurity(info->url(), info->url_chain);
+    download::RecordDownloadContentTypeSecurity(
+        info->url(), info->url_chain, info->mime_type,
+        base::BindRepeating(&IsOriginSecure));
+  }
   base::Callback<void(uint32_t)> got_id(base::Bind(
       &DownloadManagerImpl::StartDownloadWithId, weak_factory_.GetWeakPtr(),
       base::Passed(&info), base::Passed(&stream),
