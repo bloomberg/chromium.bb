@@ -560,6 +560,18 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
 BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'dummy_benchmark.noisy_benchmark_1',
     'dummy_benchmark.stable_benchmark_1',
+    'blink_perf.bindings',
+    'blink_perf.canvas',
+    'blink_perf.css',
+    'blink_perf.dom',
+    'blink_perf.events',
+    'blink_perf.image_decoder',
+    'blink_perf.layout',
+    'blink_perf.owp_storage',
+    'blink_perf.paint',
+    'blink_perf.parser',
+    'blink_perf.shadow_dom',
+    'blink_perf.svg',
 ]
 
 
