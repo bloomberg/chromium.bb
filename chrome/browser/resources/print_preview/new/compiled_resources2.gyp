@@ -31,6 +31,7 @@
         '../data/compiled_resources2.gyp:measurement_system',
         '../data/compiled_resources2.gyp:user_info',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:event_tracker',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:webui_listener_tracker',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -188,6 +189,7 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         '../../pdf/compiled_resources2.gyp:pdf_scripting_api',
         '../compiled_resources2.gyp:native_layer',
