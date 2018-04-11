@@ -31,9 +31,11 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
 
     // ServiceWorkerWebSettingsBoundaryInterface
     @Override
-    public InvocationHandler convertServiceWorkerSettings(ServiceWorkerWebSettings settings) {
+    public InvocationHandler convertServiceWorkerSettings(
+            /* ServiceWorkerWebSettings */ Object serviceWorkerWebSettings) {
         return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
                 new SupportLibServiceWorkerSettingsAdapter(
-                        WebkitToSharedGlueConverter.getServiceWorkerSettings(settings)));
+                        WebkitToSharedGlueConverter.getServiceWorkerSettings(
+                                (ServiceWorkerWebSettings) serviceWorkerWebSettings)));
     }
 }
