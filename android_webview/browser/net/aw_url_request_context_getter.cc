@@ -175,13 +175,17 @@ std::unique_ptr<net::URLRequestJobFactory> CreateJobFactory(
   return job_factory;
 }
 
-// For Android WebView, do not enforce the policies outlined in
+// For Android WebView, do not enforce policies that are not consistent with
+// the underlying OS validator.
+// This means not enforcing the Legacy Symantec PKI policies outlined in
 // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
-// as those will be handled by Android itself on its own schedule. Otherwise,
-// it returns the default SSLConfig.
+// or disabling SHA-1 for locally-installed trust anchors.
 class AwSSLConfigService : public net::SSLConfigService {
  public:
-  AwSSLConfigService() { default_config_.symantec_enforcement_disabled = true; }
+  AwSSLConfigService() {
+    default_config_.symantec_enforcement_disabled = true;
+    default_config_.sha1_local_anchors_enabled = true;
+  }
 
   void GetSSLConfig(net::SSLConfig* config) override {
     *config = default_config_;

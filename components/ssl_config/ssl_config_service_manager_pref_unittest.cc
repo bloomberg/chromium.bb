@@ -385,10 +385,10 @@ TEST_F(SSLConfigServiceManagerPrefTest, SHA1ForLocalAnchors) {
   scoped_refptr<SSLConfigService> config_service(config_manager->Get());
   ASSERT_TRUE(config_service);
 
-  // By default, SHA-1 local trust anchors should be enabled when not
-  // using any pref service.
+  // By default, SHA-1 local trust anchors should not be enabled when not
+  // not using any pref service.
   SSLConfig config1;
-  EXPECT_TRUE(config1.sha1_local_anchors_enabled);
+  EXPECT_FALSE(config1.sha1_local_anchors_enabled);
 
   // Using a pref service without any preference set should result in
   // SHA-1 local trust anchors being disabled.

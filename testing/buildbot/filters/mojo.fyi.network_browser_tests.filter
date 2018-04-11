@@ -169,8 +169,8 @@
 -SSLUITestWithClientCert.TestWSSClientCert
 
 # https://bugs.chromium.org/p/chromium/issues/detail?id=755309
--SSLUITest.SHA1IsDefaultDisabled/0
--SSLUITest.SHA1IsDefaultDisabled/1
+-SSLUITest.SHA1PrefsCanEnable/0
+-SSLUITest.SHA1PrefsCanEnable/1
 -SSLUITest.TestBadHTTPSDownload/0
 -SSLUITest.TestBadHTTPSDownload/1
 -SSLUITest.TestHTTPSOCSPOk/0
