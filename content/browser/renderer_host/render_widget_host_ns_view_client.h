@@ -24,6 +24,16 @@ class RenderWidgetHostNSViewClient {
   // RenderWidgetHostNSViewBridge, this method is to be removed.
   virtual RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() = 0;
 
+  // Return the RenderWidget's BrowserAccessibilityManager.
+  // TODO(ccameron): This returns nullptr for non-local NSViews. A scheme for
+  // non-local accessibility needs to be developed.
+  virtual BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() = 0;
+
+  // Synchronously query if there exists a RenderViewHost for the corresponding
+  // RenderWidgetHostView's RenderWidgetHost, and store the result in
+  // |*is_render_view|.
+  virtual void OnNSViewSyncIsRenderViewHost(bool* is_render_view) = 0;
+
   // Indicates that the RenderWidgetHost is to shut down.
   virtual void OnNSViewRequestShutdown() = 0;
 
@@ -114,6 +124,17 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewPaste() = 0;
   virtual void OnNSViewPasteAndMatchStyle() = 0;
   virtual void OnNSViewSelectAll() = 0;
+
+  // Speak the selected text of the appropriate RenderWidgetHostView using
+  // TextServicesContextMenu.
+  virtual void OnNSViewSpeakSelection() = 0;
+
+  // Stop speaking using TextServicesContextMenu.
+  virtual void OnNSViewStopSpeaking() = 0;
+
+  // Synchronously query if TextServicesContextMenu is currently speaking and
+  // store the result in |*is_speaking|.
+  virtual void OnNSViewSyncIsSpeaking(bool* is_speaking) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);

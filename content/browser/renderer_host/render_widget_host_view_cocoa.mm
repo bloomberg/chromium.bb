@@ -17,20 +17,13 @@
 #import "content/browser/cocoa/system_hotkey_helper_mac.h"
 #import "content/browser/cocoa/system_hotkey_map.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_plugin_guest_manager.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
-#include "content/public/browser/web_contents.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -39,13 +32,11 @@ using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
 using content::EditCommand;
 using content::NativeWebKeyboardEvent;
-using content::RenderViewHost;
 using content::RenderWidgetHostImpl;
 using content::RenderWidgetHostNSViewClient;
 using content::RenderWidgetHostView;
 using content::RenderWidgetHostViewMac;
 using content::RenderWidgetHostViewMacEditCommandHelper;
-using content::WebContents;
 using content::WebGestureEventBuilder;
 using content::WebMouseEventBuilder;
 using content::WebMouseWheelEventBuilder;
@@ -61,21 +52,6 @@ BOOL EventIsReservedBySystem(NSEvent* event) {
   content::SystemHotkeyHelperMac* helper =
       content::SystemHotkeyHelperMac::GetInstance();
   return helper->map()->IsEventReserved(event);
-}
-
-RenderWidgetHostView* GetRenderWidgetHostViewToUse(
-    RenderWidgetHostViewMac* render_widget_host_view) {
-  WebContents* web_contents = render_widget_host_view->GetWebContents();
-  if (!web_contents)
-    return render_widget_host_view;
-  content::BrowserPluginGuestManager* guest_manager =
-      web_contents->GetBrowserContext()->GetGuestManager();
-  if (!guest_manager)
-    return render_widget_host_view;
-  content::WebContents* guest = guest_manager->GetFullPageGuest(web_contents);
-  if (!guest)
-    return render_widget_host_view;
-  return guest->GetRenderWidgetHostView();
 }
 
 // TODO(suzhe): Upstream this function.
@@ -1198,12 +1174,16 @@ void ExtractUnderlines(NSAttributedString* string,
       return valid;
   }
 
+  bool is_render_view = false;
+  client_->OnNSViewSyncIsRenderViewHost(&is_render_view);
+
+  bool is_speaking = false;
+  client_->OnNSViewSyncIsSpeaking(&is_speaking);
+
   SEL action = [item action];
-  BOOL is_render_view =
-      RenderViewHost::From(renderWidgetHostView_->host()) != nullptr;
 
   if (action == @selector(stopSpeaking:))
-    return is_render_view && ui::TextServicesContextMenu::IsSpeaking();
+    return is_render_view && is_speaking;
 
   if (action == @selector(startSpeaking:))
     return is_render_view;
@@ -1243,7 +1223,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (id)accessibilityAttributeValue:(NSString*)attribute {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
+      client_->GetRootBrowserAccessibilityManager();
 
   // Contents specifies document view of RenderWidgetHostViewCocoa provided by
   // BrowserAccessibilityManager. Children includes all subviews in addition to
@@ -1269,7 +1249,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (id)accessibilityHitTest:(NSPoint)point {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
+      client_->GetRootBrowserAccessibilityManager();
   if (!manager)
     return self;
   NSPoint pointInWindow =
@@ -1284,13 +1264,13 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (BOOL)accessibilityIsIgnored {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
+      client_->GetRootBrowserAccessibilityManager();
   return !manager;
 }
 
 - (NSUInteger)accessibilityGetIndexOf:(id)child {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
+      client_->GetRootBrowserAccessibilityManager();
   // Only child is root.
   if (manager && ToBrowserAccessibilityCocoa(manager->GetRoot()) == child) {
     return 0;
@@ -1301,7 +1281,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
 - (id)accessibilityFocusedUIElement {
   BrowserAccessibilityManager* manager =
-      renderWidgetHostView_->host()->GetRootBrowserAccessibilityManager();
+      client_->GetRootBrowserAccessibilityManager();
   if (manager) {
     BrowserAccessibility* focused_item = manager->GetFocus();
     DCHECK(focused_item);
@@ -1750,11 +1730,11 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)startSpeaking:(id)sender {
-  GetRenderWidgetHostViewToUse(renderWidgetHostView_)->SpeakSelection();
+  client_->OnNSViewSpeakSelection();
 }
 
 - (void)stopSpeaking:(id)sender {
-  ui::TextServicesContextMenu::StopSpeaking();
+  client_->OnNSViewStopSpeaking();
 }
 
 - (void)cancelComposition {
