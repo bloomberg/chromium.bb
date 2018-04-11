@@ -185,7 +185,13 @@ ShellBrowserContext::CreateRequestContextForStoragePartition(
     bool in_memory,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
-  return nullptr;
+  scoped_refptr<ShellURLRequestContextGetter>& context_getter =
+      isolated_url_request_getters_[partition_path];
+  if (!context_getter) {
+    context_getter = CreateURLRequestContextGetter(
+        protocol_handlers, std::move(request_interceptors));
+  }
+  return context_getter.get();
 }
 
 net::URLRequestContextGetter*

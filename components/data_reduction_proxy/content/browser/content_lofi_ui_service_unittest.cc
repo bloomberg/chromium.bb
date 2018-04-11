@@ -31,7 +31,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
  public:
   ContentLoFiUIServiceTest()
       : content::RenderViewHostTestHarness(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD),
+            content::TestBrowserThreadBundle::DEFAULT),
         callback_called_(false) {}
 
   void RunTestOnIOThread(base::RunLoop* ui_run_loop) {

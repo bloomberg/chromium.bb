@@ -128,6 +128,8 @@ class ShellBrowserContext : public BrowserContext {
   base::FilePath path_;
   BrowserPluginGuestManager* guest_manager_;
   scoped_refptr<ShellURLRequestContextGetter> url_request_getter_;
+  std::map<base::FilePath, scoped_refptr<ShellURLRequestContextGetter>>
+      isolated_url_request_getters_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserContext);
 };
