@@ -20,6 +20,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -35,6 +36,11 @@ class HostedAppToolbarActionsBar : public ToolbarActionsBar {
     // Only show an icon when an extension action is popped out due to
     // activation, and none otherwise.
     return popped_out_action() ? 1 : 0;
+  }
+
+  int GetMinimumWidth() const override {
+    // Allow the BrowserActionsContainer to collapse completely and be hidden
+    return 0;
   }
 
  private:
@@ -113,8 +119,10 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
     BrowserView* browser_view,
     SkColor icon_color)
     : browser_view_(browser_view) {
-  SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(),
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
   SetVisible(false);
   SetPaintToLayer();
@@ -151,8 +159,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
                                       this,
                                       false /* interactive */)) {
   DCHECK(browser_view_);
-  auto layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
+  const int kHorizontalPadding =
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kHorizontalPadding),
+      kHorizontalPadding);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
