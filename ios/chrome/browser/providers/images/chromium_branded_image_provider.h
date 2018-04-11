@@ -20,7 +20,6 @@ class ChromiumBrandedImageProvider : public BrandedImageProvider {
   UIImage* GetSigninConfirmationPersonalizeServicesImage() override;
   NSArray<UIImage*>* GetToolbarVoiceSearchButtonImages(bool incognito) override;
   UIImage* GetWhatsNewIconImage(WhatsNewIcon type) override;
-  UIImage* GetToolbarSearchButtonImage(SearchEngineIcon type) override;
   UIImage* GetDownloadGoogleDriveImage() override;
 
  private:

@@ -139,10 +139,6 @@ const char kTabSwitcherPresentsBVCDescription[] =
     "BVC is visible, the tab switcher will remain in the VC hierarchy "
     "underneath it.";
 
-const char kToolbarButtonPositionsName[] = "Toolbar's buttons positions";
-const char kToolbarButtonPositionsDescription[] =
-    "Position of the toolbars buttons.";
-
 const char kUIRefreshLocationBarName[] = "UI Refresh Location Bar";
 const char kUIRefreshLocationBarDescription[] =
     "When enabled, the UI Refresh location bar with a custom steady-state will "
@@ -151,10 +147,6 @@ const char kUIRefreshLocationBarDescription[] =
 const char kUIRefreshPhase1Name[] = "UI Refresh Phase 1";
 const char kUIRefreshPhase1Description[] =
     "When enabled, the first phase of the iOS UI refresh will be displayed.";
-
-const char kSearchIconToggleName[] = "Change the icon for the search button";
-const char kSearchIconToggleDescription[] =
-    "Different icons for the search button.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =

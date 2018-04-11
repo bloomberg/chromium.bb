@@ -557,10 +557,6 @@ const CGFloat kScrollFadeDistance = 30;
   self.view.shareButton.enabled = enabled;
 }
 
-- (void)setSearchIcon:(UIImage*)searchIcon {
-  // No-op, no search icon in the non-adaptive toolbar.
-}
-
 #pragma mark - ToolbarViewFullscreenDelegate
 
 - (void)toolbarViewFrameChanged {
