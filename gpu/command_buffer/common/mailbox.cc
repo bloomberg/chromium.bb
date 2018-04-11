@@ -64,7 +64,7 @@ std::string Mailbox::ToDebugString() const {
   for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i) {
     if (i > 0)
       s += ':';
-    s += base::StringPrintf("%u", name[i]);
+    s += base::StringPrintf("%02X", static_cast<uint8_t>(name[i]));
   }
   return s;
 }
