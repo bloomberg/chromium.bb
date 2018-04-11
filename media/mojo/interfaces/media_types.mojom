@@ -6,7 +6,7 @@ module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // See media/base/audio_codecs.h for descriptions.
@@ -238,7 +238,7 @@ struct VideoFrame {
   VideoFrameData data;
 
   // Extra properties associated with the VideoFrame.
-  mojo.common.mojom.DictionaryValue metadata;
+  mojo_base.mojom.DictionaryValue metadata;
 };
 
 // Possible choices for storing VideoFrame data.
