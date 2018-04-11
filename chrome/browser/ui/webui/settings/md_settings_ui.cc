@@ -64,6 +64,7 @@
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
+#include "chrome/browser/ui/webui/settings/tts_handler.h"
 #endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
@@ -194,6 +195,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
       std::make_unique<chromeos::settings::StylusHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::InternetHandler>(profile));
+  AddSettingsPageUIHandler(std::make_unique<TtsHandler>());
 #else
   AddSettingsPageUIHandler(std::make_unique<DefaultBrowserHandler>(web_ui));
   AddSettingsPageUIHandler(std::make_unique<ManageProfileHandler>(profile));

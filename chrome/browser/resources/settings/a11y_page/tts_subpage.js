@@ -20,4 +20,9 @@ Polymer({
     },
   },
 
+  /** @private */
+  onManageGoogleTtsEngineSettingsClick_: function() {
+    settings.navigateTo(settings.routes.MANAGE_GOOGLE_TTS_ENGINE_SETTINGS);
+  },
+
 });

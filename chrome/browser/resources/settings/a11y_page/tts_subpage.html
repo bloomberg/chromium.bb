@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="google_tts_engine_subpage.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -42,6 +43,21 @@
     <h2>$i18n{textToSpeechEngines}</h2>
     <div class="settings-box block first">
       <a href="">$i18n{textToSpeechInstallEngines}</a>
+    </div>
+
+    <div class="settings-box two-line"
+        on-click="onManageGoogleTtsEngineSettingsClick_"
+        actionable>
+      <div class="start" id="appearanceSettingsPrimary">
+        $i18n{manageGoogleTtsEngineSettings}
+        <div class="secondary" id="appearanceSettingsSecondary">
+          $i18n{googleTtsEngineSettingsLinkDescription}
+        </div>
+      </div>
+      <paper-icon-button-light class="subpage-arrow">
+        <button aria-labelledby="appearanceSettingsPrimary"
+            aria-describedby="appearanceSettingsSecondary"></button>
+      </paper-icon-button-light>
     </div>
   </template>
   <script src="tts_subpage.js"></script>
