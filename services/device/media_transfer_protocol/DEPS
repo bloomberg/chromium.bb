@@ -1,4 +1,0 @@
-include_rules = [
-  "+device/media_transfer_protocol",
-  "+services/device/public/mojom",
-]

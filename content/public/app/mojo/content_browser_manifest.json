@@ -88,7 +88,6 @@
           "device:geolocation",
           "device:hid",
           "device:input_service",
-          "device:mtp",
           "device:nfc",
           "device:serial",
           "device:vibration",
