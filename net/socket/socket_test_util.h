@@ -39,7 +39,6 @@
 #include "net/socket/socks_client_socket_pool.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_client_socket_pool.h"
-#include "net/socket/transport_client_socket.h"
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -536,7 +535,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
       DatagramSocket::BindType bind_type,
       NetLog* net_log,
       const NetLogSource& source) override;
-  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
@@ -564,7 +563,7 @@ class MockClientSocketFactory : public ClientSocketFactory {
   DISALLOW_COPY_AND_ASSIGN(MockClientSocketFactory);
 };
 
-class MockClientSocket : public TransportClientSocket {
+class MockClientSocket : public SSLClientSocket {
  public:
   // The NetLogWithSource is needed to test LoadTimingInfo, which uses NetLog
   // IDs as
@@ -582,8 +581,7 @@ class MockClientSocket : public TransportClientSocket {
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
-  // TransportClientSocket implementation.
-  int Bind(const net::IPEndPoint& local_addr) override;
+  // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override = 0;
   void Disconnect() override;
   bool IsConnected() const override;
@@ -601,6 +599,19 @@ class MockClientSocket : public TransportClientSocket {
   int64_t GetTotalReceivedBytes() const override;
   void ApplySocketTag(const SocketTag& tag) override {}
 
+  // SSLClientSocket implementation.
+  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
+  int ExportKeyingMaterial(const base::StringPiece& label,
+                           bool has_context,
+                           const base::StringPiece& context,
+                           unsigned char* out,
+                           unsigned int outlen) override;
+  ChannelIDService* GetChannelIDService() const override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
+  crypto::ECPrivateKey* GetChannelIDKey() const override;
+
  protected:
   ~MockClientSocket() override;
   void RunCallbackAsync(const CompletionCallback& callback, int result);
@@ -609,7 +620,7 @@ class MockClientSocket : public TransportClientSocket {
   // True if Connect completed successfully and Disconnect hasn't been called.
   bool connected_;
 
-  IPEndPoint local_addr_;
+  // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;
 
   NetLogWithSource net_log_;
@@ -702,7 +713,7 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   DISALLOW_COPY_AND_ASSIGN(MockTCPClientSocket);
 };
 
-class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
+class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
  public:
   MockSSLClientSocket(std::unique_ptr<ClientSocketHandle> transport_socket,
                       const HostPortPair& host_and_port,
@@ -729,34 +740,16 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   bool IsConnectedAndIdle() const override;
   bool WasEverUsed() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
-  int GetLocalAddress(IPEndPoint* address) const override;
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
   void ApplySocketTag(const SocketTag& tag) override;
-  const NetLogWithSource& NetLog() const override;
-  void SetSubresourceSpeculation() override {}
-  void SetOmniboxSpeculation() override {}
-  void GetConnectionAttempts(ConnectionAttempts* out) const override;
-  void ClearConnectionAttempts() override {}
-  void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
-  int64_t GetTotalReceivedBytes() const override;
-  int SetReceiveBufferSize(int32_t size) override;
-  int SetSendBufferSize(int32_t size) override;
 
   // SSLClientSocket implementation.
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
   Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
                                  TokenBindingType tb_type,
                                  std::vector<uint8_t>* out) override;
-  int ExportKeyingMaterial(const base::StringPiece& label,
-                           bool has_context,
-                           const base::StringPiece& context,
-                           unsigned char* out,
-                           unsigned int outlen) override;
-  ChannelIDService* GetChannelIDService() const override;
-  crypto::ECPrivateKey* GetChannelIDKey() const override;
-
   // This MockSocket does not implement the manual async IO feature.
   void OnReadComplete(const MockRead& data) override;
   void OnWriteComplete(int rv) override;
@@ -766,22 +759,15 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   // TODO(mmenke):  Probably a good idea to support it, anyways.
   void OnDataProviderDestroyed() override {}
 
+  ChannelIDService* GetChannelIDService() const override;
+
  private:
   static void ConnectCallback(MockSSLClientSocket* ssl_client_socket,
                               const CompletionCallback& callback,
                               int rv);
 
-  void RunCallbackAsync(const CompletionCallback& callback, int result);
-  void RunCallback(const CompletionCallback& callback, int result);
-
-  bool connected_ = false;
-  NetLogWithSource net_log_;
   std::unique_ptr<ClientSocketHandle> transport_;
   SSLSocketDataProvider* data_;
-  // Address of the "remote" peer we're connected to.
-  IPEndPoint peer_addr_;
-
-  base::WeakPtrFactory<MockSSLClientSocket> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
 };
@@ -1103,13 +1089,12 @@ class ScopedWebSocketEndpointZeroUnlockDelay {
 // This is to provide a common base class for subclasses to override specific
 // StreamSocket methods for testing, while still communicating with a 'real'
 // StreamSocket.
-class WrappedStreamSocket : public TransportClientSocket {
+class WrappedStreamSocket : public StreamSocket {
  public:
   explicit WrappedStreamSocket(std::unique_ptr<StreamSocket> transport);
   ~WrappedStreamSocket() override;
 
   // StreamSocket implementation:
-  int Bind(const net::IPEndPoint& local_addr) override;
   int Connect(const CompletionCallback& callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
@@ -1185,7 +1170,7 @@ class MockTaggingClientSocketFactory : public MockClientSocketFactory {
       DatagramSocket::BindType bind_type,
       NetLog* net_log,
       const NetLogSource& source) override;
-  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,

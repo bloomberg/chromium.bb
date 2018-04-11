@@ -14,7 +14,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_with_source.h"
-#include "net/socket/transport_client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
@@ -39,7 +39,7 @@ class NetLog;
 // reads and writes must be done in a deterministic order and for a
 // deterministic number of bytes, every time the fuzzer is run with the same
 // data.
-class FuzzedSocket : public TransportClientSocket {
+class FuzzedSocket : public StreamSocket {
  public:
   // |data_provider| is used as to determine behavior of the FuzzedSocket. It
   // must remain valid until after the FuzzedSocket is destroyed.
@@ -69,8 +69,7 @@ class FuzzedSocket : public TransportClientSocket {
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
-  // TransportClientSocket implementation:
-  int Bind(const net::IPEndPoint& local_addr) override;
+  // StreamSocket implementation:
   int Connect(const CompletionCallback& callback) override;
   void Disconnect() override;
   bool IsConnected() const override;

@@ -25,7 +25,6 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/transport_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,18 +39,14 @@ IPAddress ParseIP(const std::string& ip) {
 }
 
 // A StreamSocket which connects synchronously and successfully.
-class MockConnectClientSocket : public TransportClientSocket {
+class MockConnectClientSocket : public StreamSocket {
  public:
   MockConnectClientSocket(const AddressList& addrlist, net::NetLog* net_log)
       : connected_(false),
         addrlist_(addrlist),
         net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {}
 
-  // TransportClientSocket implementation.
-  int Bind(const net::IPEndPoint& local_addr) override {
-    NOTREACHED();
-    return ERR_FAILED;
-  }
+  // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override {
     connected_ = true;
     return OK;
@@ -116,18 +111,13 @@ class MockConnectClientSocket : public TransportClientSocket {
   DISALLOW_COPY_AND_ASSIGN(MockConnectClientSocket);
 };
 
-class MockFailingClientSocket : public TransportClientSocket {
+class MockFailingClientSocket : public StreamSocket {
  public:
   MockFailingClientSocket(const AddressList& addrlist, net::NetLog* net_log)
       : addrlist_(addrlist),
         net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::SOCKET)) {}
 
-  // TransportClientSocket implementation.
-  int Bind(const net::IPEndPoint& local_addr) override {
-    NOTREACHED();
-    return ERR_FAILED;
-  }
-
+  // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override {
     return ERR_CONNECTION_FAILED;
   }
@@ -187,7 +177,7 @@ class MockFailingClientSocket : public TransportClientSocket {
   DISALLOW_COPY_AND_ASSIGN(MockFailingClientSocket);
 };
 
-class MockTriggerableClientSocket : public TransportClientSocket {
+class MockTriggerableClientSocket : public StreamSocket {
  public:
   // |should_connect| indicates whether the socket should successfully complete
   // or fail.
@@ -208,7 +198,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
                       weak_factory_.GetWeakPtr());
   }
 
-  static std::unique_ptr<TransportClientSocket> MakeMockPendingClientSocket(
+  static std::unique_ptr<StreamSocket> MakeMockPendingClientSocket(
       const AddressList& addrlist,
       bool should_connect,
       net::NetLog* net_log) {
@@ -219,7 +209,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
     return std::move(socket);
   }
 
-  static std::unique_ptr<TransportClientSocket> MakeMockDelayedClientSocket(
+  static std::unique_ptr<StreamSocket> MakeMockDelayedClientSocket(
       const AddressList& addrlist,
       bool should_connect,
       const base::TimeDelta& delay,
@@ -231,7 +221,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
     return std::move(socket);
   }
 
-  static std::unique_ptr<TransportClientSocket> MakeMockStalledClientSocket(
+  static std::unique_ptr<StreamSocket> MakeMockStalledClientSocket(
       const AddressList& addrlist,
       net::NetLog* net_log,
       bool failing) {
@@ -246,12 +236,7 @@ class MockTriggerableClientSocket : public TransportClientSocket {
     return std::move(socket);
   }
 
-  // TransportClientSocket implementation.
-  int Bind(const net::IPEndPoint& local_addr) override {
-    NOTREACHED();
-    return ERR_FAILED;
-  }
-
+  // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override {
     DCHECK(callback_.is_null());
     callback_ = callback;
@@ -393,7 +378,7 @@ MockTransportClientSocketFactory::CreateDatagramClientSocket(
   return std::unique_ptr<DatagramClientSocket>();
 }
 
-std::unique_ptr<TransportClientSocket>
+std::unique_ptr<StreamSocket>
 MockTransportClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
     std::unique_ptr<SocketPerformanceWatcher> /* socket_performance_watcher */,
@@ -408,9 +393,11 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
 
   switch (type) {
     case MOCK_CLIENT_SOCKET:
-      return std::make_unique<MockConnectClientSocket>(addresses, net_log_);
+      return std::unique_ptr<StreamSocket>(
+          new MockConnectClientSocket(addresses, net_log_));
     case MOCK_FAILING_CLIENT_SOCKET:
-      return std::make_unique<MockFailingClientSocket>(addresses, net_log_);
+      return std::unique_ptr<StreamSocket>(
+          new MockFailingClientSocket(addresses, net_log_));
     case MOCK_PENDING_CLIENT_SOCKET:
       return MockTriggerableClientSocket::MakeMockPendingClientSocket(
           addresses, true, net_log_);
@@ -443,7 +430,8 @@ MockTransportClientSocketFactory::CreateTransportClientSocket(
     }
     default:
       NOTREACHED();
-      return std::make_unique<MockConnectClientSocket>(addresses, net_log_);
+      return std::unique_ptr<StreamSocket>(
+          new MockConnectClientSocket(addresses, net_log_));
   }
 }
 
