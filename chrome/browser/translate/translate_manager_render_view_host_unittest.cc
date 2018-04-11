@@ -304,8 +304,7 @@ class TranslateManagerRenderViewHostTest
     details.adopted_language = lang;
     ChromeTranslateClient::FromWebContents(web_contents())
         ->translate_driver()
-        .RegisterPage(fake_page_.BindToNewPagePtr(), details,
-                      page_translatable);
+        .OnPageReady(fake_page_.BindToNewPagePtr(), details, page_translatable);
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,

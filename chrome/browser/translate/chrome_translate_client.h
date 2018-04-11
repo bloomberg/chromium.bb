@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/translate/content/browser/content_translate_driver.h"
@@ -28,10 +27,6 @@ class WebContents;
 
 class PrefService;
 
-namespace language {
-class UrlLanguageHistogram;
-}  // namespace language
-
 namespace translate {
 class LanguageState;
 class TranslateAcceptLanguages;
@@ -42,9 +37,6 @@ struct LanguageDetectionDetails;
 }  // namespace translate
 
 enum class ShowTranslateBubbleResult;
-
-// Flag to control the "translate / language" separation feature.
-extern const base::Feature kDecoupleTranslateLanguageFeature;
 
 class ChromeTranslateClient
     : public translate::TranslateClient,
@@ -81,10 +73,6 @@ class ChromeTranslateClient
   static void GetTranslateLanguages(content::WebContents* web_contents,
                                     std::string* source,
                                     std::string* target);
-
-  static void BindContentTranslateDriver(
-      translate::mojom::ContentTranslateDriverRequest request,
-      content::RenderFrameHost* render_frame_host);
 
   // Gets the associated TranslateManager.
   translate::TranslateManager* GetTranslateManager();
@@ -151,10 +139,6 @@ class ChromeTranslateClient
 
   translate::ContentTranslateDriver translate_driver_;
   std::unique_ptr<translate::TranslateManager> translate_manager_;
-
-  // Histogram to be notified about detected language of every page visited. Not
-  // owned here.
-  language::UrlLanguageHistogram* language_histogram_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTranslateClient);
 };

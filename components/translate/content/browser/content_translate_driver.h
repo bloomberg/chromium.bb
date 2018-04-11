@@ -14,7 +14,6 @@
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace content {
 class NavigationController;
@@ -28,8 +27,7 @@ class TranslateManager;
 
 // Content implementation of TranslateDriver.
 class ContentTranslateDriver : public TranslateDriver,
-                               public content::WebContentsObserver,
-                               public mojom::ContentTranslateDriver {
+                               public content::WebContentsObserver {
  public:
   // The observer for the ContentTranslateDriver.
   class Observer {
@@ -57,8 +55,6 @@ class ContentTranslateDriver : public TranslateDriver,
   explicit ContentTranslateDriver(
       content::NavigationController* nav_controller);
   ~ContentTranslateDriver() override;
-
-  void BindRequest(mojom::ContentTranslateDriverRequest request);
 
   // Adds or Removes observers.
   void AddObserver(Observer* observer);
@@ -104,10 +100,10 @@ class ContentTranslateDriver : public TranslateDriver,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
 
-  // mojom::ContentTranslateDriver implementation.
-  void RegisterPage(mojom::PagePtr page,
-                    const LanguageDetectionDetails& details,
-                    bool page_needs_translation) override;
+  // Called when a page has been loaded and can be potentially translated.
+  void OnPageReady(mojom::PagePtr page,
+                   const LanguageDetectionDetails& details,
+                   bool page_needs_translation);
 
  private:
   void OnPageAway(int page_seq_no);
@@ -125,10 +121,6 @@ class ContentTranslateDriver : public TranslateDriver,
   // Records mojo connections with all current alive pages.
   int next_page_seq_no_;
   std::map<int, mojom::PagePtr> pages_;
-
-  // ContentTranslateDriver is singleton per web contents ,
-  // serve for multiple render frames.
-  mojo::BindingSet<mojom::ContentTranslateDriver> bindings_;
 
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_;
 
