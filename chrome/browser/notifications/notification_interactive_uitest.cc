@@ -16,7 +16,6 @@
 #include "base/time/clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -36,7 +35,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/window_open_disposition.h"
@@ -373,14 +371,14 @@ IN_PROC_BROWSER_TEST_F(
   Browser* incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestAndDenyPermission(incognito));
-  CloseBrowserWindow(incognito);
+  CloseBrowserSynchronously(incognito);
 
   incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito, GetTestPageURL());
   ASSERT_TRUE(RequestAndAcceptPermission(incognito));
   CreateSimpleNotification(incognito, true);
   ASSERT_EQ(1, GetNotificationCount());
-  CloseBrowserWindow(incognito);
+  CloseBrowserSynchronously(incognito);
 
   incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(incognito, GetTestPageURL());

@@ -357,11 +357,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowAndTab) {
   EXPECT_EQ(2u, active_browser_list_->size());
 
   // Close the first browser.
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  observer.Wait();
+  CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list_->size());
 
   // Restore the first window. The expected_tabstrip_index (second argument)
@@ -449,11 +445,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowBounds) {
   EXPECT_EQ(bounds, bounds2);
 
   // Close the first window.
-  content::WindowedNotificationObserver close_window_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  close_window_observer.Wait();
+  CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list_->size());
 
   // Check that the TabRestoreService has the contents of the closed window and
@@ -502,11 +494,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
   EXPECT_EQ(2u, active_browser_list_->size());
 
   // Close the window.
-  content::WindowedNotificationObserver close_window_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  close_window_observer.Wait();
+  CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list_->size());
 
   // Check that the TabRestoreService has the contents of the closed window.
@@ -681,11 +669,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   // Close the window.
-  content::WindowedNotificationObserver close_window_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  close_window_observer.Wait();
+  CloseBrowserSynchronously(browser());
   EXPECT_EQ(window_count - 1, active_browser_list_->size());
 
   // Restore the window.
@@ -822,11 +806,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   AddSomeTabs(browser(), 3);
   // 1st tab is about:blank added by InProcessBrowserTest.
   EXPECT_EQ(4, browser()->tab_strip_model()->count());
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  observer.Wait();
+  CloseBrowserSynchronously(browser());
 
   SessionRestoreTestHelper helper;
   // Restore browser (this is what Cmd-Shift-T does on Mac).
@@ -851,11 +831,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest,
   const int tabs_count = 4;
   AddSomeTabs(browser2, tabs_count - browser2->tab_strip_model()->count());
   EXPECT_EQ(tabs_count, browser2->tab_strip_model()->count());
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::NotificationService::AllSources());
-  chrome::CloseWindow(browser2);
-  observer.Wait();
+  CloseBrowserSynchronously(browser2);
 
   // Limit the number of restored tabs that are loaded.
   TabLoader::SetMaxLoadedTabCountForTest(2);

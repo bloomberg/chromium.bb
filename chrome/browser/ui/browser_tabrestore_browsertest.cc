@@ -55,14 +55,6 @@ void CreateTestTabs(Browser* browser) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 }
 
-void CloseBrowser(Browser* browser) {
-  content::WindowedNotificationObserver close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(browser));
-  chrome::CloseWindow(browser);
-  close_observer.Wait();
-}
-
 IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   // Create tabs.
   CreateTestTabs(browser());
@@ -76,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, RecentTabsMenuTabDisposition) {
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the first browser.
-  CloseBrowser(browser());
+  CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list->size());
 
   // Restore tabs using the browser's recent tabs menu.
@@ -127,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest, DelegateRestoreTabDisposition) {
   EXPECT_EQ(2u, active_browser_list->size());
 
   // Close the first browser.
-  CloseBrowser(browser());
+  CloseBrowserSynchronously(browser());
   EXPECT_EQ(1u, active_browser_list->size());
 
   // Check the browser has a delegated restore service.

@@ -8,19 +8,14 @@
 
 #include "components/sessions/core/persistent_tab_restore_service.h"
 
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
-#include "content/public/test/test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-typedef sessions::TabRestoreService::Window Window;
+using Window = sessions::TabRestoreService::Window;
 
-typedef InProcessBrowserTest PersistentTabRestoreServiceBrowserTest;
+using PersistentTabRestoreServiceBrowserTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(PersistentTabRestoreServiceBrowserTest, RestoreApp) {
   Profile* profile = browser()->profile();
@@ -29,11 +24,7 @@ IN_PROC_BROWSER_TEST_F(PersistentTabRestoreServiceBrowserTest, RestoreApp) {
   const char* app_name = "TestApp";
 
   Browser* app_browser = CreateBrowserForApp(app_name, profile);
-  app_browser->window()->Close();
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED,
-      content::Source<Browser>(app_browser));
-  observer.Wait();
+  CloseBrowserSynchronously(app_browser);
 
   // One entry should be created.
   ASSERT_EQ(1U, trs->entries().size());
