@@ -167,9 +167,9 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // container behavior.
   bool IsOverscrollAllowed() const;
 
-  // Handle mouse and touch events on the keyboard. Returns true if the event
-  // has been handled and propagation should be stopped.
-  bool HandlePointerEvent(ui::LocatedEvent* event);
+  // Handle mouse and touch events on the keyboard. The effects of this method
+  // will not stop propagation to the keyboard extension.
+  void HandlePointerEvent(const ui::LocatedEvent& event);
 
   // Moves an already loaded keyboard.
   void MoveKeyboard(const gfx::Rect new_bounds);

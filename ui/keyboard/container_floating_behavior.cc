@@ -180,7 +180,7 @@ bool ContainerFloatingBehavior::IsDragHandle(
   return draggable_area_.Contains(offset.x(), offset.y());
 }
 
-bool ContainerFloatingBehavior::HandlePointerEvent(
+void ContainerFloatingBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
     const gfx::Rect& display_bounds) {
   // Cannot call UI-backed operations without a KeyboardController
@@ -193,15 +193,13 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
 
   // Don't handle events if this runs in a partially initialized state.
   if (keyboard_bounds.height() <= 0)
-    return false;
+    return;
 
   ui::PointerId pointer_id = -1;
   if (event.IsTouchEvent()) {
     const ui::TouchEvent* te = event.AsTouchEvent();
     pointer_id = te->pointer_details().id;
   }
-
-  bool handled = false;
 
   const ui::EventType type = event.type();
   switch (type) {
@@ -213,14 +211,12 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
                  !((const ui::MouseEvent*)&event)->IsOnlyLeftMouseButton()) {
         // Mouse events are limited to just the left mouse button.
         drag_descriptor_ = nullptr;
-        handled = true;
       } else if (!drag_descriptor_) {
         // If there is no active drag descriptor, start a new one.
         bool drag_started_by_touch = (type == ui::ET_TOUCH_PRESSED);
         drag_descriptor_.reset(
             new DragDescriptor(keyboard_bounds.origin(), kb_offset,
                                drag_started_by_touch, pointer_id));
-        handled = true;
       }
       break;
 
@@ -253,7 +249,6 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
             gfx::Rect(new_keyboard_location, keyboard_bounds.size());
         controller_->MoveKeyboard(new_bounds);
         SavePosition(container->bounds(), display_bounds.size());
-        handled = true;
       }
       break;
 
@@ -261,7 +256,6 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
       drag_descriptor_ = nullptr;
       break;
   }
-  return handled;
 }
 
 void ContainerFloatingBehavior::SetCanonicalBounds(

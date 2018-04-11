@@ -93,11 +93,10 @@ bool ContainerFullWidthBehavior::IsDragHandle(
   return false;
 }
 
-bool ContainerFullWidthBehavior::HandlePointerEvent(
+void ContainerFullWidthBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
     const gfx::Rect& display_bounds) {
   // No-op. Nothing special to do for pointer events.
-  return false;
 }
 
 void ContainerFullWidthBehavior::SetCanonicalBounds(
