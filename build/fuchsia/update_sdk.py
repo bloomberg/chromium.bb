@@ -21,7 +21,7 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'build'))
 
 import find_depot_tools
 
-SDK_SUBIDRS = ["arch", "pkg", "qemu", "sysroot", "target",
+SDK_SUBDIRS = ["arch", "pkg", "qemu", "sysroot", "target",
                "toolchain_libs", "tools"]
 
 
@@ -36,8 +36,10 @@ def Cleanup(path):
   hash_file = os.path.join(path, '.hash')
   if os.path.exists(hash_file):
     print 'Removing old SDK from %s.' % path
-    for d in SDK_SUBIDRS:
-      shutil.rmtree(os.path.join(path, d))
+    for d in SDK_SUBDIRS:
+      to_remove = os.path.join(path, d)
+      if os.path.isdir(to_remove):
+        shutil.rmtree(to_remove)
     os.remove(hash_file)
 
 
