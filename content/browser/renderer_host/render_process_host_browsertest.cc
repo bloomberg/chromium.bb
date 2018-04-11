@@ -455,6 +455,109 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   SetBrowserClientForTesting(old_client);
 }
 
+class RenderProcessHostObserverCounter : public RenderProcessHostObserver {
+ public:
+  explicit RenderProcessHostObserverCounter(RenderProcessHost* host) {
+    host->AddObserver(this);
+    observing_ = true;
+    observed_host_ = host;
+  }
+
+  ~RenderProcessHostObserverCounter() override {
+    if (observing_)
+      observed_host_->RemoveObserver(this);
+  }
+
+  void RenderProcessExited(RenderProcessHost* host,
+                           base::TerminationStatus status,
+                           int exit_code) override {
+    DCHECK(observing_);
+    DCHECK_EQ(host, observed_host_);
+    exited_count_++;
+  }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DCHECK(observing_);
+    DCHECK_EQ(host, observed_host_);
+    destroyed_count_++;
+
+    host->RemoveObserver(this);
+    observing_ = false;
+    observed_host_ = nullptr;
+  }
+
+  int exited_count() const { return exited_count_; }
+  int destroyed_count() const { return destroyed_count_; }
+
+ private:
+  int exited_count_ = 0;
+  int destroyed_count_ = 0;
+  bool observing_ = false;
+  RenderProcessHost* observed_host_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostObserverCounter);
+};
+
+// Check that the spare renderer is properly destroyed via
+// DisableKeepAliveRefCount.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareVsDisableKeepAliveRefCount) {
+  RenderProcessHost::WarmupSpareRenderProcessHost(
+      ShellContentBrowserClient::Get()->browser_context());
+  base::RunLoop().RunUntilIdle();
+
+  RenderProcessHost* spare_renderer =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  RenderProcessHostObserverCounter counter(spare_renderer);
+
+  RenderProcessHostWatcher process_watcher(
+      spare_renderer, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  spare_renderer->DisableKeepAliveRefCount();
+
+  process_watcher.Wait();
+  EXPECT_TRUE(process_watcher.did_exit_normally());
+
+  // An important part of test verification is that UaF doesn't happen in the
+  // next revolution of the message pump - without extra care in the
+  // SpareRenderProcessHostManager RenderProcessHost::Cleanup could be called
+  // twice leading to a crash caused by double-free flavour of UaF in
+  // base::DeleteHelper<...>::DoDelete.
+  base::RunLoop().RunUntilIdle();
+
+  DCHECK_EQ(1, counter.exited_count());
+  DCHECK_EQ(1, counter.destroyed_count());
+}
+
+// Check that the spare renderer is properly destroyed via
+// DisableKeepAliveRefCount.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareVsFastShutdown) {
+  RenderProcessHost::WarmupSpareRenderProcessHost(
+      ShellContentBrowserClient::Get()->browser_context());
+  base::RunLoop().RunUntilIdle();
+
+  RenderProcessHost* spare_renderer =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  RenderProcessHostObserverCounter counter(spare_renderer);
+
+  RenderProcessHostWatcher process_watcher(
+      spare_renderer, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  spare_renderer->FastShutdownIfPossible();
+
+  process_watcher.Wait();
+  EXPECT_FALSE(process_watcher.did_exit_normally());
+
+  // An important part of test verification is that UaF doesn't happen in the
+  // next revolution of the message pump - without extra care in the
+  // SpareRenderProcessHostManager RenderProcessHost::Cleanup could be called
+  // twice leading to a crash caused by double-free flavour of UaF in
+  // base::DeleteHelper<...>::DoDelete.
+  base::RunLoop().RunUntilIdle();
+
+  DCHECK_EQ(1, counter.exited_count());
+  DCHECK_EQ(1, counter.destroyed_count());
+}
+
 class ShellCloser : public RenderProcessHostObserver {
  public:
   ShellCloser(Shell* shell, std::string* logging_string)
