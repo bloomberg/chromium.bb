@@ -54,6 +54,7 @@ enum UiElementName {
   kUrlBarOriginLayout,
   kUrlBarOriginRegion,
   kUrlBarUrlText,
+  kUrlBarHintLayout,
   kUrlBarHintText,
   kUrlBarOverflowButton,
   kOverflowMenuBackplane,

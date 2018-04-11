@@ -31,8 +31,8 @@ ToolbarHelper::~ToolbarHelper() {}
 void ToolbarHelper::Update() {
   ToolbarState state(
       toolbar_model_->GetURL(), toolbar_model_->GetSecurityLevel(true),
-      &toolbar_model_->GetVectorIcon(), toolbar_model_->GetSecureVerboseText(),
-      toolbar_model_->ShouldDisplayURL(), toolbar_model_->IsOfflinePage());
+      &toolbar_model_->GetVectorIcon(), toolbar_model_->ShouldDisplayURL(),
+      toolbar_model_->IsOfflinePage());
 
   if (current_state_ == state)
     return;

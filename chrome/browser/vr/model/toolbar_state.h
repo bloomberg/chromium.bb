@@ -21,7 +21,6 @@ struct ToolbarState {
   ToolbarState(const GURL& url,
                security_state::SecurityLevel level,
                const gfx::VectorIcon* icon,
-               base::string16 verbose_text,
                bool display_url,
                bool offline);
   ToolbarState(const ToolbarState& other);
@@ -32,7 +31,6 @@ struct ToolbarState {
   GURL gurl;
   security_state::SecurityLevel security_level;
   const gfx::VectorIcon* vector_icon;
-  base::string16 secure_verbose_text;
   bool should_display_url;
   bool offline_page;
 };
