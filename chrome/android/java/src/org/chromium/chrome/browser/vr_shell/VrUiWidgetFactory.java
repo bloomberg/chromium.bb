@@ -8,7 +8,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.widget.PopupWindow;
 
-import org.chromium.ui.widget.popups.UiWidgetFactory;
+import org.chromium.ui.widget.UiWidgetFactory;
 
 /**
  * The factory that creates VR compatible UI widgets.

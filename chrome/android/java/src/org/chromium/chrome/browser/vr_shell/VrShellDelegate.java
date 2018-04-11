@@ -60,7 +60,7 @@ import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationDelegateManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.display.DisplayAndroidManager;
-import org.chromium.ui.widget.popups.UiWidgetFactory;
+import org.chromium.ui.widget.UiWidgetFactory;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
