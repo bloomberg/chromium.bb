@@ -33,6 +33,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
@@ -71,8 +72,8 @@ class OCSPIOLoop {
   void StartUsing() {
     base::AutoLock autolock(lock_);
     used_ = true;
-    io_loop_ = base::MessageLoopForIO::current();
-    DCHECK(io_loop_);
+    DCHECK(base::MessageLoopForIO::IsCurrent());
+    io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
   // Called on IO loop.
@@ -97,12 +98,14 @@ class OCSPIOLoop {
 
   void CancelAllRequests();
 
+  // Protects all members below.
   mutable base::Lock lock_;
-  bool shutdown_;  // Protected by |lock_|.
-  std::set<OCSPRequestSession*> requests_;  // Protected by |lock_|.
-  bool used_;  // Protected by |lock_|.
+  bool shutdown_;
+  std::set<OCSPRequestSession*> requests_;
+  bool used_;
   // This should not be modified after |used_|.
-  base::MessageLoopForIO* io_loop_;  // Protected by |lock_|.
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OCSPIOLoop);
@@ -182,7 +185,6 @@ class OCSPRequestSession
         buffer_(new IOBuffer(kRecvBufferSize)),
         response_code_(-1),
         cv_(&lock_),
-        io_loop_(NULL),
         finished_(false) {}
 
   void SetPostData(const char* http_data, PRUint32 http_data_len,
@@ -200,9 +202,9 @@ class OCSPRequestSession
 
   void Start() {
     // At this point, it runs on worker thread.
-    // |io_loop_| was initialized to be NULL in constructor, and
-    // set only in StartURLRequest, so no need to lock |lock_| here.
-    DCHECK(!io_loop_);
+    // |io_task_runner_| is only initialized in StartURLRequest, so no need to
+    // lock |lock_| here.
+    DCHECK(!io_task_runner_);
     g_ocsp_io_loop.Get().PostTaskToIOLoop(
         FROM_HERE,
         base::Bind(&OCSPRequestSession::StartURLRequest, this));
@@ -213,7 +215,7 @@ class OCSPRequestSession
   }
 
   void Cancel() {
-    // IO thread may set |io_loop_| to NULL, so protect by |lock_|.
+    // IO thread may reset |io_task_runner_|, so protect by |lock_|.
     base::AutoLock autolock(lock_);
     CancelLocked();
   }
@@ -278,7 +280,7 @@ class OCSPRequestSession
                           const RedirectInfo& redirect_info,
                           bool* defer_redirect) override {
     DCHECK_EQ(request_.get(), request);
-    DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
 
     if (!redirect_info.new_url.SchemeIs("http")) {
       // Prevent redirects to non-HTTP schemes, including HTTPS. This matches
@@ -289,7 +291,7 @@ class OCSPRequestSession
 
   void OnResponseStarted(URLRequest* request, int net_error) override {
     DCHECK_EQ(request_.get(), request);
-    DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
     DCHECK_NE(ERR_IO_PENDING, net_error);
 
     int bytes_read = 0;
@@ -304,7 +306,7 @@ class OCSPRequestSession
 
   void OnReadCompleted(URLRequest* request, int bytes_read) override {
     DCHECK_EQ(request_.get(), request);
-    DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
+    DCHECK(io_task_runner_->BelongsToCurrentThread());
 
     while (bytes_read > 0) {
       data_.append(buffer_->data(), bytes_read);
@@ -317,7 +319,7 @@ class OCSPRequestSession
       {
         base::AutoLock autolock(lock_);
         finished_ = true;
-        io_loop_ = NULL;
+        io_task_runner_ = nullptr;
       }
       cv_.Signal();
       Release();  // Balanced with StartURLRequest().
@@ -329,8 +331,8 @@ class OCSPRequestSession
 #ifndef NDEBUG
     {
       base::AutoLock autolock(lock_);
-      if (io_loop_)
-        DCHECK_EQ(base::MessageLoopForIO::current(), io_loop_);
+      if (io_task_runner_)
+        DCHECK(io_task_runner_->BelongsToCurrentThread());
     }
 #endif
     if (request_) {
@@ -339,7 +341,7 @@ class OCSPRequestSession
       {
         base::AutoLock autolock(lock_);
         finished_ = true;
-        io_loop_ = NULL;
+        io_task_runner_ = nullptr;
       }
       cv_.Signal();
       Release();  // Balanced with StartURLRequest().
@@ -354,14 +356,14 @@ class OCSPRequestSession
     // a reference to this object, and so that thread doesn't need to lock
     // |lock_| here.
     DCHECK(!request_);
-    DCHECK(!io_loop_);
+    DCHECK(!io_task_runner_);
   }
 
   // Must call this method while holding |lock_|.
   void CancelLocked() {
     lock_.AssertAcquired();
-    if (io_loop_) {
-      io_loop_->task_runner()->PostTask(
+    if (io_task_runner_) {
+      io_task_runner_->PostTask(
           FROM_HERE, base::Bind(&OCSPRequestSession::CancelURLRequest, this));
     }
   }
@@ -379,8 +381,9 @@ class OCSPRequestSession
 
     {
       base::AutoLock autolock(lock_);
-      DCHECK(!io_loop_);
-      io_loop_ = base::MessageLoopForIO::current();
+      DCHECK(!io_task_runner_);
+      DCHECK(base::MessageLoopForIO::IsCurrent());
+      io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
       g_ocsp_io_loop.Get().AddRequest(this);
     }
 
@@ -446,11 +449,13 @@ class OCSPRequestSession
   scoped_refptr<HttpResponseHeaders> response_headers_;
   std::string data_;              // Results of the request
 
-  // |lock_| protects |finished_| and |io_loop_|.
+  // |lock_| protects |finished_| and |io_task_runner_|.
   mutable base::Lock lock_;
   base::ConditionVariable cv_;
 
-  base::MessageLoop* io_loop_;  // Message loop of the IO thread
+  // TaskRunner for the IO thread. Set when StartURLRequest() is invoked (on the
+  // IO thread).
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   bool finished_;
 
   DISALLOW_COPY_AND_ASSIGN(OCSPRequestSession);
@@ -501,18 +506,17 @@ class OCSPServerSession {
 
 OCSPIOLoop::OCSPIOLoop()
     : shutdown_(false),
-      used_(false),
-      io_loop_(NULL) {
+      used_(false) {
 }
 
 void OCSPIOLoop::Shutdown() {
   // Safe to read outside lock since we only write on IO thread anyway.
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Prevent the worker thread from trying to access |io_loop_|.
+  // Prevent the worker thread from trying to access |io_task_runner_|.
   {
     base::AutoLock autolock(lock_);
-    io_loop_ = NULL;
+    io_task_runner_ = nullptr;
     used_ = false;
     shutdown_ = true;
   }
@@ -527,8 +531,8 @@ void OCSPIOLoop::Shutdown() {
 void OCSPIOLoop::PostTaskToIOLoop(const base::Location& from_here,
                                   const base::Closure& task) {
   base::AutoLock autolock(lock_);
-  if (io_loop_)
-    io_loop_->task_runner()->PostTask(from_here, task);
+  if (io_task_runner_)
+    io_task_runner_->PostTask(from_here, task);
 }
 
 void OCSPIOLoop::AddRequest(OCSPRequestSession* request) {
