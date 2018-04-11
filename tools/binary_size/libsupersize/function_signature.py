@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Logic for parsing a C/C++ function signature."""
+"""Logic for parsing a function signatures."""
 
 
 def _FindParameterListParen(name):
@@ -118,6 +118,33 @@ def _NormalizeTopLevelClangLambda(name, left_paren_idx):
   number = name[dollar_idx + 2:colon_idx]
   return '{}$lambda#{}{}'.format(
       name[:dollar_idx], number, name[left_paren_idx:])
+
+
+def ParseJava(name):
+  """Breaks java method signature into parts.
+
+  See unit tests for example signatures.
+
+  Returns:
+    A tuple of:
+    * name, including package, return type, and params (symbol.full_name),
+    * name, including package, no return type or params (symbol.template_name),
+    * name, no package, return type, or params (symbol.name)
+  """
+  full_name = name
+  if '(' in name:
+    package, method_sig = name.split(' ', 1)
+    class_name = package.split('.')[-1]
+    if method_sig.startswith('<'):
+      method_name = method_sig
+    else:
+      method_name = method_sig.split(' ', 1)[1]
+    name = '{}#{}'.format(class_name, method_name[:method_name.index('(')])
+    template_name = name
+  else:
+    template_name = full_name
+
+  return full_name, template_name, name
 
 
 def Parse(name):

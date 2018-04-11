@@ -103,69 +103,72 @@ def _NormalizeNames(raw_symbols):
 
     # See comment in _CalculatePadding() about when this can happen. Don't
     # process names for non-native sections.
-    if full_name.startswith('*') or not symbol.IsNative():
+    if full_name.startswith('*') or symbol.IsOverhead():
       symbol.template_name = full_name
       symbol.name = full_name
-      continue
+    elif symbol.IsDex():
+      symbol.full_name, symbol.template_name, symbol.name = (
+          function_signature.ParseJava(full_name))
+    elif symbol.IsNative():
+      # Remove [clone] suffix, and set flag accordingly.
+      # Search from left-to-right, as multiple [clone]s can exist.
+      # Example name suffixes:
+      #     [clone .part.322]  # GCC
+      #     [clone .isra.322]  # GCC
+      #     [clone .constprop.1064]  # GCC
+      #     [clone .11064]  # clang
+      # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
+      idx = full_name.find(' [clone ')
+      if idx != -1:
+        full_name = full_name[:idx]
+        symbol.flags |= models.FLAG_CLONE
 
-    # Remove [clone] suffix, and set flag accordingly.
-    # Search from left-to-right, as multiple [clone]s can exist.
-    # Example name suffixes:
-    #     [clone .part.322]  # GCC
-    #     [clone .isra.322]  # GCC
-    #     [clone .constprop.1064]  # GCC
-    #     [clone .11064]  # clang
-    # http://unix.stackexchange.com/questions/223013/function-symbol-gets-part-suffix-after-compilation
-    idx = full_name.find(' [clone ')
-    if idx != -1:
-      full_name = full_name[:idx]
-      symbol.flags |= models.FLAG_CLONE
+      # Clones for C symbols.
+      if symbol.section == 't':
+        idx = full_name.rfind('.')
+        if idx != -1 and full_name[idx + 1:].isdigit():
+          new_name = full_name[:idx]
+          # Generated symbols that end with .123 but are not clones.
+          # Find these via:
+          # size_info.symbols.WhereInSection('t').WhereIsGroup().SortedByCount()
+          if new_name not in ('__tcf_0', 'startup'):
+            full_name = new_name
+            symbol.flags |= models.FLAG_CLONE
+            # Remove .part / .isra / .constprop.
+            idx = full_name.rfind('.', 0, idx)
+            if idx != -1:
+              full_name = full_name[:idx]
 
-    # Clones for C symbols.
-    if symbol.section == 't':
-      idx = full_name.rfind('.')
-      if idx != -1 and full_name[idx + 1:].isdigit():
-        new_name = full_name[:idx]
-        # Generated symbols that end with .123 but are not clones.
-        # Find these via:
-        #   size_info.symbols.WhereInSection('t').WhereIsGroup().SortedByCount()
-        if new_name not in ('__tcf_0', 'startup'):
-          full_name = new_name
-          symbol.flags |= models.FLAG_CLONE
-          # Remove .part / .isra / .constprop.
-          idx = full_name.rfind('.', 0, idx)
-          if idx != -1:
-            full_name = full_name[:idx]
+      # E.g.: vtable for FOO
+      idx = full_name.find(' for ', 0, 30)
+      if idx != -1:
+        found_prefixes.add(full_name[:idx + 4])
+        full_name = '{} [{}]'.format(full_name[idx + 5:], full_name[:idx])
 
-    # E.g.: vtable for FOO
-    idx = full_name.find(' for ', 0, 30)
-    if idx != -1:
-      found_prefixes.add(full_name[:idx + 4])
-      full_name = '{} [{}]'.format(full_name[idx + 5:], full_name[:idx])
+      # E.g.: virtual thunk to FOO
+      idx = full_name.find(' to ', 0, 30)
+      if idx != -1:
+        found_prefixes.add(full_name[:idx + 3])
+        full_name = '{} [{}]'.format(full_name[idx + 4:], full_name[:idx])
 
-    # E.g.: virtual thunk to FOO
-    idx = full_name.find(' to ', 0, 30)
-    if idx != -1:
-      found_prefixes.add(full_name[:idx + 3])
-      full_name = '{} [{}]'.format(full_name[idx + 4:], full_name[:idx])
+      # Strip out return type, and split out name, template_name.
+      # Function parsing also applies to non-text symbols.
+      # E.g. Function statics.
+      symbol.full_name, symbol.template_name, symbol.name = (
+          function_signature.Parse(full_name))
 
-    # Strip out return type, and split out name, template_name.
-    # Function parsing also applies to non-text symbols. E.g. Function statics.
-    # TODO(wnwen): Dex methods might want this processing.
-    symbol.full_name, symbol.template_name, symbol.name = (
-        function_signature.Parse(full_name))
+      # Remove anonymous namespaces (they just harm clustering).
+      symbol.template_name = symbol.template_name.replace(
+          '(anonymous namespace)::', '')
+      symbol.full_name = symbol.full_name.replace(
+          '(anonymous namespace)::', '')
+      non_anonymous_name = symbol.name.replace('(anonymous namespace)::', '')
+      if symbol.name != non_anonymous_name:
+        symbol.flags |= models.FLAG_ANONYMOUS
+        symbol.name = non_anonymous_name
 
-    # Remove anonymous namespaces (they just harm clustering).
-    symbol.template_name = symbol.template_name.replace(
-        '(anonymous namespace)::', '')
-    symbol.full_name = symbol.full_name.replace(
-        '(anonymous namespace)::', '')
-    non_anonymous_name = symbol.name.replace('(anonymous namespace)::', '')
-    if symbol.name != non_anonymous_name:
-      symbol.flags |= models.FLAG_ANONYMOUS
-      symbol.name = non_anonymous_name
-
-    # Allow using "is" to compare names (and should help with RAM).
+    # Allow using "is" to compare names (and should help with RAM). This applies
+    # to all symbols.
     function_signature.InternSameNames(symbol)
 
   logging.debug('Found name prefixes of: %r', found_prefixes)

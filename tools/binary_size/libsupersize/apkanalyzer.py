@@ -37,7 +37,7 @@ def _LoadSourceMap(apk_name, output_directory):
 
 def _RunApkAnalyzer(apk_path, output_directory):
   args = [path_util.GetApkAnalyzerPath(output_directory), 'dex', 'packages',
-          '--defined-only', apk_path]
+          apk_path]
   mapping_path = apk_path + '.mapping'
   if os.path.exists(mapping_path):
     args.extend(['--proguard-mappings', mapping_path])
@@ -134,7 +134,7 @@ def CreateDexSymbols(apk_path, output_directory):
   id_metadata_overhead_size = dex_expected_size - total_node_size
   symbols = []
   for name, node_size in nodes:
-    package = name.split(' ')[0]
+    package = name.split(' ', 1)[0]
     class_path = package.split('$')[0]
     source_path = source_map.get(class_path, '')
     if source_path:
@@ -146,7 +146,11 @@ def CreateDexSymbols(apk_path, output_directory):
     else:
       object_path = os.path.join(
           apk_name, _DEX_PATH_COMPONENT, *package.split('.'))
-    # TODO(wnwen): Split into .dex.methods.
-    symbols.append(models.Symbol(models.SECTION_DEX, node_size,
-        full_name=name, object_path=object_path, source_path=source_path))
+    if name.endswith(')'):
+      section_name = models.SECTION_DEX_METHOD
+    else:
+      section_name = models.SECTION_DEX
+    symbols.append(models.Symbol(
+        section_name, node_size, full_name=name, object_path=object_path,
+        source_path=source_path))
   return symbols

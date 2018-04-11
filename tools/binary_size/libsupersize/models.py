@@ -50,6 +50,7 @@ SECTION_DATA = '.data'
 SECTION_DATA_REL_RO = '.data.rel.ro'
 SECTION_DATA_REL_RO_LOCAL = '.data.rel.ro.local'
 SECTION_DEX = '.dex'
+SECTION_DEX_METHOD = '.dex.method'
 SECTION_OTHER = '.other'
 SECTION_PAK_NONTRANSLATED = '.pak.nontranslated'
 SECTION_PAK_TRANSLATIONS = '.pak.translations'
@@ -58,6 +59,10 @@ SECTION_TEXT = '.text'
 # Used by SymbolGroup when they contain a mix of sections.
 SECTION_MULTIPLE = '.*'
 
+DEX_SECTIONS = (
+    SECTION_DEX,
+    SECTION_DEX_METHOD,
+)
 NATIVE_SECTIONS = (
     SECTION_BSS,
     SECTION_DATA,
@@ -77,6 +82,7 @@ SECTION_NAME_TO_SECTION = {
     SECTION_DATA_REL_RO_LOCAL: 'R',
     SECTION_DATA_REL_RO: 'R',
     SECTION_DEX: 'x',
+    SECTION_DEX_METHOD: 'm',
     SECTION_OTHER: 'o',
     SECTION_PAK_NONTRANSLATED: 'P',
     SECTION_PAK_TRANSLATIONS: 'p',
@@ -92,6 +98,7 @@ SECTION_TO_SECTION_NAME = collections.OrderedDict((
     ('d', SECTION_DATA),
     ('b', SECTION_BSS),
     ('x', SECTION_DEX),
+    ('m', SECTION_DEX_METHOD),
     ('p', SECTION_PAK_TRANSLATIONS),
     ('P', SECTION_PAK_NONTRANSLATED),
     ('o', SECTION_OTHER),
@@ -280,7 +287,7 @@ class BaseSymbol(object):
     return self.section_name == SECTION_BSS
 
   def IsDex(self):
-    return self.section_name == SECTION_DEX
+    return self.section_name in DEX_SECTIONS
 
   def IsOther(self):
     return self.section_name == SECTION_OTHER
@@ -721,6 +728,10 @@ class SymbolGroup(BaseSymbol):
       if section in SECTION_TO_SECTION_NAME:
         ret.section_name = SECTION_TO_SECTION_NAME[section]
     return ret
+
+  def WhereIsDex(self):
+    return self.WhereInSection(
+        ''.join(SECTION_NAME_TO_SECTION[s] for s in DEX_SECTIONS))
 
   def WhereIsNative(self):
     return self.WhereInSection(
