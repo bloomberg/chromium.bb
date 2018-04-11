@@ -6954,14 +6954,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
     frame_mv[refs[0]] = x->best_mv;
     cur_mv[0].as_int = frame_mv[refs[0]].as_int;
-
-    // Estimate the rate implications of a new mv but discount this
-    // under certain circumstances where we want to help initiate a weak
-    // motion field, where the distortion gain for a single block may not
-    // be enough to overcome the cost of a new mv.
-    if (discount_newmv_test(cpi, this_mode, x->best_mv, mode_mv, refs[0])) {
-      *rate_mv = AOMMAX(*rate_mv / NEW_MV_DISCOUNT_FACTOR, 1);
-    }
   }
 
   return 0;
