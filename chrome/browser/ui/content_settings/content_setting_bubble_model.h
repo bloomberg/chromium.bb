@@ -328,6 +328,7 @@ class ContentSettingRPHBubbleModel : public ContentSettingSimpleBubbleModel {
   void UnregisterProtocolHandler();
   void IgnoreProtocolHandler();
   void ClearOrSetPreviousHandler();
+  void PerformActionForSelectedItem();
 
   int selected_item_;
   // Initially false, set to true if the user explicitly interacts with the
