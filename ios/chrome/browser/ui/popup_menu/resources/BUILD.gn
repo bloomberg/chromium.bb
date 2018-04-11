@@ -13,6 +13,15 @@ imageset("popup_menu_read_later") {
   ]
 }
 
+imageset("popup_menu_add_bookmark") {
+  sources = [
+    "popup_menu_add_bookmark.imageset/Contents.json",
+    "popup_menu_add_bookmark.imageset/popup_menu_add_bookmark.png",
+    "popup_menu_add_bookmark.imageset/popup_menu_add_bookmark@2x.png",
+    "popup_menu_add_bookmark.imageset/popup_menu_add_bookmark@3x.png",
+  ]
+}
+
 imageset("popup_menu_site_information") {
   sources = [
     "popup_menu_site_information.imageset/Contents.json",

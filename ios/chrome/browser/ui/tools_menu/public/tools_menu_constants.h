@@ -57,6 +57,10 @@ extern NSString* const kToolsMenuHelpId;
 extern NSString* const kToolsMenuRequestMobileId;
 // ReadLater item accessibility Identifier.
 extern NSString* const kToolsMenuReadLater;
+// AddBookmark item accessibility Identifier.
+extern NSString* const kToolsMenuAddToBookmarks;
+// EditBookmark item accessibility Identifier.
+extern NSString* const kToolsMenuEditBookmark;
 // SiteInformation item accessibility Identifier.
 extern NSString* const kToolsMenuSiteInformation;
 

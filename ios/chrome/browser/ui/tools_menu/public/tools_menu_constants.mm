@@ -41,4 +41,6 @@ NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
 NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
 NSString* const kToolsMenuRequestMobileId = @"kToolsMenuRequestMobileId";
 NSString* const kToolsMenuReadLater = @"kToolsMenuReadLater";
+NSString* const kToolsMenuAddToBookmarks = @"kToolsMenuAddToBookmarks";
+NSString* const kToolsMenuEditBookmark = @"kToolsMenuEditBookmark";
 NSString* const kToolsMenuSiteInformation = @"kToolsMenuSiteInformation";

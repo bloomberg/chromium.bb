@@ -1550,6 +1550,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU" desc="The accessibility label for the iOS tools menu [iOS only]">
         Tools Menu
       </message>
+      <message name="IDS_IOS_TOOLS_MENU_ADD_TO_BOOKMARKS" desc="The iOS menu item for adding the current page to the bookmarks [Length: 15em] [iOS only]">
+        Bookmark
+      </message>
       <message name="IDS_IOS_TOOLS_MENU_BOOKMARKS" desc="The iOS menu item for opening the bookmarks manager [Length: 15em] [iOS only]">
         Bookmarks
       </message>
