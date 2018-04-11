@@ -46,6 +46,7 @@ using webauth::mojom::MakeCredentialAuthenticatorResponsePtr;
 using webauth::mojom::PublicKeyCredentialCreationOptions;
 using webauth::mojom::PublicKeyCredentialCreationOptionsPtr;
 using webauth::mojom::PublicKeyCredentialDescriptor;
+using webauth::mojom::PublicKeyCredentialDescriptorPtr;
 using webauth::mojom::PublicKeyCredentialParameters;
 using webauth::mojom::PublicKeyCredentialParametersPtr;
 using webauth::mojom::PublicKeyCredentialRequestOptions;
@@ -239,6 +240,16 @@ AuthenticatorSelectionCriteriaPtr GetTestAuthenticatorSelectionCriteria() {
   return criteria;
 }
 
+std::vector<PublicKeyCredentialDescriptorPtr> GetTestAllowCredentials() {
+  std::vector<PublicKeyCredentialDescriptorPtr> descriptors;
+  auto credential = PublicKeyCredentialDescriptor::New();
+  credential->type = PublicKeyCredentialType::PUBLIC_KEY;
+  std::vector<uint8_t> id(32, 0x0A);
+  credential->id = id;
+  descriptors.push_back(std::move(credential));
+  return descriptors;
+}
+
 PublicKeyCredentialCreationOptionsPtr
 GetTestPublicKeyCredentialCreationOptions() {
   auto options = PublicKeyCredentialCreationOptions::New();
@@ -260,6 +271,7 @@ GetTestPublicKeyCredentialRequestOptions() {
   options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
   options->user_verification =
       webauth::mojom::UserVerificationRequirement::PREFERRED;
+  options->allow_credentials = GetTestAllowCredentials();
   return options;
 }
 
@@ -599,7 +611,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
                  std::string(test_case.claimed_authority));
 
-    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+    EXPECT_EQ(AuthenticatorStatus::INVALID_STATE,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
   }
@@ -689,7 +701,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
     if (should_be_valid) {
       EXPECT_EQ(AuthenticatorStatus::SUCCESS, cb.status());
     } else {
-      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+      EXPECT_EQ(AuthenticatorStatus::INVALID_STATE, cb.status());
     }
   }
 }

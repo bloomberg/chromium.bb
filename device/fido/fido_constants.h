@@ -17,10 +17,16 @@ namespace device {
 
 enum class FidoReturnCode : uint8_t {
   kSuccess,
-  kFailure,
-  kInvalidParams,
-  kConditionsNotSatisfied,
-  kInvalidState,
+  // Response received but didn't parse/serialize properly.
+  kAuthenticatorResponseInvalid,
+  // The user consented to the registration operation (e.g. by touching the
+  // authenticator), but the authenticator recognized one of the credentials
+  // that were already registered at the relying party.
+  kUserConsentButCredentialExcluded,
+  // The user consented to the assertion operation (e.g. by touching the
+  // authenticator), but none of the provided credentials were recognized by
+  // the authenticator.
+  kUserConsentButCredentialNotRecognized,
 };
 
 enum class ProtocolVersion {
@@ -162,7 +168,7 @@ constexpr std::array<FidoHidDeviceCommand, 9> GetFidoHidDeviceCommandList() {
 }
 
 // BLE device command as specified in
-//  https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#command-status-and-error-constants
+// https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#command-status-and-error-constants
 // U2F BLE device does not support cancel command.
 enum class FidoBleDeviceCommand : uint8_t {
   kPing = 0x81,
