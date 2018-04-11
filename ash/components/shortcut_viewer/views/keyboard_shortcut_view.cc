@@ -128,6 +128,8 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     // shelf uses the window title to set the shelf item's tooltip text. The
     // shelf observes changes to the |kWindowIconKey| property and handles that
     // by initializing the shelf item including its tooltip text.
+    // TODO(wutao): we can remove resource id IDS_KSV_TITLE after implementing
+    // internal app shelf launcher.
     window->SetTitle(l10n_util::GetStringUTF16(IDS_KSV_TITLE));
     gfx::ImageSkia* icon =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(

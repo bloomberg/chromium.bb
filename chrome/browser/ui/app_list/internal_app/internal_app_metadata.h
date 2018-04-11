@@ -11,12 +11,21 @@
 namespace app_list {
 
 // Metadata about an internal app.
-// Internal apps are these apps can run in Chrome OS directly, e.g. Keyboard
-// Shortcut Viewer.
+// Internal apps are these Chrome OS special apps, e.g. Settings, or these apps
+// can run in Chrome OS directly, e.g. Keyboard Shortcut Viewer.
 struct InternalApp {
   const char* app_id;
+
+  // Name of the app.
   int name_string_resource_id = 0;
+
   int icon_resource_id = 0;
+
+  // Can show as a suggested app.
+  bool recommendable;
+
+  // The string used for search query in addition to the name.
+  int searchable_string_resource_id = 0;
 };
 
 // Returns a list of Chrome OS internal apps, which are searchable in launcher.

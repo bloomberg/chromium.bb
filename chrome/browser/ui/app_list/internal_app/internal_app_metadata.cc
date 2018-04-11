@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chrome/grit/generated_resources.h"
 
@@ -15,9 +16,14 @@ const std::vector<InternalApp>& GetInternalAppList() {
   static const base::NoDestructor<std::vector<InternalApp>> internal_app_list(
       {{kInternalAppIdKeyboardShortcutViewer,
         IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER,
-        IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192},
+        IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192,
+        /*recommendable=*/false,
+        IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
+
        {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
-        IDR_SETTINGS_LOGO_192}});
+        IDR_SETTINGS_LOGO_192,
+        /*recommendable=*/true,
+        /*searchable_string_resource_id=*/0}});
   return *internal_app_list;
 }
 

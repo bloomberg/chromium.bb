@@ -18,6 +18,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -123,19 +124,41 @@ class AppSearchProvider::App {
     return last_launch_time_.is_null() ? install_time_ : last_launch_time_;
   }
 
+  bool MatchSearchableText(const TokenizedString& query) {
+    if (searchable_text_.empty())
+      return false;
+    if (!tokenized_indexed_searchable_text_) {
+      tokenized_indexed_searchable_text_ =
+          std::make_unique<TokenizedString>(searchable_text_);
+    }
+    return TokenizedStringMatch().Calculate(
+        query, *tokenized_indexed_searchable_text_);
+  }
+
   AppSearchProvider::DataSource* data_source() { return data_source_; }
   const std::string& id() const { return id_; }
   const base::string16& name() const { return name_; }
   const base::Time& last_launch_time() const { return last_launch_time_; }
   const base::Time& install_time() const { return install_time_; }
 
+  bool recommendable() const { return recommendable_; }
+  void set_recommendable(bool recommendable) { recommendable_ = recommendable; }
+
+  const base::string16& searchable_text() const { return searchable_text_; }
+  void set_searchable_text(const base::string16& searchable_text) {
+    searchable_text_ = searchable_text;
+  }
+
  private:
   AppSearchProvider::DataSource* data_source_;
   std::unique_ptr<TokenizedString> tokenized_indexed_name_;
+  std::unique_ptr<TokenizedString> tokenized_indexed_searchable_text_;
   const std::string id_;
   const base::string16 name_;
   const base::Time last_launch_time_;
   const base::Time install_time_;
+  bool recommendable_ = true;
+  base::string16 searchable_text_;
 
   DISALLOW_COPY_AND_ASSIGN(App);
 };
@@ -315,6 +338,11 @@ class InternalDataSource : public AppSearchProvider::DataSource {
           this, internal_app.app_id,
           l10n_util::GetStringUTF8(internal_app.name_string_resource_id), time,
           time));
+      apps->back()->set_recommendable(internal_app.recommendable);
+      if (internal_app.searchable_string_resource_id != 0) {
+        apps->back()->set_searchable_text(l10n_util::GetStringUTF16(
+            internal_app.searchable_string_resource_id));
+      }
     }
   }
 
@@ -376,6 +404,10 @@ void AppSearchProvider::UpdateRecommendedResults(
   new_results.reserve(apps_size);
 
   for (auto& app : apps_) {
+    // Skip apps which cannot be shown as a suggested app.
+    if (!app->recommendable())
+      continue;
+
     std::unique_ptr<AppResult> result =
         app->data_source()->CreateResult(app->id(), list_controller_, true);
     result->set_title(app->name());
@@ -416,8 +448,10 @@ void AppSearchProvider::UpdateQueriedResults() {
         app->data_source()->CreateResult(app->id(), list_controller_, false);
     TokenizedStringMatch match;
     TokenizedString* indexed_name = app->GetTokenizedIndexedName();
-    if (!match.Calculate(query_terms, *indexed_name))
+    if (!match.Calculate(query_terms, *indexed_name) &&
+        !app->MatchSearchableText(query_terms)) {
       continue;
+    }
 
     result->UpdateFromMatch(*indexed_name, match);
     MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
