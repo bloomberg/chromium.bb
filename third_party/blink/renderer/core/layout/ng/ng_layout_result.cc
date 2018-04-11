@@ -18,7 +18,7 @@ NGLayoutResult::NGLayoutResult(
     Vector<NGOutOfFlowPositionedDescendant>& oof_positioned_descendants,
     Vector<NGPositionedFloat>& positioned_floats,
     Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-    const NGBlockNode& unpositioned_list_marker,
+    const NGUnpositionedListMarker& unpositioned_list_marker,
     std::unique_ptr<const NGExclusionSpace> exclusion_space,
     const WTF::Optional<NGBfcOffset> bfc_offset,
     const NGMarginStrut end_margin_strut,

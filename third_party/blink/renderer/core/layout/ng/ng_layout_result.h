@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -70,7 +71,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return unpositioned_floats_;
   }
 
-  const NGBlockNode& UnpositionedListMarker() const {
+  const NGUnpositionedListMarker& UnpositionedListMarker() const {
     return unpositioned_list_marker_;
   }
 
@@ -120,7 +121,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
           out_of_flow_positioned_descendants,
       Vector<NGPositionedFloat>& positioned_floats,
       Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
-      const NGBlockNode& unpositioned_list_marker,
+      const NGUnpositionedListMarker& unpositioned_list_marker,
       std::unique_ptr<const NGExclusionSpace> exclusion_space,
       const WTF::Optional<NGBfcOffset> bfc_offset,
       const NGMarginStrut end_margin_strut,
@@ -138,7 +139,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   Vector<NGPositionedFloat> positioned_floats_;
   Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
-  NGBlockNode unpositioned_list_marker_;
+  NGUnpositionedListMarker unpositioned_list_marker_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   const WTF::Optional<NGBfcOffset> bfc_offset_;
