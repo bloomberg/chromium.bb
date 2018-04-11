@@ -155,7 +155,13 @@ class NET_EXPORT IPAddress {
   // Returns true if the IP is in a range reserved by the IANA.
   // Works with both IPv4 and IPv6 addresses, and only compares against a given
   // protocols's reserved ranges.
+  // DEPRECATED. Use !IsPubliclyRoutable(). https://crbug.com/755418
   bool IsReserved() const;
+
+  // Returns true if the IP is not in a range reserved by the IANA for
+  // local networks. Works with both IPv4 and IPv6 addresses.
+  // IPv4-mapped-to-IPv6 addresses are considered publicly routable.
+  bool IsPubliclyRoutable() const;
 
   // Returns true if the IP is "zero" (e.g. the 0.0.0.0 IPv4 address).
   bool IsZero() const;

@@ -113,7 +113,7 @@ bool IsValidConnectInfoIpAddress(const ConnectInfo& connect_info) {
   // public IPs, but this code path is no longer used. see TODO below.
   net::IPAddress ip_address;
   return ip_address.AssignFromIPLiteral(connect_info.ip_address) &&
-         ip_address.IsReserved();
+         !ip_address.IsPubliclyRoutable();
 }
 
 }  // namespace

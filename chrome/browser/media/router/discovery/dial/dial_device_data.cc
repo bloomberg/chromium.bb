@@ -41,7 +41,7 @@ bool DialDeviceData::IsDeviceDescriptionUrl(const GURL& url) {
 
   // TODO(crbug.com/679432): check that this IP address matches the address that
   // we received the SSDP advertisement from.
-  return address.IsReserved();
+  return !address.IsPubliclyRoutable();
 }
 
 bool DialDeviceData::UpdateFrom(const DialDeviceData& new_data) {

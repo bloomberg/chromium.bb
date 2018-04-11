@@ -33,7 +33,7 @@ bool IsPrivateHost(HostResolver* host_resolver,
     // Checking only the first address should be sufficient.
     IPEndPoint ip_end_point = addresses.front();
     net::IPAddress ip_address = ip_end_point.address();
-    if (ip_address.IsReserved())
+    if (!ip_address.IsPubliclyRoutable())
       return true;
   }
 
