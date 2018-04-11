@@ -60,6 +60,30 @@ action("process_json") {
   } else {
     args += [ "linux" ]
   }
+
+  public_deps = [
+    ":workaround_list",
+  ]
+}
+
+action("workaround_list") {
+  script = "build_workaround_header.py"
+
+  inputs = [
+    "gpu_workaround_list.txt",
+  ]
+
+  outputs = [
+    "$target_gen_dir/gpu_driver_bug_workaround_autogen.h",
+  ]
+
+  args = [
+    "--output-file",
+    rebase_path(outputs[0], root_build_dir),
+  ]
+  foreach(file, inputs) {
+    args += [ rebase_path(file, root_build_dir) ]
+  }
 }
 
 source_set("config_sources") {
