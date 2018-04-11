@@ -4,7 +4,6 @@
 
 #include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/grit/components_scaled_resources.h"

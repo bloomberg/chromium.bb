@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
-#include "base/memory/ptr_util.h"
 #include "cc/base/container_util.h"
 #include "components/viz/service/display/bsp_compare_result.h"
 #include "components/viz/service/display/draw_polygon.h"

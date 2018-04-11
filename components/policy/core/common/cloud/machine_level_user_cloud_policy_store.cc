@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace policy {

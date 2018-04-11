@@ -5,7 +5,6 @@
 #include "components/exo/test/exo_test_base.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/test/test_client_controlled_state_delegate.h"
 #include "components/exo/wm_helper.h"

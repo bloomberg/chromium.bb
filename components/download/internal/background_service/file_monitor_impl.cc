@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"

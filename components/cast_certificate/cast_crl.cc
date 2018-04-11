@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "components/cast_certificate/proto/revocation.pb.h"
 #include "crypto/sha2.h"

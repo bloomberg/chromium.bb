@@ -5,7 +5,6 @@
 #include "components/previews/core/previews_logger.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/previews/core/previews_logger_observer.h"
 #include "components/previews/core/previews_switches.h"

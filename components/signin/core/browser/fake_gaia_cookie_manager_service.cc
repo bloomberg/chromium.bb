@@ -4,7 +4,6 @@
 
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"

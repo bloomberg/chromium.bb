@@ -6,7 +6,6 @@
 #include <iterator>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/heap_profiler_stack_frame_deduplicator.h"

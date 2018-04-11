@@ -5,7 +5,6 @@
 #include "components/encrypted_messages/message_encrypter.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_piece.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "crypto/aead.h"

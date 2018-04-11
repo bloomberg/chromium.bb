@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/task_runner.h"
 #include "base/unguessable_token.h"

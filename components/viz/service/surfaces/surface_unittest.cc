@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/viz/service/surfaces/surface.h"
-#include "base/memory/ptr_util.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"

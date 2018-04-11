@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "components/viz/common/quads/draw_quad.h"

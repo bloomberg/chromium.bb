@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/device_capability_manager.h"

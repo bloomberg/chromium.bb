@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/ptr_util.h"
 #include "components/signin/core/browser/child_account_info_fetcher.h"
 
 class AccountFetcherService;

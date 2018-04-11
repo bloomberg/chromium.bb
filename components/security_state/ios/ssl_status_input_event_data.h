@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "components/security_state/core/insecure_input_event_data.h"
 #include "ios/web/public/ssl_status.h"
 
