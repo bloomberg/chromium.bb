@@ -103,9 +103,9 @@ var PeerConnectionUpdateTable = (function() {
           update.type === 'addIceCandidate') {
         // extract ICE candidate type from the field following typ.
         var candidateType = update.value.match(
-          /(?: typ )(host|srflx|relay)/)[1];
+          /(?: typ )(host|srflx|relay)/);
         if (candidateType) {
-          type += ' (' + candidateType + ')';
+          type += ' (' + candidateType[1] + ')';
         }
       }
       row.innerHTML += '<td><details><summary>' + type +
