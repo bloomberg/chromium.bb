@@ -308,7 +308,7 @@ scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
   Vector<NGPositionedFloat> positioned_floats;
   return base::AdoptRef(new NGLayoutResult(
       nullptr, oof_positioned_descendants, positioned_floats,
-      unpositioned_floats_, NGBlockNode(nullptr), nullptr, bfc_offset_,
+      unpositioned_floats_, NGUnpositionedListMarker(), nullptr, bfc_offset_,
       end_margin_strut_, LayoutUnit(), LayoutUnit(), EBreakBetween::kAuto,
       EBreakBetween::kAuto, false, false, status));
 }

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_size.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_base_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -49,10 +50,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   NGContainerFragmentBuilder& SwapUnpositionedFloats(
       Vector<scoped_refptr<NGUnpositionedFloat>>*);
 
-  const NGBlockNode& UnpositionedListMarker() const {
+  const NGUnpositionedListMarker& UnpositionedListMarker() const {
     return unpositioned_list_marker_;
   }
-  NGContainerFragmentBuilder& SetUnpositionedListMarker(const NGBlockNode&);
+  NGContainerFragmentBuilder& SetUnpositionedListMarker(
+      const NGUnpositionedListMarker&);
 
   virtual NGContainerFragmentBuilder& AddChild(scoped_refptr<NGLayoutResult>,
                                                const NGLogicalOffset&);
@@ -179,7 +181,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
-  NGBlockNode unpositioned_list_marker_;
+  NGUnpositionedListMarker unpositioned_list_marker_;
 
   Vector<scoped_refptr<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;

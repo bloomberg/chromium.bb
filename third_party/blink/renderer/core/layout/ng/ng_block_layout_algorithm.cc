@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
-#include "third_party/blink/renderer/core/layout/ng/list/ng_list_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -387,7 +387,8 @@ scoped_refptr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
       HandleFloat(previous_inflow_position, ToNGBlockNode(child),
                   ToNGBlockBreakToken(child_break_token));
     } else if (child.IsListMarker()) {
-      container_builder_.SetUnpositionedListMarker(ToNGBlockNode(child));
+      container_builder_.SetUnpositionedListMarker(
+          NGUnpositionedListMarker(ToNGBlockNode(child)));
     } else {
       // We need to propagate the initial break-before value up our container
       // chain, until we reach a container that's not a first child. If we get
@@ -1851,23 +1852,21 @@ void NGBlockLayoutAlgorithm::PositionListMarker(
   }
 
   // If this is a list item, add the unpositioned list marker as a child.
-  NGBlockNode list_marker_node = layout_result.UnpositionedListMarker();
-  if (!list_marker_node) {
-    list_marker_node = container_builder_.UnpositionedListMarker();
-    if (!list_marker_node)
+  NGUnpositionedListMarker list_marker = layout_result.UnpositionedListMarker();
+  if (!list_marker) {
+    list_marker = container_builder_.UnpositionedListMarker();
+    if (!list_marker)
       return;
-    container_builder_.SetUnpositionedListMarker(NGBlockNode(nullptr));
+    container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
   }
-  if (NGListLayoutAlgorithm::AddListMarkerForBlockContent(
-          list_marker_node, constraint_space_,
-          *layout_result.PhysicalFragment(), content_offset,
-          &container_builder_))
+  if (list_marker.AddToBox(constraint_space_, *layout_result.PhysicalFragment(),
+                           content_offset, &container_builder_))
     return;
 
   // If the list marker could not be positioned against this child because it
   // does not have the baseline to align to, keep it as unpositioned and try
   // the next child.
-  container_builder_.SetUnpositionedListMarker(list_marker_node);
+  container_builder_.SetUnpositionedListMarker(list_marker);
 }
 
 void NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes() {
@@ -1876,10 +1875,9 @@ void NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes() {
 
   // Position the list marker without aligning to line boxes.
   LayoutUnit marker_block_size =
-      NGListLayoutAlgorithm::AddListMarkerWithoutLineBoxes(
-          container_builder_.UnpositionedListMarker(), constraint_space_,
-          &container_builder_);
-  container_builder_.SetUnpositionedListMarker(NGBlockNode(nullptr));
+      container_builder_.UnpositionedListMarker().AddToBoxWithoutLineBoxes(
+          constraint_space_, &container_builder_);
+  container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
 
   // Whether the list marker should affect the block size or not is not
   // well-defined, but 3 out of 4 impls do.
