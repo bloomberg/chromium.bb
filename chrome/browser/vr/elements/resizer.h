@@ -33,6 +33,9 @@ class Resizer : public UiElement {
   void DumpGeometry(std::ostringstream* os) const override;
 #endif
 
+  bool ShouldUpdateWorldSpaceTransform(
+      bool parent_transform_changed) const override;
+
  private:
   gfx::Transform LocalTransform() const override;
   gfx::Transform GetTargetLocalTransform() const override;

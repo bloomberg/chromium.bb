@@ -37,6 +37,9 @@ class Repositioner : public UiElement {
   // different if this has happened).
   bool HasMovedBeyondThreshold() const { return has_moved_beyond_threshold_; }
 
+  bool ShouldUpdateWorldSpaceTransform(
+      bool parent_transform_changed) const override;
+
  private:
   gfx::Transform LocalTransform() const override;
   gfx::Transform GetTargetLocalTransform() const override;
