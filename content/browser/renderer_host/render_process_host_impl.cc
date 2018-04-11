@@ -541,11 +541,10 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
 // SpareRenderProcessHostManager::MaybeTakeSpareRenderProcessHost when creating
 // a new RPH. In this implementation, the spare renderer is bound to a
 // BrowserContext and its default StoragePartition. If
-// MaybeTakeSpareRenderProcessHost is called with a BrowserContext and
-// StoragePartition that does not match, the spare renderer is discarded. In
-// particular, only the default StoragePartition will be able to use a spare
-// renderer. The spare renderer will also not be used as a guest renderer
-// (is_for_guests_ == true).
+// MaybeTakeSpareRenderProcessHost is called with a BrowserContext that does not
+// match, the spare renderer is discarded. Only the default StoragePartition
+// will be able to use a spare renderer. The spare renderer will also not be
+// used as a guest renderer (is_for_guests_ == true).
 //
 // It is safe to call WarmupSpareRenderProcessHost multiple times, although if
 // called in a context where the spare renderer is not likely to be used
@@ -555,14 +554,12 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   SpareRenderProcessHostManager() {}
 
   void WarmupSpareRenderProcessHost(BrowserContext* browser_context) {
-    StoragePartitionImpl* current_partition =
-        static_cast<StoragePartitionImpl*>(
-            BrowserContext::GetStoragePartition(browser_context, nullptr));
-
     if (spare_render_process_host_ &&
-        matching_browser_context_ == browser_context &&
-        matching_storage_partition_ == current_partition)
+        spare_render_process_host_->GetBrowserContext() == browser_context) {
+      DCHECK_EQ(BrowserContext::GetDefaultStoragePartition(browser_context),
+                spare_render_process_host_->GetStoragePartition());
       return;  // Nothing to warm up.
+    }
 
     CleanupSpareRenderProcessHost();
 
@@ -574,21 +571,15 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
             RenderProcessHostImpl::GetMaxRendererProcessCount())
       return;
 
-    matching_browser_context_ = browser_context;
-    matching_storage_partition_ = current_partition;
-
     spare_render_process_host_ = RenderProcessHostImpl::CreateRenderProcessHost(
-        browser_context, current_partition, nullptr,
-        false /* is_for_guests_only */);
+        browser_context, nullptr /* storage_partition_impl */,
+        nullptr /* site_instance */, false /* is_for_guests_only */);
     spare_render_process_host_->AddObserver(this);
     spare_render_process_host_->Init();
   }
 
-  // If |partition| is null, this gets the default partition from the browser
-  // context.
   RenderProcessHost* MaybeTakeSpareRenderProcessHost(
       BrowserContext* browser_context,
-      StoragePartition* partition,
       SiteInstance* site_instance,
       bool is_for_guests_only) {
     // Give embedder a chance to disable using a spare RenderProcessHost for
@@ -601,21 +592,14 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
             browser_context, site_instance->GetSiteURL()))
       return nullptr;
 
-    if (spare_render_process_host_ &&
-        browser_context == matching_browser_context_ && !is_for_guests_only &&
-        !partition) {
-      // If the spare renderer matches for everything but possibly the storage
-      // partition, and the passed-in partition is null, get the default storage
-      // partition. If this is the case, the default storage partition will
-      // already have been created and there is no possibility of breaking tests
-      // by GetDefaultStoragePartition prematurely creating one.
-      partition =
-          BrowserContext::GetStoragePartition(browser_context, site_instance);
-    }
-
+    // Get the StoragePartition for |site_instance|.  Note that this might be
+    // different than the default StoragePartition for |browser_context|.
+    StoragePartition* site_storage =
+        BrowserContext::GetStoragePartition(browser_context, site_instance);
     if (!spare_render_process_host_ ||
-        browser_context != matching_browser_context_ ||
-        partition != matching_storage_partition_ || is_for_guests_only) {
+        browser_context != spare_render_process_host_->GetBrowserContext() ||
+        site_storage != spare_render_process_host_->GetStoragePartition() ||
+        is_for_guests_only) {
       // As a new RenderProcessHost will almost certainly be created, we cleanup
       // the non-matching one so as not to waste resources.
       CleanupSpareRenderProcessHost();
@@ -692,11 +676,6 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   // all its instances; see g_all_hosts, above.
   RenderProcessHost* spare_render_process_host_ = nullptr;
 
-  // Used only to check if a creation request matches the spare, and not
-  // accessed.
-  const BrowserContext* matching_browser_context_ = nullptr;
-  const StoragePartition* matching_storage_partition_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(SpareRenderProcessHostManager);
 };
 
@@ -736,7 +715,7 @@ class DefaultSubframeProcessHostHolder : public base::SupportsUserData::Data,
     if (host_)
       return host_;
 
-    host_ = RenderProcessHostImpl::CreateOrUseSpareRenderProcessHost(
+    host_ = RenderProcessHostImpl::CreateRenderProcessHost(
         browser_context_, partition, site_instance,
         false /* is for guests only */);
     host_->SetIsNeverSuitableForReuse();
@@ -1351,18 +1330,15 @@ const unsigned int RenderProcessHostImpl::kMaxFrameDepthForPriority =
 // static
 RenderProcessHost* RenderProcessHostImpl::CreateOrUseSpareRenderProcessHost(
     BrowserContext* browser_context,
-    StoragePartitionImpl* storage_partition_impl,
     SiteInstance* site_instance,
     bool is_for_guests_only) {
   RenderProcessHost* render_process_host =
       g_spare_render_process_host_manager.Get().MaybeTakeSpareRenderProcessHost(
-          browser_context, storage_partition_impl, site_instance,
-          is_for_guests_only);
+          browser_context, site_instance, is_for_guests_only);
 
   if (!render_process_host) {
-    render_process_host =
-        CreateRenderProcessHost(browser_context, storage_partition_impl,
-                                site_instance, is_for_guests_only);
+    render_process_host = CreateRenderProcessHost(
+        browser_context, nullptr, site_instance, is_for_guests_only);
   }
 
   DCHECK(render_process_host);
@@ -3690,7 +3666,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     // creating one here with GetStoragePartition() can run into cross-thread
     // issues as TestBrowserContext initialization is done on the main thread.
     render_process_host = CreateOrUseSpareRenderProcessHost(
-        browser_context, nullptr, site_instance, is_for_guests_only);
+        browser_context, site_instance, is_for_guests_only);
   }
 
   if (is_unmatched_service_worker) {

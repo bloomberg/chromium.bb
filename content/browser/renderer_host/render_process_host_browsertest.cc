@@ -357,6 +357,104 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // down.
 }
 
+// Class that simulates the fact that some //content embedders (e.g. by
+// overriding ChromeContentBrowserClient::GetStoragePartitionConfigForSite) can
+// cause BrowserContext::GetDefaultStoragePartition(browser_context) to differ
+// from BrowserContext::GetStoragePartition(browser_context, site_instance) even
+// if |site_instance| is not for guests.
+class CustomStoragePartitionForSomeSites : public TestContentBrowserClient {
+ public:
+  explicit CustomStoragePartitionForSomeSites(const GURL& site_to_isolate)
+      : site_to_isolate_(site_to_isolate) {}
+
+  void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
+                                        const GURL& site,
+                                        bool can_be_default,
+                                        std::string* partition_domain,
+                                        std::string* partition_name,
+                                        bool* in_memory) override {
+    // Default to the browser-wide storage partition and override based on
+    // |site| below.
+    partition_domain->clear();
+    partition_name->clear();
+    *in_memory = false;
+
+    // Override for |site_to_isolate_|.
+    if (site == site_to_isolate_) {
+      *partition_domain = "blah_isolated_storage";
+      *partition_name = "blah_isolated_storage";
+      *in_memory = false;
+    }
+  }
+
+  std::string GetStoragePartitionIdForSite(BrowserContext* browser_context,
+                                           const GURL& site) override {
+    if (site == site_to_isolate_)
+      return "custom";
+    return "";
+  }
+
+  bool IsValidStoragePartitionId(BrowserContext* browser_context,
+                                 const std::string& partition_id) override {
+    return partition_id == "" || partition_id == "custom";
+  }
+
+ private:
+  GURL site_to_isolate_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomStoragePartitionForSomeSites);
+};
+
+// This test verifies that SpareRenderProcessHostManager correctly accounts
+// for StoragePartition differences when handing out the spare process.
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       SpareProcessVsCustomStoragePartition) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Provide custom storage partition for test sites.
+  GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
+  BrowserContext* browser_context =
+      ShellContentBrowserClient::Get()->browser_context();
+  GURL test_site = SiteInstance::GetSiteForURL(browser_context, test_url);
+  CustomStoragePartitionForSomeSites modified_client(test_site);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&modified_client);
+  StoragePartition* default_storage =
+      BrowserContext::GetDefaultStoragePartition(browser_context);
+  StoragePartition* custom_storage =
+      BrowserContext::GetStoragePartitionForSite(browser_context, test_site);
+  EXPECT_NE(default_storage, custom_storage);
+
+  // Open a test window - it should be associated with the default storage
+  // partition.
+  Shell* window = CreateBrowser();
+  RenderProcessHost* old_process =
+      window->web_contents()->GetMainFrame()->GetProcess();
+  EXPECT_EQ(default_storage, old_process->GetStoragePartition());
+
+  // Warm up the spare process - it should be associated with the default
+  // storage partition.
+  RenderProcessHost::WarmupSpareRenderProcessHost(browser_context);
+  RenderProcessHost* spare_renderer =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  ASSERT_TRUE(spare_renderer);
+  EXPECT_EQ(default_storage, spare_renderer->GetStoragePartition());
+
+  // Navigate to a URL that requires a custom storage partition.
+  EXPECT_TRUE(NavigateToURL(window, test_url));
+  RenderProcessHost* new_process =
+      window->web_contents()->GetMainFrame()->GetProcess();
+  // Requirement to use a custom storage partition should force a process swap.
+  EXPECT_NE(new_process, old_process);
+  // The new process should be associated with the custom storage partition.
+  EXPECT_EQ(custom_storage, new_process->GetStoragePartition());
+  // And consequently, the spare shouldn't have been used.
+  EXPECT_NE(spare_renderer, new_process);
+
+  // Restore the original ContentBrowserClient.
+  SetBrowserClientForTesting(old_client);
+}
+
 class ShellCloser : public RenderProcessHostObserver {
  public:
   ShellCloser(Shell* shell, std::string* logging_string)

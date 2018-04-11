@@ -129,13 +129,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static const unsigned int kMaxFrameDepthForPriority;
 
   // Use the spare RenderProcessHost if it exists, or create a new one. This
-  // should be the usual way to get a new RenderProcessHost.
-  // If |storage_partition_impl| is null, the default partition from the
-  // browser_context is used, using |site_instance| (for which a null value is
-  // legal).
+  // should be the usual way to get a new RenderProcessHost.  Default storage
+  // partition from the browser_context is always used.
   static RenderProcessHost* CreateOrUseSpareRenderProcessHost(
       BrowserContext* browser_context,
-      StoragePartitionImpl* storage_partition_impl,
       SiteInstance* site_instance,
       bool is_for_guests_only);
 
