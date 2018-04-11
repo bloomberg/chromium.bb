@@ -137,7 +137,7 @@ bool ScreenshotMatchesGolden(const std::string& screenshot_data,
   if (expected_bitmap.empty())
     return false;
 
-  return MatchesBitmap(expected_bitmap, actual_bitmap, 0);
+  return MatchesBitmap(expected_bitmap, actual_bitmap, 5);
 }
 
 }  // namespace
