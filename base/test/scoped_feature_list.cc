@@ -136,6 +136,15 @@ void ScopedFeatureList::InitAndDisableFeature(const Feature& feature) {
   InitWithFeaturesAndFieldTrials({}, {}, {feature});
 }
 
+void ScopedFeatureList::InitWithFeatureState(const Feature& feature,
+                                             bool enabled) {
+  if (enabled) {
+    InitAndEnableFeature(feature);
+  } else {
+    InitAndDisableFeature(feature);
+  }
+}
+
 void ScopedFeatureList::InitWithFeaturesAndFieldTrials(
     const std::vector<Feature>& enabled_features,
     const std::vector<FieldTrial*>& trials_for_enabled_features,
