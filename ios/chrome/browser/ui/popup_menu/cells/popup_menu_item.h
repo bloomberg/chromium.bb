@@ -28,6 +28,7 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionSettings,
   PopupMenuActionCloseTab,
   PopupMenuActionCloseAllIncognitoTabs,
+  PopupMenuActionNavigate,
 };
 
 // Protocol defining a popup item.

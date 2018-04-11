@@ -26,6 +26,7 @@ const CGFloat kMaxHeight = 100;
 @synthesize actionIdentifier = _actionIdentifier;
 @synthesize favicon = _favicon;
 @synthesize title = _title;
+@synthesize navigationItem = _navigationItem;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
