@@ -27,8 +27,6 @@
 - (void)setShareMenuEnabled:(BOOL)enabled;
 // Sets whether the toolbar is displaying for an NTP.
 - (void)setIsNTP:(BOOL)isNTP;
-// Sets the image for the search button of the toolbar.
-- (void)setSearchIcon:(UIImage*)searchIcon;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_CONSUMER_H_

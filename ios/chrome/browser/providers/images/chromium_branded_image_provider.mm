@@ -67,11 +67,6 @@ UIImage* ChromiumBrandedImageProvider::GetWhatsNewIconImage(WhatsNewIcon type) {
   return rb.GetNativeImageNamed(IDR_IOS_PROMO_INFO).ToUIImage();
 }
 
-UIImage* ChromiumBrandedImageProvider::GetToolbarSearchButtonImage(
-    SearchEngineIcon type) {
-  return [UIImage imageNamed:@"toolbar_search"];
-}
-
 UIImage* ChromiumBrandedImageProvider::GetDownloadGoogleDriveImage() {
   return [UIImage imageNamed:@"download_drivium"];
 }

@@ -28,8 +28,6 @@
 @property(nonatomic, readonly)
     ToolbarComponentVisibility forwardButtonVisibility;
 @property(nonatomic, readonly)
-    ToolbarComponentVisibility forwardButtonTrailingPositionVisibility;
-@property(nonatomic, readonly)
     ToolbarComponentVisibility tabGridButtonVisibility;
 @property(nonatomic, readonly)
     ToolbarComponentVisibility toolsMenuButtonVisibility;

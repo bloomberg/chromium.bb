@@ -71,13 +71,11 @@
   self.view.toolsMenuButton.guideName = kToolsMenuGuide;
   self.view.tabGridButton.guideName = kTabSwitcherGuide;
   self.view.forwardButton.guideName = kForwardButtonGuide;
-  self.view.forwardButtonTrailingPosition.guideName = kForwardButtonGuide;
   self.view.backButton.guideName = kBackButtonGuide;
 
   // Add navigation popup menu triggers.
   [self addLongPressGestureToView:self.view.backButton];
   [self addLongPressGestureToView:self.view.forwardButton];
-  [self addLongPressGestureToView:self.view.forwardButtonTrailingPosition];
   [self addLongPressGestureToView:self.view.tabGridButton];
 }
 
@@ -96,7 +94,6 @@
 
 - (void)setCanGoForward:(BOOL)canGoForward {
   self.view.forwardButton.enabled = canGoForward;
-  self.view.forwardButtonTrailingPosition.enabled = canGoForward;
 }
 
 - (void)setCanGoBack:(BOOL)canGoBack {
@@ -145,10 +142,6 @@
   // No-op, should be handled by the primary toolbar.
 }
 
-- (void)setSearchIcon:(UIImage*)searchIcon {
-  // TODO(crbug.com/831113):Remove this method.
-}
-
 #pragma mark - NewTabPageControllerDelegate
 
 - (void)setToolbarBackgroundToIncognitoNTPColorWithAlpha:(CGFloat)alpha {
@@ -181,14 +174,12 @@
     self.view.backButton.selected = YES;
   } else {
     self.view.forwardButton.selected = YES;
-    self.view.forwardButtonTrailingPosition.selected = YES;
   }
 }
 
 - (void)updateUIForTabHistoryWasDismissed {
   self.view.backButton.selected = NO;
   self.view.forwardButton.selected = NO;
-  self.view.forwardButtonTrailingPosition.selected = NO;
 }
 
 #pragma mark - Private
@@ -223,8 +214,7 @@
 
   if (sender == self.view.backButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarBack"));
-  } else if (sender == self.view.forwardButton ||
-             sender == self.view.forwardButtonTrailingPosition) {
+  } else if (sender == self.view.forwardButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarForward"));
   } else if (sender == self.view.reloadButton) {
     base::RecordAction(base::UserMetricsAction("MobileToolbarReload"));
@@ -261,8 +251,7 @@
 
   if (gesture.view == self.view.backButton) {
     [self.dispatcher showNavigationHistoryBackPopupMenu];
-  } else if (gesture.view == self.view.forwardButton ||
-             gesture.view == self.view.forwardButtonTrailingPosition) {
+  } else if (gesture.view == self.view.forwardButton) {
     [self.dispatcher showNavigationHistoryForwardPopupMenu];
   } else if (gesture.view == self.view.tabGridButton) {
     [self.dispatcher showTabGridButtonPopup];

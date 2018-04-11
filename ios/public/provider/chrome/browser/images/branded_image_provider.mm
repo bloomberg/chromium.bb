@@ -43,11 +43,6 @@ UIImage* BrandedImageProvider::GetWhatsNewIconImage(WhatsNewIcon type) {
   return nil;
 }
 
-UIImage* BrandedImageProvider::GetToolbarSearchButtonImage(
-    SearchEngineIcon type) {
-  return nil;
-}
-
 UIImage* BrandedImageProvider::GetDownloadGoogleDriveImage() {
   return nil;
 }

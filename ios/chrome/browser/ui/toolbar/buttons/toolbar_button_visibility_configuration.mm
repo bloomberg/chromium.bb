@@ -25,18 +25,10 @@
 - (ToolbarComponentVisibility)backButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
-        return ToolbarComponentVisibilityAlways;
-      } else {
-        return ToolbarComponentVisibilityAlways &
-               ~ToolbarComponentVisibilitySplit;
-      }
+      return ToolbarComponentVisibilityAlways &
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
-      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
-        return ToolbarComponentVisibilityNone;
-      } else {
-        return ToolbarComponentVisibilitySplit;
-      }
+      return ToolbarComponentVisibilitySplit;
     case LEGACY:
       return ToolbarComponentVisibilityAlways;
   }
@@ -48,27 +40,7 @@
       return ToolbarComponentVisibilityAlways &
              ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
-      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
-        return ToolbarComponentVisibilityNone;
-      } else {
-        return ToolbarComponentVisibilitySplit;
-      }
-    case LEGACY:
-      return ToolbarComponentVisibilityOnlyWhenEnabled |
-             ToolbarComponentVisibilityRegularWidthRegularHeight;
-  }
-}
-
-- (ToolbarComponentVisibility)forwardButtonTrailingPositionVisibility {
-  switch (self.type) {
-    case PRIMARY:
-      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
-        return ToolbarComponentVisibilitySplit;
-      } else {
-        return ToolbarComponentVisibilityNone;
-      }
-    case SECONDARY:
-      return ToolbarComponentVisibilityNone;
+      return ToolbarComponentVisibilitySplit;
     case LEGACY:
       return ToolbarComponentVisibilityOnlyWhenEnabled |
              ToolbarComponentVisibilityRegularWidthRegularHeight;
@@ -102,19 +74,10 @@
 - (ToolbarComponentVisibility)shareButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      if (PositionForCurrentProcess() ==
-          ToolbarButtonPositionNavigationBottomShareTop) {
-        return ToolbarComponentVisibilityAlways;
-      } else {
-        return ToolbarComponentVisibilityAlways &
-               ~ToolbarComponentVisibilitySplit;
-      }
+      return ToolbarComponentVisibilityAlways &
+             ~ToolbarComponentVisibilitySplit;
     case SECONDARY:
-      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
-        return ToolbarComponentVisibilitySplit;
-      } else {
-        return ToolbarComponentVisibilityNone;
-      }
+      return ToolbarComponentVisibilityNone;
     case LEGACY:
       return ToolbarComponentVisibilityRegularWidthRegularHeight;
   }
@@ -148,11 +111,7 @@
       return ToolbarComponentVisibilityAlways &
              ~ToolbarComponentVisibilityCompactWidthRegularHeight;
     case SECONDARY:
-      if (PositionForCurrentProcess() == ToolbarButtonPositionNavigationTop) {
-        return ToolbarComponentVisibilitySplit;
-      } else {
-        return ToolbarComponentVisibilityNone;
-      }
+      return ToolbarComponentVisibilityNone;
     case LEGACY:
       return ToolbarComponentVisibilityRegularWidthCompactHeight |
              ToolbarComponentVisibilityRegularWidthRegularHeight;

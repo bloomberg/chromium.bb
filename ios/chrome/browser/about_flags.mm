@@ -126,21 +126,6 @@ const FeatureEntry::Choice kAutofillIOSDelayBetweenFieldsChoices[] = {
     {"1000", autofill::switches::kAutofillIOSDelayBetweenFields, "1000"},
 };
 
-const FeatureEntry::Choice kToolbarButtonPositionsChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"Bottom navigation, no top", kToolbarButtonPositionsSwitch, "0"},
-    {"Bottom navigation, share on top", kToolbarButtonPositionsSwitch, "1"},
-    {"Top navigation", kToolbarButtonPositionsSwitch, "2"},
-};
-
-const FeatureEntry::Choice kSearchButtonIconChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {"Grey search engine logo", kIconSearchButtonSwitch, kIconSearchButtonGrey},
-    {"Colorful search engine logo", kIconSearchButtonSwitch,
-     kIconSearchButtonColorful},
-    {"Magnifying glass", kIconSearchButtonSwitch, kIconSearchButtonMagnifying},
-};
-
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -268,12 +253,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-tools_menu", flag_descriptions::kNewToolsMenuName,
      flag_descriptions::kNewToolsMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewToolsMenu)},
-    {"toolbar-button-positions", flag_descriptions::kToolbarButtonPositionsName,
-     flag_descriptions::kToolbarButtonPositionsDescription, flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kToolbarButtonPositionsChoices)},
-    {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
-     flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
-     MULTI_VALUE_TYPE(kSearchButtonIconChoices)},
     {"itunes-links-store-kit-handling",
      flag_descriptions::kITunesLinksStoreKitHandlingName,
      flag_descriptions::kITunesLinksStoreKitHandlingDescription,
