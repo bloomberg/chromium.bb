@@ -25,10 +25,10 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(CurrentTime, double());
 };
 
-class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
+class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  static MediaStubLocalFrameClient* Create() {
-    return new MediaStubLocalFrameClient;
+  static WebMediaStubLocalFrameClient* Create() {
+    return new WebMediaStubLocalFrameClient;
   }
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
@@ -46,7 +46,7 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
  protected:
   void SetUp() override {
     dummy_page_holder_ = DummyPageHolder::Create(
-        IntSize(), nullptr, MediaStubLocalFrameClient::Create(), nullptr);
+        IntSize(), nullptr, WebMediaStubLocalFrameClient::Create(), nullptr);
 
     if (GetParam() == MediaTestParam::kAudio)
       media_ = HTMLAudioElement::Create(dummy_page_holder_->GetDocument());
