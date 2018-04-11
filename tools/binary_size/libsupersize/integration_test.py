@@ -45,6 +45,7 @@ _TEST_APK_PATH = os.path.join(_TEST_OUTPUT_DIR, 'test.apk')
 _TEST_APK_SO_PATH = 'test.so'
 _TEST_APK_SMALL_SO_PATH = 'smalltest.so'
 _TEST_APK_DEX_PATH = 'test.dex'
+_TEST_APK_OTHER_FILE_PATH = 'icudtl.dat'
 
 update_goldens = False
 
@@ -134,9 +135,12 @@ class IntegrationTest(unittest.TestCase):
       elf_file.write(IntegrationTest._CreateBlankData(27))
     with zipfile.ZipFile(_TEST_APK_PATH, 'w') as apk_file:
       apk_file.write(_TEST_ELF_PATH, _TEST_APK_SO_PATH)
-      # Exactly 8MB of data (2^23).
+      # Exactly 4MB of data (2^22).
       apk_file.writestr(
-          _TEST_APK_SMALL_SO_PATH, IntegrationTest._CreateBlankData(23))
+          _TEST_APK_SMALL_SO_PATH, IntegrationTest._CreateBlankData(22))
+      # Exactly 1MB of data (2^20).
+      apk_file.writestr(
+          _TEST_APK_OTHER_FILE_PATH, IntegrationTest._CreateBlankData(20))
       pak_rel_path = os.path.relpath(_TEST_APK_PAK_PATH, _TEST_APK_ROOT_DIR)
       apk_file.write(_TEST_APK_PAK_PATH, pak_rel_path)
       # Exactly 8MB of data (2^23).

@@ -57,6 +57,14 @@ class SectionSizeKnobs(object):
     # change.
     self.pak_compression_ratio = 0.33
 
+    # File name: Source file.
+    self.apk_other_files = {
+      'icudtl.dat': 'third_party/icu/android/icudtl.dat',
+      'snapshot_blob_32.bin': 'v8/snapshot_blob_32.bin',
+      'snapshot_blob_64.bin': 'v8/snapshot_blob_64.bin',
+      'natives_blob.bin': 'v8/natives_blob.bin',
+    }
+
 
 def _OpenMaybeGz(path):
   """Calls `gzip.open()` if |path| ends in ".gz", otherwise calls `open()`."""
@@ -811,7 +819,7 @@ def _ParseDexSymbols(section_sizes, apk_path, output_directory):
   return symbols
 
 
-def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path):
+def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path, knobs):
   apk_name = os.path.basename(apk_path)
   apk_symbols = []
   zip_info_total = 0
@@ -823,7 +831,9 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path):
           or zip_info.filename.endswith('.dex')
           or zip_info.filename.endswith('.pak')):
         continue
-      path = os.path.join(apk_name, 'other', zip_info.filename)
+      file_name = os.path.basename(zip_info.filename)
+      path = knobs.apk_other_files.get(
+          file_name, os.path.join(apk_name, 'other', zip_info.filename))
       apk_symbols.append(models.Symbol(
             models.SECTION_OTHER, zip_info.compress_size,
             object_path=path, full_name=os.path.basename(zip_info.filename)))
@@ -941,7 +951,7 @@ def CreateSectionSizesAndSymbols(
     raw_symbols.extend(
         _ParseDexSymbols(section_sizes, apk_path, output_directory))
     raw_symbols.extend(
-        _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path))
+        _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path, knobs))
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(
         pak_files, pak_info_file, output_directory)
@@ -1068,7 +1078,8 @@ def _AutoIdentifyInputFile(args):
   format_text = file_output[file_output.find(': ') + 2:]
   # File-not-found -> 'cannot ...' and directory -> 'directory', which don't
   # match anything here, so they are handled by the final 'return False'.
-  if format_text.startswith('Java archive data '):
+  if (format_text.startswith('Java archive data') or
+      format_text.startswith('Zip archive data')):
     logging.info('Auto-identified --apk-file.')
     args.apk_file = args.f
     return True
