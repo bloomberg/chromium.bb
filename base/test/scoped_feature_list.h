@@ -83,6 +83,11 @@ class ScopedFeatureList final {
   // FeatureList and overridden with single disabled feature.
   void InitAndDisableFeature(const Feature& feature);
 
+  // Initializes and registers a FeatureList instance based on present
+  // FeatureList and overriden with a single feature either enabled or
+  // disabled depending on |enabled|.
+  void InitWithFeatureState(const Feature& feature, bool enabled);
+
  private:
   // Initializes and registers a FeatureList instance based on present
   // FeatureList and overridden with the given enabled and disabled features.
