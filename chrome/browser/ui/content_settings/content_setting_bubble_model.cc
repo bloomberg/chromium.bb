@@ -392,21 +392,13 @@ void ContentSettingRPHBubbleModel::OnRadioClicked(int radio_index) {
   if (selected_item_ == radio_index)
     return;
 
-  interacted_ = true;
   selected_item_ = radio_index;
-
-  if (radio_index == RPH_ALLOW)
-    RegisterProtocolHandler();
-  else if (radio_index == RPH_BLOCK)
-    UnregisterProtocolHandler();
-  else if (radio_index == RPH_IGNORE)
-    IgnoreProtocolHandler();
-  else
-    NOTREACHED();
+  PerformActionForSelectedItem();
 }
 
 void ContentSettingRPHBubbleModel::OnDoneClicked() {
-  interacted_ = true;
+  if (!interacted_)
+    PerformActionForSelectedItem();
 }
 
 void ContentSettingRPHBubbleModel::RegisterProtocolHandler() {
@@ -448,6 +440,18 @@ void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
   } else {
     registry_->OnAcceptRegisterProtocolHandler(previous_handler_);
   }
+}
+
+void ContentSettingRPHBubbleModel::PerformActionForSelectedItem() {
+  interacted_ = true;
+  if (selected_item_ == RPH_ALLOW)
+    RegisterProtocolHandler();
+  else if (selected_item_ == RPH_BLOCK)
+    UnregisterProtocolHandler();
+  else if (selected_item_ == RPH_IGNORE)
+    IgnoreProtocolHandler();
+  else
+    NOTREACHED();
 }
 
 // ContentSettingMidiSysExBubbleModel ------------------------------------------

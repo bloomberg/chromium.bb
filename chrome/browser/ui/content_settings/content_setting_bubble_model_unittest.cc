@@ -938,6 +938,34 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   registry.Shutdown();
 }
 
+TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
+  ProtocolHandlerRegistry registry(profile(), new FakeDelegate());
+  registry.InitProtocolSettings();
+
+  const GURL page_url("http://toplevel.example/");
+  NavigateAndCommit(page_url);
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
+      "mailto", GURL("http://www.toplevel.example/"));
+  content_settings->set_pending_protocol_handler(test_handler);
+
+  ContentSettingRPHBubbleModel content_setting_bubble_model(
+      NULL, web_contents(), profile(), &registry);
+
+  // If nothing is selected, the default action "Ignore" should be performed.
+  content_setting_bubble_model.OnDoneClicked();
+  {
+    ProtocolHandler handler = registry.GetHandlerFor("mailto");
+    EXPECT_TRUE(handler.IsEmpty());
+    EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+              content_settings->pending_protocol_handler_setting());
+    EXPECT_TRUE(registry.IsIgnored(test_handler));
+  }
+
+  registry.Shutdown();
+}
+
 TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       new ContentSettingSubresourceFilterBubbleModel(nullptr, web_contents(),
