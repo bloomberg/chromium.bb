@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/event_tracker.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
 <link rel="import" href="../data/invitation_store.html">
@@ -60,7 +61,8 @@
         font-size: 110%;
       }
 
-      .destination-location {
+      .destination-location,
+      :host([stale_]) .destination-info-wrapper {
         opacity: 0.4;
       }
     </style>
@@ -78,7 +80,9 @@
             <div class="destination-name">[[destination.displayName]]</div>
             <div class="destination-location">[[destination.hint]]</div>
             <div class="destination-connection-status">
-                [[destination.connectionStatusText]]</div>
+              [[getStatusText_(destination.connectionStatusText,
+                  destination.shouldShowInvalidCertificateError)]]
+            </div>
           </div>
         </div>
         <button

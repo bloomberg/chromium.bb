@@ -132,6 +132,11 @@ Polymer({
         print_preview.DestinationStore.EventType
             .SELECTED_DESTINATION_CAPABILITIES_READY,
         this.onDestinationUpdated_.bind(this));
+    this.tracker_.add(
+        this.destinationStore_,
+        print_preview.DestinationStore.EventType
+            .SELECTED_DESTINATION_UNSUPPORTED,
+        this.onInvalidPrinter_.bind(this));
     this.nativeLayer_.getInitialSettings().then(
         this.onInitialSettingsSet_.bind(this));
   },
@@ -211,8 +216,8 @@ Polymer({
 
   /** @private */
   onDestinationSelect_: function() {
-    this.destination_ = this.destinationStore_.selectedDestination;
     this.$.state.transitTo(print_preview_new.State.NOT_READY);
+    this.destination_ = this.destinationStore_.selectedDestination;
   },
 
   /** @private */
@@ -351,6 +356,11 @@ Polymer({
   /** @private */
   onPreviewFailed_: function() {
     this.$.state.transitTo(print_preview_new.State.FATAL_ERROR);
+  },
+
+  /** @private */
+  onInvalidPrinter_: function() {
+    this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
   },
 
   /**
