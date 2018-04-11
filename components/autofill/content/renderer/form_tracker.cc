@@ -96,11 +96,14 @@ void FormTracker::TextFieldDidChange(const WebFormControlElement& element) {
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
   // it is needed to trigger autofill.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindRepeating(&FormTracker::FormControlDidChangeImpl,
-                          weak_ptr_factory_.GetWeakPtr(), element,
-                          Observer::ElementChangeSource::TEXTFIELD_CHANGED));
+  render_frame()
+      ->GetWebFrame()
+      ->GetTaskRunner(blink::TaskType::kInternalUserInteraction)
+      ->PostTask(FROM_HERE,
+                 base::BindRepeating(
+                     &FormTracker::FormControlDidChangeImpl,
+                     weak_ptr_factory_.GetWeakPtr(), element,
+                     Observer::ElementChangeSource::TEXTFIELD_CHANGED));
 }
 
 void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
@@ -111,11 +114,13 @@ void FormTracker::SelectControlDidChange(const WebFormControlElement& element) {
 
   // Post a task to avoid processing select control change while it is changing.
   weak_ptr_factory_.InvalidateWeakPtrs();
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindRepeating(&FormTracker::FormControlDidChangeImpl,
-                          weak_ptr_factory_.GetWeakPtr(), element,
-                          Observer::ElementChangeSource::SELECT_CHANGED));
+  render_frame()
+      ->GetWebFrame()
+      ->GetTaskRunner(blink::TaskType::kInternalUserInteraction)
+      ->PostTask(FROM_HERE, base::BindRepeating(
+                                &FormTracker::FormControlDidChangeImpl,
+                                weak_ptr_factory_.GetWeakPtr(), element,
+                                Observer::ElementChangeSource::SELECT_CHANGED));
 }
 
 void FormTracker::FireProbablyFormSubmittedForTesting() {
