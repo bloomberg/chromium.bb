@@ -281,9 +281,9 @@ class UkmEnabledChecker : public SingleClientStatusChangeChecker {
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
-// Keep in sync with UkmIncognitoTest.testRegularPlusIncognitoCheck in
+// Keep in sync with UkmTest.testRegularPlusIncognitoCheck in
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
-// UkmIncognitoTest.java.
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
   MetricsConsentOverride metrics_consent(true);
 
@@ -320,9 +320,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
 }
 
 // Make sure opening a real window after Incognito doesn't enable UKM.
-// Keep in sync with UkmIncognitoTest.testIncognitoPlusRegularCheck in
+// Keep in sync with UkmTest.testIncognitoPlusRegularCheck in
 // chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
-// UkmIncognitoTest.java.
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
   MetricsConsentOverride metrics_consent(true);
 
@@ -741,6 +741,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
 }
 
 // Make sure that pending data is deleted when user deletes history.
+// Keep in sync with UkmTest.testHistoryDeleteCheck in
+// chrome/android/javatests/src/org/chromium/chrome/browser/metrics/
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   MetricsConsentOverride metrics_consent(true);
 

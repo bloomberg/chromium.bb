@@ -6,7 +6,10 @@
 #define COMPONENTS_UKM_UKM_RECORDER_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <set>
+#include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -22,9 +25,9 @@ class UkmEGTestHelper;
 }
 
 namespace ukm {
-
-class UkmSource;
 class Report;
+class UkmSource;
+class UkmUtilsForTest;
 
 namespace debug {
 class UkmDebugDataExtractor;
@@ -75,6 +78,7 @@ class UkmRecorderImpl : public UkmRecorder {
   friend ::metrics::UkmBrowserTest;
   friend ::metrics::UkmEGTestHelper;
   friend ::ukm::debug::UkmDebugDataExtractor;
+  friend ::ukm::UkmUtilsForTest;
 
   struct MetricAggregate {
     uint64_t total_count = 0;
