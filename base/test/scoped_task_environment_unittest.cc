@@ -17,7 +17,13 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_POSIX)
+#include <unistd.h>
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif  // defined(OS_POSIX)
 
 namespace base {
 namespace test {
@@ -240,6 +246,26 @@ TEST_P(ScopedTaskEnvironmentTest, SupportsSequenceLocalStorageOnMainThread) {
   sls_slot.Set(5);
   EXPECT_EQ(5, sls_slot.Get());
 }
+
+#if defined(OS_POSIX)
+TEST_F(ScopedTaskEnvironmentTest, SupportsFileDescriptorWatcherOnIOMainThread) {
+  ScopedTaskEnvironment scoped_task_environment(
+      ScopedTaskEnvironment::MainThreadType::IO,
+      ScopedTaskEnvironment::ExecutionMode::ASYNC);
+
+  int pipe_fds_[2];
+  ASSERT_EQ(0, pipe(pipe_fds_));
+
+  RunLoop run_loop;
+
+  // The write end of a newly created pipe is immediately writable.
+  auto controller = FileDescriptorWatcher::WatchWritable(
+      pipe_fds_[1], run_loop.QuitClosure());
+
+  // This will hang if the notification doesn't occur as expected.
+  run_loop.Run();
+}
+#endif  // defined(OS_POSIX)
 
 // Verify that the TickClock returned by
 // |ScopedTaskEnvironment::GetMockTickClock| gets updated when the

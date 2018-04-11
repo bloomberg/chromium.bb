@@ -7,8 +7,9 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
@@ -16,10 +17,6 @@
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(OS_POSIX)
-#include "base/files/file_descriptor_watcher_posix.h"
-#endif
 
 namespace remoting {
 
@@ -29,27 +26,21 @@ using testing::ReturnRef;
 
 namespace {
 
-#if defined(OS_WIN)
-const base::MessageLoop::Type kDesiredMessageLoopType =
-    base::MessageLoop::TYPE_UI;
-#else  // !defined(OS_WIN)
-const base::MessageLoop::Type kDesiredMessageLoopType =
-    base::MessageLoop::TYPE_IO;
-#endif  // !defined(OS_WIN)
-
-}  // namespace
-
 class LocalInputMonitorTest : public testing::Test {
  public:
   LocalInputMonitorTest();
 
   void SetUp() override;
 
-  base::MessageLoop message_loop_;
-#if defined(OS_POSIX)
-  // Required to watch a file descriptor from NativeMessageProcessHost.
-  base::FileDescriptorWatcher file_descriptor_watcher_;
-#endif
+  base::test::ScopedTaskEnvironment scoped_task_environment_ {
+#if defined(OS_WIN)
+    base::test::ScopedTaskEnvironment::MainThreadType::UI
+#else   // !defined(OS_WIN)
+    // Required to watch a file descriptor from NativeMessageProcessHost.
+    base::test::ScopedTaskEnvironment::MainThreadType::IO
+#endif  // !defined(OS_WIN)
+  };
+
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> task_runner_;
 
@@ -59,20 +50,16 @@ class LocalInputMonitorTest : public testing::Test {
 };
 
 LocalInputMonitorTest::LocalInputMonitorTest()
-    : message_loop_(kDesiredMessageLoopType),
-#if defined(OS_POSIX)
-      file_descriptor_watcher_(base::MessageLoopForIO::current()),
-#endif
-      client_jid_("user@domain/rest-of-jid"),
-      client_session_control_factory_(&client_session_control_) {
-}
+    : client_jid_("user@domain/rest-of-jid"),
+      client_session_control_factory_(&client_session_control_) {}
 
 void LocalInputMonitorTest::SetUp() {
-  // Arrange to run |message_loop_| until no components depend on it.
-  task_runner_ = new AutoThreadTaskRunner(
-      message_loop_.task_runner(), run_loop_.QuitClosure());
+  // Run the task environment until no components depend on it.
+  task_runner_ = new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
+                                          run_loop_.QuitClosure());
 }
 
+}  // namespace
 
 // This test is really to exercise only the creation and destruction code in
 // LocalInputMonitor.
