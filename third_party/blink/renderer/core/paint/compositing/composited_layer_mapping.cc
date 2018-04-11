@@ -642,9 +642,6 @@ void CompositedLayerMapping::
     return;
   }
 
-  // TODO(crbug.com/756265): Our composited in-flow descendants expect to
-  // inherit our clip, and we shouldn't omit rounded clip if some descendants
-  // could be clipped by it.
   FloatRect bounds_in_ancestor_space =
       GetLayoutObject()
           .LocalToAncestorQuad(FloatRect(composited_bounds_),
