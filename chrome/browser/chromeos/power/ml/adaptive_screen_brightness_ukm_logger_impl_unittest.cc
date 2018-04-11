@@ -12,6 +12,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -23,8 +24,11 @@ class AdaptiveScreenBrightnessUkmLoggerImplTest
  public:
   AdaptiveScreenBrightnessUkmLoggerImplTest() {}
 
-  void LogActivity(const ScreenBrightnessEvent& screen_brightness_event) {
-    screen_brightness_ukm_logger_impl_.LogActivity(screen_brightness_event);
+  void LogActivity(const ScreenBrightnessEvent& screen_brightness_event,
+                   ukm::SourceId tab_id,
+                   bool has_form_entry) {
+    screen_brightness_ukm_logger_impl_.LogActivity(screen_brightness_event,
+                                                   tab_id, has_form_entry);
   }
 
  protected:
@@ -80,7 +84,8 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, Basic) {
   event->set_brightness(31);
   event->set_reason(ScreenBrightnessEvent::Event::USER_UP);
 
-  LogActivity(screen_brightness_event);
+  LogActivity(screen_brightness_event, 5 /* tab_id */,
+              true /* has_form_entry */);
 
   EXPECT_EQ(1, ukm_entry_checker_.NumNewEntriesRecorded(
                    ukm::builders::ScreenBrightness::kEntryName));
@@ -117,6 +122,14 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, Basic) {
 
   ukm_entry_checker_.ExpectNewEntry(ukm::builders::ScreenBrightness::kEntryName,
                                     GURL(""), screen_brightness_values);
+
+  EXPECT_EQ(1, ukm_entry_checker_.NumNewEntriesRecorded(
+                   ukm::builders::UserActivityId::kEntryName));
+  const UkmMetricMap user_activity_id_values = {
+      {ukm::builders::UserActivityId::kHasFormEntryName, 1},
+  };
+  ukm_entry_checker_.ExpectNewEntry(ukm::builders::UserActivityId::kEntryName,
+                                    GURL(""), user_activity_id_values);
 }
 
 TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, AccessibilityOff) {
@@ -149,7 +162,8 @@ TEST_F(AdaptiveScreenBrightnessUkmLoggerImplTest, AccessibilityOff) {
       screen_brightness_event.mutable_event();
   event->set_brightness(1);
 
-  LogActivity(screen_brightness_event);
+  LogActivity(screen_brightness_event, ukm::kInvalidSourceId,
+              false /* has_form_entry */);
 
   EXPECT_EQ(1, ukm_entry_checker_.NumNewEntriesRecorded(
                    ukm::builders::ScreenBrightness::kEntryName));
