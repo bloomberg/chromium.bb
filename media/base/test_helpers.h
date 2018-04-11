@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_log.h"
@@ -386,6 +387,39 @@ MATCHER_P2(DiscardingEmptyFrame, pts_us, dts_us, "") {
                          "Discarding empty audio or video coded frame, PTS=" +
                              base::IntToString(pts_us) +
                              "us, DTS=" + base::IntToString(dts_us) + "us");
+}
+
+MATCHER_P4(TruncatedFrame,
+           pts_us,
+           pts_end_us,
+           start_or_end,
+           append_window_us,
+           "") {
+  const std::string expected = base::StringPrintf(
+      "Truncating audio buffer which overlaps append window %s. PTS %dus "
+      "frame_end_timestamp %dus append_window_%s %dus",
+      start_or_end, pts_us, pts_end_us, start_or_end, append_window_us);
+  *result_listener << "Expected TruncatedFrame contains '" << expected << "'";
+  return CONTAINS_STRING(arg, expected);
+}
+
+MATCHER_P2(DroppedFrame, frame_type, pts_us, "") {
+  return CONTAINS_STRING(arg,
+                         "Dropping " + std::string(frame_type) + " frame") &&
+         CONTAINS_STRING(arg, "PTS " + base::IntToString(pts_us));
+}
+
+MATCHER_P3(DroppedFrameCheckAppendWindow,
+           frame_type,
+           append_window_start_us,
+           append_window_end_us,
+           "") {
+  return CONTAINS_STRING(arg,
+                         "Dropping " + std::string(frame_type) + " frame") &&
+         CONTAINS_STRING(
+             arg, "outside append window [" +
+                      base::Int64ToString(append_window_start_us) + "us," +
+                      base::Int64ToString(append_window_end_us) + "us");
 }
 
 }  // namespace media

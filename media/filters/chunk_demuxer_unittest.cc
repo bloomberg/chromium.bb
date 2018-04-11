@@ -40,6 +40,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::AnyNumber;
+using ::testing::AtLeast;
 using ::testing::Exactly;
 using ::testing::HasSubstr;
 using ::testing::InSequence;
@@ -4085,6 +4086,11 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Video) {
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(280);
 
   // Append a cluster that starts before and ends after the append window.
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 0));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 30000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 270000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 300000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 330000));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(30));
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
                             "0K 30 60 90 120K 150 180 210 240K 270 300 330K");
@@ -4100,6 +4106,7 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Video) {
 
   // Append more data and verify that adding buffers start at the next
   // key frame.
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 630000));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(30));
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
                             "360 390 420K 450 480 510 540K 570 600 630K");
@@ -4115,6 +4122,11 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Audio) {
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(280);
 
   // Append a cluster that starts before and ends after the append window.
+  EXPECT_MEDIA_LOG(DroppedFrame("audio", 0));
+  EXPECT_MEDIA_LOG(TruncatedFrame(30000, 60000, "start", 50000));
+  EXPECT_MEDIA_LOG(TruncatedFrame(270000, 300000, "end", 280000));
+  EXPECT_MEDIA_LOG(DroppedFrame("audio", 300000));
+  EXPECT_MEDIA_LOG(DroppedFrame("audio", 330000));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(30));
   AppendSingleStreamCluster(
       kSourceId, kAudioTrackNum,
@@ -4136,6 +4148,7 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Audio) {
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(650);
 
   // Append more data and verify that a new range is created.
+  EXPECT_MEDIA_LOG(TruncatedFrame(630000, 660000, "end", 650000));
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(30));
   AppendSingleStreamCluster(
       kSourceId, kAudioTrackNum,
@@ -4149,6 +4162,11 @@ TEST_P(ChunkDemuxerTest, AppendWindow_AudioOverlapStartAndEnd) {
   // Set the append window to [10,20).
   append_window_start_for_next_append_ = base::TimeDelta::FromMilliseconds(10);
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(20);
+
+  EXPECT_MEDIA_LOG(
+      TruncatedFrame(0, kAudioBlockDuration * 1000, "start", 10000));
+  EXPECT_MEDIA_LOG(
+      TruncatedFrame(10000, kAudioBlockDuration * 1000, "end", 20000));
 
   // Append a cluster that starts before and ends after the append window.
   EXPECT_MEDIA_LOG(WebMSimpleBlockDurationEstimated(
@@ -4170,6 +4188,14 @@ TEST_P(ChunkDemuxerTest, AppendWindow_WebMFile_AudioOnly) {
   // Set the append window to [50,150).
   append_window_start_for_next_append_ = base::TimeDelta::FromMilliseconds(50);
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(150);
+
+  EXPECT_MEDIA_LOG(DroppedFrameCheckAppendWindow(
+                       "audio",
+                       append_window_start_for_next_append_.InMicroseconds(),
+                       append_window_end_for_next_append_.InMicroseconds()))
+      .Times(AtLeast(1));
+  EXPECT_MEDIA_LOG(TruncatedFrame(39000, 62000, "start", 50000));
+  EXPECT_MEDIA_LOG(TruncatedFrame(141000, 164000, "end", 150000));
 
   // Read a WebM file into memory and send the data to the demuxer.  The chunk
   // size has been chosen carefully to ensure the preroll buffer used by the
@@ -4199,6 +4225,12 @@ TEST_P(ChunkDemuxerTest, AppendWindow_AudioConfigUpdateRemovesPreroll) {
   // duration in the init segment.
   const base::TimeDelta duration_1 = base::TimeDelta::FromMilliseconds(2746);
   append_window_start_for_next_append_ = duration_1;
+
+  EXPECT_MEDIA_LOG(DroppedFrameCheckAppendWindow(
+                       "audio",
+                       append_window_start_for_next_append_.InMicroseconds(),
+                       append_window_end_for_next_append_.InMicroseconds()))
+      .Times(AtLeast(1));
 
   // Read a WebM file into memory and append the data.
   scoped_refptr<DecoderBuffer> buffer =
@@ -4239,6 +4271,14 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Text) {
   append_window_start_for_next_append_ = base::TimeDelta::FromMilliseconds(20);
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(280);
 
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 0));
+  EXPECT_MEDIA_LOG(DroppedFrame("text", 0));
+  EXPECT_MEDIA_LOG(DroppedFrame("text", 200000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 270000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 300000));
+  EXPECT_MEDIA_LOG(DroppedFrame("text", 300000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 330000));
+
   // Append a cluster that starts before and ends after the append
   // window.
   AppendMuxedCluster(
@@ -4255,6 +4295,10 @@ TEST_P(ChunkDemuxerTest, AppendWindow_Text) {
 
   // Extend the append window to [20,650).
   append_window_end_for_next_append_ = base::TimeDelta::FromMilliseconds(650);
+
+  EXPECT_MEDIA_LOG(DroppedFrame("text", 600000));
+  EXPECT_MEDIA_LOG(DroppedFrame("video", 630000));
+  EXPECT_MEDIA_LOG(DroppedFrame("text", 700000));
 
   // Append more data and verify that a new range is created.
   AppendMuxedCluster(
