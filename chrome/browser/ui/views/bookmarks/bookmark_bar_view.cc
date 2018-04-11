@@ -126,9 +126,6 @@ static const int kNewTabHorizontalPadding = 2;
 // Maximum size of buttons on the bookmark bar.
 static const int kMaxButtonWidth = 150;
 
-// Number of pixels the attached bookmark bar overlaps with the toolbar.
-static const int kToolbarAttachedBookmarkBarOverlap = 3;
-
 // Margins around the content.
 static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
                                           // toolbar above serve as the margin.
@@ -804,10 +801,10 @@ bool BookmarkBarView::IsDetached() const {
 }
 
 int BookmarkBarView::GetToolbarOverlap() const {
-  int attached_overlap = kToolbarAttachedBookmarkBarOverlap;
+  constexpr int kOverlap = 1;  // Cover toolbar bottom stroke
 
   if (!IsDetached())
-    return attached_overlap;
+    return kOverlap;
 
   // Do not animate the overlap when the infobar is above us (i.e. when we're
   // detached), since drawing over the infobar looks weird.
@@ -816,7 +813,7 @@ int BookmarkBarView::GetToolbarOverlap() const {
 
   // When detached with no infobar, animate the overlap between the attached and
   // detached states.
-  return static_cast<int>(attached_overlap * size_animation_.GetCurrentValue());
+  return gfx::ToRoundedInt(kOverlap * size_animation_.GetCurrentValue());
 }
 
 int BookmarkBarView::GetPreferredHeight() const {
