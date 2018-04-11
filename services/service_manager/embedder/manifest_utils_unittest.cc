@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "services/service_manager/embedder/manifest_utils.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {

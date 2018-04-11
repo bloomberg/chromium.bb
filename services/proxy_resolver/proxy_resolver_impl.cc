@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/mojo_proxy_resolver_v8_tracing_bindings.h"
 #include "net/proxy_resolution/pac_file_data.h"

@@ -5,7 +5,6 @@
 #include "services/device/hid/hid_connection_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 
 namespace device {

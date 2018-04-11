@@ -4,7 +4,6 @@
 
 #include "services/ui/demo/mus_demo.h"
 
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/demo/window_tree_data.h"
 #include "services/ui/public/cpp/gpu/gpu.h"

@@ -4,7 +4,6 @@
 
 #include "services/service_manager/public/cpp/service_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/values.h"

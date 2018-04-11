@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/persistent_pref_store.h"

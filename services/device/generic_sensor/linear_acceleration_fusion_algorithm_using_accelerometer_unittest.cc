@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "services/device/generic_sensor/linear_acceleration_fusion_algorithm_using_accelerometer.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"

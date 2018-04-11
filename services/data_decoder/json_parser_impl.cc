@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace data_decoder {

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"

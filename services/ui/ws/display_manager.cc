@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/display/viewport_metrics.h"

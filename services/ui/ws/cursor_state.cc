@@ -4,7 +4,6 @@
 
 #include "services/ui/ws/cursor_state.h"
 
-#include "base/memory/ptr_util.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "ui/base/cursor/cursor.h"

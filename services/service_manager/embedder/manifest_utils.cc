@@ -4,7 +4,6 @@
 
 #include "services/service_manager/embedder/manifest_utils.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace service_manager {
 

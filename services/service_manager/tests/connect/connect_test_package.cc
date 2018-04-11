@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"

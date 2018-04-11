@@ -5,7 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/c/main.h"

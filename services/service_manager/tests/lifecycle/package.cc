@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/c/main.h"

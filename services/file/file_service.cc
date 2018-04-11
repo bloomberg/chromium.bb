@@ -5,7 +5,6 @@
 #include "services/file/file_service.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task_scheduler/post_task.h"
 #include "components/services/filesystem/lock_table.h"

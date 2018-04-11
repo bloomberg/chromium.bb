@@ -14,7 +14,6 @@
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"

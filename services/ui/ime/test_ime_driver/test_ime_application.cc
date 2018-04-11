@@ -4,7 +4,6 @@
 
 #include "services/ui/ime/test_ime_driver/test_ime_application.h"
 
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"

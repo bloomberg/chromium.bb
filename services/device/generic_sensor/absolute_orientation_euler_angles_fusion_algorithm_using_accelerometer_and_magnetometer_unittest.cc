@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/absolute_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_magnetometer.h"

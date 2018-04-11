@@ -6,7 +6,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/device_service_test_base.h"

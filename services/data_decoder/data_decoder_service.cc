@@ -5,7 +5,6 @@
 #include "services/data_decoder/data_decoder_service.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

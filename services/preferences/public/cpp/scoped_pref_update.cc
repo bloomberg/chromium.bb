@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "components/prefs/pref_service.h"
 #include "services/preferences/public/cpp/dictionary_value_update.h"
 

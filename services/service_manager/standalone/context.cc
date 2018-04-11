@@ -15,7 +15,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/process/process_info.h"
 #include "base/run_loop.h"

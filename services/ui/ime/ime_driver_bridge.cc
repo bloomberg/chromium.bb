@@ -4,7 +4,6 @@
 
 #include "services/ui/ime/ime_driver_bridge.h"
 
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 

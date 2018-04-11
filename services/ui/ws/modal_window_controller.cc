@@ -4,7 +4,6 @@
 
 #include "services/ui/ws/modal_window_controller.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws/server_window.h"

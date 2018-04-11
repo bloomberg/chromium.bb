@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/export.h"

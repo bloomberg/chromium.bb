@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/display/screen_manager.h"

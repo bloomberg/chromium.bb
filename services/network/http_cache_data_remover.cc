@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/disk_cache/disk_cache.h"

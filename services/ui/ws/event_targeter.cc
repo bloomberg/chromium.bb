@@ -5,7 +5,6 @@
 #include "services/ui/ws/event_targeter.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"

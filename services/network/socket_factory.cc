@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"

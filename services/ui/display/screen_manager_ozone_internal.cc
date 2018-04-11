@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/system/devicemode.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

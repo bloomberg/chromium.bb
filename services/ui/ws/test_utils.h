@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/atomicops.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"

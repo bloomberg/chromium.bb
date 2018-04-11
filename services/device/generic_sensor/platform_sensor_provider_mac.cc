@@ -4,7 +4,6 @@
 
 #include "services/device/generic_sensor/platform_sensor_provider_mac.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
 #include "services/device/generic_sensor/platform_sensor_accelerometer_mac.h"
