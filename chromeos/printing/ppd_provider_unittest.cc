@@ -745,8 +745,8 @@ TEST_F(PpdProviderTest, FreshCacheHitNoNetworkTraffic) {
   ppd_cache_->StoreForTesting(PpdProvider::PpdReferenceToCacheKey(ref),
                               cached_ppd_contents, base::TimeDelta());
   scoped_task_environment_.RunUntilIdle();
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
 
@@ -773,8 +773,8 @@ TEST_F(PpdProviderTest, StaleCacheGetsRefreshed) {
                               cached_ppd_contents,
                               base::TimeDelta::FromDays(180));
   scoped_task_environment_.RunUntilIdle();
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
 
@@ -815,8 +815,8 @@ TEST_F(PpdProviderTest, StaleCacheGetsUsedIfNetworkFails) {
                               cached_ppd_contents,
                               base::TimeDelta::FromDays(180));
   scoped_task_environment_.RunUntilIdle();
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
 
@@ -867,8 +867,8 @@ TEST_F(PpdProviderTest, UserPpdAlwaysRefreshedIfAvailable) {
                             disk_ppd_contents.size()),
             static_cast<int>(disk_ppd_contents.size()));
 
-  provider->ResolvePpd(ref, base::Bind(&PpdProviderTest::CaptureResolvePpd,
-                                       base::Unretained(this)));
+  provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                           base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(1UL, captured_resolve_ppd_.size());
   EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);

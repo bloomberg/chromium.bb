@@ -134,8 +134,8 @@ void WifiHotspotConnector::NetworkPropertiesUpdated(
     // notifying observers. See https://crbug.com/800370.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&WifiHotspotConnector::CompleteActiveConnectionAttempt,
-                   weak_ptr_factory_.GetWeakPtr(), true /* success */));
+        base::BindOnce(&WifiHotspotConnector::CompleteActiveConnectionAttempt,
+                       weak_ptr_factory_.GetWeakPtr(), true /* success */));
     return;
   }
 
@@ -146,8 +146,9 @@ void WifiHotspotConnector::NetworkPropertiesUpdated(
     // notifying observers. See https://crbug.com/800370.
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&WifiHotspotConnector::InitiateConnectionToCurrentNetwork,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &WifiHotspotConnector::InitiateConnectionToCurrentNetwork,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -169,8 +170,8 @@ void WifiHotspotConnector::UpdateWaitingForWifi() {
     return;
 
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&WifiHotspotConnector::CreateWifiConfiguration,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&WifiHotspotConnector::CreateWifiConfiguration,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WifiHotspotConnector::InitiateConnectionToCurrentNetwork() {

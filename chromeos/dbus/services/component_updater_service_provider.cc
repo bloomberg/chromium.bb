@@ -67,9 +67,9 @@ void ComponentUpdaterServiceProvider::LoadComponent(
       mount = true;
     delegate_->LoadComponent(
         component_name, mount,
-        base::Bind(&ComponentUpdaterServiceProvider::OnLoadComponent,
-                   weak_ptr_factory_.GetWeakPtr(), method_call,
-                   response_sender));
+        base::BindOnce(&ComponentUpdaterServiceProvider::OnLoadComponent,
+                       weak_ptr_factory_.GetWeakPtr(), method_call,
+                       response_sender));
   } else {
     std::unique_ptr<dbus::ErrorResponse> error_response =
         dbus::ErrorResponse::FromMethodCall(

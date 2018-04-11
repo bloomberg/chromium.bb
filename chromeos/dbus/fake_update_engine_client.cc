@@ -82,7 +82,7 @@ void FakeUpdateEngineClient::SetChannel(const std::string& target_channel,
 void FakeUpdateEngineClient::GetChannel(bool get_current_channel,
                                         const GetChannelCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, std::string()));
+      FROM_HERE, base::BindOnce(callback, std::string()));
 }
 
 void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {

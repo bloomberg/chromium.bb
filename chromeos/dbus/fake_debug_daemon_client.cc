@@ -63,7 +63,7 @@ void FakeDebugDaemonClient::StartAgentTracing(
     const StartAgentTracingCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, GetTracingAgentName(), true /* success */));
+      base::BindOnce(callback, GetTracingAgentName(), true /* success */));
 }
 
 void FakeDebugDaemonClient::StopAgentTracing(
@@ -118,7 +118,7 @@ void FakeDebugDaemonClient::GetScrubbedLogs(const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, sample));
+      FROM_HERE, base::BindOnce(callback, false, sample));
 }
 
 void FakeDebugDaemonClient::GetScrubbedBigLogs(
@@ -126,14 +126,14 @@ void FakeDebugDaemonClient::GetScrubbedBigLogs(
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, sample));
+      FROM_HERE, base::BindOnce(callback, false, sample));
 }
 
 void FakeDebugDaemonClient::GetAllLogs(const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Log"] = "Your email address is abc@abc.com";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, sample));
+      FROM_HERE, base::BindOnce(callback, false, sample));
 }
 
 void FakeDebugDaemonClient::GetUserLogFiles(const GetLogsCallback& callback) {
@@ -141,7 +141,7 @@ void FakeDebugDaemonClient::GetUserLogFiles(const GetLogsCallback& callback) {
   user_logs["preferences"] = "Preferences";
   user_logs["invalid_file"] = "Invalid File";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true, user_logs));
+      FROM_HERE, base::BindOnce(callback, true, user_logs));
 }
 
 void FakeDebugDaemonClient::GetLog(const std::string& log_name,
@@ -154,7 +154,7 @@ void FakeDebugDaemonClient::GetLog(const std::string& log_name,
 void FakeDebugDaemonClient::TestICMP(const std::string& ip_address,
                                      const TestICMPCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, ""));
+      FROM_HERE, base::BindOnce(callback, false, ""));
 }
 
 void FakeDebugDaemonClient::TestICMPWithOptions(
@@ -162,7 +162,7 @@ void FakeDebugDaemonClient::TestICMPWithOptions(
     const std::map<std::string, std::string>& options,
     const TestICMPCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, false, ""));
+      FROM_HERE, base::BindOnce(callback, false, ""));
 }
 
 void FakeDebugDaemonClient::UploadCrashes() {
@@ -172,7 +172,7 @@ void FakeDebugDaemonClient::EnableDebuggingFeatures(
     const std::string& password,
     const DebugDaemonClient::EnableDebuggingCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+                                                base::BindOnce(callback, true));
 }
 
 void FakeDebugDaemonClient::QueryDebuggingFeatures(
@@ -181,7 +181,7 @@ void FakeDebugDaemonClient::QueryDebuggingFeatures(
       chromeos::switches::kSystemDevMode);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           callback, true,
           static_cast<int>(
               supported ? featues_mask_
@@ -191,7 +191,7 @@ void FakeDebugDaemonClient::QueryDebuggingFeatures(
 void FakeDebugDaemonClient::RemoveRootfsVerification(
     const DebugDaemonClient::EnableDebuggingCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+                                                base::BindOnce(callback, true));
 }
 
 void FakeDebugDaemonClient::WaitForServiceToBeAvailable(
@@ -255,7 +255,7 @@ void FakeDebugDaemonClient::CupsRemovePrinter(
     printers_.erase(name);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, has_printer));
+      FROM_HERE, base::BindOnce(callback, has_printer));
 }
 
 void FakeDebugDaemonClient::StartVmConcierge(VmConciergeCallback callback) {

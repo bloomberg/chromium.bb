@@ -64,7 +64,7 @@ int PipeReader::RequestRead() {
   DCHECK(data_stream_.get());
   return data_stream_->Read(
       io_buffer_.get(), io_buffer_->size(),
-      base::Bind(&PipeReader::OnRead, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PipeReader::OnRead, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PipeReader::OnRead(int byte_count) {

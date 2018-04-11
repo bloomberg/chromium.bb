@@ -79,8 +79,8 @@ class ONCCertificateImporterImplTest : public testing::Test {
     importer.ImportCertificates(
         std::make_unique<chromeos::onc::OncParsedCertificates>(*certificates),
         ::onc::ONC_SOURCE_USER_IMPORT,  // allow web trust
-        base::Bind(&ONCCertificateImporterImplTest::OnImportCompleted,
-                   base::Unretained(this), expected_success));
+        base::BindOnce(&ONCCertificateImporterImplTest::OnImportCompleted,
+                       base::Unretained(this), expected_success));
 
     task_runner_->RunUntilIdle();
 

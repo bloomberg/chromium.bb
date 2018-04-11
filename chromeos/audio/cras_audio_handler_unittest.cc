@@ -484,8 +484,8 @@ class HDMIRediscoverWaiter {
     }
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&HDMIRediscoverWaiter::CheckHDMIRediscoverGracePeriodEnd,
-                   base::Unretained(this), quit_loop_func),
+        base::BindOnce(&HDMIRediscoverWaiter::CheckHDMIRediscoverGracePeriodEnd,
+                       base::Unretained(this), quit_loop_func),
         base::TimeDelta::FromMilliseconds(grace_period_duration_in_ms_ / 4));
   }
 

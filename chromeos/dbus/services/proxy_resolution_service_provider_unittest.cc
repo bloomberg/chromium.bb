@@ -70,7 +70,7 @@ class TestProxyResolver : public net::ProxyResolver {
       return result_;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, result_));
+        FROM_HERE, base::BindOnce(callback, result_));
     return net::ERR_IO_PENDING;
   }
 
@@ -126,15 +126,17 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
             new net::TestURLRequestContextGetter(network_task_runner)) {
     network_task_runner->PostTask(
         FROM_HERE,
-        base::Bind(&TestDelegate::CreateProxyResolutionServiceOnNetworkThread,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &TestDelegate::CreateProxyResolutionServiceOnNetworkThread,
+            base::Unretained(this)));
     RunPendingTasks(network_task_runner);
   }
 
   ~TestDelegate() override {
     context_getter_->GetNetworkTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&TestDelegate::DeleteProxyServiceOnNetworkThread,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::BindOnce(&TestDelegate::DeleteProxyServiceOnNetworkThread,
+                       base::Unretained(this)));
     RunPendingTasks(context_getter_->GetNetworkTaskRunner());
   }
 

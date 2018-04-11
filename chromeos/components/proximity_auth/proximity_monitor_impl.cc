@@ -108,8 +108,9 @@ void ProximityMonitorImpl::UpdatePollingState() {
     // schedule the next polling iteration prior to executing the current one.
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ProximityMonitorImpl::PerformScheduledUpdatePollingState,
-                   polling_weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &ProximityMonitorImpl::PerformScheduledUpdatePollingState,
+            polling_weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPollingTimeoutMs));
     Poll();
   } else {

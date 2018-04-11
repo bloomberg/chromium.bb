@@ -88,20 +88,19 @@ void TPMTokenInfoGetter::Continue() {
       NOTREACHED();
       break;
     case STATE_STARTED:
-      cryptohome_client_->TpmIsEnabled(
-          base::Bind(&TPMTokenInfoGetter::OnTpmIsEnabled,
-                     weak_factory_.GetWeakPtr()));
+      cryptohome_client_->TpmIsEnabled(base::BindOnce(
+          &TPMTokenInfoGetter::OnTpmIsEnabled, weak_factory_.GetWeakPtr()));
       break;
     case STATE_TPM_ENABLED:
       if (type_ == TYPE_SYSTEM) {
         cryptohome_client_->Pkcs11GetTpmTokenInfo(
-            base::Bind(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
-                       weak_factory_.GetWeakPtr()));
+            base::BindOnce(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
+                           weak_factory_.GetWeakPtr()));
       } else {  // if (type_ == TYPE_USER)
         cryptohome_client_->Pkcs11GetTpmTokenInfoForUser(
             cryptohome::Identification(account_id_),
-            base::Bind(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
-                       weak_factory_.GetWeakPtr()));
+            base::BindOnce(&TPMTokenInfoGetter::OnPkcs11GetTpmTokenInfo,
+                           weak_factory_.GetWeakPtr()));
       }
       break;
     case STATE_DONE:
@@ -112,7 +111,7 @@ void TPMTokenInfoGetter::Continue() {
 void TPMTokenInfoGetter::RetryLater() {
   delayed_task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&TPMTokenInfoGetter::Continue, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&TPMTokenInfoGetter::Continue, weak_factory_.GetWeakPtr()),
       tpm_request_delay_);
   tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
 }

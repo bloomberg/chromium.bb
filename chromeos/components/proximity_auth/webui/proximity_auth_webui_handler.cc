@@ -633,8 +633,8 @@ void ProximityAuthWebUIHandler::OnLifeCycleStateChanged(
     // call stack of |life_cycle_|.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ProximityAuthWebUIHandler::CleanUpRemoteDeviceLifeCycle,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else if (new_state ==
              RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
     life_cycle_->GetMessenger()->AddObserver(this);

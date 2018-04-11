@@ -209,17 +209,15 @@ void LoginPerformer::TrustedLoginAsSupervisedUser(
     // http://crbug.com/351268
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ExtendedAuthenticator::AuthenticateToMount,
-                   extended_authenticator_.get(),
-                   user_context_copy,
-                   ExtendedAuthenticator::ResultCallback()));
+        base::BindOnce(&ExtendedAuthenticator::AuthenticateToMount,
+                       extended_authenticator_.get(), user_context_copy,
+                       ExtendedAuthenticator::ResultCallback()));
 
   } else {
     EnsureAuthenticator();
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&Authenticator::LoginAsSupervisedUser,
-                                      authenticator_.get(),
-                                      user_context_copy));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&Authenticator::LoginAsSupervisedUser,
+                                  authenticator_.get(), user_context_copy));
   }
 }
 
@@ -233,16 +231,15 @@ void LoginPerformer::LoginAsPublicSession(const UserContext& user_context) {
 
   EnsureAuthenticator();
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Authenticator::LoginAsPublicSession,
-                                    authenticator_.get(),
-                                    user_context));
+                         base::BindOnce(&Authenticator::LoginAsPublicSession,
+                                        authenticator_.get(), user_context));
 }
 
 void LoginPerformer::LoginOffTheRecord() {
   EnsureAuthenticator();
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Authenticator::LoginOffTheRecord, authenticator_.get()));
+      base::BindOnce(&Authenticator::LoginOffTheRecord, authenticator_.get()));
 }
 
 void LoginPerformer::LoginAsKioskAccount(const AccountId& app_account_id,
@@ -250,29 +247,28 @@ void LoginPerformer::LoginAsKioskAccount(const AccountId& app_account_id,
   EnsureAuthenticator();
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&Authenticator::LoginAsKioskAccount, authenticator_.get(),
-                 app_account_id, use_guest_mount));
+      base::BindOnce(&Authenticator::LoginAsKioskAccount, authenticator_.get(),
+                     app_account_id, use_guest_mount));
 }
 
 void LoginPerformer::LoginAsArcKioskAccount(
     const AccountId& arc_app_account_id) {
   EnsureAuthenticator();
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Authenticator::LoginAsArcKioskAccount,
-                                    authenticator_.get(), arc_app_account_id));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Authenticator::LoginAsArcKioskAccount,
+                                authenticator_.get(), arc_app_account_id));
 }
 
 void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&Authenticator::RecoverEncryptedData,
-                                    authenticator_.get(),
-                                    old_password));
+                         base::BindOnce(&Authenticator::RecoverEncryptedData,
+                                        authenticator_.get(), old_password));
 }
 
 void LoginPerformer::ResyncEncryptedData() {
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Authenticator::ResyncEncryptedData, authenticator_.get()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&Authenticator::ResyncEncryptedData,
+                                        authenticator_.get()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,11 +285,10 @@ void LoginPerformer::StartLoginCompletion() {
   chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker("AuthStarted", false);
   content::BrowserContext* browser_context = GetSigninContext();
   EnsureAuthenticator();
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&chromeos::Authenticator::CompleteLogin,
-                                    authenticator_.get(),
-                                    browser_context,
-                                    user_context_));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&chromeos::Authenticator::CompleteLogin,
+                     authenticator_.get(), browser_context, user_context_));
   user_context_.ClearSecrets();
 }
 
@@ -303,11 +298,11 @@ void LoginPerformer::StartAuthentication() {
   if (delegate_) {
     EnsureAuthenticator();
     content::BrowserContext* browser_context = GetSigninContext();
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&Authenticator::AuthenticateToLogin,
-                                      authenticator_.get(),
-                                      base::Unretained(browser_context),
-                                      user_context_));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Authenticator::AuthenticateToLogin,
+                       authenticator_.get(), base::Unretained(browser_context),
+                       user_context_));
   } else {
     NOTREACHED();
   }

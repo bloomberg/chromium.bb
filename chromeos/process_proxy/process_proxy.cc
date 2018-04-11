@@ -93,8 +93,8 @@ bool ProcessProxy::StartWatchingOutput(
       master_copy, base::Bind(&ProcessProxy::OnProcessOutput, this)));
 
   watcher_runner_->PostTask(
-      FROM_HERE, base::Bind(&ProcessOutputWatcher::Start,
-                            base::Unretained(output_watcher_.get())));
+      FROM_HERE, base::BindOnce(&ProcessOutputWatcher::Start,
+                                base::Unretained(output_watcher_.get())));
 
   return true;
 }
@@ -106,8 +106,8 @@ void ProcessProxy::OnProcessOutput(ProcessOutputType type,
     return;
 
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(&ProcessProxy::CallOnProcessOutputCallback, this,
-                            type, output, callback));
+      FROM_HERE, base::BindOnce(&ProcessProxy::CallOnProcessOutputCallback,
+                                this, type, output, callback));
 }
 
 void ProcessProxy::CallOnProcessOutputCallback(ProcessOutputType type,
@@ -137,7 +137,7 @@ void ProcessProxy::StopWatching() {
 
   watcher_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&StopOutputWatcher, base::Passed(&output_watcher_)));
+      base::BindOnce(&StopOutputWatcher, std::move(output_watcher_)));
 }
 
 void ProcessProxy::Close() {

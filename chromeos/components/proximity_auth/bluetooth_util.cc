@@ -121,7 +121,7 @@ SeekDeviceResult SeekDeviceByAddressImpl(
   if (result == 0) {
     seek_result.success = true;
     task_runner->PostDelayedTask(
-        FROM_HERE, base::Bind(&CloseSocket, socket_descriptor),
+        FROM_HERE, base::BindOnce(&CloseSocket, socket_descriptor),
         base::TimeDelta::FromSeconds(kCloseSDPConnectionDelaySec));
   } else {
     // TODO(isherman): Pass a better message based on the errno?

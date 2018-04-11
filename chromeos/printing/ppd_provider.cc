@@ -691,7 +691,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
           disk_task_runner_.get(), FROM_HERE,
           base::BindOnce(&FetchFile, url, content_ptr),
           base::BindOnce(&PpdProviderImpl::OnFileFetchComplete, this,
-                         base::Passed(&file_contents)));
+                         std::move(file_contents)));
     }
   }
 

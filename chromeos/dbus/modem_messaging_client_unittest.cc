@@ -214,7 +214,7 @@ TEST_F(ModemMessagingClientTest, List) {
   base::Optional<std::vector<dbus::ObjectPath>> result;
   client_->List(
       kServiceName, dbus::ObjectPath(kObjectPath),
-      base::Bind(
+      base::BindOnce(
           [](base::Optional<std::vector<dbus::ObjectPath>>* result_out,
              base::Optional<std::vector<dbus::ObjectPath>> result) {
             *result_out = std::move(result);

@@ -81,8 +81,8 @@ void ReachablePhoneFlow::OnSyncTickleSuccess(
                << "ms for phones to callback to CryptAuth...";
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ReachablePhoneFlow::QueryReachablePhones,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ReachablePhoneFlow::QueryReachablePhones,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kWaitTimeMillis));
 }
 

@@ -558,7 +558,8 @@ void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
   // parallel.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&CryptohomeAuthenticator::ResolveLoginCompletionStatus, this));
+      base::BindOnce(&CryptohomeAuthenticator::ResolveLoginCompletionStatus,
+                     this));
 }
 
 void CryptohomeAuthenticator::AuthenticateToUnlock(
@@ -727,16 +728,16 @@ void CryptohomeAuthenticator::RemoveEncryptedData() {
   remove_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Remove, current_state_->AsWeakPtr(),
-                            scoped_refptr<CryptohomeAuthenticator>(this)));
+      FROM_HERE, base::BindOnce(&Remove, current_state_->AsWeakPtr(),
+                                scoped_refptr<CryptohomeAuthenticator>(this)));
 }
 
 void CryptohomeAuthenticator::ResyncEncryptedData() {
   resync_attempted_ = true;
   current_state_->ResetCryptohomeStatus();
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Remove, current_state_->AsWeakPtr(),
-                            scoped_refptr<CryptohomeAuthenticator>(this)));
+      FROM_HERE, base::BindOnce(&Remove, current_state_->AsWeakPtr(),
+                                scoped_refptr<CryptohomeAuthenticator>(this)));
 }
 
 bool CryptohomeAuthenticator::VerifyOwner() {
@@ -789,9 +790,8 @@ void CryptohomeAuthenticator::Resolve() {
       // the appropriate failure.
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                     this,
-                     AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::COULD_NOT_MOUNT_CRYPTOHOME)));
       break;
     case FAILED_REMOVE:
       // In this case, we tried to remove the user's old cryptohome at their
@@ -799,42 +799,37 @@ void CryptohomeAuthenticator::Resolve() {
       remove_user_data_on_failure_ = false;
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                     this,
-                     AuthFailure(AuthFailure::DATA_REMOVAL_FAILED)));
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::DATA_REMOVAL_FAILED)));
       break;
     case FAILED_TMPFS:
       // In this case, we tried to mount a tmpfs for guest and failed.
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                     this,
-                     AuthFailure(AuthFailure::COULD_NOT_MOUNT_TMPFS)));
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::COULD_NOT_MOUNT_TMPFS)));
       break;
     case FAILED_TPM:
       // In this case, we tried to create/mount cryptohome and failed
       // because of the critical TPM error.
       // Chrome will notify user and request reboot.
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                                        this,
-                                        AuthFailure(AuthFailure::TPM_ERROR)));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure,
+                                    this, AuthFailure(AuthFailure::TPM_ERROR)));
       break;
     case FAILED_USERNAME_HASH:
       // In this case, we failed the GetSanitizedUsername request to
       // cryptohomed. This can happen for any login attempt.
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                     this,
-                     AuthFailure(AuthFailure::USERNAME_HASH_FAILED)));
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure, this,
+                         AuthFailure(AuthFailure::USERNAME_HASH_FAILED)));
       break;
     case REMOVED_DATA_AFTER_FAILURE:
       remove_user_data_on_failure_ = false;
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                                        this,
-                                        *delayed_login_failure_));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure,
+                                    this, *delayed_login_failure_));
       break;
     case CREATE_NEW:
       create_if_nonexistent = true;
@@ -848,7 +843,8 @@ void CryptohomeAuthenticator::Resolve() {
     case NEED_OLD_PW:
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnPasswordChangeDetected, this));
+          base::BindOnce(&CryptohomeAuthenticator::OnPasswordChangeDetected,
+                         this));
       break;
     case ONLINE_FAILED:
     case NEED_NEW_PW:
@@ -864,31 +860,33 @@ void CryptohomeAuthenticator::Resolve() {
     case ONLINE_LOGIN:
       VLOG(2) << "Online login";
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&CryptohomeAuthenticator::OnAuthSuccess, this));
+          FROM_HERE,
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthSuccess, this));
       break;
     case GUEST_LOGIN:
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnOffTheRecordAuthSuccess,
-                     this));
+          base::BindOnce(&CryptohomeAuthenticator::OnOffTheRecordAuthSuccess,
+                         this));
       break;
     case KIOSK_ACCOUNT_LOGIN:
     case PUBLIC_ACCOUNT_LOGIN:
       current_state_->user_context.SetIsUsingOAuth(false);
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&CryptohomeAuthenticator::OnAuthSuccess, this));
+          FROM_HERE,
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthSuccess, this));
       break;
     case SUPERVISED_USER_LOGIN:
       current_state_->user_context.SetIsUsingOAuth(false);
       task_runner_->PostTask(
-          FROM_HERE, base::Bind(&CryptohomeAuthenticator::OnAuthSuccess, this));
+          FROM_HERE,
+          base::BindOnce(&CryptohomeAuthenticator::OnAuthSuccess, this));
       break;
     case LOGIN_FAILED:
       current_state_->ResetCryptohomeStatus();
-      task_runner_->PostTask(FROM_HERE,
-                             base::Bind(&CryptohomeAuthenticator::OnAuthFailure,
-                                        this,
-                                        current_state_->online_outcome()));
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&CryptohomeAuthenticator::OnAuthFailure,
+                                    this, current_state_->online_outcome()));
       break;
     case OWNER_REQUIRED: {
       current_state_->ResetCryptohomeStatus();
@@ -903,8 +901,8 @@ void CryptohomeAuthenticator::Resolve() {
       // Chrome will show a screen which asks user to migrate the encryption.
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&CryptohomeAuthenticator::OnOldEncryptionDetected, this,
-                     state == FAILED_PREVIOUS_MIGRATION_INCOMPLETE));
+          base::BindOnce(&CryptohomeAuthenticator::OnOldEncryptionDetected,
+                         this, state == FAILED_PREVIOUS_MIGRATION_INCOMPLETE));
       break;
     default:
       NOTREACHED();

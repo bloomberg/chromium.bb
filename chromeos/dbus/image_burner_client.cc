@@ -65,15 +65,14 @@ class ImageBurnerClientImpl : public ImageBurnerClient {
         imageburn::kSignalBurnFinishedName,
         base::Bind(&ImageBurnerClientImpl::OnBurnFinished,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ImageBurnerClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ImageBurnerClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     proxy_->ConnectToSignal(
-        imageburn::kImageBurnServiceInterface,
-        imageburn::kSignalBurnUpdateName,
+        imageburn::kImageBurnServiceInterface, imageburn::kSignalBurnUpdateName,
         base::Bind(&ImageBurnerClientImpl::OnBurnProgressUpdate,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&ImageBurnerClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ImageBurnerClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

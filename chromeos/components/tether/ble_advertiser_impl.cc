@@ -162,9 +162,9 @@ void BleAdvertiserImpl::OnAdvertisementStopped(size_t index) {
 
   // Update advertisements, but do so as part of a new task in the run loop to
   // prevent the possibility of a crash. See crbug.com/776241.
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&BleAdvertiserImpl::UpdateAdvertisements,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&BleAdvertiserImpl::UpdateAdvertisements,
+                                weak_ptr_factory_.GetWeakPtr()));
 
   if (!AreAdvertisementsRegistered())
     NotifyAllAdvertisementsUnregistered();

@@ -252,7 +252,7 @@ void AttestationFlow::StartCertificateRequest(
         certificate_profile, account_id, request_origin, true, callback);
     cryptohome_client_->TpmAttestationDoesKeyExist(
         key_type, cryptohome::Identification(account_id), key_name,
-        base::BindRepeating(
+        base::BindOnce(
             &DBusBoolRedirectCallback, on_key_exists, on_key_not_exists,
             base::BindRepeating(callback, ATTESTATION_UNSPECIFIED_FAILURE, ""),
             "check for existence of attestation key"));
@@ -317,7 +317,7 @@ void AttestationFlow::GetExistingCertificate(
     const CertificateCallback& callback) {
   cryptohome_client_->TpmAttestationGetCertificate(
       key_type, cryptohome::Identification(account_id), key_name,
-      base::BindRepeating(&DBusCertificateMethodCallback, callback));
+      base::BindOnce(&DBusCertificateMethodCallback, callback));
 }
 
 void AttestationFlow::CheckAttestationReadyAndReschedule(
@@ -329,8 +329,9 @@ void AttestationFlow::CheckAttestationReadyAndReschedule(
                  << " Retrying in " << retry_delay_ << ".";
     base::MessageLoop::current()->task_runner()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&AttestationFlow::WaitForAttestationReadyAndStartEnroll,
-                   weak_factory_.GetWeakPtr(), end_time, on_failure, next_task),
+        base::BindOnce(&AttestationFlow::WaitForAttestationReadyAndStartEnroll,
+                       weak_factory_.GetWeakPtr(), end_time, on_failure,
+                       next_task),
         retry_delay_);
   } else {
     LOG(ERROR) << "Attestation: Not prepared. Giving up on retrying.";

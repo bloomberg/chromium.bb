@@ -148,8 +148,8 @@ class PpdCacheImpl : public PpdCache {
   // be invoked on completion.
   void Store(const std::string& key, const std::string& contents) override {
     store_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&StoreImpl, cache_base_dir_, key, contents,
-                              base::TimeDelta()));
+        FROM_HERE, base::BindOnce(&StoreImpl, cache_base_dir_, key, contents,
+                                  base::TimeDelta()));
   }
 
   void StoreForTesting(const std::string& key,

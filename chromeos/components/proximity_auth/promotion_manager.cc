@@ -126,8 +126,8 @@ void PromotionManager::OnFindEligibleForPromotionSuccess(
   }
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&PromotionManager::FindEligibleUnlockDevices,
-                 weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PromotionManager::FindEligibleUnlockDevices,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kWaitForPhoneOnlineDelaySec));
 }
 

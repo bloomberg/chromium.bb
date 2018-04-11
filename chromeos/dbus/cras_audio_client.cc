@@ -220,65 +220,59 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
     // Monitor the D-Bus signal for output mute change.
     cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kOutputMuteChanged,
+        cras::kCrasControlInterface, cras::kOutputMuteChanged,
         base::Bind(&CrasAudioClientImpl::OutputMuteChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for input mute change.
     cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kInputMuteChanged,
+        cras::kCrasControlInterface, cras::kInputMuteChanged,
         base::Bind(&CrasAudioClientImpl::InputMuteChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for nodes change.
     cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kNodesChanged,
+        cras::kCrasControlInterface, cras::kNodesChanged,
         base::Bind(&CrasAudioClientImpl::NodesChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for active output node change.
     cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kActiveOutputNodeChanged,
+        cras::kCrasControlInterface, cras::kActiveOutputNodeChanged,
         base::Bind(&CrasAudioClientImpl::ActiveOutputNodeChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for active input node change.
     cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kActiveInputNodeChanged,
+        cras::kCrasControlInterface, cras::kActiveInputNodeChanged,
         base::Bind(&CrasAudioClientImpl::ActiveInputNodeChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for output node volume change.
     cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface,
-        cras::kOutputNodeVolumeChanged,
+        cras::kCrasControlInterface, cras::kOutputNodeVolumeChanged,
         base::Bind(&CrasAudioClientImpl::OutputNodeVolumeChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for hotword.
     cras_proxy_->ConnectToSignal(
         cras::kCrasControlInterface, cras::kHotwordTriggered,
         base::Bind(&CrasAudioClientImpl::HotwordTriggeredReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&CrasAudioClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     // Monitor the D-Bus signal for changes in number of active streams.
     cras_proxy_->ConnectToSignal(
@@ -286,8 +280,8 @@ class CrasAudioClientImpl : public CrasAudioClient {
         base::BindRepeating(
             &CrasAudioClientImpl::NumberOfActiveStreamsChangedReceived,
             weak_ptr_factory_.GetWeakPtr()),
-        base::BindRepeating(&CrasAudioClientImpl::SignalConnected,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

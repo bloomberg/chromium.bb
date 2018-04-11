@@ -54,7 +54,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     base::RunLoop run_loop;
     multidevice_setup_->SetObserver(
         fake_multidevice_setup_observer_->GenerateInterfacePtr(),
-        base::BindRepeating(
+        base::BindOnce(
             &MultiDeviceSetupServiceTest::OnNotificationPresenterRegistered,
             base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -63,9 +63,9 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   void CallTriggerEventForDebugging(mojom::EventTypeForDebugging type) {
     base::RunLoop run_loop;
     GetMultiDeviceSetup()->TriggerEventForDebugging(
-        type, base::BindRepeating(
-                  &MultiDeviceSetupServiceTest::OnNotificationTriggered,
-                  base::Unretained(this), run_loop.QuitClosure()));
+        type,
+        base::BindOnce(&MultiDeviceSetupServiceTest::OnNotificationTriggered,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
   }
 

@@ -42,8 +42,8 @@ void CryptAuthAccessTokenFetcherImpl::FetchAccessToken(
   access_token_fetcher_ =
       identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
           kIdentityManagerConsumerName, kScopes,
-          base::Bind(&CryptAuthAccessTokenFetcherImpl::OnAccessTokenFetched,
-                     weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&CryptAuthAccessTokenFetcherImpl::OnAccessTokenFetched,
+                         weak_ptr_factory_.GetWeakPtr()),
           identity::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
 }
 

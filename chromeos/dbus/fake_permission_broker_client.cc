@@ -35,14 +35,15 @@ void OpenPath(const std::string& path,
     int error_code = logging::GetLastSystemErrorCode();
     task_runner->PostTask(
         FROM_HERE,
-        base::Bind(error_callback, kOpenFailedError,
-                   base::StringPrintf(
-                       "Failed to open '%s': %s", path.c_str(),
-                       logging::SystemErrorCodeToString(error_code).c_str())));
+        base::BindOnce(
+            error_callback, kOpenFailedError,
+            base::StringPrintf(
+                "Failed to open '%s': %s", path.c_str(),
+                logging::SystemErrorCodeToString(error_code).c_str())));
     return;
   }
 
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&fd)));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(callback, std::move(fd)));
 }
 
 }  // namespace
@@ -65,8 +66,8 @@ void FakePermissionBrokerClient::OpenPath(const std::string& path,
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&chromeos::OpenPath, path, callback, error_callback,
-                 base::ThreadTaskRunnerHandle::Get()));
+      base::BindOnce(&chromeos::OpenPath, path, callback, error_callback,
+                     base::ThreadTaskRunnerHandle::Get()));
 }
 
 void FakePermissionBrokerClient::RequestTcpPortAccess(

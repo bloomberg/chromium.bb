@@ -97,12 +97,11 @@ class SystemClockClientImpl : public SystemClockClient {
         system_clock::kSystemClockServiceName,
         dbus::ObjectPath(system_clock::kSystemClockServicePath));
     system_clock_proxy_->ConnectToSignal(
-        system_clock::kSystemClockInterface,
-        system_clock::kSystemClockUpdated,
+        system_clock::kSystemClockInterface, system_clock::kSystemClockUpdated,
         base::Bind(&SystemClockClientImpl::TimeUpdatedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SystemClockClientImpl::TimeUpdatedConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SystemClockClientImpl::TimeUpdatedConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     WaitForServiceToBeAvailable(
         base::BindOnce(&SystemClockClientImpl::ServiceInitiallyAvailable,
                        weak_ptr_factory_.GetWeakPtr()));

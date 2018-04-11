@@ -338,7 +338,7 @@ void AccelerometerFileReader::Read() {
   DCHECK(base::SequencedTaskRunnerHandle::IsSet());
   ReadFileAndNotify();
   task_runner_->PostNonNestableDelayedTask(
-      FROM_HERE, base::Bind(&AccelerometerFileReader::Read, this),
+      FROM_HERE, base::BindOnce(&AccelerometerFileReader::Read, this),
       base::TimeDelta::FromMilliseconds(
           AccelerometerReader::kDelayBetweenReadsMs));
 }
@@ -349,7 +349,7 @@ void AccelerometerFileReader::AddObserver(
   if (initialization_successful_) {
     task_runner_->PostNonNestableTask(
         FROM_HERE,
-        base::Bind(&AccelerometerFileReader::ReadFileAndNotify, this));
+        base::BindOnce(&AccelerometerFileReader::ReadFileAndNotify, this));
   }
 }
 
@@ -522,8 +522,8 @@ void AccelerometerReader::Initialize(
   // startup.
   sequenced_task_runner->PostNonNestableTask(
       FROM_HERE,
-      base::Bind(&AccelerometerFileReader::Initialize,
-                 accelerometer_file_reader_.get(), sequenced_task_runner));
+      base::BindOnce(&AccelerometerFileReader::Initialize,
+                     accelerometer_file_reader_.get(), sequenced_task_runner));
 }
 
 void AccelerometerReader::AddObserver(Observer* observer) {

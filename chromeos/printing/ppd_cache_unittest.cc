@@ -115,8 +115,8 @@ TEST_F(PpdCacheTest, HitAge) {
   cache->Store(kTestKey, kTestContents);
   scoped_task_environment_.RunUntilIdle();
 
-  cache->Find(kTestKey, base::Bind(&PpdCacheTest::CaptureFindResult,
-                                   base::Unretained(this)));
+  cache->Find(kTestKey, base::BindOnce(&PpdCacheTest::CaptureFindResult,
+                                       base::Unretained(this)));
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(captured_find_results_, 1);
   // The age should be well under a second, but accept anything under an hour.
