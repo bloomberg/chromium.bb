@@ -1229,6 +1229,16 @@ RenderWidgetHostViewMac* RenderWidgetHostViewMac::GetRenderWidgetHostViewMac() {
   return this;
 }
 
+BrowserAccessibilityManager*
+RenderWidgetHostViewMac::GetRootBrowserAccessibilityManager() {
+  return host()->GetRootBrowserAccessibilityManager();
+}
+
+void RenderWidgetHostViewMac::OnNSViewSyncIsRenderViewHost(
+    bool* is_render_view) {
+  *is_render_view = RenderViewHost::From(host()) != nullptr;
+}
+
 void RenderWidgetHostViewMac::OnNSViewRequestShutdown() {
   if (!weak_factory_.HasWeakPtrs()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1561,6 +1571,31 @@ void RenderWidgetHostViewMac::OnNSViewSelectAll() {
   if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
     delegate->SelectAll();
   }
+}
+
+void RenderWidgetHostViewMac::OnNSViewSyncIsSpeaking(bool* is_speaking) {
+  *is_speaking = ui::TextServicesContextMenu::IsSpeaking();
+}
+
+void RenderWidgetHostViewMac::OnNSViewSpeakSelection() {
+  RenderWidgetHostView* target = this;
+  WebContents* web_contents = GetWebContents();
+  if (web_contents) {
+    content::BrowserPluginGuestManager* guest_manager =
+        web_contents->GetBrowserContext()->GetGuestManager();
+    if (guest_manager) {
+      content::WebContents* guest =
+          guest_manager->GetFullPageGuest(web_contents);
+      if (guest) {
+        target = guest->GetRenderWidgetHostView();
+      }
+    }
+  }
+  target->SpeakSelection();
+}
+
+void RenderWidgetHostViewMac::OnNSViewStopSpeaking() {
+  ui::TextServicesContextMenu::StopSpeaking();
 }
 
 void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(

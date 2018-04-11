@@ -278,6 +278,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // RenderWidgetHostNSViewClient implementation.
   RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() override;
+  BrowserAccessibilityManager* GetRootBrowserAccessibilityManager() override;
+  void OnNSViewSyncIsRenderViewHost(bool* is_render_view) override;
   void OnNSViewRequestShutdown() override;
   void OnNSViewIsFirstResponderChanged(bool is_first_responder) override;
   void OnNSViewWindowIsKeyChanged(bool is_key) override;
@@ -321,6 +323,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnNSViewPaste() override;
   void OnNSViewPasteAndMatchStyle() override;
   void OnNSViewSelectAll() override;
+  void OnNSViewSpeakSelection() override;
+  void OnNSViewStopSpeaking() override;
+  void OnNSViewSyncIsSpeaking(bool* is_speaking) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
