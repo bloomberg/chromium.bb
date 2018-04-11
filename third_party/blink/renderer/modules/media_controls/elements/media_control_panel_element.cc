@@ -17,6 +17,9 @@ namespace {
 // This is matching the `transition` property from mediaControls.css
 const double kFadeOutDuration = 0.3;
 
+// This is the class name to hide the panel.
+const char kTransparentClassName[] = "transparent";
+
 }  // anonymous namespace
 
 MediaControlPanelElement::MediaControlPanelElement(
@@ -46,8 +49,7 @@ void MediaControlPanelElement::MakeOpaque() {
   if (opaque_)
     return;
 
-  SetInlineStyleProperty(CSSPropertyOpacity, 1.0,
-                         CSSPrimitiveValue::UnitType::kNumber);
+  removeAttribute("class");
   opaque_ = true;
 
   if (is_displayed_) {
@@ -60,8 +62,7 @@ void MediaControlPanelElement::MakeTransparent() {
   if (!opaque_)
     return;
 
-  SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
-                         CSSPrimitiveValue::UnitType::kNumber);
+  setAttribute("class", kTransparentClassName);
 
   opaque_ = false;
   StartTimer();

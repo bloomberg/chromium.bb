@@ -79,6 +79,11 @@ video::-webkit-media-controls-panel {
     repeat-x bottom left;
 }
 
+audio::-webkit-media-controls-panel.transparent,
+video::-webkit-media-controls-panel.transparent {
+  opacity: 0;
+}
+
 video::-webkit-media-controls-panel.scrubbing-message {
   /* Need dark gradient at the top of the video when the scrubbing message is
    * shown */
