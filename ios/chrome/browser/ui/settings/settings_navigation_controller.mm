@@ -359,11 +359,13 @@ initWithRootViewController:(UIViewController*)rootViewController
 - (UIBarButtonItem*)doneButton {
   // Create a custom Done bar button item, as Material Navigation Bar does not
   // handle a system UIBarButtonSystemItemDone item.
-  return [[UIBarButtonItem alloc]
+  UIBarButtonItem* item = [[UIBarButtonItem alloc]
       initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
               style:UIBarButtonItemStyleDone
              target:self
              action:@selector(closeSettings)];
+  item.accessibilityIdentifier = kSettingsDoneButtonId;
+  return item;
 }
 
 - (UIBarButtonItem*)closeButton {

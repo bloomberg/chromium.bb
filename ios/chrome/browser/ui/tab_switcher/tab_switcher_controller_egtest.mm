@@ -455,8 +455,7 @@ using web::test::HttpServer;
       performAction:grey_tap()];
 
   // Open the tab switcher to the "Other Devices" tab.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:TabletTabSwitcherOpenButton()]
       performAction:grey_tap()];

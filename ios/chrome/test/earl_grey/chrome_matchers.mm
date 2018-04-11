@@ -264,6 +264,10 @@ id<GREYMatcher> SettingsMenuButton() {
   return grey_accessibilityID(kToolsMenuSettingsId);
 }
 
+id<GREYMatcher> SettingsDoneButton() {
+  return grey_accessibilityID(kSettingsDoneButtonId);
+}
+
 id<GREYMatcher> ToolsMenuView() {
   return grey_accessibilityID(kToolsMenuTableViewId);
 }

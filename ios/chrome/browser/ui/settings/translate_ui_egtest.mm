@@ -17,7 +17,7 @@
 #endif
 
 using chrome_test_util::ContentSettingsButton;
-using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 
 @interface TranslateUITestCase : ChromeTestCase
@@ -51,7 +51,7 @@ using chrome_test_util::SettingsMenuBackButton;
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 

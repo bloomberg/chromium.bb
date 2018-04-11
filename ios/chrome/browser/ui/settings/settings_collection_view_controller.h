@@ -18,6 +18,9 @@ class ChromeBrowserState;
 // The accessibility identifier of the settings collection view.
 extern NSString* const kSettingsCollectionViewId;
 
+// The accessibility identifier for the settings' "Done" button.
+extern NSString* const kSettingsDoneButtonId;
+
 // The accessibility identifier of the sign in cell.
 extern NSString* const kSettingsSignInCellId;
 

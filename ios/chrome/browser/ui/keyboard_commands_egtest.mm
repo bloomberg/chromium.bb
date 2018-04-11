@@ -29,6 +29,7 @@
 
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::RecentTabsMenuButton;
+using chrome_test_util::SettingsDoneButton;
 
 // Test cases to verify that keyboard commands are and are not registered when
 // expected.
@@ -106,7 +107,7 @@ using chrome_test_util::RecentTabsMenuButton;
 
   [self verifyNoKeyboardCommandsAreRegistered];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 

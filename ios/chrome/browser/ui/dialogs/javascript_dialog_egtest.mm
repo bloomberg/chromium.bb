@@ -36,8 +36,8 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
-using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OKButton;
+using chrome_test_util::SettingsDoneButton;
 using web::test::HttpServer;
 
 namespace {
@@ -468,7 +468,7 @@ void TapSuppressDialogsButton() {
   AssertJavaScriptAlertNotPresent();
 
   // Close the settings.
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // Make sure the alert is present.

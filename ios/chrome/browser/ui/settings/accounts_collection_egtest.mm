@@ -37,8 +37,8 @@ using chrome_test_util::AccountConsistencyConfirmationOkButton;
 using chrome_test_util::AccountConsistencySetupSigninButton;
 using chrome_test_util::AccountsSyncButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
-using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsAccountButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SignOutAccountsButton;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SecondarySignInButton;
@@ -107,7 +107,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   [SigninEarlGreyUtils assertSignedOut];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -137,7 +137,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   [SigninEarlGreyUtils assertSignedOut];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -175,7 +175,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       assertWithMatcher:grey_nil()];
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity1];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -219,7 +219,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       assertWithMatcher:grey_nil()];
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity1];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -251,7 +251,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   [SigninEarlGreyUtils assertSignedOut];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -286,7 +286,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
       assertWithMatcher:grey_sufficientlyVisible()];
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 

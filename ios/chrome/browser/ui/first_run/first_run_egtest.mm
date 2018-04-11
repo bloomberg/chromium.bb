@@ -40,7 +40,7 @@
 using chrome_test_util::AccountConsistencySetupSigninButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
-using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 
 namespace {
@@ -258,7 +258,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
                   @"Sync shouldn't have finished its original setup yet");
 
   // Close Settings, user is still signed in and sync is now starting.
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
   GREYAssertTrue(sync_service->HasFinishedInitialSetup(),
