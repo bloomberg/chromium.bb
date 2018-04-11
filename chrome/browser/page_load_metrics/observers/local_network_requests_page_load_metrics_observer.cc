@@ -335,7 +335,7 @@ LocalNetworkRequestsPageLoadMetricsObserver::OnCommit(
   if (net::HostStringIsLocalhost(address.host()) ||
       page_ip_address_ == net::IPAddress::IPv6Localhost()) {
     page_domain_type_ = internal::DOMAIN_TYPE_LOCALHOST;
-  } else if (page_ip_address_.IsReserved()) {
+  } else if (!page_ip_address_.IsPubliclyRoutable()) {
     page_domain_type_ = internal::DOMAIN_TYPE_PRIVATE;
     // Maps from first byte of an IPv4 address to the number of bits in the
     // reserved prefix. This table contains the subset of prefixes defined in
@@ -402,7 +402,7 @@ void LocalNetworkRequestsPageLoadMetricsObserver::OnLoadedResource(
     }
   }
   // We only track public resource requests for private pages.
-  else if (resource_ip.IsReserved() ||
+  else if (!resource_ip.IsPubliclyRoutable() ||
            page_domain_type_ == internal::DOMAIN_TYPE_PRIVATE) {
     if (extra_request_info.net_error != net::OK) {
       resource_request_counts_[resource_ip].second++;
@@ -486,13 +486,13 @@ internal::ResourceType
 LocalNetworkRequestsPageLoadMetricsObserver::DetermineResourceType(
     net::IPAddress resource_ip) {
   if (page_domain_type_ == internal::DOMAIN_TYPE_PUBLIC) {
-    DCHECK(resource_ip.IsReserved());
+    DCHECK(!resource_ip.IsPubliclyRoutable());
     return IsLikelyRouterIP(resource_ip) ? internal::RESOURCE_TYPE_ROUTER
                                          : internal::RESOURCE_TYPE_PRIVATE;
   }
 
   DCHECK_EQ(internal::DOMAIN_TYPE_PRIVATE, page_domain_type_);
-  if (resource_ip.IsReserved()) {  // PRIVATE
+  if (!resource_ip.IsPubliclyRoutable()) {  // PRIVATE
     const bool is_same_subnet =
         net::CommonPrefixLength(page_ip_address_, resource_ip) >=
         page_ip_prefix_length_;

@@ -301,7 +301,7 @@ bool IsHostnameNonUnique(const std::string& hostname) {
     return false;
 
   // If |hostname| is an IP address, check to see if it's in an IANA-reserved
-  // range.
+  // range reserved for non-publicly routable networks.
   if (host_info.IsIPAddress()) {
     IPAddress host_addr;
     if (!host_addr.AssignFromIPLiteral(hostname.substr(
@@ -311,7 +311,7 @@ bool IsHostnameNonUnique(const std::string& hostname) {
     switch (host_info.family) {
       case url::CanonHostInfo::IPV4:
       case url::CanonHostInfo::IPV6:
-        return host_addr.IsReserved();
+        return !host_addr.IsPubliclyRoutable();
       case url::CanonHostInfo::NEUTRAL:
       case url::CanonHostInfo::BROKEN:
         return false;

@@ -447,7 +447,7 @@ void CastMediaSinkServiceImpl::OpenChannel(
     SinkSource sink_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!allow_all_ips_ && !ip_endpoint.address().IsReserved()) {
+  if (!allow_all_ips_ && ip_endpoint.address().IsPubliclyRoutable()) {
     DVLOG(2) << "Invalid Cast IP address: " << ip_endpoint.address().ToString();
     return;
   }

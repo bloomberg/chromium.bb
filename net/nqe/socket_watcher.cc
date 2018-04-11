@@ -69,7 +69,7 @@ SocketWatcher::SocketWatcher(
       rtt_notifications_minimum_interval_(min_notification_interval),
       run_rtt_callback_(allow_rtt_private_address ||
                         (!address_list.empty() &&
-                         !address_list.front().address().IsReserved())),
+                         address_list.front().address().IsPubliclyRoutable())),
       tick_clock_(tick_clock),
       first_quic_rtt_notification_received_(false),
       host_(CalculateIPHash(address_list)) {

@@ -190,12 +190,11 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
     const std::string& ip_address) const {
   net::IPAddress address;
   if (!address.AssignFromIPLiteral(ip_address)) {
-    DVLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
-    // Err on the side of safety and assume this might be private.
+    // Err on the side of privacy and assume this might be private.
     return true;
   }
 
-  return address.IsReserved();
+  return !address.IsPubliclyRoutable();
 }
 
 void ClientSideDetectionService::OnURLLoaderComplete(

@@ -426,10 +426,12 @@ TEST_F(ClientSideDetectionServiceTest, IsPrivateIPAddress) {
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("fec0::"));
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("fec0:1:2::3"));
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("::1"));
+  EXPECT_TRUE(csd_service_->IsPrivateIPAddress("::ffff:192.168.1.1"));
 
   EXPECT_FALSE(csd_service_->IsPrivateIPAddress("1.2.3.4"));
   EXPECT_FALSE(csd_service_->IsPrivateIPAddress("200.1.1.1"));
   EXPECT_FALSE(csd_service_->IsPrivateIPAddress("2001:0db8:ac10:fe01::"));
+  EXPECT_FALSE(csd_service_->IsPrivateIPAddress("::ffff:23c5:281b"));
 
   // If the address can't be parsed, the default is true.
   EXPECT_TRUE(csd_service_->IsPrivateIPAddress("blah"));

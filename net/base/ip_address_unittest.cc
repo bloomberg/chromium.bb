@@ -107,7 +107,7 @@ enum IPAddressReservedResult : bool { NOT_RESERVED = false, RESERVED = true };
 // Tests for the reserved IPv4 ranges and the (unreserved) blocks in between.
 // The reserved ranges are tested by checking the first and last address of each
 // range. The unreserved blocks are tested similarly. These tests cover the
-// entire IPv4 address range.
+// entire IPv4 address range, as well as this range mapped to IPv6.
 TEST(IPAddressTest, IsReservedIPv4) {
   struct {
     const char* const address;
@@ -213,10 +213,18 @@ TEST(IPAddressTest, IsReservedIPv4) {
                {"255.255.255.255", RESERVED}};
 
   IPAddress address;
+  IPAddress mapped_address;
   for (const auto& test : tests) {
     EXPECT_TRUE(address.AssignFromIPLiteral(test.address));
     ASSERT_TRUE(address.IsValid());
     EXPECT_EQ(!!test.is_reserved, address.IsReserved());
+    EXPECT_EQ(!test.is_reserved, address.IsPubliclyRoutable());
+
+    // Check these IPv4 addresses when mapped to IPv6. This verifies we're
+    // properly unpacking mapped addresses.
+    IPAddress mapped_address = ConvertIPv4ToIPv4MappedIPv6(address);
+    EXPECT_TRUE(mapped_address.IsReserved());
+    EXPECT_EQ(!test.is_reserved, mapped_address.IsPubliclyRoutable());
   }
 }
 
@@ -228,7 +236,9 @@ TEST(IPAddressTest, IsReservedIPv6) {
   struct {
     const char* const address;
     IPAddressReservedResult is_reserved;
-  } tests[] = {// 0000::/8
+  } tests[] = {// 0000::/8.
+               // Skip testing ::ffff:/96 explicitly since it was tested
+               // in IsReservedIPv4
                {"0:0:0:0:0:0:0:0", RESERVED},
                {"ff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", RESERVED},
                // 0100::/8
@@ -290,6 +300,7 @@ TEST(IPAddressTest, IsReservedIPv6) {
   for (const auto& test : tests) {
     EXPECT_TRUE(address.AssignFromIPLiteral(test.address));
     EXPECT_EQ(!!test.is_reserved, address.IsReserved());
+    EXPECT_EQ(!test.is_reserved, address.IsPubliclyRoutable());
   }
 }
 

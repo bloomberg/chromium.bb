@@ -134,7 +134,7 @@ NET_EXPORT bool IsCanonicalizedHostCompliant(const std::string& host);
 
 // Returns true if |hostname| contains a non-registerable or non-assignable
 // domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
-// that falls in an IANA-reserved range.
+// that falls in an range reserved for non-publicly routable networks.
 NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
 
 // Returns true if the host part of |url| is a local host name according to
