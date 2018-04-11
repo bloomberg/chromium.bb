@@ -48,11 +48,11 @@ ContentElement::~ContentElement() = default;
 void ContentElement::Render(UiElementRenderer* renderer,
                             const CameraModel& model) const {
   gfx::RectF copy_rect(0, 0, 1, 1);
-  if (texture_id_ || overlay_texture_id_) {
+  if (texture_id_ || (overlay_texture_non_empty_ && overlay_texture_id_)) {
     renderer->DrawTexturedQuad(
-        texture_id_, overlay_texture_id_, texture_location_,
-        model.view_proj_matrix * world_space_transform(), copy_rect,
-        computed_opacity(), size(), corner_radius());
+        texture_id_, overlay_texture_non_empty_ ? overlay_texture_id_ : 0,
+        texture_location_, model.view_proj_matrix * world_space_transform(),
+        copy_rect, computed_opacity(), size(), corner_radius());
   }
 }
 
@@ -143,6 +143,10 @@ void ContentElement::SetOverlayTextureId(unsigned int texture_id) {
 void ContentElement::SetOverlayTextureLocation(
     UiElementRenderer::TextureLocation location) {
   overlay_texture_location_ = location;
+}
+
+void ContentElement::SetOverlayTextureEmpty(bool empty) {
+  overlay_texture_non_empty_ = !empty;
 }
 
 void ContentElement::SetProjectionMatrix(const gfx::Transform& matrix) {

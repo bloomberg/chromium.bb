@@ -46,6 +46,7 @@ class BrowserUiInterface {
                               const base::Version& component_version) = 0;
   virtual void OnAssetsUnavailable() = 0;
   virtual void SetIncognitoTabsOpen(bool open) = 0;
+  virtual void SetOverlayTextureEmpty(bool empty) = 0;
 
   // Web contents text input related.
   virtual void ShowSoftInput(bool show) = 0;

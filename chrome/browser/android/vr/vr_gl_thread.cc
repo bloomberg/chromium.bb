@@ -449,6 +449,13 @@ void VrGLThread::SetIncognitoTabsOpen(bool open) {
                                 weak_browser_ui_, open));
 }
 
+void VrGLThread::SetOverlayTextureEmpty(bool empty) {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetOverlayTextureEmpty,
+                                weak_browser_ui_, empty));
+}
+
 void VrGLThread::ShowSoftInput(bool show) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,

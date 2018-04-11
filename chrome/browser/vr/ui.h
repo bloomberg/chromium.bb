@@ -97,6 +97,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
   void SetIncognitoTabsOpen(bool open) override;
+  void SetOverlayTextureEmpty(bool empty) override;
 
   // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until
   // the splash screen has been visible for its minimum duration. The visibility

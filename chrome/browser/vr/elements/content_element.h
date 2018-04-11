@@ -50,6 +50,7 @@ class ContentElement : public UiElement {
   void SetTextureLocation(UiElementRenderer::TextureLocation location);
   void SetOverlayTextureId(unsigned int texture_id);
   void SetOverlayTextureLocation(UiElementRenderer::TextureLocation location);
+  void SetOverlayTextureEmpty(bool empty);
   void SetProjectionMatrix(const gfx::Transform& matrix);
   void SetTextInputDelegate(TextInputDelegate* text_input_delegate);
   void SetDelegate(ContentInputDelegate* delegate);
@@ -62,6 +63,7 @@ class ContentElement : public UiElement {
   UiElementRenderer::TextureLocation texture_location_ =
       UiElementRenderer::kTextureLocationExternal;
   unsigned int overlay_texture_id_ = 0;
+  bool overlay_texture_non_empty_ = false;
   UiElementRenderer::TextureLocation overlay_texture_location_ =
       UiElementRenderer::kTextureLocationExternal;
   gfx::SizeF last_content_screen_bounds_;

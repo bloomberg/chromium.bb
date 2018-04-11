@@ -66,7 +66,8 @@ import org.chromium.ui.display.VirtualDisplayAndroid;
 @JNINamespace("vr")
 public class VrShellImpl
         extends GvrLayout implements VrShell, SurfaceHolder.Callback,
-                                     VrInputMethodManagerWrapper.BrowserKeyboardInterface {
+                                     VrInputMethodManagerWrapper.BrowserKeyboardInterface,
+                                     EmptySniffingVrViewContainer.EmptyListener {
     private static final String TAG = "VrShellImpl";
     private static final float INCHES_TO_METERS = 0.0254f;
 
@@ -114,7 +115,7 @@ public class VrShellImpl
     private Runnable mOnVSyncPausedForTesting;
 
     private Surface mContentSurface;
-    private VrViewContainer mNonVrViews;
+    private EmptySniffingVrViewContainer mNonVrViews;
     private VrViewContainer mVrUiViewContainer;
     private FrameLayout mUiView;
     private ModalDialogManager mNonVrModalDialogManager;
@@ -272,11 +273,10 @@ public class VrShellImpl
         // into a texture when browsing in VR. See https://crbug.com/793430.
         View content = mActivity.getWindow().findViewById(android.R.id.content);
         ViewGroup parent = (ViewGroup) content.getParent();
-        VrViewContainer viewContainer = new VrViewContainer(mActivity);
+        mNonVrViews = new EmptySniffingVrViewContainer(mActivity, this);
         parent.removeView(content);
-        parent.addView(viewContainer);
-        viewContainer.addView(content);
-        mNonVrViews = viewContainer;
+        parent.addView(mNonVrViews);
+        mNonVrViews.addView(content);
     }
 
     private void injectVrHostedUiView() {
@@ -1026,6 +1026,16 @@ public class VrShellImpl
         button.callOnClick();
     }
 
+    @Override
+    public void onVrViewEmpty() {
+        if (mNativeVrShell != 0) nativeOnOverlayTextureEmptyChanged(mNativeVrShell, true);
+    }
+
+    @Override
+    public void onVrViewNonEmpty() {
+        if (mNativeVrShell != 0) nativeOnOverlayTextureEmptyChanged(mNativeVrShell, false);
+    }
+
     /**
      * Sets the callback that will be run when VrShellImpl's dispatchTouchEvent
      * is run and the parent consumed the event.
@@ -1147,4 +1157,5 @@ public class VrShellImpl
     private native VrInputConnection nativeGetVrInputConnectionForTesting(long nativeVrShell);
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
     private native void nativeResumeContentRendering(long nativeVrShell);
+    private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }
