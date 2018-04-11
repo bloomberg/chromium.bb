@@ -14,4 +14,14 @@ InvisibleHitTarget::~InvisibleHitTarget() = default;
 void InvisibleHitTarget::Render(UiElementRenderer* renderer,
                                 const CameraModel& model) const {}
 
+void InvisibleHitTarget::OnHoverEnter(const gfx::PointF& position) {
+  UiElement::OnHoverEnter(position);
+  hovered_ = true;
+}
+
+void InvisibleHitTarget::OnHoverLeave() {
+  UiElement::OnHoverLeave();
+  hovered_ = false;
+}
+
 }  // namespace vr
