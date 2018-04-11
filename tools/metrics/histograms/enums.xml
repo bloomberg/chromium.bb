@@ -22864,10 +22864,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="21" label="DeleteDatabase"/>
   <int value="22" label="TransactionCommit"/>
   <int value="23" label="GetDatabaseNames"/>
-  <int value="24" label="ReadBlobJournal"/>
-  <int value="25" label="DecodeBlobJournal"/>
-  <int value="26" label="GetBlobKeyGeneratorCurrentNumber"/>
-  <int value="27" label="GetBlobInfoForRecord"/>
+  <int value="24" label="DeleteIndex"/>
+  <int value="25" label="ClearObjectStore"/>
+  <int value="26" label="ReadBlobJournal"/>
+  <int value="27" label="DecodeBlobJournal"/>
+  <int value="28" label="GetBlobKeyGeneratorCurrentNumber"/>
+  <int value="29" label="GetBlobInfoForRecord"/>
+  <int value="30" label="UpgradingSchemaWithCorruptedBlobs"/>
 </enum>
 
 <enum name="IDBLevelDBBackingStoreOpenResult">

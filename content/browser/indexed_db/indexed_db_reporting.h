@@ -15,39 +15,43 @@ class Origin;
 namespace content {
 namespace indexed_db {
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum IndexedDBBackingStoreErrorSource {
   // 0 - 2 are no longer used.
   FIND_KEY_IN_INDEX = 3,
-  GET_IDBDATABASE_METADATA,
-  GET_INDEXES,
-  GET_KEY_GENERATOR_CURRENT_NUMBER,
-  GET_OBJECT_STORES,
-  GET_RECORD,
-  KEY_EXISTS_IN_OBJECT_STORE,
-  LOAD_CURRENT_ROW,
-  SET_UP_METADATA,
-  GET_PRIMARY_KEY_VIA_INDEX,
-  KEY_EXISTS_IN_INDEX,
-  VERSION_EXISTS,
-  DELETE_OBJECT_STORE,
-  SET_MAX_OBJECT_STORE_ID,
-  SET_MAX_INDEX_ID,
-  GET_NEW_DATABASE_ID,
-  GET_NEW_VERSION_NUMBER,
-  CREATE_IDBDATABASE_METADATA,
-  DELETE_DATABASE,
-  TRANSACTION_COMMIT_METHOD,  // TRANSACTION_COMMIT is a WinNT.h macro
-  GET_DATABASE_NAMES,
-  DELETE_INDEX,
-  CLEAR_OBJECT_STORE,
-  READ_BLOB_JOURNAL,
-  DECODE_BLOB_JOURNAL,
-  GET_BLOB_KEY_GENERATOR_CURRENT_NUMBER,
-  GET_BLOB_INFO_FOR_RECORD,
+  GET_IDBDATABASE_METADATA = 4,
+  GET_INDEXES = 5,
+  GET_KEY_GENERATOR_CURRENT_NUMBER = 6,
+  GET_OBJECT_STORES = 7,
+  GET_RECORD = 8,
+  KEY_EXISTS_IN_OBJECT_STORE = 9,
+  LOAD_CURRENT_ROW = 10,
+  SET_UP_METADATA = 11,
+  GET_PRIMARY_KEY_VIA_INDEX = 12,
+  KEY_EXISTS_IN_INDEX = 13,
+  VERSION_EXISTS = 14,
+  DELETE_OBJECT_STORE = 15,
+  SET_MAX_OBJECT_STORE_ID = 16,
+  SET_MAX_INDEX_ID = 17,
+  GET_NEW_DATABASE_ID = 18,
+  GET_NEW_VERSION_NUMBER = 19,
+  CREATE_IDBDATABASE_METADATA = 20,
+  DELETE_DATABASE = 21,
+  TRANSACTION_COMMIT_METHOD = 22,  // TRANSACTION_COMMIT is a WinNT.h macro
+  GET_DATABASE_NAMES = 23,
+  DELETE_INDEX = 24,
+  CLEAR_OBJECT_STORE = 25,
+  READ_BLOB_JOURNAL = 26,
+  DECODE_BLOB_JOURNAL = 27,
+  GET_BLOB_KEY_GENERATOR_CURRENT_NUMBER = 28,
+  GET_BLOB_INFO_FOR_RECORD = 29,
+  UPGRADING_SCHEMA_CORRUPTED_BLOBS = 30,
   INTERNAL_ERROR_MAX,
 };
 
-// Values match entries in tools/metrics/histograms/histograms.xml
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum IndexedDBBackingStoreOpenResult {
   INDEXED_DB_BACKING_STORE_OPEN_MEMORY_SUCCESS,
   INDEXED_DB_BACKING_STORE_OPEN_SUCCESS,
@@ -75,6 +79,8 @@ void ReportInternalError(const char* type,
                          IndexedDBBackingStoreErrorSource location);
 
 void ReportSchemaVersion(int version, const url::Origin& origin);
+
+void ReportV2Schema(bool has_broken_blobs, const url::Origin& origin);
 
 // Use to signal conditions caused by data corruption.
 // A macro is used instead of an inline function so that the assert and log

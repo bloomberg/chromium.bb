@@ -17,9 +17,11 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
+#include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
+#include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_factory.h"
@@ -241,27 +243,43 @@ class IndexedDBBackingStoreTest : public testing::Test {
         quota_manager_proxy_(
             base::MakeRefCounted<MockQuotaManagerProxy>(nullptr, nullptr)) {}
 
-  void SetUp() override {
-    special_storage_policy_->SetAllUnlimited(true);
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_);
-
+  void CreateFactoryAndBackingStore() {
     // Factory and backing store must be created on IDB task runner.
+    idb_context_->TaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](IndexedDBBackingStoreTest* test) {
+              const Origin origin = Origin::Create(GURL("http://localhost:81"));
+              test->idb_factory_ = base::MakeRefCounted<TestIDBFactory>(
+                  test->idb_context_.get());
+              test->backing_store_ =
+                  test->idb_factory_->OpenBackingStoreForTest(
+                      origin, test->url_request_context_getter_);
+            },
+            base::Unretained(this)));
+    RunAllTasksUntilIdle();
+  }
+
+  void DestroyFactoryAndBackingStore() {
+    // Factory and backing store must be destroyed on IDB task runner.
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(
                        [](IndexedDBBackingStoreTest* test) {
-                         const Origin origin =
-                             Origin::Create(GURL("http://localhost:81"));
-                         test->idb_factory_ =
-                             base::MakeRefCounted<TestIDBFactory>(
-                                 test->idb_context_.get());
-                         test->backing_store_ =
-                             test->idb_factory_->OpenBackingStoreForTest(
-                                 origin, test->url_request_context_getter_);
+                         test->idb_factory_ = nullptr;
+                         test->backing_store_ = nullptr;
                        },
                        base::Unretained(this)));
     RunAllTasksUntilIdle();
+  }
+
+  void SetUp() override {
+    special_storage_policy_->SetAllUnlimited(true);
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
+        temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_);
+
+    CreateFactoryAndBackingStore();
 
     // useful keys and values during tests
     value1_ = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
@@ -272,15 +290,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Factory and backing store must be destroyed on IDB task runner.
-    idb_context_->TaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](IndexedDBBackingStoreTest* test) {
-                         test->idb_factory_ = nullptr;
-                         test->backing_store_ = nullptr;
-                       },
-                       base::Unretained(this)));
-    RunAllTasksUntilIdle();
+    DestroyFactoryAndBackingStore();
 
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
@@ -1411,6 +1421,142 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
       IndexedDBBackingStore::ReadCorruptionInfo(path_base, origin, &message));
   EXPECT_FALSE(PathExists(info_path));
   EXPECT_EQ("foo", message);
+}
+
+// There was a wrong migration from schema 2 to 3, which always delete IDB
+// blobs and doesn't actually write the new schema version. This tests the
+// upgrade path where the database doesn't have blob entries, so it' safe to
+// keep the database.
+// https://crbug.com/756447, https://crbug.com/829125, https://crbug.com/829141
+TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
+  struct TestState {
+    int64_t database_id;
+    const int64_t object_store_id = 99;
+  } state;
+
+  // The database metadata needs to be written so we can verify the blob entry
+  // keys are not detected.
+  idb_context_->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBBackingStore* backing_store, TestState* state) {
+            const base::string16 database_name(ASCIIToUTF16("db1"));
+            const int64_t version = 9;
+
+            const base::string16 object_store_name(
+                ASCIIToUTF16("object_store1"));
+            const bool auto_increment = true;
+            const IndexedDBKeyPath object_store_key_path(
+                ASCIIToUTF16("object_store_key"));
+
+            IndexedDBMetadataCoding metadata_coding;
+
+            {
+              IndexedDBDatabaseMetadata database;
+              leveldb::Status s = metadata_coding.CreateDatabase(
+                  backing_store->db(), backing_store->origin_identifier(),
+                  database_name, version, &database);
+              EXPECT_TRUE(s.ok());
+              EXPECT_GT(database.id, 0);
+              state->database_id = database.id;
+
+              IndexedDBBackingStore::Transaction transaction(backing_store);
+              transaction.Begin();
+
+              IndexedDBObjectStoreMetadata object_store;
+              s = metadata_coding.CreateObjectStore(
+                  transaction.transaction(), database.id,
+                  state->object_store_id, object_store_name,
+                  object_store_key_path, auto_increment, &object_store);
+              EXPECT_TRUE(s.ok());
+
+              scoped_refptr<TestCallback> callback(
+                  base::MakeRefCounted<TestCallback>());
+              EXPECT_TRUE(transaction.CommitPhaseOne(callback).ok());
+              EXPECT_TRUE(callback->called);
+              EXPECT_TRUE(callback->succeeded);
+              EXPECT_TRUE(transaction.CommitPhaseTwo().ok());
+            }
+          },
+          base::Unretained(backing_store()), base::Unretained(&state)));
+  RunAllTasksUntilIdle();
+  idb_context_->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBBackingStore* backing_store, IndexedDBKey key,
+             IndexedDBValue value, TestState* state) {
+            // Save a value.
+            IndexedDBBackingStore::Transaction transaction1(backing_store);
+            transaction1.Begin();
+            std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
+            IndexedDBBackingStore::RecordIdentifier record;
+            leveldb::Status s = backing_store->PutRecord(
+                &transaction1, state->database_id, state->object_store_id, key,
+                &value, &handles, &record);
+            EXPECT_TRUE(s.ok());
+            scoped_refptr<TestCallback> callback(
+                base::MakeRefCounted<TestCallback>());
+            EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
+            EXPECT_TRUE(callback->called);
+            EXPECT_TRUE(callback->succeeded);
+            EXPECT_TRUE(transaction1.CommitPhaseTwo().ok());
+
+            // Set the schema to 2, which was before blob support.
+            scoped_refptr<LevelDBTransaction> transaction =
+                IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+                    backing_store->db());
+            const std::string schema_version_key = SchemaVersionKey::Encode();
+            indexed_db::PutInt(transaction.get(), schema_version_key, 2);
+            ASSERT_TRUE(transaction->Commit().ok());
+          },
+          base::Unretained(backing_store()), key1_, value1_,
+          base::Unretained(&state)));
+  RunAllTasksUntilIdle();
+
+  DestroyFactoryAndBackingStore();
+  CreateFactoryAndBackingStore();
+
+  idb_context_->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](IndexedDBBackingStore* backing_store, IndexedDBKey key,
+             IndexedDBValue value, TestState* state) {
+            IndexedDBBackingStore::Transaction transaction2(backing_store);
+            transaction2.Begin();
+            IndexedDBValue result_value;
+            EXPECT_TRUE(backing_store
+                            ->GetRecord(&transaction2, state->database_id,
+                                        state->object_store_id, key,
+                                        &result_value)
+                            .ok());
+            scoped_refptr<TestCallback> callback(
+                base::MakeRefCounted<TestCallback>());
+            EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
+            EXPECT_TRUE(callback->called);
+            EXPECT_TRUE(callback->succeeded);
+            EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
+            EXPECT_EQ(value.bits, result_value.bits);
+
+            // Test that we upgraded.
+            scoped_refptr<LevelDBTransaction> transaction =
+                IndexedDBClassFactory::Get()->CreateLevelDBTransaction(
+                    backing_store->db());
+            const std::string schema_version_key = SchemaVersionKey::Encode();
+            int64_t found_int = 0;
+            bool found = false;
+            bool success =
+                indexed_db::GetInt(transaction.get(), schema_version_key,
+                                   &found_int, &found)
+                    .ok();
+            ASSERT_TRUE(success);
+            ASSERT_TRUE(transaction->Commit().ok());
+
+            EXPECT_TRUE(found);
+            EXPECT_EQ(3, found_int);
+          },
+          base::Unretained(backing_store()), key1_, value1_,
+          base::Unretained(&state)));
+  RunAllTasksUntilIdle();
 }
 
 }  // namespace indexed_db_backing_store_unittest

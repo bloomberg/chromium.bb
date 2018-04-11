@@ -28,11 +28,12 @@ leveldb::Status IOErrorStatus() {
   return leveldb::Status::IOError("IO Error");
 }
 
+namespace {
 template <typename DBOrTransaction>
-Status GetInt(DBOrTransaction* db,
-              const StringPiece& key,
-              int64_t* found_int,
-              bool* found) {
+Status GetIntInternal(DBOrTransaction* db,
+                      const StringPiece& key,
+                      int64_t* found_int,
+                      bool* found) {
   std::string result;
   Status s = db->Get(key, &result, found);
   if (!s.ok())
@@ -44,15 +45,21 @@ Status GetInt(DBOrTransaction* db,
     return s;
   return InternalInconsistencyStatus();
 }
+}  // namespace
 
-template Status GetInt<LevelDBTransaction>(LevelDBTransaction* db,
-                                           const StringPiece& key,
-                                           int64_t* found_int,
-                                           bool* found);
-template Status GetInt<LevelDBDatabase>(LevelDBDatabase* db,
-                                        const StringPiece& key,
-                                        int64_t* found_int,
-                                        bool* found);
+Status GetInt(LevelDBTransaction* txn,
+              const StringPiece& key,
+              int64_t* found_int,
+              bool* found) {
+  return GetIntInternal(txn, key, found_int, found);
+}
+
+Status GetInt(LevelDBDatabase* db,
+              const StringPiece& key,
+              int64_t* found_int,
+              bool* found) {
+  return GetIntInternal(db, key, found_int, found);
+}
 
 void PutBool(LevelDBTransaction* transaction,
              const StringPiece& key,
