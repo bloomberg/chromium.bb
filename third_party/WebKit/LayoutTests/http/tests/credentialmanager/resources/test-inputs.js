@@ -84,7 +84,7 @@ function encloseInScriptTag(code) {
 }
 
 function deepCopy(value) {
-  if ([Number, String, Uint8Array].includes(value.constructor))
+  if ([Number, String, Boolean, Uint8Array].includes(value.constructor))
     return value;
 
   let copy = (value.constructor == Array) ? [] : {};

@@ -576,7 +576,7 @@ void AuthenticatorImpl::OnRegisterResponse(
       // |exclude_credentials|.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+          webauth::mojom::AuthenticatorStatus::INVALID_STATE, nullptr);
       return;
     case device::FidoReturnCode::kFailure:
       // The response from the authenticator was corrupted.
