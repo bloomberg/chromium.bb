@@ -687,8 +687,8 @@ static bool SniffCRX(const char* content,
   // sniffing gives us less room for error. If the version number ever changes,
   // we can just add an entry to this list.
   static const struct MagicNumber kCRXMagicNumbers[] = {
-    MAGIC_NUMBER("application/x-chrome-extension", "Cr24\x02\x00\x00\x00")
-  };
+      MAGIC_NUMBER("application/x-chrome-extension", "Cr24\x02\x00\x00\x00"),
+      MAGIC_NUMBER("application/x-chrome-extension", "Cr24\x03\x00\x00\x00")};
 
   // Only consider files that have the extension ".crx".
   if (!base::EndsWith(url.path_piece(), ".crx", base::CompareCase::SENSITIVE))
