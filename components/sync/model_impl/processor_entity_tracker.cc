@@ -174,7 +174,7 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
   metadata_.set_modification_time(TimeToProtoTime(modification_time));
   metadata_.set_is_deleted(false);
 
-  // SetCommitData will update data's fileds from metadata and wrap it into
+  // SetCommitData will update data's fields from metadata and wrap it into
   // immutable EntityDataPtr.
   SetCommitData(data.get());
 }

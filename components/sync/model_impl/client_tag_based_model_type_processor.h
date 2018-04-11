@@ -115,14 +115,18 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void OnInitialUpdateReceived(const sync_pb::ModelTypeState& type_state,
                                const UpdateResponseDataList& updates);
 
-  // ModelTypeSyncBridge::GetData() callback for initial pending commit data.
-  void OnInitialPendingDataLoaded(std::unique_ptr<DataBatch> data_batch);
-
-  // ModelTypeSyncBridge::GetData() callback for re-encryption commit data.
-  void OnDataLoadedForReEncryption(std::unique_ptr<DataBatch> data_batch);
+  // ModelTypeSyncBridge::GetData() callback for pending loading data upon
+  // GetLocalChanges call.
+  void OnPendingDataLoaded(size_t max_entries,
+                           const GetLocalChangesCallback& callback,
+                           std::unique_ptr<DataBatch> data_batch);
 
   // Caches EntityData from the |data_batch| in the entity trackers.
   void ConsumeDataBatch(std::unique_ptr<DataBatch> data_batch);
+
+  // Prepares Commit requests and passes them to the GetLocalChanges callback.
+  void CommitLocalChanges(size_t max_entries,
+                          const GetLocalChangesCallback& callback);
 
   // Nudges worker if there are any local entities to be committed.
   void NudgeForCommitIfNeeded();
@@ -215,10 +219,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // The first model error that occurred, if any. Stored to track model state
   // and so it can be passed to sync if it happened prior to sync being ready.
   base::Optional<ModelError> model_error_;
-
-  // Whether we're waiting for the model to provide initial commit data. Starts
-  // as false but will be set to true if we detect it's necessary to load data.
-  bool waiting_for_pending_data_ = false;
 
   ////////////////
   // Sync state //

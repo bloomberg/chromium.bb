@@ -14,6 +14,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -33,6 +34,9 @@ class MockModelTypeWorker : public CommitQueue {
                       ModelTypeProcessor* processor);
   ~MockModelTypeWorker() override;
 
+  // Callback when local changes are received from the processor.
+  void LocalChangesReceived(CommitRequestDataList&& commit_request);
+
   // Implementation of ModelTypeWorker.
   void NudgeForCommit() override;
 
@@ -43,15 +47,17 @@ class MockModelTypeWorker : public CommitQueue {
   CommitRequestData GetLatestPendingCommitForHash(
       const std::string& tag_hash) const;
 
-  // Verify that the |n|th commit request list has one commit request for |tag|
-  // with |value| set.
-  void VerifyNthPendingCommit(size_t n,
-                              const std::string& tag_hash,
-                              const sync_pb::EntitySpecifics& specifics);
+  // Verify that the |n|th commit request list has the corresponding commit
+  // requests for |tag_hashes| with |value| set.
+  void VerifyNthPendingCommit(
+      size_t n,
+      const std::vector<std::string>& tag_hashes,
+      const std::vector<sync_pb::EntitySpecifics>& specificsList);
 
-  // Verify the pending commits each contain a single CommitRequestData and they
-  // have the same hashes in the same order as |tag_hashes|.
-  void VerifyPendingCommits(const std::vector<std::string>& tag_hashes);
+  // Verify the pending commits each contain a list of CommitRequestData and
+  // they have the same hashes in the same order as |tag_hashes|.
+  void VerifyPendingCommits(
+      const std::vector<std::vector<std::string>>& tag_hashes);
 
   // Trigger an update from the server. See GenerateUpdateData for parameter
   // descriptions. |version_offset| defaults to 1 and |ekn| defaults to the
@@ -135,6 +141,9 @@ class MockModelTypeWorker : public CommitQueue {
   // Map of versions by client tag hash.
   // This is an essential part of the mocked server state.
   std::map<const std::string, int64_t> server_versions_;
+
+  // WeakPtrFactory for this worker which will be sent to sync thread.
+  base::WeakPtrFactory<MockModelTypeWorker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeWorker);
 };
