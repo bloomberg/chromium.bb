@@ -2617,7 +2617,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
-  cm->disable_cdf_update = 1;
 
   if (!cm->seq_params.reduced_still_picture_hdr) {
     cm->show_existing_frame = aom_rb_read_bit(rb);
@@ -2695,7 +2694,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         frame_is_sframe(cm) || cm->frame_type == KEY_FRAME
             ? 1
             : aom_rb_read_bit(rb);
-    cm->disable_cdf_update = aom_rb_read_bit(rb);
   }
   if (cm->seq_params.still_picture) {
     cm->show_existing_frame = 0;
@@ -2703,6 +2701,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->frame_type = KEY_FRAME;
   }
 
+  cm->disable_cdf_update = aom_rb_read_bit(rb);
   if (cm->seq_params.force_screen_content_tools == 2) {
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
   } else {

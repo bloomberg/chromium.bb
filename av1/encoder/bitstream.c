@@ -2961,8 +2961,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     } else if (cm->frame_type != KEY_FRAME) {
       aom_wb_write_bit(wb, cm->error_resilient_mode);
     }
-    aom_wb_write_bit(wb, cm->disable_cdf_update);
   }
+  aom_wb_write_bit(wb, cm->disable_cdf_update);
 
   if (cm->seq_params.force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);

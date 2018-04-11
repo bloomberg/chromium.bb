@@ -4812,7 +4812,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
           (frame_is_intra_only(cm) || !cm->show_frame) ? 0 : 1;
       break;
   }
-  cm->disable_cdf_update |= cm->seq_params.reduced_still_picture_hdr;
   cm->timing_info_present &= !cm->seq_params.reduced_still_picture_hdr;
 
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
