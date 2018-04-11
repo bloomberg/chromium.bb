@@ -19,9 +19,12 @@ class ExamplePreprocessor {
   enum PreprocessErrorCode {
     kSuccess = 0,
     kNoFeatureIndexFound = 1,
-    kUnbucketizableFeatureType = 2,
+    kNonbucketizableFeatureType = 2,
     kInvalidFeatureType = 4,
     kInvalidFeatureListIndex = 8,
+    kNonNormalizableFeatureType = 16,
+    kNonConvertibleToStringFeatureType = 32,
+    kNormalizerIsZero = 64,
   };
 
   explicit ExamplePreprocessor(const ExamplePreprocessorConfig& config)
@@ -58,6 +61,11 @@ class ExamplePreprocessor {
   // bucketized based on the boundaries and reset as a one-hot feature with
   // bucket index as it's string value.
   int AddBucketizedFeatures(RankerExample* example) const;
+  // Normalizes numeric features to be within [-1.0, 1.0] as float features.
+  int NormalizeFeatures(RankerExample* example) const;
+  // Converts any features in |example| that are listed in
+  // |config_.convert_to_string_features()| into string-valued features.
+  int ConvertToStringFeatures(RankerExample* example) const;
   // Add a new_float_list feature as kVectorizedFeatureDefaultName, and iterate
   // for all existing features in example.features(), set corresponding
   // new_float_list.float_value(config_.feature_indices(feature_value_key)) to

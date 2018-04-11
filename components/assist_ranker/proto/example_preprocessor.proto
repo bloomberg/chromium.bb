@@ -23,4 +23,15 @@ message ExamplePreprocessorConfig {
   //   (2) a combination of feature_name and feature_value if it's string_value
   //       or i-th element of a string_list.
   map<string, int32> feature_indices = 3;
+
+  // A map from feature name to a float value to normalize the original value.
+  // The new feature value is set as float_value of
+  // GetFeatureValueAsFloat(feature) / normalizers[feature_name]
+  // The specified feature must be convertible to float (e.g. int32 or float).
+  map<string, float> normalizers = 4;
+
+  // Features inside this list will be converted to string_value. bool_value,
+  // int32_value will be converted by base::IntToString; string_value will be
+  // kept as original; fails for other feature_types.
+  repeated string convert_to_string_features = 5;
 }

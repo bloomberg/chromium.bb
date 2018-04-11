@@ -4,6 +4,7 @@
 
 #include "components/assist_ranker/example_preprocessing.h"
 
+#include "base/numerics/ranges.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/assist_ranker/ranker_example_util.h"
@@ -32,7 +33,8 @@ std::string ExamplePreprocessor::FeatureFullname(
 
 int ExamplePreprocessor::Process(RankerExample* const example,
                                  const bool clear_other_features) const {
-  return AddMissingFeatures(example) | AddBucketizedFeatures(example) |
+  return AddMissingFeatures(example) | NormalizeFeatures(example) |
+         AddBucketizedFeatures(example) | ConvertToStringFeatures(example) |
          Vectorization(example, clear_other_features);
 }
 
@@ -77,7 +79,7 @@ int ExamplePreprocessor::AddBucketizedFeatures(
       default:
         DVLOG(2) << "Can't bucketize feature type: "
                  << feature.feature_type_case();
-        error_code |= kUnbucketizableFeatureType;
+        error_code |= kNonbucketizableFeatureType;
         continue;
     }
     // Get the bucket from the boundaries; the first index that value<boundary.
@@ -89,6 +91,55 @@ int ExamplePreprocessor::AddBucketizedFeatures(
     }
     // Set one hot feature as features[feature_name] = "index";
     feature_map[feature_name].set_string_value(base::IntToString(index));
+  }
+  return error_code;
+}
+
+int ExamplePreprocessor::NormalizeFeatures(RankerExample* example) const {
+  int error_code = kSuccess;
+  for (const MapPair<std::string, float>& pair : config_.normalizers()) {
+    const std::string& feature_name = pair.first;
+    float feature_value = 0.0f;
+    if (GetFeatureValueAsFloat(feature_name, *example, &feature_value)) {
+      if (pair.second == 0.0f) {
+        error_code |= kNormalizerIsZero;
+      } else {
+        feature_value = feature_value / pair.second;
+      }
+      // Truncate to be within [-1.0, 1.0].
+      feature_value = base::ClampToRange(feature_value, -1.0f, 1.0f);
+      (*example->mutable_features())[feature_name].set_float_value(
+          feature_value);
+    } else {
+      error_code |= kNonNormalizableFeatureType;
+    }
+  }
+  return error_code;
+}
+
+int ExamplePreprocessor::ConvertToStringFeatures(RankerExample* example) const {
+  int error_code = kSuccess;
+  for (const std::string& feature_name : config_.convert_to_string_features()) {
+    const auto find_feature = example->mutable_features()->find(feature_name);
+    if (find_feature != example->features().end()) {
+      auto& feature = find_feature->second;
+      switch (feature.feature_type_case()) {
+        case Feature::kBoolValue:
+          feature.set_string_value(
+              base::IntToString(static_cast<int>(feature.bool_value())));
+          break;
+        case Feature::kInt32Value:
+          feature.set_string_value(base::IntToString(feature.int32_value()));
+          break;
+        case Feature::kStringValue:
+          break;
+        default:
+          LOG(WARNING) << "Can't convert to string feature type: "
+                       << feature.feature_type_case();
+          error_code |= kNonConvertibleToStringFeatureType;
+          continue;
+      }
+    }
   }
   return error_code;
 }
