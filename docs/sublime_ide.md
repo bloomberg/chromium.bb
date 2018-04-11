@@ -311,7 +311,7 @@ resource directory instead of that supplied by SublimeClang.
 1.  Edit your project file `Project > Edit Project` to call the script above
     (replace `/path/to/depot_tools` with your depot_tools directory):
 
-    ```
+    ```json
     {
       "folders":
       [
@@ -332,6 +332,16 @@ resource directory instead of that supplied by SublimeClang.
    true. This way you use the resource directory we set instead of the ancient
    ones included in the repository. Without this you won't have C++14 support.
 
+1. (Optional) To remove errors that sometimes show up from importing out of
+   third_party, edit your SublimeClang settings and set:
+
+   ```json
+   "diagnostic_ignore_dirs":
+   [
+     "${project_path}/src/third_party/"
+   ],
+   ```
+
 1.  Restart Sublime. Now when you save a file, you should see a "Reparsing…"
     message in the footer and errors will show up in the output panel. Also,
     variables and function definitions should auto-complete as you type.
@@ -339,6 +349,20 @@ resource directory instead of that supplied by SublimeClang.
 **Note:** If you're having issues, adding `"sublimeclang_debug_options": true` to
 your settings file will print more to the console (accessed with ``Ctrl + ` ``)
 which can be helpful when debugging.
+
+**Debugging:** If things don't seem to be working, the console ``Ctrl + ` `` is
+your friend. Here are some basic errors which have workarounds:
+
+1. Bad Libclang args
+    - *problem:* ```tu is None...``` is showing up repeatedly in the console:
+    - *solution:* ninja_options_script.py is generating arguments that libclang
+    can't parse properly. To fix this, make sure to
+    ```export CHROMIUM_OUT_DIR="{Default Out Directory}"```
+    This is because the ninja_options_script.py file will use the most recently
+    modified build directory unless specified to do otherwise. If the chosen
+    build directory has unusual args (say for thread sanitization), libclang may
+    fail.
+
 
 ### Mac (not working)
 
