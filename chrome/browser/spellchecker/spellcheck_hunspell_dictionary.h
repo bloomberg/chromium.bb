@@ -17,20 +17,18 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
-#include "net/url_request/url_fetcher_delegate.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 class GURL;
 class SpellcheckService;
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 // Defines the browser-side hunspell dictionary and provides access to it.
 class SpellcheckHunspellDictionary
     : public SpellcheckDictionary,
-      public net::URLFetcherDelegate,
       public base::SupportsWeakPtr<SpellcheckHunspellDictionary> {
  public:
   // Interface to implement for observers of the Hunspell dictionary.
@@ -53,18 +51,16 @@ class SpellcheckHunspellDictionary
         const std::string& language) = 0;
   };
 
-  SpellcheckHunspellDictionary(
-      const std::string& language,
-      net::URLRequestContextGetter* request_context_getter,
-      SpellcheckService* spellcheck_service);
+  SpellcheckHunspellDictionary(const std::string& language,
+                               content::BrowserContext* browser_context,
+                               SpellcheckService* spellcheck_service);
   ~SpellcheckHunspellDictionary() override;
 
   // SpellcheckDictionary implementation:
   void Load() override;
 
   // Retry downloading |dictionary_file_|.
-  void RetryDownloadDictionary(
-      net::URLRequestContextGetter* request_context_getter);
+  void RetryDownloadDictionary(content::BrowserContext* context);
 
   // Returns true if the dictionary is ready to use.
   virtual bool IsReady() const;
@@ -84,6 +80,9 @@ class SpellcheckHunspellDictionary
 
   // Whether dictionary download failed.
   bool IsDownloadFailure();
+
+  // Tests use this method to set a custom URL for downloading dictionaries.
+  static void SetDownloadURLForTesting(const GURL url);
 
  private:
   // Dictionary download status.
@@ -113,9 +112,7 @@ class SpellcheckHunspellDictionary
     DISALLOW_COPY_AND_ASSIGN(DictionaryFile);
   };
 
-  // net::URLFetcherDelegate implementation. Called when dictionary download
-  // finishes.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   // Determine the correct url to download the dictionary.
   GURL GetDictionaryURL();
@@ -158,10 +155,10 @@ class SpellcheckHunspellDictionary
 
   // Used for downloading the dictionary file. SpellcheckHunspellDictionary does
   // not hold a reference, and it is only valid to use it on the UI thread.
-  net::URLRequestContextGetter* request_context_getter_;
+  content::BrowserContext* browser_context_;
 
   // Used for downloading the dictionary file.
-  std::unique_ptr<net::URLFetcher> fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader_;
 
 #if !defined(OS_ANDROID)
   SpellcheckService* const spellcheck_service_;

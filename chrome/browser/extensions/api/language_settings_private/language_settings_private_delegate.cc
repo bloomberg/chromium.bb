@@ -234,10 +234,7 @@ void LanguageSettingsPrivateDelegate::RetryDownloadHunspellDictionary(
   for (const base::WeakPtr<SpellcheckHunspellDictionary> dictionary :
        GetHunspellDictionaries()) {
     if (dictionary && dictionary->GetLanguage() == language) {
-      auto* request_context_getter =
-          content::BrowserContext::GetDefaultStoragePartition(context_)
-              ->GetURLRequestContext();
-      dictionary->RetryDownloadDictionary(request_context_getter);
+      dictionary->RetryDownloadDictionary(context_);
       return;
     }
   }
