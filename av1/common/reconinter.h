@@ -267,7 +267,7 @@ static INLINE void setup_pred_plane(struct buf_2d *dst, BLOCK_SIZE bsize,
 
 void av1_setup_dst_planes(struct macroblockd_plane *planes, BLOCK_SIZE bsize,
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,
-                          const int num_planes);
+                          const int plane_start, const int plane_end);
 
 void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
                           const YV12_BUFFER_CONFIG *src, int mi_row, int mi_col,

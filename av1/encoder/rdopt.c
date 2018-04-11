@@ -8858,7 +8858,7 @@ static void set_params_rd_pick_inter_mode(
                                        args->left_pred_buf, dst_width2,
                                        dst_height2, args->left_pred_stride);
     av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
-                         mi_col, num_planes);
+                         mi_col, 0, num_planes);
     calc_target_weighted_pred(
         cm, x, xd, mi_row, mi_col, args->above_pred_buf[0],
         args->above_pred_stride[0], args->left_pred_buf[0],

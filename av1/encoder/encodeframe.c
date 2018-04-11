@@ -235,7 +235,7 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
 
   // Set up destination pointers.
   av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
-                       mi_col, num_planes);
+                       mi_col, 0, num_planes);
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.

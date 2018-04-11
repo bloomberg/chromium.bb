@@ -301,7 +301,7 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   set_mi_row_col(xd, tile, mi_row, bh, mi_col, bw, cm->mi_rows, cm->mi_cols);
 
   av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
-                       mi_col, num_planes);
+                       mi_col, 0, num_planes);
 }
 
 static void decode_mbmi_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,

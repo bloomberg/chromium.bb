@@ -555,7 +555,7 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
                          num_planes);
 
   av1_setup_src_planes(x, cpi->source, 0, 0, num_planes);
-  av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, new_yv12, 0, 0,
+  av1_setup_dst_planes(xd->plane, cm->seq_params.sb_size, new_yv12, 0, 0, 0,
                        num_planes);
 
   if (!frame_is_intra_only(cm)) {
