@@ -1304,6 +1304,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
+      keywords: ["auto", "sRGB", "linearRGB"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "color-interpolation-filters",
@@ -1317,6 +1319,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
+      keywords: ["auto", "optimizeSpeed", "optimizeQuality"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "column-fill",
@@ -1400,6 +1404,8 @@
       interpolable: true,
       svg: true,
       converter: "ConvertPathOrNone",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "display",
@@ -1536,6 +1542,8 @@
       interpolable: true,
       svg: true,
       converter: "ConvertColor",
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "flood-opacity",
@@ -1543,6 +1551,7 @@
       interpolable: true,
       svg: true,
       converter: "ConvertNumberOrPercentage",
+      typedom_types: ["Number"]
     },
     {
       name: "grid-auto-columns",
@@ -2295,6 +2304,8 @@
       inherited: true,
       svg: true,
       converter: "ConvertPaintOrder",
+      keywords: ["normal", "fill", "stroke", "markers"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "perspective",
@@ -2679,6 +2690,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       svg: true,
+      keywords: ["auto", "optimizeSpeed", "crispEdges", "geometricPrecision"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "size",
@@ -2703,6 +2716,8 @@
       interpolable: true,
       svg: true,
       converter: "ConvertColor",
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "stop-opacity",
@@ -2710,6 +2725,7 @@
       interpolable: true,
       svg: true,
       converter: "ConvertNumberOrPercentage",
+      typedom_types: ["Number"]
     },
     {
       name: "stroke",
@@ -3115,6 +3131,8 @@
       name: "vector-effect",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
+      keywords: ["none", "non-scaling-stroke"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "vertical-align",
