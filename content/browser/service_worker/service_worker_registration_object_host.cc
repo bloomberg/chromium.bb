@@ -4,7 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_registration_object_host.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_handle.h"

@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"

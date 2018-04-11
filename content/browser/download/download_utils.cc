@@ -5,7 +5,6 @@
 #include "content/browser/download/download_utils.h"
 
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"

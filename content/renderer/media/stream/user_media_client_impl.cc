@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "content/renderer/media/stream/apply_constraints_processor.h"

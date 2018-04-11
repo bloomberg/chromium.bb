@@ -4,7 +4,6 @@
 
 #include "content/browser/webrtc/webrtc_internals_ui.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/browser/webrtc/webrtc_internals_message_handler.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"

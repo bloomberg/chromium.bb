@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"

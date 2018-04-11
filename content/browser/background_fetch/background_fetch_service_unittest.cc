@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_context.h"

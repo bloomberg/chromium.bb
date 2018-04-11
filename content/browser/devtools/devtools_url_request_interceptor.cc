@@ -4,7 +4,6 @@
 
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/devtools/devtools_interceptor_controller.h"

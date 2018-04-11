@@ -7,7 +7,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "storage/common/blob_storage/blob_handle.h"

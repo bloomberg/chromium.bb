@@ -4,7 +4,6 @@
 
 #include "content/browser/accessibility/accessibility_tree_formatter_browser.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace content {
 

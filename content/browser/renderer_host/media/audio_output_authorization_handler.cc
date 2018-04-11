@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
 #include "content/browser/media/media_devices_permission_checker.h"

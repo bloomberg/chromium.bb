@@ -5,7 +5,6 @@
 #include "content/browser/devtools/devtools_url_interceptor_request_job.h"
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/network_handler.h"

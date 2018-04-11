@@ -8,7 +8,6 @@
 #include "base/containers/queue.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"

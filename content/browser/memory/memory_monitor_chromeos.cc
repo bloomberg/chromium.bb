@@ -4,7 +4,6 @@
 
 #include "content/browser/memory/memory_monitor_chromeos.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 
 namespace content {

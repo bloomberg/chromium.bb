@@ -10,7 +10,6 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"

@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/app/content_service_manager_main_delegate.h"
 #include "content/public/app/content_main.h"

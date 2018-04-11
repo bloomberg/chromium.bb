@@ -5,7 +5,6 @@
 #include "content/browser/loader/test_resource_handler.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_controller.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"

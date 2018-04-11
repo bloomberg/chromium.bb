@@ -6,7 +6,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/browser/android/java/gin_java_bound_object_delegate.h"
 #include "content/browser/android/java/gin_java_bridge_message_filter.h"

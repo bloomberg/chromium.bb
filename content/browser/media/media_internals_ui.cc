@@ -5,7 +5,6 @@
 #include "content/browser/media/media_internals_ui.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "content/browser/media/media_internals_handler.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/web_contents.h"

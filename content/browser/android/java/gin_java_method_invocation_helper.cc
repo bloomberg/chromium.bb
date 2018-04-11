@@ -11,7 +11,6 @@
 #include "base/android/event_log.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/memory/ptr_util.h"
 #include "content/browser/android/java/gin_java_script_to_java_types_coercion.h"
 #include "content/browser/android/java/java_method.h"
 #include "content/common/android/gin_java_bridge_value.h"

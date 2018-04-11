@@ -5,7 +5,6 @@
 #include "content/renderer/gpu/actions_parser.h"
 
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"

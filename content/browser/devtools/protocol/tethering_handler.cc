@@ -6,7 +6,6 @@
 
 #include <map>
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "content/shell/test_runner/mock_web_audio_device.h"
 #include "content/shell/test_runner/mock_web_midi_accessor.h"
 #include "content/shell/test_runner/test_interfaces.h"

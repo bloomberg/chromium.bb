@@ -5,7 +5,6 @@
 #include "content/browser/service_worker/service_worker_process_manager.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/site_instance_impl.h"

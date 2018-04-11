@@ -4,7 +4,6 @@
 
 #include "content/browser/memory/memory_coordinator_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/public/common/content_features.h"

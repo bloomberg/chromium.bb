@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "content/browser/renderer_host/pepper/pepper_message_filter.h"
 #include "content/browser/tracing/trace_message_filter.h"

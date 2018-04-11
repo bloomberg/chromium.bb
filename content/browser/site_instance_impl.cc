@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/debug_urls.h"

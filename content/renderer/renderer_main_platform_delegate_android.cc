@@ -12,7 +12,6 @@
 #include "sandbox/sandbox_buildflags.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
-#include "base/memory/ptr_util.h"
 #include "sandbox/linux/seccomp-bpf-helpers/baseline_policy_android.h"
 #endif
 

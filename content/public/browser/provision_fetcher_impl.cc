@@ -4,7 +4,6 @@
 
 #include "content/public/browser/provision_fetcher_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/url_request/url_request_context_getter.h"

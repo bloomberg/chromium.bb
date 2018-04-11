@@ -10,7 +10,6 @@
 
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_runner_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/media/media_devices_permission_checker.h"

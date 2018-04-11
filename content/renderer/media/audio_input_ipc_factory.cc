@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/renderer/media/audio_input_message_filter.h"

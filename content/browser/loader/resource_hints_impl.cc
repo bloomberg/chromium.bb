@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"

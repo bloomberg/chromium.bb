@@ -14,7 +14,6 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/guid.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"

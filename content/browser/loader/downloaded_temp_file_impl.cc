@@ -4,7 +4,6 @@
 
 #include "content/browser/loader/downloaded_temp_file_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
