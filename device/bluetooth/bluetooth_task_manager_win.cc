@@ -570,6 +570,7 @@ bool BluetoothTaskManagerWin::SearchLowEnergyDevices(
       win::BluetoothLowEnergyWrapper::GetInstance()
           ->EnumerateKnownBluetoothLowEnergyDevices(&btle_devices, &error);
   if (!success) {
+    error.insert(0, "Error calling EnumerateKnownBluetoothLowEnergyDevices: ");
     LogPollingError(error.c_str(), 0);
     return false;
   }
@@ -727,6 +728,7 @@ bool BluetoothTaskManagerWin::DiscoverLowEnergyDeviceServices(
                      ->EnumerateKnownBluetoothLowEnergyServices(
                          device_path, &services, &error);
   if (!success) {
+    error.insert(0, "Error calling EnumerateKnownBluetoothLowEnergyServices: ");
     LogPollingError(error.c_str(), 0);
     return false;
   }
@@ -758,6 +760,9 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
                      ->EnumerateKnownBluetoothLowEnergyGattServiceDevices(
                          &gatt_service_devices, &error);
   if (!success) {
+    error.insert(
+        0,
+        "Error calling EnumerateKnownBluetoothLowEnergyGattServiceDevices: ");
     LogPollingError(error.c_str(), 0);
     return false;
   }
@@ -775,6 +780,8 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
     if (!win::BluetoothLowEnergyWrapper::GetInstance()
              ->EnumerateKnownBluetoothLowEnergyServices(
                  gatt_service_device->path, &gatt_services, &error)) {
+      error.insert(0,
+                   "Error calling EnumerateKnownBluetoothLowEnergyServices: ");
       LogPollingError(error.c_str(), 0);
       continue;
     }
