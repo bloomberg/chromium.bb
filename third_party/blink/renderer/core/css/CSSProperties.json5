@@ -2400,6 +2400,8 @@
       field_template: "primitive",
       default_value: "kScrollBehaviorAuto",
       type_name: "ScrollBehavior",
+      keywords: ["auto", "smooth"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "scroll-margin-block-end",
@@ -2600,6 +2602,8 @@
       getter: "GetScrollSnapAlign",
       type_name: "ScrollSnapAlign",
       converter: "ConvertSnapAlign",
+      keywords: ["none", "start", "end", "center"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "scroll-snap-stop",
@@ -2608,6 +2612,7 @@
       field_template: "keyword",
       keywords: ["normal", "always"],
       default_value: "normal",
+      typedom_types: ["Keyword"]
     },
     {
       name: "scroll-snap-type",
@@ -2620,6 +2625,8 @@
       getter: "GetScrollSnapType",
       type_name: "ScrollSnapType",
       converter: "ConvertSnapType",
+      keywords: ["none", "x", "y", "block", "inline", "both", "mandatory", "proximity"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "shape-image-threshold",
