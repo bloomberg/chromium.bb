@@ -20,6 +20,8 @@
 #include "content/public/common/content_features.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
+using blink::mojom::KeyboardLockRequestResult;
+
 namespace content {
 
 namespace {
@@ -68,13 +70,17 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
     LogKeyboardLockMethodCalled(KeyboardLockMethods::kRequestSomeKeys);
 
   if (!base::FeatureList::IsEnabled(features::kKeyboardLockAPI)) {
-    std::move(callback).Run(blink::mojom::KeyboardLockRequestResult::SUCCESS);
+    std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
     return;
   }
 
-  if (!render_frame_host_->IsCurrent() || render_frame_host_->GetParent()) {
-    // TODO(joedow): Return an error code here.
-    std::move(callback).Run(blink::mojom::KeyboardLockRequestResult::SUCCESS);
+  if (!render_frame_host_->IsCurrent()) {
+    std::move(callback).Run(KeyboardLockRequestResult::kFrameDetachedError);
+    return;
+  }
+
+  if (render_frame_host_->GetParent()) {
+    std::move(callback).Run(KeyboardLockRequestResult::kChildFrameError);
     return;
   }
 
@@ -92,8 +98,7 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   // exit without enabling keyboard lock.  An empty vector is treated as
   // 'capture all keys' which is not what the caller intended.
   if (!key_codes.empty() && native_key_codes.empty()) {
-    // TODO(joedow): Return an error code here.
-    std::move(callback).Run(blink::mojom::KeyboardLockRequestResult::SUCCESS);
+    std::move(callback).Run(KeyboardLockRequestResult::kNoValidKeyCodesError);
     return;
   }
 
@@ -104,7 +109,7 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   render_frame_host_->GetRenderWidgetHost()->RequestKeyboardLock(
       std::move(key_code_set));
 
-  std::move(callback).Run(blink::mojom::KeyboardLockRequestResult::SUCCESS);
+  std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
 }
 
 void KeyboardLockServiceImpl::CancelKeyboardLock() {
