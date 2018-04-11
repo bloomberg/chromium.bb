@@ -17,6 +17,27 @@ namespace chromeos {
 // start and stop VMs.
 class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
  public:
+  class Observer {
+   public:
+    // OnContainerStarted is signaled by Concierge after the long-running
+    // container startup process has been completed and the container is ready.
+    virtual void OnContainerStarted(
+        const vm_tools::concierge::ContainerStartedSignal& signal) = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
+  // Adds an observer.
+  virtual void AddObserver(Observer* observer) = 0;
+
+  // Removes an observer if added.
+  virtual void RemoveObserver(Observer* observer) = 0;
+
+  // IsContainerStartedSignalConnected must return true before StartContainer
+  // is called.
+  virtual bool IsContainerStartedSignalConnected() = 0;
+
   // Creates a disk image for the Termina VM.
   // |callback| is called after the method call finishes.
   virtual void CreateDiskImage(

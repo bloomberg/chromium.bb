@@ -5,6 +5,7 @@
 #include "chromeos/dbus/concierge_client.h"
 
 #include "base/bind.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -18,6 +19,20 @@ class ConciergeClientImpl : public ConciergeClient {
   ConciergeClientImpl() : weak_ptr_factory_(this) {}
 
   ~ConciergeClientImpl() override = default;
+
+  // ConciergeClient override.
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  // ConciergeClient override.
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
+  }
+
+  bool IsContainerStartedSignalConnected() override {
+    return is_signal_connected_;
+  }
 
   void CreateDiskImage(
       const vm_tools::concierge::CreateDiskImageRequest& request,
@@ -95,7 +110,7 @@ class ConciergeClientImpl : public ConciergeClient {
     }
 
     concierge_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
                            vm_tools::concierge::StartContainerResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
@@ -141,6 +156,13 @@ class ConciergeClientImpl : public ConciergeClient {
       LOG(ERROR) << "Unable to get dbus proxy for "
                  << vm_tools::concierge::kVmConciergeServiceName;
     }
+    concierge_proxy_->ConnectToSignal(
+        vm_tools::concierge::kVmConciergeInterface,
+        vm_tools::concierge::kContainerStartedSignal,
+        base::BindRepeating(&ConciergeClientImpl::OnContainerStartedSignal,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -154,14 +176,48 @@ class ConciergeClientImpl : public ConciergeClient {
     ResponseProto reponse_proto;
     dbus::MessageReader reader(dbus_response);
     if (!reader.PopArrayOfBytesAsProto(&reponse_proto)) {
-      LOG(ERROR) << "Failed to parse proto from DBus response.";
+      LOG(ERROR) << "Failed to parse proto from DBus Response.";
       std::move(callback).Run(base::nullopt);
       return;
     }
     std::move(callback).Run(std::move(reponse_proto));
   }
 
+  void OnContainerStartedSignal(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(),
+              vm_tools::concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(),
+              vm_tools::concierge::kContainerStartedSignal);
+
+    vm_tools::concierge::ContainerStartedSignal container_started_signal;
+    dbus::MessageReader reader(signal);
+    if (!reader.PopArrayOfBytesAsProto(&container_started_signal)) {
+      LOG(ERROR) << "Failed to parse proto from DBus Signal";
+      return;
+    }
+    // Tell our Observers.
+    for (auto& observer : observer_list_) {
+      observer.OnContainerStarted(container_started_signal);
+    }
+  }
+
+  void OnSignalConnected(const std::string& interface_name,
+                         const std::string& signal_name,
+                         bool is_connected) {
+    DCHECK_EQ(interface_name, vm_tools::concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal_name, vm_tools::concierge::kContainerStartedSignal);
+    if (!is_connected) {
+      LOG(ERROR)
+          << "Failed to connect to Signal. Async StartContainer will not work";
+    }
+    is_signal_connected_ = is_connected;
+  }
+
   dbus::ObjectProxy* concierge_proxy_ = nullptr;
+
+  base::ObserverList<Observer> observer_list_;
+
+  bool is_signal_connected_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

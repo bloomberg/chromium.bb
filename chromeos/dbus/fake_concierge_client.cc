@@ -11,6 +11,21 @@ namespace chromeos {
 FakeConciergeClient::FakeConciergeClient() {}
 FakeConciergeClient::~FakeConciergeClient() = default;
 
+// ConciergeClient override.
+void FakeConciergeClient::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+// ConciergeClient override.
+void FakeConciergeClient::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+// ConciergeClient override.
+bool FakeConciergeClient::IsContainerStartedSignalConnected() {
+  return is_signal_connected_;
+}
+
 void FakeConciergeClient::CreateDiskImage(
     const vm_tools::concierge::CreateDiskImageRequest& request,
     DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback) {
@@ -38,6 +53,7 @@ void FakeConciergeClient::StopVm(
 void FakeConciergeClient::StartContainer(
     const vm_tools::concierge::StartContainerRequest& request,
     DBusMethodCallback<vm_tools::concierge::StartContainerResponse> callback) {
+  start_container_called_ = true;
   std::move(callback).Run(base::nullopt);
 }
 
