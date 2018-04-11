@@ -48,6 +48,10 @@ void TestBrowserWindowAura::Hide() {
   native_window_->Hide();
 }
 
+bool TestBrowserWindowAura::IsVisible() const {
+  return native_window_->IsVisible();
+}
+
 void TestBrowserWindowAura::Activate() {
   CHECK(native_window_->GetRootWindow())
       << "A TestBrowserWindowAura must have a root window to be activated.";

@@ -37,7 +37,6 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
-#include "ui/aura/window.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -69,8 +68,7 @@ Browser* GetFocusedOrTopmostVisibleBrowser() {
        browser_iterator != browser_list->end_last_active();
        ++browser_iterator) {
     browser = *browser_iterator;
-    if (browser->profile()->IsOffTheRecord() ||
-        !browser->window()->GetNativeWindow()->IsVisible())
+    if (browser->profile()->IsOffTheRecord() || !browser->window()->IsVisible())
       continue;
 
     if (browser->window()->IsActive())
