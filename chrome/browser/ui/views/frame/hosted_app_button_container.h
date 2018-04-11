@@ -11,6 +11,9 @@
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "ui/views/accessible_pane_view.h"
+#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
 namespace {
@@ -26,7 +29,7 @@ class MenuButton;
 }
 
 // A container for hosted app buttons in the title bar.
-class HostedAppButtonContainer : public views::View,
+class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
                                  public ToolbarButtonProvider {
  public:
@@ -50,6 +53,8 @@ class HostedAppButtonContainer : public views::View,
  private:
   friend class HostedAppNonClientFrameViewAshTest;
 
+  static void DisableAnimationForTesting();
+
   class ContentSettingsContainer;
 
   const std::vector<ContentSettingImageView*>&
@@ -72,6 +77,8 @@ class HostedAppButtonContainer : public views::View,
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
   AppMenuButton* GetAppMenuButton() override;
+  void FocusToolbar() override;
+  views::AccessiblePaneView* GetAsAccessiblePaneView() override;
 
   // The containing browser view.
   BrowserView* browser_view_;

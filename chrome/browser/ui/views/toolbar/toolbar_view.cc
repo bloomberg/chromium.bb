@@ -708,6 +708,14 @@ AppMenuButton* ToolbarView::GetAppMenuButton() {
   return app_menu_button_;
 }
 
+void ToolbarView::FocusToolbar() {
+  SetPaneFocus(nullptr);
+}
+
+views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
+  return this;
+}
+
 gfx::Size ToolbarView::GetSizeInternal(
     gfx::Size (View::*get_size)() const) const {
   gfx::Size size((location_bar_->*get_size)());

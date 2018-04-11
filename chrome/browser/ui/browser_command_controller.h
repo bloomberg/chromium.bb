@@ -147,6 +147,10 @@ class BrowserCommandController : public CommandUpdater,
   // window is in.
   void UpdateCommandsForFullscreenMode();
 
+  // Update commands whose state depends on whether they're available to hosted
+  // app windows.
+  void UpdateCommandsForHostedAppAvailability();
+
 #if defined(OS_CHROMEOS)
   // Update commands whose state depends on whether the window is in locked
   // fullscreen mode or not.
