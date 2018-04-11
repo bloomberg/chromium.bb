@@ -14,7 +14,7 @@
 #include <memory>
 
 #include "base/scoped_generic.h"
-#include "components/exo/wayland/aura-shell-client-protocol.h"
+#include "components/exo/wayland/public/aura-shell-client-protocol.h"
 
 #if defined(USE_GBM)
 #include <gbm.h>

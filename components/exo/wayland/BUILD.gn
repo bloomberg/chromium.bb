@@ -30,27 +30,6 @@ if (use_ozone) {
   }
 }
 
-config("aura_shell_protocol_config") {
-  include_dirs = [ "." ]
-}
-
-source_set("aura_shell_protocol") {
-  sources = [
-    "aura-shell-client-protocol.h",
-    "aura-shell-protocol.c",
-    "aura-shell-server-protocol.h",
-  ]
-
-  deps = [
-    "//third_party/wayland:wayland_util",
-  ]
-
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-
-  public_configs = [ ":aura_shell_protocol_config" ]
-}
-
 source_set("wayland") {
   sources = [
     "scoped_wl.cc",
@@ -62,10 +41,10 @@ source_set("wayland") {
   defines = [ "EXO_IMPLEMENTATION" ]
 
   deps = [
-    ":aura_shell_protocol",
     "//ash/public/cpp",
     "//base",
     "//components/exo",
+    "//components/exo/wayland/public:aura_shell_protocol",
     "//device/gamepad",
     "//services/viz/public/interfaces",
     "//skia",
@@ -145,8 +124,8 @@ source_set("client_support") {
   ]
 
   deps = [
-    ":aura_shell_protocol",
     "//base",
+    "//components/exo/wayland/public:aura_shell_protocol",
     "//ui/gl",
     "//ui/gl/init",
   ]
