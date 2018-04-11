@@ -231,14 +231,14 @@ class MockClientSocketFactory : public ClientSocketFactory {
     return std::unique_ptr<DatagramClientSocket>();
   }
 
-  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<
           SocketPerformanceWatcher> /* socket_performance_watcher */,
       NetLog* /* net_log */,
       const NetLogSource& /*source*/) override {
     allocation_count_++;
-    return nullptr;
+    return std::unique_ptr<StreamSocket>();
   }
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(

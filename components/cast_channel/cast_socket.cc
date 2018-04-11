@@ -46,7 +46,6 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_client_socket.h"
-#include "net/socket/transport_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -153,7 +152,7 @@ bool CastSocketImpl::audio_only() const {
   return audio_only_;
 }
 
-std::unique_ptr<net::TransportClientSocket> CastSocketImpl::CreateTcpSocket() {
+std::unique_ptr<net::TCPClientSocket> CastSocketImpl::CreateTcpSocket() {
   net::AddressList addresses(open_params_.ip_endpoint);
   return std::unique_ptr<net::TCPClientSocket>(new net::TCPClientSocket(
       addresses, nullptr, open_params_.net_log, net_log_source_));

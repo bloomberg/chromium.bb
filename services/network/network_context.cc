@@ -107,15 +107,13 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                mojom::NetworkContextParamsPtr params)
     : network_service_(network_service),
       params_(std::move(params)),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      socket_factory_(network_service_->net_log()) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_getter_ =
       url_request_context_owner_.url_request_context_getter;
   cookie_manager_ =
       std::make_unique<CookieManager>(GetURLRequestContext()->cookie_store());
-
-  socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
-                                                    GetURLRequestContext());
   network_service_->RegisterNetworkContext(this);
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
@@ -133,7 +131,8 @@ NetworkContext::NetworkContext(
     std::unique_ptr<URLRequestContextBuilderMojo> builder)
     : network_service_(network_service),
       params_(std::move(params)),
-      binding_(this, std::move(request)) {
+      binding_(this, std::move(request)),
+      socket_factory_(network_service_->net_log()) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log(), network_service->network_quality_estimator(),
@@ -143,8 +142,6 @@ NetworkContext::NetworkContext(
   network_service_->RegisterNetworkContext(this);
   cookie_manager_ =
       std::make_unique<CookieManager>(GetURLRequestContext()->cookie_store());
-  socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
-                                                    GetURLRequestContext());
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 }
@@ -158,9 +155,8 @@ NetworkContext::NetworkContext(
       binding_(this, std::move(request)),
       cookie_manager_(std::make_unique<CookieManager>(
           url_request_context_getter_->GetURLRequestContext()->cookie_store())),
-      socket_factory_(std::make_unique<SocketFactory>(
-          network_service_ ? network_service_->net_log() : nullptr,
-          url_request_context_getter_->GetURLRequestContext())) {
+      socket_factory_(network_service_ ? network_service_->net_log()
+                                       : nullptr) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -250,7 +246,10 @@ void NetworkContext::Cleanup() {
 }
 
 NetworkContext::NetworkContext(mojom::NetworkContextParamsPtr params)
-    : network_service_(nullptr), params_(std::move(params)), binding_(this) {
+    : network_service_(nullptr),
+      params_(std::move(params)),
+      binding_(this),
+      socket_factory_(network_service_->net_log()) {
   url_request_context_owner_ = MakeURLRequestContext(params_.get());
   url_request_context_getter_ =
       url_request_context_owner_.url_request_context_getter;
@@ -570,7 +569,7 @@ void NetworkContext::SetCTPolicy(
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
                                      mojom::UDPSocketReceiverPtr receiver) {
-  socket_factory_->CreateUDPSocket(std::move(request), std::move(receiver));
+  socket_factory_.CreateUDPSocket(std::move(request), std::move(receiver));
 }
 
 void NetworkContext::CreateTCPServerSocket(
@@ -579,7 +578,7 @@ void NetworkContext::CreateTCPServerSocket(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::TCPServerSocketRequest request,
     CreateTCPServerSocketCallback callback) {
-  socket_factory_->CreateTCPServerSocket(
+  socket_factory_.CreateTCPServerSocket(
       local_addr, backlog,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(request), std::move(callback));
@@ -592,7 +591,7 @@ void NetworkContext::CreateTCPConnectedSocket(
     mojom::TCPConnectedSocketRequest request,
     mojom::TCPConnectedSocketObserverPtr observer,
     CreateTCPConnectedSocketCallback callback) {
-  socket_factory_->CreateTCPConnectedSocket(
+  socket_factory_.CreateTCPConnectedSocket(
       local_addr, remote_addr_list,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(request), std::move(observer), std::move(callback));

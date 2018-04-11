@@ -46,13 +46,13 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
         new UDPClientSocket(bind_type, net_log, source));
   }
 
-  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
       const NetLogSource& source) override {
-    return std::make_unique<TCPClientSocket>(
-        addresses, std::move(socket_performance_watcher), net_log, source);
+    return std::unique_ptr<StreamSocket>(new TCPClientSocket(
+        addresses, std::move(socket_performance_watcher), net_log, source));
   }
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(

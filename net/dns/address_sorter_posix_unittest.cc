@@ -143,13 +143,13 @@ class TestSocketFactory : public ClientSocketFactory {
     return std::unique_ptr<DatagramClientSocket>(
         new TestUDPClientSocket(&mapping_));
   }
-  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
+  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList&,
       std::unique_ptr<SocketPerformanceWatcher>,
       NetLog*,
       const NetLogSource&) override {
     NOTIMPLEMENTED();
-    return nullptr;
+    return std::unique_ptr<StreamSocket>();
   }
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(
       std::unique_ptr<ClientSocketHandle>,

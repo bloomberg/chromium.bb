@@ -17,7 +17,6 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_socket.h"
-#include "net/socket/transport_client_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
@@ -27,7 +26,7 @@ struct NetLogSource;
 class SocketPerformanceWatcher;
 
 // A client socket that uses TCP as the transport layer.
-class NET_EXPORT TCPClientSocket : public TransportClientSocket {
+class NET_EXPORT TCPClientSocket : public StreamSocket {
  public:
   // The IP address(es) and port number to connect to.  The TCP socket will try
   // each IP address in the list until it succeeds in establishing a
@@ -45,8 +44,10 @@ class NET_EXPORT TCPClientSocket : public TransportClientSocket {
 
   ~TCPClientSocket() override;
 
-  // TransportClientSocket implementation.
-  int Bind(const IPEndPoint& address) override;
+  // Binds the socket to a local IP address and port.
+  int Bind(const IPEndPoint& address);
+
+  // StreamSocket implementation.
   int Connect(const CompletionCallback& callback) override;
   void Disconnect() override;
   bool IsConnected() const override;
