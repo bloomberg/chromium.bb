@@ -101,6 +101,12 @@ constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
                                                kAndroidMediaPanelHeight +
                                                (2 * kOverlayBottomMargin);
 
+// TODO(steimel): When modern media controls launches, remove above constants
+// and rename below constants.
+// (2px left border + 6px left padding + 56px button + 6px right padding + 2px
+// right border) = 72px.
+constexpr int kModernMinWidthForOverlayPlayButton = 72;
+
 constexpr int kMinScrubbingMessageWidth = 300;
 
 const char* kStateCSSClasses[7] = {
@@ -1132,7 +1138,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   // These are the elements in order of priority that take up vertical room.
   MediaControlElementBase* column_elements[] = {
-      overlay_play_button_.Get(), media_button_panel_.Get(), timeline_.Get(),
+      media_button_panel_.Get(), timeline_.Get(),
   };
 
   // Current size of the media controls.
@@ -1141,6 +1147,16 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
   // The video controls are more than one row so we need to allocate vertical
   // room and hide the overlay play button if there is not enough room.
   if (MediaElement().IsHTMLVideoElement() && !is_acting_as_audio_controls_) {
+    // Allocate vertical room for overlay play button if necessary.
+    WebSize overlay_play_button_size = overlay_play_button_->GetSizeOrDefault();
+    if (controls_size.height >= overlay_play_button_size.height &&
+        controls_size.width >= kModernMinWidthForOverlayPlayButton) {
+      overlay_play_button_->SetDoesFit(true);
+      controls_size.height -= overlay_play_button_size.height;
+    } else {
+      overlay_play_button_->SetDoesFit(false);
+    }
+
     controls_size.width -= kModernControlsVideoButtonPadding;
 
     // Allocate vertical room for the column elements.
