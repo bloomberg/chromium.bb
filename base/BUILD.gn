@@ -2740,6 +2740,8 @@ if (is_android) {
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessServiceDelegate.java",
       "android/java/src/org/chromium/base/process_launcher/FileDescriptorInfo.java",
+      "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
+      "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
     ]
 
     # New versions of BuildConfig.java and NativeLibraries.java
@@ -2773,7 +2775,6 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/CommandLineInitUtilTest.java",
       "android/javatests/src/org/chromium/base/CommandLineTest.java",
       "android/javatests/src/org/chromium/base/EarlyTraceEventTest.java",
-      "android/javatests/src/org/chromium/base/MemoryPressureListenerTest.java",
 
       # TODO(nona): move to Junit once that is built for Android N.
       "android/javatests/src/org/chromium/base/LocaleUtilsTest.java",
@@ -2888,6 +2889,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/NonThreadSafeTest.java",
       "android/junit/src/org/chromium/base/PromiseTest.java",
+      "android/junit/src/org/chromium/base/memory/MemoryPressureMonitorTest.java",
       "android/junit/src/org/chromium/base/process_launcher/ChildConnectionAllocatorTest.java",
       "android/junit/src/org/chromium/base/process_launcher/ChildProcessConnectionTest.java",
       "test/android/junit/src/org/chromium/base/test/SetUpStatementTest.java",

@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLineInitUtil;
@@ -22,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.memory.MemoryPressureMonitor;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
@@ -92,9 +94,20 @@ public class ChromeApplication extends Application {
             // Only browser process requires custom resources.
             BuildHooksAndroid.initCustomResources(this);
 
+            // Disable MemoryPressureMonitor polling when Chrome goes to the background.
+            ApplicationStatus.registerApplicationStateListener(newState -> {
+                if (newState == ApplicationState.HAS_RUNNING_ACTIVITIES) {
+                    MemoryPressureMonitor.INSTANCE.enablePolling();
+                } else if (newState == ApplicationState.HAS_STOPPED_ACTIVITIES) {
+                    MemoryPressureMonitor.INSTANCE.disablePolling();
+                }
+            });
+
             // Not losing much to not cover the below conditional since it just has simple setters.
             TraceEvent.end("ChromeApplication.attachBaseContext");
         }
+
+        MemoryPressureMonitor.INSTANCE.registerComponentCallbacks();
 
         if (!ContextUtils.isIsolatedProcess()) {
             // Incremental install disables process isolation, so things in this block will actually

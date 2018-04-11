@@ -95,7 +95,7 @@ int AwBrowserMainParts::PreCreateThreads() {
   pak_file_path = pak_file_path.AppendASCII("resources.pak");
   ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
 
-  base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(
+  base::android::MemoryPressureListenerAndroid::Initialize(
       base::android::AttachCurrentThread());
   breakpad::CrashDumpObserver::Create();
 
