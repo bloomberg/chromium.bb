@@ -30,18 +30,15 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
-#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_init.h"
 #include "third_party/blink/renderer/core/dom/mutation_record.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
-#include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
-#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element_controls_list.h"
@@ -988,16 +985,14 @@ void MediaControlsImpl::UpdateCurrentTimeDisplay() {
 
 void MediaControlsImpl::ToggleTextTrackList() {
   if (!MediaElement().HasClosedCaptions()) {
-    text_track_list_->SetVisible(false);
+    text_track_list_->SetIsWanted(false);
     return;
   }
 
   if (!text_track_list_->IsWanted())
     window_event_listener_->Start();
 
-  PositionPopupMenu(text_track_list_);
-
-  text_track_list_->SetVisible(!text_track_list_->IsWanted());
+  text_track_list_->SetIsWanted(!text_track_list_->IsWanted());
 }
 
 void MediaControlsImpl::ShowTextTrackAtIndex(unsigned index_to_enable) {
@@ -1738,36 +1733,9 @@ MediaControlsImpl::CurrentTimeDisplay() const {
   return *current_time_display_;
 }
 
-void MediaControlsImpl::PositionPopupMenu(Element* popup_menu) {
-  // The popup is positioned slightly on the inside of the bottom right corner.
-  static constexpr int kPopupMenuMarginPx = 4;
-  static const char kImportant[] = "important";
-  static const char kPx[] = "px";
-
-  DCHECK(MediaElement().getBoundingClientRect());
-  DCHECK(GetDocument().domWindow());
-  DCHECK(GetDocument().domWindow()->visualViewport());
-
-  // The legacy text tracks have their own button so they should position
-  // themselves based on that button.
-  DOMRect* bounding_client_rect =
-      (popup_menu == text_track_list_ && !IsModern())
-          ? toggle_closed_captions_button_->getBoundingClientRect()
-          : overflow_menu_->getBoundingClientRect();
-  DOMVisualViewport* viewport = GetDocument().domWindow()->visualViewport();
-
-  WTF::String bottom_str_value = WTF::String::Number(
-      viewport->height() - bounding_client_rect->bottom() + kPopupMenuMarginPx);
-  WTF::String right_str_value = WTF::String::Number(
-      viewport->width() - bounding_client_rect->right() + kPopupMenuMarginPx);
-
-  bottom_str_value.append(kPx);
-  right_str_value.append(kPx);
-
-  popup_menu->style()->setProperty(&GetDocument(), "bottom", bottom_str_value,
-                                   kImportant, ASSERT_NO_EXCEPTION);
-  popup_menu->style()->setProperty(&GetDocument(), "right", right_str_value,
-                                   kImportant, ASSERT_NO_EXCEPTION);
+MediaControlToggleClosedCaptionsButtonElement&
+MediaControlsImpl::ToggleClosedCaptions() {
+  return *toggle_closed_captions_button_;
 }
 
 bool MediaControlsImpl::ShouldActAsAudioControls() const {
@@ -1819,8 +1787,6 @@ void MediaControlsImpl::ToggleOverflowMenu() {
   if (!overflow_list_->IsWanted())
     window_event_listener_->Start();
 
-  PositionPopupMenu(overflow_list_);
-
   overflow_list_->SetIsWanted(!overflow_list_->IsWanted());
 }
 
@@ -1830,7 +1796,7 @@ void MediaControlsImpl::HideAllMenus() {
   if (overflow_list_->IsWanted())
     overflow_list_->SetIsWanted(false);
   if (text_track_list_->IsWanted())
-    text_track_list_->SetVisible(false);
+    text_track_list_->SetIsWanted(false);
 }
 
 void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
@@ -1845,6 +1811,10 @@ const MediaControlDownloadButtonElement& MediaControlsImpl::DownloadButton()
 
 const MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton()
     const {
+  return *overflow_menu_;
+}
+
+MediaControlOverflowMenuButtonElement& MediaControlsImpl::OverflowButton() {
   return *overflow_menu_;
 }
 

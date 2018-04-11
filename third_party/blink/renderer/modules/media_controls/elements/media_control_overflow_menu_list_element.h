@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_OVERFLOW_MENU_LIST_ELEMENT_H_
 
-#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_popup_menu_element.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/optional.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
@@ -17,11 +17,13 @@ class MediaControlsImpl;
 
 // Holds a list of elements within the overflow menu.
 class MediaControlOverflowMenuListElement final
-    : public MediaControlDivElement {
+    : public MediaControlPopupMenuElement {
  public:
   explicit MediaControlOverflowMenuListElement(MediaControlsImpl&);
 
-  void SetIsWanted(bool);
+  // Override MediaControlPopupMenuElement
+  void SetIsWanted(bool) final;
+  Element* PopupAnchor() const final;
 
  protected:
   friend class MediaControlsImpl;
