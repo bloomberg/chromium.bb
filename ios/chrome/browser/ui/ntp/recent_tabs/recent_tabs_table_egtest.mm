@@ -185,10 +185,13 @@ id<GREYMatcher> TitleOfTestPage() {
                           closeButton:NO];
 
   // Tap on "Other Devices", to hide the sign-in promo.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   l10n_util::GetNSString(
-                                       IDS_IOS_RECENT_TABS_OTHER_DEVICES))]
+  NSString* otherDevicesLabel =
+      l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
+  id<GREYMatcher> otherDevicesMatcher =
+      IsUIRefreshPhase1Enabled()
+          ? grey_accessibilityLabel(otherDevicesLabel)
+          : chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel);
+  [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
 
@@ -197,11 +200,8 @@ id<GREYMatcher> TitleOfTestPage() {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
       identity);
 
-  // Tap on "Other Devcies", to show the sign-in promo.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabel(
-                                   l10n_util::GetNSString(
-                                       IDS_IOS_RECENT_TABS_OTHER_DEVICES))]
+  // Tap on "Other Devices", to show the sign-in promo.
+  [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
