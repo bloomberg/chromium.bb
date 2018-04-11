@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -308,6 +309,19 @@ TEST(SpanTest, Size) {
   }
 }
 
+TEST(SpanTest, SizeBytes) {
+  {
+    span<int> span;
+    EXPECT_EQ(0u, span.size_bytes());
+  }
+
+  {
+    int array[] = {1, 2, 3};
+    span<int> span(array);
+    EXPECT_EQ(3u * sizeof(int), span.size_bytes());
+  }
+}
+
 TEST(SpanTest, Empty) {
   {
     span<int> span;
@@ -425,6 +439,39 @@ TEST(SpanTest, GreaterEqual) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 >= span3);
+}
+
+TEST(SpanTest, AsBytes) {
+  {
+    constexpr int kArray[] = {2, 3, 5, 7, 11, 13};
+    span<const uint8_t> bytes_span = as_bytes(make_span(kArray));
+    EXPECT_EQ(reinterpret_cast<const uint8_t*>(kArray), bytes_span.data());
+    EXPECT_EQ(sizeof(kArray), bytes_span.size());
+    EXPECT_EQ(bytes_span.size(), bytes_span.size_bytes());
+  }
+
+  {
+    std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+    span<int> mutable_span(vec);
+    span<const uint8_t> bytes_span = as_bytes(mutable_span);
+    EXPECT_EQ(reinterpret_cast<const uint8_t*>(vec.data()), bytes_span.data());
+    EXPECT_EQ(sizeof(int) * vec.size(), bytes_span.size());
+    EXPECT_EQ(bytes_span.size(), bytes_span.size_bytes());
+  }
+}
+
+TEST(SpanTest, AsWritableBytes) {
+  std::vector<int> vec = {1, 1, 2, 3, 5, 8};
+  span<int> mutable_span(vec);
+  span<uint8_t> writable_bytes_span = as_writable_bytes(mutable_span);
+  EXPECT_EQ(reinterpret_cast<uint8_t*>(vec.data()), writable_bytes_span.data());
+  EXPECT_EQ(sizeof(int) * vec.size(), writable_bytes_span.size());
+  EXPECT_EQ(writable_bytes_span.size(), writable_bytes_span.size_bytes());
+
+  // Set the first entry of vec to zero while writing through the span.
+  std::fill(writable_bytes_span.data(),
+            writable_bytes_span.data() + sizeof(int), 0);
+  EXPECT_EQ(0, vec[0]);
 }
 
 TEST(SpanTest, MakeSpanFromDataAndSize) {
