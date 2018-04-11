@@ -123,6 +123,9 @@ Polymer({
   /** @private {HTMLEmbedElement|print_preview_new.PDFPlugin} */
   plugin_: null,
 
+  /** @private {?function(!KeyboardEvent)} */
+  keyEventCallback_: null,
+
   /** @override */
   attached: function() {
     this.nativeLayer_ = print_preview.NativeLayer.getInstance();
@@ -463,6 +466,61 @@ Polymer({
   },
 
   /**
+   * Processes a keyboard event that could possibly be used to change state of
+   * the preview plugin.
+   * @param {!KeyboardEvent} e Keyboard event to process.
+   */
+  handleDirectionalKeyEvent: function(e) {
+    // Make sure the PDF plugin is there.
+    // We only care about: PageUp, PageDown, Left, Up, Right, Down.
+    // If the user is holding a modifier key, ignore.
+    if (!this.plugin_ ||
+        !arrayContains(
+            [
+              'PageUp', 'PageDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp',
+              'ArrowDown'
+            ],
+            e.code) ||
+        hasKeyModifiers(e)) {
+      return;
+    }
+
+    // Don't handle the key event for these elements.
+    const tagName = e.path[0].tagName;
+    if (['INPUT', 'SELECT', 'EMBED'].includes(tagName))
+      return;
+
+    // For the most part, if any div of header was the last clicked element,
+    // then the active element is the body. Starting with the last clicked
+    // element, and work up the DOM tree to see if any element has a
+    // scrollbar. If there exists a scrollbar, do not handle the key event
+    // here.
+    let element = e.target;
+    while (element) {
+      if (element.scrollHeight > element.clientHeight ||
+          element.scrollWidth > element.clientWidth) {
+        return;
+      }
+      element = element.parentElement;
+    }
+
+    // No scroll bar anywhere, or the active element is something else, like a
+    // button. Note: buttons have a bigger scrollHeight than clientHeight.
+    this.plugin_.sendKeyEvent(e);
+    e.preventDefault();
+  },
+
+  /**
+   * Set a callback that gets called when a key event is received that
+   * originates in the plugin.
+   * @param {function(KeyboardEvent)} callback The callback to be called with
+   *     a key event.
+   */
+  setPluginKeyEventCallback: function(callback) {
+    this.keyEventCallback_ = callback;
+  },
+
+  /**
    * Creates a preview plugin and adds it to the DOM.
    * @param {number} previewUid The unique ID of the preview. Used to determine
    *     the URL for the plugin.
@@ -475,6 +533,7 @@ Polymer({
     const srcUrl = this.getPreviewUrl_(previewUid, index);
     this.plugin_ = /** @type {print_preview_new.PDFPlugin} */ (
         PDFCreateOutOfProcessPlugin(srcUrl, 'chrome://print/pdf'));
+    this.plugin_.setKeyEventCallback(this.keyEventCallback_);
     this.plugin_.classList.add('preview-area-plugin');
     this.plugin_.setAttribute('aria-live', 'polite');
     this.plugin_.setAttribute('aria-atomic', 'true');

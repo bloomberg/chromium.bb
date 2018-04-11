@@ -123,6 +123,8 @@ Polymer({
     this.destinationStore_ = new print_preview.DestinationStore(
         this.userInfo_, this.listenerTracker_);
     this.invitationStore_ = new print_preview.InvitationStore(this.userInfo_);
+    this.tracker_.add(window, 'keydown', this.onKeyDown_.bind(this));
+    this.$.previewArea.setPluginKeyEventCallback(this.onKeyDown_.bind(this));
     this.tracker_.add(
         this.destinationStore_,
         print_preview.DestinationStore.EventType.DESTINATION_SELECT,
@@ -153,6 +155,59 @@ Polymer({
    */
   computeControlsDisabled_: function() {
     return this.state != print_preview_new.State.READY;
+  },
+
+  /**
+   * Consume escape and enter key presses and ctrl + shift + p. Delegate
+   * everything else to the preview area.
+   * @param {!KeyboardEvent} e The keyboard event.
+   * @private
+   */
+  onKeyDown_: function(e) {
+    // Escape key closes the dialog.
+    if (e.code == 'Escape' && !hasKeyModifiers(e)) {
+      // On non-mac with toolkit-views, ESC key is handled by C++-side instead
+      // of JS-side.
+      if (cr.isMac) {
+        this.close_();
+        e.preventDefault();
+      }
+      return;
+    }
+
+    // On Mac, Cmd-. should close the print dialog.
+    if (cr.isMac && e.code == 'Minus' && e.metaKey) {
+      this.close_();
+      e.preventDefault();
+      return;
+    }
+
+    // Ctrl + Shift + p / Mac equivalent.
+    if (e.code == 'KeyP') {
+      if ((cr.isMac && e.metaKey && e.altKey && !e.shiftKey && !e.ctrlKey) ||
+          (!cr.isMac && e.shiftKey && e.ctrlKey && !e.altKey && !e.metaKey)) {
+        // Don't try to print with system dialog on Windows if the document is
+        // not ready, because we send the preview document to the printer on
+        // Windows.
+        if (!cr.isWin || this.state == print_preview_new.State.READY)
+          this.onPrintWithSystemDialog_();
+        e.preventDefault();
+        return;
+      }
+    }
+
+    if (e.code == 'Enter' && this.state == print_preview_new.State.READY) {
+      const activeElementTag = e.path[0].tagName;
+      if (['BUTTON', 'SELECT', 'A'].includes(activeElementTag))
+        return;
+
+      this.onPrintRequested_();
+      e.preventDefault();
+      return;
+    }
+
+    // Pass certain directional keyboard events to the PDF viewer.
+    this.$.previewArea.handleDirectionalKeyEvent(e);
   },
 
   /**
