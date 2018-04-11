@@ -237,10 +237,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   // |recording_|, |microphone_volume_| and |playout_sinks_|.
   mutable base::Lock lock_;
 
-  // Used to protect the racing of calling OnData() since there can be more
-  // than one input stream calling OnData().
-  mutable base::Lock capture_callback_lock_;
-
   bool initialized_;
   bool playing_;
   bool recording_;
