@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
@@ -34,7 +33,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
-#include "ui/aura/client/aura_constants.h"
+#include "base/sys_info.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/class_property.h"
@@ -74,26 +73,6 @@ gfx::Point GetBoundedPosition(const gfx::Point& location_in_screen,
 // Transpose the given |rect|.
 void TransposeRect(gfx::Rect* rect) {
   rect->SetRect(rect->y(), rect->x(), rect->height(), rect->width());
-}
-
-// Returns true if |window| is an Arc app window.
-bool IsArcAppWindow(aura::Window* window) {
-  return window && window->GetProperty(aura::client::kAppType) ==
-                       static_cast<int>(AppType::ARC_APP);
-}
-
-// Gets the window that is stacked above the other. The windows for comparison
-// must have the same parent if they are both not nullptr.
-aura::Window* GetWindowStackedAbove(aura::Window* window1,
-                                    aura::Window* window2) {
-  if (!window1 || !window2)
-    return window1 ? window1 : window2;
-
-  DCHECK(window1->parent() == window2->parent());
-  const aura::Window::Windows windows = window1->parent()->children();
-  auto window1_i = std::find(windows.begin(), windows.end(), window1);
-  auto window2_i = std::find(windows.begin(), windows.end(), window2);
-  return window1_i > window2_i ? window1 : window2;
 }
 
 mojom::SplitViewState ToMojomSplitViewState(SplitViewController::State state) {
@@ -365,16 +344,17 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   split_view_divider_->UpdateDividerBounds();
   previous_event_location_ = location_in_screen;
 
-  smooth_resize_window_ = GetWindowForSmoothResize();
-  DCHECK(smooth_resize_window_);
-  wm::WindowState* window_state = wm::GetWindowState(smooth_resize_window_);
-  gfx::Point location_in_parent(location_in_screen);
-  ::wm::ConvertPointFromScreen(smooth_resize_window_->parent(),
-                               &location_in_parent);
-  int window_component = GetWindowComponentForResize(smooth_resize_window_);
-  window_state->CreateDragDetails(location_in_parent, window_component,
-                                  ::wm::WINDOW_MOVE_SOURCE_TOUCH);
-  window_state->OnDragStarted(window_component);
+  for (auto* window : {left_window_, right_window_}) {
+    if (window == nullptr)
+      continue;
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    gfx::Point location_in_parent(location_in_screen);
+    ::wm::ConvertPointFromScreen(window->parent(), &location_in_parent);
+    int window_component = GetWindowComponentForResize(window);
+    window_state->CreateDragDetails(location_in_parent, window_component,
+                                    ::wm::WINDOW_MOVE_SOURCE_TOUCH);
+    window_state->OnDragStarted(window_component);
+  }
 
   base::RecordAction(base::UserMetricsAction("SplitView_ResizeWindows"));
 }
@@ -421,13 +401,16 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   NotifyDividerPositionChanged();
   RestoreWindowsTransformAfterResizing();
 
-  if (smooth_resize_window_) {
-    // Update snapped window/windows bounds before sending OnCompleteDrag() for
-    // smoother resizing visual result.
-    UpdateSnappedWindowsAndDividerBounds();
-    wm::WindowState* window_state = wm::GetWindowState(smooth_resize_window_);
+  // Update snapped window/windows bounds before sending OnCompleteDrag() for
+  // smoother resizing visual result.
+  UpdateSnappedWindowsAndDividerBounds();
+
+  for (auto* window : {left_window_, right_window_}) {
+    if (window == nullptr)
+      continue;
+    wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->OnCompleteDrag(
-        GetEndDragLocationInScreen(smooth_resize_window_, location_in_screen));
+        GetEndDragLocationInScreen(window, location_in_screen));
     window_state->DeleteDragDetails();
   }
 
@@ -506,8 +489,6 @@ void SplitViewController::AddObserver(mojom::SplitViewObserverPtr observer) {
 void SplitViewController::OnWindowDestroying(aura::Window* window) {
   DCHECK(IsSplitViewModeActive());
   DCHECK(window == left_window_ || window == right_window_);
-  if (smooth_resize_window_ == window)
-    smooth_resize_window_ = nullptr;
   auto iter = overview_window_item_bounds_map_.find(window);
   if (iter != overview_window_item_bounds_map_.end())
     overview_window_item_bounds_map_.erase(iter);
@@ -1095,22 +1076,6 @@ void SplitViewController::GetDividerOptionalPositionRatios(
 
   if (min_size_right_ratio <= kOneThirdPositionRatio)
     position_ratios->push_back(kTwoThirdPositionRatio);
-}
-
-aura::Window* SplitViewController::GetWindowForSmoothResize() {
-  DCHECK(IsSplitViewModeActive());
-
-  // If there is only one snapped window, return it.
-  if (!left_window_ || !right_window_)
-    return left_window_ ? left_window_ : right_window_;
-
-  // If both of two snapped windows are Arc app windows or both are not Arc app
-  // windows, return the one who is stacked above the other. Otherwise return
-  // the one who is an Arc app window.
-  if (IsArcAppWindow(left_window_) == IsArcAppWindow(right_window_))
-    return GetWindowStackedAbove(left_window_, right_window_);
-  else
-    return IsArcAppWindow(left_window_) ? left_window_ : right_window_;
 }
 
 int SplitViewController::GetWindowComponentForResize(aura::Window* window) {
