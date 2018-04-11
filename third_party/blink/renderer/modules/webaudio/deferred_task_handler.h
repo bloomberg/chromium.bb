@@ -107,9 +107,12 @@ class MODULES_EXPORT DeferredTaskHandler final
   // nodes so the tail is processed.
   void AddTailProcessingHandler(scoped_refptr<AudioHandler>);
 
-  // Remove |node| from the list of tail nodes (because the tail
-  // processing is complete).
-  void RemoveTailProcessingHandler(scoped_refptr<AudioHandler>);
+  // Remove |node| from the list of tail nodes (because the tail processing is
+  // complete).  Set |disable_outputs| to true if the outputs of the handler
+  // should also be disabled.  This should be true if the tail is done.  But if
+  // we're reconnected or re-enabled, then |disable_outputs| should be false.
+  void RemoveTailProcessingHandler(scoped_refptr<AudioHandler> node,
+                                   bool disable_outputs);
 
   // Remove all tail processing nodes.  Should be called only when the
   // context is done.

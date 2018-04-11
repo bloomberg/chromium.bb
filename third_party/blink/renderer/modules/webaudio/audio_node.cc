@@ -49,7 +49,7 @@ AudioHandler::AudioHandler(NodeType node_type,
       node_(&node),
       context_(node.context()),
       last_processing_time_(-1),
-      last_non_silent_time_(-1),
+      last_non_silent_time_(0),
       connection_ref_count_(0),
       is_disabled_(false),
       channel_count_(2) {
@@ -405,10 +405,15 @@ void AudioHandler::UnsilenceOutputs() {
 }
 
 void AudioHandler::EnableOutputsIfNecessary() {
-  if (is_disabled_ && connection_ref_count_ > 0) {
-    DCHECK(IsMainThread());
-    BaseAudioContext::GraphAutoLocker locker(Context());
+  DCHECK(IsMainThread());
+  BaseAudioContext::GraphAutoLocker locker(Context());
 
+  // We're enabling outputs for this handler.  Remove this from the tail
+  // processing list (if it's there) so that we don't inadvertently disable the
+  // outputs later on when the tail processing time has elapsed.
+  Context()->GetDeferredTaskHandler().RemoveTailProcessingHandler(this, false);
+
+  if (is_disabled_ && connection_ref_count_ > 0) {
     is_disabled_ = false;
     for (auto& output : outputs_)
       output->Enable();
@@ -459,8 +464,6 @@ void AudioHandler::DisableOutputs() {
 void AudioHandler::MakeConnection() {
   AtomicIncrement(&connection_ref_count_);
 
-  Context()->GetDeferredTaskHandler().RemoveTailProcessingHandler(this);
-
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(
       stderr,
@@ -468,6 +471,7 @@ void AudioHandler::MakeConnection() {
       Context(), this, GetNodeType(), connection_ref_count_,
       node_count_[GetNodeType()], Context()->currentTime());
 #endif
+
   // See the disabling code in disableOutputsIfNecessary(). This handles
   // the case where a node is being re-connected after being used at least
   // once and disconnected. In this case, we need to re-enable.
