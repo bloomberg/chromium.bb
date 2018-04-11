@@ -63,7 +63,6 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kUrlBarUrlText,
     kUrlBarOverflowButton,
     kController,
-    kReticle,
     kLaser,
     kControllerTouchpadButton,
     kControllerAppButton,
@@ -81,7 +80,6 @@ const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
     kFloor,
     kExitPrompt,
     kController,
-    kReticle,
     kLaser,
     kControllerTouchpadButton,
     kControllerAppButton,
@@ -516,7 +514,6 @@ TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   visible_in_fullscreen.insert(kControllerAppButton);
   visible_in_fullscreen.insert(kControllerHomeButton);
   visible_in_fullscreen.insert(kLaser);
-  visible_in_fullscreen.insert(kReticle);
   visible_in_fullscreen.insert(kContentFrame);
   visible_in_fullscreen.insert(kContentFrameHitPlane);
 
