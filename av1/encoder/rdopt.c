@@ -6874,8 +6874,7 @@ static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
 }
 
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            const BLOCK_SIZE bsize,
-                            int_mv (*const mode_mv)[REF_FRAMES], int_mv *cur_mv,
+                            const BLOCK_SIZE bsize, int_mv *cur_mv,
                             const int mi_row, const int mi_col,
                             int *const rate_mv, int_mv *const single_newmv,
                             HandleInterModeArgs *const args) {
@@ -6884,7 +6883,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const int is_comp_pred = has_second_ref(mbmi);
   const PREDICTION_MODE this_mode = mbmi->mode;
-  int_mv *const frame_mv = mode_mv[this_mode];
   const int refs[2] = { mbmi->ref_frame[0],
                         mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1] };
   int i;
@@ -6912,8 +6910,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
               x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
         }
       }
-      frame_mv[refs[0]].as_int = cur_mv[0].as_int;
-      frame_mv[refs[1]].as_int = cur_mv[1].as_int;
     } else if (this_mode == NEAREST_NEWMV || this_mode == NEAR_NEWMV) {
       cur_mv[1].as_int = single_newmv[refs[1]].as_int;
       if (cpi->sf.comp_inter_joint_search_thresh <= bsize) {
@@ -6926,8 +6922,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                    &mbmi_ext->ref_mvs[refs[1]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
-      frame_mv[refs[0]].as_int = cur_mv[0].as_int;
-      frame_mv[refs[1]].as_int = cur_mv[1].as_int;
     } else {
       assert(this_mode == NEW_NEARESTMV || this_mode == NEW_NEARMV);
       cur_mv[0].as_int = single_newmv[refs[0]].as_int;
@@ -6941,8 +6935,6 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                    &mbmi_ext->ref_mvs[refs[0]][0].as_mv,
                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
       }
-      frame_mv[refs[0]].as_int = cur_mv[0].as_int;
-      frame_mv[refs[1]].as_int = cur_mv[1].as_int;
     }
   } else {
     single_motion_search(cpi, x, bsize, mi_row, mi_col, 0, rate_mv);
@@ -6952,8 +6944,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
     args->single_newmv_rate[refs[0]] = *rate_mv;
     args->single_newmv_valid[refs[0]] = 1;
 
-    frame_mv[refs[0]] = x->best_mv;
-    cur_mv[0].as_int = frame_mv[refs[0]].as_int;
+    cur_mv[0].as_int = x->best_mv.as_int;
   }
 
   return 0;
@@ -7815,8 +7806,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       continue;
     }
     if (have_newmv_in_inter_mode(this_mode)) {
-      ret_val = handle_newmv(cpi, x, bsize, mode_mv, cur_mv, mi_row, mi_col,
-                             &rate_mv, single_newmv, args);
+      ret_val = handle_newmv(cpi, x, bsize, cur_mv, mi_row, mi_col, &rate_mv,
+                             single_newmv, args);
+      for (i = 0; i < is_comp_pred + 1; ++i) {
+        frame_mv[refs[i]].as_int = cur_mv[i].as_int;
+      }
       if (ret_val != 0) {
         early_terminate = INT64_MAX;
         continue;
