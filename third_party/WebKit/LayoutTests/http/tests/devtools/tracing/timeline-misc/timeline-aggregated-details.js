@@ -565,7 +565,6 @@
   var timeline = UI.panels.timeline;
   timeline._setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
-  timeline.requestWindowTimes(0, Infinity);
   await ProductRegistry.instance();
   var groupByEnum = Timeline.AggregatedTimelineTreeView.GroupBy;
   for (var grouping of Object.values(groupByEnum)) {

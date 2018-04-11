@@ -12,12 +12,12 @@
   timeline._onModeChanged();
   timeline._flameChart._automaticallySizeWindow = true;
 
-  function requestWindowTimesHook(startTime, endTime) {
+  function setWindowTimesHook(startTime, endTime) {
     if (startTime)
       TestRunner.addResult('time delta: ' + (endTime - startTime));
   }
 
-  timeline.requestWindowTimes = requestWindowTimesHook;
+  timeline._overviewPane.setWindowTimes = setWindowTimesHook;
   await PerformanceTestRunner.loadTimeline(PerformanceTestRunner.timelineData());
   TestRunner.completeTest();
 })();

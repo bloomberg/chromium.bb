@@ -56,7 +56,6 @@
   const timeline = UI.panels.timeline;
   timeline._setModel(PerformanceTestRunner.createPerformanceModelWithEvents(rawTraceEvents));
 
-  timeline.requestWindowTimes(0, Infinity);
   testEventTree('CallTree');
   testEventTree('BottomUp');
   testEventTree('EventLog');
