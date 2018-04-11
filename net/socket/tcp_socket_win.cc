@@ -112,7 +112,7 @@ class TCPSocketWin::Core : public base::RefCounted<Core> {
   void WatchForWrite();
 
   // The TCPSocketWin is going away.
-  void Detach() { socket_ = NULL; }
+  void Detach();
 
   // Event handle for monitoring connect and read events through WSAEventSelect.
   HANDLE read_event_;
@@ -189,11 +189,12 @@ TCPSocketWin::Core::Core(TCPSocketWin* socket)
 }
 
 TCPSocketWin::Core::~Core() {
-  // Make sure the message loop is not watching this object anymore.
-  read_watcher_.StopWatching();
-  write_watcher_.StopWatching();
+  // Detach should already have been called.
+  DCHECK(!socket_);
 
-  WSACloseEvent(read_event_);
+  // Stop the write watcher.  The read watcher should already have been stopped
+  // in Detach().
+  write_watcher_.StopWatching();
   WSACloseEvent(write_overlapped_.hEvent);
   memset(&write_overlapped_, 0xaf, sizeof(write_overlapped_));
 }
@@ -209,6 +210,18 @@ void TCPSocketWin::Core::WatchForWrite() {
   // Balanced in WriteDelegate::OnObjectSignaled().
   AddRef();
   write_watcher_.StartWatchingOnce(write_overlapped_.hEvent, &writer_);
+}
+
+void TCPSocketWin::Core::Detach() {
+  // Stop watching the read watcher. A read won't be signalled after the Detach
+  // call, since the socket has been closed, but it's possible the event was
+  // signalled when the socket was closed, but hasn't been handled yet, so need
+  // to stop watching now to avoid trying to handle the event. See
+  // https://crbug.com/831149
+  read_watcher_.StopWatching();
+  WSACloseEvent(read_event_);
+
+  socket_ = nullptr;
 }
 
 void TCPSocketWin::Core::ReadDelegate::OnObjectSignaled(HANDLE object) {
