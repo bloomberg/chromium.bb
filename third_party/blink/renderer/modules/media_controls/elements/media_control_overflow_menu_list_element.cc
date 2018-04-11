@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_overflow_menu_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 
@@ -13,10 +14,9 @@ namespace blink {
 
 MediaControlOverflowMenuListElement::MediaControlOverflowMenuListElement(
     MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaOverflowList) {
+    : MediaControlPopupMenuElement(media_controls, kMediaOverflowList) {
   SetShadowPseudoId(
       AtomicString("-internal-media-controls-overflow-menu-list"));
-  SetIsWanted(false);
 }
 
 void MediaControlOverflowMenuListElement::MaybeRecordTimeTaken(
@@ -44,7 +44,7 @@ void MediaControlOverflowMenuListElement::DefaultEventHandler(Event* event) {
 }
 
 void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
-  MediaControlDivElement::SetIsWanted(wanted);
+  MediaControlPopupMenuElement::SetIsWanted(wanted);
 
   // Record the time the overflow menu was shown to a histogram.
   if (wanted) {
@@ -61,6 +61,10 @@ void MediaControlOverflowMenuListElement::SetIsWanted(bool wanted) {
         WTF::Bind(&MediaControlOverflowMenuListElement::MaybeRecordTimeTaken,
                   WrapWeakPersistent(this), kTimeToDismiss));
   }
+}
+
+Element* MediaControlOverflowMenuListElement::PopupAnchor() const {
+  return &GetMediaControls().OverflowButton();
 }
 
 }  // namespace blink

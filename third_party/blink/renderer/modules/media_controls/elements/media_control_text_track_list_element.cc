@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/platform/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -49,22 +50,23 @@ bool HasDuplicateLabel(TextTrack* current_track) {
 
 MediaControlTextTrackListElement::MediaControlTextTrackListElement(
     MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls, kMediaTextTrackList) {
+    : MediaControlPopupMenuElement(media_controls, kMediaTextTrackList) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-text-track-list"));
-  SetIsWanted(false);
 }
 
 bool MediaControlTextTrackListElement::WillRespondToMouseClickEvents() {
   return true;
 }
 
-void MediaControlTextTrackListElement::SetVisible(bool visible) {
-  if (visible) {
-    SetIsWanted(true);
+void MediaControlTextTrackListElement::SetIsWanted(bool wanted) {
+  MediaControlPopupMenuElement::SetIsWanted(wanted);
+
+  if (wanted)
     RefreshTextTrackListMenu();
-  } else {
-    SetIsWanted(false);
-  }
+}
+
+Element* MediaControlTextTrackListElement::PopupAnchor() const {
+  return &GetMediaControls().ToggleClosedCaptions();
 }
 
 void MediaControlTextTrackListElement::DefaultEventHandler(Event* event) {

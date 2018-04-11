@@ -142,6 +142,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Methods used for Download In-product help.
   const MediaControlDownloadButtonElement& DownloadButton() const;
   const MediaControlOverflowMenuButtonElement& OverflowButton() const;
+  MediaControlOverflowMenuButtonElement& OverflowButton();
   void DidDismissDownloadInProductHelp();
   MediaDownloadInProductHelpManager* DownloadInProductHelp();
 
@@ -149,6 +150,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // Accessors for UI elements.
   const MediaControlCurrentTimeDisplayElement& CurrentTimeDisplay() const;
+  MediaControlToggleClosedCaptionsButtonElement& ToggleClosedCaptions();
 
   virtual void Trace(blink::Visitor*);
 

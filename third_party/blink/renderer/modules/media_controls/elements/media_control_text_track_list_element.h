@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TEXT_TRACK_LIST_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_TEXT_TRACK_LIST_ELEMENT_H_
 
-#include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_popup_menu_element.h"
 
 namespace blink {
 
@@ -13,15 +13,16 @@ class Event;
 class MediaControlsImpl;
 class TextTrack;
 
-class MediaControlTextTrackListElement final : public MediaControlDivElement {
+class MediaControlTextTrackListElement final
+    : public MediaControlPopupMenuElement {
  public:
   explicit MediaControlTextTrackListElement(MediaControlsImpl&);
 
   // Node interface.
   bool WillRespondToMouseClickEvents() override;
 
-  // Toggle visibility of the list.
-  void SetVisible(bool);
+  void SetIsWanted(bool) final;
+  Element* PopupAnchor() const final;
 
  private:
   void DefaultEventHandler(Event*) override;
