@@ -17,7 +17,7 @@
 namespace blink {
 namespace scheduler {
 
-CompositorWorkerScheduler::CompositorWorkerScheduler(
+CompositorThreadScheduler::CompositorThreadScheduler(
     base::Thread* thread,
     std::unique_ptr<TaskQueueManager> task_queue_manager)
     : NonMainThreadScheduler(
@@ -25,15 +25,15 @@ CompositorWorkerScheduler::CompositorWorkerScheduler(
                                                   this)),
       thread_(thread) {}
 
-CompositorWorkerScheduler::~CompositorWorkerScheduler() = default;
+CompositorThreadScheduler::~CompositorThreadScheduler() = default;
 
-scoped_refptr<WorkerTaskQueue> CompositorWorkerScheduler::DefaultTaskQueue() {
+scoped_refptr<WorkerTaskQueue> CompositorThreadScheduler::DefaultTaskQueue() {
   return helper_->DefaultWorkerTaskQueue();
 }
 
-void CompositorWorkerScheduler::Init() {}
+void CompositorThreadScheduler::Init() {}
 
-void CompositorWorkerScheduler::OnTaskCompleted(
+void CompositorThreadScheduler::OnTaskCompleted(
     WorkerTaskQueue* worker_task_queue,
     const TaskQueue::Task& task,
     base::TimeTicks start,
@@ -44,12 +44,12 @@ void CompositorWorkerScheduler::OnTaskCompleted(
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CompositorWorkerScheduler::DefaultTaskRunner() {
+CompositorThreadScheduler::DefaultTaskRunner() {
   return DefaultTaskQueue();
 }
 
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
-CompositorWorkerScheduler::IdleTaskRunner() {
+CompositorThreadScheduler::IdleTaskRunner() {
   // TODO(flackr): This posts idle tasks as regular tasks. We need to create
   // an idle task runner with the semantics we want for the compositor thread
   // which runs them after the current frame has been drawn before the next
@@ -59,42 +59,42 @@ CompositorWorkerScheduler::IdleTaskRunner() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CompositorWorkerScheduler::IPCTaskRunner() {
+CompositorThreadScheduler::IPCTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
-bool CompositorWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {
+bool CompositorThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   return false;
 }
 
-bool CompositorWorkerScheduler::ShouldYieldForHighPriorityWork() {
+bool CompositorThreadScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
-void CompositorWorkerScheduler::AddTaskObserver(
+void CompositorThreadScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   helper_->AddTaskObserver(task_observer);
 }
 
-void CompositorWorkerScheduler::RemoveTaskObserver(
+void CompositorThreadScheduler::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   helper_->RemoveTaskObserver(task_observer);
 }
 
-void CompositorWorkerScheduler::Shutdown() {}
+void CompositorThreadScheduler::Shutdown() {}
 
-void CompositorWorkerScheduler::OnIdleTaskPosted() {}
+void CompositorThreadScheduler::OnIdleTaskPosted() {}
 
-base::TimeTicks CompositorWorkerScheduler::WillProcessIdleTask() {
+base::TimeTicks CompositorThreadScheduler::WillProcessIdleTask() {
   // TODO(flackr): Return the next frame time as the deadline instead.
   // TODO(flackr): Ensure that oilpan GC does happen on the compositor thread
   // even though we will have no long idle periods. https://crbug.com/609531
   return base::TimeTicks::Now() + base::TimeDelta::FromMillisecondsD(16.7);
 }
 
-void CompositorWorkerScheduler::DidProcessIdleTask() {}
+void CompositorThreadScheduler::DidProcessIdleTask() {}
 
-base::TimeTicks CompositorWorkerScheduler::NowTicks() {
+base::TimeTicks CompositorThreadScheduler::NowTicks() {
   return base::TimeTicks::Now();
 }
 
