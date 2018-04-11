@@ -42,7 +42,8 @@ class SystemWebDialogDelegate : public ui::WebDialogDelegate {
 
   // Show the dialog using the current ative profile and the proper ash
   // shell container.
-  void ShowSystemDialog();
+  // |is_minimal_style| means whether title area of the dialog should be hide.
+  void ShowSystemDialog(bool is_minimal_style = false);
 
   content::WebUI* GetWebUIForTest() { return webui_; }
 
