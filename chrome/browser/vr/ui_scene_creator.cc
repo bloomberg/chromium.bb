@@ -1877,6 +1877,7 @@ void UiSceneCreator::CreateController() {
 
   auto reticle = std::make_unique<Reticle>(scene_, model_);
   reticle->SetDrawPhase(kPhaseForeground);
+  VR_BIND_VISIBILITY(reticle, model->reticle.target_point != gfx::Point3F());
 
   auto reposition_group = Create<UiElement>(kRepositionCursor, kPhaseNone);
   VR_BIND_VISIBILITY(reposition_group,
