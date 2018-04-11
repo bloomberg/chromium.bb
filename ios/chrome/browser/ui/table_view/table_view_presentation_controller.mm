@@ -35,8 +35,20 @@ const CGFloat kTableViewMaxWidth = 414.0;
 
 @interface TableViewPresentationController ()
 
+// A view which prevents touches from reaching views below this controller's
+// |containerView|.  This view is normally clear and dismisses the presented
+// view controller when tapped, but can optionally act as a dimming view and
+// ignore touches.
+@property(nonatomic, readwrite, strong) UIView* dimmingShield;
+
+// A container view for |tableViewContainer| and |shadowImage|.
 @property(nonatomic, readwrite, strong) UIView* shadowContainer;
+
+// Draws a shadow to visually separate the contents of |tableViewContainer| from
+// the views below.
 @property(nonatomic, readwrite, strong) UIImageView* shadowImage;
+
+// Acts as a container for the presented view controller's view.
 @property(nonatomic, readwrite, strong) UIView* tableViewContainer;
 
 // Cleans up and removes any views that are managed by this controller.
@@ -45,6 +57,7 @@ const CGFloat kTableViewMaxWidth = 414.0;
 @end
 
 @implementation TableViewPresentationController
+@synthesize dimmingShield = _dimmingShield;
 @synthesize shadowContainer = _shadowContainer;
 @synthesize shadowImage = _shadowImage;
 @synthesize tableViewContainer = _tableViewContainer;
@@ -70,8 +83,18 @@ const CGFloat kTableViewMaxWidth = 414.0;
 }
 
 - (void)presentationTransitionWillBegin {
-  self.shadowContainer = [[UIView alloc] init];
+  // The dimming view is added first, so that all other views are layered on top
+  // of it.
+  self.dimmingShield = [[UIView alloc] init];
+  self.dimmingShield.backgroundColor = [UIColor clearColor];
+  self.dimmingShield.frame = self.containerView.bounds;
+  [self.containerView addSubview:self.dimmingShield];
+  [self.dimmingShield
+      addGestureRecognizer:[[UITapGestureRecognizer alloc]
+                               initWithTarget:self
+                                       action:@selector(handleShieldTap)]];
 
+  self.shadowContainer = [[UIView alloc] init];
   self.shadowImage =
       [[UIImageView alloc] initWithImage:StretchableImageNamed(@"menu_shadow")];
   self.shadowImage.translatesAutoresizingMaskIntoConstraints = NO;
@@ -136,6 +159,7 @@ const CGFloat kTableViewMaxWidth = 414.0;
 }
 
 - (void)containerViewWillLayoutSubviews {
+  self.dimmingShield.frame = self.containerView.bounds;
   self.shadowContainer.frame = [self frameOfPresentedViewInContainerView];
 }
 
@@ -148,6 +172,15 @@ const CGFloat kTableViewMaxWidth = 414.0;
   self.shadowImage = nil;
   [self.shadowContainer removeFromSuperview];
   self.shadowContainer = nil;
+  [self.dimmingShield removeFromSuperview];
+  self.dimmingShield = nil;
+}
+
+#pragma mark - Actions
+
+- (void)handleShieldTap {
+  [self.presentedViewController dismissViewControllerAnimated:YES
+                                                   completion:nil];
 }
 
 #pragma mark - Adaptivity
