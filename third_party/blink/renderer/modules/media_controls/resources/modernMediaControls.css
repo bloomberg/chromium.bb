@@ -75,8 +75,7 @@ video::-webkit-media-controls-panel {
   font-style: normal;
 
   background:
-    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x,
-                      url('default_200_percent/modern/gradient_bg.png') 2x)
+    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
     repeat-x bottom left;
 }
 
@@ -84,14 +83,28 @@ video::-webkit-media-controls-panel.scrubbing-message {
   /* Need dark gradient at the top of the video when the scrubbing message is
    * shown */
   background:
-    -webkit-image-set(url('default_100_percent/modern/top_gradient_bg.png') 1x,
-                      url('default_200_percent/modern/top_gradient_bg.png') 2x)
+    -webkit-image-set(url('default_100_percent/modern/top_gradient_bg.png') 1x)
     repeat-x top left,
-    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x,
-                      url('default_200_percent/modern/gradient_bg.png') 2x)
+    -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
     repeat-x bottom left;
 }
 
+@media (-webkit-min-device-pixel-ratio: 2) {
+  audio::-webkit-media-controls-panel,
+  video::-webkit-media-controls-panel {
+    background:
+      -webkit-image-set(url('default_200_percent/modern/gradient_bg.png') 1x)
+      repeat-x bottom left auto 80px;
+  }
+
+  video::-webkit-media-controls-panel.scrubbing-message {
+    background:
+      -webkit-image-set(url('default_200_percent/modern/top_gradient_bg.png') 1x)
+      repeat-x top left auto 120px,
+      -webkit-image-set(url('default_200_percent/modern/gradient_bg.png') 1x)
+      repeat-x bottom left auto 80px;
+  }
+}
 
 audio::-internal-media-controls-button-panel,
 video::-internal-media-controls-button-panel {
