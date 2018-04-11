@@ -34,6 +34,10 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   static Vector<NGPaintFragmentWithContainerOffset> SelfFragmentsOf(
       const NGPaintFragment&,
       const LayoutObject* target);
+
+  // Returns the line box paint fragment of |line|. |line| itself must be the
+  // paint fragment of a line box.
+  static NGPaintFragment* PreviousLineOf(const NGPaintFragment& line);
 };
 
 }  // namespace blink

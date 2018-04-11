@@ -76,8 +76,7 @@ config("blink_core_pch") {
       # Force include the header.
       cflags = [ "/FI$precompiled_header" ]
     } else if (is_mac) {
-      precompiled_source =
-          "//third_party/blink/renderer/core/precompile_core.h"
+      precompiled_source = "//third_party/blink/renderer/core/precompile_core.h"
     }
   }
 }
@@ -2007,6 +2006,7 @@ jumbo_source_set("unit_tests") {
     "paint/layer_clip_recorder_test.cc",
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_paint_fragment_test.cc",
+    "paint/ng/ng_paint_fragment_traversal_test.cc",
     "paint/ng/ng_text_fragment_painter_test.cc",
     "paint/nine_piece_image_grid_test.cc",
     "paint/object_paint_invalidator_test.cc",

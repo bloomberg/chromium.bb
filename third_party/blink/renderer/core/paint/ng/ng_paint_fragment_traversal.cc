@@ -81,4 +81,20 @@ NGPaintFragmentTraversal::SelfFragmentsOf(const NGPaintFragment& container,
   return result;
 }
 
+NGPaintFragment* NGPaintFragmentTraversal::PreviousLineOf(
+    const NGPaintFragment& line) {
+  DCHECK(line.PhysicalFragment().IsLineBox());
+  NGPaintFragment* parent = line.Parent();
+  DCHECK(parent);
+  NGPaintFragment* previous_line = nullptr;
+  for (const auto& sibling : parent->Children()) {
+    if (sibling.get() == &line)
+      return previous_line;
+    if (sibling->PhysicalFragment().IsLineBox())
+      previous_line = sibling.get();
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace blink
