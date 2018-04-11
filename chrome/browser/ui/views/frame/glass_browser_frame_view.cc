@@ -433,15 +433,22 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
 void GlassBrowserFrameView::Layout() {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::Layout");
-  if (ShouldCustomDrawSystemTitlebar()) {
-    // The profile switcher button depends on the caption button layout, so this
-    // must be called prior to LayoutProfileSwitcher().
+  // The profile switcher and incognito icon depends on the caption button
+  // layout, so always call it first.
+  if (ShouldCustomDrawSystemTitlebar())
     LayoutCaptionButtons();
-    LayoutTitleBar();
-  }
+
   if (browser_view()->IsRegularOrGuestSession())
     LayoutProfileSwitcher();
+
+  // The incognito area must be laid out even if we're not in incognito as
+  // tab-strip insets depend on it. When not in incognito the bounds will be
+  // zero-width but positioned correctly for the titlebar to start after it.
   LayoutIncognitoIcon();
+
+  if (ShouldCustomDrawSystemTitlebar())
+    LayoutTitleBar();
+
   LayoutClientView();
 }
 
@@ -577,7 +584,9 @@ bool GlassBrowserFrameView::CaptionButtonsOnLeadingEdge() const {
 }
 
 bool GlassBrowserFrameView::ShowCustomIcon() const {
-  return ShouldCustomDrawSystemTitlebar() &&
+  // Don't show the window icon when the incognito badge is visible, since
+  // they're competing for the same space.
+  return !profile_indicator_icon() && ShouldCustomDrawSystemTitlebar() &&
          browser_view()->ShouldShowWindowIcon();
 }
 
@@ -804,13 +813,16 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   int x = IsMaximized()
               ? kIconMaximizedLeftMargin
               : display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+
   const int y = window_top + (titlebar_visual_height - icon_size) / 2;
   window_icon_bounds = gfx::Rect(x, y, icon_size, icon_size);
 
+  constexpr int kIconTitleSpacing = 5;
   if (ShowCustomIcon()) {
     window_icon_->SetBoundsRect(window_icon_bounds);
-    constexpr int kIconTitleSpacing = 5;
     x = window_icon_bounds.right() + kIconTitleSpacing;
+  } else if (profile_indicator_icon()) {
+    x = profile_indicator_icon()->bounds().right() + kIconTitleSpacing;
   }
 
   if (ShowCustomTitle()) {
