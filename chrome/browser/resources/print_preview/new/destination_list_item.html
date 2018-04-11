@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
+<link rel="import" href="chrome://resources/html/load_time_data.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="highlight_utils.html">
@@ -105,7 +106,8 @@
       [[destination.connectionStatusText]]
     </span>
     <a is="action-link" class="learn-more-link"
-        hidden$="[[!destination.shouldShowInvalidCertificateError]]">
+        hidden$="[[!destination.shouldShowInvalidCertificateError]]"
+        on-click="onLearnMoreLinkClick_">
       $i18n{learnMore}
     </a>
     <span class="register-promo" hidden$="[[!destination.isUnregistered]]">

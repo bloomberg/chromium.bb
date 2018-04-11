@@ -44,6 +44,7 @@ const PreviewAreaState_ = {
   OPEN_IN_PREVIEW: 'open-in-preview',
   INVALID_SETTINGS: 'invalid-settings',
   PREVIEW_FAILED: 'preview-failed',
+  UNSUPPORTED_CLOUD_PRINTER: 'unsupported-cloud-printer',
 };
 
 Polymer({
@@ -236,6 +237,15 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether the "learn more" link to the cloud print help
+   *     page should be shown.
+   * @private
+   */
+  shouldShowLearnMoreLink_: function() {
+    return this.previewState_ == PreviewAreaState_.UNSUPPORTED_CLOUD_PRINTER;
+  },
+
+  /**
    * @return {string} The current preview area message to display.
    * @private
    */
@@ -248,6 +258,8 @@ Polymer({
       return this.i18n('invalidPrinterSettings');
     if (this.previewState_ == PreviewAreaState_.PREVIEW_FAILED)
       return this.i18n('previewFailed');
+    if (this.previewState_ == PreviewAreaState_.UNSUPPORTED_CLOUD_PRINTER)
+      return this.i18n('unsupportedCloudPrinter');
     return '';
   },
 
@@ -267,9 +279,10 @@ Polymer({
           }
         },
         type => {
-          if (/** @type{string} */ (type) == 'SETTINGS_INVALID')
+          if (/** @type{string} */ (type) == 'SETTINGS_INVALID') {
             this.previewState_ = PreviewAreaState_.INVALID_SETTINGS;
-          else if (/** @type{string} */ (type) != 'CANCELLED') {
+            this.fire('invalid-printer');
+          } else if (/** @type{string} */ (type) != 'CANCELLED') {
             this.previewState_ = PreviewAreaState_.PREVIEW_FAILED;
             this.fire('preview-failed');
           }
@@ -291,7 +304,8 @@ Polymer({
         }
         break;
       case (print_preview_new.State.INVALID_PRINTER):
-        this.previewState_ = PreviewAreaState_.INVALID_SETTINGS;
+        if (this.previewState_ != PreviewAreaState_.INVALID_SETTINGS)
+          this.previewState_ = PreviewAreaState_.UNSUPPORTED_CLOUD_PRINTER;
         break;
       default:
         break;
@@ -488,6 +502,17 @@ Polymer({
     // we don't want this to happen as it can cause the margin to stop
     // being draggable.
     this.plugin_.style.pointerEvents = e.detail ? 'none' : 'auto';
+  },
+
+  /**
+   * Called when the learn more link for a cloud destination with an invalid
+   * certificate is clicked. Calls nativeLayer to open a new tab with the help
+   * page.
+   * @private
+   */
+  onGcpErrorLearnMoreClick_: function() {
+    this.nativeLayer_.forceOpenNewTab(
+        this.i18n('gcpCertificateErrorLearnMoreURL'));
   },
 
   /**

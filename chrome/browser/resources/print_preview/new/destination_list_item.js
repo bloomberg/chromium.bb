@@ -36,6 +36,12 @@ Polymer({
     this.stale_ = this.destination.isOfflineOrInvalid;
   },
 
+  /** @private */
+  onLearnMoreLinkClick_: function() {
+    print_preview.NativeLayer.getInstance().forceOpenNewTab(
+        loadTimeData.getString('gcpCertificateErrorLearnMoreURL'));
+  },
+
   update: function() {
     this.updateSearchHint_();
     this.updateHighlighting_();
