@@ -97,15 +97,14 @@ void Keyboard::OnButtonUp(const gfx::PointF& position) {
   delegate_->OnButtonUp(position);
 }
 
-bool Keyboard::OnBeginFrame(const base::TimeTicks& time,
-                            const gfx::Transform& head_pose) {
+bool Keyboard::OnBeginFrame(const gfx::Transform& head_pose) {
   if (!delegate_)
     return false;
 
   delegate_->OnBeginFrame();
   // We return false here because any visible changes to the keyboard, such as
   // hover effects and showing/hiding of the keyboard will be drawn by the
-  // controller's dirtyness, so it's safe to assume not visual changes here.
+  // controller's dirtyness, so it's safe to assume no visual changes here.
   return false;
 }
 

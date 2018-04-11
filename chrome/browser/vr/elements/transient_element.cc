@@ -50,8 +50,7 @@ SimpleTransientElement::SimpleTransientElement(const base::TimeDelta& timeout)
 
 SimpleTransientElement::~SimpleTransientElement() {}
 
-bool SimpleTransientElement::OnBeginFrame(const base::TimeTicks& time,
-                                          const gfx::Transform& head_pose) {
+bool SimpleTransientElement::OnBeginFrame(const gfx::Transform& head_pose) {
   // Do nothing if we're not going to be visible.
   if (GetTargetOpacity() != opacity_when_visible())
     return false;
@@ -61,7 +60,7 @@ bool SimpleTransientElement::OnBeginFrame(const base::TimeTicks& time,
   if (set_visible_time_.is_null() && opacity() > 0.0f)
     set_visible_time_ = last_frame_time();
 
-  base::TimeDelta duration = time - set_visible_time_;
+  base::TimeDelta duration = last_frame_time() - set_visible_time_;
 
   if (!set_visible_time_.is_null() && duration >= timeout_) {
     super::SetVisible(false);
@@ -85,7 +84,6 @@ ShowUntilSignalTransientElement::ShowUntilSignalTransientElement(
 ShowUntilSignalTransientElement::~ShowUntilSignalTransientElement() {}
 
 bool ShowUntilSignalTransientElement::OnBeginFrame(
-    const base::TimeTicks& time,
     const gfx::Transform& head_pose) {
   // Do nothing if we're not going to be visible.
   if (GetTargetOpacity() != opacity_when_visible())
@@ -98,7 +96,7 @@ bool ShowUntilSignalTransientElement::OnBeginFrame(
 
   bool set_invisible = false;
 
-  base::TimeDelta duration = time - set_visible_time_;
+  base::TimeDelta duration = last_frame_time() - set_visible_time_;
   if (!set_visible_time_.is_null() && !min_duration_callback_called_ &&
       duration >= min_duration_) {
     min_duration_callback_.Run();

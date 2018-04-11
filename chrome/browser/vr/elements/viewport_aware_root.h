@@ -30,8 +30,7 @@ class ViewportAwareRoot : public UiElement {
   virtual bool AdjustRotationForHeadPose(const gfx::Vector3dF& look_at);
 
  private:
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) override;
+  bool OnBeginFrame(const gfx::Transform& head_pose) override;
 
   float viewport_aware_total_rotation_ = 0.f;
   bool children_visible_ = false;

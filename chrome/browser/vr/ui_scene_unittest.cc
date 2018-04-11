@@ -44,10 +44,7 @@ class AlwaysDirty : public UiElement {
  public:
   ~AlwaysDirty() override {}
 
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) override {
-    return true;
-  }
+  bool OnBeginFrame(const gfx::Transform& head_pose) override { return true; }
 };
 
 }  // namespace

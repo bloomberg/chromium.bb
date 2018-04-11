@@ -45,8 +45,7 @@ class SimpleTransientElement : public TransientElement {
   ~SimpleTransientElement() override;
 
  private:
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) override;
+  bool OnBeginFrame(const gfx::Transform& head_pose) override;
 
   typedef TransientElement super;
 
@@ -83,8 +82,7 @@ class ShowUntilSignalTransientElement : public TransientElement {
   void Reset() override;
 
  private:
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) override;
+  bool OnBeginFrame(const gfx::Transform& head_pose) override;
 
   typedef TransientElement super;
 

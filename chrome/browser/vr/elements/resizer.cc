@@ -70,8 +70,7 @@ void Resizer::UpdateTransform(const gfx::Transform& head_pose) {
   set_world_space_transform_dirty();
 }
 
-bool Resizer::OnBeginFrame(const base::TimeTicks& time,
-                           const gfx::Transform& head_pose) {
+bool Resizer::OnBeginFrame(const gfx::Transform& head_pose) {
   if (enabled_) {
     UpdateTransform(head_pose);
     return true;

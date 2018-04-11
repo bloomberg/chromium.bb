@@ -240,8 +240,7 @@ void UiElement::UpdateInput(const EditedText& info) {
   NOTREACHED();
 }
 
-bool UiElement::DoBeginFrame(const base::TimeTicks& time,
-                             const gfx::Transform& head_pose) {
+bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
   set_update_phase(UiElement::kDirty);
   // TODO(mthiesse): This is overly cautious. We may have keyframe_models but
   // not trigger any updates, so we should refine this logic and have
@@ -249,10 +248,9 @@ bool UiElement::DoBeginFrame(const base::TimeTicks& time,
   // had no visual effect and dirtiness should be related to setting properties
   // that do indeed cause visual updates.
   bool keyframe_models_updated = animation_.keyframe_models().size() > 0;
-  animation_.Tick(time);
-  last_frame_time_ = time;
+  animation_.Tick(last_frame_time_);
   set_update_phase(kUpdatedAnimations);
-  bool begin_frame_updated = OnBeginFrame(time, head_pose);
+  bool begin_frame_updated = OnBeginFrame(head_pose);
   UpdateComputedOpacity();
   bool was_visible_at_any_point = IsVisible() || updated_visibility_this_frame_;
   bool dirty = (begin_frame_updated || keyframe_models_updated ||
@@ -262,14 +260,13 @@ bool UiElement::DoBeginFrame(const base::TimeTicks& time,
   if (was_visible_at_any_point ||
       visibility_bindings_depend_on_child_visibility_) {
     for (auto& child : children_)
-      dirty |= child->DoBeginFrame(time, head_pose);
+      dirty |= child->DoBeginFrame(head_pose);
   }
 
   return dirty;
 }
 
-bool UiElement::OnBeginFrame(const base::TimeTicks& time,
-                             const gfx::Transform& head_pose) {
+bool UiElement::OnBeginFrame(const gfx::Transform& head_pose) {
   return false;
 }
 
@@ -557,20 +554,24 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   }
   *os << kReset;
 
-  if (!IsVisible()) {
+  if (phase_ < kUpdatedComputedOpacity || !IsVisible()) {
     *os << kBlue;
   }
 
   *os << DebugName() << kReset << " " << kCyan << DrawPhaseToString(draw_phase_)
       << " " << kReset;
 
-  if (size().width() != 0.0f || size().height() != 0.0f) {
-    *os << kRed << "[" << size().width() << ", " << size().height() << "] "
-        << kReset;
+  if (phase_ >= kUpdatedSize) {
+    if (size().width() != 0.0f || size().height() != 0.0f) {
+      *os << kRed << "[" << size().width() << ", " << size().height() << "] "
+          << kReset;
+    }
   }
 
-  *os << kGreen;
-  DumpGeometry(os);
+  if (phase_ >= kUpdatedWorldSpaceTransform) {
+    *os << kGreen;
+    DumpGeometry(os);
+  }
 
   counts.push_back(0u);
 
