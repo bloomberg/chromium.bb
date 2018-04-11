@@ -26,7 +26,11 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/sessions/session_restore_test_helper.h"
+#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
@@ -53,6 +57,8 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/keep_alive_registry/keep_alive_types.h"
+#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -432,6 +438,48 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   ::wm::Unminimize(widget->GetNativeWindow());
   EXPECT_EQ(&ash::kWindowControlRestoreIcon,
             test.size_button()->icon_definition_for_test());
+}
+
+// This is a regression test that session restore minimized browser should
+// update caption buttons (https://crbug.com/827444).
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       RestoreMinimizedBrowserUpdatesCaption) {
+  // Enable session service.
+  SessionStartupPref pref(SessionStartupPref::LAST);
+  Profile* profile = browser()->profile();
+  SessionStartupPref::SetStartupPref(profile, pref);
+
+  SessionServiceTestHelper helper(
+      SessionServiceFactory::GetForProfile(profile));
+  helper.SetForceBrowserNotAliveWithNoWindows(true);
+  helper.ReleaseService();
+
+  // Do not exit from test when last browser is closed.
+  ScopedKeepAlive keep_alive(KeepAliveOrigin::SESSION_RESTORE,
+                             KeepAliveRestartOption::DISABLED);
+
+  // Quit and restore.
+  browser()->window()->Minimize();
+  CloseBrowserSynchronously(browser());
+
+  chrome::NewEmptyWindow(profile);
+  ui_test_utils::BrowserAddedObserver window_observer;
+  SessionRestoreTestHelper restore_observer;
+
+  Browser* new_browser = window_observer.WaitForSingleNewBrowser();
+  restore_observer.Wait();
+
+  // Check that caption button image is set.
+  BrowserView* browser_view =
+      BrowserView::GetBrowserViewForBrowser(new_browser);
+  Widget* widget = browser_view->GetWidget();
+  // We know we're using Ash, so static cast.
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      frame_view->caption_button_container_);
+  EXPECT_TRUE(test.size_button()->icon_definition_for_test());
 }
 
 namespace {

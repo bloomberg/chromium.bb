@@ -6,6 +6,7 @@
 #define ASH_FRAME_FRAME_HEADER_H_
 
 #include "ash/ash_export.h"
+#include "ui/base/ui_base_types.h"
 
 namespace gfx {
 class Canvas;
@@ -44,6 +45,9 @@ class ASH_EXPORT FrameHeader {
   // True to instruct the frame header to paint the header as an active
   // state.
   virtual void SetPaintAsActive(bool paint_as_active) = 0;
+
+  // Called when frame show state is changed.
+  virtual void OnShowStateChanged(ui::WindowShowState show_state) = 0;
 };
 
 }  // namespace ash

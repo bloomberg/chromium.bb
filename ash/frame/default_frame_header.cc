@@ -221,6 +221,12 @@ void DefaultFrameHeader::SetPaintAsActive(bool paint_as_active) {
     back_button_->set_paint_as_active(paint_as_active);
 }
 
+void DefaultFrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
+  if (show_state == ui::SHOW_STATE_MINIMIZED)
+    return;
+  LayoutHeader();
+}
+
 void DefaultFrameHeader::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
   bool updated = false;
