@@ -1058,6 +1058,26 @@ void UiSceneCreator::CreateSystemIndicators() {
       Create<LinearLayout>(kIndicatorLayout, kPhaseNone, LinearLayout::kRight);
   indicator_layout->set_margin(kIndicatorMarginDMM);
 
+  auto* content_frame = scene_->GetUiElementByName(kContentFrame);
+  content_frame->AddBinding(std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](UiElement* plane, UiElement* indicators) {
+            if (static_cast<InvisibleHitTarget*>(plane)->hovered())
+              return true;
+            for (auto& child : indicators->children()) {
+              if (static_cast<Button*>(child.get())->hovered())
+                return true;
+            }
+            return false;
+          },
+          base::Unretained(scene_->GetUiElementByName(kContentFrameHitPlane)),
+          base::Unretained(indicator_layout.get())),
+      VR_BIND_LAMBDA(
+          [](UiElement* e, const bool& value) {
+            static_cast<Rect*>(e)->SetLocalOpacity(value ? 1.0f : 0.0f);
+          },
+          base::Unretained(content_frame))));
+
   auto specs = GetIndicatorSpecs();
   for (const auto& spec : specs) {
     auto element = std::make_unique<VectorIconButton>(
@@ -1244,36 +1264,6 @@ void UiSceneCreator::CreateContentQuad() {
       base::TimeDelta::FromMilliseconds(kRepositionFrameTransitionDurationMs));
   VR_BIND_COLOR(model_, frame.get(), &ColorScheme::content_reposition_frame,
                 &Rect::SetColor);
-  frame->AddBinding(std::make_unique<Binding<gfx::PointF>>(
-      VR_BIND_LAMBDA(
-          [](Model* model, UiElement* e) {
-            HitTestRequest request;
-            request.ray_origin = model->controller.laser_origin;
-            request.ray_target = model->reticle.target_point;
-            HitTestResult result;
-            e->HitTest(request, &result);
-            return gfx::PointF(
-                result.local_hit_point.x() * e->stale_size().width(),
-                result.local_hit_point.y() * e->stale_size().height());
-          },
-          base::Unretained(model_), base::Unretained(frame.get())),
-      VR_BIND_LAMBDA(
-          [](Model* model, Rect* e, const gfx::PointF& value) {
-            gfx::RectF inner(e->stale_size());
-            inner.Inset(kRepositionFrameEdgePadding, kRepositionFrameTopPadding,
-                        kRepositionFrameEdgePadding,
-                        kRepositionFrameEdgePadding);
-            gfx::RectF outer(e->stale_size());
-            outer.Inset(
-                kRepositionFrameEdgePadding,
-                kRepositionFrameTopPadding - kRepositionFrameHitPlaneTopPadding,
-                kRepositionFrameEdgePadding, kRepositionFrameEdgePadding);
-            const bool is_on_frame = outer.Contains(value) &&
-                                     !inner.Contains(value) &&
-                                     model->reposition_window_permitted();
-            e->SetLocalOpacity(is_on_frame ? 1.0f : 0.0f);
-          },
-          base::Unretained(model_), base::Unretained(frame.get()))));
 
   auto plane =
       Create<InvisibleHitTarget>(kContentFrameHitPlane, kPhaseForeground);
