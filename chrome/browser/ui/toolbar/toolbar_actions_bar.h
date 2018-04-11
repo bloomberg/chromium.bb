@@ -93,7 +93,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   gfx::Size GetFullSize() const;
 
   // Returns the [minimum|maximum] possible width for the toolbar.
-  int GetMinimumWidth() const;
+  virtual int GetMinimumWidth() const;
   int GetMaximumWidth() const;
 
   // Returns the width for the given number of icons.

@@ -26,13 +26,16 @@ class HostedAppMenuButton : public AppMenuButton,
   // Sets the color of the menu button icon.
   void SetIconColor(SkColor color);
 
+  // Fades the menu button highlight on and off.
+  void StartHighlightAnimation(base::TimeDelta duration);
+
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::MenuButton* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
-  // Fades the menu button highlight on and off.
-  void StartHighlightAnimation(base::TimeDelta duration);
+  // AppMenuButton:
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   void FadeHighlightOff();

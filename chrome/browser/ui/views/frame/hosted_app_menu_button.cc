@@ -9,6 +9,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/grit/generated_resources.h"
@@ -40,6 +41,17 @@ void HostedAppMenuButton::SetIconColor(SkColor color) {
   set_ink_drop_base_color(color);
 }
 
+void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
+  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
+  GetInkDrop()->SetHovered(true);
+  GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
+
+  highlight_off_timer_.Start(FROM_HERE,
+                             duration - base::TimeDelta::FromMilliseconds(
+                                            kMenuHighlightFadeDurationMs),
+                             this, &HostedAppMenuButton::FadeHighlightOff);
+}
+
 void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
                                               const gfx::Point& point,
                                               const ui::Event* event) {
@@ -50,15 +62,9 @@ void HostedAppMenuButton::OnMenuButtonClicked(views::MenuButton* source,
   menu()->RunMenu(this);
 }
 
-void HostedAppMenuButton::StartHighlightAnimation(base::TimeDelta duration) {
-  GetInkDrop()->SetHoverHighlightFadeDurationMs(kMenuHighlightFadeDurationMs);
-  GetInkDrop()->SetHovered(true);
-  GetInkDrop()->UseDefaultHoverHighlightFadeDuration();
-
-  highlight_off_timer_.Start(FROM_HERE,
-                             duration - base::TimeDelta::FromMilliseconds(
-                                            kMenuHighlightFadeDurationMs),
-                             this, &HostedAppMenuButton::FadeHighlightOff);
+gfx::Size HostedAppMenuButton::CalculatePreferredSize() const {
+  int size = GetLayoutConstant(HOSTED_APP_MENU_BUTTON_SIZE);
+  return gfx::Size(size, size);
 }
 
 void HostedAppMenuButton::FadeHighlightOff() {

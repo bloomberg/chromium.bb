@@ -29,6 +29,8 @@ int GetLayoutConstant(LayoutConstant constant) {
               GetLayoutConstant(BOOKMARK_BAR_HEIGHT)) /
              2;
 #endif
+    case HOSTED_APP_MENU_BUTTON_SIZE:
+      return 24;
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return hybrid ? 1 : 3;
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
