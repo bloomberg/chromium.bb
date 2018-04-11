@@ -40,8 +40,18 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
   def __init__(self):
     super(PerfDeviceTriggerer, self).__init__()
 
-  def append_additional_args(self, args):
-    return args
+  def append_additional_args(self, args, shard_index):
+    # Append a tag to the swarming task with the shard number
+    # so we can query for the last bot that ran a specific shard.
+    tag = 'shard:%d' % shard_index
+    shard_tag = ['--tag', tag]
+    # Need to append this before the dash if present so it gets fed to
+    # the swarming task itself.
+    if '--' in args:
+      dash_ind = args.index('--')
+      return args[:dash_ind] + shard_tag + args[dash_ind:]
+    else:
+      return args + shard_tag
 
   def select_config_indices(self, args, verbose):
     # For perf we want to trigger a job for every valid config since

@@ -120,9 +120,13 @@ class UnitTest(unittest.TestCase):
   def test_shard_env_vars_and_bot_id(self):
     triggerer = self.basic_setup()
     self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[0], ['--bot', 'build1']))
+      triggerer._swarming_runs[0], ['id', 'build1']))
     self.assertTrue(self.list_contains_sublist(
-      triggerer._swarming_runs[1], ['--bot', 'build2']))
+      triggerer._swarming_runs[1], ['id', 'build2']))
+    self.assertTrue(self.list_contains_sublist(
+      triggerer._swarming_runs[0], ['--tag', 'shard:0']))
+    self.assertTrue(self.list_contains_sublist(
+      triggerer._swarming_runs[1], ['--tag', 'shard:1']))
     self.assertTrue(self.list_contains_sublist(
       triggerer._swarming_runs[0], ['--env', 'GTEST_SHARD_INDEX', '0']))
     self.assertTrue(self.list_contains_sublist(
