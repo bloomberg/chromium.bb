@@ -90,7 +90,7 @@ AssistantOptInUI::GetVoiceInteractionHomeService() {
 void AssistantOptInDialog::Show() {
   DCHECK(!is_active);
   AssistantOptInDialog* dialog = new AssistantOptInDialog();
-  dialog->ShowSystemDialog();
+  dialog->ShowSystemDialog(true);
 }
 
 // static
