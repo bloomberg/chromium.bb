@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http/http_stream_factory_impl_request.h"
+#include "net/http/http_stream_request.h"
 
 #include <utility>
 
@@ -10,14 +10,13 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/http/bidirectional_stream_impl.h"
-#include "net/http/http_stream_factory_impl_job.h"
 #include "net/log/net_log_event_type.h"
 #include "net/spdy/chromium/spdy_http_stream.h"
 #include "net/spdy/chromium/spdy_session.h"
 
 namespace net {
 
-HttpStreamFactoryImpl::Request::Request(
+HttpStreamRequest::HttpStreamRequest(
     const GURL& url,
     Helper* helper,
     HttpStreamRequest::Delegate* delegate,
@@ -38,14 +37,14 @@ HttpStreamFactoryImpl::Request::Request(
   net_log_.BeginEvent(NetLogEventType::HTTP_STREAM_REQUEST);
 }
 
-HttpStreamFactoryImpl::Request::~Request() {
+HttpStreamRequest::~HttpStreamRequest() {
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_REQUEST);
   helper_->OnRequestComplete();
 }
 
-void HttpStreamFactoryImpl::Request::Complete(bool was_alpn_negotiated,
-                                              NextProto negotiated_protocol,
-                                              bool using_spdy) {
+void HttpStreamRequest::Complete(bool was_alpn_negotiated,
+                                 NextProto negotiated_protocol,
+                                 bool using_spdy) {
   DCHECK(!completed_);
   completed_ = true;
   was_alpn_negotiated_ = was_alpn_negotiated;
@@ -53,7 +52,7 @@ void HttpStreamFactoryImpl::Request::Complete(bool was_alpn_negotiated,
   using_spdy_ = using_spdy;
 }
 
-void HttpStreamFactoryImpl::Request::OnStreamReadyOnPooledConnection(
+void HttpStreamRequest::OnStreamReadyOnPooledConnection(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
     std::unique_ptr<HttpStream> stream) {
@@ -62,57 +61,54 @@ void HttpStreamFactoryImpl::Request::OnStreamReadyOnPooledConnection(
                                            std::move(stream));
 }
 
-void HttpStreamFactoryImpl::Request::
-    OnBidirectionalStreamImplReadyOnPooledConnection(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<BidirectionalStreamImpl> stream) {
+void HttpStreamRequest::OnBidirectionalStreamImplReadyOnPooledConnection(
+    const SSLConfig& used_ssl_config,
+    const ProxyInfo& used_proxy_info,
+    std::unique_ptr<BidirectionalStreamImpl> stream) {
   DCHECK(completed_);
   helper_->OnBidirectionalStreamImplReadyOnPooledConnection(
       used_ssl_config, used_proxy_info, std::move(stream));
 }
 
-int HttpStreamFactoryImpl::Request::RestartTunnelWithProxyAuth() {
+int HttpStreamRequest::RestartTunnelWithProxyAuth() {
   return helper_->RestartTunnelWithProxyAuth();
 }
 
-void HttpStreamFactoryImpl::Request::SetPriority(RequestPriority priority) {
+void HttpStreamRequest::SetPriority(RequestPriority priority) {
   helper_->SetPriority(priority);
 }
 
-LoadState HttpStreamFactoryImpl::Request::GetLoadState() const {
+LoadState HttpStreamRequest::GetLoadState() const {
   return helper_->GetLoadState();
 }
 
-bool HttpStreamFactoryImpl::Request::was_alpn_negotiated() const {
+bool HttpStreamRequest::was_alpn_negotiated() const {
   DCHECK(completed_);
   return was_alpn_negotiated_;
 }
 
-NextProto HttpStreamFactoryImpl::Request::negotiated_protocol() const {
+NextProto HttpStreamRequest::negotiated_protocol() const {
   DCHECK(completed_);
   return negotiated_protocol_;
 }
 
-bool HttpStreamFactoryImpl::Request::using_spdy() const {
+bool HttpStreamRequest::using_spdy() const {
   DCHECK(completed_);
   return using_spdy_;
 }
 
-const ConnectionAttempts& HttpStreamFactoryImpl::Request::connection_attempts()
-    const {
+const ConnectionAttempts& HttpStreamRequest::connection_attempts() const {
   return connection_attempts_;
 }
 
-void HttpStreamFactoryImpl::Request::AddConnectionAttempts(
+void HttpStreamRequest::AddConnectionAttempts(
     const ConnectionAttempts& attempts) {
   for (const auto& attempt : attempts)
     connection_attempts_.push_back(attempt);
 }
 
 WebSocketHandshakeStreamBase::CreateHelper*
-HttpStreamFactoryImpl::Request::websocket_handshake_stream_create_helper()
-    const {
+HttpStreamRequest::websocket_handshake_stream_create_helper() const {
   return websocket_handshake_stream_create_helper_;
 }
 

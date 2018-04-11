@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -20,6 +21,7 @@
 #include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_stream_factory.h"
+#include "net/http/http_stream_request.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/chromium/spdy_session_key.h"
@@ -35,7 +37,6 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   class NET_EXPORT_PRIVATE Job;
   class NET_EXPORT_PRIVATE JobController;
   class NET_EXPORT_PRIVATE JobFactory;
-  class NET_EXPORT_PRIVATE Request;
   HttpStreamFactoryImpl(HttpNetworkSession* session);
   ~HttpStreamFactoryImpl() override;
 
@@ -83,8 +84,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   };
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryImplRequestTest, SetPriority);
-  FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryImplRequestTest, DelayMainJob);
+  FRIEND_TEST_ALL_PREFIXES(HttpStreamRequestTest, SetPriority);
 
   friend class HttpStreamFactoryImplPeer;
 

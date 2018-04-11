@@ -21,6 +21,7 @@
 #include "net/http/http_auth_controller.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory_impl.h"
+#include "net/http/http_stream_request.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/chromium/quic_stream_factory.h"
@@ -47,8 +48,8 @@ class SpdySessionPool;
 class NetLog;
 struct SSLConfig;
 
-// An HttpStreamRequestImpl exists for each stream which is in progress of being
-// created for the StreamFactory.
+// An HttpStreamRequest exists for each stream which is in progress of being
+// created for the HttpStreamFactory.
 class HttpStreamFactoryImpl::Job {
  public:
   // For jobs issued simultaneously to an HTTP/2 supported server, a delay is
@@ -56,7 +57,7 @@ class HttpStreamFactoryImpl::Job {
   // crbug.com/718576
   static const int kHTTP2ThrottleMs = 300;
 
-  // Delegate to report Job's status to Request and HttpStreamFactory.
+  // Delegate to report Job's status to HttpStreamRequest and HttpStreamFactory.
   class NET_EXPORT_PRIVATE Delegate {
    public:
     virtual ~Delegate() {}
@@ -82,7 +83,7 @@ class HttpStreamFactoryImpl::Job {
                                 int status,
                                 const SSLConfig& used_ssl_config) = 0;
 
-    // Invoked when |job| has a certificate error for the Request.
+    // Invoked when |job| has a certificate error for the HttpStreamRequest.
     virtual void OnCertificateError(Job* job,
                                     int status,
                                     const SSLConfig& used_ssl_config,
@@ -113,8 +114,8 @@ class HttpStreamFactoryImpl::Job {
     // contained in |proxy_info| can be skipped.
     virtual bool OnInitConnection(const ProxyInfo& proxy_info) = 0;
 
-    // Invoked to notify the Request and Factory of the readiness of new
-    // SPDY session.
+    // Invoked to notify the HttpStreamRequest and HttpStreamFactory of the
+    // readiness of new SPDY session.
     virtual void OnNewSpdySessionReady(
         Job* job,
         const base::WeakPtr<SpdySession>& spdy_session) = 0;
@@ -123,7 +124,7 @@ class HttpStreamFactoryImpl::Job {
     virtual void OnPreconnectsComplete(Job* job) = 0;
 
     // Invoked to record connection attempts made by the socket layer to
-    // Request if |job| is associated with Request.
+    // HttpStreamRequest if |job| is associated with HttpStreamRequest.
     virtual void AddConnectionAttemptsToRequest(
         Job* job,
         const ConnectionAttempts& attempts) = 0;
@@ -136,9 +137,9 @@ class HttpStreamFactoryImpl::Job {
     virtual bool ShouldWait(Job* job) = 0;
 
     // Called when |job| determines the appropriate |spdy_session_key| for the
-    // Request. Note that this does not mean that SPDY is necessarily supported
-    // for this SpdySessionKey, since we may need to wait for NPN to complete
-    // before knowing if SPDY is available.
+    // HttpStreamRequest. Note that this does not mean that HTTP/2 is
+    // necessarily supported for this SpdySessionKey, since we may need to wait
+    // for ALPN negotiation to complete before knowing if HTTP/2 is available.
     virtual void SetSpdySessionKey(Job* job,
                                    const SpdySessionKey& spdy_session_key) = 0;
 

@@ -17,6 +17,7 @@
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/util/url_request_dispatcher.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/upload_bytes_element_reader.h"
