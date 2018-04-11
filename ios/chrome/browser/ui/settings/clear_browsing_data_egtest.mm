@@ -20,7 +20,7 @@
 #endif
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
-using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
 
 @interface ClearBrowsingDataSettingsTestCase : ChromeTestCase
@@ -47,7 +47,7 @@ using chrome_test_util::SettingsMenuPrivacyButton;
   _featureList.InitAndDisableFeature(kNewClearBrowsingDataUI);
 
   [self openClearBrowsingDataDialog];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -57,7 +57,7 @@ using chrome_test_util::SettingsMenuPrivacyButton;
   _featureList.InitAndEnableFeature(kNewClearBrowsingDataUI);
 
   [self openClearBrowsingDataDialog];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 

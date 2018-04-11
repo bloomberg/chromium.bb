@@ -33,6 +33,7 @@
 
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SecondarySignInButton;
+using chrome_test_util::SettingsDoneButton;
 
 namespace {
 
@@ -89,7 +90,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [ChromeEarlGreyUI signInToIdentityByEmail:identity.userEmail];
   [ChromeEarlGreyUI confirmSigninConfirmationDialog];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // Check |identity| is signed-in.
@@ -129,7 +130,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Check the signed-in user did change.
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity2];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -167,7 +168,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   // Check the signed-in user did change.
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity2];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -213,7 +214,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
   [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -244,7 +245,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
@@ -286,7 +287,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT);
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
@@ -311,7 +312,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:settings_link_matcher]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
   // All Settings should be gone and user signed in.
@@ -352,7 +353,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
   // Close sign-in screen and Settings.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -393,7 +394,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
   // Close sign-in screen and Settings.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -455,7 +456,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
 
   // Close sign-in screen and Settings.
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUtils assertSignedOut];
 }

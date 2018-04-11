@@ -115,6 +115,9 @@ id<GREYMatcher> ClearBrowsingDataCollectionView();
 // Returns matcher for the settings button in the tools menu.
 id<GREYMatcher> SettingsMenuButton();
 
+// Returns matcher for the "Done" button in the settings' navigation bar.
+id<GREYMatcher> SettingsDoneButton();
+
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();
 

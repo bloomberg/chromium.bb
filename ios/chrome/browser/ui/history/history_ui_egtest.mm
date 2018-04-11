@@ -325,9 +325,8 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
   // Include sufficientlyVisible condition for the case of the clear browsing
   // dialog, which also has a "Done" button and is displayed over the history
   // panel.
-  id<GREYMatcher> visibleDoneButton =
-      grey_allOf(chrome_test_util::NavigationBarDoneButton(),
-                 grey_sufficientlyVisible(), nil);
+  id<GREYMatcher> visibleDoneButton = grey_allOf(
+      chrome_test_util::SettingsDoneButton(), grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:visibleDoneButton]
       performAction:grey_tap()];
 

@@ -42,8 +42,8 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
@@ -500,7 +500,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   SwitchToNormalMode();
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:responses[slowURL]];
 

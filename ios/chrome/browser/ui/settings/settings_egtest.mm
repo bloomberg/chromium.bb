@@ -60,8 +60,8 @@ using chrome_test_util::ClearCacheButton;
 using chrome_test_util::ClearCookiesButton;
 using chrome_test_util::ClearSavedPasswordsButton;
 using chrome_test_util::ContentSettingsButton;
-using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsCollectionView;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
 using chrome_test_util::VoiceSearchButton;
@@ -231,11 +231,11 @@ bool IsCertificateCleared() {
 
   // Check if the Settings menu is displayed. If so, close it.
   error = nil;
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       assertWithMatcher:grey_notNil()
                   error:&error];
   if (!error) {
-    [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+    [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
         performAction:grey_tap()];
   }
 }
@@ -244,7 +244,7 @@ bool IsCertificateCleared() {
 - (void)closeSubSettingsMenu {
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -278,7 +278,7 @@ bool IsCertificateCleared() {
       performAction:grey_tap()];
 
   [self clearBrowsingData];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -313,7 +313,7 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:ClearSavedPasswordsButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 
@@ -613,7 +613,7 @@ bool IsCertificateCleared() {
   [[EarlGrey selectElementWithMatcher:SettingsCollectionView()]
       assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   GREYAssert(chrome_test_util::CloseAllIncognitoTabs(), @"Tabs did not close");
 }
@@ -622,7 +622,7 @@ bool IsCertificateCleared() {
 - (void)testAccessibilityOnSettingsPage {
   [ChromeEarlGreyUI openSettingsMenu];
   chrome_test_util::VerifyAccessibilityForCurrentScreen();
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 

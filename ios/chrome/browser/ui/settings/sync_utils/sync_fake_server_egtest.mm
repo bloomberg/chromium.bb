@@ -44,7 +44,7 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsDoneButton;
 
 namespace {
 
@@ -59,7 +59,7 @@ void SignInIdentity(NSString* userEmail) {
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
   [ChromeEarlGreyUI signInToIdentityByEmail:userEmail];
   [ChromeEarlGreyUI confirmSigninConfirmationDialog];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 }
 

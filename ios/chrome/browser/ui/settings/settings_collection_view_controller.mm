@@ -74,6 +74,7 @@
 #endif
 
 NSString* const kSettingsCollectionViewId = @"kSettingsCollectionViewId";
+NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 NSString* const kSettingsSignInCellId = @"kSettingsSignInCellId";
 NSString* const kSettingsAccountCellId = @"kSettingsAccountCellId";
 NSString* const kSettingsSearchEngineCellId = @"Search Engine";

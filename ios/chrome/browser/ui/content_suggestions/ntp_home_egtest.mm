@@ -224,9 +224,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                            errorOrNil:nil];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsDoneButton()]
       performAction:grey_tap()];
 
   safeArea = SafeAreaInsetsForView(CollectionView());

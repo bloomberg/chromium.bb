@@ -24,6 +24,7 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TapWebViewElementWithId;
 
@@ -119,7 +120,7 @@ NSString* GetTextFieldForID(int categoryId) {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   // Wait for UI components to finish loading.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
