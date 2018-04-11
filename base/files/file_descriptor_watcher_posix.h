@@ -22,6 +22,10 @@ class SingleThreadTaskRunner;
 
 // The FileDescriptorWatcher API allows callbacks to be invoked when file
 // descriptors are readable or writable without blocking.
+//
+// To enable this API in unit tests, use a ScopedTaskEnvironment with
+// MainThreadType::IO.
+//
 // Note: Prefer FileDescriptorWatcher to MessageLoopForIO::WatchFileDescriptor()
 // for non-critical IO. FileDescriptorWatcher works on threads/sequences without
 // MessagePumps but involves going through the task queue after being notified

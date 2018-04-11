@@ -111,6 +111,8 @@ class TestBrowserThreadBundle {
   // threads. The UI thread is always the main thread in a unit test.
   enum Options {
     DEFAULT = 0,
+    // The main thread will use a MessageLoopForIO (and support the
+    // base::FileDescriptorWatcher API on POSIX).
     IO_MAINLOOP = 1 << 0,
     REAL_IO_THREAD = 1 << 1,
     DONT_CREATE_BROWSER_THREADS = 1 << 2,

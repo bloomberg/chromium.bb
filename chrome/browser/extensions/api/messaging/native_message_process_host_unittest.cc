@@ -17,7 +17,6 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
-#include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -106,9 +105,6 @@ class NativeMessagingTest : public ::testing::Test,
   NativeMessagingTest()
       : current_channel_(version_info::Channel::DEV),
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-#if defined(OS_POSIX)
-        file_descriptor_watcher_(base::MessageLoopForIO::current()),
-#endif
         channel_closed_(false) {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
@@ -171,10 +167,6 @@ class NativeMessagingTest : public ::testing::Test,
   std::unique_ptr<NativeMessageHost> native_message_host_;
   std::unique_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThreadBundle thread_bundle_;
-#if defined(OS_POSIX)
-  // Required to watch a file descriptor from NativeMessageProcessHost.
-  base::FileDescriptorWatcher file_descriptor_watcher_;
-#endif
 
   std::string last_message_;
   std::unique_ptr<base::DictionaryValue> last_message_parsed_;

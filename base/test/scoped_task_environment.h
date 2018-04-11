@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/lazy_task_runner.h"
+#include "build/build_config.h"
 
 namespace base {
 
@@ -17,6 +18,7 @@ class ScopedSetSequenceLocalStorageMapForCurrentThread;
 class SequenceLocalStorageMap;
 }  // namespace internal
 
+class FileDescriptorWatcher;
 class MessageLoop;
 class TaskScheduler;
 class TestMockTimeTaskRunner;
@@ -74,7 +76,8 @@ class ScopedTaskEnvironment {
     MOCK_TIME,
     // The main thread pumps UI messages.
     UI,
-    // The main thread pumps asynchronous IO messages.
+    // The main thread pumps asynchronous IO messages and supports the
+    // FileDescriptorWatcher API on POSIX.
     IO,
   };
 
@@ -138,6 +141,11 @@ class ScopedTaskEnvironment {
   const std::unique_ptr<
       internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
       slsm_registration_for_mock_time_;
+
+#if defined(OS_POSIX)
+  // Enables the FileDescriptorWatcher API iff running a MainThreadType::IO.
+  const std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher_;
+#endif
 
   const TaskScheduler* task_scheduler_ = nullptr;
 
