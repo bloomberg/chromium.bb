@@ -1448,15 +1448,15 @@ class OutputApiUnittest(PresubmitTestsBase):
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS= master.tryserver.blink:linux_trusty_blink_rel ;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+CQ_INCLUDE_TRYBOTS= master.tryserver.blink:linux_trusty_blink_rel ;luci.chromium.try:win_optional_gpu_tests_rel
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel'
+        'luci.chromium.try:win_optional_gpu_tests_rel'
       ],
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserver.blink:linux_trusty_blink_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel;master.tryserver.blink:linux_trusty_blink_rel
 """)
 
     # Starting without any CQ_INCLUDE_TRYBOTS line.
@@ -1474,15 +1474,15 @@ CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.
     self._testIncludingCQTrybots(
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=master.tryserver.chromium.win:win_optional_gpu_tests_rel
+CQ_INCLUDE_TRYBOTS=luci.chromium.try:win_optional_gpu_tests_rel
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel'
+        'luci.chromium.try:win_optional_gpu_tests_rel'
       ],
       """A change to GPU-related code.
 
-CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+CQ_INCLUDE_TRYBOTS=luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
 """)
 
     # Equivalent tests for Gerrit (pre-existing Change-Id line).
@@ -1507,11 +1507,11 @@ Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+        'luci.chromium.try:win_optional_gpu_tests_rel',
       ],
       """A change to GPU-related code.
 
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
 Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
 
     self._testIncludingCQTrybots(
@@ -1523,11 +1523,11 @@ Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2
 """,
       [
         'luci.chromium.try:linux_optional_gpu_tests_rel',
-        'master.tryserver.chromium.win:win_optional_gpu_tests_rel',
+        'luci.chromium.try:win_optional_gpu_tests_rel',
       ],
       """A change to GPU-related code.
 
-Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg;luci.chromium.try:linux_optional_gpu_tests_rel;master.tryserver.chromium.win:win_optional_gpu_tests_rel
+Cq-Include-Trybots: luci.chromium.try:linux_optional_gpu_tests_dbg;luci.chromium.try:linux_optional_gpu_tests_rel;luci.chromium.try:win_optional_gpu_tests_rel
 Change-Id: Idaeacea9cdbe912c24c8388147a8a767c7baa5f2""", is_gerrit=True)
 
 
