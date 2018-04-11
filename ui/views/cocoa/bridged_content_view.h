@@ -49,9 +49,6 @@ class View;
   // that OSX correctly blurs the background showing through.
   BOOL drawMenuBackgroundForBlur_;
 
-  // Whether dragging on the view moves the window.
-  BOOL mouseDownCanMoveWindow_;
-
   // The cached window mask. Only used for non-rectangular windows on 10.9.
   base::scoped_nsobject<NSBezierPath> windowMask_;
 }
@@ -59,11 +56,6 @@ class View;
 @property(readonly, nonatomic) views::View* hostedView;
 @property(assign, nonatomic) ui::TextInputClient* textInputClient;
 @property(assign, nonatomic) BOOL drawMenuBackgroundForBlur;
-
-// Extends an atomic, readonly property on NSView to make it assignable.
-// This usually returns YES if the view is transparent. We want to control it
-// so that BridgedNativeWidget can dynamically enable dragging of the window.
-@property(assign) BOOL mouseDownCanMoveWindow;
 
 // Initialize the NSView -> views::View bridge. |viewToHost| must be non-NULL.
 - (id)initWithView:(views::View*)viewToHost;

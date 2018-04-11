@@ -13,10 +13,6 @@
 #import "chrome/browser/ui/views/apps/native_app_window_frame_view_mac.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
-@interface NSView (WebContentsView)
-- (void)setMouseDownCanMoveWindow:(BOOL)can_move;
-@end
-
 // This observer is used to get NSWindow notifications. We need to monitor
 // zoom and full screen events to store the correct bounds to Restore() to.
 @interface ResizeNotificationObserver : NSObject {
@@ -190,14 +186,6 @@ void ChromeNativeAppWindowViewsMac::FlashFrame(bool flash) {
 void ChromeNativeAppWindowViewsMac::OnWidgetCreated(views::Widget* widget) {
   nswindow_observer_.reset(
       [[ResizeNotificationObserver alloc] initForNativeAppWindow:this]);
-}
-
-void ChromeNativeAppWindowViewsMac::UpdateDraggableRegions(
-    const std::vector<extensions::DraggableRegion>& regions) {
-  ChromeNativeAppWindowViews::UpdateDraggableRegions(regions);
-
-  NSView* web_contents_view = app_window()->web_contents()->GetNativeView();
-  [web_contents_view setMouseDownCanMoveWindow:YES];
 }
 
 void ChromeNativeAppWindowViewsMac::ShowWithApp() {

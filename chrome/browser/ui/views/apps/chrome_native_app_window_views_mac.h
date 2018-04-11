@@ -47,8 +47,6 @@ class ChromeNativeAppWindowViewsMac : public ChromeNativeAppWindowViews {
   void OnWidgetCreated(views::Widget* widget) override;
 
   // NativeAppWindow implementation.
-  void UpdateDraggableRegions(
-      const std::vector<extensions::DraggableRegion>& regions) override;
   // These are used to simulate Mac-style hide/show. Since windows can be hidden
   // and shown using the app.window API, this sets is_hidden_with_app_ to
   // differentiate the reason a window was hidden.

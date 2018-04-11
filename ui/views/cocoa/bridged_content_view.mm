@@ -14,6 +14,7 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_mac.h"
+#include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/base/ime/text_input_client.h"
@@ -274,7 +275,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 @synthesize hostedView = hostedView_;
 @synthesize textInputClient = textInputClient_;
 @synthesize drawMenuBackgroundForBlur = drawMenuBackgroundForBlur_;
-@synthesize mouseDownCanMoveWindow = mouseDownCanMoveWindow_;
 
 - (id)initWithView:(views::View*)viewToHost {
   DCHECK(viewToHost);
@@ -319,6 +319,16 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   [[NSDistributedNotificationCenter defaultCenter] removeObserver:self];
   [cursorTrackingArea_.get() clearOwner];
   [self removeTrackingArea:cursorTrackingArea_.get()];
+}
+
+// If the point is classified as HTCAPTION (background, draggable), return nil
+// so that it can lead to a window drag or double-click in the title bar.
+- (NSView*)hitTest:(NSPoint)point {
+  gfx::Point flippedPoint(point.x, NSHeight(self.superview.bounds) - point.y);
+  int component = hostedView_->GetWidget()->GetNonClientComponent(flippedPoint);
+  if (component == HTCAPTION)
+    return nil;
+  return [super hitTest:point];
 }
 
 - (void)processCapturedMouseEvent:(NSEvent*)theEvent {

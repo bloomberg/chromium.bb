@@ -36,11 +36,13 @@ NativeWidgetMacNSWindow* AppWindowNativeWidgetMac::CreateNSWindow(
     return ns_window;
   }
 
-  // NSTexturedBackgroundWindowMask is needed to implement draggable window
-  // regions.
-  NSUInteger style_mask = NSTexturedBackgroundWindowMask | NSTitledWindowMask |
-                          NSClosableWindowMask | NSMiniaturizableWindowMask |
-                          NSResizableWindowMask;
+  NSUInteger style_mask = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                          NSWindowStyleMaskMiniaturizable |
+                          NSWindowStyleMaskResizable;
+  if (@available(macOS 10.10, *))
+    style_mask |= NSWindowStyleMaskFullSizeContentView;
+  else
+    NOTREACHED();
   return [[[NativeWidgetMacFramelessNSWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:style_mask
