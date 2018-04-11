@@ -31,6 +31,10 @@
 #include "net/net_buildflags.h"
 #include "services/network/public/cpp/features.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#endif
+
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
     : profile_(profile), proxy_config_monitor_(profile) {
   quic_allowed_.Init(
@@ -211,6 +215,20 @@ ProfileNetworkContextService::CreateNetworkContextParams(
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  if (prefs->FindPreference(prefs::kGSSAPILibraryName)) {
+    network_context_params->gssapi_library_name =
+        prefs->GetString(prefs::kGSSAPILibraryName);
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  network_context_params->allow_gssapi_library_load =
+      connector->IsActiveDirectoryManaged();
+#endif
 
   return network_context_params;
 }

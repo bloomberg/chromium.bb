@@ -21,6 +21,7 @@
 #include "services/service_manager/public/cpp/service.h"
 
 namespace net {
+class HostResolver;
 class LoggingNetworkChangeObserver;
 class NetLog;
 class NetworkQualityEstimator;
@@ -104,6 +105,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
     return &keepalive_statistics_recorder_;
   }
+  net::HostResolver* host_resolver() { return host_resolver_.get(); }
 
  private:
   class MojoNetLog;
@@ -134,6 +136,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   mojo::Binding<mojom::NetworkService> binding_;
 
   std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
+
+  std::unique_ptr<net::HostResolver> host_resolver_;
 
   // NetworkContexts register themselves with the NetworkService so that they
   // can be cleaned up when the NetworkService goes away. This is needed as

@@ -109,6 +109,13 @@ struct NetworkContextParams {
   // other channels (navigation, issuing requests, etc)? Or can
   // ProxyConfigServices be modified not to need this notification?
   ProxyConfigPollerClient? proxy_config_poller_client;
+
+  // Only used on OS_CHROMEOS platform.
+  bool allow_gssapi_library_load = false;
+
+  // The GSSAPI library name.
+  // Only used on (OS_POSIX && !OS_ANDROID) platform.
+  string gssapi_library_name;
 };
 
 struct NetworkConditions {
