@@ -154,9 +154,10 @@ EventHandler::EventHandler(LocalFrame& frame)
       hover_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
                    this,
                    &EventHandler::HoverTimerFired),
-      cursor_update_timer_(frame.GetTaskRunner(TaskType::kUnspecedTimer),
-                           this,
-                           &EventHandler::CursorUpdateTimerFired),
+      cursor_update_timer_(
+          frame.GetTaskRunner(TaskType::kInternalUserInteraction),
+          this,
+          &EventHandler::CursorUpdateTimerFired),
       event_handler_will_reset_capturing_mouse_events_node_(0),
       should_only_fire_drag_over_event_(false),
       scroll_manager_(new ScrollManager(frame)),

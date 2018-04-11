@@ -174,6 +174,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalMediaRealTime";
     case TaskType::kInternalIPC:
       return "InternalIPC";
+    case TaskType::kInternalUserInteraction:
+      return "InternalUserInteraction";
     case TaskType::kCount:
       return "Count";
   }
