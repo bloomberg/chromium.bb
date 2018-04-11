@@ -825,40 +825,54 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   // and the audio engine. The buffer length determines the maximum amount
   // of capture data that the audio engine can read from the endpoint buffer
   // during a single processing pass.
-  // A typical value is 960 audio frames <=> 20ms @ 48kHz sample rate.
   hr = audio_client_->GetBufferSize(&endpoint_buffer_size_frames_);
   if (FAILED(hr)) {
     open_result_ = OPEN_RESULT_GET_BUFFER_SIZE_FAILED;
     return hr;
   }
+  const int endpoint_buffer_size_ms =
+      static_cast<double>(endpoint_buffer_size_frames_ * 1000) /
+          input_format_.nSamplesPerSec +
+      0.5;  // Round to closest integer
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Media.Audio.Capture.Win.EndpointBufferSize",
+      base::TimeDelta::FromMilliseconds(endpoint_buffer_size_ms),
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(1),
+      50);
+  DVLOG(1) << "Endpoint buffer size: " << endpoint_buffer_size_frames_
+           << " frames (" << endpoint_buffer_size_ms << " ms)";
 
-  DVLOG(1) << "endpoint buffer size: " << endpoint_buffer_size_frames_
-           << " [frames]";
-
-#ifndef NDEBUG
   // The period between processing passes by the audio engine is fixed for a
   // particular audio endpoint device and represents the smallest processing
   // quantum for the audio engine. This period plus the stream latency between
   // the buffer and endpoint device represents the minimum possible latency
   // that an audio application can achieve.
-  // TODO(henrika): possibly remove this section when all parts are ready.
   REFERENCE_TIME device_period_shared_mode = 0;
   REFERENCE_TIME device_period_exclusive_mode = 0;
   HRESULT hr_dbg = audio_client_->GetDevicePeriod(
       &device_period_shared_mode, &device_period_exclusive_mode);
   if (SUCCEEDED(hr_dbg)) {
-    DVLOG(1) << "device period: "
-             << static_cast<double>(device_period_shared_mode / 10000.0)
-             << " [ms]";
+    // The 5000 addition is to round end result to closest integer.
+    const int device_period_ms = (device_period_shared_mode + 5000) / 10000;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Media.Audio.Capture.Win.DevicePeriod",
+        base::TimeDelta::FromMilliseconds(device_period_ms),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(1),
+        50);
+    DVLOG(1) << "Device period: " << device_period_ms << " ms";
   }
 
   REFERENCE_TIME latency = 0;
   hr_dbg = audio_client_->GetStreamLatency(&latency);
   if (SUCCEEDED(hr_dbg)) {
-    DVLOG(1) << "stream latency: " << static_cast<double>(latency / 10000.0)
-             << " [ms]";
+    // The 5000 addition is to round end result to closest integer.
+    const int latency_ms = (device_period_shared_mode + 5000) / 10000;
+    UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.Capture.Win.StreamLatency",
+                               base::TimeDelta::FromMilliseconds(latency_ms),
+                               base::TimeDelta::FromMilliseconds(1),
+                               base::TimeDelta::FromSeconds(1), 50);
+    DVLOG(1) << "Stream latency: " << latency_ms << " ms";
   }
-#endif
 
   // Set the event handle that the audio engine will signal each time a buffer
   // becomes ready to be processed by the client.
