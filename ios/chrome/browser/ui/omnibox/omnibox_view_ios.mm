@@ -145,7 +145,11 @@ UIColor* IncognitoSecureTextColor() {
 
 // When editing, forward the message on to |editView_|.
 - (BOOL)textFieldShouldClear:(UITextField*)textField {
-  editView_->OnClear();
+  if (IsRefreshLocationBarEnabled()) {
+    editView_->ClearText();
+  } else {
+    editView_->OnClear();
+  }
   processingUserEvent_ = YES;
   return YES;
 }
@@ -773,6 +777,11 @@ void OmniboxViewIOS::UpdateAppearance() {
 }
 
 void OmniboxViewIOS::CreateClearTextIcon(bool is_incognito) {
+  if (IsRefreshLocationBarEnabled()) {
+    // In UI Refresh, the system clear button is used.
+    return;
+  }
+
   UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
   UIImage* omniBoxClearImage = is_incognito
                                    ? NativeImage(IDR_IOS_OMNIBOX_CLEAR_OTR)
@@ -799,6 +808,10 @@ void OmniboxViewIOS::CreateClearTextIcon(bool is_incognito) {
 }
 
 void OmniboxViewIOS::UpdateRightDecorations() {
+  if (IsRefreshLocationBarEnabled()) {
+    return;
+  }
+
   DCHECK(clear_text_button_);
   if (!model()->has_focus()) {
     // Do nothing for iPhone. The right view will be set to nil after the
