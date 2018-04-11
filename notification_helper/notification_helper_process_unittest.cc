@@ -23,30 +23,30 @@
 
 namespace {
 
-// Returns the notification_helper process if it is found.
-base::Process FindHelperProcess() {
-  unsigned int helper_pid;
+// Returns the process with name |name| if it is found.
+base::Process FindProcess(const base::string16& name) {
+  unsigned int pid;
   {
-    base::NamedProcessIterator iter(installer::kNotificationHelperExe, nullptr);
+    base::NamedProcessIterator iter(name, nullptr);
     const auto* entry = iter.NextProcessEntry();
     if (!entry)
       return base::Process();
-    helper_pid = entry->pid();
+    pid = entry->pid();
   }
 
-  base::Process helper = base::Process::Open(helper_pid);
-  if (!helper.IsValid())
-    return helper;
+  auto process = base::Process::Open(pid);
+  if (!process.IsValid())
+    return process;
 
   // Since the process could go away suddenly before we open a handle to it,
   // it's possible that a different process was just opened and assigned the
   // same PID due to aggressive PID reuse. Now that a handle is held to *some*
   // process, take another run through the snapshot to see if the process with
   // this PID has the right exe name.
-  base::NamedProcessIterator iter(installer::kNotificationHelperExe, nullptr);
+  base::NamedProcessIterator iter(name, nullptr);
   while (const auto* entry = iter.NextProcessEntry()) {
-    if (entry->pid() == helper_pid)
-      return helper;  // PID was not reused since the PID's match.
+    if (entry->pid() == pid)
+      return process;  // PID was not reused since the PID's match.
   }
   return base::Process();  // The PID was reused.
 }
@@ -139,7 +139,9 @@ TEST_F(NotificationHelperTest, NotificationHelperServerTest) {
 
   // There isn't a way to directly correlate the notification_helper.exe server
   // to this test. So we need to hunt for the server.
-  base::Process helper = FindHelperProcess();
+
+  // Make sure there is no notification_helper process running around.
+  base::Process helper = FindProcess(installer::kNotificationHelperExe);
   ASSERT_FALSE(helper.IsValid());
 
   Microsoft::WRL::ComPtr<IUnknown> notification_activator;
@@ -152,7 +154,7 @@ TEST_F(NotificationHelperTest, NotificationHelperServerTest) {
   // The server module now holds a reference of the instance object, the
   // notification_helper.exe process is alive waiting for that reference to be
   // released.
-  helper = FindHelperProcess();
+  helper = FindProcess(installer::kNotificationHelperExe);
   ASSERT_TRUE(helper.IsValid());
 
   // Release the instance object. Now that the last (and the only) instance
