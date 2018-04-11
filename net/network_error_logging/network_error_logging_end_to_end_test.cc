@@ -164,7 +164,13 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingEndToEndTest);
 };
 
-TEST_F(NetworkErrorLoggingEndToEndTest, ReportNetworkError) {
+#if defined(OS_WIN)
+// TODO(https://crbug.com/829650): Fix and re-enable these tests.
+#define MAYBE_ReportNetworkError DISABLED_ReportNetworkError
+#else
+#define MAYBE_ReportNetworkError ReportNetworkError
+#endif
+TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_ReportNetworkError) {
   TestDelegate configure_delegate;
   configure_delegate.set_quit_on_complete(false);
   auto configure_request = url_request_context_->CreateRequest(
@@ -202,9 +208,15 @@ TEST_F(NetworkErrorLoggingEndToEndTest, ReportNetworkError) {
   ExpectDictStringValue(GetFailURL().spec(), *body_dict, "uri");
 }
 
+#if defined(OS_WIN)
+// TODO(https://crbug.com/829650): Fix and re-enable these tests.
+#define MAYBE_UploadAtShutdown DISABLED_UploadAtShutdown
+#else
+#define MAYBE_UploadAtShutdown UploadAtShutdown
+#endif
 // Make sure an upload that is in progress at shutdown does not crash.
 // This verifies that https://crbug.com/792978 is fixed.
-TEST_F(NetworkErrorLoggingEndToEndTest, UploadAtShutdown) {
+TEST_F(NetworkErrorLoggingEndToEndTest, MAYBE_UploadAtShutdown) {
   upload_should_hang_ = true;
 
   TestDelegate configure_delegate;
