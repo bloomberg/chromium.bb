@@ -776,7 +776,7 @@
 <translation id="2190355936436201913">(tom)</translation>
 <translation id="2192505247865591433">Fra:</translation>
 <translation id="2193365732679659387">Tillidsindstillinger</translation>
-<translation id="2195729137168608510">E-mail-beskyttelse</translation>
+<translation id="2195729137168608510">Mail-beskyttelse</translation>
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2200356397587687044">Chrome skal have tilladelse til at fortsætte</translation>
 <translation id="220138918934036434">Skjul knap</translation>
@@ -1341,6 +1341,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3016641847947582299">Komponenten er opdateret</translation>
 <translation id="3016780570757425217">Kende din placering</translation>
 <translation id="302014277942214887">Indtast et applikations-id eller webadressen for webshoppen.</translation>
+<translation id="3020183492814296499">Genveje</translation>
 <translation id="3020990233660977256">Serienummer: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;Vis rammens kilde</translation>
 <translation id="3022978424994383087">Det er ikke forstået.</translation>
@@ -1851,7 +1852,7 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3783640748446814672">alt</translation>
 <translation id="3785308913036335955">Vis genveje for Apps</translation>
 <translation id="3785727820640310185">Gemte adgangskoder til dette website</translation>
-<translation id="3785852283863272759">E-mail-sideplacering</translation>
+<translation id="3785852283863272759">Mail-sideplacering</translation>
 <translation id="3786301125658655746">Du er offline</translation>
 <translation id="3788401245189148511">Den kunne:</translation>
 <translation id="3789841737615482174">Installer</translation>
@@ -2607,7 +2608,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5018207570537526145">Åbn udvidelsens website</translation>
 <translation id="5024856940085636730">En handling tager længere tid end forventet. Vil du afbryde den?</translation>
 <translation id="5026874946691314267">Vis ikke denne underretning igen</translation>
-<translation id="5027550639139316293">E-mail-certifikat</translation>
+<translation id="5027550639139316293">Mail-certifikat</translation>
 <translation id="5027562294707732951">Tilføj udvidelsen</translation>
 <translation id="5029568752722684782">Slet kopi</translation>
 <translation id="5030338702439866405">Udstedt af</translation>
@@ -2960,7 +2961,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5553089923092577885">Beskrivelse af certifikatpolitik</translation>
 <translation id="5554489410841842733">Dette ikon er synligt, når udvidelsen kan fungere på den aktuelle side.</translation>
 <translation id="5554573843028719904">Andet Wi-Fi-netværk...</translation>
-<translation id="5554720593229208774">E-mail-certificeringsautoritet</translation>
+<translation id="5554720593229208774">Mail-certificeringsautoritet</translation>
 <translation id="5556206011531515970">Klik på Næste for at vælge din standardbrowser.</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
 <translation id="555746285996217175">Lås/tænd</translation>
@@ -3030,7 +3031,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5653140146600257126">Der findes allerede en mappe med navnet "$1". Vælg et andet navn.</translation>
 <translation id="5657667036353380798">Den eksterne udvidelse kræver Chrome-versionen <ph name="MINIMUM_CHROME_VERSION" /> eller nyere for at blive installeret.</translation>
 <translation id="5658415415603568799">Af sikkerhedshensyn beder Smart Lock dig om at angive din adgangskode efter 20 timer.</translation>
-<translation id="5659593005791499971">E-mail</translation>
+<translation id="5659593005791499971">Mail</translation>
 <translation id="5659833766619490117">Denne side kunne ikke oversættes</translation>
 <translation id="5662477687021125631">Bestandig</translation>
 <translation id="5667546120811588575">Konfigurerer Google Play...</translation>

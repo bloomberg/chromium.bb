@@ -284,6 +284,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="3661699943263275414">Los sitios web de terceros pueden guardar y leer datos de cookies.</translation>
 <translation id="3662546969139119822">Aquí no hay elementos en el historial</translation>
 <translation id="3672452749423051839">Sugerencias relacionadas con errores de navegación</translation>
+<translation id="3692944402865947621">Falló la descarga de <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
 <translation id="3712575778697986964">¿Deseas restablecer Ahorro de datos?</translation>
 <translation id="3714981814255182093">Abrir la barra de búsqueda</translation>
 <translation id="3716182511346448902">Chrome pausó esta página porque usa demasiada memoria.</translation>
@@ -320,6 +321,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4084682180776658562">Marcador</translation>
+<translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />publicado por Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Descargas: <ph name="MEGABYTES" /> megabytes</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos de alta calidad brindados por el proveedor.</translation>
 <translation id="4095146165863963773">¿Borrar datos de app?</translation>
@@ -369,6 +371,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4550003330909367850">Para ver o copiar tu contraseña aquí, establece un bloqueo de pantalla en este dispositivo.</translation>
 <translation id="4558311620361989323">Accesos directos a páginas web</translation>
 <translation id="4565377596337484307">Ocultar contraseña</translation>
+<translation id="4570913071927164677">Detalles</translation>
 <translation id="4572422548854449519">Acceder a una cuenta administrada</translation>
 <translation id="4581964774250883625">Estás en modo incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
@@ -545,6 +548,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="60923314841986378"><ph name="HOURS" /> horas restantes</translation>
 <translation id="60924377787140961">Pronto se mostrarán más artículos. Disfruta tu tarde.</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
+<translation id="6111020039983847643">datos que se utilizaron</translation>
 <translation id="6112702117600201073">Actualizando la página</translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
 <translation id="6138140242378429169">Optimizar la página para celulares</translation>
@@ -697,6 +701,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualización: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">datos que se ahorraron</translation>
 <translation id="7498271377022651285">Espera un momento…</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="751961395872307827">No se puede conectar al sitio</translation>

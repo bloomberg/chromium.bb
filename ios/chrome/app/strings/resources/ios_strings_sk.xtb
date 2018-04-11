@@ -168,6 +168,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="4002066346123236978">Názov</translation>
 <translation id="4038354071007134711">Tento súbor nedokáže otvoriť žiadna aplikácia na tomto zariadení.</translation>
 <translation id="4049507953662678203">Uistite sa, že máte pripojenie k sieti, a skúste to znova.</translation>
+<translation id="4084682180776658562">Záložka</translation>
 <translation id="411254640334432676">Sťahovanie zlyhalo.</translation>
 <translation id="4121993058175073134">Ak chcete odoslať údaje čistého exportu, v aplikácii Nastavenia nakonfigurujte svoj e-mailový účet.</translation>
 <translation id="4124987746317609294">Časové obdobie</translation>
@@ -429,7 +430,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="9083392325882095631">1 položka</translation>
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9148126808321036104">Znova sa prihlásiť</translation>
-<translation id="915371508759614899">Zrušiť sťahovanie?</translation>
 <translation id="9157836665414082580">Obmedziť dialógové okná</translation>
 <translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>
 <translation id="9203116392574189331">Handoff</translation>

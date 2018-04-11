@@ -168,6 +168,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="4002066346123236978">Title</translation>
 <translation id="4038354071007134711">No application on this device can open the file.</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
+<translation id="4084682180776658562">Bookmark</translation>
 <translation id="411254640334432676">Download failed.</translation>
 <translation id="4121993058175073134">To send net-export data, please configure your email account in the Settings app.</translation>
 <translation id="4124987746317609294">Time Range</translation>
@@ -429,7 +430,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9148126808321036104">Sign in again</translation>
-<translation id="915371508759614899">Cancel download?</translation>
 <translation id="9157836665414082580">Suppress Dialogues</translation>
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9203116392574189331">Handoff</translation>

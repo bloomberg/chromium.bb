@@ -168,6 +168,7 @@
 <translation id="4002066346123236978">Başlık</translation>
 <translation id="4038354071007134711">Bu cihazdaki hiçbir uygulama dosyayı açamıyor.</translation>
 <translation id="4049507953662678203">Ağ bağlantınız olduğundan emin olun ve tekrar deneyin.</translation>
+<translation id="4084682180776658562">Yer İşareti</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
 <translation id="4121993058175073134">Net-export verilerini göndermek için lütfen Ayarlar uygulamasında e-posta hesabınızı yapılandırın.</translation>
 <translation id="4124987746317609294">Zaman Aralığı</translation>
@@ -429,7 +430,6 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 <translation id="9083392325882095631">1 öğe</translation>
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9148126808321036104">Tekrar oturum açın</translation>
-<translation id="915371508759614899">İndirme işlemi iptal edilsin mi?</translation>
 <translation id="9157836665414082580">İletişim Kutularını Gizle</translation>
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9203116392574189331">Handoff</translation>

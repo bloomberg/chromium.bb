@@ -168,6 +168,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4038354071007134711">Det går inte att öppna filen med någon av apparna på enheten.</translation>
 <translation id="4049507953662678203">Kontrollera att du är ansluten till nätverket och försök igen.</translation>
+<translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="411254640334432676">Nedladdningen misslyckades.</translation>
 <translation id="4121993058175073134">Ange ett e-postkonto i appen Inställningar om du vill skicka nätverksexportdata.</translation>
 <translation id="4124987746317609294">Tidsintervall</translation>
@@ -429,7 +430,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="9083392325882095631">1 objekt</translation>
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9148126808321036104">Logga in igen</translation>
-<translation id="915371508759614899">Vill du avbryta nedladdningen?</translation>
 <translation id="9157836665414082580">Visa inte dialogrutor</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

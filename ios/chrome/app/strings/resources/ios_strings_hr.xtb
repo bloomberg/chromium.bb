@@ -168,6 +168,7 @@ Na primjer, neke web-lokacije mogu reagirati na taj zahtjev prikazivanjem oglasa
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4038354071007134711">Na ovom uređaju nema aplikacije za tu datoteku.</translation>
 <translation id="4049507953662678203">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
+<translation id="4084682180776658562">Oznaka</translation>
 <translation id="411254640334432676">Preuzimanje nije uspjelo.</translation>
 <translation id="4121993058175073134">Za slanje neto izvezenih datoteka konfigurirajte svoj račun e-pošte u aplikaciji Postavke.</translation>
 <translation id="4124987746317609294">Vremenski raspon</translation>
@@ -429,7 +430,6 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="9083392325882095631">1 stavka</translation>
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9148126808321036104">Prijavite se ponovno</translation>
-<translation id="915371508759614899">Otkazati preuzimanje?</translation>
 <translation id="9157836665414082580">Izostavi dijaloge</translation>
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>
 <translation id="9203116392574189331">Handoff</translation>

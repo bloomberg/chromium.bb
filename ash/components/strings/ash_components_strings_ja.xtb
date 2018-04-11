@@ -24,7 +24,6 @@
 <translation id="1996162290124031907">次のタブに移動する</translation>
 <translation id="2010818616644390445">ウィンドウ内の最後のタブに移動する</translation>
 <translation id="2040706009561734834">ランチャーを開くか閉じます</translation>
-<translation id="2045117674524495717">キーボード ショートカット ヘルパー</translation>
 <translation id="2088054208777350526">キーボード ショートカットを検索</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> または <ph name="F" /></translation>
 <translation id="2145908266289632567">テキスト編集</translation>
@@ -43,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> キーを押した状態で <ph name="TAB" /> キーまたは<ph name="RIGHT" />キーを押す</translation>
 <translation id="2699509451653686398">現在のウェブページをブックマークとして保存する</translation>
 <translation id="2750942583782703988">現在のページを再読み込みする</translation>
+<translation id="2764005613199379871">検索アドレスバーにフォーカスします</translation>
 <translation id="2789868185375229787">ページを縮小表示する</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> キーを押しながらリンクをクリックする</translation>
 <translation id="2830827904629746450">ウィンドウを右側に固定する</translation>
@@ -54,6 +54,7 @@
 <translation id="3105917916468784889">スクリーンショットを撮る</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">アドレスバーにフォーカスを移す</translation>
+<translation id="3256109297135787951">シェルフのアイテムのハイライト表示を解除します</translation>
 <translation id="3288816184963444640">現在のウィンドウを閉じる</translation>
 <translation id="3407560819924487926">タスク マネージャを表示する</translation>
 <translation id="3422679037938588196">検索に一致する前の文字列に移動する</translation>
@@ -68,6 +69,7 @@
 <translation id="3720939646656082033">新しいタブでリンクを開き、新しいタブに切り替える</translation>
 <translation id="3725795051337497754">現在のタブを閉じる</translation>
 <translation id="3751033133896282964">前の操作を元に戻す</translation>
+<translation id="3792178297143798024">シェルフのハイライト表示されたアイテムを開きます</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" />1〜8 キーを押す</translation>
 <translation id="3837047332182291558">キーボードの明るさを上げる（バックライト付きキーボードのみ）</translation>
 <translation id="3976863468609830880">シェルフの最後のアイコンをクリックする</translation>
@@ -154,11 +156,13 @@
 <translation id="7787242579016742662">ブラウザ内でファイルを開く</translation>
 <translation id="7822267121073044318">次の言語入力方法に切り替えます</translation>
 <translation id="7917881398263220094">現在のページの読み込みを停止する</translation>
+<translation id="7952165122793773711">1～8 番目のタブに移動します</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" />プラス記号（<ph name="PLUS" />）またはマイナス記号（<ph name="MINUS" />）キーを押す</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8104889575691864804">アプリメニューを表示します</translation>
 <translation id="8130528849632411619">ドキュメントの先頭に移動する</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> または <ph name="E" /> キーを押す</translation>
+<translation id="8232835244134740473">フォーカスを次の順に切り替えます: アカウント画像が表示されているステータス領域、ランチャー、アドレスバー、ブックマーク バー（表示されている場合）、開いているウェブページ、ダウンロード バー（表示されている場合）</translation>
 <translation id="8234414138295101081">画面を 90 度回転させる</translation>
 <translation id="8264941229485248811">デベロッパー ツール インスペクタの表示と非表示を切り替えます</translation>
 <translation id="836869401750819675">ダウンロード ページを開く</translation>

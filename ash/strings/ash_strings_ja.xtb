@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">パスワードをまだ確認できません。注: パスワードを最近変更した場合、新しいパスワードはログアウトした後に適用されます。こちらでは古いパスワードを使用してください。</translation>
 <translation id="1677472565718498478">あと <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 アドレス: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">端末の管理者によりアクティビティが監視される可能性があります。</translation>
 <translation id="1734367976349034509">このデバイスは会社が管理しています</translation>
 <translation id="1746730358044914197">入力方法は管理者によって設定されています。</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">オーバーフロー ボタン</translation>
 <translation id="1951012854035635156">アシスタント</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">言語を設定</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="1995660704900986789">電源を切る</translation>
 <translation id="2012624427112548395">Ctrl+検索+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">送信</translation>
 <translation id="2675319268637823299"><ph name="USER_EMAIL" /> のマルチログインは、管理者によって禁止されています。
     続行するには、すべてのユーザーがログアウトする必要があります。</translation>
+<translation id="2696763960464195425">ログアウトすると利用時の情報は削除されます。<ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">キーボードを設定</translation>
 <translation id="2718395828230677721">読書灯</translation>
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
@@ -331,6 +335,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="8734991477317290293">キー入力が読み取られる可能性があります</translation>
+<translation id="8809737090443522491">アプリまたはドキュメントの名前を入力</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">ウィンドウを別のデスクトップに移動すると、予期しない動作が起こることがあります。
 

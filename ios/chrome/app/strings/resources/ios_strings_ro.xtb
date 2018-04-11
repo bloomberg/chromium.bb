@@ -168,6 +168,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="4002066346123236978">Titlu</translation>
 <translation id="4038354071007134711">Aplicațiile de pe dispozitiv nu deschid fișierul.</translation>
 <translation id="4049507953662678203">Asigură-te că ai o conexiune la rețea și încearcă din nou.</translation>
+<translation id="4084682180776658562">Marcaj</translation>
 <translation id="411254640334432676">Nu s-a descărcat.</translation>
 <translation id="4121993058175073134">Pentru trimitere date de export în rețea, configurați e-mailul în Setări.</translation>
 <translation id="4124987746317609294">Interval de timp</translation>
@@ -429,7 +430,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="9083392325882095631">Un element</translation>
 <translation id="9100610230175265781">Este necesară o expresie de acces</translation>
 <translation id="9148126808321036104">Conectează-te din nou</translation>
-<translation id="915371508759614899">Anulezi descărcarea?</translation>
 <translation id="9157836665414082580">Închide casetele de dialog</translation>
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9203116392574189331">Handoff</translation>

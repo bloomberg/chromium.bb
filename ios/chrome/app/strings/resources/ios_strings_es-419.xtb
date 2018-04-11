@@ -168,6 +168,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="4002066346123236978">Título</translation>
 <translation id="4038354071007134711">Ninguna aplicación puede abrir el archivo.</translation>
 <translation id="4049507953662678203">Asegúrate de tener una conexión de red y vuelve a intentarlo.</translation>
+<translation id="4084682180776658562">Marcador</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
 <translation id="4121993058175073134">Configura cuenta en Configuración p/ enviar datos exportaciones netas.</translation>
 <translation id="4124987746317609294">Intervalo de tiempo</translation>
@@ -429,7 +430,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>
-<translation id="915371508759614899">¿Deseas cancelar la descarga?</translation>
 <translation id="9157836665414082580">Suprimir diálogos</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9203116392574189331">Handoff</translation>

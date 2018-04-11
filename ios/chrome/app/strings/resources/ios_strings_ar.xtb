@@ -168,6 +168,7 @@
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4038354071007134711">لا يمكن فتح هذا الملف بأي تطبيق موجود على هذا الجهاز.</translation>
 <translation id="4049507953662678203">تأكد من اتصالك بالشبكة، وأعد المحاولة.</translation>
+<translation id="4084682180776658562">إشارة</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
 <translation id="4121993058175073134">لإرسال بيانات تصدير الشبكة، يُرجى تهيئة حساب بريدك الإلكتروني في التطبيق "الإعدادات".</translation>
 <translation id="4124987746317609294">النطاق الزمني</translation>
@@ -429,7 +430,6 @@
 <translation id="9083392325882095631">عنصر واحد</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
-<translation id="915371508759614899">هل تريد إلغاء التنزيل؟</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9203116392574189331">Handoff</translation>

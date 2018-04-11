@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
 <translation id="1099282607296956954">Įgalinti visų svetainių atskyrimą</translation>
 <translation id="1117535567637097036">Protokolų doroklės, nustatytos pagal šią politiką, nenaudojamos apdorojant „Android“ tikslus.</translation>
+<translation id="1118093128235245168">Leisti svetainėms prašyti naudotojo suteikti galimybę pasiekti prijungtą USB įrenginį</translation>
 <translation id="1128903365609589950">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos, kad išsaugotų talpykloje saugomus failus diske.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos pateiktą katalogą neatsižvelgiant į tai, ar naudotojas nurodė žymą „--disk-cache-dir“, ar ne. Kad neprarastumėte duomenų ir išvengtumėte kitų netikėtų klaidų, ši politika neturėtų būti nustatyta tomo šakniniame kataloge ar kitais tikslais naudojamame kataloge, nes „<ph name="PRODUCT_NAME" />“ tvarko savo turinį.
@@ -73,6 +74,9 @@
       Jei ši politika nenustatyta, numatytasis dažnis yra 3 val. Minimalus
       leistinas dažnis yra 60 sekundžių.</translation>
 <translation id="1204263402976895730">Įgalinti įmonės spausdintuvai</translation>
+<translation id="1216758672198492382">Galite nustatyti, ar svetainėms leidžiama pasiekti prijungtus USB įrenginius. Pasiekiamumą galima visiškai užblokuoti arba naudotojo gali būti klausiama kiekvieną kartą, kai svetainė nori pasiekti prijungtus USB įrenginius.
+
+          Jei ši politika nenustatyta, bus naudojama vertė „3“ ir naudotojas galės ją pakeisti.</translation>
 <translation id="1219695476179627719">Nurodoma, ar įrenginyje turėtų būti grąžinta pagal politiką „<ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />“ nustatyta versija, jei jame jau paleista naujesnė versija.
 
       Numatytasis nustatymas yra „RollbackDisabled“.</translation>
@@ -615,6 +619,12 @@
 <translation id="2801230735743888564">Leidžiama naudotojams žaisti dinozaurų Velykų kiaušinių žaidimą, kai įrenginys neprijungtas prie interneto.
 
       Jei ši politika nustatyta į „False“, naudotojai negali žaisti dinozaurų Velykų kiaušinių žaidimo, kai įrenginys neprijungtas prie interneto. Jei šis nustatymas nustatytas į „True“, naudotojams leidžiama žaisti dinozaurų žaidimą. Jei ši politika nenustatyta, naudotojams neleidžiama žaisti dinozaurų Velykų kiaušinių žaidimo užregistruotoje „Chrome“ OS, bet leidžiama žaisti kitomis aplinkybėmis.</translation>
+<translation id="2802085784857530815">Leidžiama valdyti, ar naudotojai gali pasiekti ne įmonės spausdintuvus
+
+      Jei politika nustatyta į „True“ arba visai nenustatyta, naudotojai galės pridėti ir konfigūruoti savuosius spausdintuvus bei jais spausdinti.
+
+      Jei politika nustatyta į „False“, naudotojai negalės pridėti ir konfigūruoti savųjų spausdintuvų. Jie taip pat negalės spausdinti anksčiau sukonfigūruotais savaisiais spausdintuvais.
+      </translation>
 <translation id="2805707493867224476">Leisti visose svetainėse rodyti iššokančiuosius langus</translation>
 <translation id="2808013382476173118">Įgalinamas STUN serverių naudojimas, kai nuotolinės programos bando užmegzti ryšį su šiuo įrenginiu.
 
@@ -777,6 +787,7 @@
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės sumažinamos, kad neviršytų ekrano išjungimo delsos laiko (jei jis nustatytas) ar neveikos delsos laiko arba būtų jam lygios.</translation>
 <translation id="3264793472749429012">Numatytojo paieškos teikėjo koduotės</translation>
 <translation id="3273221114520206906">Numatytasis „JavaScript“ nustatymas</translation>
+<translation id="3284094172359247914">„WebUSB“ API naudojimo valdymas</translation>
 <translation id="3288595667065905535">Išleidimo kanalas</translation>
 <translation id="3292147213643666827">„<ph name="PRODUCT_NAME" />“ įgalinamas veikti kaip įgaliotasis serveris, siejantis „<ph name="CLOUD_PRINT_NAME" />“ ir senesnius prie kompiuterio prijungtus spausdintuvus.
 
@@ -861,6 +872,7 @@
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="350797926066071931">Įgalinti vertimą</translation>
 <translation id="3512226956150568738">Jei kliento turimo modelio įrenginyje jau buvo palaikomas failų formatas ARC, kol dar perėjimas prie „ext4“ šifruotės nebuvo būtinas, kad būtų galima vykdyti ARC failus, ir jei politika „ArcEnabled“ nustatyta į „true“, ši parinktis veiks kaip „AskUser“ (3 vertė). Visais kitais atvejais (jei įrenginio modelyje nebuvo nepalaikomas failų formatas ARC arba jei politika „ArcEnabled“ nustatyta į „false“) ši vertė bus lygi „DisallowArc“ (0 vertė).</translation>
+<translation id="3524204464536655762">Neleisti jokiai svetainei pateikti užklausos pasiekti USB įrenginių naudojant „WebUSB“ API</translation>
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3577251398714997599">Skelbimų nustatymai svetainėms su nepageidaujamais skelbimais</translation>

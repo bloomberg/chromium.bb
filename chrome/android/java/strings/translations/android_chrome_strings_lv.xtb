@@ -284,6 +284,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="3661699943263275414">Trešo pušu vietnes var saglabāt un lasīt sīkfailu datus</translation>
 <translation id="3662546969139119822">Nav vēstures</translation>
 <translation id="3672452749423051839">Navigācijas kļūdu ieteikumi</translation>
+<translation id="3692944402865947621">Faila <ph name="FILE_NAME" /> lejupielāde neizdevās, jo krātuves vieta nav sasniedzama.</translation>
 <translation id="3712575778697986964">Vai atiestatīt datu lietojuma samazinātāju?</translation>
 <translation id="3714981814255182093">Atvērt atrašanas joslu</translation>
 <translation id="3716182511346448902">Šī lapa izmanto pārāk daudz atmiņas, tādēļ Chrome to apturēja.</translation>
@@ -320,6 +321,7 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4056223980640387499">Sēpija</translation>
 <translation id="4062305924942672200">Juridiskā informācija</translation>
 <translation id="4084682180776658562">Grāmatzīme</translation>
+<translation id="4084712963632273211">No izdevēja <ph name="PUBLISHER_ORIGIN" /> — <ph name="BEGIN_DEEMPHASIZED" />nodrošina Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Lejupielādes: <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Šī funkcija var ietekmēt piekļuvi paaugstinātas maksas datu pakalpojumiem, kurus nodrošina jūsu mobilo sakaru operators.</translation>
 <translation id="4095146165863963773">Vai dzēst lietotnes datus?</translation>
@@ -369,6 +371,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4550003330909367850">Lai skatītu vai kopētu savu paroli šeit, iestatiet ekrāna bloķēšanu šajā ierīcē.</translation>
 <translation id="4558311620361989323">Tīmekļa lapu īsinājumtaustiņi</translation>
 <translation id="4565377596337484307">Slēpt paroli</translation>
+<translation id="4570913071927164677">Detalizēta informācija</translation>
 <translation id="4572422548854449519">Pierakstīšanās pārvaldītā kontā</translation>
 <translation id="4581964774250883625">Jūs esat atvēris inkognito režīmu.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{pirms # minūtes}zero{pirms # minūtēm}one{pirms # minūtes}other{pirms # minūtēm}}</translation>
@@ -545,6 +548,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="60923314841986378">Atlikušas <ph name="HOURS" /> h</translation>
 <translation id="60924377787140961">Drīzumā būs pieejami citi raksti. Jauku pēcpusdienu!</translation>
 <translation id="6108923351542677676">Notiek iestatīšana...</translation>
+<translation id="6111020039983847643">Izmantotie dati</translation>
 <translation id="6112702117600201073">Lapas atsvaidzināšana</translation>
 <translation id="6127379762771434464">Vienums ir noņemts</translation>
 <translation id="6138140242378429169">Padarīt lapu piemērotu mobilajām ierīcēm</translation>
@@ -697,6 +701,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="748127970106343339">Ierīces akreditācijas datu dzēšanas apstiprināšana</translation>
 <translation id="7481312909269577407">Pārsūtīt</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (atjaunināts: <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">Saglabātie dati</translation>
 <translation id="7498271377022651285">Lūdzu, uzgaidiet...</translation>
 <translation id="7514365320538308">Lejupielādēt</translation>
 <translation id="751961395872307827">Nevar izveidot savienojumu ar vietni.</translation>

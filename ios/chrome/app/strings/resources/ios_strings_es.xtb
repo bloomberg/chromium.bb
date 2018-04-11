@@ -159,6 +159,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3897092660631435901">Menú</translation>
+<translation id="3915450441834151894">Información del sitio web</translation>
 <translation id="3928666092801078803">Combinar mis datos</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="3963231839620026525">Nueva pestaña de incógnito</translation>
@@ -167,6 +168,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="4002066346123236978">Título</translation>
 <translation id="4038354071007134711">Ninguna aplicación puede abrir el archivo.</translation>
 <translation id="4049507953662678203">Comprueba que tienes una conexión de red y vuelve a intentarlo.</translation>
+<translation id="4084682180776658562">Marcador</translation>
 <translation id="411254640334432676">Error de descarga.</translation>
 <translation id="4121993058175073134">Configura tu correo en Configuración para enviar datos de exportaciones netas.</translation>
 <translation id="4124987746317609294">Intervalo de tiempo</translation>
@@ -222,6 +224,7 @@ Tus datos se han cifrado con tu frase de contraseña de sincronización. Introd�
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Habilitar sincronización</translation>
 <translation id="5244474230056479698">Sincronizando con <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Abre una pestaña para navegar por la Web de forma privada.</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nombre</translation>
@@ -301,6 +304,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6464071786529933911">Abrir en pestaña incógnito</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
+<translation id="6528048372317642110">La descarga de archivos está disponible</translation>
 <translation id="6541915733953096570">Hace una hora</translation>
 <translation id="6570040839871198836">Autocompletar</translation>
 <translation id="6656103420185847513">Editar carpeta</translation>
@@ -426,7 +430,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se debe introducir una frase de contraseña</translation>
 <translation id="9148126808321036104">Volver a iniciar sesión</translation>
-<translation id="915371508759614899">¿Quieres cancelar la descarga?</translation>
 <translation id="9157836665414082580">Quitar cuadros de diálogo</translation>
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9203116392574189331">Handoff</translation>

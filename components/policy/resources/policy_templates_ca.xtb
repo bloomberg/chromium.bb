@@ -2493,6 +2493,15 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
 
           Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>
+<translation id="9123211093995421438">Especifica el nombre mínim de fites del sistema operatiu <ph name="PRODUCT_OS_NAME" /> que es permeten per a la reversió feta a partir de la versió estable en qualsevol moment.
+
+      El nombre predeterminat és 0 per a dispositius de consumidors i 4 (aproximadament mig any) per a dispositius inscrits per empreses.
+
+      Si s'estableix aquesta política, no es podrà aplicar la protecció de la reversió fins que no s'assoleixi aquest nombre de fites com a mínim.
+
+      Establir aquesta política en un valor més baix té un efecte permanent: pot ser que el dispositiu no pugui tornar a versions anteriors fins i tot després de restablir la política en un valor més alt.
+
+      Les possibilitats de reversió també poden dependre del tauler i de pedaços de vulnerabilitat importants.</translation>
 <translation id="913195841488580904">Bloqueja l'accés a una llista d'URL</translation>
 <translation id="9135033364005346124">Activa el servidor intermediari <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Una llista blanca en què es controlen quins modes de desbloqueig ràpid pot configurar l'usuari per desbloquejar la pantalla de bloqueig.

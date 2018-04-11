@@ -24,7 +24,6 @@
 <translation id="1996162290124031907">מעבר לכרטיסייה הבאה</translation>
 <translation id="2010818616644390445">מעבר לכרטיסייה האחרונה בחלון</translation>
 <translation id="2040706009561734834">פתיחה/סגירה של מרכז האפליקציות</translation>
-<translation id="2045117674524495717">כלי העזרה למקשי קיצור</translation>
 <translation id="2088054208777350526">חיפוש מקשי קיצור</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> או <ph name="F" /></translation>
 <translation id="2145908266289632567">עריכת טקסט</translation>
@@ -50,6 +49,7 @@
 <translation id="2872353916818027657">החלפת הצג הראשי</translation>
 <translation id="2914313326123580426">הצגה או הסתרה של החלונית 'כלים למפתחים'</translation>
 <translation id="292495055542441795">החלפה של מצב מסך מלא</translation>
+<translation id="3020183492814296499">קיצורים</translation>
 <translation id="3084301071537457911">הדגשת הפריט הבא במדף</translation>
 <translation id="309173601632226815">הדגשת הלחצן של מרכז האפליקציות במדף</translation>
 <translation id="3105917916468784889">ביצוע של צילום מסך</translation>

@@ -168,6 +168,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="4002066346123236978">Tytuł</translation>
 <translation id="4038354071007134711">Nie masz aplikacji, która może otworzyć ten plik.</translation>
 <translation id="4049507953662678203">Upewnij się, że masz połączenie z siecią, i spróbuj ponownie.</translation>
+<translation id="4084682180776658562">Dodaj do zakładek</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
 <translation id="4121993058175073134">Aby wysłać dane net-export, skonfiguruj konto e-mail w aplikacji Ustawienia.</translation>
 <translation id="4124987746317609294">Zakres czasowy</translation>
@@ -429,7 +430,6 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="9083392325882095631">Jeden element</translation>
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9148126808321036104">Zaloguj się ponownie</translation>
-<translation id="915371508759614899">Anulować pobieranie?</translation>
 <translation id="9157836665414082580">Ukryj okna dialogowe</translation>
 <translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
 <translation id="9203116392574189331">Handoff</translation>

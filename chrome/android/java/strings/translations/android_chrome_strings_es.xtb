@@ -284,6 +284,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="3661699943263275414">Los sitios web externos pueden guardar y leer datos de cookies</translation>
 <translation id="3662546969139119822">Ningún elemento del historial</translation>
 <translation id="3672452749423051839">Sugerencias para errores de navegación</translation>
+<translation id="3692944402865947621">No se ha podido descargar <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
 <translation id="3712575778697986964">¿Quieres vaciar el historial de ahorro de datos?</translation>
 <translation id="3714981814255182093">Abre la barra de búsqueda</translation>
 <translation id="3716182511346448902">Esta página utiliza demasiada memoria y Chrome la ha pausado.</translation>
@@ -320,6 +321,7 @@ Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionar
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4084682180776658562">Marcador</translation>
+<translation id="4084712963632273211">De <ph name="PUBLISHER_ORIGIN" /> (<ph name="BEGIN_DEEMPHASIZED" />ofrecida por Google<ph name="END_DEEMPHASIZED" />)</translation>
 <translation id="4084836577264234537">MB descargados: <ph name="MEGABYTES" /></translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos premium ofrecidos por el operador.</translation>
 <translation id="4095146165863963773">¿Eliminar datos de la aplicación?</translation>
@@ -369,6 +371,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="4550003330909367850">Para ver o copiar tu contraseña aquí, configura el bloqueo de pantalla en este dispositivo.</translation>
 <translation id="4558311620361989323">Combinaciones de teclas en páginas web</translation>
 <translation id="4565377596337484307">Ocultar contraseña</translation>
+<translation id="4570913071927164677">Detalles</translation>
 <translation id="4572422548854449519">Inicia sesión en la cuenta gestionada</translation>
 <translation id="4581964774250883625">Has iniciado una sesión de incógnito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Hace # minuto}other{Hace # minutos}}</translation>
@@ -545,6 +548,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="60923314841986378">Quedan <ph name="HOURS" /> horas</translation>
 <translation id="60924377787140961">Próximamente se mostrarán más artículos. Disfruta de la tarde.</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
+<translation id="6111020039983847643">datos utilizados</translation>
 <translation id="6112702117600201073">Actualizando página</translation>
 <translation id="6127379762771434464">Elemento quitado</translation>
 <translation id="6138140242378429169">Optimizar página para móviles</translation>
@@ -697,6 +701,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="748127970106343339">Confirmar eliminación de credencial de dispositivo</translation>
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizada el <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">datos ahorrados</translation>
 <translation id="7498271377022651285">Espera…</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="751961395872307827">No se puede establecer conexión con el sitio web</translation>

@@ -168,6 +168,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4038354071007134711">Keine App zum Öffnen der Datei auf diesem Gerät</translation>
 <translation id="4049507953662678203">Überprüfen Sie Ihre Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
+<translation id="4084682180776658562">Lesezeichen</translation>
 <translation id="411254640334432676">Fehler beim Download</translation>
 <translation id="4121993058175073134">Zum Senden von Exportdaten E-Mail-Konto in App "Einstellungen" konfigurieren</translation>
 <translation id="4124987746317609294">Zeitraum</translation>
@@ -429,7 +430,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="9083392325882095631">1 Element</translation>
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9148126808321036104">Erneut anmelden</translation>
-<translation id="915371508759614899">Download abbrechen?</translation>
 <translation id="9157836665414082580">Dialogfelder unterdrücken</translation>
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9203116392574189331">Handoff</translation>

@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Lamentamos, mas ainda não foi possível validar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">O administrador do dispositivo pode conseguir monitorizar a sua atividade.</translation>
 <translation id="1734367976349034509">Este dispositivo é gerido pela empresa</translation>
 <translation id="1746730358044914197">Os métodos de introdução são configurados pelo gestor.</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Botão de sobrecarga</translation>
 <translation id="1951012854035635156">Assistente</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Definir o idioma</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Desligar</translation>
 <translation id="2012624427112548395">Ctrl + Pesquisa + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Submeter</translation>
 <translation id="2675319268637823299">Um administrador não permitiu o início de sessão integrado para <ph name="USER_EMAIL" />.
     Todos os utilizadores têm de terminar sessão para continuar.</translation>
+<translation id="2696763960464195425">As suas informações serão removidas quando terminar sessão. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Definir o teclado</translation>
 <translation id="2718395828230677721">Luz noturna</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -330,6 +334,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8734991477317290293">É possível que esteja a tentar roubar os seus toques de teclas.</translation>
+<translation id="8809737090443522491">Introduza o nome de uma aplicação ou de um documento.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">A movimentação de janelas para outro ambiente de trabalho pode provocar um comportamento inesperado.
 

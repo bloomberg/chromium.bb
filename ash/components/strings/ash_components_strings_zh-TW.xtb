@@ -24,7 +24,6 @@
 <translation id="1996162290124031907">前往下一個分頁</translation>
 <translation id="2010818616644390445">前往視窗中的最後一個分頁</translation>
 <translation id="2040706009561734834">開啟/關閉啟動器</translation>
-<translation id="2045117674524495717">鍵盤快速鍵說明</translation>
 <translation id="2088054208777350526">搜尋鍵盤快速鍵</translation>
 <translation id="2125211348069077981"><ph name="ALT" /><ph name="SEPARATOR" /><ph name="E" /> 或 <ph name="F" /> 鍵</translation>
 <translation id="2145908266289632567">文字編輯</translation>
@@ -50,6 +49,7 @@
 <translation id="2872353916818027657">切換主要顯示器</translation>
 <translation id="2914313326123580426">顯示或隱藏開發人員工具面板</translation>
 <translation id="292495055542441795">切換全螢幕</translation>
+<translation id="3020183492814296499">快速鍵</translation>
 <translation id="3084301071537457911">醒目顯示檔案櫃中的下一個項目</translation>
 <translation id="309173601632226815">醒目顯示檔案櫃中的啟動器按鈕</translation>
 <translation id="3105917916468784889">擷取螢幕畫面</translation>
