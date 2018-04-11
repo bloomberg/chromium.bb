@@ -5,7 +5,6 @@
 #ifndef SERVICES_UI_DEMO_WINDOW_TREE_DATA_H_
 #define SERVICES_UI_DEMO_WINDOW_TREE_DATA_H_
 
-#include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 
 namespace aura {

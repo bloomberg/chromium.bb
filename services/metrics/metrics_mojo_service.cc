@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/ukm_recorder_interface.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

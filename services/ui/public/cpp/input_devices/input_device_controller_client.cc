@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 

@@ -7,7 +7,6 @@
 #include <inttypes.h>
 #include <stddef.h>
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"

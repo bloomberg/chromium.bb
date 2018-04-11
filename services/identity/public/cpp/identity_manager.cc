@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "services/identity/public/cpp/identity_manager.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace identity {

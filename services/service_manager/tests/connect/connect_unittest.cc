@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"

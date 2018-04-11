@@ -5,7 +5,6 @@
 #include "services/metrics/ukm_recorder_interface.h"
 
 #include "base/atomic_sequence_num.h"
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"

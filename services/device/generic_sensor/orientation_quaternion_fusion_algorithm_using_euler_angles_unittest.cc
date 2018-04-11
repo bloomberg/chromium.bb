@@ -5,7 +5,6 @@
 #include <cmath>
 
 #include "services/device/generic_sensor/orientation_quaternion_fusion_algorithm_using_euler_angles.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"

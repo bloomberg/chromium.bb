@@ -4,7 +4,6 @@
 
 #include "services/device/serial/serial_io_handler_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "device/serial/buffer.h"

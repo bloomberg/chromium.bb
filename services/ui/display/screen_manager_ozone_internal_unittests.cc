@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "services/ui/common/task_runner_test_base.h"
 #include "services/ui/display/screen_manager_ozone_internal.h"

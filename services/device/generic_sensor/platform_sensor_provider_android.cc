@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "jni/PlatformSensorProvider_jni.h"

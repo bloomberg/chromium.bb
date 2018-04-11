@@ -4,7 +4,6 @@
 
 #include "services/ui/ws/platform_display.h"
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "services/ui/ws/platform_display_default.h"
 #include "services/ui/ws/platform_display_factory.h"

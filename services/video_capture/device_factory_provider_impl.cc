@@ -4,7 +4,6 @@
 
 #include "services/video_capture/device_factory_provider_impl.h"
 
-#include "base/memory/ptr_util.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"

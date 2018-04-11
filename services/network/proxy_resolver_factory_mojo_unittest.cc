@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"

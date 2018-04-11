@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_fusion.h"
