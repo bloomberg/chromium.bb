@@ -37,7 +37,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -66,7 +66,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -97,7 +97,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -126,7 +126,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -157,7 +157,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -186,7 +186,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -217,7 +217,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -246,7 +246,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -277,7 +277,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -306,7 +306,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -337,7 +337,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -366,7 +366,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -397,7 +397,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -426,7 +426,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -457,7 +457,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -486,7 +486,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -517,7 +517,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -546,7 +546,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -577,7 +577,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -606,7 +606,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -637,7 +637,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -666,7 +666,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -697,7 +697,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -726,7 +726,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4790,7 +4790,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -4819,7 +4819,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4850,7 +4850,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -4879,7 +4879,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4910,7 +4910,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -4939,7 +4939,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -4970,7 +4970,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -4999,7 +4999,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5030,7 +5030,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -5059,7 +5059,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5090,7 +5090,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -5119,7 +5119,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5150,7 +5150,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -5179,7 +5179,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5210,7 +5210,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -5239,7 +5239,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5270,7 +5270,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -5299,7 +5299,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5330,7 +5330,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -5359,7 +5359,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5390,7 +5390,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -5419,7 +5419,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -5450,7 +5450,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -5479,7 +5479,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -9521,7 +9521,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9551,7 +9551,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9581,7 +9581,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9611,7 +9611,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9641,7 +9641,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9671,7 +9671,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9701,7 +9701,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9731,7 +9731,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9761,7 +9761,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9791,7 +9791,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9821,7 +9821,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -9851,7 +9851,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -11805,7 +11805,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -11834,7 +11834,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -11865,7 +11865,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -11894,7 +11894,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -11925,7 +11925,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -11954,7 +11954,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -11985,7 +11985,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -12014,7 +12014,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12045,7 +12045,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -12074,7 +12074,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12105,7 +12105,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -12134,7 +12134,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12165,7 +12165,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -12194,7 +12194,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12225,7 +12225,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -12254,7 +12254,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12285,7 +12285,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -12314,7 +12314,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12345,7 +12345,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -12374,7 +12374,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12405,7 +12405,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -12434,7 +12434,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -12465,7 +12465,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -12494,7 +12494,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16516,7 +16516,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16546,7 +16546,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16576,7 +16576,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16606,7 +16606,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16636,7 +16636,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16666,7 +16666,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16696,7 +16696,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16726,7 +16726,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16756,7 +16756,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16786,7 +16786,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16816,7 +16816,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -16846,7 +16846,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -18822,7 +18822,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -18851,7 +18851,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -18882,7 +18882,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -18911,7 +18911,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -18942,7 +18942,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -18971,7 +18971,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19002,7 +19002,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -19031,7 +19031,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19062,7 +19062,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -19091,7 +19091,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19122,7 +19122,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -19151,7 +19151,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19182,7 +19182,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -19211,7 +19211,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19242,7 +19242,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -19271,7 +19271,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19302,7 +19302,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -19331,7 +19331,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19362,7 +19362,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -19391,7 +19391,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19422,7 +19422,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -19451,7 +19451,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -19482,7 +19482,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -19511,7 +19511,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23533,7 +23533,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -23562,7 +23562,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23593,7 +23593,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -23622,7 +23622,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23653,7 +23653,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -23682,7 +23682,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23713,7 +23713,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -23742,7 +23742,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23773,7 +23773,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -23802,7 +23802,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23833,7 +23833,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -23862,7 +23862,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23893,7 +23893,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -23922,7 +23922,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -23953,7 +23953,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -23982,7 +23982,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24013,7 +24013,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -24042,7 +24042,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24073,7 +24073,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -24102,7 +24102,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24133,7 +24133,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -24162,7 +24162,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24193,7 +24193,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -24222,7 +24222,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28215,7 +28215,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -28245,7 +28245,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28277,7 +28277,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -28307,7 +28307,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28339,7 +28339,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -28369,7 +28369,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28401,7 +28401,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -28431,7 +28431,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28463,7 +28463,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -28493,7 +28493,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28525,7 +28525,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -28555,7 +28555,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28587,7 +28587,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -28617,7 +28617,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28649,7 +28649,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -28679,7 +28679,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28711,7 +28711,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -28741,7 +28741,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28773,7 +28773,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -28803,7 +28803,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28835,7 +28835,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -28865,7 +28865,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28897,7 +28897,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -28927,7 +28927,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32361,7 +32361,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -32391,7 +32391,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32423,7 +32423,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -32453,7 +32453,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32485,7 +32485,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -32515,7 +32515,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32547,7 +32547,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -32577,7 +32577,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32609,7 +32609,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -32639,7 +32639,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32671,7 +32671,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -32701,7 +32701,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32733,7 +32733,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -32763,7 +32763,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32795,7 +32795,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -32825,7 +32825,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32857,7 +32857,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -32887,7 +32887,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32919,7 +32919,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -32949,7 +32949,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32981,7 +32981,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -33011,7 +33011,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33043,7 +33043,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -33073,7 +33073,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36403,7 +36403,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -36433,7 +36433,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36465,7 +36465,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -36495,7 +36495,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36527,7 +36527,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -36557,7 +36557,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36589,7 +36589,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -36619,7 +36619,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36651,7 +36651,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -36681,7 +36681,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36713,7 +36713,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -36743,7 +36743,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36775,7 +36775,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -36805,7 +36805,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36837,7 +36837,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -36867,7 +36867,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36899,7 +36899,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -36929,7 +36929,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36961,7 +36961,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -36991,7 +36991,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37023,7 +37023,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -37053,7 +37053,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37085,7 +37085,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -37115,7 +37115,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40429,7 +40429,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -40459,7 +40459,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40491,7 +40491,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -40521,7 +40521,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40553,7 +40553,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -40583,7 +40583,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40615,7 +40615,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -40645,7 +40645,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40677,7 +40677,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -40707,7 +40707,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40739,7 +40739,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -40769,7 +40769,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40801,7 +40801,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -40831,7 +40831,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40863,7 +40863,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -40893,7 +40893,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40925,7 +40925,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -40955,7 +40955,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40987,7 +40987,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -41017,7 +41017,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41049,7 +41049,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -41079,7 +41079,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41111,7 +41111,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -41141,7 +41141,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44326,7 +44326,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -44356,7 +44356,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44388,7 +44388,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -44418,7 +44418,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44450,7 +44450,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -44480,7 +44480,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44512,7 +44512,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -44542,7 +44542,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44574,7 +44574,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -44604,7 +44604,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44636,7 +44636,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -44666,7 +44666,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44698,7 +44698,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -44728,7 +44728,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44760,7 +44760,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -44790,7 +44790,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44822,7 +44822,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -44852,7 +44852,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44884,7 +44884,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -44914,7 +44914,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44946,7 +44946,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -44976,7 +44976,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45008,7 +45008,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -45038,7 +45038,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48202,7 +48202,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -48232,7 +48232,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48264,7 +48264,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -48294,7 +48294,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48326,7 +48326,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -48356,7 +48356,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48388,7 +48388,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -48418,7 +48418,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48450,7 +48450,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -48480,7 +48480,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48512,7 +48512,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -48542,7 +48542,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48574,7 +48574,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -48604,7 +48604,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48636,7 +48636,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -48666,7 +48666,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48698,7 +48698,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -48728,7 +48728,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48760,7 +48760,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -48790,7 +48790,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48822,7 +48822,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -48852,7 +48852,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -48884,7 +48884,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -48914,7 +48914,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52141,7 +52141,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -52171,7 +52171,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52203,7 +52203,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -52233,7 +52233,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52265,7 +52265,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -52295,7 +52295,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52327,7 +52327,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -52357,7 +52357,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52389,7 +52389,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -52419,7 +52419,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52451,7 +52451,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -52481,7 +52481,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52513,7 +52513,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -52543,7 +52543,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52575,7 +52575,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -52605,7 +52605,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52637,7 +52637,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -52667,7 +52667,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52699,7 +52699,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -52729,7 +52729,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52761,7 +52761,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -52791,7 +52791,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -52823,7 +52823,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -52853,7 +52853,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56101,7 +56101,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -56131,7 +56131,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56163,7 +56163,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -56193,7 +56193,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56225,7 +56225,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -56255,7 +56255,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56287,7 +56287,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -56317,7 +56317,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56349,7 +56349,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -56379,7 +56379,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56411,7 +56411,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -56441,7 +56441,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56473,7 +56473,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -56503,7 +56503,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56535,7 +56535,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -56565,7 +56565,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56597,7 +56597,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -56627,7 +56627,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56659,7 +56659,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -56689,7 +56689,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56721,7 +56721,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -56751,7 +56751,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -56783,7 +56783,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -56813,7 +56813,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60040,7 +60040,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -60070,7 +60070,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60102,7 +60102,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -60132,7 +60132,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60164,7 +60164,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -60194,7 +60194,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60226,7 +60226,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -60256,7 +60256,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60288,7 +60288,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -60318,7 +60318,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60350,7 +60350,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -60380,7 +60380,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60412,7 +60412,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -60442,7 +60442,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60474,7 +60474,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -60504,7 +60504,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60536,7 +60536,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -60566,7 +60566,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60598,7 +60598,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -60628,7 +60628,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60660,7 +60660,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -60690,7 +60690,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -60722,7 +60722,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -60752,7 +60752,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64006,7 +64006,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -64036,7 +64036,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64068,7 +64068,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -64098,7 +64098,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64130,7 +64130,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -64160,7 +64160,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64192,7 +64192,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -64222,7 +64222,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64254,7 +64254,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -64284,7 +64284,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64316,7 +64316,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -64346,7 +64346,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64378,7 +64378,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -64408,7 +64408,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64440,7 +64440,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -64470,7 +64470,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64502,7 +64502,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -64532,7 +64532,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64564,7 +64564,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -64594,7 +64594,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64626,7 +64626,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -64656,7 +64656,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -64688,7 +64688,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -64718,7 +64718,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -67945,7 +67945,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -67975,7 +67975,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68007,7 +68007,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -68037,7 +68037,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68069,7 +68069,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -68099,7 +68099,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68131,7 +68131,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -68161,7 +68161,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68193,7 +68193,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -68223,7 +68223,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68255,7 +68255,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -68285,7 +68285,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68317,7 +68317,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -68347,7 +68347,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68379,7 +68379,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -68409,7 +68409,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68441,7 +68441,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -68471,7 +68471,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68503,7 +68503,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -68533,7 +68533,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68565,7 +68565,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -68595,7 +68595,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -68627,7 +68627,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -68657,7 +68657,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -71863,7 +71863,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.bindings",
@@ -71893,7 +71893,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -71925,7 +71925,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.canvas",
@@ -71955,7 +71955,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -71987,7 +71987,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.css",
@@ -72017,7 +72017,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72049,7 +72049,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.dom",
@@ -72079,7 +72079,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72111,7 +72111,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.events",
@@ -72141,7 +72141,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72173,7 +72173,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.image_decoder",
@@ -72203,7 +72203,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72235,7 +72235,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.layout",
@@ -72265,7 +72265,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72297,7 +72297,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.owp_storage",
@@ -72327,7 +72327,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72359,7 +72359,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.paint",
@@ -72389,7 +72389,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72421,7 +72421,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.parser",
@@ -72451,7 +72451,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72483,7 +72483,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.shadow_dom",
@@ -72513,7 +72513,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -72545,7 +72545,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "blink_perf.svg",
@@ -72575,7 +72575,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
