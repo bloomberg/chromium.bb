@@ -99,11 +99,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMainTest, SecondLaunchFromIncognitoWithNormalUrl) {
 
   // Close the first window.
   Profile* profile = browser()->profile();
-  content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-  chrome::CloseWindow(browser());
-  observer.Wait();
+  CloseBrowserSynchronously(browser());
 
   // There should only be the incognito window open now.
   ASSERT_EQ(1u, chrome::GetTotalBrowserCount());

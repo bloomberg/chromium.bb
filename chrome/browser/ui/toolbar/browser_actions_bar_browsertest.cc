@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -632,10 +631,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarIncognitoTest, IncognitoMode) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(second_browser->profile()->IsOffTheRecord());
 
-  content::WindowedNotificationObserver window_close_observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser()));
-  browser()->window()->Close();
-  window_close_observer.Wait();
+  CloseBrowserSynchronously(browser());
 
   std::vector<ToolbarActionViewController*> actions =
       second_browser->window()->GetToolbarActionsBar()->GetActions();

@@ -183,11 +183,7 @@ class UnloadTest : public InProcessBrowserTest {
   void LoadUrlAndQuitBrowser(const char* html_content,
                              const char* expected_title) {
     NavigateToDataURL(html_content, expected_title);
-    content::WindowedNotificationObserver window_observer(
-        chrome::NOTIFICATION_BROWSER_CLOSED,
-        content::NotificationService::AllSources());
-    chrome::CloseWindow(browser());
-    window_observer.Wait();
+    CloseBrowserSynchronously(browser());
   }
 
   // If |accept| is true, simulates user clicking OK, otherwise simulates

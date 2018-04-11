@@ -15,7 +15,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
@@ -152,10 +151,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   ui_test_utils::NavigateToURL(incognito,
                                embedded_test_server()->GetURL("/test.html"));
 
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(incognito));
-  incognito->window()->Close();
-  observer.Wait();
+  CloseBrowserSynchronously(incognito);
 
   // Test passes if we don't crash.
 }

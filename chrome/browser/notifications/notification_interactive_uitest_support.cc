@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/notification_interactive_uitest_support.h"
 
 #include "base/run_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -136,13 +135,6 @@ int NotificationsTest::GetNotificationCount() {
 
 int NotificationsTest::GetNotificationPopupCount() {
   return message_center::MessageCenter::Get()->GetPopupNotifications().size();
-}
-
-void NotificationsTest::CloseBrowserWindow(Browser* browser) {
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
-  browser->window()->Close();
-  observer.Wait();
 }
 
 void NotificationsTest::CrashTab(Browser* browser, int index) {
