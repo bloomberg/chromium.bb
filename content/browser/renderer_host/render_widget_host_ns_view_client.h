@@ -103,6 +103,18 @@ class RenderWidgetHostNSViewClient {
       gfx::Rect* rect,
       gfx::Range* actual_range) = 0;
 
+  // Forward the corresponding edit menu command to the RenderWidgetHost's
+  // delegate.
+  virtual void OnNSViewExecuteEditCommand(const std::string& command) = 0;
+  virtual void OnNSViewUndo() = 0;
+  virtual void OnNSViewRedo() = 0;
+  virtual void OnNSViewCut() = 0;
+  virtual void OnNSViewCopy() = 0;
+  virtual void OnNSViewCopyToFindPboard() = 0;
+  virtual void OnNSViewPaste() = 0;
+  virtual void OnNSViewPasteAndMatchStyle() = 0;
+  virtual void OnNSViewSelectAll() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);
 };

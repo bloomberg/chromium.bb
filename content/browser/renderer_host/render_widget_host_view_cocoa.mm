@@ -155,8 +155,8 @@ void ExtractUnderlines(NSAttributedString* string,
   self = [super initWithFrame:NSZeroRect];
   if (self) {
     self.acceptsTouchEvents = YES;
-    editCommand_helper_.reset(new RenderWidgetHostViewMacEditCommandHelper);
-    editCommand_helper_->AddEditingSelectorsToClass([self class]);
+    editCommandHelper_.reset(new RenderWidgetHostViewMacEditCommandHelper);
+    editCommandHelper_->AddEditingSelectorsToClass([self class]);
 
     client_ = std::move(client);
     renderWidgetHostView_ = client_->GetRenderWidgetHostViewMac();
@@ -1218,11 +1218,11 @@ void ExtractUnderlines(NSAttributedString* string,
     return is_render_view;
   }
 
-  return editCommand_helper_->IsMenuItemEnabled(action, self);
+  return editCommandHelper_->IsMenuItemEnabled(action, self);
 }
 
-- (RenderWidgetHostViewMac*)renderWidgetHostViewMac {
-  return renderWidgetHostView_;
+- (RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient {
+  return client_.get();
 }
 
 - (NSArray*)accessibilityArrayAttributeValues:(NSString*)attribute
@@ -1641,10 +1641,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
                           base::CompareCase::INSENSITIVE_ASCII))
       editCommands_.push_back(EditCommand(command, ""));
   } else {
-    if (renderWidgetHostView_->host()->delegate()) {
-      renderWidgetHostView_->host()->delegate()->ExecuteEditCommand(
-          command, base::nullopt);
-    }
+    client_->OnNSViewExecuteEditCommand(command);
   }
 }
 
@@ -1714,62 +1711,42 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)undo:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->Undo();
+  client_->OnNSViewUndo();
 }
 
 - (void)redo:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->Redo();
+  client_->OnNSViewRedo();
 }
 
 - (void)cut:(id)sender {
-  if (auto* delegate =
-          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
-    delegate->Cut();
-  }
+  client_->OnNSViewCut();
 }
 
 - (void)copy:(id)sender {
-  if (auto* delegate =
-          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
-    delegate->Copy();
-  }
+  client_->OnNSViewCopy();
 }
 
 - (void)copyToFindPboard:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->CopyToFindPboard();
+  client_->OnNSViewCopyToFindPboard();
 }
 
 - (void)paste:(id)sender {
-  if (auto* delegate =
-          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
-    delegate->Paste();
-  }
+  client_->OnNSViewPaste();
 }
 
 - (void)pasteAndMatchStyle:(id)sender {
-  WebContents* web_contents = renderWidgetHostView_->GetWebContents();
-  if (web_contents)
-    web_contents->PasteAndMatchStyle();
+  client_->OnNSViewPasteAndMatchStyle();
 }
 
 - (void)selectAll:(id)sender {
-  // editCommand_helper_ adds implementations for most NSResponder methods
+  // editCommandHelper_ adds implementations for most NSResponder methods
   // dynamically. But the renderer side only sends selection results back to
   // the browser if they were triggered by a keyboard event or went through
   // one of the Select methods on RWH. Since selectAll: is called from the
   // menu handler, neither is true.
   // Explicitly call SelectAll() here to make sure the renderer returns
   // selection results.
-  if (auto* delegate =
-          renderWidgetHostView_->GetFocusedRenderWidgetHostDelegate()) {
-    delegate->SelectAll();
-  }
+  client_->OnNSViewSelectAll();
 }
 
 - (void)startSpeaking:(id)sender {

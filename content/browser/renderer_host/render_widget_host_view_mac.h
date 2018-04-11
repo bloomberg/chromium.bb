@@ -312,6 +312,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnNSViewSyncGetFirstRectForRange(const gfx::Range& requested_range,
                                         gfx::Rect* rect,
                                         gfx::Range* actual_range) override;
+  void OnNSViewExecuteEditCommand(const std::string& command) override;
+  void OnNSViewUndo() override;
+  void OnNSViewRedo() override;
+  void OnNSViewCut() override;
+  void OnNSViewCopy() override;
+  void OnNSViewCopyToFindPboard() override;
+  void OnNSViewPaste() override;
+  void OnNSViewPasteAndMatchStyle() override;
+  void OnNSViewSelectAll() override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
