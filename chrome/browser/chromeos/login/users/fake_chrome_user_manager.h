@@ -45,6 +45,11 @@ class FakeChromeUserManager : public ChromeUserManager {
   const user_manager::User* AddUser(const AccountId& account_id);
   const user_manager::User* AddUserWithAffiliation(const AccountId& account_id,
                                                    bool is_affiliated);
+  const user_manager::User* AddChildUser(const AccountId& account_id);
+  const user_manager::User* AddUserWithAffiliationAndType(
+      const AccountId& account_id,
+      bool is_affiliated,
+      user_manager::UserType user_type);
 
   // Creates the instance returned by |GetLocalState()| (which returns nullptr
   // by default).

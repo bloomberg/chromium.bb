@@ -89,7 +89,10 @@ ProvisioningResult ConvertArcSignInStatusToProvisioningResult(
   return ProvisioningResult::UNKNOWN_ERROR;
 }
 
-mojom::ChromeAccountType GetAccountType() {
+mojom::ChromeAccountType GetAccountType(const Profile* profile) {
+  if (profile->IsChild())
+    return mojom::ChromeAccountType::CHILD_ACCOUNT;
+
   return IsRobotAccountMode() ? mojom::ChromeAccountType::ROBOT_ACCOUNT
                               : mojom::ChromeAccountType::USER_ACCOUNT;
 }
@@ -213,10 +216,10 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
 
   if (IsArcOptInVerificationDisabled()) {
     OnAccountInfoReady(
-        CreateAccountInfo(false /* is_enforced */,
-                          std::string() /* auth_info */,
-                          std::string() /* auth_name */, GetAccountType(),
-                          policy_util::IsAccountManaged(profile_)),
+        CreateAccountInfo(
+            false /* is_enforced */, std::string() /* auth_info */,
+            std::string() /* auth_name */, GetAccountType(profile_),
+            policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
     return;
   }
@@ -294,7 +297,7 @@ void ArcAuthService::OnAuthCodeFetched(bool success,
         CreateAccountInfo(
             !IsArcOptInVerificationDisabled(), auth_code,
             ArcSessionManager::Get()->auth_context()->full_account_id(),
-            GetAccountType(), policy_util::IsAccountManaged(profile_)),
+            GetAccountType(profile_), policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
   } else {
     // Send error to ARC.

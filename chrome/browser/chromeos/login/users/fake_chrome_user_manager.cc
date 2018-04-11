@@ -74,8 +74,22 @@ const user_manager::User* FakeChromeUserManager::AddUser(
 const user_manager::User* FakeChromeUserManager::AddUserWithAffiliation(
     const AccountId& account_id,
     bool is_affiliated) {
-  user_manager::User* user = user_manager::User::CreateRegularUser(
-      account_id, user_manager::USER_TYPE_REGULAR);
+  return AddUserWithAffiliationAndType(account_id, is_affiliated,
+                                       user_manager::USER_TYPE_REGULAR);
+}
+
+const user_manager::User* FakeChromeUserManager::AddChildUser(
+    const AccountId& account_id) {
+  return AddUserWithAffiliationAndType(account_id, false,
+                                       user_manager::USER_TYPE_CHILD);
+}
+
+const user_manager::User* FakeChromeUserManager::AddUserWithAffiliationAndType(
+    const AccountId& account_id,
+    bool is_affiliated,
+    user_manager::UserType user_type) {
+  user_manager::User* user =
+      user_manager::User::CreateRegularUser(account_id, user_type);
   user->SetAffiliation(is_affiliated);
   user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
       account_id.GetUserEmail()));

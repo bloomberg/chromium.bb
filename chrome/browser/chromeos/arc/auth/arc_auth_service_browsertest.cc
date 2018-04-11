@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
@@ -112,45 +114,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     chromeos::ProfileHelper::SetAlwaysReturnPrimaryUserForTesting(true);
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    const AccountId account_id(
-        AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
-    GetFakeUserManager()->AddUser(account_id);
-    GetFakeUserManager()->LoginUser(account_id);
-    GetFakeUserManager()->CreateLocalState();
-
-    // Create test profile.
-    TestingProfile::Builder profile_builder;
-    profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
-    profile_builder.SetProfileName(kFakeUserName);
-
-    profile_builder.AddTestingFactory(
-        ProfileOAuth2TokenServiceFactory::GetInstance(),
-        BuildFakeProfileOAuth2TokenService);
-    profile_builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
-                                      BuildFakeSigninManagerBase);
-
-    profile_ = profile_builder.Build();
-
-    FakeProfileOAuth2TokenService* token_service =
-        static_cast<FakeProfileOAuth2TokenService*>(
-            ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
-    token_service->UpdateCredentials(kFakeUserName, kRefreshToken);
-    token_service->set_auto_post_fetch_response_on_message_loop(true);
-
-    FakeSigninManagerBase* signin_manager = static_cast<FakeSigninManagerBase*>(
-        SigninManagerFactory::GetForProfile(profile()));
-    signin_manager->SetAuthenticatedAccountInfo(kFakeGaiaId, kFakeUserName);
-
-    profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
-    profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
-
-    ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
-
-    // It is non-trivial to navigate through the merge session in a testing
-    // context; currently we just skip it.
-    // TODO(blundell): Figure out how to enable this flow.
-    ArcSessionManager::Get()->auth_context()->SkipMergeSessionForTesting();
   }
 
   void TearDownOnMainThread() override {
@@ -178,11 +141,56 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         user_manager::UserManager::Get());
   }
 
-  void set_profile_name(const std::string& username) {
-    profile_->set_profile_name(username);
+  void SetAccountAndProfile(const user_manager::UserType user_type) {
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId(kFakeUserName, kFakeGaiaId));
+    user_type == user_manager::USER_TYPE_CHILD
+        ? GetFakeUserManager()->AddChildUser(account_id)
+        : GetFakeUserManager()->AddUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+    GetFakeUserManager()->CreateLocalState();
+
+    // Create test profile.
+    TestingProfile::Builder profile_builder;
+    profile_builder.SetPath(temp_dir_.GetPath().AppendASCII("TestArcProfile"));
+    profile_builder.SetProfileName(kFakeUserName);
+
+    profile_builder.AddTestingFactory(
+        ProfileOAuth2TokenServiceFactory::GetInstance(),
+        BuildFakeProfileOAuth2TokenService);
+    profile_builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                                      BuildFakeSigninManagerBase);
+    if (user_type == user_manager::USER_TYPE_CHILD)
+      profile_builder.SetSupervisedUserId(supervised_users::kChildAccountSUID);
+
+    profile_ = profile_builder.Build();
+
+    FakeProfileOAuth2TokenService* token_service =
+        static_cast<FakeProfileOAuth2TokenService*>(
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
+    token_service->UpdateCredentials(kFakeUserName, kRefreshToken);
+    token_service->set_auto_post_fetch_response_on_message_loop(true);
+
+    FakeSigninManagerBase* signin_manager = static_cast<FakeSigninManagerBase*>(
+        SigninManagerFactory::GetForProfile(profile()));
+    signin_manager->SetAuthenticatedAccountInfo(kFakeGaiaId, kFakeUserName);
+
+    profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+    profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+
+    ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
+
+    // It is non-trivial to navigate through the merge session in a testing
+    // context; currently we just skip it.
+    // TODO(blundell): Figure out how to enable this flow.
+    ArcSessionManager::Get()->auth_context()->SkipMergeSessionForTesting();
   }
 
   Profile* profile() { return profile_.get(); }
+
+  void set_profile_name(const std::string& username) {
+    profile_->set_profile_name(username);
+  }
 
  private:
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
@@ -192,10 +200,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
 };
 
-// Tests that when ARC requests account info for a non-managed account and
-// the system is in silent authentication mode, Chrome supplies the info
-// configured in SetUpOnMainThread() above.
+// Tests that when ARC requests account info for a non-managed account,
+// Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   net::FakeURLFetcherFactory factory(nullptr);
   factory.SetFakeResponse(
       GURL(arc::kAuthTokenExchangeEndPoint),
@@ -217,10 +225,64 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   auth_instance.RequestAccountInfo(run_loop.QuitClosure());
   run_loop.Run();
 
-  EXPECT_TRUE(auth_instance.account_info());
+  ASSERT_TRUE(auth_instance.account_info());
   EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
   EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
   EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance.account_info()->account_type);
+  EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance.account_info()->is_managed);
+
+  arc_bridge_service->auth()->CloseInstance(&auth_instance);
+}
+
+class ArcAuthServiceChildAccountTest : public ArcAuthServiceTest {
+ protected:
+  ArcAuthServiceChildAccountTest() = default;
+  ~ArcAuthServiceChildAccountTest() override = default;
+
+  void SetUpOnMainThread() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        arc::kAvailableForChildAccountFeature);
+    ArcAuthServiceTest::SetUpOnMainThread();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceChildAccountTest);
+};
+
+// Tests that when ARC requests account info for a child account and
+// Chrome supplies the info configured in SetAccountAndProfile() above.
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
+  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
+  EXPECT_TRUE(profile()->IsChild());
+  net::FakeURLFetcherFactory factory(nullptr);
+  factory.SetFakeResponse(
+      GURL(arc::kAuthTokenExchangeEndPoint),
+      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }", net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+
+  FakeAuthInstance auth_instance;
+  ArcAuthService* auth_service =
+      ArcAuthService::GetForBrowserContext(profile());
+  ASSERT_TRUE(auth_service);
+
+  ArcBridgeService* arc_bridge_service =
+      ArcServiceManager::Get()->arc_bridge_service();
+  ASSERT_TRUE(arc_bridge_service);
+  arc_bridge_service->auth()->SetInstance(&auth_instance);
+  WaitForInstanceReady(arc_bridge_service->auth());
+
+  base::RunLoop run_loop;
+  auth_instance.RequestAccountInfo(run_loop.QuitClosure());
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance.account_info());
+  EXPECT_EQ(kFakeUserName, auth_instance.account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance.account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::CHILD_ACCOUNT,
             auth_instance.account_info()->account_type);
   EXPECT_FALSE(auth_instance.account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance.account_info()->is_managed);
