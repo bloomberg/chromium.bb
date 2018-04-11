@@ -174,7 +174,8 @@ def main(argv):
       symbol.ARCH = value
       arch_defined = True
     elif option == "--chrome-symbols-dir":
-      symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SRC, value)
+      symbol.CHROME_SYMBOLS_DIR = os.path.join(constants.DIR_SOURCE_ROOT,
+                                               value)
     elif option == "--output-directory":
       constants.SetOutputDirectory(value)
     elif option == "--packed-lib":
