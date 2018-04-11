@@ -1,5 +1,5 @@
 apk_file_name=test.apk
-apk_size=151002494
+apk_size=147856862
 elf_arch=arm
 elf_build_id=WhatAnAmazingBuildId
 elf_file_name=elf
@@ -42,8 +42,8 @@ Section .pak.translations: has 100.0% of 6821 bytes accounted for from 207 symbo
 * Padding accounts for 0 bytes (0.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
-Section .other: has 100.0% of 42373191 bytes accounted for from 3 symbols. 0 bytes are unaccounted for.
-* Padding accounts for 33984583 bytes (80.2%)
+Section .other: has 100.0% of 39227559 bytes accounted for from 4 symbols. 0 bytes are unaccounted for.
+* Padding accounts for 33984679 bytes (86.6%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 .data@2de7000(size_without_padding=4,padding=0,full_name=google::protobuf::internal::pLinuxKernelCmpxchg,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=1)
@@ -254,8 +254,9 @@ Section .other: has 100.0% of 42373191 bytes accounted for from 3 symbols. 0 byt
 .dex.method@0(size_without_padding=79,padding=0,full_name=org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimationLandscape float getScreenPositionInScrollDirection(org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab),object_path=test.apk/prebuilt/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationLandscape,source_path=,flags={gen},num_aliases=1)
 .dex.method@0(size_without_padding=54,padding=0,full_name=org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimationLandscape float getScreenSizeInScrollDirection(),object_path=test.apk/prebuilt/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationLandscape,source_path=,flags={gen},num_aliases=1)
 .dex.method@0(size_without_padding=52,padding=0,full_name=org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimationLandscape boolean isDefaultDiscardDirectionPositive(),object_path=test.apk/prebuilt/org/chromium/chrome/browser/compositor/layouts/phone/stack/StackAnimationLandscape,source_path=,flags={gen},num_aliases=1)
-.other@0(size_without_padding=8388608,padding=0,full_name=smalltest.so,object_path=test.apk/other/smalltest.so,source_path=,flags={},num_aliases=1)
-.other@0(size_without_padding=0,padding=412,full_name=Overhead: APK file,object_path=,source_path=,flags={},num_aliases=1)
+.other@0(size_without_padding=4194304,padding=0,full_name=smalltest.so,object_path=test.apk/other/smalltest.so,source_path=,flags={},num_aliases=1)
+.other@0(size_without_padding=1048576,padding=0,full_name=icudtl.dat,object_path=third_party/icu/android/icudtl.dat,source_path=,flags={},num_aliases=1)
+.other@0(size_without_padding=0,padding=508,full_name=Overhead: APK file,object_path=,source_path=,flags={},num_aliases=1)
 .other@0(size_without_padding=0,padding=33984171,full_name=Overhead: ELF file,object_path=,source_path=,flags={},num_aliases=1)
 .rodata@266e600(size_without_padding=5,padding=0,full_name=string literal,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=2)
 .rodata@266e600(size_without_padding=5,padding=0,full_name=string literal,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=2)
