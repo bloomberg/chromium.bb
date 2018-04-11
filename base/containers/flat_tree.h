@@ -805,8 +805,7 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
     const_iterator position) -> iterator {
-  // We have to cast away const because of crbug.com/677044.
-  return erase(const_cast_it(position));
+  return impl_.body_.erase(position);
 }
 
 template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
@@ -815,8 +814,7 @@ auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(const K& val)
     -> size_type {
   auto eq_range = equal_range(val);
   auto res = std::distance(eq_range.first, eq_range.second);
-  // We have to cast away const because of crbug.com/677044.
-  erase(const_cast_it(eq_range.first), const_cast_it(eq_range.second));
+  erase(eq_range.first, eq_range.second);
   return res;
 }
 
@@ -824,8 +822,7 @@ template <class Key, class Value, class GetKeyFromValue, class KeyCompare>
 auto flat_tree<Key, Value, GetKeyFromValue, KeyCompare>::erase(
     const_iterator first,
     const_iterator last) -> iterator {
-  // We have to cast away const because of crbug.com/677044.
-  return impl_.body_.erase(const_cast_it(first), const_cast_it(last));
+  return impl_.body_.erase(first, last);
 }
 
 // ----------------------------------------------------------------------------
