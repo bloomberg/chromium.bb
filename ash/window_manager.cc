@@ -33,7 +33,6 @@
 #include "ash/shell_init_params.h"
 #include "ash/shell_port_mash.h"
 #include "ash/shell_port_mus.h"
-#include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/move_event_handler.h"
 #include "ash/wm/non_client_frame_controller.h"
@@ -42,6 +41,7 @@
 #include "ash/wm/top_level_window_factory.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
+#include "components/exo/file_helper.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/types.h"
@@ -339,8 +339,12 @@ void WindowManager::OnWmConnected() {
     Shell::GetPrimaryRootWindow()->GetHost()->Show();
 
   // We only create controller in the ash process for mash.
-  if (Shell::GetAshConfig() == Config::MASH)
-    wayland_server_controller_ = WaylandServerController::CreateIfNecessary();
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // TODO(penghuang): wire up notification surface manager.
+    // https://crbug.com/768439
+    // TODO(hirono): wire up the file helper. http://crbug.com/768395
+    Shell::Get()->InitWaylandServer(nullptr, nullptr);
+  }
 }
 
 void WindowManager::OnWmAcceleratedWidgetAvailableForDisplay(

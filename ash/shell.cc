@@ -114,6 +114,7 @@
 #include "ash/virtual_keyboard_controller.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/event_client_impl.h"
@@ -152,6 +153,7 @@
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/system/devicemode.h"
+#include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -413,6 +415,17 @@ void Shell::RegisterUserProfilePrefs(PrefRegistrySimple* registry,
                                      bool for_test) {
   RegisterProfilePrefs(registry, for_test);
   PowerPrefs::RegisterUserProfilePrefs(registry, for_test);
+}
+
+void Shell::InitWaylandServer(
+    exo::NotificationSurfaceManager* notification_surface_manager,
+    std::unique_ptr<exo::FileHelper> file_helper) {
+  wayland_server_controller_ = WaylandServerController::CreateIfNecessary(
+      notification_surface_manager, std::move(file_helper));
+}
+
+void Shell::DestroyWaylandServer() {
+  wayland_server_controller_.reset();
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -687,6 +700,9 @@ Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
   const Config config = shell_port_->GetAshConfig();
+
+  // Wayland depends upon some ash specific objects. Destroy it early on.
+  wayland_server_controller_.reset();
 
   user_metrics_recorder_->OnShellShuttingDown();
 

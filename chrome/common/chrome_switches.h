@@ -292,10 +292,6 @@ extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 #endif
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
-extern const char kEnableWaylandServer[];
-#endif
-
 #if defined(OS_WIN) || defined(OS_LINUX)
 extern const char kDisableInputImeAPI[];
 extern const char kEnableInputImeAPI[];
