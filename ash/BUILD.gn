@@ -1652,6 +1652,7 @@ test("ash_unittests") {
     "wallpaper/wallpaper_controller_unittest.cc",
     "wallpaper/wallpaper_utils/wallpaper_color_calculator_unittest.cc",
     "wallpaper/wallpaper_utils/wallpaper_resizer_unittest.cc",
+    "wallpaper/wallpaper_window_state_manager_unittest.cc",
     "window_manager_common_unittests.cc",
     "window_user_data_unittest.cc",
     "wm/always_on_top_controller_unittest.cc",

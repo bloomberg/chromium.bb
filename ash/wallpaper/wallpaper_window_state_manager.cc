@@ -11,44 +11,13 @@
 #include "ui/aura/window.h"
 
 namespace ash {
-namespace {
-
-WallpaperWindowStateManager* g_window_state_manager = nullptr;
-
-}  // namespace
-
-// static
-void WallpaperWindowStateManager::MinimizeInactiveWindows(
-    const std::string& user_id_hash) {
-  if (!g_window_state_manager)
-    g_window_state_manager = new WallpaperWindowStateManager();
-  g_window_state_manager->BuildWindowListAndMinimizeInactiveForUser(
-      user_id_hash, wm::GetActiveWindow());
-}
-
-// static
-void WallpaperWindowStateManager::RestoreWindows(
-    const std::string& user_id_hash) {
-  if (!g_window_state_manager) {
-    DCHECK(false) << "This should only be called after calling "
-                  << "MinimizeInactiveWindows.";
-    return;
-  }
-
-  g_window_state_manager->RestoreMinimizedWindows(user_id_hash);
-  if (g_window_state_manager->user_id_hash_window_list_map_.empty()) {
-    delete g_window_state_manager;
-    g_window_state_manager = nullptr;
-  }
-}
 
 WallpaperWindowStateManager::WallpaperWindowStateManager() = default;
 
 WallpaperWindowStateManager::~WallpaperWindowStateManager() = default;
 
-void WallpaperWindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
-    const std::string& user_id_hash,
-    aura::Window* active_window) {
+void WallpaperWindowStateManager::MinimizeInactiveWindows(
+    const std::string& user_id_hash) {
   if (user_id_hash_window_list_map_.find(user_id_hash) ==
       user_id_hash_window_list_map_.end()) {
     user_id_hash_window_list_map_[user_id_hash] = std::set<aura::Window*>();
@@ -56,6 +25,7 @@ void WallpaperWindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
   std::set<aura::Window*>* results =
       &user_id_hash_window_list_map_[user_id_hash];
 
+  aura::Window* active_window = wm::GetActiveWindow();
   aura::Window::Windows windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 

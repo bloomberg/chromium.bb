@@ -11,9 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -45,6 +43,7 @@
 #include "extensions/browser/event_router.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/display/screen.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
 
@@ -582,11 +581,8 @@ WallpaperPrivateMinimizeInactiveWindowsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateMinimizeInactiveWindowsFunction::Run() {
-  // TODO(mash): Convert to mojo API. http://crbug.com/557405
-  if (!ash_util::IsRunningInMash()) {
-    ash::WallpaperWindowStateManager::MinimizeInactiveWindows(
-        user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-  }
+  WallpaperControllerClient::Get()->MinimizeInactiveWindows(
+      user_manager::UserManager::Get()->GetActiveUser()->username_hash());
   return RespondNow(NoArguments());
 }
 
@@ -600,11 +596,8 @@ WallpaperPrivateRestoreMinimizedWindowsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateRestoreMinimizedWindowsFunction::Run() {
-  // TODO(mash): Convert to mojo API. http://crbug.com/557405
-  if (!ash_util::IsRunningInMash()) {
-    ash::WallpaperWindowStateManager::RestoreWindows(
-        user_manager::UserManager::Get()->GetActiveUser()->username_hash());
-  }
+  WallpaperControllerClient::Get()->RestoreMinimizedWindows(
+      user_manager::UserManager::Get()->GetActiveUser()->username_hash());
   return RespondNow(NoArguments());
 }
 
