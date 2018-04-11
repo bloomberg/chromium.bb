@@ -9,8 +9,10 @@
 
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/variations/platform_field_trials.h"
 #include "components/variations/pref_names.h"
@@ -20,6 +22,10 @@
 #include "components/variations/service/variations_service_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_ANDROID)
+#include "components/variations/android/variations_seed_bridge.h"
+#endif  // OS_ANDROID
 
 using testing::_;
 using testing::Ge;
@@ -41,8 +47,7 @@ const char kTestSeedSignature[] = "a totally valid signature, I swear!";
 
 // Populates |seed| with simple test data. The resulting seed will contain one
 // study called "test", which contains one experiment called "abc" with
-// probability weight 100. |seed|'s study field will be cleared before adding
-// the new study.
+// probability weight 100.
 VariationsSeed CreateTestSeed() {
   VariationsSeed seed;
   Study* study = seed.add_study();
@@ -67,6 +72,38 @@ VariationsSeed CreateTestSafeSeed() {
   study->mutable_experiment(0)->set_name(kTestSafeSeedExperimentName);
   return seed;
 }
+
+#if defined(OS_ANDROID)
+const char kTestSeedCountry[] = "in";
+
+// Populates |seed| with simple test data, targetting only users in a specific
+// country. The resulting seed will contain one study called "test", which
+// contains one experiment called "abc" with probability weight 100, restricted
+// just to users in |kTestSeedCountry|.
+VariationsSeed CreateTestSeedWithCountryFilter() {
+  VariationsSeed seed = CreateTestSeed();
+  Study* study = seed.mutable_study(0);
+  Study::Filter* filter = study->mutable_filter();
+  filter->add_country(kTestSeedCountry);
+  return seed;
+}
+
+// Serializes |seed| to protobuf binary format.
+std::string SerializeSeed(const VariationsSeed& seed) {
+  std::string serialized_seed;
+  seed.SerializeToString(&serialized_seed);
+  return serialized_seed;
+}
+
+// Returns the |time| formatted as a UTC string.
+std::string ToUTCString(base::Time time) {
+  base::Time::Exploded exploded;
+  time.UTCExplode(&exploded);
+  return base::StringPrintf("%d-%d-%d %d:%d:%d UTC", exploded.year,
+                            exploded.month, exploded.day_of_month,
+                            exploded.hour, exploded.minute, exploded.second);
+}
+#endif  // OS_ANDROID
 
 class TestPlatformFieldTrials : public PlatformFieldTrials {
  public:
@@ -409,5 +446,46 @@ TEST_F(FieldTrialCreatorTest,
   histogram_tester.ExpectUniqueSample("Variations.SafeMode.FellBackToSafeMode2",
                                       false, 1);
 }
+
+#if defined(OS_ANDROID)
+// This is a regression test for https://crbug.com/829527
+TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
+  // Simulate having received a seed in Java during First Run.
+  const base::Time one_day_ago =
+      base::Time::Now() - base::TimeDelta::FromDays(1);
+  const std::string test_seed_data =
+      SerializeSeed(CreateTestSeedWithCountryFilter());
+  const std::string test_seed_signature = kTestSeedSignature;
+  const std::string test_seed_country = kTestSeedCountry;
+  const std::string test_response_date = ToUTCString(one_day_ago);
+  const bool test_is_gzip_compressed = false;
+  android::SetJavaFirstRunPrefsForTesting(test_seed_data, test_seed_signature,
+                                          test_seed_country, test_response_date,
+                                          test_is_gzip_compressed);
+
+  TestVariationsServiceClient variations_service_client;
+  TestPlatformFieldTrials platform_field_trials;
+  testing::NiceMock<MockSafeSeedManager> safe_seed_manager(&prefs_);
+  ON_CALL(safe_seed_manager, ShouldRunInSafeMode())
+      .WillByDefault(Return(false));
+
+  // Note: Unlike other tests, this test does not mock out the seed store, since
+  // the interaction between these two classes is what's being tested.
+  VariationsFieldTrialCreator field_trial_creator(
+      &prefs_, &variations_service_client, UIStringOverrider());
+
+  // Check that field trials are created from the seed. The test seed contains a
+  // single study with an experiment targeting 100% of users in India. Since the
+  // First Run prefs included the country code for India, this study should be
+  // active.
+  EXPECT_TRUE(field_trial_creator.SetupFieldTrials(
+      "", "", "", std::set<std::string>(), std::vector<std::string>(), nullptr,
+      std::make_unique<base::FeatureList>(), &platform_field_trials,
+      &safe_seed_manager));
+
+  EXPECT_EQ(kTestSeedExperimentName,
+            base::FieldTrialList::FindFullName(kTestSeedStudyName));
+}
+#endif  // OS_ANDROID
 
 }  // namespace variations

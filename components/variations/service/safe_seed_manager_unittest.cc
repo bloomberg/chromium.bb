@@ -34,7 +34,8 @@ base::Time GetTestFetchTime() {
 // A simple fake data store.
 class FakeSeedStore : public VariationsSeedStore {
  public:
-  FakeSeedStore() : VariationsSeedStore(nullptr) {}
+  explicit FakeSeedStore(PrefService* local_state)
+      : VariationsSeedStore(local_state) {}
   ~FakeSeedStore() override = default;
 
   bool StoreSafeSeed(const std::string& seed_data,
@@ -119,7 +120,7 @@ TEST_F(SafeSeedManagerTest, RecordSuccessfulFetch_FirstCallSavesSafeSeed) {
   SafeSeedManager safe_seed_manager(true, &prefs_);
   SetDefaultActiveState(&safe_seed_manager);
 
-  FakeSeedStore seed_store;
+  FakeSeedStore seed_store(&prefs_);
   safe_seed_manager.RecordSuccessfulFetch(&seed_store);
 
   ExpectDefaultActiveState(seed_store);
@@ -129,7 +130,7 @@ TEST_F(SafeSeedManagerTest, RecordSuccessfulFetch_RepeatedCallsRetainSafeSeed) {
   SafeSeedManager safe_seed_manager(true, &prefs_);
   SetDefaultActiveState(&safe_seed_manager);
 
-  FakeSeedStore seed_store;
+  FakeSeedStore seed_store(&prefs_);
   safe_seed_manager.RecordSuccessfulFetch(&seed_store);
   safe_seed_manager.RecordSuccessfulFetch(&seed_store);
   safe_seed_manager.RecordSuccessfulFetch(&seed_store);
@@ -142,7 +143,7 @@ TEST_F(SafeSeedManagerTest,
   SafeSeedManager safe_seed_manager(true, &prefs_);
   // Omit setting any active state.
 
-  FakeSeedStore seed_store;
+  FakeSeedStore seed_store(&prefs_);
   safe_seed_manager.RecordSuccessfulFetch(&seed_store);
 
   EXPECT_EQ(std::string(), seed_store.seed_data());
