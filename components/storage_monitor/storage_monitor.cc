@@ -4,6 +4,8 @@
 
 #include "components/storage_monitor/storage_monitor.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/removable_storage_observer.h"
@@ -50,9 +52,15 @@ void StorageMonitor::ReceiverImpl::MarkInitialized() {
 }
 
 // static
-void StorageMonitor::Create() {
+void StorageMonitor::Create(
+    std::unique_ptr<service_manager::Connector> connector) {
   delete g_storage_monitor;
   g_storage_monitor = CreateInternal();
+  g_storage_monitor->connector_ = std::move(connector);
+}
+
+service_manager::Connector* StorageMonitor::GetConnector() {
+  return connector_.get();
 }
 
 // static

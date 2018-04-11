@@ -51,6 +51,10 @@ source_set("lib") {
     ]
   }
 
+  if (is_chromeos && use_dbus) {
+    deps += [ "//services/device/media_transfer_protocol" ]
+  }
+
   if (is_serial_enabled_platform) {
     deps += [ "//services/device/serial" ]
   }

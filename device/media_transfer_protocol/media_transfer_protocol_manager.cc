@@ -31,9 +31,7 @@ namespace device {
 
 namespace {
 
-#if DCHECK_IS_ON()
 MediaTransferProtocolManager* g_media_transfer_protocol_manager = nullptr;
-#endif
 
 // When reading directory entries, this is the number of entries for
 // GetFileInfo() to read in one operation. If set too low, efficiency goes down
@@ -65,10 +63,9 @@ class MediaTransferProtocolManagerImpl : public MediaTransferProtocolManager {
   }
 
   ~MediaTransferProtocolManagerImpl() override {
-#if DCHECK_IS_ON()
     DCHECK(g_media_transfer_protocol_manager);
     g_media_transfer_protocol_manager = nullptr;
-#endif
+
     if (bus_) {
       bus_->UnlistenForServiceOwnerChange(mtpd::kMtpdServiceName,
                                           mtpd_owner_changed_callback_);
@@ -696,12 +693,16 @@ MediaTransferProtocolManager::Initialize() {
 
   VLOG(1) << "MediaTransferProtocolManager initialized";
 
-#if DCHECK_IS_ON()
   DCHECK(!g_media_transfer_protocol_manager);
   g_media_transfer_protocol_manager = manager.get();
-#endif
 
   return manager;
+}
+
+// static
+MediaTransferProtocolManager* MediaTransferProtocolManager::GetInstance() {
+  DCHECK(g_media_transfer_protocol_manager);
+  return g_media_transfer_protocol_manager;
 }
 
 }  // namespace device

@@ -13,6 +13,7 @@
         "device:hid": [ "device::mojom::HidManager" ],
         "device:input_service": [ "device::mojom::InputDeviceManager" ],
         "device:ip_geolocator": [ "device::mojom::PublicIpAddressGeolocationProvider" ],
+        "device:mtp": [ "device::mojom::MtpManager" ],
         "device:nfc": [ "device::mojom::NFCProvider" ],
         "device:power_monitor": [ "device::mojom::PowerMonitor" ],
         "device:screen_orientation": [ "device::mojom::ScreenOrientationListener" ],
