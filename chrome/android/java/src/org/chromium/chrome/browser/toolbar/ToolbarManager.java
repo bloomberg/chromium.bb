@@ -130,7 +130,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private TabModelObserver mTabModelObserver;
     private MenuDelegatePhone mMenuDelegatePhone;
-    private final ToolbarModelImpl mToolbarModel;
+    private final ToolbarModel mToolbarModel;
     private Profile mCurrentProfile;
     private BookmarkBridge mBookmarkBridge;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
@@ -195,7 +195,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         }
 
-        mToolbarModel = new ToolbarModelImpl(activity.getBottomSheet(),
+        mToolbarModel = new ToolbarModel(activity.getBottomSheet(),
                 activity.supportsModernDesign() && FeatureUtilities.isChromeModernDesignEnabled());
         mControlContainer = controlContainer;
         assert mControlContainer != null;

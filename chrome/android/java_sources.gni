@@ -1290,7 +1290,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarLayout.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java",
-  "java/src/org/chromium/chrome/browser/toolbar/ToolbarModelImpl.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarPhone.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarTabController.java",
   "java/src/org/chromium/chrome/browser/toolbar/ToolbarTablet.java",

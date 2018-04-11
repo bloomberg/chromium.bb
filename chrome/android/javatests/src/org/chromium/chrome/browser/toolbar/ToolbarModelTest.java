@@ -52,7 +52,7 @@ public class ToolbarModelTest {
     }
 
     /**
-     * After closing all {@link Tab}s, the {@link ToolbarModelImpl} should know that it is not
+     * After closing all {@link Tab}s, the {@link ToolbarModel} should know that it is not
      * showing any {@link Tab}.
      * @throws InterruptedException
      */
@@ -126,7 +126,7 @@ public class ToolbarModelTest {
     /**
      * @param activity A reference to {@link ChromeTabbedActivity} to pull
      *            {@link android.view.View} data from.
-     * @return The id of the current {@link Tab} as far as the {@link ToolbarModelImpl} sees it.
+     * @return The id of the current {@link Tab} as far as the {@link ToolbarModel} sees it.
      */
     public static int getCurrentTabId(final ChromeTabbedActivity activity) {
         ToolbarLayout toolbar = (ToolbarLayout) activity.findViewById(R.id.toolbar);
@@ -137,7 +137,7 @@ public class ToolbarModelTest {
         return tab != null ? tab.getId() : Tab.INVALID_TAB_ID;
     }
 
-    private class TestToolbarModel extends ToolbarModelImpl {
+    private class TestToolbarModel extends ToolbarModel {
         private String mDisplayUrl;
         private String mFullUrl;
         private String mUrl;
