@@ -194,34 +194,6 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
 }
 
 // static
-std::unique_ptr<NavigationLoaderInterceptor>
-ServiceWorkerRequestHandler::InitializeForSharedWorker(
-    const network::ResourceRequest& resource_request,
-    base::WeakPtr<ServiceWorkerProviderHost> host) {
-  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-
-  // Create the handler even for insecure HTTP since it's used in the
-  // case of redirect to HTTPS.
-  if (!resource_request.url.SchemeIsHTTPOrHTTPS() &&
-      !OriginCanAccessServiceWorkers(resource_request.url)) {
-    return nullptr;
-  }
-
-  std::unique_ptr<ServiceWorkerRequestHandler> handler(
-      host->CreateRequestHandler(
-          resource_request.fetch_request_mode,
-          resource_request.fetch_credentials_mode,
-          resource_request.fetch_redirect_mode,
-          resource_request.fetch_integrity, resource_request.keepalive,
-          RESOURCE_TYPE_SHARED_WORKER, REQUEST_CONTEXT_TYPE_SHARED_WORKER,
-          resource_request.fetch_frame_type,
-          nullptr /* blob_storage_context: unused in S13n */,
-          resource_request.request_body, resource_request.skip_service_worker));
-
-  return base::WrapUnique<NavigationLoaderInterceptor>(handler.release());
-}
-
-// static
 void ServiceWorkerRequestHandler::InitializeHandler(
     net::URLRequest* request,
     ServiceWorkerContextWrapper* context_wrapper,

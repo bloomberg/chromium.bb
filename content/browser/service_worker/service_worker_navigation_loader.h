@@ -30,18 +30,17 @@ struct ServiceWorkerResponse;
 class ServiceWorkerVersion;
 
 // S13nServiceWorker:
-// ServiceWorkerNavigationLoader is the URLLoader used for main resource
-// requests (i.e., navigation and shared worker requests) that (potentially) go
-// through a service worker. This loader is only used for the main resource
-// request; once the response is delivered, the resulting client loads
+// ServiceWorkerNavigationLoader is the URLLoader used for navigation requests
+// that (potentially) go through a service worker. This loader is only used for
+// the main resource request; once the navigation is committed, the page loads
 // subresources via ServiceWorkerSubresourceLoader.
 //
 // This class works similarly to ServiceWorkerURLRequestJob but with
 // network::mojom::URLLoader instead of URLRequest.
 //
 // This class is owned by the job wrapper until it is bound to a URLLoader
-// request. After it is bound |this| is kept alive until the Mojo connection to
-// this URLLoader is dropped.
+// request. After it is bound |this| is kept alive until the Mojo connection
+// to this URLLoader is dropped.
 class CONTENT_EXPORT ServiceWorkerNavigationLoader
     : public network::mojom::URLLoader {
  public:
@@ -49,9 +48,9 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   using ResponseType = ServiceWorkerResponseType;
 
   // Created by ServiceWorkerControlleeRequestHandler::MaybeCreateLoader
-  // when starting to load a main resource.
+  // when starting to load a page for navigation.
   //
-  // For the navigation case, this job typically works in the following order:
+  // This job typically works in the following order:
   // 1. One of the FallbackTo* or ForwardTo* methods are called via
   //    URLJobWrapper by ServiceWorkerControlleeRequestHandler, which
   //    determines how the request should be served (e.g. should fallback
@@ -72,9 +71,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   //    NavigationURLLoaderNetworkService (for resource loading for navigation).
   //    This forwards the blob/stream data pipe to the NavigationURLLoader if
   //    the response body was sent as a blob/stream.
-  //
-  // Loads for shared workers work similarly, except SharedWorkerScriptLoader
-  // is used instead of NavigationURLLoaderNetworkService.
   ServiceWorkerNavigationLoader(
       NavigationLoaderInterceptor::LoaderCallback loader_callback,
       Delegate* delegate,

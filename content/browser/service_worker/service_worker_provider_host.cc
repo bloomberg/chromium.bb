@@ -202,43 +202,13 @@ ServiceWorkerProviderHost::PreCreateForController(
 }
 
 // static
-base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerProviderHost::PreCreateForSharedWorker(
-    base::WeakPtr<ServiceWorkerContextCore> context,
-    int process_id,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info) {
-  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
-      ChildProcessHost::kInvalidUniqueID,
-      ServiceWorkerProviderHostInfo(
-          NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
-          blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-          true /* is_parent_frame_secure */),
-      context, nullptr));
-  host->dispatcher_host_ = context->GetDispatcherHost(process_id)->AsWeakPtr();
-  host->render_process_id_ = process_id;
-
-  (*out_provider_info)->provider_id = host->provider_id();
-  (*out_provider_info)->client_request = mojo::MakeRequest(&host->container_);
-  host->binding_.Bind(
-      mojo::MakeRequest(&((*out_provider_info)->host_ptr_info)));
-  host->binding_.set_connection_error_handler(base::BindOnce(
-      &RemoveProviderHost, context, process_id, host->provider_id()));
-
-  auto weak_ptr = host->AsWeakPtr();
-  context->AddProviderHost(std::move(host));
-  return weak_ptr;
-}
-
-// static
 std::unique_ptr<ServiceWorkerProviderHost> ServiceWorkerProviderHost::Create(
     int process_id,
     ServiceWorkerProviderHostInfo info,
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host) {
-  auto host = base::WrapUnique(new ServiceWorkerProviderHost(
+  return base::WrapUnique(new ServiceWorkerProviderHost(
       process_id, std::move(info), context, dispatcher_host));
-  host->is_execution_ready_ = true;
-  return host;
 }
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
@@ -642,8 +612,6 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   DCHECK_EQ(info_.provider_id, info.provider_id);
   DCHECK_NE(MSG_ROUTING_NONE, info.route_id);
 
-  is_execution_ready_ = true;
-
   // Connect with the mojom::ServiceWorkerContainer on the renderer.
   DCHECK(!container_.is_bound());
   DCHECK(!binding_.is_bound());
@@ -726,12 +694,6 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
       mojo::MakeRequest(&provider_info->interface_provider)));
 
   return provider_info;
-}
-
-void ServiceWorkerProviderHost::CompleteSharedWorkerPreparation() {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForSharedWorker,
-            provider_type());
-  is_execution_ready_ = true;
 }
 
 void ServiceWorkerProviderHost::SendServiceWorkerStateChangedMessage(
@@ -1109,10 +1071,6 @@ void ServiceWorkerProviderHost::CloneForWorker(
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   bindings_for_worker_threads_.AddBinding(this,
                                           std::move(container_host_request));
-}
-
-void ServiceWorkerProviderHost::Ping(PingCallback callback) {
-  std::move(callback).Run();
 }
 
 bool ServiceWorkerProviderHost::IsValidRegisterMessage(

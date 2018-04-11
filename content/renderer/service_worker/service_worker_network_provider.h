@@ -18,7 +18,6 @@
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
-#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace blink {
@@ -78,11 +77,9 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
   // non-document service worker client).
-  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker(
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          script_loader_factory_info,
-      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory);
+  // TODO(kinuko): This should also take SharedURLLoaderFactory associated
+  // with the SharedWorker.
+  static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker();
 
   // Creates a ServiceWorkerNetworkProvider for a "controller" (i.e.
   // a service worker execution context).
@@ -125,21 +122,12 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
       mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory);
 
-  ServiceWorkerNetworkProvider(
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr info,
-      network::mojom::URLLoaderFactoryAssociatedPtrInfo
-          script_loader_factory_info,
-      scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory);
-
   // This is for controllers, used in CreateForController.
   explicit ServiceWorkerNetworkProvider(
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr info);
 
   scoped_refptr<ServiceWorkerProviderContext> context_;
   mojom::ServiceWorkerDispatcherHostAssociatedPtr dispatcher_host_;
-
-  // The URL loader factory for loading worker scripts, used for service workers
-  // and shared workers.
   network::mojom::URLLoaderFactoryAssociatedPtr script_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNetworkProvider);

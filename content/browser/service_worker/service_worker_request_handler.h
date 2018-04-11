@@ -83,10 +83,6 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       scoped_refptr<network::ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
 
-  static std::unique_ptr<NavigationLoaderInterceptor> InitializeForSharedWorker(
-      const network::ResourceRequest& resource_request,
-      base::WeakPtr<ServiceWorkerProviderHost> host);
-
   // Attaches a newly created handler if the given |request| needs to
   // be handled by ServiceWorker.
   // TODO(kinuko): While utilizing UserData to attach data to URLRequest
