@@ -281,12 +281,6 @@ void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
     state_for_client_->controller_connector->OnContainerHostConnectionClosed();
 }
 
-void ServiceWorkerProviderContext::PingContainerHost(
-    base::OnceClosure callback) {
-  DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  container_host_->Ping(std::move(callback));
-}
-
 void ServiceWorkerProviderContext::UnregisterWorkerFetchContext(
     mojom::ServiceWorkerWorkerClient* client) {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
@@ -426,7 +420,9 @@ bool ServiceWorkerProviderContext::CanCreateSubresourceLoaderFactory() const {
   // Expected that it is called only for clients.
   DCHECK(state_for_client_);
   // |state_for_client_->default_loader_factory| could be null
-  // in unit tests.
+  // for SharedWorker case (which is not supported by S13nServiceWorker
+  // yet, https://crbug.com/796819) and in unit tests, return early in such
+  // cases too.
   return (ServiceWorkerUtils::IsServicificationEnabled() &&
           state_for_client_->default_loader_factory);
 }

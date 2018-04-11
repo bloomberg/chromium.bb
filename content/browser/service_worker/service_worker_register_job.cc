@@ -587,14 +587,14 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
     ServiceWorkerRegistration* registration) {
   DCHECK(registration);
   for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
-           context_->GetClientProviderHostIterator(
-               registration->pattern().GetOrigin());
+           context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
-                                          host->document_url())) {
+    if (!host->IsProviderForClient())
       continue;
-    }
+    if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(),
+                                          host->document_url()))
+      continue;
     host->AddMatchingRegistration(registration);
   }
 }

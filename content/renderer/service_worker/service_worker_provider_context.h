@@ -179,10 +179,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // see comments of |container_host_|.
   mojom::ServiceWorkerContainerHost* container_host() const;
 
-  // Pings the container host and calls |callback| once a pong arrived. Useful
-  // for waiting for all messages the host sent thus far to arrive.
-  void PingContainerHost(base::OnceClosure callback);
-
  private:
   friend class base::DeleteHelper<ServiceWorkerProviderContext>;
   friend class base::RefCountedThreadSafe<ServiceWorkerProviderContext,

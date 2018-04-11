@@ -817,16 +817,6 @@ void ServiceWorkerContextWrapper::RemoveObserver(
   core_observer_list_->RemoveObserver(observer);
 }
 
-base::WeakPtr<ServiceWorkerProviderHost>
-ServiceWorkerContextWrapper::PreCreateHostForSharedWorker(
-    int process_id,
-    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  return ServiceWorkerProviderHost::PreCreateForSharedWorker(
-      context()->AsWeakPtr(), process_id, out_provider_info);
-}
-
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
   // Explicitly remove this object as an observer to avoid use-after-frees in
   // tests where this object is not guaranteed to outlive the

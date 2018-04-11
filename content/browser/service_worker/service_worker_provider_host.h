@@ -148,16 +148,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   static std::unique_ptr<ServiceWorkerProviderHost> PreCreateForController(
       base::WeakPtr<ServiceWorkerContextCore> context);
 
-  // S13nServiceWorker:
-  // Used for starting a shared worker. Returns a provider host for the shared
-  // worker and fills |out_provider_info| with info to send to the renderer to
-  // connect to the host. The host stays alive as long as this info stays alive
-  // (namely, as long as |out_provider_info->host_ptr_info| stays alive).
-  static base::WeakPtr<ServiceWorkerProviderHost> PreCreateForSharedWorker(
-      base::WeakPtr<ServiceWorkerContextCore> context,
-      int process_id,
-      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr* out_provider_info);
-
   // Used to create a ServiceWorkerProviderHost when the renderer-side provider
   // is created. This ProviderHost will be created for the process specified by
   // |process_id|.
@@ -381,10 +371,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       int process_id,
       scoped_refptr<ServiceWorkerVersion> hosted_version);
 
-  // Called when the shared worker main script resource has finished loading.
-  // After this is called, is_execution_ready() returns true.
-  void CompleteSharedWorkerPreparation();
-
   // Sends event messages to the renderer. Events for the worker are queued up
   // until the worker thread id is known via SetReadyToSendMessagesToWorker().
   void SendServiceWorkerStateChangedMessage(
@@ -418,8 +404,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // exceptional condition like it could no longer be read from the script
   // cache.
   void NotifyControllerLost();
-
-  bool is_execution_ready() const { return is_execution_ready_; }
 
  private:
   friend class LinkHeaderServiceWorkerTest;
@@ -504,7 +488,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       mojom::ControllerServiceWorkerPurpose purpose) override;
   void CloneForWorker(
       mojom::ServiceWorkerContainerHostRequest container_host_request) override;
-  void Ping(PingCallback callback) override;
 
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
   void RegistrationComplete(RegisterCallback callback,
@@ -668,11 +651,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       interface_provider_binding_;
-
-  // For service worker clients. True if the main resource for this host has
-  // finished loading. When false, the document URL may still change due to
-  // redirects.
-  bool is_execution_ready_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };

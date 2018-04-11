@@ -78,11 +78,6 @@ interface ServiceWorkerContainerHost {
   // Clones the Mojo end point to the ServiceWorker container host. This is
   // used to communicate with the host from dedicated and shared workers.
   CloneForWorker(ServiceWorkerContainerHost& container_host_for_worker);
-
-  // Does nothing but calls the callback. Useful for pumping the message pipe
-  // for this interface and associated interfaces: when the callback is called,
-  // you know all incoming messages up to the Ping() call have been received.
-  Ping() => ();
 };
 
 // mojom::ServiceWorkerContainer is a renderer-side interface.

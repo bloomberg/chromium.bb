@@ -643,13 +643,26 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   ServiceWorkerProviderHost* host1_raw = host1.get();
   ServiceWorkerProviderHost* host2_raw = host2.get();
   ServiceWorkerProviderHost* host3_raw = host3.get();
+  ServiceWorkerProviderHost* host4_raw = host4.get();
   context()->AddProviderHost(std::move(host1));
   context()->AddProviderHost(std::move(host2));
   context()->AddProviderHost(std::move(host3));
   context()->AddProviderHost(std::move(host4));
 
-  // Iterate over the client provider hosts that belong to kOrigin1.
+  // Iterate over all provider hosts.
   std::set<ServiceWorkerProviderHost*> results;
+  for (auto it = context()->GetProviderHostIterator(); !it->IsAtEnd();
+       it->Advance()) {
+    results.insert(it->GetProviderHost());
+  }
+  EXPECT_EQ(4u, results.size());
+  EXPECT_TRUE(ContainsKey(results, host1_raw));
+  EXPECT_TRUE(ContainsKey(results, host2_raw));
+  EXPECT_TRUE(ContainsKey(results, host3_raw));
+  EXPECT_TRUE(ContainsKey(results, host4_raw));
+
+  // Iterate over the client provider hosts that belong to kOrigin1.
+  results.clear();
   for (auto it = context()->GetClientProviderHostIterator(kOrigin1);
        !it->IsAtEnd(); it->Advance()) {
     results.insert(it->GetProviderHost());
