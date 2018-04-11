@@ -323,7 +323,7 @@ struct PendingNavigationParams {
 namespace {
 
 const base::Feature kConsumeGestureOnNavigation = {
-    "ConsumeGestureOnNavigation", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ConsumeGestureOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const int kExtraCharsBeforeAndAfterSelection = 100;
 
