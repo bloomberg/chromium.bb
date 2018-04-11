@@ -428,8 +428,9 @@ void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
 }
 
 bool ChromeAutofillClient::IsAutofillSupported() {
-  // VR browsing does not support popups at the moment.
 #if defined(OS_ANDROID)
+  // VR browsing supports the autofill behind a flag. When the flag is removed
+  // we can remove this condition.
   if (vr::VrTabHelper::IsInVr(web_contents()) &&
       !base::FeatureList::IsEnabled(
           chrome::android::kVrBrowsingNativeAndroidUi)) {
