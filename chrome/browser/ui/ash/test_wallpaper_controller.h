@@ -84,6 +84,8 @@ class TestWallpaperController : ash::mojom::WallpaperController {
                              const std::string& wallpaper_files_id) override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
+  void MinimizeInactiveWindows(const std::string& user_id_hash) override;
+  void RestoreMinimizedWindows(const std::string& user_id_hash) override;
   void AddObserver(
       ash::mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void GetWallpaperImage(

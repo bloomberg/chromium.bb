@@ -136,6 +136,16 @@ void TestWallpaperController::OpenWallpaperPickerIfAllowed() {
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::MinimizeInactiveWindows(
+    const std::string& user_id_hash) {
+  NOTIMPLEMENTED();
+}
+
+void TestWallpaperController::RestoreMinimizedWindows(
+    const std::string& user_id_hash) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::AddObserver(
     ash::mojom::WallpaperObserverAssociatedPtrInfo observer) {
   ash::mojom::WallpaperObserverAssociatedPtr observer_ptr;

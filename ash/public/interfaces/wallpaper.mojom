@@ -202,6 +202,15 @@ interface WallpaperController {
   // and it's allowed to change wallpaper per the user type and the login state.
   OpenWallpaperPickerIfAllowed();
 
+  // Minimizes all windows except the active window.
+  // |user_id_hash|: The hash value corresponding to |User::username_hash|.
+  MinimizeInactiveWindows(string user_id_hash);
+
+  // Restores all minimized windows to their previous states. This should only
+  // be called after calling |MinimizeInactiveWindows|.
+  // |user_id_hash|: The hash value corresponding to |User::username_hash|.
+  RestoreMinimizedWindows(string user_id_hash);
+
   // Calling this method triggers an initial notification of the wallpaper
   // state. Observers are automatically removed as their connections are closed.
   AddObserver(associated WallpaperObserver observer);

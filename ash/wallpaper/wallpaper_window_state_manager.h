@@ -26,29 +26,19 @@ class ASH_EXPORT WallpaperWindowStateManager : public aura::WindowObserver {
   typedef std::map<std::string, std::set<aura::Window*>>
       UserIDHashWindowListMap;
 
-  // Minimizes all windows except the active window.
-  // TODO(mash): Expose this via a mojo API. http://crbug.com/557405
-  static void MinimizeInactiveWindows(const std::string& user_id_hash);
-
-  // Unminimizes all minimized windows restoring them to their previous state.
-  // This should only be called after calling MinimizeInactiveWindows.
-  // TODO(mash): Expose this via a mojo API. http://crbug.com/557405
-  static void RestoreWindows(const std::string& user_id_hash);
-
- private:
   WallpaperWindowStateManager();
 
   ~WallpaperWindowStateManager() override;
 
   // Store all unminimized windows except |active_window| and minimize them.
   // All the windows are saved in a map and the key value is |user_id_hash|.
-  void BuildWindowListAndMinimizeInactiveForUser(
-      const std::string& user_id_hash,
-      aura::Window* active_window);
+  void MinimizeInactiveWindows(const std::string& user_id_hash);
 
-  // Unminimize all the stored windows for |user_id_hash|.
+  // Unminimize all the stored windows for |user_id_hash|. This should only be
+  // called after calling MinimizeInactiveWindows.
   void RestoreMinimizedWindows(const std::string& user_id_hash);
 
+ private:
   // Remove the observer from |window| if |window| is no longer referenced in
   // user_id_hash_window_list_map_.
   void RemoveObserverIfUnreferenced(aura::Window* window);

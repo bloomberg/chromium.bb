@@ -25,6 +25,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wallpaper/wallpaper_window_state_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -1334,6 +1335,24 @@ void WallpaperController::OpenWallpaperPickerIfAllowed() {
   if (wallpaper_controller_client_ && CanOpenWallpaperPicker()) {
     wallpaper_controller_client_->OpenWallpaperPicker();
   }
+}
+
+void WallpaperController::MinimizeInactiveWindows(
+    const std::string& user_id_hash) {
+  if (!window_state_manager_)
+    window_state_manager_ = std::make_unique<WallpaperWindowStateManager>();
+
+  window_state_manager_->MinimizeInactiveWindows(user_id_hash);
+}
+
+void WallpaperController::RestoreMinimizedWindows(
+    const std::string& user_id_hash) {
+  if (!window_state_manager_) {
+    DCHECK(false) << "This should only be called after calling "
+                  << "MinimizeInactiveWindows.";
+    return;
+  }
+  window_state_manager_->RestoreMinimizedWindows(user_id_hash);
 }
 
 void WallpaperController::AddObserver(
