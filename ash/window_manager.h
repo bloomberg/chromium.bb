@@ -47,7 +47,6 @@ class WMState;
 namespace ash {
 class AcceleratorHandler;
 class AshTestHelper;
-class WaylandServerController;
 
 enum class Config;
 
@@ -208,8 +207,6 @@ class ASH_EXPORT WindowManager : public aura::WindowManagerDelegate,
   std::unique_ptr<DragState> drag_state_;
 
   std::unique_ptr<ui::InputDeviceClient> input_device_client_;
-
-  std::unique_ptr<WaylandServerController> wayland_server_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManager);
 };

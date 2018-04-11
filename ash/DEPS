@@ -3,6 +3,7 @@ include_rules = [
   "+cc/debug",
   "+cc/output",
   "+chromeos/cryptohome",
+  "+components/exo",
   "+components/pref_registry",
   "+components/prefs",
   "+components/quirks",

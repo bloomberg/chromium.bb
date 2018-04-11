@@ -44,6 +44,11 @@ class DisplayConfigurator;
 class DisplayManager;
 }  // namespace display
 
+namespace exo {
+class FileHelper;
+class NotificationSurfaceManager;
+}  // namespace exo
+
 namespace gfx {
 class Insets;
 }
@@ -170,6 +175,7 @@ class VideoDetector;
 class VoiceInteractionController;
 class VpnList;
 class WallpaperController;
+class WaylandServerController;
 class WebNotificationTray;
 class WindowCycleController;
 class WindowPositioner;
@@ -276,6 +282,12 @@ class ASH_EXPORT Shell : public SessionObserver,
                                          bool for_test = false);
   static void RegisterUserProfilePrefs(PrefRegistrySimple* registry,
                                        bool for_test = false);
+
+  // If necessary, initializes the Wayland server.
+  void InitWaylandServer(
+      exo::NotificationSurfaceManager* notification_surface_manager,
+      std::unique_ptr<exo::FileHelper> file_helper);
+  void DestroyWaylandServer();
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -723,6 +735,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LockStateController> lock_state_controller_;
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
+  std::unique_ptr<WaylandServerController> wayland_server_controller_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;

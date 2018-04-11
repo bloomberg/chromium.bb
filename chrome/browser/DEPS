@@ -204,6 +204,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  # TODO(mash): see bugs 768439 and 768395.
+  "exo_parts\.cc": [
+    "+ash/shell.h",
+  ],
   # TODO(mash): Remove. http://crbug.com/678705
   "fullscreen_chromeos\.cc": [
     "+ash/root_window_controller.h",

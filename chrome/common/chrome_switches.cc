@@ -969,11 +969,6 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 #endif
 
-#if BUILDFLAG(ENABLE_WAYLAND_SERVER)
-// Enables Wayland display server support.
-const char kEnableWaylandServer[] = "enable-wayland-server";
-#endif
-
 #if defined(OS_WIN) || defined(OS_LINUX)
 const char kDisableInputImeAPI[] = "disable-input-ime-api";
 const char kEnableInputImeAPI[] = "enable-input-ime-api";

@@ -28,6 +28,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -101,6 +102,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
       ShellContentState::GetInstance()->GetActiveBrowserContext(), nullptr));
 
   ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
+
+  ash::Shell::Get()->InitWaylandServer(nullptr, nullptr);
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {

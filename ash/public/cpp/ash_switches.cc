@@ -62,7 +62,7 @@ const char kAshSidebarDisabled[] = "disable-ash-sidebar";
 const char kAshEnableTabletMode[] = "enable-touchview";
 
 // Enable the wayland server.
-const char kAshEnableWaylandServer[] = "ash-enable-wayland-server";
+const char kAshEnableWaylandServer[] = "enable-wayland-server";
 
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
