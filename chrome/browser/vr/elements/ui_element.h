@@ -112,10 +112,11 @@ class UiElement : public cc::AnimationTarget {
     kUpdatedBindings,
     kUpdatedAnimations,
     kUpdatedComputedOpacity,
-    kUpdatedTexturesAndSizes,
+    kUpdatedSize,
     kUpdatedLayout,
     kUpdatedWorldSpaceTransform,
-    kClean = kUpdatedWorldSpaceTransform,
+    kUpdatedTextures,
+    kClean = kUpdatedTextures,
   };
 
   UiElementName name() const { return name_; }
@@ -136,8 +137,12 @@ class UiElement : public cc::AnimationTarget {
   void SetDrawPhase(DrawPhase draw_phase);
   virtual void OnSetDrawPhase();
 
-  // Returns true if the element needs to be re-drawn.
+  // Returns true if the element has changed size or position, or otherwise
+  // warrants re-rendering the scene.
   virtual bool PrepareToDraw();
+
+  // Returns true if the element updated its texture.
+  virtual bool UpdateTexture();
 
   // Returns true if the element has been updated in any visible way.
   bool DoBeginFrame(const base::TimeTicks& time,
@@ -184,10 +189,6 @@ class UiElement : public cc::AnimationTarget {
 
   // If true, the object has a non-zero opacity.
   bool IsVisible() const;
-
-  // If true, the element is either currently visible or its animation will
-  // cause it to become visible.
-  bool IsOrWillBeVisible() const;
 
   // For convenience, sets opacity to |opacity_when_visible_|.
   virtual void SetVisible(bool visible);
@@ -500,6 +501,10 @@ class UiElement : public cc::AnimationTarget {
   // Returns true if the element has been updated in any visible way.
   virtual bool OnBeginFrame(const base::TimeTicks& time,
                             const gfx::Transform& head_pose);
+
+  // If true, the element is either locally visible (independent of its
+  // ancestors), or its animation will cause it to become locally visible.
+  bool IsOrWillBeLocallyVisible() const;
 
   // Valid IDs are non-negative.
   int id_ = -1;

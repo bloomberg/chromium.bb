@@ -24,8 +24,10 @@ LinearLayout::LinearLayout(Direction direction) : direction_(direction) {}
 LinearLayout::~LinearLayout() {}
 
 bool LinearLayout::SizeAndLayOut() {
-  bool changed = false;
+  if (!IsVisible())
+    return false;
 
+  bool changed = false;
   if (layout_length > 0.0f) {
     UiElement* element_to_resize = nullptr;
     for (auto& child : children()) {
@@ -37,6 +39,7 @@ bool LinearLayout::SizeAndLayOut() {
       }
     }
     DCHECK_NE(element_to_resize, nullptr);
+    changed |= element_to_resize->SizeAndLayOut();
     changed |= AdjustResizableElement(element_to_resize);
     changed |= element_to_resize->SizeAndLayOut();
   } else {
@@ -46,9 +49,9 @@ bool LinearLayout::SizeAndLayOut() {
   }
 
   changed |= PrepareToDraw();
+  set_update_phase(kUpdatedSize);
   DoLayOutChildren();
-  set_update_phase(UiElement::kUpdatedTexturesAndSizes);
-  set_update_phase(UiElement::kUpdatedLayout);
+  set_update_phase(kUpdatedLayout);
   return changed;
 }
 
@@ -77,7 +80,7 @@ void LinearLayout::LayOutChildren() {
   bool horizontal = Horizontal();
   float cumulative_offset = -0.5 * total_extent;
   for (auto& child : children()) {
-    if (!child->requires_layout())
+    if (!child->IsVisible() || !child->requires_layout())
       continue;
     float child_extent = GetExtent(*child, horizontal);
     float child_minor_extent = GetExtent(*child, !horizontal);
@@ -122,7 +125,7 @@ void LinearLayout::GetTotalExtent(const UiElement* element_to_exclude,
   *minor_extent = 0.f;
   bool horizontal = Horizontal();
   for (auto& child : children()) {
-    if (child->requires_layout()) {
+    if (child->IsVisible() && child->requires_layout()) {
       *major_extent += margin_;
       if (child.get() != element_to_exclude) {
         *major_extent += GetExtent(*child, horizontal);

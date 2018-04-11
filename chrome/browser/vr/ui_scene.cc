@@ -23,16 +23,32 @@ namespace vr {
 
 namespace {
 
-template <typename P>
-UiScene::Elements GetVisibleElements(
-    const std::vector<UiElement*>& all_elements,
-    P predicate) {
-  UiScene::Elements elements;
-  for (auto* element : all_elements) {
-    if (element->IsVisible() && predicate(element))
-      elements.push_back(element);
+template <typename P, typename V>
+void AddPredicatedVisibleSubTree(UiElement* root, P predicate, V* elements) {
+  if (!root->IsVisible())
+    return;
+  if (predicate(root)) {
+    elements->push_back(root);
   }
-  return elements;
+  for (auto& child : root->children()) {
+    AddPredicatedVisibleSubTree(child.get(), predicate, elements);
+  }
+}
+
+template <typename P>
+UiScene::Elements GetVisibleElementsWithPredicate(UiElement* root,
+                                                  P predicate) {
+  UiScene::Elements result;
+  AddPredicatedVisibleSubTree(root, predicate, &result);
+  return result;
+}
+
+template <typename P>
+UiScene::MutableElements GetVisibleElementsWithPredicateMutable(UiElement* root,
+                                                                P predicate) {
+  UiScene::MutableElements result;
+  AddPredicatedVisibleSubTree(root, predicate, &result);
+  return result;
 }
 
 void GetAllElementsRecursive(std::vector<UiElement*>* elements, UiElement* e) {
@@ -95,6 +111,13 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   initialized_scene_ = true;
   is_dirty_ = false;
 
+  auto& elements = GetAllElements();
+
+  // TODO(crbug.com/831191): Fix and reinstate this dirty initialization.
+  // for (auto* element : elements) {
+  //   element->set_update_phase(UiElement::kDirty);
+  // }
+
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateBindings");
 
@@ -110,23 +133,8 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     scene_dirty |= root_element_->DoBeginFrame(current_time, head_pose);
   }
 
-  auto& elements = GetAllElements();
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
-
-    // TODO(crbug.com/829535): this state should get set after the last call to
-    // SetSize in SizeAndLayout.
-    for (auto* element : elements) {
-      element->set_update_phase(UiElement::kUpdatedTexturesAndSizes);
-    }
-
-    // TODO(mthiesse): We should really only be updating the sizes here, and not
-    // actually redrawing the textures because we draw all of the textures as a
-    // second phase after OnBeginFrame, once we've processed input. For now this
-    // is fine, it's just a small amount of duplicated work.
-    // Textures will have to know what their size would be, if they were to draw
-    // with their current state, and changing anything other than texture
-    // synchronously in response to input should be prohibited.
     scene_dirty |= root_element_->SizeAndLayOut();
   }
 
@@ -153,10 +161,10 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
 bool UiScene::UpdateTextures() {
   bool needs_redraw = false;
-  // Update textures and sizes.
-  for (auto* element : GetAllElements()) {
-    if (element->PrepareToDraw())
-      needs_redraw = true;
+  std::vector<UiElement*> elements = GetVisibleElementsMutable();
+  for (auto* element : elements) {
+    needs_redraw |= element->UpdateTexture();
+    element->set_update_phase(UiElement::kUpdatedTextures);
   }
   return needs_redraw;
 }
@@ -188,16 +196,28 @@ std::vector<UiElement*>& UiScene::GetAllElements() {
   return all_elements_;
 }
 
+UiScene::Elements UiScene::GetVisibleElements() {
+  return GetVisibleElementsWithPredicate(
+      root_element_.get(), [](UiElement* element) { return true; });
+}
+
+UiScene::MutableElements UiScene::GetVisibleElementsMutable() {
+  return GetVisibleElementsWithPredicateMutable(
+      root_element_.get(), [](UiElement* element) { return true; });
+}
+
 UiScene::Elements UiScene::GetVisibleElementsToDraw() {
-  return GetVisibleElements(GetAllElements(), [](UiElement* element) {
-    return element->draw_phase() == kPhaseForeground ||
-           element->draw_phase() == kPhaseBackplanes ||
-           element->draw_phase() == kPhaseBackground;
-  });
+  return GetVisibleElementsWithPredicate(
+      root_element_.get(), [](UiElement* element) {
+        return element->draw_phase() == kPhaseForeground ||
+               element->draw_phase() == kPhaseBackplanes ||
+               element->draw_phase() == kPhaseBackground;
+      });
 }
 
 UiScene::Elements UiScene::GetVisibleWebVrOverlayElementsToDraw() {
-  return GetVisibleElements(GetAllElements(), [](UiElement* element) {
+  auto* webvr_root = GetUiElementByName(kWebVrRoot);
+  return GetVisibleElementsWithPredicate(webvr_root, [](UiElement* element) {
     return element->draw_phase() == kPhaseOverlayForeground;
   });
 }

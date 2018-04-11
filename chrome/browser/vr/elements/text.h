@@ -77,7 +77,10 @@ class Text : public TexturedElement {
   void SetFontHeightInDmm(float font_height_dmms);
   void SetText(const base::string16& text);
 
-  // TODO(vollick): should use TexturedElement::SetForegroundColor
+  // SetSize() should not be called on the Text element, because the element
+  // updates its size according to text layout.
+  void SetFieldWidth(float width);
+
   virtual void SetColor(SkColor color);
   void SetSelectionColors(const TextSelectionColors& colors);
 
@@ -109,11 +112,7 @@ class Text : public TexturedElement {
   // This causes the text to become uniformly shadowed.
   void SetShadowsEnabled(bool enabled);
 
-  void OnSetSize(const gfx::SizeF& size) override;
-  void UpdateElementSize() override;
-
-  const std::vector<std::unique_ptr<gfx::RenderText>>& LayOutTextForTest();
-  gfx::SizeF GetTextureSizeForTest() const;
+  const std::vector<std::unique_ptr<gfx::RenderText>>& LinesForTest();
   void SetUnsupportedCodePointsForTest(bool unsupported);
 
  protected:
@@ -128,9 +127,13 @@ class Text : public TexturedElement {
 
  private:
   UiTexture* GetTexture() const override;
+  gfx::Size MeasureTextureSize() override;
 
   TextLayoutMode text_layout_mode_ = kMultiLineFixedWidth;
   std::unique_ptr<TextTexture> texture_;
+  gfx::Size text_texture_size_;
+  float field_width_ = 0.f;
+
   DISALLOW_COPY_AND_ASSIGN(Text);
 };
 

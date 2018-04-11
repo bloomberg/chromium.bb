@@ -823,18 +823,6 @@ TEST_F(UiTest, DontPropagateContentBoundsOnNegligibleChange) {
   ui_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
 }
 
-TEST_F(UiTest, RendererUsesCorrectOpacity) {
-  CreateScene(kNotInCct, kNotInWebVr);
-
-  ContentElement* content_element =
-      static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
-  content_element->SetTextureId(0);
-  content_element->SetTextureLocation(UiElementRenderer::kTextureLocationLocal);
-  TexturedElement::SetInitializedForTesting();
-
-  CheckRendererOpacityRecursive(&scene_->root_element());
-}
-
 TEST_F(UiTest, LoadingIndicatorBindings) {
   CreateScene(kNotInCct, kNotInWebVr);
   model_->loading = true;

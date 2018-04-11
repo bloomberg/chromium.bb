@@ -57,10 +57,6 @@ gfx::Size PromptTexture::GetPreferredTextureSize(int maximum_width) const {
   return gfx::Size(maximum_width, maximum_width * kHeight / kWidth);
 }
 
-gfx::SizeF PromptTexture::GetDrawnSize() const {
-  return size_;
-}
-
 void PromptTexture::SetPrimaryButtonHovered(bool hovered) {
   SetAndDirty(&primary_hovered_, hovered);
 }
@@ -110,6 +106,7 @@ gfx::PointF PromptTexture::PercentToPixels(const gfx::PointF& percent) const {
 }
 
 void PromptTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
+  // TODO(cjgrant): Use a fixed scalar, like text, since size should be ~DMM.
   size_.set_width(texture_size.width());
   size_.set_height(texture_size.height());
 

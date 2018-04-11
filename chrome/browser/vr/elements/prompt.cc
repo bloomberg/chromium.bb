@@ -14,11 +14,12 @@ Prompt::Prompt(int preferred_width,
                int primary_button_message_id,
                int secondary_button_message_id,
                const PromptCallback& result_callback)
-    : TexturedElement(preferred_width),
+    : TexturedElement(),
       texture_(std::make_unique<PromptTexture>(content_message_id,
                                                icon,
                                                primary_button_message_id,
                                                secondary_button_message_id)),
+      preferred_width_(preferred_width),
       result_callback_(result_callback) {}
 
 Prompt::~Prompt() = default;
@@ -101,6 +102,10 @@ void Prompt::OnStateUpdated(const gfx::PointF& position) {
 
 UiTexture* Prompt::GetTexture() const {
   return texture_.get();
+}
+
+gfx::Size Prompt::MeasureTextureSize() {
+  return texture_->GetPreferredTextureSize(preferred_width_);
 }
 
 }  // namespace vr

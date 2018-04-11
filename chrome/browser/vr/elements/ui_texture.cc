@@ -44,19 +44,16 @@ UiTexture::UiTexture() = default;
 
 UiTexture::~UiTexture() = default;
 
-void UiTexture::DrawAndLayout(SkCanvas* canvas, const gfx::Size& texture_size) {
-  TRACE_EVENT0("gpu", "UiTexture::DrawAndLayout");
+void UiTexture::DrawTexture(SkCanvas* canvas, const gfx::Size& texture_size) {
+  TRACE_EVENT0("gpu", "UiTexture::DrawTexture");
   canvas->drawColor(SK_ColorTRANSPARENT);
-  dirty_ = false;
   Draw(canvas, texture_size);
+  dirty_ = false;
 }
 
-void UiTexture::MeasureSize() {
-  OnMeasureSize();
-  measured_ = true;
+void UiTexture::DrawEmptyTexture() {
+  dirty_ = false;
 }
-
-void UiTexture::OnMeasureSize() {}
 
 bool UiTexture::LocalHitTest(const gfx::PointF& point) const {
   return false;

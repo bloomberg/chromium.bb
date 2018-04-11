@@ -27,12 +27,6 @@ class VectorIconTexture : public UiTexture {
   }
 
  private:
-  gfx::Size GetPreferredTextureSize(int width) const override {
-    return gfx::Size(width, width);
-  }
-
-  gfx::SizeF GetDrawnSize() const override { return size_; }
-
   void Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) override {
     if (icon_no_1x_.is_empty())
       return;
@@ -55,9 +49,9 @@ class VectorIconTexture : public UiTexture {
   DISALLOW_COPY_AND_ASSIGN(VectorIconTexture);
 };
 
-VectorIcon::VectorIcon(int maximum_width_pixels)
-    : TexturedElement(maximum_width_pixels),
-      texture_(std::make_unique<VectorIconTexture>()) {}
+VectorIcon::VectorIcon(int texture_width)
+    : texture_(std::make_unique<VectorIconTexture>()),
+      texture_width_(texture_width) {}
 VectorIcon::~VectorIcon() {}
 
 void VectorIcon::SetColor(SkColor color) {
@@ -78,6 +72,10 @@ void VectorIcon::SetIcon(const gfx::VectorIcon* icon) {
 
 UiTexture* VectorIcon::GetTexture() const {
   return texture_.get();
+}
+
+gfx::Size VectorIcon::MeasureTextureSize() {
+  return gfx::Size(texture_width_, texture_width_);
 }
 
 void VectorIcon::DrawVectorIcon(gfx::Canvas* canvas,

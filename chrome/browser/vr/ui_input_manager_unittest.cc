@@ -93,6 +93,7 @@ class UiInputManagerTest : public testing::Test {
     auto element = std::make_unique<StrictMock<MockTextInput>>();
     StrictMock<MockTextInput>* p_element = element.get();
     element->SetTranslate(0, 0, z_position);
+    element->SetSize(1, 0.1);
     element->set_hit_testable(true);
     scene_->AddUiElement(kRoot, std::move(element));
     scene_->OnBeginFrame(base::TimeTicks(), kStartHeadPose);

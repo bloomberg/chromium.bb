@@ -160,8 +160,8 @@ bool TextInput::OnBeginFrame(const base::TimeTicks& time,
 }
 
 void TextInput::OnSetSize(const gfx::SizeF& size) {
-  hint_element_->SetSize(size.width(), size.height());
-  text_element_->SetSize(size.width(), size.height());
+  hint_element_->SetFieldWidth(size.width());
+  text_element_->SetFieldWidth(size.width());
 }
 
 void TextInput::OnSetName() {

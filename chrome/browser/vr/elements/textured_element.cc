@@ -13,13 +13,7 @@
 
 namespace vr {
 
-namespace {
-static bool g_initialized_for_testing_ = false;
-static bool g_rerender_if_not_dirty_for_testing_ = false;
-}
-
-TexturedElement::TexturedElement(int maximum_width)
-    : maximum_width_(maximum_width) {}
+TexturedElement::TexturedElement() = default;
 
 TexturedElement::~TexturedElement() = default;
 
@@ -32,32 +26,36 @@ void TexturedElement::Initialize(SkiaSurfaceProvider* provider) {
   initialized_ = true;
 }
 
-// static
-void TexturedElement::SetInitializedForTesting() {
-  g_initialized_for_testing_ = true;
-}
-
-// static
-void TexturedElement::SetRerenderIfNotDirtyForTesting() {
-  g_rerender_if_not_dirty_for_testing_ = true;
-}
-
 bool TexturedElement::PrepareToDraw() {
-  if (!initialized_ ||
-      !(GetTexture()->dirty() || g_rerender_if_not_dirty_for_testing_) ||
-      !IsVisible())
+  if (!GetTexture()->dirty() || !IsVisible())
     return false;
-  GetTexture()->MeasureSize();
-  DCHECK(GetTexture()->measured());
-  texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
-  // PreferredTextureSize might change due to text element has new layout or new
-  // text. So we need to get the latest value before create surface.
-  surface_ = provider_->MakeSurface(texture_size_);
-  DCHECK(surface_.get());
-  GetTexture()->DrawAndLayout(surface_->getCanvas(), texture_size_);
-  texture_handle_ = provider_->FlushSurface(surface_.get(), texture_handle_);
-  // Update the element size's aspect ratio to match the texture.
-  UpdateElementSize();
+
+  texture_size_ = MeasureTextureSize();
+  return true;
+}
+
+bool TexturedElement::UpdateTexture() {
+  if (!GetTexture()->dirty() || !IsVisible())
+    return false;
+
+  // If GL isn't ready yet, or we're in unit tests, present we drew a texture to
+  // accurate articulate that we would have.  When GL is initialized, all
+  // textures are dirtied again.
+  if (!initialized_) {
+    GetTexture()->DrawEmptyTexture();
+    return true;
+  }
+
+  if (!texture_size_.IsEmpty()) {
+    surface_ = provider_->MakeSurface(texture_size_);
+    DCHECK(surface_.get());
+    GetTexture()->DrawTexture(surface_->getCanvas(), texture_size_);
+    texture_handle_ = provider_->FlushSurface(surface_.get(), texture_handle_);
+  } else {
+    surface_.reset();
+    GetTexture()->DrawEmptyTexture();
+    texture_handle_ = 0;
+  }
   return true;
 }
 
@@ -69,26 +67,15 @@ void TexturedElement::SetBackgroundColor(SkColor color) {
   GetTexture()->SetBackgroundColor(color);
 }
 
-void TexturedElement::UpdateElementSize() {
-  // Adjust the width/height of this element according to the texture. Size in
-  // the other direction is determined by the associated texture.
-  gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  DCHECK_GT(stale_size().width(), 0.f);
-  float height =
-      drawn_size.height() / drawn_size.width() * stale_size().width();
-  SetSize(stale_size().width(), height);
-}
-
 void TexturedElement::Render(UiElementRenderer* renderer,
                              const CameraModel& model) const {
-  if (!g_initialized_for_testing_) {
-    if (!initialized_)
-      return;
-    DCHECK(!GetTexture()->dirty());
-  }
-  gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
-  gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
-                       drawn_size.height() / texture_size_.height());
+  DCHECK(initialized_);
+
+  // Zero-size elements, such as empty text, don't allocate textures.
+  if (texture_handle_ <= 0)
+    return;
+
+  gfx::RectF copy_rect(0, 0, 1, 1);
   renderer->DrawTexturedQuad(
       texture_handle_, 0, UiElementRenderer::kTextureLocationLocal,
       model.view_proj_matrix * world_space_transform(), copy_rect,

@@ -19,20 +19,19 @@ class UiTexture;
 
 class TexturedElement : public UiElement {
  public:
-  // |preferred_width| is the element's desired width in meters. Constraints
-  // implied by the texture being rendered may or may not allow it to be
-  // rendered exactly at the preferred width.
-  explicit TexturedElement(int maximum_width);
+  TexturedElement();
 
   ~TexturedElement() override;
 
   void Initialize(SkiaSurfaceProvider* provider) final;
 
+  bool UpdateTexture() override;
   void Render(UiElementRenderer* renderer,
               const CameraModel& model) const final;
 
-  static void SetInitializedForTesting();
-  static void SetRerenderIfNotDirtyForTesting();
+  // Testing accessors.
+  void PrepareToDrawForTest() { PrepareToDraw(); }
+  gfx::Size texture_size_for_test() { return texture_size_; }
 
   // Foreground and background colors are used pervasively in textured elements,
   // but more element-specific colors should be set on the appropriate element.
@@ -41,14 +40,14 @@ class TexturedElement : public UiElement {
 
  protected:
   virtual UiTexture* GetTexture() const = 0;
-  virtual void UpdateElementSize();
 
   bool PrepareToDraw() final;
 
  private:
+  virtual gfx::Size MeasureTextureSize() = 0;
+
   gfx::Size texture_size_;
   GLuint texture_handle_ = 0;
-  int maximum_width_;
   bool initialized_ = false;
 
   sk_sp<SkSurface> surface_;

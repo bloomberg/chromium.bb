@@ -58,11 +58,14 @@ class Prompt : public TexturedElement {
  private:
   void OnStateUpdated(const gfx::PointF& position);
 
+  gfx::Size MeasureTextureSize() override;
+
   bool primary_down_ = false;
   bool secondary_down_ = false;
   UiUnsupportedMode reason_ = UiUnsupportedMode::kCount;
 
   std::unique_ptr<PromptTexture> texture_;
+  int preferred_width_ = 0;
 
   PromptCallback result_callback_;
 

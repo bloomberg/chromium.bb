@@ -84,6 +84,7 @@ class TextInputSceneTest : public UiTest {
         },
         base::Unretained(model), base::Unretained(text_input.get()),
         base::Unretained(text_input_model));
+    text_input->SetSize(1.0f, 0.1f);
     text_input->set_event_handlers(event_handlers);
     text_input->SetDrawPhase(kPhaseNone);
     text_input->SetTextInputDelegate(text_input_delegate);
@@ -249,18 +250,19 @@ TEST(TextInputTest, CursorPositionUpdatesOnKeyboardInput) {
   EventHandlers event_handlers;
   event_handlers.focus_change = TextInput::OnFocusChangedCallback();
   element->set_event_handlers(event_handlers);
+  element->SetSize(1, 0);
 
   EditedText info(base::UTF8ToUTF16("text"));
   info.current.selection_start = 0;
   info.current.selection_end = 0;
   element->UpdateInput(info);
-  element->get_text_element()->LayOutTextForTest();
+  element->get_text_element()->PrepareToDrawForTest();
   int x1 = element->get_text_element()->GetRawCursorBounds().x();
 
   info.current.selection_start = 1;
   info.current.selection_end = 1;
   element->UpdateInput(info);
-  element->get_text_element()->LayOutTextForTest();
+  element->get_text_element()->PrepareToDrawForTest();
   int x2 = element->get_text_element()->GetRawCursorBounds().x();
 
   EXPECT_LT(x1, x2);
@@ -272,21 +274,22 @@ TEST(TextInputTest, CursorPositionUpdatesOnClicks) {
   EventHandlers event_handlers;
   event_handlers.focus_change = TextInput::OnFocusChangedCallback();
   element->set_event_handlers(event_handlers);
+  element->SetSize(1, 0);
 
   EditedText info(base::UTF8ToUTF16("text"));
   element->UpdateInput(info);
-  element->get_text_element()->LayOutTextForTest();
+  element->get_text_element()->PrepareToDrawForTest();
 
   // Click on the left edge of the field.
   element->OnButtonDown(gfx::PointF(0.0, 0.5));
   element->OnButtonUp(gfx::PointF(0.0, 0.5));
-  element->get_text_element()->LayOutTextForTest();
+  element->get_text_element()->PrepareToDrawForTest();
   auto x1 = element->get_text_element()->GetRawCursorBounds().x();
 
   // Click on the right edge of the field.
   element->OnButtonDown(gfx::PointF(1.0, 0.5));
   element->OnButtonUp(gfx::PointF(1.0, 0.5));
-  element->get_text_element()->LayOutTextForTest();
+  element->get_text_element()->PrepareToDrawForTest();
   auto x2 = element->get_text_element()->GetRawCursorBounds().x();
 
   EXPECT_EQ(x1, 0);
