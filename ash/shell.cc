@@ -1022,12 +1022,8 @@ void Shell::Init(ui::ContextFactory* context_factory,
   // The order in which event filters are added is significant.
 
   // ui::UserActivityDetector passes events to observers, so let them get
-  // rewritten first. The detector observses the platform event source directly
-  // in the Classic configuration, but in Mus and Mash configurations, the
-  // detector instead relies on reports of events from the Window Server.
-  const bool observe_event_source = config == Config::CLASSIC;
-  user_activity_detector_ =
-      std::make_unique<ui::UserActivityDetector>(observe_event_source);
+  // rewritten first.
+  user_activity_detector_.reset(new ui::UserActivityDetector);
 
   overlay_filter_.reset(new OverlayEventFilter);
   AddPreTargetHandler(overlay_filter_.get());
