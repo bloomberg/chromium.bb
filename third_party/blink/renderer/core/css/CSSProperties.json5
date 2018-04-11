@@ -1273,6 +1273,8 @@
       computed_style_custom_functions: ["setter"],
       converter: "ConvertClip",
       custom_apply_functions_all: true,
+      keywords: ["auto"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "clip-path",
@@ -1285,6 +1287,8 @@
       default_value: "nullptr",
       type_name: "ClipPathOperation",
       converter: "ConvertClipPath",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "clip-rule",
@@ -1292,6 +1296,8 @@
       inherited: true,
       svg: true,
       type_name: "WindRule",
+      keywords: ["nonzero", "evenodd"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "color-interpolation",
@@ -1942,6 +1948,8 @@
       name: "mask-type",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,
+      keywords: ["luminance", "alpha"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "max-height",
