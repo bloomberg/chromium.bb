@@ -91,12 +91,13 @@ class BaseTestTriggerer(object):
       additional_args = all_args[:dash_ind] + bot_args + all_args[dash_ind:]
     else:
       additional_args = all_args + bot_args
-    return self.append_additional_args(additional_args)
+    return self.append_additional_args(additional_args, shard_index)
 
-  def append_additional_args(self, args):
+  def append_additional_args(self, args, shard_index):
     """ Gives subclasses ability to append additional args if necessary
 
-    Base class just returns given get."""
+    Base class just returns given args."""
+    del shard_index # unused
     return args
 
   def parse_bot_configs(self, args):
