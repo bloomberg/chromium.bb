@@ -179,7 +179,7 @@ public class VrIntentUtils {
      */
     public static boolean maybeForwardToVrLauncher(Intent intent, Activity activity) {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) return false;
-        if (wouldUse2DInVrRenderingMode(activity)) {
+        if (wouldUse2DInVrRenderingMode(activity) && VrShellDelegate.deviceSupportsVrLaunches()) {
             Intent vrIntent = new Intent(intent);
             vrIntent.setComponent(null);
             vrIntent.setPackage(activity.getPackageName());
@@ -214,7 +214,7 @@ public class VrIntentUtils {
     /**
      * Removes VR specific extras from the given intent to make it a non-VR intent.
      */
-    /* package */ static void removeVrExtras(Intent intent) {
+    public static void removeVrExtras(Intent intent) {
         if (intent == null) return;
         intent.removeCategory(DAYDREAM_CATEGORY);
         assert !isVrIntent(intent);

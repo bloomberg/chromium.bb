@@ -655,7 +655,10 @@ public class VrShellDelegate
      */
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) {
-            if (!VrIntentUtils.wouldUse2DInVrRenderingMode(activity)) return;
+            if (!VrIntentUtils.wouldUse2DInVrRenderingMode(activity)
+                    || !deviceSupportsVrLaunches()) {
+                return;
+            }
             // This is to handle intents that are sent directly to ChromeActivitys, bypassing the
             // launcher.
             intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
@@ -689,7 +692,7 @@ public class VrShellDelegate
      */
     public static void setVrModeEnabled(Activity activity, boolean enabled) {
         VrClassesWrapper wrapper = getVrClassesWrapper();
-        if (wrapper == null) return;
+        if (wrapper == null || wrapper.bootsToVr()) return;
         ensureLifecycleObserverInitialized();
         if (enabled) {
             if (sVrModeEnabledActivitys.contains(activity)) return;
@@ -864,6 +867,10 @@ public class VrShellDelegate
         return getVrClassesWrapper() != null && getVrClassesWrapper().isDaydreamReadyDevice();
     }
 
+    public static boolean deviceSupportsVrLaunches() {
+        return isDaydreamReadyDevice() && !getVrClassesWrapper().bootsToVr();
+    }
+
     // TODO(mthiesse): Should have package visibility only. We need to unify our vr and vr_shell
     // packages.
     public static boolean willChangeDensityInVr(ChromeActivity activity) {
@@ -930,7 +937,7 @@ public class VrShellDelegate
      *  @return Whether or not VR is supported on this platform.
      */
     /* package */ static boolean isVrEnabled() {
-        return getVrClassesWrapper() != null;
+        return getVrClassesWrapper() != null && !getVrClassesWrapper().bootsToVr();
     }
 
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {

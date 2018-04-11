@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
@@ -39,7 +40,19 @@ public class VrMainActivity extends Activity {
         try {
             super.onCreate(savedInstanceState);
 
-            if (!VrShellDelegate.isDaydreamReadyDevice()) {
+            // TODO(mthiesse, https://crbug.com/831175): Support WebVR launches on standalone VR
+            // devices.
+            if (!VrShellDelegate.deviceSupportsVrLaunches()) {
+                // If the device doesn't support VR launches, forward the intent back to the 2D
+                // launcher. We should only get here on standalone VR devices, or from bad intents
+                // probably sent by testers.
+                VrIntentUtils.removeVrExtras(getIntent());
+                getIntent().setComponent(null);
+                getIntent().setPackage(getPackageName());
+
+                // Daydream drops the MAIN action for unknown reasons...
+                if (getIntent().getAction() == null) getIntent().setAction(Intent.ACTION_MAIN);
+                startActivity(getIntent());
                 finish();
                 return;
             }
