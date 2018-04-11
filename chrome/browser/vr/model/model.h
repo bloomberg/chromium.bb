@@ -44,6 +44,7 @@ struct Model {
   gfx::Transform projection_matrix;
   unsigned int content_texture_id = 0;
   unsigned int content_overlay_texture_id = 0;
+  bool content_overlay_texture_non_empty = false;
   UiElementRenderer::TextureLocation content_location =
       UiElementRenderer::kTextureLocationLocal;
   UiElementRenderer::TextureLocation content_overlay_location =

@@ -737,6 +737,12 @@ void VrShell::ResumeContentRendering(JNIEnv* env,
                                            gl_thread_->GetVrShellGl()));
 }
 
+void VrShell::OnOverlayTextureEmptyChanged(JNIEnv* env,
+                                           const JavaParamRef<jobject>& object,
+                                           jboolean empty) {
+  ui_->SetOverlayTextureEmpty(empty);
+}
+
 void VrShell::ContentWebContentsDestroyed() {
   web_contents_ = nullptr;
 }

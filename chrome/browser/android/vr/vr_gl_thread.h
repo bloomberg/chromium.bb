@@ -118,6 +118,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
   void SetIncognitoTabsOpen(bool open) override;
+  void SetOverlayTextureEmpty(bool empty) override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputIndices(int selection_start,
                              int selection_end,

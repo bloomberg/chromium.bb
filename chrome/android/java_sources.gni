@@ -1314,6 +1314,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/util/ViewUtils.java",
   "java/src/org/chromium/chrome/browser/vr/CustomTabVrActivity.java",
   "java/src/org/chromium/chrome/browser/vr/VrMainActivity.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/EmptySniffingVrViewContainer.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/NoopCanvas.java",
   "java/src/org/chromium/chrome/browser/vr_shell/OnExitVrRequestListener.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrCancelAnimationActivity.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrClassesWrapper.java",

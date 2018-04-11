@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -54,6 +55,7 @@ public class VrViewContainer extends FrameLayout {
         return false;
     }
 
+    @SuppressLint("MissingSuperCall")
     @Override
     public void draw(Canvas canvas) {
         if (mSurface == null) return;
@@ -70,11 +72,14 @@ public class VrViewContainer extends FrameLayout {
             } else {
                 surfaceCanvas = mSurface.lockCanvas(null);
             }
-
             surfaceCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-            super.draw(surfaceCanvas);
+            drawSuper(surfaceCanvas);
             mSurface.unlockCanvasAndPost(surfaceCanvas);
         }
+    }
+
+    protected void drawSuper(Canvas canvas) {
+        super.draw(canvas);
     }
 
     /* package */ View getInputTarget() {

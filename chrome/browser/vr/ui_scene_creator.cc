@@ -1240,6 +1240,9 @@ void UiSceneCreator::CreateContentQuad() {
       VR_BIND_FUNC(UiElementRenderer::TextureLocation, Model, model_,
                    model->content_overlay_location, ContentElement,
                    main_content.get(), SetOverlayTextureLocation));
+  main_content->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_, !model->content_overlay_texture_non_empty,
+      ContentElement, main_content.get(), SetOverlayTextureEmpty));
   main_content->AddBinding(std::make_unique<Binding<EditedText>>(
       VR_BIND_LAMBDA([](EditedText* info) { return *info; },
                      base::Unretained(&model_->web_input_text_field_info)),

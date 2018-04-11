@@ -162,6 +162,10 @@ class VrShell : device::GvrGamepadDataProvider,
                              int composition_end);
   void ResumeContentRendering(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
+  void OnOverlayTextureEmptyChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean empty);
 
   void ContentWebContentsDestroyed();
 
