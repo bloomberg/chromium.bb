@@ -1544,3 +1544,67 @@ TEST_F('BackgroundTest', 'NavigationSyncsSelect', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'NavigationIgnoresLabels', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <p>before</p>
+    <p id="label">label</p>
+    <a href="#next" id="lebal">lebal</a>
+    <p>after</p>
+    <button aria-labelledby="label"></button>
+  */}, function(root) {
+    mockFeedback.expectSpeech('before')
+        .call(doCmd('nextObject'))
+        .expectSpeech('lebal', 'Link')
+        .call(doCmd('nextObject'))
+        .expectSpeech('after')
+        .call(doCmd('previousObject'))
+        .expectSpeech('lebal', 'Link')
+        .call(doCmd('previousObject'))
+        .expectSpeech('before')
+        .call(doCmd('nextObject'))
+        .expectSpeech('lebal', 'Link')
+        .call(doCmd('nextObject'))
+        .expectSpeech('after')
+        .call(doCmd('nextObject'))
+        .expectSpeech('label', 'lebal', 'Button')
+        .call(doCmd('nextObject'))
+        .expectEarcon(cvox.Earcon.WRAP)
+        .call(doCmd('nextObject'))
+        .expectSpeech('before')
+        .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'NavigationIgnoresDescriptions', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <p>before</p>
+    <p id="desc">label</p>
+    <a href="#next" id="csed">lebal</a>
+    <p>after</p>
+    <button aria-describedby="desc"></button>
+  */}, function(root) {
+    mockFeedback.expectSpeech('before')
+        .call(doCmd('nextObject'))
+        .expectSpeech('lebal', 'Link')
+        .call(doCmd('nextObject'))
+        .expectSpeech('after')
+        .call(doCmd('previousObject'))
+        .expectSpeech('lebal', 'Link')
+        .call(doCmd('previousObject'))
+        .expectSpeech('before')
+        .call(doCmd('nextObject'))
+        .expectSpeech('lebal', 'Link')
+        .call(doCmd('nextObject'))
+        .expectSpeech('after')
+        .call(doCmd('nextObject'))
+        .expectSpeech('label', 'lebal', 'Button')
+        .call(doCmd('nextObject'))
+        .expectEarcon(cvox.Earcon.WRAP)
+        .call(doCmd('nextObject'))
+        .expectSpeech('before')
+        .replay();
+  });
+});
