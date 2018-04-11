@@ -596,6 +596,12 @@ void RenderWidgetHostViewEventHandler::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+void RenderWidgetHostViewEventHandler::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
+}
+
 bool RenderWidgetHostViewEventHandler::CanRendererHandleEvent(
     const ui::MouseEvent* event,
     bool mouse_locked,

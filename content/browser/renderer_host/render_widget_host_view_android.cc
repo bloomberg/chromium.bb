@@ -1492,6 +1492,7 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
     InputEventAckState ack_result) {
   if (overscroll_controller_)
     overscroll_controller_->OnGestureEventAck(event, ack_result);
+  mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
 
   if (!gesture_listener_manager_)
     return;
