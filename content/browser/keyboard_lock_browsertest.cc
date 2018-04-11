@@ -54,10 +54,11 @@ constexpr char kKeyboardLockMethodCallWithSomeKeys[] =
     "  () => { window.domAutomationController.send(false); },"
     ");";
 
+// Calling lock() with no valid key codes will cause the promise to be rejected.
 constexpr char kKeyboardLockMethodCallWithAllInvalidKeys[] =
-    "navigator.keyboard.lock(['BlerghLeft', 'BlargRight']).then("
-    "  () => { window.domAutomationController.send(true); },"
+    "navigator.keyboard.lock(['BlerghLeft', 'BlarghRight']).then("
     "  () => { window.domAutomationController.send(false); },"
+    "  () => { window.domAutomationController.send(true); },"
     ");";
 
 constexpr char kKeyboardLockMethodCallWithSomeInvalidKeys[] =

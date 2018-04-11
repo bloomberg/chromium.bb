@@ -15,6 +15,21 @@
 
 namespace blink {
 
+namespace {
+
+constexpr char kFrameDetachedErrorMsg[] = "Current frame is detached.";
+
+constexpr char kPreviousLockCallNotCompletedErrorMsg[] =
+    "Last lock() call has not finished yet.";
+
+constexpr char kNoValidKeyCodesErrorMsg[] =
+    "No valid key codes passed into lock().";
+
+constexpr char kChildFrameErrorMsg[] =
+    "lock() must be called from a top-level browsing context.";
+
+}  // namespace
+
 KeyboardLock::KeyboardLock(ExecutionContext* context)
     : ContextLifecycleObserver(context) {}
 
@@ -27,13 +42,13 @@ ScriptPromise KeyboardLock::lock(ScriptState* state,
     // TODO(joedow): Reject with a DOMException once it has been defined in the
     // spec. See https://github.com/w3c/keyboard-lock/issues/18.
     return ScriptPromise::Reject(
-        state, V8String(state->GetIsolate(),
-                        "Last lock() call has not finished yet."));
+        state,
+        V8String(state->GetIsolate(), kPreviousLockCallNotCompletedErrorMsg));
   }
 
   if (!EnsureServiceConnected()) {
     return ScriptPromise::Reject(
-        state, V8String(state->GetIsolate(), "Current frame is detached."));
+        state, V8String(state->GetIsolate(), kFrameDetachedErrorMsg));
   }
 
   request_keylock_resolver_ = ScriptPromiseResolver::Create(state);
@@ -68,12 +83,19 @@ bool KeyboardLock::EnsureServiceConnected() {
 void KeyboardLock::LockRequestFinished(
     mojom::KeyboardLockRequestResult result) {
   DCHECK(request_keylock_resolver_);
-  // TODO(joedow): Reject with a DOMException once it has been defined in the
-  // spec.
-  if (result == mojom::KeyboardLockRequestResult::SUCCESS) {
-    request_keylock_resolver_->Resolve();
-  } else {
-    request_keylock_resolver_->Reject();
+  switch (result) {
+    case mojom::KeyboardLockRequestResult::kSuccess:
+      request_keylock_resolver_->Resolve();
+      break;
+    case mojom::KeyboardLockRequestResult::kFrameDetachedError:
+      request_keylock_resolver_->Reject(kFrameDetachedErrorMsg);
+      break;
+    case mojom::KeyboardLockRequestResult::kNoValidKeyCodesError:
+      request_keylock_resolver_->Reject(kNoValidKeyCodesErrorMsg);
+      break;
+    case mojom::KeyboardLockRequestResult::kChildFrameError:
+      request_keylock_resolver_->Reject(kChildFrameErrorMsg);
+      break;
   }
   request_keylock_resolver_ = nullptr;
 }

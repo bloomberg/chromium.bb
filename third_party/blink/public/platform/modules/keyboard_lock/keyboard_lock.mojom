@@ -5,7 +5,10 @@
 module blink.mojom;
 
 enum KeyboardLockRequestResult {
-  SUCCESS = 0,
+  kSuccess = 0,
+  kFrameDetachedError = 1,
+  kNoValidKeyCodesError = 2,
+  kChildFrameError = 3
 };
 
 // The browser side service to process navigator.keyboard.lock() and
