@@ -18,7 +18,7 @@ public class Features {
     public static final String VISUAL_STATE_CALLBACK = "VISUAL_STATE_CALLBACK";
 
     // WebViewClientCompat#onReceivedError(WebView, WebResourceRequest, WebResourceError)
-    public static final String WEB_RESOURCE_ERROR = "WEB_RESOURCE_ERROR";
+    public static final String RECEIVE_WEB_RESOURCE_ERROR = "RECEIVE_WEB_RESOURCE_ERROR";
 
     // WebViewClientCompat#onReceivedHttpError
     public static final String RECEIVE_HTTP_ERROR = "RECEIVE_HTTP_ERROR";
