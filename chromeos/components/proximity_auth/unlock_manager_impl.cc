@@ -307,8 +307,8 @@ void UnlockManagerImpl::OnAuthAttempted(mojom::AuthType auth_type) {
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&UnlockManagerImpl::AcceptAuthAttempt,
-                 reject_auth_attempt_weak_ptr_factory_.GetWeakPtr(), false),
+      base::BindOnce(&UnlockManagerImpl::AcceptAuthAttempt,
+                     reject_auth_attempt_weak_ptr_factory_.GetWeakPtr(), false),
       base::TimeDelta::FromSeconds(kAuthAttemptTimeoutSecs));
 
   if (screenlock_type_ == ProximityAuthSystem::SIGN_IN) {
@@ -448,8 +448,9 @@ void UnlockManagerImpl::SetWakingUpState(bool is_waking_up) {
   if (is_waking_up_) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&UnlockManagerImpl::SetWakingUpState,
-                   clear_waking_up_state_weak_ptr_factory_.GetWeakPtr(), false),
+        base::BindOnce(&UnlockManagerImpl::SetWakingUpState,
+                       clear_waking_up_state_weak_ptr_factory_.GetWeakPtr(),
+                       false),
         base::TimeDelta::FromSeconds(kWakingUpDurationSecs));
   }
 

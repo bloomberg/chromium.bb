@@ -52,8 +52,9 @@ void FakeShillIPConfigClient::GetProperties(
                                                     &dict))
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeShillIPConfigClient::PassProperties,
-                            weak_ptr_factory_.GetWeakPtr(), dict, callback));
+      FROM_HERE,
+      base::BindOnce(&FakeShillIPConfigClient::PassProperties,
+                     weak_ptr_factory_.GetWeakPtr(), dict, callback));
 }
 
 void FakeShillIPConfigClient::SetProperty(const dbus::ObjectPath& ipconfig_path,

@@ -77,8 +77,8 @@ void FakeShillProfileClient::GetProperties(
                                       std::move(entry_paths));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&PassDictionary, callback, base::Owned(properties.release())));
+      FROM_HERE, base::BindOnce(&PassDictionary, callback,
+                                base::Owned(properties.release())));
 }
 
 void FakeShillProfileClient::GetEntry(
@@ -98,8 +98,8 @@ void FakeShillProfileClient::GetEntry(
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&PassDictionary, callback, base::Owned(entry->DeepCopy())));
+      FROM_HERE, base::BindOnce(&PassDictionary, callback,
+                                base::Owned(entry->DeepCopy())));
 }
 
 void FakeShillProfileClient::DeleteEntry(const dbus::ObjectPath& profile_path,

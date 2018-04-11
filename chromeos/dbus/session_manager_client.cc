@@ -482,36 +482,36 @@ class SessionManagerClientImpl : public SessionManagerClient {
         login_manager::kOwnerKeySetSignal,
         base::Bind(&SessionManagerClientImpl::OwnerKeySetReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SessionManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kPropertyChangeCompleteSignal,
         base::Bind(&SessionManagerClientImpl::PropertyChangeCompleteReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SessionManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kScreenIsLockedSignal,
         base::Bind(&SessionManagerClientImpl::ScreenIsLockedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SessionManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kScreenIsUnlockedSignal,
         base::Bind(&SessionManagerClientImpl::ScreenIsUnlockedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SessionManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     session_manager_proxy_->ConnectToSignal(
         login_manager::kSessionManagerInterface,
         login_manager::kArcInstanceStopped,
         base::Bind(&SessionManagerClientImpl::ArcInstanceStoppedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SessionManagerClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

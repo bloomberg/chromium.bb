@@ -866,17 +866,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
     protobuf_request.set_description(kSuspendDelayDescription);
 
     RegisterSuspendDelayImpl(
-        power_manager::kRegisterSuspendDelayMethod,
-        protobuf_request,
-        base::Bind(&PowerManagerClientImpl::HandleRegisterSuspendDelayReply,
-                   weak_ptr_factory_.GetWeakPtr(), false,
-                   power_manager::kRegisterSuspendDelayMethod));
+        power_manager::kRegisterSuspendDelayMethod, protobuf_request,
+        base::BindOnce(&PowerManagerClientImpl::HandleRegisterSuspendDelayReply,
+                       weak_ptr_factory_.GetWeakPtr(), false,
+                       power_manager::kRegisterSuspendDelayMethod));
     RegisterSuspendDelayImpl(
-        power_manager::kRegisterDarkSuspendDelayMethod,
-        protobuf_request,
-        base::Bind(&PowerManagerClientImpl::HandleRegisterSuspendDelayReply,
-                   weak_ptr_factory_.GetWeakPtr(), true,
-                   power_manager::kRegisterDarkSuspendDelayMethod));
+        power_manager::kRegisterDarkSuspendDelayMethod, protobuf_request,
+        base::BindOnce(&PowerManagerClientImpl::HandleRegisterSuspendDelayReply,
+                       weak_ptr_factory_.GetWeakPtr(), true,
+                       power_manager::kRegisterDarkSuspendDelayMethod));
   }
 
   // Records the fact that an observer has finished doing asynchronous work

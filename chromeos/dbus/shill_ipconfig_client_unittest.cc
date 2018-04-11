@@ -136,9 +136,8 @@ TEST_F(ShillIPConfigClientTest, SetProperty) {
                        response.get());
   // Call method.
   client_->SetProperty(dbus::ObjectPath(kExampleIPConfigPath),
-                       shill::kAddressProperty,
-                       value,
-                       base::Bind(&ExpectNoResultValue));
+                       shill::kAddressProperty, value,
+                       base::BindOnce(&ExpectNoResultValue));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }
@@ -154,8 +153,8 @@ TEST_F(ShillIPConfigClientTest, ClearProperty) {
                        response.get());
   // Call method.
   client_->ClearProperty(dbus::ObjectPath(kExampleIPConfigPath),
-                       shill::kAddressProperty,
-                       base::Bind(&ExpectNoResultValue));
+                         shill::kAddressProperty,
+                         base::BindOnce(&ExpectNoResultValue));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }
@@ -170,7 +169,7 @@ TEST_F(ShillIPConfigClientTest, Remove) {
                        response.get());
   // Call method.
   client_->Remove(dbus::ObjectPath(kExampleIPConfigPath),
-                  base::Bind(&ExpectNoResultValue));
+                  base::BindOnce(&ExpectNoResultValue));
 
   // Run the message loop.
   base::RunLoop().RunUntilIdle();

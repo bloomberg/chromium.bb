@@ -98,7 +98,7 @@ void RefreshIPConfigsCallback(
       continue;
     DBusThreadManager::Get()->GetShillIPConfigClient()->Refresh(
         dbus::ObjectPath(ipconfig_path),
-        base::Bind(&IPConfigRefreshCallback, ipconfig_path));
+        base::BindOnce(&IPConfigRefreshCallback, ipconfig_path));
   }
   // It is safe to invoke |callback| here instead of waiting for the
   // IPConfig.Refresh callbacks to complete because the Refresh DBus calls will
@@ -191,8 +191,9 @@ void TDLSSuccessCallback(
     request_delay = base::TimeDelta::FromMilliseconds(request_delay_ms);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CallPerformTDLSOperation, device_path, new_params,
-                            callback, error_callback),
+      FROM_HERE,
+      base::BindOnce(&CallPerformTDLSOperation, device_path, new_params,
+                     callback, error_callback),
       request_delay);
 }
 
@@ -219,8 +220,9 @@ void TDLSErrorCallback(
       request_delay = base::TimeDelta::FromMilliseconds(kReRequestDelayMs);
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::Bind(&CallPerformTDLSOperation, device_path,
-                              retry_params, callback, error_callback),
+        FROM_HERE,
+        base::BindOnce(&CallPerformTDLSOperation, device_path, retry_params,
+                       callback, error_callback),
         request_delay);
     return;
   }

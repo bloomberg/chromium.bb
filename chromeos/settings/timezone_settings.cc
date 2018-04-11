@@ -396,7 +396,7 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
   base::PostTaskWithTraits(FROM_HERE,
                            {base::MayBlock(), base::TaskPriority::BACKGROUND,
                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::Bind(&SetTimezoneIDFromString, id));
+                           base::BindOnce(&SetTimezoneIDFromString, id));
   icu::TimeZone::setDefault(*known_timezone);
   for (auto& observer : observers_)
     observer.TimezoneChanged(*known_timezone);

@@ -55,7 +55,7 @@ void FirewallHole::Open(PortType type,
   if (pipe2(lifeline, O_CLOEXEC) < 0) {
     PLOG(ERROR) << "Failed to create a lifeline pipe";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, nullptr));
+        FROM_HERE, base::BindOnce(callback, nullptr));
     return;
   }
   base::ScopedFD lifeline_local(lifeline[0]);

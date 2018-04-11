@@ -264,15 +264,14 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
         update_engine::kUpdateEngineServiceName,
         dbus::ObjectPath(update_engine::kUpdateEngineServicePath));
     update_engine_proxy_->ConnectToSignal(
-        update_engine::kUpdateEngineInterface,
-        update_engine::kStatusUpdate,
+        update_engine::kUpdateEngineInterface, update_engine::kStatusUpdate,
         base::Bind(&UpdateEngineClientImpl::StatusUpdateReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&UpdateEngineClientImpl::StatusUpdateConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&UpdateEngineClientImpl::StatusUpdateConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
     update_engine_proxy_->WaitForServiceToBeAvailable(
-        base::Bind(&UpdateEngineClientImpl::OnServiceInitiallyAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&UpdateEngineClientImpl::OnServiceInitiallyAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

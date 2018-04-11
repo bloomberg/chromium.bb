@@ -157,8 +157,8 @@ class ProcessOutputWatcherTest : public testing::Test {
                                             base::Unretained(this))));
 
     output_watch_thread_->task_runner()->PostTask(
-        FROM_HERE, base::Bind(&ProcessOutputWatcher::Start,
-                              base::Unretained(crosh_watcher.get())));
+        FROM_HERE, base::BindOnce(&ProcessOutputWatcher::Start,
+                                  base::Unretained(crosh_watcher.get())));
 
     for (size_t i = 0; i < test_cases.size(); i++) {
       expectations_.SetTestCase(test_cases[i]);
@@ -184,7 +184,7 @@ class ProcessOutputWatcherTest : public testing::Test {
 
     output_watch_thread_->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&StopProcessOutputWatcher, base::Passed(&crosh_watcher)));
+        base::BindOnce(&StopProcessOutputWatcher, std::move(crosh_watcher)));
 
     EXPECT_NE(-1, IGNORE_EINTR(close(pt_pipe[1])));
   }

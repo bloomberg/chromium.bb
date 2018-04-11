@@ -96,9 +96,9 @@ ModemManagerNetworkSmsDeviceHandler::ModemManagerNetworkSmsDeviceHandler(
   // List the existing messages.
   DBusThreadManager::Get()->GetGsmSMSClient()->List(
       service_name_, object_path_,
-      base::Bind(&NetworkSmsHandler::
-                 ModemManagerNetworkSmsDeviceHandler::ListCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::ListCallback,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NetworkSmsHandler::ModemManagerNetworkSmsDeviceHandler::RequestUpdate() {
@@ -305,9 +305,9 @@ void NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::GetMessages() {
   retrieval_queue_.pop_front();
   DBusThreadManager::Get()->GetSMSClient()->GetAll(
       service_name_, sms_path,
-      base::Bind(&NetworkSmsHandler::
-                 ModemManager1NetworkSmsDeviceHandler::GetCallback,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &NetworkSmsHandler::ModemManager1NetworkSmsDeviceHandler::GetCallback,
+          weak_ptr_factory_.GetWeakPtr()));
   delete_queue_.push_back(sms_path);
 }
 

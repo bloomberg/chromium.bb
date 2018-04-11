@@ -40,8 +40,8 @@ void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
   // during non-online re-auth |user_context| does not have a gaia id.
   if (expected_user_context_.GetAccountId() == user_context.GetAccountId() &&
       *expected_user_context_.GetKey() == *user_context.GetKey()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&StubAuthenticator::OnAuthSuccess, this));
+    task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthSuccess, this));
     return;
   }
   GoogleServiceAuthError error =
@@ -49,8 +49,8 @@ void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
           GoogleServiceAuthError::InvalidGaiaCredentialsReason::
               CREDENTIALS_REJECTED_BY_SERVER);
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&StubAuthenticator::OnAuthFailure, this,
-                            AuthFailure::FromNetworkAuthFailure(error)));
+      FROM_HERE, base::BindOnce(&StubAuthenticator::OnAuthFailure, this,
+                                AuthFailure::FromNetworkAuthFailure(error)));
 }
 
 void StubAuthenticator::AuthenticateToUnlock(const UserContext& user_context) {

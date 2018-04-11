@@ -58,10 +58,10 @@ void TetherNetworkDisconnectionHandler::NetworkConnectionStateChanged(
   // NetworkStateHandlerObservers are finished running. Processing the
   // disconnection immediately can cause crashes; see https://crbug.com/800370.
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&TetherNetworkDisconnectionHandler::
-                                HandleActiveWifiNetworkDisconnection,
-                            weak_ptr_factory_.GetWeakPtr(), network->guid(),
-                            network->path()));
+      FROM_HERE, base::BindOnce(&TetherNetworkDisconnectionHandler::
+                                    HandleActiveWifiNetworkDisconnection,
+                                weak_ptr_factory_.GetWeakPtr(), network->guid(),
+                                network->path()));
 }
 
 void TetherNetworkDisconnectionHandler::HandleActiveWifiNetworkDisconnection(

@@ -102,8 +102,8 @@ void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
   // NetworkStateHandlerObservers are finished running. Processing the
   // network change immediately can cause crashes; see https://crbug.com/800370.
   task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&HostScanSchedulerImpl::EnsureScan,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&HostScanSchedulerImpl::EnsureScan,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HostScanSchedulerImpl::ScanRequested() {

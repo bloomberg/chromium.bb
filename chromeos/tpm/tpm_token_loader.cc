@@ -24,7 +24,7 @@ namespace {
 void PostResultToTaskRunner(scoped_refptr<base::SequencedTaskRunner> runner,
                             const base::Callback<void(bool)>& callback,
                             bool success) {
-  runner->PostTask(FROM_HERE, base::Bind(callback, success));
+  runner->PostTask(FROM_HERE, base::BindOnce(callback, success));
 }
 
 }  // namespace
@@ -150,10 +150,9 @@ void TPMTokenLoader::ContinueTokenInitialization() {
   switch (tpm_token_state_) {
     case TPM_STATE_UNKNOWN: {
       crypto_task_runner_->PostTaskAndReply(
-          FROM_HERE,
-          base::Bind(&crypto::EnableTPMTokenForNSS),
-          base::Bind(&TPMTokenLoader::OnTPMTokenEnabledForNSS,
-                     weak_factory_.GetWeakPtr()));
+          FROM_HERE, base::BindOnce(&crypto::EnableTPMTokenForNSS),
+          base::BindOnce(&TPMTokenLoader::OnTPMTokenEnabledForNSS,
+                         weak_factory_.GetWeakPtr()));
       tpm_token_state_ = TPM_INITIALIZATION_STARTED;
       return;
     }
@@ -174,9 +173,8 @@ void TPMTokenLoader::ContinueTokenInitialization() {
     case TPM_TOKEN_INFO_RECEIVED: {
       crypto_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(
-              &crypto::InitializeTPMTokenAndSystemSlot,
-              tpm_token_slot_id_,
+          base::BindOnce(
+              &crypto::InitializeTPMTokenAndSystemSlot, tpm_token_slot_id_,
               base::Bind(&PostResultToTaskRunner,
                          base::ThreadTaskRunnerHandle::Get(),
                          base::Bind(&TPMTokenLoader::OnTPMTokenInitialized,

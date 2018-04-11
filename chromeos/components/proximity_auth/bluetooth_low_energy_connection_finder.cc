@@ -190,7 +190,7 @@ void BluetoothLowEnergyConnectionFinder::OnStartDiscoverySessionError() {
                   << kRestartDiscoveryOnErrorDelaySeconds << " seconds.";
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync,
           weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kRestartDiscoveryOnErrorDelaySeconds));
@@ -250,15 +250,15 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
     // asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else if (old_status == cryptauth::Connection::IN_PROGRESS) {
     PA_LOG(WARNING) << "Connection failed. Retrying.";
     connection_->RemoveObserver(this);
     connection_.reset();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionAsync,
             weak_ptr_factory_.GetWeakPtr()));
   }

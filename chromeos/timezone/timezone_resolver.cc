@@ -203,8 +203,8 @@ void TZRequest::OnLocationResolved(const Geoposition& position,
                                    bool server_error,
                                    const base::TimeDelta elapsed) {
   base::ScopedClosureRunner on_request_finished(
-      base::Bind(&TimeZoneResolver::TimeZoneResolverImpl::RequestIsFinished,
-                 base::Unretained(resolver_)));
+      base::BindOnce(&TimeZoneResolver::TimeZoneResolverImpl::RequestIsFinished,
+                     base::Unretained(resolver_)));
 
   // Ignore invalid position.
   if (!position.Valid())
@@ -232,8 +232,8 @@ void TZRequest::OnTimezoneResolved(
     std::unique_ptr<TimeZoneResponseData> timezone,
     bool server_error) {
   base::ScopedClosureRunner on_request_finished(
-      base::Bind(&TimeZoneResolver::TimeZoneResolverImpl::RequestIsFinished,
-                 base::Unretained(resolver_)));
+      base::BindOnce(&TimeZoneResolver::TimeZoneResolverImpl::RequestIsFinished,
+                     base::Unretained(resolver_)));
 
   DCHECK(timezone);
   VLOG(1) << "Refreshed local timezone={" << timezone->ToStringForDebug()

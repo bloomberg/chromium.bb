@@ -101,9 +101,10 @@ class HostResolverImplChromeOS::NetworkObserver
   void CallResolverSetIpAddress(const std::string& ipv4_address,
                                 const std::string& ipv6_address) {
     resolver_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&NetworkObserver::SetIpAddressOnResolverThread,
-                              weak_ptr_factory_resolver_thread_.GetWeakPtr(),
-                              ipv4_address, ipv6_address));
+        FROM_HERE,
+        base::BindOnce(&NetworkObserver::SetIpAddressOnResolverThread,
+                       weak_ptr_factory_resolver_thread_.GetWeakPtr(),
+                       ipv4_address, ipv6_address));
   }
 
   void SetIpAddressOnResolverThread(const std::string& ipv4_address,
@@ -132,8 +133,9 @@ HostResolverImplChromeOS::HostResolverImplChromeOS(
       weak_ptr_factory_(this) {
   network_handler_task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&NetworkObserver::Create, weak_ptr_factory_.GetWeakPtr(),
-                 base::ThreadTaskRunnerHandle::Get(), network_state_handler));
+      base::BindOnce(&NetworkObserver::Create, weak_ptr_factory_.GetWeakPtr(),
+                     base::ThreadTaskRunnerHandle::Get(),
+                     network_state_handler));
 }
 
 HostResolverImplChromeOS::~HostResolverImplChromeOS() = default;

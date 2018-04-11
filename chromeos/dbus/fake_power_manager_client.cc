@@ -86,8 +86,8 @@ void FakePowerManagerClient::RequestStatusUpdate() {
   // asynchronously on a real device. On the fake implementation, we call
   // observers in a posted task to emulate the same behavior.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakePowerManagerClient::NotifyObservers,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakePowerManagerClient::NotifyObservers,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakePowerManagerClient::RequestSuspend() {}

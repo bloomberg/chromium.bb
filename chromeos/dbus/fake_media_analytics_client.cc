@@ -24,8 +24,9 @@ bool FakeMediaAnalyticsClient::FireMediaPerceptionEvent(
   if (!process_running_)
     return false;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FakeMediaAnalyticsClient::OnMediaPerception,
-                            weak_ptr_factory_.GetWeakPtr(), media_perception));
+      FROM_HERE,
+      base::BindOnce(&FakeMediaAnalyticsClient::OnMediaPerception,
+                     weak_ptr_factory_.GetWeakPtr(), media_perception));
   return true;
 }
 

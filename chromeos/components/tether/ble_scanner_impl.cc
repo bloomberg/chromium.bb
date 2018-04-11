@@ -386,8 +386,8 @@ void BleScannerImpl::ScheduleStatusChangeNotification(
   // cannot occur. See crbug.com/776241.
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&BleScannerImpl::NotifyDiscoverySessionStateChanged,
-                 weak_ptr_factory_.GetWeakPtr(), discovery_session_active));
+      base::BindOnce(&BleScannerImpl::NotifyDiscoverySessionStateChanged,
+                     weak_ptr_factory_.GetWeakPtr(), discovery_session_active));
 }
 
 }  // namespace tether

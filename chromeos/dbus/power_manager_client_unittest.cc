@@ -335,7 +335,7 @@ class PowerManagerClientTest : public testing::Test {
 
     message_loop_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&RunResponseCallback, std::move(*callback),
-                                  base::Passed(&response)));
+                                  std::move(response)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(PowerManagerClientTest);

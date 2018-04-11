@@ -81,8 +81,8 @@ class MediaAnalyticsClientImpl : public MediaAnalyticsClient {
         media_perception::kDetectionSignal,
         base::Bind(&MediaAnalyticsClientImpl::OnDetectionSignalReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&MediaAnalyticsClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&MediaAnalyticsClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:

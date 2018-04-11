@@ -895,9 +895,9 @@ void CrasAudioHandler::InitializeAudioState() {
 
   // Defer querying cras for GetNodes until cras service becomes available.
   cras_service_available_ = false;
-  GetCrasAudioClient()->WaitForServiceToBeAvailable(
-      base::Bind(&CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
+  GetCrasAudioClient()->WaitForServiceToBeAvailable(base::BindOnce(
+      &CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrasAudioHandler::InitializeAudioAfterCrasServiceAvailable(
@@ -1661,8 +1661,8 @@ bool CrasAudioHandler::HasExternalDevice(bool is_input) const {
 
 void CrasAudioHandler::GetDefaultOutputBufferSizeInternal() {
   GetCrasAudioClient()->GetDefaultOutputBufferSize(
-      base::Bind(&CrasAudioHandler::HandleGetDefaultOutputBufferSize,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&CrasAudioHandler::HandleGetDefaultOutputBufferSize,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrasAudioHandler::HandleGetDefaultOutputBufferSize(

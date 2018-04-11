@@ -38,7 +38,7 @@ TransactionDataFromDriver::~TransactionDataFromDriver() {
       buffer_deleter_.Run(GetData());
     } else {
       delete_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(buffer_deleter_, GetData()));
+                                    base::BindOnce(buffer_deleter_, GetData()));
     }
   }
 }

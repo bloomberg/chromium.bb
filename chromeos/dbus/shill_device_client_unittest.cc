@@ -176,7 +176,7 @@ TEST_F(ShillDeviceClientTest, ClearProperty) {
   // Call method.
   client_->ClearProperty(dbus::ObjectPath(kExampleDevicePath),
                          shill::kCellularAllowRoamingProperty,
-                         base::Bind(&ExpectNoResultValue));
+                         base::BindOnce(&ExpectNoResultValue));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

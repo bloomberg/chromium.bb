@@ -30,10 +30,10 @@ class VirtualFileProviderClientImpl : public VirtualFileProviderClient {
         virtual_file_provider::kOpenFileMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendInt64(size);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&VirtualFileProviderClientImpl::OnOpenFile,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  base::Passed(std::move(callback))));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&VirtualFileProviderClientImpl::OnOpenFile,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
  protected:

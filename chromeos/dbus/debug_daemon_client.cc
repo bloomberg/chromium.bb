@@ -299,7 +299,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, GetTracingAgentName(), true /* success */));
+        base::BindOnce(callback, GetTracingAgentName(), true /* success */));
   }
 
   void StopAgentTracing(const StopAgentTracingCallback& callback) override {

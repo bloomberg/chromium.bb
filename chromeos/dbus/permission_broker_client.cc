@@ -99,9 +99,10 @@ class PermissionBrokerClientImpl : public PermissionBrokerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint16(port);
     writer.AppendString(interface);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::Bind(&PermissionBrokerClientImpl::OnResponse,
-                                  weak_ptr_factory_.GetWeakPtr(), callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&PermissionBrokerClientImpl::OnResponse,
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void ReleaseUdpPort(uint16_t port,

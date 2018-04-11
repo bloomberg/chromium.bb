@@ -142,7 +142,7 @@ void AuthPolicyLoginHelper::AuthenticateUser(const std::string& username,
   chromeos::DBusThreadManager::Get()->GetAuthPolicyClient()->AuthenticateUser(
       request, GetDataReadPipe(password).get(),
       base::BindOnce(&AuthPolicyLoginHelper::OnAuthCallback,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void AuthPolicyLoginHelper::CancelRequestsAndRestart() {
@@ -162,7 +162,7 @@ void AuthPolicyLoginHelper::OnJoinCallback(JoinCallback callback,
       ->GetAuthPolicyClient()
       ->RefreshDevicePolicy(base::BindOnce(
           &AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback,
-          weak_factory_.GetWeakPtr(), base::Passed(&callback), machine_domain));
+          weak_factory_.GetWeakPtr(), std::move(callback), machine_domain));
 }
 
 void AuthPolicyLoginHelper::OnFirstPolicyRefreshCallback(

@@ -281,7 +281,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
                   Callback callback) {
     proxy_->CallMethod(
         method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(handler, GetWeakPtr(), base::Passed(callback)));
+        base::BindOnce(handler, GetWeakPtr(), std::move(*callback)));
   }
 
   // Calls the D-Bus method |name|, passing the |protobuf| as an argument.
@@ -304,7 +304,7 @@ class SmbProviderClientImpl : public SmbProviderClient {
         method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SmbProviderClientImpl::HandleDefaultCallback,
                        GetWeakPtr(), method_call->GetMember(),
-                       base::Passed(callback)));
+                       std::move(*callback)));
   }
 
   // Handles D-Bus callback for mount.

@@ -639,8 +639,8 @@ void NetworkConnectionHandlerImpl::QueueConnectRequest(
   // connect request), cancel the request and notify the user.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&NetworkConnectionHandlerImpl::CheckCertificatesLoaded,
-                 AsWeakPtr()),
+      base::BindOnce(&NetworkConnectionHandlerImpl::CheckCertificatesLoaded,
+                     AsWeakPtr()),
       base::TimeDelta::FromSeconds(kMaxCertLoadTimeSeconds) - dtime);
 }
 

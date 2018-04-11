@@ -169,13 +169,13 @@ void ShillThirdPartyVpnDriverClientImpl::AddShillThirdPartyVpnObserver(
       shill::kFlimflamThirdPartyVpnInterface, shill::kOnPlatformMessageFunction,
       base::Bind(&ShillThirdPartyVpnDriverClientImpl::OnPlatformMessage,
                  helper_info->GetWeakPtr()),
-      base::Bind(&ShillThirdPartyVpnDriverClientImpl::OnSignalConnected));
+      base::BindOnce(&ShillThirdPartyVpnDriverClientImpl::OnSignalConnected));
 
   proxy->ConnectToSignal(
       shill::kFlimflamThirdPartyVpnInterface, shill::kOnPacketReceivedFunction,
       base::Bind(&ShillThirdPartyVpnDriverClientImpl::OnPacketReceived,
                  helper_info->GetWeakPtr()),
-      base::Bind(&ShillThirdPartyVpnDriverClientImpl::OnSignalConnected));
+      base::BindOnce(&ShillThirdPartyVpnDriverClientImpl::OnSignalConnected));
 }
 
 void ShillThirdPartyVpnDriverClientImpl::RemoveShillThirdPartyVpnObserver(

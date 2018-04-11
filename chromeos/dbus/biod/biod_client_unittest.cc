@@ -198,7 +198,7 @@ class BiodClientTest : public testing::Test {
 
     message_loop_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&RunResponseCallback, std::move(*callback),
-                                  base::Passed(&pending_response)));
+                                  std::move(pending_response)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(BiodClientTest);

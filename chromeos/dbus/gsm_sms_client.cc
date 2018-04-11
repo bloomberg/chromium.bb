@@ -41,8 +41,8 @@ class SMSProxy {
         modemmanager::kModemManagerSMSInterface,
         modemmanager::kSMSReceivedSignal,
         base::Bind(&SMSProxy::OnSmsReceived, weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SMSProxy::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SMSProxy::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Sets SmsReceived signal handler.

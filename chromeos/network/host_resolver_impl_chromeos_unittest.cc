@@ -67,8 +67,8 @@ class HostResolverImplChromeOSTest : public testing::Test {
     // Create the host resolver from the main thread loop.
     scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&HostResolverImplChromeOSTest::InitializeHostResolver,
-                   base::Unretained(this)));
+        base::BindOnce(&HostResolverImplChromeOSTest::InitializeHostResolver,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -81,8 +81,8 @@ class HostResolverImplChromeOSTest : public testing::Test {
  protected:
   int CallResolve(net::HostResolver::RequestInfo& info) {
     scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
-        FROM_HERE, base::Bind(&HostResolverImplChromeOSTest::Resolve,
-                              base::Unretained(this), info));
+        FROM_HERE, base::BindOnce(&HostResolverImplChromeOSTest::Resolve,
+                                  base::Unretained(this), info));
     base::RunLoop().RunUntilIdle();
     return result_;
   }

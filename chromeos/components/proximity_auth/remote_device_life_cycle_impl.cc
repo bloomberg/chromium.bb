@@ -144,8 +144,8 @@ void RemoteDeviceLifeCycleImpl::OnAuthenticationResult(
   // |OnSendCompleted()| as an observer call for |messenger_|.
   secure_context_ = std::move(secure_context);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RemoteDeviceLifeCycleImpl::CreateMessenger,
-                            weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&RemoteDeviceLifeCycleImpl::CreateMessenger,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RemoteDeviceLifeCycleImpl::CreateMessenger() {

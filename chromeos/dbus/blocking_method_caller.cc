@@ -59,9 +59,9 @@ BlockingMethodCaller::CallMethodAndBlockWithError(
 
   std::unique_ptr<dbus::Response> response;
   bus_->GetDBusTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&CallMethodAndBlockInternal, &response, base::Owned(signaler),
-                 base::Unretained(proxy_), method_call, error_out));
+      FROM_HERE, base::BindOnce(&CallMethodAndBlockInternal, &response,
+                                base::Owned(signaler), base::Unretained(proxy_),
+                                method_call, error_out));
   // http://crbug.com/125360
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   on_blocking_method_call_.Wait();

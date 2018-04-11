@@ -223,24 +223,24 @@ class BiodClientImpl : public BiodClient {
         biod::kBiometricsManagerEnrollScanDoneSignal,
         base::Bind(&BiodClientImpl::EnrollScanDoneReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BiodClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BiodClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     biod_proxy_->ConnectToSignal(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerAuthScanDoneSignal,
         base::Bind(&BiodClientImpl::AuthScanDoneReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BiodClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BiodClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
 
     biod_proxy_->ConnectToSignal(
         biod::kBiometricsManagerInterface,
         biod::kBiometricsManagerSessionFailedSignal,
         base::Bind(&BiodClientImpl::SessionFailedReceived,
                    weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&BiodClientImpl::OnSignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&BiodClientImpl::OnSignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
