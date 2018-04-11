@@ -140,6 +140,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4145029455188493639"><ph name="EMAIL_ADDRESS" /> としてログインしています。</translation>
 <translation id="4155497795971509630">必要なコンポーネントが見つかりません。インストールしているソフトウェアのバージョンが最新であることを確認し、もう一度お試しください。</translation>
 <translation id="4156740505453712750">このパソコンへのアクセスを保護するには、<ph name="BOLD_START" />6 桁以上<ph name="BOLD_END" />の PIN を選択してください。この PIN は別の場所から接続するときに必要となります。</translation>
+<translation id="4169432154993690151">プロフィール画像を選択するには、Chrome リモート デスクトップにカメラへのアクセスを許可してください</translation>
 <translation id="4176825807642096119">アクセス コード</translation>
 <translation id="4207623512727273241">続行する前にインストーラを実行してください。</translation>
 <translation id="4227991223508142681">ユーティリティ プロビジョニングをホストします</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">From</translation>
 <translation id="677755392401385740">次のユーザーのホストを開始しました: <ph name="HOST_USERNAME" />。</translation>
 <translation id="6865175692670882333">表示/編集</translation>
+<translation id="6913710942997637770">プロフィール画像を選択するには、Chrome リモート デスクトップに写真へのアクセスを許可してください</translation>
 <translation id="6930242544192836755">接続時間</translation>
 <translation id="6939719207673461467">キーボードを表示/非表示</translation>
 <translation id="6944854424004126054">ウィンドウを元のサイズに戻す</translation>

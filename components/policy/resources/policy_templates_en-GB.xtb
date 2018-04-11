@@ -164,11 +164,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
-<translation id="1519337829779572350">This setting is deprecated, use SafeBrowsingExtendedReportingEnabled instead. Enabling or disabling SafeBrowsingExtendedReportingEnabled is equivalent to setting SafeBrowsingExtendedReportingOptInAllowed to False.
-
-      Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
-
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="1530812829012954197">Always render the following URL patterns in the host browser</translation>
@@ -886,11 +881,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
 <translation id="3660562134618097814">Transfer SAML IdP cookies during login</translation>
-<translation id="3687282113223807271">The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
-
-      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
-
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="3709266154059827597">Configure extension installation blacklist</translation>
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3736879847913515635">Enable add person in user manager</translation>
@@ -1393,19 +1383,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Note that passwords might get older than the specified number of days if the client has been offline for a longer period of time.</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
-<translation id="5106504910236139235">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing Extended Reporting and prevents users from changing this setting.
-
-      Extended Reporting sends some system information and page content to Google servers to help detect dangerous apps and sites.
-
-      If the setting is set to true, then reports will be created and sent whenever necessary (such as when a security interstitial is shown).
-
-      If the setting is set to false, reports will never be sent.
-
-      If this policy is set to true or false, the user will not be able to modify the setting.
-
-      If this policy is left unset, the user will be able to change the setting and decide whether to send reports or not.
-
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="5108031557082757679">Disabled enterprise device printers</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
 <translation id="5141670636904227950">Set the default screen magnifier type enabled on the login screen</translation>
@@ -1627,19 +1604,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
-<translation id="5784370777704871674">Enables <ph name="PRODUCT_NAME" />'s Safe Browsing feature and prevents users from changing this setting.
-
-      If you enable this setting, Safe Browsing is always active.
-
-      If you disable this setting, Safe Browsing is never active.
-
-      If you enable or disable this setting, users cannot change or override the 'Enable phishing and malware protection' setting in <ph name="PRODUCT_NAME" />.
-
-      If this policy is left unset, this will be enabled but the user will be able to change it.
-
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.
-
-      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="5809728392451418079">Set the display name for device-local accounts</translation>
 <translation id="5814301096961727113">Set the default state of spoken feedback on the login screen</translation>
 <translation id="5815129011704381141">Automatically reboot after update</translation>
@@ -1835,11 +1799,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6281043242780654992">Configures policies for Native Messaging. Blacklisted native messaging hosts won't be allowed unless they are whitelisted.</translation>
 <translation id="6282799760374509080">Allow or deny audio capture</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Enables component updates for all components in <ph name="PRODUCT_NAME" /> when unset or set to True.
-
-      If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behaviour of the browser, or is critical for its security, will not be disabled.
-      Examples of such components include the certificate revocation lists and safe browsing data.
-      See https://developers.google.com/safe-browsing for more info on SafeBrowsing.</translation>
 <translation id="6310223829319187614">Enable domain name autocomplete during user sign in</translation>
 <translation id="6315673513957120120">Chrome shows a warning page when users navigate to sites that have SSL errors. By default or when this policy is set to true, users are allowed to click through these warning pages.
       Setting this policy to false disallows users to click through any warning page.</translation>

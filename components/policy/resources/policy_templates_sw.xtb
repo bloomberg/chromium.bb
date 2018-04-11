@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="1099282607296956954">Washa kipengele cha Utengaji wa Tovuti katika kila tovuti</translation>
 <translation id="1117535567637097036">Vidhibiti vya itifaki vilivyowekwa kupitia sera hii havitumiwi wakati wa kushughulikia utaratibu wa kuratibu wa Android.</translation>
+<translation id="1118093128235245168">Ruhusu tovuti zimuombe mtumiaji atoe idhini ya kufikia kifaa cha USB</translation>
 <translation id="1128903365609589950">Huweka mipangilio ya saraka ambayo <ph name="PRODUCT_NAME" /> itatumia kuhifadhi faili zilizoakibishwa kwenye diski.
 
       Ukiweka sera hii, <ph name="PRODUCT_NAME" /> itatumia saraka iliyotolewa bila kujali kama mtumiaji amebainisha ripoti ya '--disk-cache-dir' au la. Ili kuepuka kupoteza data au hitilafu zisizotarajiwa, sera hii haipaswi kuwekwa kuwa thamani ya kipeo cha saraka au kwenye saraka iliyotumiwa kwa madhumuni mengine, kwa sababu <ph name="PRODUCT_NAME" /> hudhibiti maudhui yake.
@@ -69,6 +70,9 @@
 
      Sera hii isipowekwa, idadi chaguo-msingi ni saa 3. Idadi ya chini inayoruhusiwa ni sekunde 60.</translation>
 <translation id="1204263402976895730">Printa za biashara zinazotumia sera</translation>
+<translation id="1216758672198492382">Hukuruhusu ubaini ikiwa tovuti zinaruhusiwa kupata idhini ya kufikia vifaa vya USB vilivyounganishwa. Idhini ya ufikiaji inaweza kuzuiwa kabisa, au mtumiaji anaweza kuulizwa kila wakati tovuti inapotaka kufikia vifaa vya USB vilivyounganishwa.
+
+          Sera hii ikiachwa bila kuwekwa, '3' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="1219695476179627719">Hubainisha ikiwa kifaa kitarejeshwa kwenye toleo lililowekwa na <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> ikiwa tayari kinatumia toleo la sasa. 
 
       Chaguomsingi ni RollbackDisabled</translation>
@@ -152,11 +156,6 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Uthibitishaji wa Mbali</translation>
 <translation id="1509692106376861764">Sera hii imeondolewa kutoka toleo la 29 la <ph name="PRODUCT_NAME" /></translation>
-<translation id="1519337829779572350">Mipangilio hii imeacha kuendesha huduma, tumia SafeBrowsingExtendedReportingEnabled badala yake. Kuwasha au kuzima  SafeBrowsingExtendedReportingEnabled ni sawa na kuweka mipangilio ya SafeBrowsingExtendedReportingOptInAllowed kuwa Sivyo.
-
-      Kuweka sera hii kuwa sivyo kunazuia watumiaji kuchagua kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwa seva za Google. Ikiwa mipangilio hii imewekwa kuwa ndivyo au haijawekwa, basi watumiaji wataruhusiwa kutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye kipengele cha Kuvinjari Salama ili kusaidia kugundua programu na tovuti hatari. 
-
-     Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu SafeBrowsing.</translation>
 <translation id="1522425503138261032">Ruhusu tovuti kufuatilia eneo halisi la mtumiaji</translation>
 <translation id="152657506688053119">Orodha ya URL mbadala za mtoa huduma chaguo-msingi wa utafutaji.</translation>
 <translation id="1530812829012954197">Onyesha ruwaza zifuatazo za URL mara kwa mara katika kivinjari cha mpangishaji</translation>
@@ -593,6 +592,12 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2801230735743888564">Ruruhusu watumiaji wacheze mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao.
 
       Sera hii ikiwekwa kuwa Sivyo, watumiaji hawataweza kucheza mchezo mchezo fiche wa dinosau kifaa kinapokuwa nje ya mtandao. Mipangilio hii ikiwekwa kuwa Ndivyo, watumiaji wanaruhusiwa kucheza mchezo wa dinosau. Sera hii isipowekwa, watumiaji hawaruhusiwi kucheza mchezo fiche wa dinosau kwenye Mfumo wa Uendeshaji wa Chrome uliosajiliwa, lakini wanaruhusiwa kuucheza chini ya hali nyingine.</translation>
+<translation id="2802085784857530815">Inakuruhusu udhibiti ikiwa watumiaji wanaweza kufikia printa zisizo za shirika
+
+      Ikiwa sera imewekwa kuwa Ndivyo, au isipowekwa kabisa, watumiaji wataweza kuongeza, kuweka mipangilio na kuchapisha wakitumia printa za mitandao yao.
+
+      Ikiwa sera imewekwa kuwa Sivyo, watumiaji hawataweza kuongeza na kuweka mipangilio ya printa za mitandao yao. Hawataweza pia kuchapisha wakitumia printa zozote za mitandao yao, ambazo waliziwekea mipangilio awali.
+      </translation>
 <translation id="2805707493867224476">Ruhusu tovuti zote zionyeshe madirisha ibukizi</translation>
 <translation id="2808013382476173118">Huwasha matumizi ya seva za STUN seva teja za mbali zinapojaribu kutambua muunganisho wa mashini hii.
 
@@ -750,6 +755,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
 <translation id="3264793472749429012">Usimbaji wa kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="3273221114520206906">Mpangilio chaguo-msingi wa JavaScript</translation>
+<translation id="3284094172359247914">Dhibiti matumizi ya API ya WebUSB</translation>
 <translation id="3288595667065905535">Kituo cha Kutoa</translation>
 <translation id="3292147213643666827">Huwezesha <ph name="PRODUCT_NAME" /> kufanya kazi kama proksi kati ya <ph name="CLOUD_PRINT_NAME" /> na printa zilizotangulia zilizounganishwa kwenye mashine.
 
@@ -834,6 +840,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
           Sera hii itatumika tu endapo sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
 <translation id="350797926066071931">Wezesha Tafsiri</translation>
 <translation id="3512226956150568738">Ikiwa muundo wa kifaa teja tayari unatumia ARC kabla ya kuhamishiwa kwenye ext4 ili kutumia ARC na sera ya ArcEnabled imewekwa kuwa ndivyo, chaguo hili litafanya kazi kama AskUser (thamani ya 3). Katika hali zingine zote (ikiwa muundo wa kifaa haukuwa unatumia ARC hapo awali, au kama sera ya ArcEnabled imewekwa kuwa sivyo), thamani hii inalingana na DisallowArc (thamani ya 0).</translation>
+<translation id="3524204464536655762">Usiruhusu tovuti yoyote iombe idhini ya kufikia vifaa vya USB kupitia API ya WebUSB</translation>
 <translation id="3528000905991875314">Wezesha kurasa badala za hitilafu</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="3577251398714997599">Mipangilio ya matangazo kwa tovuti zilizo na matangazo yanayokatiza matumizi</translation>
@@ -842,11 +849,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3646859102161347133">Weka aina ya kikuza skrini</translation>
 <translation id="3653237928288822292">Aikoni ya mtoaji wa utafutaji chaguo-msingi</translation>
 <translation id="3660562134618097814">Hamisha vidakuzi vya SAML IdP wakati wa kuingia katika akaunti</translation>
-<translation id="3687282113223807271">Huduma ya Kuvinjari Salama huonyesha ukurasa wa kuonya wakati watumiaji wanapovinjari tovuti ambazo zimetiwa alama kuwa hasidi. Kuwasha mipangilio hii kunawazuia watumiaji kuondoka kwenye ukurasa wa kuonya hadi kwenye tovuti hasidi.
-
-      Ikiwa mipangilio hii itazimwa au haitawekwa basi watumiaji wanaweza kuchagua kuendelea hadi kwenye tovuti iliyotiwa alama baada ya kuonyeshwa onyo.
-
-      Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi kuhusu SafeBrowsing.</translation>
 <translation id="3709266154059827597">Sanidi orodha inayotiliwa shaka ya usakinishaji wa kiendelezi</translation>
 <translation id="3711895659073496551">Sitisha</translation>
 <translation id="3736879847913515635">Washa kipengele cha kuongeza wasifu katika kidhibiti cha mtumiaji</translation>
@@ -1325,19 +1327,6 @@ Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kio
 
      Kumbuka kwamba manenosiri huenda yakawa ya zamani zaidi kuliko siku zilizobainishwa ikiwa mteja amekuwa nje ya mtandao kwa muda mrefu zaidi.</translation>
 <translation id="5105313908130842249">Ufungaji wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>
-<translation id="5106504910236139235">Huwasha Kipengele cha Kuripoti kwa Upana Kuvinjari Salama cha <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio hii.
-
-      Kipengele cha Kuripoti kwa Upana hutuma baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwenye seva za Google ili kusaidia kutambua programu na tovuti hatari.
-
-      Kama mipangilo imewekwa kuwa ndivyo, basi ripoti zitaundwa na kutumwa wakati wowote zinapohitajika (kwa mfano, wakati ambapo skrini ya usalama inaonyeshwa).
-
-      Kama mipangilo imewekwa kuwa sivyo, ripoti hazitawahi kutumwa.
-
-      Kama sera imewekwa kuwa ndivyo au sivyo, watumiaji hawataweza kubadilisha mipangilio. 
-
-      Kama sera hii imeachwa bila kuwekwa, mtumiaji ataweza kubadilisha mipangilio na kuamua atume ripoti au la.
-
-      Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu SafeBrowsing.</translation>
 <translation id="5108031557082757679">Printa za biashara zisizotumia sera</translation>
 <translation id="5130288486815037971">Ikiwa mipangilio ya kriptografia ya RC4 katika TLS imewashwa</translation>
 <translation id="5141670636904227950">Weka aina ya kikuza skrini cha msingi kama kimewashwa kwenye skrini ya kuingia katika skrini</translation>
@@ -1555,19 +1544,6 @@ Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kio
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguo-msingi unatumiwa.
 
           Sera ya thamani inastahili kubainishwa kwa nukta. </translation>
-<translation id="5784370777704871674">Huwasha kipengele cha Kuvinjari Salama cha <ph name="PRODUCT_NAME" /> na huzuia watumiaji kubadilisha mipangilio hii.
-
-      Ukiwasha mipangilio hii, Kuvinjari Salama kunatumika wakati wowote.
-
-      Ukizima mipangilio hii, Kuvinjari Salama hakutumiki kamwe.
-
-      Ukiwasha au uzime mipangilio hii, watumiaji hawawezi kubadilisha au kufuta mipangilio ya  "Ruhusu ulinzi dhidi ya wizi wa data na programu hasidi" katika <ph name="PRODUCT_NAME" />.
-
-      Ikiwa sera hii haitawekwa, mipangilio hii itawashwa lakini mtumiaji hataweza kuibadilisha.
-
-      Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu Kuvinjari Salama.
-
-      Sera hii haipatikani katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Weka jina la onyesho kwa ajili ya akaunti za kifaa cha karibu</translation>
 <translation id="5814301096961727113">Weka hali chaguo-msingi ya maoni yanayotamkwa kwenye skrini ya kuingia katika akaunti</translation>
 <translation id="5815129011704381141">Zima na uwashe tena otomatiki baada ya kusasisha</translation>
@@ -1762,11 +1738,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6281043242780654992">Sanidi sera za Ujumbe Asili. Wapangishi wa ujumbe asili ambao hawajaidhinishwa hawataruhusiwa isipokuwa kama wamepewa idhini.</translation>
 <translation id="6282799760374509080">Ruhusu au upinge kurekodi sauti</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Ikiwa haijawekwa au imewekwa kuwa Ndivyo, masasisho ya vipengele vyote katika <ph name="PRODUCT_NAME" /> huwashwa.
-
-      Ikiwekwa kuwa Sivyo, masasisho ya vipengele yatazimwa. Hata hivyo, baadhi ya vipengele havizingatii sera hii: masasisho ya kipengele chochote ambacho hakina msimbo wa kutekelezwa, au ambacho hakibadilishi jinsi kivinjari kinavyofanya kazi, au ni muhimu kwa usalama wake hayatazimwa.
-      Mifano ya vipengele kama hivyo ni orodha za vyeti vilivyobatilishwa na data ya kuvinjari salama.
-      Angalia https://developers.google.com/safe-browsing kwa maelezo zaidi kuhusu SafeBrowsing.</translation>
 <translation id="6310223829319187614">Washa kipengee cha jina la kikoa cha kukamilisha kiotomatiki wakati wa mtumiaji kuingia katika akaunti</translation>
 <translation id="6315673513957120120">Chrome huonyesha ukurasa wa onyo watumiaji wanapoenda kwenye tovuti ambazo zina hitilafu za SSL. Kwa chaguo-msingi au sera hii ikiwekwa kuwa ndivyo, watumiaji wanaruhusiwa kubofya kwenye kurasa hizi za onyo.
       Kuweka sera kuwa sivyo hakuwaruhusu watumiaji kubofya ukurasa wowote wa onyo.</translation>

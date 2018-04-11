@@ -159,6 +159,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="3789841737615482174">Telepítés</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3897092660631435901">Menü</translation>
+<translation id="3915450441834151894">Webhelyadatok</translation>
 <translation id="3928666092801078803">Adataim egyesítése</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
 <translation id="3963231839620026525">Új inkognitólap</translation>
@@ -222,6 +223,7 @@ Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Írja be
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Szinkronizálás bekapcsolása</translation>
 <translation id="5244474230056479698">Szinkronizálás a következővel: <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Nyisson meg új lapot a privát böngészéshez.</translation>
 <translation id="5300589172476337783">Megjelenítés</translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5327248766486351172">Név</translation>
@@ -301,6 +303,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="6445981559479772097">Üzenet elküldve.</translation>
 <translation id="6464071786529933911">Megnyitás új inkognitólapon</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elem törölve</translation>
+<translation id="6528048372317642110">Nem lehetséges a fájlletöltés</translation>
 <translation id="6541915733953096570">Elmúlt óra</translation>
 <translation id="6570040839871198836">Űrlapok automatikus kitöltése</translation>
 <translation id="6656103420185847513">Mappa szerkesztése</translation>

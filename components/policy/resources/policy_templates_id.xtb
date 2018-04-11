@@ -162,11 +162,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Pengesahan Jarak Jauh</translation>
 <translation id="1509692106376861764">Kebijakan ini tidak lagi digunakan mulai <ph name="PRODUCT_NAME" /> versi 29.</translation>
-<translation id="1519337829779572350">Setelan ini tidak digunakan lagi, gunakan SafeBrowsingExtendedReportingEnabled. Mengaktifkan atau menonaktifkan SafeBrowsingExtendedReportingEnabled sama dengan menyetel SafeBrowsingExtendedReportingOptInAllowed ke False.
-
-      Menyetel kebijakan ini ke false akan mencegah pengguna memilih untuk mengirimkan beberapa informasi sistem dan konten halaman ke server Google. Jika setelan ini true atau tidak dikonfigurasi, pengguna diizinkan untuk mengirimkan beberapa informasi sistem dan konten halaman ke Safe Browsing guna membantu mendeteksi aplikasi dan situs berbahaya.
-
-      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang SafeBrowsing.</translation>
 <translation id="1522425503138261032">Izinkan situs melacak lokasi fisik pengguna</translation>
 <translation id="152657506688053119">Daftar URL pengganti untuk penyedia penelusuran default</translation>
 <translation id="1530812829012954197">Selalu urai pola URL berikut di browser host</translation>
@@ -856,11 +851,6 @@
 <translation id="3646859102161347133">Menyetel jenis lup</translation>
 <translation id="3653237928288822292">Ikon penyedia penelusuran default</translation>
 <translation id="3660562134618097814">Transfer cookie SAML IdP saat proses masuk.</translation>
-<translation id="3687282113223807271">Layanan Safe Browsing menampilkan halaman peringatan jika pengguna membuka situs yang ditandai sebagai berpotensi berbahaya. Mengaktifkan setelan ini akan membuat pengguna tidak dapat melanjutkan dari halaman peringatan ke situs berbahaya.
-
-      Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat memilih untuk melanjutkan ke situs yang ditandai setelah peringatan ditampilkan.
-
-      Lihat https://developers.google.com/safe-browsing untuk informasi selengkapnya terkait SafeBrowsing.</translation>
 <translation id="3709266154059827597">Konfigurasikan daftar hitam pemasangan ekstensi</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
 <translation id="3736879847913515635">Mengaktifkan penambahan orang di pengelola pengguna</translation>
@@ -1340,19 +1330,6 @@
 
       Perlu diperhatikan bahwa sandi mungkin lebih lama daripada jumlah hari yang ditentukan jika klien offline dalam waktu yang lebih lama.</translation>
 <translation id="5105313908130842249">Penundaan penguncian layar saat menggunakan daya baterai</translation>
-<translation id="5106504910236139235">Mengaktifkan Pelaporan Lengkap Safe Browsing <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
-
-      Pelaporan Lengkap mengirimkan beberapa informasi sistem dan konten halaman ke server Google untuk membantu mendeteksi aplikasi dan situs berbahaya.
-
-      Jika setelan ini disetel ke true, laporan akan dibuat dan dikirim kapan saja diperlukan (seperti saat interstisial keamanan ditampilkan).
-
-      Jika setelan ini disetel ke false, laporan tidak akan dikirim.
-
-      Jika kebijakan ini disetel ke true atau false, pengguna tidak dapat mengubah setelan.
-
-      Jika kebijakan ini dibiarkan tidak disetel, pengguna dapat mengubah setelan dan menentukan apakah akan mengirim laporan atau tidak.
-
-      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang SafeBrowsing.</translation>
 <translation id="5108031557082757679">Menonaktifkan printer yang merupakan perangkat perusahaan</translation>
 <translation id="5130288486815037971">Untuk mengetahui apakah cipher suite RC4 di TLS diaktifkan</translation>
 <translation id="5141670636904227950">Menyetel jenis lup default yang diaktifkan di layar masuk</translation>
@@ -1551,19 +1528,6 @@
           Saat kebijakan ini tidak disetel, panjang waktu default digunakan.
 
           Nilai kebijakan harus ditetapkan dalam milidetik.</translation>
-<translation id="5784370777704871674">Mengaktifkan fitur Safe Browsing <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengganti setelan ini.
-
-      Jika Anda mengaktifkan setelan ini, Safe Browsing selalu aktif.
-
-      Jika Anda menonaktifkan setelan ini, Safe Browsing tidak aktif.
-
-      Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan "Aktifkan perlindungan phishing dan malware" di <ph name="PRODUCT_NAME" />.
-
-      Jika dibiarkan tanpa disetel, kebijakan ini akan diaktifkan tetapi pengguna dapat mengubahnya.
-
-      Lihat https://developers.google.com/safe-browsing untuk info selengkapnya tentang SafeBrowsing.
-
-      Kebijakan ini tidak tersedia di instance Windows yang tidak digabungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Setel nama tampilan untuk akun lokal perangkat</translation>
 <translation id="5814301096961727113">Menyetel status default masukan yang diucapkan di layar masuk</translation>
 <translation id="5815129011704381141">Booting ulang otomatis setelah pembaruan</translation>
@@ -1751,11 +1715,6 @@
 <translation id="6281043242780654992">Mengonfigurasikan kebijakan untuk Perpesanan Asli. Hosting perpesanan asli yang dimasukkan dalam daftar hitam tidak akan diizinkan kecuali telah dimasukkan dalam daftar putih.</translation>
 <translation id="6282799760374509080">Izinkan atau tolak penangkapan audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Mengaktifkan update komponen untuk semua komponen di <ph name="PRODUCT_NAME" /> saat tidak disetel atau disetel ke True.
-
-      Jika disetel ke False, update komponen akan dinonaktifkan. Namun, sebagian komponen akan dikecualikan dari kebijakan ini: update komponen apa pun yang tidak berisi kode yang dapat dijalankan, atau tidak mengubah perilaku browser secara signifikan, atau demi alasan keamanan, tidak akan dinonaktifkan.
-      Contoh komponen tersebut meliputi daftar pembatalan sertifikat dan data safe browsing.
-      Lihat https://developers.google.com/safe-browsing untuk mendapatkan informasi selengkapnya terkait SafeBrowsing.</translation>
 <translation id="6310223829319187614">Mengaktifkan pelengkapan otomatis nama domain saat proses masuk pengguna</translation>
 <translation id="6315673513957120120">Chrome menunjukkan halaman peringatan saat pengguna menavigasi ke situs dengan kesalahan SSL. Secara default atau saat kebijakan ini disetel ke True, pengguna diizinkan untuk mengeklik melalui halaman peringatan ini.
       Menyetel kebijakan ini ke False membuat pengguna tidak dapat mengeklik melalui halaman peringatan apa pun.</translation>

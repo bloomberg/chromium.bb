@@ -43,6 +43,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="TAB" /> या <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">अपना अभी वाला वेबपेज बुकमार्क के रूप में सेव करें</translation>
 <translation id="2750942583782703988">अपना अभी वाला पेज फिर लोड करें</translation>
+<translation id="2764005613199379871">खोज पता बार में फ़ोकस रखें</translation>
 <translation id="2789868185375229787">पेज पर ज़ूम घटाएं</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="2830827904629746450">विंडो दाईं ओर डॉक करें</translation>
@@ -54,6 +55,7 @@
 <translation id="3105917916468784889">स्क्रीनशॉट लें</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">पता बार को फ़ोकस करें</translation>
+<translation id="3256109297135787951">अपने शेल्फ़ पर मौजूद किसी आइटम से हाइलाइट हटाएं</translation>
 <translation id="3288816184963444640">अभी वाली विंडो बंद करें</translation>
 <translation id="3407560819924487926">काम का प्रबंधक सामने लाएं</translation>
 <translation id="3422679037938588196">अपनी खोज के पिछले मिलान पर जाएं</translation>
@@ -68,6 +70,7 @@
 <translation id="3720939646656082033">लिंक को नए टैब में खोलें और नए टैब पर स्‍विच करें</translation>
 <translation id="3725795051337497754">अभी वाला टैब बंद करें</translation>
 <translation id="3751033133896282964">अपनी पिछली कार्रवाई को पहले जैसा करें</translation>
+<translation id="3792178297143798024">अपने शेल्फ़ पर हाइलाइट किया गया आइटम खोलें</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
 <translation id="3837047332182291558">कीबोर्ड की रोशनी बढ़ाएं (सिर्फ़ बैकलिट कीबोर्ड के लिए)</translation>
 <translation id="3976863468609830880">अपनी अलमारी पर आखिरी आइकॉन पर क्लिक करें</translation>
@@ -127,6 +130,7 @@
 <translation id="6435207348963613811">अपनी अलमारी पर पिछला आइटम हाइलाइट करें</translation>
 <translation id="6445033640292336367">टैब को उसकी मूल जगह पर वापस ले जाएं</translation>
 <translation id="649811797655257835">फ़ाइल चुनें, फिर <ph name="SPACE" /> दबाएं</translation>
+<translation id="6556040137485212400">उस विंडो को खोलें जिसका सबसे लंबे समय से इस्तेमाल नहीं किया गया है</translation>
 <translation id="666343722268997814">हाइलाइट किए गए आइटम के लिए राइट-क्लिक मेन्यू खोलें</translation>
 <translation id="6671538777808758331">अपनी खोज के लिए अगले मिलान पर जाएं</translation>
 <translation id="6681606577947445973"><ph name="REFRESH" /> या <ph name="CTRL" /><ph name="SEPARATOR" /><ph name="R" /></translation>
@@ -153,11 +157,13 @@
 <translation id="7787242579016742662">ब्राउज़र में फ़ाइल खोलें</translation>
 <translation id="7822267121073044318">भाषा इनपुट करने के अगले तरीके पर जाएं</translation>
 <translation id="7917881398263220094">अपने अभी वाले पेज को लोड होने से रोकें</translation>
+<translation id="7952165122793773711">टैब 1 से 8 तक जाएं</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> या <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8104889575691864804">ऐप्लिकेशन मेन्यू दिखाएं</translation>
 <translation id="8130528849632411619">दस्‍तावेज़ की शुरुआत में जाएं</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> या <ph name="E" /></translation>
+<translation id="8232835244134740473">फ़ोकस इनके बीच स्विच करें: स्टेटस बताने वाली जगह (जहां आपके खाते की तस्वीर दिखाई देती है), लॉन्चर, पता बार, बुकमार्क बार (अगर दिख रहा हो), वह वेबपेज जो खुला है और डाउनलोड बार (अगर दिख रहा हो).</translation>
 <translation id="8234414138295101081">स्‍क्रीन को 90 डिग्री पर घुमाएं</translation>
 <translation id="8264941229485248811">डेवलपर टूल इंसपेक्टर दिखाएं या छिपाएं</translation>
 <translation id="836869401750819675">डाउनलोड पेज खोलें</translation>

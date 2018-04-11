@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Zadani davatelj usluga pretraživanja</translation>
 <translation id="1099282607296956954">Omogući izolaciju web-lokacije za sve web-lokacije</translation>
 <translation id="1117535567637097036">Rukovatelji protokolom postavljeni putem ovog pravila ne upotrebljavaju se prilikom upotrebe Androidovih namjera.</translation>
+<translation id="1118093128235245168">Dopusti web-lokacijama da traže dopuštenje korisnika za pristup povezanom USB uređaju</translation>
 <translation id="1128903365609589950">Konfigurira direktorij koji će <ph name="PRODUCT_NAME" /> koristiti za pohranu predmemoriranih datoteka na disku.
 
       Ako postavite to pravilo, taj će direktorij <ph name="PRODUCT_NAME" /> upotrebljavati bez obzira na to je li korisnik naveo oznaku "--disk-cache-dir". Kako bi se spriječio gubitak podataka ili druge neočekivane pogreške, pravilo se ne smije postaviti na korijenski direktorij ili direktorij jedinice koji se koristi u druge svrhe jer njegovim sadržajem upravlja <ph name="PRODUCT_NAME" />.
@@ -73,6 +74,9 @@
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
       dopuštena učestalost iznosi 60 sekundi.</translation>
 <translation id="1204263402976895730">Omogućeni pisači tvrtke</translation>
+<translation id="1216758672198492382">Omogućuje vam da odredite hoće li web-lokacijama biti dopušten pristup povezanim USB uređajima. Pristup se može potpuno blokirati ili se može tražiti dopuštenje korisnika svaki put kad neka web-lokacija želi pristupiti povezanim USB uređajima.
+
+          Ako se pravilo ne postavi, upotrebljavat će se vrijednost "3" koju korisnik može promijeniti.</translation>
 <translation id="1219695476179627719">Određuje treba li se uređaj vratiti na verziju koja je postavljena pravilom <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> ako već ima noviju verziju.
 
       Zadana postavka glasi RollbackDisabled.</translation>
@@ -158,11 +162,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
 <translation id="1509692106376861764">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Ta je postavka obustavljena, upotrijebite SafeBrowsingExtendedReportingEnabled. Omogućivanje ili onemogućivanje postavke SafeBrowsingExtendedReportingEnabled ekvivalentno je postavljanju SafeBrowsingExtendedReportingOptInAllowed na netočno.
-
-      Ako se to pravilo postavi na netočno, korisnici ne mogu odabrati slanje nekih podataka o sustavu i sadržaja stranice Googleovim poslužiteljima. Ako se pravilo postavi na točno ili se ne konfigurira, korisnici će moći slati neke podatke o sustavu i sadržaj stranice Sigurnom pregledavanju radi otkrivanja opasnih aplikacija i web-lokacija.
-
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
 <translation id="152657506688053119">Popis zamjenskih URL-ova za zadanog davatelja usluge pretraživanja</translation>
 <translation id="1530812829012954197">Uvijek prikaži sljedeće URL obrasce u pregledniku hosta</translation>
@@ -318,6 +317,17 @@
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
+<translation id="2132732175597591362">Određuje hoće li popis dopuštenih uzoraka URL-a koji se automatski reproduciraju uvijek biti omogućen.
+
+      Ako je automatska reprodukcija omogućena, videozapisi se mogu reproducirati automatski (bez korisnikova pristanka) s audiosadržajem u pregledniku <ph name="PRODUCT_NAME" />.
+
+      Uzorak URL-a mora biti oblikovan prema uputama na ovoj stranici https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Ako je pravilo AutoplayAllowed postavljeno na True, ovo pravilo neće imati učinka.
+
+      Ako je pravilo AutoplayAllowed postavljeno na False, svi uzorci URL-a postavljeni u ovom pravilu i dalje će se moći reproducirati.
+
+      Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.</translation>
 <translation id="2134437727173969994">Dopusti zaključavanje zaslona</translation>
 <translation id="2137064848866899664">Ako se to pravilo postavi, svaki se zaslon zakreće na navedeno
       usmjerenje pri svakom ponovnom pokretanju i prilikom prvog povezivanja
@@ -583,6 +593,12 @@
 <translation id="2801230735743888564">Dopusti korisnicima igranje skrivene igre s dinosaurom kada je uređaj izvan mreže.
 
       Ako se to pravilo postavi na "False", korisnici neće moći igrati skrivenu igru s dinosaurom kada uređaj nije povezan s mrežom. Ako se ta postavka postavi na "True", korisnici će moći igrati igru s dinosaurom. Ako se to pravilo ne postavi, korisnici neće moći igrati skrivenu igru s dinosaurom u prijavljenom OS-u Chrome, ali će je moći igrati u drugim okolnostima.</translation>
+<translation id="2802085784857530815">Omogućuje vam da odredite mogu li korisnici pristupiti pisačima izvan tvrtke
+
+      Ako se pravilo postavi na True ili se ne postavi, korisnici će moći dodavati i konfigurirati nativne pisače te ispisivati na njima.
+
+      Ako se pravilo postavi na False, korisnici neće moći dodavati i konfigurirati nativne pisače. Neće moći ni ispisivati na prethodno konfiguriranim nativnim pisačima.
+      </translation>
 <translation id="2805707493867224476">Dopusti svim web-lokacijama prikazivanje skočnih prozora</translation>
 <translation id="2808013382476173118">Omogućuje upotrebu STUN poslužitelja kada udaljeni klijenti pokušavaju uspostaviti vezu s ovim računalom.
 
@@ -739,6 +755,7 @@
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode isključivanja zaslona i odgode neaktivnosti ili jednako tom vremenu (ako je postavljeno).</translation>
 <translation id="3264793472749429012">Kodiranja zadanog davatelja usluge pretraživanja</translation>
 <translation id="3273221114520206906">Zadana postavka JavaScripta</translation>
+<translation id="3284094172359247914">Upravljanje upotrebom API-ja WebUSB</translation>
 <translation id="3288595667065905535">Kanal izdanja</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="3307746730474515290">Kontrolira koje se vrste aplikacija/proširenja smiju instalirati i ograničava pristup za vrijeme izvođenja.
@@ -820,6 +837,7 @@
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="350797926066071931">Omogući Prevoditelj</translation>
 <translation id="3512226956150568738">Ako je klijentov model uređaja već podržavao ARC prije nego što je premještanje na ext4 bilo obavezno za izvođenje ARC-a i ako je pravilo ArcEnabled postavljeno na true, ta će se opcija ponašati kao AskUser (vrijednost 3). U svim ostalim slučajevima (ako model uređaja nije podržavao ARC ili ako je pravilo ArcEnabled postavljeno na false), ta je vrijednost ekvivalentna pravilu DisallowArc (vrijednost 0).</translation>
+<translation id="3524204464536655762">Ne dopuštaj nijednoj web-lokaciji da traži pristup USB uređajima putem API-ja WebUSB</translation>
 <translation id="3528000905991875314">Omogući alternativne stranice pogrešaka</translation>
 <translation id="3547954654003013442">Proxy postavke</translation>
 <translation id="3577251398714997599">Postavke oglasa za web-lokacije s ometajućim oglasima</translation>
@@ -828,11 +846,6 @@
 <translation id="3646859102161347133">Postavljanje vrste povećala</translation>
 <translation id="3653237928288822292">Ikona zadanog davatelja usluga pretraživanja</translation>
 <translation id="3660562134618097814">Prenesi kolačiće SAML IdP-a tijekom prijave</translation>
-<translation id="3687282113223807271">Usluga Sigurno pregledavanje prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje su označene kao potencijalno zlonamjerne. Omogućavanje te postavke sprječava korisnike da ipak krenu dalje sa stranice upozorenja do zlonamjerne web-lokacije.
-
-      Ako je ta postavka onemogućena ili ako nije konfigurirana, korisnici prema želji mogu nastaviti do označene web-lokacije nakon što im se prikazalo upozorenje.
-
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Konfiguriraj crnu listu instalacije proširenja</translation>
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3736879847913515635">Omogućivanje dodavanja osobe u upravitelju korisnika</translation>
@@ -927,6 +940,9 @@
       Navodi proširenja koja se automatski instaliraju za korisnike demo verzije, za uređaje u prodajnom načinu. Ta se proširenja spremaju na uređaj i mogu se instalirati izvanmrežno, nakon instalacije.
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
+<translation id="3873159954366380945">Omogućuje postavljanje razdoblja tijekom kojeg će se prikazivati obavijesti o ponovnom pokretanju preglednika <ph name="PRODUCT_NAME" /> radi primjene ažuriranja na čekanju.
+
+      Pomoću ove postavke pravila može se odrediti razdoblje u milisekundama tijekom kojeg se korisnik progresivno obavještava o tome da je potrebno ponovo pokrenuti <ph name="PRODUCT_NAME" /> (ili <ph name="PRODUCT_OS_NAME" />) radi ažuriranja. Tijekom tog će se vremena korisniku prikazivati ponavljajuća obavijest o potrebnom ažuriranju na temelju postavke pravila <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Ako se ne postavi, koristit će se zadano razdoblje od 345.600.000 miliskundi (četiri dana) za <ph name="PRODUCT_OS_NAME" /> i 604.800.000 milisekundi (jedan tjedan) za sve ostale platforme.</translation>
 <translation id="3877517141460819966">Integrirani način dvostruke autentifikacije</translation>
 <translation id="388237772682176890">To je pravilo obustavljeno u verziji M53 i uklonjeno u verziji M54 jer je uklonjena podrška za SPDY/3.1.
 
@@ -1267,6 +1283,15 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="489803897780524242">Parametar koji kontrolira položaj pojma za pretraživanje za zadanog pružatelja usluge pretraživanja</translation>
 <translation id="4899708173828500852">Omogući Sigurno pregledavanje</translation>
+<translation id="4899802251198446659">Omogućuje vam da odredite mogu li se videozapisi reproducirati automatski (bez korisnikova pristanka) s audiosadržajem u pregledniku <ph name="PRODUCT_NAME" />.
+
+      Ako se ovo pravilo postavi na True, <ph name="PRODUCT_NAME" /> može automatski reproducirati medije.
+      Ako se ovo pravilo postavi na False, <ph name="PRODUCT_NAME" /> ne može automatski reproducirati medije. Pravilo AutoplayWhitelist može se upotrijebiti za poništavanje ovog pravila za određene uzorke URL-a.
+      Prema zadanim postavkama <ph name="PRODUCT_NAME" /> ne može automatski reproducirati medije. Pravilo AutoplayWhitelist može se upotrijebiti za poništavanje ovog pravila za određene uzorke URL-a.
+
+      Ako se <ph name="PRODUCT_NAME" /> izvodi, a pravilo se promijeni, pravilo će se primjenjivati samo na nove 
+otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s prethodnim pravilom.
+      </translation>
 <translation id="4906194810004762807">Brzina osvježavanja za pravilo uređaja</translation>
 <translation id="4917385247580444890">Jak</translation>
 <translation id="4923806312383904642">Dopusti WebDriveru da nadjača nekompatibilna pravila</translation>
@@ -1301,19 +1326,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Zaporke mogu biti i starije od navedenog broja dana ako je klijent bio offline dulje vrijeme.</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
-<translation id="5106504910236139235">Omogućuje prošireno izvješćivanje Sigurnog pregledavanja za <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
-
-      Prošireno izvješćivanje šalje neke podatke o sustavu i sadržaj stranice Googleovim poslužiteljima radi otkrivanja opasnih aplikacija i web-lokacija.
-
-      Ako se postavi na točno, izvješća će se izrađivati i slati kada god to bude potrebno (na primjer kada se prikaže međuprostorno sigurnosno upozorenje).
-
-      Ako se pravilo postavi na netočno, izvješća se neće slati.
-
-      Ako se pravilo postavi na točno ili netočno, korisnik neće moći izmijeniti postavku.
-
-      Ako se pravilo ne postavi, korisnik će moći promijeniti postavku i odlučiti hoće li slati izvješća.
-
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Onemogućeni pisači za uređaje tvrtke</translation>
 <translation id="5130288486815037971">Omogućivanje RC4 paketa šifri u TLS-u</translation>
 <translation id="5141670636904227950">Postavljanje zadane vrste povećala na "omogućeno" na zaslonu za prijavu</translation>
@@ -1516,19 +1528,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
-<translation id="5784370777704871674">Omogućuje značajku Sigurno pregledavanje preglednika <ph name="PRODUCT_NAME" /> i onemogućuje korisnicima da promijene tu postavku.
-
-      Ako omogućite tu postavku, Sigurno pregledavanje uvijek je aktivno.
-
-      Ako je onemogućite, Sigurno pregledavanje nikada nije aktivno.
-
-      Ako omogućite ili onemogućite tu postavku, korisnici ne mogu promijeniti niti nadjačati postavku "Omogući zaštitu od krađe identiteta i zlonamjernog softvera" u pregledniku <ph name="PRODUCT_NAME" />.
-
-      Ako se to pravilo ne postavi, ta će postavka biti omogućena, ali će je korisnici moći promijeniti.
-
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.
-
-      To pravilo nije dostupno na instancama Windowsa koje nisu priudružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Postavlja naziv za prikaz za lokalne račune uređaja</translation>
 <translation id="5814301096961727113">Postavljanje zadanog stanja izgovaranja povratnih informacija na zaslonu za prijavu</translation>
 <translation id="5815129011704381141">Automatsko ponovno pokretanje nakon ažuriranja</translation>
@@ -1716,11 +1715,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6281043242780654992">Konfigurira pravila za lokalno slanje poruka. Zabranjeni hostovi za lokalno slanje poruka bit će dopušteni samo ako se nalaze na popisu dopuštenih.</translation>
 <translation id="6282799760374509080">Omogući ili onemogući snimanje zvuka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Omogućuje ažuriranja komponenti za sve komponente na usluzi <ph name="PRODUCT_NAME" /> kada pravilo nije postavljeno ili je postavljeno na True.
-
-      Ako se postavi na False, ažuriranje je komponenti onemogućeno. No neke su komponente izuzete od tog pravila i dalje će se ažurirati, a to su komponente koje ne sadrže izvršni kôd, koje bitno ne mijenjaju ponašanje preglednika ili koje su važne za sigurnost.
-      Primjeri takvih komponenti uključuju popise opozvanih certifikata i podatke sigurnog pregledavanja.
-      Više informacija o Sigurnom pregledavanju potražite na stranici https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Omogući samodovršavanje naziva domene tijekom prijave korisnika</translation>
 <translation id="6315673513957120120">Chrome prikazuje stranicu upozorenja kada korisnici dođu do web-lokacija koje sadrže pogreške SSL-a. Prema zadanim postavkama ili kada se to pravilo postavi na "True", korisnicima je dopušteno klikanjem proći stranice upozorenja.
       Ako se pravilo postavi na "False", korisnici neće moći klikanjem proći stranice upozorenja.</translation>
@@ -2538,6 +2532,15 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="9112897538922695510">Omogućuje vam registriranje popisa rukovatelja protokola. To pravilo može biti samo preporučeno. Entitet |protocol| treba se postaviti u shemu kao "mailto", a entitet |url| treba se postaviti u uzorak URL-a aplikacije koja rukuje shemom. Uzorak može uključivati "%s" koji će se, ako postoji, zamijeniti rukovanim URL-om.
 
           Rukovatelji protokola koji su registrirani pravilom spojeni su s onima koje je registrirao korisnik i za upotrebu su dostupne obje vrste rukovatelja. Korisnik može nadjačati rukovatelje protokola instalirane pravilom tako što će instalirati novog zadanog rukovatelja, ali ne može ukloniti onoga koji je pravilom registriran.</translation>
+<translation id="9123211093995421438">Određuje najmanji broj prijelaznih točaka za vraćanje sustava <ph name="PRODUCT_OS_NAME" /> koji se treba dopustiti počevši od stabilne verzije u bilo kojem trenutku.
+
+      Zadana vrijednost za potrošače iznosi 0, a za uređaje prijavljene u organizacijama 4 (otprilike pola godine).
+
+      Postavljanjem tog pravila sprječava se primjena zaštite od vraćanja sustava za najmanje onaj broj prijelaznih točaka koji je naveden.
+
+      Postavljanje tog pravila ima trajni učinak: uređaj se MOŽDA neće moći vratiti na starije verzije, čak ni nakon što se vrijednost poništi i postavi na višu.
+
+      Stvarne mogućnosti vraćanja sustava na starije verzije mogu ovisiti o modelu uređaja i zakrpama za kritične ranjivosti.</translation>
 <translation id="913195841488580904">Blokiranje pristupa popisu URL-ova</translation>
 <translation id="9135033364005346124">Omogući <ph name="CLOUD_PRINT_NAME" /> proxy</translation>
 <translation id="9136253551939494882">Popis dopuštenih načina otključavanja koji kontrolira koje brze načine otključavanja korisnik može konfigurirati i upotrebljavati za otključavanje zaključanog zaslona.

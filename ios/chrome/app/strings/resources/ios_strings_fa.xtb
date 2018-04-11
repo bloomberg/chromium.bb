@@ -160,6 +160,7 @@
 <translation id="3789841737615482174">نصب</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3897092660631435901">منو</translation>
+<translation id="3915450441834151894">اطلاعات سایت</translation>
 <translation id="3928666092801078803">ادغام کردن داده‌های من</translation>
 <translation id="3950820424414687140">ورود به سیستم</translation>
 <translation id="3963231839620026525">برگه ناشناس جدید</translation>
@@ -223,6 +224,7 @@
 <translation id="5197255632782567636">اینترنت</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
 <translation id="5244474230056479698">درحال همگام‌سازی در <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">برای مرور وب به‌طور خصوصی، برگه‌ای باز کنید.</translation>
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
@@ -302,6 +304,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6445981559479772097">پیام ارسال شد.</translation>
 <translation id="6464071786529933911">در برگه ناشناس جدید</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
+<translation id="6528048372317642110">بارگیری فایل امکان‌پذیر است</translation>
 <translation id="6541915733953096570">ساعت گذشته</translation>
 <translation id="6570040839871198836">تکمیل خودکار</translation>
 <translation id="6656103420185847513">ویرایش پوشه</translation>

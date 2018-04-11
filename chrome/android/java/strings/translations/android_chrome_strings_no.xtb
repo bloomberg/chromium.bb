@@ -284,6 +284,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="3661699943263275414">Tredjepartsnettsteder kan lagre og lese data i informasjonskapsler.</translation>
 <translation id="3662546969139119822">Her er det ingen logg</translation>
 <translation id="3672452749423051839">Forslag ved navigasjonsfeil</translation>
+<translation id="3692944402865947621">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av at lagringsstedet ikke kan nås.</translation>
 <translation id="3712575778697986964">Vil du tilbakestille Datasparing?</translation>
 <translation id="3714981814255182093">Åpne søkeraden</translation>
 <translation id="3716182511346448902">Denne siden bruker for mye minne, så Chrome har satt den på pause.</translation>
@@ -320,6 +321,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
+<translation id="4084712963632273211">Fra <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />levert av Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" /> MB er lastet ned</translation>
 <translation id="4089831646916293264">Det kan hende at dette elementet gjør at du ikke får tilgang til premium-datatjenester som tilbys av operatøren din.</translation>
 <translation id="4095146165863963773">Slette appdataene?</translation>
@@ -369,6 +371,7 @@ Google-kontoen din kan ha andre former for nettlesingslogg, for eksempel søk og
 <translation id="4550003330909367850">For å se eller kopiere passordet ditt her, angi skjermlås på denne enheten.</translation>
 <translation id="4558311620361989323">Hurtigtaster for nettsider</translation>
 <translation id="4565377596337484307">Skjul passord</translation>
+<translation id="4570913071927164677">Detaljer</translation>
 <translation id="4572422548854449519">Logg på en administrert konto</translation>
 <translation id="4581964774250883625">Du er nå i inkognitomodus.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{for # minutt siden}other{for # minutter siden}}</translation>
@@ -545,6 +548,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="60923314841986378"><ph name="HOURS" /> timer igjen</translation>
 <translation id="60924377787140961">Flere artikler kommer snart. Ha en fin ettermiddag.</translation>
 <translation id="6108923351542677676">Konfigurasjon pågår …</translation>
+<translation id="6111020039983847643">data brukt</translation>
 <translation id="6112702117600201073">Oppdaterer siden.</translation>
 <translation id="6127379762771434464">Elementet ble fjernet</translation>
 <translation id="6138140242378429169">Gjør siden mobilvennlig</translation>
@@ -697,6 +701,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="748127970106343339">Bekreft sletting av enhetslegitimasjon</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (oppdatert <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">data spart</translation>
 <translation id="7498271377022651285">Vent litt</translation>
 <translation id="7514365320538308">Last ned</translation>
 <translation id="751961395872307827">Kan ikke koble til nettstedet</translation>

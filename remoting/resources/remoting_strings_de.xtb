@@ -140,6 +140,7 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="4145029455188493639">Angemeldet als <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Es fehlen einige erforderliche Komponenten. Überprüfen Sie, ob Sie die neueste Version der Software installiert haben, und versuchen Sie es erneut.</translation>
 <translation id="4156740505453712750">Um den Zugriff auf diesen Computer zu schützen, wählen Sie eine PIN mit <ph name="BOLD_START" />mindestens 6 Ziffern<ph name="BOLD_END" /> aus. Die Eingabe dieser PIN ist erforderlich, wenn eine Verbindung von einem anderen Ort aus hergestellt wird.</translation>
+<translation id="4169432154993690151">Um ein Profilbild auszuwählen, erlauben Sie Chrome Remote Desktop den Zugriff auf Ihre Kamera</translation>
 <translation id="4176825807642096119">Zugriffscode</translation>
 <translation id="4207623512727273241">Führen Sie das Installationsprogramm aus, bevor Sie fortfahren.</translation>
 <translation id="4227991223508142681">Host Provisioning-Dienstprogramm</translation>
@@ -257,6 +258,7 @@ pc</translation>
 <translation id="6748108480210050150">Von</translation>
 <translation id="677755392401385740">Host für folgenden Nutzer gestartet: <ph name="HOST_USERNAME" /></translation>
 <translation id="6865175692670882333">Ansehen/bearbeiten</translation>
+<translation id="6913710942997637770">Um ein Profilbild auszuwählen, erlauben Sie Chrome Remote Desktop den Zugriff auf Ihre Fotos</translation>
 <translation id="6930242544192836755">Dauer</translation>
 <translation id="6939719207673461467">Tastatur ein-/ausblenden</translation>
 <translation id="6944854424004126054">Fenster wiederherstellen</translation>

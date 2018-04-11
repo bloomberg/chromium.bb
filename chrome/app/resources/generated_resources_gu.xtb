@@ -2597,7 +2597,6 @@
 <translation id="5088534251099454936">RSA એન્ક્રિપ્શનવાળું PKCS #1 SHA-512</translation>
 <translation id="509429900233858213">કોઈ ભૂલ આવી છે.</translation>
 <translation id="5094721898978802975">સહયોગ કરતી મૂળ ઍપ્લિકેશન સાથે સંચાર કરો</translation>
-<translation id="5095987538085179331"><ph name="URL" /> સુરક્ષિત કન્ટેન્ટ ચલાવવા માટે તમારા ઉપકરણને વિશેષ રીતે ઓળખવા માગે છે</translation>
 <translation id="5097002363526479830">નેટવર્ક '<ph name="NAME" />' થી કનેક્ટ કરવામાં નિષ્ફળ: <ph name="DETAILS" /></translation>
 <translation id="5099354524039520280">ઉપર</translation>
 <translation id="5100114659116077956">તમારી સમક્ષ નવી સુવિધાઓ લાવવા માટે, તમારી Chromebox ને અપડેટ કરવાની જરૂર છે.</translation>
@@ -4569,7 +4568,6 @@
 <translation id="8214489666383623925">ફાઇલ ખોલો...</translation>
 <translation id="8214962590150211830">આ વ્યક્તિને દૂર કરો</translation>
 <translation id="8217399928341212914">બહુવિધ ફાઇલો આપમેળે ડાઉનલોડ કરવું અવરોધિત કરવાનું ચાલુ રાખો</translation>
-<translation id="8222121761382682759">અનઇન્સ્ટોલ કરો...</translation>
 <translation id="8223479393428528563">ઑફલાઇન વપરાશ માટે આ ફાઇલો સાચવવા, પાછા ઓનલાઇન થાઓ, ફાઇલો પર જમણી ક્લિક કરો અને <ph name="OFFLINE_CHECKBOX_NAME" /> વિકલ્પ પસંદ કરો.</translation>
 <translation id="8226222018808695353">પ્રતિબંધિત</translation>
 <translation id="8226619461731305576">કતારમાં</translation>

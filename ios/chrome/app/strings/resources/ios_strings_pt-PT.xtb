@@ -159,6 +159,7 @@ Por exemplo, alguns Sites poderão mostrar anúncios que não sejam baseados nou
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3897092660631435901">Menu</translation>
+<translation id="3915450441834151894">Informações do site</translation>
 <translation id="3928666092801078803">Combinar os meus dados</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
 <translation id="3963231839620026525">Novo separador anónimo</translation>
@@ -222,6 +223,7 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ativar a sincronização</translation>
 <translation id="5244474230056479698">A sincronizar com <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">Abra um separador para navegar na Web de forma privada.</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
@@ -301,6 +303,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6445981559479772097">Mensagem enviada.</translation>
 <translation id="6464071786529933911">Abrir num novo separador de navegação anónima</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens eliminados</translation>
+<translation id="6528048372317642110">A transferência de ficheiros está disponível.</translation>
 <translation id="6541915733953096570">Hora anterior</translation>
 <translation id="6570040839871198836">Formulários de preenchimento auto.</translation>
 <translation id="6656103420185847513">Editar Pasta</translation>

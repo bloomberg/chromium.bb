@@ -140,6 +140,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="4145029455188493639">Has iniciat la sessió com a <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Falten alguns components necessaris. Assegureu-vos que hàgiu instal·lat la versió més recent del programari i torneu-ho a provar.</translation>
 <translation id="4156740505453712750">Per protegir l'accés a aquest ordinador, trieu un PIN de <ph name="BOLD_START" />sis dígits com a mínim<ph name="BOLD_END" />. Necessitareu aquest PIN per connectar-vos a aquest ordinador des d'una altra ubicació.</translation>
+<translation id="4169432154993690151">Per triar una foto de perfil, permet que Escriptori remot de Chrome accedeixi a la càmera</translation>
 <translation id="4176825807642096119">Codi d'accés</translation>
 <translation id="4207623512727273241">Executeu l'instal·lador abans de continuar.</translation>
 <translation id="4227991223508142681">Utilitat de l'administració de l'amfitrió</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">L'amfitrió ha començat per a l'usuari: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Mostra/edita</translation>
+<translation id="6913710942997637770">Per triar una foto de perfil, permet que Escriptori remot de Chrome accedeixi a les fotos</translation>
 <translation id="6930242544192836755">Durada</translation>
 <translation id="6939719207673461467">Mostra o amaga el teclat</translation>
 <translation id="6944854424004126054">Restaura la finestra</translation>

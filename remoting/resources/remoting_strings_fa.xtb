@@ -140,6 +140,7 @@
 <translation id="4145029455188493639">واردشده به سیستم به‌عنوان <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">برخی از بخش‌ها از بین رفته‌اند. لطفاً مطمئن شوید آخرین نسخه نرم‌افزار را دارید و دوباره امتحان کنید.</translation>
 <translation id="4156740505453712750">برای حفاظت از دسترسی به این رایانه، لطفاً پینی را که <ph name="BOLD_START" />حداقل شش رقم<ph name="BOLD_END" /> دارد انتخاب کنید. این پین هنگام اتصال از مکان دیگر لازم است.</translation>
+<translation id="4169432154993690151">‏برای انتخاب تصویر نمایه، به «کنترل رایانه از راه دور Chrome» اجازه دسترسی به دوربین بدهید</translation>
 <translation id="4176825807642096119">کد دسترسی</translation>
 <translation id="4207623512727273241">لطفاً قبل از ادامه، نصب‌کننده را اجرا کنید.</translation>
 <translation id="4227991223508142681">برنامه کمکی ارائه مجوز به میزبان</translation>
@@ -257,6 +258,7 @@ Chrome
 <translation id="6748108480210050150">از</translation>
 <translation id="677755392401385740">میزبان برای کاربر آغاز شد: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">مشاهده/ویرایش</translation>
+<translation id="6913710942997637770">‏برای انتخاب تصویر نمایه، به «کنترل رایانه از راه دور Chrome» اجازه دسترسی به عکس‌هایتان را بدهید</translation>
 <translation id="6930242544192836755">مدت زمان</translation>
 <translation id="6939719207673461467">نمایش/پنهان کردن صفحه‌کلید</translation>
 <translation id="6944854424004126054">بازگرداندن پنجره</translation>

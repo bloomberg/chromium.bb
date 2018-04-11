@@ -520,6 +520,7 @@
 <translation id="177336675152937177">Dados do aplicativo hospedado</translation>
 <translation id="1774349594977710164">Seu smartphone também desbloqueia seus outros <ph name="DEVICE_TYPE" />s porque eles são sincronizados automaticamente.</translation>
 <translation id="1774833706453699074">Adicionar páginas abertas aos Favoritos...</translation>
+<translation id="1775381402323441512">Informações sobre o vídeo</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
 <translation id="177694132944350798">Seus dados foram criptografados com sua senha do Google a partir de <ph name="TIME" />. Digite-a para iniciar a sincronização.</translation>
 <translation id="1779652936965200207">Insira esta senha em "<ph name="DEVICE_NAME" />":</translation>
@@ -562,6 +563,7 @@
 <translation id="1829192082282182671">Diminuir &amp;zoom</translation>
 <translation id="1830550083491357902">Desconectado</translation>
 <translation id="1832511806131704864">Atualização da alteração do smartphone</translation>
+<translation id="1834503245783133039">Falha no download: <ph name="FILE_NAME" /></translation>
 <translation id="1838374766361614909">Limpar pesquisa</translation>
 <translation id="1838709767668011582">Site Google</translation>
 <translation id="1839704667838141620">Alterar a forma como esse arquivo é compartilhado</translation>
@@ -698,6 +700,7 @@
 <translation id="2079053412993822885">Se você excluir um dos seus próprios certificados, não será mais possível utilizá-lo para se identificar.</translation>
 <translation id="2079545284768500474">Desfazer</translation>
 <translation id="2080070583977670716">Mais definições</translation>
+<translation id="2084108471225856927">Configurações do dispositivo</translation>
 <translation id="2085470240340828803">Já existe um arquivo chamado "<ph name="FILENAME" />". O que você quer fazer?</translation>
 <translation id="2087822576218954668">Impressão: <ph name="PRINT_NAME" /></translation>
 <translation id="2089566709556890888">Navegue com segurança com o Google Chrome</translation>
@@ -1420,12 +1423,13 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3130528281680948470">Seu dispositivo será redefinido, e todas as contas de usuário final e dados locais serão removidos. Esta ação não pode ser desfeita.</translation>
 <translation id="313205617302240621">Esqueceu a senha?</translation>
 <translation id="3135204511829026971">Girar tela</translation>
+<translation id="313963229645891001">Fazendo o download, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Avatar amarelo padrão</translation>
 <translation id="3140353188828248647">Foco na barra de endereço</translation>
 <translation id="3141318088920353606">Ouvindo...</translation>
 <translation id="3141917231319778873">Essa solicitação não é compatível com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3143515551205905069">Cancelar sincronização</translation>
-<translation id="3143695347784622594">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. É possível alterar essa opção a qualquer momento nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" /> do dispositivo. Se você ativou a opção "Atividade na Web e de apps" adicional, essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
+<translation id="3143695347784622594">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. É possível alterar essa opção a qualquer momento nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" /> do dispositivo. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="3144126448740580210">CONCLUÍDO</translation>
 <translation id="3144647712221361880">Abrir link como</translation>
 <translation id="3149510190863420837">Aplicativos do Google Chrome</translation>
@@ -1547,6 +1551,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3326821416087822643">Compactando <ph name="FILE_NAME" /></translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
 <translation id="3331974543021145906">Informações sobre o aplicativo</translation>
+<translation id="3335337277364016868">Ano da gravação</translation>
 <translation id="3335947283844343239">Reabrir guia fechada</translation>
 <translation id="3340978935015468852">configurações</translation>
 <translation id="3341703758641437857">Permitir acesso aos URLs do arquivo</translation>
@@ -1608,6 +1613,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3435738964857648380">Segurança</translation>
 <translation id="3435896845095436175">Ativar</translation>
 <translation id="3436038974659740746">Personalizar ortografia</translation>
+<translation id="3437801641691368414">Hora da criação</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Sempre permitir que <ph name="HOST" /> acesse seu microfone</translation>
 <translation id="3439970425423980614">Abrindo visualização do PDF</translation>
@@ -1651,6 +1657,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3487007233252413104">função anônima</translation>
 <translation id="348780365869651045">Aguardando AppCache...</translation>
 <translation id="3488065109653206955">Ativado parcialmente</translation>
+<translation id="348999362308956431">Download concluído: <ph name="FILE_NAME" /></translation>
 <translation id="3492788708641132712">A sincronização não está funcionando. Tente fazer login novamente.</translation>
 <translation id="3493881266323043047">Validade</translation>
 <translation id="3494769164076977169">Perguntar quando um site tenta fazer o download de arquivos automaticamente após o primeiro arquivo (recomendado)</translation>
@@ -1753,6 +1760,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3646789916214779970">Redefinir para o tema padrão</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> detectado</translation>
 <translation id="3649138363871392317">A foto foi capturada</translation>
+<translation id="3650952250015018111">Permitir que o app <ph name="APP_NAME" /> acesse:</translation>
 <translation id="3651488188562686558">Desconectar do Wi-Fi</translation>
 <translation id="3652817283076144888">Inicializando</translation>
 <translation id="3653999333232393305">Continuar permitindo que <ph name="HOST" /> acesse seu microfone</translation>
@@ -1865,6 +1873,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="381202950560906753">Adicionar outra</translation>
 <translation id="3812525830114410218">Certificado inválido</translation>
 <translation id="3813296892522778813">Se você não encontrar o que está procurando, acesse a <ph name="BEGIN_LINK_CHROMIUM" />Ajuda do Google Chrome<ph name="END_LINK_CHROMIUM" /></translation>
+<translation id="3817579325494460411">Não fornecido</translation>
 <translation id="3819007103695653773">Permitir que todos os sites enviem mensagens push de segundo plano</translation>
 <translation id="3819752733757735746">Acesso com interruptor (controlar o computador com apenas um ou dois interruptores)</translation>
 <translation id="3819800052061700452">&amp;Tela cheia</translation>
@@ -1958,6 +1967,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="394984172568887996">Importado do IE</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3954354850384043518">Em andamento</translation>
+<translation id="3954469006674843813"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (<ph name="REFRESH_RATE" /> hertz)</translation>
 <translation id="3955193568934677022">Permitir que os sites reproduzam conteúdo protegido (recomendado)</translation>
 <translation id="3956702100721821638">Não foi possível acessar o Google Play</translation>
 <translation id="3958088479270651626">Importar favoritos e configurações</translation>
@@ -2037,6 +2047,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <ph name="EXTENSION_FILE" /></translation>
 <translation id="4087470595660267445">Instalar apps e jogos do Google Play no Chromebook. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saber mais&lt;/a&gt;</translation>
 <translation id="4088095054444612037">Aceitar fazer parte do grupo</translation>
+<translation id="4089235344645910861">Configurações salvas. Sincronização iniciada.</translation>
 <translation id="4090103403438682346">Ativa o acesso verificado</translation>
 <translation id="4090535558450035482">Esta extensão é gerenciada e não pode ser removida.</translation>
 <translation id="4091434297613116013">folhas de papel</translation>
@@ -2116,6 +2127,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4244238649050961491">Encontrar mais apps para usar com a stylus</translation>
 <translation id="424546999567421758">Detectado alto uso de disco</translation>
 <translation id="424726838611654458">Sempre abrir com o Adobe Reader</translation>
+<translation id="4247901771970415646">Não é possível sincronizar com <ph name="USERNAME" /></translation>
 <translation id="4249248555939881673">Aguardando conexão da rede...</translation>
 <translation id="4249373718504745892">Esta página foi impedida de acessar sua câmera e seu microfone.</translation>
 <translation id="424963718355121712">Os apps precisam ser veiculados a partir do host que afetam</translation>
@@ -2153,6 +2165,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4305227814872083840">longo (2 seg)</translation>
 <translation id="4306119971288449206">Os apps precisam ser veiculados com o tipo de conteúdo "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K ativos)</translation>
+<translation id="4309915981827077375">Informações gerais</translation>
 <translation id="4310139701823742692">O arquivo está no formato errado. Verifique o arquivo PPD e tente novamente.</translation>
 <translation id="431076611119798497">&amp;Detalhes</translation>
 <translation id="4312866146174492540">Bloquear (padrão)</translation>
@@ -2201,6 +2214,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4409697491990005945">Margens</translation>
 <translation id="4411578466613447185">Signatário do código</translation>
 <translation id="4412698727486357573">Central de Ajuda</translation>
+<translation id="44141919652824029">Permitir que o app <ph name="APP_NAME" /> receba a lista dos seus dispositivos USB conectados?</translation>
 <translation id="4414232939543644979">Nova janela &amp;anônima</translation>
 <translation id="4415748029120993980">Curva elíptica SECG secp384r1 (também conhecida como NIST P-384)</translation>
 <translation id="4419409365248380979">Sempre permitir que <ph name="HOST" /> configure cookies</translation>
@@ -2294,6 +2308,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4565377596337484307">Ocultar senha</translation>
 <translation id="4567772783389002344">Adicionar palavra</translation>
 <translation id="4568213207643490790">Contas do Google não são permitidas neste dispositivo.</translation>
+<translation id="4568854179928172494">Horário modificado</translation>
 <translation id="4569747168316751899">Quando estiver ocioso</translation>
 <translation id="4572659312570518089">Autenticação cancelada durante a conexão com "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Arquivo <ph name="FILE_TYPE" /></translation>
@@ -2337,6 +2352,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4640525840053037973">Fazer login com sua Conta do Google</translation>
 <translation id="4641539339823703554">Não foi possível para o Google Chrome configurar a hora do sistema. Verifique a hora abaixo e corrija-a, se necessário.</translation>
 <translation id="4643612240819915418">&amp;Abrir vídeo em uma nova guia</translation>
+<translation id="4644818355646995778">Fazendo o download, <ph name="PERCENT_REMAINING" /></translation>
 <translation id="4645676300727003670">&amp;Manter</translation>
 <translation id="4647090755847581616">&amp;Fechar guia</translation>
 <translation id="4647697156028544508">Insira o PIN para "<ph name="DEVICE_NAME" />":</translation>
@@ -2631,7 +2647,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5088534251099454936">PKCS #1 SHA-512 com criptografia RSA</translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5094721898978802975">Comunicar-se com aplicativos nativos de colaboração</translation>
-<translation id="5095987538085179331">O URL <ph name="URL" /> quer identificar seu dispositivo de forma exclusiva para reproduzir conteúdo protegido</translation>
 <translation id="5097002363526479830">Falha na conexão à rede "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5099354524039520280">para cima</translation>
 <translation id="5100114659116077956">Para oferecer os recursos mais recentes, seu Chromebox precisa ser atualizado.</translation>
@@ -2725,6 +2740,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5250372599208556903">O <ph name="SEARCH_ENGINE_NAME" /> usa sua localização para oferecer conteúdo local a você. É possível alterar isso em <ph name="SETTINGS_LINK" />.</translation>
 <translation id="5252456968953390977">Roaming</translation>
 <translation id="5252653240322147470">O PIN deve ter menos de <ph name="MAXIMUM" /> dígitos</translation>
+<translation id="5253070652067921974">Criado por</translation>
 <translation id="5254368820972107711">Mostrar arquivos a serem removidos</translation>
 <translation id="52550593576409946">Não foi possível iniciar o aplicativo Kiosk.</translation>
 <translation id="5255315797444241226">A senha inserida está incorreta.</translation>
@@ -2803,6 +2819,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5353252989841766347">Exportar senhas do Chrome</translation>
 <translation id="5355097969896547230">Localizar novamente</translation>
 <translation id="5355926466126177564">A extensão "<ph name="EXTENSION_NAME" />" alterou a página que é exibida quando você pesquisa na Omnibox.</translation>
+<translation id="5358764674931277">Frame rate</translation>
 <translation id="5360150013186312835">Mostrar na barra de ferramentas</translation>
 <translation id="5362741141255528695">Selecionar arquivo de chave privada.</translation>
 <translation id="5363109466694494651">Realizar Powerwash e reverter</translation>
@@ -2839,6 +2856,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5414566801737831689">Ler os ícones dos websites que você visitar</translation>
 <translation id="5417312524372586921">Temas do navegador</translation>
 <translation id="5419294236999569767">Hora do sistema</translation>
+<translation id="5420438158931847627">Determina a nitidez de textos e imagens</translation>
 <translation id="5422221874247253874">Ponto de acesso</translation>
 <translation id="5422781158178868512">Seu dispositivo de armazenamento externo não foi reconhecido.</translation>
 <translation id="5423849171846380976">Ativado</translation>
@@ -2894,7 +2912,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5488093641312826914">"<ph name="COPIED_ITEM_NAME" />" copiado</translation>
 <translation id="5488468185303821006">Permitir em modo anônimo</translation>
-<translation id="5491110079163012109">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário, que pode optar por enviar dados de uso e diagnóstico deste dispositivo para o Google. É possível ver essa opção nas configurações. Se você ativou a opção "Atividade na Web e de apps" adicional, essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
+<translation id="5491110079163012109">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário, que pode optar por enviar dados de uso e diagnóstico deste dispositivo para o Google. É possível ver essa opção nas configurações. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">tela ativada</translation>
 <translation id="5494362494988149300">Abrir quando estiver &amp;concluído</translation>
 <translation id="5494920125229734069">Selecionar tudo</translation>
@@ -3025,6 +3043,9 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5678550637669481956">Foi concedido acesso de leitura e gravação a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Leia seus dados em <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador de recurso</translation>
+<translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Não é possível desconectar de um arquivo ou disco virtual<ph name="END_BOLD" />
+   <ph name="LINE_BREAKS" />
+   Feche todos os itens do arquivo ou disco virtual e tente novamente.</translation>
 <translation id="5687326903064479980">Fuso horário</translation>
 <translation id="5689516760719285838">Local</translation>
 <translation id="56907980372820799">Vincular dados</translation>
@@ -3033,6 +3054,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5694501201003948907">Compactando $1 itens...</translation>
 <translation id="5696143504434933566">Denunciar abuso de "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5699533844376998780">A extensão "<ph name="EXTENSION_NAME" />" foi adicionada.</translation>
+<translation id="5700087501958648444">Informações sobre o áudio</translation>
 <translation id="570043786759263127">Apps e serviços do Google Play</translation>
 <translation id="5700836101007545240">A opção "Adicionar conexão" foi desativada pelo seu administrador</translation>
 <translation id="5701381305118179107">Centralizar</translation>
@@ -3564,7 +3586,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6528513914570774834">Permitir que outros usuários deste dispositivo usem esta rede</translation>
 <translation id="652948702951888897">Histórico do Chrome</translation>
 <translation id="653019979737152879">Sincronizando <ph name="FILE_NAME" />...</translation>
-<translation id="6530681427077572136">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. É possível alterar essa opção a qualquer momento nas configurações do dispositivo. Se você ativou a opção "Atividade na Web e de apps" adicional, essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
+<translation id="6530681427077572136">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. É possível alterar essa opção a qualquer momento nas configurações do dispositivo. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="6531282281159901044">Manter arquivo perigoso</translation>
 <translation id="6534583978616527129">Inicializar a conexão</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Observação:<ph name="END_BOLD" /> Ative somente se você souber o que está fazendo ou tiver sido solicitado(a) a fazê-lo, porque a coleta de dados pode reduzir o desempenho.</translation>
@@ -3591,6 +3613,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="656398493051028875">Excluindo "<ph name="FILENAME" />"...</translation>
 <translation id="6567688344210276845">Não foi possível carregar o ícone "<ph name="ICON" />" para a ação da página.</translation>
 <translation id="657402800789773160">&amp;Recarregar esta página</translation>
+<translation id="6577284282025554716">Download cancelado: <ph name="FILE_NAME" /></translation>
 <translation id="6578664922716508575">Criptografar senhas sincronizadas com seu nome de usuário e senha do Google</translation>
 <translation id="6580151766480067746">Versão de ARC</translation>
 <translation id="6581162200855843583">Link do Google Drive</translation>
@@ -4053,6 +4076,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7297443947353982503">Nome de usuário/senha incorretos ou falha de autenticação EAP</translation>
 <translation id="729761647156315797">Escolher idioma e teclado</translation>
 <translation id="7299337219131431707">Ativar a navegação como visitante</translation>
+<translation id="730289542559375723">{NUM_APPLICATIONS,plural, =1{Este aplicativo pode impedir que o Chrome funcione adequadamente.}one{Este aplicativo pode impedir que o Chrome funcione adequadamente.}other{Estes aplicativos podem impedir que o Chrome funcione adequadamente.}}</translation>
 <translation id="7303900363563182677">Este site foi impedido de ver textos e imagens copiados para a área de transferência</translation>
 <translation id="730515362922783851">Trocar dados com qualquer dispositivo da rede local ou Internet</translation>
 <translation id="7308002049209013926">Use a tela de início para acessar rapidamente os novos apps e atividades. Para chegar aqui com o teclado, pressione Alt + Shift + L.</translation>
@@ -4309,6 +4333,7 @@ A instalação do <ph name="APP_NAME" /> faz o download de <ph name="DOWNLOAD_SI
 <translation id="7707922173985738739">Usar dados móveis</translation>
 <translation id="7709152031285164251">Falha - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Transmitir…</translation>
+<translation id="7711920809702896782">Informações sobre a imagem</translation>
 <translation id="7714307061282548371">Cookies de <ph name="DOMAIN" /> permitidos</translation>
 <translation id="7714464543167945231">Certificado</translation>
 <translation id="7716781361494605745">URL da diretiva de autoridade de certificação do Netscape</translation>
@@ -4408,7 +4433,7 @@ A instalação do <ph name="APP_NAME" /> faz o download de <ph name="DOWNLOAD_SI
 <translation id="7851457902707056880">O login foi restrito somente à conta do proprietário. Reinicie e faça login com a conta do proprietário. A máquina reiniciará automaticamente dentro de 30 segundos.</translation>
 <translation id="7851716364080026749">Sempre bloquear acesso à câmera e ao microfone</translation>
 <translation id="7853747251428735">Mais &amp;ferramentas</translation>
-<translation id="7856006446339184955">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa <ph name="BEGIN_LINK1" />configuração<ph name="END_LINK1" /> é aplicada pelo proprietário. Se você ativou a opção "Atividade na Web e de apps" adicional, essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
+<translation id="7856006446339184955">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa <ph name="BEGIN_LINK1" />configuração<ph name="END_LINK1" /> é aplicada pelo proprietário. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="7857117644404132472">Adicionar exceção</translation>
 <translation id="7857949311770343000">Esta é a página "Nova guia" que você esperava?</translation>
 <translation id="786073089922909430">Serviço: <ph name="ARC_PROCESS_NAME" /></translation>
@@ -4427,6 +4452,7 @@ A instalação do <ph name="APP_NAME" /> faz o download de <ph name="DOWNLOAD_SI
 <translation id="7886917304091689118">Executando no Chrome</translation>
 <translation id="7887334752153342268">Duplicar</translation>
 <translation id="7887864092952184874">Mouse Bluetooth pareado</translation>
+<translation id="7889565820482017512">Tamanho da tela</translation>
 <translation id="7889966925761734854">Procurar</translation>
 <translation id="7892100671754994880">Próximo usuário</translation>
 <translation id="7893008570150657497">Acessar fotos, música e outras mídias em seu computador</translation>
@@ -4530,6 +4556,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8028060951694135607">Recuperação de chave da Microsoft</translation>
 <translation id="8028134359912645720">Toque na tecla Control, Alt, Shift ou Iniciador e mantenha-a pressionada para ver os atalhos de teclado para esses modificadores.</translation>
+<translation id="8028803902702117856">Fazendo o download de <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Tamanho</translation>
 <translation id="8030656706657716245">Adicionar impressora</translation>
 <translation id="8032244173881942855">Não é possível transmitir a guia.</translation>
@@ -4647,7 +4674,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8214489666383623925">Abrir arquivo...</translation>
 <translation id="8214962590150211830">Remover esta pessoa</translation>
 <translation id="8217399928341212914">Continuar a bloquear downloads automáticos de vários arquivos</translation>
-<translation id="8222121761382682759">Desinstalar...</translation>
 <translation id="8223479393428528563">Para salvar esses arquivos para uso off-line, fique on-line novamente, clique com o botão direito nos arquivos e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8226222018808695353">Proibido</translation>
 <translation id="8226619461731305576">Fila</translation>
@@ -4787,6 +4813,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="84613761564611563">Interface de usuário de configuração de rede solicitada. Aguarde...</translation>
 <translation id="8461914792118322307">Proxy</translation>
 <translation id="8463215747450521436">Este usuário supervisionado pode ter sido excluído ou desativado pelo gerente. Entre em contato com o gerente, se quiser continuar fazendo login como esse usuário.</translation>
+<translation id="846374874681391779">Barra de downloads</translation>
 <translation id="8463955938112983119">Plug-in <ph name="PLUGIN_NAME" /> desativado.</translation>
 <translation id="8464132254133862871">Esta conta de usuário não está qualificada para o serviço.</translation>
 <translation id="8465252176946159372">Entrada inválida</translation>
@@ -4802,6 +4829,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8477384620836102176">&amp;Geral</translation>
 <translation id="8480082892550707549">Mesmo que você tenha feito o download de arquivos deste site antes, o site pode estar temporariamente não seguro (invadido). Tente fazer o download desse arquivo mais tarde.</translation>
 <translation id="8480869669560681089">Dispositivo desconhecido de <ph name="VENDOR_NAME" /></translation>
+<translation id="8481187309597259238">Confirmar a permissão de USB</translation>
 <translation id="8483248364096924578">Endereço IP</translation>
 <translation id="8487678622945914333">Aproximar</translation>
 <translation id="8487693399751278191">Importar favoritos agora...</translation>
@@ -4827,7 +4855,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8534656636775144800">Ops! Algo deu errado ao tentar vincular o domínio. Tente novamente.</translation>
 <translation id="8535005006684281994">URL da renovação do certificado do Netscape</translation>
 <translation id="8539727552378197395">Nenhum (HttpOnly)</translation>
-<translation id="8541166929715485291">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário, que pode optar por enviar dados de uso e diagnóstico deste dispositivo para o Google. É possível ver essa opção nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" />. Se você ativou a opção "Atividade na Web e de apps" adicional, essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
+<translation id="8541166929715485291">Enviar dados do sistema. Enviar automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário, que pode optar por enviar dados de uso e diagnóstico deste dispositivo para o Google. É possível ver essa opção nas <ph name="BEGIN_LINK1" />configurações<ph name="END_LINK1" />. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="8545107379349809705">Ocultar informações...</translation>
 <translation id="8545575359873600875">Não foi possível confirmar a senha. O gerente desse usuário supervisionado pode ter alterado a senha recentemente. Nesse caso, a nova senha será aplicada da próxima vez que você fizer login. Tente usar a senha antiga.</translation>
 <translation id="8546186510985480118">Pouco espaço no dispositivo</translation>
@@ -5188,6 +5216,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9094033019050270033">Atualizar senha</translation>
 <translation id="9094982973264386462">Remover</translation>
 <translation id="9095253524804455615">Remover</translation>
+<translation id="9099674669267916096">Contagem de páginas</translation>
 <translation id="9100765901046053179">Configurações avançadas</translation>
 <translation id="9101691533782776290">Iniciar aplicativo</translation>
 <translation id="9102610709270966160">Ativar extensão</translation>
@@ -5234,7 +5263,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="9157697743260533322">Falha ao configurar atualizações automáticas para todos os usuários (erro de inicialização de simulação: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="9158715103698450907">Ops!  Ocorreu um problema de comunicação de rede durante a autenticação. Verifica sua conexão de rede e tente novamente.</translation>
 <translation id="9161070040817969420">Subquadros de: <ph name="PARENT_SITE" /></translation>
-<translation id="916501514001398070">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário. Se você ativou a opção "Atividade na Web e de apps" adicional, essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
+<translation id="916501514001398070">Enviar dados do sistema. Atualmente, este dispositivo envia automaticamente dados de uso e diagnóstico do dispositivo e de apps para o Google. Essa configuração é aplicada pelo proprietário. Se você ativou a opção "Atividade na Web e de apps", essas informações serão armazenadas com sua conta para que você possa gerenciá-las em Minha atividade. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="9169496697824289689">Ver atalhos de teclado</translation>
 <translation id="9169931577761441333">Adicionar o app <ph name="APP_NAME" /> à tela inicial</translation>
 <translation id="9170397650136757332">Agora, mova o dedo levemente para capturar todas as partes da sua impressão digital</translation>
@@ -5279,6 +5308,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="942532530371314860">O app <ph name="APP_NAME" /> está compartilhando áudio e uma guia do Chrome.</translation>
 <translation id="942954117721265519">Não há imagens neste diretório.</translation>
+<translation id="943972244133411984">Modificado por</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
 <translation id="952992212772159698">Desativado</translation>
 <translation id="957960681186851048">Este site tentou fazer o download de vários arquivos automaticamente</translation>

@@ -369,6 +369,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4176463684765177261">Deaktivované</translation>
 <translation id="4188530942454211480">Predchádzajúca veta</translation>
 <translation id="4191918948604314587">Tlačidlo</translation>
+<translation id="419265409837491189">Prechod na predchádzajúci stĺpec</translation>
 <translation id="4202186506458631436">Posunúť doprava</translation>
 <translation id="4206289001967551965">V tabuľke</translation>
 <translation id="4209770650650780359">Automatické dopĺňanie aktivujete pomocou šípky nahor alebo nadol.</translation>
@@ -419,6 +420,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4660783501463101648">Klasická verzia bola odstránená. Prepínač na klávesnici umožňujúci prepnúť späť na verziu ChromeVox Classic bol odstránený.</translation>
 <translation id="4661075872484491155">strom</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Prechod na ďalší stĺpec</translation>
 <translation id="4688873778442829762">mriežka</translation>
 <translation id="4693675773662933727">Prechádzajúci orientačný bod</translation>
 <translation id="4696413482802371445">Žiadny ďalší nadpis 5. úrovne</translation>
@@ -434,6 +436,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4826415162591436065">Prejsť dopredu</translation>
 <translation id="4826604887384865800">Ďalší skok</translation>
 <translation id="4827410568042294688">nevybrané</translation>
+<translation id="4839925464551908214">Prechod na predchádzajúci riadok</translation>
 <translation id="4842108708071771135">Žiadny ďalší prvok blockquote</translation>
 <translation id="4844625982113518938">Po stlačení ľubovoľného klávesu sa dozviete jeho názov. Kombináciou klávesov Ctrl+W režim učenia ukončíte.</translation>
 <translation id="4846428657345567687">Vitajte v čítačke ChromeVox!</translation>
@@ -788,6 +791,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8186185314313222077">prepnutie na celú obrazovku</translation>
 <translation id="8199231515320852133">Oznámiť hlavičky aktuálnej bunky</translation>
 <translation id="820417203470636242">Prázdna bunka</translation>
+<translation id="820469951249669083">Prechod na ďalší riadok</translation>
 <translation id="8215202828671303819">Hromadný výber</translation>
 <translation id="826991282343985864">r$1s$2</translation>
 <translation id="8276439074553447000">Prejsť na predchádzajúcu zamerateľnú položku</translation>

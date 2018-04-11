@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">ขออภัย ยังคงยืนยันรหัสผ่านไม่ได้ หมายเหตุ: หากคุณเปลี่ยนแปลงรหัสผ่านไปเมื่อเร็วๆ นี้ รหัสผ่านใหม่จะมีผลเมื่อคุณออกจากระบบ โปรดใช้รหัสผ่านเดิมที่นี่</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
 <translation id="1698760176351776263">ที่อยู่ IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">ผู้ดูแลระบบของอุปกรณ์อาจมีสิทธิ์ตรวจสอบกิจกรรมของคุณได้</translation>
 <translation id="1734367976349034509">อุปกรณ์นี้ได้รับการจัดการโดยองค์กร</translation>
 <translation id="1746730358044914197">ผู้ดูแลระบบเป็นคนกำหนดค่าวิธีการป้อนข้อมูล</translation>
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">ปุ่มเพิ่มเติม</translation>
 <translation id="1951012854035635156">ผู้ช่วย</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">ตั้งค่าภาษา</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">ปิดเครื่อง</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2675319268637823299">ผู้ดูแลระบบไม่อนุญาตให้ <ph name="USER_EMAIL" /> ลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี
     ผู้ใช้ทุกคนต้องออกจากระบบเพื่อดำเนินการต่อ</translation>
+<translation id="2696763960464195425">ระบบจะนำข้อมูลของคุณออกเมื่อออกจากระบบ <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">ตั้งค่าแป้นพิมพ์</translation>
 <translation id="2718395828230677721">แสงตอนกลางคืน</translation>
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
 <translation id="2761704814324807722">ถาดสถานะ เวลา <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -270,6 +274,7 @@
 <translation id="7098389117866926363">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="7131634465328662194">คุณจะออกจากระบบโดยอัตโนมัติ</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
+<translation id="7165511658052620796">(TEMP) แสดงการเข้าสู่ระบบ Webui ถ้าใช้การแจ้งข้อบกพร่อง (crbug.com) หรือการส่งความคิดเห็น (alt+shift+i)</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
 <translation id="726276584504105859">ลากมาที่นี่เพื่อใช้การแยกหน้าจอ</translation>
@@ -330,6 +335,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>
 <translation id="8734991477317290293">แป้นพิมพ์นี้อาจพยายามขโมยการกดแป้นพิมพ์ของคุณ</translation>
+<translation id="8809737090443522491">พิมพ์ชื่อแอปหรือเอกสาร</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">การย้ายหน้าต่างไปยังเดสก์ท็อปอื่นอาจส่งผลให้เกิดพฤติกรรมที่ไม่คาดคิด
 

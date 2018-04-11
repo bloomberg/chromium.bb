@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Sajnos a jelszó ellenőrzése még mindig nem sikerült. Megjegyzés: ha a közelmúltban módosította jelszavát, az új jelszó beállítása a kijelentkezés után megy végbe, ezért itt a régi jelszót használja.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1698760176351776263">IPv6-cím: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Az eszközadminisztrátor képes lehet az Ön tevékenységeinek megfigyelésére.</translation>
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
 <translation id="1746730358044914197">A rendszergazda állította be a beviteli módszereket.</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Túlcsordulás gomb</translation>
 <translation id="1951012854035635156">Segéd</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Nyelv beállítása</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Kikapcsolás</translation>
 <translation id="2012624427112548395">Ctrl+Keresés+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Elküldés</translation>
 <translation id="2675319268637823299">A rendszergazda letiltotta a többfiókos bejelentkezést <ph name="USER_EMAIL" /> számára.
     Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
+<translation id="2696763960464195425">Adatait kijelentkezéskor eltávolítjuk. <ph name="LEARN_MORE" />.</translation>
+<translation id="2700493154570097719">Billentyűzetet beállítása</translation>
 <translation id="2718395828230677721">Éjszakai fény</translation>
 <translation id="2727977024730340865">Kis teljesítményű töltőt csatlakoztatott. Az akkumulátor töltése nem megbízható.</translation>
 <translation id="2761704814324807722">Állapotterület, idő: <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
 <translation id="7131634465328662194">A rendszer automatikusan kijelentkezteti.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
+<translation id="7165511658052620796">(TEMP) Webui-bejelentkezés mutatása; programhiba bejelentése (crbug.com) vagy visszajelzés küldése (Alt+Shift+I) esetén</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
 <translation id="7256634071279256947">Hátulsó mikrofon</translation>
 <translation id="726276584504105859">Húzza ide az osztott képernyő használatához</translation>
@@ -329,6 +334,7 @@ Kizárólag olyan fiókok esetében használja a funkciót, amelyekben megbízik
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>
 <translation id="8734991477317290293">Előfordulhat, hogy így kísérlik meg a billentyűleütések rögzítését</translation>
+<translation id="8809737090443522491">Írja be a kívánt alkalmazás vagy dokumentum nevét.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Az ablakok másik asztalra történő áthelyezése váratlan viselkedést eredményezhet.
 

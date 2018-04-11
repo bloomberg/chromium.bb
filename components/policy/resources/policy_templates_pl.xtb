@@ -32,6 +32,7 @@
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
 <translation id="1099282607296956954">Włącz izolację każdej witryny</translation>
 <translation id="1117535567637097036">Moduły obsługi protokołów ustawiane przez tę zasadę nie są używane podczas obsługi intencji Androida.</translation>
+<translation id="1118093128235245168">Zezwól, by strony prosiły użytkownika o przyznanie dostępu do podłączonych urządzeń USB</translation>
 <translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
 
       Jeśli włączysz tę zasadę, przeglądarka <ph name="PRODUCT_NAME" /> będzie używać wybranego katalogu bez względu na to, czy użytkownik określi parametr „--disk-cache-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
@@ -73,6 +74,9 @@
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
       godziny. Minimalna dopuszczalna częstotliwość to 60 sekund.</translation>
 <translation id="1204263402976895730">Włączone drukarki firmowe</translation>
+<translation id="1216758672198492382">Pozwala określić, czy strony mogą uzyskać dostęp do podłączonych urządzeń USB. Dostęp może być całkowicie zablokowany lub użytkownik może być pytany za każdym razem, gdy strona chce użyć takiego urządzenia.
+
+          Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „3”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="1219695476179627719">Określa, czy oprogramowanie urządzenia ma zostać cofnięte do wersji ustawionej w zasadzie <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, jeśli jest już zainstalowana nowsza wersja.
 
       Wartość domyślna to RollbackDisabled.</translation>
@@ -158,11 +162,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME" /> w wersji 29.</translation>
-<translation id="1519337829779572350">To ustawienie zostało wycofane. Zamiast niego użyj ustawienia SafeBrowsingExtendedReportingEnabled. Włączenie lub wyłączenie ustawienia SafeBrowsingExtendedReportingEnabled działa tak samo jak ustawienie wartości SafeBrowsingExtendedReportingOptInAllowed na Fałsz.
-
-      Ustawienie wartości tej zasady na Fałsz uniemożliwia użytkownikom wysyłanie niektórych informacji o systemie i zawartości stron na serwery Google. Jeśli zasada ma wartość Prawda lub nie jest skonfigurowana, użytkownicy mogą wysyłać niektóre informacje o systemie i zawartości stron do usługi Bezpieczne przeglądanie w celu wykrywania niebezpiecznych aplikacji i witryn.
-
-      Więcej informacji o funkcji Bezpieczne przeglądanie znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
 <translation id="152657506688053119">Lista alternatywnych URL-i dla domyślnego dostawcy wyszukiwania</translation>
 <translation id="1530812829012954197">Zawsze renderuj strony w przeglądarce hosta według następujących wzorców adresów URL</translation>
@@ -595,6 +594,12 @@ Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowani
 <translation id="2801230735743888564">Daje użytkownikom dostęp do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline.
 
       Jeśli ta zasada jest wyłączona, użytkownicy nie mają dostępu do ukrytej gry-żartu z dinozaurem, gdy urządzenie jest offline. Jeśli jest włączona, użytkownicy mogą grać w tę grę. Jeśli zasada nie jest ustawiona, użytkownicy nie mają dostępu do gry na zarejestrowanych urządzeniach z Chrome OS, a w innych przypadkach mogą w nią grać.</translation>
+<translation id="2802085784857530815">Pozwala określić, czy użytkownicy mogą korzystać z drukarek nienależących do firmy
+
+      Jeśli zasada ma wartość Prawda lub nie jest skonfigurowana, użytkownicy mogą dodawać i konfigurować swoje drukarki natywne oraz na nich drukować.
+
+      Jeśli zasada ma wartość Fałsz, użytkownicy nie mogą dodawać ani konfigurować własnych drukarek natywnych. Nie mogą też drukować na wcześniej skonfigurowanych drukarkach natywnych.
+      </translation>
 <translation id="2805707493867224476">Zezwalaj na pokazywanie wyskakujących okienek we wszystkich witrynach</translation>
 <translation id="2808013382476173118">Pozwala korzystać z serwerów STUN, gdy klienty zdalne próbują nawiązać połączenie z tym komputerem.
 
@@ -749,6 +754,7 @@ Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą oni stos
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być większe niż opóźnienie wyłączenia ekranu (jeśli jest ustawione) i opóźnienie bezczynności.</translation>
 <translation id="3264793472749429012">Kodowania obsługiwane przez domyślnego dostawcę wyszukiwania</translation>
 <translation id="3273221114520206906">Domyślne ustawienie języka JavaScript</translation>
+<translation id="3284094172359247914">Kontrolowanie używania interfejsu API WebUSB</translation>
 <translation id="3288595667065905535">Kanał wersji</translation>
 <translation id="3292147213643666827">Umożliwia działanie <ph name="PRODUCT_NAME" /> jako serwera proxy między <ph name="CLOUD_PRINT_NAME" /> a starszymi drukarkami podłączonymi do komputera.
 
@@ -833,6 +839,7 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
           Ta zasada jest uwzględniana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="350797926066071931">Włącz Tłumacza</translation>
 <translation id="3512226956150568738">Jeśli model urządzenia klienta obsługiwał środowisko ARC już wtedy, gdy do uruchomienia ARC nie była konieczna migracja do ext4, i jeśli zasada ArcEnabled jest ustawiona na wartość prawda, ta opcja będzie zachowywać się tak jak opcja AskUser (wartość 3). We wszystkich pozostałych przypadkach (jeśli model urządzenia nie obsługiwał wcześniej ARC lub jeśli zasada ArcEnabled jest ustawiona na wartość fałsz), ta wartość jest równoznaczna z opcją DisallowArc (wartość 0).</translation>
+<translation id="3524204464536655762">Nie zezwalaj żadnym stronom na wysyłanie próśb o dostęp do urządzeń USB przez interfejs API WebUSB</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="3577251398714997599">Ustawienia reklam dla stron zawierających uciążliwe reklamy</translation>
@@ -841,11 +848,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
 <translation id="3660562134618097814">Prześlij pliki cookie dostawcy tożsamości SAML podczas logowania</translation>
-<translation id="3687282113223807271">Funkcja Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
-
-      Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.
-
-      Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="3709266154059827597">Konfiguruj czarną listę instalacji rozszerzeń</translation>
 <translation id="3711895659073496551">Wstrzymaj</translation>
 <translation id="3736879847913515635">Włączanie dodawania osób w menedżerze użytkowników</translation>
@@ -1319,19 +1321,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Pamiętaj, że hasła mogą być starsze niż ustawiona liczba dni, gdy klient przez długi czas pozostawał w trybie offline.</translation>
 <translation id="5105313908130842249">Opóźnienie blokady ekranu przy zasilaniu z baterii</translation>
-<translation id="5106504910236139235">Włącza rozszerzone raporty w usłudze Bezpieczne przeglądanie <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
-
-      Rozszerzone raportowanie wysyła na serwery Google pewne informacje o systemie i zawartości stron w celu wykrywania niebezpiecznych aplikacji i witryn.
-
-      Jeśli ustawienie ma wartość Prawda, raporty są tworzone i wysyłane w razie potrzeby (na przykład jeśli wyświetlane jest pełnoekranowe ostrzeżenie bezpieczeństwa).
-
-      Jeśli ustawienie ma wartość Fałsz, raporty nie są nigdy wysyłane.
-
-      Jeśli zasada ma wartość Prawda lub Fałsz, użytkownik nie może zmienić ustawienia.
-
-      Jeśli zasada nie ma wartości, użytkownik może zmienić ustawienie i zdecydować, czy wysyłać raporty.
-
-      Więcej informacji na temat Bezpiecznego przeglądania znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="5108031557082757679">Wyłączone drukarki firmowe powiązane z urządzeniami</translation>
 <translation id="5130288486815037971">Czy włączone są mechanizmy szyfrowania RC4 w TLS</translation>
 <translation id="5141670636904227950">Ustaw domyślny typ lupy włączony na ekranie logowania</translation>
@@ -1530,19 +1519,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
-<translation id="5784370777704871674">Włącza funkcję Bezpieczne przeglądanie w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia.
-
-      Jeśli włączysz to ustawienie, funkcja Bezpieczne przeglądanie będzie zawsze aktywna.
-
-      Jeśli wyłączysz to ustawienie, funkcja Bezpieczne przeglądanie nigdy nie będzie aktywna.
-
-      Jeśli to ustawienie jest włączone lub wyłączone, użytkownicy nie mogą zmienić ustawienia „Włącz ochronę przed wyłudzaniem danych (phishingiem) i złośliwym oprogramowaniem” w <ph name="PRODUCT_NAME" />.
-
-      Jeśli zasada nie jest skonfigurowana, ustawienie jest włączone, ale użytkownik może je zmienić.
-
-      Więcej informacji o funkcji Bezpieczne przeglądanie znajdziesz na stronie https://developers.google.com/safe-browsing
-
-      Ta zasada nie jest dostępna w systemach Windows nie połączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Ustaw nazwę wyświetlaną dla lokalnych kont na urządzeniu</translation>
 <translation id="5814301096961727113">Ustaw domyślny stan potwierdzeń głosowych na ekranie logowania</translation>
 <translation id="5815129011704381141">Automatyczne ponowne uruchomienie po aktualizacji</translation>
@@ -1730,11 +1706,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6281043242780654992">Konfiguruje zasady wiadomości natywnych. Hosty wiadomości natywnych na czarnej liście nie będą dostępne, dopóki nie znajdą się na białej liście.</translation>
 <translation id="6282799760374509080">Zezwól lub nie na przechwytywanie dźwięku</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Gdy ta zasada jest nieskonfigurowana lub ma wartość Prawda, włączone są aktualizacje wszystkich komponentów <ph name="PRODUCT_NAME" />.
-
-      Jeśli zasada ma wartość Fałsz, aktualizacje komponentów są wyłączone. Nie obejmuje to jednak niektórych komponentów: nie są wyłączane aktualizacje żadnych komponentów, które nie zawierają kodu wykonywalnego, nie mają znacznego wpływu na działanie przeglądarki lub mają kluczowe znaczenie dla bezpieczeństwa.
-      Przykładami takich komponentów są listy odwołanych certyfikatów i dane Bezpiecznego przeglądania.
-      Więcej informacji o Bezpiecznym przeglądaniu znajdziesz na stronie https://developers.google.com/safe-browsing</translation>
 <translation id="6310223829319187614">Włącz autouzupełnianie nazw domen w czasie logowania użytkownika</translation>
 <translation id="6315673513957120120">Chrome wyświetla stronę z ostrzeżeniem, gdy użytkownicy otworzą witrynę, w której występują błędy SSL. Domyślnie lub wtedy, gdy ta zasada jest włączona, użytkownicy mogą zignorować i zamknąć stronę z ostrzeżeniem.
       Po wyłączeniu tej zasady użytkownicy nie będą mogli zamknąć strony z ostrzeżeniem.</translation>

@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Motor de pesquisa predefinido</translation>
 <translation id="1099282607296956954">Ativar o Isolamento do site para todos os sites.</translation>
 <translation id="1117535567637097036">Os controladores de protocolos definidos através desta política não são utilizados no processamento de intenções do Android.</translation>
+<translation id="1118093128235245168">Permitir que os sites solicitem ao utilizador a concessão de acesso a um dispositivo USB ligado</translation>
 <translation id="1128903365609589950">Configura o diretório que o <ph name="PRODUCT_NAME" /> irá utilizar para armazenar ficheiros em cache no disco.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido, independentemente de o utilizador ter especificado o sinalizador "--disk-cache-dir" ou não. Para evitar perda de dados ou outros erros inesperados, esta política não deve ser definida para o diretório raiz de um volume nem para um diretório utilizado para outros fins porque o <ph name="PRODUCT_NAME" /> gere os respetivos conteúdos.
@@ -74,6 +75,9 @@
       Se esta política não for definida, a frequência predefinida é de 3 horas. A frequência mínima
       permitida é de 60 segundos.</translation>
 <translation id="1204263402976895730">Impressoras empresariais ativadas</translation>
+<translation id="1216758672198492382">Permite definir se os Websites estão autorizados a obter acesso a dispositivos USB ligados. É possível bloquear completamente o acesso ou o utilizador pode ser consultado sempre que um Website pretenda obter acesso a dispositivos USB ligados.
+
+          Se esta política não for definida, é utilizada a definição "3" e o utilizador poderá alterá-la.</translation>
 <translation id="1219695476179627719">Especifica se o dispositivo deve reverter para a versão definida por <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> se já estiver a executar uma versão posterior.
 
       A predefinição é RollbackDisabled.</translation>
@@ -159,11 +163,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
 <translation id="1509692106376861764">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Esta definição foi descontinuada. Em alternativa, utilize SafeBrowsingExtendedReportingEnabled. Ativar ou desativar SafeBrowsingExtendedReportingEnabled é equivalente a definir SafeBrowsingExtendedReportingOptInAllowed como falsa.
-
-      Definir esta política como falsa impede os utilizadores de optarem por enviar algumas informações do sistema e conteúdo de páginas para os servidores da Google. Caso esta definição seja verdadeira ou não esteja configurada, os utilizadores podem enviar algumas informações do sistema e conteúdo de páginas para a Navegação segura, de modo a ajudar a detetar aplicações e sites perigosos.
-
-      Consulte https://developers.google.com/safe-browsing para mais informações acerca da Navegação segura.</translation>
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o fornecedor de pesquisas predefinido</translation>
 <translation id="1530812829012954197">Processar sempre os seguintes padrões de URL no navegador anfitrião</translation>
@@ -319,6 +318,17 @@
 <translation id="2113068765175018713">Limitar o tempo de atividade do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nestes Web sites</translation>
 <translation id="2131902621292742709">Atraso do escurecimento do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
+<translation id="2132732175597591362">Controla a lista de autorizações dos padrões de URL nos quais a reprodução automática estará sempre ativada.
+
+      Se a reprodução automática estiver ativada, os vídeos podem ser reproduzidos automaticamente (sem autorização do utilizador) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
+
+      Os padrões de URL devem ser formatados de acordo com as indicações em https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Se a política AutoplayAllowed estiver definida como verdadeira, esta política não tem qualquer efeito.
+
+      Se a política AutoplayAllowed estiver definida como falsa, quaisquer padrões de URL definidos nesta política continuam a ter autorização de reprodução.
+
+      Tenha em atenção que, se o <ph name="PRODUCT_NAME" /> estiver em execução e esta política for alterada, a alteração aplica-se apenas aos novos separadores abertos. Por conseguinte, é possível que alguns separadores continuem a seguir o comportamento anterior.</translation>
 <translation id="2134437727173969994">Permitir o bloqueio do ecrã</translation>
 <translation id="2137064848866899664">Se esta política estiver definida, cada ecrã é rodado para a
       orientação especificada em todos os reinícios e da primeira vez que for ligado
@@ -591,6 +601,12 @@
 <translation id="2801230735743888564">Permitir aos utilizadores jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline.
 
       Se esta política estiver definida como falsa, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro quando o dispositivo está offline. Se esta política estiver definida como verdadeira, os utilizadores podem jogar o jogo do dinossauro. Se esta política não estiver definida, os utilizadores não podem jogar o jogo do ovo da Páscoa do dinossauro em dispositivos com o Chrome OS inscritos, mas podem jogá-lo noutras circunstâncias.</translation>
+<translation id="2802085784857530815">Permite controlar se os utilizadores podem aceder a impressoras não empresariais
+
+      Se a política estiver definida como Verdadeira ou não estiver definida, os utilizadores poderão adicionar e configurar as suas próprias impressoras nativas e utilizá-las para imprimir.
+
+      Se a política estiver definida como Falsa, os utilizadores não poderão adicionar nem configurar as suas próprias impressoras nativas. Também não poderão utilizar impressoras nativas previamente configuradas para imprimir.
+      </translation>
 <translation id="2805707493867224476">Permitir que todos os sites mostrem pop-ups</translation>
 <translation id="2808013382476173118">Ativa a utilização de servidores STUN quando existirem clientes remotos a tentar estabelecer ligação a esta máquina.
 
@@ -748,6 +764,7 @@
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso para desligar o ecrã (se estiver definido) e ao atraso de inatividade.</translation>
 <translation id="3264793472749429012">Codificações do fornecedor de pesquisas predefinido</translation>
 <translation id="3273221114520206906">Definição de JavaScript predefinida</translation>
+<translation id="3284094172359247914">Controlar a utilização da API WebUSB</translation>
 <translation id="3288595667065905535">Libertar canal</translation>
 <translation id="3292147213643666827">Permite que o <ph name="PRODUCT_NAME" /> atue como proxy entre o <ph name="CLOUD_PRINT_NAME" /> e as impressoras antigas ligadas ao computador.
 
@@ -833,6 +850,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="350797926066071931">Ativar Google Tradutor</translation>
 <translation id="3512226956150568738">Se o modelo do dispositivo do cliente já era compatível com ARC antes de a migração para ext4 ser necessária para executar ARC e se a política ArcEnabled estiver definida como verdadeira, esta opção comporta-se como AskUser (valor 3). Em todos os outros casos (se o modelo do dispositivo não era compatível com ARC anteriormente ou se a política ArcEnabled estiver definida como falsa), este valor é equivalente a DisallowArc (valor 0).</translation>
+<translation id="3524204464536655762">Não permitir que nenhum site solicite acesso a dispositivos USB através da API WebUSB</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3577251398714997599">Definição dos anúncios para sites com anúncios intrusivos</translation>
@@ -841,12 +859,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do fornecedor de pesquisas predefinido</translation>
 <translation id="3660562134618097814">Transferir cookies SAML IdP durante o início de sessão</translation>
-<translation id="3687282113223807271">O serviço de Navegação segura apresenta uma página de aviso quando os utilizadores acederem a sites sinalizados como potencialmente maliciosos. A ativação desta definição impede que os utilizadores prossigam da página de aviso para o site com conteúdo malicioso.
-
-     
-      Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.
-
-      Veja https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="3709266154059827597">Configurar lista negra de instalação de extensões</translation>
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3736879847913515635">Ativar a opção para adicionar uma pessoa no gestor de utilizadores</translation>
@@ -941,6 +953,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Lista as extensões que são instaladas automaticamente para o utilizador em modo de Demonstração, para dispositivos no modo de retalho. Estas extensões são guardadas no dispositivo e podem ser instaladas offline, após a instalação.
 
       Cada entrada da lista contém um dicionário que tem de incluir o ID da extensão no campo "extension-id" e o respetivo URL de atualização no campo "update-url".</translation>
+<translation id="3873159954366380945">Permite-lhe definir o período de tempo durante o qual são apresentadas notificações de reinício do <ph name="PRODUCT_NAME" /> para aplicar uma atualização pendente.
+
+      Esta definição de política pode ser utilizada para controlar o período de tempo, em milissegundos, durante o qual o utilizador é gradualmente informado de que o <ph name="PRODUCT_NAME" /> tem de ser reiniciado (ou o <ph name="PRODUCT_OS_NAME" /> tem de ser reiniciado) para aplicar uma atualização. Durante este período de tempo, o utilizador é repetidamente informado da necessidade de aplicar uma atualização com base na definição da política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Se não estiver definida, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para o <ph name="PRODUCT_OS_NAME" /> e 604 800 000 milissegundos (uma semana) para todas as outras plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticação do fator duplo integrado</translation>
 <translation id="388237772682176890">Esta política foi descontinuada no M53 e removida no M54, uma vez que a compatibilidade com o SPDY/3.1 foi removida.
 
@@ -1282,6 +1297,14 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="489803897780524242">Colocação do termo de pesquisa de controlo de parâmetros para o fornecedor de pesquisa predefinido</translation>
 <translation id="4899708173828500852">Ativar Navegação Segura</translation>
+<translation id="4899802251198446659">Permite-lhe controlar se os vídeos podem ser reproduzidos automaticamente (sem autorização do utilizador) com conteúdo de áudio no <ph name="PRODUCT_NAME" />.
+
+      Se a política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> está autorizado a reproduzir automaticamente conteúdo multimédia.
+      Se a política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> não está autorizado a reproduzir automaticamente conteúdo multimédia. É possível utilizar a política AutoplayWhitelist para substituir esta definição para determinados padrões de URL.
+      Por predefinição, o <ph name="PRODUCT_NAME" /> não está autorizado a reproduzir automaticamente conteúdo multimédia. É possível utilizar a política AutoplayWhitelist para substituir esta definição para determinados padrões de URL.
+
+      Tenha em atenção que, se o <ph name="PRODUCT_NAME" /> estiver em execução e esta política for alterada, a alteração aplica-se apenas aos novos separadores abertos. Por conseguinte, é possível que alguns separadores continuem a seguir o comportamento anterior.
+      </translation>
 <translation id="4906194810004762807">Taxa de atualização para a Política do Dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4923806312383904642">Permitir ao WebDriver substituir políticas incompatíveis</translation>
@@ -1316,19 +1339,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Tenha em atenção que as palavras-passe poderão ultrapassar o número de dias especificado se o cliente estiver offline por um período de tempo mais longo.</translation>
 <translation id="5105313908130842249">Atraso do bloqueio do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
-<translation id="5106504910236139235">Ativa os relatórios alargados da Navegação segura do <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
-
-      Os relatórios alargados enviam algumas informações do sistema e conteúdo de páginas para os servidores da Google, de modo a ajudar a detetar aplicações e sites perigosos.
-
-      Se a opção estiver definida como verdadeira, os relatórios são criados e enviados sempre que seja necessário (por exemplo, quando é apresentado um anúncio intercalar de segurança).
-
-      Se a opção estiver definida como falsa, os relatórios nunca são enviados.
-
-      Se esta política estiver definida como verdadeira ou falsa, o utilizador não pode modificar a definição.
-
-      Se esta política não for definida, o utilizador pode alterar a definição e decidir se envia ou não os relatórios.
-
-      Consulte https://developers.google.com/safe-browsing para mais informações acerca da Navegação segura.</translation>
 <translation id="5108031557082757679">Impressoras empresariais de dispositivos desativadas</translation>
 <translation id="5130288486815037971">Determinar se os conjuntos de cifras RC4 no TLS estão ativados</translation>
 <translation id="5141670636904227950">Definir o tipo de lupa predefinida ativada no ecrã de início de sessão</translation>
@@ -1528,19 +1538,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos.</translation>
-<translation id="5784370777704871674">Ativa a funcionalidade de Navegação segura do <ph name="PRODUCT_NAME" /> e impede os utilizadores de alterarem esta definição.
-
-      Se ativar esta definição, a Navegação segura estará sempre ativa.
-
-      Se desativar esta definição, a Navegação segura nunca estará ativa.
-
-      Se ativar ou desativar esta definição, os utilizadores não podem alterar nem substituir a definição "Ativar proteção contra phishing e software malicioso" no <ph name="PRODUCT_NAME" />.
-
-      Se esta política não for definida, estará ativada, mas o utilizador poderá alterá-la.
-
-      Consulte https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.
-
-      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Definir o nome a apresentar para contas locais do dispositivo</translation>
 <translation id="5814301096961727113">Definir o estado predefinido de respostas faladas no ecrã de início de sessão</translation>
 <translation id="5815129011704381141">Reiniciar automaticamente após uma atualização</translation>
@@ -1728,11 +1725,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6281043242780654992">Configura as políticas das Mensagens nativas. Os anfitriões de mensagens nativas na lista negra não terão autorização até passarem para a lista de autorizações.</translation>
 <translation id="6282799760374509080">Permitir ou impedir a captura de áudio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Ativa as atualizações de componentes para todos os componentes no <ph name="PRODUCT_NAME" /> quando não está definida ou está definida como Verdadeira.
-
-      Se estiver definida como Falsa, as atualizações de componentes são desativadas. Contudo, alguns componentes estão isentos desta política: as atualizações de quaisquer componentes que não contenham código executável, que não alterem significativamente o comportamento do navegador ou que sejam essenciais para a respetiva segurança não são desativadas.
-      Alguns exemplos destes componentes incluem as listas de revogação de certificados e os dados da navegação segura.
-      Veja https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
 <translation id="6310223829319187614">Ativar o preenchimento automático do nome do domínio durante o início de sessão do utilizador</translation>
 <translation id="6315673513957120120">O Chrome mostra uma página de aviso quando os utilizadores navegam para sites com erros de SSL. Por predefinição ou quando esta política está definida como verdadeira, os utilizadores estão autorizados a clicar nestas páginas de aviso.
       Definir esta política como falsa desautoriza os utilizadores a clicar em qualquer página de aviso.</translation>
@@ -2343,21 +2335,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
           Se não estiver definido ou estiver definido como falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
 <translation id="8312129124898414409">Permite definir se os Sites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Sites ou negá-la para todos os Sites.
           Se esta política não for definida, é utilizada a opção "BlockKeygen" e o utilizador pode alterá-la.</translation>
-<translation id="8317983199166002498">Configura o tipo de transferência que o <ph name="PRODUCT_NAME" /> irá bloquear completamente, sem permitir que os utilizadores substituam a decisão de segurança.
-
-      Se definir esta política, o <ph name="PRODUCT_NAME" /> irá impedir determinados tipos de transferência e não permitirá que os utilizadores ignorem os avisos de segurança.
-
-      Se for escolhida a opção "Bloquear transferências perigosas", são permitidas todas as transferências, exceto as que tenham avisos da Navegação segura.
-
-      Se for escolhida a opção "Bloquear transferências potencialmente perigosas", são permitidas todas as transferências, exceto as que tenham avisos da Navegação segura devido à possibilidade de serem perigosas.
-
-      Se for escolhida a opção "Bloquear todas as transferências", são bloqueadas todas as transferências.
-
-      Se esta política não for definida (ou se for escolhida a opção "Sem restrições especiais"), as transferências são sujeitas às restrições de segurança habituais e que se baseiam nos resultados das análises da Navegação segura.
-
-      Tenha em conta que estas restrições se aplicam a transferências acionadas a partir de conteúdos de páginas Web, bem como à opção do menu de contexto "Transferir link...". Estas restrições não se aplicam à opção de guardar/transferir a página que está a ser apresentada no momento nem à opção de guardar PDFs a partir das opções de impressão.
-
-      Consulte https://developers.google.com/safe-browsing para obter mais informações sobre a Navegação segura.</translation>
 <translation id="8329984337216493753">Esta política está ativa apenas no modo de retalho.
 
       Quando a política DeviceIdleLogoutTimeout é especificada, define a duração da caixa de aviso com uma contagem decrescente que é mostrada ao utilizador antes do encerramento da sessão.

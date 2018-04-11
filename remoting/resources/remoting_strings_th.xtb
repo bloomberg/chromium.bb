@@ -140,6 +140,7 @@
 <translation id="4145029455188493639">ลงชื่อเข้าใช้ด้วย <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4155497795971509630">คอมโพเนนต์ที่จำเป็นบางอย่างขาดหายไป โปรดตรวจสอบว่าคุณได้ติดตั้งซอฟต์แวร์เวอร์ชันล่าสุดและลองอีกครั้ง</translation>
 <translation id="4156740505453712750">หากต้องการป้องกันการเข้าถึงคอมพิวเตอร์เครื่องนี้ โปรดเลือก PIN <ph name="BOLD_START" />อย่างน้อยหกหลัก<ph name="BOLD_END" /> โดยจะต้องป้อน PIN นี้เมื่อเชื่อมต่อจากตำแหน่งอื่น</translation>
+<translation id="4169432154993690151">หากต้องการเลือกรูปโปรไฟล์ โปรดอนุญาตให้ Chrome Remote Desktop เข้าถึงกล้อง</translation>
 <translation id="4176825807642096119">รหัสการเข้าถึง</translation>
 <translation id="4207623512727273241">โปรดเรียกใช้ตัวติดตั้งก่อนดำเนินการต่อ</translation>
 <translation id="4227991223508142681">ยูทิลิตีของการจัดสรรการโฮสต์</translation>
@@ -257,6 +258,7 @@
 <translation id="6748108480210050150">จาก</translation>
 <translation id="677755392401385740">โฮสต์เริ่มใช้งานสำหรับผู้ใช้: <ph name="HOST_USERNAME" /></translation>
 <translation id="6865175692670882333">ดู/แก้ไข</translation>
+<translation id="6913710942997637770">หากต้องการเลือกรูปโปรไฟล์ โปรดอนุญาตให้ Chrome Remote Desktop เข้าถึงรูปภาพ</translation>
 <translation id="6930242544192836755">ระยะเวลา</translation>
 <translation id="6939719207673461467">แสดง/ซ่อนแป้นพิมพ์</translation>
 <translation id="6944854424004126054">กู้คืนหน้าต่าง</translation>

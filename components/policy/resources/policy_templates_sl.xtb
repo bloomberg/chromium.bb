@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
 <translation id="1099282607296956954">Omogočanje osamitve spletnega mesta za vsako spletno mesto</translation>
 <translation id="1117535567637097036">Rutine za obravnavo protokolov, nastavljene s tem pravilnikom, se ne uporabljajo pri obravnavi namer za Android.</translation>
+<translation id="1118093128235245168">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogoči dostop do povezane naprave USB</translation>
 <translation id="1128903365609589950">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
 
       Če ta pravilnik nastavite, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--disk-cache-dir« ali ne. Če se želite izogniti izgubi podatkov ali drugim nepričakovanim napakam, tega pravilnika ne nastavite na korenski imenik pogona ali imenik, ki ga uporabljate za druge namene, ker <ph name="PRODUCT_NAME" /> upravlja njegovo vsebino.
@@ -74,6 +75,9 @@
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
 <translation id="1204263402976895730">Omogočeni tiskalniki v podjetjih</translation>
+<translation id="1216758672198492382">Omogoča nastavitev, ali lahko spletna mesta dostopajo do povezanih naprav USB. Dostop je mogoče v celoti blokirati ali pa je uporabnik vprašan, ko želi spletno mesto dostopati do povezanih naprav USB.
+
+          Če ta pravilnik ni nastavljen, je uporabljeno »3« in uporabnik lahko to spremeni.</translation>
 <translation id="1219695476179627719">Določa, ali naj se naprava povrne na različico, ki jo določa pravilnik <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, če se v njej že izvaja novejša različica.
 
       Privzeta nastavitev je RollbackDisabled (povrnitev onemogočena).</translation>
@@ -161,11 +165,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">Potrditev na daljavo</translation>
 <translation id="1509692106376861764">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29.</translation>
-<translation id="1519337829779572350">Ta nastavitev je zastarela, uporabite SafeBrowsingExtendedReportingEnabled. Če omogočite ali onemogočite SafeBrowsingExtendedReportingEnabled, je to enakovredno, kot če onemogočite SafeBrowsingExtendedReportingOptInAllowed.
-
-      Če onemogočite ta pravilnik, uporabnikom preprečite, da bi pošiljali nekatere informacije o sistemu in vsebino strani v Googlove strežnike. Če je ta nastavitev omogočena ali ni nastavljena, je uporabnikom dovoljeno pošiljati nekatere informacije o sistemu in vsebino strani Varnemu brskanju zaradi zaznavanja nevarnih aplikacij in spletnih mest.
-
-      Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Dovoli mestom sledenje fizične lokacije uporabnika</translation>
 <translation id="152657506688053119">Seznam nadomestnih URL-jev za privzetega ponudnika iskanja</translation>
 <translation id="1530812829012954197">Vedno upodobi te vzorce URL-jev v gostiteljskem brskalniku</translation>
@@ -327,6 +326,17 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2113068765175018713">Omejitev časa dejavnosti naprave samodejnim vnovičnim zagonom</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>
+<translation id="2132732175597591362">Nadzira seznam dovoljenih vzorcev URL, na katerih bo vedno vklopljeno samodejno predvajanje.
+
+      Če je omogočeno samodejno predvajanje, se lahko videoposnetki samodejno predvajajo (brez soglasja uporabnika) z zvočno vsebino v izdelku <ph name="PRODUCT_NAME" />.
+
+      Vzorec URL mora biti oblikovan, kot je določeno tukaj: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Če je pravilnik AutoplayAllowed omogočen, ta pravilnik ne bo imel nobenega vpliva.
+
+      Če je pravilnik AutoplayAllowed onemogočen, se bodo lahko še vedno predvajali morebitni vzorci URL, nastavljeni v tem pravilniku.
+
+      Opomba: če se <ph name="PRODUCT_NAME" /> izvaja in se ta pravilnik spremeni, bo uporabljen samo za novoodprte zavihke. Nekateri zavihki bodo zato morda še vedno delovali po starem.</translation>
 <translation id="2134437727173969994">Dovoli zaklepanje zaslona</translation>
 <translation id="2137064848866899664">Če je ta pravilnik nastavljen, je vsak zaslon zasukan na
       določeno postavitev pri vsakem vnovičnem zagonu in pri prvi povezavi
@@ -610,6 +620,12 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2801230735743888564">Uporabnikom dovoli igranje skrite igre z dinozavrom, ko je naprava brez internetne povezave.
 
       Če je ta pravilnik onemogočen, uporabniki ne bodo mogli igrati skrite igre z dinozavrom, ko je naprava brez internetne povezave. Če je nastavitev omogočena, bodo uporabniki lahko igrali igro. Če ta pravilnik ni nastavljen, uporabniki igre ne bodo mogli igrati v včlanjenem OS Chrome, lahko pa jo bodo igrali v drugih okoliščinah.</translation>
+<translation id="2802085784857530815">Omogoča nadziranje, ali uporabniki lahko dostopajo do tiskalnikov, ki niso od podjetja.
+
+      Če je pravilnik omogočen ali sploh ni nastavljen, lahko uporabniki dodajajo, konfigurirajo in tiskajo s svojimi izvornimi tiskalniki.
+
+      Če je pravilnik onemogočen, uporabniki ne morejo dodajati ali konfigurirati svojih izvornih tiskalnikov. Prav tako ne morejo tiskati s konfiguriranimi izvornimi tiskalniki.
+      </translation>
 <translation id="2805707493867224476">Dovoli vsem mestom, da pokažejo pojavna okna</translation>
 <translation id="2808013382476173118">Omogoča uporabo strežnikov STUN, ko oddaljeni odjemalci poskušajo vzpostaviti zvezo s tem računalnikom.
 
@@ -772,6 +788,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik izklopa zaslona (če je nastavljen) in časovnik zamik nedejavnosti.</translation>
 <translation id="3264793472749429012">Privzeto kodiranje iskalnika</translation>
 <translation id="3273221114520206906">Privzeta nastavitev JavaScripta</translation>
+<translation id="3284094172359247914">Nadzor uporabe API-ja za WebUSB</translation>
 <translation id="3288595667065905535">Kanal za izdaje</translation>
 <translation id="3292147213643666827">Omogoča, da <ph name="PRODUCT_NAME" /> deluje kot proxy med storitvijo <ph name="CLOUD_PRINT_NAME" /> in starejšimi tiskalniki, priključenimi na računalnik.
 
@@ -856,6 +873,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="350797926066071931">Omogoči Google Prevajalnik</translation>
 <translation id="3512226956150568738">Če je model odjemalske naprave že podpiral ARC, preden je bila zaradi izvajanja ARC-a potrebna selitev na šifriranje ext4, in je omogočen pravilnik »ArcEnabled«, bo možnost delovala kot »AskUser« (vrednost 3). V vseh drugih primerih (če model naprave prej ni podpiral ARC-ja ali če je pravilnik »ArcEnabled« onemogočen) je ta vrednost enakovredna »DisallowArc« (vrednost 0).</translation>
+<translation id="3524204464536655762">Ne dovoli nobenemu spletnemu mestu zahtevanja dostopa do naprav USB prek API-ja za WebUSB</translation>
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
@@ -864,11 +882,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
 <translation id="3653237928288822292">Privzeta ikona iskalnika</translation>
 <translation id="3660562134618097814">Prenesi piškotke SAML IdP pri prijavi</translation>
-<translation id="3687282113223807271">Storitev Varnega brskanja prikaže opozorilno stran, ko uporabniki prikrmarijo na spletna mesta, ki so označena kot morebitno zlonamerna. Če je ta nastavitev omogočena, uporabniki z opozorilne strani ne morejo na zlonamerno spletno mesto.
-
-      Če je ta nastavitev onemogočena ali ni nastavljena, lahko uporabniki po prikazu opozorila nadaljujejo na označeno spletno mesto.
-
-      Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="3711895659073496551">Prekinitev</translation>
 <translation id="3736879847913515635">Omogočanje dodajanja oseb v upravitelju uporabnikov</translation>
@@ -971,6 +984,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Navaja razširitve, samodejno nameščene za uporabnika predstavitvenega načina, za naprave v maloprodajnem načinu. Te razširitve so shranjene v napravi in jih je mogoče namestiti brez povezave.
 
       Vsak vnos na seznamu vsebuje slovar, ki mora vključevati ID razširitve v polju »extension-id« in URL za posodobitev v polju »update-url«.</translation>
+<translation id="3873159954366380945">Omogoči nastavitev časovnega obdobja, v katerem so prikazana obvestila o vnovičnem zagonu brskalnika <ph name="PRODUCT_NAME" /> zaradi uveljavitve čakajoče posodobitve.
+
+      S to nastavitvijo pravilnika je mogoče določiti časovno obdobje (v milisekundah), v katerem se uporabnika redno obvešča, da mora zaradi posodobitve znova zagnati brskalnik <ph name="PRODUCT_NAME" /> (ali operacijski sistem <ph name="PRODUCT_OS_NAME" />). V tem časovnem obdobju se uporabnika redno obvešča, da je potrebna posodobitev na podlagi nastavitve pravilnika <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Če pravilnik ni nastavljen, se kot privzeto časovno obdobje za <ph name="PRODUCT_OS_NAME" /> uporabi 345.600.000 ms (štiri dni), za vsa druga okolja pa 604.800.000 ms (en teden).</translation>
 <translation id="3877517141460819966">Integriran način dvojnega preverjanja pristnosti</translation>
 <translation id="388237772682176890">Ta pravilnik je zastarel v različici M53 in je odstranjen v različici M54 zaradi umika podpore za protokol SPDY/3.1.
 
@@ -1321,6 +1337,14 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="489803897780524242">Parameter, ki nadzira umestitev iskalnega izraza za privzetega ponudnika iskanja</translation>
 <translation id="4899708173828500852">Omogoči varno brskanje</translation>
+<translation id="4899802251198446659">Omogoča nadziranje, ali se lahko videoposnetki samodejno predvajajo (brez soglasja uporabnika) z zvočno vsebino v brskalniku <ph name="PRODUCT_NAME" />.
+
+      Če je pravilnik omogočen, je v brskalniku <ph name="PRODUCT_NAME" /> dovoljeno samodejno predvajanje predstavnosti.
+      Če je pravilnik onemogočen, v brskalniku <ph name="PRODUCT_NAME" /> ni dovoljeno samodejno predvajanje predstavnosti. Če želite za določene vzorce URL to preglasiti, lahko uporabite pravilnik AutoplayWhitelist.
+      V brskalniku <ph name="PRODUCT_NAME" /> privzeto ni dovoljeno samodejno predvajanje predstavnosti. Če želite za določene vzorce URL to preglasiti, lahko uporabite pravilnik AutoplayWhitelist.
+
+      Opomba: če se <ph name="PRODUCT_NAME" /> izvaja in se ta pravilnik spremeni, bo uporabljen samo za novoodprte zavihke. Nekateri zavihki bodo zato morda še vedno delovali po starem.
+      </translation>
 <translation id="4906194810004762807">Osveži oceno za pravilnik za naprave</translation>
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4923806312383904642">Omogočanje, da funkcija WebDriver preglasi nezdružljive pravilnike</translation>
@@ -1359,19 +1383,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če je odjemalec dalj časa brez povezave, so lahko zgodi, da so gesla starejša od navedenega števila dni.</translation>
 <translation id="5105313908130842249">Časovni zamik zaklepa zaslona, če se napaja iz akumulatorja</translation>
-<translation id="5106504910236139235">Omogoča razširjeno poročanje za Varno brskanje za brskalnik <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
-
-      Razširjeno poročanje pošilja nekatere informacije o sistemu in vsebino strani v Googlove strežnike zaradi zaznavanja nevarnih aplikacij in spletnih mest.
-
-      Če je nastavitev omogočena, bodo poročila ustvarjena in poslana, ko je to potrebno (ko je na primer prikazan vmesni varnostni zaslon).
-
-      Če je nastavitev onemogočena, poročila ne bodo poslana.
-
-      Če je ta pravilnik omogočen ali onemogočen, uporabnik ne more spremeniti nastavitve.
-
-      Če ta pravilnik ni nastavljen, uporabnik lahko spremeni nastavitev in se odloči, ali se poročila pošljejo.
-
-      Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Onemogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="5130288486815037971">Ali so v protokolu TLS omogočene šifrirne zbirke RC4</translation>
 <translation id="5141670636904227950">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu</translation>
@@ -1591,19 +1602,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če pravilnik ni nastavljen, velja privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah.</translation>
-<translation id="5784370777704871674">Omogoči funkcijo varnega brskanja v programu <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje te nastavitve.
-
-      Če omogočite to nastavitev, je funkcija varnega brskanja vedno vklopljena.
-
-      Če jo onemogočite, je funkcija varnega brskanja vedno izklopljena.
-
-      Če to nastavitev omogočite ali onemogočite, uporabniki ne morejo spremeniti ali preglasiti nastavitve »Omogoči zaščito pred lažnim predstavljanjem in zlonamerno programsko opremo« v programu <ph name="PRODUCT_NAME" />.
-
-      Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.
-
-      Več informacij o funkciji varnega brskanja je na voljo na strani https://developers.google.com/safe-browsing.
-
-      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Nastavljanje prikaznega imena za lokalne račune za napravo</translation>
 <translation id="5814301096961727113">Nastavitev privzetega stanja glasovnih povratnih informacij načina na prijavnem zaslonu</translation>
 <translation id="5815129011704381141">Samodejni vnovični zagon po posodobitvi</translation>
@@ -1803,11 +1801,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6281043242780654992">Konfigurira pravilnike za izvorno pošiljanje sporočil. Gostitelji izvornega pošiljanja sporočil s seznama blokiranih ne bodo dovoljeni, razen če bodo uvrščeni na seznam dovoljenih.</translation>
 <translation id="6282799760374509080">Omogočanje ali onemogočanje snemanja zvoka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Omogoča posodobitve komponent za vse komponente v izdelku <ph name="PRODUCT_NAME" />, če pravilnik ni nastavljen ali je omogočen.
-
-      Če pravilnik ni omogočen, so posodobitve komponent onemogočene. Vendar pa so nekatere komponente izvzete iz tega pravilnika: onemogočene niso posodobitve komponent, ki ne vsebujejo izvedljive kode, ki bistveno ne spreminjajo delovanja brskalnika ali ki so pomembne za varnost brskalnika.
-      Primeri takih komponent so na primer seznami ukinjenih potrdil in podatki varnega brskanja.
-      Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="6310223829319187614">Omogočanje samodokončanja imena domene med prijavo uporabnika</translation>
 <translation id="6315673513957120120">Chrome prikaže opozorilno stran, ko uporabniki prikrmarijo na spletna mesta, na katerih so napake SSL. Uporabnikom je privzeto (ali če je ta pravilnik omogočen) dovoljeno, da s klikom opustijo te strani z opozorilom.
       Če onemogočite ta pravilnik, uporabnikom ni dovoljeno s klikom opustiti katere koli strani z opozorilom.</translation>
@@ -2674,6 +2667,15 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9112897538922695510">Omogoča registracijo seznama rutin za obravnavo protokolov. Ta pravilnik je lahko samo priporočen. Lastnost |protocol| mora biti nastavljena na shemo, kot je »mailto«, in lastnost |url| mora biti nastavljena na vzorec URL aplikacije, ki obravnava shemo. Vzorec lahko vsebuje »%s«. Če ga, ta nadomesti obravnavani URL.
 
           Rutine za obravnavo protokola, registrirane s pravilnikom, so združene z rutinami, ki jih registrira uporabnik, oboje pa je na voljo za uporabo. Uporabnik lahko preglasi rutine za obravnavo protokola, nameščene s pravilnikom, tako da namesti novo privzeto rutino za obravnavo protokola, vendar ne more odstraniti rutine za obravnavo protokola, registrirane s pravilnikom.</translation>
+<translation id="9123211093995421438">Določa najmanjše število dovoljenih mejnikov sistema <ph name="PRODUCT_OS_NAME" />, za katero je dovoljena povrnitev, z začetkom pri trenutno veljavni stabilni različici.
+
+      Privzeta vrednost je 0 za naprave potrošnikov in 4 (približno pol leta) za včlanjene naprave v poslovnih okoljih.
+
+      Z nastavitvijo tega pravilnika preprečite, da bi zaščita pred povrnitvijo veljala za vsaj toliko mejnikov.
+
+      Nastavitev tega pravilnika na nižjo vrednost ima trajni učinek: naprave MORDA ne bo mogoče povrniti na prejšnje različice, tudi potem ko pravilnik ponastavite na višjo vrednost. 
+
+      Dejanske možnosti povrnitve so lahko odvisne tudi od vezja in nujnih popravkov ranljivosti.</translation>
 <translation id="913195841488580904">Blokiranje dostopa do seznama spletnih naslovov</translation>
 <translation id="9135033364005346124">Omogoči proxy <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="9136253551939494882">Seznam dovoljenih, ki upravlja, katere hitre načine odklepanja lahko uporabnik nastavi in uporablja za odklepanje zaklenjenega zaslona.

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1005145902654145231">セッションの名前を変更できませんでした。</translation>
 <translation id="1008557486741366299">後で</translation>
 <translation id="1015730422737071372">詳細を報告する</translation>
 <translation id="1021110881106174305">利用可能なカード</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">エンティティ識別子が正しくありません</translation>
 <translation id="1232569758102978740">無題</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />、<ph name="TYPE_2" />（同期済み）</translation>
+<translation id="1256368399071562588">&lt;p&gt;ウェブサイトにアクセスしようとしてもサイトが開かない場合は、まず次の解決方法を行って、エラーが解消されるかご確認ください。&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;ウェブアドレスに入力ミスがないか確認します。&lt;/li&gt;
+    &lt;li&gt;インターネット接続に問題がないことを確認します。&lt;/li&gt;
+    &lt;li&gt;ウェブサイトの所有者に問い合わせます。&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">リーディング リスト</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成されました（まだアップロードされておらず、無視の指定もありません）</translation>
 <translation id="1270502636509132238">集荷方法</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="1292701964462482250">「パソコンにインストールされているソフトウェアが原因で、Chrome からインターネットに安全に接続することができません」（Windows パソコンのみ）</translation>
 <translation id="1294154142200295408">コマンドラインのバリエーション</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">選択されたセッションが存在しません。</translation>
+<translation id="1323433172918577554">もっと見る</translation>
 <translation id="1333989956347591814">ただし、次の相手に<ph name="BEGIN_EMPHASIS" />あなたのアクティビティが知られる<ph name="END_EMPHASIS" />可能性はあります。
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />訪問先のウェブサイト
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">アクセス先のサイトには危険なアプリがあります</translation>
 <translation id="1374468813861204354">ヒント</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
+<translation id="1376836354785490390">折りたたむ</translation>
 <translation id="1377321085342047638">カード番号</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> からデータが送信されませんでした。</translation>
 <translation id="1407135791313364759">すべて開く</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">印刷</translation>
 <translation id="1484290072879560759">配送先住所を選択</translation>
 <translation id="1506687042165942984">このページの保存されているコピー（古いバージョン）を表示します。</translation>
+<translation id="1507202001669085618">&lt;p&gt;インターネットに接続するために Wi-Fi ポータルへのログインが必要な場合は、このエラーが表示されます。&lt;/p&gt;
+    &lt;p&gt;エラーを解決するには、開こうとしているページで [&lt;strong&gt;接続&lt;/strong&gt;] をクリックします。&lt;/p&gt;</translation>
 <translation id="1517433312004943670">電話番号が必要です</translation>
 <translation id="1517500485252541695">利用可能なクレジット カードとデビットカード</translation>
 <translation id="1519264250979466059">ビルド日</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">フィルタ</translation>
 <translation id="1916770123977586577">更新後の設定をこのサイトに適用するには、このページを再読み込みしてください</translation>
 <translation id="1919345977826869612">広告</translation>
+<translation id="1919367280705858090">特定のエラー メッセージに関する情報</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{なし}=1{1 件のサイト}other{# 件のサイト}}</translation>
 <translation id="1927235823738766038">利用可能なクレジット カードとデビットカード</translation>
 <translation id="194030505837763158"><ph name="LINK" /> に移動します</translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{なし}=1{1 件のサイトから}other{# 件のサイトから}}</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
+<translation id="3984550557525787191">そのセッション名はすでに存在しています。</translation>
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ファイアウォールとウイルス対策の設定を確認する<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">クラッシュ</translation>
 <translation id="422022731706691852"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって、今後の閲覧に悪影響を及ぼすソフトウェア（ホームページを変更したり、アクセス先のサイトで追加の広告を表示したりするソフトウェア）をインストールするよう誘導される可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;ステップ 1: ポータルにログインする&lt;/h4&gt;
+    &lt;p&gt;カフェや空港といった場所の Wi-Fi ネットワークを使用するには、ログインが必要です。ログインページを表示するには、&lt;code&gt;http://&lt;/code&gt; を使用しているページにアクセスします。&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;&lt;code&gt;http://&lt;/code&gt; で始まる任意のウェブサイトにアクセスします（例: &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;）。&lt;/li&gt;
+    &lt;li&gt;表示されたログイン ページでログインして、インターネットに接続します。&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;ステップ 2: シークレット モードでページを開く（パソコンのみ）&lt;/h4&gt;
+    &lt;p&gt;アクセスしたページをシークレット ウィンドウで開きます。&lt;/p&gt;
+    &lt;p&gt;この方法でページが表示された場合は、Chrome の拡張機能に問題があります。エラーを解決するには、問題のある拡張機能を無効にしてください。&lt;/p&gt;
+    &lt;h4&gt;ステップ 3: オペレーティング システムを更新する&lt;/h4&gt;
+    &lt;p&gt;端末が最新の状態であることを確認します。&lt;/p&gt;
+    &lt;h4&gt;ステップ 4: ウィルス対策ソフトウェアを一時的に無効にする&lt;/h4&gt;
+    &lt;p&gt;このエラーは、「HTTPS 保護」や「HTTPS スキャン」などの機能を備えたウィルス対策ソフトウェアを使用している場合に表示されます。こうしたウィルス対策ソフトウェアにより、Chrome のセキュリティが適用されなくなっています。&lt;/p&gt;
+    &lt;p&gt;問題を解決するには、ウィルス対策ソフトウェアを無効にします。無効にするとページを利用できるようになる場合は、セキュリティで保護されたサイトにアクセスするときにこのソフトウェアを無効にしてください。&lt;/p&gt;
+    &lt;p&gt;サイトの利用が終わったら、ウィルス対策ソフトウェアを有効にします。&lt;/p&gt;
+    &lt;h4&gt;ステップ 5: サポートを依頼する&lt;/h4&gt;
+    &lt;p&gt;引き続きエラーが表示される場合は、ウェブサイトの所有者にお問い合わせください。&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />ネットワーク診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="4235360514405112390">有効</translation>
 <translation id="4250431568374086873">このサイトへの接続は完全には保護されていません</translation>
@@ -567,6 +599,7 @@
 <translation id="5222812217790122047">メールアドレスは必須です</translation>
 <translation id="522700295135997067">このサイトでパスワードを盗まれた可能性があります</translation>
 <translation id="5230733896359313003">配送先住所</translation>
+<translation id="5250209940322997802">「ネットワークに接続してください」</translation>
 <translation id="5251803541071282808">クラウド</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />このソフトウェアを一時的に無効にしてインターネットに接続できるようにするには、次の手順を行います。なお、この作業には管理者権限が必要です。<ph name="END_PARAGRAPH" />
 
@@ -590,6 +623,7 @@
 <translation id="5332219387342487447">配送方法</translation>
 <translation id="5355557959165512791"><ph name="SITE" /> は証明書が失効しているため、現在アクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
 <translation id="536296301121032821">ポリシー設定を保存できませんでした</translation>
+<translation id="5377026284221673050">「時計が遅れています」、「時計が進んでいます」、「&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;」</translation>
 <translation id="5386426401304769735">このサイトの証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
 <translation id="5402410679244714488">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、最終使用日: 1 年以上前</translation>
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
@@ -843,6 +877,7 @@
 <translation id="7542403920425041731">確認すると、カードの情報がこのサイトに共有されます。</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
 <translation id="7543525346216957623">保護者に頼んでください</translation>
+<translation id="7548892272833184391">接続エラーを解決する</translation>
 <translation id="7549584377607005141">このウェブページを正しく表示するには、先ほど入力したデータが必要です。データは再送信できますが、このページで先ほど行った操作を繰り返すことになります。</translation>
 <translation id="7552846755917812628">次のことをお試しください。</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
@@ -850,6 +885,7 @@
 <translation id="7567204685887185387">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は不正に発行されたものである可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE" />のページです。翻訳しますか？</translation>
 <translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
+<translation id="7575800019233204241">「この接続ではプライバシーが保護されません」、「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」、「SSL 証明書エラー」</translation>
 <translation id="7578104083680115302">どの端末でも、Google に保存したカードを使ってサイトやアプリの支払いをすばやく行うことができます。</translation>
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7592362899630581445">サーバーの証明書が名前の制約に違反しています。</translation>
@@ -1072,6 +1108,8 @@
 <translation id="973773823069644502">配達先住所を追加</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{なし}=1{1 件のアイテム}other{# 件のアイテム}}</translation>
 <translation id="981121421437150478">オフライン</translation>
+<translation id="985199708454569384">&lt;p&gt;このエラーは、パソコンまたはモバイル端末の日付と時刻が正確でない場合に表示されます。&lt;/p&gt;
+    &lt;p&gt;エラーを解決するには、端末の時計を開き、日付と時刻が正しいことを確認します。&lt;/p&gt;</translation>
 <translation id="988159990683914416">Developer Build</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

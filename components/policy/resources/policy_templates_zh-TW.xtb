@@ -34,6 +34,7 @@
 <translation id="1096105751829466145">預設搜尋引擎</translation>
 <translation id="1099282607296956954">為所有網站啟用網站隔離</translation>
 <translation id="1117535567637097036">處理 Android 調用請求時，系統不會使用透過這項政策設定的通訊協定處理常式。</translation>
+<translation id="1118093128235245168">允許網站要求使用者授權存取已連線的 USB 裝置</translation>
 <translation id="1128903365609589950">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
 
       如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。請勿將這項政策設為磁碟區的根目錄或用於其他用途的目錄 (因為 <ph name="PRODUCT_NAME" /> 會管理相關內容)，以免遺失資料或發生其他未預期的錯誤。
@@ -73,6 +74,9 @@
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
       是 60 秒。</translation>
 <translation id="1204263402976895730">啟用的企業印表機</translation>
+<translation id="1216758672198492382">讓你設定是否允許網站存取已連線的 USB 裝置。你可以禁止所有網站存取 USB 裝置，也可以要求網站一律需要經過使用者同意才能存取這類裝置。
+
+          如果未設定這項政策，系統會使用「3」，而使用者可以自行變更設定。</translation>
 <translation id="1219695476179627719">指定是否要將已搭載較新版本的裝置復原至 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> 所設定的版本。
 
       預設值為 RollbackDisabled。</translation>
@@ -158,11 +162,6 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1504431521196476721">遠端證明</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
-<translation id="1519337829779572350">這項設定已遭淘汰，請改用 SafeBrowsingExtendedReportingEnabled。啟用或停用 SafeBrowsingExtendedReportingEnabled 等同於將 SafeBrowsingExtendedReportingOptInAllowed 設為 False。
-
-      如果將這項政策設為 False，使用者就無法選擇將部分系統資訊和網頁內容傳送至 Google 伺服器；如果設為 True 或未設定，使用者就可以將部分系統資訊和網頁內容傳送至「安全瀏覽」服務，協助偵測危險的應用程式和網站。
-
-      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="1530812829012954197">一律在瀏覽器中顯示以下網址模式</translation>
@@ -318,6 +317,17 @@
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
+<translation id="2132732175597591362">控管一律開啟自動播放功能的網址模式許可清單。
+
+      如果開啟自動播放功能，<ph name="PRODUCT_NAME" /> 中的影片便可自動播放音訊內容 (不需使用者同意)。.
+
+      網址模式的格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 中的規定。
+
+      如果 AutoplayAllowed 政策設為 True，這項政策就不會產生任何效果。
+
+      如果 AutoplayAllowed 政策設為 False，這項政策中設定的任何網址模式仍可自動播放音訊內容。
+
+      請注意，如果 <ph name="PRODUCT_NAME" /> 正在執行中，而這項政策發生變更，則只有新開啟的分頁會套用變更後的政策。因此，部分分頁仍可能執行先前行為。</translation>
 <translation id="2134437727173969994">允許鎖定畫面</translation>
 <translation id="2137064848866899664">如果設定這項政策，每次重新啟動時，
       以及在這個政策值發生變更後首次連線時，
@@ -583,6 +593,12 @@
 <translation id="2801230735743888564">允許使用者在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。
 
       如果將這項政策設為 False，使用者將無法在裝置處於離線狀態時玩恐龍復活節彩蛋遊戲。如果將這項政策設為 True，使用者就可以玩這個遊戲。如果未設定這項政策，使用者將無法在已註冊的 Chrome 作業系統中玩恐龍復活節彩蛋遊戲，但可以在其他環境下玩這個遊戲。</translation>
+<translation id="2802085784857530815">讓你控制使用者是否可存取非企業印表機
+
+      如果將這項政策設為 True 或未予設定，使用者可以自行新增及設定自己的原生印表機，也可以使用這類印表機列印。
+
+      如果將這項政策設定為 False，使用者就無法新增及設定自己的原生印表機，也無法使用任何先前設定過的原生印表機進行列印。
+      </translation>
 <translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
 <translation id="2808013382476173118">在遠端用戶端嘗試與這台電腦建立連線時，啟用 STUN 伺服器。
 
@@ -739,6 +755,7 @@
           指定政策值時需以毫秒為單位。該值需小於或等於螢幕關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="3264793472749429012">預設搜尋引擎編碼</translation>
 <translation id="3273221114520206906">預設 JavaScript 設定</translation>
+<translation id="3284094172359247914">控制 WebUSB API 使用權限</translation>
 <translation id="3288595667065905535">發佈頻道</translation>
 <translation id="3292147213643666827">啟用 Proxy 功能，將 <ph name="PRODUCT_NAME" /> 當做 <ph name="CLOUD_PRINT_NAME" /> 與連接到本機的舊型印表機之間的 Proxy。
 
@@ -822,6 +839,7 @@
           只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
 <translation id="3512226956150568738">如果用戶端裝置型號在必須遷移至 Ext4 才能執行 ARC 之前已支援 ARC，且 ArcEnabled 政策設為 True，這個選項的行為會與 AskUser 相同 (值 3)。在所有其他情況下 (如果用戶端裝置型號之前不支援 ARC，或 ArcEnabled 政策設為 False)，這個值會等同於 DisallowArc (值 0)。</translation>
+<translation id="3524204464536655762">不允許任何網站透過 WebUSB API 要求存取 USB 裝置</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3577251398714997599">含侵入式廣告的網站的廣告設定</translation>
@@ -830,11 +848,6 @@
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="3660562134618097814">登入時移轉 SAML IdP Cookie</translation>
-<translation id="3687282113223807271">當使用者瀏覽遭檢舉為有惡意風險的網站時，「安全瀏覽」服務會顯示警告網頁。如果你啟用這項設定，就能防止使用者略過警告網頁，繼續前往惡意網站。
-
-      如果你停用這項設定或未進行設定，則使用者可以選擇在系統顯示警告之後，繼續前往遭檢舉的網站。
-
-      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="3711895659073496551">暫停</translation>
 <translation id="3736879847913515635">允許在使用者管理工具中新增使用者</translation>
@@ -928,6 +941,9 @@
       列出系統自動為零售模式裝置中的示範模式使用者所安裝的擴充功能。這些擴充功能會儲存在裝置上，並且可以在安裝後進行離線安裝。
 
       每個清單項目都含有目錄，其中的「extension-id」欄位必須包含擴充功能 ID，且「update-url」欄位必須包含更新網址。</translation>
+<translation id="3873159954366380945">讓你設定要顯示 <ph name="PRODUCT_NAME" /> 重新啟動通知 (為了套用待安裝的更新) 的時間範圍。
+
+      這項設定可用於控制時間範圍 (以毫秒為單位)，透過定期通知讓使用者瞭解 <ph name="PRODUCT_NAME" /> 必須重新啟動 (或者 <ph name="PRODUCT_OS_NAME" /> 必須重新啟動) 才能套用更新。在此期間內，系統會根據 <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策的設定持續告知使用者必須進行更新。如果不予設定，則系統會使用 345600000 毫秒 (四天) 做為 <ph name="PRODUCT_OS_NAME" /> 的預設時間範圍，並以 604800000 毫秒 (一週) 做為所有其他平台的預設時間範圍。</translation>
 <translation id="3877517141460819966">整合式雙重驗證模式</translation>
 <translation id="388237772682176890">自 M53 起我們已淘汰這項政策，至 M54 則移除了這項政策 (因為我們已不再支援 SPDY/3.1)。
 
@@ -1267,6 +1283,14 @@
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="489803897780524242">可使用這個參數來決定是否要為預設搜尋服務商提供替代搜尋字詞。</translation>
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
+<translation id="4899802251198446659">讓你控制 <ph name="PRODUCT_NAME" /> 中的影片能否自動播放音訊內容 (不需使用者同意)。
+
+      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 即可自動播放媒體。
+      如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 就無法自動播放媒體。你可以使用 AutoplayWhitelist 政策覆寫這項設定，指定可自動播放媒體的網址模式。
+      根據預設，<ph name="PRODUCT_NAME" /> 不能自動播放媒體。你可以使用 AutoplayWhitelist 政策覆寫這項設定，指定可自動播放媒體的網址模式。
+
+      請注意，如果 <ph name="PRODUCT_NAME" /> 正在執行中，而這項政策發生變更，則只有新開啟的分頁會套用變更後的政策。因此，部分分頁仍可能執行先前行為。
+      </translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
 <translation id="4917385247580444890">強</translation>
 <translation id="4923806312383904642">允許 WebDriver 覆寫不相容的政策</translation>
@@ -1301,19 +1325,6 @@
 
       請注意，如果用戶端有很長一段時間處於離線狀態，則即使已過了指定的天數，密碼也可能不會變更。</translation>
 <translation id="5105313908130842249">在電池供電環境下執行時的螢幕鎖定延遲時間</translation>
-<translation id="5106504910236139235">啟用 <ph name="PRODUCT_NAME" /> 安全瀏覽模式的進階回報功能，並禁止使用者變更這項設定。
-
-      進階回報功能會將部分系統資訊和網頁內容傳送至 Google 伺服器，協助偵測危險的應用程式和網站。
-
-      如果將這項設定設為 True，系統會視需要 (例如當安全性插頁顯示時) 建立並傳送報告。
-
-      如果將這項設定設為 False，系統則一律不會傳送報告。
-
-      將這項政策設為 True 或 False 時，使用者將無法修改設定。
-
-      如果未設定這項政策，使用者即可變更設定，自行決定是否要傳送報告。
-
-      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="5108031557082757679">已停用企業裝置印表機</translation>
 <translation id="5130288486815037971">是否在 TLS 中啟用 RC4 加密套件</translation>
 <translation id="5141670636904227950">設定啟用的螢幕放大鏡在登入畫面的預設類型</translation>
@@ -1512,19 +1523,6 @@
           如果你未設定這項政策，系統會使用預設時間長度。
 
           指定政策值時需以毫秒為單位。</translation>
-<translation id="5784370777704871674">啟用 <ph name="PRODUCT_NAME" /> 的安全瀏覽功能並禁止使用者變更這項設定。
-
-      如果啟用這項設定，系統會一律啟用安全瀏覽功能。
-
-      如果停用這項設定，系統一律不會啟用安全瀏覽功能。
-
-      不論啟用或停用這項設定，使用者都無法在 <ph name="PRODUCT_NAME" /> 中變更或覆寫「阻擋釣魚網站及惡意程式」設定。
-
-      如果未設定這項政策，系統會啟用這項功能，不過使用者可以變更設定。
-
-      如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。
-
-      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="5809728392451418079">設定裝置本機帳戶的顯示名稱</translation>
 <translation id="5814301096961727113">設定互動朗讀在登入畫面的預設狀態</translation>
 <translation id="5815129011704381141">更新完成後自動重新啟動</translation>
@@ -1712,11 +1710,6 @@
 <translation id="6281043242780654992">設定內建訊息傳遞政策。如要允許列入黑名單的內建訊息傳遞主機，必須將其加入許可清單。</translation>
 <translation id="6282799760374509080">允許或拒絕擷取音訊</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">如果這項政策未設定或設為 True 時，允許更新 <ph name="PRODUCT_NAME" /> 的所有元件。
-
-      如果設為 False，則禁止更新元件。不過，部分元件不受這項政策規範：只要元件更新不含可執行的程式碼、不大幅變更瀏覽器的行為，或是對元件安全性至關重要，就不會遭到禁止。
-      這類元件的範例包括憑證撤銷清單和安全瀏覽資料。
-      如需進一步瞭解「安全瀏覽」功能，請參閱 https://developers.google.com/safe-browsing。</translation>
 <translation id="6310223829319187614">允許在使用者登入過程中以自動完成功能填入網域名稱</translation>
 <translation id="6315673513957120120">當使用者瀏覽出現 SSL 錯誤的網站，Chrome 會顯示警告網頁。在預設或政策設為 True 的情況下，使用者可以忽略這類警告網頁，繼續前往原先指定的頁面。
       這項政策設為 False 時，系統會禁止使用者忽略任何警告網頁。</translation>
@@ -2528,6 +2521,15 @@
 <translation id="9112897538922695510">允許你註冊通訊協定處理常式清單 (這是一律建議使用的政策)。屬性 |protocol| 應設定為配置 (例如「mailto」)，而屬性 |url| 則應設定為處理該配置的應用程式的網址模式。模式可包含「%s」(如果有的話，會由受處理的網址取代)。
 
           由政策註冊的通訊協定處理常式會與由使用者註冊的通訊協定處理常式合併，兩者皆可供使用。使用者可以安裝新的預設處理常式來覆寫由政策安裝的通訊協定處理常式，但無法移除由政策註冊的通訊協定處理常式。</translation>
+<translation id="9123211093995421438">指定隨時可從穩定版復原的最少 <ph name="PRODUCT_OS_NAME" />重要事件數。
+
+      一般使用者裝置的預設值為 0，企業註冊裝置的預設值為 4 (約半年)。
+
+      設定這項政策後，在發生至少指定數量的重要事件前，復原保護機制將不會生效。
+
+      調降這項政策的值所造成的影響為永久性的，即使之後再次調高設定值，裝置仍「可能」無法復原至較早的版本。
+
+      實際上能否復原也可能會受到裝置型號和重大漏洞修補程式的影響。</translation>
 <translation id="913195841488580904">禁止存取清單中的網址</translation>
 <translation id="9135033364005346124">啟用 <ph name="CLOUD_PRINT_NAME" /> Proxy</translation>
 <translation id="9136253551939494882">控制使用者可以設定及使用哪些快速解鎖模式來解除螢幕鎖定的許可清單。

@@ -140,6 +140,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="4145029455188493639">Logget på som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av programvaren, og prøv på nytt.</translation>
 <translation id="4156740505453712750">For å beskytte tilgangen til denne datamaskinen må du velge en PIN-kode bestående av <ph name="BOLD_START" />minst seks tall<ph name="BOLD_END" />. Denne PIN-koden kreves når man kobler til fra en annen posisjon.</translation>
+<translation id="4169432154993690151">For å ta et profilbilde, gi Chrome Eksternt skrivebord tilgang til kameraet ditt</translation>
 <translation id="4176825807642096119">Tilgangskode</translation>
 <translation id="4207623512727273241">Kjør installasjonsprogrammet før du fortsetter.</translation>
 <translation id="4227991223508142681">Verktøy for vertsidentitetshåndtering</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Fra</translation>
 <translation id="677755392401385740">Vert startet for brukeren: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Se/rediger</translation>
+<translation id="6913710942997637770">For å velge et profilbilde, gi Chrome Eksternt skrivebord tilgang til bildene dine</translation>
 <translation id="6930242544192836755">Varighet</translation>
 <translation id="6939719207673461467">Vis/skjul tastaturet.</translation>
 <translation id="6944854424004126054">Gjenopprett vinduet</translation>

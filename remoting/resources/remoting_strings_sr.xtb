@@ -140,6 +140,7 @@
 <translation id="4145029455188493639">Пријављени сте као <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Недостају неке неопходне компоненте. Проверите да ли сте инсталирали најновију верзију софтвера и покушајте поново.</translation>
 <translation id="4156740505453712750">Да бисте заштитили приступ овом рачунару, изаберите PIN од <ph name="BOLD_START" />најмање шест цифара<ph name="BOLD_END" />. Тај PIN ће бити потребан при повезивању са друге локације.</translation>
+<translation id="4169432154993690151">Да бисте одабрали слику профила, дозволите Chrome удаљеном рачунару да приступи камери</translation>
 <translation id="4176825807642096119">Приступни кôд</translation>
 <translation id="4207623512727273241">Покрените инсталациони програм пре него што наставите.</translation>
 <translation id="4227991223508142681">Услужни програм за доделу хостова</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Од</translation>
 <translation id="677755392401385740">Хост је покренут за корисника: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Прикажи/измени</translation>
+<translation id="6913710942997637770">Да бисте одабрали слику профила, дозволите Chrome удаљеном рачунару да приступи сликама</translation>
 <translation id="6930242544192836755">Трајање</translation>
 <translation id="6939719207673461467">Прикажи/сакриј тастатуру.</translation>
 <translation id="6944854424004126054">Вратите прозор</translation>

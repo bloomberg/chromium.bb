@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Enhetsadministratoren kan muligens overvåke aktiviteten din.</translation>
 <translation id="1734367976349034509">Denne enheten er administrert av en bedrift</translation>
 <translation id="1746730358044914197">Inndatametoder konfigureres av administratoren din.</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Overflyt-knapp</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Velg språk</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Slå av</translation>
 <translation id="2012624427112548395">Ctrl + Søk + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Send</translation>
 <translation id="2675319268637823299">En administrator har deaktivert multipålogging for <ph name="USER_EMAIL" />.
     Alle brukere må logge av for å fortsette.</translation>
+<translation id="2696763960464195425">Informasjonen din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Velg tastatur</translation>
 <translation id="2718395828230677721">Nattlys</translation>
 <translation id="2727977024730340865">Tilkoblet laveffektslader. Batteriladingen kan være upålitelig.</translation>
 <translation id="2761704814324807722">Statusfelt, klokken <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="7131634465328662194">Du logges av automatisk.</translation>
 <translation id="7165278925115064263">Alt + Shift + K</translation>
+<translation id="7165511658052620796">(TEMP) Vis webui-pålogging hvis du har brukt feilrapportering (crbug.com) eller tilbakemelding (Shift + Alt + i)</translation>
 <translation id="7168224885072002358">Går tilbake til den gamle oppløsningen om <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Mikrofon bak</translation>
 <translation id="726276584504105859">Dra hit for å bruke delt skjerm</translation>
@@ -329,6 +334,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="8734991477317290293">Det brukes kanskje til å stjele tastetrykkene dine.</translation>
+<translation id="8809737090443522491">Skriv inn navnet på en app eller et dokument</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd.
 

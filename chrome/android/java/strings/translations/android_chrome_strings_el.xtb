@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">Οι ιστότοποι τρίτου μέρους μπορούν να αποθηκεύουν και να διαβάζουν δεδομένα cookie</translation>
 <translation id="3662546969139119822">Δεν υπάρχει ιστορικό εδώ</translation>
 <translation id="3672452749423051839">Προτάσεις σφάλματος πλοήγησης</translation>
+<translation id="3692944402865947621">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε επειδή δεν είναι προσβάσιμη η τοποθεσία αποθήκευσης.</translation>
 <translation id="3712575778697986964">Επαναφορά δεδομένων Εξοικονόμησης δεδομένων;</translation>
 <translation id="3714981814255182093">Άνοιγμα της γραμμής εύρεσης</translation>
 <translation id="3716182511346448902">Αυτή η σελίδα χρησιμοποιεί πάρα πολλή μνήμη. Για αυτόν τον λόγο, το Chrome την έθεσε σε παύση.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">Σέπια</translation>
 <translation id="4062305924942672200">Νομικές πληροφορίες</translation>
 <translation id="4084682180776658562">Σελιδοδείκτης</translation>
+<translation id="4084712963632273211">Από <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />παρέχεται από την Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">Έγινε λήψη <ph name="MEGABYTES" /> MB</translation>
 <translation id="4089831646916293264">Αυτή η λειτουργία ενδέχεται να εμποδίζει την πρόσβαση σε υπηρεσίες δεδομένων υψηλής ποιότητας που παρέχονται από την εταιρεία κινητής τηλεφωνίας.</translation>
 <translation id="4095146165863963773">Διαγραφή δεδομένων εφαρμογών;</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">Για να δείτε ή να αντιγράψετε τον κωδικό πρόσβασης εδώ, ρυθμίστε το κλείδωμα οθόνης σε αυτήν τη συσκευή.</translation>
 <translation id="4558311620361989323">Συντομεύσεις ιστοσελίδας</translation>
 <translation id="4565377596337484307">Απόκρυψη κωδικού πρόσβασης</translation>
+<translation id="4570913071927164677">Λεπτομέρειες</translation>
 <translation id="4572422548854449519">Συνδεθείτε στον διαχειριζόμενο λογαριασμό</translation>
 <translation id="4581964774250883625">Πραγματοποιείτε ανώνυμη περιήγηση</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Πριν από # λεπτό}other{Πριν από # λεπτά}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378">Απομένουν <ph name="HOURS" /> ώρες</translation>
 <translation id="60924377787140961">Περισσότερα άρθρα θα εμφανιστούν σύντομα. Απολαύστε το απόγευμά σας!</translation>
 <translation id="6108923351542677676">Ρύθμιση σε εξέλιξη…</translation>
+<translation id="6111020039983847643">δεδομένα που χρησιμοποιήθηκαν</translation>
 <translation id="6112702117600201073">Ανανέωση σελίδας</translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
 <translation id="6138140242378429169">Ρύθμιση σελίδας ώστε να είναι φιλική προς κινητά</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">Επιβεβαίωση διαγραφής διαπιστευτηρίων συσκευής</translation>
 <translation id="7481312909269577407">Προώθηση</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ενημέρωση στις <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">δεδομένα που εξοικονομήθηκαν</translation>
 <translation id="7498271377022651285">Περιμένετε…</translation>
 <translation id="7514365320538308">Λήψη</translation>
 <translation id="751961395872307827">Δεν είναι δυνατή η σύνδεση στον ιστότοπο</translation>

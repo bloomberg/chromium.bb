@@ -369,6 +369,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4176463684765177261">Devre dışı</translation>
 <translation id="4188530942454211480">Önceki Cümle</translation>
 <translation id="4191918948604314587">Düğme</translation>
+<translation id="419265409837491189">Önceki sütuna git</translation>
 <translation id="4202186506458631436">Sağa git</translation>
 <translation id="4206289001967551965">Tablo içinde</translation>
 <translation id="4209770650650780359">Otomatik tamamlamalar için yukarı veya aşağı ok tuşuna basın.</translation>
@@ -419,6 +420,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4660783501463101648">Classic kaldırıldı. ChromeVox Classic'e geçiş için kullanılan klavye geçiş tuşu kaldırıldı.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Sonraki sütuna git</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Önceki önemli nokta</translation>
 <translation id="4696413482802371445">Sonraki 5. düzey başlık yok.</translation>
@@ -434,6 +436,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4826415162591436065">İleri git</translation>
 <translation id="4826604887384865800">Sonraki atlama</translation>
 <translation id="4827410568042294688">seçili değil</translation>
+<translation id="4839925464551908214">Önceki satıra git</translation>
 <translation id="4842108708071771135">Sonraki blok alıntı yok.</translation>
 <translation id="4844625982113518938">Adını öğrenmek için herhangi bir tuşa basın. Ctrl+W, öğrenme modunu kapatır.</translation>
 <translation id="4846428657345567687">ChromeVox'a Hoş Geldiniz!</translation>
@@ -788,6 +791,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8186185314313222077">tam ekrana geç</translation>
 <translation id="8199231515320852133">Mevcut hücrenin üst bilgilerini söyle</translation>
 <translation id="820417203470636242">Boş hücre.</translation>
+<translation id="820469951249669083">Sonraki satıra git</translation>
 <translation id="8215202828671303819">Çoklu seçim</translation>
 <translation id="826991282343985864">sa$1sü$2</translation>
 <translation id="8276439074553447000">Odaklanabilir önceki öğeye atla</translation>

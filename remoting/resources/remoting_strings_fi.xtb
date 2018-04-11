@@ -140,6 +140,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="4145029455188493639">Kirjautunut osoitteella <ph name="EMAIL_ADDRESS" /></translation>
 <translation id="4155497795971509630">Joitakin vaadittavia komponentteja puuttuu. Varmista, että olet asentanut ohjelmiston uusimman version, ja yritä uudelleen.</translation>
 <translation id="4156740505453712750">Suojaa tämän tietokoneen käyttöä valitsemalla <ph name="BOLD_START" />vähintään kuusinumeroinen<ph name="BOLD_END" /> PIN-koodi. Tarvitset PIN-koodin muodostaessasi yhteyden toiselta koneelta.</translation>
+<translation id="4169432154993690151">Jos haluat valita profiilikuvan, anna Chrome-etäkäytölle kamerasi käyttöoikeus.</translation>
 <translation id="4176825807642096119">Käyttökoodi</translation>
 <translation id="4207623512727273241">Suorita asennusohjelma ennen kuin jatkat.</translation>
 <translation id="4227991223508142681">Isäntien hallintatyökalu</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Lähettäjä</translation>
 <translation id="677755392401385740">Käyttäjän <ph name="HOST_USERNAME" /> isäntä käynnistettiin.</translation>
 <translation id="6865175692670882333">Tarkastele/muokkaa</translation>
+<translation id="6913710942997637770">Jos haluat valita profiilikuvan, anna Chrome-etäkäytölle valokuviesi käyttöoikeus.</translation>
 <translation id="6930242544192836755">Kesto</translation>
 <translation id="6939719207673461467">Näytä/piilota näppäimistö</translation>
 <translation id="6944854424004126054">Palauta ikkuna</translation>

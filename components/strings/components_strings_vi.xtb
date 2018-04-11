@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="1005145902654145231">Không đổi được tên phiên.</translation>
 <translation id="1008557486741366299">Không phải Bây giờ</translation>
 <translation id="1015730422737071372">Cung cấp chi tiết bổ sung</translation>
 <translation id="1021110881106174305">Thẻ được chấp nhận</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Số nhận dạng tổ chức không đúng</translation>
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (được đồng bộ hóa)</translation>
+<translation id="1256368399071562588">&lt;p&gt;Nếu bạn cố truy cập vào một trang web nhưng vẫn không mở được, trước tiên, hãy tìm cách khắc phục lỗi này bằng các bước khắc phục sự cố dưới đây:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Kiểm tra xem địa chỉ web có lỗi chính tả không.&lt;/li&gt;
+    &lt;li&gt;Đảm bảo kết nối Internet hoạt động bình thường.&lt;/li&gt;
+    &lt;li&gt;Liên hệ với chủ sở hữu trang web.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Danh sách đọc</translation>
 <translation id="1264126396475825575">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> (nhưng chưa tải lên hoặc đã bị bỏ qua)</translation>
 <translation id="1270502636509132238">Phương thức nhận hàng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
+<translation id="1292701964462482250">"Phần mềm trên máy tính của bạn đang ngăn không cho Chrome kết nối an toàn với web" (chỉ trên máy tính Windows)</translation>
 <translation id="1294154142200295408">Các biến thể của dòng lệnh</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Thử xóa các cookie của bạn<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">Phiên đã chọn không tồn tại.</translation>
+<translation id="1323433172918577554">Hiển thị nhiều hơn</translation>
 <translation id="1333989956347591814">Hoạt động của bạn <ph name="BEGIN_EMPHASIS" />có thể vẫn hiển thị<ph name="END_EMPHASIS" /> với:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Trang web bạn truy cập
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">Trang web bạn sắp truy cập chứa ứng dụng nguy hiểm</translation>
 <translation id="1374468813861204354">đề xuất</translation>
 <translation id="1375198122581997741">Giới thiệu Phiên bản</translation>
+<translation id="1376836354785490390">Hiển thị ít hơn</translation>
 <translation id="1377321085342047638">Số thẻ</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> không gửi bất kỳ dữ liệu nào.</translation>
 <translation id="1407135791313364759">Mở tất cả</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">In</translation>
 <translation id="1484290072879560759">Chọn địa chỉ giao hàng</translation>
 <translation id="1506687042165942984">Hiển thị bản sao đã lưu (nghĩa là đã lỗi thời) của trang này.</translation>
+<translation id="1507202001669085618">&lt;p&gt;Bạn sẽ gặp lỗi này nếu đang sử dụng cổng Wi-Fi yêu cầu bạn đăng nhập để có thể vào mạng.&lt;/p&gt;
+    &lt;p&gt;Để khắc phục lỗi này, hãy nhấp vào &lt;strong&gt;Kết nối&lt;/strong&gt; trên trang mà bạn đang cố mở.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Phải có số điện thoại</translation>
 <translation id="1517500485252541695">Thẻ tín dụng và thẻ ghi nợ được chấp nhận</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Lọc</translation>
 <translation id="1916770123977586577">Để áp dụng các cài đặt đã cập nhật cho trang web này, hãy tải lại trang</translation>
 <translation id="1919345977826869612">Quảng cáo</translation>
+<translation id="1919367280705858090">Nhận trợ giúp với thông báo lỗi cụ thể</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Không có}=1{1 trang web}other{# trang web}}</translation>
 <translation id="1927235823738766038">Thẻ tín dụng và thẻ ghi nợ được chấp nhận</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
@@ -421,6 +435,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Từ 1 trang web }other{Từ # trang web }}</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> bị chặn</translation>
+<translation id="3984550557525787191">Tên phiên này đã tồn tại.</translation>
 <translation id="3987940399970879459">Dưới 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
 <translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
@@ -451,6 +466,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kiểm tra tường lửa và cấu hình diệt vi-rút<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Sự cố</translation>
 <translation id="422022731706691852">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng đánh lừa bạn cài đặt các chương trình ảnh hưởng đến trải nghiệm duyệt web của bạn (ví dụ: bằng cách thay đổi trang chủ hoặc hiển thị thêm quảng cáo trên các trang web bạn truy cập). <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;Bước 1: Đăng nhập vào cổng&lt;/h4&gt;
+    &lt;p&gt;Mạng Wi-Fi ở những nơi như quán cà phê hoặc sân bay cần bạn phải đăng nhập. Để xem trang đăng nhập, hãy truy cập vào một trang sử dụng &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Truy cập vào trang web bất kỳ bắt đầu bằng &lt;code&gt;http://&lt;/code&gt;, chẳng hạn như &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Trên trang đăng nhập mở ra, hãy đăng nhập để sử dụng Internet.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;Bước 2: Mở trang ở chế độ Ẩn danh (chỉ dành cho máy tính)&lt;/h4&gt;
+    &lt;p&gt;Mở trang bạn đã truy cập trong Cửa sổ ẩn danh.&lt;/p&gt;
+    &lt;p&gt;Nếu trang mở ra thì tiện ích của Chrome không hoạt động bình thường. Để khắc phục lỗi này, hãy tắt tiện ích này.&lt;/p&gt;
+    &lt;h4&gt;Bước 3: Cập nhật hệ điều hành&lt;/h4&gt;
+    &lt;p&gt;Đảm bảo thiết bị đã cập nhật.&lt;/p&gt;
+    &lt;h4&gt;Bước 4: Tạm tắt phần mềm diệt vi-rút&lt;/h4&gt;
+    &lt;p&gt;Bạn sẽ gặp lỗi này nếu bạn có bất kỳ phần mềm diệt vi-rút nào có tính năng "Bảo vệ HTTPS" hoặc "Quét HTTPS". Phần mềm diệt vi-rút đang ngăn không cho Chrome cung cấp chế độ bảo mật.&lt;/p&gt;
+    &lt;p&gt;Để khắc phục sự cố này, hãy tắt phần mềm diệt vi-rút. Nếu trang hoạt động sau khi tắt phần mềm, hãy tắt phần mềm này khi bạn sử dụng trang web an toàn.&lt;/p&gt;
+    &lt;p&gt;Hãy nhớ bật lại chương trình diệt vi-rút khi đã hoàn tất.&lt;/p&gt;
+    &lt;h4&gt;Bước 5: Yêu cầu trợ giúp thêm&lt;/h4&gt;
+    &lt;p&gt;Nếu bạn vẫn gặp lỗi này, hãy liên hệ với chủ sở hữu trang web.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Thử chạy Chẩn đoán mạng<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Hợp lệ</translation>
 <translation id="4250431568374086873">Kết nối của bạn tới trang web này không đủ an toàn</translation>
@@ -466,6 +498,7 @@
 <translation id="4325863107915753736">Không tìm được bài viết</translation>
 <translation id="4326324639298822553">Kiểm tra ngày hết hạn của bạn và thử lại</translation>
 <translation id="4331708818696583467">Không bảo mật</translation>
+<translation id="4340982228985273705">Máy tính này không được coi là máy tính do doanh nghiệp quản lý, vì vậy, chính sách này chỉ có thể tự động cài đặt các tiện ích được lưu trữ trên Cửa hàng Chrome trực tuyến. URL cập nhật Cửa hàng Chrome trực tuyến là "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Thẻ tín dụng được chấp nhận</translation>
 <translation id="4356973930735388585">Những kẻ tấn công trên trang web này có thể tìm cách cài đặt các chương trình nguy hiểm vào máy tính của bạn. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng).</translation>
 <translation id="4372948949327679948">Giá trị <ph name="VALUE_TYPE" /> mong đợi.</translation>
@@ -567,6 +600,7 @@
 <translation id="5222812217790122047">Cần có email</translation>
 <translation id="522700295135997067">Trang web này có thể vừa đánh cắp mật khẩu của bạn</translation>
 <translation id="5230733896359313003">Địa chỉ giao hàng</translation>
+<translation id="5250209940322997802">"Kết nối với mạng"</translation>
 <translation id="5251803541071282808">Đám mây</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Hãy làm theo các bước sau để tạm thời vô hiệu hóa phần mềm nhằm giúp bạn có thể truy cập vào web. Bạn cần phải có đặc quyền của quản trị viên.<ph name="END_PARAGRAPH" />
 
@@ -590,6 +624,7 @@
 <translation id="5332219387342487447">Phương thức giao hàng</translation>
 <translation id="5355557959165512791">Bạn không thể truy cập vào <ph name="SITE" /> ngay bây giờ vì chứng chỉ của trang này đã bị thu hồi. Lỗi mạng và các cuộc tấn công mạng thường chỉ là tạm thời nên trang này có thể sẽ hoạt động lại sau.</translation>
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
+<translation id="5377026284221673050">"Đồng hồ chạy chậm" hoặc "Đồng hồ chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="5402410679244714488">Hết hạn: <ph name="EXPIRATION_DATE_ABBR" />, sử dụng lần cuối hơn một năm trước</translation>
 <translation id="540969355065856584">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không hợp lệ tại thời điểm này. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -843,6 +878,7 @@
 <translation id="7542403920425041731">Sau khi bạn xác nhận, chi tiết thẻ của bạn sẽ được chia sẻ với trang web này.</translation>
 <translation id="7542995811387359312">Tính năng tự động điền thẻ tín dụng đã bị vô hiệu hóa vì biểu mẫu này không sử dụng kết nối an toàn.</translation>
 <translation id="7543525346216957623">Hãy hỏi ý kiến cha mẹ của bạn</translation>
+<translation id="7548892272833184391">Khắc phục lỗi kết nối</translation>
 <translation id="7549584377607005141">Trang web này yêu cầu dữ liệu mà bạn đã nhập trước đó để được hiển thị đúng cách. Bạn có thể gửi lại dữ liệu này nhưng làm như vậy bạn sẽ lặp lại mọi hoạt động mà trang này đã thực hiện trước đó.</translation>
 <translation id="7552846755917812628">Thử các mẹo sau:</translation>
 <translation id="7554791636758816595">Tab mới</translation>
@@ -850,6 +886,7 @@
 <translation id="7567204685887185387">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này có thể đã bị gian lận khi phát hành. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
 <translation id="7568593326407688803">Trang này bằng<ph name="ORIGINAL_LANGUAGE" />Bạn có muốn dịch trang này không?</translation>
 <translation id="7569952961197462199">Xóa thẻ tín dụng khỏi Chrome?</translation>
+<translation id="7575800019233204241">"Kết nối của bạn không phải là kết nối riêng tư" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" hoặc "lỗi chứng chỉ SSL"</translation>
 <translation id="7578104083680115302">Thanh toán nhanh trên các trang web và ứng dụng trong mọi thiết bị nhờ sử dụng thẻ bạn đã lưu với Google.</translation>
 <translation id="7588950540487816470">Web trong cuộc sống</translation>
 <translation id="7592362899630581445">Chứng chỉ của máy chủ vi phạm hạn chế tên.</translation>
@@ -1072,6 +1109,8 @@
 <translation id="973773823069644502">Thêm địa chỉ giao hàng</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Không có}=1{1 mục}other{# mục}}</translation>
 <translation id="981121421437150478">Ngoại tuyến</translation>
+<translation id="985199708454569384">&lt;p&gt;Bạn sẽ gặp lỗi này nếu ngày và giờ trên máy tính hoặc thiết bị di động không chính xác.&lt;/p&gt;
+    &lt;p&gt;Để khắc phục lỗi này, hãy mở đồng hồ trên thiết bị. Đảm bảo ngày và giờ chính xác.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Phiên bản dành cho Nhà phát triển</translation>
 <translation id="989988560359834682">Chỉnh sửa địa chỉ</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

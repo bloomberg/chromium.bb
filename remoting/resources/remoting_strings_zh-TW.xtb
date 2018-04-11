@@ -140,6 +140,7 @@
 <translation id="4145029455188493639">目前登入的帳戶是 <ph name="EMAIL_ADDRESS" />。</translation>
 <translation id="4155497795971509630">找不到部分必要元件。請確認您已安裝最新版本的軟體，然後再試一次。</translation>
 <translation id="4156740505453712750">如要保護這台電腦，避免不明人士入侵，請選擇一個<ph name="BOLD_START" />至少 6 位數<ph name="BOLD_END" />的 PIN。當使用者從其他位置連線時，必須先輸入這個 PIN 驗證身分。</translation>
+<translation id="4169432154993690151">如要選擇個人資料相片，你必須允許 Chrome 遠端桌面存取你的相片</translation>
 <translation id="4176825807642096119">存取碼</translation>
 <translation id="4207623512727273241">請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="4227991223508142681">主機帳戶管理公用程式</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">寄件者</translation>
 <translation id="677755392401385740">已為下列使用者啟動主機：<ph name="HOST_USERNAME" />。</translation>
 <translation id="6865175692670882333">檢視/編輯</translation>
+<translation id="6913710942997637770">如要選擇個人資料相片，你必須允許 Chrome 遠端桌面存取你的相片</translation>
 <translation id="6930242544192836755">持續時間</translation>
 <translation id="6939719207673461467">顯示/隱藏鍵盤。</translation>
 <translation id="6944854424004126054">還原視窗</translation>

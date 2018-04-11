@@ -370,6 +370,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4176463684765177261">Deaktiveret</translation>
 <translation id="4188530942454211480">Forrige sætning</translation>
 <translation id="4191918948604314587">En knap</translation>
+<translation id="419265409837491189">Gå til forrige kolonne</translation>
 <translation id="4202186506458631436">Flyt til højre</translation>
 <translation id="4206289001967551965">I tabel</translation>
 <translation id="4209770650650780359">Tryk på pil op eller pil ned for at bruge autofuldførelse.</translation>
@@ -420,6 +421,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4660783501463101648">Classic er fjernet. Tastaturknappen, som skifter tilbage til ChromeVox Classic, er fjernet.</translation>
 <translation id="4661075872484491155">træ</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Gå til næste kolonne</translation>
 <translation id="4688873778442829762">git</translation>
 <translation id="4693675773662933727">Forrige orienteringspunkt</translation>
 <translation id="4696413482802371445">Ikke flere niveau 5-overskrifter.</translation>
@@ -435,6 +437,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4826415162591436065">Naviger frem</translation>
 <translation id="4826604887384865800">Næste hop</translation>
 <translation id="4827410568042294688">fravalgt</translation>
+<translation id="4839925464551908214">Gå til forrige række</translation>
 <translation id="4842108708071771135">Ikke flere blockquotes.</translation>
 <translation id="4844625982113518938">Tryk på en hvilken som helst tast for at se dens navn. Tryk på Ctrl+W for at lukke indlæringstilstanden.</translation>
 <translation id="4846428657345567687">Velkommen til ChromeVox</translation>
@@ -789,6 +792,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8186185314313222077">slå fuld skærm til eller fra</translation>
 <translation id="8199231515320852133">Offentliggør overskrifterne for den aktuelle celle</translation>
 <translation id="820417203470636242">Tom celle.</translation>
+<translation id="820469951249669083">Gå til næste række</translation>
 <translation id="8215202828671303819">Valg af flere</translation>
 <translation id="826991282343985864">r$1k$2</translation>
 <translation id="8276439074553447000">Gå til forrige element, der kan fokuseres på</translation>

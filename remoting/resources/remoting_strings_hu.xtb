@@ -140,6 +140,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="4145029455188493639">Bejelentkezve mint <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Hiányzik néhány szükséges összetevő. Kérjük, ellenőrizze, hogy a szoftver legfrissebb verzióját telepítette-e, majd próbálja újra.</translation>
 <translation id="4156740505453712750">A számítógép hozzáférésének védelméhez válasszon egy <ph name="BOLD_START" />legalább hat számjegyből álló<ph name="BOLD_END" /> PIN kódot. Ezt a PIN kódot kéri a rendszer, ha más helyről kísérlik meg a kapcsolódást.</translation>
+<translation id="4169432154993690151">Profilkép választásához engedélyezze a Chrome távoliasztal-szolgáltatás számára a kamerához való hozzáférést</translation>
 <translation id="4176825807642096119">Elérési kód</translation>
 <translation id="4207623512727273241">Kérjük, futtassa a telepítőt a folytatás előtt.</translation>
 <translation id="4227991223508142681">Gazdagép-ellátási segédprogram</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Feladó</translation>
 <translation id="677755392401385740">Gazdagép elindítva a következő felhasználó számára: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Megtekintés/szerkesztés</translation>
+<translation id="6913710942997637770">Profilkép választásához engedélyezze a Chrome távoliasztal-szolgáltatás számára a fotókhoz való hozzáférést</translation>
 <translation id="6930242544192836755">Időtartam</translation>
 <translation id="6939719207673461467">Billentyűzet megjelenítése/elrejtése.</translation>
 <translation id="6944854424004126054">Ablak visszaállítása</translation>

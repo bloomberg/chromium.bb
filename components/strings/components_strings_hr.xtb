@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1005145902654145231">Promjena naziva sesije nije uspjela.</translation>
 <translation id="1008557486741366299">Ne sada</translation>
 <translation id="1015730422737071372">Navedite dodatne pojedinosti</translation>
 <translation id="1021110881106174305">Prihvaćene kartice</translation>
@@ -42,13 +43,22 @@
 <translation id="1228893227497259893">Pogrešan identifikator entiteta</translation>
 <translation id="1232569758102978740">Neimenovano</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />, <ph name="TYPE_2" /> (sinkronizirano)</translation>
+<translation id="1256368399071562588">&lt;p&gt;Ako pokušate otvoriti web-lokaciju i ona se ne otvara, najprije pokušajte riješiti poteškoću prema ovim uputama:&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Provjerite je li web-adresa ispravno napisana.&lt;/li&gt;
+    &lt;li&gt;Provjerite jeste li povezani s internetom.&lt;/li&gt;
+    &lt;li&gt;Obratite se vlasniku web-lokacije.&lt;/li&gt;
+    &lt;/ol&gt;</translation>
 <translation id="1263231323834454256">Popis za čitanje</translation>
 <translation id="1264126396475825575">Izvješća o rušenju programa generirana <ph name="CRASH_TIME" /> (još nisu prenesena ili zanemarena)</translation>
 <translation id="1270502636509132238">Način preuzimanja</translation>
 <translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
+<translation id="1292701964462482250">"Softver na vašem računalu sprječava sigurno povezivanje Chromea s webom" (samo na Windows računalima)</translation>
 <translation id="1294154142200295408">Varijacije naredbenog retka</translation>
 <translation id="129553762522093515">Nedavno zatvoreno</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Izbrišite kolačiće<ph name="END_LINK" /></translation>
+<translation id="1314614906530272393">Odabrana sesija ne postoji.</translation>
+<translation id="1323433172918577554">Više</translation>
 <translation id="1333989956347591814">Vaše aktivnosti <ph name="BEGIN_EMPHASIS" />i dalje mogu biti vidljive<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />web-lokacijama koje posjećujete
@@ -60,6 +70,7 @@
 <translation id="1348198688976932919">Sljedeća web-lokacija sadrži opasne aplikacije</translation>
 <translation id="1374468813861204354">prijedlozi</translation>
 <translation id="1375198122581997741">O verziji</translation>
+<translation id="1376836354785490390">Manje</translation>
 <translation id="1377321085342047638">Broj kartice</translation>
 <translation id="139305205187523129">Host <ph name="HOST_NAME" /> nije poslao nikakve podatke.</translation>
 <translation id="1407135791313364759">Otvori sve</translation>
@@ -69,6 +80,8 @@
 <translation id="1430915738399379752">Ispis</translation>
 <translation id="1484290072879560759">Odaberite adresu za dostavu</translation>
 <translation id="1506687042165942984">Prikaži spremljenu kopiju te stranice (tj., onu za koju se zna da je zastarjela).</translation>
+<translation id="1507202001669085618">&lt;p&gt;Ta će se pogreška prikazati ako upotrebljavate Wi-Fi portal na koji se morate prijaviti da biste se povezali s internetom.&lt;/p&gt;
+    &lt;p&gt;Da biste ispravili tu pogrešku, kliknite &lt;strong&gt;Poveži se&lt;/strong&gt; na stranici koju pokušavate otvoriti.&lt;/p&gt;</translation>
 <translation id="1517433312004943670">Telefonski je broj obavezan</translation>
 <translation id="1517500485252541695">Prihvaćene kreditne i debitne kartice</translation>
 <translation id="1519264250979466059">Datum međuverzije</translation>
@@ -132,6 +145,7 @@
 <translation id="1898423065542865115">Filtriranje</translation>
 <translation id="1916770123977586577">Ponovo učitajte stranicu da bi se ažurirane postavke primijenile na ovu web-lokaciju</translation>
 <translation id="1919345977826869612">Oglasi</translation>
+<translation id="1919367280705858090">Pomoć za konkretne poruke pogreške</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nijedna}=1{1 web-lokacija}one{# web-lokacija}few{# web-lokacije}other{# web-lokacija}}</translation>
 <translation id="1927235823738766038">Prihvaćene kreditne i debitne kartice</translation>
 <translation id="194030505837763158">Posjetite <ph name="LINK" /></translation>
@@ -420,6 +434,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Nijedna}=1{S 1 web-lokacije }one{S/sa # web-lokacije }few{S/sa # web-lokacije }other{S/sa # web-lokacija }}</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3973234410852337861">Host <ph name="HOST_NAME" /> je blokiran</translation>
+<translation id="3984550557525787191">Naziv sesije već postoji.</translation>
 <translation id="3987940399970879459">Manje od 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 web-stranica u blizini}one{# web-stranica u blizini}few{# web-stranice u blizini}other{# web-stranica u blizini}}</translation>
 <translation id="4030383055268325496">&amp;Poništi dodavanje</translation>
@@ -450,6 +465,23 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />provjerite vatrozid i konfiguraciju antivirusnog programa<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Padovi programa</translation>
 <translation id="422022731706691852">Napadači na web-lokaciji <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu vas pokušati navesti na instaliranje programa koji smanjuju kvalitetu pregledavanja interneta (na primjer, promjenom početne stranice ili prikazivanjem dodatnih oglasa na web-lokacijama koje posjetite). <ph name="BEGIN_LEARN_MORE_LINK" />Saznajte više<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="4221630205957821124">&lt;h4&gt;1. korak: prijavite se na portal&lt;/h4&gt;
+    &lt;p&gt;Na Wi-Fi mreže na mjestima kao što su kafići ili zračne luke trebate se prijaviti. Da biste vidjeli stranicu za prijavu, posjetite stranicu koja upotrebljava &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
+    &lt;ol&gt;
+    &lt;li&gt;Otvorite bilo koju web-lokaciju koja započinje s &lt;code&gt;http://&lt;/code&gt;, na primjer &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;Na stranici za prijavu koja će se otvoriti prijavite se da biste se povezali s internetom.&lt;/li&gt;
+    &lt;/ol&gt;
+    &lt;h4&gt;2. korak: otvorite stranicu u anonimnom načinu (samo na računalima)&lt;/h4&gt;
+    &lt;p&gt;Otvorite stranicu koju ste posjetili u anonimnom prozoru.&lt;/p&gt;
+    &lt;p&gt;Ako se ta stranica otvori, Chromeovo proširenje ne funkcionira pravilno. Da biste ispravili tu pogrešku, isključite proširenje.&lt;/p&gt;
+    &lt;h4&gt;3. korak: ažurirajte operativni sustav&lt;/h4&gt;
+    &lt;p&gt;Ako uređaj nije ažuriran, ažurirajte ga.&lt;/p&gt;
+    &lt;h4&gt;4. korak: privremeno isključite antivirusni softver&lt;/h4&gt;
+    &lt;p&gt;Ta će se pogreška pojaviti ako imate antivirusni softver za "zaštitu HTTPS-a" ili "pretraživanje HTTPS-a". Taj softver onemogućuje Chromeu da pruža zaštitu.&lt;/p&gt;
+    &lt;p&gt;Da biste riješili taj problem, isključite antivirusni softver. Ako nakon isključivanja tog softvera stranica funkcionira, isključite taj softver kada upotrebljavate sigurne web-lokacije.&lt;/p&gt;
+    &lt;p&gt;Ne zaboravite ponovo uključiti antivirusni program kada završite.&lt;/p&gt;
+    &lt;h4&gt;5. korak: potražite dodatnu pomoć&lt;/h4&gt;
+    &lt;p&gt;Ako i dalje vidite pogrešku, obratite se vlasniku web-lokacije.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Pokušajte pokrenuti Mrežnu dijagnostiku<ph name="END_LINK" />.</translation>
 <translation id="4235360514405112390">Važeći</translation>
 <translation id="4250431568374086873">Veza s ovom web-lokacijom nije potpuno sigurna</translation>
@@ -465,6 +497,7 @@
 <translation id="4325863107915753736">Članak nije pronađen</translation>
 <translation id="4326324639298822553">Provjerite datum isteka, pa pokušajte ponovo</translation>
 <translation id="4331708818696583467">Nije sigurno</translation>
+<translation id="4340982228985273705">Za ovo računalo nije otkriveno da njime upravlja tvrtka, pa pravilo može samo automatski instalirati proširenja hostirana u Chrome web-trgovini. URL za ažuriranje Chrome web-trgovine je "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">Prihvaćene kreditne kartice</translation>
 <translation id="4356973930735388585">Napadači na ovoj web-lokaciji mogu pokušati instalirati opasne programe na vaše računalo radi krađe ili brisanja vaših podataka (na primjer fotografija, zaporki, poruka i brojeva kreditnih kartica).</translation>
 <translation id="4372948949327679948">Očekivana vrijednost vrste <ph name="VALUE_TYPE" />.</translation>
@@ -566,6 +599,7 @@
 <translation id="5222812217790122047">E-pošta (obavezno)</translation>
 <translation id="522700295135997067">Ova web-lokacija možda vam je upravo ukrala zaporku</translation>
 <translation id="5230733896359313003">Adresa za dostavu</translation>
+<translation id="5250209940322997802">"Povezivanje s mrežom"</translation>
 <translation id="5251803541071282808">Oblak</translation>
 <translation id="5281113152797308730"><ph name="BEGIN_PARAGRAPH" />Privremeno onemogućite softver prema ovim uputama da biste se povezali s webom. Potrebne su vam administratorske povlastice.<ph name="END_PARAGRAPH" />
 
@@ -589,6 +623,7 @@
 <translation id="5332219387342487447">Način otpreme</translation>
 <translation id="5355557959165512791">Trenutačno ne možete otvoriti web-lokaciju <ph name="SITE" /> jer je njezin certifikat opozvan. Mrežne pogreške i napadi uglavnom su privremeni i ta bi stranica kasnije trebala funkcionirati.</translation>
 <translation id="536296301121032821">Pohrana postavki pravila nije uspjela</translation>
+<translation id="5377026284221673050">"Sat kasni" ili "Sat ide unaprijed" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Lanac certifikata za ovu web-lokaciju sadrži certifikat s SHA-1 potpisom.</translation>
 <translation id="5402410679244714488">Istek: <ph name="EXPIRATION_DATE_ABBR" />, posljednja upotreba prije više od godinu dana</translation>
 <translation id="540969355065856584">Poslužitelj nije uspio dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat trenutačno nije važeći. Uzrok tomu može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu.</translation>
@@ -842,6 +877,7 @@
 <translation id="7542403920425041731">Nakon što ih potvrdite, podaci o kartici dijelit će se s ovom web-lokacijom.</translation>
 <translation id="7542995811387359312">Automatsko popunjavanje kreditne kartice onemogućeno je jer se ovaj obrazac ne služi sigurnom vezom.</translation>
 <translation id="7543525346216957623">Zamoli roditelja</translation>
+<translation id="7548892272833184391">Ispravljanje pogrešaka veze</translation>
 <translation id="7549584377607005141">Ova web-stranica zahtijeva podatke koje ste ranije unijeli da bi se pravilno prikazala. Te podatke možete poslati ponovo, ali time ćete ponoviti sve radnje koje je ta stranica prethodno izvela.</translation>
 <translation id="7552846755917812628">Pokušajte učiniti sljedeće:</translation>
 <translation id="7554791636758816595">Nova kartica</translation>
@@ -849,6 +885,7 @@
 <translation id="7567204685887185387">Poslužitelj nije mogao dokazati da je <ph name="DOMAIN" />; njegov sigurnosni certifikat možda je lažan. To može biti uzrokovano pogrešnom konfiguracijom ili napadom na vašu vezu.</translation>
 <translation id="7568593326407688803">Ova je stranica na ovom jeziku:<ph name="ORIGINAL_LANGUAGE" />Želite li je prevesti?</translation>
 <translation id="7569952961197462199">Želite li s Chromea ukloniti kreditnu karticu?</translation>
+<translation id="7575800019233204241">"Vaša veza nije privatna" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ili "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ili "Pogreška SSL certifikata"</translation>
 <translation id="7578104083680115302">Plaćajte brzo na web-lokacijama i u aplikacijama na više uređaja karticama koje ste spremili na Google.</translation>
 <translation id="7588950540487816470">Fizički web</translation>
 <translation id="7592362899630581445">Certifikat poslužitelja krši ograničenja naziva.</translation>
@@ -1072,6 +1109,8 @@ i netočne vjerodajnice. To može značiti da se neki napadač pokušava predsta
 <translation id="973773823069644502">Dodajte adresu za isporuku</translation>
 <translation id="975560348586398090">{COUNT,plural, =0{Nijedna}=1{1 stavka}one{# stavka}few{# stavke}other{# stavki}}</translation>
 <translation id="981121421437150478">Izvanmrežno</translation>
+<translation id="985199708454569384">&lt;p&gt;Ta će se pogreška prikazati ako datum i vrijeme na računalu ili mobilnom uređaju nisu točni.&lt;/p&gt;
+    &lt;p&gt;Da biste ispravili tu pogrešku, otvorite sat uređaja. Ako vrijeme i datum nisu točni, ispravite ih.&lt;/p&gt;</translation>
 <translation id="988159990683914416">Sastavak razvojnog programera</translation>
 <translation id="989988560359834682">Uređivanje adrese</translation>
 <translation id="992115559265932548"><ph name="MICROSOFT_ACTIVE_DIRECTORY" /></translation>

@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Salasanan vahvistaminen ei onnistunut vieläkään. Huom. Jos vaihdoit salasanasi äskettäin, uusi salasana otetaan käyttöön kirjauduttuasi ulos. Käytä tässä vanhaa salasanaasi.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
 <translation id="1698760176351776263">IPv6-osoite: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Laitteen järjestelmänvalvoja voi ehkä seurata toimintaasi.</translation>
 <translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
 <translation id="1746730358044914197">Järjestelmänvalvoja on määrittänyt syöttötavat.</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Overflow-painike</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Määritä kieli</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Virta pois</translation>
 <translation id="2012624427112548395">Ctrl + haku + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2675319268637823299">Järjestelmänvalvoja on kieltänyt käyttäjää <ph name="USER_EMAIL" /> kirjautumasta sisään useille tileille.
     Kaikkien käyttäjien on kirjauduttava ulos jatkaakseen käyttöä.</translation>
+<translation id="2696763960464195425">Tietosi poistetaan, kun kirjaudut ulos. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Määritä näppäimistö</translation>
 <translation id="2718395828230677721">Yövalo</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
 <translation id="2761704814324807722">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -272,6 +276,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
 <translation id="7131634465328662194">Sinut kirjataan automaattisesti ulos.</translation>
 <translation id="7165278925115064263">Alt+Vaihto+K</translation>
+<translation id="7165511658052620796">(TEMP) Näytä webui-kirjautuminen; jos käytettiin tiedostovirhettä (crbug.com) tai palautetta (alt+shift+i)</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Takamikrofoni</translation>
 <translation id="726276584504105859">Jaa näyttö vetämällä tähän.</translation>
@@ -332,6 +337,7 @@ Käytä tätä ominaisuutta vain luotettavien tilien kanssa.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pienitehoinen laturi kytketty</translation>
 <translation id="8734991477317290293">Sillä voidaan yrittää kaapata näppäinpainalluksesi</translation>
+<translation id="8809737090443522491">Kirjoita sovelluksen tai dokumentin nimi</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Ikkunan siirtämisellä toiselle työpöydälle voi olla odottamattomia seurauksia.
 

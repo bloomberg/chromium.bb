@@ -369,6 +369,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4176463684765177261">Uitgeschakeld</translation>
 <translation id="4188530942454211480">Vorige zin</translation>
 <translation id="4191918948604314587">Een knop</translation>
+<translation id="419265409837491189">Naar vorige kolom</translation>
 <translation id="4202186506458631436">Naar rechts verplaatsen</translation>
 <translation id="4206289001967551965">In tabel</translation>
 <translation id="4209770650650780359">Druk op de pijl-omhoog of -omlaag voor automatisch aanvullen.</translation>
@@ -419,6 +420,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4660783501463101648">De klassieke versie is verwijderd. Het is niet meer mogelijk om via het toetsenbord terug te schakelen naar de klassieke versie van ChromeVox.</translation>
 <translation id="4661075872484491155">structuur</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">Naar volgende kolom</translation>
 <translation id="4688873778442829762">raster</translation>
 <translation id="4693675773662933727">Vorig oriëntatiepunt</translation>
 <translation id="4696413482802371445">Geen volgende kop voor niveau 5.</translation>
@@ -434,6 +436,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4826415162591436065">Verder navigeren</translation>
 <translation id="4826604887384865800">Volgende sprong</translation>
 <translation id="4827410568042294688">niet geselecteerd</translation>
+<translation id="4839925464551908214">Naar vorige rij</translation>
 <translation id="4842108708071771135">Geen volgend blok met geciteerde tekst.</translation>
 <translation id="4844625982113518938">Druk op een willekeurige toets voor de naam van de toets. Met Ctrl + W sluit je de leermodus.</translation>
 <translation id="4846428657345567687">Welkom bij ChromeVox.</translation>
@@ -788,6 +791,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="8186185314313222077">volledig scherm in- of uitschakelen</translation>
 <translation id="8199231515320852133">De koppen van de huidige cel melden</translation>
 <translation id="820417203470636242">Lege cel.</translation>
+<translation id="820469951249669083">Naar volgende rij</translation>
 <translation id="8215202828671303819">Meervoudige selectie</translation>
 <translation id="826991282343985864">r$1c$2</translation>
 <translation id="8276439074553447000">Springen naar vorig actief item</translation>

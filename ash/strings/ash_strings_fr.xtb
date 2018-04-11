@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Impossible de valider le mot de passe. Remarque : si vous l'avez modifié dernièrement, votre nouveau mot de passe ne sera appliqué qu'une fois que vous vous serez déconnecté. Veuillez donc utiliser votre ancien mot de passe.</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresse IPv6 : <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Il est possible que l'administrateur de l'appareil puisse surveiller votre activité.</translation>
 <translation id="1734367976349034509">Cet appareil est géré par une entreprise</translation>
 <translation id="1746730358044914197">Les modes de saisie sont configurés par votre administrateur.</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Bouton de dépassement de capacité</translation>
 <translation id="1951012854035635156">Assistant</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Définir la langue</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Éteindre</translation>
 <translation id="2012624427112548395">Ctrl+Recherche+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Valider</translation>
 <translation id="2675319268637823299">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL" />.
     Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
+<translation id="2696763960464195425">Les informations vous concernant sont supprimées lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Définir votre clavier</translation>
 <translation id="2718395828230677721">Éclairage nocturne</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -270,6 +274,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="7098389117866926363">Appareil USB de type C (port situé sur l'arrière de l'appareil, à gauche)</translation>
 <translation id="7131634465328662194">Vous allez être déconnecté automatiquement.</translation>
 <translation id="7165278925115064263">Alt+Maj+K</translation>
+<translation id="7165511658052620796">(TEMP) Afficher la connexion WebUI en cas de bug d'un fichier utilisé (crbug.com) ou de commentaire (Alt+Maj+I)</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
@@ -330,6 +335,7 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
 <translation id="8734991477317290293">Il est possible que cet autre clavier tente d'enregistrer les touches sur lesquelles vous appuyez afin de vous soutirer des informations</translation>
+<translation id="8809737090443522491">Saisissez le nom d'une application ou d'un document</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>
 <translation id="8814715559352963456">Si vous déplacez des fenêtres vers un autre écran, elles peuvent présenter des comportements inattendus.
 

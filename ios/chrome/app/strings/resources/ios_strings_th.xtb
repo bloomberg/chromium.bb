@@ -157,6 +157,7 @@
 <translation id="3789841737615482174">ติดตั้ง</translation>
 <translation id="385051799172605136">กลับ</translation>
 <translation id="3897092660631435901">เมนู</translation>
+<translation id="3915450441834151894">ข้อมูลเว็บไซต์</translation>
 <translation id="3928666092801078803">รวมข้อมูลของฉัน</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="3963231839620026525">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
@@ -220,6 +221,7 @@
 <translation id="5197255632782567636">อินเทอร์เน็ต</translation>
 <translation id="5228579091201413441">เปิดใช้การซิงค์</translation>
 <translation id="5244474230056479698">กำลังซิงค์กับ <ph name="EMAIL" /></translation>
+<translation id="527973086555161537">เปิดแท็บเพื่อท่องเว็บในแบบส่วนตัว</translation>
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>
@@ -299,6 +301,7 @@
 <translation id="6445981559479772097">ส่งข้อความแล้ว</translation>
 <translation id="6464071786529933911">เปิดในแท็บที่ไม่ระบุตัวตนใหม่</translation>
 <translation id="6482629121755362506">ลบแล้ว <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> รายการ</translation>
+<translation id="6528048372317642110">ดาวน์โหลดไฟล์ได้</translation>
 <translation id="6541915733953096570">ชั่วโมงที่ผ่านมา</translation>
 <translation id="6570040839871198836">ป้อนฟอร์มอัตโนมัติ</translation>
 <translation id="6656103420185847513">แก้ไขโฟลเดอร์</translation>

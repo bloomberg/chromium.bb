@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">‏אתרים של צד שלישי יוכלו לשמור ולקרוא נתונים של קובצי Cookie</translation>
 <translation id="3662546969139119822">ההיסטוריה ריקה</translation>
 <translation id="3672452749423051839">הצעות לשגיאת ניווט</translation>
+<translation id="3692944402865947621">ההורדה של <ph name="FILE_NAME" /> נכשלה כי מיקום האחסון לא נגיש.</translation>
 <translation id="3712575778697986964">‏לאפס את חוסך הנתונים (Data Saver)?</translation>
 <translation id="3714981814255182093">פתח את סרגל החיפוש</translation>
 <translation id="3716182511346448902">‏הדף הזה מנצל יותר מדי זיכרון, כך שהוא הושהה על-ידי Chrome.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4084682180776658562">סימניה</translation>
+<translation id="4084712963632273211">‏מאת <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />מוגש על-ידי Google<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537">‏‎<ph name="MEGABYTES" /> MB להורדות</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
 <translation id="4095146165863963773">למחוק נתוני יישומים?</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">כדי להציג או להעתיק את הסיסמה יש להגדיר נעילת מסך במכשיר זה.</translation>
 <translation id="4558311620361989323">קיצורי דרך בדפי אינטרנט</translation>
 <translation id="4565377596337484307">הסתר סיסמה</translation>
+<translation id="4570913071927164677">פרטים</translation>
 <translation id="4572422548854449519">כניסה אל חשבון מנוהל</translation>
 <translation id="4581964774250883625">עברת למצב גלישה בסתר</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{לפני דקה}two{לפני # דקות}many{לפני # דקות}other{לפני # דקות}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378">נותרו <ph name="HOURS" /> שעות</translation>
 <translation id="60924377787140961">בקרוב יופיעו מאמרים נוספים. שיהיה לך המשך יום נפלא!</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
+<translation id="6111020039983847643">נתונים שנצרכו</translation>
 <translation id="6112702117600201073">מרענן את הדף</translation>
 <translation id="6127379762771434464">הפריט הוסר</translation>
 <translation id="6138140242378429169">הפוך את הדף לידידותי לנייד</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">אשר את מחיקת פרטי הכניסה של המכשיר</translation>
 <translation id="7481312909269577407">קדימה</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (עודכן <ph name="TIME_SINCE_UPDATE" />)</translation>
+<translation id="7494974237137038751">נתונים שנחסכו</translation>
 <translation id="7498271377022651285">המתן…</translation>
 <translation id="7514365320538308">הורד</translation>
 <translation id="751961395872307827">לא ניתן להתחבר לאתר</translation>

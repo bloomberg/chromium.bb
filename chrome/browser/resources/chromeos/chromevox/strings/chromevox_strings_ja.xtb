@@ -370,6 +370,7 @@
 <translation id="4176463684765177261">無効</translation>
 <translation id="4188530942454211480">前の文</translation>
 <translation id="4191918948604314587">ボタン</translation>
+<translation id="419265409837491189">前の列に移動します</translation>
 <translation id="4202186506458631436">右へ移動</translation>
 <translation id="4206289001967551965">表の中です</translation>
 <translation id="4209770650650780359">上または下矢印キーでオート コンプリートの候補を表示します。</translation>
@@ -420,6 +421,7 @@
 <translation id="4660783501463101648">クラシックの削除。ChromeVox クラシックに戻るキーボード切り替えは削除されました。</translation>
 <translation id="4661075872484491155">ツリー</translation>
 <translation id="4668929960204016307">,</translation>
+<translation id="4677535310137735442">次の列に移動します</translation>
 <translation id="4688873778442829762">グリッド</translation>
 <translation id="4693675773662933727">前のランドマーク</translation>
 <translation id="4696413482802371445">次のレベル 5 見出しはありません。</translation>
@@ -435,6 +437,7 @@
 <translation id="4826415162591436065">順方向にナビゲート</translation>
 <translation id="4826604887384865800">次のジャンプ</translation>
 <translation id="4827410568042294688">選択していません</translation>
+<translation id="4839925464551908214">前の行に移動します</translation>
 <translation id="4842108708071771135">次の引用箇所はありません。</translation>
 <translation id="4844625982113518938">キーを押すとその名前が読み上げられます。学習モードを終了するには Ctrl+W キーを押します。</translation>
 <translation id="4846428657345567687">ChromeVox へようこそ</translation>
@@ -789,6 +792,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8186185314313222077">全画面表示の切り替え</translation>
 <translation id="8199231515320852133">現在のセルの見出しを読み上げる</translation>
 <translation id="820417203470636242">セルは空欄です。</translation>
+<translation id="820469951249669083">次の行に移動します</translation>
 <translation id="8215202828671303819">複数選択可</translation>
 <translation id="826991282343985864">行$1列$2</translation>
 <translation id="8276439074553447000">前のフォーカス可能項目にジャンプ</translation>

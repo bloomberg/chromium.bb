@@ -140,6 +140,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="4145029455188493639">Prijavljeni ste kao <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Nedostaju neke obavezne komponente. Provjerite jeste li instalirali najnoviju verziju softvera i pokušajte ponovo.</translation>
 <translation id="4156740505453712750">Da biste zaštitili pristup ovom računalu, odaberite PIN s <ph name="BOLD_START" />najmanje šest brojeva<ph name="BOLD_END" />. Taj će PIN biti potreban pri povezivanju s druge lokacije.</translation>
+<translation id="4169432154993690151">Za odabir profilne slike dopustite Udaljenoj radnoj površini Chrome da pristupi vašem fotoaparatu</translation>
 <translation id="4176825807642096119">Pristupni kôd</translation>
 <translation id="4207623512727273241">Ponovo pokrenite instalacijski program prije nastavka.</translation>
 <translation id="4227991223508142681">Uslužni program za pružanje usluge hosta</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">Od</translation>
 <translation id="677755392401385740">Host je pokrenut za korisnika: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6865175692670882333">Prikaz/uređivanje</translation>
+<translation id="6913710942997637770">Za odabir profilne slike dopustite Udaljenoj radnoj površini Chrome da pristupi vašim fotografijama</translation>
 <translation id="6930242544192836755">Trajanje</translation>
 <translation id="6939719207673461467">Prikaži/sakrij tipkovnicu.</translation>
 <translation id="6944854424004126054">Vraćanje prozora</translation>

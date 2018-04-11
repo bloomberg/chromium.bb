@@ -140,6 +140,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="4145029455188493639">Connecté en tant que <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="4155497795971509630">Certains composants nécessaires sont introuvables. Veuillez vous assurer que vous utilisez la dernière version du logiciel, puis réessayer.</translation>
 <translation id="4156740505453712750">Pour protéger l'accès à cet ordinateur, veuillez choisir un code d'accès d'<ph name="BOLD_START" />au moins six chiffres<ph name="BOLD_END" />. Ce code d'accès sera demandé lors d'une connexion depuis un autre appareil.</translation>
+<translation id="4169432154993690151">Pour sélectionner une photo de profil, autorisez l'accès de Chrome Remote Desktop à votre caméra</translation>
 <translation id="4176825807642096119">Code d'accès</translation>
 <translation id="4207623512727273241">Veuillez lancer le programme d'installation avant de continuer.</translation>
 <translation id="4227991223508142681">Utilitaire de provisionnement de l'hôte</translation>
@@ -257,6 +258,7 @@ PC</translation>
 <translation id="6748108480210050150">De</translation>
 <translation id="677755392401385740">Hôte démarré pour l'utilisateur "<ph name="HOST_USERNAME" />"</translation>
 <translation id="6865175692670882333">Afficher/modifier</translation>
+<translation id="6913710942997637770">Pour sélectionner une photo de profil, autorisez l'accès de Chrome Remote Desktop à vos photos</translation>
 <translation id="6930242544192836755">Durée</translation>
 <translation id="6939719207673461467">Afficher/Masquer le clavier</translation>
 <translation id="6944854424004126054">Restaurer la fenêtre</translation>

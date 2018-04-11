@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">很抱歉，系統仍然無法驗證你的密碼。注意：如果你的密碼最近有所異動，新密碼會在你登出後立即生效，目前請在這裡使用舊密碼。</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 後用盡</translation>
 <translation id="1698760176351776263">IPv6 位址：<ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">裝置管理員或許可監控你的活動。</translation>
 <translation id="1734367976349034509">這個裝置受到企業管理</translation>
 <translation id="1746730358044914197">輸入法是由你的管理員所設定。</translation>
 <translation id="1747827819627189109">螢幕小鍵盤已啟用</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">溢位按鈕</translation>
 <translation id="1951012854035635156">小幫手</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">設定語言</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">關閉</translation>
 <translation id="2012624427112548395">Ctrl 鍵 + 搜尋鍵 + H 鍵</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。
     所有使用者都必須登出，才能繼續操作。</translation>
+<translation id="2696763960464195425">登出帳戶後，系統將移除你的資訊。<ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">設定鍵盤</translation>
 <translation id="2718395828230677721">夜燈</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
 <translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
@@ -269,6 +273,7 @@
 <translation id="7098389117866926363">USB-C 裝置 (背面左側連接埠)</translation>
 <translation id="7131634465328662194">系統會自動將你登出。</translation>
 <translation id="7165278925115064263">Alt + Shift + K 鍵</translation>
+<translation id="7165511658052620796">(TEMP) 顯示 WebUI 登入；如使用回報錯誤 (crbug.com) 或意見回饋 (Alt+Shift+I 鍵)</translation>
 <translation id="7168224885072002358">系統將在 <ph name="TIMEOUT_SECONDS" /> 秒後還原成原來的解析度</translation>
 <translation id="7256634071279256947">後置麥克風</translation>
 <translation id="726276584504105859">拖曳到這裡即可使用分割畫面</translation>
@@ -329,6 +334,7 @@
 <translation id="8673028979667498656">270 度</translation>
 <translation id="8676770494376880701">已連接低功率充電器</translation>
 <translation id="8734991477317290293">你的按鍵行為可能會遭到側錄</translation>
+<translation id="8809737090443522491">輸入應用程式或文件名稱</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">將視窗移至其他桌面可能會導致未預期的行為。
 

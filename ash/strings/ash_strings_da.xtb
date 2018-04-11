@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Din adgangskode kunne stadig ikke bekræftes. Bemærk! Hvis du har ændret din adgangskode for nylig, anvendes din nye adgangskode først, når du har logget ud. Du skal bruge den gamle adgangskode her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Enhedsadministratoren kan muligvis overvåge din aktivitet.</translation>
 <translation id="1734367976349034509">Denne enhed er virksomhedsadministreret</translation>
 <translation id="1746730358044914197">Indtastningsmetoder konfigureres af din administrator.</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Knappen Overflow</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Angiv dit sprog</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Sluk</translation>
 <translation id="2012624427112548395">Ctrl+Søg+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2675319268637823299">En administrator har afvist samlet login fra flere konti for <ph name="USER_EMAIL" />.
     Alle brugere skal logge ud for at fortsætte.</translation>
+<translation id="2696763960464195425">Dine oplysninger fjernes, når du logger ud. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Angiv dit tastatur</translation>
 <translation id="2718395828230677721">Nattelys</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -270,6 +274,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="7131634465328662194">Du logges automatisk ud.</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
+<translation id="7165511658052620796">(TEMP) Vis webui-login; hvis der er brugt filrettelse (crbug.com), eller feedback (alt+shift+i)</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
 <translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="726276584504105859">Træk hertil for at bruge delt skærm</translation>
@@ -330,6 +335,7 @@ Brug kun denne funktion til konti, du har tillid til.</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
 <translation id="8734991477317290293">Det forsøger muligvis at stjæle dine indtastninger</translation>
+<translation id="8809737090443522491">Skriv navnet på en app eller et dokument</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">Hvis du flytter vinduer til et andet skrivebord, kan det resultere i uventet adfærd.
 

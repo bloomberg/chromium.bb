@@ -157,11 +157,6 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1504431521196476721">Atestación remota</translation>
 <translation id="1509692106376861764">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="1519337829779572350">Esta configuración es obsoleta. En su lugar, usa SafeBrowsingExtendedReportingEnabled. Habilitar o inhabilitar SafeBrowsingExtendedReportingEnabled es equivalente a establecer SafeBrowsingExtendedReportingOptInAllowed como falsa.
-
-      Si esta política se establece como falsa, los usuarios ya no podrán enviar cierta información del sistema ni contenido de páginas a los servidores de Google. Si esta configuración se establece como verdadera o no se configura, los usuarios podrán enviar cierta información del sistema y contenido de páginas a Navegación segura para detectar apps y sitios peligrosos.
-
-      Para obtener más información sobre Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="1522425503138261032">Permitir a los sitios que rastreen la ubicación física de los usuarios.</translation>
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
@@ -317,6 +312,17 @@
 <translation id="2113068765175018713">Limita el tiempo de actividad del dispositivo mediante un reinicio automático.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>
+<translation id="2132732175597591362">Controla la lista blanca de los patrones de URL en los que la reproducción automática está siempre habilitada.
+
+      Si se habilita la reproducción automática, los videos se podrán reproducir automáticamente (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
+
+      El formato del patrón de URL debe cumplir con las pautas de https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Si se establece la política AutoplayAllowed como verdadera, esta política no tendrá efecto.
+
+      Si se establece la política AutoplayAllowed como falsa, podrá reproducirse cualquier patrón de URL que se establezca en esta política.
+
+      Ten en cuenta que, si <ph name="PRODUCT_NAME" /> está abierto y esta política cambia, solo se aplicará a las pestañas nuevas que se abran. Por lo tanto, es posible que notes el comportamiento anterior en algunas pestañas.</translation>
 <translation id="2134437727173969994">Permite bloquear la pantalla</translation>
 <translation id="2137064848866899664">Si se establece esta política, la pantalla rotará en la orientación que se especifica en cada reinicio y la primera vez que se conecte luego de que se cambie el valor de la política. Los usuarios pueden cambiar la rotación de la pantalla a través de la página de configuración después de acceder, pero el valor de la política anulará la configuración en el siguiente reinicio.
 
@@ -823,11 +829,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3653237928288822292">Ícono del proveedor de búsqueda predeterminado</translation>
 <translation id="3660562134618097814">Transferir cookies del IdP de SAML durante el acceso</translation>
-<translation id="3687282113223807271">El servicio de Navegación segura muestra una página de advertencia cuando los usuarios visitan sitios marcados como potencialmente maliciosos. Habilitar esta configuración evita que los usuarios procedan desde la página de advertencia al sitio malicioso.
-
-      Si esta opción se inhabilita o no se configura, los usuarios podrán elegir continuar hacia el sitio marcado después de que se les haya mostrado la advertencia.
-
-      Consulta https://developers.google.com/safe-browsing para obtener más información sobre Navegación segura.</translation>
 <translation id="3709266154059827597">Configurar la lista negra de instalación de extensiones</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3736879847913515635">Habilitar la opción para agregar una persona en el Administrador de usuarios</translation>
@@ -922,6 +923,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Elabora una lista de las extensiones que se instalan automáticamente para el usuario de demostración, para los dispositivos en modo de venta. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión, después de la instalación.
 
       Cada entrada de la lista contiene un diccionario que debe incluir el ID de extensión en el campo "extension-id" y su URL de actualización en el campo "update-url".</translation>
+<translation id="3873159954366380945">Te permite establecer el período en el que se mostrarán las notificaciones sobre el reinicio de <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
+
+      Esta política se puede usar para controlar el período (en milisegundos) en el que el usuario recibe notificaciones de forma progresiva sobre el reinicio de <ph name="PRODUCT_NAME" /> (o el reinicio de <ph name="PRODUCT_OS_NAME" />) para aplicar una actualización. En este período, el usuario recibirá repetidas notificaciones sobre la necesidad de instalar una actualización, según la configuración de la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se establece esta política, se usará el período predeterminado de 345600000 milisegundos (cuatro días) para <ph name="PRODUCT_OS_NAME" /> y de 604800000 milisegundos (una semana) para el resto de las plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
 <translation id="388237772682176890">Esta política ya no está disponible en M53 y se quitó en M54 porque se quitó la compatibilidad con SPDY/3.1.
 
@@ -1262,6 +1266,14 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="489803897780524242">Parámetro que controla la ubicación del término de búsqueda para el proveedor de búsqueda predeterminado</translation>
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
+<translation id="4899802251198446659">Te permite controlar si los videos se pueden reproducir de forma automática (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
+
+      Si se establece la política como verdadera, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia de forma automática.
+      Si se establece la política como falsa, <ph name="PRODUCT_NAME" /> no podrá reproducir contenido multimedia de forma automática. Se puede usar la política AutoplayWhitelist para anular esta configuración en determinados patrones de URL.
+      De forma predeterminada, <ph name="PRODUCT_NAME" /> no puede reproducir contenido multimedia de forma automática. Se puede usar la política AutoplayWhitelist para anular esta configuración en determinados patrones de URL.
+
+      Ten en cuenta que, si <ph name="PRODUCT_NAME" /> está abierto y esta política cambia, solo se aplicará a las pestañas nuevas que se abran. Por lo tanto, es posible que notes el comportamiento anterior en algunas pestañas.
+      </translation>
 <translation id="4906194810004762807">Frecuencia de actualización de la Política de dispositivos</translation>
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4923806312383904642">Permitir que WebDriver anule las políticas incompatibles</translation>
@@ -1296,19 +1308,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ten en cuenta que las contraseñas pueden ser más antiguas que la cantidad de días especificada si el cliente no se conectó por un período mayor.</translation>
 <translation id="5105313908130842249">Demora de bloqueo de pantalla con batería</translation>
-<translation id="5106504910236139235">Habilita el informe extendido de Navegación segura de <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
-
-      El informe extendido envía cierta información del sistema y contenido de páginas a los servidores de Google para detectar apps y sitios peligrosos.
-
-      Si la configuración se establece como verdadera, se crearán los informes y se enviarán cuando sea necesario (por ejemplo, cuando se muestre un intersticial de seguridad).
-
-      Si la configuración se establece como falsa, nunca se enviarán informes.
-
-      Si esta política se establece como verdadera o falsa, el usuario no podrá modificar la configuración.
-
-      Si esta política no se establece, el usuario podrá cambiar la configuración y decidir si envía los informes o no.
-
-      Para obtener más información sobre Navegación segura, consulta https://developers.google.com/safe-browsing.</translation>
 <translation id="5108031557082757679">Impresoras empresariales inhabilitadas asociadas a dispositivos</translation>
 <translation id="5130288486815037971">Si se habilitan los conjuntos de cifrado de RC4 en TLS</translation>
 <translation id="5141670636904227950">Establece el tipo de lupa predeterminado habilitado en la pantalla de acceso.</translation>
@@ -1503,19 +1502,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se establece esta política, se utilizará un período de tiempo predeterminado.
 
           El valor de la política debe especificarse en milisegundos.</translation>
-<translation id="5784370777704871674">Permite la función de Navegación segura de <ph name="PRODUCT_NAME" /> y evita que los usuarios cambien esta configuración.
-
-      Si habilitas esta configuración, la Navegación segura siempre está activa.
-
-      Si inhabilitas esta configuración, la Navegación segura nunca está activa.
-
-      Si habilitas o inhabilitas esta configuración, los usuarios no pueden cambiar ni anular la configuración para "habilitar la protección contra la suplantación de identidad y software malicioso" en <ph name="PRODUCT_NAME" />.
-
-      Si no se configura esta política, se habilitará, pero el usuario podrá cambiarla.
-
-      Consulta https://developers.google.com/safe-browsing para obtener más información sobre la Navegación segura.
-
-      Esta política no está disponible en instancias de Windows que no se hayan unido a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="5809728392451418079">Establecer el nombre para mostrar de las cuentas locales del dispositivo</translation>
 <translation id="5814301096961727113">Establece el estado predeterminado de los comentarios por voz en la pantalla de acceso.</translation>
 <translation id="5815129011704381141">Reinicia automáticamente después de la actualización.</translation>
@@ -1704,11 +1690,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6281043242780654992">Permite configurar las políticas de mensajería nativa. A menos que se incluyan en la lista blanca, los hosts de mensajería nativa incluidos en la lista negra estarán bloqueados.</translation>
 <translation id="6282799760374509080">Permitir o rechazar la captura de audio</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6287694548537067861">Si esta política no se establece o se establece como verdadera, permite las actualizaciones para todos los componentes en <ph name="PRODUCT_NAME" />.
-
-      Si se establece como falsa, las actualizaciones de los componentes se inhabilitarán. Sin embargo, algunos componentes están exceptuados de esta política: no se inhabilitarán las actualizaciones de componentes que no contienen código ejecutable, no alteran significativamente el comportamiento del navegador ni son fundamentales para su funcionamiento.
-      Los ejemplos de dichos componentes incluyen las listas de revocación de certificados y los datos de navegación segura.
-      Consulta https://developers.google.com/safe-browsing para obtener más información sobre Navegación segura.</translation>
 <translation id="6310223829319187614">Habilitar la opción de autocompletar el nombre de dominio durante el accceso del usuario</translation>
 <translation id="6315673513957120120">Chrome muestra una página de advertencia cuando los usuarios visitan sitios que tienen errores de SSL. De forma predeterminada o cuando esta política se establece en true, los usuarios pueden hacer clic en estas páginas de advertencia.
       Al establecer esta política en false, los usuarios no pueden hacer clic en ninguna página de advertencia.</translation>

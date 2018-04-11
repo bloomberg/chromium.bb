@@ -284,6 +284,7 @@
 <translation id="3661699943263275414">타사 웹사이트에서 쿠키 데이터를 저장하고 읽을 수 있도록 허용</translation>
 <translation id="3662546969139119822">기록 없음</translation>
 <translation id="3672452749423051839">탐색 오류 시 추천사항 표시</translation>
+<translation id="3692944402865947621">저장 위치에 연결할 수 없어 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="3712575778697986964">데이터 절약 모드를 초기화하시겠습니까?</translation>
 <translation id="3714981814255182093">찾기 창 열기</translation>
 <translation id="3716182511346448902">페이지에서 너무 많은 메모리를 사용하므로 Chrome에서 페이지를 일시중지했습니다.</translation>
@@ -320,6 +321,7 @@
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="4084682180776658562">북마크</translation>
+<translation id="4084712963632273211">발신자: <ph name="PUBLISHER_ORIGIN" /> – <ph name="BEGIN_DEEMPHASIZED" />Google 제공<ph name="END_DEEMPHASIZED" /></translation>
 <translation id="4084836577264234537"><ph name="MEGABYTES" />MB 다운로드됨</translation>
 <translation id="4089831646916293264">이 기능을 사용하면 이동통신사에서 제공하는 프리미엄 데이터 서비스에 액세스하는 데 문제가 생길 수 있습니다.</translation>
 <translation id="4095146165863963773">앱 데이터를 삭제하시겠습니까?</translation>
@@ -369,6 +371,7 @@
 <translation id="4550003330909367850">여기에서 비밀번호를 보거나 복사하려면 이 기기에 화면 잠금을 설정하세요.</translation>
 <translation id="4558311620361989323">웹페이지 단축키</translation>
 <translation id="4565377596337484307">비밀번호 감추기</translation>
+<translation id="4570913071927164677">세부정보</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
 <translation id="4581964774250883625">시크릿 모드로 전환됨</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{#분 전}other{#분 전}}</translation>
@@ -545,6 +548,7 @@
 <translation id="60923314841986378"><ph name="HOURS" />시간 남음</translation>
 <translation id="60924377787140961">더 많은 콘텐츠가 표시될 예정이니 기대해주세요. 즐거운 오후 보내세요.</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
+<translation id="6111020039983847643">사용한 데이터</translation>
 <translation id="6112702117600201073">페이지 새로고침</translation>
 <translation id="6127379762771434464">항목 삭제됨</translation>
 <translation id="6138140242378429169">페이지를 모바일 친화적으로 바꾸세요.</translation>
@@ -697,6 +701,7 @@
 <translation id="748127970106343339">기기 사용자 인증 정보 삭제 확인</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />(<ph name="TIME_SINCE_UPDATE" />에 업데이트됨)</translation>
+<translation id="7494974237137038751">절약한 데이터</translation>
 <translation id="7498271377022651285">잠시 기다려 주세요…</translation>
 <translation id="7514365320538308">다운로드</translation>
 <translation id="751961395872307827">사이트에 연결할 수 없습니다</translation>

@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">Неверный пароль. Обратите внимание! Если вы недавно изменили пароль, но не выходили из системы, значит, новый пароль ещё не вступил в силу и необходимо указать старый.</translation>
 <translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Адрес IPv6: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">Администратор может отслеживать ваши действия на этом устройстве.</translation>
 <translation id="1734367976349034509">Это корпоративное устройство</translation>
 <translation id="1746730358044914197">Способы ввода настраиваются администратором</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">Кнопка переполнения</translation>
 <translation id="1951012854035635156">Ассистент</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">Выберите язык</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">Выключить</translation>
 <translation id="2012624427112548395">CTRL + ПОИСК + H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2675319268637823299">Администратор отключил множественный вход для аккаунта <ph name="USER_EMAIL" />.
     Чтобы вы смогли войти в этот аккаунт, все остальные пользователи должны выйти из него.</translation>
+<translation id="2696763960464195425">После выхода из аккаунта ваши данные будут удалены. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">Выберите раскладку</translation>
 <translation id="2718395828230677721">Ночной режим</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2761704814324807722">Строка состояния, время <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -330,6 +334,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>
 <translation id="8734991477317290293">Это может быть попыткой узнать, какие клавиши вы нажимаете.</translation>
+<translation id="8809737090443522491">Введите название приложения или документа</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">При переносе окон на другой рабочий стол иногда возникают ошибки.
 
