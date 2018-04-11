@@ -1001,6 +1001,7 @@ void RenderWidgetHostViewMac::GestureEventAck(const WebGestureEvent& event,
     default:
       break;
   }
+  mouse_wheel_phase_handler_.GestureEventAck(event, ack_result);
 }
 
 void RenderWidgetHostViewMac::DidOverscroll(

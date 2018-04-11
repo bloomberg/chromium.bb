@@ -979,6 +979,7 @@ void RenderWidgetHostViewAura::GestureEventAck(
       host()->StopFling();
     }
   }
+  event_handler_->GestureEventAck(event, ack_result);
 }
 
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(

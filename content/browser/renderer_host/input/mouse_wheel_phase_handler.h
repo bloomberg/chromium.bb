@@ -7,6 +7,7 @@
 
 #include "base/timer/timer.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 
 namespace content {
@@ -39,6 +40,15 @@ enum ScrollPhaseState {
   SCROLL_IN_PROGRESS,
 };
 
+enum class FirstScrollUpdateAckState {
+  // Shows that the ACK for the first GSU event is not arrived yet.
+  kNotArrived = 0,
+  // Shows that the first GSU event is consumed.
+  kConsumed,
+  // Shows that the first GSU event is not consumed.
+  kNotConsumed,
+};
+
 class MouseWheelPhaseHandler {
  public:
   MouseWheelPhaseHandler(RenderWidgetHostViewBase* const host_view);
@@ -61,6 +71,8 @@ class MouseWheelPhaseHandler {
   bool HasPendingWheelEndEvent() const {
     return mouse_wheel_end_dispatch_timer_.IsRunning();
   }
+  void GestureEventAck(const blink::WebGestureEvent& event,
+                       InputEventAckState ack_result);
 
  private:
   void SendSyntheticWheelEventWithPhaseEnded(
@@ -69,6 +81,8 @@ class MouseWheelPhaseHandler {
                                         const base::TimeDelta timeout);
   bool IsWithinSlopRegion(const blink::WebMouseWheelEvent& wheel_event) const;
   bool HasDifferentModifiers(
+      const blink::WebMouseWheelEvent& wheel_event) const;
+  bool ShouldBreakLatchingDueToDirectionChange(
       const blink::WebMouseWheelEvent& wheel_event) const;
 
   RenderWidgetHostViewBase* const host_view_;
@@ -83,8 +97,12 @@ class MouseWheelPhaseHandler {
   gfx::Vector2dF first_wheel_location_;
 
   // This is used to break the timer based latching when the new wheel event has
-  // different modifiers.
-  int initial_wheel_modifiers_;
+  // different modifiers or when it is in a different direction from the
+  // previous wheel events and the scrolling has been ignored.
+  blink::WebMouseWheelEvent initial_wheel_event_;
+
+  FirstScrollUpdateAckState first_scroll_update_ack_state_ =
+      FirstScrollUpdateAckState::kNotArrived;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWheelPhaseHandler);
 };
