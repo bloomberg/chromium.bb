@@ -4041,3 +4041,18 @@ crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass T
 
 # Sheriff 2018-04-06
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
+
+# Sheriff 2018-04-11
+crbug.com/831701 [ Linux ] external/wpt/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.worker.html [ Pass Timeout ]
+crbug.com/831686 [ Linux ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Pass Timeout ]
+crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
+crbug.com/831673 [ Linux ] http/tests/devtools/reveal-objects.js [ Pass Timeout ]
+crbug.com/831496 [ Linux ] virtual/gpu/fast/canvas/fillrect_gradient.html [ Pass Timeout ]
+crbug.com/831482 [ Linux ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Timeout ]
+crbug.com/831249 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-svg-inline.html [ Pass Timeout ]
+crbug.com/831230 [ Linux ] virtual/threaded/compositing/webgl/webgl-reflection.html [ Pass Timeout ]
+crbug.com/829952 [ Linux ] fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
+crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
+crbug.com/818426 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
+crbug.com/818324 [ Linux ] external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Pass Timeout ]
+
