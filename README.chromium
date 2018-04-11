@@ -228,7 +228,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Feb 5, 2018, the latest version is 2018c and the above files
+  As of April 5, 2018, the latest version is 2018d and the above files
   are available at
   http://source.icu-project.org/repos/icu/data/trunk/tzdata/icunew/2018c/44/
 
@@ -285,7 +285,14 @@ D. Local Modifications
 9. Reduce size of SmallIntFormatter implementation
 
   - patches/simplify_smallintformatter.patch
-    upstream bug: https://ssl.icu-project.org/trac/ticket/12390 
+    upstream bug: https://ssl.icu-project.org/trac/ticket/12390
 
   Reduce the size of the binary by about 16 kiB on Android,
   without noticeable performance change.
+
+10. Apply a rule fix for a perf issue with a long sequence of letters/digits
+
+  - patches/word_long.patch
+    upstream bug: https://ssl.icu-project.org/trac/ticket/13692
+    (62-to-be does not have this issue)
+  - bug: crbug.com/829144

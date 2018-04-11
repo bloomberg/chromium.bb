@@ -1,0 +1,37 @@
+diff --git a/source/data/brkitr/rules/word.txt b/source/data/brkitr/rules/word.txt
+index 665758c0..1edadbd7 100644
+--- a/source/data/brkitr/rules/word.txt
++++ b/source/data/brkitr/rules/word.txt
+@@ -227,3 +227,7 @@ $Regional_Indicator ($Format | $Extend | $ZWJ)* $Regional_Indicator;
+ 
+ # For dictionary-based break
+ $dictionary $dictionary;
++
++# Skip over potentially very long words or numbers.
++# Not necessary to reach a safe point, but avoids potential performance problems.
++($ALetter | $Numeric) ($ALetter | $Numeric);
+diff --git a/source/data/brkitr/rules/word_POSIX.txt b/source/data/brkitr/rules/word_POSIX.txt
+index 5ea6a05c..eec29197 100644
+--- a/source/data/brkitr/rules/word_POSIX.txt
++++ b/source/data/brkitr/rules/word_POSIX.txt
+@@ -221,3 +221,7 @@ $Regional_Indicator ($Format | $Extend | $ZWJ)* $Regional_Indicator;
+ 
+ # For dictionary-based break
+ $dictionary $dictionary;
++
++# Skip over potentially very long words or numbers.
++# Not necessary to reach a safe point, but avoids potential performance problems.
++($ALetter | $Numeric) ($ALetter | $Numeric);
+diff --git a/source/data/brkitr/rules/word_ja.txt b/source/data/brkitr/rules/word_ja.txt
+index fb77507c..7909faa7 100644
+--- a/source/data/brkitr/rules/word_ja.txt
++++ b/source/data/brkitr/rules/word_ja.txt
+@@ -273,3 +273,8 @@ $Double_QuoteEx $Hebrew_LetterEx;
+ 
+ # For dictionary-based break
+ $dictionary $dictionary;
++
++# Skip over potentially very long words or numbers.
++# Not necessary to reach a safe point, but avoids potential performance
++problems.
++($ALetter | $Numeric) ($ALetter | $Numeric);
