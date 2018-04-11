@@ -9,6 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include "aom_ports/mem.h"
 #include "av1/common/timing.h"
 
 void set_aom_dec_model_info(aom_dec_model_info_t *decoder_model) {
@@ -24,12 +25,10 @@ void set_dec_model_op_parameters(aom_dec_model_op_parameters_t *op_params,
                                  int64_t bitrate, int op_idc) {
   op_params->decoder_model_operating_point_idc = op_idc;
   op_params->decoder_model_param_present_flag = 1;
-  op_params->bitrate =
-      (uint32_t)((bitrate + (1 << (decoder_model->bitrate_scale + 5))) >>
-                 (decoder_model->bitrate_scale + 6));
-  op_params->buffer_size =
-      (uint32_t)((bitrate + (1 << (decoder_model->buffer_size_scale + 3))) >>
-                 (decoder_model->buffer_size_scale + 4));
+  op_params->bitrate = (uint32_t)ROUND_POWER_OF_TWO_64(
+      bitrate, decoder_model->bitrate_scale + 6);
+  op_params->buffer_size = (uint32_t)ROUND_POWER_OF_TWO_64(
+      bitrate, decoder_model->buffer_size_scale + 4);
   op_params->cbr_flag = 0;
   op_params->decoder_buffer_delay = 90000 >> 1;  //  0.5 s
   op_params->encoder_buffer_delay = 90000 >> 1;  //  0.5 s
