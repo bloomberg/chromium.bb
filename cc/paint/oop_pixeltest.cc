@@ -307,8 +307,7 @@ class OopImagePixelTest : public OopPixelTest,
   bool UseTooLargeImage() { return GetParam(); }
   gfx::Size GetImageSize() {
     const int kMaxSize = 20000;
-    DCHECK_GT(kMaxSize,
-              context_provider_->GrContext()->caps()->maxTextureSize());
+    DCHECK_GT(kMaxSize, context_provider_->GrContext()->maxTextureSize());
     return UseTooLargeImage() ? gfx::Size(10, kMaxSize) : gfx::Size(10, 10);
   }
 };
