@@ -218,8 +218,15 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
 }
 #endif
 
+#if defined(OS_MACOSX)
+// https://crbug.com/828031
+#define MAYBE_LocationBarViewShown DISABLED_LocationBarViewShown
+#else
+#define MAYBE_LocationBarViewShown LocationBarViewShown
+#endif
+
 IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
-                       LocationBarViewShown) {
+                       MAYBE_LocationBarViewShown) {
   static_cast<PresentationReceiverWindow*>(receiver_view_)
       ->ShowInactiveFullscreen();
   static_cast<ExclusiveAccessContext*>(receiver_view_)->ExitFullscreen();
@@ -234,8 +241,15 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
   EXPECT_LT(0, location_bar_view->height());
 }
 
+#if defined(OS_MACOSX)
+// https://crbug.com/828031
+#define MAYBE_ShowPageInfoDialog DISABLED_ShowPageInfoDialog
+#else
+#define MAYBE_ShowPageInfoDialog ShowPageInfoDialog
+#endif
+
 IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowViewBrowserTest,
-                       ShowPageInfoDialog) {
+                       MAYBE_ShowPageInfoDialog) {
   content::NavigationController::LoadURLParams load_params(GURL("about:blank"));
   fake_delegate_->web_contents()->GetController().LoadURLWithParams(
       load_params);

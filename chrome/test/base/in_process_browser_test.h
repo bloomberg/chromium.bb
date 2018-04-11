@@ -22,6 +22,7 @@
 
 #if defined(OS_MACOSX)
 #include "ui/base/test/scoped_fake_full_keyboard_access.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 namespace base {
@@ -270,6 +271,12 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // more consistent with other platforms, where most views are focusable by
   // default.
   ui::test::ScopedFakeFullKeyboardAccess faked_full_keyboard_access_;
+
+  // Don't allow browser tests to enter real fullscreen - it might trigger races
+  // in WindowServer in test configurations. This is a temporary debugging hack.
+  // TODO(ellyjones): Remove this or make it permanent -
+  // https://crbug.com/828031.
+  ui::test::ScopedFakeNSWindowFullscreen faked_fullscreen_;
 #endif  // OS_MACOSX
 
 #if defined(OS_WIN)

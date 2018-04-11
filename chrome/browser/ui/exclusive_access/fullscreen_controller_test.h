@@ -93,13 +93,6 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void ToggleTabFullscreen_Internal(bool enter_fullscreen,
                                     bool retry_until_success);
 
-#if defined(OS_MACOSX)
-  // On Mac, entering into the system fullscreen mode can tickle crashes in
-  // the WindowServer (c.f. https://crbug.com/828031), so provide a fake for
-  // testing.
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen_window_;
-#endif
-
   base::test::ScopedFeatureList scoped_feature_list_;
 
   base::WeakPtrFactory<FullscreenControllerTest> weak_ptr_factory_;
