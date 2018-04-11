@@ -291,6 +291,7 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   // Request model type for local changes.
   scoped_refptr<GetLocalChangesRequest> request =
       base::MakeRefCounted<GetLocalChangesRequest>(cancelation_signal_);
+  // TODO(mamir): do we need to make this async?
   model_type_processor_->GetLocalChanges(
       max_entries, base::Bind(&GetLocalChangesRequest::SetResponse, request));
   request->WaitForResponse();
