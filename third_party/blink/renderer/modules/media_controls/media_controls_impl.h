@@ -99,6 +99,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Notify us that the media element's network state has changed.
   void NetworkStateChanged() override;
   LayoutObject* PanelLayoutObject() override;
+  LayoutObject* TimelineLayoutObject() override;
+  LayoutObject* ButtonPanelLayoutObject() override;
   LayoutObject* ContainerLayoutObject() override;
   void SetTestMode(bool) override;
   // Return the internal elements, which is used by registering clicking

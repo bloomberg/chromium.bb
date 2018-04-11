@@ -127,6 +127,19 @@ IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
   return mapped_content_quad.EnclosingBoundingBox();
 }
 
+// Similar to above except uses the full bounding box instead of just the
+// context box (which ignores padding). This is used for the timeline since the
+// timeline is mostly padding.
+IntRect PaddingBoxRelativeToAncestor(const LayoutBox& box,
+                                     const LayoutBoxModelObject& ancestor) {
+  FloatRect cue_content_box(box.PaddingBoxRect());
+  // We pass UseTransforms here primarily because we use a transform for
+  // non-snap-to-lines positioning (see VTTCue.cpp.)
+  FloatQuad mapped_content_quad =
+      box.LocalToAncestorQuad(cue_content_box, &ancestor, kUseTransforms);
+  return mapped_content_quad.EnclosingBoundingBox();
+}
+
 IntRect CueBoundingBox(const LayoutBox& cue_box) {
   return ContentBoxRelativeToAncestor(cue_box, *cue_box.ContainingBlock());
 }
@@ -338,6 +351,31 @@ IntRect LayoutVTTCue::ComputeControlsRect() const {
   MediaControls* controls = media_element->GetMediaControls();
   if (!controls || !controls->ContainerLayoutObject())
     return IntRect();
+
+  if (RuntimeEnabledFeatures::ModernMediaControlsEnabled()) {
+    // Only a part of the media controls is used for overlap avoidance.
+    // For modern media controls, we avoid both the button panel and the
+    // timeline.
+    LayoutObject* button_panel_layout_object =
+        media_element->GetMediaControls()->ButtonPanelLayoutObject();
+    LayoutObject* timeline_layout_object =
+        media_element->GetMediaControls()->TimelineLayoutObject();
+
+    if (!button_panel_layout_object || !button_panel_layout_object->IsBox() ||
+        !timeline_layout_object || !timeline_layout_object->IsBox()) {
+      return IntRect();
+    }
+
+    IntRect button_panel_box = ContentBoxRelativeToAncestor(
+        ToLayoutBox(*button_panel_layout_object),
+        ToLayoutBox(*controls->ContainerLayoutObject()));
+    IntRect timeline_box = PaddingBoxRelativeToAncestor(
+        ToLayoutBox(*timeline_layout_object),
+        ToLayoutBox(*controls->ContainerLayoutObject()));
+
+    button_panel_box.Unite(timeline_box);
+    return button_panel_box;
+  }
 
   // Only a part of the media controls is used for overlap avoidance.
   LayoutObject* panel_layout_object =

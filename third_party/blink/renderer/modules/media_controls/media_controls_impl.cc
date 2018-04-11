@@ -807,6 +807,14 @@ LayoutObject* MediaControlsImpl::PanelLayoutObject() {
   return panel_->GetLayoutObject();
 }
 
+LayoutObject* MediaControlsImpl::TimelineLayoutObject() {
+  return timeline_->GetLayoutObject();
+}
+
+LayoutObject* MediaControlsImpl::ButtonPanelLayoutObject() {
+  return media_button_panel_->GetLayoutObject();
+}
+
 LayoutObject* MediaControlsImpl::ContainerLayoutObject() {
   return GetLayoutObject();
 }

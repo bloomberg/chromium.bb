@@ -47,6 +47,8 @@ class CORE_EXPORT MediaControls : public GarbageCollectedMixin {
   // used for overlap checking during text track layout. May be null.
   // TODO(mlamouri): required by LayoutVTTCue.
   virtual LayoutObject* PanelLayoutObject() = 0;
+  virtual LayoutObject* TimelineLayoutObject() = 0;
+  virtual LayoutObject* ButtonPanelLayoutObject() = 0;
   // Returns the layout object of the media controls container. Maybe null.
   // TODO(mlamouri): required by LayoutVTTCue.
   virtual LayoutObject* ContainerLayoutObject() = 0;
