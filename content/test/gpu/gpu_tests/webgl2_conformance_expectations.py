@@ -135,7 +135,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['win', 'nvidia'], bug=818383)
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
-        ['linux', 'nvidia', 'passthrough'], bug=818383)
+        ['linux', 'nvidia'], bug=818383)
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
         ['mac', 'amd'], bug=818383)
 
