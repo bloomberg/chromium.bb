@@ -707,6 +707,14 @@ const char kVersion[]                       = "version";
 //   will be used. (This behavior may depend on additional factors.)
 const char kWebRtcRemoteEventLog[] = "webrtc-remote-event-log";
 
+// Sets the delay (in seconds) between proactive prunings of remote-bound
+// WebRTC event logs which are pending upload.
+// All positive values are legal.
+// All negative values are illegal, and ignored.
+// If set to 0, the meaning is "no proactive pruning".
+const char kWebRtcRemoteEventLogProactivePruningDelta[] =
+    "webrtc-event-log-proactive-pruning-delta";
+
 // Normally, remote-bound WebRTC event logs are uploaded only when no
 // peer connections are active. With this flag, the upload is never suppressed.
 const char kWebRtcRemoteEventLogUploadNoSuppression[] =

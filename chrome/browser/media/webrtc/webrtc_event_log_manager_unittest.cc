@@ -146,6 +146,12 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
         uploader_run_loop_(std::make_unique<base::RunLoop>()),
         browser_context_(nullptr),
         upload_suppressing_browser_context_(nullptr) {
+    // Avoid proactive pruning; it has the potential to mess up tests, as well
+    // as keep pendings tasks around with a dangling reference to the unit
+    // under test. (Zero is a sentinel value for disabling proactive pruning.)
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+        ::switches::kWebRtcRemoteEventLogProactivePruningDelta, "0");
+
     EXPECT_TRUE(local_logs_base_dir_.CreateUniqueTempDir());
     local_logs_base_path_ = local_logs_base_dir_.GetPath().Append(
         FILE_PATH_LITERAL("local_event_logs"));
