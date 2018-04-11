@@ -977,6 +977,9 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
   if (!delegated_frame_host_)
     return;
 
+  DCHECK(delegated_frame_host_->HasDelegatedContent() ==
+         frame_evictor_->HasFrame());
+
   delegated_frame_host_->DestroyDelegatedContent();
 
   if (frame_evictor_->HasFrame())
