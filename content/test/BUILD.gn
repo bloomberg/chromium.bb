@@ -1056,7 +1056,10 @@ test("content_browsertests") {
   is_linux_without_udev = is_linux && !use_udev
   if (!is_linux_without_udev && !is_android) {
     sources += [ "../browser/webauth/webauth_browsertest.cc" ]
-    deps += [ "//device/fido:test_support" ]
+    deps += [
+      "//device/fido:mocks",
+      "//device/fido:test_support",
+    ]
   }
 
   if (is_mac) {

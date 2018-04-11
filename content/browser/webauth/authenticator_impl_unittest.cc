@@ -13,13 +13,14 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_values.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
@@ -704,6 +705,72 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
       EXPECT_EQ(AuthenticatorStatus::INVALID_STATE, cb.status());
     }
   }
+}
+
+TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportMakeCredential) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  TestMakeCredentialCallback cb;
+
+  // Set up service_manager::Connector for tests.
+  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  auto connector = service_manager::Connector::Create(&request);
+
+  // Set up a timer for testing.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto timer =
+      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+
+  device::test::ScopedVirtualFidoDevice virtual_device;
+  authenticator->MakeCredential(std::move(options), cb.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  cb.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+}
+
+TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportGetAssertion) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback cb;
+
+  // Set up service_manager::Connector for tests.
+  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  auto connector = service_manager::Connector::Create(&request);
+
+  // Set up a timer for testing.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto timer =
+      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+
+  device::test::ScopedVirtualFidoDevice virtual_device;
+  authenticator->GetAssertion(std::move(options), cb.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  cb.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
 }
 
 enum class IndividualAttestation {

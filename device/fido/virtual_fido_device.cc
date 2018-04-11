@@ -141,6 +141,16 @@ void VirtualFidoDevice::DeviceTransact(std::vector<uint8_t> command,
   // Note, here we are using the code-under-test in this fake.
   auto parsed_command = apdu::ApduCommand::CreateFromMessage(command);
 
+  // If malformed U2F request is received, respond with error immediately.
+  if (!parsed_command) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            std::move(cb),
+            ErrorStatus(apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED)));
+    return;
+  }
+
   base::Optional<std::vector<uint8_t>> response;
 
   switch (parsed_command->ins()) {
