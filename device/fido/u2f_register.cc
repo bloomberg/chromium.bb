@@ -140,7 +140,8 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       state_ = State::COMPLETE;
       if (is_duplicate_registration) {
         std::move(completion_callback_)
-            .Run(FidoReturnCode::kInvalidState, base::nullopt);
+            .Run(FidoReturnCode::kUserConsentButCredentialExcluded,
+                 base::nullopt);
         break;
       }
       auto response =
@@ -149,7 +150,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       if (!response) {
         // The response data was corrupted / didn't parse properly.
         std::move(completion_callback_)
-            .Run(FidoReturnCode::kFailure, base::nullopt);
+            .Run(FidoReturnCode::kAuthenticatorResponseInvalid, base::nullopt);
         break;
       }
       std::move(completion_callback_)

@@ -362,7 +362,7 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
 
   sign_callback_receiver().WaitForCallback();
   // Device that responded had no correct keys.
-  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied,
+  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
             sign_callback_receiver().status());
   EXPECT_FALSE(sign_callback_receiver().value());
 }
@@ -479,7 +479,8 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(FidoReturnCode::kFailure, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kAuthenticatorResponseInvalid,
+            sign_callback_receiver().status());
   EXPECT_FALSE(sign_callback_receiver().value());
 }
 

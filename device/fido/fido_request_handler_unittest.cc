@@ -283,7 +283,8 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kInvalidState, callback().status());
+  EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
+            callback().status());
 }
 
 }  // namespace device

@@ -570,7 +570,7 @@ void AuthenticatorImpl::OnRegisterResponse(
   DCHECK(u2f_request_) << "unsupported callback hairpin";
 
   switch (status_code) {
-    case device::FidoReturnCode::kInvalidState:
+    case device::FidoReturnCode::kUserConsentButCredentialExcluded:
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
@@ -578,14 +578,13 @@ void AuthenticatorImpl::OnRegisterResponse(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::INVALID_STATE, nullptr);
       return;
-    case device::FidoReturnCode::kFailure:
+    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
-    case device::FidoReturnCode::kInvalidParams:
-    case device::FidoReturnCode::kConditionsNotSatisfied:
+    case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
       NOTREACHED();
       return;
     case device::FidoReturnCode::kSuccess:
@@ -666,20 +665,19 @@ void AuthenticatorImpl::OnSignResponse(
   DCHECK(u2f_request_) << "unsupported callback hairpin";
 
   switch (status_code) {
-    case device::FidoReturnCode::kConditionsNotSatisfied:
+    case device::FidoReturnCode::kUserConsentButCredentialNotRecognized:
       // No authenticators contained the credential.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+          webauth::mojom::AuthenticatorStatus::INVALID_STATE, nullptr);
       return;
-    case device::FidoReturnCode::kFailure:
+    case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
-    case device::FidoReturnCode::kInvalidParams:
-    case device::FidoReturnCode::kInvalidState:
+    case device::FidoReturnCode::kUserConsentButCredentialExcluded:
       NOTREACHED();
       return;
     case device::FidoReturnCode::kSuccess:
