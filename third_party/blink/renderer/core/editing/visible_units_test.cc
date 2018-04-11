@@ -270,7 +270,7 @@ TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContentWithInput) {
       CreateVisiblePositionInFlatTree(*text, 2)));
 }
 
-TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement) {
+TEST_F(VisibleUnitsTest, IsVisuallyEquivalentCandidateWithHTMLHtmlElement) {
   const char* body_content =
       "<html><div id=one contenteditable>1</div><span id=two "
       "contenteditable=false>22</span><span id=three "
@@ -305,6 +305,52 @@ TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLHtmlElement) {
 
   EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(two, 0)));
   EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(two, 1)));
+}
+
+TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithHTMLBodyElement) {
+  const char* body_content =
+      "<div id=one contenteditable>1</div><span id=two "
+      "contenteditable=false>22</span><span id=three "
+      "contenteditable=false>333</span><span id=four "
+      "contenteditable=false>333</span>";
+  SetBodyContent(body_content);
+
+  Node* one = GetDocument().QuerySelector("#one");
+  Node* two = GetDocument().QuerySelector("#two");
+  Node* three = GetDocument().QuerySelector("#three");
+  Node* four = GetDocument().QuerySelector("#four");
+  Element* body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
+  Element* empty_body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
+  Element* div = GetDocument().CreateRawElement(HTMLNames::divTag);
+  Element* br = GetDocument().CreateRawElement(HTMLNames::brTag);
+  empty_body->appendChild(div);
+  empty_body->appendChild(br);
+  one->appendChild(empty_body);
+  // Move two, three and four into second body element.
+  body->appendChild(two);
+  body->AppendChild(three);
+  body->AppendChild(four);
+  one->appendChild(body);
+  GetDocument().UpdateStyleAndLayout();
+
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(
+      Position(GetDocument().documentElement(), 0)));
+
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(one, 0)));
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(one, 1)));
+
+  EXPECT_TRUE(IsVisuallyEquivalentCandidate(Position(one->firstChild(), 0)));
+  EXPECT_TRUE(IsVisuallyEquivalentCandidate(Position(one->firstChild(), 1)));
+
+  EXPECT_TRUE(IsVisuallyEquivalentCandidate(Position(body, 0)));
+  EXPECT_TRUE(IsVisuallyEquivalentCandidate(Position(body, 1)));
+  EXPECT_TRUE(IsVisuallyEquivalentCandidate(Position(body, 2)));
+
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(two, 0)));
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(two, 1)));
+
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(empty_body, 0)));
+  EXPECT_FALSE(IsVisuallyEquivalentCandidate(Position(empty_body, 1)));
 }
 
 TEST_F(VisibleUnitsTest, isVisuallyEquivalentCandidateWithDocument) {

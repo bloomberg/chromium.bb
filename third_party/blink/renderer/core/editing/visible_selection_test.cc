@@ -672,4 +672,23 @@ TEST_F(VisibleSelectionTest, updateIfNeededWithShadowHost) {
   EXPECT_EQ(Position(sample->firstChild(), 0), selection.Start());
 }
 
+// This is a regression test for https://crbug.com/825120
+TEST_F(VisibleSelectionTest, BackwardSelectionWithMultipleEmptyBodies) {
+  Element* body = GetDocument().body();
+  Element* new_body = GetDocument().CreateRawElement(HTMLNames::bodyTag);
+  body->appendChild(new_body);
+  GetDocument().UpdateStyleAndLayout();
+
+  const SelectionInDOMTree selection =
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::BeforeNode(*new_body))
+          .Extend(Position::BeforeNode(*body))
+          .Build();
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+
+  EXPECT_EQ("^<body></body>", GetSelectionTextFromBody(selection));
+  EXPECT_EQ("|<body></body>",
+            GetSelectionTextFromBody(visible_selection.AsSelection()));
+}
+
 }  // namespace blink
