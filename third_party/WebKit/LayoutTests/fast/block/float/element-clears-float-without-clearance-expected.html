@@ -22,51 +22,64 @@
     height: 50px;
     background-color: orange;
 }
+section {
+    float: left;
+    width: 25%;
+    margin: 0 5px;
+    padding: 5px;
+    background: #ddd;
+}
 </style>
-crbug.com/434048 : The orange boxes should sit right under the float.
-<div class="bfc">
+<section>
+  crbug.com/434048 : The orange boxes should sit right under the float.
+  <div class="bfc">
     <div class="float">float</div>
     <div class="under">clear</div>
-</div>
+  </div>
 
-<div class="bfc">
+  <div class="bfc">
     <div class="float">float</div>
     <div class="under">clear</div>
-</div>
+  </div>
 
-<div class="bfc">
+  <div class="bfc">
     <div class="float">float</div>
     <div class="under">clear</div>
-</div>
+  </div>
+</section>
 
-crbug.com/434048 : There should be 30px between the orange box and the float.
-<div class="bfc">
+<section>
+  crbug.com/434048 : There should be 20px between the orange box and the float.
+  <div class="bfc">
     <div class="float">float</div>
     <div class="clear">clear</div>
-</div>
+  </div>
 
-<div class="bfc">
+  <div class="bfc">
     <div class="float">float</div>
     <div class="clear">clear</div>
-</div>
+  </div>
 
-<div class="bfc">
+  <div class="bfc">
     <div class="float">float</div>
     <div class="clear">clear</div>
-</div>
+  </div>
+</section>
 
-<div class="bfc">
+<section>
+  crbug.com/434048 : There should be 20px between the orange box and the float.
+  <div class="bfc">
     <div class="float">float</div>
     <div class="clear">clear</div>
-</div>
+  </div>
 
-<div class="bfc">
+  <div class="bfc">
     <div class="float">float</div>
     <div class="clear">clear</div>
-</div>
+  </div>
 
-<div class="bfc">
+  <div class="bfc">
     <div class="float">float</div>
     <div class="clear">clear</div>
-</div>
-
+  </div>
+</section>
