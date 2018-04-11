@@ -157,12 +157,15 @@ static int64_t try_restoration_unit(const RestSearchCtxt *rsc,
   const int highbd = cm->use_highbitdepth;
 
   const YV12_BUFFER_CONFIG *fts = cm->frame_to_show;
+  // TODO(yunqing): For now, only use optimized LR filter in decoder. Can be
+  // also used in encoder.
+  int opt = 0;
 
   av1_loop_restoration_filter_unit(
       limits, rui, &rsi->boundaries, &rlbs, tile_rect, rsc->tile_stripe0,
       is_uv && cm->subsampling_x, is_uv && cm->subsampling_y, highbd, bit_depth,
       fts->buffers[plane], fts->strides[is_uv], rsc->dst->buffers[plane],
-      rsc->dst->strides[is_uv], cm->rst_tmpbuf);
+      rsc->dst->strides[is_uv], cm->rst_tmpbuf, opt);
 
   return sse_restoration_unit(limits, rsc->src, rsc->dst, plane, highbd);
 }

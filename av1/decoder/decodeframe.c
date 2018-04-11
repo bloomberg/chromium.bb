@@ -3330,14 +3330,15 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
   }
 
   if (!(cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
-    int do_loop_restoration =
+    const int do_loop_restoration =
         cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE;
-    int do_cdef =
+    const int do_cdef =
         !cm->skip_loop_filter && !cm->coded_lossless &&
         (cm->cdef_bits || cm->cdef_strengths[0] || cm->cdef_uv_strengths[0]);
-    int do_superres = av1_superres_unscaled(cm) == 0;
+    const int do_superres = !av1_superres_unscaled(cm);
+    const int optimized_loop_restoration = !do_cdef && !do_superres;
 
     if (do_cdef || do_superres) {
       if (do_loop_restoration)
@@ -3349,19 +3350,15 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
       if (do_loop_restoration) {
         av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 1);
-        av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf,
-                                          cm);
+        av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
+                                          optimized_loop_restoration);
       }
     } else {
-      // TODO: no cdef and no superres case. Write an optimized version of
-      // loop_restoration_filter for this special case.
-      // (Placeholder)
-      if (do_loop_restoration) {
-        av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
-        av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 1);
-        av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf,
-                                          cm);
-      }
+      // In no cdef and no superres case. Provide an optimized version of
+      // loop_restoration_filter.
+      if (do_loop_restoration)
+        av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
+                                          optimized_loop_restoration);
     }
   }
 

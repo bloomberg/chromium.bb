@@ -4022,7 +4022,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
         cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-      av1_loop_restoration_filter_frame(cm->frame_to_show, cm);
+      av1_loop_restoration_filter_frame(cm->frame_to_show, cm, 0);
     }
   }
 }

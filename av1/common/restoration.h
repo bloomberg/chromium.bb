@@ -226,6 +226,7 @@ typedef struct {
   int vert_units_per_tile, horz_units_per_tile;
   RestorationUnitInfo *unit_info;
   RestorationStripeBoundaries boundaries;
+  int opt;
 } RestorationInfo;
 
 static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
@@ -286,10 +287,10 @@ void av1_loop_restoration_filter_unit(
     const RestorationStripeBoundaries *rsb, RestorationLineBuffers *rlbs,
     const AV1PixelRect *tile_rect, int tile_stripe0, int ss_x, int ss_y,
     int highbd, int bit_depth, uint8_t *data8, int stride, uint8_t *dst8,
-    int dst_stride, int32_t *tmpbuf);
+    int dst_stride, int32_t *tmpbuf, int opt);
 
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
-                                       struct AV1Common *cm);
+                                       struct AV1Common *cm, int opt);
 void av1_loop_restoration_precal();
 
 typedef void (*rest_unit_visitor_t)(const RestorationTileLimits *limits,
