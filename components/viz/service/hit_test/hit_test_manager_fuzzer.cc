@@ -18,6 +18,8 @@
 
 namespace {
 
+constexpr uint32_t kMaxDepthAllowed = 255;
+
 // TODO(riajiang): Move into common functions that can be used by the fuzzer
 // for HitTestQuery.
 uint32_t GetNextUInt32NonZero(base::FuzzedDataProvider* fuzz) {
@@ -38,15 +40,17 @@ void SubmitHitTestRegionList(
     viz::TestLatestLocalSurfaceIdLookupDelegate* delegate,
     viz::FrameSinkManagerImpl* frame_sink_manager,
     const viz::SurfaceId& surface_id,
-    bool support_is_root);
+    bool support_is_root,
+    const uint32_t depth);
 
 void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
                       std::vector<viz::mojom::HitTestRegionPtr>* regions,
                       uint32_t child_count,
                       viz::TestLatestLocalSurfaceIdLookupDelegate* delegate,
                       viz::FrameSinkManagerImpl* frame_sink_manager,
-                      const viz::SurfaceId& surface_id) {
-  if (!child_count)
+                      const viz::SurfaceId& surface_id,
+                      const uint32_t depth) {
+  if (!child_count || depth > kMaxDepthAllowed)
     return;
 
   // If there's not enough space left for a HitTestRegion, then skip.
@@ -80,12 +84,12 @@ void AddHitTestRegion(base::FuzzedDataProvider* fuzz,
                                          base::UnguessableToken::Create());
     SubmitHitTestRegionList(fuzz, delegate, frame_sink_manager,
                             viz::SurfaceId(frame_sink_id, local_surface_id),
-                            false /* support_is_root */);
+                            false /* support_is_root */, depth + 1);
   }
 
   regions->push_back(std::move(hit_test_region));
   AddHitTestRegion(fuzz, regions, child_count - 1, delegate, frame_sink_manager,
-                   surface_id);
+                   surface_id, depth + 1);
 }
 
 void SubmitHitTestRegionList(
@@ -93,10 +97,13 @@ void SubmitHitTestRegionList(
     viz::TestLatestLocalSurfaceIdLookupDelegate* delegate,
     viz::FrameSinkManagerImpl* frame_sink_manager,
     const viz::SurfaceId& surface_id,
-    bool support_is_root) {
+    bool support_is_root,
+    const uint32_t depth) {
   // If there's not enough space left for a HitTestRegionList, then skip.
-  if (fuzz->remaining_bytes() < sizeof(viz::mojom::HitTestRegionList))
+  if ((fuzz->remaining_bytes() < sizeof(viz::mojom::HitTestRegionList)) ||
+      depth > kMaxDepthAllowed) {
     return;
+  }
 
   auto hit_test_region_list = viz::mojom::HitTestRegionList::New();
   hit_test_region_list->flags = fuzz->ConsumeUint16();
@@ -109,7 +116,7 @@ void SubmitHitTestRegionList(
 
   uint32_t child_count = fuzz->ConsumeUint16();
   AddHitTestRegion(fuzz, &hit_test_region_list->regions, child_count, delegate,
-                   frame_sink_manager, surface_id);
+                   frame_sink_manager, surface_id, depth + 1);
 
   delegate->SetSurfaceIdMap(surface_id);
   viz::CompositorFrameSinkSupport support(
@@ -158,7 +165,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t num_bytes) {
       frame_sink_id, 10 /* initial_region_size */, 100 /* max_region_size */);
 
   SubmitHitTestRegionList(&fuzz, &delegate, &frame_sink_manager, surface_id,
-                          true /* support_is_root */);
+                          true /* support_is_root */, 0 /* depth */);
 
   viz::SurfaceId aggregate_surface_id = surface_id;
   if (fuzz.ConsumeBool() && fuzz.remaining_bytes() >= sizeof(viz::SurfaceId)) {
