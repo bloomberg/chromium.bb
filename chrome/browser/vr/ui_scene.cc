@@ -113,10 +113,10 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
   auto& elements = GetAllElements();
 
-  // TODO(crbug.com/831191): Fix and reinstate this dirty initialization.
-  // for (auto* element : elements) {
-  //   element->set_update_phase(UiElement::kDirty);
-  // }
+  for (auto* element : elements) {
+    element->set_update_phase(UiElement::kDirty);
+    element->set_last_frame_time(current_time);
+  }
 
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateBindings");
@@ -130,7 +130,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
     // Process all animations and pre-binding work. I.e., induce any
     // time-related "dirtiness" on the scene graph.
-    scene_dirty |= root_element_->DoBeginFrame(current_time, head_pose);
+    scene_dirty |= root_element_->DoBeginFrame(head_pose);
   }
 
   {

@@ -52,8 +52,7 @@ class TextInput : public UiElement {
     input_commit_callback_ = callback;
   }
 
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) final;
+  bool OnBeginFrame(const gfx::Transform& head_pose) final;
   void OnSetSize(const gfx::SizeF& size) final;
   void OnSetName() final;
 

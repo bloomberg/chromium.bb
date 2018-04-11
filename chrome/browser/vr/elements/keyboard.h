@@ -44,8 +44,7 @@ class Keyboard : public UiElement {
   };
 
  private:
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) override;
+  bool OnBeginFrame(const gfx::Transform& head_pose) override;
   void OnUpdatedWorldSpaceTransform() override;
   void Render(UiElementRenderer* renderer,
               const CameraModel& camera_model) const final;

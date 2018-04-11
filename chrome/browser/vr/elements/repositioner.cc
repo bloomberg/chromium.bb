@@ -126,8 +126,7 @@ void Repositioner::UpdateTransform(const gfx::Transform& head_pose) {
   }
 }
 
-bool Repositioner::OnBeginFrame(const base::TimeTicks& time,
-                                const gfx::Transform& head_pose) {
+bool Repositioner::OnBeginFrame(const gfx::Transform& head_pose) {
   if (enabled_) {
     UpdateTransform(head_pose);
     return true;

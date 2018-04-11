@@ -177,8 +177,7 @@ void ContentElement::UpdateInput(const EditedText& info) {
     text_input_delegate_->UpdateInput(info.current);
 }
 
-bool ContentElement::OnBeginFrame(const base::TimeTicks& time,
-                                  const gfx::Transform& head_pose) {
+bool ContentElement::OnBeginFrame(const gfx::Transform& head_pose) {
   // TODO(mthiesse): This projection matrix is always going to be a frame
   // behind when computing the content size. We'll need to address this somehow
   // when we allow content resizing, or we could end up triggering an extra

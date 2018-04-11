@@ -25,8 +25,7 @@ class ScaledDepthAdjuster : public UiElement {
  private:
   gfx::Transform LocalTransform() const override;
   gfx::Transform GetTargetLocalTransform() const override;
-  bool OnBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose) override;
+  bool OnBeginFrame(const gfx::Transform& head_pose) override;
   void OnSetType() override;
 
 #ifndef NDEBUG

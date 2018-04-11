@@ -137,6 +137,11 @@ class UiElement : public cc::AnimationTarget {
   void SetDrawPhase(DrawPhase draw_phase);
   virtual void OnSetDrawPhase();
 
+  void UpdateBindings();
+
+  // Returns true if the element has been updated in any visible way.
+  bool DoBeginFrame(const gfx::Transform& head_pose);
+
   // Returns true if the element has changed size or position, or otherwise
   // warrants re-rendering the scene.
   virtual bool PrepareToDraw();
@@ -144,11 +149,6 @@ class UiElement : public cc::AnimationTarget {
   // Returns true if the element updated its texture.
   virtual bool UpdateTexture();
 
-  // Returns true if the element has been updated in any visible way.
-  bool DoBeginFrame(const base::TimeTicks& time,
-                    const gfx::Transform& head_pose);
-
-  // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
 
   virtual void Render(UiElementRenderer* renderer,
@@ -362,8 +362,6 @@ class UiElement : public cc::AnimationTarget {
     return bindings_;
   }
 
-  void UpdateBindings();
-
   void set_visibility_bindings_depend_on_child_visibility(bool value) {
     visibility_bindings_depend_on_child_visibility_ = value;
   }
@@ -479,10 +477,13 @@ class UiElement : public cc::AnimationTarget {
   bool descendants_updated() const { return descendants_updated_; }
   void set_descendants_updated(bool updated) { descendants_updated_ = updated; }
 
+  base::TimeTicks last_frame_time() const { return last_frame_time_; }
+  void set_last_frame_time(const base::TimeTicks& time) {
+    last_frame_time_ = time;
+  }
+
  protected:
   Animation& animation() { return animation_; }
-
-  base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
   virtual const Sounds& GetSounds() const;
 
@@ -499,8 +500,7 @@ class UiElement : public cc::AnimationTarget {
   virtual void OnUpdatedWorldSpaceTransform();
 
   // Returns true if the element has been updated in any visible way.
-  virtual bool OnBeginFrame(const base::TimeTicks& time,
-                            const gfx::Transform& head_pose);
+  virtual bool OnBeginFrame(const gfx::Transform& head_pose);
 
   // If true, the element is either locally visible (independent of its
   // ancestors), or its animation will cause it to become locally visible.
@@ -582,8 +582,7 @@ class UiElement : public cc::AnimationTarget {
 
   DrawPhase draw_phase_ = kPhaseNone;
 
-  // This is the time as of the last call to |Animate|. It is needed when
-  // reversing transitions.
+  // The time of the most recent frame.
   base::TimeTicks last_frame_time_;
 
   // This transform can be used by children to derive position of its parent.
