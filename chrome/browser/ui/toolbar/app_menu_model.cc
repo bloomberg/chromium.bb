@@ -722,6 +722,9 @@ void AppMenuModel::LogMenuAction(AppMenuAction action_id) {
 // - Learn about the browser and global customisation e.g. settings, help.
 // - Browser relaunch, quit.
 void AppMenuModel::Build() {
+  // Build (and, by extension, Init) should only be called once.
+  DCHECK_EQ(0, GetItemCount());
+
   if (CreateActionToolbarOverflowMenu())
     AddSeparator(ui::UPPER_SEPARATOR);
 
