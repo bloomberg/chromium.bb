@@ -183,7 +183,8 @@ void DeferredTaskHandler::AddTailProcessingHandler(
 }
 
 void DeferredTaskHandler::RemoveTailProcessingHandler(
-    scoped_refptr<AudioHandler> handler) {
+    scoped_refptr<AudioHandler> handler,
+    bool disable_outputs) {
   DCHECK(IsGraphOwner());
 
   size_t index = tail_processing_handlers_.Find(handler);
@@ -191,7 +192,10 @@ void DeferredTaskHandler::RemoveTailProcessingHandler(
 #if DEBUG_AUDIONODE_REFERENCES > 1
     handler->RemoveTailProcessingDebug();
 #endif
-    handler->DisableOutputs();
+
+    if (disable_outputs) {
+      handler->DisableOutputs();
+    }
     tail_processing_handlers_.EraseAt(index);
   }
 }
@@ -203,11 +207,13 @@ void DeferredTaskHandler::UpdateTailProcessingHandlers() {
     scoped_refptr<AudioHandler> handler = tail_processing_handlers_[k - 1];
     if (handler->PropagatesSilence()) {
 #if DEBUG_AUDIONODE_REFERENCES
-      fprintf(stderr, "[%16p]: %16p: %2d: updateTail @%.15g\n",
+      fprintf(stderr,
+              "[%16p]: %16p: %2d: updateTail @%.15g (tail = %.15g + %.15g)\n",
               handler->Context(), handler.get(), handler->GetNodeType(),
-              handler->Context()->currentTime());
+              handler->Context()->currentTime(), handler->TailTime(),
+              handler->LatencyTime());
 #endif
-      RemoveTailProcessingHandler(handler);
+      RemoveTailProcessingHandler(handler, true);
     }
   }
 }
