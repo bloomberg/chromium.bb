@@ -173,9 +173,9 @@ class PreSigninPolicyFetcherTestBase : public testing::Test {
   UserPolicyBuilder cached_policy_;
   UserPolicyBuilder fresh_policy_;
   const cryptohome::KeyDefinition cryptohome_key_ =
-      cryptohome::KeyDefinition("secret",
-                                std::string() /* label */,
-                                cryptohome::PRIV_DEFAULT);
+      cryptohome::KeyDefinition::CreateForPassword("secret",
+                                                   std::string() /* label */,
+                                                   cryptohome::PRIV_DEFAULT);
 
   MockCloudPolicyClient* cloud_policy_client_ = nullptr;
   std::unique_ptr<PreSigninPolicyFetcher> pre_signin_policy_fetcher_;

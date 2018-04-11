@@ -172,20 +172,19 @@ bool KeyDefinition::ProviderData::operator==(const ProviderData& other) const {
          (!has_bytes || (*bytes == *other.bytes));
 }
 
-KeyDefinition::KeyDefinition() : type(TYPE_PASSWORD),
-                                 privileges(0),
-                                 revision(0) {
+KeyDefinition KeyDefinition::CreateForPassword(
+    const std::string& secret,
+    const std::string& label,
+    int /*AuthKeyPrivileges*/ privileges) {
+  KeyDefinition key_def;
+  key_def.type = TYPE_PASSWORD;
+  key_def.label = label;
+  key_def.privileges = privileges;
+  key_def.secret = secret;
+  return key_def;
 }
 
-KeyDefinition::KeyDefinition(const std::string& secret,
-                             const std::string& label,
-                             int /*AuthKeyPrivileges*/ privileges)
-    : type(TYPE_PASSWORD),
-      label(label),
-      privileges(privileges),
-      revision(0),
-      secret(secret) {
-}
+KeyDefinition::KeyDefinition() = default;
 
 KeyDefinition::KeyDefinition(const KeyDefinition& other) = default;
 

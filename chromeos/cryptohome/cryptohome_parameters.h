@@ -118,20 +118,22 @@ struct CHROMEOS_EXPORT KeyDefinition {
     std::unique_ptr<std::string> bytes;
   };
 
+  // Creates an instance with the TYPE_PASSWORD type.
+  static KeyDefinition CreateForPassword(const std::string& secret,
+                                         const std::string& label,
+                                         int privileges);
+
   KeyDefinition();
-  KeyDefinition(const std::string& secret,
-                const std::string& label,
-                int privileges);
   KeyDefinition(const KeyDefinition& other);
   ~KeyDefinition();
 
   bool operator==(const KeyDefinition& other) const;
 
-  Type type;
+  Type type = TYPE_PASSWORD;
   std::string label;
   // Privileges associated with key. Combination of |AuthKeyPrivileges| values.
-  int privileges;
-  int revision;
+  int privileges = 0;
+  int revision = 0;
   std::string secret;
 
   std::vector<AuthorizationData> authorization_data;

@@ -155,7 +155,7 @@ void ManagerPasswordService::GetSupervisedUsersCallback(
     return;
   }
 
-  cryptohome::KeyDefinition new_key_definition(
+  auto new_key_definition = cryptohome::KeyDefinition::CreateForPassword(
       new_key, kCryptohomeSupervisedUserKeyLabel,
       kCryptohomeSupervisedUserKeyPrivileges);
   new_key_definition.revision = revision;
@@ -222,9 +222,8 @@ void ManagerPasswordService::OnKeyTransformedIfNeeded(
     const UserContext& master_key_context) {
   const Key* const key = master_key_context.GetKey();
   DCHECK_NE(Key::KEY_TYPE_PASSWORD_PLAIN, key->GetKeyType());
-  cryptohome::KeyDefinition new_master_key(key->GetSecret(),
-                                           kCryptohomeMasterKeyLabel,
-                                           cryptohome::PRIV_DEFAULT);
+  auto new_master_key = cryptohome::KeyDefinition::CreateForPassword(
+      key->GetSecret(), kCryptohomeMasterKeyLabel, cryptohome::PRIV_DEFAULT);
   // Use new master key for further actions.
   UserContext new_master_key_context = master_key_context;
   new_master_key_context.GetKey()->SetLabel(kCryptohomeMasterKeyLabel);

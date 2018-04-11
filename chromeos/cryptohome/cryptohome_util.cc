@@ -115,10 +115,15 @@ std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
   for (RepeatedPtrField<KeyData>::const_iterator it = key_data.begin();
        it != key_data.end(); ++it) {
     // Extract |type|, |label| and |revision|.
-    DCHECK_EQ(KeyData::KEY_TYPE_PASSWORD, it->type());
-    key_definitions.push_back(KeyDefinition(std::string() /* secret */,
-                                            it->label(), 0 /* privileges */));
-    KeyDefinition& key_definition = key_definitions.back();
+    KeyDefinition key_definition;
+    switch (it->type()) {
+      case KeyData::KEY_TYPE_PASSWORD:
+        key_definition.type = KeyDefinition::TYPE_PASSWORD;
+        break;
+      default:
+        NOTREACHED();
+    }
+    key_definition.label = it->label();
     key_definition.revision = it->revision();
 
     // Extract |privileges|.
@@ -171,6 +176,8 @@ std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
 
       DCHECK_EQ(1, data_items);
     }
+
+    key_definitions.push_back(std::move(key_definition));
   }
   return key_definitions;
 }
