@@ -1095,8 +1095,9 @@ void ExistingUserController::OnOldEncryptionDetected(
       DBusThreadManager::Get()->GetSessionManagerClient(),
       std::move(cloud_policy_client), IsActiveDirectoryManaged(),
       user_context.GetAccountId(),
-      cryptohome::KeyDefinition(user_context.GetKey()->GetSecret(),
-                                std::string(), cryptohome::PRIV_DEFAULT));
+      cryptohome::KeyDefinition::CreateForPassword(
+          user_context.GetKey()->GetSecret(), std::string(),
+          cryptohome::PRIV_DEFAULT));
   pre_signin_policy_fetcher_->FetchPolicy(
       base::BindOnce(&ExistingUserController::OnPolicyFetchResult,
                      weak_factory_.GetWeakPtr(), user_context));

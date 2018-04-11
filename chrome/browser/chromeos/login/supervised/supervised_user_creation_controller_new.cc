@@ -219,9 +219,9 @@ void SupervisedUserCreationControllerNew::OnKeyTransformedIfNeeded(
 
   // Main key is the master key. Just as keys for plain GAIA users, it is salted
   // with system salt. It has all usual privileges.
-  cryptohome::KeyDefinition master_key(creation_context_->salted_master_key,
-                                       kCryptohomeMasterKeyLabel,
-                                       cryptohome::PRIV_DEFAULT);
+  auto master_key = cryptohome::KeyDefinition::CreateForPassword(
+      creation_context_->salted_master_key, kCryptohomeMasterKeyLabel,
+      cryptohome::PRIV_DEFAULT);
 
   keys.push_back(master_key);
   authenticator_->CreateMount(
@@ -262,7 +262,7 @@ void SupervisedUserCreationControllerNew::OnMountSuccess(
 
   // Plain text password, hashed and salted with individual salt.
   // It can be used for mounting homedir, and can be replaced only when signed.
-  cryptohome::KeyDefinition password_key(
+  auto password_key = cryptohome::KeyDefinition::CreateForPassword(
       creation_context_->salted_password, kCryptohomeSupervisedUserKeyLabel,
       kCryptohomeSupervisedUserKeyPrivileges);
   std::string encryption_key;

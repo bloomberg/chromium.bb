@@ -141,8 +141,9 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
   }
   base::Base64Decode(base64_signature, &signature);
   std::unique_ptr<base::DictionaryValue> data_copy(password_data->DeepCopy());
-  cryptohome::KeyDefinition key(password, kCryptohomeSupervisedUserKeyLabel,
-                                kCryptohomeSupervisedUserKeyPrivileges);
+  auto key = cryptohome::KeyDefinition::CreateForPassword(
+      password, kCryptohomeSupervisedUserKeyLabel,
+      kCryptohomeSupervisedUserKeyPrivileges);
 
   authenticator_ = ExtendedAuthenticator::Create(this);
   SupervisedUserAuthentication::Schema current_schema =

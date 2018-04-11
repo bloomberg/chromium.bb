@@ -165,8 +165,9 @@ void DoMount(const base::WeakPtr<AuthAttemptState>& attempt,
     mount.set_require_ephemeral(true);
   if (create_if_nonexistent) {
     cryptohome::KeyDefinitionToKey(
-        cryptohome::KeyDefinition(key->GetSecret(), kCryptohomeGAIAKeyLabel,
-                                  cryptohome::PRIV_DEFAULT),
+        cryptohome::KeyDefinition::CreateForPassword(key->GetSecret(),
+                                                     kCryptohomeGAIAKeyLabel,
+                                                     cryptohome::PRIV_DEFAULT),
         mount.mutable_create()->add_keys());
   }
   if (attempt->user_context.IsForcingDircrypto())
@@ -417,8 +418,9 @@ void MountPublic(const base::WeakPtr<AuthAttemptState>& attempt,
   mount.set_public_mount(true);
   // Set the request to create a new homedir when missing.
   cryptohome::KeyDefinitionToKey(
-      cryptohome::KeyDefinition(std::string(), kCryptohomePublicMountKeyLabel,
-                                cryptohome::PRIV_DEFAULT),
+      cryptohome::KeyDefinition::CreateForPassword(
+          std::string(), kCryptohomePublicMountKeyLabel,
+          cryptohome::PRIV_DEFAULT),
       mount.mutable_create()->add_keys());
 
   // For public mounts, authorization secret is filled by cryptohomed, hence it

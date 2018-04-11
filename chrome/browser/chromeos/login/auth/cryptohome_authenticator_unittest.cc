@@ -311,9 +311,9 @@ class CryptohomeAuthenticatorTest : public testing::Test {
 
   void ExpectGetKeyDataExCall(std::unique_ptr<int64_t> key_type,
                               std::unique_ptr<std::string> salt) {
-    cryptohome::KeyDefinition key_definition(std::string() /* secret */,
-                                             kCryptohomeGAIAKeyLabel,
-                                             cryptohome::PRIV_DEFAULT);
+    auto key_definition = cryptohome::KeyDefinition::CreateForPassword(
+        std::string() /* secret */, kCryptohomeGAIAKeyLabel,
+        cryptohome::PRIV_DEFAULT);
     key_definition.revision = 1;
     if (key_type) {
       key_definition.provider_data.push_back(

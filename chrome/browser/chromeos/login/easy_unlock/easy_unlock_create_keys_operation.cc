@@ -317,9 +317,9 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   user_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
 
   EasyUnlockDeviceKeyData* device = &devices_[index];
-  cryptohome::KeyDefinition key_def(user_key.GetSecret(),
-                                    EasyUnlockKeyManager::GetKeyLabel(index),
-                                    kEasyUnlockKeyPrivileges);
+  auto key_def = cryptohome::KeyDefinition::CreateForPassword(
+      user_key.GetSecret(), EasyUnlockKeyManager::GetKeyLabel(index),
+      kEasyUnlockKeyPrivileges);
   key_def.revision = kEasyUnlockKeyRevision;
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNameBluetoothAddress, device->bluetooth_address));

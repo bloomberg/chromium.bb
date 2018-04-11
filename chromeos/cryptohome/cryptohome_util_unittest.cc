@@ -457,6 +457,7 @@ TEST(CryptohomeUtilTest, GetKeyDataReplyToKeyDefinitionsTwoEntries) {
   ASSERT_EQ(1u, key_definitions.size());
   const KeyDefinition& key_definition = key_definitions.front();
   EXPECT_EQ(KeyDefinition::TYPE_PASSWORD, key_definition.type);
+  EXPECT_EQ(kKeyLabel, key_definition.label);
   EXPECT_EQ(PRIV_MOUNT | PRIV_ADD | PRIV_REMOVE, key_definition.privileges);
   EXPECT_EQ(kKeyRevision, key_definition.revision);
   ASSERT_EQ(1u, key_definition.authorization_data.size());
