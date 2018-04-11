@@ -327,6 +327,8 @@ component("chromeos") {
     "login/auth/authenticator.h",
     "login/auth/authpolicy_login_helper.cc",
     "login/auth/authpolicy_login_helper.h",
+    "login/auth/challenge_response_key.cc",
+    "login/auth/challenge_response_key.h",
     "login/auth/cryptohome_authenticator.cc",
     "login/auth/cryptohome_authenticator.h",
     "login/auth/extended_authenticator.cc",

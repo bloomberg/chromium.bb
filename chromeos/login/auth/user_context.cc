@@ -67,6 +67,16 @@ Key* UserContext::GetMutablePasswordKey() {
   return &password_key_;
 }
 
+const std::vector<ChallengeResponseKey>& UserContext::GetChallengeResponseKeys()
+    const {
+  return challenge_response_keys_;
+}
+
+std::vector<ChallengeResponseKey>*
+UserContext::GetMutableChallengeResponseKeys() {
+  return &challenge_response_keys_;
+}
+
 const std::string& UserContext::GetAuthCode() const {
   return auth_code_;
 }

@@ -9,6 +9,7 @@
 
 #include "base/optional.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/login/auth/challenge_response_key.h"
 #include "chromeos/login/auth/key.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -50,10 +51,21 @@ class CHROMEOS_EXPORT UserContext {
 
   const AccountId& GetAccountId() const;
   const std::string& GetGaiaID() const;
+  // Information about the user password - either a plain-text password or a
+  // its hashed/transformed representation.
   const Key* GetKey() const;
   Key* GetKey();
+  // The plain-text user password. Initialized only on enterprise enrolled
+  // devices. See https://crbug.com/386606.
   const Key* GetPasswordKey() const;
   Key* GetMutablePasswordKey();
+  // The challenge-response keys for user authentication. Currently, such keys
+  // can't be used simultaneously with the plain-text password keys, so when the
+  // list stored here is non-empty, both GetKey() and GetPasswordKey() should
+  // contain empty keys.
+  const std::vector<ChallengeResponseKey>& GetChallengeResponseKeys() const;
+  std::vector<ChallengeResponseKey>* GetMutableChallengeResponseKeys();
+
   const std::string& GetAuthCode() const;
   const std::string& GetRefreshToken() const;
   const std::string& GetAccessToken() const;
@@ -97,6 +109,7 @@ class CHROMEOS_EXPORT UserContext {
   AccountId account_id_;
   Key key_;
   Key password_key_;
+  std::vector<ChallengeResponseKey> challenge_response_keys_;
   std::string auth_code_;
   std::string refresh_token_;
   std::string access_token_;  // OAuthLogin scoped access token.
