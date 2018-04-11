@@ -110,12 +110,9 @@ gfx::Transform TransformerHelper::GetInverseTransform() const {
   return transformer_->GetInverseTransform() * transform;
 }
 
-void TransformerHelper::UpdateWindowSizeAndScale(const gfx::Size& host_size,
-                                                 float device_scale_factor) {
-  ash_host_->AsWindowTreeHost()->window()->SetBounds(
-      transformer_->GetRootWindowBounds(host_size));
-  ash_host_->AsWindowTreeHost()->window()->SetDeviceScaleFactor(
-      device_scale_factor);
+gfx::Rect TransformerHelper::GetTransformedWindowBounds(
+    const gfx::Size& host_size) const {
+  return transformer_->GetRootWindowBounds(host_size);
 }
 
 }  // namespace ash
