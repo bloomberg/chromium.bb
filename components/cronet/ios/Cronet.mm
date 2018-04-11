@@ -488,8 +488,10 @@ class CronetHttpProtocolHandlerDelegate
 }
 
 // This is a private dummy method that prevents the linker from stripping out
-// the otherwise unreferenced methods from 'native/url_request.cc'.
-+ (void)preventStrippingNativeCronetUrlRequest {
+// the otherwise unreferenced modules from 'native'.
++ (void)preventStrippingNativeCronetModules {
+  Cronet_Buffer_Create();
+  Cronet_Engine_Create();
   Cronet_UrlRequest_Create();
 }
 
