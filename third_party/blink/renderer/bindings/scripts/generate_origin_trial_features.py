@@ -201,9 +201,6 @@ def parse_options():
                       choices=['core', 'modules'],
                       help='target component to generate code')
     parser.add_option('--idl-files-list')
-    # TODO(tkent): Remove the option after the great mv. crbug.com/760462
-    parser.add_option('--snake-case-generated-files',
-                      action='store_true', default=False)
 
     options, _ = parser.parse_args()
     if options.output_directory is None:
