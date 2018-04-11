@@ -202,8 +202,8 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
 
     uint8_t pred8[kMaxSize * kMaxSize];
     uint8_t ref8[kMaxSize * kMaxSize];
-    uint8_t output[kMaxSize * kMaxSize];
-    uint8_t output2[kMaxSize * kMaxSize];
+    DECLARE_ALIGNED(16, uint8_t, output[MAX_SB_SQUARE]);
+    DECLARE_ALIGNED(16, uint8_t, output2[MAX_SB_SQUARE]);
 
     for (int i = 0; i < h; ++i)
       for (int j = 0; j < w; ++j) {
@@ -254,8 +254,8 @@ class AV1JNTCOMPAVGUPSAMPLEDTest
 
     uint8_t pred8[kMaxSize * kMaxSize];
     uint8_t ref8[kMaxSize * kMaxSize];
-    uint8_t output[kMaxSize * kMaxSize];
-    uint8_t output2[kMaxSize * kMaxSize];
+    DECLARE_ALIGNED(16, uint8_t, output[MAX_SB_SQUARE]);
+    DECLARE_ALIGNED(16, uint8_t, output2[MAX_SB_SQUARE]);
 
     for (int i = 0; i < h; ++i)
       for (int j = 0; j < w; ++j) {
