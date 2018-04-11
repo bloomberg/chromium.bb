@@ -422,6 +422,13 @@ void ShapeResult::FallbackFonts(
   }
 }
 
+void ShapeResult::GetRunFontData(Vector<RunFontData>* font_data) const {
+  for (const auto& run : runs_) {
+    font_data->push_back(
+        RunFontData({run->font_data_.get(), run->glyph_data_.size()}));
+  }
+}
+
 // TODO(kojii): VC2015 fails to explicit instantiation of a member function.
 // Typed functions + this private function are to instantiate instances.
 template <typename TextContainerType>

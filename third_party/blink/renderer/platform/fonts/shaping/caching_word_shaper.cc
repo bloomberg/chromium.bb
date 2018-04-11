@@ -117,7 +117,7 @@ Vector<CharacterRange> CachingWordShaper::IndividualCharacterRanges(
   return ranges;
 }
 
-Vector<ShapeResultBuffer::RunFontData> CachingWordShaper::GetRunFontData(
+Vector<ShapeResult::RunFontData> CachingWordShaper::GetRunFontData(
     const TextRun& run) const {
   ShapeResultBuffer buffer;
   ShapeResultsForRun(GetShapeCache(), &font_, run, &buffer);

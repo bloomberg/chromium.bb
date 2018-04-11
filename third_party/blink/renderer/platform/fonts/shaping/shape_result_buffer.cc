@@ -207,16 +207,10 @@ int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
   return total_offset;
 }
 
-Vector<ShapeResultBuffer::RunFontData> ShapeResultBuffer::GetRunFontData()
-    const {
-  Vector<RunFontData> font_data;
-
-  for (const auto& result : results_) {
-    for (const auto& run : result->runs_) {
-      font_data.push_back(
-          RunFontData({run->font_data_.get(), run->glyph_data_.size()}));
-    }
-  }
+Vector<ShapeResult::RunFontData> ShapeResultBuffer::GetRunFontData() const {
+  Vector<ShapeResult::RunFontData> font_data;
+  for (const auto& result : results_)
+    result->GetRunFontData(&font_data);
   return font_data;
 }
 

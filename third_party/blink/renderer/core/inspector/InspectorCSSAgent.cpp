@@ -78,8 +78,10 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/style/style_generated_image.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -308,6 +310,20 @@ bool GetColorsFromRect(LayoutRect rect,
     }
   }
   return found_opaque_color;
+}
+
+void CollectPlatformFontsFromRunFontDataList(
+    const Vector<ShapeResult::RunFontData>& run_font_data_list,
+    HashCountedSet<std::pair<int, String>>* font_stats) {
+  for (const auto& run_font_data : run_font_data_list) {
+    const auto* simple_font_data = run_font_data.font_data_;
+    String family_name = simple_font_data->PlatformData().FontFamilyName();
+    if (family_name.IsNull())
+      family_name = "";
+    font_stats->insert(
+        std::make_pair(simple_font_data->IsCustomFont() ? 1 : 0, family_name),
+        run_font_data.glyph_count_);
+  }
 }
 
 }  // namespace
@@ -1167,20 +1183,34 @@ void InspectorCSSAgent::CollectPlatformFontsForLayoutObject(
 
   FontCachePurgePreventer preventer;
   LayoutText* layout_text = ToLayoutText(layout_object);
+
+  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+    auto fragments = NGPaintFragment::InlineFragmentsFor(layout_object);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      for (const NGPaintFragment* fragment : fragments) {
+        DCHECK(fragment->PhysicalFragment().IsText());
+        const NGPhysicalTextFragment& text_fragment =
+            ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+        const ShapeResult* shape_result = text_fragment.TextShapeResult();
+        if (!shape_result)
+          continue;
+        Vector<ShapeResult::RunFontData> run_font_data_list;
+        shape_result->GetRunFontData(&run_font_data_list);
+        CollectPlatformFontsFromRunFontDataList(run_font_data_list, font_stats);
+      }
+      return;
+    }
+    // If !IsInLayoutNGInlineFormattingContext, the LayoutText is in legacy
+    // inline formatting context. Fallback to InlineTextBox code below.
+  }
+
   for (InlineTextBox* box : layout_text->TextBoxes()) {
     const ComputedStyle& style = layout_text->StyleRef(box->IsFirstLineStyle());
     const Font& font = style.GetFont();
     TextRun run = box->ConstructTextRunForInspector(style);
     CachingWordShaper shaper(font);
-    for (const auto& run_font_data : shaper.GetRunFontData(run)) {
-      const auto* simple_font_data = run_font_data.font_data_;
-      String family_name = simple_font_data->PlatformData().FontFamilyName();
-      if (family_name.IsNull())
-        family_name = "";
-      font_stats->insert(
-          std::make_pair(simple_font_data->IsCustomFont() ? 1 : 0, family_name),
-          run_font_data.glyph_count_);
-    }
+    CollectPlatformFontsFromRunFontDataList(shaper.GetRunFontData(run),
+                                            font_stats);
   }
 }
 
