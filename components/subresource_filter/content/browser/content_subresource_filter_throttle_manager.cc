@@ -21,7 +21,7 @@
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
-#include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"

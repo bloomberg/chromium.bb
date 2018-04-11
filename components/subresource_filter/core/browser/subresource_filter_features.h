@@ -194,10 +194,6 @@ extern const base::Feature kSafeBrowsingSubresourceFilter;
 // Enables the new experimental UI for the Subresource Filter.
 extern const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI;
 
-// Enables the tagging of ad frames and resource requests by using the
-// subresource_filter component in dry-run mode.
-extern const base::Feature kAdTagging;
-
 // Name/values of the variation parameter controlling maximum activation level.
 extern const char kActivationLevelParameterName[];
 extern const char kActivationLevelDryRun[];

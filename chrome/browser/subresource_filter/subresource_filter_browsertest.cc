@@ -48,6 +48,7 @@
 #include "components/subresource_filter/core/common/activation_decision.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
