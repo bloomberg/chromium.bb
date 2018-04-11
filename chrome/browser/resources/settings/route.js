@@ -45,6 +45,7 @@
  *   LANGUAGES: (undefined|!settings.Route),
  *   LOCK_SCREEN: (undefined|!settings.Route),
  *   MANAGE_ACCESSIBILITY: (undefined|!settings.Route),
+ *   MANAGE_GOOGLE_TTS_ENGINE_SETTINGS: (undefined|!settings.Route),
  *   MANAGE_PASSWORDS: (undefined|!settings.Route),
  *   MANAGE_PROFILE: (undefined|!settings.Route),
  *   MANAGE_TTS_SETTINGS: (undefined|!settings.Route),
@@ -387,6 +388,8 @@ cr.define('settings', function() {
           r.ACCESSIBILITY.createChild('/manageAccessibility');
       r.MANAGE_TTS_SETTINGS =
           r.MANAGE_ACCESSIBILITY.createChild('/manageAccessibility/tts');
+      r.MANAGE_GOOGLE_TTS_ENGINE_SETTINGS = r.MANAGE_TTS_SETTINGS.createChild(
+          '/manageAccessibility/tts/googleTtsEngine');
       // </if>
 
       r.SYSTEM = r.ADVANCED.createSection('/system', 'system');

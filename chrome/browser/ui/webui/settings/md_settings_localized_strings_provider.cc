@@ -243,6 +243,12 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"textToSpeechPitch", IDS_SETTINGS_TEXT_TO_SPEECH_PITCH},
     {"textToSpeechEngines", IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES},
     {"textToSpeechInstallEngines", IDS_SETTINGS_TEXT_TO_SPEECH_INSTALL_ENGINES},
+    {"manageGoogleTtsEngineSettings",
+     IDS_SETTINGS_MANAGE_GOOGLE_TTS_ENGINE_SETTINGS},
+    {"googleTtsEngineSettingsLinkDescription",
+     IDS_SETTINGS_GOOGLE_TTS_ENGINE_LINK_DESCRIPTION},
+    {"googleTextToSpeechSettings", IDS_SETTINGS_GOOGLE_TTS_ENGINE_TITLE},
+    {"enableTtsVoiceLabel", IDS_SETTINGS_ENABLE_TTS_VOICE_LABEL},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
