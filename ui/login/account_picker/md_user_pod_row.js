@@ -30,6 +30,7 @@ cr.define('login', function() {
   var SCROLL_MASK_HEIGHT = 112;
   var CROS_POD_HEIGHT_WITH_PIN = 618;
   var PUBLIC_SESSION_ICON_WIDTH = 12;
+  var CROS_POD_WARNING_BANNER_OFFSET_Y = 270;
 
   /**
    * The maximum number of users that each pod placement method can handle.
@@ -4185,7 +4186,12 @@ cr.define('login', function() {
       var bannerContainer = $('signin-banner-container1');
       if (bannerContainer.hidden)
         return;
-      bannerContainer.style.top = cr.ui.toCssPx(this.mainPod_.top / 2);
+      if ($('signin-banner').classList.contains('warning')) {
+        bannerContainer.style.top =
+            cr.ui.toCssPx(this.mainPod_.top + CROS_POD_WARNING_BANNER_OFFSET_Y);
+      } else {
+        bannerContainer.style.top = cr.ui.toCssPx(this.mainPod_.top / 2);
+      }
       if (this.pods.length <= POD_ROW_LIMIT) {
         bannerContainer.style.left = cr.ui.toCssPx(
             (this.screenSize.width - bannerContainer.offsetWidth) / 2);
@@ -4329,11 +4335,13 @@ cr.define('login', function() {
      * Displays a banner containing |message|. If the banner is already present
      * this function updates the message in the banner.
      * @param {string} message Text to be displayed or empty to hide the banner.
+     * @param {boolean} isWarning True if the given message is a warning.
      */
-    showBannerMessage: function(message) {
+    showBannerMessage: function(message, isWarning) {
       var banner = $('signin-banner');
       banner.textContent = message;
       banner.classList.toggle('message-set', !!message);
+      banner.classList.toggle('warning', isWarning);
       $('signin-banner-container1').hidden = banner.textContent.length == 0;
       this.updateSigninBannerPosition_();
     },

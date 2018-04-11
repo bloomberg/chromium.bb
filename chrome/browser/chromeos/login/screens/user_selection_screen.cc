@@ -325,7 +325,8 @@ class UserSelectionScreen::DircryptoMigrationChecker {
     owner_->ShowBannerMessage(
         needs_migration ? l10n_util::GetStringUTF16(
                               IDS_LOGIN_NEEDS_DIRCRYPTO_MIGRATION_BANNER)
-                        : base::string16());
+                        : base::string16(),
+        needs_migration);
   }
 
   UserSelectionScreen* const owner_;
@@ -707,8 +708,9 @@ UserSelectionScreen::GetScreenType() const {
   return OTHER_SCREEN;
 }
 
-void UserSelectionScreen::ShowBannerMessage(const base::string16& message) {
-  view_->ShowBannerMessage(message);
+void UserSelectionScreen::ShowBannerMessage(const base::string16& message,
+                                            bool is_warning) {
+  view_->ShowBannerMessage(message, is_warning);
 }
 
 void UserSelectionScreen::ShowUserPodCustomIcon(

@@ -57,7 +57,8 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   ~TestLockHandler() override {}
 
   // proximity_auth::ScreenlockBridge::LockHandler implementation:
-  void ShowBannerMessage(const base::string16& message) override {
+  void ShowBannerMessage(const base::string16& message,
+                         bool is_warning) override {
     ASSERT_FALSE(true) << "Should not be reached.";
   }
 

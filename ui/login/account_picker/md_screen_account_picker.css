@@ -46,6 +46,30 @@ html[dir=rtl] #signin-banner {
   right: -50%;
 }
 
+#signin-banner.warning {
+  -webkit-padding-start: 128px;
+  background-color: transparent;
+  color: rgb(215, 68, 57);
+  font-size: 10px;
+}
+
+#signin-banner.warning::before {
+  background-image: url(../../webui/resources/images/icon_error_outline.svg);
+  background-size: 20px;
+  content: '';
+  height: 20px;
+  left: 24px;
+  position: absolute;
+  transform: translateY(-50%);
+  top: 50%;
+  width: 20px;
+}
+
+html[dir=rtl] #signin-banner.warning::before {
+  left: auto;
+  right: 24px;
+}
+
 html[screen=user-adding] #signin-banner {
   background-color: rgba(0, 0, 0, 0.34);
   display: inline-block;
@@ -54,6 +78,11 @@ html[screen=user-adding] #signin-banner {
 html[screen=user-adding] #signin-banner,
 html[screen=login] #signin-banner {
   padding: 20px 24px;
+}
+
+html[screen=user-adding] #signin-banner.warning,
+html[screen=login] #signin-banner.warning {
+  -webkit-padding-start: 52px;  /* 24 + 20(icon width) + 8 (icon padding). */
 }
 
 html[screen=login] #signin-banner,
