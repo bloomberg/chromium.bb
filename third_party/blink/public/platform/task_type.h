@@ -164,7 +164,10 @@ enum class TaskType : unsigned {
   // Tasks to execute IPC (legacy IPC and mojo).
   kInternalIPC = 31,
 
-  kCount = 32,
+  // Tasks related to user interaction like clicking or inputting texts.
+  kInternalUserInteraction = 32,
+
+  kCount = 33,
 };
 
 }  // namespace blink
