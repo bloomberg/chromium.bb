@@ -179,37 +179,83 @@ void CrostiniRegistryService::UpdateApplicationList(
     return;
   }
 
-  DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
-  base::DictionaryValue* apps = update.Get();
-  apps->Clear();
+  // We need to compute the diff between the new list of apps and the old list
+  // of apps (with matching vm/container names). We keep a set of the new app
+  // ids so that we can compute these and update the Dictionary directly.
+  std::set<std::string> new_app_ids;
+  std::vector<std::string> updated_apps;
+  std::vector<std::string> removed_apps;
+  std::vector<std::string> inserted_apps;
 
-  for (const App& app : app_list.apps()) {
-    if (app.desktop_file_id().empty()) {
-      LOG(WARNING) << "Received app with missing desktop file id";
-      continue;
+  // The DictionaryPrefUpdate should be destructed before calling the observer.
+  {
+    DictionaryPrefUpdate update(prefs_, kCrostiniRegistryPref);
+    base::DictionaryValue* apps = update.Get();
+    for (const App& app : app_list.apps()) {
+      if (app.desktop_file_id().empty()) {
+        LOG(WARNING) << "Received app with missing desktop file id";
+        continue;
+      }
+
+      base::Value name = ProtoToDictionary(app.name());
+      if (name.FindKey(base::StringPiece()) == nullptr) {
+        LOG(WARNING) << "Received app '" << app.desktop_file_id()
+                     << "' with missing unlocalized name";
+        continue;
+      }
+
+      std::string app_id = GenerateAppId(
+          app.desktop_file_id(), app_list.vm_name(), app_list.container_name());
+      new_app_ids.insert(app_id);
+
+      base::Value pref_registration(base::Value::Type::DICTIONARY);
+      pref_registration.SetKey(kAppDesktopFileIdKey,
+                               base::Value(app.desktop_file_id()));
+      pref_registration.SetKey(kAppVmNameKey, base::Value(app_list.vm_name()));
+      pref_registration.SetKey(kAppContainerNameKey,
+                               base::Value(app_list.container_name()));
+      pref_registration.SetKey(kAppNameKey, std::move(name));
+      pref_registration.SetKey(kAppCommentKey,
+                               ProtoToDictionary(app.comment()));
+      pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
+      pref_registration.SetKey(kAppNoDisplayKey, base::Value(app.no_display()));
+
+      base::Value* old_app = apps->FindKey(app_id);
+      if (old_app && pref_registration == *old_app)
+        continue;
+
+      if (old_app)
+        updated_apps.push_back(app_id);
+      else
+        inserted_apps.push_back(app_id);
+
+      apps->SetKey(app_id, std::move(pref_registration));
     }
 
-    base::Value name = ProtoToDictionary(app.name());
-    if (name.FindKey(base::StringPiece()) == nullptr) {
-      LOG(WARNING) << "Received app '" << app.desktop_file_id()
-                   << "' with missing unlocalized name";
-      continue;
+    for (const auto& item : apps->DictItems()) {
+      if (item.second.FindKey(kAppVmNameKey)->GetString() ==
+              app_list.vm_name() &&
+          item.second.FindKey(kAppContainerNameKey)->GetString() ==
+              app_list.container_name() &&
+          new_app_ids.find(item.first) == new_app_ids.end()) {
+        removed_apps.push_back(item.first);
+      }
     }
 
-    base::Value pref_registration(base::Value::Type::DICTIONARY);
-    pref_registration.SetKey(kAppDesktopFileIdKey,
-                             base::Value(app.desktop_file_id()));
-    pref_registration.SetKey(kAppVmNameKey, base::Value(app_list.vm_name()));
-    pref_registration.SetKey(kAppContainerNameKey,
-                             base::Value(app_list.container_name()));
-    pref_registration.SetKey(kAppNameKey, std::move(name));
-    pref_registration.SetKey(kAppCommentKey, ProtoToDictionary(app.comment()));
-    pref_registration.SetKey(kAppMimeTypesKey, ProtoToList(app.mime_types()));
-    pref_registration.SetKey(kAppNoDisplayKey, base::Value(app.no_display()));
-    apps->SetKey(GenerateAppId(app.desktop_file_id(), app_list.vm_name(),
-                               app_list.container_name()),
-                 std::move(pref_registration));
+    for (const std::string& removed_app : removed_apps)
+      apps->RemoveKey(removed_app);
   }
+
+  for (Observer& obs : observers_)
+    obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
+}
+
+void CrostiniRegistryService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CrostiniRegistryService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 // static

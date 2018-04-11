@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -62,6 +63,20 @@ class CrostiniRegistryService : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(Registration);
   };
 
+  class Observer {
+   public:
+    // Called at the end of UpdateApplicationList() with lists of app_ids for
+    // apps which have been updated, removed, and inserted.
+    virtual void OnRegistryUpdated(
+        CrostiniRegistryService* registry_service,
+        const std::vector<std::string>& updated_apps,
+        const std::vector<std::string>& removed_apps,
+        const std::vector<std::string>& inserted_apps) = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
   explicit CrostiniRegistryService(Profile* profile);
   ~CrostiniRegistryService() override;
 
@@ -74,11 +89,16 @@ class CrostiniRegistryService : public KeyedService {
   // The existing list of apps is replaced by |application_list|.
   void UpdateApplicationList(const vm_tools::apps::ApplicationList& app_list);
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
  private:
   // Owned by the BrowserContext.
   PrefService* const prefs_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniRegistryService);
 };
