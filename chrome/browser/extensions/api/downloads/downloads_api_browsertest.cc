@@ -93,6 +93,10 @@ struct DownloadIdComparator {
   }
 };
 
+bool IsDownloadExternallyRemoved(download::DownloadItem* item) {
+  return item->GetFileExternallyRemoved();
+}
+
 class DownloadsEventsListener : public content::NotificationObserver {
  public:
   DownloadsEventsListener()
@@ -1102,6 +1106,31 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
   base::ListValue* result_list = NULL;
   ASSERT_TRUE(result->GetAsList(&result_list));
   ASSERT_EQ(1UL, result_list->GetSize());
+}
+
+// Test that file existence check should be performed after search.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest, FileExistenceCheckAfterSearch) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  DownloadItem* download_item = CreateFirstSlowTestDownload();
+  ASSERT_TRUE(download_item);
+  ASSERT_FALSE(download_item->GetTargetFilePath().empty());
+
+  // Finish the download and try again.
+  FinishFirstSlowDownloads();
+  base::DeleteFile(download_item->GetTargetFilePath(), false);
+
+  ASSERT_FALSE(download_item->GetFileExternallyRemoved());
+  std::unique_ptr<base::Value> result(
+      RunFunctionAndReturnResult(new DownloadsSearchFunction(), "[{}]"));
+  ASSERT_TRUE(result.get());
+  base::ListValue* result_list = nullptr;
+  ASSERT_TRUE(result->GetAsList(&result_list));
+  ASSERT_EQ(1UL, result_list->GetSize());
+  // Check file removal update will eventually come. WaitForEvent() will
+  // immediately return if the file is already removed.
+  content::DownloadUpdatedObserver(
+      download_item, base::BindRepeating(&IsDownloadExternallyRemoved))
+      .WaitForEvent();
 }
 
 #if !defined(OS_CHROMEOS)

@@ -330,7 +330,6 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
   std::unique_ptr<MockDownloadItem> item = CreateMockInProgressDownload();
 
   EXPECT_CALL(*item, GetOriginalMimeType());
-  EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
   EXPECT_CALL(
       *manager(),
       PostInitialization(content::DownloadManager::

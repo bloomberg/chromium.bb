@@ -329,6 +329,10 @@ bool WasAutoOpened(DownloadItem* item) {
   return item->GetAutoOpened();
 }
 
+bool IsDownloadExternallyRemoved(DownloadItem* item) {
+  return item->GetFileExternallyRemoved();
+}
+
 #if !defined(OS_CHROMEOS)
 // Called when a download starts. Marks the download as hidden.
 void SetHiddenDownloadCallback(DownloadItem* item,
@@ -3440,6 +3444,32 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SecurityLevels) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
   histogram_tester.ExpectTotalCount("Security.SecurityLevel.DownloadStarted",
                                     2);
+}
+
+// Tests that opening the downloads page will cause file existence check.
+IN_PROC_BROWSER_TEST_F(DownloadTest, FileExistenceCheckOpeningDownloadsPage) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/" + std::string(kDownloadTest1Path));
+
+  // Download the file and wait.  We do not expect the Select File dialog.
+  DownloadAndWait(browser(), url);
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForBrowser(browser())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  DownloadItem* item = downloads[0];
+  base::DeleteFile(item->GetTargetFilePath(), false);
+  ASSERT_FALSE(item->GetFileExternallyRemoved());
+
+  // Open the downloads tab.
+  chrome::ShowDownloads(browser());
+  // Check file removal update will eventually come.
+  content::DownloadUpdatedObserver(
+      item, base::BindRepeating(&IsDownloadExternallyRemoved))
+      .WaitForEvent();
 }
 
 #if defined(FULL_SAFE_BROWSING)
