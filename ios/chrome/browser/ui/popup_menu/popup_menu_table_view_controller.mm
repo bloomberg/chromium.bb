@@ -96,11 +96,10 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  TableViewItem<PopupMenuItem>* item =
-      [self.tableViewModel itemAtIndexPath:indexPath];
   UIView* cell = [self.tableView cellForRowAtIndexPath:indexPath];
   CGPoint center = [cell convertPoint:cell.center toView:nil];
-  [self executeActionForIdentifier:item.actionIdentifier origin:center];
+  [self executeActionForItem:[self.tableViewModel itemAtIndexPath:indexPath]
+                      origin:center];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -114,8 +113,9 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 
 // Executes the action associated with |identifier|, using |origin| as the point
 // of origin of the action if one is needed.
-- (void)executeActionForIdentifier:(PopupMenuAction)identifier
-                            origin:(CGPoint)origin {
+- (void)executeActionForItem:(TableViewItem<PopupMenuItem>*)item
+                      origin:(CGPoint)origin {
+  NSInteger identifier = item.actionIdentifier;
   switch (identifier) {
     case PopupMenuActionReload:
       base::RecordAction(UserMetricsAction("MobileMenuReload"));
@@ -198,6 +198,10 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
     case PopupMenuActionCloseAllIncognitoTabs:
       base::RecordAction(UserMetricsAction("MobileMenuCloseAllIncognitoTabs"));
       [self.dispatcher closeAllIncognitoTabs];
+      break;
+    case PopupMenuActionNavigate:
+      // No metrics for this item.
+      [self.commandHandler navigateToPageForItem:item];
       break;
   }
 

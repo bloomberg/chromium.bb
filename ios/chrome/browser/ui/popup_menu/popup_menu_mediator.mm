@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -384,6 +385,12 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   });
 }
 
+- (void)navigateToPageForItem:(TableViewItem<PopupMenuItem>*)item {
+  PopupMenuNavigationItem* navigationItem =
+      base::mac::ObjCCastStrict<PopupMenuNavigationItem>(item);
+  [self.dispatcher navigateToHistoryItem:navigationItem.navigationItem];
+}
+
 #pragma mark - ReadingListMenuNotificationDelegate Implementation
 
 - (void)unreadCountChanged:(NSInteger)unreadCount {
@@ -506,6 +513,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     const gfx::Image& image = navigationItem->GetFavicon().image;
     if (!image.IsEmpty())
       item.favicon = image.ToUIImage();
+    item.actionIdentifier = PopupMenuActionNavigate;
+    item.navigationItem = navigationItem;
     [items addObject:item];
   }
 

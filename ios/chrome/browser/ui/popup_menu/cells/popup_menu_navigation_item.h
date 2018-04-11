@@ -8,12 +8,18 @@
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+namespace web {
+class NavigationItem;
+}  // namespace web
+
 // Item used to display an item for a navigation menu.
 @interface PopupMenuNavigationItem : TableViewItem<PopupMenuItem>
 // Title of the navigation item.
 @property(nonatomic, copy) NSString* title;
 // Favicon to be displayed. Set to nil to display the default favicon.
 @property(nonatomic, strong) UIImage* favicon;
+// Item used to navigate in the history.
+@property(nonatomic, assign) web::NavigationItem* navigationItem;
 @end
 
 // Associated cell for a PopupMenuNavigationItem.

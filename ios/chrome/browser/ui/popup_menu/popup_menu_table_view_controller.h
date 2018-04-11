@@ -15,6 +15,8 @@
 @protocol PopupMenuTableViewControllerCommand
 // Adds the current page to the reading list.
 - (void)readPageLater;
+// Navigates to the page associated with |item|.
+- (void)navigateToPageForItem:(TableViewItem<PopupMenuItem>*)item;
 @end
 
 // TableViewController for the popup menu.
