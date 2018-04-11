@@ -45,6 +45,7 @@
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
@@ -205,9 +206,18 @@ NSString* const kTabUrlKey = @"url";
 #pragma mark - Properties
 
 - (NSString*)title {
-  base::string16 title = self.webState->GetTitle();
-  if (title.empty())
-    title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
+  base::string16 title;
+
+  web::WebState* webState = self.webState;
+  if (!webState->GetNavigationManager()->GetVisibleItem() &&
+      DownloadManagerTabHelper::FromWebState(webState)->has_download_task()) {
+    title = l10n_util::GetStringUTF16(IDS_DOWNLOAD_TAB_TITLE);
+  } else {
+    title = webState->GetTitle();
+    if (title.empty())
+      title = l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
+  }
+
   return base::SysUTF16ToNSString(title);
 }
 
