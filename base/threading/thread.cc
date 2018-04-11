@@ -308,9 +308,8 @@ void Thread::ThreadMain() {
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher API.
   std::unique_ptr<FileDescriptorWatcher> file_descriptor_watcher;
   if (MessageLoopForIO::IsCurrent()) {
-    DCHECK_EQ(message_loop_, MessageLoopForIO::current());
-    file_descriptor_watcher.reset(
-        new FileDescriptorWatcher(MessageLoopForIO::current()));
+    file_descriptor_watcher.reset(new FileDescriptorWatcher(
+        static_cast<MessageLoopForIO*>(message_loop_)));
   }
 #endif
 
