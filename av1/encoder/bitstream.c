@@ -3482,6 +3482,8 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
 #else
   if (!cm->seq_params.reduced_still_picture_hdr)
     aom_wb_write_bit(&wb, cm->timing_info_present);  // timing info present flag
+  else
+    assert(cm->timing_info_present == 0);
 
   if (cm->timing_info_present) {
     // timing_info
