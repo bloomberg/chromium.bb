@@ -1260,53 +1260,44 @@ TEST_F(PartitionAllocTest, LostFreePagesBug) {
   EXPECT_TRUE(bucket->decommitted_pages_head);
 }
 
-#if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
-
-// This is defined as a separate test class because MAYBE_RepeatedReturnNull
-// test exhausts the process memory, and breaks any test in the same
-// class that runs after it.
-class PartitionAllocReturnNullTest : public PartitionAllocTest {};
-
 // Unit tests that check if an allocation fails in "return null" mode,
 // repeating it doesn't crash, and still returns null. The tests need to
 // stress memory subsystem limits to do so, hence they try to allocate
 // 6 GB of memory, each with a different per-allocation block sizes.
 //
-// On 64-bit POSIX systems, the address space is limited to 6 GB using
-// setrlimit() first.
+// On 64-bit systems we need to restrict the address space to force allocation
+// failure, so these tests run only on POSIX systems that provide setrlimit(),
+// and use it to limit address space to 6GB.
+//
+// Disable these tests on Android because, due to the allocation-heavy behavior,
+// they tend to get OOM-killed rather than pass.
+// TODO(https://crbug.com/779645): Fuchsia currently sets OS_POSIX, but does
+// not provide a working setrlimit().
+#if !defined(ARCH_CPU_64_BITS) || \
+    (defined(OS_POSIX) &&         \
+     !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)))
+
+// This is defined as a separate test class because RepeatedReturnNull
+// test exhausts the process memory, and breaks any test in the same
+// class that runs after it.
+class PartitionAllocReturnNullTest : public PartitionAllocTest {};
 
 // Test "return null" for larger, direct-mapped allocations first. As a
 // direct-mapped allocation's pages are unmapped and freed on release, this
 // test is performd first for these "return null" tests in order to leave
 // sufficient unreserved virtual memory around for the later one(s).
-
-// Disable this test on Android because, due to its allocation-heavy behavior,
-// it tends to get OOM-killed rather than pass.
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
-#define MAYBE_RepeatedReturnNullDirect DISABLED_RepeatedReturnNullDirect
-#else
-#define MAYBE_RepeatedReturnNullDirect RepeatedReturnNullDirect
-#endif
-TEST_F(PartitionAllocReturnNullTest, MAYBE_RepeatedReturnNullDirect) {
+TEST_F(PartitionAllocReturnNullTest, RepeatedReturnNullDirect) {
   // A direct-mapped allocation size.
   DoReturnNullTest(32 * 1024 * 1024);
 }
 
 // Test "return null" with a 512 kB block size.
-
-// Disable this test on Android because, due to its allocation-heavy behavior,
-// it tends to get OOM-killed rather than pass.
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-#define MAYBE_RepeatedReturnNull DISABLED_RepeatedReturnNull
-#else
-#define MAYBE_RepeatedReturnNull RepeatedReturnNull
-#endif
-TEST_F(PartitionAllocReturnNullTest, MAYBE_RepeatedReturnNull) {
+TEST_F(PartitionAllocReturnNullTest, RepeatedReturnNull) {
   // A single-slot but non-direct-mapped allocation size.
   DoReturnNullTest(512 * 1024);
 }
-
-#endif  // !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
+#endif  // !defined(ARCH_CPU_64_BITS) || (defined(OS_POSIX) &&
+        // !(defined(OS_FUCHSIA) || defined(OS_MACOSX) || defined(OS_ANDROID)))
 
 // Death tests misbehave on Android, http://crbug.com/643760.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
