@@ -48,6 +48,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/prefs:test_support",
+    "//components/subresource_filter/core/common:common",
     "//components/subresource_filter/core/common:test_support",
     "//components/url_pattern_index/proto:url_pattern_index",
     "//components/variations",

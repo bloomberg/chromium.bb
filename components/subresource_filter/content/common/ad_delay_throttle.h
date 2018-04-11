@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -23,8 +22,6 @@ namespace subresource_filter {
 // TODO(csharrison): Add delays for when the request is in a same-origin iframe.
 class AdDelayThrottle : public content::URLLoaderThrottle {
  public:
-  static const base::Feature kFeature;
-
   static constexpr base::TimeDelta kDefaultDelay =
       base::TimeDelta::FromMilliseconds(50);
 

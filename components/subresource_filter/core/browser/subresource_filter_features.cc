@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "components/subresource_filter/core/common/common_features.h"
 
 namespace subresource_filter {
 
@@ -241,7 +242,6 @@ const base::Feature kSafeBrowsingSubresourceFilter{
 
 const base::Feature kSafeBrowsingSubresourceFilterExperimentalUI{
     "SubresourceFilterExperimentalUI", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAdTagging{"AdTagging", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Legacy name `activation_state` is used in variation parameters.
 const char kActivationLevelParameterName[] = "activation_state";

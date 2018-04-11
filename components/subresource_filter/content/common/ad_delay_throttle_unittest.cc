@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
 #include "content/public/test/throttling_url_loader_test_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -36,11 +37,13 @@ class AdDelayThrottleTest : public testing::Test {
         client_(std::make_unique<network::TestURLLoaderClient>()),
         shared_factory_(
             base::MakeRefCounted<content::WeakWrapperSharedURLLoaderFactory>(
-                &loader_factory_)) {}
+                &loader_factory_)) {
+    scoped_ad_tagging_.InitAndEnableFeature(kAdTagging);
+  }
   ~AdDelayThrottleTest() override {}
 
   void SetUp() override {
-    scoped_features_.InitAndEnableFeature(AdDelayThrottle::kFeature);
+    scoped_features_.InitAndEnableFeature(kDelayUnsafeAds);
   }
 
  protected:
@@ -61,16 +64,21 @@ class AdDelayThrottleTest : public testing::Test {
   base::TimeDelta GetExpectedDelay() const {
     return base::TimeDelta::FromMilliseconds(
         base::GetFieldTrialParamByFeatureAsInt(
-            AdDelayThrottle::kFeature, "insecure_delay",
+            kDelayUnsafeAds, kInsecureDelayParam,
             AdDelayThrottle::kDefaultDelay.InMilliseconds()));
   }
 
   base::test::ScopedTaskEnvironment scoped_environment_;
   std::unique_ptr<network::TestURLLoaderClient> client_;
   network::TestURLLoaderFactory loader_factory_;
+
   base::test::ScopedFeatureList scoped_features_;
 
  private:
+  // Use a separate ScopedFeatureList to enable ad tagging, as
+  // InitAndEnableFeaturesWithParameters does not support enabling multiple
+  // features.
+  base::test::ScopedFeatureList scoped_ad_tagging_;
   scoped_refptr<content::WeakWrapperSharedURLLoaderFactory> shared_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AdDelayThrottleTest);
@@ -100,16 +108,32 @@ class AdDelayThrottleEnabledParamTest
       public ::testing::WithParamInterface<bool> {
   void SetUp() override {
     if (GetParam()) {
-      scoped_features_.InitAndEnableFeature(AdDelayThrottle::kFeature);
+      scoped_features_.InitAndEnableFeature(kDelayUnsafeAds);
     } else {
-      scoped_features_.InitAndDisableFeature(AdDelayThrottle::kFeature);
+      scoped_features_.InitAndDisableFeature(kDelayUnsafeAds);
     }
   }
 };
 
 TEST_F(AdDelayThrottleTest, NoFeature_NoDelay) {
   base::test::ScopedFeatureList scoped_disable;
-  scoped_disable.InitAndDisableFeature(AdDelayThrottle::kFeature);
+  scoped_disable.InitAndDisableFeature(kDelayUnsafeAds);
+
+  AdDelayThrottle::Factory factory;
+  auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
+  EXPECT_NE(nullptr, throttle);
+  std::string url = "http://example.test/ad.js";
+  loader_factory_.AddResponse(url, "var ads = 1;");
+  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
+      CreateLoaderAndStart(GURL(url), std::move(throttle));
+  scoped_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(client_->has_received_completion());
+}
+
+TEST_F(AdDelayThrottleTest, NoAdTagging_NoDelay) {
+  base::test::ScopedFeatureList scoped_disable;
+  scoped_disable.InitAndDisableFeature(kAdTagging);
 
   AdDelayThrottle::Factory factory;
   auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
@@ -168,8 +192,8 @@ TEST_F(AdDelayThrottleTest, InsecureAdRequest_Delay) {
 
 TEST_F(AdDelayThrottleTest, DelayFromFieldTrialParam) {
   base::test::ScopedFeatureList scoped_params;
-  scoped_params.InitAndEnableFeatureWithParameters(AdDelayThrottle::kFeature,
-                                                   {{"insecure_delay", "100"}});
+  scoped_params.InitAndEnableFeatureWithParameters(
+      kDelayUnsafeAds, {{kInsecureDelayParam, "100"}});
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(100), GetExpectedDelay());
 
   AdDelayThrottle::Factory factory;

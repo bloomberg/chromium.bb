@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/content/common/ad_delay_throttle.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,8 +27,8 @@ class AdDelayBrowserTest
 
   void SetUp() override {
     scoped_features_.InitAndEnableFeatureWithParameters(
-        subresource_filter::AdDelayThrottle::kFeature,
-        {{"insecure_delay", DelayParamToUse()}});
+        subresource_filter::kDelayUnsafeAds,
+        {{subresource_filter::kInsecureDelayParam, DelayParamToUse()}});
     subresource_filter::SubresourceFilterBrowserTest::SetUp();
   }
 
@@ -54,7 +55,8 @@ class AdDelayBrowserTest
   base::TimeDelta GetExpectedDelay() const {
     return base::TimeDelta::FromMilliseconds(
         base::GetFieldTrialParamByFeatureAsInt(
-            subresource_filter::AdDelayThrottle::kFeature, "insecure_delay",
+            subresource_filter::kDelayUnsafeAds,
+            subresource_filter::kInsecureDelayParam,
             subresource_filter::AdDelayThrottle::kDefaultDelay
                 .InMilliseconds()));
   }

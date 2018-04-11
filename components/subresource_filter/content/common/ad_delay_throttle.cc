@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/subresource_filter/core/common/common_features.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -27,20 +28,16 @@ void LogSecureInfo(AdDelayThrottle::SecureInfo info) {
 
 }  // namespace
 
-const base::Feature AdDelayThrottle::kFeature{
-    "DelayUnsafeAds", base::FEATURE_DISABLED_BY_DEFAULT};
-
 constexpr base::TimeDelta AdDelayThrottle::kDefaultDelay;
 
 AdDelayThrottle::Factory::Factory()
     : insecure_delay_(base::TimeDelta::FromMilliseconds(
           base::GetFieldTrialParamByFeatureAsInt(
-              kFeature,
-              "insecure_delay",
+              kDelayUnsafeAds,
+              kInsecureDelayParam,
               kDefaultDelay.InMilliseconds()))),
-      // TODO(csharrison): Also check for AdTagging here to avoid reporting on
-      // groups without that experiment.
-      delay_enabled_(base::FeatureList::IsEnabled(kFeature)) {}
+      delay_enabled_(base::FeatureList::IsEnabled(kAdTagging) &&
+                     base::FeatureList::IsEnabled(kDelayUnsafeAds)) {}
 
 AdDelayThrottle::Factory::~Factory() = default;
 
