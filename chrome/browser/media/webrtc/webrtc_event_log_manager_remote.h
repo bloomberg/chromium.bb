@@ -201,6 +201,9 @@ class WebRtcRemoteEventLogManager final
   // this check is not too expensive.
   void PrunePendingLogs();
 
+  // PrunePendingLogs() and schedule the next proactive prune.
+  void RecurringPendingLogsPrune();
+
   // Removes pending logs whose last modification date was between at or later
   // than |delete_begin|, and earlier than |delete_end|.
   // If a null time-point is given as either |delete_begin| or |delete_begin|,
@@ -256,6 +259,17 @@ class WebRtcRemoteEventLogManager final
   // Normally, uploading is suppressed while there are active peer connections.
   // This may be disabled from the command line.
   const bool upload_suppression_disabled_;
+
+  // Proactive pruning will be done only if this has a value, in which case,
+  // every |proactive_prune_scheduling_delta_|, pending logs will be pruned.
+  // This avoids them staying around on disk for longer than their expiration
+  // if no event occurs which triggers reactive pruning.
+  const base::Optional<base::TimeDelta> proactive_prune_scheduling_delta_;
+
+  // Proactive pruning, if enabled, starts with the first enabled browser
+  // context. To avoid unnecessary complexity, if that browser context is
+  // disabled, proactive pruning is not disabled.
+  bool proactive_prune_scheduling_started_;
 
   // This is used to inform WebRtcEventLogManager when remote-bound logging
   // of a peer connection starts/stops, which allows WebRtcEventLogManager to

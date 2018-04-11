@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,6 +32,9 @@ static_assert(kMaxRemoteLogFileMetadataSizeBytes <= 0xFFFFFFu,
 const size_t kMaxRemoteLogFileSizeBytes = 50000000u;
 
 namespace {
+const base::TimeDelta kDefaultProactivePruningDelta =
+    base::TimeDelta::FromMinutes(5);
+
 const base::FilePath::CharType kRemoteBoundLogSubDirectory[] =
     FILE_PATH_LITERAL("webrtc_event_logs");
 
@@ -73,6 +77,27 @@ bool AreLogParametersValid(size_t max_file_size_bytes,
 
   return true;
 }
+
+base::Optional<base::TimeDelta> GetProactivePruningDelta() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kWebRtcRemoteEventLogProactivePruningDelta)) {
+    const std::string delta_seconds_str =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            ::switches::kWebRtcRemoteEventLogProactivePruningDelta);
+    int64_t seconds;
+    if (base::StringToInt64(delta_seconds_str, &seconds) && seconds >= 0) {
+      // A delta of 0 seconds is used to signal the intention of disabling
+      // proactive pruning altogether. (From the command line. Past the command
+      // line, we use an unset optional to signal that.)
+      return (seconds == 0) ? base::Optional<base::TimeDelta>()
+                            : base::TimeDelta::FromSeconds(seconds);
+    } else {
+      LOG(WARNING) << "Proactive pruning delta could not be parsed.";
+    }
+  }
+
+  return kDefaultProactivePruningDelta;
+}
 }  // namespace
 
 const size_t kMaxActiveRemoteBoundWebRtcEventLogs = 3;
@@ -96,10 +121,15 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     : upload_suppression_disabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               ::switches::kWebRtcRemoteEventLogUploadNoSuppression)),
+      proactive_prune_scheduling_delta_(GetProactivePruningDelta()),
+      proactive_prune_scheduling_started_(false),
       observer_(observer),
       uploader_factory_(new WebRtcEventLogUploaderImpl::Factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
+  // Proactive pruning would not do anything at the moment; it will be started
+  // with the first enabled browser context. This will all have the benefit
+  // of doing so on io_task_sequence_checker_ rather than the UI thread.
 }
 
 WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
@@ -126,6 +156,12 @@ void WebRtcRemoteEventLogManager::EnableForBrowserContext(
   AddPendingLogs(browser_context_id, remote_bound_logs_dir);
 
   enabled_browser_contexts_.insert(browser_context_id);
+
+  if (proactive_prune_scheduling_delta_.has_value() &&
+      !proactive_prune_scheduling_started_) {
+    proactive_prune_scheduling_started_ = true;
+    RecurringPendingLogsPrune();
+  }
 }
 
 // TODO(crbug.com/775415): Add unit tests.
@@ -511,6 +547,21 @@ void WebRtcRemoteEventLogManager::PrunePendingLogs() {
   RemovePendingLogs(
       base::Time::Min(),
       base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention);
+}
+
+void WebRtcRemoteEventLogManager::RecurringPendingLogsPrune() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(proactive_prune_scheduling_delta_.has_value());
+  DCHECK_GT(*proactive_prune_scheduling_delta_, base::TimeDelta());
+  DCHECK(proactive_prune_scheduling_started_);
+
+  PrunePendingLogs();
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&WebRtcRemoteEventLogManager::RecurringPendingLogsPrune,
+                     base::Unretained(this)),
+      *proactive_prune_scheduling_delta_);
 }
 
 void WebRtcRemoteEventLogManager::RemovePendingLogs(
