@@ -579,7 +579,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) return;
 
         // This event is handled by the support lib in {@link #onReceivedError2}.
-        if (mSupportLibClient.isFeatureAvailable(Features.WEB_RESOURCE_ERROR)) return;
+        if (mSupportLibClient.isFeatureAvailable(Features.RECEIVE_WEB_RESOURCE_ERROR)) return;
 
         try {
             TraceEvent.begin("WebViewContentsClientAdapter.onReceivedError");
@@ -611,7 +611,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
                 error.description = mWebViewDelegate.getErrorString(mContext, error.errorCode);
             }
             if (TRACE) Log.i(TAG, "onReceivedError=" + request.url);
-            if (mSupportLibClient.isFeatureAvailable(Features.WEB_RESOURCE_ERROR)) {
+            if (mSupportLibClient.isFeatureAvailable(Features.RECEIVE_WEB_RESOURCE_ERROR)) {
                 // Note: we must pass AwWebResourceError, since this class was introduced after L.
                 mSupportLibClient.onReceivedError(
                         mWebView, new WebResourceRequestAdapter(request), error);

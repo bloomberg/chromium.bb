@@ -125,7 +125,7 @@ public class SupportLibWebViewContentsClientAdapter {
 
     public void onReceivedError(
             WebView webView, WebResourceRequest request, final AwWebResourceError error) {
-        assert isFeatureAvailable(Features.WEB_RESOURCE_ERROR);
+        assert isFeatureAvailable(Features.RECEIVE_WEB_RESOURCE_ERROR);
         WebResourceErrorBoundaryInterface errorDelegate = new WebResourceErrorDelegate(error);
         InvocationHandler errorHandler =
                 BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(errorDelegate);
