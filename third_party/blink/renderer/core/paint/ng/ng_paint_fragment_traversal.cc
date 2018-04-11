@@ -46,6 +46,19 @@ class NotSelfPaintingFilter {
   }
 };
 
+// Collects line box and inline fragments.
+class InlineFilter {
+ public:
+  bool IsCollectible(const NGPaintFragment* fragment) const {
+    return fragment->PhysicalFragment().IsInline() ||
+           fragment->PhysicalFragment().IsLineBox();
+  }
+  bool IsTraverse(const NGPaintFragment* fragment) {
+    return fragment->PhysicalFragment().IsContainer() &&
+           !fragment->PhysicalFragment().IsBlockLayoutRoot();
+  }
+};
+
 // Collect only fragments that belong to this LayoutObject.
 class LayoutObjectFilter {
  public:
@@ -68,6 +81,15 @@ Vector<NGPaintFragmentWithContainerOffset>
 NGPaintFragmentTraversal::DescendantsOf(const NGPaintFragment& container) {
   Vector<NGPaintFragmentWithContainerOffset> result;
   NotSelfPaintingFilter filter;
+  CollectPaintFragments(container, NGPhysicalOffset(), filter, &result);
+  return result;
+}
+
+Vector<NGPaintFragmentWithContainerOffset>
+NGPaintFragmentTraversal::InlineDescendantsOf(
+    const NGPaintFragment& container) {
+  Vector<NGPaintFragmentWithContainerOffset> result;
+  InlineFilter filter;
   CollectPaintFragments(container, NGPhysicalOffset(), filter, &result);
   return result;
 }

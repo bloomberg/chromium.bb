@@ -49,4 +49,30 @@ TEST_F(NGPaintFragmentTraversalTest, PreviousLineInListItem) {
             NGPaintFragmentTraversal::PreviousLineOf(*RootChildren()[1]));
 }
 
+TEST_F(NGPaintFragmentTraversalTest, InlineDescendantsOf) {
+  SetUpHtml("t",
+            "<ul>"
+            "<li id=t style='position: absolute'>"
+            "<span style='float: right'>float</span>"
+            "<span style='position: absolute'>oof</span>"
+            "text<br>"
+            "<span style='display: inline-block'>inline block</span>"
+            "</li>"
+            "</ul>");
+
+  // Tests that floats, out-of-flow positioned and descendants of atomic inlines
+  // are excluded.
+  auto descendants =
+      NGPaintFragmentTraversal::InlineDescendantsOf(*root_fragment_);
+  ASSERT_EQ(6u, descendants.size());
+  // TODO(layout-dev): This list marker is not in any line box. Should it be
+  // treated as inline?
+  EXPECT_TRUE(descendants[0].fragment->PhysicalFragment().IsListMarker());
+  EXPECT_TRUE(descendants[1].fragment->PhysicalFragment().IsLineBox());
+  EXPECT_TRUE(descendants[2].fragment->PhysicalFragment().IsText());  // "text"
+  EXPECT_TRUE(descendants[3].fragment->PhysicalFragment().IsText());  // "br"
+  EXPECT_TRUE(descendants[4].fragment->PhysicalFragment().IsLineBox());
+  EXPECT_TRUE(descendants[5].fragment->PhysicalFragment().IsAtomicInline());
+}
+
 }  // namespace blink
