@@ -69,6 +69,7 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 import org.chromium.ui.widget.Toast;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * The Toolbar layout to be used for a custom tab. This is used for both phone and tablet UIs.
@@ -114,6 +115,10 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private static final int STATE_DOMAIN_ONLY = 0;
     private static final int STATE_TITLE_ONLY = 1;
     private static final int STATE_DOMAIN_AND_TITLE = 2;
+
+    /** Regular expression for prefixes to strip from publisher hostnames. */
+    private static final Pattern HOSTNAME_PREFIX_PATTERN =
+            Pattern.compile("^(www[0-9]*|web|ftp|wap|home|mobile|amp)\\.");
 
     private View mLocationBarFrameLayout;
     private View mTitleUrlContainer;
@@ -382,9 +387,13 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         updateSecurityIcon();
     }
 
-    private static String extractPublisherFromPublisherUrl(String publisherUrl) {
-        return BidiFormatter.getInstance().unicodeWrap(
-                UrlFormatter.formatUrlForDisplayOmitScheme(GURLUtils.getOrigin(publisherUrl)));
+    @VisibleForTesting
+    public static String extractPublisherFromPublisherUrl(String publisherUrl) {
+        String publisher =
+                UrlFormatter.formatUrlForDisplayOmitScheme(GURLUtils.getOrigin(publisherUrl));
+
+        String trimmedPublisher = HOSTNAME_PREFIX_PATTERN.matcher(publisher).replaceFirst("");
+        return BidiFormatter.getInstance().unicodeWrap(trimmedPublisher);
     }
 
     @Override

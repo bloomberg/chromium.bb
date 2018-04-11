@@ -130,8 +130,8 @@ public class TrustedCdnPublisherUrlTest {
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     public void testHttps() throws Exception {
-        runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", "example.com",
-                org.chromium.chrome.R.drawable.omnibox_https_valid);
+        runTrustedCdnPublisherUrlTest("https://www.example.com/test", "com.example.test",
+                "example.com", org.chromium.chrome.R.drawable.omnibox_https_valid);
         mScreenShooter.shoot("trustedPublisherUrlHttps");
     }
 
