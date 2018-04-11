@@ -108,7 +108,7 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
 
   // Default case.
   if (!reference_view || !reference_view->visible())
-    return browser_view->button_provider()->GetAppMenuButton();
+    return browser_view->toolbar_button_provider()->GetAppMenuButton();
   return reference_view;
 }
 #else  // OS_MACOSX && !MAC_VIEWS_BROWSER

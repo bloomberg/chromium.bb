@@ -30,7 +30,7 @@ views::View* GetPageInfoAnchorView(Browser* browser, Anchor anchor) {
   if (anchor == kLocationBar)
     return browser_view->GetLocationBarView()->GetSecurityBubbleAnchorView();
   if (anchor == kAppMenuButton)
-    return browser_view->button_provider()->GetAppMenuButton();
+    return browser_view->toolbar_button_provider()->GetAppMenuButton();
   NOTREACHED();
   return nullptr;
 }

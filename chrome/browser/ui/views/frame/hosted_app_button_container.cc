@@ -167,7 +167,7 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
   app_menu_button_->SetIconColor(active_icon_color);
   AddChildView(app_menu_button_);
 
-  browser_view_->SetButtonProvider(this);
+  browser_view_->SetToolbarButtonProvider(this);
 }
 
 HostedAppButtonContainer::~HostedAppButtonContainer() {}

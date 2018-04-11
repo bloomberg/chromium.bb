@@ -829,7 +829,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 }
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  const AppMenuButton* app_menu_button = button_provider_->GetAppMenuButton();
+  const AppMenuButton* app_menu_button =
+      toolbar_button_provider_->GetAppMenuButton();
   bool app_menu_showing = app_menu_button && app_menu_button->IsMenuShowing();
   GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble &&
                                                 !app_menu_showing);
@@ -956,10 +957,10 @@ void BrowserView::FullscreenStateChanged() {
   ProcessFullscreen(false, GURL(), EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE);
 }
 
-void BrowserView::SetButtonProvider(BrowserViewButtonProvider* provider) {
-  // There should only be one button provider.
-  DCHECK(!button_provider_);
-  button_provider_ = provider;
+void BrowserView::SetToolbarButtonProvider(ToolbarButtonProvider* provider) {
+  // There should only be one toolbar button provider.
+  DCHECK(!toolbar_button_provider_);
+  toolbar_button_provider_ = provider;
 }
 
 LocationBar* BrowserView::GetLocationBar() const {
@@ -1033,7 +1034,7 @@ void BrowserView::FocusToolbar() {
 
 ToolbarActionsBar* BrowserView::GetToolbarActionsBar() {
   BrowserActionsContainer* container =
-      button_provider_->GetBrowserActionsContainer();
+      toolbar_button_provider_->GetBrowserActionsContainer();
   return container ? container->toolbar_actions_bar() : nullptr;
 }
 
@@ -1190,7 +1191,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     if (card_view && card_view->visible())
       anchor_view = card_view;
     else
-      anchor_view = button_provider()->GetAppMenuButton();
+      anchor_view = toolbar_button_provider()->GetAppMenuButton();
   }
 
   autofill::SaveCardBubbleViews* bubble = new autofill::SaveCardBubbleViews(
@@ -1276,7 +1277,7 @@ void BrowserView::UserChangedTheme() {
 }
 
 void BrowserView::ShowAppMenu() {
-  if (!button_provider_->GetAppMenuButton())
+  if (!toolbar_button_provider_->GetAppMenuButton())
     return;
 
   // Keep the top-of-window views revealed as long as the app menu is visible.
@@ -1284,7 +1285,7 @@ void BrowserView::ShowAppMenu() {
       immersive_mode_controller_->GetRevealedLock(
           ImmersiveModeController::ANIMATE_REVEAL_NO));
 
-  button_provider_->GetAppMenuButton()->Activate(nullptr);
+  toolbar_button_provider_->GetAppMenuButton()->Activate(nullptr);
 }
 
 content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
@@ -2178,8 +2179,8 @@ void BrowserView::InitViews() {
 
   // This browser view may already have a custom button provider set (e.g the
   // hosted app frame).
-  if (!button_provider_)
-    SetButtonProvider(toolbar_);
+  if (!toolbar_button_provider_)
+    SetToolbarButtonProvider(toolbar_);
 
   infobar_container_ = new InfoBarContainerView(this);
   AddChildView(infobar_container_);

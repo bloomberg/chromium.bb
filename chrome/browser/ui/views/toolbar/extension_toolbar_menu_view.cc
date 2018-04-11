@@ -38,7 +38,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
   SetBackgroundColor(SK_ColorTRANSPARENT);
   BrowserActionsContainer* main =
       BrowserView::GetBrowserViewForBrowser(browser_)
-          ->button_provider()
+          ->toolbar_button_provider()
           ->GetBrowserActionsContainer();
   container_ = new BrowserActionsContainer(browser_, main, main->delegate());
   SetContents(container_);

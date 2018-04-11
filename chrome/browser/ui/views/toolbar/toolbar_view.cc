@@ -699,7 +699,7 @@ void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
   }
 }
 
-// BrowserViewButtonProvider:
+// ToolbarButtonProvider:
 BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
   return browser_actions_;
 }
