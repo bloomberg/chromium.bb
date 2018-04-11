@@ -106,7 +106,6 @@
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
-#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
@@ -3742,15 +3741,8 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
           content::RenderProcessHost*, const url::Origin&>>();
 
   // Register mojo ContentTranslateDriver interface only for main frame.
-  // Use feature to determine whether translate or language code handles
-  // language detection. See crbug.com/736929.
-  if (base::FeatureList::IsEnabled(kDecoupleTranslateLanguageFeature)) {
-    frame_interfaces_parameterized_->AddInterface(base::Bind(
-        &ChromeLanguageDetectionTabHelper::BindContentTranslateDriver));
-  } else {
-    frame_interfaces_parameterized_->AddInterface(
-        base::Bind(&ChromeTranslateClient::BindContentTranslateDriver));
-  }
+  frame_interfaces_parameterized_->AddInterface(base::BindRepeating(
+      &ChromeLanguageDetectionTabHelper::BindContentTranslateDriver));
 
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));

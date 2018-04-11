@@ -192,9 +192,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                         web_contents->GetBrowserContext()));
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(kDecoupleTranslateLanguageFeature)) {
-    ChromeLanguageDetectionTabHelper::CreateForWebContents(web_contents);
-  }
+  ChromeLanguageDetectionTabHelper::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));

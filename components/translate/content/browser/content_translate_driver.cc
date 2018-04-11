@@ -46,11 +46,6 @@ ContentTranslateDriver::ContentTranslateDriver(
 
 ContentTranslateDriver::~ContentTranslateDriver() {}
 
-void ContentTranslateDriver::BindRequest(
-    mojom::ContentTranslateDriverRequest request) {
-  bindings_.AddBinding(this, std::move(request));
-}
-
 void ContentTranslateDriver::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -230,8 +225,7 @@ void ContentTranslateDriver::OnPageAway(int page_seq_no) {
   pages_.erase(page_seq_no);
 }
 
-// mojom::ContentTranslateDriver implementation.
-void ContentTranslateDriver::RegisterPage(
+void ContentTranslateDriver::OnPageReady(
     mojom::PagePtr page,
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {

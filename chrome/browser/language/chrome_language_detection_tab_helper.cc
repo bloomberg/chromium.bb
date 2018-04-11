@@ -63,6 +63,6 @@ void ChromeLanguageDetectionTabHelper::RegisterPage(
   if (!translate_client)
     return;
 
-  translate_client->translate_driver().RegisterPage(std::move(page), details,
-                                                    page_needs_translation);
+  translate_client->translate_driver().OnPageReady(std::move(page), details,
+                                                   page_needs_translation);
 }
