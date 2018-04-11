@@ -23,10 +23,12 @@
 #include "build/build_config.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 
 namespace storage_monitor {
 
 class MediaTransferProtocolDeviceObserverChromeOS;
+class MtpManagerClientChromeOS;
 
 class StorageMonitorCros : public StorageMonitor,
                            public chromeos::disks::DiskMountManager::Observer {
@@ -101,8 +103,16 @@ class StorageMonitorCros : public StorageMonitor,
 
   std::unique_ptr<device::MediaTransferProtocolManager>
       media_transfer_protocol_manager_;
+
   std::unique_ptr<MediaTransferProtocolDeviceObserverChromeOS>
       media_transfer_protocol_device_observer_;
+
+  // These two items are mojo format counterparts which will replace
+  // the existing ones.
+  // This will replace |media_transfer_protocol_manager_|
+  device::mojom::MtpManagerPtr mtp_device_manager_;
+  // This will replace |media_transfer_protocol_device_observer_|
+  std::unique_ptr<MtpManagerClientChromeOS> mtp_manager_client_;
 
   base::WeakPtrFactory<StorageMonitorCros> weak_ptr_factory_;
 
