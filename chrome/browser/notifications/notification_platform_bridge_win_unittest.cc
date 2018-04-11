@@ -50,6 +50,7 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
   ~NotificationPlatformBridgeWinTest() override = default;
 
   HRESULT GetToast(
+      const NotificationLaunchId& launch_id,
       bool renotify,
       mswr::ComPtr<winui::Notifications::IToastNotification2>* toast2) {
     GURL origin(kOrigin);
@@ -60,8 +61,6 @@ class NotificationPlatformBridgeWinTest : public testing::Test {
         message_center::RichNotificationData(), nullptr /* delegate */);
     notification->set_renotify(renotify);
     MockNotificationImageRetainer image_retainer;
-    NotificationLaunchId launch_id(kLaunchId);
-    DCHECK(launch_id.is_valid());
     std::unique_ptr<NotificationTemplateBuilder> builder =
         NotificationTemplateBuilder::Build(&image_retainer, launch_id,
                                            kProfileId, *notification);
@@ -102,8 +101,11 @@ TEST_F(NotificationPlatformBridgeWinTest, GroupAndTag) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
+  NotificationLaunchId launch_id(kLaunchId);
+  ASSERT_TRUE(launch_id.is_valid());
+
   mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
-  ASSERT_HRESULT_SUCCEEDED(GetToast(false /* renotify */, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(GetToast(launch_id, false /* renotify */, &toast2));
 
   HSTRING hstring_group;
   ASSERT_HRESULT_SUCCEEDED(toast2->get_Group(&hstring_group));
@@ -135,9 +137,12 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
   mswr::ComPtr<winui::Notifications::IToastNotification2> toast2;
   boolean suppress;
 
+  NotificationLaunchId launch_id(kLaunchId);
+  ASSERT_TRUE(launch_id.is_valid());
+
   // Make sure this works a toast is not suppressed when no notifications are
   // registered.
-  ASSERT_HRESULT_SUCCEEDED(GetToast(false, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(GetToast(launch_id, false, &toast2));
   ASSERT_HRESULT_SUCCEEDED(toast2->get_SuppressPopup(&suppress));
   ASSERT_FALSE(suppress);
 
@@ -148,12 +153,12 @@ TEST_F(NotificationPlatformBridgeWinTest, Suppress) {
   notifications.push_back(&item1);
 
   // Request this notification with renotify true (should not be suppressed).
-  ASSERT_HRESULT_SUCCEEDED(GetToast(true, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(GetToast(launch_id, true, &toast2));
   ASSERT_HRESULT_SUCCEEDED(toast2->get_SuppressPopup(&suppress));
   ASSERT_FALSE(suppress);
 
   // Request this notification with renotify false (should be suppressed).
-  ASSERT_HRESULT_SUCCEEDED(GetToast(false, &toast2));
+  ASSERT_HRESULT_SUCCEEDED(GetToast(launch_id, false, &toast2));
   ASSERT_HRESULT_SUCCEEDED(toast2->get_SuppressPopup(&suppress));
   ASSERT_TRUE(suppress);
 
