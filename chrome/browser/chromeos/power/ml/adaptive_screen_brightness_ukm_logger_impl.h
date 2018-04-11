@@ -7,12 +7,11 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_ukm_logger.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace chromeos {
 namespace power {
 namespace ml {
-
-class ScreenBrightnessEvent;
 
 class AdaptiveScreenBrightnessUkmLoggerImpl
     : public AdaptiveScreenBrightnessUkmLogger {
@@ -21,8 +20,9 @@ class AdaptiveScreenBrightnessUkmLoggerImpl
   ~AdaptiveScreenBrightnessUkmLoggerImpl() override;
 
   // chromeos::power::ml::AdaptiveScreenBrightnessUkmLogger overrides:
-  void LogActivity(
-      const ScreenBrightnessEvent& screen_brightness_event) override;
+  void LogActivity(const ScreenBrightnessEvent& screen_brightness_event,
+                   ukm::SourceId tab_id,
+                   bool has_form_entry) override;
 
  private:
   // This ID is incremented each time a ScreenBrightessEvent is logged to UKM.

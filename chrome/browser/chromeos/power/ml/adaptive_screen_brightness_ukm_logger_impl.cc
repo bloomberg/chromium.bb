@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/power/ml/user_activity_ukm_logger_impl.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace chromeos {
 namespace power {
@@ -37,7 +38,9 @@ AdaptiveScreenBrightnessUkmLoggerImpl::
     ~AdaptiveScreenBrightnessUkmLoggerImpl() = default;
 
 void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
-    const ScreenBrightnessEvent& screen_brightness_event) {
+    const ScreenBrightnessEvent& screen_brightness_event,
+    ukm::SourceId tab_id,
+    bool has_form_entry) {
   const ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
   ukm::builders::ScreenBrightness ukm_screen_brightness(source_id);
   ukm_screen_brightness.SetSequenceId(next_sequence_id_++);
@@ -199,7 +202,15 @@ void AdaptiveScreenBrightnessUkmLoggerImpl::LogActivity(
     ukm_screen_brightness.SetReason(event.reason());
   }
 
-  ukm_screen_brightness.Record(ukm::UkmRecorder::Get());
+  ukm::UkmRecorder* const ukm_recorder = ukm::UkmRecorder::Get();
+  ukm_screen_brightness.Record(ukm_recorder);
+
+  if (tab_id == ukm::kInvalidSourceId)
+    return;
+
+  ukm::builders::UserActivityId user_activity_id(tab_id);
+  user_activity_id.SetActivityId(source_id).SetHasFormEntry(has_form_entry);
+  user_activity_id.Record(ukm_recorder);
 }
 
 }  // namespace ml

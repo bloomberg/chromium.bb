@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_ADAPTIVE_SCREEN_BRIGHTNESS_UKM_LOGGER_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_ML_ADAPTIVE_SCREEN_BRIGHTNESS_UKM_LOGGER_H_
 
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
 namespace chromeos {
 namespace power {
 namespace ml {
@@ -17,7 +19,11 @@ class AdaptiveScreenBrightnessUkmLogger {
   virtual ~AdaptiveScreenBrightnessUkmLogger() = default;
 
   // Log screen brightness proto.
-  virtual void LogActivity(const ScreenBrightnessEvent& screen_brightness) = 0;
+  // |tab_id| is the UKM SourceId associated with the active tab in the focused
+  // visible browser (or topmost visible browser if none are focused).
+  virtual void LogActivity(const ScreenBrightnessEvent& screen_brightness,
+                           ukm::SourceId tab_id,
+                           bool has_form_entry) = 0;
 };
 
 }  // namespace ml

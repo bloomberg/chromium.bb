@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_manager.h"
 
 #include <cmath>
+#include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/process/launch.h"
@@ -21,13 +22,22 @@
 #include "chrome/browser/chromeos/power/ml/real_boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/recent_events_counter.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/system/devicetype.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/viz/host/host_frame_sink_manager.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/page_importance_signals.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 
 namespace chromeos {
@@ -45,6 +55,55 @@ constexpr int kNumUserInputEventsBuckets =
 
 // Log data every 10 minutes.
 constexpr base::TimeDelta kLoggingInterval = base::TimeDelta::FromMinutes(10);
+
+// Returns the focused visible browser unless no visible browser is focused,
+// then returns the topmost visible browser.
+// Returns nullopt if no suitable browsers are found.
+Browser* GetFocusedOrTopmostVisibleBrowser() {
+  Browser* topmost_browser = nullptr;
+  Browser* browser = nullptr;
+  BrowserList* browser_list = BrowserList::GetInstance();
+  DCHECK(browser_list);
+
+  for (auto browser_iterator = browser_list->begin_last_active();
+       browser_iterator != browser_list->end_last_active();
+       ++browser_iterator) {
+    browser = *browser_iterator;
+    if (browser->profile()->IsOffTheRecord() ||
+        !browser->window()->GetNativeWindow()->IsVisible())
+      continue;
+
+    if (browser->window()->IsActive())
+      return browser;
+
+    if (!topmost_browser)
+      topmost_browser = *browser_iterator;
+  }
+  if (topmost_browser)
+    return topmost_browser;
+
+  return nullptr;
+}
+
+// For the active tab, returns the UKM SourceId and whether any form in this
+// tab had an interaction. The active tab is in the focused visible browser.
+// If no visible browser is focused, the topmost visible browser is used.
+const std::pair<ukm::SourceId, bool> GetActiveTabData() {
+  ukm::SourceId tab_id = ukm::kInvalidSourceId;
+  bool has_form_entry = false;
+  Browser* browser = GetFocusedOrTopmostVisibleBrowser();
+  if (browser) {
+    const TabStripModel* const tab_strip_model = browser->tab_strip_model();
+    DCHECK(tab_strip_model);
+    content::WebContents* contents = tab_strip_model->GetActiveWebContents();
+    if (contents) {
+      tab_id = ukm::GetSourceIdForWebContentsDocument(contents);
+      has_form_entry =
+          contents->GetPageImportanceSignals().had_form_interaction;
+    }
+  }
+  return std::pair<ukm::SourceId, bool>(tab_id, has_form_entry);
+}
 
 }  // namespace
 
@@ -411,9 +470,10 @@ void AdaptiveScreenBrightnessManager::LogEvent() {
         magnification_manager_->IsMagnifierEnabled());
   }
 
+  const std::pair<ukm::SourceId, bool> tab_data = GetActiveTabData();
+
   // Log to metrics.
-  // TODO(pdyson): Add relevant UserActivityId metrics.
-  ukm_logger_->LogActivity(screen_brightness);
+  ukm_logger_->LogActivity(screen_brightness, tab_data.first, tab_data.second);
 }
 
 }  // namespace ml
