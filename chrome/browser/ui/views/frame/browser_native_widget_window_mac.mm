@@ -18,6 +18,8 @@ constexpr NSInteger kTitleBarHeight = 37;
 
 @interface NSWindow (PrivateAPI)
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle;
+- (void)beginWindowDragWithEvent:(NSEvent*)event
+    NS_DEPRECATED_MAC(10_10, 10_11, "Use performWindowDragWithEvent: instead.");
 @end
 
 // Weak lets Chrome launch even if a future macOS doesn't have NSThemeFrame.
@@ -48,6 +50,39 @@ WEAK_IMPORT_ATTRIBUTE
 - (BOOL)_shouldFlipTrafficLightsForRTL API_AVAILABLE(macos(10.12)) {
   return [[self window] windowTitlebarLayoutDirection] ==
          NSUserInterfaceLayoutDirectionRightToLeft;
+}
+
+// Returning nil from _copyDragRegion prevents browser windows from being
+// server-side draggable in the tab strip area. The area occupied by the title
+// bar is normally draggable except where a view underlaps it which overrides
+// -mouseDown: *and* returns YES from -acceptsFirstResponder. Currently, the
+// tab strip is shown by a BridgedContentView which only sometimes returns YES
+// from -acceptsFirstResponder. With this override, a window drag only starts
+// after falling through -hitTest:.
+//
+// It would be ideal to avoid that round trip: right now, for example, browser
+// windows aren't draggable while Chrome is hung or paused in a debugger.
+// Another approach would be to expose an NSView for each views::View which
+// exposes it to AppKit it as a non-draggable region. Cocoa app windows did
+// this for draggable regions. (Tracked under https://crbug.com/830962.)
+- (id)_copyDragRegion {
+  return nil;
+}
+
+// Same as _copyDragRegion, but for 10.10.
+- (NSRect)_draggableFrame NS_DEPRECATED_MAC(10_10, 10_11) {
+  return NSZeroRect;
+}
+
+// Lets the window be dragged by its title bar on 10.10.
+- (void)mouseDown:(NSEvent*)event {
+  if (@available(macOS 10.11, *))
+    ;  // Not needed on 10.11 and up.
+  else if (@available(macOS 10.10, *))
+    [self.window beginWindowDragWithEvent:event];
+  else
+    NOTREACHED();
+  [super mouseDown:event];
 }
 
 @end

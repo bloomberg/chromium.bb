@@ -71,10 +71,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   static gfx::Size GetWindowSizeForClientSize(NSWindow* window,
                                               const gfx::Size& size);
 
-  // Whether an event monitor should be used to intercept window drag events.
-  // Evalutes to |true| on macOS 10.10 and older.
-  static bool ShouldUseDragEventMonitor();
-
   // Creates one side of the bridge. |parent| must not be NULL.
   explicit BridgedNativeWidget(NativeWidgetMac* parent);
   ~BridgedNativeWidget() override;
@@ -161,17 +157,6 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Called by the NSWindowDelegate when the window becomes or resigns key.
   void OnWindowKeyStatusChangedTo(bool is_key);
-
-  // Returns true if the |event| should initiate a window drag.
-  bool ShouldDragWindow(NSEvent* event);
-
-  // Called when the application receives a mouse-down, but before the event is
-  // processed by NSWindow. Returning true here will cause the event to be
-  // cancelled and reposted at the CGSessionEventTap level. This is used to
-  // determine whether a mouse-down should drag the window. Only called when
-  // ShouldUseDragEventMonitor() returns true.
-  // Virtual for testing.
-  virtual bool ShouldRepostPendingLeftMouseDown(NSEvent* event);
 
   // Called by NativeWidgetMac when the window size constraints change.
   void OnSizeConstraintsChanged();
@@ -263,10 +248,6 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Show the window using -[NSApp beginSheet:..], modal for the parent window.
   void ShowAsModalSheet();
-
-  // Sets mouseDownCanMoveWindow on |bridged_view_| and triggers the NSWindow to
-  // update its draggable region.
-  void SetDraggable(bool draggable);
 
   // Overridden from CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override;

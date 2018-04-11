@@ -122,26 +122,6 @@
   if ([commandDispatcher_ preSendEvent:event])
     return;
 
-  // If a window drag event monitor is not used, query the BridgedNativeWidget
-  // to decide if a window drag should be performed.
-  // This conditional is equivalent to
-  // !views::BridgedNativeWidget::ShouldUseDragEventMonitor(), but it also
-  // supresses the -Wunguarded-availability warning.
-  if (@available(macOS 10.11, *)) {
-    views::BridgedNativeWidget* bridge =
-        views::NativeWidgetMac::GetBridgeForNativeWindow(self);
-
-    if (bridge && bridge->ShouldDragWindow(event)) {
-      // Using performWindowDragWithEvent: does not generate a
-      // NSWindowWillMoveNotification. Hence post one.
-      [[NSNotificationCenter defaultCenter]
-          postNotificationName:NSWindowWillMoveNotification
-                        object:self];
-
-      [self performWindowDragWithEvent:event];
-    }
-  }
-
   NSEventType type = [event type];
   if ((type != NSKeyDown && type != NSKeyUp) || ![self hasViewsMenuActive]) {
     [super sendEvent:event];
