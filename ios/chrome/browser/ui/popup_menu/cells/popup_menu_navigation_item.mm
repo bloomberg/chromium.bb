@@ -39,6 +39,7 @@ const CGFloat kMaxHeight = 100;
 - (void)configureCell:(PopupMenuNavigationCell*)cell
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
+  cell.accessibilityTraits = UIAccessibilityTraitButton;
   [cell setFavicon:self.favicon];
   [cell setTitle:self.title];
 }
@@ -107,6 +108,8 @@ const CGFloat kMaxHeight = 100;
     [_faviconView.centerYAnchor
         constraintEqualToAnchor:self.contentView.centerYAnchor]
         .active = YES;
+
+    self.isAccessibilityElement = YES;
   }
   return self;
 }

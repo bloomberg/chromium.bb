@@ -52,6 +52,7 @@ const CGFloat kMaxHeight = 100;
   [super configureCell:cell withStyler:styler];
   cell.titleLabel.text = self.title;
   cell.imageView.image = self.image;
+  cell.accessibilityTraits = UIAccessibilityTraitButton;
   cell.userInteractionEnabled = self.enabled;
   [cell setBadgeNumber:self.badgeNumber];
   [cell setBadgeText:self.badgeText];
@@ -161,6 +162,8 @@ const CGFloat kMaxHeight = 100;
                        constant:-kMargin];
     trailingEdge.priority = UILayoutPriorityDefaultHigh - 2;
     trailingEdge.active = YES;
+
+    self.isAccessibilityElement = YES;
   }
   return self;
 }
@@ -234,6 +237,7 @@ const CGFloat kMaxHeight = 100;
 - (void)prepareForReuse {
   [super prepareForReuse];
   self.userInteractionEnabled = YES;
+  self.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
 }
 
 - (void)setUserInteractionEnabled:(BOOL)userInteractionEnabled {
@@ -244,6 +248,7 @@ const CGFloat kMaxHeight = 100;
   } else {
     self.titleLabel.textColor = [[self class] disabledColor];
     self.imageView.tintColor = [[self class] disabledColor];
+    self.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
 }
 

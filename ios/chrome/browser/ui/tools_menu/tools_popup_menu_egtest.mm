@@ -27,8 +27,7 @@ const char kPDFURL[] = "http://ios/testing/data/http_server_files/testpage.pdf";
 
 // Matcher for the button to find in page.
 id<GREYMatcher> FindInPageButton() {
-  return chrome_test_util::ButtonWithAccessibilityLabel(
-      l10n_util::GetNSStringWithFixup(IDS_IOS_TOOLS_MENU_FIND_IN_PAGE));
+  return grey_accessibilityID(kToolsMenuFindInPageId);
 }
 }  // namespace
 
