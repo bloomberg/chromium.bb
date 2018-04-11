@@ -433,19 +433,18 @@ std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
   return dev_mode;
 }
 
+bool IsDevModeWithColor(const DEVMODE* devmode) {
+  return (devmode->dmFields & DM_COLOR) && (devmode->dmColor == DMCOLOR_COLOR);
+}
+
 std::unique_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
     HANDLE printer,
     const base::string16& printer_name,
     bool color) {
   std::unique_ptr<DEVMODE, base::FreeDeleter> default_ticket =
       CreateDevMode(printer, nullptr);
-  if (!default_ticket)
+  if (!default_ticket || IsDevModeWithColor(default_ticket.get()) == color)
     return default_ticket;
-
-  if ((default_ticket->dmFields & DM_COLOR) &&
-      ((default_ticket->dmColor == DMCOLOR_COLOR) == color)) {
-    return default_ticket;
-  }
 
   default_ticket->dmFields |= DM_COLOR;
   default_ticket->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;

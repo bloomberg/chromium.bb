@@ -178,6 +178,8 @@ PRINTING_EXPORT std::unique_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     const base::string16& printer_name,
     const std::string& print_ticket);
 
+PRINTING_EXPORT bool IsDevModeWithColor(const DEVMODE* devmode);
+
 // Creates default DEVMODE and sets color option. Some devices need special
 // workaround for color.
 PRINTING_EXPORT std::unique_ptr<DEVMODE, base::FreeDeleter>
