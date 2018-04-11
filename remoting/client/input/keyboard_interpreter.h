@@ -15,6 +15,8 @@ namespace remoting {
 class KeyboardInputStrategy;
 class ClientInputInjector;
 
+struct KeypressInfo;
+
 // This is a class for interpreting raw keyboard input, it will delegate
 // handling of text events to the selected keyboard input strategy.
 class KeyboardInterpreter {
@@ -25,6 +27,9 @@ class KeyboardInterpreter {
   // If |input_injector| is nullptr, all methods below will have no effect.
   void SetContext(ClientInputInjector* input_injector);
 
+  // Assembles the key events and then delegates to |KeyboardInputStrategy| to
+  // send the keys.
+  void HandleKeypressEvent(const KeypressInfo& keypress);
   // Delegates to |KeyboardInputStrategy| to covert and send the input.
   void HandleTextEvent(const std::string& text, uint8_t modifiers);
   // Delegates to |KeyboardInputStrategy| to covert and send the delete.

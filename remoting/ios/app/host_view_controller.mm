@@ -326,6 +326,10 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
                                                0);
 }
 
+- (void)clientKeyboardShouldSendKey:(const remoting::KeypressInfo&)key {
+  _client.keyboardInterpreter->HandleKeypressEvent(key);
+}
+
 - (void)clientKeyboardShouldDelete {
   _client.keyboardInterpreter->HandleDeleteEvent(0);
 }

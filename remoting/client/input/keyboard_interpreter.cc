@@ -5,6 +5,7 @@
 #include "remoting/client/input/keyboard_interpreter.h"
 
 #include "base/logging.h"
+#include "remoting/client/input/keycode_map.h"
 #include "remoting/client/input/text_keyboard_input_strategy.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
@@ -22,6 +23,24 @@ void KeyboardInterpreter::SetContext(ClientInputInjector* input_injector) {
   } else {
     input_strategy_.reset();
   }
+}
+
+void KeyboardInterpreter::HandleKeypressEvent(const KeypressInfo& keypress) {
+  if (!input_strategy_) {
+    return;
+  }
+
+  DCHECK(keypress.dom_code != ui::DomCode::NONE);
+  base::queue<KeyEvent> keys;
+  if (keypress.modifiers & KeypressInfo::Modifier::SHIFT) {
+    keys.push({static_cast<uint32_t>(ui::DomCode::SHIFT_LEFT), true});
+  }
+  keys.push({static_cast<uint32_t>(keypress.dom_code), true});
+  keys.push({static_cast<uint32_t>(keypress.dom_code), false});
+  if (keypress.modifiers & KeypressInfo::Modifier::SHIFT) {
+    keys.push({static_cast<uint32_t>(ui::DomCode::SHIFT_LEFT), false});
+  }
+  input_strategy_->HandleKeysEvent(keys);
 }
 
 void KeyboardInterpreter::HandleTextEvent(const std::string& text,

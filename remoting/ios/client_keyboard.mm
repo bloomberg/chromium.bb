@@ -8,6 +8,8 @@
 
 #import "remoting/ios/client_keyboard.h"
 
+#include "remoting/client/input/keycode_map.h"
+
 // TODO(nicholss): Look into inputAccessoryView to get the top bar for sending
 // special keys.
 // TODO(nicholss): Look into inputView - The custom input view to display when
@@ -49,6 +51,16 @@
 #pragma mark - UIKeyInput
 
 - (void)insertText:(NSString*)text {
+  if (text.length == 1) {
+    // TODO(yuweih): KeyboardLayout should be configurable.
+    remoting::KeypressInfo keypress =
+        remoting::KeypressFromUnicode([text characterAtIndex:0]);
+    if (keypress.dom_code != ui::DomCode::NONE) {
+      [_delegate clientKeyboardShouldSendKey:keypress];
+      return;
+    }
+  }
+  // Fallback to text injection.
   [_delegate clientKeyboardShouldSend:text];
 }
 

@@ -12,6 +12,8 @@ source_set("input") {
     "keyboard_input_strategy.h",
     "keyboard_interpreter.cc",
     "keyboard_interpreter.h",
+    "keycode_map.cc",
+    "keycode_map.h",
     "native_device_keymap.cc",
     "native_device_keymap.h",
     "native_device_keymap_android.cc",
@@ -65,6 +67,7 @@ source_set("unit_tests") {
 
   sources = [
     "key_event_mapper_unittest.cc",
+    "keycode_map_unittest.cc",
     "touch_input_scaler_unittest.cc",
   ]
 
