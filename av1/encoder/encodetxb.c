@@ -1300,9 +1300,13 @@ static AOM_FORCE_INLINE void update_coeff_simple(
     const tran_low_t abs_qc = abs(qc);
     const tran_low_t tqc = tcoeff[ci];
     const tran_low_t dqc = dqcoeff[ci];
-    const int64_t dist = get_coeff_dist(tqc, dqc, shift);
     const int rate = get_coeff_cost_simple(ci, abs_qc, coeff_ctx, txb_costs,
                                            bwl, tx_class, levels);
+    if (abs(dqc) < abs(tqc)) {
+      *accu_rate += rate;
+      return;
+    }
+    const int64_t dist = get_coeff_dist(tqc, dqc, shift);
     const int64_t rd = RDCOST(rdmult, rate, dist);
 
     const int sign = (qc < 0) ? 1 : 0;
