@@ -115,5 +115,5 @@ struct NotificationResources {
 
   // Icons for the actions. The size of |action_icons| must match the size
   // of |actions| in the corresponding NotificationData.
-  array<skia.mojom.Bitmap>? action_icons;
+  array<skia.mojom.Bitmap?>? action_icons;
 };
