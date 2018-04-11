@@ -285,7 +285,6 @@ dbg_list="\
   libgtk2.0-0-dbg
   libpcre3-dbg
   libpixman-1-0-dbg
-  libsqlite3-0-dbg
   libxau6-dbg
   libxcb1-dbg
   libxcomposite1-dbg
@@ -360,6 +359,11 @@ if package_exists libxcursor1-dbgsym; then
   dbg_list="${dbg_list} libxcursor1-dbgsym"
 elif package_exists libxcursor1-dbg; then
   dbg_list="${dbg_list} libxcursor1-dbg"
+fi
+if package_exists libsqlite3-0-dbgsym; then
+  dbg_list="${dbg_list} libsqlite3-0-dbgsym"
+else
+  dbg_list="${dbg_list} libsqlite3-0-dbg"
 fi
 
 # 32-bit libraries needed e.g. to compile V8 snapshot for Android or armhf
