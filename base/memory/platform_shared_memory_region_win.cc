@@ -310,7 +310,27 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
     PlatformHandle handle,
     Mode mode,
     size_t size) {
-  // TODO(https://crbug.com/825177): implement this.
+  // Call ::DuplicateHandle() with FILE_MAP_WRITE as a desired access to check
+  // if the |handle| has a write access.
+  ProcessHandle process = GetCurrentProcess();
+  HANDLE duped_handle;
+  BOOL success = ::DuplicateHandle(process, handle, process, &duped_handle,
+                                   FILE_MAP_WRITE, FALSE, 0);
+  if (success) {
+    BOOL rv = ::CloseHandle(duped_handle);
+    DCHECK(rv);
+  }
+
+  bool is_read_only = !success;
+  bool expected_read_only = mode == Mode::kReadOnly;
+
+  if (is_read_only != expected_read_only) {
+    DLOG(ERROR) << "File mapping handle has wrong access rights: it is"
+                << (is_read_only ? " " : " not ") << "read-only but it should"
+                << (expected_read_only ? " " : " not ") << "be";
+    return false;
+  }
+
   return true;
 }
 
