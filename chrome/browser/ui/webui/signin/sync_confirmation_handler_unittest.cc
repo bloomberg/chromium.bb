@@ -40,10 +40,6 @@ const int kExpectedProfileImageSize = 128;
 // really matter in unit tests.
 const double kDefaultDialogHeight = 350.0;
 
-const std::string kGaiaID = "gaia";
-const std::string kUsername = "foo@example.com";
-const std::string kPassword = "password";
-
 class TestingSyncConfirmationHandler : public SyncConfirmationHandler {
  public:
   TestingSyncConfirmationHandler(
@@ -103,11 +99,11 @@ class TestingOneClickSigninSyncStarter : public OneClickSigninSyncStarter {
 
 class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
  public:
-  static const std::string kConsentText1;
-  static const std::string kConsentText2;
-  static const std::string kConsentText3;
-  static const std::string kConsentText4;
-  static const std::string kConsentText5;
+  static const char kConsentText1[];
+  static const char kConsentText2[];
+  static const char kConsentText3[];
+  static const char kConsentText4[];
+  static const char kConsentText5[];
 
   SyncConfirmationHandlerTest()
       : did_user_explicitly_interact(false), web_ui_(new content::TestWebUI) {}
@@ -214,11 +210,11 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
   DISALLOW_COPY_AND_ASSIGN(SyncConfirmationHandlerTest);
 };
 
-const std::string SyncConfirmationHandlerTest::kConsentText1 = "consentText1";
-const std::string SyncConfirmationHandlerTest::kConsentText2 = "consentText2";
-const std::string SyncConfirmationHandlerTest::kConsentText3 = "consentText3";
-const std::string SyncConfirmationHandlerTest::kConsentText4 = "consentText4";
-const std::string SyncConfirmationHandlerTest::kConsentText5 = "consentText5";
+const char SyncConfirmationHandlerTest::kConsentText1[] = "consentText1";
+const char SyncConfirmationHandlerTest::kConsentText2[] = "consentText2";
+const char SyncConfirmationHandlerTest::kConsentText3[] = "consentText3";
+const char SyncConfirmationHandlerTest::kConsentText4[] = "consentText4";
+const char SyncConfirmationHandlerTest::kConsentText5[] = "consentText5";
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   account_fetcher_service()->FakeUserInfoFetchSuccess(
