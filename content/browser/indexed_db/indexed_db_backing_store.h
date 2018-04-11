@@ -598,6 +598,9 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
   bool is_incognito() const { return !indexed_db_factory_; }
 
+  leveldb::Status AnyDatabaseContainsBlobs(LevelDBTransaction* transaction,
+                                           bool* blobs_exist);
+
   leveldb::Status SetUpMetadata();
 
   // TODO(dmurph): Move this completely to IndexedDBMetadataFactory.

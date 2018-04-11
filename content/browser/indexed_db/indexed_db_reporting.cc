@@ -66,5 +66,16 @@ void ReportSchemaVersion(int version, const url::Origin& origin) {
   }
 }
 
+void ReportV2Schema(bool has_broken_blobs, const url::Origin& origin) {
+  UMA_HISTOGRAM_BOOLEAN("WebCore.IndexedDB.SchemaV2HasBlobs", has_broken_blobs);
+  const std::string suffix = OriginToCustomHistogramSuffix(origin);
+  if (!suffix.empty()) {
+    base::BooleanHistogram::FactoryGet(
+        "WebCore.IndexedDB.SchemaV2HasBlobs" + suffix,
+        base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(has_broken_blobs);
+  }
+}
+
 }  // namespace indexed_db
 }  // namespace content
