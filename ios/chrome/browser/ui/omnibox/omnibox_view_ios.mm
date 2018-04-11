@@ -145,11 +145,8 @@ UIColor* IncognitoSecureTextColor() {
 
 // When editing, forward the message on to |editView_|.
 - (BOOL)textFieldShouldClear:(UITextField*)textField {
-  if (IsRefreshLocationBarEnabled()) {
-    editView_->ClearText();
-  } else {
-    editView_->OnClear();
-  }
+  DCHECK(IsRefreshLocationBarEnabled());
+  editView_->ClearText();
   processingUserEvent_ = YES;
   return YES;
 }
