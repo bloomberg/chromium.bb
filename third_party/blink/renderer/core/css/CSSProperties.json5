@@ -1680,6 +1680,7 @@
       keywords: ["none", "manual", "auto"],
       default_value: "manual",
       type_name: "Hyphens",
+      typedom_types: ["Keyword"]
     },
     {
       name: "image-rendering",
@@ -1763,6 +1764,8 @@
       interpolable: true,
       inherited: true,
       converter: "ConvertSpacing",
+      keywords: ["normal"],
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "lighting-color",
@@ -2190,6 +2193,7 @@
       field_template: "keyword",
       keywords: ["normal", "break-word"],
       default_value: "normal",
+      typedom_types: ["Keyword"]
     },
     {
       name: "overflow-x",
@@ -3397,6 +3401,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "LineBreak",
+      keywords: ["auto", "loose", "normal", "strict"],
+      typedom_types: ["Keyword"]
     },
     // An Apple extension.
     {
@@ -3738,6 +3744,7 @@
       // Word Break Values. Matches WinIE and CSS3
       keywords: ["normal", "break-all", "keep-all", "break-word"],
       default_value: "normal",
+      typedom_types: ["Keyword"]
     },
     {
       name: "word-spacing",
@@ -3745,6 +3752,9 @@
       interpolable: true,
       inherited: true,
       converter: "ConvertSpacing",
+      keywords: ["normal"],
+      typedom_types: ["normal"],
+      typedom_types: ["Keyword", "Length"]
     },
     // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap'
     // property. So using the same handlers.
@@ -3753,6 +3763,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       name_for_methods: "OverflowWrap",
+      keywords: ["normal", "break-word"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "z-index",
