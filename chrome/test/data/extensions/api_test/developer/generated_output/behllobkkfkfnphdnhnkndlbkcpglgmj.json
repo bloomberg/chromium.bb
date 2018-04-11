@@ -1,6 +1,6 @@
 {
    "dependentExtensions": [  ],
-   "description": "__MSG_chrome_extension_description__",
+   "description": "The first extension that I made.",
    "disableReasons": {
       "corruptInstall": false,
       "suspiciousInstall": false,
@@ -11,7 +11,7 @@
       "isEnabled": false
    },
    "fileAccess": {
-      "isActive": false,
+      "isActive": true,
       "isEnabled": true
    },
    "homePage": {
@@ -27,7 +27,7 @@
    "location": "UNPACKED",
    "manifestErrors": [  ],
    "mustRemainInstalled": false,
-   "name": "__MSG_chrome_extension_name__",
+   "name": "My extension 1",
    "offlineEnabled": false,
    "runOnAllUrls": {
       "isActive": true,
