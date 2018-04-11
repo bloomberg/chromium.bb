@@ -92,10 +92,12 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 
     // Prevent the fake omnibox from scrolling up off of the screen.
     CGFloat topSafeArea = 0;
-    if (@available(iOS 11, *)) {
-      topSafeArea = self.collectionView.safeAreaInsets.top;
-    } else {
-      topSafeArea = StatusBarHeight();
+    if (IsUIRefreshPhase1Enabled()) {
+      if (@available(iOS 11, *)) {
+        topSafeArea = self.collectionView.safeAreaInsets.top;
+      } else {
+        topSafeArea = StatusBarHeight();
+      }
     }
     CGFloat minY = headerHeight - ntp_header::kMinHeaderHeight - topSafeArea;
     if (contentOffset.y > minY)
