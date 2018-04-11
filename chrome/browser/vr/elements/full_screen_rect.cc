@@ -17,7 +17,8 @@ void FullScreenRect::Render(UiElementRenderer* renderer,
   gfx::Transform m;
   m.Scale3d(2.0f, 2.0f, 1.0f);
   renderer->DrawGradientQuad(m, edge_color(), center_color(),
-                             computed_opacity(), size(), corner_radii());
+                             computed_opacity(), gfx::SizeF(1.f, 1.f),
+                             corner_radii());
 }
 
 bool FullScreenRect::IsWorldPositioned() const {
