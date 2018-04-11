@@ -28,6 +28,8 @@
 #include "content/test/did_commit_provisional_load_interceptor.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
+#include "device/fido/fido_test_data.h"
+#include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -287,9 +289,11 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
     std::vector<webauth::mojom::AuthenticatorTransport> transports;
     transports.push_back(webauth::mojom::AuthenticatorTransport::USB);
 
-    std::vector<uint8_t> kCredentialId{0, 0, 0};
     auto descriptor = webauth::mojom::PublicKeyCredentialDescriptor::New(
-        webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY, kCredentialId,
+        webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY,
+        std::vector<uint8_t>(
+            std::begin(device::test_data::kTestGetAssertionCredentialId),
+            std::end(device::test_data::kTestGetAssertionCredentialId)),
         transports);
     credentials.push_back(std::move(descriptor));
 
@@ -610,6 +614,72 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
   fake_hid_discovery->WaitForCallToStart();
   EXPECT_TRUE(fake_hid_discovery->is_start_requested());
   EXPECT_FALSE(fake_ble_discovery->is_start_requested());
+}
+
+// WebAuthBrowserCtapTest ----------------------------------------------
+
+// A test fixture that enables CTAP only flag.
+class WebAuthBrowserCtapTest : public WebAuthLocalClientBrowserTest {
+ public:
+  WebAuthBrowserCtapTest() = default;
+
+ protected:
+  std::vector<base::Feature> GetFeaturesToEnable() override {
+    return {features::kWebAuth, features::kWebAuthCtap2};
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserCtapTest);
+};
+
+// TODO(hongjunchoi): Implement VirtualCtap2Device to replace mocking.
+// See: https://crbugs.com/829413
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest, TestCtapMakeCredential) {
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+
+  TestCreateCallbackReceiver create_callback_receiver;
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback_receiver.callback());
+
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+  auto device = std::make_unique<device::MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      device::CtapRequestCommand::kAuthenticatorGetInfo,
+      device::test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      device::CtapRequestCommand::kAuthenticatorMakeCredential,
+      device::test_data::kTestMakeCredentialResponse);
+
+  fake_hid_discovery->AddDevice(std::move(device));
+
+  create_callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, create_callback_receiver.status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest, TestCtapGetAssertion) {
+  auto* fake_hid_discovery = discovery_factory()->ForgeNextHidDiscovery();
+
+  TestGetCallbackReceiver get_callback_receiver;
+  auto get_assertion_request_params = BuildBasicGetOptions();
+  authenticator()->GetAssertion(std::move(get_assertion_request_params),
+                                get_callback_receiver.callback());
+
+  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
+  auto device = std::make_unique<device::MockFidoDevice>();
+  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      device::CtapRequestCommand::kAuthenticatorGetInfo,
+      device::test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      device::CtapRequestCommand::kAuthenticatorGetAssertion,
+      device::test_data::kTestGetAssertionResponse);
+
+  fake_hid_discovery->AddDevice(std::move(device));
+
+  get_callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, get_callback_receiver.status());
 }
 
 }  // namespace content
