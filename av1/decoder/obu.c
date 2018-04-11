@@ -160,7 +160,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   if (seq_params->reduced_still_picture_hdr) {
     pbi->common.enhancement_layers_cnt = 1;
     seq_params->operating_point_idc[0] = 0;
-    seq_params->level[0] = 0;
+    seq_params->level[0] = aom_rb_read_literal(rb, LEVEL_BITS);
     seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
     uint8_t operating_points_minus1_cnt =
