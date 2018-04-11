@@ -256,6 +256,18 @@ void TestDownloadHttpResponse::SendResponse(
     return;
   }
 
+  // Call inject error callback to UI thread.
+  if (!parameters_.injected_errors.empty() &&
+      parameters_.injected_errors.front() <= range_.last_byte_position() &&
+      parameters_.injected_errors.front() >= range_.first_byte_position() &&
+      !parameters_.inject_error_cb.is_null()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(parameters_.inject_error_cb,
+                                           range_.first_byte_position(),
+                                           parameters_.injected_errors.front() -
+                                               range_.first_byte_position()));
+  }
+
   // Pause before sending headers.
   if (ShouldPauseImmediately()) {
     PauseResponsesAndWaitForResumption();
@@ -483,14 +495,6 @@ bool TestDownloadHttpResponse::HandleInjectedError(
   int64_t error_offset = parameters_.injected_errors.front();
   if (error_offset > buffer_range.last_byte_position())
     return false;
-
-  // Call inject error callback to UI thread.
-  if (parameters_.inject_error_cb) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(parameters_.inject_error_cb, response_sent_offset_,
-                       transferred_bytes_));
-  }
 
   // Send the bytes before the error offset, then close the connection.
   net::HttpByteRange range = buffer_range;
