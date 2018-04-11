@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
@@ -378,8 +379,11 @@ TEST_F(UserEventSyncBridgeTest, RecordWithLateInitializedStore) {
   EXPECT_CALL(*processor(), DoModelReadyToSync(&late_init_bridge, NotNull()));
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   std::move(store_init_callback)
-      .Run(base::nullopt,
+      .Run(/*error=*/base::nullopt,
            ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
+
+  late_init_bridge.OnSyncStarting(/*error_handler=*/base::DoNothing(),
+                                  /*start_callback=*/base::DoNothing());
 
   // Record events after metadata is ready.
   late_init_bridge.RecordUserEvent(
@@ -394,6 +398,139 @@ TEST_F(UserEventSyncBridgeTest, RecordWithLateInitializedStore) {
           Pair(GetStorageKey(consent1), MatchesUserEvent(consent1)),
           Pair(GetStorageKey(consent2), MatchesUserEvent(consent2)),
           Pair(GetStorageKey(specifics2), MatchesUserEvent(specifics2))));
+}
+
+TEST_F(UserEventSyncBridgeTest,
+       ShouldReportPreviouslyPersistedConsentsWhenSyncIsReenabled) {
+  UserEventSpecifics consent = CreateSpecifics(1u, 1u, 1u);
+  consent.mutable_user_consent();
+
+  bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(consent));
+
+  EXPECT_CALL(*processor(), DisableSync());
+  bridge()->DisableSync();
+  // The bridge may asynchronously query the store to choose what to delete.
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_THAT(GetAllData(), SizeIs(1));
+
+  // Reenable sync.
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  std::string storage_key;
+  EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
+  bridge()->OnSyncStarting(/*error_handler=*/base::DoNothing(),
+                           /*start_callback=*/base::DoNothing());
+
+  // The bridge may asynchronously query the store to choose what to resubmit.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(storage_key, GetStorageKey(consent));
+}
+
+TEST_F(UserEventSyncBridgeTest,
+       ShouldReportPersistedConsentsOnStartupEvenWithLateStoreInitialization) {
+  // Wait until bridge() is ready to avoid interference with processor() mock.
+  base::RunLoop().RunUntilIdle();
+
+  UserEventSpecifics consent = CreateSpecifics(1u, 1u, 1u);
+  consent.mutable_user_consent();
+
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
+  ModelType store_init_type;
+  ModelTypeStore::InitCallback store_init_callback;
+  UserEventSyncBridge late_init_bridge(
+      base::BindLambdaForTesting(
+          [&](ModelType type, ModelTypeStore::InitCallback callback) {
+            store_init_type = type;
+            store_init_callback = std::move(callback);
+          }),
+      processor()->CreateForwardingProcessor(), mapper());
+
+  // Sync is active, but the store is not ready yet.
+  EXPECT_CALL(*processor(), DoModelReadyToSync(_, _)).Times(0);
+  late_init_bridge.OnSyncStarting(/*error_handler=*/base::DoNothing(),
+                                  /*start_callback=*/base::DoNothing());
+
+  // Initialize the store.
+  std::unique_ptr<ModelTypeStore> store =
+      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type);
+
+  // TODO(vitaliii): Try to avoid putting the data directly into the store (e.g.
+  // by using a forwarding store), because this is an implementation detail.
+  // However, currently the bridge owns the store and there is no obvious way to
+  // preserve it.
+
+  // Put the consent manually to simulate a restart with disabled sync.
+  auto batch = store->CreateWriteBatch();
+  batch->WriteData(GetStorageKey(consent), consent.SerializeAsString());
+  store->CommitWriteBatch(std::move(batch), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(*processor(), DoModelReadyToSync(&late_init_bridge, NotNull()));
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  std::string storage_key;
+  EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
+  std::move(store_init_callback)
+      .Run(/*error=*/base::nullopt,
+           ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
+
+  // The bridge may asynchronously query the store to choose what to resubmit.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(storage_key, GetStorageKey(consent));
+}
+
+TEST_F(UserEventSyncBridgeTest,
+       ShouldReportPersistedConsentsOnStartupEvenWithLateSyncInitialization) {
+  // Wait until bridge() is ready to avoid interference with processor() mock.
+  base::RunLoop().RunUntilIdle();
+
+  UserEventSpecifics consent = CreateSpecifics(1u, 1u, 1u);
+  consent.mutable_user_consent();
+
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(false));
+  ModelType store_init_type;
+  ModelTypeStore::InitCallback store_init_callback;
+  UserEventSyncBridge late_init_bridge(
+      base::BindLambdaForTesting(
+          [&](ModelType type, ModelTypeStore::InitCallback callback) {
+            store_init_type = type;
+            store_init_callback = std::move(callback);
+          }),
+      processor()->CreateForwardingProcessor(), mapper());
+
+  // Initialize the store.
+  std::unique_ptr<ModelTypeStore> store =
+      ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type);
+
+  // TODO(vitaliii): Try to avoid putting the data directly into the store (e.g.
+  // by using a forwarding store), because this is an implementation detail.
+  // However, currently the bridge owns the store and there is no obvious way to
+  // preserve it.
+
+  // Put the consent manually to simulate a restart with disabled sync.
+  auto batch = store->CreateWriteBatch();
+  batch->WriteData(GetStorageKey(consent), consent.SerializeAsString());
+  store->CommitWriteBatch(std::move(batch), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  // The store has been initialized, but the sync is not active yet.
+  ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
+  EXPECT_CALL(*processor(), DoModelReadyToSync(&late_init_bridge, NotNull()));
+  std::move(store_init_callback)
+      .Run(/*error=*/base::nullopt,
+           ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(store_init_type));
+  base::RunLoop().RunUntilIdle();
+
+  late_init_bridge.OnSyncStarting(/*error_handler=*/base::DoNothing(),
+                                  /*start_callback=*/base::DoNothing());
+
+  std::string storage_key;
+  EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
+  // The bridge may asynchronously query the store to choose what to resubmit.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_THAT(storage_key, GetStorageKey(consent));
 }
 
 }  // namespace
