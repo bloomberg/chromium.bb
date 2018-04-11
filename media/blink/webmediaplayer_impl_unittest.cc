@@ -736,7 +736,14 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
 }
 
 // Verify that preload=metadata suspend works properly.
-TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
+// Flaky on Linux MSan and TSan. http://crbug.com/831566.
+#if defined(OS_LINUX) && \
+    (defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER))
+#define MAYBE_LoadPreloadMetadataSuspend DISABLED_LoadPreloadMetadataSuspend
+#else
+#define MAYBE_LoadPreloadMetadataSuspend LoadPreloadMetadataSuspend
+#endif
+TEST_F(WebMediaPlayerImplTest, MAYBE_LoadPreloadMetadataSuspend) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
   InitializeWebMediaPlayerImpl();
