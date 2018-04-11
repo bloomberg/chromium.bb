@@ -92,6 +92,7 @@ class PageLoadMetricsUpdateDispatcher {
 
     virtual void OnTimingChanged() = 0;
     virtual void OnSubFrameTimingChanged(
+        content::RenderFrameHost* rfh,
         const mojom::PageLoadTiming& timing) = 0;
     virtual void OnMainFrameMetadataChanged() = 0;
     virtual void OnSubframeMetadataChanged() = 0;

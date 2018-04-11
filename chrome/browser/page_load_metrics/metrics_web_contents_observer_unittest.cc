@@ -64,13 +64,15 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     return CONTINUE_OBSERVING;
   }
 
-  void OnTimingUpdate(bool is_subframe,
+  void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
                       const mojom::PageLoadTiming& timing,
                       const PageLoadExtraInfo& extra_info) override {
-    if (is_subframe)
+    if (subframe_rfh) {
+      DCHECK(subframe_rfh->GetParent());
       updated_subframe_timings_->push_back(timing.Clone());
-    else
+    } else {
       updated_timings_->push_back(timing.Clone());
+    }
   }
 
   void OnComplete(const mojom::PageLoadTiming& timing,

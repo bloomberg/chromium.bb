@@ -20,6 +20,10 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace page_load_metrics {
 
 // This enum represents how a page load ends. If the action occurs before the
@@ -360,7 +364,9 @@ class PageLoadMetricsObserver {
   // implement one of the On* callbacks, such as OnFirstContentfulPaint or
   // OnDomContentLoadedEventStart. Please email loading-dev@chromium.org if you
   // intend to override this method.
-  virtual void OnTimingUpdate(bool is_subframe,
+  //
+  // If |subframe_rfh| is nullptr, the update took place in the main frame.
+  virtual void OnTimingUpdate(content::RenderFrameHost* subframe_rfh,
                               const mojom::PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
 

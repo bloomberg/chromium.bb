@@ -123,7 +123,7 @@ void DispatchObserverTimingCallbacks(
     const mojom::PageLoadTiming& new_timing,
     const PageLoadExtraInfo& extra_info) {
   if (!last_timing.Equals(new_timing))
-    observer->OnTimingUpdate(false /* is_subframe */, new_timing, extra_info);
+    observer->OnTimingUpdate(nullptr, new_timing, extra_info);
   if (new_timing.document_timing->dom_content_loaded_event_start &&
       !last_timing.document_timing->dom_content_loaded_event_start)
     observer->OnDomContentLoadedEventStart(new_timing, extra_info);
@@ -607,10 +607,12 @@ void PageLoadTracker::OnTimingChanged() {
 }
 
 void PageLoadTracker::OnSubFrameTimingChanged(
+    content::RenderFrameHost* rfh,
     const mojom::PageLoadTiming& timing) {
   PageLoadExtraInfo extra_info(ComputePageLoadExtraInfo());
+  DCHECK(rfh->GetParent());
   for (const auto& observer : observers_) {
-    observer->OnTimingUpdate(true /* is_subframe*/, timing, extra_info);
+    observer->OnTimingUpdate(rfh, timing, extra_info);
   }
 }
 
