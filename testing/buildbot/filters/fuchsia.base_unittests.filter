@@ -63,10 +63,6 @@
 -FieldTrialListTest.ClearParamsFromSharedMemory
 -FieldTrialListTest.TestCopyFieldTrialStateToFlags
 
-# https://crbug.com/779645 - requires ability to set address-space limits.
--PartitionAllocTest.RepeatedReturnNull
--PartitionAllocTest.RepeatedReturnNullDirect
-
 # Flaky, https://crbug.com/768436, https://crbug.com/792310.
 -TaskSchedulerWorkerPoolBlockingTest.MaximumWorkersTest
 -TaskSchedulerWorkerPoolBlockingTest.MayBlockIncreaseCapacityNestedWillBlock
