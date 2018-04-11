@@ -50,11 +50,11 @@ ModuleScript* ScriptModuleResolverImpl::GetHostDefined(
   return it->value;
 }
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#hostresolveimportedmodule(referencingscriptormodule,-specifier)
 ScriptModule ScriptModuleResolverImpl::Resolve(
     const String& specifier,
     const ScriptModule& referrer,
     ExceptionState& exception_state) {
-  // https://html.spec.whatwg.org/multipage/webappapis.html#hostresolveimportedmodule(referencingscriptormodule,-specifier)
   DVLOG(1) << "ScriptModuleResolverImpl::resolve(specifier=\"" << specifier
            << ", referrer.hash=" << ScriptModuleHash::GetHash(referrer) << ")";
 

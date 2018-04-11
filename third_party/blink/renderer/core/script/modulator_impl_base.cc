@@ -47,13 +47,24 @@ const SecurityOrigin* ModulatorImplBase::GetSecurityOriginForFetch() {
   return GetExecutionContext()->GetSecurityOrigin();
 }
 
+// [fetch-a-module-script-tree]
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
+// [fetch-a-module-worker-script-tree]
+// https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
 void ModulatorImplBase::FetchTree(const ModuleScriptFetchRequest& request,
                                   ModuleTreeClient* client) {
-  // Step 1. Perform the internal module script graph fetching procedure given
-  // url, settings object, destination, cryptographic nonce, parser state,
-  // credentials mode, settings object, a new empty list, "client", and with the
-  // top-level module fetch flag set. If the caller of this algorithm specified
-  // custom perform the fetch steps, pass those along as well.
+  // [fetch-a-module-script-tree] Step 2. Perform the internal module script
+  // graph fetching procedure given url, settings object, destination, options,
+  // settings object, visited set, "client", and with the top-level module fetch
+  // flag set. If the caller of this algorithm specified custom perform the
+  // fetch steps, pass those along as well. [spec text]
+
+  // [fetch-a-module-worker-script-tree] Step 3. Perform the internal module
+  // script graph fetching procedure given url, fetch client settings object,
+  // destination, options, module map settings object, visited set, "client",
+  // and with the top-level module fetch flag set. If the caller of this
+  // algorithm specified custom perform the fetch steps, pass those along as
+  // well. [spec text]
 
   // Note: "Fetch a module script graph" algorithm doesn't have "referrer" as
   // its argument.
@@ -61,9 +72,14 @@ void ModulatorImplBase::FetchTree(const ModuleScriptFetchRequest& request,
 
   tree_linker_registry_->Fetch(request, this, client);
 
-  // Step 2. When the internal module script graph fetching procedure
-  // asynchronously completes with result, asynchronously complete this
-  // algorithm with result.
+  // [fetch-a-module-script-tree] Step 3. When the internal module script graph
+  // fetching procedure asynchronously completes with result, asynchronously
+  // complete this algorithm with result. [spec text]
+
+  // [fetch-a-module-worker-script-tree] Step 4. When the internal module script
+  // graph fetching procedure asynchronously completes with result,
+  // asynchronously complete this algorithm with result. [spec text]
+
   // Note: We delegate to ModuleTreeLinker to notify ModuleTreeClient.
 }
 

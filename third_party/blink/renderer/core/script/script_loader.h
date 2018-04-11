@@ -176,27 +176,37 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // "A script element has several associated pieces of state.":
 
   // https://html.spec.whatwg.org/multipage/scripting.html#already-started
-  // "Initially, script elements must have this flag unset"
+  //
+  // Spec: ... Initially, script elements must have this flag unset ... [spec
+  // text]
   bool already_started_ = false;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
-  // "Initially, script elements must have this flag unset."
+  //
+  // Spec: ... Initially, script elements must have this flag unset. ... [spec
+  // text]
   bool parser_inserted_ = false;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#non-blocking
-  // "Initially, script elements must have this flag set."
+  //
+  // Spec: ... Initially, script elements must have this flag set. ... [spec
+  // text]
   bool non_blocking_ = true;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#ready-to-be-parser-executed
-  // "Initially, script elements must have this flag unset"
+  //
+  // Spec: ... Initially, script elements must have this flag unset ... [spec
+  // text]
   bool ready_to_be_parser_executed_ = false;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#concept-script-type
-  // "It is determined when the script is prepared"
+  //
+  // Spec: ... It is determined when the script is prepared, ... [spec text]
   ScriptType script_type_ = ScriptType::kClassic;
 
   // https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external
-  // "It is determined when the script is prepared"
+  //
+  // Spec: ... It is determined when the script is prepared, ... [spec text]
   bool is_external_script_ = false;
 
   bool have_fired_load_;

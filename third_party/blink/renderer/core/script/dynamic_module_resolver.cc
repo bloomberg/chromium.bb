@@ -42,11 +42,10 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
   const Member<ScriptPromiseResolver> promise_resolver_;
 };
 
+// Implements steps 2.[5-8] of
+// https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
 void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
-  // Implements steps 2.[5-8] of
-  // https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
-
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
     // The promise_resolver_ should have ::Detach()-ed at this point,
@@ -142,6 +141,7 @@ void DynamicModuleResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
 }
 
+// https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
 void DynamicModuleResolver::ResolveDynamically(
     const String& specifier,
     const KURL& referrer_resource_url,
@@ -151,7 +151,6 @@ void DynamicModuleResolver::ResolveDynamically(
       << "ResolveDynamically should be called from V8 callback, within a valid "
          "context.";
 
-  // https://html.spec.whatwg.org/multipage/webappapis.html#hostimportmoduledynamically(referencingscriptormodule,-specifier,-promisecapability)
   // Step 1. "Let referencing script be
   // referencingScriptOrModule.[[HostDefined]]." [spec text]
 
@@ -198,10 +197,11 @@ void DynamicModuleResolver::ResolveDynamically(
   // Step 2.3. "Let options be the descendant script fetch options for
   // referencing script's fetch options." [spec text]
   // https://html.spec.whatwg.org/multipage/webappapis.html#descendant-script-fetch-options
-  // "For any given script fetch options options, the descendant script fetch
-  // options are a new script fetch options whose items all have the same
+  //
+  // Spec: For any given script fetch options options, the descendant script
+  // fetch options are a new script fetch options whose items all have the same
   // values, except for the integrity metadata, which is instead the empty
-  // string." [spec text]
+  // string. [spec text]
   ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
                              String(), referrer_info.ParserState(),
                              referrer_info.CredentialsMode());
