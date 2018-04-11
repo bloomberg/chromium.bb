@@ -11,12 +11,18 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/url_request/url_request_context.h"
 #include "services/network/tcp_connected_socket.h"
 #include "services/network/udp_socket.h"
 
 namespace network {
 
-SocketFactory::SocketFactory(net::NetLog* net_log) : net_log_(net_log) {}
+SocketFactory::SocketFactory(net::NetLog* net_log,
+                             net::URLRequestContext* url_request_context)
+    : net_log_(net_log),
+      client_socket_factory_(url_request_context->GetNetworkSessionContext()
+                                 ->client_socket_factory) {}
 
 SocketFactory::~SocketFactory() {}
 
@@ -53,7 +59,8 @@ void SocketFactory::CreateTCPConnectedSocket(
     mojom::TCPConnectedSocketObserverPtr observer,
     mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
   auto socket = std::make_unique<TCPConnectedSocket>(
-      std::move(observer), net_log_, traffic_annotation);
+      std::move(observer), net_log_, client_socket_factory_,
+      traffic_annotation);
   TCPConnectedSocket* socket_raw = socket.get();
   tcp_connected_socket_bindings_.AddBinding(std::move(socket),
                                             std::move(request));

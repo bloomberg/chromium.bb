@@ -1586,6 +1586,7 @@ component("net") {
       "socket/tcp_socket_posix.h",
       "socket/tcp_socket_win.cc",
       "socket/tcp_socket_win.h",
+      "socket/transport_client_socket.h",
       "socket/transport_client_socket_pool.cc",
       "socket/transport_client_socket_pool.h",
       "socket/udp_client_socket.cc",

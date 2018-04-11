@@ -150,6 +150,11 @@ int FuzzedSocket::SetSendBufferSize(int32_t size) {
   return OK;
 }
 
+int FuzzedSocket::Bind(const net::IPEndPoint& local_addr) {
+  NOTREACHED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
 int FuzzedSocket::Connect(const CompletionCallback& callback) {
   // Sockets can normally be reused, but don't support it here.
   DCHECK_NE(net_error_, OK);

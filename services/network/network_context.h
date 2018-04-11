@@ -209,7 +209,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   std::unique_ptr<CookieManager> cookie_manager_;
 
-  SocketFactory socket_factory_;
+  std::unique_ptr<SocketFactory> socket_factory_;
 
 #if !defined(OS_IOS)
   std::unique_ptr<WebSocketFactory> websocket_factory_;
