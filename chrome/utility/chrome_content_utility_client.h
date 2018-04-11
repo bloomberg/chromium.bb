@@ -34,8 +34,6 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;
 
-  static void PreSandboxStartup();
-
   // See NetworkBinderProvider above.
   static void SetNetworkBinderCreationCallback(
       const NetworkBinderCreationCallback& callback);

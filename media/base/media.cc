@@ -35,11 +35,12 @@ class MediaInitializer {
     TRACE_EVENT_WARMUP_CATEGORY("audio");
     TRACE_EVENT_WARMUP_CATEGORY("media");
 
+    // Initializing the CPU flags may query /proc for details on the current CPU
+    // for NEON, VFP, etc optimizations. If in a sandboxed process, they should
+    // have been forced (see InitializeMediaLibraryInSandbox).
     libyuv::InitCpuFlags();
 
 #if BUILDFLAG(ENABLE_FFMPEG)
-    // Initialize CPU flags outside of the sandbox as this may query /proc for
-    // details on the current CPU for NEON, VFP, etc optimizations.
     av_get_cpu_flags();
 
     // Disable logging as it interferes with layout tests.
@@ -79,6 +80,17 @@ static MediaInitializer* GetMediaInstance() {
 }
 
 void InitializeMediaLibrary() {
+  GetMediaInstance();
+}
+
+void InitializeMediaLibraryInSandbox(int64_t libyuv_cpu_flags,
+                                     int64_t libavutil_cpu_flags) {
+  // Force the CPU flags so when they don't require disk access when queried
+  // from MediaInitializer().
+  libyuv::SetCpuFlags(libyuv_cpu_flags);
+#if BUILDFLAG(ENABLE_FFMPEG)
+  av_force_cpu_flags(libavutil_cpu_flags);
+#endif
   GetMediaInstance();
 }
 

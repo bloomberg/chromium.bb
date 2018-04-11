@@ -890,11 +890,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
   }
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
-  if (process_type == switches::kUtilityProcess ||
-      process_type == switches::kZygoteProcess) {
-    ChromeContentUtilityClient::PreSandboxStartup();
-  }
-
   InitializePDF();
 #endif
 

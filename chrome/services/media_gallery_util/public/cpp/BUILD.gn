@@ -6,6 +6,8 @@ import("//media/media_options.gni")
 
 source_set("cpp") {
   sources = [
+    "media_parser_provider.cc",
+    "media_parser_provider.h",
     "safe_audio_video_checker.cc",
     "safe_audio_video_checker.h",
     "safe_media_metadata_parser.cc",
@@ -15,11 +17,19 @@ source_set("cpp") {
   deps = [
     "//services/service_manager/public/cpp",
     "//third_party/boringssl",
+    "//third_party/libyuv",
   ]
 
   public_deps = [
     "//chrome/services/media_gallery_util/public/mojom",
   ]
+
+  if (media_use_ffmpeg) {
+    deps += [
+      "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
+    ]
+  }
 }
 
 source_set("browser_tests") {

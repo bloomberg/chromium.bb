@@ -55,30 +55,24 @@ SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
 
 void SafeMediaMetadataParser::Start(service_manager::Connector* connector,
                                     DoneCallback callback) {
-  DCHECK(!media_parser_ptr_);
+  DCHECK(!media_parser());
   DCHECK(callback);
 
   callback_ = std::move(callback);
 
-  connector->BindInterface(chrome::mojom::kMediaGalleryUtilServiceName,
-                           mojo::MakeRequest(&media_parser_ptr_));
-  // It's safe to use Unretained below as |this| owns |media_parser_ptr_|.
-  media_parser_ptr_.set_connection_error_handler(
-      base::BindOnce(&SafeMediaMetadataParser::ParseMediaMetadataFailed,
-                     base::Unretained(this)));
+  RetrieveMediaParser(connector);
+}
 
+void SafeMediaMetadataParser::OnMediaParserCreated() {
   chrome::mojom::MediaDataSourcePtr source;
   media_data_source_ = std::make_unique<MediaDataSourceImpl>(this, &source);
-  media_parser_ptr_->ParseMediaMetadata(
+  media_parser()->ParseMediaMetadata(
       mime_type_, blob_size_, get_attached_images_, std::move(source),
       base::BindOnce(&SafeMediaMetadataParser::ParseMediaMetadataDone,
                      base::Unretained(this)));
 }
 
-void SafeMediaMetadataParser::ParseMediaMetadataFailed() {
-  media_parser_ptr_.reset();  // Terminate the utility process.
-  media_data_source_.reset();
-
+void SafeMediaMetadataParser::OnConnectionError() {
   auto metadata_dictionary = std::make_unique<base::DictionaryValue>();
   auto attached_images =
       std::make_unique<std::vector<metadata::AttachedImage>>();
@@ -92,7 +86,7 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
     bool parse_success,
     std::unique_ptr<base::DictionaryValue> metadata_dictionary,
     const std::vector<metadata::AttachedImage>& attached_images) {
-  media_parser_ptr_.reset();  // Terminate the utility process.
+  ResetMediaParser();
   media_data_source_.reset();
 
   auto attached_images_copy =
@@ -118,6 +112,6 @@ void SafeMediaMetadataParser::BlobReaderDone(
     chrome::mojom::MediaDataSource::ReadBlobCallback callback,
     std::unique_ptr<std::string> data,
     int64_t /* blob_total_size */) {
-  if (media_parser_ptr_)
+  if (media_parser())
     std::move(callback).Run(std::vector<uint8_t>(data->begin(), data->end()));
 }

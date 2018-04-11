@@ -7,7 +7,7 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 
 namespace service_manager {
@@ -18,9 +18,7 @@ class Connector;
 // File::FILE_OK, then file appears to be valid.  File validation does not
 // attempt to decode the entire file since that could take a considerable
 // amount of time.
-
-class SafeAudioVideoChecker
-    : public base::RefCountedThreadSafe<SafeAudioVideoChecker> {
+class SafeAudioVideoChecker : public MediaParserProvider {
  public:
   using ResultCallback = base::OnceCallback<void(base::File::Error result)>;
 
@@ -28,6 +26,7 @@ class SafeAudioVideoChecker
   SafeAudioVideoChecker(base::File file,
                         ResultCallback callback,
                         std::unique_ptr<service_manager::Connector> connector);
+  ~SafeAudioVideoChecker() override;
 
   // Checks the file. Can be called on a different thread than the UI thread.
   // Note that the callback specified in the construtor will be called on the
@@ -35,18 +34,15 @@ class SafeAudioVideoChecker
   void Start();
 
  private:
-  friend class base::RefCountedThreadSafe<SafeAudioVideoChecker>;
-
-  ~SafeAudioVideoChecker();
+  // MediaParserProvider implementation:
+  void OnMediaParserCreated() override;
+  void OnConnectionError() override;
 
   // Media file check result.
   void CheckMediaFileDone(bool valid);
 
   // Media file to check.
   base::File file_;
-
-  // Pointer to the Mojo interface doing the actual parsing.
-  chrome::mojom::MediaParserPtr media_parser_ptr_;
 
   // Connector to the ServiceManager used to ind the MediaParser interface.
   std::unique_ptr<service_manager::Connector> connector_;

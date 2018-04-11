@@ -49,7 +49,6 @@
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/public/mojom/constants.mojom.h"
 #include "chrome/services/removable_storage_writer/removable_storage_writer_service.h"
-#include "chrome/utility/extensions/extensions_handler.h"
 #if defined(OS_WIN)
 #include "chrome/services/wifi_util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/wifi_util_win/wifi_util_win_service.h"
@@ -100,10 +99,6 @@ void RegisterRemovableStorageWriterService(
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::InitExtensionsClient();
-#endif
-
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
   printing_handler_ = std::make_unique<printing::PrintingHandler>();
 #endif
@@ -263,13 +258,6 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   if (g_network_binder_creation_callback.Get())
     g_network_binder_creation_callback.Get().Run(registry);
-}
-
-// static
-void ChromeContentUtilityClient::PreSandboxStartup() {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  extensions::PreSandboxStartup();
-#endif
 }
 
 // static
