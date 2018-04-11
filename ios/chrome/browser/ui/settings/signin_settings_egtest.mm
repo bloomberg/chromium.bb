@@ -44,7 +44,9 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
 
-  [[EarlGrey selectElementWithMatcher:grey_buttonTitle(@"Cancel")]
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
+                                          grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   [SigninEarlGreyUtils
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
