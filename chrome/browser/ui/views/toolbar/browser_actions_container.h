@@ -26,6 +26,7 @@
 namespace views {
 class BubbleDialogDelegateView;
 class ResizeArea;
+class Separator;
 }
 
 // The BrowserActionsContainer is a container view, responsible for drawing the
@@ -183,6 +184,10 @@ class BrowserActionsContainer : public views::View,
   // the omnibox, this is probably *not* |max_width|).
   int GetWidthForMaxWidth(int max_width) const;
 
+  // Sets the color for the separator if present, called after construction and
+  // on theme changes.
+  void SetSeparatorColor(SkColor color);
+
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
@@ -256,6 +261,19 @@ class BrowserActionsContainer : public views::View,
   // Clears the |active_bubble_|, and unregisters the container as an observer.
   void ClearActiveBubble(views::Widget* widget);
 
+  // Utility functions for going from/to width and icon counts.
+  size_t WidthToIconCount(int width) const;
+  int GetWidthForIconCount(size_t num_icons) const;
+  int GetWidthWithAllActionsVisible() const;
+
+  // Width allocated for the resize handle, |resize_area_|. 0 when it should not
+  // be shown.
+  int GetResizeAreaWidth() const;
+
+  // Width of the separator and surrounding padding. 0 when the separator should
+  // not be shown.
+  int GetSeparatorAreaWidth() const;
+
   const ToolbarActionsBar::PlatformSettings& platform_settings() const {
     return toolbar_actions_bar_->platform_settings();
   }
@@ -279,6 +297,10 @@ class BrowserActionsContainer : public views::View,
   // The resize area for the container.
   views::ResizeArea* resize_area_ = nullptr;
 
+  // Separator at the end of browser actions to highlight that these actions are
+  // different from built-in toolbar actions.
+  views::Separator* separator_ = nullptr;
+
   // The animation that happens when the container snaps to place.
   std::unique_ptr<gfx::SlideAnimation> resize_animation_;
 
@@ -286,8 +308,7 @@ class BrowserActionsContainer : public views::View,
   bool added_to_view_ = false;
 
   // When the container is resizing, this is the width at which it started.
-  // If the container is not resizing, -1.
-  int resize_starting_width_ = -1;
+  base::Optional<int> resize_starting_width_;
 
   // This is used while the user is resizing (and when the animations are in
   // progress) to know how wide the delta is between the current state and what

@@ -755,6 +755,8 @@ void ToolbarView::LoadImages() {
   const SkColor disabled_color =
       tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
+  browser_actions_->SetSeparatorColor(normal_color);
+
   const bool is_touch =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   // TODO(pbos): Move these constants to LayoutProvider or LayoutConstants.
