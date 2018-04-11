@@ -59,6 +59,7 @@ class SystemTokenCertDBInitializer;
 
 namespace power {
 namespace ml {
+class AdaptiveScreenBrightnessManager;
 class UserActivityController;
 }  // namespace ml
 }  // namespace power
@@ -134,6 +135,9 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   // default (as it will be instantiated elsewhere). For now it's necessary to
   // send notifier settings information to Ash.
   std::unique_ptr<NotificationPlatformBridge> notification_client_;
+
+  std::unique_ptr<power::ml::AdaptiveScreenBrightnessManager>
+      adaptive_screen_brightness_manager_;
 
   std::unique_ptr<power::ml::UserActivityController> user_activity_controller_;
 

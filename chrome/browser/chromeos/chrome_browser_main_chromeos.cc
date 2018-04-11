@@ -82,6 +82,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/power/freezer_cgroup_process_manager.h"
 #include "chrome/browser/chromeos/power/idle_action_warning_observer.h"
+#include "chrome/browser/chromeos/power/ml/adaptive_screen_brightness_manager.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_controller.h"
 #include "chrome/browser/chromeos/power/power_data_collector.h"
 #include "chrome/browser/chromeos/power/power_metrics_reporter.h"
@@ -1072,6 +1073,12 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = std::make_unique<ShutdownPolicyForwarder>();
 
+  if (base::FeatureList::IsEnabled(
+          features::kAdaptiveScreenBrightnessLogging)) {
+    adaptive_screen_brightness_manager_ =
+        power::ml::AdaptiveScreenBrightnessManager::CreateInstance();
+  }
+
   if (base::FeatureList::IsEnabled(features::kUserActivityEventLogging)) {
     user_activity_controller_ =
         std::make_unique<power::ml::UserActivityController>();
@@ -1134,6 +1141,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   keyboard_event_rewriters_.reset();
   low_disk_notification_.reset();
   user_activity_controller_.reset();
+  adaptive_screen_brightness_manager_.reset();
 
   // Detach D-Bus clients before DBusThreadManager is shut down.
   idle_action_warning_observer_.reset();
