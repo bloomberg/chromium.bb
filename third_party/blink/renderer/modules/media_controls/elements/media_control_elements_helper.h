@@ -60,6 +60,10 @@ class MediaControlElementsHelper final {
   // element ID.
   static HTMLDivElement* CreateDivWithId(const WTF::AtomicString& id,
                                          ContainerNode* parent);
+
+  // Utility function that notifies the media controls in which the element is
+  // that it was focused by an accessibility tool.
+  static void NotifyMediaControlAccessibleFocus(Element*);
 };
 
 }  // namespace blink

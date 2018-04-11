@@ -185,6 +185,11 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void MaybeToggleControlsFromTap();
 
+  // Called by accessibility code to notify that the controls was focused by an
+  // accessibility tool. This is meant to be replaced by AOM when the event will
+  // be exposed to the platform.
+  void OnAccessibleFocus();
+
  private:
   // MediaControlsMediaEventListener is a component that is listening to events
   // and calling the appropriate callback on MediaControlsImpl. The object is
