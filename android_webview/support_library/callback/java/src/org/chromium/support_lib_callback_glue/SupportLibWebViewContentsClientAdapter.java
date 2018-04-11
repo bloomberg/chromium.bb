@@ -32,6 +32,7 @@ public class SupportLibWebViewContentsClientAdapter {
     // this is a Proxy for the WebViewClientCompat.
     @Nullable
     private WebViewClientBoundaryInterface mWebViewClient;
+    final private String[] mWebViewClientSupportedFeatures;
 
     private static class SafeBrowsingResponseDelegate
             implements SafeBrowsingResponseBoundaryInterface {
@@ -79,6 +80,8 @@ public class SupportLibWebViewContentsClientAdapter {
 
     public SupportLibWebViewContentsClientAdapter(WebViewClient possiblyCompatClient) {
         mWebViewClient = convertCompatClient(possiblyCompatClient);
+        mWebViewClientSupportedFeatures =
+                mWebViewClient == null ? new String[0] : mWebViewClient.getSupportedFeatures();
     }
 
     @Nullable
@@ -114,8 +117,8 @@ public class SupportLibWebViewContentsClientAdapter {
      */
     public boolean isFeatureAvailable(String featureName) {
         if (mWebViewClient == null) return false;
-        // TODO(ntfschr): provide a real implementation, which consults the WebViewClientCompat.
-        return true;
+        return BoundaryInterfaceReflectionUtil.containsFeature(
+                mWebViewClientSupportedFeatures, featureName);
     }
 
     public void onPageCommitVisible(WebView webView, String url) {
