@@ -82,7 +82,7 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_OffscreenCanvasTransferAfterStyleResize',
               ['mac', 'linux', 'win', 'android'], bug=735171)
     self.Flaky('Pixel_OffscreenCanvasTransferToImageBitmap',
-              ['linux', 'android'], bug=807742)
+              ['linux', 'win', 'android'], bug=807742)
 
     self.Flaky('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker',
         ['mac', ('nvidia', 0xfe9), 'debug'], bug=751328)
