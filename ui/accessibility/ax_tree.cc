@@ -269,8 +269,8 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
       // Here we are extending the definition of offscreen to include elements
       // that are clipped by their parents in addition to those clipped by
       // the rootWebArea.
-      // No need to update |offscreen| if |clipped| is not empty, because it
-      // should be false by default.
+      // No need to update |offscreen| if |intersection| is not empty, because
+      // it should be false by default.
       if (offscreen != nullptr)
         *offscreen |= true;
     }
