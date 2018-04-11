@@ -111,9 +111,6 @@ class ModelTypeWorker : public UpdateHandler,
   // Callback for when our contribution gets a response.
   void OnCommitResponse(CommitResponseDataList* response_list);
 
-  // Called at the end of commit regardless of commit success.
-  void CleanupAfterCommit();
-
   // If migration the directory encounters an error partway through, we need to
   // clear the update data that has been added so far.
   void AbortMigration();
@@ -161,9 +158,10 @@ class ModelTypeWorker : public UpdateHandler,
   // an update occurred.
   bool UpdateEncryptionKeyName();
 
-  // Iterates through all elements in |entities_| and tries to decrypt anything
-  // that has encrypted data. Also updates |has_encrypted_updates_| to reflect
-  // whether anything in |entities_| was not decryptable by |cryptographer_|.
+  // Iterates through all elements in |entries_pending_decryption_| and tries to
+  // decrypt anything that has encrypted data. Also updates
+  // |has_encrypted_updates_| to reflect whether anything in
+  // |entries_pending_decryption_| was not decryptable by |cryptographer_|.
   // Should only be called during a GetUpdates cycle.
   void DecryptStoredEntities();
 
@@ -199,22 +197,16 @@ class ModelTypeWorker : public UpdateHandler,
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   NudgeHandler* nudge_handler_;
 
-  // A map of per-entity information, keyed by client_tag_hash.
-  //
-  // When commits are pending, their information is stored here. This
-  // information is dropped from memory when the commit succeeds or gets
-  // canceled.
-  //
-  // This also stores some information related to received server state in
-  // order to implement reflection blocking and conflict detection. This
-  // information is kept in memory indefinitely.
-  EntityMap entities_;
+  // A map of per-entity information, keyed by server_id.
+  // Holds updates encrypted with pending keys.
+  EntityMap entries_pending_decryption_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.
   UpdateResponseDataList pending_updates_;
 
-  // Whether there are outstanding encrypted updates in |entities_|.
+  // Whether there are outstanding encrypted updates in
+  // |entries_pending_decryption_|.
   bool has_encrypted_updates_ = false;
 
   // Indicates if processor has local changes. Processor only nudges worker once
