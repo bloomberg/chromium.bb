@@ -27,8 +27,12 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   STATIC_ONLY(NGPaintFragmentTraversal);
 
  public:
-  // Return descendants without paint layer in preorder.
+  // Returns descendants without paint layer in preorder.
   static Vector<NGPaintFragmentWithContainerOffset> DescendantsOf(
+      const NGPaintFragment&);
+
+  // Returns inline descendants in preorder.
+  static Vector<NGPaintFragmentWithContainerOffset> InlineDescendantsOf(
       const NGPaintFragment&);
 
   static Vector<NGPaintFragmentWithContainerOffset> SelfFragmentsOf(
