@@ -267,6 +267,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
+  output_mode_ = config.output_mode;
   if (!SetupFormats())
     return false;
 
@@ -280,7 +281,6 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   decoder_state_ = kInitialized;
-  output_mode_ = config.output_mode;
 
   // InitializeTask will NOTIFY_ERROR on failure.
   decoder_thread_.task_runner()->PostTask(
