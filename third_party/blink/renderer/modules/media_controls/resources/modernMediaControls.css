@@ -51,10 +51,6 @@ video::-webkit-media-controls-enclosure {
   width: 100%;
 }
 
-video::-webkit-media-controls-overlay-enclosure {
-  display: none;
-}
-
 audio::-webkit-media-controls-panel,
 video::-webkit-media-controls-panel {
   -webkit-appearance: -internal-media-control;
@@ -744,6 +740,36 @@ video::cue(u) {
 
 video::cue(i) {
     font-style: italic;
+}
+
+/**
+ * Overlay cast button
+ */
+
+video::-internal-media-controls-overlay-cast-button {
+    -webkit-appearance: none;
+    background-image: -webkit-image-set(
+      url(default_100_percent/legacy/mediaplayer_overlay_cast_off.png) 1x);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    display: flex;
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    margin-left: 0px;
+    margin-top: 0px;
+    border-width: 0px;
+    background-color: transparent;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    transition: opacity 0.3s;
+}
+
+video::-internal-media-controls-overlay-cast-button.on {
+    background-image: -webkit-image-set(
+      url(default_100_percent/legacy/mediaplayer_overlay_cast_on.png) 1x);
 }
 
 /**
