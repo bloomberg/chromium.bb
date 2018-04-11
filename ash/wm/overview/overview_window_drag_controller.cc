@@ -85,6 +85,7 @@ void OverviewWindowDragController::CompleteDrag(
     // to overview window grid.
     if (!ShouldUpdateDragIndicatorsOrSnap(location_in_screen) ||
         snap_position_ == SplitViewController::NONE) {
+      item_->set_should_restack_on_animation_end(true);
       window_selector_->PositionWindows(/*animate=*/true);
     } else {
       SnapWindow(snap_position_);

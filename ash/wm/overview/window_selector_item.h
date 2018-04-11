@@ -188,6 +188,12 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Checks if this item is current being dragged.
   bool IsDragItem();
 
+  // Called after a positioning transform animation ends. Checks to see if the
+  // animation was triggered by a drag end event. If so, inserts the window back
+  // to its original stacking order so that the order of windows is the same as
+  // when entering overview.
+  void OnDragAnimationCompleted();
+
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
   // the shadow is hidden.
   void SetShadowBounds(base::Optional<gfx::Rect> bounds_in_screen);
@@ -213,6 +219,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   OverviewAnimationType GetExitTransformAnimationType();
 
   WindowGrid* window_grid() { return window_grid_; }
+
+  void set_should_restack_on_animation_end(bool val) {
+    should_restack_on_animation_end_ = val;
+  }
 
   float GetCloseButtonOpacityForTesting();
   float GetTitlebarOpacityForTesting();
@@ -284,10 +294,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // selection and stacks the window at the top of the Z order in order to keep
   // it visible while dragging around.
   void StartDrag();
-
-  // Called after dragging. Inserts the window back to its original stacking
-  // order so that the order of windows is the same as when entering overview.
-  void EndDrag();
 
   // True if the item is being shown in the overview, false if it's being
   // filtered.
@@ -365,6 +371,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // layer-transform pairs to the observer until this contained window completes
   // its exiting animation.
   bool should_be_observed_when_exiting_ = false;
+
+  // True if after an animation, we need to reorder the stacking order of the
+  // widgets.
+  bool should_restack_on_animation_end_ = false;
 
   // The shadow around the overview window. Shadows the original window, not
   // |item_widget_|. Done here instead of on the original window because of the

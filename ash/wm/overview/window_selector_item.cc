@@ -986,7 +986,7 @@ void WindowSelectorItem::HandleReleaseEvent(
   if (!IsDragItem())
     return;
 
-  EndDrag();
+  window_grid_->SetSelectionWidgetVisibility(true);
   window_selector_->CompleteDrag(this, location_in_screen);
 }
 
@@ -1015,6 +1015,51 @@ void WindowSelectorItem::ResetDraggedWindowGesture() {
 bool WindowSelectorItem::IsDragItem() {
   return window_selector_->window_drag_controller() &&
          window_selector_->window_drag_controller()->item() == this;
+}
+
+void WindowSelectorItem::OnDragAnimationCompleted() {
+  // This is function is called whenever the grid repositions its windows, but
+  // we only need to restack the windows if an item was being dragged around
+  // and then released.
+  if (!should_restack_on_animation_end_)
+    return;
+
+  should_restack_on_animation_end_ = false;
+
+  // First stack this item's window below the snapped window if split view mode
+  // is active.
+  aura::Window* dragged_window = GetWindowForStacking();
+  aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
+  aura::Window* parent_window = dragged_widget_window->parent();
+  if (Shell::Get()->IsSplitViewModeActive()) {
+    aura::Window* snapped_window =
+        Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
+    if (snapped_window->parent() == parent_window &&
+        dragged_window->parent() == parent_window) {
+      parent_window->StackChildBelow(dragged_widget_window, snapped_window);
+      parent_window->StackChildBelow(dragged_window, dragged_widget_window);
+    }
+  }
+
+  // Then find the window which was stacked right above this selector item's
+  // window before dragging and stack this selector item's window below it.
+  const std::vector<std::unique_ptr<WindowSelectorItem>>& selector_items =
+      window_grid_->window_list();
+  aura::Window* stacking_target = nullptr;
+  for (size_t index = 0; index < selector_items.size(); index++) {
+    if (index > 0) {
+      aura::Window* window = selector_items[index - 1].get()->GetWindow();
+      if (window->parent() == parent_window &&
+          dragged_window->parent() == parent_window) {
+        stacking_target = window;
+      }
+    }
+    if (selector_items[index].get() == this && stacking_target) {
+      parent_window->StackChildBelow(dragged_widget_window, stacking_target);
+      parent_window->StackChildBelow(dragged_window, dragged_widget_window);
+      break;
+    }
+  }
 }
 
 void WindowSelectorItem::SetShadowBounds(
@@ -1374,45 +1419,6 @@ void WindowSelectorItem::StartDrag() {
         widget_window->parent() == snapped_window->parent()) {
       widget_window->parent()->StackChildBelow(widget_window, snapped_window);
       widget_window->parent()->StackChildBelow(window, widget_window);
-    }
-  }
-}
-
-void WindowSelectorItem::EndDrag() {
-  window_grid_->SetSelectionWidgetVisibility(true);
-
-  // First stack this item's window below the snapped window if split view mode
-  // is active.
-  aura::Window* dragged_window = GetWindowForStacking();
-  aura::Window* dragged_widget_window = item_widget_->GetNativeWindow();
-  aura::Window* parent_window = dragged_widget_window->parent();
-  if (Shell::Get()->IsSplitViewModeActive()) {
-    aura::Window* snapped_window =
-        Shell::Get()->split_view_controller()->GetDefaultSnappedWindow();
-    if (snapped_window->parent() == parent_window &&
-        dragged_window->parent() == parent_window) {
-      parent_window->StackChildBelow(dragged_widget_window, snapped_window);
-      parent_window->StackChildBelow(dragged_window, dragged_widget_window);
-    }
-  }
-
-  // Then find the window which was stacked right above this selector item's
-  // window before dragging and stack this selector item's window below it.
-  const std::vector<std::unique_ptr<WindowSelectorItem>>& selector_items =
-      window_grid_->window_list();
-  aura::Window* stacking_target = nullptr;
-  for (size_t index = 0; index < selector_items.size(); index++) {
-    if (index > 0) {
-      aura::Window* window = selector_items[index - 1].get()->GetWindow();
-      if (window->parent() == parent_window &&
-          dragged_window->parent() == parent_window) {
-        stacking_target = window;
-      }
-    }
-    if (selector_items[index].get() == this && stacking_target) {
-      parent_window->StackChildBelow(dragged_widget_window, stacking_target);
-      parent_window->StackChildBelow(dragged_window, dragged_widget_window);
-      break;
     }
   }
 }
