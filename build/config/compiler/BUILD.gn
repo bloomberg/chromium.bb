@@ -121,6 +121,10 @@ declare_args() {
   # for a KI issue in Valgrind,
   # https://bugs.kde.org/show_bug.cgi?id=384727
   ro_segment_workaround_for_valgrind = false
+
+  # Turn this on to use ghash feature of lld for faster debug link on Windows.
+  # http://blog.llvm.org/2018/01/improving-link-time-on-windows-with.html
+  use_ghash = false
 }
 
 declare_args() {
@@ -2042,6 +2046,12 @@ config("symbols") {
       # information in .obj and .lib files instead of copying
       # it all. This flag is incompatible with /PROFILE
       ldflags = [ "/DEBUG:FASTLINK" ]
+    } else if (is_clang && use_lld && use_ghash) {
+      cflags += [
+        "-mllvm",
+        "-emit-codeview-ghash-section",
+      ]
+      ldflags = [ "/DEBUG:GHASH" ]
     } else {
       ldflags = [ "/DEBUG" ]
     }
