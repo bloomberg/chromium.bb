@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/media_galleries/metadata_types.h"
+#include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 
 namespace content {
@@ -29,7 +30,7 @@ class Connector;
 // expects the MIME type of the Blob to be already known. It creates a utility
 // process to do further MIME-type-specific metadata extraction from the Blob
 // data.
-class SafeMediaMetadataParser {
+class SafeMediaMetadataParser : public MediaParserProvider {
  public:
   typedef base::OnceCallback<void(
       bool parse_success,
@@ -42,7 +43,7 @@ class SafeMediaMetadataParser {
                           int64_t blob_size,
                           const std::string& mime_type,
                           bool get_attached_images);
-  ~SafeMediaMetadataParser();
+  ~SafeMediaMetadataParser() override;
 
   // Should be called on the thread |connector| is associated with. |callback|
   // is invoked on that same thread.
@@ -51,8 +52,9 @@ class SafeMediaMetadataParser {
  private:
   class MediaDataSourceImpl;
 
-  // Callback if the utility process or metadata parse request fails.
-  void ParseMediaMetadataFailed();
+  // MediaParserProvider implementation:
+  void OnMediaParserCreated() override;
+  void OnConnectionError() override;
 
   // Callback from utility process when it finishes parsing metadata.
   void ParseMediaMetadataDone(
@@ -78,7 +80,6 @@ class SafeMediaMetadataParser {
   const std::string mime_type_;
   bool get_attached_images_;
 
-  chrome::mojom::MediaParserPtr media_parser_ptr_;
   DoneCallback callback_;
 
   std::unique_ptr<MediaDataSourceImpl> media_data_source_;

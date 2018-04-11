@@ -8,7 +8,6 @@
 #   chrome/common/extensions/OWNERS
 #   chrome/renderer/extensions/OWNERS
 #   chrome/renderer/resources/extensions/OWNERS
-#   chrome/utility/extensions/OWNERS
 
 rdevlin.cronin@chromium.org
 lazyboy@chromium.org

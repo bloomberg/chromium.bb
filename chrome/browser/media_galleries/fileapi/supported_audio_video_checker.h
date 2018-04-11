@@ -10,7 +10,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media_galleries/fileapi/av_scanning_file_validator.h"
 
@@ -50,7 +49,7 @@ class SupportedAudioVideoChecker : public AVScanningFileValidator {
 
   base::FilePath path_;
   storage::CopyOrMoveFileValidator::ResultCallback callback_;
-  scoped_refptr<SafeAudioVideoChecker> safe_checker_;
+  std::unique_ptr<SafeAudioVideoChecker> safe_checker_;
   base::WeakPtrFactory<SupportedAudioVideoChecker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SupportedAudioVideoChecker);

@@ -1,3 +1,5 @@
 include_rules = [
   "+extensions/browser",
+  "+third_party/libyuv",
+  "+third_party/ffmpeg",
 ]

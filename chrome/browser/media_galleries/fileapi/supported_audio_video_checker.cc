@@ -130,7 +130,7 @@ void SupportedAudioVideoChecker::OnFileOpen(
     return;
   }
 
-  safe_checker_ = new SafeAudioVideoChecker(std::move(file), callback_,
-                                            std::move(connector));
+  safe_checker_ = std::make_unique<SafeAudioVideoChecker>(
+      std::move(file), callback_, std::move(connector));
   safe_checker_->Start();
 }

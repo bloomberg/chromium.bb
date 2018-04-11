@@ -99,8 +99,6 @@ static_library("utility") {
 
   if (enable_extensions) {
     sources += [
-      "extensions/extensions_handler.cc",
-      "extensions/extensions_handler.h",
       "image_writer/disk_unmounter_mac.cc",
       "image_writer/disk_unmounter_mac.h",
       "image_writer/error_messages.cc",

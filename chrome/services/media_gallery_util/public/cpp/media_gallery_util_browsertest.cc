@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/common/service_manager_connection.h"
@@ -24,17 +25,41 @@ namespace {
 
 using MediaGalleryUtilBrowserTest = InProcessBrowserTest;
 
+class TestMediaParserProvider : public MediaParserProvider {
+ public:
+  TestMediaParserProvider() = default;
+
+  chrome::mojom::MediaParser* GetMediaParser(
+      service_manager::Connector* connector) {
+    DCHECK(!quit_loop_);
+    base::RunLoop run_loop;
+    quit_loop_ = run_loop.QuitClosure();
+    RetrieveMediaParser(connector);
+    run_loop.Run();
+    return media_parser();
+  }
+
+ private:
+  void OnMediaParserCreated() override { std::move(quit_loop_).Run(); }
+
+  void OnConnectionError() override { std::move(quit_loop_).Run(); }
+
+  base::Closure quit_loop_;
+};
+
 }  // namespace
 
+// Tests that the MediaParserProvider class used by the client library classes
+// does initialize the CPU info correctly.
 IN_PROC_BROWSER_TEST_F(MediaGalleryUtilBrowserTest, TestThirdPartyCpuInfo) {
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  chrome::mojom::MediaParserPtr media_parser_ptr;
-  connector->BindInterface(chrome::mojom::kMediaGalleryUtilServiceName,
-                           mojo::MakeRequest(&media_parser_ptr));
+  TestMediaParserProvider media_parser_provider;
+  chrome::mojom::MediaParser* media_parser =
+      media_parser_provider.GetMediaParser(connector);
 
   base::RunLoop run_loop;
-  media_parser_ptr->GetCpuInfo(base::BindOnce(
+  media_parser->GetCpuInfo(base::BindOnce(
       [](base::Closure quit_closure, int64_t libyuv_cpu_flags,
          int64_t ffmpeg_cpu_flags) {
         int64_t expected_ffmpeg_cpu_flags = 0;

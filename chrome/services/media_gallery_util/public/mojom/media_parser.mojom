@@ -35,6 +35,17 @@ interface MediaParser {
   GetCpuInfo() => (int64 libyuv_cpu_flags, int64 ffmpeg_cpu_flags);
 };
 
+interface MediaParserFactory {
+  // Creates a MediaParser. |libyuv_cpuf_lags| are the flags returned by
+  // libyuv::InitCpuFlags() from third-party/libyuv and |libavutil_cpu_flags|
+  // the flags returned by av_get_cpu_flags() from FFmpeg. These flags have to
+  // be passed in as retrieving them may require file access (to /proc/cpuinfo
+  // for instance) and the media parser may be run in a sandboxed process with
+  // no such access.
+  CreateMediaParser(int64 libyuv_cpu_flags, int64 libavutil_cpu_flags)
+      => (MediaParser media_parser);
+};
+
 interface MediaDataSource {
   // ParseMediaMetadata interface used to read blob data for parsing from the
   // calling process.
