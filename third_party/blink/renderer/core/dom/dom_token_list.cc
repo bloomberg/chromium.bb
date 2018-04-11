@@ -228,7 +228,7 @@ bool DOMTokenList::replace(const AtomicString& token,
 
 bool DOMTokenList::supports(const AtomicString& token,
                             ExceptionState& exception_state) {
-  return ValidateTokenValue(token, exception_state);
+  return ValidateTokenValue(token.LowerASCII(), exception_state);
 }
 
 // https://dom.spec.whatwg.org/#dom-domtokenlist-add
