@@ -11,10 +11,8 @@ function createDeepComponent(nest) {
   const div = document.createElement('div');
   div.appendChild(document.createElement('slot'));
   div.appendChild(document.createElement('p'));
-  const shadowRoot = div.attachShadow({ mode: 'open' });
-  if (nest == 0) {
-    shadowRoot.appendChild(document.createElement('slot'));
-  } else {
+  if (nest > 0) {
+    const shadowRoot = div.attachShadow({ mode: 'open' });
     shadowRoot.appendChild(createDeepComponent(nest - 1));
   }
   return div;
@@ -32,6 +30,28 @@ function createHostTreeWithDeepComponentChild(hostChildren) {
     hostChildren,
     createChildFunction: () => createDeepComponent(100),
   });
+}
+
+function GetDeepestFirstChild(firstChild) {
+  // Assuming a shadow root's first child always exists, and it can be a host.
+  // createDeepComponent constructs such a tree.
+  if (!firstChild.shadowRoot)
+    return firstChild;
+  return GetDeepestFirstChild(firstChild.shadowRoot.firstChild);
+}
+
+function rotateChildren(parent) {
+  // A tree structure will change, rotating children.
+  const firstChild = parent.firstChild;
+  firstChild.remove();
+  parent.appendChild(firstChild);
+}
+
+function removeLastChildAndAppend(host) {
+  // A tree structure won't change
+  const lastChild = host.lastChild;
+  lastChild.remove();
+  host.appendChild(lastChild);
 }
 
 function createHostTreeWith({hostChildren, createChildFunction}) {
