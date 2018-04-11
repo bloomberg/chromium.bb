@@ -4,8 +4,9 @@
 
 #include "notification_helper/com_server_module.h"
 
-#include <wrl/client.h>
 #include <memory>
+
+#include <wrl/client.h>
 
 #include "base/win/scoped_winrt_initializer.h"
 #include "chrome/install_static/install_util.h"
