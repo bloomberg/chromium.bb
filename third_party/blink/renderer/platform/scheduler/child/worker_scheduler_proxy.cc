@@ -21,7 +21,7 @@ WorkerSchedulerProxy::~WorkerSchedulerProxy() {
 }
 
 void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
-    base::WeakPtr<WorkerSchedulerImpl> worker_scheduler) {
+    base::WeakPtr<WorkerThreadScheduler> worker_scheduler) {
   DCHECK(!IsMainThread())
       << "OnWorkerSchedulerCreated should be called from the worker thread";
   DCHECK(!worker_scheduler_) << "OnWorkerSchedulerCreated is called twice";
@@ -42,8 +42,9 @@ void WorkerSchedulerProxy::OnThrottlingStateChanged(
     return;
 
   worker_thread_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&WorkerSchedulerImpl::OnThrottlingStateChanged,
-                                worker_scheduler_, throttling_state));
+      FROM_HERE,
+      base::BindOnce(&WorkerThreadScheduler::OnThrottlingStateChanged,
+                     worker_scheduler_, throttling_state));
 }
 
 }  // namespace scheduler

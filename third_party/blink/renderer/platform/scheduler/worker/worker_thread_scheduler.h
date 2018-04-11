@@ -25,17 +25,16 @@ namespace scheduler {
 class TaskQueueManager;
 class WorkerSchedulerProxy;
 
-// TODO(yutak): Rename this class to WorkerThreadScheduler.
-class PLATFORM_EXPORT WorkerSchedulerImpl : public NonMainThreadScheduler,
-                                            public IdleHelper::Delegate,
-                                            public TaskTimeObserver {
+class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadScheduler,
+                                              public IdleHelper::Delegate,
+                                              public TaskTimeObserver {
  public:
-  WorkerSchedulerImpl(WebThreadType thread_type,
-                      std::unique_ptr<TaskQueueManager> task_queue_manager,
-                      WorkerSchedulerProxy* proxy);
-  ~WorkerSchedulerImpl() override;
+  WorkerThreadScheduler(WebThreadType thread_type,
+                        std::unique_ptr<TaskQueueManager> task_queue_manager,
+                        WorkerSchedulerProxy* proxy);
+  ~WorkerThreadScheduler() override;
 
-  // ChildScheduler implementation:
+  // WebThreadScheduler implementation:
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
@@ -46,7 +45,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public NonMainThreadScheduler,
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
 
-  // WorkerScheduler implementation:
+  // NonMainThreadScheduler implementation:
   scoped_refptr<WorkerTaskQueue> DefaultTaskQueue() override;
   void Init() override;
   void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
@@ -88,7 +87,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public NonMainThreadScheduler,
  private:
   void MaybeStartLongIdlePeriod();
 
-  base::WeakPtr<WorkerSchedulerImpl> GetWeakPtr();
+  base::WeakPtr<WorkerThreadScheduler> GetWeakPtr();
 
   IdleHelper idle_helper_;
   IdleCanceledDelayedTaskSweeper idle_canceled_delayed_task_sweeper_;
@@ -100,9 +99,9 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public NonMainThreadScheduler,
 
   WorkerMetricsHelper worker_metrics_helper_;
 
-  base::WeakPtrFactory<WorkerSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<WorkerThreadScheduler> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerImpl);
+  DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);
 };
 
 }  // namespace scheduler

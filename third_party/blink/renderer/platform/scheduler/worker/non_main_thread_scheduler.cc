@@ -23,7 +23,7 @@ NonMainThreadScheduler::~NonMainThreadScheduler() = default;
 std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
     WebThreadType thread_type,
     WorkerSchedulerProxy* proxy) {
-  return std::make_unique<WorkerSchedulerImpl>(
+  return std::make_unique<WorkerThreadScheduler>(
       thread_type, TaskQueueManager::TakeOverCurrentThread(), proxy);
 }
 

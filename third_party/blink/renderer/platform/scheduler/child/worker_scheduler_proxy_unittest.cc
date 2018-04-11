@@ -20,24 +20,24 @@ namespace scheduler {
 
 namespace {
 
-class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
+class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
-  WorkerSchedulerImplForTest(std::unique_ptr<TaskQueueManager> manager,
-                             WorkerSchedulerProxy* proxy,
-                             WaitableEvent* throtting_state_changed)
-      : WorkerSchedulerImpl(WebThreadType::kTestThread,
-                            std::move(manager),
-                            proxy),
+  WorkerThreadSchedulerForTest(std::unique_ptr<TaskQueueManager> manager,
+                               WorkerSchedulerProxy* proxy,
+                               WaitableEvent* throtting_state_changed)
+      : WorkerThreadScheduler(WebThreadType::kTestThread,
+                              std::move(manager),
+                              proxy),
         throtting_state_changed_(throtting_state_changed) {}
 
   void OnThrottlingStateChanged(
       FrameScheduler::ThrottlingState throttling_state) override {
-    WorkerSchedulerImpl::OnThrottlingStateChanged(throttling_state);
+    WorkerThreadScheduler::OnThrottlingStateChanged(throttling_state);
 
     throtting_state_changed_->Signal();
   }
 
-  using WorkerSchedulerImpl::throttling_state;
+  using WorkerThreadScheduler::throttling_state;
 
  private:
   WaitableEvent* throtting_state_changed_;
@@ -55,18 +55,18 @@ class WebThreadImplForWorkerSchedulerForTest
 
   std::unique_ptr<NonMainThreadScheduler> CreateNonMainThreadScheduler()
       override {
-    auto scheduler = std::make_unique<WorkerSchedulerImplForTest>(
+    auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
         TaskQueueManager::TakeOverCurrentThread(), worker_scheduler_proxy(),
         throtting_state_changed_);
     scheduler_ = scheduler.get();
     return scheduler;
   }
 
-  WorkerSchedulerImplForTest* GetWorkerScheduler() { return scheduler_; }
+  WorkerThreadSchedulerForTest* GetWorkerScheduler() { return scheduler_; }
 
  private:
-  WaitableEvent* throtting_state_changed_;           // NOT OWNED
-  WorkerSchedulerImplForTest* scheduler_ = nullptr;  // NOT OWNED
+  WaitableEvent* throtting_state_changed_;             // NOT OWNED
+  WorkerThreadSchedulerForTest* scheduler_ = nullptr;  // NOT OWNED
 };
 
 std::unique_ptr<WebThreadImplForWorkerSchedulerForTest> CreateWorkerThread(

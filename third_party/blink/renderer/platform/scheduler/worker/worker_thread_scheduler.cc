@@ -45,7 +45,7 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
 
 }  // namespace
 
-WorkerSchedulerImpl::WorkerSchedulerImpl(
+WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
     std::unique_ptr<TaskQueueManager> task_queue_manager,
     WorkerSchedulerProxy* proxy)
@@ -79,7 +79,7 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 }
 
-WorkerSchedulerImpl::~WorkerSchedulerImpl() {
+WorkerThreadScheduler::~WorkerThreadScheduler() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("worker.scheduler"), "WorkerScheduler", this);
 
@@ -87,45 +87,45 @@ WorkerSchedulerImpl::~WorkerSchedulerImpl() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WorkerSchedulerImpl::DefaultTaskRunner() {
+WorkerThreadScheduler::DefaultTaskRunner() {
   DCHECK(initialized_);
   return helper_->DefaultWorkerTaskQueue();
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
-WorkerSchedulerImpl::IdleTaskRunner() {
+WorkerThreadScheduler::IdleTaskRunner() {
   DCHECK(initialized_);
   return idle_helper_.IdleTaskRunner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-WorkerSchedulerImpl::IPCTaskRunner() {
+WorkerThreadScheduler::IPCTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 
-bool WorkerSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
+bool WorkerThreadScheduler::CanExceedIdleDeadlineIfRequired() const {
   DCHECK(initialized_);
   return idle_helper_.CanExceedIdleDeadlineIfRequired();
 }
 
-bool WorkerSchedulerImpl::ShouldYieldForHighPriorityWork() {
+bool WorkerThreadScheduler::ShouldYieldForHighPriorityWork() {
   // We don't consider any work as being high priority on workers.
   return false;
 }
 
-void WorkerSchedulerImpl::AddTaskObserver(
+void WorkerThreadScheduler::AddTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(initialized_);
   helper_->AddTaskObserver(task_observer);
 }
 
-void WorkerSchedulerImpl::RemoveTaskObserver(
+void WorkerThreadScheduler::RemoveTaskObserver(
     base::MessageLoop::TaskObserver* task_observer) {
   DCHECK(initialized_);
   helper_->RemoveTaskObserver(task_observer);
 }
 
-void WorkerSchedulerImpl::Shutdown() {
+void WorkerThreadScheduler::Shutdown() {
   DCHECK(initialized_);
   load_tracker_.RecordIdle(helper_->NowTicks());
   base::TimeTicks end_time = helper_->NowTicks();
@@ -140,17 +140,17 @@ void WorkerSchedulerImpl::Shutdown() {
   helper_->Shutdown();
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerSchedulerImpl::DefaultTaskQueue() {
+scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::DefaultTaskQueue() {
   DCHECK(initialized_);
   return helper_->DefaultWorkerTaskQueue();
 }
 
-void WorkerSchedulerImpl::Init() {
+void WorkerThreadScheduler::Init() {
   initialized_ = true;
   idle_helper_.EnableLongIdlePeriod();
 }
 
-void WorkerSchedulerImpl::OnTaskCompleted(
+void WorkerThreadScheduler::OnTaskCompleted(
     WorkerTaskQueue* worker_task_queue,
     const TaskQueue::Task& task,
     base::TimeTicks start,
@@ -160,22 +160,23 @@ void WorkerSchedulerImpl::OnTaskCompleted(
                                            thread_time);
 }
 
-SchedulerHelper* WorkerSchedulerImpl::GetSchedulerHelperForTesting() {
+SchedulerHelper* WorkerThreadScheduler::GetSchedulerHelperForTesting() {
   return helper_.get();
 }
 
-bool WorkerSchedulerImpl::CanEnterLongIdlePeriod(base::TimeTicks,
-                                                 base::TimeDelta*) {
+bool WorkerThreadScheduler::CanEnterLongIdlePeriod(base::TimeTicks,
+                                                   base::TimeDelta*) {
   return true;
 }
 
-base::TimeTicks WorkerSchedulerImpl::CurrentIdleTaskDeadlineForTesting() const {
+base::TimeTicks WorkerThreadScheduler::CurrentIdleTaskDeadlineForTesting()
+    const {
   return idle_helper_.CurrentIdleTaskDeadline();
 }
 
-void WorkerSchedulerImpl::WillProcessTask(double start_time) {}
+void WorkerThreadScheduler::WillProcessTask(double start_time) {}
 
-void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
+void WorkerThreadScheduler::DidProcessTask(double start_time, double end_time) {
   base::TimeTicks start_time_ticks =
       MonotonicTimeInSecondsToTimeTicks(start_time);
   base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
@@ -183,16 +184,16 @@ void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
   load_tracker_.RecordTaskTime(start_time_ticks, end_time_ticks);
 }
 
-void WorkerSchedulerImpl::OnThrottlingStateChanged(
+void WorkerThreadScheduler::OnThrottlingStateChanged(
     FrameScheduler::ThrottlingState throttling_state) {
   throttling_state_ = throttling_state;
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerSchedulerImpl::ControlTaskQueue() {
+scoped_refptr<WorkerTaskQueue> WorkerThreadScheduler::ControlTaskQueue() {
   return helper_->ControlWorkerTaskQueue();
 }
 
-base::WeakPtr<WorkerSchedulerImpl> WorkerSchedulerImpl::GetWeakPtr() {
+base::WeakPtr<WorkerThreadScheduler> WorkerThreadScheduler::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
