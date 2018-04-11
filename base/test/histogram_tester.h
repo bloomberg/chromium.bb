@@ -28,7 +28,9 @@ class HistogramSamples;
 //
 // Note: When using this class from a browser test, one might have to call
 // SubprocessMetricsProvider::MergeHistogramDeltasForTesting() to sync the
-// histogram data between the renderer and browser processes.
+// histogram data between the renderer and browser processes. If it is in a
+// content browser test, then content::FetchHistogramsFromChildProcesses()
+// should be used to achieve that.
 class HistogramTester {
  public:
   using CountsMap = std::map<std::string, HistogramBase::Count>;
