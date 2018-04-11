@@ -643,7 +643,8 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       spare_render_process_host_->RemoveObserver(this);
 
       // Make sure the RenderProcessHost object gets destroyed.
-      spare_render_process_host_->Cleanup();
+      if (!spare_render_process_host_->IsKeepAliveRefCountDisabled())
+        spare_render_process_host_->Cleanup();
 
       // Drop reference to the RenderProcessHost object.
       spare_render_process_host_ = nullptr;
@@ -2239,9 +2240,11 @@ void RenderProcessHostImpl::RecordKeepAliveDuration(
 
 void RenderProcessHostImpl::DisableKeepAliveRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  is_keep_alive_ref_count_disabled_ = true;
-  if (!keep_alive_ref_count_)
+
+  if (is_keep_alive_ref_count_disabled_)
     return;
+  is_keep_alive_ref_count_disabled_ = true;
+
   keep_alive_ref_count_ = 0;
   base::TimeTicks now = base::TimeTicks::Now();
   for (size_t i = 0; i < kNumKeepAliveClients; i++) {
@@ -2254,6 +2257,7 @@ void RenderProcessHostImpl::DisableKeepAliveRefCount() {
   }
 
   // Cleaning up will also remove this from the SpareRenderProcessHostManager.
+  // (in this case |keep_alive_ref_count_| would be 0 even before).
   Cleanup();
 }
 
