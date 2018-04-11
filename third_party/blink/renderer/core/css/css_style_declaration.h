@@ -92,10 +92,12 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   virtual CSSStyleSheet* ParentStyleSheet() const { return nullptr; }
 
   void AnonymousNamedGetter(const AtomicString& name, StringOrFloat&);
+  // Note: AnonymousNamedSetter() can end up throwing an exception via
+  // SetPropertyInternal() even though it does not take an |ExceptionState| as
+  // an argument (see bug 829408).
   bool AnonymousNamedSetter(ScriptState*,
                             const AtomicString& name,
-                            const String& value,
-                            ExceptionState&);
+                            const String& value);
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&);
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 

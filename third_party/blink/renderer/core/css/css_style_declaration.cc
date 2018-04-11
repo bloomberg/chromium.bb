@@ -170,21 +170,30 @@ void CSSStyleDeclaration::AnonymousNamedGetter(const AtomicString& name,
   result.SetString(GetPropertyValueInternal(resolved_property));
 }
 
-bool CSSStyleDeclaration::AnonymousNamedSetter(
-    ScriptState* script_state,
-    const AtomicString& name,
-    const String& value,
-    ExceptionState& exception_state) {
+bool CSSStyleDeclaration::AnonymousNamedSetter(ScriptState* script_state,
+                                               const AtomicString& name,
+                                               const String& value) {
   if (!script_state->ContextIsValid())
     return false;
 
   CSSPropertyID unresolved_property = CssPropertyInfo(name);
   if (!unresolved_property)
     return false;
+  // We create the ExceptionState manually due to performance issues: adding
+  // [RaisesException] to the IDL causes the bindings layer to expensively
+  // create a CString to set the ExceptionState's |property_name| argument,
+  // while we can use CSSProperty::GetPropertyName() here (see bug 829408).
+  ExceptionState exception_state(
+      script_state->GetIsolate(), ExceptionState::kSetterContext,
+      "CSSStyleDeclaration",
+      CSSProperty::Get(resolveCSSPropertyID(unresolved_property))
+          .GetPropertyName());
   SetPropertyInternal(
       unresolved_property, String(), value, false,
       ExecutionContext::From(script_state)->GetSecureContextMode(),
       exception_state);
+  if (exception_state.HadException())
+    return false;
   return true;
 }
 

@@ -39,5 +39,5 @@
     // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-camel-cased-attribute
     // https://drafts.csswg.org/cssom/#dom-cssstyledeclaration-dashed-attribute
     getter (DOMString or float) (DOMString name);
-    [CEReactions, CallWith=ScriptState, RaisesException] setter void (DOMString property, DOMString? propertyValue);
+    [CEReactions, CallWith=ScriptState] setter void (DOMString property, DOMString? propertyValue);
 };
