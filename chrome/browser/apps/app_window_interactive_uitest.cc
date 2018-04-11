@@ -76,10 +76,6 @@ void AppWindowInteractiveTest::WaitUntilKeyFocus() {
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
-
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
 
@@ -117,10 +113,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
-
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("leave_fullscreen", &launched_listener);
 
@@ -166,10 +158,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest, ESCLeavesFullscreenDOM) {
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenWindow) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
-
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen", &launched_listener);
 
@@ -212,10 +200,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenDOM) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
-
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen", &launched_listener);
 
@@ -268,10 +252,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
 // and 'overrideEscFullscreen'.
 IN_PROC_BROWSER_TEST_F(AppWindowInteractiveTest,
                        ESCDoesNotLeaveFullscreenOldPermission) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
-
   ExtensionTestMessageListener launched_listener("Launched", true);
   LoadAndLaunchPlatformApp("prevent_leave_fullscreen_old", &launched_listener);
 

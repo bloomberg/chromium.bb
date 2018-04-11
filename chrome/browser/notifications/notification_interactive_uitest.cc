@@ -595,9 +595,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
   ASSERT_TRUE(embedded_test_server()->Start());
 
   AllowAllOrigins();
@@ -680,9 +677,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
 // Verify that a notification is actually displayed when the webpage that
 // creates it is fullscreen with the fullscreen notification flag turned on.
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayPopupNotification) {
-#if defined(OS_MACOSX)
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Creates a simple notification.
