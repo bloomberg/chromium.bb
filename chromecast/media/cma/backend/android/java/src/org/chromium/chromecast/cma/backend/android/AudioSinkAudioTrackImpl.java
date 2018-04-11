@@ -127,6 +127,9 @@ class AudioSinkAudioTrackImpl {
         STABLE, // Reference time exists and is updated regularly.
         RESYNCING_AFTER_UNDERRUN, // The AudioTrack hit an underrun and we need to find a new
                                   // reference timestamp after the underrun point.
+        RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT, // We experienced excessive and consistent
+                                                   // jitters in the timestamps and we should find a
+                                                   // new reference timestamp.
     }
 
     ReferenceTimestampState mReferenceTimestampState;
@@ -652,6 +655,8 @@ class AudioSinkAudioTrackImpl {
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
 
+            case RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT:
+            // fall-through
             case RESYNCING_AFTER_UNDERRUN:
                 // Resyncing happens after we hit an underrun in the AudioTrack. This causes the
                 // Android Audio stack to insert additional samples, which increases the reference
@@ -672,7 +677,8 @@ class AudioSinkAudioTrackImpl {
                 mRefNanoTimeAtFramePos0 = newNanoTimeAtFramePos0;
                 mReferenceTimestampState = ReferenceTimestampState.STABLE;
                 Log.i(mTag,
-                        "New stable timestamp after underrun [" + mTimestampStabilityCounter + "/"
+                        "New stable timestamp after underrun or excessive drift ["
+                                + mTimestampStabilityCounter + "/"
                                 + elapsedNsec(mTimestampStabilityStartTimeNsec) / 1000000 + "ms]");
                 break;
 
@@ -690,8 +696,12 @@ class AudioSinkAudioTrackImpl {
                     if (timeSinceLastGoodTstamp <= MAX_TIME_IGNORING_TSTAMPS_NSECS) {
                         return; // Ignore this one.
                     }
-                    // We ignored jittery timestamps for too long, let this one pass.
+                    // We ignored jittery timestamps for too long, restart sync logic.
                     Log.i(mTag, "Too many jittery timestamps ignored!");
+                    mLastTimestampUpdateNsec = NO_TIMESTAMP;
+                    mTimestampStabilityCounter = 0;
+                    mReferenceTimestampState =
+                            ReferenceTimestampState.RESYNCING_AFTER_EXCESSIVE_TIMESTAMP_DRIFT;
                 }
                 // Low-pass filter: 0.10*New + 0.90*Ref. Do integer math with proper rounding.
                 mRefNanoTimeAtFramePos0 =
