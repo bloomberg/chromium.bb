@@ -11,6 +11,7 @@
 #include "net/base/net_export.h"
 #include "net/socket/datagram_socket.h"
 #include "net/socket/socket_performance_watcher.h"
+#include "net/socket/transport_client_socket.h"
 
 namespace net {
 
@@ -23,7 +24,6 @@ struct NetLogSource;
 class SSLClientSocket;
 struct SSLClientSocketContext;
 struct SSLConfig;
-class StreamSocket;
 
 // An interface used to instantiate StreamSocket objects.  Used to facilitate
 // testing code with mock socket implementations.
@@ -38,7 +38,7 @@ class NET_EXPORT ClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) = 0;
 
-  virtual std::unique_ptr<StreamSocket> CreateTransportClientSocket(
+  virtual std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
       NetLog* net_log,
