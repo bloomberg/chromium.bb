@@ -36,6 +36,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/indexed_buffer_binding_host.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -236,7 +237,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
       bool offscreen,
       const gles2::DisallowedFeatures& disallowed_features,
       const ContextCreationAttribs& attrib_helper) override;
-  const gles2::ContextState* GetContextState() override;
+  const ContextState* GetContextState() override { return &state_; }
   void Destroy(bool have_context) override;
   bool MakeCurrent() override;
   gl::GLContext* GetGLContext() override;
@@ -767,6 +768,15 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
+  // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
+  // However, we set it to true everywhere, not to trust drivers to handle
+  // out-of-bounds buffer accesses.
+  bool needs_emulation = true;
+  state_.indexed_uniform_buffer_bindings =
+      new gles2::IndexedBufferBindingHost(group_->max_uniform_buffer_bindings(),
+                                          GL_UNIFORM_BUFFER, needs_emulation);
+  state_.indexed_uniform_buffer_bindings->SetIsBound(true);
+
   state_.InitGenericAttribs(group_->max_vertex_attribs());
   vertex_array_manager_.reset(new VertexArrayManager());
 
@@ -802,11 +812,6 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   return gpu::ContextResult::kSuccess;
 }
 
-const gles2::ContextState* RasterDecoderImpl::GetContextState() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void RasterDecoderImpl::Destroy(bool have_context) {
   if (!initialized())
     return;
@@ -835,6 +840,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   state_.sampler_units.clear();
   state_.bound_pixel_pack_buffer = nullptr;
   state_.bound_pixel_unpack_buffer = nullptr;
+  state_.indexed_uniform_buffer_bindings = nullptr;
 
   copy_tex_image_blit_.reset();
   copy_texture_chromium_.reset();
