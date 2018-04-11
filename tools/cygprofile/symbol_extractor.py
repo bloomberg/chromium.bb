@@ -15,18 +15,24 @@ import cygprofile_utils
 
 sys.path.insert(
     0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                    'third_party', 'android_platform', 'development',
-                    'scripts'))
-import symbol
+                    'build', 'android'))
+
+from pylib import constants
+from pylib.constants import host_paths
 
 _MAX_WARNINGS_TO_PRINT = 200
 
 SymbolInfo = collections.namedtuple('SymbolInfo', ('name', 'offset', 'size',
                                                    'section'))
 
+# Unfortunate global variable :-/
+_arch = 'arm'
+
+
 def SetArchitecture(arch):
   """Set the architecture for binaries to be symbolized."""
-  symbol.ARCH = arch
+  global _arch
+  _arch = arch
 
 
 def _FromObjdumpLine(line):
@@ -89,7 +95,7 @@ def SymbolInfosFromBinary(binary_filename):
   Returns:
     A list of SymbolInfo from the binary.
   """
-  command = (symbol.ToolPath('objdump'), '-t', '-w', binary_filename)
+  command = (host_paths.ToolPath('objdump', _arch), '-t', '-w', binary_filename)
   p = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE)
   try:
     result = _SymbolInfosFromStream(p.stdout)
@@ -116,6 +122,7 @@ def GroupSymbolInfosByOffset(symbol_infos):
     offset_to_symbol_infos[symbol_info.offset].append(symbol_info)
   return dict(offset_to_symbol_infos)
 
+
 def GroupSymbolInfosByName(symbol_infos):
   """Create a dict {name: [symbol_info1, ...], ...}.
 
@@ -131,6 +138,7 @@ def GroupSymbolInfosByName(symbol_infos):
   for symbol_info in symbol_infos:
     name_to_symbol_infos[symbol_info.name].append(symbol_info)
   return dict(name_to_symbol_infos)
+
 
 def CreateNameToSymbolInfo(symbol_infos):
   """Create a dict {name: symbol_info, ...}.
@@ -161,4 +169,7 @@ def CreateNameToSymbolInfo(symbol_infos):
 
 def DemangleSymbol(mangled_symbol):
   """Return the demangled form of mangled_symbol."""
-  return symbol.CallCppFilt(mangled_symbol)
+  cmd = [host_paths.ToolPath("c++filt", _arch)]
+  process = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+  demangled_symbol, _ = process.communicate(mangled_symbol + '\n')
+  return demangled_symbol

@@ -19,9 +19,9 @@ from test_utils import SimpleTestSymbol
 
 sys.path.insert(
     0, os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                    'third_party', 'android_platform', 'development',
-                    'scripts'))
-import symbol
+                    'build', 'android'))
+
+import pylib.constants.host_paths as host_paths
 
 
 # Used for fake demangling on bots where c++filt does not exist.
@@ -44,7 +44,7 @@ class TestObjectFileProcessor(cyglog_to_orderfile.ObjectFileProcessor):
 class TestCyglogToOrderfile(unittest.TestCase):
   def setUp(self):
     self._old_demangle = None
-    if not os.path.exists(symbol.ToolPath('c++filt')):
+    if not os.path.exists(host_paths.ToolPath('c++filt', 'arm')):
       print 'Using fake demangling due to missing c++filt binary'
       self._old_demangle = symbol_extractor.DemangleSymbol
       symbol_extractor.DemangleSymbol = _FakeDemangle

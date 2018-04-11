@@ -23,17 +23,23 @@ with host_paths.SysPath(
 
 _RE_ASAN = re.compile(r'(.*?)(#\S*?)\s+(\S*?)\s+\((.*?)\+(.*?)\)')
 
+# This named tuple models a parsed Asan log line.
+AsanParsedLine = collections.namedtuple('AsanParsedLine',
+                                        'prefix,library,pos,rel_address')
+
+# This named tuple models an Asan log line. 'raw' is the raw content
+# while 'parsed' is None or an AsanParsedLine instance.
+AsanLogLine = collections.namedtuple('AsanLogLine', 'raw,parsed')
+
 def _ParseAsanLogLine(line):
+  """Parse line into corresponding AsanParsedLine value, if any, or None."""
   m = re.match(_RE_ASAN, line)
   if not m:
     return None
-  return {
-      'prefix': m.group(1),
-      'library': m.group(4),
-      'pos': m.group(2),
-      'rel_address': '%08x' % int(m.group(5), 16),
-  }
-
+  return AsanParsedLine(prefix=m.group(1),
+                        library=m.group(4),
+                        pos=m.group(2),
+                        rel_address='%08x' % int(m.group(5), 16))
 
 def _FindASanLibraries():
   asan_lib_dir = os.path.join(host_paths.DIR_SOURCE_ROOT,
@@ -55,38 +61,52 @@ def _TranslateLibPath(library, asan_libs):
   return symbol.TranslateLibPath(library)
 
 
-def _Symbolize(asan_input):
-  asan_libs = _FindASanLibraries()
-  libraries = collections.defaultdict(list)
-  asan_lines = []
-  for asan_log_line in [a.rstrip() for a in asan_input]:
-    m = _ParseAsanLogLine(asan_log_line)
-    if m:
-      libraries[m['library']].append(m)
-    asan_lines.append({'raw_log': asan_log_line, 'parsed': m})
+def _PrintSymbolized(asan_input, arch):
+  """Print symbolized logcat output for Asan symbols.
 
+  Args:
+    asan_input: list of input lines.
+    arch: Target CPU architecture.
+  """
+  asan_libs = _FindASanLibraries()
+
+  # Maps library -> [ AsanParsedLine... ]
+  libraries = collections.defaultdict(list)
+
+  asan_log_lines = []
+  for line in asan_input:
+    line = line.rstrip()
+    parsed = _ParseAsanLogLine(line)
+    if parsed:
+      libraries[parsed.library].append(parsed)
+    asan_log_lines.append(AsanLogLine(raw=line, parsed=parsed))
+
+  # Maps library -> { address -> [(symbol, location, obj_sym_with_offset)...] }
   all_symbols = collections.defaultdict(dict)
+
   for library, items in libraries.iteritems():
     libname = _TranslateLibPath(library, asan_libs)
-    lib_relative_addrs = set([i['rel_address'] for i in items])
+    lib_relative_addrs = set([i.rel_address for i in items])
     # pylint: disable=no-member
     info_dict = symbol.SymbolInformationForSet(libname,
                                                lib_relative_addrs,
-                                               True)
+                                               True,
+                                               target_arch=arch)
     if info_dict:
-      all_symbols[library]['symbols'] = info_dict
+      all_symbols[library] = info_dict
 
-  for asan_log_line in asan_lines:
-    m = asan_log_line['parsed']
-    if not m:
-      print asan_log_line['raw_log']
-      continue
-    if (m['library'] in all_symbols and
-        m['rel_address'] in all_symbols[m['library']]['symbols']):
-      s = all_symbols[m['library']]['symbols'][m['rel_address']][0]
-      print '%s%s %s %s' % (m['prefix'], m['pos'], s[0], s[1])
+  for log_line in asan_log_lines:
+    m = log_line.parsed
+    if (m and m.library in all_symbols and
+        m.rel_address in all_symbols[m.library]):
+      # NOTE: all_symbols[lib][address] is a never-emtpy list of tuples.
+      # NOTE: The documentation for SymbolInformationForSet() indicates
+      # that usually one wants to display the last list item, not the first.
+      # The code below takes the first, is this the best choice here?
+      s = all_symbols[m.library][m.rel_address][0]
+      print '%s%s %s %s' % (m.prefix, m.pos, s[0], s[1])
     else:
-      print asan_log_line['raw_log']
+      print log_line.raw
 
 
 def main():
@@ -96,6 +116,8 @@ def main():
                          'Use stdin if not specified.')
   parser.add_option('--output-directory',
                     help='Path to the root build directory.')
+  parser.add_option('--arch', default='arm',
+                    help='CPU architecture name')
   options, _ = parser.parse_args()
 
   if options.output_directory:
@@ -107,7 +129,8 @@ def main():
     asan_input = file(options.logcat, 'r')
   else:
     asan_input = sys.stdin
-  _Symbolize(asan_input.readlines())
+
+  _PrintSymbolized(asan_input.readlines(), options.arch)
 
 
 if __name__ == "__main__":
