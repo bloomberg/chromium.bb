@@ -38,8 +38,6 @@ const struct {
   ui::KeyboardCode keycode;
   int modifiers;
 } kReservedAccelerators[] = {
-    {ui::VKEY_SPACE, ui::EF_CONTROL_DOWN},
-    {ui::VKEY_SPACE, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN},
     {ui::VKEY_F13, ui::EF_NONE},
     {ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN}};
 
