@@ -158,6 +158,11 @@ def build_basename(name, prefix=None, ext=None):
 
 
 def binding_header_basename(name):
+    """Returns a binding header basename including an extension for the
+    specified interface name.
+
+    E.g. 'NodeList' -> 'v8_node_list.h'
+    """
     return build_basename(name, prefix='v8_', ext='.h')
 
 
