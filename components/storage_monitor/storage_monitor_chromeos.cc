@@ -20,12 +20,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "components/storage_monitor/media_transfer_protocol_device_observer_chromeos.h"
-#include "components/storage_monitor/mtp_manager_client_chromeos.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 using chromeos::disks::DiskMountManager;
 
@@ -119,13 +116,6 @@ void StorageMonitorCros::Init() {
   if (!media_transfer_protocol_manager_) {
     media_transfer_protocol_manager_ =
         device::MediaTransferProtocolManager::Initialize();
-
-    // Set up the connection with mojofied MtpManager.
-    DCHECK(GetConnector());
-    GetConnector()->BindInterface(device::mojom::kServiceName,
-                                  mojo::MakeRequest(&mtp_device_manager_));
-    mtp_manager_client_ =
-        std::make_unique<MtpManagerClientChromeOS>(mtp_device_manager_.get());
   }
   media_transfer_protocol_device_observer_ =
       std::make_unique<MediaTransferProtocolDeviceObserverChromeOS>(

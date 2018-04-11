@@ -190,9 +190,6 @@ class MediaTransferProtocolManager {
 
   // Creates and returns the global MediaTransferProtocolManager instance.
   static std::unique_ptr<MediaTransferProtocolManager> Initialize();
-
-  // Returns the global MediaTransferProtocolManager instance.
-  static MediaTransferProtocolManager* GetInstance();
 };
 
 }  // namespace device
