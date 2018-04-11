@@ -206,6 +206,8 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     cm->decoder_model_info_present_flag = aom_rb_read_bit(rb);
     if (cm->decoder_model_info_present_flag)
       av1_read_decoder_model_info(cm, rb);
+  } else {
+    cm->decoder_model_info_present_flag = 0;
   }
   int operating_points_decoder_model_present = aom_rb_read_bit(rb);
   if (operating_points_decoder_model_present) {
