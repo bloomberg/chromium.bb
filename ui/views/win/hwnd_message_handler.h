@@ -760,6 +760,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // not WM_TOUCH events.
   bool pointer_events_for_touch_;
 
+  // True if we enable feature kPrecisionTouchpadScrollPhase. Indicate we will
+  // report the scroll phase information or not.
+  bool precision_touchpad_scroll_phase_enabled_;
+
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the
   // window destruction and ensure that the map is cleaned up.

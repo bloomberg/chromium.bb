@@ -248,10 +248,6 @@ const int kTouchDownContextResetTimeout = 500;
 // same location as the cursor.
 const int kSynthesizedMouseMessagesTimeDifference = 500;
 
-bool IsPrecisionTouchpadNavigationGestureEnabled() {
-  return base::FeatureList::IsEnabled(features::kPrecisionTouchpadScrollPhase);
-}
-
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -372,6 +368,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       left_button_down_on_caption_(false),
       background_fullscreen_hack_(false),
       pointer_events_for_touch_(features::IsUsingWMPointerForTouch()),
+      precision_touchpad_scroll_phase_enabled_(base::FeatureList::IsEnabled(
+          features::kPrecisionTouchpadScrollPhase)),
       autohide_factory_(this),
       weak_factory_(this) {}
 
@@ -1120,7 +1118,7 @@ void HWNDMessageHandler::ApplyPanGestureEvent(
 
   int modifiers = ui::GetModifiersFromKeyState();
 
-  if (IsPrecisionTouchpadNavigationGestureEnabled()) {
+  if (precision_touchpad_scroll_phase_enabled_) {
     ui::ScrollEvent event(ui::ET_SCROLL, cursor_location, ui::EventTimeForNow(),
                           modifiers, scroll_x, scroll_y, scroll_x, scroll_y, 2,
                           momentum_phase, phase);
@@ -1152,7 +1150,7 @@ void HWNDMessageHandler::ApplyPanGestureScrollBegin(int scroll_x,
 }
 
 void HWNDMessageHandler::ApplyPanGestureScrollEnd() {
-  if (!IsPrecisionTouchpadNavigationGestureEnabled())
+  if (!precision_touchpad_scroll_phase_enabled_)
     return;
 
   ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::NONE,
@@ -1160,7 +1158,7 @@ void HWNDMessageHandler::ApplyPanGestureScrollEnd() {
 }
 
 void HWNDMessageHandler::ApplyPanGestureFlingBegin() {
-  if (!IsPrecisionTouchpadNavigationGestureEnabled())
+  if (!precision_touchpad_scroll_phase_enabled_)
     return;
 
   ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::BEGAN,
@@ -1168,7 +1166,7 @@ void HWNDMessageHandler::ApplyPanGestureFlingBegin() {
 }
 
 void HWNDMessageHandler::ApplyPanGestureFlingEnd() {
-  if (!IsPrecisionTouchpadNavigationGestureEnabled())
+  if (!precision_touchpad_scroll_phase_enabled_)
     return;
 
   ApplyPanGestureEvent(0, 0, ui::EventMomentumPhase::END,
