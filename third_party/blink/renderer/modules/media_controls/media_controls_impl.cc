@@ -106,10 +106,6 @@ constexpr int kMinHeightForOverlayPlayButton = kOverlayPlayButtonHeight +
 
 constexpr int kMinScrubbingMessageWidth = 300;
 
-// If you change this value, then also update the corresponding value in
-// LayoutTests/media/media-controls.js.
-const double kTimeWithoutMouseMovementBeforeHidingMediaControls = 3;
-
 const char* kStateCSSClasses[7] = {
     "phase-pre-ready state-no-source",    // kNoSource
     "phase-pre-ready state-no-metadata",  // kNotLoaded
@@ -197,6 +193,17 @@ bool ShouldShowCastButton(HTMLMediaElement& media_element) {
 bool PreferHiddenVolumeControls(const Document& document) {
   return !document.GetSettings() ||
          document.GetSettings()->GetPreferHiddenVolumeControls();
+}
+
+// If you change this value, then also update the corresponding value in
+// LayoutTests/media/media-controls.js.
+double kTimeWithoutMouseMovementBeforeHidingMediaControls = 3;
+double kModernTimeWithoutMouseMovementBeforeHidingMediaControls = 2.5;
+
+double GetTimeWithoutMouseMovementBeforeHidingMediaControls() {
+  return MediaControlsImpl::IsModern()
+             ? kModernTimeWithoutMouseMovementBeforeHidingMediaControls
+             : kTimeWithoutMouseMovementBeforeHidingMediaControls;
 }
 
 }  // namespace
@@ -1359,7 +1366,7 @@ void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {
 
 void MediaControlsImpl::StartHideMediaControlsTimer() {
   hide_media_controls_timer_.StartOneShot(
-      kTimeWithoutMouseMovementBeforeHidingMediaControls, FROM_HERE);
+      GetTimeWithoutMouseMovementBeforeHidingMediaControls(), FROM_HERE);
 }
 
 void MediaControlsImpl::StopHideMediaControlsTimer() {

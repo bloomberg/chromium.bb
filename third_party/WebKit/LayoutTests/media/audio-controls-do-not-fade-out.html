@@ -14,7 +14,7 @@ async_test(function(t) {
 
     function controlsTimerFired() {
         var controls = mediaControlsButton(audio, "panel");
-        assert_equals(getComputedStyle(controls).opacity, "1");
+        assert_false(controls.classList.contains("transparent"));
     }
 });
 </script>

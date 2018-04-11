@@ -49,6 +49,11 @@ video::-webkit-media-controls {
     align-items: center;
 }
 
+audio::-webkit-media-controls-panel.transparent,
+video::-webkit-media-controls-panel.transparent {
+  opacity: 0;
+}
+
 audio::-webkit-media-controls-enclosure, video::-webkit-media-controls-enclosure {
     width: 100%;
     height: 32px;

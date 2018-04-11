@@ -20,7 +20,7 @@ async_test(function(t) {
 
         runAfterHideMediaControlsTimerFired(t.step_func_done(function() {
             var controls = mediaControlsButton(video, "panel");
-            assert_equals(getComputedStyle(controls).opacity, "0");
+            assert_true(controls.classList.contains("transparent"));
         }), video);
     });
 
