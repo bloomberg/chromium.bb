@@ -206,3 +206,18 @@ TEST_F(DownloadManagerTabHelperTest, NetworkActivityIndicatorOnDestruction) {
   EXPECT_EQ(0U, [[NetworkActivityIndicatorManager sharedInstance]
                     numTotalNetworkTasks]);
 }
+
+// Tests that has_download_task() returns correct result.
+TEST_F(DownloadManagerTabHelperTest, HasDownloadTask) {
+  ASSERT_FALSE(delegate_.state);
+  auto task = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
+
+  web::FakeDownloadTask* task_ptr = task.get();
+  ASSERT_FALSE(tab_helper()->has_download_task());
+  tab_helper()->Download(std::move(task));
+  task_ptr->Start(std::make_unique<net::URLFetcherStringWriter>());
+  ASSERT_TRUE(tab_helper()->has_download_task());
+
+  task_ptr->Cancel();
+  EXPECT_FALSE(tab_helper()->has_download_task());
+}

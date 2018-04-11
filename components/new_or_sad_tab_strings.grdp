@@ -4,6 +4,9 @@
       <message name="IDS_DEFAULT_TAB_TITLE" desc="The default title in a tab.">
         Untitled
       </message>
+      <message name="IDS_DOWNLOAD_TAB_TITLE" desc="The title for an empty Tab, which displays Download Manager.">
+        Download
+      </message>
 
       <!-- Sad Tab Strings -->
       <message name="IDS_SAD_TAB_TITLE" desc="The title of the sad tab page that is shown when a tab crashes. This is intended to be a humorous exclamation of dismay." formatter_data="android_java">

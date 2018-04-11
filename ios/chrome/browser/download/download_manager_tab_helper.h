@@ -36,6 +36,10 @@ class DownloadManagerTabHelper
   // Asynchronously downloads a file using the given |task|.
   virtual void Download(std::unique_ptr<web::DownloadTask> task);
 
+  // Returns |true| after Download() was called, |false| after the task was
+  // cancelled.
+  bool has_download_task() const { return task_.get(); }
+
  protected:
   // Allow subclassing from DownloadManagerTabHelper for testing purposes.
   DownloadManagerTabHelper(web::WebState* web_state,
