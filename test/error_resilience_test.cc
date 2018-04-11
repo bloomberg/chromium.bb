@@ -347,6 +347,9 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   unsigned int error_resilient_frame_list[] = { 8 };
   SetErrorResilientFrames(num_error_resilient_frames,
                           error_resilient_frame_list);
+  // Ensure that any invisible frames before the E frame are dropped
+  SetInvisibleErrorFrames(num_error_resilient_frames,
+                          error_resilient_frame_list);
   // Set all frames after the error resilient frame to not allow MFMV
   unsigned int num_nomfmv_frames = 6;
   unsigned int nomfmv_frame_list[] = { 9, 10, 11, 12, 13, 14 };
