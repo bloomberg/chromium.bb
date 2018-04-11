@@ -16,13 +16,11 @@ ToolbarState::ToolbarState()
 ToolbarState::ToolbarState(const GURL& url,
                            security_state::SecurityLevel level,
                            const gfx::VectorIcon* icon,
-                           base::string16 verbose_text,
                            bool display_url,
                            bool offline)
     : gurl(url),
       security_level(level),
       vector_icon(icon),
-      secure_verbose_text(verbose_text),
       should_display_url(display_url),
       offline_page(offline) {}
 
@@ -32,7 +30,6 @@ bool ToolbarState::operator==(const ToolbarState& other) const {
   return (gurl == other.gurl && security_level == other.security_level &&
           vector_icon == other.vector_icon &&
           should_display_url == other.should_display_url &&
-          secure_verbose_text == other.secure_verbose_text &&
           offline_page == other.offline_page);
 }
 

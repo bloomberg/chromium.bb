@@ -2061,9 +2061,18 @@ void UiSceneCreator::CreateUrlBar() {
                         &ColorScheme::url_bar_button, &Button::SetButtonColors);
   scene_->AddUiElement(kUrlBarLayout, std::move(origin_region));
 
+  // This layout contains the page info icon and URL.
   auto origin_layout = Create<LinearLayout>(kUrlBarOriginLayout, kPhaseNone,
                                             LinearLayout::kRight);
+  VR_BIND_VISIBILITY(origin_layout, model->toolbar_state.should_display_url);
+
   scene_->AddUiElement(kUrlBarOriginRegion, std::move(origin_layout));
+
+  // This layout contains hint-text items, shown when there's no origin.
+  auto hint_layout =
+      Create<LinearLayout>(kUrlBarHintLayout, kPhaseNone, LinearLayout::kRight);
+  VR_BIND_VISIBILITY(hint_layout, !model->toolbar_state.should_display_url);
+  scene_->AddUiElement(kUrlBarOriginRegion, std::move(hint_layout));
 
   auto security_button_region =
       Create<Rect>(kUrlBarSecurityButtonRegion, kPhaseNone);
@@ -2080,7 +2089,6 @@ void UiSceneCreator::CreateUrlBar() {
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
   security_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
-  VR_BIND_VISIBILITY(security_button, model->toolbar_state.should_display_url);
   VR_BIND_BUTTON_COLORS(model_, security_button.get(),
                         &ColorScheme::url_bar_button, &Button::SetButtonColors);
   security_button->AddBinding(std::make_unique<Binding<const gfx::VectorIcon*>>(
@@ -2117,7 +2125,6 @@ void UiSceneCreator::CreateUrlBar() {
                           base::Unretained(browser_),
                           UiUnsupportedMode::kUnhandledCodePoint));
   url_text->SetFieldWidth(kUrlBarUrlWidthDMM);
-  VR_BIND_VISIBILITY(url_text, model->toolbar_state.should_display_url);
   url_text->AddBinding(VR_BIND_FUNC(GURL, Model, model_,
                                     model->toolbar_state.gurl, UrlText,
                                     url_text.get(), SetUrl));
@@ -2132,20 +2139,21 @@ void UiSceneCreator::CreateUrlBar() {
   right_margin->SetSize(kUrlBarOriginRightMarginDMM, 0);
   scene_->AddUiElement(kUrlBarOriginLayout, std::move(right_margin));
 
+  auto hint_text_spacer = Create<Rect>(kNone, kPhaseNone);
+  hint_text_spacer->SetType(kTypeSpacer);
+  hint_text_spacer->SetSize(kUrlBarOriginContentOffsetDMM, kUrlBarHeightDMM);
+  scene_->AddUiElement(kUrlBarHintLayout, std::move(hint_text_spacer));
+
   auto hint_text =
       Create<Text>(kUrlBarHintText, kPhaseForeground, kUrlBarFontHeightDMM);
-  hint_text->set_contributes_to_parent_bounds(false);
-  hint_text->set_x_anchoring(LEFT);
-  hint_text->set_x_centering(LEFT);
-  hint_text->SetFieldWidth(kUrlBarUrlWidthDMM);
-  hint_text->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
+  hint_text->SetFieldWidth(kUrlBarOriginRegionWidthDMM -
+                           kUrlBarOriginContentOffsetDMM);
   hint_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
-  VR_BIND_VISIBILITY(hint_text, !model->toolbar_state.should_display_url);
   VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::url_bar_hint_text,
                 &Text::SetColor);
-  scene_->AddUiElement(kUrlBarOriginRegion, std::move(hint_text));
+  scene_->AddUiElement(kUrlBarHintLayout, std::move(hint_text));
 
   separator = Create<Rect>(kUrlBarSeparator, kPhaseForeground);
   separator->set_hit_testable(true);
