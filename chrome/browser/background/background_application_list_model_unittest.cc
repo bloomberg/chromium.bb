@@ -88,6 +88,7 @@ static scoped_refptr<Extension> CreateExtension(
     bool background_permission) {
   base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   manifest.SetString(extensions::manifest_keys::kName, name);
   auto permissions = std::make_unique<base::ListValue>();
   if (background_permission) {
