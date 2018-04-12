@@ -47,10 +47,6 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // Whether the content soft-wraps to the next line.
   bool HasSoftWrapToNextLine() const;
 
-  // Whether the content is following a soft-wrap from the previous line.
-  // TODO(xiaochengh): Try to avoid passing the previous line.
-  bool HasSoftWrapFromPreviousLine(const NGPhysicalLineBoxFragment*) const;
-
   PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const final;
 
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
