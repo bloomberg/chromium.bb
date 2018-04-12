@@ -213,10 +213,19 @@ void FidoBleConnection::WriteControlPoint(const std::vector<uint8_t>& data,
     return;
   }
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  control_point->WriteRemoteCharacteristic(
-      data, base::Bind(OnWrite, copyable_callback),
-      base::Bind(OnWriteError, copyable_callback));
+  // Attempt a write without response for performance reasons. Fall back to a
+  // confirmed write in case of failure, e.g. when the characteristic does not
+  // provide the required property.
+  if (control_point->WriteWithoutResponse(data)) {
+    DVLOG(2) << "Write without response succeeded.";
+    std::move(callback).Run(true);
+  } else {
+    auto copyable_callback =
+        base::AdaptCallbackForRepeating(std::move(callback));
+    control_point->WriteRemoteCharacteristic(
+        data, base::Bind(OnWrite, copyable_callback),
+        base::Bind(OnWriteError, copyable_callback));
+  }
 }
 
 void FidoBleConnection::WriteServiceRevision(ServiceRevision service_revision,

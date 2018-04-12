@@ -85,6 +85,12 @@ void BluetoothRemoteGattCharacteristic::StartNotifySession(
   }
 }
 
+bool BluetoothRemoteGattCharacteristic::WriteWithoutResponse(
+    base::span<const uint8_t> value) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void BluetoothRemoteGattCharacteristic::ExecuteStartNotifySession(
     NotifySessionCallback callback,
     ErrorCallback error_callback,

@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -131,6 +132,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       const std::vector<uint8_t>& value,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
+
+  // Sends a write request to a remote characteristic with the value |value|
+  // without waiting for a response. This method returns false to signal
+  // failures. When attempting to write the remote characteristic true is
+  // returned without a guarantee of success. This method only applies to remote
+  // characteristics and will fail for those that are locally hosted.
+  // This method is currently implemented only on macOS.
+  // TODO(https://crbug.com/831524): Implement it on other platforms as well.
+  virtual bool WriteWithoutResponse(base::span<const uint8_t> value);
 
  protected:
   BluetoothRemoteGattCharacteristic();

@@ -183,6 +183,16 @@ void FakeRemoteGattCharacteristic::WriteRemoteCharacteristic(
                      value));
 }
 
+bool FakeRemoteGattCharacteristic::WriteWithoutResponse(
+    base::span<const uint8_t> value) {
+  if (properties_ & PROPERTY_WRITE_WITHOUT_RESPONSE) {
+    last_written_value_.emplace(value.begin(), value.end());
+    return true;
+  }
+
+  return false;
+}
+
 void FakeRemoteGattCharacteristic::SubscribeToNotifications(
     device::BluetoothRemoteGattDescriptor* ccc_descriptor,
     const base::Closure& callback,
