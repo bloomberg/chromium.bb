@@ -59,7 +59,10 @@ AppInstallEventLogCollector::AppInstallEventLogCollector(
     Delegate* delegate,
     Profile* profile,
     const std::set<std::string>& pending_packages)
-    : delegate_(delegate), profile_(profile), online_(GetOnlineState()) {
+    : delegate_(delegate),
+      profile_(profile),
+      online_(GetOnlineState()),
+      pending_packages_(pending_packages) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
@@ -69,9 +72,17 @@ AppInstallEventLogCollector::AppInstallEventLogCollector(
   if (policy_bridge) {
     policy_bridge->AddObserver(this);
   }
+  ArcAppListPrefs* const app_prefs = ArcAppListPrefs::Get(profile_);
+  if (app_prefs) {
+    app_prefs->AddObserver(this);
+  }
 }
 
 AppInstallEventLogCollector::~AppInstallEventLogCollector() {
+  ArcAppListPrefs* const app_prefs = ArcAppListPrefs::Get(profile_);
+  if (app_prefs) {
+    app_prefs->RemoveObserver(this);
+  }
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
@@ -83,8 +94,9 @@ AppInstallEventLogCollector::~AppInstallEventLogCollector() {
 }
 
 void AppInstallEventLogCollector::OnPendingPackagesChanged(
-    const std::set<std::string>& added,
-    const std::set<std::string>& removed) {}
+    const std::set<std::string>& pending_packages) {
+  pending_packages_ = pending_packages;
+}
 
 void AppInstallEventLogCollector::AddLoginEvent() {
   // Don't log in case session is restared or recovered from crash.
@@ -169,6 +181,33 @@ void AppInstallEventLogCollector::OnCloudDpsFailed(
   event->set_event_type(em::AppInstallReportLogEvent::CLOUDDPS_RESPONSE);
   SetTimestampFromTime(event.get(), time);
   event->set_clouddps_response(static_cast<int>(reason));
+  delegate_->Add(package_name, true /* gather_disk_space_info */,
+                 std::move(event));
+}
+
+void AppInstallEventLogCollector::OnInstallationStarted(
+    const std::string& package_name) {
+  if (!pending_packages_.count(package_name)) {
+    return;
+  }
+
+  auto event = std::make_unique<em::AppInstallReportLogEvent>();
+  event->set_event_type(em::AppInstallReportLogEvent::INSTALLATION_STARTED);
+  delegate_->Add(package_name, true /* gather_disk_space_info */,
+                 std::move(event));
+}
+
+void AppInstallEventLogCollector::OnInstallationFinished(
+    const std::string& package_name,
+    bool success) {
+  if (!pending_packages_.count(package_name)) {
+    return;
+  }
+
+  auto event = std::make_unique<em::AppInstallReportLogEvent>();
+  event->set_event_type(
+      success ? em::AppInstallReportLogEvent::INSTALLATION_FINISHED
+              : em::AppInstallReportLogEvent::INSTALLATION_FAILED);
   delegate_->Add(package_name, true /* gather_disk_space_info */,
                  std::move(event));
 }

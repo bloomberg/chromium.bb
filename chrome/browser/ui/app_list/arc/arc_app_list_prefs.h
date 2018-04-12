@@ -160,6 +160,14 @@ class ArcAppListPrefs : public KeyedService,
     // Notifies sync date type controller the model is ready to start.
     virtual void OnPackageListInitialRefreshed() {}
 
+    // Notifies that installation of package started.
+    virtual void OnInstallationStarted(const std::string& package_name) {}
+
+    // Notifies that installation of package finished. |succeed| is set to true
+    // in case of success.
+    virtual void OnInstallationFinished(const std::string& package_name,
+                                        bool success) {}
+
    protected:
     virtual ~Observer() {}
   };

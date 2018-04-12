@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -21,6 +22,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_handler.h"
+#include "components/arc/common/app.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -131,9 +133,13 @@ class AppInstallEventLogCollectorTest : public testing::Test {
                               shill::kTypeEthernet, shill::kStateOffline,
                               true /* visible */);
     base::RunLoop().RunUntilIdle();
+
+    arc_app_test_.SetUp(profile_.get());
   }
 
   void TearDown() override {
+    arc_app_test_.TearDown();
+
     profile_.reset();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -169,6 +175,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   chromeos::FakePowerManagerClient* power_manager_client() {
     return power_manager_client_;
   }
+  ArcAppListPrefs* app_prefs() { return arc_app_test_.arc_app_list_prefs(); }
 
   const std::set<std::string> packages_ = {kPackageName};
 
@@ -181,6 +188,7 @@ class AppInstallEventLogCollectorTest : public testing::Test {
   FakeAppInstallEventLogCollectorDelegate delegate_;
   TestingPrefServiceSimple pref_service_;
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
+  ArcAppTest arc_app_test_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogCollectorTest);
 };
@@ -383,6 +391,58 @@ TEST_F(AppInstallEventLogCollectorTest, CloudDPSEvent) {
   EXPECT_TRUE(delegate()->last_request().event.has_clouddps_response());
   EXPECT_EQ(static_cast<int>(arc::mojom::InstallErrorReason::TIMEOUT),
             delegate()->last_request().event.clouddps_response());
+}
+
+TEST_F(AppInstallEventLogCollectorTest, InstallPackages) {
+  arc::mojom::AppHost* const app_host = app_prefs();
+
+  std::unique_ptr<AppInstallEventLogCollector> collector =
+      std::make_unique<AppInstallEventLogCollector>(delegate(), profile(),
+                                                    packages_);
+
+  app_host->OnInstallationStarted(kPackageName);
+  ASSERT_EQ(1, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_STARTED,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(kPackageName, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
+
+  // kPackageName2 is not in the pending set.
+  app_host->OnInstallationStarted(kPackageName2);
+  EXPECT_EQ(1, delegate()->add_count());
+
+  arc::mojom::InstallationResult result;
+  result.package_name = kPackageName;
+  result.success = true;
+  app_host->OnInstallationFinished(
+      arc::mojom::InstallationResultPtr(result.Clone()));
+  EXPECT_EQ(2, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_FINISHED,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(kPackageName, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
+
+  collector->OnPendingPackagesChanged({kPackageName, kPackageName2});
+
+  // Now kPackageName2 is in the pending set.
+  app_host->OnInstallationStarted(kPackageName2);
+  EXPECT_EQ(3, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_STARTED,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
+
+  result.package_name = kPackageName2;
+  result.success = false;
+  app_host->OnInstallationFinished(
+      arc::mojom::InstallationResultPtr(result.Clone()));
+  EXPECT_EQ(4, delegate()->add_count());
+  EXPECT_EQ(em::AppInstallReportLogEvent::INSTALLATION_FAILED,
+            delegate()->last_event().event_type());
+  EXPECT_EQ(kPackageName2, delegate()->last_request().package_name);
+  EXPECT_TRUE(delegate()->last_request().add_disk_space_info);
+
+  EXPECT_EQ(0, delegate()->add_for_all_count());
 }
 
 }  // namespace policy

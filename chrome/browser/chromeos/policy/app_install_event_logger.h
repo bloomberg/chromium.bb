@@ -104,8 +104,7 @@ class AppInstallEventLogger : public AppInstallEventLogCollector::Delegate,
   // Informs the existing |log_collector_| that the list of pending app
   // push-install requests has changed or instantiates a new |log_collector_| if
   // none exists yet.
-  void UpdateCollector(const std::set<std::string>& added,
-                       const std::set<std::string>& removed);
+  void UpdateCollector(const std::set<std::string>& pending);
 
   // Destroys the |log_collector_|, if it exists.
   void StopCollector();
