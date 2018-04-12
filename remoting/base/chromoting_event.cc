@@ -64,6 +64,7 @@ const NameMapElement<ChromotingEvent::Os> kOsNames[] = {
     {ChromotingEvent::Os::CHROMOTING_CHROMEOS, "chromeos"},
     {ChromotingEvent::Os::CHROMOTING_MAC, "mac"},
     {ChromotingEvent::Os::CHROMOTING_WINDOWS, "windows"},
+    {ChromotingEvent::Os::OTHER, "other"},
     {ChromotingEvent::Os::CHROMOTING_ANDROID, "android"},
     {ChromotingEvent::Os::CHROMOTING_IOS, "ios"},
 };
