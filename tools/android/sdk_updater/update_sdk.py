@@ -35,6 +35,7 @@
 """
 
 import argparse
+import contextlib
 import os
 import re
 import shutil
@@ -46,7 +47,14 @@ import tempfile
 _SRC_ROOT = os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-_SDK_ROOT = os.path.join(_SRC_ROOT, 'third_party', 'android_sdk', 'public')
+_SRC_DEPS_PATH = os.path.join(_SRC_ROOT, 'DEPS')
+
+_SDK_PUBLIC_ROOT = os.path.join(_SRC_ROOT, 'third_party', 'android_sdk',
+                                'public')
+
+_SDK_SOURCES_ROOT = os.path.join(_SRC_ROOT, 'third_party', 'android_sdk',
+                                 'sources')
+
 
 # TODO(shenghuazhang): Update sdkmanager path when gclient can download SDK
 # via CIPD: crug/789809
@@ -56,7 +64,7 @@ _SDKMANAGER_PATH = os.path.join(_SRC_ROOT, 'third_party', 'android_tools',
 _ANDROID_CONFIG_GNI_PATH = os.path.join(_SRC_ROOT, 'build', 'config',
                                         'android', 'config.gni')
 
-_TOOLS_LIB_PATH = os.path.join(_SDK_ROOT, 'tools', 'lib')
+_TOOLS_LIB_PATH = os.path.join(_SDK_PUBLIC_ROOT, 'tools', 'lib')
 
 _DEFAULT_DOWNLOAD_PACKAGES = [
   'build-tools',
@@ -65,10 +73,12 @@ _DEFAULT_DOWNLOAD_PACKAGES = [
   'tools'
 ]
 
+# TODO(shenghuazhang): Search package versions from available packages through
+# the sdkmanager, instead of hardcoding the package names w/ version.
 _DEFAULT_PACKAGES_DICT = {
   'build-tools': 'build-tools;27.0.3',
   'platforms': 'platforms;android-27',
-  'sources': 'sources;android-26',
+  'sources': 'sources;android-27',
 }
 
 _GN_ARGUMENTS_TO_UPDATE = {
@@ -90,7 +100,7 @@ def _DownloadSdk(arguments):
   If package isn't provided, update build-tools, platform-tools, platforms,
   and tools.
   """
-  for pkg in arguments.packages:
+  for pkg in arguments.package:
     # If package is not a sdk-style path, try to match a default path to it.
     if pkg in _DEFAULT_PACKAGES_DICT:
       print 'Coercing %s to %s' % (pkg, _DEFAULT_PACKAGES_DICT[pkg])
@@ -108,7 +118,7 @@ def _DownloadSdk(arguments):
     subprocess.check_call(download_sdk_cmd)
 
 
-def _FindPackageVersion(package):
+def _FindPackageVersion(package, sdk_root):
   """Find sdk package version
 
   Two options for package version:
@@ -118,8 +128,10 @@ def _FindPackageVersion(package):
   """
   sdkmanager_list_cmd = [
       _SDKMANAGER_PATH,
-      '--list'
+      '--list',
+      '--sdk_root=%s' % sdk_root,
   ]
+
   if package in _DEFAULT_PACKAGES_DICT:
     # Get the version after ';' from package name
     package = _DEFAULT_PACKAGES_DICT[package]
@@ -143,13 +155,12 @@ def _FindPackageVersion(package):
     # by the first new line, the check loop should be ended when reaches a '\n'.
     output = subprocess.check_output(sdkmanager_list_cmd)
     for line in output.splitlines():
-      if package in line:
+      if ' ' + package + ' ' in line:
         # if found package path, catch its version which in the first '|...|'
         return line.split('|')[1].strip()
       if line == '\n': # Reaches the end of 'Installed packages' list
         break
     raise Exception('Cannot find the version of package %s' % package)
-
 
 def _ReplaceVersionInFile(file_path, pattern, version, dry_run=False):
   """Replace the version of sdk package argument in file.
@@ -165,21 +176,18 @@ def _ReplaceVersionInFile(file_path, pattern, version, dry_run=False):
     dry_run: Bool. To show what packages would be created and packages, without
              actually doing either.
   """
-  try:
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-      with open(file_path) as f:
-        for line in f:
-          new_line = re.sub(pattern, r'\g<1>"%s"\n' % version, line)
-          if new_line != line:
-            print '    Note: file %s argument %s would be updated to "%s".' % (
-                  file_path, line.strip(), version)
-          temp_file.write(new_line)
+  with tempfile.NamedTemporaryFile() as temp_file:
+    with open(file_path) as f:
+      for line in f:
+        new_line = re.sub(pattern, r'\g<1>"%s"\n' % version, line)
+        if new_line != line:
+          print ('    Note: file "%s" argument ' % file_path  +
+                '"%s" would be updated to "%s".' % (line.strip(), version))
+        temp_file.write(new_line)
     if not dry_run:
+      temp_file.flush()
       shutil.move(temp_file.name, file_path)
-
-  finally:
-    if os.path.exists(temp_file.name):
-      os.remove(temp_file.name)
+      temp_file.delete = False
 
 
 def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
@@ -205,8 +213,8 @@ def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
     raise IOError('Cannot find .yaml file for package %s' % package)
 
   if dry_run:
-    print 'This `package` command (without -n/--dry-run) would create and',
-    print 'upload the package %s version:%s to CIPD.' % (package, pkg_version)
+    print ('This `package` command (without -n/--dry-run) would create and ' +
+           'upload the package %s version:%s to CIPD.' % (package, pkg_version))
   else:
     upload_sdk_cmd = [
       'cipd', 'create',
@@ -219,6 +227,65 @@ def UploadSdkPackage(sdk_root, dry_run, service_url, package, yaml_file,
       upload_sdk_cmd.extend(['-log-level', 'debug'])
 
     subprocess.check_call(upload_sdk_cmd)
+
+@contextlib.contextmanager
+def UpdateDepsFile(package, pkg_version, deps_path, dry_run,
+                   release_version=None):
+  """Find the sdk pkg version in DEPS and modify it as cipd uploading version.
+
+  TODO(shenghuazhang): use DEPS edition operations after issue crbug.com/760633
+  fixed.
+
+  DEPS file hooks sdk package with version with suffix -crX, e.g. '26.0.2-cr1'.
+  If pkg_version is the base number of the existing version in DEPS, e.g.
+  '26.0.2', return '26.0.2-cr2' as the version uploading to CIPD. If not the
+  base number, return ${pkg_version}-cr0.
+
+  Args:
+    package: The name of the package.
+    pkg_version: The new version of the package.
+    deps_path: Path to deps file which gclient hooks sdk pkg w/ versions.
+    dry_run: Bool. To show what packages would be created and packages, without
+             actually doing either.
+    release_version: Android sdk release version e.g. 'o_mr1', 'p'.
+  """
+  var_package = package
+  if release_version:
+    var_package = release_version + '_' + var_package
+  package_var_pattern = re.compile(
+      # Match the argument with "'sdk_*_version': 'version:" with whitespaces.
+      r'(^\s*\'android_sdk_%s_version\'\s*:\s*\'version:)' % var_package +
+      # version number with right single quote. E.g. 27.0.1-cr0.
+      r'([-\w\s.]+)'
+      # End of string
+      r'(\',?$)'
+  )
+
+  with tempfile.NamedTemporaryFile() as temp_file:
+    with open(deps_path) as f:
+      for line in f:
+        new_line = line
+        found = re.match(package_var_pattern, line)
+        if found:
+          # Check if pkg_version as base version already exists in deps
+          deps_version = found.group(2)
+          match = re.match(r'%s-cr([\d+])' % pkg_version, deps_version)
+          suffix_number = 0
+          if match:
+            suffix_number = 1 + int(match.group(1))
+          version = '%s-cr%d' % (pkg_version, suffix_number)
+          new_line = re.sub(package_var_pattern, r'\g<1>%s\g<3>' % version,
+                            line)
+          print ('    Note: deps file "%s" argument ' % deps_path +
+                 '"%s" would be updated to "%s".' % (line.strip(), version))
+        temp_file.write(new_line)
+
+    yield version
+
+    if not dry_run:
+      temp_file.flush()
+      shutil.move(temp_file.name, deps_path)
+      temp_file.delete = False
 
 
 def ChangeVersionInGNI(package, arg_version, gn_args_dict, gni_file_path,
@@ -278,14 +345,21 @@ def _UploadSdkPackage(arguments):
   for package in packages:
     pkg_version = arguments.version
     if not pkg_version:
-      pkg_version = _FindPackageVersion(package)
-    UploadSdkPackage(arguments.sdk_root, arguments.dry_run,
-                     arguments.service_url, package, arguments.yaml_file,
-                     pkg_version, arguments.verbose)
+      pkg_version = _FindPackageVersion(package, arguments.sdk_root)
+
+    # Upload SDK package to cipd, and update the package version hooking
+    # in DEPS file.
+    with UpdateDepsFile(package, pkg_version, _SRC_DEPS_PATH,
+                        arguments.dry_run) as deps_pkg_version:
+      UploadSdkPackage(os.path.join(arguments.sdk_root, '..'),
+                       arguments.dry_run, arguments.service_url, package,
+                       arguments.yaml_file, deps_pkg_version,
+                       arguments.verbose)
 
     if package in _GN_ARGUMENTS_TO_UPDATE:
+      # Update the package version config in gn file
       arg_version = _GetArgVersion(pkg_version, package)
-      ChangeVersionInGNI(package, pkg_version, _GN_ARGUMENTS_TO_UPDATE,
+      ChangeVersionInGNI(package, arg_version, _GN_ARGUMENTS_TO_UPDATE,
                          _ANDROID_CONFIG_GNI_PATH, arguments.dry_run)
 
 
@@ -302,16 +376,15 @@ def main():
   download_parser.set_defaults(func=_DownloadSdk)
   download_parser.add_argument(
       '-p',
-      '--packages',
-      nargs='+',
+      '--package',
+      nargs=1,
       default=_DEFAULT_DOWNLOAD_PACKAGES,
-      help='The packages of the SDK needs to be installed/updated. ' +
+      help='The package of the SDK needs to be installed/updated. ' +
            'Note that package name should be a sdk-style path e.g. ' +
            '"platforms;android-27" or "platform-tools". If package ' +
            'is not specified, update "build-tools;27.0.3", "tools" ' +
            '"platform-tools" and "platforms;android-27" by default.')
   download_parser.add_argument('--sdk-root',
-                               default=_SDK_ROOT,
                                help='base path to the Android SDK root')
   download_parser.add_argument('-v', '--verbose',
                                action='store_true',
@@ -346,13 +419,18 @@ def main():
                               help='The url of the CIPD service.',
                               default='https://chrome-infra-packages.appspot.com')
   package_parser.add_argument('--sdk-root',
-                               default=_SDK_ROOT,
                                help='base path to the Android SDK root')
   package_parser.add_argument('-v', '--verbose',
                               action='store_true',
                               help='print debug information')
 
   args = parser.parse_args()
+
+  if not args.sdk_root:
+    if args.package and 'sources' in args.package:
+      args.sdk_root = _SDK_SOURCES_ROOT
+    else:
+      args.sdk_root = _SDK_PUBLIC_ROOT
 
   args.func(args)
 
