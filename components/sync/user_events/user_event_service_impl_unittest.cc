@@ -50,7 +50,7 @@ std::unique_ptr<UserEventSpecifics> AsTrial(
 
 std::unique_ptr<UserEventSpecifics> AsConsent(
     std::unique_ptr<UserEventSpecifics> specifics) {
-  specifics->mutable_user_consent();
+  specifics->mutable_user_consent()->set_account_id("account_id");
   return specifics;
 }
 
@@ -61,6 +61,7 @@ std::unique_ptr<UserEventSpecifics> WithNav(
   return specifics;
 }
 
+// TODO(vitaliii): Merge this into FakeSyncService and use it instead.
 class TestSyncService : public FakeSyncService {
  public:
   TestSyncService(bool is_engine_initialized,
@@ -101,7 +102,7 @@ class UserEventServiceImplTest : public testing::Test {
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
         RecordingModelTypeChangeProcessor::CreateProcessorAndAssignRawPointer(
             &processor_),
-        &mapper_);
+        &mapper_, &sync_service_);
   }
 
   TestSyncService* sync_service() { return &sync_service_; }

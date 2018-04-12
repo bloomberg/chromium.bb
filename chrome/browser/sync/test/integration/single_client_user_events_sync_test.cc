@@ -32,10 +32,20 @@ UserEventSpecifics CreateTestEvent(int microseconds) {
   return specifics;
 }
 
+std::string GetAccountId() {
+#if defined(OS_CHROMEOS)
+  // TODO(vitaliii): Unify the two, because it takes ages to debug and
+  // impossible to discover otherwise.
+  return "user@gmail.com";
+#else
+  return "gaia-id-user@gmail.com";
+#endif
+}
+
 UserEventSpecifics CreateUserConsent(int microseconds) {
   UserEventSpecifics specifics;
   specifics.set_event_time_usec(microseconds);
-  specifics.mutable_user_consent();
+  specifics.mutable_user_consent()->set_account_id(GetAccountId());
   return specifics;
 }
 
