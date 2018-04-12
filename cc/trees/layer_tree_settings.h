@@ -155,6 +155,14 @@ class CC_EXPORT LayerTreeSettings {
   // Whether SetViewportSizeAndScale should update the painted scale factor or
   // the device scale factor.
   bool use_painted_device_scale_factor = false;
+
+  // Number of tasks that are not required for activation or draw to
+  // schedule at once.  Because cpu side work for some raster types is cheap,
+  // this provides some backpressure about getting too far ahead.
+  size_t max_prepaint_cpu_raster_tasks = std::numeric_limits<size_t>::max();
+  // TODO(enne): tune this gpu raster number down to something more reasonable.
+  size_t max_prepaint_gpu_raster_tasks = std::numeric_limits<size_t>::max();
+  size_t max_prepaint_oop_raster_tasks = 2;
 };
 
 }  // namespace cc
