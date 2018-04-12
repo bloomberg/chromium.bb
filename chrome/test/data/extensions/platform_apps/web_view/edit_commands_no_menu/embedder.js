@@ -38,7 +38,11 @@ embedder.waitForResponseFromGuest_ =
     var response = data[0];
     if (response == 'channel-created') {
       channelCreationCallback();
-      chrome.test.sendMessage('connected');
+      // Schedule the 'connected' notification to the main test so that the
+      // postMessage scheduled in channelCreationCallback() is sent first.
+      setTimeout(function () {
+        chrome.test.sendMessage('connected');
+      }, 0);
       return;
     }
     console.log('response: ' + response);

@@ -233,6 +233,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
 
   SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ClickNext();
+  WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -255,14 +256,17 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   // Move to password page.
   SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ClickNext();
+  WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   // Click back to identifier page.
   JS().Evaluate("$('gaia-navigation').$.backButton.click();");
+  WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
 
   // Click next to password page, user id is remembered.
   ClickNext();
+  WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   content::WindowedNotificationObserver session_start_waiter(
