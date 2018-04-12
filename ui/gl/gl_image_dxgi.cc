@@ -239,10 +239,10 @@ bool CopyingGLImageDXGI::Initialize() {
       &desc, nullptr, decoder_copy_texture_.GetAddressOf());
   // TODO(sunnyps): Remove after fixing https://crbug.com/794735
   base::debug::Alias(&hr);
-  if (hr == DXGI_ERROR_DEVICE_REMOVED) {
-    HRESULT reason_hr = d3d11_device_->GetDeviceRemovedReason();
-    base::debug::Alias(&reason_hr);
-  }
+  HRESULT reason_hr = S_OK;
+  base::debug::Alias(&reason_hr);
+  if (hr == DXGI_ERROR_DEVICE_REMOVED)
+    reason_hr = d3d11_device_->GetDeviceRemovedReason();
   CHECK(SUCCEEDED(hr));
   EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
