@@ -600,6 +600,10 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(
 
   available_picture_buffers_.push(picture_buffer_id);
   TryOutputPicture();
+
+  decoder_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VaapiVideoDecodeAccelerator::DecodeTask,
+                            base::Unretained(this)));
 }
 
 void VaapiVideoDecodeAccelerator::FlushTask() {
