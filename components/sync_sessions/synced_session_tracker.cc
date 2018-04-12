@@ -199,21 +199,19 @@ const sessions::SessionTab* SyncedSessionTracker::LookupSessionTab(
   return tab_iter->second;
 }
 
-void SyncedSessionTracker::LookupForeignTabNodeIds(
-    const std::string& session_tag,
-    std::set<int>* tab_node_ids) const {
-  tab_node_ids->clear();
+std::set<int> SyncedSessionTracker::LookupTabNodeIds(
+    const std::string& session_tag) const {
   const TrackedSession* session = LookupTrackedSession(session_tag);
-  if (session) {
-    tab_node_ids->insert(session->tab_node_ids.begin(),
-                         session->tab_node_ids.end());
-  }
-  // In case an invalid node id was included, remove it.
-  tab_node_ids->erase(TabNodePool::kInvalidTabNodeID);
+  return session ? session->tab_node_ids : std::set<int>();
 }
 
 const SyncedSession* SyncedSessionTracker::LookupLocalSession() const {
-  const TrackedSession* session = LookupTrackedSession(local_session_tag_);
+  return LookupSession(local_session_tag_);
+}
+
+const SyncedSession* SyncedSessionTracker::LookupSession(
+    const std::string& session_tag) const {
+  const TrackedSession* session = LookupTrackedSession(session_tag);
   return session ? &session->synced_session : nullptr;
 }
 
@@ -319,12 +317,6 @@ bool SyncedSessionTracker::IsTabUnmappedForTesting(SessionID tab_id) {
   return session->unmapped_tabs.count(tab_id) != 0;
 }
 
-std::set<int> SyncedSessionTracker::GetTabNodeIdsForTesting(
-    const std::string& session_tag) const {
-  const TrackedSession* session = LookupTrackedSession(session_tag);
-  return session ? session->tab_node_ids : std::set<int>();
-}
-
 void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
                                               SessionID window_id) {
   TrackedSession* session = GetTrackedSession(session_tag);
@@ -420,7 +412,9 @@ void SyncedSessionTracker::PutTabInWindow(const std::string& session_tag,
 
 void SyncedSessionTracker::OnTabNodeSeen(const std::string& session_tag,
                                          int tab_node_id) {
-  GetTrackedSession(session_tag)->tab_node_ids.insert(tab_node_id);
+  if (tab_node_id != TabNodePool::kInvalidTabNodeID) {
+    GetTrackedSession(session_tag)->tab_node_ids.insert(tab_node_id);
+  }
 }
 
 sessions::SessionTab* SyncedSessionTracker::GetTab(

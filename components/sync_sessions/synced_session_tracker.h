@@ -52,10 +52,9 @@ class SyncedSessionTracker {
   std::vector<const SyncedSession*> LookupAllForeignSessions(
       SessionLookup lookup) const;
 
-  // Fills |tab_node_ids| with the tab node ids (see GetTab) for all the tabs*
-  // associated with the session having tag |session_tag|.
-  void LookupForeignTabNodeIds(const std::string& session_tag,
-                               std::set<int>* tab_node_ids) const;
+  // Returns the tab node ids (see GetTab) for all the tabs* associated with the
+  // session having tag |session_tag|.
+  std::set<int> LookupTabNodeIds(const std::string& session_tag) const;
 
   // Attempts to look up the session windows associatd with the session given
   // by |session_tag|. Ownership of SessionWindows stays within the
@@ -79,6 +78,11 @@ class SyncedSessionTracker {
   const SyncedSession* LookupLocalSession() const;
 
   // **** Methods for manipulating synced sessions and tabs. ****
+
+  // Returns a pointer to the SyncedSession object associated with
+  // |session_tag|. If none exists, returns nullptr. Ownership of the
+  // SyncedSession remains within the SyncedSessionTracker.
+  const SyncedSession* LookupSession(const std::string& session_tag) const;
 
   // Returns a pointer to the SyncedSession object associated with
   // |session_tag|. If none exists, creates one. Ownership of the
@@ -204,8 +208,6 @@ class SyncedSessionTracker {
 
   // Returns whether a tab is unmapped or not.
   bool IsTabUnmappedForTesting(SessionID tab_id);
-
-  std::set<int> GetTabNodeIdsForTesting(const std::string& session_tag) const;
 
  private:
   friend class SessionsSyncManagerTest;

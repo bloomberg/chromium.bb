@@ -10,6 +10,7 @@
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sync_sessions/mock_sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
+#include "components/sync_sessions/test_matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::AssertionFailure;
@@ -132,6 +133,7 @@ class SyncedSessionTrackerTest : public testing::Test {
 TEST_F(SyncedSessionTrackerTest, GetSession) {
   SyncedSession* session1 = GetTracker()->GetSession(kTag);
   SyncedSession* session2 = GetTracker()->GetSession(kTag2);
+  ASSERT_EQ(session1, GetTracker()->LookupSession(kTag));
   ASSERT_EQ(session1, GetTracker()->GetSession(kTag));
   ASSERT_NE(session1, session2);
   // Should clean up memory on its own.
@@ -145,7 +147,7 @@ TEST_F(SyncedSessionTrackerTest, GetTabUnmapped) {
 
 TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
   GetTracker()->PutWindowInSession(kTag, kWindow1);
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
 
   // Doing it again should have no effect.
@@ -157,11 +159,11 @@ TEST_F(SyncedSessionTrackerTest, PutWindowInSession) {
 TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   GetTracker()->PutWindowInSession(kTag, kWindow1);
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
+  ASSERT_EQ(1U, session->windows.at(kWindow1)->wrapped_window.tabs.size());
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
   // Should clean up memory on its own.
 }
@@ -308,68 +310,41 @@ TEST_F(SyncedSessionTrackerTest, ManyGetTabs) {
   }
 }
 
-TEST_F(SyncedSessionTrackerTest, LookupForeignTabNodeIds) {
-  std::set<int> result;
-
+TEST_F(SyncedSessionTrackerTest, LookupTabNodeIds) {
   GetTracker()->OnTabNodeSeen(kTag, 1);
   GetTracker()->OnTabNodeSeen(kTag, 2);
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_EQ(2U, result.size());
-  EXPECT_FALSE(result.end() == result.find(1));
-  EXPECT_FALSE(result.end() == result.find(2));
-  GetTracker()->LookupForeignTabNodeIds(kTag2, &result);
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), ElementsAre(1, 2));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag2), IsEmpty());
 
   GetTracker()->PutWindowInSession(kTag, kWindow1);
   GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_EQ(2U, result.size());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), ElementsAre(1, 2));
 
   GetTracker()->OnTabNodeSeen(kTag, 3);
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_EQ(3U, result.size());
-  EXPECT_FALSE(result.end() == result.find(3));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), ElementsAre(1, 2, 3));
 
   GetTracker()->OnTabNodeSeen(kTag2, 21);
   GetTracker()->OnTabNodeSeen(kTag2, 22);
-  GetTracker()->LookupForeignTabNodeIds(kTag2, &result);
-  EXPECT_EQ(2U, result.size());
-  EXPECT_FALSE(result.end() == result.find(21));
-  EXPECT_FALSE(result.end() == result.find(22));
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_EQ(3U, result.size());
-  EXPECT_FALSE(result.end() == result.find(1));
-  EXPECT_FALSE(result.end() == result.find(2));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag2), ElementsAre(21, 22));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), ElementsAre(1, 2, 3));
 
-  GetTracker()->LookupForeignTabNodeIds(kTag3, &result);
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag3), IsEmpty());
   GetTracker()->PutWindowInSession(kTag3, kWindow2);
   GetTracker()->PutTabInWindow(kTag3, kWindow2, kTab2);
-  GetTracker()->LookupForeignTabNodeIds(kTag3, &result);
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag3), IsEmpty());
   EXPECT_FALSE(GetTracker()->DeleteForeignSession(kTag3));
-  GetTracker()->LookupForeignTabNodeIds(kTag3, &result);
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag3), IsEmpty());
 
   EXPECT_FALSE(GetTracker()->DeleteForeignSession(kTag));
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_TRUE(result.empty());
-  GetTracker()->LookupForeignTabNodeIds(kTag2, &result);
-  EXPECT_EQ(2U, result.size());
-  EXPECT_FALSE(result.end() == result.find(21));
-  EXPECT_FALSE(result.end() == result.find(22));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), IsEmpty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag2), ElementsAre(21, 22));
 
   GetTracker()->OnTabNodeSeen(kTag2, 21);
   GetTracker()->OnTabNodeSeen(kTag2, 23);
-  GetTracker()->LookupForeignTabNodeIds(kTag2, &result);
-  EXPECT_EQ(3U, result.size());
-  EXPECT_FALSE(result.end() == result.find(21));
-  EXPECT_FALSE(result.end() == result.find(22));
-  EXPECT_FALSE(result.end() == result.find(23));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag2), ElementsAre(21, 22, 23));
 
   EXPECT_FALSE(GetTracker()->DeleteForeignSession(kTag2));
-  GetTracker()->LookupForeignTabNodeIds(kTag2, &result);
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag2), IsEmpty());
 }
 
 TEST_F(SyncedSessionTrackerTest, SessionTracking) {
@@ -441,19 +416,14 @@ TEST_F(SyncedSessionTrackerTest, DeleteForeignTab) {
   GetTracker()->OnTabNodeSeen(kTag, tab_node_id_1);
   GetTracker()->OnTabNodeSeen(kTag, tab_node_id_2);
 
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_EQ(2U, result.size());
-  EXPECT_TRUE(result.find(tab_node_id_1) != result.end());
-  EXPECT_TRUE(result.find(tab_node_id_2) != result.end());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag),
+              ElementsAre(tab_node_id_1, tab_node_id_2));
 
   GetTracker()->DeleteForeignTab(kTag, tab_node_id_1);
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_EQ(1U, result.size());
-  EXPECT_TRUE(result.find(tab_node_id_2) != result.end());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), ElementsAre(tab_node_id_2));
 
   GetTracker()->DeleteForeignTab(kTag, tab_node_id_2);
-  GetTracker()->LookupForeignTabNodeIds(kTag, &result);
-  EXPECT_TRUE(result.empty());
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag), IsEmpty());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
 
@@ -533,11 +503,11 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMapped) {
   GetTracker()->CleanupLocalTabs(&free_node_ids);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
+  ASSERT_EQ(1U, session->windows.at(kWindow1)->wrapped_window.tabs.size());
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
 
   // Then reassociate with a new tab id.
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab2);
@@ -559,9 +529,9 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMapped) {
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as the GetTab.
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
-            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
+  ASSERT_EQ(GetTracker()->LookupTabNodeIds(kTag).size(),
+            GetTracker()->LookupTabNodeIds(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -585,11 +555,11 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
   EXPECT_TRUE(free_node_ids.empty());
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
+  ASSERT_EQ(1U, session->windows.at(kWindow1)->wrapped_window.tabs.size());
   EXPECT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
 
   // Then reassociate with a new tab id.
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab2);
@@ -617,9 +587,9 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabMappedTwice) {
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as the GetTab.
   EXPECT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->wrapped_window.tabs[1].get());
-  EXPECT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
-            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
+            session->windows.at(kWindow1)->wrapped_window.tabs[1].get());
+  EXPECT_EQ(GetTracker()->LookupTabNodeIds(kTag).size(),
+            GetTracker()->LookupTabNodeIds(kTag).count(kTabNode1));
   EXPECT_EQ(1U, GetTabNodePool()->Capacity());
 
   // Attempting to access the original tab will create a new SessionTab object.
@@ -657,11 +627,11 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabUnmapped) {
 
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as GetTab.
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
-            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
+  ASSERT_EQ(GetTracker()->LookupTabNodeIds(kTag).size(),
+            GetTracker()->LookupTabNodeIds(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -695,11 +665,11 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldUnmappedNewMapped) {
 
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as GetTab.
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
-            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
+  ASSERT_EQ(GetTracker()->LookupTabNodeIds(kTag).size(),
+            GetTracker()->LookupTabNodeIds(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -722,11 +692,11 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabSameTabId) {
   GetTracker()->CleanupLocalTabs(&free_node_ids);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
+  ASSERT_EQ(1U, session->windows.at(kWindow1)->wrapped_window.tabs.size());
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
 
   // Reassociate, using the same tab id.
   GetTracker()->ReassociateLocalTab(kTabNode1, kTab1);
@@ -747,9 +717,9 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabSameTabId) {
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as the GetTab.
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
-  ASSERT_EQ(GetTracker()->GetTabNodeIdsForTesting(kTag).size(),
-            GetTracker()->GetTabNodeIdsForTesting(kTag).count(kTabNode1));
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
+  ASSERT_EQ(GetTracker()->LookupTabNodeIds(kTag).size(),
+            GetTracker()->LookupTabNodeIds(kTag).count(kTabNode1));
   ASSERT_EQ(1U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
 }
@@ -772,11 +742,11 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldMappedNewUnmapped) {
   GetTracker()->CleanupLocalTabs(&free_node_ids);
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
   EXPECT_FALSE(GetTracker()->IsTabUnmappedForTesting(kTab1));
-  SyncedSession* session = GetTracker()->GetSession(kTag);
+  const SyncedSession* session = GetTracker()->LookupSession(kTag);
   ASSERT_EQ(1U, session->windows.size());
-  ASSERT_EQ(1U, session->windows[kWindow1]->wrapped_window.tabs.size());
+  ASSERT_EQ(1U, session->windows.at(kWindow1)->wrapped_window.tabs.size());
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab1),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
 
   // Create a second unmapped tab.
   GetTracker()->ReassociateLocalTab(kTabNode2, kTab2);
@@ -804,9 +774,142 @@ TEST_F(SyncedSessionTrackerTest, ReassociateTabOldMappedNewUnmapped) {
   // Now that it's been mapped, it should be accessible both via the
   // GetSession as well as the GetTab.
   ASSERT_EQ(GetTracker()->GetTab(kTag, kTab2),
-            session->windows[kWindow1]->wrapped_window.tabs[0].get());
+            session->windows.at(kWindow1)->wrapped_window.tabs[0].get());
   ASSERT_EQ(2U, GetTabNodePool()->Capacity());
   ASSERT_TRUE(VerifyTabIntegrity(kTag));
+}
+
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithHeader) {
+  sync_pb::SessionSpecifics header;
+  header.set_session_tag(kTag);
+  header.mutable_header()->add_window()->set_window_id(kWindow1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab2.id());
+  UpdateTrackerWithSpecifics(header, base::Time::Now(), GetTracker());
+
+  EXPECT_THAT(
+      GetTracker()->LookupSession(kTag),
+      MatchesSyncedSession(kTag, {{kWindow1.id(), {kTab1.id(), kTab2.id()}}}));
+  EXPECT_THAT(GetTracker()->LookupSessionTab(kTag, kTab1), NotNull());
+  EXPECT_THAT(GetTracker()->LookupSessionTab(kTag, kTab2), NotNull());
+}
+
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithIdenticalHeader) {
+  sync_pb::SessionSpecifics header;
+  header.set_session_tag(kTag);
+  header.mutable_header()->add_window()->set_window_id(kWindow1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab2.id());
+  UpdateTrackerWithSpecifics(header, base::Time::Now(), GetTracker());
+  ASSERT_THAT(
+      GetTracker()->LookupSession(kTag),
+      MatchesSyncedSession(kTag, {{kWindow1.id(), {kTab1.id(), kTab2.id()}}}));
+
+  // Update with an exact header entity.
+  UpdateTrackerWithSpecifics(header, base::Time::Now(), GetTracker());
+
+  EXPECT_THAT(
+      GetTracker()->LookupSession(kTag),
+      MatchesSyncedSession(kTag, {{kWindow1.id(), {kTab1.id(), kTab2.id()}}}));
+  EXPECT_THAT(GetTracker()->LookupSessionTab(kTag, kTab1), NotNull());
+}
+
+// Verifies that an invalid header (with duplicated tab IDs) is discarded.
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithHeaderWithDuplicateTabIds) {
+  sync_pb::SessionSpecifics header;
+  header.set_session_tag(kTag);
+  header.mutable_header()->add_window()->set_window_id(kWindow1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab1.id());
+  UpdateTrackerWithSpecifics(header, base::Time::Now(), GetTracker());
+
+  EXPECT_THAT(GetTracker()->LookupSession(kTag),
+              MatchesSyncedSession(kTag, /*window_id_to_tabs=*/{}));
+}
+
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTab) {
+  sync_pb::SessionSpecifics tab;
+  tab.set_session_tag(kTag);
+  tab.set_tab_node_id(kTabNode1);
+  tab.mutable_tab()->set_window_id(kWindow1.id());
+  tab.mutable_tab()->set_tab_id(kTab1.id());
+  UpdateTrackerWithSpecifics(tab, base::Time::Now(), GetTracker());
+
+  const sessions::SessionTab* tracked_tab =
+      GetTracker()->LookupSessionTab(kTag, kTab1);
+  ASSERT_THAT(tracked_tab, NotNull());
+  EXPECT_EQ(kWindow1, tracked_tab->window_id);
+  EXPECT_EQ(false, tracked_tab->pinned);
+
+  EXPECT_THAT(GetTracker()->LookupSession(kTag),
+              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
+
+  // Overwrite some attribute.
+  tab.mutable_tab()->set_pinned(true);
+  UpdateTrackerWithSpecifics(tab, base::Time::Now(), GetTracker());
+  tracked_tab = GetTracker()->LookupSessionTab(kTag, kTab1);
+  ASSERT_THAT(tracked_tab, NotNull());
+  EXPECT_EQ(kWindow1, tracked_tab->window_id);
+  EXPECT_EQ(true, tracked_tab->pinned);
+
+  EXPECT_THAT(GetTracker()->LookupSession(kTag),
+              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
+}
+
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTabThenHeader) {
+  sync_pb::SessionSpecifics tab;
+  tab.set_session_tag(kTag);
+  tab.set_tab_node_id(kTabNode1);
+  tab.mutable_tab()->set_window_id(kWindow1.id());
+  tab.mutable_tab()->set_tab_id(kTab1.id());
+  UpdateTrackerWithSpecifics(tab, base::Time::Now(), GetTracker());
+
+  EXPECT_THAT(GetTracker()->LookupSession(kTag),
+              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
+
+  sync_pb::SessionSpecifics header;
+  header.set_session_tag(kTag);
+  header.mutable_header()->add_window()->set_window_id(kWindow1.id());
+  header.mutable_header()->mutable_window(0)->add_tab(kTab1.id());
+  UpdateTrackerWithSpecifics(header, base::Time::Now(), GetTracker());
+
+  const sessions::SessionTab* tracked_tab =
+      GetTracker()->LookupSessionTab(kTag, kTab1);
+  ASSERT_THAT(tracked_tab, NotNull());
+  EXPECT_EQ(kWindow1, tracked_tab->window_id);
+
+  EXPECT_THAT(GetTracker()->LookupSession(kTag),
+              MatchesSyncedSession(
+                  kTag, {{kWindow1.id(), std::vector<int>{kTab1.id()}}}));
+}
+
+TEST_F(SyncedSessionTrackerTest, UpdateTrackerWithTwoTabsSameId) {
+  sync_pb::SessionSpecifics tab1;
+  tab1.set_session_tag(kTag);
+  tab1.set_tab_node_id(kTabNode1);
+  tab1.mutable_tab()->set_window_id(kWindow1.id());
+  tab1.mutable_tab()->set_tab_id(kTab1.id());
+  tab1.mutable_tab()->set_pinned(false);
+  UpdateTrackerWithSpecifics(tab1, base::Time::Now(), GetTracker());
+
+  sync_pb::SessionSpecifics tab2;
+  tab2.set_session_tag(kTag);
+  tab2.set_tab_node_id(kTabNode2);
+  tab2.mutable_tab()->set_window_id(kWindow1.id());
+  tab2.mutable_tab()->set_tab_id(kTab1.id());
+  tab2.mutable_tab()->set_pinned(true);
+  UpdateTrackerWithSpecifics(tab2, base::Time::Now(), GetTracker());
+
+  EXPECT_THAT(GetTracker()->LookupSession(kTag),
+              MatchesSyncedSession(kTag, /*window_id_to_tabs*/ {}));
+  EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag),
+              ElementsAre(kTabNode1, kTabNode2));
+
+  const sessions::SessionTab* tracked_tab =
+      GetTracker()->LookupSessionTab(kTag, kTab1);
+  ASSERT_THAT(tracked_tab, NotNull());
+  EXPECT_EQ(kWindow1, tracked_tab->window_id);
+  EXPECT_EQ(true, tracked_tab->pinned);
 }
 
 }  // namespace sync_sessions
