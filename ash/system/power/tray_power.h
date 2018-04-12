@@ -89,22 +89,25 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   bool UpdateNotificationStateForRemainingTime();
   bool UpdateNotificationStateForRemainingPercentage();
 
-  message_center::MessageCenter* message_center_;  // Not owned.
-  tray::PowerTrayView* power_tray_;
+  message_center::MessageCenter* message_center_ = nullptr;  // Not owned.
+  tray::PowerTrayView* power_tray_ = nullptr;
   std::unique_ptr<BatteryNotification> battery_notification_;
   std::unique_ptr<DualRoleNotification> dual_role_notification_;
-  NotificationState notification_state_;
+  NotificationState notification_state_ = NOTIFICATION_NONE;
+
+  // Was the battery full the last time OnPowerStatusChanged() was called?
+  bool battery_was_full_ = false;
 
   // Was a USB charger connected the last time OnPowerStatusChanged() was
   // called?
-  bool usb_charger_was_connected_;
+  bool usb_charger_was_connected_ = false;
 
   // Was line power connected the last time onPowerStatusChanged() was called?
-  bool line_power_was_connected_;
+  bool line_power_was_connected_ = false;
 
   // Has the user already dismissed a low-power notification? Should be set
   // back to false when all power sources are disconnected.
-  bool usb_notification_dismissed_;
+  bool usb_notification_dismissed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };
