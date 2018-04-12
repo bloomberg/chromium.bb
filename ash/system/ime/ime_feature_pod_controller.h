@@ -21,7 +21,7 @@ class ASH_EXPORT IMEFeaturePodController : public FeaturePodControllerBase {
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
-  void OnPressed() override;
+  void OnIconPressed() override;
 
  private:
   void Update();

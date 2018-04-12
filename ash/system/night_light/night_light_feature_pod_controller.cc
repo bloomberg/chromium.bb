@@ -28,7 +28,7 @@ FeaturePodButton* NightLightFeaturePodController::CreateButton() {
   return button_;
 }
 
-void NightLightFeaturePodController::OnPressed() {
+void NightLightFeaturePodController::OnIconPressed() {
   DCHECK(switches::IsNightLightEnabled());
   Shell::Get()->night_light_controller()->Toggle();
   UpdateButton();

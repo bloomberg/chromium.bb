@@ -24,7 +24,7 @@ FeaturePodButton* NetworkFeaturePodController::CreateButton() {
   return button_;
 }
 
-void NetworkFeaturePodController::OnPressed() {
+void NetworkFeaturePodController::OnIconPressed() {
   tray_controller_->ShowNetworkDetailedView();
 }
 

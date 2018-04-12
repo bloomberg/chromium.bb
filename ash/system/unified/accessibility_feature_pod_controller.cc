@@ -35,7 +35,7 @@ FeaturePodButton* AccessibilityFeaturePodController::CreateButton() {
   return button;
 }
 
-void AccessibilityFeaturePodController::OnPressed() {
+void AccessibilityFeaturePodController::OnIconPressed() {
   tray_controller_->ShowAccessibilityDetailedView();
 }
 

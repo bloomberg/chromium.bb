@@ -24,7 +24,7 @@ class QuietModeFeaturePodController
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
-  void OnPressed() override;
+  void OnIconPressed() override;
 
   // message_center::MessageCenterObserver:
   void OnQuietModeChanged(bool in_quiet_mode) override;

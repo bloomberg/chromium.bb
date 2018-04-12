@@ -183,7 +183,11 @@ void FeaturePodButton::SetVisible(bool visible) {
 
 void FeaturePodButton::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  controller_->OnPressed();
+  if (sender == label_button_) {
+    controller_->OnLabelPressed();
+    return;
+  }
+  controller_->OnIconPressed();
 }
 
 }  // namespace ash

@@ -23,7 +23,7 @@ class ASH_EXPORT AccessibilityFeaturePodController
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
-  void OnPressed() override;
+  void OnIconPressed() override;
 
  private:
   // Unowned.

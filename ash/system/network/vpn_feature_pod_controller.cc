@@ -53,7 +53,7 @@ FeaturePodButton* VPNFeaturePodController::CreateButton() {
   return button_;
 }
 
-void VPNFeaturePodController::OnPressed() {
+void VPNFeaturePodController::OnIconPressed() {
   tray_controller_->ShowVPNDetailedView();
 }
 

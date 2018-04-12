@@ -31,7 +31,7 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
   return button_;
 }
 
-void QuietModeFeaturePodController::OnPressed() {
+void QuietModeFeaturePodController::OnIconPressed() {
   MessageCenter* message_center = MessageCenter::Get();
   bool is_quiet_mode = message_center->IsQuietMode();
   message_center->SetQuietMode(!is_quiet_mode);

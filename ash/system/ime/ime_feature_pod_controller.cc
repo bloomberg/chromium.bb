@@ -52,7 +52,7 @@ FeaturePodButton* IMEFeaturePodController::CreateButton() {
   return button_;
 }
 
-void IMEFeaturePodController::OnPressed() {
+void IMEFeaturePodController::OnIconPressed() {
   tray_controller_->ShowIMEDetailedView();
 }
 
