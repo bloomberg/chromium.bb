@@ -8,6 +8,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button_delegate.h"
 #include "base/macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -83,9 +84,12 @@ class ASH_EXPORT FrameCaptionButtonContainerView
   // a repaint.
   void SetPaintAsActive(bool paint_as_active);
 
-  // Sets whether the buttons should be painted in a lighter color (for use on
-  // dark backgrounds).
-  void SetUseLightImages(bool light);
+  // Sets whether the buttons should use themed foreground color computation.
+  void SetColorMode(FrameCaptionButton::ColorMode color_mode);
+
+  // Sets the background frame color that buttons should compute their color
+  // respective to.
+  void SetBackgroundColor(SkColor background_color);
 
   // Tell the window controls to reset themselves to the normal state.
   void ResetWindowControls();

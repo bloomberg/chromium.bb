@@ -28,20 +28,17 @@ constexpr gfx::Tween::Type kTweenType = gfx::Tween::FAST_OUT_SLOW_IN_2;
 
 FrameHeaderOriginText::FrameHeaderOriginText(const base::string16& origin,
                                              SkColor active_color,
-                                             SkColor inactive_color,
-                                             SkColor active_background_color,
-                                             SkColor inactive_background_color)
-    : active_color_(active_color),
-      inactive_color_(inactive_color),
-      active_background_color_(active_background_color),
-      inactive_background_color_(inactive_background_color) {
+                                             SkColor inactive_color)
+    : active_color_(active_color), inactive_color_(inactive_color) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   label_ = std::make_unique<views::Label>(origin).release();
   label_->SetElideBehavior(gfx::ELIDE_HEAD);
   label_->SetSubpixelRenderingEnabled(false);
   label_->SetEnabledColor(active_color);
-  label_->SetBackgroundColor(active_background_color);
+  // Disable Label's auto readability to ensure consistent colors in the title
+  // bar (see http://crbug.com/814121#c2).
+  label_->SetAutoColorReadabilityEnabled(false);
   label_->SetPaintToLayer();
   label_->layer()->SetFillsBoundsOpaquely(false);
   label_->layer()->SetOpacity(0);
@@ -57,8 +54,6 @@ FrameHeaderOriginText::~FrameHeaderOriginText() = default;
 
 void FrameHeaderOriginText::SetPaintAsActive(bool active) {
   label_->SetEnabledColor(active ? active_color_ : inactive_color_);
-  label_->SetBackgroundColor(active ? active_background_color_
-                                    : inactive_background_color_);
 }
 
 void FrameHeaderOriginText::StartSlideAnimation() {

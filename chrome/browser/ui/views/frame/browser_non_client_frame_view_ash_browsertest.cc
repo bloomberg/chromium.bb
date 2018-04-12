@@ -690,14 +690,7 @@ class HostedAppNonClientFrameViewAshTest
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   EXPECT_EQ(GetThemeColor(), frame_header_->GetActiveFrameColor());
   EXPECT_EQ(GetThemeColor(), frame_header_->GetInactiveFrameColor());
-  // TODO(afakhry): Figure out the right way to test this (i.e. are we testing
-  // that the caption colors are light since the frame color is dark? Or are we
-  // testing that the colors are contrasting?). Do this while working on themes
-  // in https://crbug.com/820495.
-  const SkColor expected_active_icon_color =
-      GetParam() ? gfx::kGoogleGrey100 : SK_ColorWHITE;
-  EXPECT_EQ(expected_active_icon_color,
-            GetActiveIconColor(hosted_app_button_container_));
+  EXPECT_EQ(SK_ColorWHITE, GetActiveIconColor(hosted_app_button_container_));
 }
 
 // Tests that the focus toolbar command focuses the app menu button in web app
