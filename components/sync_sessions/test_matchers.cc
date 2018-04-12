@@ -12,10 +12,12 @@
 namespace sync_sessions {
 namespace {
 
+using testing::ContainerEq;
 using testing::ElementsAreArray;
 using testing::Matcher;
 using testing::MatcherInterface;
 using testing::MatchResultListener;
+using testing::PrintToString;
 
 class MatchesHeaderMatcher
     : public MatcherInterface<const sync_pb::SessionSpecifics&> {
@@ -28,11 +30,15 @@ class MatchesHeaderMatcher
   bool MatchAndExplain(const sync_pb::SessionSpecifics& actual,
                        MatchResultListener* listener) const override {
     if (!actual.has_header()) {
-      *listener << "which is not a header entity";
+      *listener << " which is not a header entity";
+      return false;
+    }
+    if (actual.tab_node_id() != -1) {
+      *listener << " which has a valid tab node ID: " << actual.tab_node_id();
       return false;
     }
     if (!session_tag_.MatchAndExplain(actual.session_tag(), listener)) {
-      *listener << "which contains an unexpected session tag: "
+      *listener << " which contains an unexpected session tag: "
                 << actual.session_tag();
       return false;
     }
@@ -44,11 +50,13 @@ class MatchesHeaderMatcher
                             window.tab().end());
     }
     if (!window_ids_.MatchAndExplain(actual_window_ids, listener)) {
-      *listener << "which contains an unexpected windows";
+      *listener << " which contains unexpected windows: "
+                << PrintToString(actual_window_ids);
       return false;
     }
     if (!tab_ids_.MatchAndExplain(actual_tab_ids, listener)) {
-      *listener << "which contains an unexpected tabs";
+      *listener << " which contains unexpected tabs: "
+                << PrintToString(actual_tab_ids);
       return false;
     }
     return true;
@@ -74,31 +82,38 @@ class MatchesTabMatcher
   MatchesTabMatcher(Matcher<std::string> session_tag,
                     Matcher<int> window_id,
                     Matcher<int> tab_id,
+                    Matcher<int> tab_node_id,
                     Matcher<std::vector<std::string>> urls)
       : session_tag_(session_tag),
         window_id_(window_id),
         tab_id_(tab_id),
+        tab_node_id_(tab_node_id),
         urls_(urls) {}
 
   bool MatchAndExplain(const sync_pb::SessionSpecifics& actual,
                        MatchResultListener* listener) const override {
     if (!actual.has_tab()) {
-      *listener << "which is not a tab entity";
+      *listener << " which is not a tab entity";
       return false;
     }
     if (!session_tag_.MatchAndExplain(actual.session_tag(), listener)) {
-      *listener << "which contains an unexpected session tag: "
+      *listener << " which contains an unexpected session tag: "
                 << actual.session_tag();
       return false;
     }
     if (!window_id_.MatchAndExplain(actual.tab().window_id(), listener)) {
-      *listener << "which contains an unexpected window ID: "
+      *listener << " which contains an unexpected window ID: "
                 << actual.tab().window_id();
       return false;
     }
     if (!tab_id_.MatchAndExplain(actual.tab().tab_id(), listener)) {
-      *listener << "which contains an unexpected tab ID: "
+      *listener << " which contains an unexpected tab ID: "
                 << actual.tab().tab_id();
+      return false;
+    }
+    if (!tab_node_id_.MatchAndExplain(actual.tab_node_id(), listener)) {
+      *listener << " which contains an unexpected tab node ID: "
+                << actual.tab_node_id();
       return false;
     }
     std::vector<std::string> actual_urls;
@@ -106,7 +121,7 @@ class MatchesTabMatcher
       actual_urls.push_back(navigation.virtual_url());
     }
     if (!urls_.MatchAndExplain(actual_urls, listener)) {
-      *listener << "which contains unexpected navigation URLs";
+      *listener << " which contains unexpected navigation URLs";
       return false;
     }
     return true;
@@ -124,43 +139,47 @@ class MatchesTabMatcher
   Matcher<std::string> session_tag_;
   Matcher<int> window_id_;
   Matcher<int> tab_id_;
+  Matcher<int> tab_node_id_;
   Matcher<std::vector<std::string>> urls_;
 };
 
 class MatchesSyncedSessionMatcher
     : public MatcherInterface<const SyncedSession*> {
  public:
-  MatchesSyncedSessionMatcher(Matcher<std::string> session_tag,
-                              Matcher<std::vector<int>> window_ids,
-                              Matcher<std::vector<int>> tab_ids)
-      : session_tag_(session_tag), window_ids_(window_ids), tab_ids_(tab_ids) {}
+  MatchesSyncedSessionMatcher(
+      Matcher<std::string> session_tag,
+      Matcher<std::map<int, std::vector<int>>> window_id_to_tabs)
+      : session_tag_(session_tag), window_id_to_tabs_(window_id_to_tabs) {}
 
   bool MatchAndExplain(const SyncedSession* actual,
                        MatchResultListener* listener) const override {
     if (!actual) {
-      *listener << "which is null";
+      *listener << " which is null";
       return false;
     }
     if (!session_tag_.MatchAndExplain(actual->session_tag, listener)) {
-      *listener << "which contains an unexpected session tag: "
+      *listener << " which contains an unexpected session tag: "
                 << actual->session_tag;
       return false;
     }
-    std::vector<int> actual_window_ids;
-    std::vector<int> actual_tab_ids;
+
+    std::map<int, std::vector<int>> actual_window_id_to_tabs;
     for (const auto& id_and_window : actual->windows) {
-      actual_window_ids.push_back(
-          id_and_window.second->wrapped_window.window_id.id());
-      for (const auto& id : id_and_window.second->wrapped_window.tabs) {
-        actual_tab_ids.push_back(id->tab_id.id());
+      const SessionID actual_window_id = id_and_window.first;
+      if (actual_window_id != id_and_window.second->wrapped_window.window_id) {
+        *listener << " which has an inconsistent window representation";
+        return false;
+      }
+      actual_window_id_to_tabs.emplace(actual_window_id.id(),
+                                       std::vector<int>());
+      for (const auto& tab : id_and_window.second->wrapped_window.tabs) {
+        actual_window_id_to_tabs[actual_window_id.id()].push_back(
+            tab->tab_id.id());
       }
     }
-    if (!window_ids_.MatchAndExplain(actual_window_ids, listener)) {
-      *listener << "which contains an unexpected window set";
-      return false;
-    }
-    if (!tab_ids_.MatchAndExplain(actual_tab_ids, listener)) {
-      *listener << "which contains an unexpected tab set";
+
+    if (!window_id_to_tabs_.MatchAndExplain(actual_window_id_to_tabs,
+                                            listener)) {
       return false;
     }
     return true;
@@ -176,8 +195,7 @@ class MatchesSyncedSessionMatcher
 
  private:
   Matcher<std::string> session_tag_;
-  Matcher<std::vector<int>> window_ids_;
-  Matcher<std::vector<int>> tab_ids_;
+  Matcher<std::map<int, std::vector<int>>> window_id_to_tabs_;
 };
 
 }  // namespace
@@ -190,8 +208,8 @@ Matcher<const sync_pb::SessionSpecifics&> MatchesHeader(
       new MatchesHeaderMatcher(session_tag, window_ids, tab_ids));
 }
 
-testing::Matcher<const sync_pb::SessionSpecifics&> MatchesHeader(
-    testing::Matcher<std::string> session_tag,
+Matcher<const sync_pb::SessionSpecifics&> MatchesHeader(
+    Matcher<std::string> session_tag,
     const std::vector<int>& window_ids,
     const std::vector<int>& tab_ids) {
   return MatchesHeader(session_tag, ElementsAreArray(window_ids),
@@ -202,33 +220,33 @@ Matcher<const sync_pb::SessionSpecifics&> MatchesTab(
     Matcher<std::string> session_tag,
     Matcher<int> window_id,
     Matcher<int> tab_id,
+    Matcher<int> tab_node_id,
     Matcher<std::vector<std::string>> urls) {
   return testing::MakeMatcher(
-      new MatchesTabMatcher(session_tag, window_id, tab_id, urls));
+      new MatchesTabMatcher(session_tag, window_id, tab_id, tab_node_id, urls));
 }
 
-testing::Matcher<const sync_pb::SessionSpecifics&> MatchesTab(
-    testing::Matcher<std::string> session_tag,
-    testing::Matcher<int> window_id,
-    testing::Matcher<int> tab_id,
+Matcher<const sync_pb::SessionSpecifics&> MatchesTab(
+    Matcher<std::string> session_tag,
+    Matcher<int> window_id,
+    Matcher<int> tab_id,
+    Matcher<int> tab_node_id,
     const std::vector<std::string>& urls) {
-  return MatchesTab(session_tag, window_id, tab_id, ElementsAreArray(urls));
+  return MatchesTab(session_tag, window_id, tab_id, tab_node_id,
+                    ElementsAreArray(urls));
 }
 
 Matcher<const SyncedSession*> MatchesSyncedSession(
     Matcher<std::string> session_tag,
-    Matcher<std::vector<int>> window_ids,
-    Matcher<std::vector<int>> tab_ids) {
+    Matcher<std::map<int, std::vector<int>>> window_id_to_tabs) {
   return testing::MakeMatcher(
-      new MatchesSyncedSessionMatcher(session_tag, window_ids, tab_ids));
+      new MatchesSyncedSessionMatcher(session_tag, window_id_to_tabs));
 }
 
-testing::Matcher<const SyncedSession*> MatchesSyncedSession(
-    testing::Matcher<std::string> session_tag,
-    const std::vector<int>& window_ids,
-    const std::vector<int>& tab_ids) {
-  return MatchesSyncedSession(session_tag, ElementsAreArray(window_ids),
-                              ElementsAreArray(tab_ids));
+Matcher<const SyncedSession*> MatchesSyncedSession(
+    Matcher<std::string> session_tag,
+    const std::map<int, std::vector<int>>& window_id_to_tabs) {
+  return MatchesSyncedSession(session_tag, ContainerEq(window_id_to_tabs));
 }
 
 }  // namespace sync_sessions

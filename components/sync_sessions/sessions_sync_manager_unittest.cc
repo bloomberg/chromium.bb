@@ -29,6 +29,7 @@ using syncer::SyncData;
 using syncer::SyncDataList;
 using syncer::SyncDataLocal;
 using syncer::SyncError;
+using testing::ElementsAre;
 using testing::Eq;
 using testing::IsNull;
 
@@ -1164,16 +1165,10 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabsWithShadowing) {
       manager()->session_tracker_.LookupSessionTab(session_tag, kTabIds1[1]),
       IsNull());
 
-  std::set<int> tab_node_ids;
-  manager()->session_tracker_.LookupForeignTabNodeIds(session_tag,
-                                                      &tab_node_ids);
-  EXPECT_EQ(6U, tab_node_ids.size());
-  EXPECT_TRUE(tab_node_ids.find(tab1A.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab1B.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab1C.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab2A.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab2B.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab2C.tab_node_id()) != tab_node_ids.end());
+  EXPECT_THAT(manager()->session_tracker_.LookupTabNodeIds(session_tag),
+              ElementsAre(tab1A.tab_node_id(), tab1B.tab_node_id(),
+                          tab1C.tab_node_id(), tab2A.tab_node_id(),
+                          tab2B.tab_node_id(), tab2C.tab_node_id()));
 
   SyncChangeList changes;
   changes.push_back(MakeRemoteChange(tab1A, SyncChange::ACTION_DELETE));
@@ -1181,13 +1176,9 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabsWithShadowing) {
   changes.push_back(MakeRemoteChange(tab2C, SyncChange::ACTION_DELETE));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
-  tab_node_ids.clear();
-  manager()->session_tracker_.LookupForeignTabNodeIds(session_tag,
-                                                      &tab_node_ids);
-  EXPECT_EQ(3U, tab_node_ids.size());
-  EXPECT_TRUE(tab_node_ids.find(tab1C.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab2A.tab_node_id()) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab2B.tab_node_id()) != tab_node_ids.end());
+  EXPECT_THAT(manager()->session_tracker_.LookupTabNodeIds(session_tag),
+              ElementsAre(tab1C.tab_node_id(), tab2A.tab_node_id(),
+                          tab2B.tab_node_id()));
 
   manager()->DoGarbageCollection();
   ASSERT_EQ(3U, output.size());
@@ -1224,22 +1215,15 @@ TEST_F(SessionsSyncManagerTest, ProcessForeignDeleteTabsWithReusedNodeIds) {
   ASSERT_EQ(2U, output.size());
   output.clear();
 
-  std::set<int> tab_node_ids;
-  manager()->session_tracker_.LookupForeignTabNodeIds(session_tag,
-                                                      &tab_node_ids);
-  EXPECT_EQ(2U, tab_node_ids.size());
-  EXPECT_TRUE(tab_node_ids.find(tab_node_id_shared) != tab_node_ids.end());
-  EXPECT_TRUE(tab_node_ids.find(tab_node_id_unique) != tab_node_ids.end());
+  EXPECT_THAT(manager()->session_tracker_.LookupTabNodeIds(session_tag),
+              ElementsAre(tab_node_id_shared, tab_node_id_unique));
 
   SyncChangeList changes;
   changes.push_back(MakeRemoteChange(tab1A, SyncChange::ACTION_DELETE));
   manager()->ProcessSyncChanges(FROM_HERE, changes);
 
-  tab_node_ids.clear();
-  manager()->session_tracker_.LookupForeignTabNodeIds(session_tag,
-                                                      &tab_node_ids);
-  EXPECT_EQ(1U, tab_node_ids.size());
-  EXPECT_TRUE(tab_node_ids.find(tab_node_id_unique) != tab_node_ids.end());
+  EXPECT_THAT(manager()->session_tracker_.LookupTabNodeIds(session_tag),
+              ElementsAre(tab_node_id_unique));
 
   manager()->DoGarbageCollection();
   EXPECT_EQ(1U, output.size());

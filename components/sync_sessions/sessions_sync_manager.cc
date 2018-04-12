@@ -558,8 +558,8 @@ void SessionsSyncManager::DeleteForeignSessionInternal(
     return;
   }
 
-  std::set<int> tab_node_ids_to_delete;
-  session_tracker_.LookupForeignTabNodeIds(tag, &tab_node_ids_to_delete);
+  const std::set<int> tab_node_ids_to_delete =
+      session_tracker_.LookupTabNodeIds(tag);
   if (DisassociateForeignSession(tag)) {
     // Only tell sync to delete the header if there was one.
     change_output->push_back(
