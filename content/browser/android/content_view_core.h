@@ -30,10 +30,6 @@ class ContentViewCore : public WebContentsObserver {
 
   ~ContentViewCore() override;
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
-  WebContents* GetWebContents() const;
-  ui::WindowAndroid* GetWindowAndroid() const;
-
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
@@ -76,21 +72,22 @@ class ContentViewCore : public WebContentsObserver {
                    const base::android::JavaParamRef<jobject>& obj,
                    jfloat dipScale);
 
-  ui::ViewAndroid* GetViewAndroid() const;
-
  private:
 
   // WebContentsObserver implementation.
   void RenderViewReady() override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
+  void WebContentsDestroyed() override;
 
   // --------------------------------------------------------------------------
   // Other private methods and data
   // --------------------------------------------------------------------------
 
-  void InitWebContents();
   void SendScreenRectsAndResizeWidget();
+
+  ui::ViewAndroid* GetViewAndroid() const;
+  ui::WindowAndroid* GetWindowAndroid() const;
 
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
 
@@ -99,8 +96,6 @@ class ContentViewCore : public WebContentsObserver {
 
   // Send device_orientation_ to renderer.
   void SendOrientationChangeEventInternal();
-
-  float dpi_scale() const { return dpi_scale_; }
 
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
