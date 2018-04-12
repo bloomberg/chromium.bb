@@ -5006,8 +5006,6 @@ if (!is_android) {
       "../app/chrome_watcher_command_line_win.cc",
       "../app/chrome_watcher_command_line_win_unittest.cc",
       "../app/resources/resources_unittest.cc",
-      "../common/crash_keys.cc",
-      "../common/crash_keys.h",
     ]
     deps = [
       ":test_support",
