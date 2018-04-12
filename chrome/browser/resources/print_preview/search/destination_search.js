@@ -791,7 +791,7 @@ cr.define('print_preview', function() {
      */
     onWindowResize_: function() {
       this.reflowLists_();
-    }
+    },
   };
 
   // Export

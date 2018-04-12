@@ -89,6 +89,10 @@
   -webkit-margin-start: 10px;
 }
 
+#destination-search .invitation-cloud-print-information {
+  padding-top: 12px;
+}
+
 #destination-search #invitation-process-throbber {
   display: block;
 }

@@ -30,7 +30,7 @@ function registerShowOverlay() {
 }
 
 function registerBegin() {
-  var button = $("register-continue-button");
+  var button = $('register-continue');
   assertTrue(button != null);
 
   assertFalse($('register-page-confirm').hidden);

@@ -10063,9 +10063,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         <message name="IDS_LOCAL_DISCOVERY_DEVICES_PAGE_TITLE" desc="Title for devices page">
           Devices
         </message>
-        <message name="IDS_LOCAL_DISCOVERY_REGISTER_PRINTER_CONFIRMATION" desc="Confirmation for registering a printer to Google Cloud Print">
-          Do you wish to register the printer <ph name="PRINTER_NAME">$1</ph> to Google Cloud Print?
-        </message>
         <message name="IDS_LOCAL_DISCOVERY_REGISTER_DEVICE_CONFIRMATION" desc="Confirmation for registering a device to Google Cloud Devices">
           Do you wish to register <ph name="DEVICE_NAME">$1</ph> to Google Cloud Devices?
         </message>
@@ -10164,6 +10161,11 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       </message>
       <message name="IDS_LOCAL_DISCOVERY_REGISTER_TIMEOUT_ON_PRINTER" desc="Label for when registration has timed out on the printer side">
         Printer registration has timed out. In order to register a printer, you must confirm registration on the printer.
+      </message>
+
+      <!--Printer registration message for local discovery and Print Preview-->
+      <message name="IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION" desc="Information about registering printers with Google Cloud Print shown to the user before they confirm registration.">
+        Documents are <ph name="BEGIN_LINK_HELP">&lt;a is="action-link" href="https://support.google.com/cloudprint/answer/2541843" target="_blank"&gt;</ph>sent to Google<ph name="END_LINK_HELP">&lt;/a&gt;</ph> to prepare them for printing. View, edit and manage your printers and printer history on the <ph name="BEGIN_LINK_DASHBOARD">&lt;a is="action-link" href="https://www.google.com/cloudprint#jobs" target="_blank"&gt;</ph>Google Cloud Print dashboard<ph name="END_LINK_DASHBOARD">&lt;/a&gt;</ph>.
       </message>
 
       <!--Tab alert tooltip strings-->
