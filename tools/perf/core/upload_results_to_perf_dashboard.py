@@ -32,7 +32,7 @@ def _GetMainRevision(commit_pos):
 def _GetDashboardJson(options):
   main_revision = _GetMainRevision(options.got_revision_cp)
   revisions = _GetPerfDashboardRevisionsWithProperties(
-    options.got_webrtc_revision, options.got_v8_revision, options.version,
+    options.got_webrtc_revision, options.got_v8_revision,
     options.git_revision, main_revision)
   reference_build = 'reference' in options.name
   stripped_test_name = options.name.replace('.reference', '')
@@ -93,7 +93,6 @@ def _CreateParser():
   parser.add_option('--buildnumber')
   parser.add_option('--got-webrtc-revision')
   parser.add_option('--got-v8-revision')
-  parser.add_option('--version')
   parser.add_option('--git-revision')
   parser.add_option('--output-json-dashboard-url')
   parser.add_option('--send-as-histograms', action='store_true')
@@ -173,7 +172,7 @@ def GetDashboardUrl(name, configuration_name, results_url,
 
 
 def _GetPerfDashboardRevisionsWithProperties(
-    got_webrtc_revision, got_v8_revision, version, git_revision, main_revision,
+    got_webrtc_revision, got_v8_revision, git_revision, main_revision,
     point_id=None):
   """Fills in the same revisions fields that process_log_utils does."""
 
@@ -181,7 +180,6 @@ def _GetPerfDashboardRevisionsWithProperties(
   versions['rev'] = main_revision
   versions['webrtc_git'] = got_webrtc_revision
   versions['v8_rev'] = got_v8_revision
-  versions['ver'] = version
   versions['git_revision'] = git_revision
   versions['point_id'] = point_id
   # There are a lot of "bad" revisions to check for, so clean them all up here.
