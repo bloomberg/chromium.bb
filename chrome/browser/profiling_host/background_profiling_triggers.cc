@@ -82,20 +82,7 @@ void BackgroundProfilingTriggers::StartTimer() {
 }
 
 bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
-    return false;
-  }
-
-  // Do not upload if there is an incognito session running in any profile.
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-  for (Profile* profile : profiles) {
-    if (profile->HasOffTheRecordProfile()) {
-      return false;
-    }
-  }
-
-  return true;
+  return ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 }
 
 bool BackgroundProfilingTriggers::IsOverTriggerThreshold(
