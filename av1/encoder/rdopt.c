@@ -7774,9 +7774,12 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   mbmi->num_proj_ref[1] = 0;
 
   if (is_comp_pred) {
-    if (frame_mv[refs[0]].as_int == INVALID_MV ||
-        frame_mv[refs[1]].as_int == INVALID_MV)
-      return INT64_MAX;
+    for (int ref_idx = 0; ref_idx < is_comp_pred + 1; ++ref_idx) {
+      const int single_mode = get_single_mode(this_mode, ref_idx, is_comp_pred);
+      if (single_mode == NEWMV &&
+          args->single_newmv[mbmi->ref_frame[ref_idx]].as_int == INVALID_MV)
+        return INT64_MAX;
+    }
   }
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
