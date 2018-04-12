@@ -80,4 +80,22 @@ public class Features {
     // WebResourceRequest.isRedirect
     public static final String WEB_RESOURCE_REQUEST_IS_REDIRECT =
             "WEB_RESOURCE_REQUEST_IS_REDIRECT";
+
+    // WebResourceError.getDescription
+    public static final String WEB_RESOURCE_ERROR_GET_DESCRIPTION =
+            "WEB_RESOURCE_ERROR_GET_DESCRIPTION";
+
+    // WebResourceError.getErrorCode
+    public static final String WEB_RESOURCE_ERROR_GET_CODE = "WEB_RESOURCE_ERROR_GET_CODE";
+
+    // SafeBrowsingResponse.backToSafety
+    public static final String SAFE_BROWSING_RESPONSE_BACK_TO_SAFETY =
+            "SAFE_BROWSING_RESPONSE_BACK_TO_SAFETY";
+
+    // SafeBrowsingResponse.proceed
+    public static final String SAFE_BROWSING_RESPONSE_PROCEED = "SAFE_BROWSING_RESPONSE_PROCEED";
+
+    // SafeBrowsingResponse.showInterstitial
+    public static final String SAFE_BROWSING_RESPONSE_SHOW_INTERSTITIAL =
+            "SAFE_BROWSING_RESPONSE_SHOW_INTERSTITIAL";
 }
