@@ -22,7 +22,9 @@
 #include "content/public/browser/render_widget_host_view.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 
 using content::WebContents;
@@ -352,8 +354,11 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
       base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
     // The "Emoji" item is available near the top of the context menu, after
     // any "Look Up" of selected text.
-    menu_model_.InsertItemWithStringIdAt(index++, IDC_CONTENT_CONTEXT_EMOJI,
+    menu_model_.InsertItemWithStringIdAt(index, IDC_CONTENT_CONTEXT_EMOJI,
                                          IDS_CONTENT_CONTEXT_EMOJI);
+    menu_model_.SetIcon(index++,
+                        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                            IDR_EMOJI_FAVICON));
     menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
   }
 
