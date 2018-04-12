@@ -163,7 +163,7 @@ public class CopylessPasteTest {
         e.properties[1].values.setStringValues(new String[] {"Hotel Name"});
         expected.entities = new Entity[1];
         expected.entities[0] = e;
-        Assert.assertEquals(expected, extracted);
+        Assert.assertEquals(expected.serialize(), extracted.serialize());
     }
 
     /**

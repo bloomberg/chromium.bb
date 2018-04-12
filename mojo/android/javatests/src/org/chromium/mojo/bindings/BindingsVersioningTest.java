@@ -67,7 +67,7 @@ public class BindingsVersioningTest {
             expected.fInt32 = 123;
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v0.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(0, v0.getVersion());
             Assert.assertEquals(0, output.getVersion());
         }
@@ -81,7 +81,7 @@ public class BindingsVersioningTest {
             expected.fRect = newRect(5);
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v1.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(1, v1.getVersion());
             Assert.assertEquals(1, output.getVersion());
         }
@@ -97,7 +97,7 @@ public class BindingsVersioningTest {
             expected.fString = "hello";
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v3.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(3, v3.getVersion());
             Assert.assertEquals(3, output.getVersion());
         }
@@ -115,7 +115,7 @@ public class BindingsVersioningTest {
             expected.fArray = new byte[] {10, 9, 8};
 
             MultiVersionStruct output = MultiVersionStruct.deserialize(v5.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(5, v5.getVersion());
             Assert.assertEquals(5, output.getVersion());
         }
@@ -144,7 +144,7 @@ public class BindingsVersioningTest {
             Assert.assertEquals(expectedHandle, output.fMessagePipe.releaseNativeHandle());
             output.fMessagePipe = expected.fMessagePipe;
 
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(7, v7.getVersion());
             Assert.assertEquals(7, output.getVersion());
         }
@@ -162,7 +162,7 @@ public class BindingsVersioningTest {
             expected.fInt32 = 123;
 
             MultiVersionStructV0 output = MultiVersionStructV0.deserialize(struct.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(9, output.getVersion());
         }
 
@@ -172,7 +172,7 @@ public class BindingsVersioningTest {
             expected.fRect = newRect(5);
 
             MultiVersionStructV1 output = MultiVersionStructV1.deserialize(struct.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(9, output.getVersion());
         }
 
@@ -183,7 +183,7 @@ public class BindingsVersioningTest {
             expected.fString = "hello";
 
             MultiVersionStructV3 output = MultiVersionStructV3.deserialize(struct.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(9, output.getVersion());
         }
 
@@ -195,7 +195,7 @@ public class BindingsVersioningTest {
             expected.fArray = new byte[] {10, 9, 8};
 
             MultiVersionStructV5 output = MultiVersionStructV5.deserialize(struct.serialize(null));
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(9, output.getVersion());
         }
 
@@ -218,7 +218,7 @@ public class BindingsVersioningTest {
             Assert.assertEquals(expectedHandle, output.fMessagePipe.releaseNativeHandle());
             output.fMessagePipe = expected.fMessagePipe;
 
-            Assert.assertEquals(expected, output);
+            Assert.assertTrue(BindingsTestUtils.structsEqual(expected, output));
             Assert.assertEquals(9, output.getVersion());
         }
     }
