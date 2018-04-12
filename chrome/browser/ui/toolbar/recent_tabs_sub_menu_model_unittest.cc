@@ -372,8 +372,8 @@ TEST_F(RecentTabsSubMenuModelTest,
   SessionService* session_service = new SessionService(profile());
   SessionServiceFactory::SetForTestProfile(profile(),
                                            base::WrapUnique(session_service));
-  SessionID tab_id;
-  SessionID window_id;
+  SessionID tab_id = SessionID::FromSerializedValue(1);
+  SessionID window_id = SessionID::FromSerializedValue(2);
   session_service->SetWindowType(window_id,
                                  Browser::TYPE_TABBED,
                                  SessionService::TYPE_NORMAL);

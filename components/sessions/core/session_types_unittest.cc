@@ -39,8 +39,8 @@ TEST(SessionTab, FromSyncData) {
   }
 
   sessions::SessionTab tab;
-  tab.window_id.set_id(100);
-  tab.tab_id.set_id(100);
+  tab.window_id = SessionID::FromSerializedValue(100);
+  tab.tab_id = SessionID::FromSerializedValue(100);
   tab.tab_visual_index = 100;
   tab.current_navigation_index = 1000;
   tab.pinned = false;
@@ -74,8 +74,8 @@ TEST(SessionTab, FromSyncData) {
 
 TEST(SessionTab, ToSyncData) {
   sessions::SessionTab tab;
-  tab.window_id.set_id(10);
-  tab.tab_id.set_id(5);
+  tab.window_id = SessionID::FromSerializedValue(10);
+  tab.tab_id = SessionID::FromSerializedValue(5);
   tab.tab_visual_index = 13;
   tab.current_navigation_index = 3;
   tab.pinned = true;

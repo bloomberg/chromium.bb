@@ -21,7 +21,8 @@
 #include "ui/gfx/image/image_skia.h"
 
 TestOmniboxClient::TestOmniboxClient()
-    : autocomplete_classifier_(
+    : session_id_(SessionID::FromSerializedValue(1)),
+      autocomplete_classifier_(
           std::make_unique<AutocompleteController>(
               CreateAutocompleteProviderClient(),
               nullptr,
