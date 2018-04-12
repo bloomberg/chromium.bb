@@ -365,6 +365,18 @@
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PITCH" desc="The pitch of speech in text-to-speech settings.">
       Pitch
     </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_HEADING" desc="The heading for a section of the text-to-speech settings page where a user can preview text to speech">
+      Preview
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_INPUT_LABEL" desc="The label for sample input for a section of the text-to-speech settings page where a user can preview text to speech.">
+      Text to preview
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_INPUT" desc="The sample input for a section of the text-to-speech settings page where a user can preview text to speech. Users will hear this read aloud.">
+      Hi there! I'm your text-to-speech voice.
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_PLAY" desc="A button on the text-to-speech settings page to start playing a preview of text to speech">
+      Play
+    </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES" desc="Heading for a section of text-to-speech settings to do per-engine settings">
       Speech Engines
     </message>
