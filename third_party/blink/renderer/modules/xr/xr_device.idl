@@ -7,6 +7,6 @@
     SecureContext,
     OriginTrialEnabled=WebXR
 ] interface XRDevice : EventTarget {
-  [CallWith=ScriptState] Promise supportsSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
-  [CallWith=ScriptState] Promise requestSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
+  [CallWith=ScriptState, MeasureAs=XRSupportsSession] Promise supportsSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
+  [CallWith=ScriptState, MeasureAs=XRRequestSession] Promise requestSession([PermissiveDictionaryConversion] optional XRSessionCreationOptions options);
 };

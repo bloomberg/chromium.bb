@@ -1902,6 +1902,11 @@ enum WebFeature {
   kCrossOriginHTMLFrameElementContentDocument = 2410,
   kCrossOriginHTMLObjectElementContentDocument = 2411,
   kCrossOriginHTMLObjectElementGetSVGDocument = 2412,
+  kNavigatorXR = 2413,
+  kXRRequestDevice = 2414,
+  kXRRequestSession = 2415,
+  kXRSupportsSession = 2416,
+  kXRSessionGetInputSources = 2417,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
