@@ -20,7 +20,6 @@
 #include "components/prefs/pref_change_registrar.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }  // namespace base
 
@@ -82,8 +81,6 @@ class EasyUnlockServiceRegular
   EasyUnlockService::Type GetType() const override;
   AccountId GetAccountId() const override;
   void LaunchSetup() override;
-  const base::DictionaryValue* GetPermitAccess() const override;
-  void SetPermitAccess(const base::DictionaryValue& permit) override;
   void ClearPermitAccess() override;
   const base::ListValue* GetRemoteDevices() const override;
   void SetRemoteDevices(const base::ListValue& devices) override;
@@ -138,10 +135,6 @@ class EasyUnlockServiceRegular
       bool success);
 
   std::unique_ptr<ShortLivedUserContext> short_lived_user_context_;
-
-  // Updates local state with the preference from the user's profile, so they
-  // can be accessed on the sign-in screen.
-  void SyncProfilePrefsToLocalState();
 
   // Returns the CryptAuthEnrollmentManager, which manages the profile's
   // CryptAuth enrollment.

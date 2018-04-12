@@ -26,7 +26,6 @@
 class AccountId;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }  // namespace base
 
@@ -93,8 +92,6 @@ class EasyUnlockService : public KeyedService {
   virtual void LaunchSetup() = 0;
 
   // Gets/Sets/Clears the permit access for the local device.
-  virtual const base::DictionaryValue* GetPermitAccess() const = 0;
-  virtual void SetPermitAccess(const base::DictionaryValue& permit) = 0;
   virtual void ClearPermitAccess() = 0;
 
   // Gets/Sets the remote devices list.
@@ -158,10 +155,6 @@ class EasyUnlockService : public KeyedService {
   // Updates the user pod on the signin/lock screen for the user associated with
   // the service to reflect the provided screenlock state.
   bool UpdateScreenlockState(proximity_auth::ScreenlockState state);
-
-  // Returns the screenlock state if it is available. Otherwise STATE_INACTIVE
-  // is returned.
-  proximity_auth::ScreenlockState GetScreenlockState();
 
   // Starts an auth attempt for the user associated with the service. The
   // attempt type (unlock vs. signin) will depend on the service type.
@@ -237,10 +230,6 @@ class EasyUnlockService : public KeyedService {
 
   // Opens an Easy Unlock Setup app window.
   void OpenSetupApp();
-
-  // Reloads the Easy unlock component app if it's loaded and resets the lock
-  // screen state.
-  void ReloadAppAndLockScreen();
 
   // Checks whether Easy unlock should be running and updates app state.
   void UpdateAppState();

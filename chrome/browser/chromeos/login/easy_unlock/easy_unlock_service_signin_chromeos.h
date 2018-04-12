@@ -35,10 +35,6 @@ class EasyUnlockServiceSignin
   explicit EasyUnlockServiceSignin(Profile* profile);
   ~EasyUnlockServiceSignin() override;
 
-  // Sets |account_id| as the current user of the service. Note this does
-  // not change the focused user on the login screen.
-  void SetCurrentUser(const AccountId& account_id);
-
   // Wraps the challenge for the remote device identified by |account_id| and
   // the
   // |device_public_key|. The |channel_binding_data| is signed by the TPM
@@ -87,8 +83,6 @@ class EasyUnlockServiceSignin
   EasyUnlockService::Type GetType() const override;
   AccountId GetAccountId() const override;
   void LaunchSetup() override;
-  const base::DictionaryValue* GetPermitAccess() const override;
-  void SetPermitAccess(const base::DictionaryValue& permit) override;
   void ClearPermitAccess() override;
   const base::ListValue* GetRemoteDevices() const override;
   void SetRemoteDevices(const base::ListValue& devices) override;

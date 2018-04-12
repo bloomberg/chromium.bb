@@ -170,22 +170,6 @@ class EasyUnlockPrivateUnwrapSecureMessageFunction
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateUnwrapSecureMessageFunction);
 };
 
-class EasyUnlockPrivateSetPermitAccessFunction
-    : public UIThreadExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("easyUnlockPrivate.setPermitAccess",
-                             EASYUNLOCKPRIVATE_SETPERMITACCESS)
-  EasyUnlockPrivateSetPermitAccessFunction();
-
- private:
-  ~EasyUnlockPrivateSetPermitAccessFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
-  DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateSetPermitAccessFunction);
-};
-
 class EasyUnlockPrivateGetPermitAccessFunction
     : public UIThreadExtensionFunction {
  public:

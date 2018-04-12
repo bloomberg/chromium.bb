@@ -299,24 +299,6 @@ void EasyUnlockServiceRegular::SetHardlockAfterKeyOperation(
   CheckCryptohomeKeysAndMaybeHardlock();
 }
 
-const base::DictionaryValue* EasyUnlockServiceRegular::GetPermitAccess() const {
-  const base::DictionaryValue* pairing_dict =
-      profile()->GetPrefs()->GetDictionary(prefs::kEasyUnlockPairing);
-  const base::DictionaryValue* permit_dict = NULL;
-  if (pairing_dict &&
-      pairing_dict->GetDictionary(kKeyPermitAccess, &permit_dict))
-    return permit_dict;
-
-  return NULL;
-}
-
-void EasyUnlockServiceRegular::SetPermitAccess(
-    const base::DictionaryValue& permit) {
-  DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
-                                      prefs::kEasyUnlockPairing);
-  pairing_update->SetKey(kKeyPermitAccess, permit.Clone());
-}
-
 void EasyUnlockServiceRegular::ClearPermitAccess() {
   DictionaryPrefUpdate pairing_update(profile()->GetPrefs(),
                                       prefs::kEasyUnlockPairing);
