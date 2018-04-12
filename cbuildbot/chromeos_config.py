@@ -2288,7 +2288,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
-  _pi_hwtest_boards = frozenset([])
+  _pi_hwtest_boards = frozenset([
+      'kevin-arcnext',
+  ])
   _pi_no_hwtest_boards = frozenset([
       'betty-arcnext',
       'caroline-arcnext',
@@ -2296,9 +2298,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
   ])
-  _pi_hwtest_experimental_boards = frozenset([
-      'kevin-arcnext',
-  ])
+  _pi_hwtest_experimental_boards = frozenset([])
   _pi_vmtest_boards = frozenset([])
 
 
@@ -2516,6 +2516,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'kahlee',
       'kevin',
+      'kevin-arcnext',
       'kip',
       'lakitu',
       'lakitu-gpu',
@@ -2579,7 +2580,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
-      'kevin-arcnext', # contact: ddmail@ (b/74621032)
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
@@ -3851,7 +3851,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'kevin-arcnext-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-          'important': False,
       },
 
       'peppy-chrome-pfq': {
