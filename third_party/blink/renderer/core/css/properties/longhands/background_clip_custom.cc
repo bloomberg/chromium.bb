@@ -14,7 +14,8 @@ const CSSValue* BackgroundClip::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext&,
     const CSSParserLocalContext& local_context) const {
-  return CSSParsingUtils::ParseBackgroundBox(range, local_context);
+  return CSSParsingUtils::ParseBackgroundBox(
+      range, local_context, CSSParsingUtils::AllowTextValue::kAllow);
 }
 
 const CSSValue* BackgroundClip::CSSValueFromComputedStyleInternal(

@@ -878,11 +878,12 @@ CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange& range,
 }
 
 CSSValue* ParseBackgroundBox(CSSParserTokenRange& range,
-                             const CSSParserLocalContext& local_context) {
+                             const CSSParserLocalContext& local_context,
+                             AllowTextValue alias_allow_text_value) {
   // This is legacy behavior that does not match spec, see crbug.com/604023
   if (local_context.UseAliasParsing()) {
     return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
-        ConsumePrefixedBackgroundBox, range, AllowTextValue::kAllow);
+        ConsumePrefixedBackgroundBox, range, alias_allow_text_value);
   }
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       ConsumeBackgroundBox, range);

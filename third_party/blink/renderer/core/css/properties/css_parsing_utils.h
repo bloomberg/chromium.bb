@@ -84,7 +84,8 @@ bool ConsumeBackgroundPosition(CSSParserTokenRange&,
                                CSSValue*& result_y);
 CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange&, AllowTextValue);
 CSSValue* ParseBackgroundBox(CSSParserTokenRange&,
-                             const CSSParserLocalContext&);
+                             const CSSParserLocalContext&,
+                             AllowTextValue alias_allow_text_value);
 CSSValue* ParseBackgroundOrMaskSize(CSSParserTokenRange&,
                                     const CSSParserContext&,
                                     const CSSParserLocalContext&,
