@@ -288,6 +288,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnNSViewWindowFrameInScreenChanged(
       const gfx::Rect& window_frame_in_screen_dip) override;
   void OnNSViewDisplayChanged(const display::Display& display) override;
+  void OnNSViewBeginKeyboardEvent() override;
+  void OnNSViewEndKeyboardEvent() override;
+  void OnNSViewForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info) override;
+  void OnNSViewForwardKeyboardEventWithCommands(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info,
+      const std::vector<EditCommand>& commands) override;
   void OnNSViewRouteOrProcessMouseEvent(
       const blink::WebMouseEvent& web_event) override;
   void OnNSViewRouteOrProcessWheelEvent(
@@ -301,6 +310,16 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnNSViewGestureEnd(blink::WebGestureEvent end_event) override;
   void OnNSViewSmartMagnify(
       const blink::WebGestureEvent& smart_magnify_event) override;
+  void OnNSViewImeSetComposition(
+      const base::string16& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end) override;
+  void OnNSViewImeCommitText(const base::string16& text,
+                             const gfx::Range& replacement_range) override;
+  void OnNSViewImeFinishComposingText() override;
+  void OnNSViewImeCancelComposition() override;
   void OnNSViewLookUpDictionaryOverlayAtPoint(
       const gfx::PointF& root_point) override;
   void OnNSViewLookUpDictionaryOverlayFromRange(
@@ -371,6 +390,19 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // can return nullptr; for instance when |render_widget_host_| becomes nullptr
   // in the destruction path of the WebContentsImpl.
   RenderWidgetHostDelegate* GetFocusedRenderWidgetHostDelegate();
+
+  // Returns the RenderWidgetHostImpl to which Ime messages from the NSView
+  // should be targeted. This exists to preserve historical behavior, and may
+  // not be the desired behavior.
+  // https://crbug.com/831843
+  RenderWidgetHostImpl* GetWidgetForIme();
+
+  // When inside a block of handling a keyboard event, returns the
+  // RenderWidgetHostImpl to which all keyboard and Ime messages from the NSView
+  // should be fowarded. This exists to preserve historical behavior, and may
+  // not be the desired behavior.
+  // https://crbug.com/831843
+  RenderWidgetHostImpl* GetWidgetForKeyboardEvent();
 
  private:
   friend class RenderWidgetHostViewMacTest;
@@ -472,6 +504,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;
+
+  // Used to ensure that a consistent RenderWidgetHost is targeted throughout
+  // the duration of a keyboard event.
+  bool in_keyboard_event_ = false;
+  int32_t keyboard_event_widget_process_id_ = 0;
+  int32_t keyboard_event_widget_routing_id_ = 0;
 
   // When a gesture starts, the system does not inform the view of which type
   // of gesture is happening (magnify, rotate, etc), rather, it just informs

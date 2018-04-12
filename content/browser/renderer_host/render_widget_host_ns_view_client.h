@@ -60,6 +60,22 @@ class RenderWidgetHostNSViewClient {
   // Indicate the NSView's NSScreen's properties.
   virtual void OnNSViewDisplayChanged(const display::Display& display) = 0;
 
+  // Indicate the begin and end block of a keyboard event. The beginning of this
+  // block will record the active RenderWidgetHost, and will forward all
+  // remaining keyboard and Ime messages to that RenderWidgetHost.
+  virtual void OnNSViewBeginKeyboardEvent() = 0;
+  virtual void OnNSViewEndKeyboardEvent() = 0;
+
+  // Forward a keyboard event to the RenderWidgetHost that is currently handling
+  // the key-down event.
+  virtual void OnNSViewForwardKeyboardEvent(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info) = 0;
+  virtual void OnNSViewForwardKeyboardEventWithCommands(
+      const NativeWebKeyboardEvent& key_event,
+      const ui::LatencyInfo& latency_info,
+      const std::vector<EditCommand>& commands) = 0;
+
   // Forward events to the renderer or the input router, as appropriate.
   virtual void OnNSViewRouteOrProcessMouseEvent(
       const blink::WebMouseEvent& web_event) = 0;
@@ -78,6 +94,21 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewGestureEnd(blink::WebGestureEvent end_event) = 0;
   virtual void OnNSViewSmartMagnify(
       const blink::WebGestureEvent& smart_magnify_event) = 0;
+
+  // Forward the corresponding Ime commands to the appropriate RenderWidgetHost.
+  // Appropriate, has two meanings here. If this is during a key-down event,
+  // then the target is the RWH that is handling that key-down event. Otherwise,
+  // it is the result of GetActiveWidget.
+  virtual void OnNSViewImeSetComposition(
+      const base::string16& text,
+      const std::vector<ui::ImeTextSpan>& ime_text_spans,
+      const gfx::Range& replacement_range,
+      int selection_start,
+      int selection_end) = 0;
+  virtual void OnNSViewImeCommitText(const base::string16& text,
+                                     const gfx::Range& replacement_range) = 0;
+  virtual void OnNSViewImeFinishComposingText() = 0;
+  virtual void OnNSViewImeCancelComposition() = 0;
 
   // Request an overlay dictionary be displayed for the text at the specified
   // point.

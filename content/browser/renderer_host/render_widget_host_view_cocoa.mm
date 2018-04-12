@@ -17,7 +17,6 @@
 #import "content/browser/cocoa/system_hotkey_helper_mac.h"
 #import "content/browser/cocoa/system_hotkey_map.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
@@ -526,8 +525,6 @@ void ExtractUnderlines(NSAttributedString* string,
   // Don't cancel child popups; the key events are probably what's triggering
   // the popup in the first place.
 
-  RenderWidgetHostImpl* widgetHost = renderWidgetHostView_->host();
-  DCHECK(widgetHost);
 
   NativeWebKeyboardEvent event(theEvent);
   ui::LatencyInfo latency_info;
@@ -537,13 +534,6 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-
-  // If there are multiple widgets on the page (such as when there are
-  // out-of-process iframes), pick the one that should process this event.
-  if (widgetHost->delegate())
-    widgetHost = widgetHost->delegate()->GetFocusedRenderWidgetHost(widgetHost);
-  if (!widgetHost)
-    return;
 
   // Do not forward key up events unless preceded by a matching key down,
   // otherwise we might get an event from releasing the return key in the
@@ -555,6 +545,11 @@ void ExtractUnderlines(NSAttributedString* string,
       return;
   }
 
+  // Tell the client that we are beginning a keyboard event. This ensures that
+  // all event and Ime messages target the same RenderWidgetHost throughout this
+  // function call.
+  client_->OnNSViewBeginKeyboardEvent();
+
   ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
   client_->OnNSViewSyncGetTextInputType(&textInputType);
   bool shouldAutohideCursor = textInputType != ui::TEXT_INPUT_TYPE_NONE &&
@@ -563,7 +558,7 @@ void ExtractUnderlines(NSAttributedString* string,
 
   // We only handle key down events and just simply forward other events.
   if (eventType != NSKeyDown) {
-    widgetHost->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
+    client_->OnNSViewForwardKeyboardEvent(event, latency_info);
 
     // Possibly autohide the cursor.
     if (shouldAutohideCursor) {
@@ -571,6 +566,7 @@ void ExtractUnderlines(NSAttributedString* string,
       cursorHidden_ = YES;
     }
 
+    client_->OnNSViewEndKeyboardEvent();
     return;
   }
 
@@ -620,7 +616,7 @@ void ExtractUnderlines(NSAttributedString* string,
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.windows_key_code = 0xE5;  // VKEY_PROCESSKEY
     fakeEvent.skip_in_browser = true;
-    widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent, latency_info);
+    client_->OnNSViewForwardKeyboardEvent(fakeEvent, latency_info);
     // If this key event was handled by the input method, but
     // -doCommandBySelector: (invoked by the call to -interpretKeyEvents: above)
     // enqueued edit commands, then in order to let webkit handle them
@@ -631,15 +627,13 @@ void ExtractUnderlines(NSAttributedString* string,
     if (hasEditCommands_ && !hasMarkedText_)
       delayEventUntilAfterImeCompostion = YES;
   } else {
-    widgetHost->ForwardKeyboardEventWithCommands(event, latency_info,
-                                                 &editCommands_);
+    client_->OnNSViewForwardKeyboardEventWithCommands(event, latency_info,
+                                                      editCommands_);
   }
 
   // Calling ForwardKeyboardEventWithCommands() could have destroyed the
-  // widget. When the widget was destroyed,
-  // |renderWidgetHostView_->host()| will be set to NULL. So we
-  // check it here and return immediately if it's NULL.
-  if (!renderWidgetHostView_->host())
+  // widget.
+  if (clientWasDestroyed_)
     return;
 
   // Then send keypress and/or composition related events.
@@ -656,8 +650,8 @@ void ExtractUnderlines(NSAttributedString* string,
   BOOL textInserted = NO;
   if (textToBeInserted_.length() >
       ((hasMarkedText_ || oldHasMarkedText) ? 0u : 1u)) {
-    widgetHost->ImeCommitText(textToBeInserted_, std::vector<ui::ImeTextSpan>(),
-                              gfx::Range::InvalidRange(), 0);
+    client_->OnNSViewImeCommitText(textToBeInserted_,
+                                   gfx::Range::InvalidRange());
     textInserted = YES;
   }
 
@@ -668,15 +662,15 @@ void ExtractUnderlines(NSAttributedString* string,
     // composition node in WebKit.
     // When marked text is available, |markedTextSelectedRange_| will be the
     // range being selected inside the marked text.
-    widgetHost->ImeSetComposition(markedText_, ime_text_spans_,
-                                  setMarkedTextReplacementRange_,
-                                  markedTextSelectedRange_.location,
-                                  NSMaxRange(markedTextSelectedRange_));
+    client_->OnNSViewImeSetComposition(markedText_, ime_text_spans_,
+                                       setMarkedTextReplacementRange_,
+                                       markedTextSelectedRange_.location,
+                                       NSMaxRange(markedTextSelectedRange_));
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
     if (unmarkTextCalled_) {
-      widgetHost->ImeFinishComposingText(false);
+      client_->OnNSViewImeFinishComposingText();
     } else {
-      widgetHost->ImeCancelComposition();
+      client_->OnNSViewImeCancelComposition();
     }
   }
 
@@ -698,20 +692,17 @@ void ExtractUnderlines(NSAttributedString* string,
     fakeEvent.skip_in_browser = true;
     ui::LatencyInfo fake_event_latency_info = latency_info;
     fake_event_latency_info.set_source_event_type(ui::SourceEventType::OTHER);
-    widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent,
-                                                    fake_event_latency_info);
+    client_->OnNSViewForwardKeyboardEvent(fakeEvent, fake_event_latency_info);
     // Not checking |renderWidgetHostView_->host()| here because
     // a key event with |skip_in_browser| == true won't be handled by browser,
     // thus it won't destroy the widget.
 
-    widgetHost->ForwardKeyboardEventWithCommands(event, fake_event_latency_info,
-                                                 &editCommands_);
+    client_->OnNSViewForwardKeyboardEventWithCommands(
+        event, fake_event_latency_info, editCommands_);
 
     // Calling ForwardKeyboardEventWithCommands() could have destroyed the
-    // widget. When the widget was destroyed,
-    // |renderWidgetHostView_->host()| will be set to NULL. So we
-    // check it here and return immediately if it's NULL.
-    if (!renderWidgetHostView_->host())
+    // widget.
+    if (clientWasDestroyed_)
       return;
   }
 
@@ -725,7 +716,7 @@ void ExtractUnderlines(NSAttributedString* string,
       event.text[0] = textToBeInserted_[0];
       event.text[1] = 0;
       event.skip_in_browser = true;
-      widgetHost->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
+      client_->OnNSViewForwardKeyboardEvent(event, latency_info);
     } else if ((!textInserted || delayEventUntilAfterImeCompostion) &&
                event.text[0] != '\0' &&
                ((modifierFlags & kCtrlCmdKeyMask) ||
@@ -735,7 +726,7 @@ void ExtractUnderlines(NSAttributedString* string,
       // cases, unless the key event generated any other command.
       event.SetType(blink::WebInputEvent::kChar);
       event.skip_in_browser = true;
-      widgetHost->ForwardKeyboardEventWithLatencyInfo(event, latency_info);
+      client_->OnNSViewForwardKeyboardEvent(event, latency_info);
     }
   }
 
@@ -744,6 +735,8 @@ void ExtractUnderlines(NSAttributedString* string,
     [NSCursor setHiddenUntilMouseMoves:YES];
     cursorHidden_ = YES;
   }
+
+  client_->OnNSViewEndKeyboardEvent();
 }
 
 - (BOOL)suppressNextKeyUpForTesting:(int)keyCode {
@@ -1546,9 +1539,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   // If we are handling a key down event, then FinishComposingText() will be
   // called in keyEvent: method.
   if (!handlingKeyDown_) {
-    if (renderWidgetHostView_->GetActiveWidget()) {
-      renderWidgetHostView_->GetActiveWidget()->ImeFinishComposingText(false);
-    }
+    client_->OnNSViewImeFinishComposingText();
   } else {
     unmarkTextCalled_ = YES;
   }
@@ -1591,11 +1582,9 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (handlingKeyDown_) {
     setMarkedTextReplacementRange_ = gfx::Range(replacementRange);
   } else {
-    if (renderWidgetHostView_->GetActiveWidget()) {
-      renderWidgetHostView_->GetActiveWidget()->ImeSetComposition(
-          markedText_, ime_text_spans_, gfx::Range(replacementRange),
-          newSelRange.location, NSMaxRange(newSelRange));
-    }
+    client_->OnNSViewImeSetComposition(
+        markedText_, ime_text_spans_, gfx::Range(replacementRange),
+        newSelRange.location, NSMaxRange(newSelRange));
   }
 }
 
@@ -1647,11 +1636,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
     textToBeInserted_.append(base::SysNSStringToUTF16(im_text));
   } else {
     gfx::Range replacement_range(replacementRange);
-    if (renderWidgetHostView_->GetActiveWidget()) {
-      renderWidgetHostView_->GetActiveWidget()->ImeCommitText(
-          base::SysNSStringToUTF16(im_text), std::vector<ui::ImeTextSpan>(),
-          replacement_range, 0);
-    }
+    client_->OnNSViewImeCommitText(base::SysNSStringToUTF16(im_text),
+                                   replacement_range);
   }
 
   // Inserting text will delete all marked text automatically.
@@ -1753,10 +1739,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (!hasMarkedText_)
     return;
 
-  if (renderWidgetHostView_->GetActiveWidget()) {
-    renderWidgetHostView_->GetActiveWidget()->ImeFinishComposingText(false);
-  }
-
+  client_->OnNSViewImeFinishComposingText();
   [self cancelComposition];
 }
 
