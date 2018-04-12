@@ -81,14 +81,14 @@ struct ReportingPolicy;
 class NET_EXPORT URLRequestContextBuilder {
  public:
   using CreateInterceptingJobFactory =
-      base::OnceCallback<std::unique_ptr<net::URLRequestJobFactory>(
-          std::unique_ptr<net::URLRequestJobFactory> inner_job_factory)>;
+      base::OnceCallback<std::unique_ptr<URLRequestJobFactory>(
+          std::unique_ptr<URLRequestJobFactory> inner_job_factory)>;
 
   // Creates an HttpNetworkTransactionFactory given an HttpNetworkSession. Does
   // not take ownership of the session.
   using CreateHttpTransactionFactoryCallback =
-      base::OnceCallback<std::unique_ptr<net::HttpTransactionFactory>(
-          net::HttpNetworkSession* session)>;
+      base::OnceCallback<std::unique_ptr<HttpTransactionFactory>(
+          HttpNetworkSession* session)>;
 
   struct NET_EXPORT HttpCacheParams {
     enum Type {
@@ -159,7 +159,7 @@ class NET_EXPORT URLRequestContextBuilder {
   // ProxyResolutionService::SanitizeUrlPolicy::SAFE. Ignored if
   // a ProxyResolutionService is set directly.
   void set_pac_sanitize_url_policy(
-      net::ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy) {
+      ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy) {
     pac_sanitize_url_policy_ = pac_sanitize_url_policy;
   }
 
@@ -173,7 +173,7 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 
   void set_ssl_config_service(
-      scoped_refptr<net::SSLConfigService> ssl_config_service) {
+      scoped_refptr<SSLConfigService> ssl_config_service) {
     ssl_config_service_ = std::move(ssl_config_service);
   }
 
@@ -293,8 +293,7 @@ class NET_EXPORT URLRequestContextBuilder {
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  void set_reporting_policy(
-      std::unique_ptr<net::ReportingPolicy> reporting_policy);
+  void set_reporting_policy(std::unique_ptr<ReportingPolicy> reporting_policy);
 
   void set_network_error_logging_enabled(bool network_error_logging_enabled) {
     network_error_logging_enabled_ = network_error_logging_enabled;
@@ -383,13 +382,13 @@ class NET_EXPORT URLRequestContextBuilder {
   base::FilePath transport_security_persister_path_;
   NetLog* net_log_;
   std::unique_ptr<HostResolver> host_resolver_;
-  net::HostResolver* shared_host_resolver_;
+  HostResolver* shared_host_resolver_;
   std::unique_ptr<ChannelIDService> channel_id_service_;
   std::unique_ptr<ProxyConfigService> proxy_config_service_;
   bool pac_quick_check_enabled_;
   ProxyResolutionService::SanitizeUrlPolicy pac_sanitize_url_policy_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
-  scoped_refptr<net::SSLConfigService> ssl_config_service_;
+  scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   ProxyDelegate* shared_proxy_delegate_;
@@ -400,7 +399,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<CTVerifier> ct_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
 #if BUILDFLAG(ENABLE_REPORTING)
-  std::unique_ptr<net::ReportingPolicy> reporting_policy_;
+  std::unique_ptr<ReportingPolicy> reporting_policy_;
   bool network_error_logging_enabled_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;

@@ -65,7 +65,8 @@ class NET_EXPORT URLRequestContextStorage {
   void set_network_delegate(std::unique_ptr<NetworkDelegate> network_delegate);
   void set_proxy_resolution_service(
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service);
-  void set_ssl_config_service(SSLConfigService* ssl_config_service);
+  void set_ssl_config_service(
+      scoped_refptr<SSLConfigService> ssl_config_service);
   void set_http_server_properties(
       std::unique_ptr<HttpServerProperties> http_server_properties);
   void set_cookie_store(std::unique_ptr<CookieStore> cookie_store);

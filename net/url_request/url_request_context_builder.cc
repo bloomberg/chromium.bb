@@ -126,7 +126,7 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   }
 
   bool OnCanSetCookie(const URLRequest& request,
-                      const net::CanonicalCookie& cookie,
+                      const CanonicalCookie& cookie,
                       CookieOptions* options) override {
     return true;
   }
@@ -299,7 +299,7 @@ void URLRequestContextBuilder::SetCertVerifier(
 
 #if BUILDFLAG(ENABLE_REPORTING)
 void URLRequestContextBuilder::set_reporting_policy(
-    std::unique_ptr<net::ReportingPolicy> reporting_policy) {
+    std::unique_ptr<ReportingPolicy> reporting_policy) {
   reporting_policy_ = std::move(reporting_policy);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
@@ -427,7 +427,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   if (ssl_config_service_) {
     // This takes a raw pointer, but |storage| will hold onto a reference to the
     // service.
-    storage->set_ssl_config_service(ssl_config_service_.get());
+    storage->set_ssl_config_service(ssl_config_service_);
   } else {
     storage->set_ssl_config_service(new SSLConfigServiceDefaults);
   }
@@ -613,13 +613,13 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
-  std::unique_ptr<net::URLRequestJobFactory> top_job_factory(job_factory);
+  std::unique_ptr<URLRequestJobFactory> top_job_factory(job_factory);
   if (!url_request_interceptors_.empty()) {
     // Set up interceptors in the reverse order.
 
     for (auto i = url_request_interceptors_.rbegin();
          i != url_request_interceptors_.rend(); ++i) {
-      top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
+      top_job_factory.reset(new URLRequestInterceptingJobFactory(
           std::move(top_job_factory), std::move(*i)));
     }
     url_request_interceptors_.clear();
