@@ -74,8 +74,11 @@ void FaceDetector::OnDetectFaces(
       Point2D location;
       location.setX(landmark->location.x);
       location.setY(landmark->location.y);
+      HeapVector<Point2D> locations;
+      locations.push_back(location);
+
       Landmark web_landmark;
-      web_landmark.setLocation(location);
+      web_landmark.setLocations(locations);
       if (landmark->type == shape_detection::mojom::blink::LandmarkType::EYE) {
         web_landmark.setType("eye");
       } else if (landmark->type ==
