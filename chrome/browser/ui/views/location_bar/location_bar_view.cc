@@ -1019,13 +1019,16 @@ void LocationBarView::UpdateZoomViewVisibility() {
 void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {
   if (!animate) {
     size_animation_.Reset(visible ? 1 : 0);
+    SetVisible(visible);
     return;
   }
 
-  if (visible)
+  if (visible) {
+    SetVisible(true);
     size_animation_.Show();
-  else
+  } else {
     size_animation_.Hide();
+  }
 }
 
 void LocationBarView::SaveStateToContents(WebContents* contents) {
@@ -1146,6 +1149,8 @@ void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
 
 void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
   AnimationProgressed(animation);
+  if (animation->GetCurrentValue() == 0)
+    SetVisible(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
