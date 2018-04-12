@@ -52,20 +52,22 @@ void LayoutCustom::StyleDidChange(StyleDifference diff,
   // We will also need to investigate reducing the properties which
   // LayoutBlockFlow::StyleDidChange invalidates upon. (For example margins).
 
-  LayoutBlockFlow::StyleDidChange(diff, old_style);
-
   LayoutWorklet* worklet = LayoutWorklet::From(*GetDocument().domWindow());
   const AtomicString& name = StyleRef().DisplayLayoutCustomName();
   state_ =
       worklet->GetDocumentDefinitionMap()->Contains(name) ? kBlock : kUnloaded;
 
+  // Make our children "block-level" before invoking StyleDidChange. As the
+  // current multi-col logic may invoke a call to AddChild, failing a DCHECK.
+  if (state_ != kUnloaded)
+    SetChildrenInline(false);
+
+  LayoutBlockFlow::StyleDidChange(diff, old_style);
+
   // Register if we'll need to reattach the layout tree when a matching
   // "layout()" is registered.
-  if (state_ == kUnloaded) {
+  if (state_ == kUnloaded)
     worklet->AddPendingLayout(name, GetNode());
-  } else {
-    SetChildrenInline(false);
-  }
 }
 
 void LayoutCustom::UpdateBlockLayout(bool relayout_children) {
