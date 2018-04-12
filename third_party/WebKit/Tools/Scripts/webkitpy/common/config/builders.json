@@ -67,7 +67,7 @@
         "specifiers": ["Mac10.12", "Release"]
     },
     "mac_chromium_rel_ng": {
-        "bucket": "master.tryserver.chromium.mac",
+        "bucket": "luci.chromium.try",
         "port_name": "mac-mac10.12",
         "specifiers": ["Mac10.12", "Release"],
         "is_try_builder": true
