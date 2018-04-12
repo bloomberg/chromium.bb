@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/unguessable_token.h"
+#include "media/base/user_input_monitor.h"
+#include "services/audio/input_stream.h"
 #include "services/audio/local_muter.h"
 #include "services/audio/output_stream.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -14,7 +16,7 @@
 namespace audio {
 
 StreamFactory::StreamFactory(media::AudioManager* audio_manager)
-    : audio_manager_(audio_manager) {}
+    : audio_manager_(audio_manager), user_input_monitor_(nullptr) {}
 
 StreamFactory::~StreamFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
@@ -25,6 +27,29 @@ void StreamFactory::Bind(
     std::unique_ptr<service_manager::ServiceContextRef> context_ref) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   bindings_.AddBinding(this, std::move(request), std::move(context_ref));
+}
+
+void StreamFactory::CreateInputStream(
+    media::mojom::AudioInputStreamRequest stream_request,
+    media::mojom::AudioInputStreamClientPtr client,
+    media::mojom::AudioInputStreamObserverPtr observer,
+    media::mojom::AudioLogPtr log,
+    const std::string& device_id,
+    const media::AudioParameters& params,
+    uint32_t shared_memory_count,
+    bool enable_agc,
+    CreateInputStreamCallback created_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  // Unretained is safe since |this| indirectly owns the InputStream.
+  auto deleter_callback = base::BindOnce(&StreamFactory::DestroyInputStream,
+                                         base::Unretained(this));
+
+  input_streams_.insert(std::make_unique<InputStream>(
+      std::move(created_callback), std::move(deleter_callback),
+      std::move(stream_request), std::move(client), std::move(observer),
+      std::move(log), audio_manager_, user_input_monitor_, device_id, params,
+      shared_memory_count, enable_agc));
 }
 
 void StreamFactory::CreateOutputStream(
@@ -74,6 +99,12 @@ void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
 
   // Add the binding.
   muter->AddBinding(std::move(request));
+}
+
+void StreamFactory::DestroyInputStream(InputStream* stream) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  size_t erased = input_streams_.erase(stream);
+  DCHECK_EQ(1u, erased);
 }
 
 void StreamFactory::DestroyOutputStream(OutputStream* stream) {

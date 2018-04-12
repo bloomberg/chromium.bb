@@ -27,6 +27,7 @@ class UnguessableToken;
 namespace media {
 class AudioManager;
 class AudioParameters;
+class UserInputMonitor;
 }  // namespace media
 
 namespace service_manager {
@@ -35,6 +36,7 @@ class ServiceContextRef;
 
 namespace audio {
 
+class InputStream;
 class LocalMuter;
 class OutputStream;
 
@@ -51,6 +53,16 @@ class StreamFactory final : public mojom::StreamFactory {
             std::unique_ptr<service_manager::ServiceContextRef> context_ref);
 
   // StreamFactory implementation.
+  void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
+                         media::mojom::AudioInputStreamClientPtr client,
+                         media::mojom::AudioInputStreamObserverPtr observer,
+                         media::mojom::AudioLogPtr log,
+                         const std::string& device_id,
+                         const media::AudioParameters& params,
+                         uint32_t shared_memory_count,
+                         bool enable_agc,
+                         CreateInputStreamCallback created_callback) final;
+
   void CreateOutputStream(
       media::mojom::AudioOutputStreamRequest stream_request,
       media::mojom::AudioOutputStreamClientPtr client,
@@ -64,15 +76,19 @@ class StreamFactory final : public mojom::StreamFactory {
                  const base::UnguessableToken& group_id) final;
 
  private:
+  using InputStreamSet =
+      base::flat_set<std::unique_ptr<InputStream>, base::UniquePtrComparator>;
   using OutputStreamSet =
       base::flat_set<std::unique_ptr<OutputStream>, base::UniquePtrComparator>;
 
+  void DestroyInputStream(InputStream* stream);
   void DestroyOutputStream(OutputStream* stream);
   void DestroyMuter(LocalMuter* muter);
 
   SEQUENCE_CHECKER(owning_sequence_);
 
   media::AudioManager* const audio_manager_;
+  media::UserInputMonitor* user_input_monitor_;
 
   mojo::BindingSet<mojom::StreamFactory,
                    std::unique_ptr<service_manager::ServiceContextRef>>
@@ -81,6 +97,7 @@ class StreamFactory final : public mojom::StreamFactory {
   // Order of the following members is important for a clean shutdown.
   GroupCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
+  InputStreamSet input_streams_;
   OutputStreamSet output_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);

@@ -12,9 +12,9 @@
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
-#include "media/base/user_input_monitor.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/audio/stream_factory.h"
 #include "services/audio/test/mock_log.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +34,8 @@ const bool kDoEnableAGC = true;
 const bool kDoNotEnableAGC = false;
 const bool kValidStream = true;
 const bool kInvalidStream = false;
+const bool kMuted = true;
+const bool kNotMuted = false;
 const char* kDefaultDeviceId = "default";
 
 class MockStreamClient : public media::mojom::AudioInputStreamClient {
@@ -86,19 +88,6 @@ class MockStreamObserver : public media::mojom::AudioInputStreamObserver {
   DISALLOW_COPY_AND_ASSIGN(MockStreamObserver);
 };
 
-class MockUserInputMonitor : public media::UserInputMonitor {
- public:
-  MockUserInputMonitor() {}
-
-  size_t GetKeyPressCount() const override { return 0; }
-
-  MOCK_METHOD0(StartKeyboardMonitoring, void());
-  MOCK_METHOD0(StopKeyboardMonitoring, void());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockUserInputMonitor);
-};
-
 class MockStream : public media::AudioInputStream {
  public:
   MockStream() {}
@@ -124,7 +113,10 @@ class MockStream : public media::AudioInputStream {
 class AudioServiceInputStreamTest : public testing::Test {
  public:
   AudioServiceInputStreamTest()
-      : audio_manager_(std::make_unique<media::TestAudioThread>(false)) {}
+      : audio_manager_(std::make_unique<media::TestAudioThread>(false)),
+        stream_factory_(&audio_manager_),
+        stream_factory_binding_(&stream_factory_,
+                                mojo::MakeRequest(&stream_factory_ptr_)) {}
 
   ~AudioServiceInputStreamTest() { audio_manager_.Shutdown(); }
 
@@ -139,18 +131,16 @@ class AudioServiceInputStreamTest : public testing::Test {
         mojo::edk::ProcessErrorCallback());
   }
 
-  std::unique_ptr<InputStream> CreateStream(
-      media::mojom::AudioInputStreamRequest request,
-      bool enable_agc) {
-    return std::make_unique<InputStream>(
+  media::mojom::AudioInputStreamPtr CreateStream(bool enable_agc) {
+    media::mojom::AudioInputStreamPtr stream_ptr;
+    stream_factory_ptr_->CreateInputStream(
+        mojo::MakeRequest(&stream_ptr), client_.MakePtr(), observer_.MakePtr(),
+        log_.MakePtr(), kDefaultDeviceId,
+        media::AudioParameters::UnavailableDeviceParams(),
+        kDefaultSharedMemoryCount, enable_agc,
         base::BindOnce(&AudioServiceInputStreamTest::OnCreated,
-                       base::Unretained(this)),
-        base::BindOnce(&AudioServiceInputStreamTest::DeleteCallback,
-                       base::Unretained(this)),
-        std::move(request), client_.MakePtr(), observer_.MakePtr(),
-        log_.MakePtr(), &audio_manager_, &user_input_monitor_,
-        media::AudioParameters::UnavailableDeviceParams(), kDefaultDeviceId,
-        kDefaultSharedMemoryCount, enable_agc);
+                       base::Unretained(this)));
+    return stream_ptr;
   }
 
   media::MockAudioManager& audio_manager() { return audio_manager_; }
@@ -162,20 +152,21 @@ class AudioServiceInputStreamTest : public testing::Test {
   MockLog& log() { return log_; }
 
   void OnCreated(media::mojom::AudioDataPipePtr ptr, bool initially_muted) {
-    CreatedCallback(!!ptr);
+    CreatedCallback(!!ptr, initially_muted);
   }
 
-  MOCK_METHOD1(CreatedCallback, void(bool /*valid*/));
-  MOCK_METHOD1(DeleteCallback, void(InputStream*));
+  MOCK_METHOD2(CreatedCallback, void(bool /*valid*/, bool /*initially_muted*/));
   MOCK_METHOD1(BadMessageCallback, void(const std::string&));
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_env_;
   media::MockAudioManager audio_manager_;
+  StreamFactory stream_factory_;
+  mojom::StreamFactoryPtr stream_factory_ptr_;
+  mojo::Binding<mojom::StreamFactory> stream_factory_binding_;
   StrictMock<MockStreamClient> client_;
   StrictMock<MockStreamObserver> observer_;
   NiceMock<MockLog> log_;
-  NiceMock<MockUserInputMonitor> user_input_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioServiceInputStreamTest);
 };
@@ -188,18 +179,17 @@ TEST_F(AudioServiceInputStreamTest, ConstructDestruct) {
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
-  stream.reset();
+  stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -212,16 +202,14 @@ TEST_F(AudioServiceInputStreamTest,
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
-  EXPECT_CALL(*this, DeleteCallback(stream.get()));
   EXPECT_CALL(observer(), BindingConnectionError());
   client().CloseBinding();
   base::RunLoop().RunUntilIdle();
@@ -236,16 +224,14 @@ TEST_F(AudioServiceInputStreamTest,
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
-  EXPECT_CALL(*this, DeleteCallback(stream.get()));
   EXPECT_CALL(client(), BindingConnectionError());
   observer().CloseBinding();
   base::RunLoop().RunUntilIdle();
@@ -260,19 +246,17 @@ TEST_F(AudioServiceInputStreamTest,
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
 
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
-  EXPECT_CALL(*this, DeleteCallback(stream.get()));
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -285,11 +269,10 @@ TEST_F(AudioServiceInputStreamTest, Record) {
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(mock_stream, Start(NotNull()));
@@ -303,7 +286,7 @@ TEST_F(AudioServiceInputStreamTest, Record) {
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
-  stream.reset();
+  stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -315,11 +298,10 @@ TEST_F(AudioServiceInputStreamTest, SetVolume) {
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   const double new_volume = 0.618;
@@ -332,7 +314,7 @@ TEST_F(AudioServiceInputStreamTest, SetVolume) {
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
-  stream.reset();
+  stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -344,15 +326,13 @@ TEST_F(AudioServiceInputStreamTest, SetNegativeVolume_BadMessage) {
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*this, BadMessageCallback(_));
-  EXPECT_CALL(*this, DeleteCallback(stream.get()));
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
@@ -369,16 +349,14 @@ TEST_F(AudioServiceInputStreamTest, SetVolumeGreaterThanOne_BadMessage) {
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*this, BadMessageCallback(_));
   EXPECT_CALL(mock_stream, Close());
-  EXPECT_CALL(*this, DeleteCallback(stream.get()));
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
@@ -394,19 +372,41 @@ TEST_F(AudioServiceInputStreamTest, CreateStreamWithAGCEnable_PropagateAGC) {
       &mock_stream));
 
   EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kNotMuted));
   EXPECT_CALL(mock_stream, SetAutomaticGainControl(kDoEnableAGC));
   EXPECT_CALL(log(), OnCreated(_, _));
-  EXPECT_CALL(*this, CreatedCallback(kValidStream));
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoEnableAGC);
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kNotMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoEnableAGC);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
-  stream.reset();
+  stream_ptr.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AudioServiceInputStreamTest,
+       CreateInitiallyMutedStream_PropagateInitiallyMuted) {
+  NiceMock<MockStream> mock_stream;
+  audio_manager().SetMakeInputStreamCB(base::BindRepeating(
+      [](media::AudioInputStream* stream, const media::AudioParameters& params,
+         const std::string& device_id) { return stream; },
+      &mock_stream));
+
+  EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(mock_stream, IsMuted()).WillOnce(Return(kMuted));
+  EXPECT_CALL(log(), OnCreated(_, _));
+  EXPECT_CALL(*this, CreatedCallback(kValidStream, kMuted));
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoEnableAGC);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(log(), OnClosed());
+  EXPECT_CALL(mock_stream, Close());
+  EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
+  stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -414,16 +414,13 @@ TEST_F(AudioServiceInputStreamTest,
        ConstructWithStreamCreationFailure_SignalsError) {
   // By default, MockAudioManager fails to create a stream.
 
-  media::mojom::AudioInputStreamPtr stream_ptr;
-  std::unique_ptr<InputStream> stream =
-      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  media::mojom::AudioInputStreamPtr stream_ptr = CreateStream(kDoNotEnableAGC);
 
-  EXPECT_CALL(*this, CreatedCallback(kInvalidStream));
+  EXPECT_CALL(*this, CreatedCallback(kInvalidStream, kNotMuted));
   EXPECT_CALL(log(), OnError());
   EXPECT_CALL(client(), OnError());
   EXPECT_CALL(client(), BindingConnectionError());
   EXPECT_CALL(observer(), BindingConnectionError());
-  EXPECT_CALL(*this, DeleteCallback(stream.get()));
   base::RunLoop().RunUntilIdle();
 }
 

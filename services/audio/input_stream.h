@@ -42,8 +42,8 @@ class InputStream final : public media::mojom::AudioInputStream,
               media::mojom::AudioLogPtr log,
               media::AudioManager* manager,
               media::UserInputMonitor* user_input_monitor,
-              const media::AudioParameters& params,
               const std::string& device_id,
+              const media::AudioParameters& params,
               uint32_t shared_memory_count,
               bool enable_agc);
   ~InputStream() override;
