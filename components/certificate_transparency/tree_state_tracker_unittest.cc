@@ -42,7 +42,6 @@ namespace certificate_transparency {
 class TreeStateTrackerTest : public ::testing::Test {
   void SetUp() override {
     log_ = net::CTLogVerifier::Create(GetTestPublicKey(), "testlog",
-                                      "https://ct.example.com",
                                       "unresolvable.invalid");
 
     ASSERT_TRUE(log_);

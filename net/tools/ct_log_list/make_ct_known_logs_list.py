@@ -25,9 +25,6 @@ def _write_log_info_struct_definition(f):
         "  // The user-friendly log name.\n"
         "  // Note: This will not be translated.\n"
         "  const char* log_name;\n"
-        "  // The HTTPS API endpoint for the log.\n"
-        "  // Note: Trailing slashes should be included.\n"
-        "  const char* log_url;\n"
         "  // The DNS API endpoint for the log.\n"
         "  // This is used as the parent domain for all queries about the "
         "log.\n  // If empty, CT DNS queries are not supported for the log. "
@@ -132,7 +129,6 @@ def _to_loginfo_struct(log):
     s += "\n     ".join(split_hex_key)
     s += ',\n     %d' % (len(log_key))
     s += ',\n     "%s"' % (_escape_c_string(log["description"]))
-    s += ',\n     "https://%s"' % (log["url"])
     s += ',\n     "%s"' % (log["dns_api_endpoint"])
     s += '}'
     return s

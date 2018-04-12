@@ -185,9 +185,8 @@ void AddCacheEntry(net::HostCache* cache,
 
 class SingleTreeTrackerTest : public ::testing::Test {
   void SetUp() override {
-    log_ =
-        net::CTLogVerifier::Create(GetTestPublicKey(), "testlog",
-                                   "https://ct.example.com", kDNSRequestSuffix);
+    log_ = net::CTLogVerifier::Create(GetTestPublicKey(), "testlog",
+                                      kDNSRequestSuffix);
 
     ASSERT_TRUE(log_);
     ASSERT_EQ(log_->key_id(), GetTestPublicKeyId());

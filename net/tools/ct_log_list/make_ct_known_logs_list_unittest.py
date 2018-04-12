@@ -69,7 +69,7 @@ class FormattingTest(unittest.TestCase):
                "dns_api_endpoint": "dns.ct.example.com"}
         expected_loginfo = (
                 '    {"\\x61\\x62\\x63",\n     3,\n     "Test Description",\n'
-                '     "https://ct.example.com",\n     "dns.ct.example.com"}')
+                '     "dns.ct.example.com"}')
         self.assertEqual(
                 make_ct_known_logs_list._to_loginfo_struct(log),
                 expected_loginfo)
@@ -128,7 +128,7 @@ class DisqualifiedLogsHandlingTest(unittest.TestCase):
             '\\xde\\x5d\\xae\\x22\\x23\\xb0"\n     "\\x03\\x61\\xa3\\x96\\x17'
             '\\x7a\\x9c\\xb4\\x10\\xff\\x61\\xf2\\x00\\x15\\xad",\n    {"\\x61'
             '\\x62\\x63",\n     3,\n     "Test Description",\n     '
-            '"https://ct.example.com",\n     "dns.ct.example.com"},\n     '
+            '"dns.ct.example.com"},\n     '
             'base::TimeDelta::FromSeconds(1464566400)}')
 
         self.assertEqual(
