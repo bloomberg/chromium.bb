@@ -182,14 +182,6 @@ static __m256i highbd_clamp_epi16(__m256i u, __m256i zero, __m256i max) {
   return _mm256_max_epi16(_mm256_min_epi16(u, max), zero);
 }
 
-static INLINE void cfl_predict_hbd(__m256i *dst, __m256i *src,
-                                   __m256i alpha_q12, __m256i alpha_sign,
-                                   __m256i dc_q0, __m256i max) {
-  __m256i res = predict_unclipped(src, alpha_q12, alpha_sign, dc_q0);
-  _mm256_storeu_si256(dst,
-                      highbd_clamp_epi16(res, _mm256_setzero_si256(), max));
-}
-
 static INLINE void cfl_predict_hbd_avx2(const int16_t *pred_buf_q3,
                                         uint16_t *dst, int dst_stride,
                                         int alpha_q3, int bd, int width,
@@ -204,10 +196,15 @@ static INLINE void cfl_predict_hbd_avx2(const int16_t *pred_buf_q3,
   __m256i *row = (__m256i *)pred_buf_q3;
   const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
   do {
-    cfl_predict_hbd((__m256i *)dst, row, alpha_q12, alpha_sign, dc_q0, max);
+    const __m256i res = predict_unclipped(row, alpha_q12, alpha_sign, dc_q0);
+    _mm256_storeu_si256((__m256i *)dst,
+                        highbd_clamp_epi16(res, _mm256_setzero_si256(), max));
     if (width == 32) {
-      cfl_predict_hbd((__m256i *)(dst + 16), row + 1, alpha_q12, alpha_sign,
-                      dc_q0, max);
+      const __m256i res_1 =
+          predict_unclipped(row + 1, alpha_q12, alpha_sign, dc_q0);
+      _mm256_storeu_si256(
+          (__m256i *)(dst + 16),
+          highbd_clamp_epi16(res_1, _mm256_setzero_si256(), max));
     }
     dst += dst_stride;
   } while ((row += CFL_BUF_LINE_I256) < row_end);
