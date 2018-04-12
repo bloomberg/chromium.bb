@@ -507,9 +507,7 @@ Polymer({
   requestListUpdate_: function() {
     if (this.deviceList_.length == 0) {
       // Update immediately for the initial device list.
-      this.bluetooth.getDevices(devices => {
-        this.populateDeviceList_(devices);
-      });
+      this.refreshBluetoothList_();
       return;
     }
 
@@ -524,9 +522,7 @@ Polymer({
         return;
       }
 
-      this.bluetooth.getDevices(devices => {
-        this.populateDeviceList_(devices);
-      });
+      this.refreshBluetoothList_();
       this.updateTimerId_ = undefined;
     }, this.listUpdateFrequencyMs);
   },
@@ -543,33 +539,17 @@ Polymer({
   },
 
   /**
-   * Populate the device list from chrome.bluetooth.getDevices
-   * Limit the device number to MAX_NUMBER_DEVICE_SHOWN and
-   * prioritize paired/connecting devices over other devices.
-   * @param {!Array<!chrome.bluetooth.Device|undefined>} devices
+   * Requests bluetooth device list from Chrome. Update deviceList_ once the
+   * results are returned from chrome.
    * @private
    */
-  populateDeviceList_: function(devices) {
-    const tempList = [];
-    let i;
-    for (i = 0; i < devices.length; i++) {
-      if (tempList.length == MAX_NUMBER_DEVICE_SHOWN)
-        break;
-
-      if (!!devices[i].paired || !!devices[i].connecting) {
-        tempList.push(devices[i]);
-        devices[i] = undefined;
-      }
-    }
-
-    for (i = 0; i < devices.length; i++) {
-      if (tempList.length == MAX_NUMBER_DEVICE_SHOWN)
-        break;
-
-      if (devices[i] !== undefined)
-        tempList.push(devices[i]);
-    }
-
-    this.deviceList_ = tempList;
+  refreshBluetoothList_: function() {
+    const filter = {
+      filterType: chrome.bluetooth.FilterType.KNOWN,
+      limit: MAX_NUMBER_DEVICE_SHOWN
+    };
+    this.bluetooth.getDevices(filter, devices => {
+      this.deviceList_ = devices;
+    });
   },
 });

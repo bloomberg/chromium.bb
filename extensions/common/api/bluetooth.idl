@@ -13,6 +13,9 @@ namespace bluetooth {
                    joystick, gamepad, keyboard, mouse, tablet,
                    keyboardMouseCombo};
 
+  // Types for filtering bluetooth devices.
+  enum FilterType {all, known};
+
   // Information about the state of the Bluetooth adapter.
   dictionary AdapterState {
     // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.
@@ -82,11 +85,20 @@ namespace bluetooth {
     // The received signal strength, in dBm. This field is avaliable and valid
     // only during discovery. Outside of discovery it's value is not specified.
     long? inquiryRssi;
-  
+
     // The transmitted power level. This field is avaliable only for LE devices
     // that include this field in AD. It is avaliable and valid only during
     // discovery.
     long? inquiryTxPower;
+  };
+
+  dictionary BluetoothFilter {
+    // Type of filter to apply to the device list. Default is all.
+    FilterType? filterType;
+
+    // Maximum number of bluetoth devices to return. Default is 0 (no limit)
+    // if unspecified.
+    long? limit;
   };
 
   // Callback from the <code>getDevice</code> method.
@@ -117,8 +129,13 @@ namespace bluetooth {
 
     // Get a list of Bluetooth devices known to the system, including paired
     // and recently discovered devices.
+    // |filter|: Some criteria to filter the list of returned bluetooth devices.
+    // If the filter is not set or set to <code>{}</code>, returned device list
+    // will contain all bluetooth devices. Right now this is only supported in
+    // ChromeOS, for other platforms, a full list is returned.
     // |callback| : Called when the search is completed.
-    static void getDevices(GetDevicesCallback callback);
+    static void getDevices(optional BluetoothFilter filter,
+                           GetDevicesCallback callback);
 
     // Start discovery. Newly discovered devices will be returned via the
     // onDeviceAdded event. Previously discovered devices already known to

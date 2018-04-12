@@ -85,8 +85,9 @@ cr.define('settings', function() {
     getDevice: assertNotReached,
 
     /** @override */
-    getDevices: function(callback) {
-      callback(this.devices.slice());
+    getDevices: function(opt_filter, opt_callback) {
+      if (opt_callback)
+        opt_callback(this.devices.slice());
     },
 
     /** @override */

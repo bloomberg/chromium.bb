@@ -88,9 +88,12 @@ class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
   ~BluetoothGetDevicesFunction() override;
 
   // BluetoothExtensionFunction:
+  bool CreateParams() override;
   void DoWork(scoped_refptr<device::BluetoothAdapter> adapter) override;
 
  private:
+  std::unique_ptr<bluetooth::GetDevices::Params> params_;
+
   DISALLOW_COPY_AND_ASSIGN(BluetoothGetDevicesFunction);
 };
 

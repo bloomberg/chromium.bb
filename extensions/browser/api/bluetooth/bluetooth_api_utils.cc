@@ -143,6 +143,20 @@ void PopulateAdapterState(const device::BluetoothAdapter& adapter,
   out->address = adapter.GetAddress();
 }
 
+#if defined(OS_CHROMEOS)
+device::BluetoothFilterType ToBluetoothDeviceFilterType(FilterType type) {
+  switch (type) {
+    case FilterType::FILTER_TYPE_NONE:
+    case FilterType::FILTER_TYPE_ALL:
+      return device::BluetoothFilterType::ALL;
+    case FilterType::FILTER_TYPE_KNOWN:
+      return device::BluetoothFilterType::KNOWN;
+    default:
+      NOTREACHED();
+  }
+}
+#endif
+
 }  // namespace bluetooth
 }  // namespace api
 }  // namespace extensions
