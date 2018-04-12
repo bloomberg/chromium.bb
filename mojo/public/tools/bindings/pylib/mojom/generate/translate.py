@@ -452,12 +452,14 @@ def _ResolveNumericEnumValues(enum_fields):
   values to EnumField.numeric_value.
 
   Returns:
-    The highest assigned enumerator value or None if no values were assigned.
+    A tuple of the lowest and highest assigned enumerator value or None, None
+    if no enumerator values were assigned.
   """
 
   # map of <mojom_name> -> integral value
   resolved_enum_values = {}
   prev_value = -1
+  min_value = None
   max_value = None
   for field in enum_fields:
     # This enum value is +1 the previous enum value (e.g: BEGIN).
@@ -476,10 +478,12 @@ def _ResolveNumericEnumValues(enum_fields):
 
     resolved_enum_values[field.mojom_name] = prev_value
     field.numeric_value = prev_value
+    if min_value is None or prev_value < min_value:
+      min_value = prev_value
     if max_value is None or prev_value > max_value:
       max_value = prev_value
 
-  return max_value
+  return min_value, max_value
 
 def _Enum(module, parsed_enum, parent_kind):
   """
@@ -503,7 +507,7 @@ def _Enum(module, parsed_enum, parent_kind):
     enum.fields = map(
         lambda field: _EnumField(module, enum, field, parent_kind),
         parsed_enum.enum_value_list)
-    enum.max_value = _ResolveNumericEnumValues(enum.fields)
+    enum.min_value, enum.max_value = _ResolveNumericEnumValues(enum.fields)
 
   module.kinds[enum.spec] = enum
 

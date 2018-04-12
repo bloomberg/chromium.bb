@@ -12,6 +12,9 @@ enum class {{enum_name}} : int32_t {
   {{field.name}},
 {%-     endif %}
 {%-   endfor %}
+{%-   if enum.min_value is not none %}
+  kMinValue = {{enum.min_value}},
+{%-   endif %}
 {%-   if enum.max_value is not none %}
   kMaxValue = {{enum.max_value}},
 {%-   endif %}
