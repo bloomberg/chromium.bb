@@ -54,8 +54,6 @@ class OmniboxTextView : public views::View {
   int GetLineHeight() const;
 
  private:
-  const gfx::FontList& GetFontForType(int text_type) const;
-
   std::unique_ptr<gfx::RenderText> CreateRenderText(
       const base::string16& text) const;
 
@@ -88,8 +86,7 @@ class OmniboxTextView : public views::View {
   OmniboxResultView* result_view_;
 
   // Font settings for this view.
-  gfx::FontList font_list_;
-  mutable int font_height_;
+  int font_height_;
 
   mutable std::unique_ptr<gfx::RenderText> render_text_;
 
