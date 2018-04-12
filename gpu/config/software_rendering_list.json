@@ -479,8 +479,8 @@
     },
     {
       "id": 68,
-      "description": "VMware has corrupt rendering on Windows",
-      "cr_bugs": [169470, 754435],
+      "description": "VMware Fusion 4 has corrupt rendering with Win Vista+",
+      "cr_bugs": [169470],
       "os": {
         "type": "win",
         "version": {
@@ -489,6 +489,10 @@
         }
       },
       "vendor_id": "0x15ad",
+      "driver_version": {
+        "op": "<=",
+        "value": "7.14.1.1134"
+      },
       "features": [
         "all"
       ]

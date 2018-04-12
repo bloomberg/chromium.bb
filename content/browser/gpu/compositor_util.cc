@@ -22,6 +22,7 @@
 #include "components/viz/common/features.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
@@ -54,10 +55,20 @@ bool IsForceGpuRasterizationEnabled() {
   return command_line->HasSwitch(switches::kForceGpuRasterization);
 }
 
+gpu::GpuFeatureStatus SafeGetFeatureStatus(GpuDataManagerImpl* manager,
+                                           gpu::GpuFeatureType feature) {
+  if (!manager->IsGpuFeatureInfoAvailable()) {
+    // The GPU process probably crashed during startup, but we can't
+    // assert this as the test bots are slow, and recording the crash
+    // is racy. Be robust and just say that all features are disabled.
+    return gpu::kGpuFeatureStatusDisabled;
+  }
+  return manager->GetFeatureStatus(feature);
+}
+
 gpu::GpuFeatureStatus GetGpuCompositingStatus() {
-  gpu::GpuFeatureStatus status =
-      GpuDataManagerImpl::GetInstance()->GetFeatureStatus(
-          gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
+  gpu::GpuFeatureStatus status = SafeGetFeatureStatus(
+      GpuDataManagerImpl::GetInstance(), gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING);
 #if defined(USE_AURA) || defined(OS_MACOSX)
   if (status == gpu::kGpuFeatureStatusEnabled &&
       ImageTransportFactory::GetInstance()->IsGpuCompositingDisabled()) {
@@ -71,11 +82,11 @@ const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-  DCHECK(manager->IsGpuFeatureInfoAvailable());
 
   const GpuFeatureData kGpuFeatureData[] = {
       {"2d_canvas",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
+       SafeGetFeatureStatus(manager,
+                            gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
        command_line.HasSwitch(switches::kDisableAccelerated2dCanvas),
        "Accelerated 2D canvas is unavailable: either disabled via blacklist or"
        " the command line.",
@@ -88,36 +99,37 @@ const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
        " and hardware acceleration will be unavailable.",
        true},
       {"webgl",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL),
+       SafeGetFeatureStatus(manager, gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL),
        command_line.HasSwitch(switches::kDisableWebGL),
        "WebGL has been disabled via blacklist or the command line.", false},
-      {"flash_3d", manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_FLASH3D),
+      {"flash_3d", SafeGetFeatureStatus(manager, gpu::GPU_FEATURE_TYPE_FLASH3D),
        command_line.HasSwitch(switches::kDisableFlash3d),
        "Using 3d in flash has been disabled, either via blacklist, about:flags "
        "or"
        " the command line.",
        true},
       {"flash_stage3d",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
+       SafeGetFeatureStatus(manager, gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D),
        command_line.HasSwitch(switches::kDisableFlashStage3d),
        "Using Stage3d in Flash has been disabled, either via blacklist,"
        " about:flags or the command line.",
        true},
       {"flash_stage3d_baseline",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE),
+       SafeGetFeatureStatus(manager,
+                            gpu::GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE),
        command_line.HasSwitch(switches::kDisableFlashStage3d),
        "Using Stage3d Baseline profile in Flash has been disabled, either"
        " via blacklist, about:flags or the command line.",
        true},
       {"video_decode",
-       manager->GetFeatureStatus(
-           gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
+       SafeGetFeatureStatus(manager,
+                            gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE),
        command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode),
        "Accelerated video decode has been disabled, either via blacklist,"
        " about:flags or the command line.",
        true},
       {"rasterization",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION),
+       SafeGetFeatureStatus(manager, gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION),
        (command_line.HasSwitch(switches::kDisableGpuRasterization) &&
         !IsForceGpuRasterizationEnabled()),
        "Accelerated rasterization has been disabled, either via blacklist,"
@@ -137,7 +149,7 @@ const GpuFeatureData GetGpuFeatureData(size_t index, bool* eof) {
        "line.",
        false},
       {"webgl2",
-       manager->GetFeatureStatus(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2),
+       SafeGetFeatureStatus(manager, gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2),
        (command_line.HasSwitch(switches::kDisableWebGL) ||
         command_line.HasSwitch(switches::kDisableWebGL2)),
        "WebGL2 has been disabled via blacklist or the command line.", false},
