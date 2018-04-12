@@ -576,10 +576,11 @@ class TestSafeBrowsingDatabaseFactory : public SafeBrowsingDatabaseFactory {
 // safebrowsing server for testing purpose.
 class TestProtocolManager : public SafeBrowsingProtocolManager {
  public:
-  TestProtocolManager(SafeBrowsingProtocolManagerDelegate* delegate,
-                      net::URLRequestContextGetter* request_context_getter,
-                      const SafeBrowsingProtocolConfig& config)
-      : SafeBrowsingProtocolManager(delegate, request_context_getter, config) {
+  TestProtocolManager(
+      SafeBrowsingProtocolManagerDelegate* delegate,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const SafeBrowsingProtocolConfig& config)
+      : SafeBrowsingProtocolManager(delegate, url_loader_factory, config) {
     create_count_++;
   }
 
@@ -635,11 +636,11 @@ class TestSBProtocolManagerFactory : public SBProtocolManagerFactory {
 
   std::unique_ptr<SafeBrowsingProtocolManager> CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config) override {
     base::AutoLock locker(lock_);
 
-    pm_ = new TestProtocolManager(delegate, request_context_getter, config);
+    pm_ = new TestProtocolManager(delegate, url_loader_factory, config);
 
     if (!quit_closure_.is_null()) {
       quit_closure_.Run();

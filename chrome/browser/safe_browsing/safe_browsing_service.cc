@@ -446,7 +446,7 @@ void SafeBrowsingService::StartOnIOThread(
         GetProtocolManagerDelegate();
     if (protocol_manager_delegate) {
       protocol_manager_ = SafeBrowsingProtocolManager::Create(
-          protocol_manager_delegate, url_request_context_getter, config);
+          protocol_manager_delegate, GetURLLoaderFactoryOnIOThread(), config);
       protocol_manager_->Initialize();
     }
   }

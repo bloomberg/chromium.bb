@@ -29,9 +29,8 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -136,10 +135,10 @@ class SBProtocolManagerFactoryImpl : public SBProtocolManagerFactory {
 
   std::unique_ptr<SafeBrowsingProtocolManager> CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config) override {
-    return base::WrapUnique(new SafeBrowsingProtocolManager(
-        delegate, request_context_getter, config));
+    return base::WrapUnique(
+        new SafeBrowsingProtocolManager(delegate, url_loader_factory, config));
   }
 
  private:
@@ -155,17 +154,16 @@ SBProtocolManagerFactory* SafeBrowsingProtocolManager::factory_ = nullptr;
 std::unique_ptr<SafeBrowsingProtocolManager>
 SafeBrowsingProtocolManager::Create(
     SafeBrowsingProtocolManagerDelegate* delegate,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const SafeBrowsingProtocolConfig& config) {
   if (!factory_)
     factory_ = new SBProtocolManagerFactoryImpl();
-  return factory_->CreateProtocolManager(delegate, request_context_getter,
-                                         config);
+  return factory_->CreateProtocolManager(delegate, url_loader_factory, config);
 }
 
 SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingProtocolManagerDelegate* delegate,
-    net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const SafeBrowsingProtocolConfig& config)
     : delegate_(delegate),
       request_type_(NO_REQUEST),
@@ -180,11 +178,10 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       version_(config.version),
       update_size_(0),
       client_name_(config.client_name),
-      request_context_getter_(request_context_getter),
+      url_loader_factory_(url_loader_factory),
       url_prefix_(config.url_prefix),
       backup_update_reason_(BACKUP_UPDATE_REASON_MAX),
-      disable_auto_update_(config.disable_auto_update),
-      url_fetcher_id_(0) {
+      disable_auto_update_(config.disable_auto_update) {
   DCHECK(!url_prefix_.empty());
 
   backup_url_prefixes_[BACKUP_UPDATE_REASON_CONNECT] =
@@ -210,13 +207,6 @@ void SafeBrowsingProtocolManager::RecordGetHashResult(bool is_download,
     UMA_HISTOGRAM_ENUMERATION("SB2.GetHashResult", result_type,
                               GET_HASH_RESULT_MAX);
   }
-}
-
-void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
-    const char* metric_name,
-    const net::URLRequestStatus& status,
-    int response_code) {
-  RecordHttpResponseOrErrorCode(metric_name, status.error(), response_code);
 }
 
 void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
@@ -289,21 +279,21 @@ void SafeBrowsingProtocolManager::GetFullHash(
             }
           }
         })");
-  std::unique_ptr<net::URLFetcher> fetcher_ptr =
-      net::URLFetcher::Create(url_fetcher_id_++, gethash_url,
-                              net::URLFetcher::POST, this, traffic_annotation);
-  net::URLFetcher* fetcher = fetcher_ptr.get();
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  hash_requests_[fetcher] = {std::move(fetcher_ptr),
-                             FullHashDetails(callback, is_download)};
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = gethash_url;
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  auto loader_ptr = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  loader_ptr->AttachStringForUpload(FormatGetHash(prefixes), "text/plain");
+  auto* loader = loader_ptr.get();
+  loader_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SafeBrowsingProtocolManager::OnURLLoaderComplete,
+                     base::Unretained(this), loader));
 
-  const std::string get_hash = FormatGetHash(prefixes);
-
-  fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  fetcher->SetRequestContext(request_context_getter_.get());
-  fetcher->SetUploadData("text/plain", get_hash);
-  fetcher->Start();
+  hash_requests_[loader] = {std::move(loader_ptr),
+                            FullHashDetails(callback, is_download)};
 }
 
 void SafeBrowsingProtocolManager::GetNextUpdate() {
@@ -314,8 +304,6 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
   IssueUpdateRequest();
 }
 
-// net::URLFetcherDelegate implementation ----------------------------------
-
 // All SafeBrowsing request responses are handled here.
 // TODO(paulg): Clarify with the SafeBrowsing team whether a failed parse of a
 //              chunk should retry the download and parse of that chunk (and
@@ -324,23 +312,38 @@ void SafeBrowsingProtocolManager::GetNextUpdate() {
 //              drop it. This isn't so bad because the next UPDATE_REQUEST we
 //              do will report all the chunks we have. If that chunk is still
 //              required, the SafeBrowsing servers will tell us to get it again.
-void SafeBrowsingProtocolManager::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void SafeBrowsingProtocolManager::OnURLLoaderComplete(
+    network::SimpleURLLoader* url_loader,
+    std::unique_ptr<std::string> response_body) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  auto it = hash_requests_.find(source);
-  int response_code = source->GetResponseCode();
-  net::URLRequestStatus status = source->GetStatus();
+  int response_code = 0;
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers)
+    response_code = url_loader->ResponseInfo()->headers->response_code();
 
+  std::string data;
+  if (response_body)
+    data = *response_body.get();
+
+  OnURLLoaderCompleteInternal(url_loader, url_loader->NetError(), response_code,
+                              data);
+}
+
+void SafeBrowsingProtocolManager::OnURLLoaderCompleteInternal(
+    network::SimpleURLLoader* url_loader,
+    int net_error,
+    int response_code,
+    const std::string& data) {
+  auto it = hash_requests_.find(url_loader);
   if (it != hash_requests_.end()) {
     // GetHash response.
-    RecordHttpResponseOrErrorCode(kGetHashUmaResponseMetricName, status,
+    RecordHttpResponseOrErrorCode(kGetHashUmaResponseMetricName, net_error,
                                   response_code);
     const FullHashDetails& details = it->second.second;
     std::vector<SBFullHashResult> full_hashes;
     base::TimeDelta cache_lifetime;
-    if (status.is_success() && (response_code == net::HTTP_OK ||
-                                response_code == net::HTTP_NO_CONTENT)) {
+    if (net_error == net::OK && (response_code == net::HTTP_OK ||
+                                 response_code == net::HTTP_NO_CONTENT)) {
       // For tracking our GetHash false positive (net::HTTP_NO_CONTENT) rate,
       // compared to real (net::HTTP_OK) responses.
       if (response_code == net::HTTP_OK)
@@ -350,8 +353,6 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
 
       gethash_error_count_ = 0;
       gethash_back_off_mult_ = 1;
-      std::string data;
-      source->GetResponseAsString(&data);
       if (!ParseGetHash(data.data(), data.length(), &cache_lifetime,
                         &full_hashes)) {
         full_hashes.clear();
@@ -361,13 +362,15 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
     } else {
       HandleGetHashError(Time::Now());
-      if (status.status() == net::URLRequestStatus::FAILED) {
+      if (net_error != net::OK) {
         RecordGetHashResult(details.is_download, GET_HASH_NETWORK_ERROR);
-        DVLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
-                 << " failed with error: " << status.error();
+        DVLOG(1) << "SafeBrowsing GetHash request for: "
+                 << url_loader->GetFinalURL()
+                 << " failed with error: " << net_error;
       } else {
         RecordGetHashResult(details.is_download, GET_HASH_HTTP_ERROR);
-        DVLOG(1) << "SafeBrowsing GetHash request for: " << source->GetURL()
+        DVLOG(1) << "SafeBrowsing GetHash request for: "
+                 << url_loader->GetFinalURL()
                  << " failed with error: " << response_code;
       }
     }
@@ -380,13 +383,13 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     hash_requests_.erase(it);
   } else {
     // Update or chunk response.
-    RecordHttpResponseOrErrorCode(kGetChunkUmaResponseMetricName, status,
+    RecordHttpResponseOrErrorCode(kGetChunkUmaResponseMetricName, net_error,
                                   response_code);
-    std::unique_ptr<net::URLFetcher> fetcher = std::move(request_);
+    std::unique_ptr<network::SimpleURLLoader> loader = std::move(request_);
 
     if (request_type_ == UPDATE_REQUEST ||
         request_type_ == BACKUP_UPDATE_REQUEST) {
-      if (!fetcher.get()) {
+      if (!loader.get()) {
         // We've timed out waiting for an update response, so we've cancelled
         // the update request and scheduled a new one. Ignore this response.
         return;
@@ -396,17 +399,13 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       timeout_timer_.Stop();
     }
 
-    if (status.is_success() && response_code == net::HTTP_OK) {
+    if (net_error == net::OK && response_code == net::HTTP_OK) {
       // We have data from the SafeBrowsing service.
-      std::string data;
-      source->GetResponseAsString(&data);
-
       // TODO(shess): Cleanup the flow of this code so that |parsed_ok| can be
       // removed or omitted.
-      const bool parsed_ok =
-          HandleServiceResponse(source->GetURL(), data.data(), data.length());
+      const bool parsed_ok = HandleServiceResponse(data.data(), data.length());
       if (!parsed_ok) {
-        DVLOG(1) << "SafeBrowsing request for: " << source->GetURL()
+        DVLOG(1) << "SafeBrowsing request for: " << loader->GetFinalURL()
                  << " failed parse.";
         chunk_request_urls_.clear();
         if (request_type_ == UPDATE_REQUEST &&
@@ -440,11 +439,11 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
           break;
       }
     } else {
-      if (status.status() == net::URLRequestStatus::FAILED) {
-        DVLOG(1) << "SafeBrowsing request for: " << source->GetURL()
-                 << " failed with error: " << status.error();
+      if (net_error != net::OK) {
+        DVLOG(1) << "SafeBrowsing request for: " << loader->GetFinalURL()
+                 << " failed with error: " << net_error;
       } else {
-        DVLOG(1) << "SafeBrowsing request for: " << source->GetURL()
+        DVLOG(1) << "SafeBrowsing request for: " << loader->GetFinalURL()
                  << " failed with error: " << response_code;
       }
       if (request_type_ == CHUNK_REQUEST) {
@@ -452,10 +451,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
         chunk_request_urls_.clear();
       } else if (request_type_ == UPDATE_REQUEST) {
         BackupUpdateReason backup_update_reason = BACKUP_UPDATE_REASON_MAX;
-        if (status.is_success()) {
+        if (net_error == net::OK) {
           backup_update_reason = BACKUP_UPDATE_REASON_HTTP;
         } else {
-          switch (status.error()) {
+          switch (net_error) {
             case net::ERR_INTERNET_DISCONNECTED:
             case net::ERR_NETWORK_CHANGED:
               backup_update_reason = BACKUP_UPDATE_REASON_NETWORK;
@@ -478,8 +477,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   }
 }
 
-bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
-                                                        const char* data,
+bool SafeBrowsingProtocolManager::HandleServiceResponse(const char* data,
                                                         size_t length) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -687,15 +685,17 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
             }
           }
         })");
-  request_ =
-      net::URLFetcher::Create(url_fetcher_id_++, backup_update_url,
-                              net::URLFetcher::POST, this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_.get());
-  request_->SetUploadData("text/plain", update_list_data_);
-  request_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = backup_update_url;
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  request_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                              traffic_annotation);
+  request_->AttachStringForUpload(update_list_data_, "text/plain");
+  request_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SafeBrowsingProtocolManager::OnURLLoaderComplete,
+                     base::Unretained(this), request_.get()));
 
   // Begin the update request timeout.
   timeout_timer_.Start(FROM_HERE, kSbMaxUpdateWait, this,
@@ -716,15 +716,18 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   DCHECK(!next_chunk.url.empty());
   GURL chunk_url = NextChunkUrl(next_chunk.url);
   request_type_ = CHUNK_REQUEST;
-  request_ = net::URLFetcher::Create(url_fetcher_id_++, chunk_url,
-                                     net::URLFetcher::GET, this,
-                                     kChunkBackupRequestTrafficAnnotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_.get());
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = chunk_url;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  request_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), kChunkBackupRequestTrafficAnnotation);
+  request_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SafeBrowsingProtocolManager::OnURLLoaderComplete,
+                     base::Unretained(this), request_.get()));
+
   chunk_request_start_ = base::Time::Now();
-  request_->Start();
 }
 
 void SafeBrowsingProtocolManager::OnGetChunksComplete(
@@ -770,15 +773,18 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   UMA_HISTOGRAM_COUNTS("SB2.UpdateRequestSize", update_list_data_.size());
 
   GURL update_url = UpdateUrl(extended_reporting_level);
-  request_ = net::URLFetcher::Create(url_fetcher_id_++, update_url,
-                                     net::URLFetcher::POST, this,
-                                     kChunkBackupRequestTrafficAnnotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
-  request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
-  request_->SetRequestContext(request_context_getter_.get());
-  request_->SetUploadData("text/plain", update_list_data_);
-  request_->Start();
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = update_url;
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  request_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), kChunkBackupRequestTrafficAnnotation);
+  request_->AttachStringForUpload(update_list_data_, "text/plain");
+  request_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SafeBrowsingProtocolManager::OnURLLoaderComplete,
+                     base::Unretained(this), request_.get()));
 
   // Begin the update request timeout.
   timeout_timer_.Start(FROM_HERE, kSbMaxUpdateWait, this,
