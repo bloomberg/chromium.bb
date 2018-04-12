@@ -34,6 +34,7 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "extensions/browser/api_test_utils.h"
+#include "extensions/common/extension_builder.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -240,11 +241,10 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
 }
 
 void ExtensionSessionsTest::CreateTestExtension() {
-  std::unique_ptr<base::DictionaryValue> test_extension_value(
-      api_test_utils::ParseDictionary(
-          "{\"name\": \"Test\", \"version\": \"1.0\", "
-          "\"permissions\": [\"sessions\", \"tabs\"]}"));
-  extension_ = api_test_utils::CreateExtension(test_extension_value.get());
+  extension_ = ExtensionBuilder("Test")
+                   .AddPermissions({"sessions", "tabs"})
+                   .SetLocation(Manifest::INTERNAL)
+                   .Build();
 }
 
 void ExtensionSessionsTest::CreateSessionModels() {

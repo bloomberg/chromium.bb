@@ -36,12 +36,7 @@ const char kReferrerId[] = "chrome-remove-extension-dialog";
 const char kUninstallUrlPrefKey[] = "uninstall_url";
 
 scoped_refptr<extensions::Extension> BuildTestExtension() {
-  return extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder()
-                       .Set("name", "foo")
-                       .Set("version", "1.0")
-                       .Build())
-      .Build();
+  return extensions::ExtensionBuilder("foo").Build();
 }
 
 std::string GetActiveUrl(Browser* browser) {
@@ -311,16 +306,15 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
     EXTENSION_FROM_WEBSTORE,
   };
   void ShowUi(const std::string& name) override {
-    extensions::DictionaryBuilder manifest_builder;
-    manifest_builder.Set("name", "ExtensionForRemoval").Set("version", "1.0");
+    extensions::ExtensionBuilder extension_builder("ExtensionForRemoval");
     if (extension_origin_ == EXTENSION_FROM_WEBSTORE) {
-      manifest_builder.Set("update_url",
-                           extension_urls::GetWebstoreUpdateUrl().spec());
+      extensions::DictionaryBuilder update_url;
+      update_url.Set("update_url",
+                     extension_urls::GetWebstoreUpdateUrl().spec());
+      extension_builder.MergeManifest(update_url.Build());
     }
 
-    extension_ = extensions::ExtensionBuilder()
-                     .SetManifest(manifest_builder.Build())
-                     .Build();
+    extension_ = extension_builder.Build();
     extensions::ExtensionSystem::Get(browser()->profile())
         ->extension_service()
         ->AddExtension(extension_.get());
@@ -330,12 +324,7 @@ class ExtensionUninstallDialogViewInteractiveBrowserTest
         &delegate_));
     if (uninstall_method_ == UNINSTALL_BY_EXTENSION) {
       triggering_extension_ =
-          extensions::ExtensionBuilder()
-              .SetManifest(extensions::DictionaryBuilder()
-                               .Set("name", "TestExtensionRemover")
-                               .Set("version", "1.0")
-                               .Build())
-              .Build();
+          extensions::ExtensionBuilder("TestExtensionRemover").Build();
       dialog_->ConfirmUninstallByExtension(
           extension_.get(), triggering_extension_.get(),
           extensions::UNINSTALL_REASON_FOR_TESTING,
