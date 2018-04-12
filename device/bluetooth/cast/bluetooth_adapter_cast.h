@@ -192,7 +192,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
   chromecast::bluetooth::GattClientManager* const gatt_client_manager_;
   chromecast::bluetooth::LeScanManager* const le_scan_manager_;
 
-  bool powered_ = false;
+  bool powered_ = true;
   bool initialized_ = false;
 
   std::string name_;
