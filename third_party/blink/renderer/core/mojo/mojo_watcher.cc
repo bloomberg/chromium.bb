@@ -72,7 +72,7 @@ void MojoWatcher::ContextDestroyed(ExecutionContext*) {
 MojoWatcher::MojoWatcher(ExecutionContext* context,
                          V8MojoWatchCallback* callback)
     : ContextLifecycleObserver(context),
-      task_runner_(context->GetTaskRunner(TaskType::kUnspecedTimer)),
+      task_runner_(context->GetTaskRunner(TaskType::kInternalIPC)),
       callback_(callback) {}
 
 MojoResult MojoWatcher::Watch(mojo::Handle handle,
