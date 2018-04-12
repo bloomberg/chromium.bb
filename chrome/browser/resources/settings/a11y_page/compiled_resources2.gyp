@@ -24,11 +24,16 @@
     {
       'target_name': 'tts_subpage',
       'dependencies': [
+        'externs',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
         '../compiled_resources2.gyp:route',
       ],
        'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'externs',
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
   ],
 }
