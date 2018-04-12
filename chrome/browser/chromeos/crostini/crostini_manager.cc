@@ -8,12 +8,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "dbus/message.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/base/escape.h"
 
 namespace {
@@ -248,6 +250,9 @@ void CrostiniManager::LaunchContainerTerminal(
       net::EscapeQueryParamValue("LXD_DIR=/mnt/stateful/lxd", false);
   std::string lxd_conf =
       net::EscapeQueryParamValue("LXD_CONF=/mnt/stateful/lxd_conf", false);
+  const extensions::Extension* crosh_extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          kCrostiniCroshBuiltinAppId);
 
   std::vector<base::StringPiece> pieces = {vsh_crosh,
                                            vm_name_param,
@@ -263,11 +268,9 @@ void CrostiniManager::LaunchContainerTerminal(
 
   GURL vsh_in_crosh_url(base::JoinString(pieces, "&args[]="));
 
-  AppLaunchParams launch_params(profile,
-                                nullptr,  // this is a URL app.  No extension.
-                                extensions::LAUNCH_CONTAINER_WINDOW,
-                                WindowOpenDisposition::NEW_WINDOW,
-                                extensions::SOURCE_APP_LAUNCHER);
+  AppLaunchParams launch_params(
+      profile, crosh_extension, extensions::LAUNCH_CONTAINER_WINDOW,
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_APP_LAUNCHER);
 
   OpenApplicationWindow(launch_params, vsh_in_crosh_url);
 }
