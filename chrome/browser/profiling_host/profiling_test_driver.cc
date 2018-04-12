@@ -565,15 +565,6 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
     if (!initialization_success_)
       return false;
     if (ShouldProfileRenderer()) {
-      // On Android, there is a warm-up renderer that is sometimes started
-      // before the ProfilingProcessHost can be started. This renderer will
-      // therefore not be profiled, even if Chrome is started with the
-      // --memlog=all-renderers switch.
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&ProfilingProcessHost::StartProfilingRenderersForTesting,
-                     base::Unretained(ProfilingProcessHost::GetInstance())));
-
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
           base::Bind(
@@ -665,7 +656,7 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
   ProfilingProcessHost::Start(connection, options_.mode, options_.stack_mode,
-                              sampling_rate);
+                              sampling_rate, base::Closure());
   ProfilingProcessHost::GetInstance()->SetKeepSmallAllocations(true);
 
   if (run_loop)
