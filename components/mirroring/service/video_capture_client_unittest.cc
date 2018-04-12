@@ -25,7 +25,7 @@ media::mojom::VideoFrameInfoPtr GetVideoFrameInfo(const gfx::Size& size) {
   metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
                         base::TimeTicks());
   return media::mojom::VideoFrameInfo::New(
-      base::TimeDelta(), metadata.CopyInternalValues(),
+      base::TimeDelta(), metadata.GetInternalValues().Clone(),
       media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU, size,
       gfx::Rect(size));
 }

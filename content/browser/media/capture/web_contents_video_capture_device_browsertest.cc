@@ -126,9 +126,7 @@ class FakeVideoCaptureStack {
           reinterpret_cast<uint8_t*>(mapping.get()), mapped_size,
           frame_info->timestamp);
       CHECK(frame);
-      if (frame_info->metadata) {
-        frame->metadata()->MergeInternalValuesFrom(*frame_info->metadata);
-      }
+      frame->metadata()->MergeInternalValuesFrom(frame_info->metadata);
       // This destruction observer will unmap the shared memory when the
       // VideoFrame goes out-of-scope.
       frame->AddDestructionObserver(base::BindOnce(

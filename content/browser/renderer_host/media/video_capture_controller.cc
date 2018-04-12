@@ -457,7 +457,7 @@ void VideoCaptureController::OnFrameReadyInBuffer(
     double frame_rate = 0.0f;
     if (video_capture_format_) {
       media::VideoFrameMetadata metadata;
-      metadata.MergeInternalValuesFrom(*frame_info->metadata);
+      metadata.MergeInternalValuesFrom(frame_info->metadata);
       if (!metadata.GetDouble(VideoFrameMetadata::FRAME_RATE, &frame_rate)) {
         frame_rate = video_capture_format_->frame_rate;
       }

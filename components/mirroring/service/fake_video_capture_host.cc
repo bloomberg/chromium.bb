@@ -48,7 +48,7 @@ void FakeVideoCaptureHost::SendOneFrame(const gfx::Size& size,
                         capture_time);
   observer_->OnBufferReady(
       0, media::mojom::VideoFrameInfo::New(
-             base::TimeDelta(), metadata.CopyInternalValues(),
+             base::TimeDelta(), metadata.GetInternalValues().Clone(),
              media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU, size,
              gfx::Rect(size)));
 }

@@ -169,9 +169,8 @@ class DevToolsVideoConsumerTest : public testing::Test {
     callbacks.Bind(mojo::MakeRequest(&callbacks_ptr));
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New(
-        base::TimeDelta(), nullptr, kFormat, kStorage, kResolution,
-        gfx::Rect(kResolution));
-    info->metadata = std::make_unique<base::DictionaryValue>();
+        base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY), kFormat,
+        kStorage, kResolution, gfx::Rect(kResolution));
 
     consumer_->OnFrameCaptured(std::move(buffer), buffer_size, std::move(info),
                                gfx::Rect(kResolution), gfx::Rect(kResolution),

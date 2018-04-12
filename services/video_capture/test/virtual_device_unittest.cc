@@ -144,8 +144,7 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
                          std::move(receiver_proxy));
   for (auto buffer_id : received_buffer_ids_) {
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
-    // |info->metadata| cannot be a nullptr when going over mojo boundary.
-    info->metadata = std::make_unique<base::DictionaryValue>();
+    info->metadata = base::Value(base::Value::Type::DICTIONARY);
     device_adapter_->OnFrameReadyInBuffer(buffer_id, std::move(info));
   }
   wait_loop.RunUntilIdle();

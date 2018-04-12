@@ -88,7 +88,7 @@ class MockVideoCaptureControllerEventHandler
       const media::mojom::VideoFrameInfoPtr& frame_info) override {
     EXPECT_EQ(expected_pixel_format_, frame_info->pixel_format);
     media::VideoFrameMetadata metadata;
-    metadata.MergeInternalValuesFrom(*frame_info->metadata);
+    metadata.MergeInternalValuesFrom(frame_info->metadata);
     base::TimeTicks reference_time;
     EXPECT_TRUE(metadata.GetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
                                       &reference_time));

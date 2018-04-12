@@ -6,7 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/common/values.mojom";
+import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum ResolutionChangePolicy {
@@ -61,7 +61,7 @@ struct VideoCaptureParams {
 
 struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
-  mojo.common.mojom.DictionaryValue metadata;
+  mojo_base.mojom.DictionaryValue metadata;
   VideoPixelFormat pixel_format;
   VideoPixelStorage storage_type;
   gfx.mojom.Size coded_size;

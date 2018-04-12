@@ -156,8 +156,7 @@ void DevToolsVideoConsumer::OnFrameCaptured(
     return;
   frame->AddDestructionObserver(base::BindOnce(
       [](mojo::ScopedSharedBufferMapping mapping) {}, std::move(mapping)));
-  DCHECK(info->metadata);
-  frame->metadata()->MergeInternalValuesFrom(*info->metadata);
+  frame->metadata()->MergeInternalValuesFrom(info->metadata);
 
   callback_.Run(std::move(frame));
 }
