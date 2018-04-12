@@ -119,10 +119,9 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   task_runner_ = new base::TestMockTimeTaskRunner();
   cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
-  store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
+  store_->SetCredentials(ComponentPolicyBuilder::GetFakeAccountId(),
                          ComponentPolicyBuilder::kFakeToken,
-                         ComponentPolicyBuilder::kFakeDeviceId,
-                         public_key_,
+                         ComponentPolicyBuilder::kFakeDeviceId, public_key_,
                          ComponentPolicyBuilder::kFakePublicKeyVersion);
   fetcher_factory_.set_remove_fetcher_on_delete(true);
   fetcher_backend_.reset(new ExternalPolicyDataFetcherBackend(
@@ -202,10 +201,12 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseTooLarge) {
 TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseInvalid) {
   // Submit an invalid policy fetch response.
   builder_.policy_data().set_username("wronguser@example.com");
+  builder_.policy_data().set_gaia_id("wrong-gaia-id");
   updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   // Submit two valid policy fetch responses.
   builder_.policy_data().set_username(ComponentPolicyBuilder::kFakeUsername);
+  builder_.policy_data().set_gaia_id(ComponentPolicyBuilder::kFakeGaiaId);
   builder_.policy_data().set_settings_entity_id(kTestExtension2);
   builder_.payload().set_download_url(kTestDownload2);
   updater_->UpdateExternalPolicy(

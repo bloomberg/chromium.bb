@@ -27,6 +27,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
@@ -81,7 +82,7 @@ class ComponentCloudPolicyService::Backend
   void ClearCache();
 
   // The passed credentials will be used to validate the policies.
-  void SetCredentials(const std::string& username,
+  void SetCredentials(const AccountId& account_id,
                       const std::string& dm_token,
                       const std::string& device_id,
                       const std::string& public_key,
@@ -158,17 +159,17 @@ void ComponentCloudPolicyService::Backend::ClearCache() {
 }
 
 void ComponentCloudPolicyService::Backend::SetCredentials(
-    const std::string& username,
+    const AccountId& account_id,
     const std::string& dm_token,
     const std::string& device_id,
     const std::string& public_key,
     int public_key_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!username.empty());
+  DCHECK(account_id.is_valid());
   DCHECK(!dm_token.empty());
-  DVLOG(1) << "Updating credentials: username = " << username
+  DVLOG(1) << "Updating credentials: account id = " << account_id
            << ", public_key_version = " << public_key_version;
-  store_.SetCredentials(username, dm_token, device_id, public_key,
+  store_.SetCredentials(account_id, dm_token, device_id, public_key,
                         public_key_version);
   has_credentials_set_ = true;
   // Trigger an additional update against the last fetched policies. This helps
@@ -420,6 +421,10 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
     // updates, to handle the case of the user registering for policy after the
     // session starts.
     std::string username = policy->username();
+    std::string gaia_id = policy->gaia_id();
+    AccountId account_id =
+        gaia_id.empty() ? AccountId::FromUserEmail(username)
+                        : AccountId::FromUserEmailGaiaId(username, gaia_id);
     std::string request_token = policy->request_token();
     std::string device_id =
         policy->has_device_id() ? policy->device_id() : std::string();
@@ -429,7 +434,7 @@ void ComponentCloudPolicyService::UpdateFromSuperiorStore() {
     backend_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&Backend::SetCredentials, base::Unretained(backend_.get()),
-                   username, request_token, device_id, public_key,
+                   account_id, request_token, device_id, public_key,
                    public_key_version));
   }
 
