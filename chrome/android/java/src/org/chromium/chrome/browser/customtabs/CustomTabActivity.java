@@ -23,7 +23,6 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -135,6 +134,7 @@ public class CustomTabActivity extends ChromeActivity {
     // Whether there is any speculative page loading associated with the session.
     private boolean mHasSpeculated;
     private CustomTabObserver mTabObserver;
+    private CustomTabNavigationEventObserver mTabNavigationEventObserver;
 
     private String mSpeculatedUrl;
 
@@ -258,6 +258,7 @@ public class CustomTabActivity extends ChromeActivity {
             // initializeMainTab().
             PageLoadMetrics.addObserver(mMetricsObserver);
             tab.addObserver(mTabObserver);
+            tab.addObserver(mTabNavigationEventObserver);
         }
 
         @Override
@@ -270,6 +271,7 @@ public class CustomTabActivity extends ChromeActivity {
         @Override
         public void tabRemoved(Tab tab) {
             tab.removeObserver(mTabObserver);
+            tab.removeObserver(mTabNavigationEventObserver);
             PageLoadMetrics.removeObserver(mMetricsObserver);
         }
     };
@@ -648,12 +650,14 @@ public class CustomTabActivity extends ChromeActivity {
         tab.getView().requestFocus();
         mTabObserver = new CustomTabObserver(
                 getApplication(), mSession, mIntentDataProvider.isOpenedByChrome());
+        mTabNavigationEventObserver = new CustomTabNavigationEventObserver(mSession);
 
         mMetricsObserver = new PageLoadMetricsObserver(mConnection, mSession, tab, mTabObserver);
         // Immediately add the observer to PageLoadMetrics to catch early events that may
         // be generated in the middle of tab initialization.
         PageLoadMetrics.addObserver(mMetricsObserver);
         tab.addObserver(mTabObserver);
+        tab.addObserver(mTabNavigationEventObserver);
 
         prepareTabBackground(tab);
     }
@@ -727,7 +731,6 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void onPauseWithNative() {
         super.onPauseWithNative();
-        mConnection.notifyNavigationEvent(mSession, CustomTabsCallback.TAB_HIDDEN);
         if (mWebappTimeSpentLogger != null) {
             mWebappTimeSpentLogger.onPause();
         }
@@ -770,6 +773,8 @@ public class CustomTabActivity extends ChromeActivity {
         if (mUsingHiddenTab && !tab.isLoading() && !tab.isShowingErrorPage()) {
             mTabObserver.onPageLoadStarted(tab, params.getUrl());
             mTabObserver.onPageLoadFinished(tab);
+            mTabNavigationEventObserver.onPageLoadStarted(tab, params.getUrl());
+            mTabNavigationEventObserver.onPageLoadFinished(tab);
         }
 
         // No actual load to do if tab already has the exact correct url.

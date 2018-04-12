@@ -8,7 +8,6 @@ import android.app.Application;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.SystemClock;
-import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 
@@ -59,15 +58,15 @@ class CustomTabObserver extends EmptyTabObserver {
                     R.dimen.custom_tabs_screenshot_height);
             Rect bounds = ExternalPrerenderHandler.estimateContentSize(application, false);
             if (bounds.width() == 0 || bounds.height() == 0) {
-                mContentBitmapWidth = (int) Math.round(desiredWidth);
-                mContentBitmapHeight = (int) Math.round(desiredHeight);
+                mContentBitmapWidth = Math.round(desiredWidth);
+                mContentBitmapHeight = Math.round(desiredHeight);
             } else {
                 // Compute a size that scales the content bitmap to fit one (or both) dimensions,
                 // but also preserves aspect ratio.
                 float scale =
                         Math.min(desiredWidth / bounds.width(), desiredHeight / bounds.height());
-                mContentBitmapWidth = (int) Math.round(bounds.width() * scale);
-                mContentBitmapHeight = (int) Math.round(bounds.height() * scale);
+                mContentBitmapWidth = Math.round(bounds.width() * scale);
+                mContentBitmapHeight = Math.round(bounds.height() * scale);
             }
         }
         mOpenedByChrome = openedByChrome;
@@ -103,8 +102,6 @@ class CustomTabObserver extends EmptyTabObserver {
             mCurrentState = STATE_WAITING_LOAD_FINISH;
         } else if (mCurrentState == STATE_WAITING_LOAD_FINISH) {
             if (mCustomTabsConnection != null) {
-                mCustomTabsConnection.notifyNavigationEvent(
-                        mSession, CustomTabsCallback.NAVIGATION_ABORTED);
                 mCustomTabsConnection.sendNavigationInfo(
                         mSession, tab.getUrl(), tab.getTitle(), null);
             }
@@ -112,17 +109,7 @@ class CustomTabObserver extends EmptyTabObserver {
         }
         if (mCustomTabsConnection != null) {
             mCustomTabsConnection.setSendNavigationInfoForSession(mSession, false);
-            mCustomTabsConnection.notifyNavigationEvent(
-                    mSession, CustomTabsCallback.NAVIGATION_STARTED);
             mNavigationInfoCaptureTrigger.onNewNavigation();
-        }
-    }
-
-    @Override
-    public void onShown(Tab tab) {
-        if (mCustomTabsConnection != null) {
-            mCustomTabsConnection.notifyNavigationEvent(
-                    mSession, CustomTabsCallback.TAB_SHOWN);
         }
     }
 
@@ -134,10 +121,6 @@ class CustomTabObserver extends EmptyTabObserver {
     @Override
     public void onPageLoadFinished(Tab tab) {
         long pageLoadFinishedTimestamp = SystemClock.elapsedRealtime();
-        if (mCustomTabsConnection != null) {
-            mCustomTabsConnection.notifyNavigationEvent(
-                    mSession, CustomTabsCallback.NAVIGATION_FINISHED);
-        }
 
         if (mCurrentState == STATE_WAITING_LOAD_FINISH && mIntentReceivedTimestamp > 0) {
             String histogramPrefix = mOpenedByChrome ? "ChromeGeneratedCustomTab" : "CustomTabs";
@@ -183,19 +166,11 @@ class CustomTabObserver extends EmptyTabObserver {
     public void onDidAttachInterstitialPage(Tab tab) {
         if (tab.getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS) return;
         resetPageLoadTracking();
-        if (mCustomTabsConnection != null) {
-            mCustomTabsConnection.notifyNavigationEvent(
-                    mSession, CustomTabsCallback.NAVIGATION_FAILED);
-        }
     }
 
     @Override
     public void onPageLoadFailed(Tab tab, int errorCode) {
         resetPageLoadTracking();
-        if (mCustomTabsConnection != null) {
-            mCustomTabsConnection.notifyNavigationEvent(
-                    mSession, CustomTabsCallback.NAVIGATION_FAILED);
-        }
     }
 
     @Override
@@ -229,7 +204,5 @@ class CustomTabObserver extends EmptyTabObserver {
                     mCustomTabsConnection.sendNavigationInfo(
                             mSession, tab.getUrl(), tab.getTitle(), bitmap);
                 });
-
-        return;
     }
 }
