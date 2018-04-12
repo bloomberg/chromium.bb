@@ -54,9 +54,8 @@ class MockSCTObserver : public CTVerifier::Observer {
 class MultiLogCTVerifierTest : public ::testing::Test {
  public:
   void SetUp() override {
-    scoped_refptr<const CTLogVerifier> log(
-        CTLogVerifier::Create(ct::GetTestPublicKey(), kLogDescription,
-                              "https://ct.example.com", "dns.example.com"));
+    scoped_refptr<const CTLogVerifier> log(CTLogVerifier::Create(
+        ct::GetTestPublicKey(), kLogDescription, "dns.example.com"));
     ASSERT_TRUE(log);
     log_verifiers_.push_back(log);
 

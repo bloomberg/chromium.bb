@@ -204,7 +204,7 @@ class CTLogVerifierTest : public ::testing::Test {
  public:
   void SetUp() override {
     log_ = CTLogVerifier::Create(ct::GetTestPublicKey(), "testlog",
-                                 "https://ct.example.com", "ct.example.com");
+                                 "ct.example.com");
 
     ASSERT_TRUE(log_);
     EXPECT_EQ(ct::GetTestPublicKeyId(), log_->key_id());
@@ -465,8 +465,8 @@ TEST_F(CTLogVerifierTest, ExcessDataInPublicKey) {
   std::string key = ct::GetTestPublicKey();
   key += "extra";
 
-  scoped_refptr<const CTLogVerifier> log = CTLogVerifier::Create(
-      key, "testlog", "https://ct.example.com", "ct.example.com");
+  scoped_refptr<const CTLogVerifier> log =
+      CTLogVerifier::Create(key, "testlog", "ct.example.com");
   EXPECT_FALSE(log);
 }
 

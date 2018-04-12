@@ -12,7 +12,6 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/cert/signed_certificate_timestamp.h"
-#include "url/gurl.h"
 
 // Forward declare the crypto types to avoid having to include the full
 // headers.
@@ -44,15 +43,12 @@ class NET_EXPORT CTLogVerifier
   static scoped_refptr<const CTLogVerifier> Create(
       const base::StringPiece& public_key,
       const base::StringPiece& description,
-      const base::StringPiece& url,
       const base::StringPiece& dns_domain);
 
   // Returns the log's key ID (RFC6962, Section 3.2)
   const std::string& key_id() const { return key_id_; }
   // Returns the log's human-readable description.
   const std::string& description() const { return description_; }
-  // Returns the log's URL
-  const GURL& url() const { return url_; }
 
   // Returns the log's DNS domain for CT over DNS queries, as described in
   // https://github.com/google/certificate-transparency-rfcs/blob/master/dns/draft-ct-over-dns.md.
@@ -88,7 +84,6 @@ class NET_EXPORT CTLogVerifier
   friend class base::RefCountedThreadSafe<CTLogVerifier>;
 
   CTLogVerifier(const base::StringPiece& description,
-                const GURL& url,
                 const base::StringPiece& dns_domain);
   ~CTLogVerifier();
 
@@ -107,7 +102,6 @@ class NET_EXPORT CTLogVerifier
 
   std::string key_id_;
   std::string description_;
-  GURL url_;
   std::string dns_domain_;
   ct::DigitallySigned::HashAlgorithm hash_algorithm_;
   ct::DigitallySigned::SignatureAlgorithm signature_algorithm_;
