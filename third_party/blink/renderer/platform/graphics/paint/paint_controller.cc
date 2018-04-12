@@ -679,7 +679,7 @@ void PaintController::CommitNewDisplayItems() {
 size_t PaintController::ApproximateUnsharedMemoryUsage() const {
   size_t memory_usage = sizeof(*this);
 
-  // Memory outside this class due to m_currentPaintArtifact.
+  // Memory outside this class due to current_paint_artifact_.
   memory_usage += current_paint_artifact_.ApproximateUnsharedMemoryUsage() -
                   sizeof(current_paint_artifact_);
 
@@ -694,9 +694,17 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
   // the rounded clips vector in ClipDisplayItem, which is not expected to
   // contribute significantly to memory usage.
 
-  // Memory outside this class due to m_newDisplayItemList.
+  // Memory outside this class due to new_display_item_list_.
   DCHECK(new_display_item_list_.IsEmpty());
   memory_usage += new_display_item_list_.MemoryUsageInBytes();
+
+  // Memory outside this class due to current_cached_subsequences_ and
+  // new_cached_subsequences_.
+  memory_usage += current_cached_subsequences_.Capacity() *
+                  sizeof(*current_cached_subsequences_.begin());
+  DCHECK(new_cached_subsequences_.IsEmpty());
+  memory_usage += new_cached_subsequences_.Capacity() *
+                  sizeof(*new_cached_subsequences_.begin());
 
   return memory_usage;
 }

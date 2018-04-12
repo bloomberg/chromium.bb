@@ -1437,7 +1437,11 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
 }
 
 size_t GraphicsLayer::ApproximateUnsharedMemoryUsage() const {
-  return GetPaintController().ApproximateUnsharedMemoryUsage();
+  size_t result = sizeof(*this);
+  result += GetPaintController().ApproximateUnsharedMemoryUsage();
+  if (raster_invalidator_)
+    result += raster_invalidator_->ApproximateUnsharedMemoryUsage();
+  return result;
 }
 
 bool ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_ = false;
