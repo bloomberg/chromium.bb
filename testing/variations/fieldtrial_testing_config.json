@@ -2274,24 +2274,54 @@
     "OmniboxBundledExperimentV1": [
         {
             "platforms": [
-                "android",
                 "chromeos",
-                "ios",
                 "linux",
                 "mac",
                 "win"
             ],
             "experiments": [
                 {
-                    "name": "UIExperiments",
+                    "name": "DesktopExperiments",
                     "params": {
                         "UIVerticalMargin": "8"
                     },
                     "enable_features": [
                         "OmniboxBreakWordsAtUnderscores",
+                        "OmniboxDisplayTitleForCurrentUrl",
+                        "OmniboxTailSuggestions",
                         "OmniboxUIExperimentShowSuggestionFavicons",
                         "OmniboxUIExperimentSwapTitleAndUrl",
-                        "OmniboxUIExperimentVerticalMargin"
+                        "OmniboxUIExperimentVerticalMargin",
+                        "ZeroSuggestRedirectToChrome",
+                        "ZeroSuggestSwapTitleAndUrl"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "AndroidExperiments",
+                    "enable_features": [
+                        "OmniboxBreakWordsAtUnderscores",
+                        "OmniboxDisplayTitleForCurrentUrl"
+                    ]
+                }
+            ]
+        },
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "iOSExperiments",
+                    "enable_features": [
+                        "OmniboxBreakWordsAtUnderscores",
+                        "OmniboxDisplayTitleForCurrentUrl"
                     ]
                 }
             ]
