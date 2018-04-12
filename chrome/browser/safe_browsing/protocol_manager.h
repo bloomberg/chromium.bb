@@ -33,14 +33,12 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "components/safe_browsing/db/util.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace safe_browsing {
 
@@ -48,7 +46,7 @@ class SBProtocolManagerFactory;
 class SafeBrowsingProtocolManagerDelegate;
 
 // Lives on the IO thread.
-class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
+class SafeBrowsingProtocolManager {
  public:
   // FullHashCallback is invoked when GetFullHash completes.
   // Parameters:
@@ -60,7 +58,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
       base::Callback<void(const std::vector<SBFullHashResult>&,
                           const base::TimeDelta&)>;
 
-  ~SafeBrowsingProtocolManager() override;
+  virtual ~SafeBrowsingProtocolManager();
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingService. Useful for tests.
@@ -71,15 +69,22 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Create an instance of the safe browsing protocol manager.
   static std::unique_ptr<SafeBrowsingProtocolManager> Create(
       SafeBrowsingProtocolManagerDelegate* delegate,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config);
 
   // Sets up the update schedule and internal state for making periodic requests
   // of the Safebrowsing servers.
   virtual void Initialize();
 
-  // net::URLFetcherDelegate interface.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  // Callback when the request completes
+  void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,
+                           std::unique_ptr<std::string> response_body);
+
+  // To ease testing.
+  void OnURLLoaderCompleteInternal(network::SimpleURLLoader* url_loader,
+                                   int net_error,
+                                   int response_code,
+                                   const std::string& data);
 
   // Retrieve the full hash for a set of prefixes, and invoke the callback
   // argument when the results are retrieved. The callback may be invoked
@@ -164,11 +169,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Record HTTP response code when there's no error in fetching an HTTP
   // request, and the error code, when there is.
   // |metric_name| is the name of the UMA metric to record the response code or
-  // error code against, |status| represents the status of the HTTP request, and
-  // |response code| represents the HTTP response code received from the server.
-  static void RecordHttpResponseOrErrorCode(
-      const char* metric_name, const net::URLRequestStatus& status,
-      int response_code);
+  // error code against, |net_error| represents the status of the HTTP request,
+  // and |response code| represents the HTTP response code received from the
+  // server.
   static void RecordHttpResponseOrErrorCode(const char* metric_name,
                                             int net_error,
                                             int response_code);
@@ -180,10 +183,10 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
 
  protected:
   // Constructs a SafeBrowsingProtocolManager for |delegate| that issues
-  // network requests using |request_context_getter|.
+  // network requests using |url_loader_factory|.
   SafeBrowsingProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config);
 
  private:
@@ -267,7 +270,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Runs the protocol parser on received data and update the
   // SafeBrowsingService with the new content. Returns 'true' on successful
   // parse, 'false' on error.
-  bool HandleServiceResponse(const GURL& url, const char* data, size_t length);
+  bool HandleServiceResponse(const char* data, size_t length);
 
   // Updates internal state for each GetHash response error, assuming that the
   // current time is |now|.
@@ -305,7 +308,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // Current active request (in case we need to cancel) for updates or chunks
   // from the SafeBrowsing service. We can only have one of these outstanding
   // at any given time unlike GetHash requests, which are tracked separately.
-  std::unique_ptr<net::URLFetcher> request_;
+  std::unique_ptr<network::SimpleURLLoader> request_;
 
   // The kind of request that is currently in progress.
   SafeBrowsingRequestType request_type_;
@@ -337,8 +340,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // All chunk requests that need to be made.
   base::circular_deque<ChunkUrl> chunk_request_urls_;
 
-  std::map<const net::URLFetcher*,
-           std::pair<std::unique_ptr<net::URLFetcher>, FullHashDetails>>
+  std::map<
+      const network::SimpleURLLoader*,
+      std::pair<std::unique_ptr<network::SimpleURLLoader>, FullHashDetails>>
       hash_requests_;
 
   // True if the service has been given an add/sub chunk but it hasn't been
@@ -367,8 +371,8 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // safebrowsing hits and chunk update requests.
   std::string additional_query_;
 
-  // The context we use to issue network requests.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  // The URLLoaderFactory we use to issue network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // URL prefix where browser fetches safebrowsing chunk updates, and hashes.
   std::string url_prefix_;
@@ -386,9 +390,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
   // ForceScheduleNextUpdate() is called. This is set for testing purpose.
   bool disable_auto_update_;
 
-  // ID for URLFetchers for testing.
-  int url_fetcher_id_;
-
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolManager);
 };
 
@@ -400,7 +401,7 @@ class SBProtocolManagerFactory {
 
   virtual std::unique_ptr<SafeBrowsingProtocolManager> CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
-      net::URLRequestContextGetter* request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const SafeBrowsingProtocolConfig& config) = 0;
 
  private:
