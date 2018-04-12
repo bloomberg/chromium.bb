@@ -93,9 +93,9 @@ TEST_F(SurfaceAggregatorPixelTest, DrawSimpleFrame) {
   auto root_frame =
       CompositorFrameBuilder().AddRenderPass(std::move(pass)).Build();
 
-  LocalSurfaceId root_local_surface_id = allocator_.GenerateId();
-  SurfaceId root_surface_id(support_->frame_sink_id(), root_local_surface_id);
-  support_->SubmitCompositorFrame(root_local_surface_id, std::move(root_frame));
+  SurfaceId root_surface_id(support_->frame_sink_id(), allocator_.GenerateId());
+  support_->SubmitCompositorFrame(allocator_.GetCurrentLocalSurfaceId(),
+                                  std::move(root_frame));
 
   SurfaceAggregator aggregator(manager_.surface_manager(),
                                resource_provider_.get(), true);
