@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -60,11 +61,12 @@ class NGCaretRectTest : public NGLayoutTest {
   const NGPhysicalBoxFragment* root_fragment_;
 };
 
-#define TEST_CARET(caret, fragment_, type_, offset_)                          \
-  {                                                                           \
-    EXPECT_EQ(caret.fragment.get(), fragment_) << caret.fragment->ToString(); \
-    EXPECT_EQ(caret.position_type, NGCaretPositionType::type_);               \
-    EXPECT_EQ(caret.text_offset, offset_) << caret.text_offset.value_or(-1);  \
+#define TEST_CARET(caret, fragment_, type_, offset_)                         \
+  {                                                                          \
+    EXPECT_EQ(&caret.fragment->PhysicalFragment(), fragment_)                \
+        << caret.fragment->PhysicalFragment().ToString();                    \
+    EXPECT_EQ(caret.position_type, NGCaretPositionType::type_);              \
+    EXPECT_EQ(caret.text_offset, offset_) << caret.text_offset.value_or(-1); \
   }
 
 TEST_F(NGCaretRectTest, CaretPositionInOneLineOfText) {
