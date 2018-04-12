@@ -66,14 +66,16 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
             prefs::NUM_PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISIONS);
   std::string previous_response;
   if (previous_save_credit_card_prompt_user_decision ==
-      prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED)
+      prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_ACCEPTED) {
     previous_response = ".PreviouslyAccepted";
-  else if (previous_save_credit_card_prompt_user_decision ==
-           prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED)
+  } else if (previous_save_credit_card_prompt_user_decision ==
+             prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_DENIED) {
     previous_response = ".PreviouslyDenied";
-  else
+  } else {
     DCHECK_EQ(previous_save_credit_card_prompt_user_decision,
               prefs::PREVIOUS_SAVE_CREDIT_CARD_PROMPT_USER_DECISION_NONE);
+    previous_response = ".NoPreviousDecision";
+  }
   return previous_response;
 }
 
@@ -681,6 +683,8 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
   DCHECK_LT(metric, NUM_INFO_BAR_METRICS);
 
   std::string destination = is_uploading ? ".Server" : ".Local";
+  LogUMAHistogramEnumeration("Autofill.CreditCardInfoBar" + destination, metric,
+                             NUM_INFO_BAR_METRICS);
   LogUMAHistogramEnumeration(
       "Autofill.CreditCardInfoBar" + destination +
           PreviousSaveCreditCardPromptUserDecisionToString(
@@ -704,6 +708,9 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   DCHECK_LT(metric, NUM_SAVE_CARD_PROMPT_METRICS);
   std::string destination = is_uploading ? ".Upload" : ".Local";
   std::string show = is_reshow ? ".Reshows" : ".FirstShow";
+  LogUMAHistogramEnumeration(
+      "Autofill.SaveCreditCardPrompt" + destination + show, metric,
+      NUM_SAVE_CARD_PROMPT_METRICS);
   LogUMAHistogramEnumeration(
       "Autofill.SaveCreditCardPrompt" + destination + show +
           PreviousSaveCreditCardPromptUserDecisionToString(
