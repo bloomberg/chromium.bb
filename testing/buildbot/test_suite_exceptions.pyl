@@ -2682,14 +2682,6 @@
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
       'Linux MSan Tests',  # https://crbug.com/831676
     ],
-    'modifications': {
-      # chromium.android
-      'Marshmallow Phone Tester (rel)': {
-        'swarming': {
-          'hard_timeout': 300,
-        },
-      },
-    },
   },
   'site_per_process_browser_tests': {
     'remove_from': [

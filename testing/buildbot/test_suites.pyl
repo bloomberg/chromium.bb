@@ -447,7 +447,7 @@
     },
     'services_unittests': {
       'android_swarming': {
-        'hard_timeout': 120,
+        'hard_timeout': 300,
       },
     },
     'skia_unittests': {},
