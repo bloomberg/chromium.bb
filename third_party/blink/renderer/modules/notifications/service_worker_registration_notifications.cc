@@ -124,7 +124,10 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
           resolver);
 
   if (RuntimeEnabledFeatures::NotificationsWithMojoEnabled()) {
-    // TODO(https://crbug.com/796991): Implement this via mojo.
+    ExecutionContext* execution_context = ExecutionContext::From(script_state);
+    NotificationManager::From(execution_context)
+        ->GetNotifications(registration.WebRegistration(), options.tag(),
+                           std::move(callbacks));
   } else {
     WebNotificationManager* notification_manager =
         Platform::Current()->GetWebNotificationManager();
