@@ -16,12 +16,14 @@ branch, but not on TOT.
 
 from __future__ import print_function
 
+import base64
 import functools
 import os
 import time
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import build_summary
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -49,6 +51,9 @@ METRIC_BRANCH_CLEANUP = 'chromeos/chromite/cbuildbot_launch/branch_cleanup'
 METRIC_DISTFILES_CLEANUP = (
     'chromeos/chromite/cbuildbot_launch/distfiles_cleanup')
 METRIC_DEPOT_TOOLS = 'chromeos/chromite/cbuildbot_launch/depot_tools_prep'
+
+# Builder state
+BUILDER_STATE_FILENAME = '.cbuildbot_build_state.json'
 
 
 def StageDecorator(functor):
@@ -118,6 +123,69 @@ def PreParseArguments(argv):
     cros_build_lib.Die('--buildroot is a required option.')
 
   return options
+
+
+def GetCurrentBuildState(options):
+  """Extract information about the current build state from command-line args.
+
+  Args:
+    options: A parsed options object from a cbuildbot parser.
+
+  Returns:
+    A BuildSummary object describing the current build.
+  """
+  build_state = build_summary.BuildSummary(
+      status=constants.BUILDER_STATUS_INFLIGHT)
+  if options.buildnumber:
+    build_state.build_number = options.buildnumber
+  if options.buildbucket_id:
+    build_state.buildbucket_id = options.buildbucket_id
+  if options.master_build_id:
+    build_state.master_build_id = options.master_build_id
+  return build_state
+
+
+def GetLastBuildState(root):
+  """Fetch the state of the last build run from |root|.
+
+  If the saved state file can't be read or doesn't contain valid JSON, a default
+  state will be returned.
+
+  Args:
+    root: Root of the working directory tree as a string.
+
+  Returns:
+    A BuildSummary object representing the previous build.
+  """
+  state_file = os.path.join(root, BUILDER_STATE_FILENAME)
+
+  state = build_summary.BuildSummary()
+  try:
+    state_raw = osutils.ReadFile(state_file)
+    state.from_json(state_raw)
+  except IOError as e:
+    logging.warning('Unable to read %s: %s', state_file, e)
+    return state
+  except ValueError as e:
+    logging.warning('Saved state file %s is not valid JSON: %s', state_file, e)
+    return state
+
+  if not state.is_valid():
+    logging.warning('Previous build state is not valid.  Ignoring.')
+    return build_summary.BuildSummary()
+
+  return state
+
+
+def SetLastBuildState(root, new_state):
+  """Save the state of the last build under |root|.
+
+  Args:
+    root: Root of the working directory tree as a string.
+    new_state: BuildSummary object containing the state to be saved.
+  """
+  state_file = os.path.join(root, BUILDER_STATE_FILENAME)
+  osutils.WriteFile(state_file, new_state.to_json())
 
 
 def GetState(root):
@@ -198,7 +266,7 @@ def _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields):
 
 
 @StageDecorator
-def CleanBuildRoot(root, repo, metrics_fields):
+def CleanBuildRoot(root, repo, metrics_fields, build_state):
   """Some kinds of branch transitions break builds.
 
   This method ensures that cbuildbot's buildroot is a clean checkout on the
@@ -209,6 +277,8 @@ def CleanBuildRoot(root, repo, metrics_fields):
     root: Root directory owned by cbuildbot_launch.
     repo: repository.RepoRepository instance.
     metrics_fields: Dictionary of fields to include in metrics.
+    build_state: BuildSummary object containing the current build state that
+        will be saved into the cleaned root.
   """
   old_buildroot_layout, old_branch, distfiles_ts = GetState(root)
   distfiles_ts = _MaybeCleanDistfiles(repo, distfiles_ts, metrics_fields)
@@ -250,6 +320,7 @@ def CleanBuildRoot(root, repo, metrics_fields):
   # Ensure buildroot exists. Save the state we are prepped for.
   osutils.SafeMakedirs(repo.directory)
   SetState(repo.branch, root, distfiles_ts)
+  SetLastBuildState(root, build_state)
 
 
 @StageDecorator
@@ -405,10 +476,12 @@ def _main(argv):
       repo = repository.RepoRepository(manifest_url, buildroot,
                                        branch=branchname,
                                        git_cache_dir=options.git_cache_dir)
+      previous_build_state = GetLastBuildState(root)
 
       # Clean up the buildroot to a safe state.
       with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
-        CleanBuildRoot(root, repo, metrics_fields)
+        build_state = GetCurrentBuildState(options)
+        CleanBuildRoot(root, repo, metrics_fields, build_state)
 
       # Get a checkout close enough to the branch that cbuildbot can handle it.
       if options.sync:
@@ -421,8 +494,18 @@ def _main(argv):
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
     with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
+      if previous_build_state.is_valid():
+        argv.append('--previous-build-state')
+        argv.append(base64.b64encode(previous_build_state.to_json()))
+
       result = Cbuildbot(buildroot, depot_tools_path, argv)
       s_fields['success'] = (result == 0)
+
+      build_state.status = (
+          constants.BUILDER_STATUS_PASSED
+          if result == 0 else constants.BUILDER_STATUS_FAILED)
+      SetLastBuildState(root, build_state)
+
       CleanupChroot(buildroot)
       return result
 
