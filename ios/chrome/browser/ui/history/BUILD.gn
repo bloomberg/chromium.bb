@@ -99,6 +99,7 @@ source_set("history_ui") {
     "history_entry_item_interface.h",
     "history_table_container_view_controller.h",
     "history_table_container_view_controller.mm",
+    "history_table_updater_delegate.h",
     "history_table_view_controller.h",
     "history_table_view_controller.mm",
     "history_util.h",

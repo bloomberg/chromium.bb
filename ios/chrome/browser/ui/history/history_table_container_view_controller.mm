@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_container_bottom_toolbar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -13,9 +14,16 @@
 #error "This file requires ARC support."
 #endif
 
-@implementation HistoryTableContainerViewController
+@interface HistoryTableContainerViewController ()
+// This ViewController's searchController;
+@property(nonatomic, strong) UISearchController* searchController;
+@end
 
-- (instancetype)initWithTable:(ChromeTableViewController*)table {
+@implementation HistoryTableContainerViewController
+@synthesize searchController = _searchController;
+
+- (instancetype)initWithTable:
+    (ChromeTableViewController<HistoryTableUpdaterDelegate>*)table {
   self = [super initWithTable:table];
   if (self) {
     NSString* leadingButtonString = l10n_util::GetNSStringWithFixup(
@@ -31,4 +39,29 @@
   }
   return self;
 }
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self addSearchController];
+}
+
+// Creates and adds a UISearchController.
+- (void)addSearchController {
+  // Init the searchController with nil so the results are displayed on the same
+  // TableView.
+  self.searchController =
+      [[UISearchController alloc] initWithSearchResultsController:nil];
+  self.searchController.dimsBackgroundDuringPresentation = NO;
+  // For iOS 11 and later, we place the search bar in the navigation bar, if not
+  // we place the search bar in the table view's header.
+  if (@available(iOS 11, *)) {
+    self.navigationItem.searchController = self.searchController;
+    // We want the search bar visible all the time.
+    self.navigationItem.hidesSearchBarWhenScrolling = NO;
+  } else {
+    self.tableViewController.tableView.tableHeaderView =
+        self.searchController.searchBar;
+  }
+}
+
 @end

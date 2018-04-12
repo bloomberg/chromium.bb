@@ -9,6 +9,7 @@
 
 #include "base/ios/block_types.h"
 #include "ios/chrome/browser/ui/history/history_consumer.h"
+#include "ios/chrome/browser/ui/history/history_table_updater_delegate.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -35,7 +36,7 @@ class ChromeBrowserState;
 
 // ChromeTableViewController for displaying history items.
 @interface HistoryTableViewController
-    : ChromeTableViewController<HistoryConsumer>
+    : ChromeTableViewController<HistoryConsumer, HistoryTableUpdaterDelegate>
 // The ViewController's BrowserState.
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // Abstraction to communicate with HistoryService and WebHistoryService.
