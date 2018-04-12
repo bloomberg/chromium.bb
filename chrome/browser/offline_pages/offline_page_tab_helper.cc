@@ -175,8 +175,10 @@ void OfflinePageTabHelper::FinalizeOfflineInfo(
   GURL navigated_url = navigation_handle->GetURL();
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
-  if (web_contents->GetContentsMimeType() != "multipart/related")
+  if (web_contents->GetContentsMimeType() != "multipart/related" &&
+      web_contents->GetContentsMimeType() != "message/rfc822") {
     return;
+  }
 
   if (SchemeIsForUntrustedOfflinePages(navigated_url)) {
     // If a MHTML archive is being loaded for file: or content: URL, and we did
