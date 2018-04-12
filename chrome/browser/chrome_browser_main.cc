@@ -1382,14 +1382,30 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
         !command_line->HasSwitch(switches::kSitePerProcess)) {
       command_line->AppendSwitch(switches::kSitePerProcess);
     }
-    // We don't check for `HasSwitch` here, because we don't want the command-
-    // line switch to take precedence over enterprise policy. (This behavior is
-    // in harmony with other enterprise policy settings.)
-    if (local_state->HasPrefPath(prefs::kIsolateOrigins)) {
+    // We apply the flag always when it differs from the command line state,
+    // because we don't want the command-line switch to take precedence over
+    // enterprise policy. (This behavior is in harmony with other enterprise
+    // policy settings.)
+    if (local_state->HasPrefPath(prefs::kIsolateOrigins) &&
+        (!command_line->HasSwitch(switches::kIsolateOrigins) ||
+         command_line->GetSwitchValueASCII(switches::kIsolateOrigins) !=
+             local_state->GetString(prefs::kIsolateOrigins))) {
       command_line->AppendSwitchASCII(
           switches::kIsolateOrigins,
           local_state->GetString(prefs::kIsolateOrigins));
     }
+  }
+
+  // The admin should also be able to use these policies to override trials that
+  // will try to turn site isolation on per default.
+  // Note that disabling either SitePerProcess or IsolateOrigins via policy will
+  // disable both types of field trials.
+  if ((local_state->IsManagedPreference(prefs::kSitePerProcess) &&
+       !local_state->GetBoolean(prefs::kSitePerProcess)) ||
+      (local_state->IsManagedPreference(prefs::kIsolateOrigins) &&
+       local_state->GetString(prefs::kIsolateOrigins).empty())) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableSiteIsolationTrials);
   }
 
   // ChromeOS needs ui::ResourceBundle::InitSharedInstance to be called before

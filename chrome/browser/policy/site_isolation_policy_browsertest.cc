@@ -7,6 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -45,6 +46,7 @@ class SiteIsolationPolicyBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicyBrowserTest);
 };
 
+template <bool policy_value>
 class SitePerProcessPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
  protected:
   SitePerProcessPolicyBrowserTest() {}
@@ -62,7 +64,7 @@ class SitePerProcessPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
     policy::PolicyMap values;
     values.Set(policy::key::kSitePerProcess, policy::POLICY_LEVEL_MANDATORY,
                policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(true), nullptr);
+               std::make_unique<base::Value>(policy_value), nullptr);
     provider_.UpdateChromePolicy(values);
 
     // Append the automation switch which should disable Site Isolation when the
@@ -77,6 +79,11 @@ class SitePerProcessPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessPolicyBrowserTest);
 };
+
+typedef SitePerProcessPolicyBrowserTest<true>
+    SitePerProcessPolicyBrowserTestEnabled;
+typedef SitePerProcessPolicyBrowserTest<false>
+    SitePerProcessPolicyBrowserTestDisabled;
 
 class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
  protected:
@@ -106,7 +113,7 @@ class IsolateOriginsPolicyBrowserTest : public SiteIsolationPolicyBrowserTest {
 };
 
 class WebDriverSitePerProcessPolicyBrowserTest
-    : public SitePerProcessPolicyBrowserTest {
+    : public SitePerProcessPolicyBrowserTestEnabled {
  protected:
   WebDriverSitePerProcessPolicyBrowserTest()
       : are_sites_isolated_for_testing_(false) {}
@@ -142,7 +149,7 @@ class WebDriverSitePerProcessPolicyBrowserTest
 
 // Ensure that --disable-site-isolation-trials does not override policies.
 class NoOverrideSitePerProcessPolicyBrowserTest
-    : public SitePerProcessPolicyBrowserTest {
+    : public SitePerProcessPolicyBrowserTestEnabled {
  protected:
   NoOverrideSitePerProcessPolicyBrowserTest() {}
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -153,7 +160,7 @@ class NoOverrideSitePerProcessPolicyBrowserTest
   DISALLOW_COPY_AND_ASSIGN(NoOverrideSitePerProcessPolicyBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTest, Simple) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestEnabled, Simple) {
   Expectations expectations[] = {
       {"https://foo.com/noodles.html", true},
       {"http://foo.com/", true},
@@ -190,4 +197,36 @@ IN_PROC_BROWSER_TEST_F(NoOverrideSitePerProcessPolicyBrowserTest, Simple) {
       {"http://example.org/pumpkins.html", true},
   };
   CheckExpectations(expectations, arraysize(expectations));
+}
+
+class SitePerProcessPolicyBrowserTestFieldTrialTest
+    : public SitePerProcessPolicyBrowserTestDisabled {
+ public:
+  SitePerProcessPolicyBrowserTestFieldTrialTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kSitePerProcess);
+  }
+  ~SitePerProcessPolicyBrowserTestFieldTrialTest() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessPolicyBrowserTestFieldTrialTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessPolicyBrowserTestFieldTrialTest, Simple) {
+  // Skip this test if all sites are isolated.
+  if (content::AreAllSitesIsolatedForTesting())
+    return;
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSiteIsolationTrials));
+  Expectations expectations[] = {
+      {"https://foo.com/noodles.html", false},
+      {"http://example.org/pumpkins.html", false},
+  };
+  CheckExpectations(expectations, arraysize(expectations));
+}
+
+IN_PROC_BROWSER_TEST_F(SiteIsolationPolicyBrowserTest, NoPolicyNoTrialsFlags) {
+  ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableSiteIsolationTrials));
 }

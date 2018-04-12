@@ -415,10 +415,20 @@ void UserSessionManager::MaybeAppendPolicySwitches(
       user_profile_prefs->FindPreference(prefs::kIsolateOrigins);
   bool site_per_process = site_per_process_pref->IsManaged() &&
                           site_per_process_pref->GetValue()->GetBool();
+
   std::string isolate_origins =
       isolate_origins_pref->IsManaged()
           ? isolate_origins_pref->GetValue()->GetString()
           : std::string();
+
+  // The admin should also be able to use these policies to override trials that
+  // will try to turn site isolation on per default.
+  // Note that disabling either SitePerProcess or IsolateOrigins via policy will
+  // disable both types of field trials.
+  bool disable_site_isolation_trials =
+      (site_per_process_pref->IsManaged() &&
+       !site_per_process_pref->GetValue()->GetBool()) ||
+      (isolate_origins_pref->IsManaged() && isolate_origins.empty());
 
   // Append sentinels indicating that these values originate from policy.
   // This is important, because only command-line switches between the
@@ -429,7 +439,8 @@ void UserSessionManager::MaybeAppendPolicySwitches(
   // We use the policy-style sentinels because these values originate from
   // policy, and because login_manager uses the same sentinels when adding the
   // login-screen site isolation flags.
-  bool use_policy_sentinels = site_per_process || !isolate_origins.empty();
+  bool use_policy_sentinels = site_per_process || !isolate_origins.empty() ||
+                              disable_site_isolation_trials;
   if (use_policy_sentinels)
     user_flags->AppendSwitch(chromeos::switches::kPolicySwitchesBegin);
 
@@ -443,6 +454,10 @@ void UserSessionManager::MaybeAppendPolicySwitches(
     user_flags->AppendSwitchASCII(
         ::switches::kIsolateOrigins,
         user_profile_prefs->GetString(prefs::kIsolateOrigins));
+  }
+
+  if (disable_site_isolation_trials) {
+    user_flags->AppendSwitch(::switches::kDisableSiteIsolationTrials);
   }
 
   if (use_policy_sentinels) {
