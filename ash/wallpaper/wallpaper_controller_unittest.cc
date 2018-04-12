@@ -1493,18 +1493,26 @@ TEST_F(WallpaperControllerTest, SigninWallpaperIsKeptAfterRotation) {
       {wallpaper_dir_->GetPath().Append(kDefaultSmallWallpaperName)}));
 }
 
-// If clients call |ShowUserWallpaper| twice with the same account id, the
-// latter request should be prevented (See crbug.com/158383).
-TEST_F(WallpaperControllerTest, PreventReloadingSameWallpaper) {
+TEST_F(WallpaperControllerTest, ReloadWallpaper) {
   CreateAndSaveWallpapers(account_id_1);
+
+  // If |ShowUserWallpaper| is called twice with the same account id and display
+  // size, the second request shouldn't trigger a wallpaper reload
+  // (crbug.com/158383).
+  UpdateDisplay("800x600");
+  RunAllTasksUntilIdle();
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
 
   controller_->ShowUserWallpaper(InitializeUser(account_id_1));
   RunAllTasksUntilIdle();
-  // No wallpaper is set for the second |ShowUserWallpaper| request.
   EXPECT_EQ(0, GetWallpaperCount());
+
+  // Rotating the display should trigger a wallpaper reload.
+  UpdateDisplay("800x600/r");
+  RunAllTasksUntilIdle();
+  EXPECT_EQ(1, GetWallpaperCount());
 }
 
 TEST_F(WallpaperControllerTest, UpdateCustomWallpaperLayout) {
@@ -1692,49 +1700,6 @@ TEST_F(WallpaperControllerTest, WallpaperBlur) {
   controller_->RemoveObserver(&observer);
 }
 
-TEST_F(WallpaperControllerTest, WallpaperBlurDisabledByPolicy) {
-  // Simulate DEVICE policy wallpaper.
-  const WallpaperInfo info("", WALLPAPER_LAYOUT_CENTER, DEVICE,
-                           base::Time::Now());
-  const gfx::ImageSkia image = CreateImage(10, 10, kWallpaperColor);
-  controller_->ShowWallpaperImage(image, info, false /*preview_mode=*/);
-  ASSERT_FALSE(controller_->IsBlurEnabled());
-  ASSERT_FALSE(controller_->IsWallpaperBlurred());
-
-  TestWallpaperControllerObserver observer;
-  controller_->AddObserver(&observer);
-
-  SetSessionState(SessionState::ACTIVE);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  SetSessionState(SessionState::LOCKED);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  SetSessionState(SessionState::LOGGED_IN_NOT_ACTIVE);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  SetSessionState(SessionState::LOGIN_SECONDARY);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  SetSessionState(SessionState::LOGIN_PRIMARY);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  SetSessionState(SessionState::OOBE);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  SetSessionState(SessionState::UNKNOWN);
-  EXPECT_FALSE(controller_->IsWallpaperBlurred());
-  EXPECT_EQ(0, observer.wallpaper_blur_changed_count_);
-
-  controller_->RemoveObserver(&observer);
-}
-
 TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
   ASSERT_TRUE(controller_->IsBlurEnabled());
   ASSERT_FALSE(controller_->IsWallpaperBlurred());
@@ -1768,6 +1733,9 @@ TEST_F(WallpaperControllerTest, OnlyShowDevicePolicyWallpaperOnLoginScreen) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_TRUE(IsDevicePolicyWallpaper());
+  // Verify the device policy wallpaper shouldn't be blurred.
+  ASSERT_FALSE(controller_->IsBlurEnabled());
+  ASSERT_FALSE(controller_->IsWallpaperBlurred());
 
   // Verify the device policy wallpaper is replaced when session state is no
   // longer LOGIN_PRIMARY.
