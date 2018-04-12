@@ -6,10 +6,10 @@ test(function() {
   assert_own_property(self, 'BackgroundFetchClickEvent');
 
   // The `id` and `state` are required in the BackgroundFetchClickEventInit.
-  assert_throws(null, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent'));
-  assert_throws(null, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent', {}));
-  assert_throws(null, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent', { id: 'foo' }));
-  assert_throws(null, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent', { id: 'foo', state: 'foo' }));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent'));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent', {}));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent', { id: 'foo' }));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchClickEvent('BackgroundFetchClickEvent', { id: 'foo', state: 'foo' }));
 
   // The `state` must be one of { pending, succeeded, failed }. This should not throw.
   for (let state of ['pending', 'succeeded', 'failed'])

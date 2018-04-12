@@ -6,8 +6,8 @@ test(function() {
   assert_own_property(self, 'BackgroundFetchEvent');
 
   // The `id` is required in the BackgroundFetchEventInit.
-  assert_throws(null, () => new BackgroundFetchEvent('BackgroundFetchEvent'));
-  assert_throws(null, () => new BackgroundFetchEvent('BackgroundFetchEvent', {}));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchEvent('BackgroundFetchEvent'));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchEvent('BackgroundFetchEvent', {}));
 
   const event = new BackgroundFetchEvent('BackgroundFetchEvent', {
     id: 'my-id'

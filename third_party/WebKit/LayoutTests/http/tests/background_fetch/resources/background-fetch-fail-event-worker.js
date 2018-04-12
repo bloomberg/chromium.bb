@@ -8,10 +8,10 @@ test(function() {
   // The `id` and `fetches` are required options in the
   // BackgroundFetchFailEventInit. The latter must be a sequence of
   // BackgroundFetchSettledFetch instances.
-  assert_throws(null, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent'));
-  assert_throws(null, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent', {}));
-  assert_throws(null, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent', { id: 'foo' }));
-  assert_throws(null, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent', { id: 'foo', fetches: 'bar' }));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent'));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent', {}));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent', { id: 'foo' }));
+  assert_throws({name: "TypeError"}, () => new BackgroundFetchFailEvent('BackgroundFetchFailEvent', { id: 'foo', fetches: 'bar' }));
 
   const fetches = [
     new BackgroundFetchSettledFetch(new Request('non-existing-image.png'), new Response()),

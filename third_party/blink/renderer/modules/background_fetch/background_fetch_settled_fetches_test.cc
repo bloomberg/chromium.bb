@@ -92,11 +92,11 @@ TEST(BackgroundFetchSettledFetchesTest, MatchNullValue) {
   RequestOrUSVString null_request;
 
   auto settled_fetches = CreateSettledFetches({"foo.com"});
-  BackgroundFetchSettledFetches bgf_settled_fetches(scope.GetScriptState(),
-                                                    settled_fetches);
+  auto* bgf_settled_fetches = BackgroundFetchSettledFetches::Create(
+      scope.GetScriptState(), settled_fetches);
 
   ScriptPromise promise =
-      bgf_settled_fetches.match(scope.GetScriptState(), null_request);
+      bgf_settled_fetches->match(scope.GetScriptState(), null_request);
 
   ScriptValue value = ResolvePromise(scope.GetScriptState(), promise);
   EXPECT_TRUE(value.IsNull());
@@ -109,13 +109,13 @@ TEST(BackgroundFetchSettledFetchesTest, MatchUSVString) {
 
   auto settled_fetches = CreateSettledFetches(
       {"http://t1.net/", "http://foo.com/", "http://t3.net/"});
-  BackgroundFetchSettledFetches bgf_settled_fetches(scope.GetScriptState(),
-                                                    settled_fetches);
+  auto* bgf_settled_fetches = BackgroundFetchSettledFetches::Create(
+      scope.GetScriptState(), settled_fetches);
 
   ScriptPromise matched_promise =
-      bgf_settled_fetches.match(scope.GetScriptState(), matched_request);
+      bgf_settled_fetches->match(scope.GetScriptState(), matched_request);
   ScriptPromise unmatched_promise =
-      bgf_settled_fetches.match(scope.GetScriptState(), unmatched_request);
+      bgf_settled_fetches->match(scope.GetScriptState(), unmatched_request);
 
   ScriptValue matched_value =
       ResolvePromise(scope.GetScriptState(), matched_promise);
@@ -136,13 +136,13 @@ TEST(BackgroundFetchSettledFetchesTest, MatchRequest) {
 
   auto settled_fetches = CreateSettledFetches(
       {"http://t1.net/", "http://foo.com/", "http://t3.net/"});
-  BackgroundFetchSettledFetches bgf_settled_fetches(scope.GetScriptState(),
-                                                    settled_fetches);
+  auto* bgf_settled_fetches = BackgroundFetchSettledFetches::Create(
+      scope.GetScriptState(), settled_fetches);
 
   ScriptPromise matched_promise =
-      bgf_settled_fetches.match(scope.GetScriptState(), matched_request);
+      bgf_settled_fetches->match(scope.GetScriptState(), matched_request);
   ScriptPromise unmatched_promise =
-      bgf_settled_fetches.match(scope.GetScriptState(), unmatched_request);
+      bgf_settled_fetches->match(scope.GetScriptState(), unmatched_request);
 
   ScriptValue matched_value =
       ResolvePromise(scope.GetScriptState(), matched_promise);
