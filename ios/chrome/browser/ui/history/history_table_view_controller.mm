@@ -6,18 +6,24 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
+#import "ios/chrome/browser/ui/history/history_table_view_controller_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/web/public/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -126,40 +132,9 @@ const int kMaxFetchCount = 100;
   [self showHistoryMatchingQuery:nil];
 }
 
-#pragma mark - Protocols.
+#pragma mark - Protocols
 
-#pragma mark HistoryEntriesStatusItemDelegate
-
-- (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
-               didRequestOpenURL:(const GURL&)URL {
-  // TODO(crbug.com/805190): Migrate.
-}
-
-#pragma mark HistoryEntryInserterDelegate
-
-- (void)historyEntryInserter:(HistoryEntryInserter*)inserter
-    didInsertItemAtIndexPath:(NSIndexPath*)indexPath {
-  [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
-                        withRowAnimation:UITableViewRowAnimationNone];
-}
-
-- (void)historyEntryInserter:(HistoryEntryInserter*)inserter
-     didInsertSectionAtIndex:(NSInteger)sectionIndex {
-  [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                withRowAnimation:UITableViewRowAnimationNone];
-}
-
-- (void)historyEntryInserter:(HistoryEntryInserter*)inserter
-     didRemoveSectionAtIndex:(NSInteger)sectionIndex {
-  [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
-                withRowAnimation:UITableViewRowAnimationNone];
-}
-
-#pragma mark HistoryEntryItemDelegate
-// TODO(crbug.com/805190): Migrate once we decide how to handle favicons and the
-// a11y callback on HistoryEntryItem.
-
-#pragma mark - HistoryConsumer
+#pragma mark HistoryConsumer
 
 - (void)historyQueryWasCompletedWithResults:
             (const std::vector<BrowsingHistoryService::HistoryEntry>&)results
@@ -186,7 +161,7 @@ const int kMaxFetchCount = 100;
   // history entries were found.
   if (results.empty() && self.empty) {
     [self updateEntriesStatusMessage];
-    [self.delegate historyTableViewControllerDidChangeEntries:self];
+    [self.delegate historyTableViewControllerDidChangeEntries];
     return;
   }
 
@@ -216,7 +191,7 @@ const int kMaxFetchCount = 100;
       item.timestamp = entry.time;
       [resultsItems addObject:item];
     }
-    [self.delegate historyTableViewControllerDidChangeEntries:self];
+    [self.delegate historyTableViewControllerDidChangeEntries];
     if (([self isSearching] && [searchQuery length] > 0 &&
          [self.currentQuery isEqualToString:searchQuery]) ||
         self.filterQueryResult) {
@@ -265,6 +240,48 @@ const int kMaxFetchCount = 100;
   [self showHistoryMatchingQuery:nil];
 }
 
+#pragma mark HistoryEntriesStatusItemDelegate
+
+- (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
+               didRequestOpenURL:(const GURL&)URL {
+  // TODO(crbug.com/805190): Migrate.
+}
+
+#pragma mark HistoryEntryInserterDelegate
+
+- (void)historyEntryInserter:(HistoryEntryInserter*)inserter
+    didInsertItemAtIndexPath:(NSIndexPath*)indexPath {
+  [self.tableView insertRowsAtIndexPaths:@[ indexPath ]
+                        withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void)historyEntryInserter:(HistoryEntryInserter*)inserter
+     didInsertSectionAtIndex:(NSInteger)sectionIndex {
+  [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+                withRowAnimation:UITableViewRowAnimationNone];
+}
+
+- (void)historyEntryInserter:(HistoryEntryInserter*)inserter
+     didRemoveSectionAtIndex:(NSInteger)sectionIndex {
+  [self.tableView deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+                withRowAnimation:UITableViewRowAnimationNone];
+}
+
+#pragma mark HistoryEntryItemDelegate
+// TODO(crbug.com/805190): Migrate once we decide how to handle favicons and the
+// a11y callback on HistoryEntryItem.
+
+#pragma mark HistoryTableUpdaterDelegate
+
+- (void)showHistoryMatchingQuery:(NSString*)query {
+  self.finishedLoading = NO;
+  self.currentQuery = query;
+  [self fetchHistoryForQuery:query continuation:false];
+}
+- (void)deleteSelectedItems {
+  // TODO(crbug.com/805190): Migrate.
+}
+
 #pragma mark - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -274,6 +291,24 @@ const int kMaxFetchCount = 100;
           sectionForSectionIdentifier:kEntriesStatusSectionIdentifier])
     return 0;
   return UITableViewAutomaticDimension;
+}
+
+- (void)tableView:(UITableView*)tableView
+    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
+  DCHECK_EQ(tableView, self.tableView);
+  if (self.isEditing) {
+    [self.delegate historyTableViewControllerDidChangeEntrySelection];
+  } else {
+    HistoryEntryItem* item = base::mac::ObjCCastStrict<HistoryEntryItem>(
+        [self.tableViewModel itemAtIndexPath:indexPath]);
+    [self openURL:item.URL];
+    if (self.isSearching) {
+      base::RecordAction(
+          base::UserMetricsAction("HistoryPage_SearchResultClick"));
+    } else {
+      base::RecordAction(base::UserMetricsAction("HistoryPage_EntryLinkClick"));
+    }
+  }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -374,32 +409,38 @@ const int kMaxFetchCount = 100;
 }
 
 #pragma mark Context Menu
+
+// Displays context menu on cell pressed with gestureRecognizer.
 - (void)displayContextMenuInvokedByGestureRecognizer:
     (UILongPressGestureRecognizer*)gestureRecognizer {
   // TODO(crbug.com/805190): Migrate.
 }
 
-- (void)openURL:(const GURL&)URL {
-  // TODO(crbug.com/805190): Migrate.
-}
-
+// Opens URL in a new non-incognito tab and dismisses the history view.
 - (void)openURLInNewTab:(const GURL&)URL {
   // TODO(crbug.com/805190): Migrate.
 }
 
+// Opens URL in a new incognito tab and dismisses the history view.
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
   // TODO(crbug.com/805190): Migrate.
 }
 
-#pragma mark - HistoryTableUpdaterDelegate
+#pragma mark Helper Methods
 
-- (void)showHistoryMatchingQuery:(NSString*)query {
-  self.finishedLoading = NO;
-  self.currentQuery = query;
-  [self fetchHistoryForQuery:query continuation:false];
-}
-- (void)deleteSelectedItems {
-  // TODO(crbug.com/805190): Migrate.
+// Opens URL in the current tab and dismisses the history view.
+- (void)openURL:(const GURL&)URL {
+  // Make a copy to make sure the referenced URL doesn't change while we're
+  // opening it.
+  GURL copiedURL(URL);
+  new_tab_page_uma::RecordAction(_browserState,
+                                 new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
+  [self.delegate dismissHistoryWithCompletion:^{
+    [self.loader loadURL:copiedURL
+                 referrer:web::Referrer()
+               transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
+        rendererInitiated:NO];
+  }];
 }
 
 @end

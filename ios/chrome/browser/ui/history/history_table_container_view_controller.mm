@@ -89,4 +89,20 @@
                        self.navigationController];
 }
 
+#pragma mark - HistoryTableViewControllerDelegate
+
+- (void)dismissHistoryWithCompletion:(ProceduralBlock)completionHandler {
+  [self.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:completionHandler];
+}
+
+- (void)historyTableViewControllerDidChangeEntries {
+  // TODO(crbug.com/805190): Migrate.
+}
+
+- (void)historyTableViewControllerDidChangeEntrySelection {
+  // TODO(crbug.com/805190): Migrate.
+}
+
 @end

@@ -69,6 +69,7 @@
   [self.historyContainerViewController.dismissButton setAction:@selector(stop)];
   self.historyContainerViewController.navigationItem.rightBarButtonItem =
       self.historyContainerViewController.dismissButton;
+  historyTableViewController.delegate = self.historyContainerViewController;
 
   // Present HistoryContainerViewController.
   FormSheetNavigationController* navController =

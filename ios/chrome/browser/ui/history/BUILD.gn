@@ -102,6 +102,7 @@ source_set("history_ui") {
     "history_table_updater_delegate.h",
     "history_table_view_controller.h",
     "history_table_view_controller.mm",
+    "history_table_view_controller_delegate.h",
     "history_util.h",
     "history_util.mm",
   ]
@@ -115,7 +116,9 @@ source_set("history_ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/list_model",
