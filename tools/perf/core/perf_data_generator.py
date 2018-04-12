@@ -896,6 +896,8 @@ def generate_all_tests(waterfall):
 
 def update_all_tests(waterfall, file_path):
   tests = generate_all_tests(waterfall)
+  # Add in the migrated testers for the new recipe.
+  get_new_recipe_testers(NEW_PERF_RECIPE_MIGRATED_TESTERS, tests)
   with open(file_path, 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
@@ -983,6 +985,11 @@ def verify_all_tests_in_benchmark_csv(tests, benchmark_metadata):
     for s in scripts:
       name = s['name']
       name = re.sub('\\.reference$', '', name)
+      # TODO(eyaich): Determine new way to generate ownership based
+      # on the benchmark bot map instead of on the generated tests
+      # for new perf recipe.
+      if name is 'performance_test_suite':
+        continue
       test_names.add(name)
 
   # Disabled tests are filtered out of the waterfall json. Add them back here.
@@ -1107,33 +1114,6 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'swarm79-c7'
       ],
     },
-    'Mac 10.12 Laptop Low End': {
-      'tests': [
-        {
-          'isolate': 'performance_test_suite',
-        },
-        {
-          'isolate': 'load_library_perf_tests',
-          'shards': [0],
-          'telemetry': False,
-        }
-      ],
-      'platform': 'mac',
-      'dimension': {
-        'pool': 'Chrome-perf-fyi',
-        'os': 'Mac-10.12',
-        'gpu': '8086:1626'
-      },
-      'device_ids': [
-          'build195-a9', 'build196-a9', 'build197-a9', 'build198-a9',
-          'build199-a9', 'build200-a9', 'build201-a9', 'build202-a9',
-          'build203-a9', 'build204-a9', 'build205-a9', 'build206-a9',
-          'build207-a9', 'build208-a9', 'build209-a9', 'build210-a9',
-          'build211-a9', 'build212-a9', 'build213-a9', 'build214-a9',
-          'build215-a9', 'build216-a9', 'build217-a9', 'build218-a9',
-          'build219-a9', 'build220-a9'
-      ],
-    },
     'Android Go': {
       'tests': [
         {
@@ -1158,6 +1138,37 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
 }
 
 
+NEW_PERF_RECIPE_MIGRATED_TESTERS = {
+  'testers' : {
+    'Mac 10.12 Laptop Low End': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+        },
+        {
+          'isolate': 'load_library_perf_tests',
+          'shards': [0],
+          'telemetry': False,
+        }
+      ],
+      'platform': 'mac',
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Mac-10.12',
+        'gpu': '8086:1626'
+      },
+      'device_ids': [
+          'build41-a7', 'build42-a7', 'build43-a7', 'build44-a7',
+          'build45-a7', 'build46-a7', 'build47-a7', 'build48-a7',
+          'build49-a7', 'build50-a7', 'build51-a7', 'build52-a7',
+          'build53-a7', 'build54-a7', 'build55-a7', 'build56-a7',
+          'build57-a7', 'build58-a7', 'build59-a7', 'build60-a7',
+          'build61-a7', 'build62-a7', 'build63-a7', 'build64-a7',
+          'build65-a7', 'build66-a7'
+      ],
+    }
+  }
+}
 def add_common_test_properties(test_entry, tester_config, test_spec):
   dimensions = []
   index = 0
@@ -1274,7 +1285,7 @@ def generate_performance_test(tester_config, test):
   return result
 
 
-def load_and_update_new_recipe_json():
+def load_and_update_new_recipe_fyi_json():
   tests = {}
   filename = 'chromium.perf.fyi.json'
   buildbot_dir = os.path.join(
@@ -1285,16 +1296,19 @@ def load_and_update_new_recipe_json():
   with open(fyi_filepath, 'w') as fp:
     # We have loaded what is there, we want to update or add
     # what we have listed here
-    testers = NEW_PERF_RECIPE_FYI_TESTERS
-    for tester, tester_config in testers['testers'].iteritems():
-      isolated_scripts = []
-      for test in tester_config['tests']:
-        isolated_scripts.append(generate_performance_test(tester_config, test))
-      tests[tester] = {
-        'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
-      }
+    get_new_recipe_testers(NEW_PERF_RECIPE_FYI_TESTERS, tests)
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
+
+
+def get_new_recipe_testers(testers, tests):
+  for tester, tester_config in testers['testers'].iteritems():
+    isolated_scripts = []
+    for test in tester_config['tests']:
+      isolated_scripts.append(generate_performance_test(tester_config, test))
+    tests[tester] = {
+      'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
+    }
 
 
 def main(args):
@@ -1326,7 +1340,7 @@ def main(args):
              'configs and benchmark.csv.') % sys.argv[0]
       return 1
   else:
-    load_and_update_new_recipe_json()
+    load_and_update_new_recipe_fyi_json()
     update_all_tests(get_waterfall_config(), waterfall_file)
     update_benchmark_csv(benchmark_file)
   return 0
