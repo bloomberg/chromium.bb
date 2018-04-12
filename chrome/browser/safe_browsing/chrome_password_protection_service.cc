@@ -921,23 +921,20 @@ bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
 
 base::string16 ChromePasswordProtectionService::GetWarningDetailText() {
   if (!base::FeatureList::IsEnabled(
-          safe_browsing::kEnterprisePasswordProtectionV1)) {
-    return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
-  }
-
-  std::string enterprise_name =
-      profile_->GetPrefs()->GetString(prefs::kPasswordProtectionEnterpriseName);
-  if (enterprise_name.empty() ||
+          safe_browsing::kEnterprisePasswordProtectionV1) ||
       GetSyncAccountType() != safe_browsing::LoginReputationClientRequest::
                                   PasswordReuseEvent::GSUITE) {
     return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
   }
 
-  // For GSuite password reuses, we need to include their organization name in
-  // the site identity detail text.
-  return l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE,
-      base::UTF8ToUTF16(enterprise_name));
+  std::string enterprise_name =
+      profile_->GetPrefs()->GetString(prefs::kPasswordProtectionEnterpriseName);
+  return enterprise_name.empty()
+             ? l10n_util::GetStringUTF16(
+                   IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE)
+             : l10n_util::GetStringFUTF16(
+                   IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE_WITH_ORG_NAME,
+                   base::UTF8ToUTF16(enterprise_name));
 }
 
 }  // namespace safe_browsing
