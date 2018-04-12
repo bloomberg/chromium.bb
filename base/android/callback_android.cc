@@ -5,6 +5,7 @@
 #include "base/android/callback_android.h"
 
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/Callback_jni.h"
 
@@ -13,25 +14,29 @@ namespace android {
 
 void RunCallbackAndroid(const JavaRef<jobject>& callback,
                         const JavaRef<jobject>& arg) {
-  Java_Helper_onObjectResultFromNative(base::android::AttachCurrentThread(),
-                                       callback, arg);
+  Java_Helper_onObjectResultFromNative(AttachCurrentThread(), callback, arg);
 }
 
 void RunCallbackAndroid(const JavaRef<jobject>& callback, bool arg) {
-  Java_Helper_onBooleanResultFromNative(base::android::AttachCurrentThread(),
-                                        callback, static_cast<jboolean>(arg));
+  Java_Helper_onBooleanResultFromNative(AttachCurrentThread(), callback,
+                                        static_cast<jboolean>(arg));
 }
 
 void RunCallbackAndroid(const JavaRef<jobject>& callback, int arg) {
-  Java_Helper_onIntResultFromNative(base::android::AttachCurrentThread(),
-                                    callback, arg);
+  Java_Helper_onIntResultFromNative(AttachCurrentThread(), callback, arg);
+}
+
+void RunStringCallbackAndroid(const JavaRef<jobject>& callback,
+                              const std::string& arg) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_string = ConvertUTF8ToJavaString(env, arg);
+  Java_Helper_onObjectResultFromNative(env, callback, java_string);
 }
 
 void RunCallbackAndroid(const JavaRef<jobject>& callback,
                         const std::vector<uint8_t>& arg) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::android::ScopedJavaLocalRef<jbyteArray> j_bytes =
-      base::android::ToJavaByteArray(env, arg);
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_bytes = ToJavaByteArray(env, arg);
   Java_Helper_onObjectResultFromNative(env, callback, j_bytes);
 }
 

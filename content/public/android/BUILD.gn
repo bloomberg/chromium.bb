@@ -232,7 +232,6 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/browser/ActionModeCallbackHelper.java",
     "java/src/org/chromium/content_public/browser/ChildProcessUtils.java",
     "java/src/org/chromium/content_public/browser/InputMethodManagerWrapper.java",
-    "java/src/org/chromium/content_public/browser/ContentBitmapCallback.java",
     "java/src/org/chromium/content_public/browser/ContentViewCore.java",
     "java/src/org/chromium/content_public/browser/GestureListenerManager.java",
     "java/src/org/chromium/content_public/browser/GestureStateListener.java",

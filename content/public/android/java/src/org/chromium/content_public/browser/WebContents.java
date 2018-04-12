@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.base.EventForwarder;
@@ -393,10 +394,11 @@ public interface WebContents extends Parcelable {
      *
      * @param width The width of the resulting bitmap, or 0 for "auto."
      * @param height The height of the resulting bitmap, or 0 for "auto."
+     * @param path The folder in which to store the screenshot.
      * @param callback May be called synchronously, or at a later point, to deliver the bitmap
      *                 result (or a failure code).
      */
-    void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback);
+    void getContentBitmapAsync(int width, int height, String path, Callback<String> callback);
 
     /**
      * Reloads all the Lo-Fi images in this WebContents.

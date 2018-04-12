@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Application;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
+import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -103,7 +104,7 @@ class CustomTabObserver extends EmptyTabObserver {
         } else if (mCurrentState == STATE_WAITING_LOAD_FINISH) {
             if (mCustomTabsConnection != null) {
                 mCustomTabsConnection.sendNavigationInfo(
-                        mSession, tab.getUrl(), tab.getTitle(), null);
+                        mSession, tab.getUrl(), tab.getTitle(), (Uri) null);
             }
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
         }
@@ -198,11 +199,11 @@ class CustomTabObserver extends EmptyTabObserver {
         if (!mCustomTabsConnection.shouldSendNavigationInfoForSession(mSession)) return;
         if (tab.getWebContents() == null) return;
 
-        tab.getWebContents().getContentBitmapAsync(
-                mContentBitmapWidth, mContentBitmapHeight, (Bitmap bitmap) -> {
-                    if (TextUtils.isEmpty(tab.getTitle()) && bitmap == null) return;
+        ShareHelper.captureScreenshotForContents(tab.getWebContents(), mContentBitmapWidth,
+                mContentBitmapHeight, (Uri snapshotPath) -> {
+                    if (TextUtils.isEmpty(tab.getTitle()) && snapshotPath == null) return;
                     mCustomTabsConnection.sendNavigationInfo(
-                            mSession, tab.getUrl(), tab.getTitle(), bitmap);
+                            mSession, tab.getUrl(), tab.getTitle(), snapshotPath);
                 });
     }
 }

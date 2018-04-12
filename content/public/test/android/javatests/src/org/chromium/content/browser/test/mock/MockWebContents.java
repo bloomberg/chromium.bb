@@ -9,8 +9,8 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Parcel;
 
+import org.chromium.base.Callback;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
-import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePort;
@@ -213,7 +213,8 @@ public class MockWebContents implements WebContents {
     public void setOverscrollRefreshHandler(OverscrollRefreshHandler handler) {}
 
     @Override
-    public void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback) {}
+    public void getContentBitmapAsync(
+            int width, int height, String path, Callback<String> callback) {}
 
     @Override
     public void reloadLoFiImages() {}

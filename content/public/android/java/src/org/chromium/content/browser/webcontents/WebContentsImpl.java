@@ -15,6 +15,7 @@ import android.os.ParcelUuid;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -30,7 +31,6 @@ import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ChildProcessImportance;
-import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.MessagePort;
@@ -622,13 +622,9 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
     }
 
     @Override
-    public void getContentBitmapAsync(int width, int height, ContentBitmapCallback callback) {
-        nativeGetContentBitmap(mNativeWebContentsAndroid, width, height, callback);
-    }
-
-    @CalledByNative
-    private void onGetContentBitmapFinished(ContentBitmapCallback callback, Bitmap bitmap) {
-        callback.onFinishGetBitmap(bitmap);
+    public void getContentBitmapAsync(
+            int width, int height, String path, Callback<String> callback) {
+        nativeGetContentBitmap(mNativeWebContentsAndroid, width, height, path, callback);
     }
 
     @Override
@@ -827,8 +823,8 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
     private native void nativeSetOverscrollRefreshHandler(
             long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
-    private native void nativeGetContentBitmap(
-            long nativeWebContentsAndroid, int width, int height, ContentBitmapCallback callback);
+    private native void nativeGetContentBitmap(long nativeWebContentsAndroid, int width, int height,
+            String path, Callback<String> callback);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);
     private native int nativeDownloadImage(long nativeWebContentsAndroid,
             String url, boolean isFavicon, int maxBitmapSize,
