@@ -34,7 +34,7 @@ DictationChromeos::~DictationChromeos() = default;
 
 void DictationChromeos::OnToggleDictation() {
   if (speech_recognizer_) {
-    media::SoundsManager::Get()->Play(chromeos::SOUND_EXIT_SCREEN);
+    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
     speech_recognizer_.reset();
     return;
   }
@@ -63,7 +63,7 @@ void DictationChromeos::OnSpeechSoundLevelChanged(int16_t level) {}
 void DictationChromeos::OnSpeechRecognitionStateChanged(
     SpeechRecognizerStatus new_state) {
   if (new_state == SPEECH_RECOGNIZER_RECOGNIZING)
-    media::SoundsManager::Get()->Play(chromeos::SOUND_ENTER_SCREEN);
+    media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_START);
 }
 
 void DictationChromeos::GetSpeechAuthParameters(std::string* auth_scope,
