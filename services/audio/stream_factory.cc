@@ -48,7 +48,8 @@ void StreamFactory::CreateOutputStream(
   output_streams_.insert(std::make_unique<OutputStream>(
       std::move(created_callback), std::move(deleter_callback),
       std::move(stream_request), std::move(client), std::move(observer),
-      std::move(log), audio_manager_, output_device_id, params, group_id));
+      std::move(log), audio_manager_, output_device_id, params, &coordinator_,
+      group_id));
 }
 
 void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
