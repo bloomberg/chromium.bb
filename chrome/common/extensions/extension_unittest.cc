@@ -26,6 +26,7 @@
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
+#include "extensions/test/test_extension_dir.h"
 #include "net/base/mime_sniffer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "skia/ext/image_operations.h"
@@ -308,31 +309,49 @@ TEST(ExtensionTest, IdIsValid) {
       crx_file::id_util::IdIsValid("abcdefghijklmnopabcdefghijklmno0"));
 }
 
-
 // This test ensures that the mimetype sniffing code stays in sync with the
 // actual crx files that we test other parts of the system with.
 TEST(ExtensionTest, MimeTypeSniffing) {
-  base::FilePath path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions").AppendASCII("good.crx");
+  auto get_mime_type_from_crx = [](const base::FilePath& file_path) {
+    SCOPED_TRACE(file_path.AsUTF8Unsafe());
 
-  std::string data;
-  ASSERT_TRUE(base::ReadFileToString(path, &data));
+    std::string data;
+    EXPECT_TRUE(base::ReadFileToString(file_path, &data));
 
-  std::string result;
-  EXPECT_TRUE(net::SniffMimeType(
-      data.c_str(), data.size(), GURL("http://www.example.com/foo.crx"),
-      std::string(), net::ForceSniffFileUrlsForHtml::kDisabled, &result));
-  EXPECT_EQ(std::string(Extension::kMimeType), result);
+    std::string result;
+    EXPECT_TRUE(net::SniffMimeType(
+        data.c_str(), data.size(), GURL("http://www.example.com/foo.crx"),
+        std::string(), net::ForceSniffFileUrlsForHtml::kDisabled, &result));
 
-  data.clear();
-  result.clear();
-  path = path.DirName().AppendASCII("bad_magic.crx");
-  ASSERT_TRUE(base::ReadFileToString(path, &data));
-  EXPECT_TRUE(net::SniffMimeType(
-      data.c_str(), data.size(), GURL("http://www.example.com/foo.crx"),
-      std::string(), net::ForceSniffFileUrlsForHtml::kDisabled, &result));
-  EXPECT_EQ("application/octet-stream", result);
+    return result;
+  };
+
+  base::FilePath dir_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &dir_path));
+  dir_path = dir_path.AppendASCII("extensions");
+
+  // First, test an extension packed a long time ago (but in this galaxy).
+  // Specifically, this package is using the crx2 format, whereas modern chrome
+  // uses crx3.
+  EXPECT_EQ(Extension::kMimeType,
+            get_mime_type_from_crx(dir_path.AppendASCII("good.crx")));
+
+  // Then, an extension whose crx has a bad magic number (it should be Cr24).
+  EXPECT_EQ("application/octet-stream",
+            get_mime_type_from_crx(dir_path.AppendASCII("bad_magic.crx")));
+
+  // Finally, an extension that we pack right. This. Instant.
+  // This verifies that the modern extensions Chrome packs are always
+  // recognized as the extension mime type.
+  // Regression test for https://crbug.com/831284.
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(R"(
+      {
+        "name": "New extension",
+        "version": "0.2",
+        "manifest_version": 2
+      })");
+  EXPECT_EQ(Extension::kMimeType, get_mime_type_from_crx(test_dir.Pack()));
 }
 
 TEST(ExtensionTest, WantsFileAccess) {
