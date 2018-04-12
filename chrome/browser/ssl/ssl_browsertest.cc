@@ -1300,23 +1300,6 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBrokenHTTPSWithActiveInsecureContent) {
 
 namespace {
 
-// A WebContentsObserver that allows the user to wait for a
-// DidChangeVisibleSecurityState event.
-class SecurityStateWebContentsObserver : public content::WebContentsObserver {
- public:
-  explicit SecurityStateWebContentsObserver(content::WebContents* web_contents)
-      : content::WebContentsObserver(web_contents) {}
-  ~SecurityStateWebContentsObserver() override {}
-
-  void WaitForDidChangeVisibleSecurityState() { run_loop_.Run(); }
-
-  // WebContentsObserver:
-  void DidChangeVisibleSecurityState() override { run_loop_.Quit(); }
-
- private:
-  base::RunLoop run_loop_;
-};
-
 // A WebContentsObserver that allows the user to wait for a same-document
 // navigation. Tests using this observer will fail if a non-same-document
 // navigation completes after calling WaitForSameDocumentNavigation.

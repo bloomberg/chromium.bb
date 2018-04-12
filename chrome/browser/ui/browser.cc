@@ -1501,8 +1501,12 @@ void Browser::VisibleSecurityStateChanged(WebContents* source) {
   // When the current tab's security state changes, we need to update the URL
   // bar to reflect the new state.
   DCHECK(source);
-  if (tab_strip_model_->GetActiveWebContents() == source)
+  if (tab_strip_model_->GetActiveWebContents() == source) {
     UpdateToolbar(false);
+
+    if (hosted_app_controller_)
+      hosted_app_controller_->UpdateLocationBarVisibility(true);
+  }
 }
 
 void Browser::AddNewContents(WebContents* source,

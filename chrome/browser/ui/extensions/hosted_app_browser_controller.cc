@@ -51,15 +51,39 @@ base::StringPiece ExpectedSchemeForApp(base::StringPiece scheme) {
   return url::kHttpsScheme;
 }
 
+bool IsSiteSecure(const content::WebContents* web_contents) {
+  const SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    security_state::SecurityInfo security_info;
+    helper->GetSecurityInfo(&security_info);
+    switch (security_info.security_level) {
+      case security_state::SECURITY_LEVEL_COUNT:
+        NOTREACHED();
+        return false;
+      case security_state::EV_SECURE:
+      case security_state::SECURE:
+      case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+        return true;
+      case security_state::NONE:
+      case security_state::HTTP_SHOW_WARNING:
+      case security_state::DANGEROUS:
+        return false;
+    }
+  }
+  return false;
+}
+
 // Returns true if |page_url| is both secure (not http) and on the same origin
 // as |app_url|. Note that even if |app_url| is http, this still returns true as
-// long as |page_url| is https.
+// long as |page_url| is https. To avoid breaking Hosted Apps and Bookmark Apps
+// that might redirect to sites in the same domain but with "www.", this returns
+// true if |page_url| is secure and in the same origin as |app_url| with "www.".
 bool IsSameOriginAndSecure(const GURL& app_url, const GURL& page_url) {
-  const std::string www("www.");
   return ExpectedSchemeForApp(app_url.scheme_piece()) ==
              page_url.scheme_piece() &&
          (app_url.host_piece() == page_url.host_piece() ||
-          www + app_url.host() == page_url.host_piece()) &&
+          std::string("www.") + app_url.host() == page_url.host_piece()) &&
          app_url.port() == page_url.port();
 }
 
@@ -169,19 +193,24 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   if (web_contents->GetLastCommittedURL().is_empty())
     return false;
 
-  const SecurityStateTabHelper* helper =
-      SecurityStateTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    security_state::SecurityInfo security_info;
-    helper->GetSecurityInfo(&security_info);
-    if (security_info.security_level == security_state::DANGEROUS)
-      return true;
+  GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
+  if (!IsSameOriginAndSecure(launch_url, web_contents->GetLastCommittedURL()))
+    return true;
+
+  // Check the visible URL, because we would like to indicate to the user that
+  // they are navigating to a different origin than that of the app as soon as
+  // the navigation starts, even if the navigation hasn't committed yet.
+  if (!IsSameOriginAndSecure(launch_url, web_contents->GetVisibleURL()))
+    return true;
+
+  // We consider URLs with kExtensionScheme secure.
+  if (!(IsSiteSecure(web_contents) ||
+        web_contents->GetLastCommittedURL().scheme_piece() ==
+            kExtensionScheme)) {
+    return true;
   }
 
-  GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);
-  return !IsSameOriginAndSecure(launch_url, web_contents->GetVisibleURL()) ||
-         !IsSameOriginAndSecure(launch_url,
-                                web_contents->GetLastCommittedURL());
+  return false;
 }
 
 void HostedAppBrowserController::UpdateLocationBarVisibility(

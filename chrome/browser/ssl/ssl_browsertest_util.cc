@@ -95,4 +95,18 @@ void CheckSecurityState(content::WebContents* tab,
   AuthState::Check(*entry, expected_authentication_state);
 }
 
+SecurityStateWebContentsObserver::SecurityStateWebContentsObserver(
+    content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents) {}
+
+SecurityStateWebContentsObserver::~SecurityStateWebContentsObserver() {}
+
+void SecurityStateWebContentsObserver::WaitForDidChangeVisibleSecurityState() {
+  run_loop_.Run();
+}
+
+void SecurityStateWebContentsObserver::DidChangeVisibleSecurityState() {
+  run_loop_.Quit();
+}
+
 }  // namespace ssl_test_util

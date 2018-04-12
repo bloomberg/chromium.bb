@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_SSL_SSL_BROWSERTEST_UTIL_H_
 #define CHROME_BROWSER_SSL_SSL_BROWSERTEST_UTIL_H_
 
+#include "base/run_loop.h"
 #include "components/security_state/core/security_state.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace content {
@@ -47,6 +49,22 @@ void CheckSecurityState(content::WebContents* tab,
                         net::CertStatus expected_error,
                         security_state::SecurityLevel expected_security_level,
                         int expected_authentication_state);
+
+// A WebContentsObserver that allows the user to wait for a
+// DidChangeVisibleSecurityState event.
+class SecurityStateWebContentsObserver : public content::WebContentsObserver {
+ public:
+  explicit SecurityStateWebContentsObserver(content::WebContents* web_contents);
+  ~SecurityStateWebContentsObserver() override;
+
+  void WaitForDidChangeVisibleSecurityState();
+
+  // WebContentsObserver:
+  void DidChangeVisibleSecurityState() override;
+
+ private:
+  base::RunLoop run_loop_;
+};
 
 }  // namespace ssl_test_util
 

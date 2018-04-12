@@ -310,6 +310,8 @@ class HostedAppTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
+    // Browser will both run and display insecure content.
+    command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
     command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
   }
 
@@ -523,13 +525,42 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowLocationBarMixedContent) {
   SetupAppWithURL(app_url);
 
   // Navigate to another page on the same origin, but with mixed content; the
-  // location bar should be hidden.
-  // TODO(ortuno): Make the location bar visible.
+  // location bar should be shown.
   NavigateAndCheckForLocationBar(
       app_browser_,
       https_server()->GetURL("app.com",
                              "/ssl/page_displays_insecure_content.html"),
-      false);
+      true);
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppTest,
+                       ShouldShowLocationBarDynamicMixedContent) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const GURL app_url = https_server()->GetURL("app.com", "/simple.html");
+
+  SetupAppWithURL(app_url);
+
+  // Navigate to a page on the same origin. Since mixed content hasn't been
+  // loaded yet, the location bar shouldn't be shown.
+  NavigateAndCheckForLocationBar(app_browser_, app_url, false);
+
+  // Load mixed content; now the location bar should be shown.
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  ssl_test_util::SecurityStateWebContentsObserver observer(web_contents);
+  ASSERT_TRUE(content::ExecuteScript(
+      web_contents,
+      base::StringPrintf("let i = document.createElement('img');"
+                         "i.src = '%s';"
+                         "document.body.appendChild(i);",
+                         embedded_test_server()
+                             ->GetURL("foo.com", "/ssl/google_files/logo.gif")
+                             .spec()
+                             .c_str())));
+  observer.WaitForDidChangeVisibleSecurityState();
+  EXPECT_TRUE(app_browser_->hosted_app_controller()->ShouldShowLocationBar());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTest,
