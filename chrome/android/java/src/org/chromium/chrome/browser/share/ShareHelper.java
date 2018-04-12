@@ -45,6 +45,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 
 import java.io.File;
@@ -366,54 +367,60 @@ public class ShareHelper {
         }.execute();
     }
 
-    /**
-     * Persists the screenshot file and notifies the file provider that the file is ready to be
-     * accessed by the client.
-     *
-     * The bitmap is compressed to JPEG before being written to the file.
-     *
-     * @param screenshot  The screenshot bitmap to be written to file.
-     * @param callback    The callback that will be called once the bitmap is saved.
-     */
-    public static void saveScreenshotToDisk(final Bitmap screenshot, final Context context,
-            final Callback<Uri> callback) {
-        if (screenshot == null) {
-            callback.onResult(null);
-            return;
+    private static class ExternallyVisibleUriCallback implements Callback<String> {
+        private Callback<Uri> mComposedCallback;
+        ExternallyVisibleUriCallback(Callback<Uri> cb) {
+            mComposedCallback = cb;
         }
 
-        new AsyncTask<Void, Void, Uri>() {
-            @Override
-            protected Uri doInBackground(Void... params) {
-                FileOutputStream fOut = null;
-                try {
-                    File path = new File(UiUtils.getDirectoryForImageCapture(context) + "/"
-                            + SHARE_IMAGES_DIRECTORY_NAME);
-                    if (path.exists() || path.mkdir()) {
-                        String fileName = String.valueOf(System.currentTimeMillis());
-                        File saveFile = File.createTempFile(fileName, JPEG_EXTENSION, path);
-                        fOut = new FileOutputStream(saveFile);
-                        screenshot.compress(Bitmap.CompressFormat.JPEG, 85, fOut);
-                        return ApiCompatibilityUtils.getUriForImageCaptureFile(saveFile);
-                    }
-                } catch (IOException ie) {
-                    Log.w(TAG, "Ignoring IOException when saving screenshot.", ie);
-                } finally {
-                    StreamUtil.closeQuietly(fOut);
+        @Override
+        public void onResult(final String path) {
+            if (TextUtils.isEmpty(path)) {
+                mComposedCallback.onResult(null);
+                return;
+            }
+
+            new AsyncTask<Void, Void, Uri>() {
+                @Override
+                protected Uri doInBackground(Void... v) {
+                    return ApiCompatibilityUtils.getUriForImageCaptureFile(new File(path));
                 }
 
-                return null;
+                @Override
+                protected void onPostExecute(Uri uri) {
+                    mComposedCallback.onResult(uri);
+                }
             }
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+    }
 
-            @Override
-            protected void onPostExecute(Uri fileUri) {
-                fileUri = ApplicationStatus.getStateForApplication()
-                                != ApplicationState.HAS_DESTROYED_ACTIVITIES
-                        ? fileUri
-                        : null;
-                callback.onResult(fileUri);
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    // TODO(yfriedman): Remove after internal tree is updated.
+    public static void saveScreenshotToDisk(
+            Bitmap screenshot, Context context, Callback<Uri> callback) {}
+
+    /**
+     * Captures a screenshot for the provided web contents, persists it and notifies the file
+     * provider that the file is ready to be accessed by the client.
+     *
+     * The screenshot is compressed to JPEG before being written to the file.
+     *
+     * @param contents The WebContents instance for which to capture a screenshot.
+     * @param width    The desired width of the resulting screenshot, or 0 for "auto."
+     * @param height   The desired height of the resulting screenshot, or 0 for "auto."
+     * @param callback The callback that will be called once the screenshot is saved.
+     */
+    public static void captureScreenshotForContents(
+            WebContents contents, int width, int height, Callback<Uri> callback) {
+        try {
+            String path = UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext())
+                    + File.separator + SHARE_IMAGES_DIRECTORY_NAME;
+            contents.getContentBitmapAsync(
+                    width, height, path, new ExternallyVisibleUriCallback(callback));
+        } catch (IOException e) {
+            Log.e(TAG, "Error getting content bitmap: ", e);
+            callback.onResult(null);
+        }
     }
 
     /**

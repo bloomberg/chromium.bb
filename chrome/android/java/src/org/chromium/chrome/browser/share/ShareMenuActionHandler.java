@@ -18,7 +18,6 @@ import org.chromium.chrome.browser.printing.PrintShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
-import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
 
@@ -196,15 +195,14 @@ public class ShareMenuActionHandler {
         if (blockingUri == null) return;
 
         // Start screenshot capture and notify the provider when it is ready.
-        ContentBitmapCallback callback =
-                (bitmap) -> ShareHelper.saveScreenshotToDisk(bitmap, mainActivity, result -> {
+        Callback<Uri> callback = (saveFile) -> {
             // Unblock the file once it is saved to disk.
-            ChromeFileProvider.notifyFileReady(blockingUri, result);
-        });
+            ChromeFileProvider.notifyFileReady(blockingUri, saveFile);
+        };
         if (sScreenshotCaptureSkippedForTesting) {
-            callback.onFinishGetBitmap(null);
+            callback.onResult(null);
         } else {
-            webContents.getContentBitmapAsync(0, 0, callback);
+            ShareHelper.captureScreenshotForContents(webContents, 0, 0, callback);
         }
     }
 

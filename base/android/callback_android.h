@@ -24,6 +24,9 @@ void BASE_EXPORT RunCallbackAndroid(const JavaRef<jobject>& callback,
 
 void BASE_EXPORT RunCallbackAndroid(const JavaRef<jobject>& callback, int arg);
 
+void BASE_EXPORT RunStringCallbackAndroid(const JavaRef<jobject>& callback,
+                                          const std::string& arg);
+
 void BASE_EXPORT RunCallbackAndroid(const JavaRef<jobject>& callback,
                                     const std::vector<uint8_t>& arg);
 

@@ -1012,10 +1012,15 @@ public class CustomTabsConnection {
      * @param session The session to use for getting client callback.
      * @param url The current url for the tab.
      * @param title The current title for the tab.
-     * @param screenshot A screenshot of the tab contents.
+     * @param snapshotPath Uri location for screenshot of the tab contents which is publicly
+     *         available for sharing.
      */
     public void sendNavigationInfo(
-            CustomTabsSessionToken session, String url, String title, Bitmap screenshot) { }
+            CustomTabsSessionToken session, String url, String title, Uri snapshotPath) {}
+
+    // TODO(yfriedman): Remove when internal code is deleted.
+    public void sendNavigationInfo(
+            CustomTabsSessionToken session, String url, String title, Bitmap snapshotPath) {}
 
     /**
      * Called when the bottom bar for the custom tab has been hidden or shown completely by user

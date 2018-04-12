@@ -178,6 +178,7 @@ class CONTENT_EXPORT WebContentsAndroid
                         const base::android::JavaParamRef<jobject>& obj,
                         jint width,
                         jint height,
+                        const base::android::JavaParamRef<jstring>& jpath,
                         const base::android::JavaParamRef<jobject>& jcallback);
 
   void ReloadLoFiImages(JNIEnv* env,
@@ -206,6 +207,7 @@ class CONTENT_EXPORT WebContentsAndroid
   bool IsPictureInPictureAllowedForFullscreenVideo(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+
   base::android::ScopedJavaLocalRef<jobject> GetFullscreenVideoSize(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -228,6 +230,7 @@ class CONTENT_EXPORT WebContentsAndroid
 
   void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
                                 const base::android::JavaRef<jobject>& callback,
+                                const std::string& path,
                                 const SkBitmap& bitmap);
 
   void OnFinishDownloadImage(const base::android::JavaRef<jobject>& obj,
