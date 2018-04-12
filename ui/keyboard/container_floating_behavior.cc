@@ -182,7 +182,7 @@ bool ContainerFloatingBehavior::IsDragHandle(
 
 void ContainerFloatingBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
-    const gfx::Rect& display_bounds) {
+    const display::Display& current_display) {
   // Cannot call UI-backed operations without a KeyboardController
   DCHECK(controller_);
   auto kb_offset = gfx::Vector2d(event.x(), event.y());
@@ -245,10 +245,28 @@ void ContainerFloatingBehavior::HandlePointerEvent(
         const gfx::Point new_keyboard_location =
             drag_descriptor_->original_keyboard_location() +
             cumulative_drag_offset;
-        const gfx::Rect new_bounds =
+        gfx::Rect new_bounds =
             gfx::Rect(new_keyboard_location, keyboard_bounds.size());
-        controller_->MoveKeyboard(new_bounds);
-        SavePosition(container->bounds(), display_bounds.size());
+
+        DisplayUtil display_util;
+        const display::Display& new_display =
+            display_util.FindAdjacentDisplayIfPointIsNearMargin(
+                current_display, current_drag_location);
+
+        if (current_display.id() == new_display.id()) {
+          controller_->MoveKeyboard(new_bounds);
+        } else {
+          new_bounds =
+              ContainKeyboardToScreenBounds(new_bounds, new_display.bounds());
+          // Since the keyboard has jumped across screens, cancel the current
+          // drag descriptor as though the user has lifted their finger.
+          drag_descriptor_ = nullptr;
+
+          // Enqueue a transition to the adjacent display.
+          // TODO(blakeo): pass new_bounds to display transition.
+          controller_->MoveToDisplayWithTransition(new_display);
+        }
+        SavePosition(container->bounds(), new_display.size());
       }
       break;
 

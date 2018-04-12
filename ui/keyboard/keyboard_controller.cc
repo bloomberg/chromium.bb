@@ -38,6 +38,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/queued_container_type.h"
+#include "ui/keyboard/queued_display_change.h"
 #include "ui/wm/core/window_animations.h"
 
 #if defined(OS_CHROMEOS)
@@ -336,6 +337,11 @@ void KeyboardController::RemoveObserver(KeyboardControllerObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void KeyboardController::MoveToDisplayWithTransition(display::Display display) {
+  queued_display_change_ = std::make_unique<QueuedDisplayChange>(display);
+  HideKeyboard(HIDE_REASON_AUTOMATIC);
+}
+
 void KeyboardController::HideKeyboard(HideReason reason) {
   TRACE_EVENT0("vk", "HideKeyboard");
 
@@ -390,15 +396,22 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 }
 
 void KeyboardController::HideAnimationFinished() {
-  if (state_ == KeyboardControllerState::HIDDEN && queued_container_type_) {
-    SetContainerBehaviorInternal(queued_container_type_->container_type());
-    // The position of the container window will be adjusted shortly in
-    // |PopulateKeyboardContent| before showing animation, so we can set the
-    // passed bounds directly.
-    if (queued_container_type_->target_bounds())
-      SetContainerBounds(queued_container_type_->target_bounds().value(),
-                         false /* contents_loaded */);
-    ShowKeyboard(false /* lock */);
+  if (state_ == KeyboardControllerState::HIDDEN) {
+    if (queued_container_type_) {
+      SetContainerBehaviorInternal(queued_container_type_->container_type());
+      // The position of the container window will be adjusted shortly in
+      // |PopulateKeyboardContent| before showing animation, so we can set the
+      // passed bounds directly.
+      if (queued_container_type_->target_bounds())
+        SetContainerBounds(queued_container_type_->target_bounds().value(),
+                           false /* contents_loaded */);
+      ShowKeyboard(false /* lock */);
+    }
+
+    if (queued_display_change_) {
+      ShowKeyboardInDisplay(queued_display_change_->new_display().id());
+      queued_display_change_ = nullptr;
+    }
   }
 }
 
@@ -780,8 +793,9 @@ bool KeyboardController::IsOverscrollAllowed() const {
 }
 
 void KeyboardController::HandlePointerEvent(const ui::LocatedEvent& event) {
-  container_behavior_->HandlePointerEvent(
-      event, container_->GetRootWindow()->bounds());
+  const display::Display& current_display =
+      display_util_.GetNearestDisplayToWindow(container_->GetRootWindow());
+  container_behavior_->HandlePointerEvent(event, current_display);
 }
 
 void KeyboardController::SetContainerType(

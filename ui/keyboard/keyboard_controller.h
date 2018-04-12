@@ -25,6 +25,7 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/keyboard/notification_manager.h"
 #include "ui/keyboard/queued_container_type.h"
+#include "ui/keyboard/queued_display_change.h"
 
 namespace aura {
 class Window;
@@ -184,6 +185,8 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Sets floating keyboard drggable rect.
   bool SetDraggableArea(const gfx::Rect& rect);
 
+  void MoveToDisplayWithTransition(display::Display display);
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -268,6 +271,7 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   std::unique_ptr<ContainerBehavior> container_behavior_;
 
   std::unique_ptr<QueuedContainerType> queued_container_type_;
+  std::unique_ptr<QueuedDisplayChange> queued_display_change_;
 
   // If true, show the keyboard window when keyboard UI content updates.
   bool show_on_content_update_;

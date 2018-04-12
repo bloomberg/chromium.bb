@@ -95,7 +95,7 @@ bool ContainerFullWidthBehavior::IsDragHandle(
 
 void ContainerFullWidthBehavior::HandlePointerEvent(
     const ui::LocatedEvent& event,
-    const gfx::Rect& display_bounds) {
+    const display::Display& current_display) {
   // No-op. Nothing special to do for pointer events.
 }
 
