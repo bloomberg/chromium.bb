@@ -254,6 +254,10 @@ class SessionRestoreStatsCollector::StatsReportingDelegate {
   // Called when a deferred tab has been loaded.
   virtual void ReportDeferredTabLoaded() = 0;
 
+  // Called when a tab starts being tracked. Logs the relative time since last
+  // use of the tab.
+  virtual void ReportTabTimeSinceActive(base::TimeDelta elapsed) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(StatsReportingDelegate);
 };
@@ -269,6 +273,7 @@ class SessionRestoreStatsCollector::UmaStatsReportingDelegate
   void ReportTabLoaderStats(const TabLoaderStats& tab_loader_stats) override;
   void ReportTabDeferred() override;
   void ReportDeferredTabLoaded() override;
+  void ReportTabTimeSinceActive(base::TimeDelta elapsed) override;
 
  private:
   // Has ReportTabDeferred been called?

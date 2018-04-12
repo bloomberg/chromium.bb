@@ -137,9 +137,15 @@ void SessionRestoreStatsCollector::TrackTabs(
         content::NotificationService::AllSources());
   }
 
+  const base::TimeTicks now = base::TimeTicks::Now();
   tab_loader_stats_.tab_count += tabs.size();
   waiting_for_load_tab_count_ += tabs.size();
   for (const auto& tab : tabs) {
+    base::TimeDelta time_since_active;
+    if (tab.contents()->GetVisibility() != content::Visibility::VISIBLE)
+      time_since_active = now - tab.contents()->GetLastActiveTime();
+    reporting_delegate_->ReportTabTimeSinceActive(time_since_active);
+
     auto* controller = &tab.contents()->GetController();
     TabState* tab_state = RegisterForNotifications(controller);
     // The tab might already be loading if it is active in a visible window.
@@ -536,4 +542,11 @@ void SessionRestoreStatsCollector::UmaStatsReportingDelegate::
     ReportDeferredTabLoaded() {
   EmitUmaSessionRestoreTabActionEvent(
       SESSION_RESTORE_TAB_ACTIONS_UMA_DEFERRED_TAB_LOADED);
+}
+
+void SessionRestoreStatsCollector::UmaStatsReportingDelegate::
+    ReportTabTimeSinceActive(base::TimeDelta elapsed) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("SessionRestore.RestoredTab.TimeSinceActive",
+                             elapsed, base::TimeDelta::FromSeconds(10),
+                             base::TimeDelta::FromDays(7), 100);
 }
