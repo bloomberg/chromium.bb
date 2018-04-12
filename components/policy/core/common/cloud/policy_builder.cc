@@ -365,6 +365,11 @@ std::vector<std::string> PolicyBuilder::GetUserAffiliationIds() {
   return {user_affiliation_id1, user_affiliation_id2};
 }
 
+// static
+AccountId PolicyBuilder::GetFakeAccountId() {
+  return AccountId::FromUserEmailGaiaId(kFakeUsername, kFakeGaiaId);
+}
+
 template<>
 TypedPolicyBuilder<em::CloudPolicySettings>::TypedPolicyBuilder()
     : payload_(new em::CloudPolicySettings()) {

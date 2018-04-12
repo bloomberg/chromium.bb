@@ -120,16 +120,16 @@ const std::string& ComponentCloudPolicyStore::GetCachedHash(
   return it == cached_hashes_.end() ? base::EmptyString() : it->second;
 }
 
-void ComponentCloudPolicyStore::SetCredentials(const std::string& username,
+void ComponentCloudPolicyStore::SetCredentials(const AccountId& account_id,
                                                const std::string& dm_token,
                                                const std::string& device_id,
                                                const std::string& public_key,
                                                int public_key_version) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(username_.empty() || username == username_);
+  DCHECK(!account_id_.is_valid() || account_id == account_id_);
   DCHECK(dm_token_.empty() || dm_token == dm_token_);
   DCHECK(device_id_.empty() || device_id == device_id_);
-  username_ = username;
+  account_id_ = account_id;
   dm_token_ = dm_token;
   device_id_ = device_id;
   public_key_ = public_key;
@@ -321,7 +321,7 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
     return false;
   }
 
-  if (username_.empty() || dm_token_.empty() || device_id_.empty() ||
+  if (!account_id_.is_valid() || dm_token_.empty() || device_id_.empty() ||
       public_key_.empty() || public_key_version_ == -1) {
     LOG(WARNING) << "Credentials are not loaded yet.";
     return false;
@@ -339,7 +339,7 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
           std::move(proto), scoped_refptr<base::SequencedTaskRunner>()));
   validator->ValidateTimestamp(time_not_before,
                                CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
-  validator->ValidateUsername(username_, true);
+  validator->ValidateUser(account_id_);
   validator->ValidateDMToken(dm_token_,
                              ComponentCloudPolicyValidator::DM_TOKEN_REQUIRED);
   validator->ValidateDeviceId(device_id_,

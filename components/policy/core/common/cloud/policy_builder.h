@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "crypto/rsa_private_key.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -127,6 +128,8 @@ class PolicyBuilder {
   static std::string GetPublicTestOtherKeyAsString();
 
   static std::vector<std::string> GetUserAffiliationIds();
+
+  static AccountId GetFakeAccountId();
 
  private:
   enterprise_management::PolicyFetchResponse policy_;

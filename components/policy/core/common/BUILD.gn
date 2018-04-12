@@ -281,6 +281,7 @@ static_library("test_support") {
     # build, it will be hidden inside the policy component.
     "//components/policy:generated",
     "//components/policy/proto",
+    "//components/signin/core/account_id",
     "//crypto",
     "//net",
     "//testing/gmock",
@@ -366,6 +367,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/policy:generated",
     "//components/prefs:test_support",
+    "//components/signin/core/account_id",
     "//extensions/buildflags",
     "//google_apis",
     "//net:test_support",
