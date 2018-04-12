@@ -80,20 +80,16 @@ cr.define('extensions', function() {
         this.extensionOptions_.onclose = this.close.bind(this);
 
         let preferredSize = null;
-        const onSizeChanged = e => {
+        this.extensionOptions_.onpreferredsizechanged = e => {
           preferredSize = e;
           this.updateDialogSize_(preferredSize.width, preferredSize.height);
-          this.$.dialog.showModal();
-          this.extensionOptions_.onpreferredsizechanged = null;
+          if (!this.$.dialog.open)
+            this.$.dialog.showModal();
         };
 
         this.boundResizeListener_ = () => {
           this.updateDialogSize_(preferredSize.width, preferredSize.height);
         };
-
-        // Only handle the 1st instance of 'preferredsizechanged' event, to get
-        // the preferred size.
-        this.extensionOptions_.onpreferredsizechanged = onSizeChanged;
 
         // Add a 'resize' such that the dialog is resized when window size
         // changes.
@@ -104,11 +100,12 @@ cr.define('extensions', function() {
 
     close: function() {
       /** @type {!CrDialogElement} */ (this.$.dialog).close();
-      this.extensionOptions_.onpreferredsizechanged = null;
     },
 
     /** @private */
     onClose_: function() {
+      this.extensionOptions_.onpreferredsizechanged = null;
+
       if (this.boundResizeListener_) {
         window.removeEventListener('resize', this.boundResizeListener_);
         this.boundResizeListener_ = null;
