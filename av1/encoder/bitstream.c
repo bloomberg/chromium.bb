@@ -1872,6 +1872,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   RestorationType frame_rtype = rsi->frame_restoration_type;
   if (frame_rtype == RESTORE_NONE) return;
 
+  (void)counts;
   assert(!cm->all_lossless);
 
   const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
@@ -1882,7 +1883,9 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   if (frame_rtype == RESTORE_SWITCHABLE) {
     aom_write_symbol(w, unit_rtype, xd->tile_ctx->switchable_restore_cdf,
                      RESTORE_SWITCHABLE_TYPES);
+#if CONFIG_ENTROPY_STATS
     ++counts->switchable_restore[unit_rtype];
+#endif
     switch (unit_rtype) {
       case RESTORE_WIENER:
         write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
@@ -1895,14 +1898,18 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
   } else if (frame_rtype == RESTORE_WIENER) {
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->wiener_restore_cdf, 2);
+#if CONFIG_ENTROPY_STATS
     ++counts->wiener_restore[unit_rtype != RESTORE_NONE];
+#endif
     if (unit_rtype != RESTORE_NONE) {
       write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
     }
   } else if (frame_rtype == RESTORE_SGRPROJ) {
     aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->sgrproj_restore_cdf, 2);
+#if CONFIG_ENTROPY_STATS
     ++counts->sgrproj_restore[unit_rtype != RESTORE_NONE];
+#endif
     if (unit_rtype != RESTORE_NONE) {
       write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
     }

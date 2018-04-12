@@ -676,25 +676,37 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 static void update_inter_mode_stats(FRAME_CONTEXT *fc, FRAME_COUNTS *counts,
                                     PREDICTION_MODE mode, int16_t mode_context,
                                     uint8_t allow_update_cdf) {
+  (void)counts;
+
   int16_t mode_ctx = mode_context & NEWMV_CTX_MASK;
   if (mode == NEWMV) {
+#if CONFIG_ENTROPY_STATS
     ++counts->newmv_mode[mode_ctx][0];
+#endif
     if (allow_update_cdf) update_cdf(fc->newmv_cdf[mode_ctx], 0, 2);
     return;
   } else {
+#if CONFIG_ENTROPY_STATS
     ++counts->newmv_mode[mode_ctx][1];
+#endif
     if (allow_update_cdf) update_cdf(fc->newmv_cdf[mode_ctx], 1, 2);
 
     mode_ctx = (mode_context >> GLOBALMV_OFFSET) & GLOBALMV_CTX_MASK;
     if (mode == GLOBALMV) {
+#if CONFIG_ENTROPY_STATS
       ++counts->zeromv_mode[mode_ctx][0];
+#endif
       if (allow_update_cdf) update_cdf(fc->zeromv_cdf[mode_ctx], 0, 2);
       return;
     } else {
+#if CONFIG_ENTROPY_STATS
       ++counts->zeromv_mode[mode_ctx][1];
+#endif
       if (allow_update_cdf) update_cdf(fc->zeromv_cdf[mode_ctx], 1, 2);
       mode_ctx = (mode_context >> REFMV_OFFSET) & REFMV_CTX_MASK;
+#if CONFIG_ENTROPY_STATS
       ++counts->refmv_mode[mode_ctx][mode != NEARESTMV];
+#endif
       if (allow_update_cdf)
         update_cdf(fc->refmv_cdf[mode_ctx], mode != NEARESTMV, 2);
     }
@@ -892,7 +904,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
   if (cm->skip_mode_flag && !seg_ref_active && is_comp_ref_allowed(bsize)) {
     const int skip_mode_ctx = av1_get_skip_mode_context(xd);
+#if CONFIG_ENTROPY_STATS
     td->counts->skip_mode[skip_mode_ctx][mbmi->skip_mode]++;
+#endif
     if (allow_update_cdf)
       update_cdf(fc->skip_mode_cdfs[skip_mode_ctx], mbmi->skip_mode, 2);
   }
@@ -900,7 +914,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   if (!mbmi->skip_mode) {
     if (!seg_ref_active) {
       const int skip_ctx = av1_get_skip_context(xd);
+#if CONFIG_ENTROPY_STATS
       td->counts->skip[skip_ctx][mbmi->skip]++;
+#endif
       if (allow_update_cdf) update_cdf(fc->skip_cdfs[skip_ctx], mbmi->skip, 2);
     }
   }
@@ -908,40 +924,45 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
   if (cm->delta_q_present_flag &&
       (bsize != cm->seq_params.sb_size || !mbmi->skip) &&
       super_block_upper_left) {
+#if CONFIG_ENTROPY_STATS
     const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
     const int absdq = abs(dq);
-    int i;
-    for (i = 0; i < AOMMIN(absdq, DELTA_Q_SMALL); ++i) {
+    for (int i = 0; i < AOMMIN(absdq, DELTA_Q_SMALL); ++i) {
       td->counts->delta_q[i][1]++;
     }
     if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
+#endif
     xd->prev_qindex = mbmi->current_q_index;
     if (cm->delta_lf_present_flag) {
       if (cm->delta_lf_multi) {
         const int frame_lf_count =
             av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id) {
+#if CONFIG_ENTROPY_STATS
           const int delta_lf =
               (mbmi->curr_delta_lf[lf_id] - xd->prev_delta_lf[lf_id]) /
               cm->delta_lf_res;
           const int abs_delta_lf = abs(delta_lf);
-          for (i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
+          for (int i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
             td->counts->delta_lf_multi[lf_id][i][1]++;
           }
           if (abs_delta_lf < DELTA_LF_SMALL)
             td->counts->delta_lf_multi[lf_id][abs_delta_lf][0]++;
+#endif
           xd->prev_delta_lf[lf_id] = mbmi->curr_delta_lf[lf_id];
         }
       } else {
+#if CONFIG_ENTROPY_STATS
         const int delta_lf =
             (mbmi->current_delta_lf_from_base - xd->prev_delta_lf_from_base) /
             cm->delta_lf_res;
         const int abs_delta_lf = abs(delta_lf);
-        for (i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
+        for (int i = 0; i < AOMMIN(abs_delta_lf, DELTA_LF_SMALL); ++i) {
           td->counts->delta_lf[i][1]++;
         }
         if (abs_delta_lf < DELTA_LF_SMALL)
           td->counts->delta_lf[abs_delta_lf][0]++;
+#endif
         xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
       }
     }
@@ -979,7 +1000,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
     const int inter_block = is_inter_block(mbmi);
 
     if (!seg_ref_active) {
+#if CONFIG_ENTROPY_STATS
       counts->intra_inter[av1_get_intra_inter_context(xd)][inter_block]++;
+#endif
       if (allow_update_cdf) {
         update_cdf(fc->intra_inter_cdf[av1_get_intra_inter_context(xd)],
                    inter_block, 2);
@@ -1155,22 +1178,30 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
             is_interintra_allowed(mbmi)) {
           const int bsize_group = size_group_lookup[bsize];
           if (mbmi->ref_frame[1] == INTRA_FRAME) {
+#if CONFIG_ENTROPY_STATS
             counts->interintra[bsize_group][1]++;
+#endif
             if (allow_update_cdf)
               update_cdf(fc->interintra_cdf[bsize_group], 1, 2);
+#if CONFIG_ENTROPY_STATS
             counts->interintra_mode[bsize_group][mbmi->interintra_mode]++;
+#endif
             if (allow_update_cdf) {
               update_cdf(fc->interintra_mode_cdf[bsize_group],
                          mbmi->interintra_mode, INTERINTRA_MODES);
             }
             if (is_interintra_wedge_used(bsize)) {
+#if CONFIG_ENTROPY_STATS
               counts->wedge_interintra[bsize][mbmi->use_wedge_interintra]++;
+#endif
               if (allow_update_cdf) {
                 update_cdf(fc->wedge_interintra_cdf[bsize],
                            mbmi->use_wedge_interintra, 2);
               }
               if (mbmi->use_wedge_interintra) {
+#if CONFIG_ENTROPY_STATS
                 counts->wedge_idx[bsize][mbmi->interintra_wedge_index]++;
+#endif
                 if (allow_update_cdf) {
                   update_cdf(fc->wedge_idx_cdf[bsize],
                              mbmi->interintra_wedge_index, 16);
@@ -1178,7 +1209,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
               }
             }
           } else {
+#if CONFIG_ENTROPY_STATS
             counts->interintra[bsize_group][0]++;
+#endif
             if (allow_update_cdf)
               update_cdf(fc->interintra_cdf[bsize_group], 0, 2);
           }
@@ -1192,13 +1225,17 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
                 : SIMPLE_TRANSLATION;
         if (mbmi->ref_frame[1] != INTRA_FRAME) {
           if (motion_allowed == WARPED_CAUSAL) {
+#if CONFIG_ENTROPY_STATS
             counts->motion_mode[bsize][mbmi->motion_mode]++;
+#endif
             if (allow_update_cdf) {
               update_cdf(fc->motion_mode_cdf[bsize], mbmi->motion_mode,
                          MOTION_MODES);
             }
           } else if (motion_allowed == OBMC_CAUSAL) {
+#if CONFIG_ENTROPY_STATS
             counts->obmc[bsize][mbmi->motion_mode == OBMC_CAUSAL]++;
+#endif
             if (allow_update_cdf) {
               update_cdf(fc->obmc_cdf[bsize], mbmi->motion_mode == OBMC_CAUSAL,
                          2);
@@ -1216,7 +1253,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
               cm->seq_params.enable_masked_compound;
           if (masked_compound_used) {
             const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
+#if CONFIG_ENTROPY_STATS
             ++counts->comp_group_idx[comp_group_idx_ctx][mbmi->comp_group_idx];
+#endif
             if (allow_update_cdf) {
               update_cdf(fc->comp_group_idx_cdf[comp_group_idx_ctx],
                          mbmi->comp_group_idx, 2);
@@ -1225,7 +1264,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
           if (mbmi->comp_group_idx == 0) {
             const int comp_index_ctx = get_comp_index_context(cm, xd);
+#if CONFIG_ENTROPY_STATS
             ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+#endif
             if (allow_update_cdf) {
               update_cdf(fc->compound_index_cdf[comp_index_ctx],
                          mbmi->compound_idx, 2);
@@ -1233,8 +1274,10 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           } else {
             assert(masked_compound_used);
             if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
+#if CONFIG_ENTROPY_STATS
               ++counts
                     ->compound_type[bsize][mbmi->interinter_compound_type - 1];
+#endif
               if (allow_update_cdf) {
                 update_cdf(fc->compound_type_cdf[bsize],
                            mbmi->interinter_compound_type - 1,
@@ -1245,7 +1288,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
         }
         if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           if (is_interinter_compound_used(COMPOUND_WEDGE, bsize)) {
+#if CONFIG_ENTROPY_STATS
             counts->wedge_idx[bsize][mbmi->wedge_index]++;
+#endif
             if (allow_update_cdf) {
               update_cdf(fc->wedge_idx_cdf[bsize], mbmi->wedge_index, 16);
             }
@@ -1262,7 +1307,9 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
       mode_ctx =
           av1_mode_context_analyzer(mbmi_ext->mode_context, mbmi->ref_frame);
       if (has_second_ref(mbmi)) {
+#if CONFIG_ENTROPY_STATS
         ++counts->inter_compound_mode[mode_ctx][INTER_COMPOUND_OFFSET(mode)];
+#endif
         if (allow_update_cdf)
           update_cdf(fc->inter_compound_mode_cdf[mode_ctx],
                      INTER_COMPOUND_OFFSET(mode), INTER_COMPOUND_MODES);
@@ -1278,9 +1325,11 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
         for (idx = 0; idx < 2; ++idx) {
           if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+#if CONFIG_ENTROPY_STATS
             uint8_t drl_ctx =
                 av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
             ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
+#endif
 
             if (mbmi->ref_mv_idx == idx) break;
           }
@@ -1293,9 +1342,11 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
 
         for (idx = 1; idx < 3; ++idx) {
           if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+#if CONFIG_ENTROPY_STATS
             uint8_t drl_ctx =
                 av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
             ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
+#endif
 
             if (mbmi->ref_mv_idx == idx - 1) break;
           }
@@ -1461,7 +1512,9 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
     const int has_cols = (mi_col + hbs) < cm->mi_cols;
 
     if (has_rows && has_cols) {
+#if CONFIG_ENTROPY_STATS
       td->counts->partition[ctx][partition]++;
+#endif
 
       if (tile_data->allow_update_cdf) {
         FRAME_CONTEXT *fc = xd->tile_ctx;
@@ -4466,7 +4519,9 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
   }
 
   if (tx_size == plane_tx_size) {
+#if CONFIG_ENTROPY_STATS
     ++counts->txfm_partition[ctx][0];
+#endif
     if (allow_update_cdf)
       update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 0, 2);
     mbmi->tx_size = tx_size;
@@ -4477,7 +4532,9 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     const int bsw = tx_size_wide_unit[sub_txs];
     const int bsh = tx_size_high_unit[sub_txs];
 
+#if CONFIG_ENTROPY_STATS
     ++counts->txfm_partition[ctx][1];
+#endif
     if (allow_update_cdf)
       update_cdf(xd->tile_ctx->txfm_partition_cdf[ctx], 1, 2);
     ++x->txb_split_count;
@@ -4759,7 +4816,9 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
           if (tile_data->allow_update_cdf)
             update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
                        depth, max_depths + 1);
+#if CONFIG_ENTROPY_STATS
           ++td->counts->intra_tx_size[tx_size_cat][tx_size_ctx][depth];
+#endif
         }
       }
       assert(IMPLIES(is_rect_tx(mbmi->tx_size), is_rect_tx_allowed(xd, mbmi)));

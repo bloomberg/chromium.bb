@@ -184,12 +184,7 @@ typedef struct FRAME_COUNTS {
   unsigned int palette_uv_color_index[PALETTE_SIZES]
                                      [PALETTE_COLOR_INDEX_CONTEXTS]
                                      [PALETTE_COLORS];
-#endif  // CONFIG_ENTROPY_STATS
   unsigned int partition[PARTITION_CONTEXTS][EXT_PARTITION_TYPES];
-  unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
-                                [SWITCHABLE_FILTERS];
-
-#if CONFIG_ENTROPY_STATS
   unsigned int txb_skip[TOKEN_CDF_Q_CTXS][TX_SIZES][TXB_SKIP_CONTEXTS][2];
   unsigned int eob_extra[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES]
                         [EOB_COEF_CONTEXTS][2];
@@ -210,13 +205,10 @@ typedef struct FRAME_COUNTS {
                                [SIG_COEF_CONTEXTS][NUM_BASE_LEVELS + 2];
   unsigned int coeff_base_eob_multi[TOKEN_CDF_Q_CTXS][TX_SIZES][PLANE_TYPES]
                                    [SIG_COEF_CONTEXTS_EOB][NUM_BASE_LEVELS + 1];
-#endif  // CONFIG_ENTROPY_STATS
-
   unsigned int newmv_mode[NEWMV_MODE_CONTEXTS][2];
   unsigned int zeromv_mode[GLOBALMV_MODE_CONTEXTS][2];
   unsigned int refmv_mode[REFMV_MODE_CONTEXTS][2];
   unsigned int drl_mode[DRL_MODE_CONTEXTS][2];
-
   unsigned int inter_compound_mode[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
   unsigned int wedge_idx[BLOCK_SIZES_ALL][16];
   unsigned int interintra[BLOCK_SIZE_GROUPS][2];
@@ -226,7 +218,6 @@ typedef struct FRAME_COUNTS {
   unsigned int motion_mode[BLOCK_SIZES_ALL][MOTION_MODES];
   unsigned int obmc[BLOCK_SIZES_ALL][2];
   unsigned int intra_inter[INTRA_INTER_CONTEXTS][2];
-#if CONFIG_ENTROPY_STATS
   unsigned int comp_inter[COMP_INTER_CONTEXTS][2];
   unsigned int comp_ref_type[COMP_REF_TYPE_CONTEXTS][2];
   unsigned int uni_comp_ref[UNI_COMP_REF_CONTEXTS][UNIDIR_COMP_REFS - 1][2];
@@ -234,7 +225,7 @@ typedef struct FRAME_COUNTS {
   unsigned int comp_ref[REF_CONTEXTS][FWD_REFS - 1][2];
   unsigned int comp_bwdref[REF_CONTEXTS][BWD_REFS - 1][2];
   unsigned int intrabc[2];
-#endif  // CONFIG_ENTROPY_STATS
+
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
   unsigned int intra_tx_size[MAX_TX_CATS][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
   unsigned int skip_mode[SKIP_MODE_CONTEXTS][2];
@@ -244,16 +235,19 @@ typedef struct FRAME_COUNTS {
   unsigned int delta_q[DELTA_Q_PROBS][2];
   unsigned int delta_lf_multi[FRAME_LF_COUNT][DELTA_LF_PROBS][2];
   unsigned int delta_lf[DELTA_LF_PROBS][2];
-#if CONFIG_ENTROPY_STATS
+
   unsigned int inter_ext_tx[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   unsigned int intra_ext_tx[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                            [TX_TYPES];
-#endif  // CONFIG_ENTROPY_STATS
   unsigned int filter_intra_mode[FILTER_INTRA_MODES];
   unsigned int filter_intra[BLOCK_SIZES_ALL][2];
   unsigned int switchable_restore[RESTORE_SWITCHABLE_TYPES];
   unsigned int wiener_restore[2];
   unsigned int sgrproj_restore[2];
+#endif  // CONFIG_ENTROPY_STATS
+
+  unsigned int switchable_interp[SWITCHABLE_FILTER_CONTEXTS]
+                                [SWITCHABLE_FILTERS];
 } FRAME_COUNTS;
 
 static const int av1_ext_tx_ind[EXT_TX_SET_TYPES][TX_TYPES] = {
