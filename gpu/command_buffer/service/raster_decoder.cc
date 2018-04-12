@@ -809,6 +809,12 @@ gpu::ContextResult RasterDecoderImpl::Initialize(
   api()->glActiveTextureFn(GL_TEXTURE0);
   CHECK_GL_ERROR();
 
+  // Set all the default state because some GL drivers get it wrong.
+  // TODO(backer): Not all of this state needs to be initialized. Reduce the set
+  // if perf becomes a problem.
+  state_.InitCapabilities(nullptr);
+  state_.InitState(nullptr);
+
   return gpu::ContextResult::kSuccess;
 }
 

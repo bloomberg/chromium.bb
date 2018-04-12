@@ -93,6 +93,608 @@ _PEPPER_INTERFACES = [
 ]
 
 
+# Capabilities selected with glEnable
+_CAPABILITY_FLAGS = [
+  {'name': 'blend'},
+  {'name': 'cull_face'},
+  {'name': 'depth_test', 'state_flag': 'framebuffer_state_.clear_state_dirty'},
+  {'name': 'dither', 'default': True},
+  {'name': 'framebuffer_srgb_ext', 'default': True, 'no_init': True,
+   'extension_flag': 'ext_srgb_write_control'},
+  {'name': 'polygon_offset_fill'},
+  {'name': 'sample_alpha_to_coverage'},
+  {'name': 'sample_coverage'},
+  {'name': 'scissor_test'},
+  {'name': 'stencil_test',
+   'state_flag': 'framebuffer_state_.clear_state_dirty'},
+  {'name': 'rasterizer_discard', 'es3': True},
+  {'name': 'primitive_restart_fixed_index', 'es3': True},
+  {'name': 'multisample_ext', 'default': True,
+   'extension_flag': 'ext_multisample_compatibility'},
+  {'name': 'sample_alpha_to_one_ext',
+   'extension_flag': 'ext_multisample_compatibility'},
+]
+
+
+_STATE_INFO = {
+  'ClearColor': {
+    'type': 'Normal',
+    'func': 'ClearColor',
+    'enum': 'GL_COLOR_CLEAR_VALUE',
+    'states': [
+      {'name': 'color_clear_red', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'color_clear_green', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'color_clear_blue', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'color_clear_alpha', 'type': 'GLfloat', 'default': '0.0f'},
+    ],
+  },
+  'ClearDepthf': {
+    'type': 'Normal',
+    'func': 'ClearDepth',
+    'enum': 'GL_DEPTH_CLEAR_VALUE',
+    'states': [
+      {'name': 'depth_clear', 'type': 'GLclampf', 'default': '1.0f'},
+    ],
+  },
+  'ColorMask': {
+    'type': 'Normal',
+    'func': 'ColorMask',
+    'enum': 'GL_COLOR_WRITEMASK',
+    'states': [
+      {
+        'name': 'color_mask_red',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+      {
+        'name': 'color_mask_green',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+      {
+        'name': 'color_mask_blue',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+      {
+        'name': 'color_mask_alpha',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+    ],
+    'state_flag': 'framebuffer_state_.clear_state_dirty',
+  },
+  'ClearStencil': {
+    'type': 'Normal',
+    'func': 'ClearStencil',
+    'enum': 'GL_STENCIL_CLEAR_VALUE',
+    'states': [
+      {'name': 'stencil_clear', 'type': 'GLint', 'default': '0'},
+    ],
+  },
+  'CoverageModulationCHROMIUM': {
+    'type': 'Normal',
+    'func': 'CoverageModulationNV',
+    'extension_flag': 'chromium_framebuffer_mixed_samples',
+    'states': [
+      { 'enum': 'GL_COVERAGE_MODULATION_CHROMIUM',
+        'name': 'coverage_modulation',
+        'type': 'GLenum',
+        'default': 'GL_NONE',
+      },
+    ]
+  },
+  'BlendColor': {
+    'type': 'Normal',
+    'func': 'BlendColor',
+    'enum': 'GL_BLEND_COLOR',
+    'states': [
+      {'name': 'blend_color_red', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'blend_color_green', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'blend_color_blue', 'type': 'GLfloat', 'default': '0.0f'},
+      {'name': 'blend_color_alpha', 'type': 'GLfloat', 'default': '0.0f'},
+    ],
+  },
+  'BlendEquation': {
+    'type': 'SrcDst',
+    'func': 'BlendEquationSeparate',
+    'states': [
+      {
+        'name': 'blend_equation_rgb',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_EQUATION_RGB',
+        'default': 'GL_FUNC_ADD',
+      },
+      {
+        'name': 'blend_equation_alpha',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_EQUATION_ALPHA',
+        'default': 'GL_FUNC_ADD',
+      },
+    ],
+  },
+  'BlendFunc': {
+    'type': 'SrcDst',
+    'func': 'BlendFuncSeparate',
+    'states': [
+      {
+        'name': 'blend_source_rgb',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_SRC_RGB',
+        'default': 'GL_ONE',
+      },
+      {
+        'name': 'blend_dest_rgb',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_DST_RGB',
+        'default': 'GL_ZERO',
+      },
+      {
+        'name': 'blend_source_alpha',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_SRC_ALPHA',
+        'default': 'GL_ONE',
+      },
+      {
+        'name': 'blend_dest_alpha',
+        'type': 'GLenum',
+        'enum': 'GL_BLEND_DST_ALPHA',
+        'default': 'GL_ZERO',
+      },
+    ],
+  },
+  'PolygonOffset': {
+    'type': 'Normal',
+    'func': 'PolygonOffset',
+    'states': [
+      {
+        'name': 'polygon_offset_factor',
+        'type': 'GLfloat',
+        'enum': 'GL_POLYGON_OFFSET_FACTOR',
+        'default': '0.0f',
+      },
+      {
+        'name': 'polygon_offset_units',
+        'type': 'GLfloat',
+        'enum': 'GL_POLYGON_OFFSET_UNITS',
+        'default': '0.0f',
+      },
+    ],
+  },
+  'CullFace':  {
+    'type': 'Normal',
+    'func': 'CullFace',
+    'enum': 'GL_CULL_FACE_MODE',
+    'states': [
+      {
+        'name': 'cull_mode',
+        'type': 'GLenum',
+        'default': 'GL_BACK',
+      },
+    ],
+  },
+  'FrontFace': {
+    'type': 'Normal',
+    'func': 'FrontFace',
+    'enum': 'GL_FRONT_FACE',
+    'states': [{'name': 'front_face', 'type': 'GLenum', 'default': 'GL_CCW'}],
+  },
+  'DepthFunc': {
+    'type': 'Normal',
+    'func': 'DepthFunc',
+    'enum': 'GL_DEPTH_FUNC',
+    'states': [{'name': 'depth_func', 'type': 'GLenum', 'default': 'GL_LESS'}],
+  },
+  'DepthRange': {
+    'type': 'Normal',
+    'func': 'DepthRange',
+    'enum': 'GL_DEPTH_RANGE',
+    'states': [
+      {'name': 'z_near', 'type': 'GLclampf', 'default': '0.0f'},
+      {'name': 'z_far', 'type': 'GLclampf', 'default': '1.0f'},
+    ],
+  },
+  'SampleCoverage': {
+    'type': 'Normal',
+    'func': 'SampleCoverage',
+    'states': [
+      {
+        'name': 'sample_coverage_value',
+        'type': 'GLclampf',
+        'enum': 'GL_SAMPLE_COVERAGE_VALUE',
+        'default': '1.0f',
+      },
+      {
+        'name': 'sample_coverage_invert',
+        'type': 'GLboolean',
+        'enum': 'GL_SAMPLE_COVERAGE_INVERT',
+        'default': 'false',
+      },
+    ],
+  },
+  'StencilMask': {
+    'type': 'FrontBack',
+    'func': 'StencilMaskSeparate',
+    'state_flag': 'framebuffer_state_.clear_state_dirty',
+    'states': [
+      {
+        'name': 'stencil_front_writemask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_WRITEMASK',
+        'default': '0xFFFFFFFFU',
+        'cached': True,
+      },
+      {
+        'name': 'stencil_back_writemask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_BACK_WRITEMASK',
+        'default': '0xFFFFFFFFU',
+        'cached': True,
+      },
+    ],
+  },
+  'StencilOp': {
+    'type': 'FrontBack',
+    'func': 'StencilOpSeparate',
+    'states': [
+      {
+        'name': 'stencil_front_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_front_z_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_PASS_DEPTH_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_front_z_pass_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_PASS_DEPTH_PASS',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_back_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_back_z_fail_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_PASS_DEPTH_FAIL',
+        'default': 'GL_KEEP',
+      },
+      {
+        'name': 'stencil_back_z_pass_op',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_PASS_DEPTH_PASS',
+        'default': 'GL_KEEP',
+      },
+    ],
+  },
+  'StencilFunc': {
+    'type': 'FrontBack',
+    'func': 'StencilFuncSeparate',
+    'states': [
+      {
+        'name': 'stencil_front_func',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_FUNC',
+        'default': 'GL_ALWAYS',
+      },
+      {
+        'name': 'stencil_front_ref',
+        'type': 'GLint',
+        'enum': 'GL_STENCIL_REF',
+        'default': '0',
+      },
+      {
+        'name': 'stencil_front_mask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_VALUE_MASK',
+        'default': '0xFFFFFFFFU',
+      },
+      {
+        'name': 'stencil_back_func',
+        'type': 'GLenum',
+        'enum': 'GL_STENCIL_BACK_FUNC',
+        'default': 'GL_ALWAYS',
+      },
+      {
+        'name': 'stencil_back_ref',
+        'type': 'GLint',
+        'enum': 'GL_STENCIL_BACK_REF',
+        'default': '0',
+      },
+      {
+        'name': 'stencil_back_mask',
+        'type': 'GLuint',
+        'enum': 'GL_STENCIL_BACK_VALUE_MASK',
+        'default': '0xFFFFFFFFU',
+      },
+    ],
+  },
+  'Hint': {
+    'type': 'NamedParameter',
+    'func': 'Hint',
+    'states': [
+      {
+        'name': 'hint_generate_mipmap',
+        'type': 'GLenum',
+        'enum': 'GL_GENERATE_MIPMAP_HINT',
+        'default': 'GL_DONT_CARE',
+        'gl_version_flag': '!is_desktop_core_profile'
+      },
+      {
+        'name': 'hint_fragment_shader_derivative',
+        'type': 'GLenum',
+        'enum': 'GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES',
+        'default': 'GL_DONT_CARE',
+        'extension_flag': 'oes_standard_derivatives'
+      }
+    ],
+  },
+  'PixelStore': {
+    'type': 'NamedParameter',
+    'func': 'PixelStorei',
+    'states': [
+      {
+        'name': 'pack_alignment',
+        'type': 'GLint',
+        'enum': 'GL_PACK_ALIGNMENT',
+        'default': '4'
+      },
+      {
+        'name': 'unpack_alignment',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_ALIGNMENT',
+        'default': '4'
+      },
+      {
+        'name': 'pack_row_length',
+        'type': 'GLint',
+        'enum': 'GL_PACK_ROW_LENGTH',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'pack_skip_pixels',
+        'type': 'GLint',
+        'enum': 'GL_PACK_SKIP_PIXELS',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'pack_skip_rows',
+        'type': 'GLint',
+        'enum': 'GL_PACK_SKIP_ROWS',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'unpack_row_length',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_ROW_LENGTH',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'unpack_image_height',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_IMAGE_HEIGHT',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'unpack_skip_pixels',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_SKIP_PIXELS',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'unpack_skip_rows',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_SKIP_ROWS',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      },
+      {
+        'name': 'unpack_skip_images',
+        'type': 'GLint',
+        'enum': 'GL_UNPACK_SKIP_IMAGES',
+        'default': '0',
+        'es3': True,
+        'manual': True,
+      }
+    ],
+  },
+  # TODO: Consider implemenenting these states
+  # GL_ACTIVE_TEXTURE
+  'LineWidth': {
+    'type': 'Normal',
+    'custom_function' : True,
+    'func': 'DoLineWidth',
+    'enum': 'GL_LINE_WIDTH',
+    'states': [
+      {
+        'name': 'line_width',
+        'type': 'GLfloat',
+        'default': '1.0f',
+        'range_checks': [{'check': "<= 0.0f", 'test_value': "0.0f"}],
+        'nan_check': True,
+      }],
+  },
+  'DepthMask': {
+    'type': 'Normal',
+    'func': 'DepthMask',
+    'enum': 'GL_DEPTH_WRITEMASK',
+    'states': [
+      {
+        'name': 'depth_mask',
+        'type': 'GLboolean',
+        'default': 'true',
+        'cached': True
+      },
+    ],
+    'state_flag': 'framebuffer_state_.clear_state_dirty',
+  },
+  'Scissor': {
+    'type': 'Normal',
+    'func': 'Scissor',
+    'enum': 'GL_SCISSOR_BOX',
+    'states': [
+      # NOTE: These defaults reset at GLES2DecoderImpl::Initialization.
+      {
+        'name': 'scissor_x',
+        'type': 'GLint',
+        'default': '0',
+        'expected': 'kViewportX',
+      },
+      {
+        'name': 'scissor_y',
+        'type': 'GLint',
+        'default': '0',
+        'expected': 'kViewportY',
+      },
+      {
+        'name': 'scissor_width',
+        'type': 'GLsizei',
+        'default': '1',
+        'expected': 'kViewportWidth',
+      },
+      {
+        'name': 'scissor_height',
+        'type': 'GLsizei',
+        'default': '1',
+        'expected': 'kViewportHeight',
+      },
+    ],
+  },
+  'Viewport': {
+    'type': 'Normal',
+    'func': 'Viewport',
+    'enum': 'GL_VIEWPORT',
+    'states': [
+      # NOTE: These defaults reset at GLES2DecoderImpl::Initialization.
+      {
+        'name': 'viewport_x',
+        'type': 'GLint',
+        'default': '0',
+        'expected': 'kViewportX',
+      },
+      {
+        'name': 'viewport_y',
+        'type': 'GLint',
+        'default': '0',
+        'expected': 'kViewportY',
+      },
+      {
+        'name': 'viewport_width',
+        'type': 'GLsizei',
+        'default': '1',
+        'expected': 'kViewportWidth',
+      },
+      {
+        'name': 'viewport_height',
+        'type': 'GLsizei',
+        'default': '1',
+        'expected': 'kViewportHeight',
+      },
+    ],
+  },
+  'MatrixValuesCHROMIUM': {
+    'type': 'NamedParameter',
+    'func': 'MatrixLoadfEXT',
+    'states': [
+      { 'enum': 'GL_PATH_MODELVIEW_MATRIX_CHROMIUM',
+        'enum_set': 'GL_PATH_MODELVIEW_CHROMIUM',
+        'name': 'modelview_matrix',
+        'type': 'GLfloat',
+        'default': [
+          '1.0f', '0.0f','0.0f','0.0f',
+          '0.0f', '1.0f','0.0f','0.0f',
+          '0.0f', '0.0f','1.0f','0.0f',
+          '0.0f', '0.0f','0.0f','1.0f',
+        ],
+        'extension_flag': 'chromium_path_rendering',
+      },
+      { 'enum': 'GL_PATH_PROJECTION_MATRIX_CHROMIUM',
+        'enum_set': 'GL_PATH_PROJECTION_CHROMIUM',
+        'name': 'projection_matrix',
+        'type': 'GLfloat',
+        'default': [
+          '1.0f', '0.0f','0.0f','0.0f',
+          '0.0f', '1.0f','0.0f','0.0f',
+          '0.0f', '0.0f','1.0f','0.0f',
+          '0.0f', '0.0f','0.0f','1.0f',
+        ],
+        'extension_flag': 'chromium_path_rendering',
+      },
+    ],
+  },
+  'PathStencilFuncCHROMIUM': {
+    'type': 'Normal',
+    'func': 'PathStencilFuncNV',
+    'extension_flag': 'chromium_path_rendering',
+    'states': [
+      {
+        'name': 'stencil_path_func',
+        'type': 'GLenum',
+        'enum': 'GL_PATH_STENCIL_FUNC_CHROMIUM',
+        'default': 'GL_ALWAYS',
+       },
+      {
+        'name': 'stencil_path_ref',
+        'type': 'GLint',
+        'enum': 'GL_PATH_STENCIL_REF_CHROMIUM',
+        'default': '0',
+       },
+      {
+        'name': 'stencil_path_mask',
+        'type': 'GLuint',
+        'enum': 'GL_PATH_STENCIL_VALUE_MASK_CHROMIUM',
+        'default': '0xFFFFFFFFU',
+      },
+    ],
+  },
+  'WindowRectanglesEXT': {
+    'type': 'Normal',
+    'func': 'WindowRectanglesEXT',
+    'custom_function': True,
+    'extension_flag': 'ext_window_rectangles',
+    'no_init': True,
+    'states': [
+      {
+        'name': 'window_rectangles_mode',
+        'type': 'GLenum',
+        'enum': 'GL_WINDOW_RECTANGLE_MODE_EXT',
+        'default': 'GL_EXCLUSIVE_EXT',
+      },
+      {
+        'name': 'num_window_rectangles',
+        'type': 'GLint',
+        'enum': 'GL_NUM_WINDOW_RECTANGLES_EXT',
+        'default': '0',
+      },
+    ],
+  },
+}
+
 _prefix = None
 _upper_prefix = None
 _lower_prefix = None
@@ -982,13 +1584,10 @@ TEST_F(%(prefix)sImplementationTest,
 class StateSetHandler(TypeHandler):
   """Handler for commands that simply set state."""
 
-  def __init__(self, state_info):
-    self.state_info = state_info
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = self.state_info[state_name]
+    state = _STATE_INFO[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     for ndx,item in enumerate(states):
@@ -1033,7 +1632,7 @@ class StateSetHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     TypeHandler.WriteServiceUnitTest(self, func, f, *extras)
     state_name = func.GetInfo('state')
-    state = self.state_info[state_name]
+    state = _STATE_INFO[state_name]
     states = state['states']
     for ndx,item in enumerate(states):
       if 'range_checks' in item:
@@ -1101,13 +1700,10 @@ TEST_P(%(test_name)s, %(name)sNaNValue%(ndx)d) {
 class StateSetRGBAlphaHandler(TypeHandler):
   """Handler for commands that simply set state that have rgb/alpha."""
 
-  def __init__(self, state_info):
-    self.state_info = state_info
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = self.state_info[state_name]
+    state = _STATE_INFO[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     num_args = len(args)
@@ -1137,14 +1733,10 @@ class StateSetRGBAlphaHandler(TypeHandler):
 class StateSetFrontBackSeparateHandler(TypeHandler):
   """Handler for commands that simply set state that have front/back."""
 
-  def __init__(self, state_info):
-    self.state_info = state_info
-
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = self.state_info[state_name]
+    state = _STATE_INFO[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     face = args[0].name
@@ -1185,13 +1777,10 @@ class StateSetFrontBackSeparateHandler(TypeHandler):
 class StateSetFrontBackHandler(TypeHandler):
   """Handler for commands that simply set state that set both front/back."""
 
-  def __init__(self, state_info):
-    self.state_info = state_info
-
   def WriteHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = self.state_info[state_name]
+    state = _STATE_INFO[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     num_args = len(args)
@@ -1222,13 +1811,10 @@ class StateSetFrontBackHandler(TypeHandler):
 class StateSetNamedParameter(TypeHandler):
   """Handler for commands that set a state chosen with an enum parameter."""
 
-  def __init__(self, state_info):
-    self.state_info = state_info
-
   def WriteHandlerImplementation(self, func, f):
     """Overridden from TypeHandler."""
     state_name = func.GetInfo('state')
-    state = self.state_info[state_name]
+    state = _STATE_INFO[state_name]
     states = state['states']
     args = func.GetOriginalArgs()
     num_args = len(args)
@@ -5647,8 +6233,7 @@ class GLGenerator(object):
   _comment_re = re.compile(r'^//.*$')
   _function_re = re.compile(r'^GL_APICALL(.*?)GL_APIENTRY (.*?) \((.*?)\);$')
 
-  def __init__(self, verbose, year, function_info, named_type_info,
-               state_info, capability_flags):
+  def __init__(self, verbose, year, function_info, named_type_info):
     self.original_functions = []
     self.functions = []
     self.verbose = verbose
@@ -5659,8 +6244,7 @@ class GLGenerator(object):
     self.generated_cpp_filenames = []
     self.function_info = function_info
     self.named_type_info = named_type_info
-    self.state_info = state_info
-    self.capability_flags = capability_flags
+    self.capability_flags = _CAPABILITY_FLAGS
     self.type_handlers = {
         '': TypeHandler(),
         'Bind': BindHandler(),
@@ -5679,12 +6263,12 @@ class GLGenerator(object):
         'PUTn': PUTnHandler(),
         'PUTSTR': PUTSTRHandler(),
         'PUTXn': PUTXnHandler(),
-        'StateSet': StateSetHandler(state_info),
-        'StateSetRGBAlpha': StateSetRGBAlphaHandler(state_info),
-        'StateSetFrontBack': StateSetFrontBackHandler(state_info),
+        'StateSet': StateSetHandler(),
+        'StateSetRGBAlpha': StateSetRGBAlphaHandler(),
+        'StateSetFrontBack': StateSetFrontBackHandler(),
         'StateSetFrontBackSeparate':
-        StateSetFrontBackSeparateHandler(state_info),
-        'StateSetNamedParameter': StateSetNamedParameter(state_info),
+        StateSetFrontBackSeparateHandler(),
+        'StateSetNamedParameter': StateSetNamedParameter(),
         'STRn': STRnHandler(),
     }
 
@@ -5859,8 +6443,8 @@ class GLGenerator(object):
         f.write("  bool cached_%s;\n" % capability['name'])
       f.write("};\n\n")
 
-      for state_name in sorted(self.state_info.keys()):
-        state = self.state_info[state_name]
+      for state_name in sorted(_STATE_INFO.keys()):
+        state = _STATE_INFO[state_name]
         for item in state['states']:
           if isinstance(item['default'], list):
             f.write("%s %s[%d];\n" % (item['type'], item['name'],
@@ -5926,8 +6510,8 @@ bool %s::GetStateAs%s(
     GLenum pname, %s* params, GLsizei* num_written) const {
   switch (pname) {
 """ % (class_name, gl_type, gl_type))
-      for state_name in sorted(self.state_info.keys()):
-        state = self.state_info[state_name]
+      for state_name in sorted(_STATE_INFO.keys()):
+        state = _STATE_INFO[state_name]
         if 'enum' in state:
           f.write("    case %s:\n" % state['enum'])
           f.write("      *num_written = %d;\n" % len(state['states']))
@@ -5994,8 +6578,8 @@ bool %s::GetStateAs%s(
       f.write("\n")
 
       f.write("void ContextState::Initialize() {\n")
-      for state_name in sorted(self.state_info.keys()):
-        state = self.state_info[state_name]
+      for state_name in sorted(_STATE_INFO.keys()):
+        state = _STATE_INFO[state_name]
         for item in state['states']:
           if isinstance(item['default'], list):
             for ndx, value in enumerate(item['default']):
@@ -6055,8 +6639,8 @@ void ContextState::InitState(const ContextState *prev_state) const {
 
       def WriteStates(test_prev):
         # We need to sort the keys so the expectations match
-        for state_name in sorted(self.state_info.keys()):
-          state = self.state_info[state_name]
+        for state_name in sorted(_STATE_INFO.keys()):
+          state = _STATE_INFO[state_name]
           if 'no_init' in state and state['no_init']:
             continue
           if state['type'] == 'FrontBack':
@@ -6211,7 +6795,7 @@ bool ClientContextState::SetCapabilityState(
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.functions:
         func.WriteServiceImplementation(f)
-      if self.capability_flags:
+      if self.capability_flags and _prefix != 'Raster':
         f.write("""
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
@@ -6307,8 +6891,8 @@ namespace gles2 {
     with CHeaderWriter(filename, self.year, comment) as f:
       if self.capability_flags:
         f.write(
-"""void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(
-      bool es3_capable) {""")
+"""void %sDecoderTestBase::SetupInitCapabilitiesExpectations(
+      bool es3_capable) {""" % _prefix)
         for capability in self.capability_flags:
           capability_no_init = 'no_init' in capability and \
               capability['no_init'] == True
@@ -6336,74 +6920,73 @@ namespace gles2 {
         f.write("""  }
 }
 """)
-      if _prefix != 'Raster':
-        f.write("""
-void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
+      f.write("""
+void %sDecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
   auto* feature_info_ = group_->feature_info();
-""")
-        # We need to sort the keys so the expectations match
-        for state_name in sorted(self.state_info.keys()):
-          state = self.state_info[state_name]
-          if state['type'] == 'FrontBack':
-            num_states = len(state['states'])
-            for ndx, group in enumerate(Grouper(num_states / 2,
-                                                state['states'])):
-              args = []
-              for item in group:
-                if 'expected' in item:
-                  args.append(item['expected'])
-                else:
-                  args.append(item['default'])
-              f.write(
-                  "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
-                  (state['func'], ('GL_FRONT', 'GL_BACK')[ndx],
-                   ", ".join(args)))
-              f.write("      .Times(1)\n")
-              f.write("      .RetiresOnSaturation();\n")
-          elif state['type'] == 'NamedParameter':
-            for item in state['states']:
-              expect_value = item['default']
-              if isinstance(expect_value, list):
-                # TODO: Currently we do not check array values.
-                expect_value = "_"
-
-              operation = []
-              operation.append(
-                               "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
-                               (state['func'],
-                                (item['enum_set']
-                                    if 'enum_set' in item else item['enum']),
-                                expect_value))
-              operation.append("      .Times(1)\n")
-              operation.append("      .RetiresOnSaturation();\n")
-
-              guarded_operation = GuardState(item, ''.join(operation))
-              f.write(guarded_operation)
-          elif 'no_init' not in state:
-            if 'extension_flag' in state:
-              f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
-                         state['extension_flag'])
-              f.write("  ")
+""" % _prefix)
+      # We need to sort the keys so the expectations match
+      for state_name in sorted(_STATE_INFO.keys()):
+        state = _STATE_INFO[state_name]
+        if state['type'] == 'FrontBack':
+          num_states = len(state['states'])
+          for ndx, group in enumerate(Grouper(num_states / 2,
+                                              state['states'])):
             args = []
-            for item in state['states']:
+            for item in group:
               if 'expected' in item:
                 args.append(item['expected'])
               else:
                 args.append(item['default'])
-            # TODO: Currently we do not check array values.
-            args = ["_" if isinstance(arg, list) else arg for arg in args]
-            if 'custom_function' in state:
-              f.write("  SetupInitStateManualExpectationsFor%s(%s);\n" %
-                         (state['func'], ", ".join(args)))
+            f.write(
+                "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                (state['func'], ('GL_FRONT', 'GL_BACK')[ndx],
+                 ", ".join(args)))
+            f.write("      .Times(1)\n")
+            f.write("      .RetiresOnSaturation();\n")
+        elif state['type'] == 'NamedParameter':
+          for item in state['states']:
+            expect_value = item['default']
+            if isinstance(expect_value, list):
+              # TODO: Currently we do not check array values.
+              expect_value = "_"
+
+            operation = []
+            operation.append(
+                             "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                             (state['func'],
+                              (item['enum_set']
+                                  if 'enum_set' in item else item['enum']),
+                              expect_value))
+            operation.append("      .Times(1)\n")
+            operation.append("      .RetiresOnSaturation();\n")
+
+            guarded_operation = GuardState(item, ''.join(operation))
+            f.write(guarded_operation)
+        elif 'no_init' not in state:
+          if 'extension_flag' in state:
+            f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
+                       state['extension_flag'])
+            f.write("  ")
+          args = []
+          for item in state['states']:
+            if 'expected' in item:
+              args.append(item['expected'])
             else:
-              f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
-                         (state['func'], ", ".join(args)))
-              f.write("      .Times(1)\n")
-              f.write("      .RetiresOnSaturation();\n")
-            if 'extension_flag' in state:
-              f.write("  }\n")
-        f.write("  SetupInitStateManualExpectations(es3_capable);\n")
-        f.write("}\n")
+              args.append(item['default'])
+          # TODO: Currently we do not check array values.
+          args = ["_" if isinstance(arg, list) else arg for arg in args]
+          if 'custom_function' in state:
+            f.write("  SetupInitStateManualExpectationsFor%s(%s);\n" %
+                       (state['func'], ", ".join(args)))
+          else:
+            f.write("  EXPECT_CALL(*gl_, %s(%s))\n" %
+                       (state['func'], ", ".join(args)))
+            f.write("      .Times(1)\n")
+            f.write("      .RetiresOnSaturation();\n")
+          if 'extension_flag' in state:
+            f.write("  }\n")
+      f.write("  SetupInitStateManualExpectations(es3_capable);\n")
+      f.write("}\n")
     self.generated_cpp_filenames.append(filename)
 
   def WriteServiceUnitTestsForExtensions(self, filename):

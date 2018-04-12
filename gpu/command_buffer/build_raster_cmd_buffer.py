@@ -11,11 +11,6 @@ from optparse import OptionParser
 
 import build_cmd_buffer_lib
 
-# Empty flags because raster interface does not support glEnable
-_CAPABILITY_FLAGS = []
-
-_STATE_INFO = {}
-
 # Named type info object represents a named type that is used in OpenGL call
 # arguments.  Each named type defines a set of valid OpenGL call arguments.  The
 # named types are used in 'raster_cmd_buffer_functions.txt'.
@@ -452,8 +447,7 @@ def main(argv):
   base_dir = os.getcwd()
   build_cmd_buffer_lib.InitializePrefix("Raster")
   gen = build_cmd_buffer_lib.GLGenerator(options.verbose, "2018",
-                                         _FUNCTION_INFO, _NAMED_TYPE_INFO,
-                                         _STATE_INFO, _CAPABILITY_FLAGS)
+                                         _FUNCTION_INFO, _NAMED_TYPE_INFO)
   gen.ParseGLH("gpu/command_buffer/raster_cmd_buffer_functions.txt")
 
   # Support generating files under gen/
