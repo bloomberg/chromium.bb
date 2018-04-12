@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/u2f_parsing_utils.h"
 
 namespace device {
 
@@ -70,15 +71,11 @@ FidoBleFrame::ToFragments(size_t max_fragment_size) const {
   base::queue<FidoBleFrameContinuationFragment> other_fragments;
   data_view = data_view.subspan(init_fragment_size);
 
-  while (!data_view.empty()) {
-    // Subtract 1 to account for SEQ byte.
-    const size_t cont_fragment_size =
-        std::min(max_fragment_size - 1, data_view.size());
+  // Subtract 1 to account for SEQ byte.
+  for (auto cont_data :
+       u2f_parsing_utils::SplitSpan(data_view, max_fragment_size - 1)) {
     // High bit must stay cleared.
-    other_fragments.emplace(data_view.first(cont_fragment_size),
-                            other_fragments.size() & 0x7F);
-
-    data_view = data_view.subspan(cont_fragment_size);
+    other_fragments.emplace(cont_data, other_fragments.size() & 0x7F);
   }
 
   return {initial_fragment, std::move(other_fragments)};
