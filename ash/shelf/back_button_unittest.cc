@@ -71,8 +71,24 @@ class BackButtonTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(BackButtonTest);
 };
 
-// Verify that the back button is only visible in tablet mode.
+// Verify that the back button is visible in tablet mode.
 TEST_F(BackButtonTest, Visibility) {
+  ASSERT_TRUE(back_button()->layer());
+  EXPECT_EQ(0.f, back_button()->layer()->opacity());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  test_api()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(1.f, back_button()->layer()->opacity());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  test_api()->RunMessageLoopUntilAnimationsDone();
+  EXPECT_EQ(0.f, back_button()->layer()->opacity());
+}
+
+// Verify that the back button is visible in tablet mode, if the initial shelf
+// alignment is on the left or right.
+TEST_F(BackButtonTest, VisibilityWithVerticalShelf) {
+  test_api()->shelf_view()->shelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);
   ASSERT_TRUE(back_button()->layer());
   EXPECT_EQ(0.f, back_button()->layer()->opacity());
 
