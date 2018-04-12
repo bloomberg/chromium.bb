@@ -11686,6 +11686,57 @@ class WebFrameSimTest : public testing::WithParamInterface<bool>,
 
 INSTANTIATE_TEST_CASE_P(All, WebFrameSimTest, testing::Bool());
 
+TEST_P(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
+  WebView().Resize(WebSize(500, 300));
+  WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);
+
+  SimRequest r("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  r.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        body, html {
+          width: 100%;
+          height: 1000px;
+          margin: 0;
+        }
+        #top {
+          position: absolute;
+          top: 500px;
+          height: 100px;
+          width: 100%;
+
+        }
+        #bottom {
+          position: absolute;
+          top: 600px;
+          width: 100%;
+          height: 500px;
+        }
+      </style>
+      <div id="top"></div>
+      <div id="bottom"></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  LocalFrameView* frame_view =
+      ToLocalFrame(WebView().GetPage()->MainFrame())->View();
+
+  frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 600),
+                                                   kProgrammaticScroll);
+  Compositor().BeginFrame();
+
+  HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
+                           HitTestRequest::kActive |
+                           HitTestRequest::kIgnoreClipping;
+  HitTestResult result(request,
+                       frame_view->RootFrameToAbsolute(LayoutPoint(100, -50)));
+  frame_view->GetLayoutView()->HitTest(result);
+
+  EXPECT_EQ(GetDocument().getElementById("top"), result.InnerNode());
+}
+
 TEST_P(WebFrameSimTest, TickmarksDocumentRelative) {
   WebView().Resize(WebSize(500, 300));
   WebView().GetPage()->GetSettings().SetTextAutosizingEnabled(false);

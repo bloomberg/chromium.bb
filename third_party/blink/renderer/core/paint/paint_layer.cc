@@ -1742,8 +1742,12 @@ bool PaintLayer::HitTest(HitTestResult& result) {
 
   // Start with frameVisibleRect to ensure we include the scrollbars.
   LayoutRect hit_test_area = FrameVisibleRect(GetLayoutObject());
-  if (request.IgnoreClipping())
-    hit_test_area.Unite(LayoutRect(GetLayoutObject().View()->DocumentRect()));
+  if (request.IgnoreClipping()) {
+    if (LocalFrameView* frame_view = GetLayoutObject().GetDocument().View()) {
+      hit_test_area.Unite(frame_view->DocumentToAbsolute(
+          LayoutRect(GetLayoutObject().View()->DocumentRect())));
+    }
+  }
 
   PaintLayer* inside_layer = HitTestLayer(this, nullptr, result, hit_test_area,
                                           hit_test_location, false);
