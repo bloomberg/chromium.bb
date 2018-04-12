@@ -7,6 +7,6 @@ enum LandmarkType { "mouth", "eye" };
 
 // https://wicg.github.io/shape-detection-api/#dictdef-landmark
 dictionary Landmark {
-  required Point2D location;
+  required FrozenArray<Point2D> locations;
   LandmarkType type;
 };
