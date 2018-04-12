@@ -1392,6 +1392,12 @@ config("default_warnings") {
         # TODO(thakis): Only for no_chromium_code? http://crbug.com/505314
         "-Wno-ignored-pragma-optimize",
       ]
+      if (llvm_force_head_revision) {
+        cflags += [
+          # TODO(thakis): Enable, https://crbug.com/832211
+          "-Wno-return-std-move",
+        ]
+      }
     } else if (use_xcode_clang) {
       cflags += [
         # TODO(thakis): https://crbug.com/604888
