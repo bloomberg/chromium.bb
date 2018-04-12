@@ -14,6 +14,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
 
 namespace ash {
 namespace {
@@ -75,22 +76,12 @@ void TrayBluetoothHelper::InitializeOnAdapterReady(
 
 BluetoothDeviceList TrayBluetoothHelper::GetAvailableBluetoothDevices() const {
   BluetoothDeviceList device_list;
-  device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  for (device::BluetoothDevice* device : devices) {
-    if (device_list.size() == kMaximumDevicesShown)
-      break;
-
-    if (device->IsPaired() || device->IsConnecting())
-      device_list.push_back(GetBluetoothDeviceInfo(device));
-  }
-
-  for (device::BluetoothDevice* device : devices) {
-    if (device_list.size() == kMaximumDevicesShown)
-      break;
-
-    if (!device->IsPaired() && !device->IsConnecting())
-      device_list.push_back(GetBluetoothDeviceInfo(device));
-  }
+  device::BluetoothAdapter::DeviceList devices =
+      device::FilterBluetoothDeviceList(adapter_->GetDevices(),
+                                        device::BluetoothFilterType::KNOWN,
+                                        kMaximumDevicesShown);
+  for (device::BluetoothDevice* device : devices)
+    device_list.push_back(GetBluetoothDeviceInfo(device));
 
   return device_list;
 }
