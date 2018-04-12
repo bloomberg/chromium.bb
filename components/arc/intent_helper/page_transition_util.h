@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
 #define COMPONENTS_ARC_INTENT_HELPER_PAGE_TRANSITION_UTIL_H_
 
+#include "base/macros.h"
 #include "ui/base/page_transition_types.h"
 
 namespace arc {
