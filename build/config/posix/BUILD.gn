@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//buildtools/deps_revisions.gni")
 import("//build/config/c++/c++.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -48,6 +49,10 @@ config("runtime_library") {
       "-nostdinc++",
       "-isystem" + rebase_path("$libcxx_prefix/include", root_build_dir),
       "-isystem" + rebase_path("$libcxxabi_prefix/include", root_build_dir),
+    ]
+    defines += [
+      "CR_LIBCXX_REVISION=$libcxx_svn_revision",
+      "CR_LIBCXXABI_REVISION=$libcxxabi_svn_revision",
     ]
 
     # Make sure we don't link against libc++ or libstdc++.
