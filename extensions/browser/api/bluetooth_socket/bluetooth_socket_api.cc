@@ -533,7 +533,7 @@ ExtensionFunction::ResponseAction BluetoothSocketCloseFunction::Run() {
   if (!socket)
     return RespondNow(Error(kSocketNotFoundError));
 
-  RemoveSocket(params_->socket_id);
+  RemoveSocket(params->socket_id);
   return RespondNow(ArgumentList(bluetooth_socket::Close::Results::Create()));
 }
 
