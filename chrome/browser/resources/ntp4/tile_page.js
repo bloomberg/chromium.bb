@@ -111,7 +111,7 @@ cr.define('ntp', function() {
       setCurrentlyDraggingTile(this);
 
       e.dataTransfer.effectAllowed = 'copyMove';
-      this.firstChild.setDragData(e.dataTransfer);
+      /** @type {!ntp.App} */ (this.firstChild).setDragData(e.dataTransfer);
 
       // The drag clone is the node we use as a representation during the drag.
       // It's attached to the top level document element so that it floats above
@@ -1297,7 +1297,7 @@ cr.define('ntp', function() {
     /**
      * Sets the drop effect on |dataTransfer| to the desired value (e.g.
      * 'copy').
-     * @param {Object} dataTransfer The drag event dataTransfer object.
+     * @param {DataTransfer} dataTransfer The drag event dataTransfer object.
      */
     setDropEffect: function(dataTransfer) {
       assertNotReached();

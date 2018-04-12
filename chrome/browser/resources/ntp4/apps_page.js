@@ -627,7 +627,8 @@ cr.define('ntp', function() {
      * @private
      */
     onCardSelected_: function() {
-      var apps = this.querySelectorAll('.app.icon-loading');
+      var apps = /** @type {NodeList<ntp.App>} */ (
+          this.querySelectorAll('.app.icon-loading'));
       for (var i = 0; i < apps.length; i++) {
         apps[i].loadIcon();
       }

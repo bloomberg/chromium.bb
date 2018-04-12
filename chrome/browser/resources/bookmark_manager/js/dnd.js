@@ -323,7 +323,8 @@ cr.define('dnd', function() {
 
     if (target instanceof ListItem) {
       // Use selected items.
-      draggedNodes = target.parentNode.selectedItems;
+      draggedNodes =
+          /** @type {cr.ui.List} */ (target.parentNode).selectedItems;
     } else if (target instanceof TreeItem) {
       draggedNodes.push(target.bookmarkNode);
     }

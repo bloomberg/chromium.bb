@@ -6,7 +6,7 @@
  * @typedef {{afterHighlight: string,
  *            beforeHighlight: string,
  *            highlight: string,
- *            title: string}}
+ *            message: string}}
  */
 var ExtensionHighlight;
 

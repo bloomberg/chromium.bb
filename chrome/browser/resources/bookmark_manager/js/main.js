@@ -257,7 +257,7 @@ function processHash() {
 // Activate is handled by the open-in-same-window-command.
 function handleDoubleClickForList(e) {
   if (e.button == 0)
-    $('open-in-same-window-command').execute();
+    /** @type {Command} */ ($('open-in-same-window-command')).execute();
 }
 
 // The list dispatches an event when the user clicks on the URL or the Show in
@@ -731,7 +731,8 @@ function canExecuteForTree(e) {
  * Update the canExecute state of all the commands.
  */
 function updateAllCommands() {
-  var commands = document.querySelectorAll('command');
+  var commands =
+      /** @type {NodeList<Command>} */ (document.querySelectorAll('command'));
   for (var i = 0; i < commands.length; i++) {
     commands[i].canExecuteChange();
   }
@@ -756,7 +757,7 @@ function updateEditingCommands() {
     if (result != canEdit) {
       canEdit = result;
       editingCommands.forEach(function(baseId) {
-        $(baseId + '-command').canExecuteChange();
+        /** @type {Command} */ ($(baseId + '-command')).canExecuteChange();
       });
     }
   });
@@ -770,10 +771,12 @@ function handleMenuButtonClicked(e) {
   updateEditingCommands();
 
   if (e.currentTarget.id == 'folders-menu') {
-    $('copy-from-folders-menu-command').canExecuteChange();
-    $('undo-delete-from-folders-menu-command').canExecuteChange();
+    /** @type {Command} */ ($('copy-from-folders-menu-command'))
+        .canExecuteChange();
+    /** @type {Command} */ ($('undo-delete-from-folders-menu-command'))
+        .canExecuteChange();
   } else {
-    $('copy-command').canExecuteChange();
+    /** @type {Command} */ ($('copy-command')).canExecuteChange();
   }
 }
 
@@ -959,8 +962,9 @@ function deleteBookmarks(opt_target) {
   function performDelete() {
     // Only remove filtered ids.
     chrome.bookmarkManagerPrivate.removeTrees(filteredIds);
-    $('undo-delete-command').canExecuteChange();
-    $('undo-delete-from-folders-menu-command').canExecuteChange();
+    /** @type {Command} */ ($('undo-delete-command')).canExecuteChange();
+    /** @type {Command} */ ($('undo-delete-from-folders-menu-command'))
+        .canExecuteChange();
     performGlobalUndo = undoDelete;
   }
 
@@ -1019,8 +1023,9 @@ function undoDelete() {
     arr.forEach(restoreTree);
   });
   lastDeleted = null;
-  $('undo-delete-command').canExecuteChange();
-  $('undo-delete-from-folders-menu-command').canExecuteChange();
+  /** @type {Command} */ ($('undo-delete-command')).canExecuteChange();
+  /** @type {Command} */ ($('undo-delete-from-folders-menu-command'))
+      .canExecuteChange();
 
   // Only a single level of undo is supported, so disable global undo now.
   performGlobalUndo = null;
@@ -1411,7 +1416,7 @@ function installEventHandlerForCommand(eventName, commandId) {
     if (document.activeElement != bmm.list &&
         document.activeElement != bmm.tree)
       return;
-    var command = $(commandId);
+    var command = /** @type {Command} */ ($(commandId));
     if (!command.disabled) {
       command.execute();
       if (e)

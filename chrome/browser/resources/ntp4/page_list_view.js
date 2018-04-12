@@ -87,7 +87,7 @@ cr.define('ntp', function() {
 
     /**
      * The 'dots-list' element.
-     * @type {!Element|undefined}
+     * @type {!ntp.DotList|undefined}
      */
     dotList: undefined,
 
@@ -145,7 +145,7 @@ cr.define('ntp', function() {
         opt_pageSwitcherEnd) {
       this.pageList = pageList;
 
-      this.dotList = dotList;
+      this.dotList = /** @type {!ntp.DotList} */ (dotList);
       cr.ui.decorate(this.dotList, ntp.DotList);
 
       this.trash = opt_trash;
@@ -191,7 +191,8 @@ cr.define('ntp', function() {
       // This listener must be added before the card slider is initialized,
       // because it needs to be called before the card slider's handler.
       cardSliderFrame.addEventListener('mousewheel', function(e) {
-        if (cardSlider.currentCardValue.handleMouseWheel(e)) {
+        if (/** @type {!ntp.TilePage} */ (cardSlider.currentCardValue)
+                .handleMouseWheel(e)) {
           e.preventDefault();            // Prevent default scroll behavior.
           e.stopImmediatePropagation();  // Prevent horizontal card flipping.
         }
@@ -430,7 +431,7 @@ cr.define('ntp', function() {
       }
 
       var page = this.appsPages[pageIndex];
-      var app = $(appData.id);
+      var app = /** @type {?ntp.App} */ ($(appData.id));
       if (app) {
         app.replaceAppData(appData);
       } else if (opt_highlight) {
@@ -535,7 +536,8 @@ cr.define('ntp', function() {
       if (!this.pageSwitcherStart || !this.pageSwitcherEnd)
         return;
 
-      var page = this.cardSlider.currentCardValue;
+      var page =
+          /** @type {?ntp.TilePage} */ (this.cardSlider.currentCardValue);
 
       this.pageSwitcherStart.hidden =
           !page || (this.cardSlider.currentCard == 0);
@@ -676,7 +678,8 @@ cr.define('ntp', function() {
      * @private
      */
     updateOfflineEnabledApps_: function() {
-      var apps = document.querySelectorAll('.app');
+      var apps = /** @type {!NodeList<!ntp.App>} */ (
+          document.querySelectorAll('.app'));
       for (var i = 0; i < apps.length; ++i) {
         if (apps[i].appData.enabled && !apps[i].appData.offlineEnabled) {
           apps[i].setIcon();

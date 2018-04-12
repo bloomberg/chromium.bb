@@ -191,7 +191,8 @@ cr.define('extensions', function() {
           case EventType.UNINSTALLED:
             var index = this.getIndexOfExtension_(eventData.item_id);
             this.extensions_.splice(index, 1);
-            this.removeWrapper_(getRequiredElement(eventData.item_id));
+            this.removeWrapper_(/**@type {!ExtensionWrapper} */ (
+                getRequiredElement(eventData.item_id)));
             break;
           default:
             assertNotReached();
@@ -293,7 +294,7 @@ cr.define('extensions', function() {
 
       var idToHighlight = this.getIdQueryParam_();
       if (idToHighlight) {
-        var wrapper = $(idToHighlight);
+        var wrapper = /** @type {ExtensionWrapper} */ ($(idToHighlight));
         if (wrapper) {
           this.scrollToWrapper_(idToHighlight);
 
@@ -363,15 +364,15 @@ cr.define('extensions', function() {
     /**
      * Removes the wrapper from the DOM and updates the focused element if
      * needed.
-     * @param {!Element} wrapper
+     * @param {!ExtensionWrapper} wrapper
      * @private
      */
     removeWrapper_: function(wrapper) {
       // If focus is in the wrapper about to be removed, move it first. This
       // happens when clicking the trash can to remove an extension.
       if (wrapper.contains(document.activeElement)) {
-        var wrappers = document.querySelectorAll(
-            '.extension-list-item-wrapper[id]');
+        var wrappers = /** @type {NodeList<ExtensionWrapper>}*/ (
+            document.querySelectorAll('.extension-list-item-wrapper[id]'));
         var index = Array.prototype.indexOf.call(wrappers, wrapper);
         assert(index != -1);
         var focusableWrapper = wrappers[index + 1] || wrappers[index - 1];
@@ -597,7 +598,8 @@ cr.define('extensions', function() {
      * Updates an HTML element for the extension metadata given in |extension|.
      * @param {!chrome.developerPrivate.ExtensionInfo} extension A dictionary of
      *     extension metadata.
-     * @param {!Element} wrapper The extension wrapper element to update.
+     * @param {!ExtensionWrapper} wrapper The extension wrapper element to
+     *     update.
      * @private
      */
     updateWrapper_: function(extension, wrapper) {
@@ -1047,7 +1049,7 @@ cr.define('extensions', function() {
         this.extensions_.sort(compareExtensions);
       }
 
-      var wrapper = $(extension.id);
+      var wrapper = /**@type {ExtensionWrapper} */ ($(extension.id));
       if (wrapper) {
         this.updateWrapper_(extension, wrapper);
       } else {
