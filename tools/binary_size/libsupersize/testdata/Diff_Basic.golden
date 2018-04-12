@@ -55,5 +55,5 @@ Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss
 Index | Running Total | Section@Address | ...
 ------------------------------------------------------------
 ~ 0)         10 (100.0%) d@0x2de70a0  +10 (-6->4)  num_aliases=1
-               source_path=third_party/container.c 	object_path=third_party/WebKit.a/ContiguousContainer.o
+               source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
                flags={}  name=base::android::g_renderer_histogram_code

@@ -170,9 +170,9 @@ Index | Running Total | Section@Address | PSS | Path
              BarAlias (num_aliases=4)
 39)  77769423 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              FooAlias (num_aliases=4)
-40)  77769426 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
+40)  77769426 (100.0%) t@0x2a0010   3 (size=12)    $root_gen_dir/third_party/icu/ucnv_ext.c
              blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-41)  77769429 (100.0%) t@0x2a0010   3 (size=12)    $root_gen_dir/third_party/icu/ucnv_ext.c
+41)  77769429 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
              blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
 42)  77769457 (100.0%) t@0x2a0020   28             third_party/container.c
              blink::ContiguousContainerBase::ContiguousContainerBase

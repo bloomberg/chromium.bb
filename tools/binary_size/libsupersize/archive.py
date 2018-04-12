@@ -20,6 +20,7 @@ import tempfile
 import zipfile
 
 import apkanalyzer
+import ar
 import concurrent
 import demangle
 import describe
@@ -33,6 +34,16 @@ import path_util
 
 sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
+
+
+# Holds computation state that is live only when an output directory exists.
+_OutputDirectoryContext = collections.namedtuple('_OutputDirectoryContext', [
+    'elf_object_paths',  # Only when elf_path is also provided.
+    'known_inputs',  # Only when elf_path is also provided.
+    'output_directory',
+    'source_mapper',
+    'thin_archives',
+])
 
 
 # Tunable "knobs" for CreateSectionSizesAndSymbols().
@@ -190,8 +201,9 @@ def _NormalizeObjectPath(path):
     # Convert ../../third_party/... -> third_party/...
     path = path[6:]
   if path.endswith(')'):
-    # Convert foo/bar.a(baz.o) -> foo/bar.a/baz.o
-    start_idx = path.index('(')
+    # Convert foo/bar.a(baz.o) -> foo/bar.a/baz.o so that hierarchical
+    # breakdowns consider the .o part to be a separate node.
+    start_idx = path.rindex('(')
     path = os.path.join(path[:start_idx], path[start_idx + 1:-1])
   return path
 
@@ -373,17 +385,16 @@ def _AssignNmAliasPathsAndCreatePathAliases(raw_symbols, object_paths_by_name):
   return ret
 
 
-def _DiscoverMissedObjectPaths(raw_symbols, elf_object_paths):
+def _DiscoverMissedObjectPaths(raw_symbols, known_inputs):
   # Missing object paths are caused by .a files added by -l flags, which are not
   # listed as explicit inputs within .ninja rules.
-  parsed_inputs = set(elf_object_paths)
   missed_inputs = set()
   for symbol in raw_symbols:
     path = symbol.object_path
     if path.endswith(')'):
       # Convert foo/bar.a(baz.o) -> foo/bar.a
-      path = path[:path.index('(')]
-    if path and path not in parsed_inputs:
+      path = path[:path.rindex('(')]
+    if path and path not in known_inputs:
       missed_inputs.add(path)
   return missed_inputs
 
@@ -608,9 +619,21 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
   return metadata
 
 
-def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
-    track_string_literals, elf_object_paths):
-  """Adds Elf section sizes and symbols."""
+def _ResolveThinArchivePaths(raw_symbols, thin_archives):
+  """Converts object_paths for thin archives to external .o paths."""
+  for symbol in raw_symbols:
+    object_path = symbol.object_path
+    if object_path.endswith(')'):
+      start_idx = object_path.rindex('(')
+      archive_path = object_path[:start_idx]
+      if archive_path in thin_archives:
+        subpath = object_path[start_idx + 1:-1]
+        symbol.object_path = ar.CreateThinObjectPath(archive_path, subpath)
+
+
+def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
+                  outdir_context=None):
+  """Adds ELF section sizes and symbols."""
   if elf_path:
     # Run nm on the elf file to retrieve the list of symbol names per-address.
     # This list is required because the .map file contains only a single name
@@ -627,14 +650,18 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
     # single path for these symbols.
     # Rather than record all paths for each symbol, set the paths to be the
     # common ancestor of all paths.
-    if output_directory:
-      bulk_analyzer = nm.BulkObjectFileAnalyzer(tool_prefix, output_directory)
-      bulk_analyzer.AnalyzePaths(elf_object_paths)
+    if outdir_context:
+      bulk_analyzer = nm.BulkObjectFileAnalyzer(
+          tool_prefix, outdir_context.output_directory)
+      bulk_analyzer.AnalyzePaths(outdir_context.elf_object_paths)
 
   logging.info('Parsing Linker Map')
   with _OpenMaybeGz(map_path) as map_file:
     section_sizes, raw_symbols = (
         linker_map_parser.MapFileParser().Parse(map_file))
+
+    if outdir_context and outdir_context.thin_archives:
+      _ResolveThinArchivePaths(raw_symbols, outdir_context.thin_archives)
 
   if elf_path:
     logging.debug('Validating section sizes')
@@ -646,9 +673,11 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
         logging.error('readelf: %r', elf_section_sizes)
         sys.exit(1)
 
-  if elf_path and output_directory:
+  if elf_path and outdir_context:
     missed_object_paths = _DiscoverMissedObjectPaths(
-        raw_symbols, elf_object_paths)
+        raw_symbols, outdir_context.known_inputs)
+    missed_object_paths = ar.ExpandThinArchives(
+        missed_object_paths, outdir_context.output_directory)[0]
     bulk_analyzer.AnalyzePaths(missed_object_paths)
     bulk_analyzer.SortPaths()
     if track_string_literals:
@@ -674,11 +703,12 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, output_directory,
     names_by_address = elf_nm_result.get()
     raw_symbols = _AddNmAliases(raw_symbols, names_by_address)
 
-    if output_directory:
+    if outdir_context:
       object_paths_by_name = bulk_analyzer.GetSymbolNames()
-      logging.debug('Fetched path information for %d symbols from %d files',
-                    len(object_paths_by_name),
-                    len(elf_object_paths) + len(missed_object_paths))
+      logging.debug(
+          'Fetched path information for %d symbols from %d files',
+          len(object_paths_by_name),
+          len(outdir_context.elf_object_paths) + len(missed_object_paths))
 
       # For aliases, this provides path information where there wasn't any.
       logging.info('Creating aliases for symbols shared by multiple paths')
@@ -923,22 +953,42 @@ def CreateSectionSizesAndSymbols(
     apk_elf_result = concurrent.ForkAndCall(
         _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
 
+  outdir_context = None
   source_mapper = None
-  elf_object_paths = None
   if output_directory:
     # Start by finding the elf_object_paths, so that nm can run on them while
     # the linker .map is being parsed.
     logging.info('Parsing ninja files.')
-    source_mapper, elf_object_paths = ninja_parser.Parse(
-        output_directory, elf_path)
+    source_mapper, ninja_elf_object_paths = (
+        ninja_parser.Parse(output_directory, elf_path))
     logging.debug('Parsed %d .ninja files.', source_mapper.parsed_file_count)
-    assert not elf_path or elf_object_paths, (
+    assert not elf_path or ninja_elf_object_paths, (
         'Failed to find link command in ninja files for ' +
         os.path.relpath(elf_path, output_directory))
 
+    if ninja_elf_object_paths:
+      elf_object_paths, thin_archives = ar.ExpandThinArchives(
+          ninja_elf_object_paths, output_directory)
+      known_inputs = set(elf_object_paths)
+      known_inputs.update(ninja_elf_object_paths)
+    else:
+      elf_object_paths = None
+      known_inputs = None
+      # When we don't know which elf file is used, just search all paths.
+      thin_archives = set(
+          p for p in source_mapper.IterAllPaths()
+          if p.endswith('.a') and ar.IsThinArchive(
+              os.path.join(output_directory, p)))
+
+    outdir_context = _OutputDirectoryContext(
+        elf_object_paths=elf_object_paths,
+        known_inputs=known_inputs,
+        output_directory=output_directory,
+        source_mapper=source_mapper,
+        thin_archives=thin_archives)
+
   section_sizes, raw_symbols = _ParseElfInfo(
-      map_path, elf_path, tool_prefix, output_directory, track_string_literals,
-      elf_object_paths)
+      map_path, elf_path, tool_prefix, track_string_literals, outdir_context)
   elf_overhead_size = _CalculateElfOverhead(section_sizes, elf_path)
 
   pak_symbols_by_id = None
@@ -981,6 +1031,10 @@ def CreateSizeInfo(
     section_sizes, raw_symbols, metadata=None, normalize_names=True):
   """Performs operations on all symbols and creates a SizeInfo object."""
   logging.debug('Sorting %d symbols', len(raw_symbols))
+  # TODO(agrieve): Either change this sort so that it's only sorting by section
+  #     (and not using .sort()), or have it specify a total ordering (which must
+  #     also include putting padding-only symbols before others of the same
+  #     address). Note: The sort as-is takes ~1.5 seconds.
   raw_symbols.sort(key=lambda s: (
       s.IsPak(), s.IsBss(), s.section_name, s.address))
   logging.info('Processed %d symbols', len(raw_symbols))
