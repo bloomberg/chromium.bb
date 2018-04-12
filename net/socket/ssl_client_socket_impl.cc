@@ -25,7 +25,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/thread_local.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
@@ -992,29 +991,10 @@ void SSLClientSocketImpl::DoWriteCallback(int rv) {
   base::ResetAndReturn(&user_write_callback_).Run(rv);
 }
 
-// TODO(cbentzel): Remove including "base/threading/thread_local.h" and
-// g_first_run_completed once crbug.com/424386 is fixed.
-base::LazyInstance<base::ThreadLocalBoolean>::Leaky g_first_run_completed =
-    LAZY_INSTANCE_INITIALIZER;
-
 int SSLClientSocketImpl::DoHandshake() {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  int rv;
-
-  // TODO(cbentzel): Leave only 1 call to SSL_do_handshake once crbug.com/424386
-  // is fixed.
-  if (ssl_config_.send_client_cert && ssl_config_.client_cert.get()) {
-    rv = SSL_do_handshake(ssl_.get());
-  } else {
-    if (g_first_run_completed.Get().Get()) {
-      rv = SSL_do_handshake(ssl_.get());
-    } else {
-      g_first_run_completed.Get().Set(true);
-      rv = SSL_do_handshake(ssl_.get());
-    }
-  }
-
+  int rv = SSL_do_handshake(ssl_.get());
   int net_error = OK;
   if (rv <= 0) {
     int ssl_error = SSL_get_error(ssl_.get(), rv);
