@@ -37,7 +37,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/scoped_overscroll_mode.h"
+#include "content/public/test/scoped_overscroll_modes.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -613,7 +613,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 #define MAYBE_OverscrollScreenshot OverscrollScreenshot
 #endif
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
-  ScopedOverscrollMode scoped_mode(OverscrollConfig::Mode::kParallaxUi);
+  ScopedHistoryNavigationMode scoped_mode(
+      OverscrollConfig::HistoryNavigationMode::kParallaxUi);
 
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
@@ -704,7 +705,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, MAYBE_OverscrollScreenshot) {
 // RenderViewHost to be swapped out.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        MAYBE_ScreenshotForSwappedOutRenderViews) {
-  ScopedOverscrollMode scoped_mode(OverscrollConfig::Mode::kParallaxUi);
+  ScopedHistoryNavigationMode scoped_mode(
+      OverscrollConfig::HistoryNavigationMode::kParallaxUi);
 
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   // Create a new server with a different site.
@@ -776,7 +778,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // Tests that navigations resulting from reloads, history.replaceState,
 // and history.pushState do not capture screenshots.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ReplaceStateReloadPushState) {
-  ScopedOverscrollMode scoped_mode(OverscrollConfig::Mode::kParallaxUi);
+  ScopedHistoryNavigationMode scoped_mode(
+      OverscrollConfig::HistoryNavigationMode::kParallaxUi);
 
   ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/overscroll_navigation.html"));
   WebContentsImpl* web_contents =

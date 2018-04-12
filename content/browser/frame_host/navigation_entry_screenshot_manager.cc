@@ -93,8 +93,10 @@ NavigationEntryScreenshotManager::~NavigationEntryScreenshotManager() {
 }
 
 void NavigationEntryScreenshotManager::TakeScreenshot() {
-  if (OverscrollConfig::GetMode() != OverscrollConfig::Mode::kParallaxUi)
+  if (OverscrollConfig::GetHistoryNavigationMode() !=
+      OverscrollConfig::HistoryNavigationMode::kParallaxUi) {
     return;
+  }
 
   NavigationEntryImpl* entry = owner_->GetLastCommittedEntry();
   if (!entry)

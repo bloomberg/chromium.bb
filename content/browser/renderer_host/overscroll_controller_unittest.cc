@@ -9,6 +9,7 @@
 #include "base/containers/queue.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/public/test/scoped_overscroll_modes.h"
 #include "content/test/test_overscroll_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -68,6 +69,18 @@ class OverscrollControllerTest : public ::testing::Test {
     return controller_->WillHandleEvent(*current_event_);
   }
 
+  // Creates and sends a gesture-fling-start event to the overscroll controller.
+  // Returns |true| if the event is consumed by the overscroll controller.
+  bool SimulateGestureFlingStart(float velocity_x,
+                                 float velocity_y,
+                                 blink::WebGestureDevice device) {
+    DCHECK(!current_event_);
+    current_event_ = std::make_unique<blink::WebGestureEvent>(
+        SyntheticWebGestureEventBuilder::BuildFling(velocity_x, velocity_y,
+                                                    device));
+    return controller_->WillHandleEvent(*current_event_);
+  }
+
   // Notifies the overscroll controller that the current event is ACKed.
   void SimulateAck(bool processed) {
     DCHECK(current_event_);
@@ -101,7 +114,7 @@ class OverscrollControllerTest : public ::testing::Test {
 // initiated, overscroll will not initiate anymore.
 TEST_F(OverscrollControllerTest, MouseWheelConsumedPreventsOverscroll) {
   // Simulate a mouse-wheel, ACK it as not processed, simulate the corresponding
-  // gesture scroll-update event, and ACK it is not processed. Since it is not
+  // gesture scroll-update event, and ACK it as not processed. Since it is not
   // passing the start threshold, no overscroll should happen.
   EXPECT_FALSE(SimulateMouseWheel(10, 0));
   SimulateAck(false);
@@ -165,6 +178,150 @@ TEST_F(OverscrollControllerTest,
   // Next Inertial update event would be consumed by overscroll controller.
   EXPECT_TRUE(SimulateGestureScrollUpdate(
       100, 0, blink::kWebGestureDeviceTouchpad, true));
+}
+
+// Verifies that when pull-to-refresh is disabled, it is not triggered for
+// neither touchpad nor touchscreen.
+TEST_F(OverscrollControllerTest, PullToRefreshDisabled) {
+  ScopedPullToRefreshMode scoped_mode(
+      OverscrollConfig::PullToRefreshMode::kDisabled);
+
+  // Simulate a touchpad gesture scroll-update event that passes the start
+  // threshold and ACK it as not processed. Pull-to-refresh should not be
+  // triggered.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      0, 80, blink::kWebGestureDeviceTouchpad, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchpad zero-velocity fling-start which would normally end
+  // pull-to-refresh, and ACK it as not processed. Nothing should happen.
+  EXPECT_FALSE(
+      SimulateGestureFlingStart(0, 0, blink::kWebGestureDeviceTouchpad));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchscreen gesture scroll-update event that passes the start
+  // threshold and ACK it as not processed. Pull-to-refresh should not be
+  // triggered.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      0, 80, blink::kWebGestureDeviceTouchscreen, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchscreen gesture scroll-end which would normally end
+  // pull-to-refresh, and ACK it as not processed. Nothing should happen.
+  EXPECT_FALSE(SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
+                                    blink::kWebGestureDeviceTouchscreen));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+}
+
+// Verifies that when pull-to-refresh is enabled, it is triggered for both
+// touchpad and touchscreen.
+TEST_F(OverscrollControllerTest, PullToRefreshEnabled) {
+  ScopedPullToRefreshMode scoped_mode(
+      OverscrollConfig::PullToRefreshMode::kEnabled);
+
+  // Simulate a touchpad gesture scroll-update event that passes the start
+  // threshold and ACK it as not processed. Pull-to-refresh should be triggered.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      0, 80, blink::kWebGestureDeviceTouchpad, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_SOUTH, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHPAD, controller_source());
+  EXPECT_EQ(OVERSCROLL_SOUTH, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchpad zero-velocity fling-start and ACK it as not processed..
+  // It should abort pull-to-refresh.
+  EXPECT_FALSE(
+      SimulateGestureFlingStart(0, 0, blink::kWebGestureDeviceTouchpad));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchscreen gesture scroll-update event that passes the start
+  // threshold and ACK it as not processed. Pull-to-refresh should be triggered.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      0, 80, blink::kWebGestureDeviceTouchscreen, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_SOUTH, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHSCREEN, controller_source());
+  EXPECT_EQ(OVERSCROLL_SOUTH, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchscreen gesture scroll-end and ACK it as not processed. It
+  // should abort pull-to-refresh.
+  EXPECT_FALSE(SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
+                                    blink::kWebGestureDeviceTouchscreen));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+}
+
+// Verifies that when pull-to-refresh is enabled only for touchscreen, it is
+// triggered for touchscreen but not for touchpad.
+TEST_F(OverscrollControllerTest, PullToRefreshEnabledTouchscreen) {
+  ScopedPullToRefreshMode scoped_mode(
+      OverscrollConfig::PullToRefreshMode::kEnabledTouchschreen);
+
+  // Simulate a touchpad gesture scroll-update event that passes the start
+  // threshold and ACK it as not processed. Pull-to-refresh should not be
+  // triggered.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      0, 80, blink::kWebGestureDeviceTouchpad, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchpad zero-velocity fling-start which would normally end
+  // pull-to-refresh, and ACK it as not processed. Nothing should happen.
+  EXPECT_FALSE(
+      SimulateGestureFlingStart(0, 0, blink::kWebGestureDeviceTouchpad));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchscreen gesture scroll-update event that passes the start
+  // threshold and ACK it as not processed. Pull-to-refresh should be triggered.
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      0, 80, blink::kWebGestureDeviceTouchscreen, false));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_SOUTH, controller_mode());
+  EXPECT_EQ(OverscrollSource::TOUCHSCREEN, controller_source());
+  EXPECT_EQ(OVERSCROLL_SOUTH, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+
+  // Simulate a touchscreen gesture scroll-end and ACK it as not processed. It
+  // should abort pull-to-refresh.
+  EXPECT_FALSE(SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
+                                    blink::kWebGestureDeviceTouchscreen));
+  SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
 }
 
 }  // namespace content

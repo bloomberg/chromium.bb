@@ -210,6 +210,14 @@ const FeatureEntry::Choice kOverscrollStartThresholdChoices[] = {
      switches::kOverscrollStartThreshold, "166"},
     {flag_descriptions::kOverscrollStartThreshold200Percent,
      switches::kOverscrollStartThreshold, "200"}};
+
+const FeatureEntry::Choice kPullToRefreshChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flags_ui::kGenericExperimentChoiceDisabled, switches::kPullToRefresh, "0"},
+    {flags_ui::kGenericExperimentChoiceEnabled, switches::kPullToRefresh, "1"},
+    {flag_descriptions::kPullToRefreshEnabledTouchscreen,
+     switches::kPullToRefresh, "2"}};
+
 #endif  // USE_AURA
 
 const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
@@ -1660,10 +1668,7 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kOverscrollStartThresholdChoices)},
     {"pull-to-refresh", flag_descriptions::kPullToRefreshName,
      flag_descriptions::kPullToRefreshDescription, kOsAura,
-     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kPullToRefresh,
-                                         "1",
-                                         switches::kPullToRefresh,
-                                         "0")},
+     MULTI_VALUE_TYPE(kPullToRefreshChoices)},
 #endif  // USE_AURA
     {"enable-touch-drag-drop", flag_descriptions::kTouchDragDropName,
      flag_descriptions::kTouchDragDropDescription, kOsWin | kOsCrOS,

@@ -707,7 +707,8 @@ const char kProxyServer[] = "proxy-server";
 
 // Enables or disables pull-to-refresh gesture in response to vertical
 // overscroll.
-// Set the value to '1' to enable the feature, and set to '0' to disable.
+// Set the value to '0' to disable the feature, set to '1' to enable it for both
+// touchpad and touchscreen, and set to '2' to enable it only for touchscreen.
 // Defaults to disabled.
 const char kPullToRefresh[] = "pull-to-refresh";
 
