@@ -47,6 +47,10 @@
     padding-right: 0.7cm;
   }
 
+  .grow {
+    flex: auto;
+  }
+
   .text {
     font-size: 8px;
     overflow: hidden;
@@ -70,8 +74,7 @@ function setup(options) {
     <div class='date text left'></div>
     <div class='title text center'></div>`;
   footer.innerHTML = options['footerTemplate'] || `
-    <div class='url text left'></div>
-    <div class='center'></div>
+    <div class='url text left grow'></div>
     <div class='text right'>
       <span class='pageNumber'></span>/<span class='totalPages'></span>
     </div>`;
