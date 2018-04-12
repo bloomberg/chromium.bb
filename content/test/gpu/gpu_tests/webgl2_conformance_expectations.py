@@ -425,6 +425,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
 
+    # These Transform Feedback tests seem flaky on ANGLE/GL.
+    self.Flaky('conformance2/transform_feedback/switching-objects.html',
+        ['passthrough', 'opengl'], bug=696345)
+    self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
+        ['passthrough', 'opengl'], bug=818383)
+
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
@@ -751,7 +757,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_separate_triangles.html',
         ['mac', 'amd'], bug=483282)
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
-        ['mac', 'amd', 'sierra'], bug=818383)
+        ['mac', 'amd', 'sierra', 'no_angle'], bug=818383)
 
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_00.html',
         ['mac', 'amd'], bug=751254)
