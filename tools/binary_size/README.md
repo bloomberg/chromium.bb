@@ -85,26 +85,28 @@ between milestones.
 ##### Native Symbols
 
 1. Symbol list is Extracted from linker `.map` file.
-   * Map files contain some unique pieces of information compared to `nm` output,
-      such as `** merge strings` entries, and some unnamed symbols (which
-      although unnamed, contain the `.o` path).
+   * Map files contain some unique pieces of information compared to `nm`
+      output, such as `** merge strings` entries, and some unnamed symbols
+      (which although unnamed, contain the `.o` path).
 1. `.o` files are mapped to `.cc` files by parsing `.ninja` files.
-   * This means that `.h` files are never listed as sources. No information about
-     inlined symbols is gathered.
-1. Symbol aliases (when multiple symbols share an address) are collected from
-   debug information via `nm elf-file`.
-   * Aliases are created by identical code folding (linker optimization).
+   * This means that `.h` files are never listed as sources. No information
+     about inlined symbols is gathered.
+1. `** merge strings` symbols are further broken down into individual string
+   literal symbols. This is done by reading string literals from `.o` files, and
+   then searching for them within the `** merge strings` sections.
+1. Symbol aliases:
    * Aliases have the same address and size, but report their `.pss` as
       `.size / .num_aliases`.
-1. `** merge strings` symbols are further broken down into individual string
-  literal symbols. This is done by reading string literals from `.o` files, and
-  then searching for them within the `** merge strings` sections.
-1. "Shared symbols" are those that are owned by multiple `.o` files. These include
-  inline functions defined in `.h` files, and string literals that are de-duped
-  at link-time. Shared symbols are normally represented using one symbol alias
-  per path, but are sometimes collapsed into a single symbol where the path is
-  set to `{shared}/$SYMBOL_COUNT`. This collapsing is done only for symbols owned
-  by a large number of paths.
+   * Type 1: Different names. Caused by identical code folding.
+     * These are collected from debug information via `nm elf-file`.
+   * Type 2: Same names, different paths. Caused by inline functions defined in
+     `.h` files.
+     * These are collected by running `nm` on each `.o` file.
+     * Normally represented using one alias per path, but are sometimes
+       collapsed into a single symbol with a path of `{shared}/$SYMBOL_COUNT`.
+       This collapsing is done only for symbols owned by a large number of paths.
+   * Type 3: String literals that are de-duped at link-time.
+     * These are found as part of the string literal extraction process.
 
 ##### Pak Symbols
 

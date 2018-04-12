@@ -30,7 +30,7 @@ BulkObjectFileAnalyzer:
   Alias for _BulkObjectFileAnalyzerMaster, but when SUPERSIZE_DISABLE_ASYNC=1,
   alias for _BulkObjectFileAnalyzerWorker.
   * AnalyzePaths: Run "nm" on all .o files to collect symbol names that exist
-    within each.
+    within each. Does not work with thin archives (expand them first).
   * SortPaths: Sort results of AnalyzePaths().
   * AnalyzeStringLiterals: Must be run after AnalyzePaths() has completed.
     Extracts string literals from .o files, and then locates them within the
@@ -57,6 +57,7 @@ import sys
 import threading
 import traceback
 
+import ar
 import concurrent
 import demangle
 import models
@@ -263,41 +264,6 @@ def _ReadFileChunks(path, positions):
   return ret
 
 
-def _IterArchiveChunks(path):
-  """For each .o embedded in the given .a file, yields (foo.o, foo_contents)."""
-  with open(path, 'rb') as f:
-    if f.read(8) != '!<arch>\n' :
-      raise Exception('Invalid .a: ' + path)
-    while True:
-      line = f.readline()
-      if not line:
-        return
-      parts = line.split()
-      chunk_size = int(parts[-2])
-      chunk_data = f.read(chunk_size)
-
-      name = parts[0]
-      if name == '/':
-        # Initial metadata chunk.
-        continue
-      elif name == '//':
-        name_list = chunk_data
-        continue
-      elif name[0] == '/':
-        # Name is specified as location in name table.
-        # E.g.: /123
-        name_offset = int(name[1:])
-        slash_idx = name_list.index('/', name_offset)
-        name = name_list[name_offset:slash_idx]
-      else:
-        # Name is specified inline.
-        # E.g.: foo.o/
-        # Name may not have whitespace before next field, so use rindex.
-        # E.g.: somelongername.o/1234
-        name = name[:name.rindex('/')]
-      yield name, chunk_data
-
-
 def _ParseOneObjectFileNmOutput(lines):
   # Constructors are often repeated because they have the same unmangled
   # name, but multiple mangled names. See:
@@ -332,7 +298,7 @@ def _ReadStringSections(target, output_directory, positions_by_path):
   is_archive = isinstance(target, basestring)
   string_sections_by_path = {}
   if is_archive:
-    for subpath, chunk in _IterArchiveChunks(
+    for subpath, chunk in ar.IterArchiveChunks(
         os.path.join(output_directory, target)):
       path = '{}({})'.format(target, subpath)
       positions = positions_by_path.get(path)
