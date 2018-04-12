@@ -63,7 +63,7 @@ void SessionStorageContextMojo::GetStorageUsage(
   NOTREACHED();
 }
 void SessionStorageContextMojo::DeleteStorage(
-    const GURL& origin,
+    const url::Origin& origin,
     const std::string& persistent_namespace_id) {
   NOTREACHED();
 }
