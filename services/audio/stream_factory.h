@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
@@ -16,6 +17,7 @@
 #include "media/mojo/interfaces/audio_logging.mojom.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/audio/group_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace base {
@@ -33,6 +35,7 @@ class ServiceContextRef;
 
 namespace audio {
 
+class LocalMuter;
 class OutputStream;
 
 // This class is used to provide the StreamFactory interface. It will typically
@@ -57,12 +60,15 @@ class StreamFactory final : public mojom::StreamFactory {
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
       CreateOutputStreamCallback created_callback) final;
+  void BindMuter(mojom::LocalMuterAssociatedRequest request,
+                 const base::UnguessableToken& group_id) final;
 
  private:
   using OutputStreamSet =
       base::flat_set<std::unique_ptr<OutputStream>, base::UniquePtrComparator>;
 
-  void RemoveOutputStream(OutputStream* stream);
+  void DestroyOutputStream(OutputStream* stream);
+  void DestroyMuter(LocalMuter* muter);
 
   SEQUENCE_CHECKER(owning_sequence_);
 
@@ -72,6 +78,9 @@ class StreamFactory final : public mojom::StreamFactory {
                    std::unique_ptr<service_manager::ServiceContextRef>>
       bindings_;
 
+  // Order of the following members is important for a clean shutdown.
+  GroupCoordinator coordinator_;
+  std::vector<std::unique_ptr<LocalMuter>> muters_;
   OutputStreamSet output_streams_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamFactory);
