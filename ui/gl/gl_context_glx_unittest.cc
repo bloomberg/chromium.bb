@@ -15,7 +15,8 @@
 
 namespace gl {
 
-#if defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 // https://crbug.com/830653
 #define MAYBE_DoNotDestroyOnFailedMakeCurrent \
   DISABLED_DoNotDestroyOnFailedMakeCurrent
