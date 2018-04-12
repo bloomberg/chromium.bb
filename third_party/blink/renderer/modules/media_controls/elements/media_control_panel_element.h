@@ -6,20 +6,21 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIA_CONTROLS_ELEMENTS_MEDIA_CONTROL_PANEL_ELEMENT_H_
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_div_element.h"
-#include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 
+class ContainerNode;
 class Event;
 class MediaControlsImpl;
-class TimerBase;
 
-class MediaControlPanelElement final : public MediaControlDivElement {
+class MODULES_EXPORT MediaControlPanelElement final
+    : public MediaControlDivElement {
  public:
   explicit MediaControlPanelElement(MediaControlsImpl&);
 
  public:
-  // Methods called by `MediaContrlsImpl`.
+  // Methods called by `MediaControlsImpl`.
   void SetIsDisplayed(bool);
   bool IsOpaque() const;
   void MakeOpaque();
@@ -27,20 +28,25 @@ class MediaControlPanelElement final : public MediaControlDivElement {
 
   void SetKeepDisplayedForAccessibility(bool);
 
+  // Node override;
+  void RemovedFrom(ContainerNode*);
+
+  virtual void Trace(blink::Visitor*);
+
  private:
+  class TransitionEventListener;
+
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
 
-  void StartTimer();
-  void StopTimer();
-  void TransitionTimerFired(TimerBase*);
   void DidBecomeVisible();
+  void HandleTransitionEndEvent();
 
   bool is_displayed_ = false;
   bool opaque_ = true;
   bool keep_displayed_for_accessibility_ = false;
 
-  TaskRunnerTimer<MediaControlPanelElement> transition_timer_;
+  Member<TransitionEventListener> event_listener_;
 };
 
 }  // namespace blink

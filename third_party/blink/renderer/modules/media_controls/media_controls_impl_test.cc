@@ -157,6 +157,10 @@ bool IsElementVisible(Element& element) {
   return true;
 }
 
+void SimulateTransitionEnd(Element& element) {
+  element.DispatchEvent(Event::Create(EventTypeNames::transitionend));
+}
+
 // This must match MediaControlDownloadButtonElement::DownloadActionMetrics.
 enum DownloadActionMetrics {
   kShown = 0,
@@ -1037,6 +1041,7 @@ TEST_F(MediaControlsImplTestWithMockScheduler,
 
   // Once user interaction stops, controls can hide.
   platform_->RunForPeriodSeconds(2);
+  SimulateTransitionEnd(*panel);
   EXPECT_FALSE(IsElementVisible(*panel));
 }
 
