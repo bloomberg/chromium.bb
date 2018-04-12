@@ -107,6 +107,7 @@ static scoped_refptr<extensions::Extension> CreateExtension(
     extensions::Manifest::Location location) {
   base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   manifest.SetString(extensions::manifest_keys::kName, name);
   std::string error;
   scoped_refptr<extensions::Extension> extension =

@@ -338,6 +338,7 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
   const std::string& public_key = NameToPublicKey(name);
   source.SetString(extensions::manifest_keys::kPublicKey, public_key);
   source.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
+  source.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   switch (type) {
     case Manifest::TYPE_EXTENSION:
       // Do nothing.
