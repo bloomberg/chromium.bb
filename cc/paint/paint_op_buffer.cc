@@ -4,7 +4,6 @@
 
 #include "cc/paint/paint_op_buffer.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/paint/decoded_draw_image.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"

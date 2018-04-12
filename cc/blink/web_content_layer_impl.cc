@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_display_item_list_impl.h"
 #include "cc/layers/picture_layer.h"

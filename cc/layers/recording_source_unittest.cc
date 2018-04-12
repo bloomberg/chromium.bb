@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
 #include "cc/raster/raster_source.h"
 #include "cc/test/fake_content_layer_client.h"

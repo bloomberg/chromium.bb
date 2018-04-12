@@ -5,7 +5,6 @@
 #include "cc/test/fake_painted_scrollbar_layer.h"
 
 #include "base/auto_reset.h"
-#include "base/memory/ptr_util.h"
 #include "cc/test/fake_scrollbar.h"
 
 namespace cc {

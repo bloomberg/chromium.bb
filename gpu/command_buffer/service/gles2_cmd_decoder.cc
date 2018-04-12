@@ -20,7 +20,6 @@
 #include "base/containers/queue.h"
 #include "base/containers/span.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"

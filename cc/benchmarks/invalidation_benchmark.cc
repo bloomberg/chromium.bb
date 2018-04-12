@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <limits>
 
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"

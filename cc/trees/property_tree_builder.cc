@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 
-#include "base/memory/ptr_util.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"

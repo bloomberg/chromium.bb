@@ -9,7 +9,6 @@
 #include <limits>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/animation/tween.h"

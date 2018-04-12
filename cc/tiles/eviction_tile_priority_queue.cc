@@ -4,7 +4,6 @@
 
 #include "cc/tiles/eviction_tile_priority_queue.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace cc {
 

@@ -4,7 +4,6 @@
 
 #include "cc/paint/paint_shader.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"

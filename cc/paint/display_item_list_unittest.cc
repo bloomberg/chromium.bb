@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
 #include "cc/paint/filter_operation.h"

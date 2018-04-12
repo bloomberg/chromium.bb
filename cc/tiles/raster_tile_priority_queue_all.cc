@@ -4,7 +4,6 @@
 
 #include "cc/tiles/raster_tile_priority_queue_all.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 
 namespace cc {

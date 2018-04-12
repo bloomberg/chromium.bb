@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"

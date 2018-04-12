@@ -9,7 +9,6 @@
 #include <sstream>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 
 namespace {

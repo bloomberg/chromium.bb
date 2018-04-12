@@ -5,7 +5,6 @@
 #include "gpu/ipc/host/shader_disk_cache.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"

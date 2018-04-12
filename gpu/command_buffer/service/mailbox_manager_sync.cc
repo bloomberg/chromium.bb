@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/containers/queue.h"
-#include "base/memory/ptr_util.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/texture_manager.h"

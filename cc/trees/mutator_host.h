@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_mutator.h"

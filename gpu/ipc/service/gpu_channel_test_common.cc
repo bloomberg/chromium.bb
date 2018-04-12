@@ -4,7 +4,6 @@
 
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"

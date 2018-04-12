@@ -4,7 +4,6 @@
 
 #include "cc/test/layer_tree_pixel_resource_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
