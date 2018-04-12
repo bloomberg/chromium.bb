@@ -55,6 +55,13 @@ using content::WebContents;
 
 namespace {
 
+bool PressTabAndWait(const Browser* browser,
+                     int type,
+                     const content::NotificationSource& source) {
+  return ui_test_utils::SendKeyPressAndWait(browser, ui::VKEY_TAB, false, false,
+                                            false, false, type, source);
+}
+
 #if defined(OS_POSIX)
 // The delay waited in some cases where we don't have a notifications for an
 // action we take.
@@ -777,6 +784,69 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, NoFocusForBackgroundNTP) {
   ASSERT_TRUE(content::ExecuteScript(new_web_contents, go_back_script));
   back_observer.Wait();
   EXPECT_FALSE(IsViewFocused(VIEW_ID_OMNIBOX));
+}
+
+// Tests that the location bar is focusable when showing, which is the case in
+// popup windows.
+// The location bar is currently broken in MacViews Browser.
+// TODO(crbug.com/831483): Enable test once mac is fixed.
+#if defined(OS_MACOSX)
+#define MAYBE_PopupLocationBar DISABLED_PopupLocationBar
+#else
+#define MAYBE_PopupLocationBar PopupLocationBar
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_PopupLocationBar) {
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  Browser* popup_browser = new Browser(
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true));
+  AddBlankTabAndShow(popup_browser);
+  browser_added_observer.WaitForSingleNewBrowser();
+
+  ui_test_utils::ClickOnView(popup_browser, VIEW_ID_TAB_CONTAINER);
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(popup_browser, VIEW_ID_TAB_CONTAINER));
+
+  ASSERT_TRUE(PressTabAndWait(popup_browser,
+                              chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
+                              content::Source<Browser>(popup_browser)));
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(popup_browser, VIEW_ID_LOCATION_ICON));
+
+  ASSERT_TRUE(PressTabAndWait(popup_browser,
+                              chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
+                              content::NotificationService::AllSources()));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(popup_browser, VIEW_ID_OMNIBOX));
+
+  ASSERT_TRUE(PressTabAndWait(popup_browser,
+                              chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
+                              content::NotificationService::AllSources()));
+  EXPECT_TRUE(
+      ui_test_utils::IsViewFocused(popup_browser, VIEW_ID_TAB_CONTAINER));
+}
+
+// Tests that the location bar is not focusable when hidden, which is the case
+// in app windows.
+// Tests that the location bar is focusable when showing, which is the case in
+// popup windows.
+// The location bar is currently broken in MacViews Browser.
+// TODO(crbug.com/831483): Enable test once mac is fixed.
+#if defined(OS_MACOSX)
+#define MAYBE_AppLocationBar DISABLED_AppLocationBar
+#else
+#define MAYBE_AppLocationBar AppLocationBar
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_AppLocationBar) {
+  ui_test_utils::BrowserAddedObserver browser_added_observer;
+  Browser* app_browser = CreateBrowserForApp("foo", browser()->profile());
+  browser_added_observer.WaitForSingleNewBrowser();
+
+  ui_test_utils::ClickOnView(app_browser, VIEW_ID_TAB_CONTAINER);
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(app_browser, VIEW_ID_TAB_CONTAINER));
+
+  ASSERT_TRUE(PressTabAndWait(app_browser,
+                              chrome::NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
+                              content::Source<Browser>(app_browser)));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(app_browser, VIEW_ID_TAB_CONTAINER));
 }
 
 }  // namespace
