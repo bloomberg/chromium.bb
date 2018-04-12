@@ -23,6 +23,7 @@
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_util.h"
+#include "ui/app_list/assistant_interaction_model.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
@@ -291,6 +292,7 @@ void AppListView::Initialize(const InitParams& params) {
   base::Time start_time = base::Time::Now();
   is_tablet_mode_ = params.is_tablet_mode;
   is_side_shelf_ = params.is_side_shelf;
+  assistant_interaction_model_ = params.assistant_interaction_model;
   InitContents(params.initial_apps_page);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));

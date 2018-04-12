@@ -6,6 +6,7 @@
 
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/presenter/app_list_view_delegate_factory.h"
+#include "ash/assistant/ash_assistant_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -20,6 +21,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/app_list_view.h"
@@ -90,6 +92,12 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
                               ->tablet_mode_controller()
                               ->IsTabletModeWindowManagerEnabled();
   params.is_side_shelf = IsSideShelf(root_window);
+
+  if (chromeos::switches::IsAssistantEnabled()) {
+    params.assistant_interaction_model =
+        Shell::Get()->ash_assistant_controller()->assistant_interaction_model();
+  }
+
   view->Initialize(params);
 
   wm::GetWindowState(view->GetWidget()->GetNativeWindow())
