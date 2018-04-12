@@ -29,7 +29,7 @@
 
 <script src="dynamic_form_utils.js"></script>
 <script>
-var filled = false;
+var notify_on_first_name_input_appear = false;
 
 function sleep (time) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -37,16 +37,29 @@ function sleep (time) {
 
 function CountryChanged() {
   sleep(2000).then(() => {
-    DynamicallyChangeForm();
-    filled = true;
+    RemoveForm('form1');
+    var new_form = AddNewFormAndFields('form1', 'addr1.1');
+    document.getElementsByTagName('body')[0].appendChild(new_form);
 
-    // Give time to see if it fills.
-    setTimeout(function() {
-      window.domAutomationController.send(document.getElementById("firstname").value != '');
-    }, 1000);});
+    if (notify_on_first_name_input_appear) {
+      // Give time to see if it fills.
+      setTimeout(function() {
+        window.domAutomationController.send(document.getElementById("firstname_form1").value != '');
+      }, 1000);
+    }
+  });
 }
 
-// The callback will happen after the dynamic change.
-function hasFinished() {}
+function hasRefilled() {
+  var first_name_input = document.getElementById('firstname_form1');
+  if (first_name_input && first_name_input_changed) {
+    // Give time to see if it fills.
+    setTimeout(function() {
+      window.domAutomationController.send(first_name_input.value != '');
+    }, 1000);
+  } else {
+    notify_on_first_name_input_appear = true;
+  }
+}
 
 </script>

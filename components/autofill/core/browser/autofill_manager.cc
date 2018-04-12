@@ -203,13 +203,6 @@ AutofillManager::FillingContext::FillingContext() = default;
 
 AutofillManager::FillingContext::~FillingContext() = default;
 
-void AutofillManager::FillingContext::Reset() {
-  attempted_refill = false;
-  filled_form_name.clear();
-  filled_field_name.clear();
-  type_groups_to_refill.clear();
-}
-
 AutofillManager::AutofillManager(
     AutofillDriver* driver,
     AutofillClient* client,
@@ -774,12 +767,15 @@ void AutofillManager::FillOrPreviewProfileForm(
     address_form_event_logger_->OnDidFillSuggestion(
         profile, form_structure->form_parsed_timestamp());
 
-    // Set up the information needed for an eventual refill.
-    if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms)) {
-      filling_context_.temp_data_model = profile;
-      filling_context_.filled_form_name = form_structure->form_name();
-      filling_context_.filled_field_name = autofill_field->unique_name();
-      filling_context_.original_fill_time = base::TimeTicks::Now();
+    // Set up the information needed for an eventual refill of this form.
+    if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
+        !form_structure->form_name().empty()) {
+      auto& entry = filling_contexts_map_[form_structure->form_name()];
+      auto filling_context = std::make_unique<FillingContext>();
+      filling_context->temp_data_model = profile;
+      filling_context->filled_field_name = autofill_field->unique_name();
+      filling_context->original_fill_time = base::TimeTicks::Now();
+      entry = std::move(filling_context);
     }
   }
 
@@ -1213,7 +1209,7 @@ void AutofillManager::Reset() {
   forms_loaded_timestamps_.clear();
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
-  filling_context_.Reset();
+  filling_contexts_map_.clear();
 }
 
 AutofillManager::AutofillManager(
@@ -1363,12 +1359,18 @@ void AutofillManager::FillOrPreviewDataModelForm(
   // Only record the types that are filled for an eventual refill if all the
   // following are satisfied:
   //  The refilling feature is enabled.
-  //  A refill has not been attempted yet.
+  //  A form with the given name is already filled.
+  //  A refill has not been attempted for that form yet.
   //  This fill is not a refill attempt.
   //  This is not a credit card fill.
+  FillingContext* filling_context = nullptr;
+  auto itr = filling_contexts_map_.find(form_structure->form_name());
+  if (itr != filling_contexts_map_.end())
+    filling_context = itr->second.get();
   bool could_attempt_refill =
       base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
-      !filling_context_.attempted_refill && !is_refill && !is_credit_card;
+      filling_context != nullptr && !filling_context->attempted_refill &&
+      !is_refill && !is_credit_card;
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     if (form_structure->field(i)->section() != autofill_field->section())
@@ -1394,17 +1396,21 @@ void AutofillManager::FillOrPreviewDataModelForm(
     if (cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION)
       continue;
 
-    // Don't fill previously autofilled fields except the initiating field.
-    if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field))
+    // Don't fill previously autofilled fields except the initiating field or
+    // when it's a refill
+    if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field) &&
+        !is_refill) {
       continue;
+    }
 
     if (field_group_type == NO_GROUP)
       continue;
 
     // On a refill, only fill fields from type groups that were present during
     // the initial fill.
-    if (is_refill && !base::ContainsKey(filling_context_.type_groups_to_refill,
-                                        field_group_type)) {
+    if (is_refill &&
+        !base::ContainsKey(filling_context->type_groups_originally_filled,
+                           field_group_type)) {
       continue;
     }
 
@@ -1416,7 +1422,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
     }
 
     if (could_attempt_refill)
-      filling_context_.type_groups_to_refill.insert(field_group_type);
+      filling_context->type_groups_originally_filled.insert(field_group_type);
 
     // Must match ForEachMatchingFormField() in form_autofill_util.cc.
     // Only notify autofilling of empty fields and the field that initiated
@@ -1670,14 +1676,19 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
                                         parse_form_start_time);
 
     // If a form with the same name was previously filled, and there has not
-    // been a refill attempt yet, start the process of triggering a refill.
+    // been a refill attempt on that form yet, start the process of triggering a
+    // refill.
     if (ShouldTriggerRefill(*form_structure)) {
+      auto itr = filling_contexts_map_.find(form_structure->form_name());
+      DCHECK(itr != filling_contexts_map_.end());
+      FillingContext* filling_context = itr->second.get();
+
       // If a timer for the refill was already running, it means the form
       // changed again. Stop the timer and start it again.
-      if (filling_context_.on_refill_timer.IsRunning())
-        filling_context_.on_refill_timer.AbandonAndStop();
+      if (filling_context->on_refill_timer.IsRunning())
+        filling_context->on_refill_timer.AbandonAndStop();
 
-      filling_context_.on_refill_timer.Start(
+      filling_context->on_refill_timer.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kWaitTimeForDynamicFormsMs),
           base::BindRepeating(&AutofillManager::TriggerRefill,
@@ -2013,22 +2024,32 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
   if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
     return false;
 
+  // Should not refill if a form with the same name has not been filled before.
+  auto itr = filling_contexts_map_.find(form_structure.form_name());
+  if (itr == filling_contexts_map_.end())
+    return false;
+
+  FillingContext* filling_context = itr->second.get();
+
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta delta = now - filling_context_.original_fill_time;
-  return !filling_context_.attempted_refill &&
-         !filling_context_.filled_form_name.empty() &&
-         filling_context_.filled_form_name == form_structure.form_name() &&
+  base::TimeDelta delta = now - filling_context->original_fill_time;
+  return !filling_context->attempted_refill &&
          delta.InMilliseconds() < kLimitBeforeRefillMs;
 }
 
 void AutofillManager::TriggerRefill(const FormData& form,
                                     FormStructure* form_structure) {
-  filling_context_.attempted_refill = true;
+  auto itr = filling_contexts_map_.find(form_structure->form_name());
+  DCHECK(itr != filling_contexts_map_.end());
+  FillingContext* filling_context = itr->second.get();
+
+  DCHECK(!filling_context->attempted_refill);
+  filling_context->attempted_refill = true;
 
   // Try to find the field from which the original field originated.
   AutofillField* autofill_field = nullptr;
   for (const std::unique_ptr<AutofillField>& field : *form_structure) {
-    if (field->unique_name() == filling_context_.filled_field_name) {
+    if (field->unique_name() == filling_context->filled_field_name) {
       autofill_field = field.get();
       break;
     }
@@ -2042,7 +2063,7 @@ void AutofillManager::TriggerRefill(const FormData& form,
   base::string16 cvc;
   FillOrPreviewDataModelForm(
       AutofillDriver::RendererFormDataAction::FORM_DATA_ACTION_FILL,
-      /*query_id=*/-1, form, field, filling_context_.temp_data_model,
+      /*query_id=*/-1, form, field, filling_context->temp_data_model,
       /*is_credit_card=*/false, cvc, form_structure, autofill_field,
       /*is_refill=*/true);
 }

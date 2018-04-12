@@ -38,7 +38,8 @@
 
 <script src="dynamic_form_utils.js"></script>
 <script>
-var filled = false;
+
+var notify_on_credit_card_name_input_appear = false;
 
 function ExpChanged() {
   RemoveForm("cc1");
@@ -99,14 +100,23 @@ function ExpChanged() {
 
   document.getElementsByTagName('body')[0].appendChild(new_form);
 
-  filled = true;
-
-  // Give time to see if it fills.
-  setTimeout(function() {
-    window.domAutomationController.send(document.getElementById("cc-name").value != '');
-  }, 1000);
+  if (notify_on_credit_card_name_input_appear) {
+    // Give time to see if it fills.
+    setTimeout(function() {
+      window.domAutomationController.send(document.getElementById("cc-name").value != '');
+    }, 1000);
+  }
 }
 
-// The callback will happen after the dynamic change
-function hasRefilled() {}
+function hasRefilled() {
+  var credit_card_name_input = document.getElementById('cc-name');
+  if (credit_card_name_input) {
+    setTimeout(function() {
+      window.domAutomationController.send(credit_card_name_input.value != '');
+    }, 1000);
+  } else {
+    notify_on_credit_card_name_input_appear = true;
+  }
+}
+
 </script>

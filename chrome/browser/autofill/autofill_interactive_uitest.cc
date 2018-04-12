@@ -549,8 +549,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     ExpectFilledTestForm();
   }
 
-  void TriggerFormFill() {
-    FocusFirstNameField();
+  void TriggerFormFill(const std::string& field_name) {
+    FocusFieldByName(field_name);
 
     // Start filling the first name field with "M" and wait for the popup to be
     // shown.
@@ -1829,7 +1829,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
       embedded_test_server()->GetURL("/autofill/dynamic_form_disabled.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
   bool has_refilled = false;
@@ -1838,13 +1838,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
   ASSERT_FALSE(has_refilled);
 
   // Make sure that the new form was not filled.
-  ExpectFieldValue("firstname", "");
-  ExpectFieldValue("address1", "");
-  ExpectFieldValue("state", "CA");  // Default value.
-  ExpectFieldValue("city", "");
-  ExpectFieldValue("company", "");
-  ExpectFieldValue("email", "");
-  ExpectFieldValue("phone", "");
+  ExpectFieldValue("firstname_form1", "");
+  ExpectFieldValue("address_form1", "");
+  ExpectFieldValue("state_form1", "CA");  // Default value.
+  ExpectFieldValue("city_form1", "");
+  ExpectFieldValue("company_form1", "");
+  ExpectFieldValue("email_form1", "");
+  ExpectFieldValue("phone_form1", "");
 }
 
 // An extension of the test fixture for tests with site isolation.
@@ -2052,7 +2052,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
       embedded_test_server()->GetURL("a.com", "/autofill/dynamic_form.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
   bool has_refilled = false;
@@ -2061,13 +2061,59 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
   ASSERT_TRUE(has_refilled);
 
   // Make sure the new form was filled correctly.
-  ExpectFieldValue("firstname", "Milton");
-  ExpectFieldValue("address1", "4120 Freidrich Lane");
-  ExpectFieldValue("state", "TX");
-  ExpectFieldValue("city", "Austin");
-  ExpectFieldValue("company", "Initech");
-  ExpectFieldValue("email", "red.swingline@initech.com");
-  ExpectFieldValue("phone", "15125551234");
+  ExpectFieldValue("firstname_form1", "Milton");
+  ExpectFieldValue("address_form1", "4120 Freidrich Lane");
+  ExpectFieldValue("state_form1", "TX");
+  ExpectFieldValue("city_form1", "Austin");
+  ExpectFieldValue("company_form1", "Initech");
+  ExpectFieldValue("email_form1", "red.swingline@initech.com");
+  ExpectFieldValue("phone_form1", "15125551234");
+}
+
+IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+                       TwoDynamicChangingFormsFill) {
+  // Setup that the test expects a re-fill to happen.
+  test_delegate()->SetIsExpectingDynamicRefill(true);
+
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL("a.com",
+                                            "/autofill/two_dynamic_forms.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname_form1");
+
+  // Wait for the re-fill to happen.
+  bool has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled('firstname_form1')", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname_form1", "Milton");
+  ExpectFieldValue("address_form1", "4120 Freidrich Lane");
+  ExpectFieldValue("state_form1", "TX");
+  ExpectFieldValue("city_form1", "Austin");
+  ExpectFieldValue("company_form1", "Initech");
+  ExpectFieldValue("email_form1", "red.swingline@initech.com");
+  ExpectFieldValue("phone_form1", "15125551234");
+
+  TriggerFormFill("firstname_form2");
+
+  // Wait for the re-fill to happen.
+  has_refilled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetRenderViewHost(), "hasRefilled('firstname_form2')", &has_refilled));
+  ASSERT_TRUE(has_refilled);
+
+  // Make sure the new form was filled correctly.
+  ExpectFieldValue("firstname_form2", "Milton");
+  ExpectFieldValue("address_form2", "4120 Freidrich Lane");
+  ExpectFieldValue("state_form2", "TX");
+  ExpectFieldValue("city_form2", "Austin");
+  ExpectFieldValue("company_form2", "Initech");
+  ExpectFieldValue("email_form2", "red.swingline@initech.com");
+  ExpectFieldValue("phone_form2", "15125551234");
 }
 
 // Test that forms that dynamically change a second time do not get filled.
@@ -2079,22 +2125,22 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
       "a.com", "/autofill/double_dynamic_form.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for two dynamic changes to happen.
   bool has_refilled = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      GetRenderViewHost(), "hasFinished()", &has_refilled));
+      GetRenderViewHost(), "hasRefilled()", &has_refilled));
   ASSERT_FALSE(has_refilled);
 
   // Make sure the new form was not filled.
-  ExpectFieldValue("firstname", "");
-  ExpectFieldValue("address1", "");
-  ExpectFieldValue("state", "CA");  // Default value.
-  ExpectFieldValue("city", "");
-  ExpectFieldValue("company", "");
-  ExpectFieldValue("email", "");
-  ExpectFieldValue("phone", "");
+  ExpectFieldValue("firstname_form2", "");
+  ExpectFieldValue("address_form2", "");
+  ExpectFieldValue("state_form2", "CA");  // Default value.
+  ExpectFieldValue("city_form2", "");
+  ExpectFieldValue("company_form2", "");
+  ExpectFieldValue("email_form2", "");
+  ExpectFieldValue("phone_form2", "");
 }
 
 // Test that forms that dynamically change after a second do not get filled.
@@ -2106,7 +2152,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
       "a.com", "/autofill/dynamic_form_after_delay.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for the dynamic change to happen.
   bool has_refilled = false;
@@ -2115,13 +2161,13 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
   ASSERT_FALSE(has_refilled);
 
   // Make sure that the new form was not filled.
-  ExpectFieldValue("firstname", "");
-  ExpectFieldValue("address1", "");
-  ExpectFieldValue("state", "CA");  // Default value.
-  ExpectFieldValue("city", "");
-  ExpectFieldValue("company", "");
-  ExpectFieldValue("email", "");
-  ExpectFieldValue("phone", "");
+  ExpectFieldValue("firstname_form1", "");
+  ExpectFieldValue("address_form1", "");
+  ExpectFieldValue("state_form1", "CA");  // Default value.
+  ExpectFieldValue("city_form1", "");
+  ExpectFieldValue("company_form1", "");
+  ExpectFieldValue("email_form1", "");
+  ExpectFieldValue("phone_form1", "");
 }
 
 // Test that only field of a type group that was filled initially get refilled.
@@ -2133,7 +2179,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
       "a.com", "/autofill/dynamic_form_new_field_types.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for the dynamic change to happen.
   bool has_refilled = false;
@@ -2142,19 +2188,19 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
   ASSERT_TRUE(has_refilled);
 
   // The fields present in the initial fill should be filled.
-  ExpectFieldValue("firstname", "Milton");
-  ExpectFieldValue("address1", "4120 Freidrich Lane");
-  ExpectFieldValue("state", "TX");
-  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("firstname_form1", "Milton");
+  ExpectFieldValue("address_form1", "4120 Freidrich Lane");
+  ExpectFieldValue("state_form1", "TX");
+  ExpectFieldValue("city_form1", "Austin");
   // Fields from group that were not present in the initial fill should not be
   // filled
-  ExpectFieldValue("company", "");
+  ExpectFieldValue("company_form1", "");
   // Fields that were present but hidden in the initial fill should not be
   // filled.
-  ExpectFieldValue("email", "");
+  ExpectFieldValue("email_form1", "");
   // The phone should be filled even if it's a different format than the initial
   // fill.
-  ExpectFieldValue("phone", "5125551234");
+  ExpectFieldValue("phone_form1", "5125551234");
 }
 
 // Test that credit card fields are never re-filled.
@@ -2202,7 +2248,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
       "a.com", "/autofill/dynamic_form_select_options_change.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
   bool has_refilled = false;
@@ -2230,17 +2276,17 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
       "a.com", "/autofill/dynamic_form_double_select_options_change.html");
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
 
-  TriggerFormFill();
+  TriggerFormFill("firstname");
 
   // Wait for the re-fill to happen.
   bool has_refilled = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       GetRenderViewHost(), "hasRefilled()", &has_refilled));
-  ASSERT_TRUE(has_refilled);
+  ASSERT_FALSE(has_refilled);
 
   // The fields that were initially filled and not reset should still be filled.
-  ExpectFieldValue("firstname", "Milton");
-  ExpectFieldValue("address1", "");  // That field value was reset dynamically.
+  ExpectFieldValue("firstname", "");  // That field value was reset dynamically.
+  ExpectFieldValue("address1", "4120 Freidrich Lane");
   ExpectFieldValue("state", "CA");   // Default value.
   ExpectFieldValue("city", "Austin");
   ExpectFieldValue("company", "Initech");

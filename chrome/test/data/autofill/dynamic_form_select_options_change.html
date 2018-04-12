@@ -24,7 +24,23 @@
 
 <script>
 
+var notify_on_first_name_input_change = false;
+var first_name_input_changed = false;
+
 function CountryChanged() {
+  var first_name_input = document.getElementById("firstname");
+  // Reset the value of the first name field.
+  first_name_input.value = '';
+  first_name_input.onchange = function() {
+    if (notify_on_first_name_input_change)
+      window.domAutomationController.send(first_name_input.value != '');
+    else
+      first_name_input_changed = true;
+  }
+
+  // Reset the value of the address field.
+  document.getElementById("address1").value = '';
+
   // Get the select object.
   var state_select = document.getElementById("state");
 
@@ -37,17 +53,15 @@ function CountryChanged() {
   state_select.options[0] = new Option('WA', 'WA');
   state_select.options[1] = new Option('MA', 'MA');
   state_select.options[2] = new Option('TX', 'TX');
-
-  // Reset the value of a field.
-  document.getElementById("address1").value = '';
-
-  // Add event lister for state change.
-  state_select.addEventListener('change', function(){
-    window.domAutomationController.send(document.getElementById("firstname").value != '');
-  });
 }
 
-// The callback will happen after the dynamic change.
-function hasRefilled() {}
+function hasRefilled() {
+  var first_name_input = document.getElementById('firstname');
+  if (first_name_input && first_name_input_changed) {
+    window.domAutomationController.send(first_name_input.value != '');
+  } else {
+    notify_on_first_name_input_change = true;
+  }
+}
 
 </script>
