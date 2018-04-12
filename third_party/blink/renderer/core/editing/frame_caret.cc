@@ -51,7 +51,7 @@ FrameCaret::FrameCaret(LocalFrame& frame,
       display_item_client_(new CaretDisplayItemClient()),
       caret_visibility_(CaretVisibility::kHidden),
       caret_blink_timer_(new TaskRunnerTimer<FrameCaret>(
-          frame.GetTaskRunner(TaskType::kUnspecedTimer),
+          frame.GetTaskRunner(TaskType::kInternalAnimation),
           this,
           &FrameCaret::CaretBlinkTimerFired)),
       should_paint_caret_(true),

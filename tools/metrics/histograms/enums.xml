@@ -38372,6 +38372,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="31" label="InternalIPC"/>
   <int value="32" label="InternalUserInteraction"/>
   <int value="33" label="InternalInspector"/>
+  <int value="34" label="InternalAnimation"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

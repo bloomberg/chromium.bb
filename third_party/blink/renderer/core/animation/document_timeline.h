@@ -154,10 +154,10 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
    public:
     DocumentTimelineTiming(DocumentTimeline* timeline)
         : timeline_(timeline),
-          timer_(
-              timeline->GetDocument()->GetTaskRunner(TaskType::kUnspecedTimer),
-              this,
-              &DocumentTimelineTiming::TimerFired) {
+          timer_(timeline->GetDocument()->GetTaskRunner(
+                     TaskType::kInternalAnimation),
+                 this,
+                 &DocumentTimelineTiming::TimerFired) {
       DCHECK(timeline_);
     }
 
