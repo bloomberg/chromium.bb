@@ -358,8 +358,7 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
   CertVerifier* const cert_verifier_;
   HttpAuthHandlerFactory* const http_auth_handler_factory_;
 
-  // Not const since it's modified by HttpNetworkSessionPeer for testing.
-  ProxyResolutionService* proxy_resolution_service_;
+  ProxyResolutionService* const proxy_resolution_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;
