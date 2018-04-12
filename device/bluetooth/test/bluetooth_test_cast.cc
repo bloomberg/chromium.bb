@@ -31,9 +31,9 @@ class BluetoothTestCast::FakeLeScanManager
   void SetScanEnable(bool enable, SetScanEnableCallback cb) override {
     std::move(cb).Run(true);
   }
-  void GetScanResults(
-      GetScanResultsCallback cb,
-      base::Optional<uint16_t> service_uuid = base::nullopt) override {}
+  void GetScanResults(GetScanResultsCallback cb,
+                      base::Optional<chromecast::bluetooth::ScanFilter>
+                          scan_filter = base::nullopt) override {}
   void ClearScanResults() override {}
 
   Observer* observer() {
