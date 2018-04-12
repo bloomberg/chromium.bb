@@ -22,6 +22,7 @@ const int kMaxInvisibleErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
 const int kMaxErrorResilientFrames = 12;
 const int kMaxNoMFMVFrames = 12;
+const int kMaxPrimRefNoneFrames = 12;
 const int kMaxSFrames = 12;
 const int kCpuUsed = 1;
 
@@ -43,6 +44,7 @@ class ErrorResilienceTestLarge
     droppable_nframes_ = 0;
     error_resilient_nframes_ = 0;
     nomfmv_nframes_ = 0;
+    prim_ref_none_nframes_ = 0;
     s_nframes_ = 0;
   }
 
@@ -76,9 +78,10 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
-    frame_flags_ &= ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
-                      AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_FRAME_MVS |
-                      AOM_EFLAG_ERROR_RESILIENT | AOM_EFLAG_SET_S_FRAME);
+    frame_flags_ &=
+        ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
+          AOM_EFLAG_NO_REF_FRAME_MVS | AOM_EFLAG_ERROR_RESILIENT |
+          AOM_EFLAG_SET_S_FRAME | AOM_EFLAG_SET_PRIMARY_REF_NONE);
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
@@ -111,6 +114,18 @@ class ErrorResilienceTestLarge
           std::cout << "             Encoding no mfmv frame: "
                     << nomfmv_frames_[i] << "\n";
           frame_flags_ |= AOM_EFLAG_NO_REF_FRAME_MVS;
+          break;
+        }
+      }
+    }
+
+    if (prim_ref_none_nframes_ > 0 &&
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
+      for (unsigned int i = 0; i < prim_ref_none_nframes_; ++i) {
+        if (prim_ref_none_frames_[i] == video->frame()) {
+          std::cout << "             Encoding no PRIMARY_REF_NONE frame: "
+                    << prim_ref_none_frames_[i] << "\n";
+          frame_flags_ |= AOM_EFLAG_SET_PRIMARY_REF_NONE;
           break;
         }
       }
@@ -237,6 +252,16 @@ class ErrorResilienceTestLarge
       nomfmv_frames_[i] = list[i];
   }
 
+  void SetPrimaryRefNoneFrames(int num, unsigned int *list) {
+    if (num > kMaxPrimRefNoneFrames)
+      num = kMaxPrimRefNoneFrames;
+    else if (num < 0)
+      num = 0;
+    prim_ref_none_nframes_ = num;
+    for (unsigned int i = 0; i < prim_ref_none_nframes_; ++i)
+      prim_ref_none_frames_[i] = list[i];
+  }
+
   void SetSFrames(int num, unsigned int *list) {
     if (num > kMaxSFrames)
       num = kMaxSFrames;
@@ -261,6 +286,7 @@ class ErrorResilienceTestLarge
   unsigned int droppable_nframes_;
   unsigned int error_resilient_nframes_;
   unsigned int nomfmv_nframes_;
+  unsigned int prim_ref_none_nframes_;
   unsigned int s_nframes_;
   double mismatch_psnr_;
   unsigned int mismatch_nframes_;
@@ -269,6 +295,7 @@ class ErrorResilienceTestLarge
   unsigned int droppable_frames_[kMaxDroppableFrames];
   unsigned int error_resilient_frames_[kMaxErrorResilientFrames];
   unsigned int nomfmv_frames_[kMaxNoMFMVFrames];
+  unsigned int prim_ref_none_frames_[kMaxPrimRefNoneFrames];
   unsigned int s_frames_[kMaxSFrames];
   libaom_test::TestMode encoding_mode_;
   int allow_mismatch_;
@@ -350,10 +377,14 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   // Ensure that any invisible frames before the E frame are dropped
   SetInvisibleErrorFrames(num_error_resilient_frames,
                           error_resilient_frame_list);
-  // Set all frames after the error resilient frame to not allow MFMV
-  unsigned int num_nomfmv_frames = 6;
-  unsigned int nomfmv_frame_list[] = { 9, 10, 11, 12, 13, 14 };
-  SetNoMFMVFrames(num_nomfmv_frames, nomfmv_frame_list);
+  // Set all frames after the error resilient frame to not allow MFMV and to
+  // use PRIMARY_REF_NONE for their primary_ref_frame.
+  unsigned int num_post_error_resilient_frames = 6;
+  unsigned int post_error_resilient_frame_list[] = { 9, 10, 11, 12, 13, 14 };
+  SetNoMFMVFrames(num_post_error_resilient_frames,
+                  post_error_resilient_frame_list);
+  SetPrimaryRefNoneFrames(num_post_error_resilient_frames,
+                          post_error_resilient_frame_list);
 
   // Set a few frames before the E frame that are lost (not decoded)
   unsigned int num_error_frames = 5;
@@ -367,7 +398,7 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_error_frames);
   // All frames following the E-frame and the E-frame are expected to have
   // mismatches, but still be parse-able.
-  EXPECT_LE(GetMismatchFrames(), num_nomfmv_frames + 1);
+  EXPECT_LE(GetMismatchFrames(), num_post_error_resilient_frames + 1);
 }
 
 // Check for ParseAbility property of an S frame.

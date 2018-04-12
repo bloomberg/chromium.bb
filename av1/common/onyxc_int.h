@@ -462,6 +462,7 @@ typedef struct AV1Common {
   aom_bit_depth_t dequant_bit_depth;  // bit_depth of current dequantizer
 
   int error_resilient_mode;
+  int force_primary_ref_none;
 
   int tile_cols, tile_rows;
   int last_tile_cols, last_tile_rows;

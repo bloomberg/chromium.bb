@@ -429,6 +429,7 @@ typedef struct AV1_COMP {
   int ext_use_ref_frame_mvs;
   int ext_use_error_resilient;
   int ext_use_s_frame;
+  int ext_use_primary_ref_none;
 
   YV12_BUFFER_CONFIG last_frame_uf;
   YV12_BUFFER_CONFIG trial_frame_rst;

@@ -278,7 +278,8 @@ static void setup_frame(AV1_COMP *cpi) {
   // context 1 for ALTREF frames and context 0 for the others.
 
   cm->primary_ref_frame = PRIMARY_REF_NONE;
-  if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
+  if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
+      cm->force_primary_ref_none) {
     av1_setup_past_independence(cm);
     for (int i = 0; i < REF_FRAMES; i++) {
       cm->fb_of_context_type[i] = -1;
@@ -4443,6 +4444,7 @@ static void set_ext_overrides(AV1_COMP *cpi) {
   // Note: The overrides are valid only for the next frame passed
   // to encode_frame_to_data_rate() function
   if (cpi->ext_use_s_frame) cpi->common.frame_type = S_FRAME;
+  cpi->common.force_primary_ref_none = cpi->ext_use_primary_ref_none;
 
   if (cpi->ext_refresh_frame_context_pending) {
     cpi->common.refresh_frame_context = cpi->ext_refresh_frame_context;
@@ -6029,6 +6031,7 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
                                  ((flags & AOM_EFLAG_ERROR_RESILIENT) != 0);
   cpi->ext_use_s_frame =
       cpi->oxcf.s_frame_mode | ((flags & AOM_EFLAG_SET_S_FRAME) != 0);
+  cpi->ext_use_primary_ref_none = (flags & AOM_EFLAG_SET_PRIMARY_REF_NONE) != 0;
 
   if (flags & AOM_EFLAG_NO_UPD_ENTROPY) {
     av1_update_entropy(cpi, 0);

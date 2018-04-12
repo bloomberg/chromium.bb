@@ -136,6 +136,12 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * s frame.
  */
 #define AOM_EFLAG_SET_S_FRAME (1 << 29)
+/*!\brief Force primary_ref_frame to PRIMARY_REF_NONE
+ *
+ * When this flag is set, the encoder will set a frame's primary_ref_frame
+ * to PRIMARY_REF_NONE
+ */
+#define AOM_EFLAG_SET_PRIMARY_REF_NONE (1 << 30)
 
 /*!\brief AVx encoder control functions
  *
