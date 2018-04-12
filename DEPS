@@ -1273,6 +1273,7 @@ hooks = [
         'src/infra',
         'src/ppapi',
         'src/printing',
+        'src/third_party/blink/tools',  # See http://crbug.com/625877.
         'src/third_party/catapult',
         'src/third_party/closure_compiler/build',
         'src/third_party/WebKit/Tools/Scripts',  # See http://crbug.com/625877.
