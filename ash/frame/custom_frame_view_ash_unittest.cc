@@ -269,7 +269,7 @@ TEST_F(CustomFrameViewAshTest,
 }
 
 TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
-  auto* delegate = new CustomFrameTestWidgetDelegate();
+  auto* delegate = new TestWidgetConstraintsDelegate;
   std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
   widget->Maximize();
 
@@ -280,7 +280,7 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   // header is zero.
   widget->Minimize();
   widget->Show();
-  widget->Maximize();
+  EXPECT_TRUE(widget->IsMaximized());
   EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
 
   // Verify that when we toggle maximize, the header is shown. For example,
@@ -293,6 +293,27 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
   EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
             delegate->GetCustomFrameViewTopBorderHeight());
+}
+
+// Test if creating a new window in tablet mode uses maximzied state
+// and immersive mode.
+TEST_F(CustomFrameViewAshTest, GetPreferredOnScreenHeightInTabletMaximzied) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  auto* delegate = new TestWidgetConstraintsDelegate;
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  auto* frame_view = static_cast<ash::CustomFrameViewAsh*>(
+      widget->non_client_view()->frame_view());
+  auto* header_view = static_cast<HeaderView*>(frame_view->GetHeaderView());
+  ASSERT_TRUE(widget->IsMaximized());
+  EXPECT_TRUE(header_view->in_immersive_mode());
+  static_cast<ImmersiveFullscreenControllerDelegate*>(header_view)
+      ->SetVisibleFraction(0.5);
+  // The height should be ~(33 *.5)
+  EXPECT_NEAR(16, header_view->GetPreferredOnScreenHeight(), 1);
+  static_cast<ImmersiveFullscreenControllerDelegate*>(header_view)
+      ->SetVisibleFraction(0.0);
+  EXPECT_EQ(0, header_view->GetPreferredOnScreenHeight());
 }
 
 // Verify windows that are minimized and then entered into tablet mode will have
@@ -461,13 +482,9 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
       static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
   EXPECT_FALSE(header_view->GetBackButton());
   model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
-  LOG(ERROR) << "Enabling Back";
   custom_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(header_view->GetBackButton());
   EXPECT_FALSE(header_view->GetBackButton()->enabled());
-
-  LOG(ERROR) << "Bounds:"
-             << header_view->GetBackButton()->GetBoundsInScreen().ToString();
 
   // Back button is disabled, so clicking on it should not should
   // generate back key sequence.
@@ -603,16 +620,6 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
   EXPECT_EQ(&ash::kWindowControlDezoomIcon,
             test_api.size_button()->icon_definition_for_test());
 #endif
-}
-
-TEST_F(CustomFrameViewAshTest, ZeroTopBorderHeightOverride) {
-  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
-  std::unique_ptr<views::Widget> widget(CreateTestWidget(delegate));
-  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
-  custom_frame_view->set_zero_top_border_height(true);
-  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
-  custom_frame_view->set_zero_top_border_height(false);
-  EXPECT_EQ(33, delegate->GetCustomFrameViewTopBorderHeight());
 }
 
 namespace {

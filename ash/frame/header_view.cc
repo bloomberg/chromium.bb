@@ -17,8 +17,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 
-#include "base/debug/stack_trace.h"
-
 namespace ash {
 
 HeaderView::HeaderView(views::Widget* target_widget,
@@ -54,13 +52,7 @@ void HeaderView::ResetWindowControls() {
 }
 
 int HeaderView::GetPreferredOnScreenHeight() {
-  const bool should_hide_titlebar_in_tablet_mode =
-      Shell::Get()->tablet_mode_controller() &&
-      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
-          target_widget_);
-
-  if (is_immersive_delegate_ &&
-      (target_widget_->IsFullscreen() || should_hide_titlebar_in_tablet_mode)) {
+  if (is_immersive_delegate_ && in_immersive_mode_) {
     return static_cast<int>(GetPreferredHeight() *
                             fullscreen_visible_fraction_);
   }
@@ -221,7 +213,12 @@ void HeaderView::OnImmersiveRevealEnded() {
   parent()->Layout();
 }
 
+void HeaderView::OnImmersiveFullscreenEntered() {
+  in_immersive_mode_ = true;
+}
+
 void HeaderView::OnImmersiveFullscreenExited() {
+  in_immersive_mode_ = false;
   fullscreen_visible_fraction_ = 0;
   DestroyLayer();
   parent()->Layout();

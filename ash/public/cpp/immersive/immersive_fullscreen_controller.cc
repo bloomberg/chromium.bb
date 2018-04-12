@@ -122,6 +122,8 @@ void ImmersiveFullscreenController::SetEnabled(WindowType window_type,
       if (immersive_focus_watcher_)
         immersive_focus_watcher_->UpdateFocusRevealedLock();
     }
+
+    delegate_->OnImmersiveFullscreenEntered();
   } else {
     // Stop cursor-at-top tracking.
     top_edge_hover_timer_.Stop();

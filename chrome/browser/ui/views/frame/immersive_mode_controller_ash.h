@@ -67,6 +67,7 @@ class ImmersiveModeControllerAsh
   // ImmersiveFullscreenController::Delegate overrides:
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
+  void OnImmersiveFullscreenEntered() override;
   void OnImmersiveFullscreenExited() override;
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
