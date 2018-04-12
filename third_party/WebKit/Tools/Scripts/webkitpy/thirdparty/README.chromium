@@ -16,16 +16,6 @@ Security Critical: no
 Description: Used to reformat python code via format-webkitpy
 Local Modifications: None
 
-Name: coverage - code coverage metrics for python
-Short Name: coverage
-URL: http://pypi.python.org/packages/source/c/coverage/coverage-3.5.1.tar.gz#md5=410d4c8155a4dab222f2bc51212d4a24
-Version: 3.5.1
-License: BSD
-License File: NOT_SHIPPED
-Security Critical: no
-Description: code coverage metrics gathering for test-webkitpy.
-Local Modifications: None
-
 Name: mod_pywebsocket
 Short Name: mod_pywebsocket
 URL: https://code.google.com/p/pywebsocket/
