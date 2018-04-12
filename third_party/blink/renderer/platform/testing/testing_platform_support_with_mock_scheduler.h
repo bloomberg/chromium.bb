@@ -19,7 +19,7 @@ class OrderedSimpleTaskRunner;
 namespace blink {
 
 namespace scheduler {
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 }
 
 // This class adds scheduler and threading support to TestingPlatformSupport.
@@ -57,7 +57,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // Advances |m_clock| by |seconds|.
   void AdvanceClockSeconds(double seconds);
 
-  scheduler::RendererSchedulerImpl* GetRendererScheduler() const;
+  scheduler::MainThreadSchedulerImpl* GetMainThreadScheduler() const;
 
   // Controls the behavior of |m_mockTaskRunner| if true, then |m_clock| will
   // be advanced to the next timer when there's no more immediate work to do.
@@ -68,7 +68,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<scheduler::RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<scheduler::MainThreadSchedulerImpl> scheduler_;
   scheduler::TaskQueueManagerForTest*
       task_queue_manager_;  // Owned by scheduler_.
   std::unique_ptr<WebThread> thread_;

@@ -30,14 +30,14 @@ class TracedValue;
 namespace blink {
 namespace scheduler {
 
-class RendererSchedulerImpl;
 class CPUTimeBudgetPool;
 class FrameSchedulerImpl;
+class MainThreadSchedulerImpl;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
   PageSchedulerImpl(PageScheduler::Delegate*,
-                    RendererSchedulerImpl*,
+                    MainThreadSchedulerImpl*,
                     bool disable_background_timer_throttling);
 
   ~PageSchedulerImpl() override;
@@ -117,7 +117,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
 
   TraceableVariableController tracing_controller_;
   std::set<FrameSchedulerImpl*> frame_schedulers_;
-  RendererSchedulerImpl* renderer_scheduler_;
+  MainThreadSchedulerImpl* main_thread_scheduler_;
 
   PageVisibilityState page_visibility_;
   bool disable_background_timer_throttling_;

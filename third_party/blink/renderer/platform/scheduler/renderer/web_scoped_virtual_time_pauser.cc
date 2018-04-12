@@ -14,7 +14,7 @@ WebScopedVirtualTimePauser::WebScopedVirtualTimePauser()
     : scheduler_(nullptr) {}
 
 WebScopedVirtualTimePauser::WebScopedVirtualTimePauser(
-    scheduler::RendererSchedulerImpl* scheduler,
+    scheduler::MainThreadSchedulerImpl* scheduler,
     VirtualTaskDuration duration,
     const WebString& name)
     : duration_(duration),

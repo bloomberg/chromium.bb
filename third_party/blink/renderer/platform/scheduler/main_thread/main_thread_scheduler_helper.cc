@@ -11,9 +11,9 @@ namespace scheduler {
 
 MainThreadSchedulerHelper::MainThreadSchedulerHelper(
     std::unique_ptr<TaskQueueManager> task_queue_manager,
-    RendererSchedulerImpl* renderer_scheduler)
+    MainThreadSchedulerImpl* main_thread_scheduler)
     : SchedulerHelper(std::move(task_queue_manager)),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       default_task_queue_(
           NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
                            MainThreadTaskQueue::QueueType::kDefault)
@@ -54,7 +54,7 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
     const MainThreadTaskQueue::QueueCreationParams& params) {
   scoped_refptr<MainThreadTaskQueue> task_queue =
       task_queue_manager_->CreateTaskQueue<MainThreadTaskQueue>(
-          params.spec, params, renderer_scheduler_);
+          params.spec, params, main_thread_scheduler_);
   if (params.used_for_important_tasks)
     task_queue->SetQueuePriority(TaskQueue::QueuePriority::kHighestPriority);
   return task_queue;

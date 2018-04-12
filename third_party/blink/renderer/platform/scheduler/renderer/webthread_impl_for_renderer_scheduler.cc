@@ -13,7 +13,7 @@ namespace blink {
 namespace scheduler {
 
 WebThreadImplForRendererScheduler::WebThreadImplForRendererScheduler(
-    RendererSchedulerImpl* scheduler)
+    MainThreadSchedulerImpl* scheduler)
     : web_scheduler_(new RendererWebSchedulerImpl(scheduler)),
       task_runner_(scheduler->DefaultTaskQueue()),
       idle_task_runner_(scheduler->IdleTaskRunner()),

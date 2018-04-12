@@ -18,7 +18,7 @@ namespace blink {
 namespace scheduler {
 
 std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests() {
-  return std::make_unique<scheduler::RendererSchedulerImpl>(
+  return std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::make_unique<TaskQueueManagerForTest>(
           std::make_unique<LazyThreadControllerForTest>()),
       base::nullopt);
@@ -26,8 +26,8 @@ std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests() {
 
 void RunIdleTasksForTesting(WebMainThreadScheduler* scheduler,
                             const base::Closure& callback) {
-  RendererSchedulerImpl* scheduler_impl =
-      static_cast<RendererSchedulerImpl*>(scheduler);
+  MainThreadSchedulerImpl* scheduler_impl =
+      static_cast<MainThreadSchedulerImpl*>(scheduler);
   scheduler_impl->RunIdleTasksForTesting(callback);
 }
 
