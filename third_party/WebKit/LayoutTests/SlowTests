@@ -510,3 +510,7 @@ crbug.com/825170 external/wpt/css/css-transitions/properties-value-implicit-001.
 crbug.com/825170 external/wpt/css/css-transitions/properties-value-inherit-001.html [ Slow ]
 crbug.com/825170 external/wpt/css/css-transitions/properties-value-inherit-002.html [ Slow ]
 crbug.com/825170 external/wpt/css/css-transitions/transitioncancel-001.html [ Slow ]
+
+# This test does a lot of IPC because it tests limits on IPC allocations,
+# and is therefore slow.
+crbug.com/826957 fast/peerconnection/RTCPeerConnection-manyCandidates.html [ Slow ]
