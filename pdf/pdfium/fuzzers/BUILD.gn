@@ -31,7 +31,6 @@ group("pdf_fuzzers") {
   if (pdf_enable_xfa) {
     deps += [
       ":pdf_cfx_barcode_fuzzer",
-      ":pdf_cfx_saxreader_fuzzer",
       ":pdf_codec_bmp_fuzzer",
       ":pdf_codec_gif_fuzzer",
       ":pdf_codec_jpeg_fuzzer",
@@ -240,14 +239,6 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_cfx_barcode_fuzzer",
     ]
-  }
-
-  fuzzer_test("pdf_cfx_saxreader_fuzzer") {
-    sources = []
-    deps = [
-      "//third_party/pdfium/testing/libfuzzer:pdf_cfx_saxreader_fuzzer",
-    ]
-    dict = "dicts/pdf_xml.dict"
   }
 
   fuzzer_test("pdfium_xfa_fuzzer") {
