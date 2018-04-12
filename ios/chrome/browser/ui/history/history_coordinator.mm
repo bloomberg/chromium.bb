@@ -60,6 +60,7 @@
   self.historyContainerViewController =
       [[HistoryTableContainerViewController alloc]
           initWithTable:historyTableViewController];
+  self.historyContainerViewController.dispatcher = self.dispatcher;
   self.historyContainerViewController.title =
       l10n_util::GetNSString(IDS_HISTORY_TITLE);
   // TODO(crbug.com/805192): Move this configuration code to

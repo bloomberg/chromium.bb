@@ -5,7 +5,10 @@
 #import "ios/chrome/browser/ui/history/history_table_container_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_container_bottom_toolbar.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -20,12 +23,14 @@
 @end
 
 @implementation HistoryTableContainerViewController
+@synthesize dispatcher = _dispatcher;
 @synthesize searchController = _searchController;
 
 - (instancetype)initWithTable:
     (ChromeTableViewController<HistoryTableUpdaterDelegate>*)table {
   self = [super initWithTable:table];
   if (self) {
+    // Setup the bottom toolbar.
     NSString* leadingButtonString = l10n_util::GetNSStringWithFixup(
         IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
     NSString* trailingButtonString =
@@ -36,6 +41,11 @@
     [toolbar.leadingButton setTitleColor:[UIColor redColor]
                                 forState:UIControlStateNormal];
     self.bottomToolbar = toolbar;
+
+    // Setup toolbar buttons.
+    [self.bottomToolbar.leadingButton addTarget:self
+                                         action:@selector(openPrivacySettings)
+                               forControlEvents:UIControlEventTouchUpInside];
   }
   return self;
 }
@@ -62,6 +72,21 @@
     self.tableViewController.tableView.tableHeaderView =
         self.searchController.searchBar;
   }
+}
+
+#pragma mark - Private Methods
+
+- (void)openPrivacySettings {
+  // Ignore the button tap if |self| is presenting another ViewController.
+  // TODO(crbug.com/831865): Find a way to disable the button when a VC is
+  // presented.
+  if ([self presentedViewController]) {
+    return;
+  }
+  base::RecordAction(
+      base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
+  [self.dispatcher showClearBrowsingDataSettingsFromViewController:
+                       self.navigationController];
 }
 
 @end
