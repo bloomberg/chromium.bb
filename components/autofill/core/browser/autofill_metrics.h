@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_METRICS_H_
 
 #include <stddef.h>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -683,7 +684,9 @@ class AutofillMetrics {
                       QualityMetricType metric_type,
                       ServerFieldType predicted_type,
                       ServerFieldType actual_type);
-    void LogFormSubmitted(AutofillFormSubmittedState state,
+    void LogFormSubmitted(bool is_for_credit_card,
+                          const std::set<FormType>& form_types,
+                          AutofillFormSubmittedState state,
                           const base::TimeTicks& form_parsed_timestamp);
 
     // We initialize |url_| with the form's URL when we log the first form
@@ -920,6 +923,8 @@ class AutofillMetrics {
   // state of the form.
   static void LogAutofillFormSubmittedState(
       AutofillFormSubmittedState state,
+      bool is_for_credit_card,
+      const std::set<FormType>& form_types,
       const base::TimeTicks& form_parsed_timestamp,
       FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
@@ -956,9 +961,14 @@ class AutofillMetrics {
 
   // Logs the developer engagement ukm for the specified |url| and autofill
   // fields in the form structure. |developer_engagement_metrics| is a bitmask
-  // of |AutofillMetrics::DeveloperEngagementMetric|.
+  // of |AutofillMetrics::DeveloperEngagementMetric|. |is_for_credit_card| is
+  // true if the form is a credit card form. |form_types| is set of
+  // FormType recorded for the page. This will be stored as a bit vector
+  // in UKM.
   static void LogDeveloperEngagementUkm(ukm::UkmRecorder* ukm_recorder,
                                         const GURL& url,
+                                        bool is_for_credit_card,
+                                        std::set<FormType> form_types,
                                         int developer_engagement_metrics);
 
   // Logs the the |ukm_entry_name| with the specified |url| and the specified
@@ -967,6 +977,9 @@ class AutofillMetrics {
                      const GURL& url,
                      const std::string& ukm_entry_name,
                      const std::vector<std::pair<const char*, int>>& metrics);
+
+  // Converts form type to bit vector to store in UKM.
+  static int64_t FormTypesToBitVector(const std::set<FormType>& form_types);
 
   // Utility to log autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.

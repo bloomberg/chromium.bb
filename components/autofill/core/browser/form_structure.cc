@@ -394,10 +394,11 @@ void FormStructure::DetermineHeuristicTypes(ukm::UkmRecorder* ukm_recorder) {
         1 << AutofillMetrics::FORM_CONTAINS_UPI_VPA_HINT;
   }
 
-  if (developer_engagement_metrics)
-    AutofillMetrics::LogDeveloperEngagementUkm(ukm_recorder,
-                                               main_frame_origin().GetURL(),
-                                               developer_engagement_metrics);
+  if (developer_engagement_metrics) {
+    AutofillMetrics::LogDeveloperEngagementUkm(
+        ukm_recorder, main_frame_origin().GetURL(), IsCompleteCreditCardForm(),
+        GetFormTypes(), developer_engagement_metrics);
+  }
 
   if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions))
     RationalizeFieldTypePredictions();
@@ -747,6 +748,7 @@ void FormStructure::LogQualityMetrics(
   size_t num_edited_autofilled_fields = 0;
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
+  bool is_for_credit_card = IsCompleteCreditCardForm();
 
   // Determine the correct suffix for the metric, depending on whether or
   // not a submission was observed.
@@ -842,7 +844,8 @@ void FormStructure::LogQualityMetrics(
       form_interactions_ukm_logger->UpdateSourceURL(
           main_frame_origin().GetURL());
     AutofillMetrics::LogAutofillFormSubmittedState(
-        state, form_parsed_timestamp_, form_interactions_ukm_logger);
+        state, is_for_credit_card, GetFormTypes(), form_parsed_timestamp_,
+        form_interactions_ukm_logger);
   }
 }
 
