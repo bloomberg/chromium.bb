@@ -261,8 +261,7 @@ void ComponentCloudPolicyStore::Purge(
   bool purged_current_policies = false;
   for (PolicyBundle::const_iterator it = policy_bundle_.begin();
        it != policy_bundle_.end(); ++it) {
-    if (it->first.domain == domain &&
-        filter.Run(it->first.component_id) &&
+    if (it->first.domain == domain && filter.Run(it->first.component_id) &&
         !policy_bundle_.Get(it->first).empty()) {
       policy_bundle_.Get(it->first).Clear();
       purged_current_policies = true;
@@ -334,9 +333,8 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
   if (stored_policy_times_iter != stored_policy_times_.end())
     time_not_before = stored_policy_times_iter->second;
 
-  std::unique_ptr<ComponentCloudPolicyValidator> validator(
-      ComponentCloudPolicyValidator::Create(
-          std::move(proto), scoped_refptr<base::SequencedTaskRunner>()));
+  auto validator = std::make_unique<ComponentCloudPolicyValidator>(
+      std::move(proto), scoped_refptr<base::SequencedTaskRunner>());
   validator->ValidateTimestamp(time_not_before,
                                CloudPolicyValidatorBase::TIMESTAMP_VALIDATED);
   validator->ValidateUser(account_id_);
@@ -388,10 +386,9 @@ bool ComponentCloudPolicyStore::ValidatePolicy(
   return true;
 }
 
-bool ComponentCloudPolicyStore::ValidateData(
-    const std::string& data,
-    const std::string& secure_hash,
-    PolicyMap* policy) {
+bool ComponentCloudPolicyStore::ValidateData(const std::string& data,
+                                             const std::string& secure_hash,
+                                             PolicyMap* policy) {
   if (crypto::SHA256HashString(data) != secure_hash) {
     LOG(ERROR) << "The received data doesn't match the expected hash.";
     return false;

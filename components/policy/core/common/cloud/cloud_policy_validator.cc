@@ -128,7 +128,6 @@ void CloudPolicyValidatorBase::ValidatePayload() {
   validation_flags_ |= VALIDATE_PAYLOAD;
 }
 
-
 void CloudPolicyValidatorBase::ValidateCachedKey(
     const std::string& cached_key,
     const std::string& cached_key_signature,
@@ -181,11 +180,9 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
 
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
     std::unique_ptr<em::PolicyFetchResponse> policy_response,
-    google::protobuf::MessageLite* payload,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : status_(VALIDATION_OK),
       policy_(std::move(policy_response)),
-      payload_(payload),
       validation_flags_(0),
       timestamp_not_before_(0),
       timestamp_option_(TIMESTAMP_VALIDATED),
@@ -236,6 +233,18 @@ void CloudPolicyValidatorBase::RunValidation() {
   RunChecks();
 }
 
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckProtoPayload(
+    google::protobuf::MessageLite* payload) {
+  DCHECK(payload);
+  if (!policy_data_ || !policy_data_->has_policy_value() ||
+      !payload->ParseFromString(policy_data_->policy_value()) ||
+      !payload->IsInitialized()) {
+    LOG(ERROR) << "Failed to decode policy payload protobuf";
+    return VALIDATION_POLICY_PARSE_ERROR;
+  }
+  return VALIDATION_OK;
+}
+
 void CloudPolicyValidatorBase::RunChecks() {
   status_ = VALIDATION_OK;
   if ((policy_->has_error_code() && policy_->error_code() != 200) ||
@@ -259,19 +268,19 @@ void CloudPolicyValidatorBase::RunChecks() {
   // error, s.t. the most severe check will determine the validation status.
   static const struct {
     int flag;
-    Status (CloudPolicyValidatorBase::* checkFunction)();
+    Status (CloudPolicyValidatorBase::*checkFunction)();
   } kCheckFunctions[] = {
-      { VALIDATE_SIGNATURE,   &CloudPolicyValidatorBase::CheckSignature },
-      { VALIDATE_INITIAL_KEY, &CloudPolicyValidatorBase::CheckInitialKey },
-      { VALIDATE_CACHED_KEY,  &CloudPolicyValidatorBase::CheckCachedKey },
-      { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
-      { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
-      { VALIDATE_DM_TOKEN,    &CloudPolicyValidatorBase::CheckDMToken },
-      { VALIDATE_DEVICE_ID,   &CloudPolicyValidatorBase::CheckDeviceId },
-      { VALIDATE_USER,        &CloudPolicyValidatorBase::CheckUser },
-      { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
-      { VALIDATE_TIMESTAMP,   &CloudPolicyValidatorBase::CheckTimestamp },
-      { VALIDATE_PAYLOAD,     &CloudPolicyValidatorBase::CheckPayload },
+      {VALIDATE_SIGNATURE, &CloudPolicyValidatorBase::CheckSignature},
+      {VALIDATE_INITIAL_KEY, &CloudPolicyValidatorBase::CheckInitialKey},
+      {VALIDATE_CACHED_KEY, &CloudPolicyValidatorBase::CheckCachedKey},
+      {VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType},
+      {VALIDATE_ENTITY_ID, &CloudPolicyValidatorBase::CheckEntityId},
+      {VALIDATE_DM_TOKEN, &CloudPolicyValidatorBase::CheckDMToken},
+      {VALIDATE_DEVICE_ID, &CloudPolicyValidatorBase::CheckDeviceId},
+      {VALIDATE_USER, &CloudPolicyValidatorBase::CheckUser},
+      {VALIDATE_DOMAIN, &CloudPolicyValidatorBase::CheckDomain},
+      {VALIDATE_TIMESTAMP, &CloudPolicyValidatorBase::CheckTimestamp},
+      {VALIDATE_PAYLOAD, &CloudPolicyValidatorBase::CheckPayload},
   };
 
   for (size_t i = 0; i < arraysize(kCheckFunctions); ++i) {
@@ -296,8 +305,7 @@ bool CloudPolicyValidatorBase::CheckNewPublicKeyVerificationSignature() {
   }
 
   if (!CheckVerificationKeySignature(
-          policy_->new_public_key(),
-          verification_key_,
+          policy_->new_public_key(), verification_key_,
           policy_->new_public_key_verification_signature_deprecated())) {
     LOG(ERROR) << "Signature verification failed";
     UMA_HISTOGRAM_ENUMERATION(kMetricPolicyKeyVerification,
@@ -324,8 +332,8 @@ bool CloudPolicyValidatorBase::CheckVerificationKeySignature(
   // If no owning_domain_ supplied, try extracting the domain from the policy
   // itself (this happens on certain platforms during startup, when we validate
   // cached policy before prefs are loaded).
-  std::string domain = owning_domain_.empty() ?
-      ExtractDomainFromPolicy() : owning_domain_;
+  std::string domain =
+      owning_domain_.empty() ? ExtractDomainFromPolicy() : owning_domain_;
   if (domain.empty()) {
     LOG(ERROR) << "Policy does not contain a domain";
     return false;
@@ -344,8 +352,7 @@ std::string CloudPolicyValidatorBase::ExtractDomainFromPolicy() {
   std::string domain;
   if (policy_data_->has_username()) {
     domain = gaia::ExtractDomainName(
-        gaia::CanonicalizeEmail(
-            gaia::SanitizeEmail(policy_data_->username())));
+        gaia::CanonicalizeEmail(gaia::SanitizeEmail(policy_data_->username())));
   }
   return domain;
 }
@@ -385,8 +392,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckSignature() {
 }
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckInitialKey() {
-  if (!policy_->has_new_public_key() ||
-      !policy_->has_policy_data_signature() ||
+  if (!policy_->has_new_public_key() || !policy_->has_policy_data_signature() ||
       !VerifySignature(policy_->policy_data(), policy_->new_public_key(),
                        policy_->policy_data_signature(), SHA1)) {
     LOG(ERROR) << "Initial policy signature validation failed";
@@ -413,7 +419,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckCachedKey() {
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckPolicyType() {
   if (!policy_data_->has_policy_type() ||
-       policy_data_->policy_type() != policy_type_) {
+      policy_data_->policy_type() != policy_type_) {
     LOG(ERROR) << "Wrong policy type " << policy_data_->policy_type();
     return VALIDATION_WRONG_POLICY_TYPE;
   }
@@ -468,8 +474,7 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDMToken() {
 
 CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDeviceId() {
   if (device_id_option_ == DEVICE_ID_REQUIRED &&
-      (!policy_data_->has_device_id() ||
-       policy_data_->device_id().empty())) {
+      (!policy_data_->has_device_id() || policy_data_->device_id().empty())) {
     LOG(ERROR) << "Empty device id encountered - expected: " << device_id_;
     return VALIDATION_BAD_DEVICE_ID;
   }
@@ -540,17 +545,6 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDomain() {
   if (domain_ != policy_domain) {
     LOG(ERROR) << "Invalid user name " << policy_data_->username();
     return VALIDATION_BAD_USER;
-  }
-
-  return VALIDATION_OK;
-}
-
-CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckPayload() {
-  if (!policy_data_->has_policy_value() ||
-      !payload_->ParseFromString(policy_data_->policy_value()) ||
-      !payload_->IsInitialized()) {
-    LOG(ERROR) << "Failed to decode policy payload protobuf";
-    return VALIDATION_POLICY_PARSE_ERROR;
   }
 
   return VALIDATION_OK;

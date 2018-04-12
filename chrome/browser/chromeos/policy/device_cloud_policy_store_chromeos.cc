@@ -114,10 +114,9 @@ void DeviceCloudPolicyStoreChromeOS::OnDeviceSettingsServiceShutdown() {
 std::unique_ptr<DeviceCloudPolicyValidator>
 DeviceCloudPolicyStoreChromeOS::CreateValidator(
     const em::PolicyFetchResponse& policy) {
-  std::unique_ptr<DeviceCloudPolicyValidator> validator(
-      DeviceCloudPolicyValidator::Create(
-          std::make_unique<em::PolicyFetchResponse>(policy),
-          background_task_runner_));
+  auto validator = std::make_unique<DeviceCloudPolicyValidator>(
+      std::make_unique<em::PolicyFetchResponse>(policy),
+      background_task_runner_);
   validator->ValidateDomain(install_attributes_->GetDomain());
   validator->ValidatePolicyType(dm_protocol::kChromeDevicePolicyType);
   validator->ValidatePayload();

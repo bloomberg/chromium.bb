@@ -71,9 +71,8 @@ std::unique_ptr<UserCloudPolicyValidator>
 MachineLevelUserCloudPolicyStore::CreateValidator(
     std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
     CloudPolicyValidatorBase::ValidateTimestampOption option) {
-  std::unique_ptr<UserCloudPolicyValidator> validator =
-      UserCloudPolicyValidator::Create(std::move(policy),
-                                       background_task_runner());
+  auto validator = std::make_unique<UserCloudPolicyValidator>(
+      std::move(policy), background_task_runner());
   validator->ValidatePolicyType(
       dm_protocol::kChromeMachineLevelUserCloudPolicyType);
   validator->ValidateDMToken(machine_dm_token_,

@@ -137,8 +137,7 @@ void DeviceLocalAccountPolicyStore::StoreValidatedPolicy(
   }
 
   session_manager_client_->StoreDeviceLocalAccountPolicy(
-      account_id_,
-      policy_blob,
+      account_id_, policy_blob,
       base::Bind(&DeviceLocalAccountPolicyStore::HandleStoreResult,
                  weak_factory_.GetWeakPtr()));
 }
@@ -191,9 +190,8 @@ void DeviceLocalAccountPolicyStore::Validate(
     return;
   }
 
-  std::unique_ptr<UserCloudPolicyValidator> validator(
-      UserCloudPolicyValidator::Create(std::move(policy_response),
-                                       background_task_runner()));
+  auto validator = std::make_unique<UserCloudPolicyValidator>(
+      std::move(policy_response), background_task_runner());
   validator->ValidateUsername(account_id_, false);
   validator->ValidatePolicyType(dm_protocol::kChromePublicAccountPolicyType);
   // The timestamp is verified when storing a new policy downloaded from the
