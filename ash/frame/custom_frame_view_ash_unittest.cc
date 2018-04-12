@@ -11,8 +11,6 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_view.h"
-#include "ash/frame/wide_frame_view.h"
-#include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -622,57 +620,6 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
   EXPECT_EQ(&ash::kWindowControlDezoomIcon,
             test_api.size_button()->icon_definition_for_test());
 #endif
-}
-
-TEST_F(CustomFrameViewAshTest, WideFrame) {
-  auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
-
-  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
-  HeaderView* header_view =
-      static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
-
-  WideFrameView* wide_frame_view = WideFrameView::Create(widget.get());
-  HeaderView* wide_header_view = wide_frame_view->header_view();
-  display::Screen* screen = display::Screen::GetScreen();
-
-  const gfx::Rect work_area = screen->GetPrimaryDisplay().work_area();
-  gfx::Rect frame_bounds =
-      wide_frame_view->GetWidget()->GetWindowBoundsInScreen();
-  EXPECT_EQ(work_area.width(), frame_bounds.width());
-  EXPECT_EQ(work_area.origin(), frame_bounds.origin());
-  EXPECT_FALSE(header_view->should_paint());
-  EXPECT_TRUE(wide_header_view->should_paint());
-
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_FALSE(wide_header_view->should_paint());
-  Shell::Get()->window_selector_controller()->ToggleOverview();
-  EXPECT_TRUE(wide_header_view->should_paint());
-
-  // Test immersive.
-  ImmersiveFullscreenController controller;
-  wide_frame_view->Init(&controller);
-  EXPECT_FALSE(wide_header_view->in_immersive_mode());
-  EXPECT_FALSE(header_view->in_immersive_mode());
-
-  controller.SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
-  EXPECT_TRUE(header_view->in_immersive_mode());
-  EXPECT_TRUE(wide_header_view->in_immersive_mode());
-  // The height should be ~(33 *.5)
-  wide_header_view->SetVisibleFraction(0.5);
-  EXPECT_NEAR(16, wide_header_view->GetPreferredOnScreenHeight(), 1);
-
-  controller.SetEnabled(ImmersiveFullscreenController::WINDOW_TYPE_OTHER,
-                        false);
-  EXPECT_FALSE(header_view->in_immersive_mode());
-  EXPECT_FALSE(wide_header_view->in_immersive_mode());
-  // visible fraction should be ignored in non immersive.
-  wide_header_view->SetVisibleFraction(0.5);
-  EXPECT_EQ(33, wide_header_view->GetPreferredOnScreenHeight());
-
-  UpdateDisplay("1234x800");
-  EXPECT_EQ(1234,
-            wide_frame_view->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
 namespace {
