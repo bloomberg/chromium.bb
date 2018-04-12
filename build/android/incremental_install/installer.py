@@ -227,10 +227,11 @@ def Install(device, install_json, apk=None, enable_device_cache=False,
   finalize_timer = _Execute(use_concurrency, release_installer_lock, save_cache)
 
   logging.info(
-      'Took %s seconds (setup=%s, install=%s, libs=%s, dex=%s, finalize=%s)',
-      main_timer.GetDelta(), setup_timer.GetDelta(), install_timer.GetDelta(),
-      push_native_timer.GetDelta(), push_dex_timer.GetDelta(),
-      finalize_timer.GetDelta())
+      'Install of %s took %s seconds '
+      '(setup=%s, install=%s, libs=%s, dex=%s, finalize=%s)',
+      os.path.basename(apk.path), main_timer.GetDelta(), setup_timer.GetDelta(),
+      install_timer.GetDelta(), push_native_timer.GetDelta(),
+      push_dex_timer.GetDelta(), finalize_timer.GetDelta())
   if show_proguard_warning:
     logging.warning('Target had proguard enabled, but incremental install uses '
                     'non-proguarded .dex files. Performance characteristics '
