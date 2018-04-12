@@ -19,9 +19,8 @@ using testing::Pointee;
 
 namespace contextual_suggestions {
 
-using Cluster = ntp_snippets::ContextualContentSuggestionsService::Cluster;
-using ClustersCallback = ntp_snippets::ContextualContentSuggestionsService::
-    FetchContextualSuggestionClustersCallback;
+using Cluster = ntp_snippets::Cluster;
+using ClustersCallback = ntp_snippets::FetchClustersCallback;
 
 namespace {
 

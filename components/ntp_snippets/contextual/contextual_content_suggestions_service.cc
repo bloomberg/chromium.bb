@@ -10,28 +10,18 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "components/ntp_snippets/contextual/cluster.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
-namespace {
-static const char kSamplePeekText[] = "Peek text";
-static const char kSampleClusterTitle[] = "Cluster title filler";
-}  // namespace
 
 using contextual_suggestions::ContextualSuggestionsMetricsReporter;
-
-ContextualContentSuggestionsService::Cluster::Cluster() = default;
-
-ContextualContentSuggestionsService::Cluster::Cluster(const std::string& title)
-    : title(title) {}
-
-ContextualContentSuggestionsService::Cluster::Cluster(Cluster&& other) =
-    default;
-
-ContextualContentSuggestionsService::Cluster::~Cluster() = default;
+using contextual_suggestions::Cluster;
+using contextual_suggestions::FetchClustersCallback;
 
 ContextualContentSuggestionsService::ContextualContentSuggestionsService(
     std::unique_ptr<ContextualSuggestionsFetcher>
@@ -50,24 +40,16 @@ ContextualContentSuggestionsService::ContextualContentSuggestionsService(
 ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
     default;
 
+// TODO(pnoland): remove this
 void ContextualContentSuggestionsService::FetchContextualSuggestions(
     const GURL& url,
-    FetchContextualSuggestionsCallback callback) {
-  contextual_suggestions_fetcher_->FetchContextualSuggestions(
-      url,
-      base::BindOnce(
-          &ContextualContentSuggestionsService::DidFetchContextualSuggestions,
-          base::Unretained(this), url, std::move(callback)));
-}
+    FetchContextualSuggestionsCallback callback) {}
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
     const GURL& url,
-    FetchContextualSuggestionClustersCallback callback) {
-  // TODO(pnoland): Fetch suggestions using the new fetcher.
-  contextual_suggestions_fetcher_->FetchContextualSuggestions(
-      url, base::BindOnce(&ContextualContentSuggestionsService::
-                              DidFetchContextualSuggestionsClusterWrapper,
-                          base::Unretained(this), std::move(callback)));
+    FetchClustersCallback callback) {
+  contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
+      url, std::move(callback));
 }
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
@@ -109,40 +91,6 @@ void ContextualContentSuggestionsService::ReportEvent(
   }
 
   metrics_reporter_->RecordEvent(event);
-}
-
-// TODO(gaschler): Cache contextual suggestions at run-time.
-void ContextualContentSuggestionsService::DidFetchContextualSuggestions(
-    const GURL& url,
-    FetchContextualSuggestionsCallback callback,
-    Status status,
-    ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions) {
-  std::vector<ContentSuggestion> suggestions;
-  if (fetched_suggestions.has_value()) {
-    for (const std::unique_ptr<ContextualSuggestion>& suggestion :
-         fetched_suggestions.value()) {
-      suggestions.emplace_back(suggestion->ToContentSuggestion());
-      ContentSuggestion::ID id = suggestions.back().id();
-      GURL image_url = suggestion->salient_image_url();
-      image_url_by_id_[id.id_within_category()] = image_url;
-    }
-  }
-  std::move(callback).Run(status, url, std::move(suggestions));
-}
-
-void ContextualContentSuggestionsService::
-    DidFetchContextualSuggestionsClusterWrapper(
-        FetchContextualSuggestionClustersCallback callback,
-        Status status,
-        ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions) {
-  std::vector<Cluster> clusters;
-  if (fetched_suggestions.has_value()) {
-    Cluster cluster;
-    cluster.title = kSampleClusterTitle;
-    cluster.suggestions = std::move(fetched_suggestions.value());
-    clusters.push_back(std::move(cluster));
-  }
-  std::move(callback).Run(kSamplePeekText, std::move(clusters));
 }
 
 void ContextualContentSuggestionsService::Shutdown() {

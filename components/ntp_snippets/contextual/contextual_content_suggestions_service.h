@@ -22,6 +22,9 @@
 
 namespace ntp_snippets {
 
+using contextual_suggestions::Cluster;
+using contextual_suggestions::FetchClustersCallback;
+
 class CachedImageFetcher;
 class RemoteSuggestionsDatabase;
 
@@ -29,20 +32,6 @@ class RemoteSuggestionsDatabase;
 // for contextual suggestion, using caching.
 class ContextualContentSuggestionsService : public KeyedService {
  public:
-  // A structure representing a suggestion cluster.
-  struct Cluster {
-   public:
-    Cluster();
-    explicit Cluster(const std::string& title);
-    Cluster(Cluster&& other);
-    ~Cluster();
-
-    std::string title;
-    ContextualSuggestion::PtrVector suggestions;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Cluster);
-  };
 
   ContextualContentSuggestionsService(
       std::unique_ptr<ContextualSuggestionsFetcher>
@@ -60,10 +49,6 @@ class ContextualContentSuggestionsService : public KeyedService {
                               const GURL& url,
                               std::vector<ContentSuggestion> suggestions)>;
 
-  using FetchContextualSuggestionClustersCallback =
-      base::OnceCallback<void(std::string peek_text,
-                              std::vector<Cluster> clusters)>;
-
   // Asynchronously fetches contextual suggestions for the given URL.
   virtual void FetchContextualSuggestions(
       const GURL& url,
@@ -72,7 +57,7 @@ class ContextualContentSuggestionsService : public KeyedService {
   // Asynchronously fetches contextual suggestions for the given URL.
   virtual void FetchContextualSuggestionClusters(
       const GURL& url,
-      FetchContextualSuggestionClustersCallback callback);
+      FetchClustersCallback callback);
 
   // Fetches an image pointed to by |url| and internally caches it using
   // |suggestion_id|. Asynchronous if cache or network is queried.
@@ -96,18 +81,6 @@ class ContextualContentSuggestionsService : public KeyedService {
   void Shutdown() override;
 
  private:
-  void DidFetchContextualSuggestions(
-      const GURL& url,
-      FetchContextualSuggestionsCallback callback,
-      Status status,
-      ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions);
-
-  // Temporary function to wire new bridge to the old prototype.
-  void DidFetchContextualSuggestionsClusterWrapper(
-      FetchContextualSuggestionClustersCallback callback,
-      Status status,
-      ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions);
-
   // Cache for images of contextual suggestions, needed by CachedImageFetcher.
   std::unique_ptr<RemoteSuggestionsDatabase> contextual_suggestions_database_;
 

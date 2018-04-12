@@ -29,7 +29,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using Cluster = ntp_snippets::ContextualContentSuggestionsService::Cluster;
+using Cluster = ntp_snippets::Cluster;
 
 namespace contextual_suggestions {
 
@@ -154,10 +154,10 @@ void ContextualSuggestionsBridge::OnSuggestionsAvailable(
         env, j_result, ConvertUTF8ToJavaString(env, cluster.title));
     for (auto& suggestion : cluster.suggestions) {
       Java_ContextualSuggestionsBridge_addSuggestionToLastCluster(
-          env, j_result, ConvertUTF8ToJavaString(env, suggestion->id()),
-          ConvertUTF8ToJavaString(env, suggestion->title()),
-          ConvertUTF8ToJavaString(env, suggestion->publisher_name()),
-          ConvertUTF8ToJavaString(env, suggestion->url().spec()));
+          env, j_result, ConvertUTF8ToJavaString(env, suggestion.id),
+          ConvertUTF8ToJavaString(env, suggestion.title),
+          ConvertUTF8ToJavaString(env, suggestion.publisher_name),
+          ConvertUTF8ToJavaString(env, suggestion.url.spec()));
     }
   }
   RunCallbackAndroid(j_callback, j_result);
