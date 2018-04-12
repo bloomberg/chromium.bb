@@ -33,12 +33,12 @@
 
   {{interface.name}}Proxy.prototype.{{method.name}} = function(
 {%- for parameter in method.parameters -%}
-{{parameter.name}}{% if not loop.last %}, {% endif %}
+{{parameter.name|sanitize_identifier}}{% if not loop.last %}, {% endif %}
 {%- endfor -%}
 ) {
-    var params = new {{interface_method_id}}_Params();
+    var params_ = new {{interface_method_id}}_Params();
 {%- for parameter in method.parameters %}
-    params.{{parameter.name}} = {{parameter.name}};
+    params_.{{parameter.name}} = {{parameter.name|sanitize_identifier}};
 {%- endfor %}
 
 {%- if method.response_parameters == None %}
@@ -46,12 +46,12 @@
     var builder = new codec.MessageV2Builder(
         k{{interface_method_id}}_Name,
         codec.align({{interface_method_id}}_Params.encodedSize));
-    builder.setPayload({{interface_method_id}}_Params, params);
+    builder.setPayload({{interface_method_id}}_Params, params_);
 {%-   else %}
     var builder = new codec.MessageV0Builder(
         k{{interface_method_id}}_Name,
         codec.align({{interface_method_id}}_Params.encodedSize));
-    builder.encodeStruct({{interface_method_id}}_Params, params);
+    builder.encodeStruct({{interface_method_id}}_Params, params_);
 {%-   endif %}
     var message = builder.finish();
     this.receiver_.accept(message);
@@ -62,13 +62,13 @@
           k{{interface_method_id}}_Name,
           codec.align({{interface_method_id}}_Params.encodedSize),
           codec.kMessageExpectsResponse, 0);
-      builder.setPayload({{interface_method_id}}_Params, params);
+      builder.setPayload({{interface_method_id}}_Params, params_);
 {%-   else %}
       var builder = new codec.MessageV1Builder(
           k{{interface_method_id}}_Name,
           codec.align({{interface_method_id}}_Params.encodedSize),
           codec.kMessageExpectsResponse, 0);
-      builder.encodeStruct({{interface_method_id}}_Params, params);
+      builder.encodeStruct({{interface_method_id}}_Params, params_);
 {%-   endif %}
       var message = builder.finish();
       this.receiver_.acceptAndExpectResponse(message).then(function(message) {
@@ -89,8 +89,8 @@
   }
 
 {%- for method in interface.methods %}
-  {{interface.name}}Stub.prototype.{{method.name}} = function({{method.parameters|map(attribute='name')|join(', ')}}) {
-    return this.delegate_ && this.delegate_.{{method.name}} && this.delegate_.{{method.name}}({{method.parameters|map(attribute='name')|join(', ')}});
+  {{interface.name}}Stub.prototype.{{method.name}} = function({{method.parameters|map(attribute='name')|map('sanitize_identifier')|join(', ')}}) {
+    return this.delegate_ && this.delegate_.{{method.name}} && this.delegate_.{{method.name}}({{method.parameters|map(attribute='name')|map('sanitize_identifier')|join(', ')}});
   }
 {%- endfor %}
 
