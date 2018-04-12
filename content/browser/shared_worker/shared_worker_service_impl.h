@@ -14,23 +14,26 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker_connector.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/public/browser/shared_worker_service.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace blink {
 class MessagePortChannel;
 }
 
 namespace content {
-
 class SharedWorkerInstance;
 class SharedWorkerHost;
 
 class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
  public:
-  SharedWorkerServiceImpl();
+  explicit SharedWorkerServiceImpl(
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~SharedWorkerServiceImpl() override;
 
   // SharedWorkerService implementation.
@@ -58,7 +61,11 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
                     mojom::SharedWorkerClientPtr client,
                     int process_id,
                     int frame_id,
-                    const blink::MessagePortChannel& message_port);
+                    const blink::MessagePortChannel& message_port,
+                    mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+                        service_worker_provider_info,
+                    network::mojom::URLLoaderFactoryAssociatedPtrInfo
+                        script_loader_factory_info);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);
@@ -68,6 +75,10 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   std::set<std::unique_ptr<SharedWorkerHost>, base::UniquePtrComparator>
       worker_hosts_;
   base::OnceClosure terminate_all_workers_callback_;
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+
+  base::WeakPtrFactory<SharedWorkerServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerServiceImpl);
 };

@@ -15,6 +15,16 @@ import "third_party/blink/public/mojom/service_worker/service_worker_registratio
 // and browser.
 const string kNavigation_ServiceWorkerSpec = "navigation:service_worker";
 
+// S13nServiceWorker:
+// Sent from the browser process to the renderer. Contains parameteres for the
+// constructor of ServiceWorkerNetworkProvider used for starting a shared
+// worker.
+struct ServiceWorkerProviderInfoForSharedWorker {
+  int32 provider_id;
+  associated ServiceWorkerContainerHost host_ptr_info;
+  associated ServiceWorkerContainer& client_request;
+};
+
 // Sent from the browser process to the renderer. Contains parameters for the
 // constructor of ServiceWorkerNetworkProvider used for starting a service
 // worker.

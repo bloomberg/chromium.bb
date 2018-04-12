@@ -89,7 +89,10 @@ void SuccessReportingCallback(
 bool IsSameOriginClientProviderHost(const GURL& origin,
                                     ServiceWorkerProviderHost* host) {
   return host->IsProviderForClient() &&
-         host->document_url().GetOrigin() == origin;
+         host->document_url().GetOrigin() == origin &&
+         // Don't expose "reserved" clients (clients that are not yet execution
+         // ready) to the Clients API.
+         host->is_execution_ready();
 }
 
 bool IsSameOriginWindowProviderHost(const GURL& origin,
@@ -386,13 +389,6 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (providers_->Lookup(process_id))
     providers_->Remove(process_id);
-}
-
-std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
-ServiceWorkerContextCore::GetProviderHostIterator() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return base::WrapUnique(new ProviderHostIterator(
-      providers_.get(), ProviderHostIterator::ProviderHostPredicate()));
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
