@@ -4,9 +4,10 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-
+#include "base/sys_info.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search/instant_test_base.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -23,6 +25,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -135,6 +138,147 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginNTPBrowserTest,
   ui_test_utils::NavigateToURL(browser(), isolated_url);
   EXPECT_FALSE(instant_service->IsInstantProcess(
       contents->GetMainFrame()->GetProcess()->GetID()));
+}
+
+// Helper class to mark "https://ntp.com/" as an isolated origin.
+class SitePerProcessMemoryThresholdBrowserTest : public InProcessBrowserTest {
+ public:
+  SitePerProcessMemoryThresholdBrowserTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+
+    // This way the test always sees the same amount of physical memory
+    // (kLowMemoryDeviceThresholdMB = 512MB), regardless of how much memory is
+    // available in the testing environment.
+    command_line->AppendSwitch(switches::kEnableLowEndDeviceMode);
+    EXPECT_EQ(512, base::SysInfo::AmountOfPhysicalMemoryMB());
+  }
+
+  // Some command-line switches override field trials - the tests need to be
+  // skipped in this case.
+  bool ShouldSkipBecauseOfConflictingCommandLineSwitches() {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSitePerProcess))
+      return true;
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableSiteIsolationTrials))
+      return true;
+
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessMemoryThresholdBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       SitePerProcessEnabled_HighThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // 512MB of physical memory that the test simulates is below the 768MB
+  // threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  base::test::ScopedFeatureList site_per_process;
+  site_per_process.InitAndEnableFeature(features::kSitePerProcess);
+
+  // Despite enabled site-per-process trial, there should be no isolation
+  // because the device has too little memory.
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       SitePerProcessEnabled_LowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // 512MB of physical memory that the test simulates is above the 128MB
+  // threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  base::test::ScopedFeatureList site_per_process;
+  site_per_process.InitAndEnableFeature(features::kSitePerProcess);
+
+  // site-per-process trial is enabled, and the memory threshold is above the
+  // memory present on the device.
+  EXPECT_TRUE(content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       SitePerProcessEnabled_NoThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  base::test::ScopedFeatureList site_per_process;
+  site_per_process.InitAndEnableFeature(features::kSitePerProcess);
+
+  EXPECT_TRUE(content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       SitePerProcessDisabled_HighThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // 512MB of physical memory that the test simulates is below the 768MB
+  // threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "768"}});
+
+  base::test::ScopedFeatureList site_per_process;
+  site_per_process.InitAndDisableFeature(features::kSitePerProcess);
+
+  // site-per-process trial is disabled, so isolation should be disabled
+  // (i.e. the memory threshold should be ignored).
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       SitePerProcessDisabled_LowThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  // 512MB of physical memory that the test simulates is above the 128MB
+  // threshold.
+  base::test::ScopedFeatureList memory_feature;
+  memory_feature.InitAndEnableFeatureWithParameters(
+      features::kSitePerProcessOnlyForHighMemoryClients,
+      {{features::kSitePerProcessOnlyForHighMemoryClientsParamName, "128"}});
+
+  base::test::ScopedFeatureList site_per_process;
+  site_per_process.InitAndDisableFeature(features::kSitePerProcess);
+
+  // site-per-process trial is disabled, so isolation should be disabled
+  // (i.e. the memory threshold should be ignored).
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessMemoryThresholdBrowserTest,
+                       SitePerProcessDisabled_NoThreshold) {
+  if (ShouldSkipBecauseOfConflictingCommandLineSwitches())
+    return;
+
+  base::test::ScopedFeatureList site_per_process;
+  site_per_process.InitAndDisableFeature(features::kSitePerProcess);
+
+  // site-per-process trial is disabled, so isolation should be disabled
+  // (i.e. the memory threshold should be ignored).
+  EXPECT_FALSE(
+      content::SiteIsolationPolicy::UseDedicatedProcessesForAllSites());
 }
 
 }  // namespace content

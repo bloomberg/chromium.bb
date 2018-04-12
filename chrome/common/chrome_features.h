@@ -300,6 +300,9 @@ extern const base::Feature kSiteNotificationChannels;
 
 extern const base::Feature kSitePerProcess;
 
+extern const base::Feature kSitePerProcessOnlyForHighMemoryClients;
+extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kNativeSmb;
 #endif
