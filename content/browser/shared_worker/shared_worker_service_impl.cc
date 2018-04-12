@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/shared_worker/shared_worker_host.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_script_loader_factory.h"
@@ -221,18 +220,12 @@ void SharedWorkerServiceImpl::CreateWorker(
   auto host =
       std::make_unique<SharedWorkerHost>(this, std::move(instance), process_id);
 
-  bool pause_on_start;
-  base::UnguessableToken devtools_worker_token;
-  SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
-      host.get(), &pause_on_start, &devtools_worker_token);
-
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
   mojom::SharedWorkerFactoryPtr factory;
   BindInterface(process_host, &factory);
 
-  host->Start(std::move(factory), pause_on_start, devtools_worker_token,
-              std::move(service_worker_provider_info),
+  host->Start(std::move(factory), std::move(service_worker_provider_info),
               std::move(script_loader_factory_info));
   host->AddClient(std::move(client), process_id, frame_id, message_port);
 

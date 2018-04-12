@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/unguessable_token.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
@@ -77,30 +78,38 @@ SharedWorkerHost::~SharedWorkerHost() {
 
 void SharedWorkerHost::Start(
     mojom::SharedWorkerFactoryPtr factory,
-    bool pause_on_start,
-    const base::UnguessableToken& devtools_worker_token,
     mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
         service_worker_provider_info,
     network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  blink::mojom::WorkerContentSettingsProxyPtr content_settings;
-  content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
-      instance_->url(), this, mojo::MakeRequest(&content_settings));
-
-  mojom::SharedWorkerHostPtr host;
-  binding_.Bind(mojo::MakeRequest(&host));
-
-  service_manager::mojom::InterfaceProviderPtr interface_provider;
-  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
-      mojom::kNavigation_SharedWorkerSpec, process_id_,
-      mojo::MakeRequest(&interface_provider)));
 
   mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
       instance_->url(), instance_->name(), instance_->content_security_policy(),
       instance_->content_security_policy_type(),
       instance_->creation_address_space()));
 
+  // Register with DevTools.
+  bool pause_on_start;
+  base::UnguessableToken devtools_worker_token;
+  SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
+      this, &pause_on_start, &devtools_worker_token);
+
+  // Set up content settings interface.
+  blink::mojom::WorkerContentSettingsProxyPtr content_settings;
+  content_settings_ = std::make_unique<SharedWorkerContentSettingsProxyImpl>(
+      instance_->url(), this, mojo::MakeRequest(&content_settings));
+
+  // Set up host interface.
+  mojom::SharedWorkerHostPtr host;
+  binding_.Bind(mojo::MakeRequest(&host));
+
+  // Set up interface provider interface.
+  service_manager::mojom::InterfaceProviderPtr interface_provider;
+  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
+      mojom::kNavigation_SharedWorkerSpec, process_id_,
+      mojo::MakeRequest(&interface_provider)));
+
+  // Send the CreateSharedWorker message.
   factory_ = std::move(factory);
   factory_->CreateSharedWorker(
       std::move(info), pause_on_start, devtools_worker_token,
