@@ -138,7 +138,7 @@ bool IsElementVisible(Element& element) {
   const CSSPropertyValueSet* inline_style = element.InlineStyle();
 
   if (!inline_style)
-    return true;
+    return element.getAttribute("class") != "transparent";
 
   if (inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
     return false;
@@ -1066,6 +1066,52 @@ TEST_F(MediaControlsImplTestWithMockScheduler, CursorHidesWhenControlsHide) {
   // Once the controls hide again, the cursor is hidden again.
   platform_->RunForPeriodSeconds(4);
   EXPECT_TRUE(IsCursorHidden());
+}
+
+TEST_F(MediaControlsImplTestWithMockScheduler, AccessibleFocusShowsControls) {
+  EnsureSizing();
+
+  Element* panel = MediaControls().PanelElement();
+
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  MediaControls().OnAccessibleFocus();
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_FALSE(IsElementVisible(*panel));
+
+  MediaControls().OnAccessibleFocus();
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+}
+
+TEST_F(MediaControlsImplTestWithMockScheduler,
+       AccessibleFocusKeepsControlsHiddenButDisplayed) {
+  EnsureSizing();
+
+  Element* panel = MediaControls().PanelElement();
+
+  MediaControls().MediaElement().SetSrc("http://example.com");
+  MediaControls().MediaElement().Play();
+
+  platform_->RunForPeriodSeconds(2);
+  EXPECT_TRUE(IsElementVisible(*panel));
+
+  MediaControls().OnAccessibleFocus();
+  platform_->RunForPeriodSeconds(4);
+  EXPECT_FALSE(IsElementVisible(*panel));
+
+  // Display is none but can't be checked via InlineStyle. Adding checks of this
+  // to make sure that any one changing this assumption will have to update this
+  // test.
+  EXPECT_FALSE(panel->InlineStyle());
+  EXPECT_NE(EDisplay::kNone, panel->EnsureComputedStyle()->Display());
 }
 
 TEST_F(MediaControlsImplTest,
