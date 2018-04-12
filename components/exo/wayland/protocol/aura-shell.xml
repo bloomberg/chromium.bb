@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zaura_shell" version="4">
+  <interface name="zaura_shell" version="5">
     <description summary="aura_shell">
       The global interface exposing aura shell capabilities is used to
       instantiate an interface extension for a wl_surface object.
@@ -68,7 +68,7 @@
     </request>
   </interface>
 
-  <interface name="zaura_surface" version="4">
+  <interface name="zaura_surface" version="5">
     <description summary="aura shell interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to access aura shell specific functionality for surface.
@@ -120,9 +120,18 @@
       </description>
       <arg name="startup_id" type="string" allow-null="true"/>
     </request>
+
+    <!-- Version 5 additions -->
+
+    <request name="set_application_id" since="5">
+      <description summary="set the application ID of this surface">
+	Set the application ID.
+      </description>
+      <arg name="application_id" type="string" allow-null="true"/>
+    </request>
   </interface>
 
-  <interface name="zaura_output" version="2">
+  <interface name="zaura_output" version="5">
     <description summary="aura shell interface to a wl_output">
       An additional interface to a wl_output object, which allows the
       client to access aura shell specific functionality for output.
@@ -156,7 +165,7 @@
       <entry name="2000" value="2000"/>
     </enum>
 
-    <event name="scale">
+    <event name="scale" since="2">
       <description summary="advertise available scales for the output">
 	The scale event describes an available scale for the output.
 
@@ -168,6 +177,37 @@
       </description>
       <arg name="flags" type="uint" enum="scale_property" summary="bitfield of scale flags"/>
       <arg name="scale" type="uint" enum="scale_factor" summary="output scale"/>
+    </event>
+
+    <!-- Version 5 additions -->
+
+    <enum name="connection_type">
+      <entry name="unknown" value="0"/>
+      <entry name="internal" value="1"/>
+    </enum>
+
+    <event name="connection" since="5">
+      <description summary="advertise connection for the output">
+	The connection event describes how the output is connected.
+
+	The event is sent when binding to the output object.
+      </description>
+      <arg name="connection" type="uint" enum="connection_type" summary="output connection"/>
+    </event>
+
+    <event name="device_scale_factor" since="5">
+      <description summary="advertise device scale factor for the output">
+	This event describes the device specific scale factor for the output.
+
+	The device specific scale factor is not expected the change during
+	the lifetime of the output. And it is not limited to an integer value
+	like the scale factor provided by wl_output interface. The exact
+	contents scale used by the compositor can be determined by combining
+	this device scale factor with the current output scale.
+
+	The event is sent when binding to the output object.
+      </description>
+      <arg name="scale" type="uint" enum="scale_factor" summary="output device scale factor"/>
     </event>
  </interface>
 

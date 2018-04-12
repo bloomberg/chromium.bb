@@ -57,6 +57,7 @@ class SubSurface : public SurfaceDelegate, public SurfaceObserver {
   }
   void OnSetParent(Surface* parent, const gfx::Point& position) override {}
   void OnSetStartupId(const char* startup_id) override {}
+  void OnSetApplicationId(const char* application_id) override {}
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

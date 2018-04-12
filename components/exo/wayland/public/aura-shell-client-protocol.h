@@ -219,6 +219,8 @@ enum zaura_surface_frame_type {
 #define ZAURA_SURFACE_SET_PARENT 1
 #define ZAURA_SURFACE_SET_FRAME_COLORS 2
 #define ZAURA_SURFACE_SET_STARTUP_ID 3
+#define ZAURA_SURFACE_SET_APPLICATION_ID 4
+
 
 /**
  * @ingroup iface_zaura_surface
@@ -236,6 +238,10 @@ enum zaura_surface_frame_type {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_STARTUP_ID_SINCE_VERSION 4
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_APPLICATION_ID_SINCE_VERSION 5
 
 /** @ingroup iface_zaura_surface */
 static inline void
@@ -306,11 +312,23 @@ zaura_surface_set_frame_colors(struct zaura_surface *zaura_surface, uint32_t act
  *
  * Set the startup ID.
  */
-static inline void zaura_surface_set_startup_id(
-    struct zaura_surface* zaura_surface,
-    const char* startup_id) {
-  wl_proxy_marshal((struct wl_proxy*)zaura_surface,
-                   ZAURA_SURFACE_SET_STARTUP_ID, startup_id);
+static inline void
+zaura_surface_set_startup_id(struct zaura_surface *zaura_surface, const char *startup_id)
+{
+	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
+			 ZAURA_SURFACE_SET_STARTUP_ID, startup_id);
+}
+
+/**
+ * @ingroup iface_zaura_surface
+ *
+ * Set the application ID.
+ */
+static inline void
+zaura_surface_set_application_id(struct zaura_surface *zaura_surface, const char *application_id)
+{
+	wl_proxy_marshal((struct wl_proxy *) zaura_surface,
+			 ZAURA_SURFACE_SET_APPLICATION_ID, application_id);
 }
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
@@ -352,6 +370,14 @@ enum zaura_output_scale_factor {
 };
 #endif /* ZAURA_OUTPUT_SCALE_FACTOR_ENUM */
 
+#ifndef ZAURA_OUTPUT_CONNECTION_TYPE_ENUM
+#define ZAURA_OUTPUT_CONNECTION_TYPE_ENUM
+enum zaura_output_connection_type {
+	ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN = 0,
+	ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL = 1,
+};
+#endif /* ZAURA_OUTPUT_CONNECTION_TYPE_ENUM */
+
 /**
  * @ingroup iface_zaura_output
  * @struct zaura_output_listener
@@ -369,11 +395,44 @@ struct zaura_output_listener {
 	 * scale that was received with the current flag set.
 	 * @param flags bitfield of scale flags
 	 * @param scale output scale
+	 * @since 2
 	 */
 	void (*scale)(void *data,
 		      struct zaura_output *zaura_output,
 		      uint32_t flags,
 		      uint32_t scale);
+	/**
+	 * advertise connection for the output
+	 *
+	 * The connection event describes how the output is connected.
+	 *
+	 * The event is sent when binding to the output object.
+	 * @param connection output connection
+	 * @since 5
+	 */
+	void (*connection)(void *data,
+			   struct zaura_output *zaura_output,
+			   uint32_t connection);
+	/**
+	 * advertise device scale factor for the output
+	 *
+	 * This event describes the device specific scale factor for the
+	 * output.
+	 *
+	 * The device specific scale factor is not expected the change
+	 * during the lifetime of the output. And it is not limited to an
+	 * integer value like the scale factor provided by wl_output
+	 * interface. The exact contents scale used by the compositor can
+	 * be determined by combining this device scale factor with the
+	 * current output scale.
+	 *
+	 * The event is sent when binding to the output object.
+	 * @param scale output device scale factor
+	 * @since 5
+	 */
+	void (*device_scale_factor)(void *data,
+				    struct zaura_output *zaura_output,
+				    uint32_t scale);
 };
 
 /**
@@ -390,7 +449,15 @@ zaura_output_add_listener(struct zaura_output *zaura_output,
 /**
  * @ingroup iface_zaura_output
  */
-#define ZAURA_OUTPUT_SCALE_SINCE_VERSION 1
+#define ZAURA_OUTPUT_SCALE_SINCE_VERSION 2
+/**
+ * @ingroup iface_zaura_output
+ */
+#define ZAURA_OUTPUT_CONNECTION_SINCE_VERSION 5
+/**
+ * @ingroup iface_zaura_output
+ */
+#define ZAURA_OUTPUT_DEVICE_SCALE_FACTOR_SINCE_VERSION 5
 
 
 /** @ingroup iface_zaura_output */

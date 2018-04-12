@@ -92,6 +92,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
   }
   void OnSetParent(Surface* parent, const gfx::Point& position) override {}
   void OnSetStartupId(const char* startup_id) override {}
+  void OnSetApplicationId(const char* application_id) override {}
 
   // Overridden from cc::BeginFrameObserverBase:
   bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;

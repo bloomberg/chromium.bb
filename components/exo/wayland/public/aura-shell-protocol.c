@@ -50,7 +50,7 @@ static const struct wl_message zaura_shell_requests[] = {
 };
 
 WL_EXPORT const struct wl_interface zaura_shell_interface = {
-	"zaura_shell", 4,
+	"zaura_shell", 5,
 	2, zaura_shell_requests,
 	0, NULL,
 };
@@ -60,21 +60,24 @@ static const struct wl_message zaura_surface_requests[] = {
 	{ "set_parent", "2?oii", types + 6 },
 	{ "set_frame_colors", "3uu", types + 0 },
 	{ "set_startup_id", "4?s", types + 0 },
+	{ "set_application_id", "5?s", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zaura_surface_interface = {
-	"zaura_surface", 4,
-	4, zaura_surface_requests,
+	"zaura_surface", 5,
+	5, zaura_surface_requests,
 	0, NULL,
 };
 
 static const struct wl_message zaura_output_events[] = {
-	{ "scale", "uu", types + 0 },
+	{ "scale", "2uu", types + 0 },
+	{ "connection", "5u", types + 0 },
+	{ "device_scale_factor", "5u", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zaura_output_interface = {
-	"zaura_output", 2,
+	"zaura_output", 5,
 	0, NULL,
-	1, zaura_output_events,
+	3, zaura_output_events,
 };
 
