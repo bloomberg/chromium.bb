@@ -30,34 +30,38 @@
 <script src="dynamic_form_utils.js"></script>
 <script>
 
-var refilled = false;
-var callback_c = false;
+var notify_on_first_name_input_appear = false;
 
 function CountryChanged() {
-  DynamicallyChangeForm();
+  RemoveForm('form1');
+  var new_form = AddNewFormAndFields('form1', 'addr1.1');
 
-  // Prepare the function to trigger a second dynamic form change.
-  document.getElementById("email").addEventListener('change', function(){
-
+  // Trigger a second form change on refill.
+  new_form.elements[0].addEventListener('change', function(){
     RemoveForm("form1")
-
-    var new_form2 = AddNewFormAndFields();
-    new_form2.setAttribute('id', "form2");
-
+    var new_form2 = AddNewFormAndFields("form2", "addr1.2");
     document.getElementsByTagName('body')[0].appendChild(new_form2);
 
-    if (callback_c)
-      window.domAutomationController.send(document.getElementById("firstname").value != '');
-
+    if (notify_on_first_name_input_appear) {
+      // Give time to see if it fills.
+      setTimeout(function() {
+        window.domAutomationController.send(document.getElementById("firstname_form2").value != '');
+      }, 1000);
+    }
   });
+
+  document.getElementsByTagName('body')[0].appendChild(new_form);
 }
 
-function hasFinished() {
-  var first_name_input = document.getElementById("firstname");
-  if (refilled) {
-    window.domAutomationController.send(document.getElementById("firstname").value != '');
+function hasRefilled() {
+  var first_name_input = document.getElementById('firstname_form2');
+  if (first_name_input) {
+    // Give time to see if it fills.
+    setTimeout(function() {
+      window.domAutomationController.send(first_name_input.value != '');
+    }, 1000);
   } else {
-    callback_c = true;
+    notify_on_first_name_input_appear = true;
   }
 }
 
