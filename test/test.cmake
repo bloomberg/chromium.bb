@@ -291,6 +291,7 @@ endif ()
         ${AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1}
         "${AOM_ROOT}/test/av1_highbd_iht_test.cc"
         "${AOM_ROOT}/test/av1_quantize_test.cc"
+        "${AOM_ROOT}/test/quantize_func_test.cc"
         "${AOM_ROOT}/test/reconinter_test.cc")
   endif ()
 

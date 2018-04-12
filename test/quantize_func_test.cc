@@ -17,7 +17,7 @@
 #include "aom/aom_codec.h"
 #include "aom_ports/aom_timer.h"
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/av1_quantize.h"
+#include "av1/common/scan.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
@@ -114,7 +114,7 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
     uint16_t *eob = (uint16_t *)(dqcoeff + n_coeffs);
 
     // Testing uses 2-D DCT scan order table
-    const SCAN_ORDER *const sc = get_default_scan(tx_size_, DCT_DCT, 0);
+    const SCAN_ORDER *const sc = get_default_scan(tx_size_, DCT_DCT);
 
     // Testing uses luminance quantization table
     const int16_t *zbin = qtab_->quant.y_zbin[q];
@@ -268,7 +268,7 @@ TEST_P(QuantizeTest, DISABLED_Speed) {
   uint16_t *eob = (uint16_t *)(dqcoeff + n_coeffs);
 
   // Testing uses 2-D DCT scan order table
-  const SCAN_ORDER *const sc = get_default_scan(tx_size_, DCT_DCT, 0);
+  const SCAN_ORDER *const sc = get_default_scan(tx_size_, DCT_DCT);
 
   // Testing uses luminance quantization table
   const int q = 22;
