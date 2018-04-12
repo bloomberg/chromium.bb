@@ -87,6 +87,10 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
         std::make_unique<CdmService>(std::move(mock_cdm_service_client));
     cdm_service_ = cdm_service.get();
 
+    // Delayed service release involves a posted delayed task which will not
+    // block *.RunUntilIdle() and hence cause a memory leak in the test.
+    cdm_service_->DisableDelayedServiceReleaseForTesting();
+
     service_context_ = std::make_unique<service_manager::ServiceContext>(
         std::move(cdm_service), std::move(request));
   }

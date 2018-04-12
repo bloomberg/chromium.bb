@@ -53,6 +53,10 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   explicit CdmService(std::unique_ptr<Client> client);
   ~CdmService() final;
 
+  void DisableDelayedServiceReleaseForTesting() {
+    is_delayed_service_release_enabled = false;
+  }
+
   size_t BoundCdmFactorySizeForTesting() const {
     return cdm_factory_bindings_.size();
   }
@@ -88,6 +92,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   DeferredDestroyStrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::CdmService> bindings_;
+  bool is_delayed_service_release_enabled = true;
 };
 
 }  // namespace media
