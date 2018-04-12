@@ -240,7 +240,8 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     pending_frame_set_.insert(frame_id);
     loading_state_ = kLoading;
 
-    if (browser_info_->major_version >= 63) {
+    if (browser_info_->major_version >= 63 &&
+        browser_info_->major_version < 67) {
       // Check if the document is really loading.
       base::DictionaryValue params;
       params.SetString("expression", "document.readyState");
