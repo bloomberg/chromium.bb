@@ -22,19 +22,26 @@ class MODULES_EXPORT BackgroundFetchSettledFetches final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  BackgroundFetchSettledFetches(
-      ScriptState*,
-      const WebVector<WebBackgroundFetchSettledFetch>& fetches);
+  static BackgroundFetchSettledFetches* Create(
+      ScriptState* script_state,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
+    return new BackgroundFetchSettledFetches(script_state, fetches);
+  }
 
   ~BackgroundFetchSettledFetches() override = default;
 
   // Web Exposed functions defined in the IDL file.
-  ScriptPromise match(ScriptState*, const RequestOrUSVString&);
-  ScriptPromise values(ScriptState*);
+  ScriptPromise match(ScriptState* script_state,
+                      const RequestOrUSVString& request);
+  ScriptPromise values(ScriptState* script_state);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor* visitor);
 
  private:
+  BackgroundFetchSettledFetches(
+      ScriptState* script_state,
+      const WebVector<WebBackgroundFetchSettledFetch>& fetches);
+
   HeapVector<Member<BackgroundFetchSettledFetch>> fetches_;
 };
 

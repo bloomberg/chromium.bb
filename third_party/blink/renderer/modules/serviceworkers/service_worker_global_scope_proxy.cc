@@ -58,8 +58,8 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_fail_event.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_fail_event_init.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetched_event.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetched_event_init.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_event_init.h"
+#include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_event.h"
 #include "third_party/blink/renderer/modules/background_sync/sync_event.h"
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
@@ -209,15 +209,15 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchedEvent(
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetched, event_id);
 
-  BackgroundFetchedEventInit init;
-  init.setId(developer_id);
-
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
-  ScriptState::Scope scope(script_state);
 
-  BackgroundFetchedEvent* event = BackgroundFetchedEvent::Create(
-      EventTypeNames::backgroundfetched, init, unique_id, fetches, script_state,
+  BackgroundFetchSettledEventInit init;
+  init.setId(developer_id);
+  init.setFetches(BackgroundFetchSettledFetches::Create(script_state, fetches));
+
+  BackgroundFetchUpdateEvent* event = BackgroundFetchUpdateEvent::Create(
+      EventTypeNames::backgroundfetched, init, unique_id, script_state,
       observer, worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);

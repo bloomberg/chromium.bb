@@ -23,6 +23,17 @@ class MODULES_EXPORT BackgroundFetchUpdateEvent final
     return new BackgroundFetchUpdateEvent(type, initializer);
   }
 
+  static BackgroundFetchUpdateEvent* Create(
+      const AtomicString& type,
+      const BackgroundFetchSettledEventInit& initializer,
+      const String& unique_id,
+      ScriptState* script_state,
+      WaitUntilObserver* observer,
+      ServiceWorkerRegistration* registration) {
+    return new BackgroundFetchUpdateEvent(type, initializer, unique_id,
+                                          script_state, observer, registration);
+  }
+
   ~BackgroundFetchUpdateEvent() override;
 
   // Web Exposed method defined in the IDL file.
