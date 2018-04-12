@@ -90,6 +90,7 @@ views::View* AnchorViewForBrowser(ExtensionInstalledBubble* controller,
       BrowserActionsContainer* container =
           browser_view->toolbar()->browser_actions();
       // Hitting this DCHECK means |ShouldShow| failed.
+      DCHECK(container);
       DCHECK(!container->animating());
 
       reference_view = container->GetViewForId(controller->extension()->id());
@@ -405,7 +406,7 @@ bool ExtensionInstalledBubble::ShouldShow() {
         BrowserView::GetBrowserViewForBrowser(browser())
             ->toolbar()
             ->browser_actions();
-    return !container->animating();
+    return container && !container->animating();
   }
   return true;
 }

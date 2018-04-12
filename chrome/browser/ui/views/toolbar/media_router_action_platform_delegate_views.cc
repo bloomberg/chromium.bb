@@ -39,7 +39,7 @@ bool MediaRouterActionPlatformDelegateViews::CloseOverflowMenuIfOpen() {
       BrowserView::GetBrowserViewForBrowser(browser_)
           ->toolbar()
           ->app_menu_button();
-  if (!app_menu_button->IsMenuShowing())
+  if (!app_menu_button || !app_menu_button->IsMenuShowing())
     return false;
 
   app_menu_button->CloseMenu();
