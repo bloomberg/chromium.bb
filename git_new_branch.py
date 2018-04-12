@@ -2,7 +2,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """
 Create new branch tracking origin/master by default.
 """
@@ -13,7 +12,7 @@ import sys
 import subprocess2
 
 from git_common import run, root, set_config, get_or_create_merge_base, tags
-from git_common import hash_one
+from git_common import hash_one, upstream, set_branch_config, current_branch
 
 
 def main(args):
@@ -28,13 +27,26 @@ def main(args):
                  help='set upstream branch to current branch.')
   g.add_argument('--upstream', metavar='REF', default=root(),
                  help='upstream branch (or tag) to track.')
+  g.add_argument('--inject-current', '--inject_current',
+                 action='store_true',
+                 help='new branch adopts current branch\'s upstream,' +
+                 ' and new branch becomes current branch\'s upstream.')
   g.add_argument('--lkgr', action='store_const', const='lkgr', dest='upstream',
                  help='set basis ref for new branch to lkgr.')
 
   opts = parser.parse_args(args)
 
   try:
-    if opts.upstream_current:
+    if opts.inject_current:
+      below = current_branch()
+      if below is None:
+        raise Exception('no current branch')
+      above = upstream(below)
+      if above is None:
+        raise Exception('branch %s has no upstream' % (below))
+      run('checkout', '--track', above, '-b', opts.branch_name)
+      run('branch', '--set-upstream-to', opts.branch_name, below)
+    elif opts.upstream_current:
       run('checkout', '--track', '-b', opts.branch_name)
     else:
       if opts.upstream in tags():
