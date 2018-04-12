@@ -8,5 +8,5 @@
     OriginTrialEnabled=WebXR
 ] interface XR : EventTarget {
   attribute EventHandler ondevicechange;
-  [CallWith=ScriptState] Promise requestDevice();
+  [CallWith=ScriptState, MeasureAs=XRRequestDevice] Promise requestDevice();
 };

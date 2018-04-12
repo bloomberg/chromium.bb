@@ -18265,6 +18265,11 @@ Called by update_net_error_codes.py.-->
   <int value="2410" label="CrossOriginHTMLFrameElementContentDocument"/>
   <int value="2411" label="CrossOriginHTMLObjectElementContentDocument"/>
   <int value="2412" label="CrossOriginHTMLObjectElementGetSVGDocument"/>
+  <int value="2413" label="NavigatorXR"/>
+  <int value="2414" label="XRRequestDevice"/>
+  <int value="2415" label="XRRequestSession"/>
+  <int value="2416" label="XRSupportsSession"/>
+  <int value="2417" label="XRSessionGetInputSources"/>
 </enum>
 
 <enum name="FeedbackSource">
