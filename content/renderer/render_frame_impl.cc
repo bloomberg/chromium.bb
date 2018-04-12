@@ -7357,8 +7357,9 @@ void RenderFrameImpl::FrameDidCallFocus() {
 }
 
 void RenderFrameImpl::OnPictureInPictureSurfaceIdUpdated(
-    const viz::SurfaceId& surface_id) {
-  GetFrameHost()->OnUpdatePictureInPictureSurfaceId(surface_id);
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
+  GetFrameHost()->OnUpdatePictureInPictureSurfaceId(surface_id, natural_size);
 }
 
 void RenderFrameImpl::OnExitPictureInPicture() {

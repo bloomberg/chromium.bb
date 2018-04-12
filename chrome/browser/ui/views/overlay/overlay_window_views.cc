@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "media/base/video_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/manager/display_manager.h"
@@ -122,15 +123,22 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
   // Initial size of the window is always 20% of the display width and height,
   // constrained by the min and max sizes. Only explicitly update this the first
   // time |current_size_| is being calculated.
-  if (current_size_.IsEmpty())
+  // Once |current_size_| is calculated at least once, it should stay within the
+  // bounds of |min_size_| and |max_size_|.
+  if (current_size_.IsEmpty()) {
     current_size_ = gfx::Size(work_area.width() / 5, work_area.height() / 5);
+    current_size_.set_width(std::min(
+        max_size_.width(), std::max(min_size_.width(), current_size_.width())));
+    current_size_.set_height(
+        std::min(max_size_.height(),
+                 std::max(min_size_.height(), current_size_.height())));
+  }
 
-  // TODO(apacible): Take into account the video aspect ratio.
-  current_size_.set_width(std::min(
-      max_size_.width(), std::max(min_size_.width(), current_size_.width())));
-  current_size_.set_height(
-      std::min(max_size_.height(),
-               std::max(min_size_.height(), current_size_.height())));
+  // Determine the window size by fitting |natural_size_| within
+  // |current_size_|, keeping to |natural_size_|'s aspect ratio.
+  if (!natural_size_.IsEmpty())
+    current_size_ =
+        media::ScaleSizeToFitWithinTarget(natural_size_, current_size_);
 
   // The initial positioning is on the bottom right quadrant
   // of the primary display work area.
@@ -185,4 +193,12 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // TODO(apacible): Update sizes and maybe resize the current
   // Picture-in-Picture window. Currently, switching between workspaces on linux
   // does not trigger this function. http://crbug.com/819673
+}
+
+void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
+  DCHECK(!natural_size.IsEmpty());
+  natural_size_ = natural_size;
+
+  // Update the views::Widget bounds to adhere to sizing spec.
+  SetBounds(CalculateAndUpdateBounds());
 }

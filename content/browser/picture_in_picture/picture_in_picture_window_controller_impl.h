@@ -34,7 +34,8 @@ class PictureInPictureWindowControllerImpl
 
   CONTENT_EXPORT void Show() override;
   CONTENT_EXPORT void Close() override;
-  CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id) override;
+  CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
+                                   const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
 
  private:

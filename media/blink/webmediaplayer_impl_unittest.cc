@@ -610,6 +610,10 @@ class WebMediaPlayerImplTest : public testing::Test {
     return !wmpi_->update_background_status_cb_.IsCancelled();
   }
 
+  gfx::Size GetNaturalSize() const {
+    return wmpi_->pipeline_metadata_.natural_size;
+  }
+
   void LoadAndWaitForMetadata(std::string data_file) {
     // URL doesn't matter, it's value is unknown to the underlying demuxer.
     const GURL kTestURL("file://example.com/sample.webm");
@@ -1348,7 +1352,7 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
 
   EXPECT_CALL(delegate_,
               DidPictureInPictureSourceChange(delegate_.player_id()));
-  EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_));
+  EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_, GetNaturalSize()));
   // This call should trigger the callback since the SurfaceId is set.
   wmpi_->EnterPictureInPicture();
   testing::Mock::VerifyAndClearExpectations(&client_);

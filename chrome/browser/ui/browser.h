@@ -500,8 +500,8 @@ class Browser : public TabStripModelObserver,
                            bool is_audible) override;
   void OnDidBlockFramebust(content::WebContents* web_contents,
                            const GURL& url) override;
-  void UpdatePictureInPictureSurfaceId(
-      const viz::SurfaceId& surface_id) override;
+  void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
+                                       const gfx::Size& natural_size) override;
   void ExitPictureInPicture() override;
 
   bool is_type_tabbed() const { return type_ == TYPE_TABBED; }

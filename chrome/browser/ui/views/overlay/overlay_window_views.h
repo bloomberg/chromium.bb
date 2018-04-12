@@ -25,6 +25,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   bool IsAlwaysOnTop() const override;
   ui::Layer* GetLayer() override;
   gfx::Rect GetBounds() const override;
+  void UpdateVideoSize(const gfx::Size& natural_size) override;
 
   // views::Widget:
   gfx::Size GetMinimumSize() const override;
@@ -47,6 +48,10 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
 
   // Current size of the Picture-in-Picture window.
   gfx::Size current_size_;
+
+  // The natural size of the video to show. This is used to compute sizing and
+  // ensuring factors such as aspect ratio is maintained.
+  gfx::Size natural_size_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowViews);
 };

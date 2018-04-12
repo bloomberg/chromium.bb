@@ -581,9 +581,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   }
 
   // Updates the Picture-in-Picture controller with the relevant viz::SurfaceId
-  // of the video to be in Picture-in-Picture mode.
-  virtual void UpdatePictureInPictureSurfaceId(
-      const viz::SurfaceId& surface_id);
+  // and natural size of the video to be in Picture-in-Picture mode.
+  virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
+                                               const gfx::Size& natural_size);
 
   // Updates the Picture-in-Picture controller with a signal that
   // Picture-in-Picture mode has ended.

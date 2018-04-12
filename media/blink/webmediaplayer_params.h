@@ -50,10 +50,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   typedef base::Callback<void(const base::Closure&)> DeferLoadCB;
   typedef base::Callback<Context3D()> Context3DCB;
 
-  // Callback to obtain the video SurfaceInfo to trigger Picture-in-Picture
-  // mode.
+  // Callback to obtain the SurfaceInfo and natural size for the relevant video
+  // to trigger Picture-in-Picture mode.
   using PipSurfaceInfoCB =
-      base::RepeatingCallback<void(const viz::SurfaceId& surface_id)>;
+      base::RepeatingCallback<void(const viz::SurfaceId& surface_id,
+                                   const gfx::Size& natural_size)>;
 
   // Callback to exit Picture-in-Picture.
   using ExitPipCB = base::RepeatingCallback<void()>;

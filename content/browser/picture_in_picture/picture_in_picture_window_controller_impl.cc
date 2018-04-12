@@ -61,10 +61,13 @@ void PictureInPictureWindowControllerImpl::Close() {
 }
 
 void PictureInPictureWindowControllerImpl::EmbedSurface(
-    const viz::SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
   DCHECK(window_);
   DCHECK(surface_id.is_valid());
   surface_id_ = surface_id;
+
+  window_->UpdateVideoSize(natural_size);
 
   if (!embedder_)
     embedder_.reset(new OverlaySurfaceEmbedder(window_.get()));

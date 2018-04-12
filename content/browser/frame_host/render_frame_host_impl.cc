@@ -2399,9 +2399,10 @@ void RenderFrameHostImpl::FrameSizeChanged(const gfx::Size& frame_size) {
 }
 
 void RenderFrameHostImpl::OnUpdatePictureInPictureSurfaceId(
-    const viz::SurfaceId& surface_id) {
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size) {
   if (delegate_)
-    delegate_->UpdatePictureInPictureSurfaceId(surface_id);
+    delegate_->UpdatePictureInPictureSurfaceId(surface_id, natural_size);
 }
 
 void RenderFrameHostImpl::OnExitPictureInPicture() {

@@ -109,7 +109,8 @@ class MockFrameHost : public mojom::FrameHost {
   void FrameSizeChanged(const gfx::Size& frame_size) override {}
 
   void OnUpdatePictureInPictureSurfaceId(
-      const viz::SurfaceId& surface_id) override {}
+      const viz::SurfaceId& surface_id,
+      const gfx::Size& natural_size) override {}
 
   void OnExitPictureInPicture() override {}
 

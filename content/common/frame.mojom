@@ -328,9 +328,11 @@ interface FrameHost {
   // navigation.
   FrameSizeChanged(gfx.mojom.Size size);
 
-  // Sent by the renderer to update Picture-in-Picture with SurfaceId information
-  // to be used to show content in the Picture-in-Picture window.
-  OnUpdatePictureInPictureSurfaceId(viz.mojom.SurfaceId surface_id);
+  // Sent by the renderer to update Picture-in-Picture with SurfaceId and video
+  // size to be used to show content in the Picture-in-Picture window.
+  OnUpdatePictureInPictureSurfaceId(
+      viz.mojom.SurfaceId surface_id,
+      gfx.mojom.Size natural_size);
 
   // Sent by the renderer to signal that Picture-in-Picture mode has ended.
   OnExitPictureInPicture();
