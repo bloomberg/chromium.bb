@@ -2897,6 +2897,22 @@
         "GL_EXT_disjoint_timer_query",
         "GL_EXT_disjoint_timer_query_webgl2"
       ]
+    },
+    {
+      "id": 267,
+      "cr_bugs": [831781],
+      "description": "WebGL with multisampling produces errors on Mali",
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "ARM",
+      "gl_renderer": "Mali-TDVX",
+      "disabled_extensions": [
+        "GL_EXT_multisampled_render_to_texture"
+      ],
+      "features": [
+        "disable_chromium_framebuffer_multisample"
+      ]
     }
   ]
 }
