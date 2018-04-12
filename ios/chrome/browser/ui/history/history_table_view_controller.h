@@ -7,7 +7,6 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
-#include "base/ios/block_types.h"
 #include "ios/chrome/browser/ui/history/history_consumer.h"
 #include "ios/chrome/browser/ui/history/history_table_updater_delegate.h"
 
@@ -15,24 +14,8 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-@class HistoryTableViewController;
+@protocol HistoryTableViewControllerDelegate;
 @protocol UrlLoader;
-
-// Delegate for HistoryTableViewController.
-@protocol HistoryTableViewControllerDelegate<NSObject>
-// Notifies the delegate that history should be dismissed.
-- (void)historyTableViewController:(HistoryTableViewController*)controller
-         shouldCloseWithCompletion:(ProceduralBlock)completionHandler;
-// Notifies the delegate that the tableView has scrolled to |offset|.
-- (void)historyTableViewController:(HistoryTableViewController*)controller
-                 didScrollToOffset:(CGPoint)offset;
-// Notifies the delegate that history entries have been loaded or changed.
-- (void)historyTableViewControllerDidChangeEntries:
-    (HistoryTableViewController*)controller;
-// Notifies the delegate that history entries have been selected or deselected.
-- (void)historyTableViewControllerDidChangeEntrySelection:
-    (HistoryTableViewController*)controller;
-@end
 
 // ChromeTableViewController for displaying history items.
 @interface HistoryTableViewController
@@ -45,8 +28,7 @@ class ChromeBrowserState;
 // The UrlLoader used by this ViewController.
 @property(nonatomic, weak) id<UrlLoader> loader;
 // Delegate for this HistoryTableView.
-@property(nonatomic, weak, readonly) id<HistoryTableViewControllerDelegate>
-    delegate;
+@property(nonatomic, weak) id<HistoryTableViewControllerDelegate> delegate;
 
 @end
 
