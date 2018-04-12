@@ -363,7 +363,7 @@ jumbo_source_set("unit_tests") {
     "iterators/text_iterator_test.cc",
     "iterators/text_searcher_icu_test.cc",
     "layout_selection_test.cc",
-    "local_caret_rect_bi_di_test.cc",
+    "local_caret_rect_bidi_test.cc",
     "local_caret_rect_test.cc",
     "markers/active_suggestion_marker_list_impl_test.cc",
     "markers/active_suggestion_marker_test.cc",

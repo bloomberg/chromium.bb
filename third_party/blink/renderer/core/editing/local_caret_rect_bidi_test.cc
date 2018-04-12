@@ -10,17 +10,17 @@
 
 namespace blink {
 
-class LocalCaretRectBiDiTest : public EditingTestBase {};
+class LocalCaretRectBidiTest : public EditingTestBase {};
 
 // This file contains script-generated tests for LocalCaretRectOfPosition()
 // that are related to Bidirectional text. The test cases are only for
 // behavior recording purposes, and do not necessarily reflect the
 // correct/desired behavior.
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunAfterRtlRunTouchingLineBoundary) {
   // Sample: A B C|d e f
-  // BiDi:   1 1 1 0 0 0
+  // Bidi:   1 1 1 0 0 0
   // Visual: C B A|d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -32,9 +32,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterRtlRun) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunAfterRtlRun) {
   // Sample: g h i A B C|d e f
-  // BiDi:   0 0 0 1 1 1 0 0 0
+  // Bidi:   0 0 0 1 1 1 0 0 0
   // Visual: g h i C B A|d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -46,10 +46,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterRtlRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunAfterRtlRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: A B C|d e f
-  // BiDi:   1 1 1 0 0 0
+  // Bidi:   1 1 1 0 0 0
   // Visual: C B A|d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -61,9 +61,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterRtlRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunAfterRtlRunAtDeepPosition) {
   // Sample: g h i A B C|d e f
-  // BiDi:   0 0 0 1 1 1 0 0 0
+  // Bidi:   0 0 0 1 1 1 0 0 0
   // Visual: g h i C B A|d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -75,9 +75,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterRtlRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunAfterTwoNestedRuns) {
   // Sample: D E F a b c|g h i
-  // BiDi:   1 1 1 2 2 2 0 0 0
+  // Bidi:   1 1 1 2 2 2 0 0 0
   // Visual: a b c F E D|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -90,10 +90,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunAfterTwoNestedRunsAtDeepPosition) {
   // Sample: D E F a b c|g h i
-  // BiDi:   1 1 1 2 2 2 0 0 0
+  // Bidi:   1 1 1 2 2 2 0 0 0
   // Visual: a b c F E D|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -106,9 +106,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunAfterThreeNestedRuns) {
   // Sample: G H I d e f A B C|j k l
-  // BiDi:   1 1 1 2 2 2 3 3 3 0 0 0
+  // Bidi:   1 1 1 2 2 2 3 3 3 0 0 0
   // Visual: d e f C B A I H G|j k l
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -121,10 +121,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunAfterThreeNestedRunsAtDeepPosition) {
   // Sample: G H I d e f A B C|j k l
-  // BiDi:   1 1 1 2 2 2 3 3 3 0 0 0
+  // Bidi:   1 1 1 2 2 2 3 3 3 0 0 0
   // Visual: d e f C B A I H G|j k l
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -137,9 +137,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunAfterFourNestedRuns) {
   // Sample: J K L g h i D E F a b c|m n o
-  // BiDi:   1 1 1 2 2 2 3 3 3 4 4 4 0 0 0
+  // Bidi:   1 1 1 2 2 2 3 3 3 4 4 4 0 0 0
   // Visual: g h i a b c F E D L K J|m n o
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -152,10 +152,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunAfterFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunAfterFourNestedRunsAtDeepPosition) {
   // Sample: J K L g h i D E F a b c|m n o
-  // BiDi:   1 1 1 2 2 2 3 3 3 4 4 4 0 0 0
+  // Bidi:   1 1 1 2 2 2 3 3 3 4 4 4 0 0 0
   // Visual: g h i a b c F E D L K J|m n o
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -168,10 +168,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunBeforeRtlRunTouchingLineBoundary) {
   // Sample: d e f|A B C
-  // BiDi:   0 0 0 1 1 1
+  // Bidi:   0 0 0 1 1 1
   // Visual: d e f|C B A
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -183,9 +183,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeRtlRun) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunBeforeRtlRun) {
   // Sample: d e f|A B C g h i
-  // BiDi:   0 0 0 1 1 1 0 0 0
+  // Bidi:   0 0 0 1 1 1 0 0 0
   // Visual: d e f|C B A g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -197,10 +197,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeRtlRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunBeforeRtlRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: d e f|A B C
-  // BiDi:   0 0 0 1 1 1
+  // Bidi:   0 0 0 1 1 1
   // Visual: d e f|C B A
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -212,9 +212,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeRtlRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunBeforeRtlRunAtDeepPosition) {
   // Sample: d e f|A B C g h i
-  // BiDi:   0 0 0 1 1 1 0 0 0
+  // Bidi:   0 0 0 1 1 1 0 0 0
   // Visual: d e f|C B A g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -226,9 +226,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeRtlRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunBeforeTwoNestedRuns) {
   // Sample: g h i|a b c D E F
-  // BiDi:   0 0 0 2 2 2 1 1 1
+  // Bidi:   0 0 0 2 2 2 1 1 1
   // Visual: g h i|F E D a b c
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -241,10 +241,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunBeforeTwoNestedRunsAtDeepPosition) {
   // Sample: g h i|a b c D E F
-  // BiDi:   0 0 0 2 2 2 1 1 1
+  // Bidi:   0 0 0 2 2 2 1 1 1
   // Visual: g h i|F E D a b c
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -257,9 +257,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunBeforeThreeNestedRuns) {
   // Sample: j k l|A B C d e f G H I
-  // BiDi:   0 0 0 3 3 3 2 2 2 1 1 1
+  // Bidi:   0 0 0 3 3 3 2 2 2 1 1 1
   // Visual: j k l I H G|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -272,10 +272,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunBeforeThreeNestedRunsAtDeepPosition) {
   // Sample: j k l|A B C d e f G H I
-  // BiDi:   0 0 0 3 3 3 2 2 2 1 1 1
+  // Bidi:   0 0 0 3 3 3 2 2 2 1 1 1
   // Visual: j k l I H G|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -288,9 +288,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLtrBaseRunBeforeFourNestedRuns) {
   // Sample: m n o|a b c D E F g h i J K L
-  // BiDi:   0 0 0 4 4 4 3 3 3 2 2 2 1 1 1
+  // Bidi:   0 0 0 4 4 4 3 3 3 2 2 2 1 1 1
   // Visual: m n o L K J|F E D a b c g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -303,10 +303,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLtrBaseRunBeforeFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLtrBaseRunBeforeFourNestedRunsAtDeepPosition) {
   // Sample: m n o|a b c D E F g h i J K L
-  // BiDi:   0 0 0 4 4 4 3 3 3 2 2 2 1 1 1
+  // Bidi:   0 0 0 4 4 4 3 3 3 2 2 2 1 1 1
   // Visual: m n o L K J|F E D a b c g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -319,10 +319,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunAfterLtrRunTouchingLineBoundary) {
   // Sample: a b c|D E F
-  // BiDi:   2 2 2 1 1 1
+  // Bidi:   2 2 2 1 1 1
   // Visual: F E D a b c|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -334,9 +334,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterLtrRun) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunAfterLtrRun) {
   // Sample: G H I a b c|D E F
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: F E D a b c|I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -348,10 +348,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterLtrRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunAfterLtrRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: a b c|D E F
-  // BiDi:   2 2 2 1 1 1
+  // Bidi:   2 2 2 1 1 1
   // Visual: F E D a b c|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -363,9 +363,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterLtrRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunAfterLtrRunAtDeepPosition) {
   // Sample: G H I a b c|D E F
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: F E D a b c|I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -377,9 +377,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterLtrRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunAfterTwoNestedRuns) {
   // Sample: d e f A B C|G H I
-  // BiDi:   2 2 2 3 3 3 1 1 1
+  // Bidi:   2 2 2 3 3 3 1 1 1
   // Visual: I H G d e f C B A|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -392,10 +392,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunAfterTwoNestedRunsAtDeepPosition) {
   // Sample: d e f A B C|G H I
-  // BiDi:   2 2 2 3 3 3 1 1 1
+  // Bidi:   2 2 2 3 3 3 1 1 1
   // Visual: I H G d e f C B A|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -408,9 +408,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunAfterThreeNestedRuns) {
   // Sample: g h i D E F a b c|J K L
-  // BiDi:   2 2 2 3 3 3 4 4 4 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 1 1 1
   // Visual: L K J g h i a b c F E D|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -423,10 +423,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunAfterThreeNestedRunsAtDeepPosition) {
   // Sample: g h i D E F a b c|J K L
-  // BiDi:   2 2 2 3 3 3 4 4 4 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 1 1 1
   // Visual: L K J g h i a b c F E D|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -439,9 +439,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunAfterFourNestedRuns) {
   // Sample: j k l G H I d e f A B C|M N O
-  // BiDi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
   // Visual: O N M j k l d e f C B A I H G|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -454,10 +454,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunAfterFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunAfterFourNestedRunsAtDeepPosition) {
   // Sample: j k l G H I d e f A B C|M N O
-  // BiDi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
   // Visual: O N M j k l d e f C B A I H G|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -470,10 +470,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunBeforeLtrRunTouchingLineBoundary) {
   // Sample: D E F|a b c
-  // BiDi:   1 1 1 2 2 2
+  // Bidi:   1 1 1 2 2 2
   // Visual:|a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -485,9 +485,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeLtrRun) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunBeforeLtrRun) {
   // Sample: D E F|a b c G H I
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: I H G|a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -499,10 +499,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeLtrRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunBeforeLtrRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: D E F|a b c
-  // BiDi:   1 1 1 2 2 2
+  // Bidi:   1 1 1 2 2 2
   // Visual:|a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -514,9 +514,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeLtrRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunBeforeLtrRunAtDeepPosition) {
   // Sample: D E F|a b c G H I
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: I H G|a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -528,9 +528,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeLtrRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunBeforeTwoNestedRuns) {
   // Sample: G H I|A B C d e f
-  // BiDi:   1 1 1 3 3 3 2 2 2
+  // Bidi:   1 1 1 3 3 3 2 2 2
   // Visual:|C B A d e f I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -543,10 +543,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunBeforeTwoNestedRunsAtDeepPosition) {
   // Sample: G H I|A B C d e f
-  // BiDi:   1 1 1 3 3 3 2 2 2
+  // Bidi:   1 1 1 3 3 3 2 2 2
   // Visual:|C B A d e f I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -559,9 +559,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunBeforeThreeNestedRuns) {
   // Sample: J K L|a b c D E F g h i
-  // BiDi:   1 1 1 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 4 4 4 3 3 3 2 2 2
   // Visual:|F E D a b c g h i L K J
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -574,10 +574,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunBeforeThreeNestedRunsAtDeepPosition) {
   // Sample: J K L|a b c D E F g h i
-  // BiDi:   1 1 1 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 4 4 4 3 3 3 2 2 2
   // Visual:|F E D a b c g h i L K J
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -590,9 +590,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockRtlBaseRunBeforeFourNestedRuns) {
   // Sample: M N O|A B C d e f G H I j k l
-  // BiDi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
   // Visual: I H G|C B A d e f j k l O N M
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -605,10 +605,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockRtlBaseRunBeforeFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockRtlBaseRunBeforeFourNestedRunsAtDeepPosition) {
   // Sample: M N O|A B C d e f G H I j k l
-  // BiDi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
   // Visual: I H G|C B A d e f j k l O N M
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -621,10 +621,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunAfterRtlRunTouchingLineBoundary) {
   // Sample: A B C|d e f
-  // BiDi:   3 3 3 2 2 2
+  // Bidi:   3 3 3 2 2 2
   // Visual:|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -636,9 +636,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterRtlRun) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunAfterRtlRun) {
   // Sample: g h i A B C|d e f
-  // BiDi:   2 2 2 3 3 3 2 2 2
+  // Bidi:   2 2 2 3 3 3 2 2 2
   // Visual: g h i|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -650,10 +650,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterRtlRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunAfterRtlRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: A B C|d e f
-  // BiDi:   3 3 3 2 2 2
+  // Bidi:   3 3 3 2 2 2
   // Visual:|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -665,9 +665,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterRtlRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunAfterRtlRunAtDeepPosition) {
   // Sample: g h i A B C|d e f
-  // BiDi:   2 2 2 3 3 3 2 2 2
+  // Bidi:   2 2 2 3 3 3 2 2 2
   // Visual: g h i|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -679,9 +679,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterRtlRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunAfterTwoNestedRuns) {
   // Sample: D E F a b c|g h i
-  // BiDi:   3 3 3 4 4 4 2 2 2
+  // Bidi:   3 3 3 4 4 4 2 2 2
   // Visual:|a b c F E D g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -694,10 +694,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunAfterTwoNestedRunsAtDeepPosition) {
   // Sample: D E F a b c|g h i
-  // BiDi:   3 3 3 4 4 4 2 2 2
+  // Bidi:   3 3 3 4 4 4 2 2 2
   // Visual:|a b c F E D g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -710,9 +710,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunAfterThreeNestedRuns) {
   // Sample: G H I d e f A B C|j k l
-  // BiDi:   3 3 3 4 4 4 5 5 5 2 2 2
+  // Bidi:   3 3 3 4 4 4 5 5 5 2 2 2
   // Visual:|d e f C B A I H G j k l
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -725,10 +725,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunAfterThreeNestedRunsAtDeepPosition) {
   // Sample: G H I d e f A B C|j k l
-  // BiDi:   3 3 3 4 4 4 5 5 5 2 2 2
+  // Bidi:   3 3 3 4 4 4 5 5 5 2 2 2
   // Visual:|d e f C B A I H G j k l
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -741,9 +741,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunAfterFourNestedRuns) {
   // Sample: J K L g h i D E F a b c|m n o
-  // BiDi:   3 3 3 4 4 4 5 5 5 6 6 6 2 2 2
+  // Bidi:   3 3 3 4 4 4 5 5 5 6 6 6 2 2 2
   // Visual:|g h i a b c F E D L K J m n o
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -756,10 +756,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunAfterFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunAfterFourNestedRunsAtDeepPosition) {
   // Sample: J K L g h i D E F a b c|m n o
-  // BiDi:   3 3 3 4 4 4 5 5 5 6 6 6 2 2 2
+  // Bidi:   3 3 3 4 4 4 5 5 5 6 6 6 2 2 2
   // Visual:|g h i a b c F E D L K J m n o
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -772,10 +772,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunBeforeRtlRunTouchingLineBoundary) {
   // Sample: d e f|A B C
-  // BiDi:   2 2 2 3 3 3
+  // Bidi:   2 2 2 3 3 3
   // Visual: d e f C B A|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -787,9 +787,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeRtlRun) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunBeforeRtlRun) {
   // Sample: d e f|A B C g h i
-  // BiDi:   2 2 2 3 3 3 2 2 2
+  // Bidi:   2 2 2 3 3 3 2 2 2
   // Visual: d e f C B A|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -801,10 +801,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeRtlRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunBeforeRtlRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: d e f|A B C
-  // BiDi:   2 2 2 3 3 3
+  // Bidi:   2 2 2 3 3 3
   // Visual: d e f C B A|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -816,9 +816,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeRtlRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunBeforeRtlRunAtDeepPosition) {
   // Sample: d e f|A B C g h i
-  // BiDi:   2 2 2 3 3 3 2 2 2
+  // Bidi:   2 2 2 3 3 3 2 2 2
   // Visual: d e f C B A|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -830,9 +830,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeRtlRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunBeforeTwoNestedRuns) {
   // Sample: g h i|a b c D E F
-  // BiDi:   2 2 2 4 4 4 3 3 3
+  // Bidi:   2 2 2 4 4 4 3 3 3
   // Visual: g h i F E D a b c|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -845,10 +845,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunBeforeTwoNestedRunsAtDeepPosition) {
   // Sample: g h i|a b c D E F
-  // BiDi:   2 2 2 4 4 4 3 3 3
+  // Bidi:   2 2 2 4 4 4 3 3 3
   // Visual: g h i F E D a b c|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -861,9 +861,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunBeforeThreeNestedRuns) {
   // Sample: j k l|A B C d e f G H I
-  // BiDi:   2 2 2 5 5 5 4 4 4 3 3 3
+  // Bidi:   2 2 2 5 5 5 4 4 4 3 3 3
   // Visual: j k l I H G C B A d e f|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -876,10 +876,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunBeforeThreeNestedRunsAtDeepPosition) {
   // Sample: j k l|A B C d e f G H I
-  // BiDi:   2 2 2 5 5 5 4 4 4 3 3 3
+  // Bidi:   2 2 2 5 5 5 4 4 4 3 3 3
   // Visual: j k l I H G C B A d e f|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -892,9 +892,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLtrBaseRunBeforeFourNestedRuns) {
   // Sample: m n o|a b c D E F g h i J K L
-  // BiDi:   2 2 2 6 6 6 5 5 5 4 4 4 3 3 3
+  // Bidi:   2 2 2 6 6 6 5 5 5 4 4 4 3 3 3
   // Visual: m n o L K J F E D a b c|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -907,10 +907,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLtrBaseRunBeforeFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLtrBaseRunBeforeFourNestedRunsAtDeepPosition) {
   // Sample: m n o|a b c D E F g h i J K L
-  // BiDi:   2 2 2 6 6 6 5 5 5 4 4 4 3 3 3
+  // Bidi:   2 2 2 6 6 6 5 5 5 4 4 4 3 3 3
   // Visual: m n o L K J F E D a b c|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -923,10 +923,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunAfterLtrRunTouchingLineBoundary) {
   // Sample: a b c|D E F
-  // BiDi:   2 2 2 1 1 1
+  // Bidi:   2 2 2 1 1 1
   // Visual: F E D|a b c
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -938,9 +938,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterLtrRun) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunAfterLtrRun) {
   // Sample: G H I a b c|D E F
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: F E D|a b c I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -952,10 +952,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterLtrRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunAfterLtrRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: a b c|D E F
-  // BiDi:   2 2 2 1 1 1
+  // Bidi:   2 2 2 1 1 1
   // Visual: F E D|a b c
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -967,9 +967,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterLtrRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunAfterLtrRunAtDeepPosition) {
   // Sample: G H I a b c|D E F
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: F E D|a b c I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -981,9 +981,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterLtrRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunAfterTwoNestedRuns) {
   // Sample: d e f A B C|G H I
-  // BiDi:   2 2 2 3 3 3 1 1 1
+  // Bidi:   2 2 2 3 3 3 1 1 1
   // Visual: I H G|d e f C B A
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -996,10 +996,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunAfterTwoNestedRunsAtDeepPosition) {
   // Sample: d e f A B C|G H I
-  // BiDi:   2 2 2 3 3 3 1 1 1
+  // Bidi:   2 2 2 3 3 3 1 1 1
   // Visual: I H G|d e f C B A
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1012,9 +1012,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunAfterThreeNestedRuns) {
   // Sample: g h i D E F a b c|J K L
-  // BiDi:   2 2 2 3 3 3 4 4 4 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 1 1 1
   // Visual: L K J|g h i a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1027,10 +1027,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunAfterThreeNestedRunsAtDeepPosition) {
   // Sample: g h i D E F a b c|J K L
-  // BiDi:   2 2 2 3 3 3 4 4 4 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 1 1 1
   // Visual: L K J|g h i a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1043,9 +1043,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunAfterFourNestedRuns) {
   // Sample: j k l G H I d e f A B C|M N O
-  // BiDi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
   // Visual: O N M|j k l d e f C B A I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1058,10 +1058,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunAfterFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunAfterFourNestedRunsAtDeepPosition) {
   // Sample: j k l G H I d e f A B C|M N O
-  // BiDi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
+  // Bidi:   2 2 2 3 3 3 4 4 4 5 5 5 1 1 1
   // Visual: O N M|j k l d e f C B A I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1074,10 +1074,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunBeforeLtrRunTouchingLineBoundary) {
   // Sample: D E F|a b c
-  // BiDi:   1 1 1 2 2 2
+  // Bidi:   1 1 1 2 2 2
   // Visual: a b c|F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1089,9 +1089,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeLtrRun) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunBeforeLtrRun) {
   // Sample: D E F|a b c G H I
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: I H G a b c|F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1103,10 +1103,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeLtrRun) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunBeforeLtrRunTouchingLineBoundaryAtDeepPosition) {
   // Sample: D E F|a b c
-  // BiDi:   1 1 1 2 2 2
+  // Bidi:   1 1 1 2 2 2
   // Visual: a b c|F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1118,9 +1118,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeLtrRunAtDeepPosition) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunBeforeLtrRunAtDeepPosition) {
   // Sample: D E F|a b c G H I
-  // BiDi:   1 1 1 2 2 2 1 1 1
+  // Bidi:   1 1 1 2 2 2 1 1 1
   // Visual: I H G a b c|F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1132,9 +1132,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeLtrRunAtDeepPosition) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunBeforeTwoNestedRuns) {
   // Sample: G H I|A B C d e f
-  // BiDi:   1 1 1 3 3 3 2 2 2
+  // Bidi:   1 1 1 3 3 3 2 2 2
   // Visual: C B A d e f|I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1147,10 +1147,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunBeforeTwoNestedRunsAtDeepPosition) {
   // Sample: G H I|A B C d e f
-  // BiDi:   1 1 1 3 3 3 2 2 2
+  // Bidi:   1 1 1 3 3 3 2 2 2
   // Visual: C B A d e f|I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1163,9 +1163,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunBeforeThreeNestedRuns) {
   // Sample: J K L|a b c D E F g h i
-  // BiDi:   1 1 1 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 4 4 4 3 3 3 2 2 2
   // Visual: F E D a b c|g h i L K J
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1178,10 +1178,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunBeforeThreeNestedRunsAtDeepPosition) {
   // Sample: J K L|a b c D E F g h i
-  // BiDi:   1 1 1 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 4 4 4 3 3 3 2 2 2
   // Visual: F E D a b c|g h i L K J
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1194,9 +1194,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockRtlBaseRunBeforeFourNestedRuns) {
   // Sample: M N O|A B C d e f G H I j k l
-  // BiDi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
   // Visual: I H G C B A d e f|j k l O N M
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1209,10 +1209,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockRtlBaseRunBeforeFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockRtlBaseRunBeforeFourNestedRunsAtDeepPosition) {
   // Sample: M N O|A B C d e f G H I j k l
-  // BiDi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
+  // Bidi:   1 1 1 5 5 5 4 4 4 3 3 3 2 2 2
   // Visual: I H G C B A d e f|j k l O N M
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1225,9 +1225,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
   // Sample:|A B C d e f
-  // BiDi:   1 1 1 0 0 0
+  // Bidi:   1 1 1 0 0 0
   // Visual:|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1239,10 +1239,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLineBeginLtrBaseRunWithThreeNestedRuns) {
   // Sample:|a b c D E F g h i
-  // BiDi:   2 2 2 1 1 1 0 0 0
+  // Bidi:   2 2 2 1 1 1 0 0 0
   // Visual:|F E D a b c g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1255,10 +1255,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLineBeginLtrBaseRunWithFourNestedRuns) {
   // Sample:|A B C d e f G H I j k l
-  // BiDi:   3 3 3 2 2 2 1 1 1 0 0 0
+  // Bidi:   3 3 3 2 2 2 1 1 1 0 0 0
   // Visual: I H G|C B A d e f j k l
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1271,9 +1271,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndLtrBaseRunWithTwoNestedRuns) {
   // Sample: d e f A B C|
-  // BiDi:   0 0 0 1 1 1
+  // Bidi:   0 0 0 1 1 1
   // Visual: d e f C B A|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1285,9 +1285,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndLtrBaseRunWithThreeNestedRuns) {
   // Sample: g h i D E F a b c|
-  // BiDi:   0 0 0 1 1 1 2 2 2
+  // Bidi:   0 0 0 1 1 1 2 2 2
   // Visual: g h i a b c F E D|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1300,9 +1300,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndLtrBaseRunWithFourNestedRuns) {
   // Sample: j k l G H I d e f A B C|
-  // BiDi:   0 0 0 1 1 1 2 2 2 3 3 3
+  // Bidi:   0 0 0 1 1 1 2 2 2 3 3 3
   // Visual: j k l d e f C B A|I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1315,9 +1315,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndLtrBaseRunWithFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginWithRtlRunOnly) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineBeginWithRtlRunOnly) {
   // Sample:|A B C
-  // BiDi:   1 1 1
+  // Bidi:   1 1 1
   // Visual:|C B A
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1329,9 +1329,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginWithRtlRunOnly) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
   // Sample:|a b c D E F
-  // BiDi:   2 2 2 1 1 1
+  // Bidi:   2 2 2 1 1 1
   // Visual:|F E D a b c
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1343,10 +1343,10 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLineBeginRtlBaseRunWithThreeNestedRuns) {
   // Sample:|A B C d e f G H I
-  // BiDi:   3 3 3 2 2 2 1 1 1
+  // Bidi:   3 3 3 2 2 2 1 1 1
   // Visual: I H G|C B A d e f
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1359,10 +1359,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InLtrBlockLineBeginRtlBaseRunWithFourNestedRuns) {
   // Sample:|a b c D E F g h i J K L
-  // BiDi:   4 4 4 3 3 3 2 2 2 1 1 1
+  // Bidi:   4 4 4 3 3 3 2 2 2 1 1 1
   // Visual: L K J|F E D a b c g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1375,9 +1375,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndWithRtlRunOnly) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndWithRtlRunOnly) {
   // Sample: A B C|
-  // BiDi:   1 1 1
+  // Bidi:   1 1 1
   // Visual: C B A|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1389,9 +1389,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndWithRtlRunOnly) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndRtlBaseRunWithTwoNestedRuns) {
   // Sample: D E F a b c|
-  // BiDi:   1 1 1 2 2 2
+  // Bidi:   1 1 1 2 2 2
   // Visual: a b c F E D|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1403,9 +1403,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndRtlBaseRunWithThreeNestedRuns) {
   // Sample: G H I d e f A B C|
-  // BiDi:   1 1 1 2 2 2 3 3 3
+  // Bidi:   1 1 1 2 2 2 3 3 3
   // Visual: d e f C B A|I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1418,9 +1418,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InLtrBlockLineEndRtlBaseRunWithFourNestedRuns) {
   // Sample: J K L g h i D E F a b c|
-  // BiDi:   1 1 1 2 2 2 3 3 3 4 4 4
+  // Bidi:   1 1 1 2 2 2 3 3 3 4 4 4
   // Visual: g h i a b c F E D|L K J
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1433,9 +1433,9 @@ TEST_F(LocalCaretRectBiDiTest, InLtrBlockLineEndRtlBaseRunWithFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginWithLtrRunOnly) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineBeginWithLtrRunOnly) {
   // Sample:|a b c
-  // BiDi:   2 2 2
+  // Bidi:   2 2 2
   // Visual: a b c|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1447,9 +1447,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginWithLtrRunOnly) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
   // Sample:|A B C d e f
-  // BiDi:   3 3 3 2 2 2
+  // Bidi:   3 3 3 2 2 2
   // Visual: C B A d e f|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1461,10 +1461,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginLtrBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLineBeginLtrBaseRunWithThreeNestedRuns) {
   // Sample:|a b c D E F g h i
-  // BiDi:   4 4 4 3 3 3 2 2 2
+  // Bidi:   4 4 4 3 3 3 2 2 2
   // Visual: F E D a b c|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1477,10 +1477,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLineBeginLtrBaseRunWithFourNestedRuns) {
   // Sample:|A B C d e f G H I j k l
-  // BiDi:   5 5 5 4 4 4 3 3 3 2 2 2
+  // Bidi:   5 5 5 4 4 4 3 3 3 2 2 2
   // Visual: I H G C B A d e f|j k l
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1493,9 +1493,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndWithLtrRunOnly) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndWithLtrRunOnly) {
   // Sample: a b c|
-  // BiDi:   2 2 2
+  // Bidi:   2 2 2
   // Visual:|a b c
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1507,9 +1507,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndWithLtrRunOnly) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndLtrBaseRunWithTwoNestedRuns) {
   // Sample: d e f A B C|
-  // BiDi:   2 2 2 3 3 3
+  // Bidi:   2 2 2 3 3 3
   // Visual:|d e f C B A
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1521,9 +1521,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndLtrBaseRunWithThreeNestedRuns) {
   // Sample: g h i D E F a b c|
-  // BiDi:   2 2 2 3 3 3 4 4 4
+  // Bidi:   2 2 2 3 3 3 4 4 4
   // Visual: g h i|a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1536,9 +1536,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndLtrBaseRunWithFourNestedRuns) {
   // Sample: j k l G H I d e f A B C|
-  // BiDi:   2 2 2 3 3 3 4 4 4 5 5 5
+  // Bidi:   2 2 2 3 3 3 4 4 4 5 5 5
   // Visual: j k l|d e f C B A I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1551,9 +1551,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndLtrBaseRunWithFourNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
   // Sample:|a b c D E F
-  // BiDi:   2 2 2 1 1 1
+  // Bidi:   2 2 2 1 1 1
   // Visual: F E D a b c|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1565,10 +1565,10 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineBeginRtlBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLineBeginRtlBaseRunWithThreeNestedRuns) {
   // Sample:|A B C d e f G H I
-  // BiDi:   3 3 3 2 2 2 1 1 1
+  // Bidi:   3 3 3 2 2 2 1 1 1
   // Visual: I H G C B A d e f|
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1581,10 +1581,10 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest,
+TEST_F(LocalCaretRectBidiTest,
        InRtlBlockLineBeginRtlBaseRunWithFourNestedRuns) {
   // Sample:|a b c D E F g h i J K L
-  // BiDi:   4 4 4 3 3 3 2 2 2 1 1 1
+  // Bidi:   4 4 4 3 3 3 2 2 2 1 1 1
   // Visual: L K J F E D a b c|g h i
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1597,9 +1597,9 @@ TEST_F(LocalCaretRectBiDiTest,
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithTwoNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndRtlBaseRunWithTwoNestedRuns) {
   // Sample: D E F a b c|
-  // BiDi:   1 1 1 2 2 2
+  // Bidi:   1 1 1 2 2 2
   // Visual:|a b c F E D
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1611,9 +1611,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithTwoNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithThreeNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndRtlBaseRunWithThreeNestedRuns) {
   // Sample: G H I d e f A B C|
-  // BiDi:   1 1 1 2 2 2 3 3 3
+  // Bidi:   1 1 1 2 2 2 3 3 3
   // Visual:|d e f C B A I H G
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
@@ -1626,9 +1626,9 @@ TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithThreeNestedRuns) {
             LocalCaretRectOfPosition(position_with_affinity).rect);
 }
 
-TEST_F(LocalCaretRectBiDiTest, InRtlBlockLineEndRtlBaseRunWithFourNestedRuns) {
+TEST_F(LocalCaretRectBidiTest, InRtlBlockLineEndRtlBaseRunWithFourNestedRuns) {
   // Sample: J K L g h i D E F a b c|
-  // BiDi:   1 1 1 2 2 2 3 3 3 4 4 4
+  // Bidi:   1 1 1 2 2 2 3 3 3 4 4 4
   // Visual: g h i|a b c F E D L K J
   LoadAhem();
   InsertStyleElement("div {font: 10px/10px Ahem; width: 300px}");
