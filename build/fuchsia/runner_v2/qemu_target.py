@@ -56,6 +56,14 @@ class QemuTarget(target.Target):
         'qemu-system-' + self._GetTargetSdkArch())
     kernel_args = boot_data.GetKernelArgs(self._output_dir)
 
+    # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
+    # noisy ANSI spew from the user's terminal emulator.
+    kernel_args.append('TERM=dumb')
+
+    # Enable logging to the serial port.
+    # TODO(sergeyu): Use loglistener instead of serial port to get zircon logs.
+    kernel_args.append('kernel.serial=legacy')
+
     qemu_command = [qemu_path,
         '-m', str(self._ram_size_mb),
         '-nographic',
@@ -81,9 +89,7 @@ class QemuTarget(target.Target):
         '-serial', 'stdio',
         '-monitor', 'none',
 
-        # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
-        # noisy ANSI spew from the user's terminal emulator.
-        '-append', 'TERM=dumb ' + ' '.join(kernel_args)
+        '-append', ' '.join(kernel_args)
       ]
 
     # Configure the machine & CPU to emulate, based on the target architecture.

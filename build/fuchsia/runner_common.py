@@ -630,8 +630,18 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
                                'zircon.bin')
 
-  kernel_args = ['devmgr.epoch=%d' % time.time(),
-                 'zircon.nodename=' + INSTANCE_ID]
+  kernel_args = [
+      'devmgr.epoch=%d' % time.time(),
+      'zircon.nodename=' + INSTANCE_ID,
+
+      # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
+      # noisy ANSI spew from the user's terminal emulator.
+      'TERM=dumb',
+
+      # Enable logging to the serial port.
+      'kernel.serial=legacy'
+  ]
+
   if bootfs_data.has_autorun:
     # See https://fuchsia.googlesource.com/zircon/+/master/docs/kernel_cmdline.md#zircon_autorun_system_command.
     kernel_args.append('zircon.autorun.system=/boot/bin/sh+/system/cr_autorun')
@@ -673,9 +683,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
         '-serial', 'stdio',
         '-monitor', 'none',
 
-        # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
-        # noisy ANSI spew from the user's terminal emulator.
-        '-append', 'TERM=dumb ' + ' '.join(kernel_args)
+        '-append', ' '.join(kernel_args)
       ]
 
     # Configure the machine & CPU to emulate, based on the target architecture.
