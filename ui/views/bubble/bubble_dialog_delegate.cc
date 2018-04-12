@@ -4,7 +4,6 @@
 
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node_data.h"

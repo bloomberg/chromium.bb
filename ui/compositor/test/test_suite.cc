@@ -5,7 +5,6 @@
 #include "ui/compositor/test/test_suite.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "ui/compositor/compositor.h"

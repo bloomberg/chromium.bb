@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"

@@ -10,7 +10,6 @@
 #include <set>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"

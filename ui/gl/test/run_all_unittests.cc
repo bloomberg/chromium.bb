@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"

@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"

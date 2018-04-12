@@ -4,7 +4,6 @@
 
 #include "ui/aura/mus/window_tree_host_mus.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/test/aura_mus_test_base.h"

@@ -4,7 +4,6 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
-#include "base/memory/ptr_util.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "ui/aura/client/aura_constants.h"

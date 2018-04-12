@@ -4,7 +4,6 @@
 
 #include "ui/events/blink/compositor_thread_event_queue.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event_traits.h"

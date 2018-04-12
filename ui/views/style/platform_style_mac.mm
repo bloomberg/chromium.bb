@@ -4,7 +4,6 @@
 
 #include "ui/views/style/platform_style.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/color_utils.h"

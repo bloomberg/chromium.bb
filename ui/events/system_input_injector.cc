@@ -4,7 +4,6 @@
 
 #include "ui/events/system_input_injector.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace ui {
 

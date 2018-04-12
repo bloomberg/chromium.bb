@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"

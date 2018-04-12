@@ -5,7 +5,6 @@
 #include "ui/base/models/tree_node_iterator.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 

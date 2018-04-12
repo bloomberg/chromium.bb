@@ -5,7 +5,6 @@
 #include "ui/keyboard/keyboard_util.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_test_util.h"

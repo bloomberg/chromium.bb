@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/gamepad/generic_gamepad_mapping.h"
 #include "ui/events/ozone/gamepad/static_gamepad_mapping.h"

@@ -4,7 +4,6 @@
 
 #include "ui/events/ozone/evdev/touch_filter/false_touch_finder.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/evdev/touch_filter/edge_touch_filter.h"

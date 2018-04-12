@@ -4,7 +4,6 @@
 
 #include "ui/wm/core/wm_state.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/transient_window_controller.h"

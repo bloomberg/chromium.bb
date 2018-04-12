@@ -4,7 +4,6 @@
 
 #include "ui/views/animation/test/test_ink_drop_host.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"

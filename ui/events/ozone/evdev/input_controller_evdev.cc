@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"

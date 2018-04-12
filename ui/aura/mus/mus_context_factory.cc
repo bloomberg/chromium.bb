@@ -5,7 +5,6 @@
 #include "ui/aura/mus/mus_context_factory.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/host/renderer_settings_creation.h"

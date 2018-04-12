@@ -4,7 +4,6 @@
 
 #include "ui/aura/mus/property_converter.h"
 
-#include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 

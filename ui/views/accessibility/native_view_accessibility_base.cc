@@ -8,7 +8,6 @@
 #include "ui/views/accessibility/native_view_accessibility_base.h"
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event_utils.h"

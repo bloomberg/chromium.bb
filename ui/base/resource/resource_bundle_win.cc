@@ -5,7 +5,6 @@
 #include "ui/base/resource/resource_bundle_win.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "skia/ext/image_operations.h"

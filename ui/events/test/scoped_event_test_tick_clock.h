@@ -5,7 +5,6 @@
 #ifndef UI_EVENTS_TEST_SCOPED_EVENT_TEST_TICK_CLOCK_H_
 #define UI_EVENTS_TEST_SCOPED_EVENT_TEST_TICK_CLOCK_H_
 
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "ui/events/base_event_utils.h"
 

@@ -5,7 +5,6 @@
 #include "ui/native_theme/common_theme.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"

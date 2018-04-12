@@ -5,7 +5,6 @@
 #include "ui/views/controls/button/toggle_button.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"

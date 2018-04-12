@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_window_event_manager.h"
 #include "ui/events/platform/x11/x11_event_source.h"

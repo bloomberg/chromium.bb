@@ -4,7 +4,6 @@
 
 #include "ui/events/blink/event_with_callback.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"

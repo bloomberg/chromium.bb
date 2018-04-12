@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_export.h"
 

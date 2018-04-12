@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/views_delegate.h"

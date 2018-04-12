@@ -4,7 +4,6 @@
 
 #include "ui/views/animation/test/ink_drop_impl_test_api.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/animation/test/ink_drop_highlight_test_api.h"

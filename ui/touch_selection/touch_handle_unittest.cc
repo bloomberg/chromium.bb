@@ -4,7 +4,6 @@
 
 #include "ui/touch_selection/touch_handle.h"
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/motion_event_test_utils.h"
 #include "ui/gfx/geometry/rect_f.h"

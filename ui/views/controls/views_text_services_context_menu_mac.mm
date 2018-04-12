@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"

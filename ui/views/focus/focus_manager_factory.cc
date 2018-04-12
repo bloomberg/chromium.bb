@@ -4,7 +4,6 @@
 
 #include "ui/views/focus/focus_manager_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 

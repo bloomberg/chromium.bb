@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer.h"

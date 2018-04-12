@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_message_proxy.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"

@@ -5,7 +5,6 @@
 #include "ui/views/focus/external_focus_tracker.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/views/view.h"
 #include "ui/views/view_tracker.h"
 
