@@ -135,7 +135,7 @@ public class PartnerBrowserCustomizations {
      *         this method reads is not initialized until the asynchronous initialization of this
      *         class has been completed.
      */
-    static boolean isHomepageProviderAvailableAndEnabled() {
+    public static boolean isHomepageProviderAvailableAndEnabled() {
         return !TextUtils.isEmpty(getHomePageUrl());
     }
 
