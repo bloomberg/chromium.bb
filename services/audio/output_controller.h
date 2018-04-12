@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
@@ -25,6 +26,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_source_diverter.h"
+#include "services/audio/group_member.h"
 
 // An OutputController controls an AudioOutputStream and provides data to this
 // output stream. It executes audio operations like play, pause, stop, etc. on
@@ -58,6 +60,7 @@
 namespace audio {
 
 class OutputController : public media::AudioOutputStream::AudioSourceCallback,
+                         public GroupMember,
                          public media::AudioManager::AudioDeviceListener {
  public:
   // An event handler that receives events from the OutputController. The
@@ -145,6 +148,14 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                  int prior_frames_skipped,
                  media::AudioBus* dest) override;
   void OnError() override;
+
+  // GroupMember implementation.
+  const base::UnguessableToken& GetGroupId() override;
+  const media::AudioParameters& GetAudioParameters() override;
+  void StartSnooping(Snooper* snooper) override;
+  void StopSnooping(Snooper* snooper) override;
+  void StartMuting() override;
+  void StopMuting() override;
 
   // AudioDeviceListener implementation.  When called OutputController will
   // shutdown the existing |stream_|, create a new stream, and then transition
@@ -239,10 +250,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Helper method that stops, closes, and NULLs |*stream_|.
   void StopCloseAndClearStream();
 
-  // Send audio data to each duplication target.
-  void BroadcastDataToDuplicationTargets(
-      std::unique_ptr<media::AudioBus> audio_bus,
-      base::TimeTicks reference_time);
+  // Send audio data to each Snooper.
+  void BroadcastDataToSnoopers(std::unique_ptr<media::AudioBus> audio_bus,
+                               base::TimeTicks reference_time);
 
   // Log the current average power level measured by power_monitor_.
   void LogAudioPowerLevel(const char* call_name);
@@ -265,12 +275,21 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   media::AudioOutputStream* stream_;
 
   // When non-NULL, audio is being diverted to this stream.
+  // TODO(crbug/824019): Remove this legacy functionality.
   media::AudioOutputStream* diverting_to_stream_;
+
+  // When true, local audio output should be muted; either by having audio
+  // diverted to |diverting_to_stream_|, or a fake AudioOutputStream.
+  bool disable_local_output_;
 
   // The targets for audio stream to be copied to. |should_duplicate_| is set to
   // 1 when the OnMoreData() call should proxy the data to
-  // BroadcastDataToDuplicationTargets().
+  // BroadcastDataToSnoopers().
+  //
+  // TODO(crbug/824019): Remove |duplication_targets_| (part of legacy
+  // functionality).
   base::flat_set<media::AudioPushSink*> duplication_targets_;
+  std::vector<Snooper*> snoopers_;
   base::AtomicRefCount should_duplicate_;
 
   // The current volume of the audio stream.
@@ -293,6 +312,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   base::Optional<ErrorStatisticsTracker> stats_tracker_;
 
   // Instantiated in Create(), and destroyed in Close().
+  // TODO(crbug/824019): Remove this legacy functionality.
   base::Optional<ThreadHoppingDiverter> diverter_;
 
   // WeakPtrFactory+WeakPtr that is used to post tasks that are canceled when a

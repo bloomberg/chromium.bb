@@ -36,6 +36,8 @@ class AudioParameters;
 
 namespace audio {
 
+class GroupCoordinator;
+
 class OutputStream final : public media::mojom::AudioOutputStream,
                            public OutputController::EventHandler {
  public:
@@ -52,6 +54,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
                media::AudioManager* audio_manager,
                const std::string& output_device_id,
                const media::AudioParameters& params,
+               GroupCoordinator* coordinator,
                const base::UnguessableToken& group_id);
 
   ~OutputStream() final;
@@ -82,6 +85,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   media::mojom::AudioOutputStreamClientPtr client_;
   media::mojom::AudioOutputStreamObserverAssociatedPtr observer_;
   const scoped_refptr<media::mojom::ThreadSafeAudioLogPtr> log_;
+  GroupCoordinator* const coordinator_;
 
   SyncReader reader_;
   OutputController controller_;

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
@@ -100,6 +101,7 @@ OutputController::OutputController(media::AudioManager* audio_manager,
       group_id_(group_id),
       stream_(NULL),
       diverting_to_stream_(NULL),
+      disable_local_output_(false),
       should_duplicate_(0),
       volume_(1.0),
       state_(kEmpty),
@@ -119,6 +121,8 @@ OutputController::~OutputController() {
   DCHECK_EQ(kClosed, state_);
   DCHECK_EQ(nullptr, stream_);
   DCHECK(duplication_targets_.empty());
+  DCHECK(snoopers_.empty());
+  DCHECK(should_duplicate_.IsZero());
 }
 
 bool OutputController::Create(bool is_for_device_change) {
@@ -136,9 +140,23 @@ bool OutputController::Create(bool is_for_device_change) {
   StopCloseAndClearStream();  // Calls RemoveOutputDeviceChangeListener().
   DCHECK_EQ(kEmpty, state_);
 
-  stream_ = diverting_to_stream_ ? diverting_to_stream_
-                                 : audio_manager_->MakeAudioOutputStreamProxy(
-                                       params_, output_device_id_);
+  if (diverting_to_stream_) {
+    // TODO(crbug/824019): Remove this legacy functionality.
+    stream_ = diverting_to_stream_;
+  } else if (disable_local_output_) {
+    // Create a fake AudioOutputStream that will continue pumping the audio
+    // data, but does not play it out anywhere. Pumping the audio data is
+    // necessary because video playback is synchronized to the audio stream and
+    // will freeze otherwise.
+    media::AudioParameters mute_params = params_;
+    mute_params.set_format(media::AudioParameters::AUDIO_FAKE);
+    stream_ =
+        audio_manager_->MakeAudioOutputStreamProxy(mute_params, std::string());
+  } else {
+    stream_ =
+        audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_);
+  }
+
   if (!stream_) {
     state_ = kError;
     LogStreamCreationResult(is_for_device_change,
@@ -251,10 +269,16 @@ void OutputController::Close() {
   if (state_ != kClosed) {
     StopCloseAndClearStream();
     sync_reader_->Close();
+
+    // TODO(crbug/824019): Remove this legacy functionality.
     diverter_ = base::nullopt;
     for (media::AudioPushSink* sink : duplication_targets_)
       sink->Close();
-    duplication_targets_.clear();
+    if (!duplication_targets_.empty()) {
+      duplication_targets_.clear();
+      should_duplicate_.Decrement();
+    }
+
     state_ = kClosed;
   }
 }
@@ -273,7 +297,7 @@ void OutputController::SetVolume(double volume) {
       stream_->SetVolume(volume_);
       break;
     default:
-      return;
+      break;
   }
 }
 
@@ -306,13 +330,13 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
-  if (should_duplicate_.IsOne()) {
+  if (!should_duplicate_.IsZero()) {
     const base::TimeTicks reference_time = delay_timestamp + delay;
     std::unique_ptr<media::AudioBus> copy(media::AudioBus::Create(params_));
     dest->CopyTo(copy.get());
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&OutputController::BroadcastDataToDuplicationTargets,
+        base::BindOnce(&OutputController::BroadcastDataToSnoopers,
                        weak_this_for_stream_, std::move(copy), reference_time));
   }
 
@@ -337,14 +361,21 @@ int OutputController::OnMoreData(base::TimeDelta delay,
   return frames;
 }
 
-void OutputController::BroadcastDataToDuplicationTargets(
+void OutputController::BroadcastDataToSnoopers(
     std::unique_ptr<media::AudioBus> audio_bus,
     base::TimeTicks reference_time) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT1("audio", "OutputController::BroadcastDataToDuplicationTargets",
+  TRACE_EVENT1("audio", "OutputController::BroadcastDataToSnoopers",
                "reference_time (ms)",
                (reference_time - base::TimeTicks()).InMillisecondsF());
-  if (state_ != kPlaying || duplication_targets_.empty())
+  if (state_ != kPlaying)
+    return;
+
+  for (Snooper* snooper : snoopers_)
+    snooper->OnData(*audio_bus, reference_time, volume_);
+
+  // TODO(crbug/824019): The rest of this method will be deleted.
+  if (duplication_targets_.empty())
     return;
 
   // Note: Do not need to acquire lock since this is running on the same thread
@@ -400,6 +431,60 @@ void OutputController::StopCloseAndClearStream() {
   }
 
   state_ = kEmpty;
+}
+
+const base::UnguessableToken& OutputController::GetGroupId() {
+  return group_id_;
+}
+
+const media::AudioParameters& OutputController::GetAudioParameters() {
+  return params_;
+}
+
+void OutputController::StartSnooping(Snooper* snooper) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(snooper);
+
+  if (snoopers_.empty())
+    should_duplicate_.Increment();
+  DCHECK(!base::ContainsValue(snoopers_, snooper));
+  snoopers_.push_back(snooper);
+}
+
+void OutputController::StopSnooping(Snooper* snooper) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  const auto it = std::find(snoopers_.begin(), snoopers_.end(), snooper);
+  DCHECK(it != snoopers_.end());
+  snoopers_.erase(it);
+  if (snoopers_.empty())
+    should_duplicate_.Decrement();
+}
+
+void OutputController::StartMuting() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (disable_local_output_)
+    return;
+  disable_local_output_ = true;
+
+  // If there is an active |stream_| that plays out audio locally, invoke a
+  // device change to switch to a fake AudioOutputStream for muting.
+  if (state_ != kClosed && stream_ && stream_ != diverting_to_stream_)
+    OnDeviceChange();
+}
+
+void OutputController::StopMuting() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!disable_local_output_)
+    return;
+  disable_local_output_ = false;
+
+  // If there is an active |stream_| and it is the fake stream for muting,
+  // invoke a device change to switch back to the normal AudioOutputStream.
+  if (state_ != kClosed && stream_ && stream_ != diverting_to_stream_)
+    OnDeviceChange();
 }
 
 void OutputController::OnDeviceChange() {

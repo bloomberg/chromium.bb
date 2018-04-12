@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "services/audio/group_coordinator.h"
 
 namespace audio {
 
@@ -27,6 +28,7 @@ OutputStream::OutputStream(
     media::AudioManager* audio_manager,
     const std::string& output_device_id,
     const media::AudioParameters& params,
+    GroupCoordinator* coordinator,
     const base::UnguessableToken& group_id)
     : foreign_socket_(),
       delete_callback_(std::move(delete_callback)),
@@ -34,6 +36,7 @@ OutputStream::OutputStream(
       client_(std::move(client)),
       observer_(std::move(observer)),
       log_(media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))),
+      coordinator_(coordinator),
       // Unretained is safe since we own |reader_|
       reader_(base::BindRepeating(&media::mojom::AudioLog::OnLogMessage,
                                   base::Unretained(log_->get())),
@@ -51,6 +54,7 @@ OutputStream::OutputStream(
   DCHECK(observer_.is_bound());
   DCHECK(created_callback);
   DCHECK(delete_callback_);
+  DCHECK(coordinator_);
 
   // |this| owns these objects, so unretained is safe.
   base::RepeatingClosure error_handler =
@@ -63,6 +67,7 @@ OutputStream::OutputStream(
 
   log_->get()->OnCreated(params, output_device_id);
 
+  coordinator_->RegisterGroupMember(&controller_);
   if (!reader_.IsValid() || !controller_.Create(false)) {
     // Either SyncReader initialization failed or the controller failed to
     // create the stream. In the latter case, the controller will have called
@@ -80,6 +85,7 @@ OutputStream::~OutputStream() {
   log_->get()->OnClosed();
 
   controller_.Close();
+  coordinator_->UnregisterGroupMember(&controller_);
 }
 
 void OutputStream::Play() {
