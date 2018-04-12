@@ -6,8 +6,8 @@
 
 #include "base/stl_util.h"
 #include "base/unguessable_token.h"
-#include "media/base/audio_parameters.h"
 #include "services/audio/group_member.h"
+#include "services/audio/test/mock_group_member.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,27 +22,6 @@ using testing::_;
 
 namespace audio {
 namespace {
-
-class MockGroupMember : public GroupMember {
- public:
-  explicit MockGroupMember(const UnguessableToken& group_id)
-      : group_id_(group_id) {}
-
-  ~MockGroupMember() override = default;
-
-  const UnguessableToken& GetGroupId() final { return group_id_; }
-  MOCK_METHOD0(GetAudioParameters, const media::AudioParameters&());
-  MOCK_METHOD1(StartSnooping, void(Snooper* snooper));
-  MOCK_METHOD1(StopSnooping, void(Snooper* snooper));
-  MOCK_METHOD0(StartMuting, void());
-  MOCK_METHOD0(StopMuting, void());
-  MOCK_METHOD0(IsMuting, bool());
-
- private:
-  const UnguessableToken group_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockGroupMember);
-};
 
 class MockGroupObserver : public GroupCoordinator::Observer {
  public:

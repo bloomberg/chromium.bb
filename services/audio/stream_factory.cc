@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/unguessable_token.h"
+#include "services/audio/local_muter.h"
 #include "services/audio/output_stream.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
@@ -40,7 +42,7 @@ void StreamFactory::CreateOutputStream(
   observer.Bind(std::move(observer_info));
 
   // Unretained is safe since |this| indirectly owns the OutputStream.
-  auto deleter_callback = base::BindOnce(&StreamFactory::RemoveOutputStream,
+  auto deleter_callback = base::BindOnce(&StreamFactory::DestroyOutputStream,
                                          base::Unretained(this));
 
   output_streams_.insert(std::make_unique<OutputStream>(
@@ -49,10 +51,44 @@ void StreamFactory::CreateOutputStream(
       std::move(log), audio_manager_, output_device_id, params, group_id));
 }
 
-void StreamFactory::RemoveOutputStream(OutputStream* stream) {
+void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,
+                              const base::UnguessableToken& group_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+
+  // Find the existing LocalMuter for this group, or create one on-demand.
+  auto it = std::find_if(muters_.begin(), muters_.end(),
+                         [&group_id](const std::unique_ptr<LocalMuter>& muter) {
+                           return muter->group_id() == group_id;
+                         });
+  LocalMuter* muter;
+  if (it == muters_.end()) {
+    auto muter_ptr = std::make_unique<LocalMuter>(&coordinator_, group_id);
+    muter = muter_ptr.get();
+    muter->SetAllBindingsLostCallback(base::BindOnce(
+        &StreamFactory::DestroyMuter, base::Unretained(this), muter));
+    muters_.emplace_back(std::move(muter_ptr));
+  } else {
+    muter = it->get();
+  }
+
+  // Add the binding.
+  muter->AddBinding(std::move(request));
+}
+
+void StreamFactory::DestroyOutputStream(OutputStream* stream) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   size_t erased = output_streams_.erase(stream);
   DCHECK_EQ(1u, erased);
+}
+
+void StreamFactory::DestroyMuter(LocalMuter* muter) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
+  DCHECK(muter);
+
+  const auto it = std::find_if(muters_.begin(), muters_.end(),
+                               base::MatchesUniquePtr(muter));
+  DCHECK(it != muters_.end());
+  muters_.erase(it);
 }
 
 }  // namespace audio
