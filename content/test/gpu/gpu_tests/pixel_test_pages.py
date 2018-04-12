@@ -8,7 +8,7 @@ class PixelTestPage(object):
   """
   def __init__(self, url, name, test_rect, revision,
                tolerance=2, browser_args=None, expected_colors=None,
-               gpu_process_disabled=False):
+               gpu_process_disabled=False, optional_action=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -27,6 +27,12 @@ class PixelTestPage(object):
     # disabled. To prevent regressions, only allow the GPU information
     # to be incomplete in these cases.
     self.gpu_process_disabled = gpu_process_disabled
+    # One of the tests (WebGLSadCanvas) requires custom actions to
+    # be run. These are specified as a string which is the name of a
+    # method to call in PixelIntegrationTest. For example if the
+    # action here is "CrashGpuProcess" then it would be defined in a
+    # "_CrashGpuProcess" method in PixelIntegrationTest.
+    self.optional_action = optional_action
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -133,6 +139,13 @@ def DefaultPages(base_name):
       base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
       test_rect=[0, 0, 300, 300],
       revision=1),
+
+    PixelTestPage(
+      'pixel_webgl_sad_canvas.html',
+      base_name + '_WebGLSadCanvas',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      optional_action='CrashGpuProcess'),
 
     PixelTestPage(
       'pixel_scissor.html',

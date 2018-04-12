@@ -512,8 +512,6 @@ jumbo_split_static_library("browser") {
     "google/google_url_tracker_factory.h",
     "gpu/gpu_mode_manager.cc",
     "gpu/gpu_mode_manager.h",
-    "gpu/three_d_api_observer.cc",
-    "gpu/three_d_api_observer.h",
     "hang_monitor/hang_crash_dump_win.cc",
     "hang_monitor/hang_crash_dump_win.h",
     "history/chrome_history_backend_client.cc",

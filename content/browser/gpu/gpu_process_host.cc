@@ -1074,7 +1074,12 @@ void GpuProcessHost::DidCreateOffscreenContext(const GURL& url) {
 }
 
 void GpuProcessHost::DidDestroyOffscreenContext(const GURL& url) {
-  urls_with_live_offscreen_contexts_.erase(url);
+  // We only want to remove *one* of the entries in the multiset for
+  // this particular URL, so can't use the erase method taking a key.
+  auto candidate = urls_with_live_offscreen_contexts_.find(url);
+  if (candidate != urls_with_live_offscreen_contexts_.end()) {
+    urls_with_live_offscreen_contexts_.erase(candidate);
+  }
 }
 
 void GpuProcessHost::DidDestroyChannel(int32_t client_id) {

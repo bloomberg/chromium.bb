@@ -115,3 +115,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(hubbe): Temporary supressions for rebaseline
     self.Fail('Pixel_Video_VP9', bug=754986)
     self.Fail('Pixel_DirectComposition_Video_VP9', bug=754986)
+
+    # TODO(kbr): temporary suppression for new test.
+    self.Fail('Pixel_WebGLSadCanvas', bug=575305)

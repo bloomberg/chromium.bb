@@ -9934,23 +9934,6 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
         </if>
       </if>
 
-      <!-- Pepper 3D and WebGL (client 3D APIs) infobar strings -->
-      <message name="IDS_3D_APIS_BLOCKED_TEXT" desc="Infobar message when 3D graphics APIs are blocked because the graphics processor was reset recently. NOTE that 'rats' here is being used like 'darn'.">
-        Rats! <ph name="API_NAME">$1<ex>WebGL</ex></ph> hit a snag.
-      </message>
-      <message name="IDS_3D_APIS_WEBGL_NAME" desc="Name of the WebGL API.">
-        WebGL
-      </message>
-      <message name="IDS_3D_APIS_PEPPER_3D_NAME" desc="Name of the Pepper 3D API.">
-        Pepper 3D
-      </message>
-      <message name="IDS_3D_APIS_BLOCKED_OK_BUTTON_LABEL" desc="Label for the 'ok' button on the infobar indicating that 3D APIs were blocked. Clicking this button dismisses the infobar with no other action.">
-        Ignore
-      </message>
-      <message name="IDS_3D_APIS_BLOCKED_TRY_AGAIN_BUTTON_LABEL" desc="Label for the 'cancel' button on the infobar indicating that 3D APIs were blocked. Clicking this button unblocks the APIs and reloads the page.">
-        Reload
-      </message>
-
       <!-- Identity internals strings -->
       <message name="IDS_IDENTITY_INTERNALS_TOKEN_CACHE_TEXT" desc="The title of the token cache of the Identity API.">
         Identity API Token Cache

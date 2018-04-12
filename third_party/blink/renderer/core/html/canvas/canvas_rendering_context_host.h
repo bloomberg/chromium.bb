@@ -56,6 +56,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public GarbageCollectedMixin {
   // If WebGL is temporarily blocked because WebGL contexts were lost one or
   // more times, in particular, via the GL_ARB_robustness extension.
   virtual bool IsWebGLBlocked() const = 0;
+  virtual void SetContextCreationWasBlocked() {}
 
   virtual FontSelector* GetFontSelector() = 0;
 

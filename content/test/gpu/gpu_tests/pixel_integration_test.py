@@ -28,16 +28,24 @@ test_data_dirs = [gpu_data_dir,
 test_harness_script = r"""
   var domAutomationController = {};
 
+  domAutomationController._proceed = false;
+
+  domAutomationController._readyForActions = false;
   domAutomationController._succeeded = false;
   domAutomationController._finished = false;
 
   domAutomationController.send = function(msg) {
-    domAutomationController._finished = true;
-
-    if(msg.toLowerCase() == "success") {
-      domAutomationController._succeeded = true;
+    domAutomationController._proceed = true;
+    let lmsg = msg.toLowerCase();
+    if (lmsg == "ready") {
+      domAutomationController._readyForActions = true;
     } else {
-      domAutomationController._succeeded = false;
+      domAutomationController._finished = true;
+      if (lmsg == "success") {
+        domAutomationController._succeeded = true;
+      } else {
+        domAutomationController._succeeded = false;
+      }
     }
   }
 
@@ -121,7 +129,9 @@ class PixelIntegrationTest(
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=test_harness_script)
     tab.action_runner.WaitForJavaScriptCondition(
-      'domAutomationController._finished', timeout=300)
+      'domAutomationController._proceed', timeout=300)
+    if tab.EvaluateJavaScript('domAutomationController._readyForActions'):
+      self._DoPageAction(tab, page)
     if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
       self.fail('page indicated test failure')
     if not tab.screenshot_supported:
@@ -182,6 +192,13 @@ class PixelIntegrationTest(
           screenshot, ref_png)
       self.fail('Reference image did not match captured screen')
 
+  def _DoPageAction(self, tab, page):
+    getattr(self, '_' + page.optional_action)(tab, page)
+    # Now that we've done the page's specific action, wait for it to
+    # report completion.
+    tab.action_runner.WaitForJavaScriptCondition(
+      'domAutomationController._finished', timeout=300)
+
   def _DeleteOldReferenceImages(self, ref_image_path, cur_revision):
     if not cur_revision:
       return
@@ -217,6 +234,24 @@ class PixelIntegrationTest(
 
     self._WriteImage(image_path, screenshot)
     return screenshot
+
+  #
+  # Optional actions pages can take.
+  # These are specified as methods taking the tab and the page as
+  # arguments.
+  #
+  def _CrashGpuProcess(self, tab, page):
+    # Crash the GPU process.
+    gpucrash_tab = tab.browser.tabs.New()
+    # To access these debug URLs from Telemetry, they have to be
+    # written using the chrome:// scheme.
+    # The try/except is a workaround for crbug.com/368107.
+    try:
+      gpucrash_tab.Navigate('chrome://gpucrash')
+    except Exception:
+      print 'Tab crashed while navigating to chrome://gpucrash'
+    # Activate the original tab and wait for completion.
+    tab.Activate()
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

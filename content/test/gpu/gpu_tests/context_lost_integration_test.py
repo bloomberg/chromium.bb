@@ -60,7 +60,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   def _AddDefaultArgs(browser_args):
     # These are options specified for every test.
     return [
-      '--disable-domain-blocking-for-3d-apis',
       '--disable-gpu-process-crash-limit',
       # Required for about:gpucrash handling from Telemetry.
       '--enable-gpu-benchmarking'] + browser_args
@@ -78,7 +77,11 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('ContextLost_WebGLContextLostFromSelectElement',
               'webgl_with_select_element.html'),
              ('ContextLost_WebGLContextLostInHiddenTab',
-              'webgl.html?query=kill_after_notification'))
+              'webgl.html?query=kill_after_notification'),
+             ('ContextLost_WebGLBlockedAfterJSNavigation',
+              'webgl-domain-blocking-page1.html'),
+             ('ContextLost_WebGLUnblockedAfterUserInitiatedReload',
+              'webgl-domain-unblocking.html'))
     for t in tests:
       yield (t[0], t[1], ('_' + t[0]))
 
@@ -96,7 +99,11 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def SetUpProcess(cls):
     super(ContextLostIntegrationTest, cls).SetUpProcess()
-    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([]))
+    # Most of the tests need this, so add it to the default set of
+    # command line arguments used to launch the browser, to reduce the
+    # number of browser restarts between tests.
+    cls.CustomizeBrowserArgs(cls._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     cls.StartBrowser()
     cls.SetStaticServerDirs([data_path])
 
@@ -210,16 +217,22 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   # slightly differently named.
   def _GpuCrash_GPUProcessCrashesExactlyOncePerVisitToAboutGpuCrash(
       self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     self._NavigateAndWaitForLoad(test_path)
     self._KillGPUProcess(2, True)
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
   def _ContextLost_WebGLContextLostFromGPUProcessExit(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     self._NavigateAndWaitForLoad(test_path)
     self._KillGPUProcess(1, False)
     self._RestartBrowser('must restart after tests that kill the GPU process')
 
   def _ContextLost_WebGLContextLostFromLoseContextExtension(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     url = self.UrlOfStaticFilePath(test_path)
     tab = self.tab
     tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
@@ -227,6 +240,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       'window.domAutomationController._finished')
 
   def _ContextLost_WebGLContextLostFromQuantity(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     self._NavigateAndWaitForLoad(test_path)
     # Try to coerce GC to clean up any contexts not attached to the page.
     # This method seems unreliable, so the page will also attempt to
@@ -235,10 +250,14 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     self._WaitForTabAndCheckCompletion()
 
   def _ContextLost_WebGLContextLostFromSelectElement(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     self._NavigateAndWaitForLoad(test_path)
     self._WaitForTabAndCheckCompletion()
 
   def _ContextLost_WebGLContextLostInHiddenTab(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([
+      '--disable-domain-blocking-for-3d-apis']))
     self._NavigateAndWaitForLoad(test_path)
     # Test losing a context in a hidden tab. This test passes if the tab
     # doesn't crash.
@@ -247,6 +266,75 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     tab.EvaluateJavaScript('loseContextUsingExtension()')
     tab.Activate()
     self._WaitForTabAndCheckCompletion()
+
+  def _ContextLost_WebGLBlockedAfterJSNavigation(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
+    self._NavigateAndWaitForLoad(test_path)
+
+    tab = self.tab
+
+    # Make sure the tab got a WebGL context.
+    if tab.EvaluateJavaScript('window.domAutomationController._finished'):
+      # This means the test failed for some reason.
+      if tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
+        self.fail('Initial page claimed to succeed early')
+      else:
+        self.fail('Initial page failed to get a WebGL context')
+
+    # Kill the GPU process in order to get WebGL blocked.
+    gpucrash_tab = tab.browser.tabs.New()
+    try:
+      # To access these debug URLs from Telemetry, they have to be
+      # written using the chrome:// scheme.
+      gpucrash_tab.Navigate('chrome://gpucrash')
+      # Activate the original tab.
+      tab.Activate()
+      # The original tab has navigated to a new page. Wait for it to
+      # finish running its onload handler.
+      tab.WaitForJavaScriptCondition('window.initFinished',
+                                     timeout=wait_timeout)
+      # Make sure the page failed to get a GL context.
+      if tab.EvaluateJavaScript('window.gotGL'):
+        self.fail(
+          'Page should have been blocked from getting a new WebGL context')
+    finally:
+      gpucrash_tab.Close()
+
+  def _ContextLost_WebGLUnblockedAfterUserInitiatedReload(self, test_path):
+    self.RestartBrowserIfNecessaryWithArgs(self._AddDefaultArgs([]))
+    self._NavigateAndWaitForLoad(test_path)
+
+    tab = self.tab
+
+    # Make sure the tab initially got a WebGL context.
+    if not tab.EvaluateJavaScript('window.domAutomationController._succeeded'):
+      self.fail('Tab failed to get an initial WebGL context')
+
+    # Kill the GPU process in order to get WebGL blocked.
+    gpucrash_tab = tab.browser.tabs.New()
+    try:
+      # To access these debug URLs from Telemetry, they have to be
+      # written using the chrome:// scheme.
+      gpucrash_tab.Navigate('chrome://gpucrash')
+      # Activate the original tab.
+      tab.Activate()
+      # Wait for the page to receive a context loss event.
+      tab.WaitForJavaScriptCondition('window.contextLostReceived',
+                                     timeout=wait_timeout)
+      # Make sure WebGL is still blocked.
+      if not tab.EvaluateJavaScript(
+          'window.domAutomationController._succeeded'):
+        self.fail('WebGL should have been blocked after a context loss')
+      # Reload the page via Telemetry / DevTools. This is treated as a
+      # user-initiated navigation, so WebGL is unblocked.
+      self._NavigateAndWaitForLoad(test_path)
+      # Ensure WebGL is unblocked.
+      if not tab.EvaluateJavaScript(
+          'window.domAutomationController._succeeded'):
+        self.fail(
+          'WebGL should have been unblocked after a user-initiated navigation')
+    finally:
+      gpucrash_tab.Close()
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

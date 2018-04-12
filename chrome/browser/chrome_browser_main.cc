@@ -74,7 +74,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/expired_histograms_array.h"
@@ -1512,8 +1511,6 @@ void ChromeBrowserMainParts::PreBrowserStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreBrowserStart");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreBrowserStart();
-
-  three_d_observer_.reset(new ThreeDAPIObserver());
 
 // Start the tab manager here so that we give the most amount of time for the
 // other services to start up before we start adjusting the oom priority.
