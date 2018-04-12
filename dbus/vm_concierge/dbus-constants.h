@@ -24,6 +24,7 @@ const char kLaunchContainerApplicationMethod[] = "LaunchContainerApplication";
 const char kGetContainerAppIconMethod[] = "GetContainerAppIcon";
 
 const char kContainerStartedSignal[] = "ContainerStarted";
+const char kContainerStartupFailedSignal[] = "ContainerStartupFailed";
 
 }  // namespace concierge
 }  // namespace vm_tools

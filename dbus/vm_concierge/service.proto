@@ -239,7 +239,8 @@ message ListVmDisksResponse {
   string failure_reason = 3;
 }
 
-// Signal for when a container has started up.
+// Message used in the signal for when a container has started up or failed to
+// startup.
 message ContainerStartedSignal {
   // Name of the VM the container is in.
   string vm_name = 1;
