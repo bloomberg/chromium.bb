@@ -206,10 +206,9 @@ TEST_F(DisplayTest, DisplayDamaged) {
   display_->Initialize(&client, manager_.surface_manager());
   display_->SetColorSpace(color_space_1, color_space_1);
 
-  LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
-  display_->SetLocalSurfaceId(local_surface_id, 1.f);
+  display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->display_resized_);
   EXPECT_TRUE(scheduler_->has_new_root_surface);
@@ -229,7 +228,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   pass_list.push_back(std::move(pass));
 
   scheduler_->ResetDamageForTest();
-  SubmitCompositorFrame(&pass_list, local_surface_id);
+  SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
   EXPECT_TRUE(scheduler_->damaged);
   EXPECT_FALSE(scheduler_->display_resized_);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -254,7 +253,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    SubmitCompositorFrame(&pass_list, local_surface_id);
+    SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -283,7 +282,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    SubmitCompositorFrame(&pass_list, local_surface_id);
+    SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -297,8 +296,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   // Pass is wrong size so shouldn't be swapped. However, damage should
   // result in latency info being stored for the next swap.
   {
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.f);
+    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
 
     scheduler_->ResetDamageForTest();
 
@@ -309,7 +307,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
                                 .AddLatencyInfo(ui::LatencyInfo())
                                 .Build();
 
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    support_->SubmitCompositorFrame(id_allocator_.GetCurrentLocalSurfaceId(),
+                                    std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -327,12 +326,11 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
     pass->id = 1u;
 
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.f);
+    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    SubmitCompositorFrame(&pass_list, local_surface_id);
+    SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -362,7 +360,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    SubmitCompositorFrame(&pass_list, local_surface_id);
+    SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -386,7 +384,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
                                 .AddLatencyInfo(ui::LatencyInfo())
                                 .Build();
 
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    support_->SubmitCompositorFrame(id_allocator_.GetCurrentLocalSurfaceId(),
+                                    std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -400,8 +399,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   // Resize should cause a swap if no frame was swapped at the previous size.
   {
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.f);
+    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.f);
     scheduler_->swapped = false;
     display_->Resize(gfx::Size(200, 200));
     EXPECT_FALSE(scheduler_->swapped);
@@ -414,7 +412,8 @@ TEST_F(DisplayTest, DisplayDamaged) {
                                 .AddRenderPass(kOutputRect, kDamageRect)
                                 .Build();
 
-    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    support_->SubmitCompositorFrame(id_allocator_.GetCurrentLocalSurfaceId(),
+                                    std::move(frame));
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
@@ -431,8 +430,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
   // Surface that's damaged completely should be resized and swapped.
   {
-    local_surface_id = id_allocator_.GenerateId();
-    display_->SetLocalSurfaceId(local_surface_id, 1.0f);
+    display_->SetLocalSurfaceId(id_allocator_.GenerateId(), 1.0f);
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(0, 0, 99, 99);
@@ -440,7 +438,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
 
     pass_list.push_back(std::move(pass));
     scheduler_->ResetDamageForTest();
-    SubmitCompositorFrame(&pass_list, local_surface_id);
+    SubmitCompositorFrame(&pass_list, id_allocator_.GetCurrentLocalSurfaceId());
     EXPECT_TRUE(scheduler_->damaged);
     EXPECT_FALSE(scheduler_->display_resized_);
     EXPECT_FALSE(scheduler_->has_new_root_surface);
