@@ -8,15 +8,13 @@
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/ntp_content"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingTop="@dimen/tab_strip_height" >
+    android:layout_height="match_parent" >
 
     <org.chromium.chrome.browser.ntp.NewTabPageScrollView
         android:id="@+id/ntp_scrollview"
         android:background="@color/ntp_bg_incognito"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingTop="@dimen/toolbar_height_no_shadow"
         android:fadingEdgeLength="9dp"
         android:fillViewport="false"
         android:focusable="true"

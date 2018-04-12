@@ -34,7 +34,7 @@ public class NativePageFactory {
         protected NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
                 TabModelSelector tabModelSelector) {
             if (tab.isIncognito()) {
-                return new IncognitoNewTabPage(activity);
+                return new IncognitoNewTabPage(activity, new TabShim(tab));
             }
 
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
