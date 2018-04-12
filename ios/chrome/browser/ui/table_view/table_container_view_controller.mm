@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_container_bottom_toolbar.h"
 #import "ios/chrome/browser/ui/table_view/table_container_constants.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,7 +43,7 @@
 #pragma mark Setters and Getters
 
 // TODO(crbug.com/805178): Temporary Toolbar code for prototyping purposes.
-- (void)setBottomToolbar:(UIView*)bottomToolbar {
+- (void)setBottomToolbar:(TableContainerBottomToolbar*)bottomToolbar {
   _bottomToolbar = bottomToolbar;
   _bottomToolbar.backgroundColor = [UIColor lightGrayColor];
   _bottomToolbar.translatesAutoresizingMaskIntoConstraints = NO;

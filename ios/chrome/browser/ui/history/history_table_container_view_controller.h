@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 
+@protocol ApplicationCommands;
 @protocol HistoryTableUpdaterDelegate;
 
 // Container for handling the interaction between its TableViewController, the
@@ -14,6 +15,9 @@
 @interface HistoryTableContainerViewController : TableContainerViewController
 - (instancetype)initWithTable:
     (ChromeTableViewController<HistoryTableUpdaterDelegate>*)table;
+// The dispatcher used by this ViewController.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_TABLE_CONTAINER_VIEW_CONTROLLER_H_
