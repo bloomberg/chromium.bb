@@ -1425,10 +1425,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-- (void)startVoiceSearch:(StartVoiceSearchCommand*)command {
-  [self startVoiceSearch];
-}
-
 - (void)showHistory {
   if (experimental_flags::IsCollectionsUIRebootEnabled()) {
     // New History UIReboot coordinator.
