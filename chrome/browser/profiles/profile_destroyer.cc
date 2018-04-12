@@ -62,8 +62,8 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   if (profile_is_off_the_record) {
     DCHECK(!profile_has_off_the_record);
     if (profile_hosts_count) {
-      // The instance will destroy itself once all render process hosts
-      // referring to it are properly terminated.
+      // The instance will destroy itself once all (non-spare) render process
+      // hosts referring to it are properly terminated.
       new ProfileDestroyer(profile, &profile_hosts);
     } else {
       profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
@@ -207,10 +207,16 @@ ProfileDestroyer::HostSet ProfileDestroyer::GetHostsForProfile(
         content::RenderProcessHost::AllHostsIterator());
       !iter.IsAtEnd(); iter.Advance()) {
     content::RenderProcessHost* render_process_host = iter.GetCurrentValue();
-    if (render_process_host &&
-            render_process_host->GetBrowserContext() == profile) {
-      hosts.insert(render_process_host);
-    }
+    DCHECK(render_process_host);
+
+    if (render_process_host->GetBrowserContext() != profile)
+      continue;
+
+    // Ignore the spare RenderProcessHost.
+    if (render_process_host->HostHasNotBeenUsed())
+      continue;
+
+    hosts.insert(render_process_host);
   }
   return hosts;
 }

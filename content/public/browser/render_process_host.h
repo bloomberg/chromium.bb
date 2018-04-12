@@ -460,9 +460,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // The spare RenderProcessHost is meant to be created in a situation where a
   // navigation is imminent and it is unlikely an existing RenderProcessHost
   // will be used, for example in a cross-site navigation when a Service Worker
-  // will need to be started.
-  static void WarmupSpareRenderProcessHost(
-      content::BrowserContext* browser_context);
+  // will need to be started.  Note that if ContentBrowserClient opts into
+  // strict site isolation (via ShouldEnableStrictSiteIsolation), then the
+  // //content layer will maintain a warm spare process host at all times
+  // (without a need for separate calls to WarmupSpareRenderProcessHost).
+  static void WarmupSpareRenderProcessHost(BrowserContext* browser_context);
 
   // Flag to run the renderer in process.  This is primarily
   // for debugging purposes.  When running "in process", the
@@ -501,15 +503,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   static bool ShouldTryToUseExistingProcessHost(
       content::BrowserContext* browser_context, const GURL& site_url);
 
-  // Get an existing RenderProcessHost associated with the given browser
-  // context, if possible.  The renderer process is chosen randomly from
-  // suitable renderers that share the same context and type (determined by the
-  // site url).
-  // Returns nullptr if no suitable renderer process is available, in which case
-  // the caller is free to create a new renderer.
-  static RenderProcessHost* GetExistingProcessHost(
-      content::BrowserContext* browser_context, const GURL& site_url);
-
   // Overrides the default heuristic for limiting the max renderer process
   // count.  This is useful for unit testing process limit behaviors.  It is
   // also used to allow a command line parameter to configure the max number of
@@ -525,6 +518,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   using AnalyzeHungRendererFunction = void (*)(const base::Process& renderer);
   static void SetHungRendererAnalysisFunction(
       AnalyzeHungRendererFunction analyze_hung_renderer);
+
+  // Counts current RenderProcessHost(s), ignoring the spare process.
+  static int GetCurrentRenderProcessCountForTesting();
 };
 
 }  // namespace content

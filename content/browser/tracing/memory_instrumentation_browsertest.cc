@@ -6,6 +6,9 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -29,13 +32,18 @@ class MemoryInstrumentationTest : public ContentBrowserTest {
 };
 
 uint64_t GetPrivateFootprintKb(ProcessType type,
-                               const GlobalMemoryDump& global_dump) {
+                               const GlobalMemoryDump& global_dump,
+                               base::ProcessId pid = base::kNullProcessId) {
   const GlobalMemoryDump::ProcessDump* target_dump = nullptr;
   for (const auto& dump : global_dump.process_dumps()) {
-    if (dump.process_type() == type) {
-      EXPECT_FALSE(target_dump);
-      target_dump = &dump;
-    }
+    if (dump.process_type() != type)
+      continue;
+
+    if (pid != base::kNullProcessId && pid != dump.pid())
+      continue;
+
+    EXPECT_FALSE(target_dump);
+    target_dump = &dump;
   }
   EXPECT_TRUE(target_dump);
   return target_dump->os_dump().private_footprint_kb;
@@ -87,6 +95,9 @@ IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
   EXPECT_EQ(x[0] + x[kAllocSize - 1], 2);
 
   content::WebContents* web_contents = shell()->web_contents();
+  base::ProcessId renderer_pid =
+      base::GetProcId(web_contents->GetMainFrame()->GetProcess()->GetHandle());
+
   // Should allocate at least 4*10^6 / 1024 = 4000kb.
   EXPECT_TRUE(content::ExecuteScript(web_contents,
                                      "var a = Array(1000000).fill(1234);\n"));
@@ -109,9 +120,9 @@ IN_PROC_BROWSER_TEST_F(MemoryInstrumentationTest,
               AllOf(Ge(kAllocSizeKb - 3000), Le(kAllocSizeKb + 3000)));
 
   int64_t before_renderer_kb =
-      GetPrivateFootprintKb(ProcessType::RENDERER, *before_ptr);
+      GetPrivateFootprintKb(ProcessType::RENDERER, *before_ptr, renderer_pid);
   int64_t during_renderer_kb =
-      GetPrivateFootprintKb(ProcessType::RENDERER, *during_ptr);
+      GetPrivateFootprintKb(ProcessType::RENDERER, *during_ptr, renderer_pid);
   EXPECT_GE(during_renderer_kb - before_renderer_kb, 3000);
 }
 

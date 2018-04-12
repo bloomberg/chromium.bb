@@ -79,7 +79,9 @@ bool RenderersAreBeingProfiled(
 }
 
 // On success, populates |pid|.
-int NumProcessesWithName(base::Value* dump_json, std::string name, int* pid) {
+int NumProcessesWithName(base::Value* dump_json,
+                         std::string name,
+                         std::vector<int>* pids) {
   int num_processes = 0;
   base::Value* events = dump_json->FindKey("traceEvents");
   for (const base::Value& event : events->GetList()) {
@@ -100,14 +102,14 @@ int NumProcessesWithName(base::Value* dump_json, std::string name, int* pid) {
     if (found_process_name->GetString() != name)
       continue;
 
-    if (pid) {
+    if (pids) {
       const base::Value* found_pid =
           event.FindKeyOfType("pid", base::Value::Type::INTEGER);
       if (!found_pid) {
         LOG(ERROR) << "Process missing pid.";
         return 0;
       }
-      *pid = found_pid->GetInt();
+      pids->push_back(found_pid->GetInt());
     }
 
     ++num_processes;
@@ -840,49 +842,51 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
 }
 
 bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
-  int pid;
-  bool result = NumProcessesWithName(dump_json, "Renderer", &pid) == 1;
+  std::vector<int> pids;
+  bool result = NumProcessesWithName(dump_json, "Renderer", &pids) >= 1;
   if (!result) {
     LOG(ERROR) << "Failed to find process with name Renderer";
     return false;
   }
 
-  base::ProcessId renderer_pid = static_cast<base::ProcessId>(pid);
-  base::Value* heaps_v2 = FindArgDump(renderer_pid, dump_json, "heaps_v2");
-  if (ShouldProfileRenderer()) {
-    if (!heaps_v2) {
-      LOG(ERROR) << "Failed to find heaps v2 for renderer";
-      return false;
+  for (int pid : pids) {
+    base::ProcessId renderer_pid = static_cast<base::ProcessId>(pid);
+    base::Value* heaps_v2 = FindArgDump(renderer_pid, dump_json, "heaps_v2");
+    if (ShouldProfileRenderer()) {
+      if (!heaps_v2) {
+        LOG(ERROR) << "Failed to find heaps v2 for renderer";
+        return false;
+      }
+
+      base::Value* process_mmaps =
+          FindArgDump(renderer_pid, dump_json, "process_mmaps");
+      if (!ValidateProcessMmaps(process_mmaps, HasNativeFrames())) {
+        LOG(ERROR) << "Failed to validate renderer process mmaps.";
+        return false;
+      }
+
+      // ValidateDump doesn't always succeed for the renderer, since we don't do
+      // anything to flush allocations, there are very few allocations recorded
+      // by the heap profiler. When we do a heap dump, we prune small
+      // allocations...and this can cause all allocations to be pruned.
+      // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0));
+    } else {
+      if (heaps_v2) {
+        LOG(ERROR) << "There should be no heap dump for the renderer.";
+        return false;
+      }
     }
 
-    base::Value* process_mmaps =
-        FindArgDump(renderer_pid, dump_json, "process_mmaps");
-    if (!ValidateProcessMmaps(process_mmaps, HasNativeFrames())) {
-      LOG(ERROR) << "Failed to validate renderer process mmaps.";
-      return false;
-    }
-
-    // ValidateDump doesn't always succeed for the renderer, since we don't do
-    // anything to flush allocations, there are very few allocations recorded
-    // by the heap profiler. When we do a heap dump, we prune small
-    // allocations...and this can cause all allocations to be pruned.
-    // ASSERT_NO_FATAL_FAILURE(ValidateDump(dump_json.get(), 0, 0));
-  } else {
-    if (heaps_v2) {
-      LOG(ERROR) << "There should be no heap dump for the renderer.";
-      return false;
-    }
-  }
-
-  if (options_.mode == Mode::kAllRenderers) {
-    if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
-      LOG(ERROR) << "There should be at least 1 renderer dump";
-      return false;
-    }
-  } else {
-    if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
-      LOG(ERROR) << "There should be more than 1 renderer dump";
-      return false;
+    if (options_.mode == Mode::kAllRenderers) {
+      if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
+        LOG(ERROR) << "There should be at least 1 renderer dump";
+        return false;
+      }
+    } else {
+      if (NumProcessesWithName(dump_json, "Renderer", nullptr) == 0) {
+        LOG(ERROR) << "There should be more than 1 renderer dump";
+        return false;
+      }
     }
   }
 

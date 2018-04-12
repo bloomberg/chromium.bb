@@ -48,15 +48,7 @@ using content::WebContents;
 namespace {
 
 int RenderProcessHostCount() {
-  content::RenderProcessHost::iterator hosts =
-      content::RenderProcessHost::AllHostsIterator();
-  int count = 0;
-  while (!hosts.IsAtEnd()) {
-    if (hosts.GetCurrentValue()->HasConnection())
-      count++;
-    hosts.Advance();
-  }
-  return count;
+  return content::RenderProcessHost::GetCurrentRenderProcessCountForTesting();
 }
 
 WebContents* FindFirstDevToolsContents() {

@@ -1014,14 +1014,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
       browser(), ui_test_utils::GetTestUrl(
                      base::FilePath(base::FilePath::kCurrentDirectory),
                      base::FilePath(kTitle1File)));
-  content::RenderProcessHost::iterator it(
-      content::RenderProcessHost::AllHostsIterator());
-  for (; !it.IsAtEnd(); it.Advance()) {
-    base::TimeDelta renderer_td =
-        it.GetCurrentValue()->GetChildProcessIdleTime();
-    base::TimeDelta browser_td = base::TimeTicks::Now() - start;
-    EXPECT_TRUE(browser_td >= renderer_td);
-  }
+  base::TimeDelta renderer_td = browser()
+                                    ->tab_strip_model()
+                                    ->GetActiveWebContents()
+                                    ->GetMainFrame()
+                                    ->GetProcess()
+                                    ->GetChildProcessIdleTime();
+  base::TimeDelta browser_td = base::TimeTicks::Now() - start;
+  EXPECT_TRUE(browser_td >= renderer_td);
 }
 
 // Test RenderView correctly send back favicon url for web page that redirects

@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -128,16 +129,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Special depth used when there are no PriorityClients.
   static const unsigned int kMaxFrameDepthForPriority;
 
-  // Use the spare RenderProcessHost if it exists, or create a new one. This
-  // should be the usual way to get a new RenderProcessHost.  Default storage
-  // partition from the browser_context is always used.
-  static RenderProcessHost* CreateOrUseSpareRenderProcessHost(
-      BrowserContext* browser_context,
-      SiteInstance* site_instance,
-      bool is_for_guests_only);
-
-  // Create a new RenderProcessHost. In most cases
-  // CreateOrUseSpareRenderProcessHost, above, should be used instead.
+  // Create a new RenderProcessHost.
   // If |storage_partition_impl| is null, the default partition from the
   // browser_context is used, using |site_instance| (for which a null value is
   // legal). |site_instance| is not used if |storage_partition_impl| is not
@@ -302,10 +294,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
       BrowserContext* browser_context,
       SiteInstanceImpl* site_instance);
 
-  // Cleanup and remove any spare renderer. This should be used when a
-  // navigation has occurred or will be occurring that will not use the spare
-  // renderer and resources should be cleaned up.
-  static void CleanupSpareRenderProcessHost();
+  // Should be called when |browser_context| is used in a navigation.
+  //
+  // The SpareRenderProcessHostManager can decide how to respond (for example,
+  // by shutting down the spare process to conserve resources, or alternatively
+  // by making sure that the spare process belongs to the same BrowserContext as
+  // the most recent navigation).
+  static void NotifySpareManagerAboutRecentlyUsedBrowserContext(
+      BrowserContext* browser_context);
 
   static base::MessageLoop* GetInProcessRendererThreadForTesting();
 
@@ -390,6 +386,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Return the spare RenderProcessHost, if it exists. There is at most one
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
+
+  // Discards the spare RenderProcessHost.  After this call,
+  // GetSpareRenderProcessHostForTesting will return nullptr.
+  static void DiscardSpareRenderProcessHostForTesting();
+
+  // Returns true if a spare RenderProcessHost should be kept at all times.
+  static bool IsSpareProcessKeptAtAllTimes();
 
   PermissionServiceContext& permission_service_context() {
     return *permission_service_context_;
@@ -533,6 +536,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
       BrowserContext* browser_context,
       SiteInstanceImpl* site_instance,
       bool is_for_guests_only);
+
+  // Get an existing RenderProcessHost associated with the given browser
+  // context, if possible.  The renderer process is chosen randomly from
+  // suitable renderers that share the same context and type (determined by the
+  // site url).
+  // Returns nullptr if no suitable renderer process is available, in which case
+  // the caller is free to create a new renderer.
+  static RenderProcessHost* GetExistingProcessHost(
+      content::BrowserContext* browser_context,
+      const GURL& site_url);
+  FRIEND_TEST_ALL_PREFIXES(RenderProcessHostUnitTest,
+                           GuestsAreNotSuitableHosts);
 
   // Returns a RenderProcessHost that is rendering |site_url| in one of its
   // frames, or that is expecting a navigation to |site_url|.

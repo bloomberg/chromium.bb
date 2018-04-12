@@ -30,6 +30,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/display_util.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/frame_messages.h"
@@ -7815,6 +7816,79 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(main_url, entry->GetURL());
   EXPECT_EQ(1U, entry->root_node()->children.size());
   EXPECT_EQ(0U, entry->root_node()->children[0]->children.size());
+}
+
+// This test supplements SpareRenderProcessHostUnitTest to verify that the spare
+// RenderProcessHost is actually used in cross-process navigations.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       UtilizationOfSpareRenderProcessHost) {
+  GURL first_url = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL second_url = embedded_test_server()->GetURL("b.com", "/title2.html");
+  RenderProcessHost* prev_spare = nullptr;
+  RenderProcessHost* curr_spare = nullptr;
+  RenderProcessHost* prev_host = nullptr;
+  RenderProcessHost* curr_host = nullptr;
+
+  // In the current implementation the spare is not warmed-up until the first
+  // real navigation.  It might be okay to change that in the future.
+  curr_spare = RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  curr_host = shell()->web_contents()->GetMainFrame()->GetProcess();
+  EXPECT_FALSE(curr_spare);
+
+  // Navigate to the first URL.
+  prev_host = curr_host;
+  prev_spare = curr_spare;
+  EXPECT_TRUE(NavigateToURL(shell(), first_url));
+  curr_spare = RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  curr_host = shell()->web_contents()->GetMainFrame()->GetProcess();
+  EXPECT_NE(curr_spare, curr_host);
+  // No process swap when navigating away from the initial blank page.
+  EXPECT_EQ(prev_host, curr_host);
+  // We should always keep a spare RenderProcessHost around in site-per-process
+  // mode.  We don't assert what should happen in other scenarios (to give
+  // flexibility to platform-specific decisions - e.g. on the desktop there
+  // might be no spare outside of site-per-process, but on Android the spare
+  // might still be opportunistically warmed up).
+  if (AreAllSitesIsolatedForTesting())
+    EXPECT_TRUE(curr_spare);
+
+  // Perform a cross-site omnibox navigation.
+  prev_host = curr_host;
+  prev_spare = curr_spare;
+  EXPECT_TRUE(NavigateToURL(shell(), second_url));
+  curr_spare = RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  curr_host = shell()->web_contents()->GetMainFrame()->GetProcess();
+  // The cross-site omnibox navigation should swap processes.
+  EXPECT_NE(prev_host, curr_host);
+  // If present, the spare RenderProcessHost should have been be used.
+  if (prev_spare)
+    EXPECT_EQ(prev_spare, curr_host);
+  // A new spare should be warmed-up in site-per-process mode.
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_TRUE(curr_spare);
+    EXPECT_NE(prev_spare, curr_spare);
+  }
+
+  // Perform a back navigation.
+  prev_host = curr_host;
+  prev_spare = curr_spare;
+  TestNavigationObserver back_load_observer(shell()->web_contents());
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  controller.GoBack();
+  back_load_observer.Wait();
+  curr_spare = RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  curr_host = shell()->web_contents()->GetMainFrame()->GetProcess();
+  // The cross-site back navigation should swap processes.
+  EXPECT_NE(prev_host, curr_host);
+  // If present, the spare RenderProcessHost should have been used.
+  if (prev_spare)
+    EXPECT_EQ(prev_spare, curr_host);
+  // A new spare should be warmed-up in site-per-process mode.
+  if (AreAllSitesIsolatedForTesting()) {
+    EXPECT_TRUE(curr_spare);
+    EXPECT_NE(prev_spare, curr_spare);
+  }
 }
 
 class NavigationControllerControllableResponseBrowserTest

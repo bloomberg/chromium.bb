@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -34,7 +35,20 @@ class MemoryCoordinatorImplBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, HandleAdded) {
   GURL url = GetTestUrl("", "simple_page.html");
   NavigateToURL(shell(), url);
-  size_t num_children = MemoryCoordinatorImpl::GetInstance()->children().size();
+
+  size_t num_children = 0;
+  for (auto const& it : MemoryCoordinatorImpl::GetInstance()->children()) {
+    int process_id = it.first;
+
+    // Ignore the spare process.
+    RenderProcessHost* spare_process =
+        RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+    if (spare_process && process_id == spare_process->GetID())
+      continue;
+
+    num_children++;
+  }
+
   EXPECT_EQ(1u, num_children);
 }
 

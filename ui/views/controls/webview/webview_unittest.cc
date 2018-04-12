@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -191,6 +192,10 @@ class WebViewUnitTest : public views::test::WidgetTest {
   }
 
  private:
+  // TODO(lukasza): https://crbug.com/832100: Move the factory into
+  // TestingProfile, so individual tests don't need to worry about it.
+  content::ScopedMockRenderProcessHostFactory process_factory_;
+
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
   std::unique_ptr<content::TestBrowserContext> browser_context_;
   content::TestContentBrowserClient test_browser_client_;

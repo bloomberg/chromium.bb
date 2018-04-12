@@ -34,6 +34,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -528,11 +529,11 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
         add_event_count_(0),
         reset_event_count_(0),
         completely_reset_event_count_(0),
-        new_table_count_(0),
-        binding_(this) {}
+        new_table_count_(0) {}
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojom::VisitedLinkNotificationSinkRequest(std::move(handle)));
+    binding_.AddBinding(
+        this, mojom::VisitedLinkNotificationSinkRequest(std::move(handle)));
   }
 
   void WaitForUpdate() {
@@ -543,7 +544,7 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
 
   void WaitForNoUpdate() { binding_.FlushForTesting(); }
 
-  mojo::Binding<mojom::VisitedLinkNotificationSink>& binding() {
+  mojo::BindingSet<mojom::VisitedLinkNotificationSink>& binding() {
     return binding_;
   }
 
@@ -588,7 +589,9 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
   int new_table_count_;
 
   base::Closure quit_closure_;
-  mojo::Binding<mojom::VisitedLinkNotificationSink> binding_;
+  mojo::BindingSet<mojom::VisitedLinkNotificationSink> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(VisitCountingContext);
 };
 
 // Stub out as little as possible, borrowing from RenderProcessHost.
@@ -835,11 +838,13 @@ TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
   VisitRelayingRenderProcessHost different_process_host(&different_context,
                                                         &counting_context);
 
+  size_t old_size = counting_context.binding().size();
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDERER_PROCESS_CREATED,
       content::Source<content::RenderProcessHost>(&different_process_host),
       content::NotificationService::NoDetails());
-  EXPECT_FALSE(counting_context.binding().is_bound());
+  size_t new_size = counting_context.binding().size();
+  EXPECT_EQ(old_size, new_size);
 }
 
 class VisitedLinkCompletelyResetEventTest : public VisitedLinkEventsTest {

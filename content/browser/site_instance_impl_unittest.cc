@@ -625,20 +625,22 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   if (AreAllSitesIsolatedForTesting())
     return;
 
-  // On Android by default the number of renderer hosts is unlimited and process
-  // sharing doesn't happen. We set the override so that the test can run
-  // everywhere.
-  RenderProcessHost::SetMaxRendererProcessCount(kMaxRendererProcessCount);
-
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Make a bunch of mock renderers so that we hit the limit.
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
   std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
-  for (size_t i = 0; i < kMaxRendererProcessCount; ++i)
+  for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
     hosts.push_back(
         std::make_unique<MockRenderProcessHost>(browser_context.get()));
+    hosts[i]->SetIsUsed();
+  }
+
+  // On Android by default the number of renderer hosts is unlimited and process
+  // sharing doesn't happen. We set the override so that the test can run
+  // everywhere.
+  RenderProcessHost::SetMaxRendererProcessCount(kMaxRendererProcessCount);
 
   // Create some extension instances and make sure they share a process.
   scoped_refptr<SiteInstanceImpl> extension1_instance(

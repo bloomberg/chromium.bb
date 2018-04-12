@@ -80,7 +80,9 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
   // A tab is already open when the test begins.
   StartGatherCycleAndWait();
   EXPECT_EQ(1u, probe.current_gather_cycle_for_testing());
-  EXPECT_EQ(1u, probe.render_process_info_map_for_testing().size());
+  size_t initial_size = probe.render_process_info_map_for_testing().size();
+  EXPECT_LE(1u, initial_size);
+  EXPECT_GE(2u, initial_size);  // If a spare RenderProcessHost is present.
   EXPECT_TRUE(probe.AllRenderProcessMeasurementsAreCurrentForTesting());
 
   // Open a second tab and complete a navigation.
@@ -91,7 +93,8 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   StartGatherCycleAndWait();
   EXPECT_EQ(2u, probe.current_gather_cycle_for_testing());
-  EXPECT_EQ(2u, probe.render_process_info_map_for_testing().size());
+  EXPECT_EQ(initial_size + 1u,
+            probe.render_process_info_map_for_testing().size());
   EXPECT_TRUE(probe.AllRenderProcessMeasurementsAreCurrentForTesting());
 
   // Kill one of the two open tabs.
@@ -103,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ResourceCoordinatorRenderProcessProbeBrowserTest,
                   ->FastShutdownIfPossible());
   StartGatherCycleAndWait();
   EXPECT_EQ(3u, probe.current_gather_cycle_for_testing());
-  EXPECT_EQ(1u, probe.render_process_info_map_for_testing().size());
+  EXPECT_EQ(initial_size, probe.render_process_info_map_for_testing().size());
   EXPECT_TRUE(probe.AllRenderProcessMeasurementsAreCurrentForTesting());
 }
 

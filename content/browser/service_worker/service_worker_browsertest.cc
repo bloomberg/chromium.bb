@@ -2487,13 +2487,7 @@ class ServiceWorkerBlackBoxBrowserTest : public ServiceWorkerBrowserTest {
 };
 
 static int CountRenderProcessHosts() {
-  int result = 0;
-  for (RenderProcessHost::iterator iter(RenderProcessHost::AllHostsIterator());
-       !iter.IsAtEnd();
-       iter.Advance()) {
-    result++;
-  }
-  return result;
+  return RenderProcessHost::GetCurrentRenderProcessCountForTesting();
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
