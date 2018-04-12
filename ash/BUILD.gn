@@ -212,6 +212,8 @@ component("ash") {
     "frame/frame_header_util.h",
     "frame/header_view.cc",
     "frame/header_view.h",
+    "frame/wide_frame_view.cc",
+    "frame/wide_frame_view.h",
     "high_contrast/high_contrast_controller.cc",
     "high_contrast/high_contrast_controller.h",
     "highlighter/highlighter_controller.cc",

@@ -222,6 +222,9 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenController
   // Returns the display bounds of the screen |widget_| is on.
   gfx::Rect GetDisplayBoundsInScreen() const;
 
+  // Test if the |widget| is the event target to control reveal state.
+  bool IsTargetForWidget(views::Widget* widget) const;
+
   // Not owned.
   ImmersiveFullscreenControllerDelegate* delegate_;
   views::View* top_container_;
