@@ -1626,8 +1626,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutRect DebugRect() const override;
 
-  float VisualRectOutsetForRasterEffects() const override;
-
   // The CSS border box rect for this box.
   //
   // The rectangle is in this box's physical coordinates but with a
