@@ -19,7 +19,6 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
-class ContentViewCore;
 class RenderWidgetHostViewAndroid;
 class SelectPopup;
 class SelectionPopupController;
@@ -34,9 +33,6 @@ class WebContentsViewAndroid : public WebContentsView,
   WebContentsViewAndroid(WebContentsImpl* web_contents,
                          WebContentsViewDelegate* delegate);
   ~WebContentsViewAndroid() override;
-
-  // Sets the interface to the view system.
-  void SetContentViewCore(ContentViewCore* content_view_core);
 
   // Sets the object that show/hide popup view for <select> tag.
   void SetSelectPopup(std::unique_ptr<SelectPopup> select_popup);
@@ -132,9 +128,6 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // The WebContents whose contents we display.
   WebContentsImpl* web_contents_;
-
-  // ContentViewCore is our interface to the view system.
-  std::unique_ptr<ContentViewCore> content_view_core_;
 
   // Handles "overscroll to refresh" events
   std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler_;

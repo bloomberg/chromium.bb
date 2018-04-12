@@ -11,7 +11,6 @@
 #include "cc/layers/layer.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_feature_list.h"
-#include "content/browser/android/content_view_core.h"
 #include "content/browser/android/gesture_listener_manager.h"
 #include "content/browser/android/select_popup.h"
 #include "content/browser/android/selection/selection_popup_controller.h"
@@ -105,30 +104,13 @@ WebContentsViewAndroid::WebContentsViewAndroid(
     : web_contents_(web_contents),
       delegate_(delegate),
       view_(this, ui::ViewAndroid::LayoutType::NORMAL),
-      synchronous_compositor_client_(nullptr) {}
+      synchronous_compositor_client_(nullptr) {
+  view_.SetLayer(cc::Layer::Create());
+}
 
 WebContentsViewAndroid::~WebContentsViewAndroid() {
   if (view_.GetLayer())
     view_.GetLayer()->RemoveFromParent();
-}
-
-void WebContentsViewAndroid::SetContentViewCore(ContentViewCore* cvc) {
-  if (content_view_core_.get() != cvc)
-    content_view_core_.reset(cvc);
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->UpdateNativeViewTree(cvc ? &view_ : nullptr);
-
-  if (web_contents_->ShowingInterstitialPage()) {
-    rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-        web_contents_->GetInterstitialPage()
-            ->GetMainFrame()
-            ->GetRenderViewHost()
-            ->GetWidget()
-            ->GetView());
-    if (rwhv)
-      rwhv->UpdateNativeViewTree(cvc ? &view_ : nullptr);
-  }
 }
 
 void WebContentsViewAndroid::SetSelectPopup(
@@ -180,7 +162,7 @@ WebContentsViewAndroid::GetRenderWidgetHostViewAndroid() {
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
-  return content_view_core_ ? content_view_core_->GetWindowAndroid() : nullptr;
+  return view_.GetWindowAndroid();
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
@@ -267,9 +249,7 @@ RenderWidgetHostViewBase* WebContentsViewAndroid::CreateViewForWidget(
   // order to paint it. See ContentView::GetRenderWidgetHostViewAndroid for an
   // example of how this is achieved for InterstitialPages.
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(render_widget_host);
-  gfx::NativeView native_view = content_view_core_ ? &view_ : nullptr;
-  RenderWidgetHostViewAndroid* rwhv =
-      new RenderWidgetHostViewAndroid(rwhi, native_view);
+  auto* rwhv = new RenderWidgetHostViewAndroid(rwhi, &view_);
   rwhv->SetSynchronousCompositorClient(synchronous_compositor_client_);
   return rwhv;
 }

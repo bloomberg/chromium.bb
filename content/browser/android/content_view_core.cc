@@ -33,13 +33,6 @@ RenderWidgetHostViewAndroid* GetRenderWidgetHostViewFromHost(
       host->GetWidget()->GetView());
 }
 
-void SetContentViewCore(WebContents* web_contents, ContentViewCore* cvc) {
-  WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents)->GetView());
-  DCHECK(wcva);
-  wcva->SetContentViewCore(cvc);
-}
-
 }  // namespace
 
 ContentViewCore::ContentViewCore(JNIEnv* env,
@@ -51,7 +44,6 @@ ContentViewCore::ContentViewCore(JNIEnv* env,
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       dpi_scale_(dpi_scale),
       device_orientation_(0) {
-  GetViewAndroid()->SetLayer(cc::Layer::Create());
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
@@ -62,8 +54,6 @@ ContentViewCore::ContentViewCore(JNIEnv* env,
   std::string spoofed_ua =
       BuildUserAgentFromOSAndProduct(kLinuxInfoStr, product);
   web_contents->SetUserAgentOverride(spoofed_ua, false);
-
-  InitWebContents();
 }
 
 ContentViewCore::~ContentViewCore() {
@@ -100,21 +90,16 @@ void ContentViewCore::OnJavaContentViewCoreDestroyed(
   java_ref_.reset();
   // Java peer has gone, ContentViewCore is not functional and waits to
   // be destroyed with WebContents.
-  // We need to reset WebContentsViewAndroid's reference, otherwise, there
-  // could have call in when swapping the WebContents,
-  // see http://crbug.com/383939 .
   DCHECK(web_contents_);
-  SetContentViewCore(web_contents(), nullptr);
-}
-
-void ContentViewCore::InitWebContents() {
-  DCHECK(web_contents_);
-  SetContentViewCore(web_contents(), this);
 }
 
 void ContentViewCore::RenderViewReady() {
   if (device_orientation_ != 0)
     SendOrientationChangeEventInternal();
+}
+
+void ContentViewCore::WebContentsDestroyed() {
+  delete this;
 }
 
 void ContentViewCore::RenderViewHostChanged(RenderViewHost* old_host,
@@ -147,11 +132,6 @@ RenderWidgetHostViewAndroid* ContentViewCore::GetRenderWidgetHostViewAndroid()
   return static_cast<RenderWidgetHostViewAndroid*>(rwhv);
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCore::GetJavaObject() {
-  JNIEnv* env = AttachCurrentThread();
-  return java_ref_.get(env);
-}
-
 void ContentViewCore::SendScreenRectsAndResizeWidget() {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (view) {
@@ -172,10 +152,6 @@ ui::ViewAndroid* ContentViewCore::GetViewAndroid() const {
 // ----------------------------------------------------------------------------
 // Methods called from Java via JNI
 // ----------------------------------------------------------------------------
-
-WebContents* ContentViewCore::GetWebContents() const {
-  return web_contents_;
-}
 
 void ContentViewCore::SetFocus(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
