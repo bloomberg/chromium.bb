@@ -20,6 +20,7 @@
 #include "net/socket/udp_socket.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/socket_factory.h"
 #include "services/network/udp_socket_test_util.h"
@@ -180,7 +181,8 @@ class UDPSocketTest : public testing::Test {
  public:
   UDPSocketTest()
       : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+        factory_(nullptr /*netlog*/, &url_request_context_) {}
   ~UDPSocketTest() override {}
 
   void SetWrappedSocket(
@@ -193,16 +195,19 @@ class UDPSocketTest : public testing::Test {
     return socket->remaining_recv_slots_;
   }
 
+  SocketFactory* factory() { return &factory_; }
+
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  net::TestURLRequestContext url_request_context_;
+  SocketFactory factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UDPSocketTest);
 };
 
 TEST_F(UDPSocketTest, Settings) {
-  SocketFactory factory(nullptr /*net_log*/);
   mojom::UDPSocketPtr socket_ptr;
-  factory.CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
   net::IPEndPoint server_addr;
   net::IPEndPoint any_port(GetLocalHostWithAnyPort());
 
@@ -219,9 +224,8 @@ TEST_F(UDPSocketTest, Settings) {
 // Tests that Send() is used after Bind() is not supported. Send() should only
 // be used after Connect().
 TEST_F(UDPSocketTest, TestSendWithBind) {
-  SocketFactory factory(nullptr /*net_log*/);
   mojom::UDPSocketPtr socket_ptr;
-  factory.CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
 
@@ -238,7 +242,6 @@ TEST_F(UDPSocketTest, TestSendWithBind) {
 // Tests that when SendTo() is used after Connect() is not supported. SendTo()
 // should only be used after Bind().
 TEST_F(UDPSocketTest, TestSendToWithConnect) {
-  SocketFactory factory(nullptr /*net_log*/);
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketReceiverImpl receiver;
   mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
@@ -246,8 +249,8 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
   receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                          std::move(receiver_interface_ptr));
+  factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket),
+                             std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -255,7 +258,7 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketPtr client_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&client_socket), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&client_socket), nullptr);
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -269,9 +272,8 @@ TEST_F(UDPSocketTest, TestSendToWithConnect) {
 // Tests that the sequence of calling Bind()/Connect() and setters is
 // important.
 TEST_F(UDPSocketTest, TestUnexpectedSequences) {
-  SocketFactory factory(nullptr /*net_log*/);
   mojom::UDPSocketPtr socket_ptr;
-  factory.CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
   test::UDPSocketTestHelper helper(&socket_ptr);
   net::IPEndPoint local_addr(GetLocalHostWithAnyPort());
 
@@ -402,7 +404,6 @@ TEST_F(UDPSocketTest, TestReceiveMoreOverflow) {
 }
 
 TEST_F(UDPSocketTest, TestReadSend) {
-  SocketFactory factory(nullptr /*net_log*/);
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketReceiverImpl receiver;
   mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
@@ -410,8 +411,8 @@ TEST_F(UDPSocketTest, TestReadSend) {
   receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                          std::move(receiver_interface_ptr));
+  factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket),
+                             std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -419,7 +420,7 @@ TEST_F(UDPSocketTest, TestReadSend) {
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketPtr client_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&client_socket), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&client_socket), nullptr);
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -472,10 +473,9 @@ TEST_F(UDPSocketTest, TestReadSend) {
 }
 
 TEST_F(UDPSocketTest, TestReadSendTo) {
-  SocketFactory factory(nullptr /*net_log*/);
   // Create a server socket to send data.
   mojom::UDPSocketPtr server_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&server_socket), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket), nullptr);
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -488,8 +488,8 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
   receiver_binding.Bind(mojo::MakeRequest(&client_receiver_ptr));
 
   mojom::UDPSocketPtr client_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&client_socket),
-                          std::move(client_receiver_ptr));
+  factory()->CreateUDPSocket(mojo::MakeRequest(&client_socket),
+                             std::move(client_receiver_ptr));
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -539,7 +539,6 @@ TEST_F(UDPSocketTest, TestReadSendTo) {
 }
 
 TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
-  SocketFactory factory(nullptr /*net_log*/);
   // Create a server socket to listen for incoming datagrams.
   test::UDPSocketReceiverImpl receiver;
   mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
@@ -547,8 +546,8 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
   receiver_binding.Bind(mojo::MakeRequest(&receiver_interface_ptr));
 
   mojom::UDPSocketPtr server_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&server_socket),
-                          std::move(receiver_interface_ptr));
+  factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket),
+                             std::move(receiver_interface_ptr));
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -556,7 +555,7 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
 
   // Create a client socket to send datagrams.
   mojom::UDPSocketPtr client_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&client_socket), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&client_socket), nullptr);
   net::IPEndPoint client_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper client_helper(&client_socket);
   ASSERT_EQ(net::OK,
@@ -591,9 +590,8 @@ TEST_F(UDPSocketTest, TestReceiveMoreWithBufferSize) {
 // Make sure passing an invalid net::IPEndPoint will be detected by
 // serialization/deserialization in mojo.
 TEST_F(UDPSocketTest, TestSendToInvalidAddress) {
-  SocketFactory factory(nullptr /*net_log*/);
   mojom::UDPSocketPtr server_socket;
-  factory.CreateUDPSocket(mojo::MakeRequest(&server_socket), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket), nullptr);
 
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   test::UDPSocketTestHelper helper(&server_socket);
@@ -655,7 +653,6 @@ TEST_F(UDPSocketTest, TestReadZeroByte) {
 #define MAYBE_JoinMulticastGroup JoinMulticastGroup
 #endif  // defined(OS_ANDROID)
 TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
-  SocketFactory factory(nullptr /*net_log*/);
   const char kGroup[] = "237.132.100.17";
 
   net::IPAddress group_ip;
@@ -665,8 +662,8 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   test::UDPSocketReceiverImpl receiver;
   mojo::Binding<mojom::UDPSocketReceiver> receiver_binding(&receiver);
   receiver_binding.Bind(mojo::MakeRequest(&receiver_ptr));
-  factory.CreateUDPSocket(mojo::MakeRequest(&socket_ptr),
-                          std::move(receiver_ptr));
+  factory()->CreateUDPSocket(mojo::MakeRequest(&socket_ptr),
+                             std::move(receiver_ptr));
 
   test::UDPSocketTestHelper helper(&socket_ptr);
 
@@ -702,7 +699,7 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 
   // Create a second socket to send a packet to multicast group.
   mojom::UDPSocketPtr second_socket_ptr;
-  factory.CreateUDPSocket(mojo::MakeRequest(&second_socket_ptr), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&second_socket_ptr), nullptr);
   test::UDPSocketTestHelper second_socket_helper(&second_socket_ptr);
   net::IPEndPoint second_socket_address(bind_ip_address, 0);
   ASSERT_EQ(net::OK,
@@ -733,16 +730,15 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
 }
 
 TEST_F(UDPSocketTest, ErrorHappensDuringSocketOptionsConfiguration) {
-  SocketFactory factory(nullptr /*net_log*/);
   mojom::UDPSocketPtr server_socket_ptr;
-  factory.CreateUDPSocket(mojo::MakeRequest(&server_socket_ptr), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&server_socket_ptr), nullptr);
   test::UDPSocketTestHelper server_helper(&server_socket_ptr);
   net::IPEndPoint server_addr(GetLocalHostWithAnyPort());
   ASSERT_EQ(net::OK,
             server_helper.BindSync(server_addr, nullptr, &server_addr));
 
   mojom::UDPSocketPtr socket_ptr;
-  factory.CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
+  factory()->CreateUDPSocket(mojo::MakeRequest(&socket_ptr), nullptr);
   test::UDPSocketTestHelper helper(&socket_ptr);
 
   // Invalid options.

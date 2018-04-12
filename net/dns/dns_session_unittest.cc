@@ -34,13 +34,13 @@ class TestClientSocketFactory : public ClientSocketFactory {
       NetLog* net_log,
       const NetLogSource& source) override;
 
-  std::unique_ptr<StreamSocket> CreateTransportClientSocket(
+  std::unique_ptr<TransportClientSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       std::unique_ptr<SocketPerformanceWatcher>,
       NetLog*,
       const NetLogSource&) override {
     NOTIMPLEMENTED();
-    return std::unique_ptr<StreamSocket>();
+    return nullptr;
   }
 
   std::unique_ptr<SSLClientSocket> CreateSSLClientSocket(

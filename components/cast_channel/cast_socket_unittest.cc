@@ -36,6 +36,7 @@
 #include "net/cert/pem_tokenizer.h"
 #include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
@@ -104,64 +105,23 @@ base::FilePath GetTestCertsDirectory() {
   return path;
 }
 
-class MockTCPSocket : public net::TCPClientSocket {
+class MockTCPSocket : public net::MockTCPClientSocket {
  public:
-  explicit MockTCPSocket(const net::MockConnect& connect_data)
-      : TCPClientSocket(net::AddressList(),
-                        nullptr,
-                        nullptr,
-                        net::NetLogSource()),
-        connect_data_(connect_data),
-        do_nothing_(false) {}
-
-  explicit MockTCPSocket(bool do_nothing)
-      : TCPClientSocket(net::AddressList(),
-                        nullptr,
-                        nullptr,
-                        net::NetLogSource()) {
-    CHECK(do_nothing);
+  MockTCPSocket(bool do_nothing, net::SocketDataProvider* socket_provider)
+      : net::MockTCPClientSocket(net::AddressList(), nullptr, socket_provider) {
     do_nothing_ = do_nothing;
   }
 
-  virtual int Connect(const net::CompletionCallback& callback) {
+  int Connect(const net::CompletionCallback& callback) override {
     if (do_nothing_) {
       // Stall the I/O event loop.
       return net::ERR_IO_PENDING;
     }
 
-    if (connect_data_.mode == net::ASYNC) {
-      CHECK_NE(connect_data_.result, net::ERR_IO_PENDING);
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, connect_data_.result));
-      return net::ERR_IO_PENDING;
-    } else {
-      return connect_data_.result;
-    }
-  }
-
-  virtual bool SetKeepAlive(bool enable, int delay) {
-    // Always return true in tests
-    return true;
-  }
-
-  virtual bool SetNoDelay(bool no_delay) {
-    // Always return true in tests
-    return true;
-  }
-
-  MOCK_METHOD3(Read, int(net::IOBuffer*, int, const net::CompletionCallback&));
-  MOCK_METHOD4(Write,
-               int(net::IOBuffer*,
-                   int,
-                   const net::CompletionCallback&,
-                   const net::NetworkTrafficAnnotationTag&));
-
-  virtual void Disconnect() {
-    // Do nothing in tests
+    return net::MockTCPClientSocket::Connect(callback);
   }
 
  private:
-  net::MockConnect connect_data_;
   bool do_nothing_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);
@@ -245,8 +205,7 @@ class MockTestCastSocket : public TestCastSocketBase {
   using TestCastSocketBase::TestCastSocketBase;
 
   MockTestCastSocket(const CastSocketOpenParams& open_params, Logger* logger)
-      : TestCastSocketBase(open_params, logger),
-        mock_net_log_(open_params.net_log) {}
+      : TestCastSocketBase(open_params, logger) {}
 
   ~MockTestCastSocket() override {}
 
@@ -294,24 +253,34 @@ class MockTestCastSocket : public TestCastSocketBase {
   }
 
  private:
-  std::unique_ptr<net::TCPClientSocket> CreateTcpSocket() override {
+  // Creates a TCP socket. Note that at most one socket created with this method
+  // may be live at a time.
+  std::unique_ptr<net::TransportClientSocket> CreateTcpSocket() override {
     if (tcp_unresponsive_) {
-      return std::unique_ptr<net::TCPClientSocket>(new MockTCPSocket(true));
+      socket_data_provider_ = std::make_unique<net::StaticSocketDataProvider>(
+          nullptr, 0, nullptr, 0);
+      return std::unique_ptr<net::TransportClientSocket>(
+          new MockTCPSocket(true, socket_data_provider_.get()));
     } else {
-      return std::unique_ptr<net::TCPClientSocket>(
-          new MockTCPSocket(*tcp_connect_data_));
+      socket_data_provider_ = std::make_unique<net::StaticSocketDataProvider>(
+          reads_.data(), reads_.size(), writes_.data(), writes_.size());
+      socket_data_provider_->set_connect_data(*tcp_connect_data_);
+      return std::unique_ptr<net::TransportClientSocket>(
+          new MockTCPSocket(false, socket_data_provider_.get()));
     }
   }
 
+  // Creates an SSL socket. Note that at most one socket created with this
+  // method may be live at a time.
   std::unique_ptr<net::SSLClientSocket> CreateSslSocket(
-      std::unique_ptr<net::StreamSocket>) override {
-    ssl_data_.reset(new net::StaticSocketDataProvider(
-        reads_.data(), reads_.size(), writes_.data(), writes_.size()));
-    ssl_data_->set_connect_data(*ssl_connect_data_);
-
-    // NOTE: net::MockTCPClientSocket inherits from net::SSLClientSocket !!
-    return std::unique_ptr<net::SSLClientSocket>(new net::MockTCPClientSocket(
-        net::AddressList(), mock_net_log_, ssl_data_.get()));
+      std::unique_ptr<net::StreamSocket> tcp_socket) override {
+    ssl_socket_data_provider_ = std::make_unique<net::SSLSocketDataProvider>(
+        ssl_connect_data_->mode, ssl_connect_data_->result);
+    auto client_handle = std::make_unique<net::ClientSocketHandle>();
+    client_handle->SetSocket(std::move(tcp_socket));
+    return std::make_unique<net::MockSSLClientSocket>(
+        std::move(client_handle), net::HostPortPair(), net::SSLConfig(),
+        ssl_socket_data_provider_.get());
   }
 
   // Simulated connect data
@@ -320,11 +289,11 @@ class MockTestCastSocket : public TestCastSocketBase {
   // Simulated read / write data
   std::vector<net::MockWrite> writes_;
   std::vector<net::MockRead> reads_;
-  std::unique_ptr<net::SocketDataProvider> ssl_data_;
+  std::unique_ptr<net::SocketDataProvider> socket_data_provider_;
+  std::unique_ptr<net::SSLSocketDataProvider> ssl_socket_data_provider_;
   // If true, makes TCP connection process stall. For timeout testing.
   bool tcp_unresponsive_ = false;
   MockCastTransport* mock_transport_ = nullptr;
-  net::NetLog* mock_net_log_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(MockTestCastSocket);
 };
@@ -340,16 +309,17 @@ class SslTestCastSocket : public TestCastSocketBase {
 
   using TestCastSocketBase::TestCastSocketBase;
 
-  void SetTcpSocket(std::unique_ptr<net::TCPClientSocket> tcp_client_socket) {
+  void SetTcpSocket(
+      std::unique_ptr<net::TransportClientSocket> tcp_client_socket) {
     tcp_client_socket_ = std::move(tcp_client_socket);
   }
 
  private:
-  std::unique_ptr<net::TCPClientSocket> CreateTcpSocket() override {
+  std::unique_ptr<net::TransportClientSocket> CreateTcpSocket() override {
     return std::move(tcp_client_socket_);
   }
 
-  std::unique_ptr<net::TCPClientSocket> tcp_client_socket_;
+  std::unique_ptr<net::TransportClientSocket> tcp_client_socket_;
 };
 
 class CastSocketTestBase : public testing::Test {
@@ -552,7 +522,7 @@ class SslCastSocketTest : public CastSocketTestBase {
 
   // Underlying TCP sockets for |socket_| to communicate with |server_socket_|
   // when testing with the real SSL implementation.
-  std::unique_ptr<net::TCPClientSocket> tcp_client_socket_;
+  std::unique_ptr<net::TransportClientSocket> tcp_client_socket_;
   std::unique_ptr<net::TCPServerSocket> tcp_server_socket_;
 
   std::unique_ptr<SslTestCastSocket> socket_;

@@ -19,6 +19,7 @@
 #include "services/network/tcp_server_socket.h"
 
 namespace net {
+class ClientSocketFactory;
 class NetLog;
 }  // namespace net
 
@@ -35,7 +36,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   // Constructs a SocketFactory. If |net_log| is non-null, it is used to
   // log NetLog events when logging is enabled. |net_log| used to must outlive
   // |this|.
-  explicit SocketFactory(net::NetLog* net_log);
+  SocketFactory(net::NetLog* net_log,
+                net::URLRequestContext* url_request_context);
   virtual ~SocketFactory();
 
   void CreateUDPSocket(mojom::UDPSocketRequest request,
@@ -59,9 +61,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
   void OnAccept(std::unique_ptr<TCPConnectedSocket> socket,
                 mojom::TCPConnectedSocketRequest request) override;
 
-  void OnConnectCompleted(int result);
-
   net::NetLog* net_log_;
+  net::ClientSocketFactory* client_socket_factory_;
   mojo::StrongBindingSet<mojom::UDPSocket> udp_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPServerSocket> tcp_server_socket_bindings_;
   mojo::StrongBindingSet<mojom::TCPConnectedSocket>
