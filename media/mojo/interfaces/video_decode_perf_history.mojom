@@ -12,6 +12,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 interface VideoDecodePerfHistory {
   // Parameters describe the stream characteristics for which we will return
   // performance info.
-  GetPerfInfo(VideoCodecProfile profile, gfx.mojom.Size video_size,
-              int32 frames_per_sec) => (bool is_smooth, bool is_power_efficient);
+  // TODO(liberato): Consider making this return PredictionTargets, and move the
+  // conversion to bool higher in the stack.
+  GetPerfInfo(PredictionFeatures features) => (bool is_smooth, bool is_power_efficient);
 };

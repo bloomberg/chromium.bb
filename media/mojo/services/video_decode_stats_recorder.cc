@@ -31,62 +31,57 @@ VideoDecodeStatsRecorder::~VideoDecodeStatsRecorder() {
   FinalizeRecord();
 }
 
-void VideoDecodeStatsRecorder::StartNewRecord(VideoCodecProfile profile,
-                                              const gfx::Size& natural_size,
-                                              int frames_per_sec) {
-  DCHECK_NE(profile, VIDEO_CODEC_PROFILE_UNKNOWN);
-  DCHECK_GT(frames_per_sec, 0);
-  DCHECK(natural_size.width() > 0 && natural_size.height() > 0);
+void VideoDecodeStatsRecorder::StartNewRecord(
+    mojom::PredictionFeaturesPtr features) {
+  DCHECK_NE(features->profile, VIDEO_CODEC_PROFILE_UNKNOWN);
+  DCHECK_GT(features->frames_per_sec, 0);
+  DCHECK(features->video_size.width() > 0 && features->video_size.height() > 0);
 
+  features_ = *features;
   FinalizeRecord();
 
-  DVLOG(2) << __func__ << "profile: " << profile
-           << " sz:" << natural_size.ToString() << " fps:" << frames_per_sec;
+  DVLOG(2) << __func__ << "profile: " << features_.profile
+           << " sz:" << features_.video_size.ToString()
+           << " fps:" << features_.frames_per_sec;
 
-  profile_ = profile;
-  natural_size_ = natural_size;
-  frames_per_sec_ = frames_per_sec;
-  frames_decoded_ = 0;
-  frames_dropped_ = 0;
-  frames_decoded_power_efficient_ = 0;
+  // Reinitialize to defaults.
+  targets_ = mojom::PredictionTargets();
 }
 
 void VideoDecodeStatsRecorder::UpdateRecord(
-    uint32_t frames_decoded,
-    uint32_t frames_dropped,
-    uint32_t frames_decoded_power_efficient) {
-  DVLOG(3) << __func__ << " decoded:" << frames_decoded
-           << " dropped:" << frames_dropped;
+    mojom::PredictionTargetsPtr targets) {
+  DVLOG(3) << __func__ << " decoded:" << targets->frames_decoded
+           << " dropped:" << targets->frames_dropped;
 
   // Dropped can never exceed decoded.
-  DCHECK_LE(frames_dropped, frames_decoded);
+  DCHECK_LE(targets->frames_dropped, targets->frames_decoded);
   // Power efficient frames can never exceed decoded frames.
-  DCHECK_LE(frames_decoded_power_efficient, frames_decoded);
+  DCHECK_LE(targets->frames_decoded_power_efficient, targets->frames_decoded);
   // Should never go backwards.
-  DCHECK_GE(frames_decoded, frames_decoded_);
-  DCHECK_GE(frames_dropped, frames_dropped_);
-  DCHECK_GE(frames_decoded_power_efficient, frames_decoded_power_efficient_);
+  DCHECK_GE(targets->frames_decoded, targets_.frames_decoded);
+  DCHECK_GE(targets->frames_dropped, targets_.frames_dropped);
+  DCHECK_GE(targets->frames_decoded_power_efficient,
+            targets_.frames_decoded_power_efficient);
 
-  frames_decoded_ = frames_decoded;
-  frames_dropped_ = frames_dropped;
-  frames_decoded_power_efficient_ = frames_decoded_power_efficient;
+  targets_ = *targets;
 }
 
 void VideoDecodeStatsRecorder::FinalizeRecord() {
-  if (profile_ == VIDEO_CODEC_PROFILE_UNKNOWN || frames_decoded_ == 0 ||
-      !perf_history_) {
+  if (features_.profile == VIDEO_CODEC_PROFILE_UNKNOWN ||
+      targets_.frames_decoded == 0 || !perf_history_) {
     return;
   }
 
-  DVLOG(2) << __func__ << " profile: " << profile_
-           << " size:" << natural_size_.ToString() << " fps:" << frames_per_sec_
-           << " decoded:" << frames_decoded_ << " dropped:" << frames_dropped_
-           << " power efficient decoded:" << frames_decoded_power_efficient_;
+  DVLOG(2) << __func__ << " profile: " << features_.profile
+           << " size:" << features_.video_size.ToString()
+           << " fps:" << features_.frames_per_sec
+           << " decoded:" << targets_.frames_decoded
+           << " dropped:" << targets_.frames_dropped
+           << " power efficient decoded:"
+           << targets_.frames_decoded_power_efficient;
 
   perf_history_->SavePerfRecord(untrusted_top_frame_origin_, is_top_frame_,
-                                profile_, natural_size_, frames_per_sec_,
-                                frames_decoded_, frames_dropped_,
-                                frames_decoded_power_efficient_, player_id_);
+                                features_, targets_, player_id_);
 }
 
 }  // namespace media

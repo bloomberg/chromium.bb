@@ -282,3 +282,22 @@ struct PipelineStatistics {
   int64 audio_memory_usage;
   int64 video_memory_usage;
 };
+
+// Set of features for MediaCapabilities prediction.
+// TODO(liberato): consider generalizing this.
+struct PredictionFeatures {
+    // It would be nice to initialize this to VIDEO_CODEC_PROFILE_UNKNOWN (-1),
+    // but we can't do that with native enums.
+    VideoCodecProfile profile;
+    gfx.mojom.Size video_size;
+    int32 frames_per_sec = 0;
+};
+
+// Target values for MediaCapabilities predictions.
+// TODO(liberato): consider generalizing this.
+struct PredictionTargets {
+  uint32 frames_decoded = 0;
+  uint32 frames_dropped = 0;
+  uint32 frames_decoded_power_efficient = 0;
+};
+

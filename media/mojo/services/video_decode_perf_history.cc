@@ -66,16 +66,14 @@ void VideoDecodePerfHistory::OnDatabaseInit(bool success) {
   init_deferred_api_calls_.clear();
 }
 
-void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
-                                         const gfx::Size& natural_size,
-                                         int frame_rate,
+void VideoDecodePerfHistory::GetPerfInfo(mojom::PredictionFeaturesPtr features,
                                          GetPerfInfoCallback got_info_cb) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK_NE(profile, VIDEO_CODEC_PROFILE_UNKNOWN);
-  DCHECK_GT(frame_rate, 0);
-  DCHECK(natural_size.width() > 0 && natural_size.height() > 0);
+  DCHECK_NE(features->profile, VIDEO_CODEC_PROFILE_UNKNOWN);
+  DCHECK_GT(features->frames_per_sec, 0);
+  DCHECK(features->video_size.width() > 0 && features->video_size.height() > 0);
 
   if (db_init_status_ == FAILED) {
     // Optimistically claim perf is both smooth and power efficient.
@@ -87,14 +85,14 @@ void VideoDecodePerfHistory::GetPerfInfo(VideoCodecProfile profile,
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::GetPerfInfo, weak_ptr_factory_.GetWeakPtr(),
-        profile, natural_size, frame_rate, std::move(got_info_cb)));
+        std::move(features), std::move(got_info_cb)));
     InitDatabase();
     return;
   }
 
   VideoDecodeStatsDB::VideoDescKey video_key =
-      VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(profile, natural_size,
-                                                        frame_rate);
+      VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
+          features->profile, features->video_size, features->frames_per_sec);
 
   db_->GetDecodeStats(
       video_key, base::BindOnce(&VideoDecodePerfHistory::OnGotStatsForRequest,
@@ -174,21 +172,18 @@ void VideoDecodePerfHistory::OnGotStatsForRequest(
 void VideoDecodePerfHistory::SavePerfRecord(
     const url::Origin& untrusted_top_frame_origin,
     bool is_top_frame,
-    VideoCodecProfile profile,
-    const gfx::Size& natural_size,
-    int frame_rate,
-    uint32_t frames_decoded,
-    uint32_t frames_dropped,
-    uint32_t frames_decoded_power_efficient,
+    mojom::PredictionFeatures features,
+    mojom::PredictionTargets targets,
     uint64_t player_id,
     base::OnceClosure save_done_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(3) << __func__
            << base::StringPrintf(
                   " profile:%s size:%s fps:%d decoded:%d dropped:%d",
-                  GetProfileName(profile).c_str(),
-                  natural_size.ToString().c_str(), frame_rate, frames_decoded,
-                  frames_dropped);
+                  GetProfileName(features.profile).c_str(),
+                  features.video_size.ToString().c_str(),
+                  features.frames_per_sec, targets.frames_decoded,
+                  targets.frames_dropped);
 
   if (db_init_status_ == FAILED) {
     DVLOG(3) << __func__ << " Can't save stats. No DB!";
@@ -199,18 +194,18 @@ void VideoDecodePerfHistory::SavePerfRecord(
   if (db_init_status_ != COMPLETE) {
     init_deferred_api_calls_.push_back(base::BindOnce(
         &VideoDecodePerfHistory::SavePerfRecord, weak_ptr_factory_.GetWeakPtr(),
-        untrusted_top_frame_origin, is_top_frame, profile, natural_size,
-        frame_rate, frames_decoded, frames_dropped,
-        frames_decoded_power_efficient, player_id, std::move(save_done_cb)));
+        untrusted_top_frame_origin, is_top_frame, std::move(features),
+        std::move(targets), player_id, std::move(save_done_cb)));
     InitDatabase();
     return;
   }
 
   VideoDecodeStatsDB::VideoDescKey video_key =
-      VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(profile, natural_size,
-                                                        frame_rate);
+      VideoDecodeStatsDB::VideoDescKey::MakeBucketedKey(
+          features.profile, features.video_size, features.frames_per_sec);
   VideoDecodeStatsDB::DecodeStatsEntry new_stats(
-      frames_decoded, frames_dropped, frames_decoded_power_efficient);
+      targets.frames_decoded, targets.frames_dropped,
+      targets.frames_decoded_power_efficient);
 
   // Get past perf info and report UKM metrics before saving this record.
   db_->GetDecodeStats(

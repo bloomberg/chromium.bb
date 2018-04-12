@@ -282,12 +282,21 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   const bool kIsTopFrame = true;
   const uint64_t kPlayerId = 1234u;
 
+  media::mojom::PredictionFeatures prediction_features;
+  prediction_features.profile = kProfile;
+  prediction_features.video_size = kSize;
+  prediction_features.frames_per_sec = kFrameRate;
+
+  media::mojom::PredictionTargets prediction_targets;
+  prediction_targets.frames_decoded = kFramesDecoded;
+  prediction_targets.frames_dropped = kFramesDropped;
+  prediction_targets.frames_decoded_power_efficient = kFramesPowerEfficient;
+
   {
     base::RunLoop run_loop;
     video_decode_perf_history->SavePerfRecord(
-        kOrigin, kIsTopFrame, kProfile, kSize, kFrameRate, kFramesDecoded,
-        kFramesDropped, kFramesPowerEfficient, kPlayerId,
-        run_loop.QuitWhenIdleClosure());
+        kOrigin, kIsTopFrame, prediction_features, prediction_targets,
+        kPlayerId, run_loop.QuitWhenIdleClosure());
     run_loop.Run();
   }
 
@@ -299,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   {
     base::RunLoop run_loop;
     video_decode_perf_history->GetPerfInfo(
-        kProfile, kSize, kFrameRate,
+        media::mojom::PredictionFeatures::New(prediction_features),
         base::BindOnce(&BrowsingDataRemoverBrowserTest::OnVideoDecodePerfInfo,
                        base::Unretained(this), &run_loop, &is_smooth,
                        &is_power_efficient));
@@ -317,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, VideoDecodePerfHistory) {
   {
     base::RunLoop run_loop;
     video_decode_perf_history->GetPerfInfo(
-        kProfile, kSize, kFrameRate,
+        media::mojom::PredictionFeatures::New(prediction_features),
         base::BindOnce(&BrowsingDataRemoverBrowserTest::OnVideoDecodePerfInfo,
                        base::Unretained(this), &run_loop, &is_smooth,
                        &is_power_efficient));
