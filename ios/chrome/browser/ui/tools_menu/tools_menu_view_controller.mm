@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
@@ -362,7 +363,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
   _menuView = [[ToolsMenuCollectionView alloc] initWithFrame:[rootView bounds]
                                         collectionViewLayout:menuItemsLayout];
   [_menuView setAccessibilityLabel:l10n_util::GetNSString(IDS_IOS_TOOLS_MENU)];
-  [_menuView setAccessibilityIdentifier:kToolsMenuTableViewId];
+  [_menuView setAccessibilityIdentifier:kPopupMenuToolsMenuTableViewId];
   [_menuView setTranslatesAutoresizingMaskIntoConstraints:NO];
   [_menuView setBackgroundColor:[UIColor whiteColor]];
   [_menuView setDataSource:self];

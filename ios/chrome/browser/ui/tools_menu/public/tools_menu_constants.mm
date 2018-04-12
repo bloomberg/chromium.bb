@@ -18,9 +18,6 @@ NSString* const kToolsMenuDidShowNotification =
 NSString* const kToolsMenuDidHideNotification =
     @"kToolsMenuDidHideNotification";
 
-// Tools menu table view ID.
-NSString* const kToolsMenuTableViewId = @"kToolsMenuTableViewId";
-
 // Tools menu item IDs.
 NSString* const kToolsMenuReload = @"kToolsMenuReload";
 NSString* const kToolsMenuStop = @"kToolsMenuStop";

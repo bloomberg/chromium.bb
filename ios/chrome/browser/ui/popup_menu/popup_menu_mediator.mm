@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_navigation_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
@@ -297,7 +298,12 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   _popupMenu = popupMenu;
 
   if (self.type == PopupMenuTypeToolsMenu) {
-    _popupMenu.tableView.accessibilityIdentifier = kToolsMenuTableViewId;
+    _popupMenu.tableView.accessibilityIdentifier =
+        kPopupMenuToolsMenuTableViewId;
+  } else if (self.type == PopupMenuTypeNavigationBackward ||
+             self.type == PopupMenuTypeNavigationForward) {
+    _popupMenu.tableView.accessibilityIdentifier =
+        kPopupMenuNavigationTableViewId;
   }
 
   [_popupMenu setPopupMenuItems:self.items];

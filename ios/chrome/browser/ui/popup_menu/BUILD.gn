@@ -11,6 +11,7 @@ source_set("popup_menu") {
     "popup_menu_mediator.mm",
   ]
   deps = [
+    ":constants",
     ":popup_menu_ui",
     "//base",
     "//components/bookmarks/browser",
@@ -55,6 +56,7 @@ source_set("popup_menu_ui") {
     "popup_menu_view_controller.mm",
   ]
   deps = [
+    ":constants",
     ":flags",
     "resources:popup_background",
     "resources:popup_menu_add_bookmark",
@@ -91,6 +93,14 @@ source_set("popup_menu_ui") {
   libs = [
     "QuartzCore.framework",
     "UIKit.framework",
+  ]
+}
+
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "popup_menu_constants.h",
+    "popup_menu_constants.mm",
   ]
 }
 

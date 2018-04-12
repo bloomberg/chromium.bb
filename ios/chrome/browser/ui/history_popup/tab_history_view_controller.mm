@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/commands/history_popup_commands.h"
 #import "ios/chrome/browser/ui/history_popup/tab_history_cell.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 #include "ios/web/public/favicon_status.h"
@@ -24,9 +25,6 @@ namespace {
 // Visible percentage of the last visible row on the Tools menu if the
 // Tools menu is scrollable.
 const CGFloat kLastRowVisiblePercentage = 0.6;
-// The collection view's a11y ID.
-// TODO(crbug.com/697648): Decide better a11y behavior for this feature.
-NSString* const kCollectionViewIdentifier = @"Tab History";
 // Reuse identifier for cells.
 NSString* const kCellIdentifier = @"TabHistoryCell";
 NSString* const kFooterIdentifier = @"Footer";
@@ -285,7 +283,7 @@ layoutAttributesForSupplementaryViewOfKind:(NSString*)kind
 
     // Set up the UICollectionView.
     UICollectionView* collectionView = [self collectionView];
-    collectionView.accessibilityIdentifier = kCollectionViewIdentifier;
+    collectionView.accessibilityIdentifier = kPopupMenuNavigationTableViewId;
     collectionView.backgroundColor = [UIColor whiteColor];
     [collectionView registerClass:[TabHistoryCell class]
         forCellWithReuseIdentifier:kCellIdentifier];
