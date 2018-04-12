@@ -25,6 +25,12 @@ Polymer({
     'search-changed': 'onSearchChanged_',
   },
 
+  /**
+   * Timeout used to delay processing of the input, in ms.
+   * @private {?number}
+   */
+  timeout_: null,
+
   /** @return {!HTMLInputElement} */
   getSearchInput: function() {
     return this.$.searchInput;
@@ -32,11 +38,17 @@ Polymer({
 
   /**
    * @param {!CustomEvent} e Event containing the new search.
+   * @private
    */
   onSearchChanged_: function(e) {
-    const safeQuery = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
-    this.searchQuery =
-        safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'i') : null;
+    let safeQuery = e.detail.trim().replace(SANITIZE_REGEX, '\\$&');
+    safeQuery = safeQuery.length > 0 ? new RegExp(`(${safeQuery})`, 'i') : null;
+    if (this.timeout_)
+      clearTimeout(this.timeout_);
+    this.timeout_ = setTimeout(() => {
+      this.searchQuery = safeQuery;
+      this.timeout_ = null;
+    }, 150);
   },
 });
 })();
