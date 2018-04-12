@@ -75,7 +75,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeMenuItemsExpandSheet,
     &kChromeHomePersistentIph,
     &kChromeHomePullToRefreshIphAtTop,
-    &kChromeHomeSurvey,
     &kChromeHomeSwipeLogic,
     &kChromeHomeSwipeLogicVelocity,
     &kChromeSmartSelection,

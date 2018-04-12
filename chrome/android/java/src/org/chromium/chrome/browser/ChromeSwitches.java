@@ -167,8 +167,8 @@ public abstract class ChromeSwitches {
      */
     public static final String CHROME_HOME_SWIPE_LOGIC_VELOCITY = "velocity";
 
-    /** Switch for enabling the Chrome Home Survey. */
-    public static final String CHROME_HOME_FORCE_ENABLE_SURVEY = "force-enable-chrome-home-survey";
+    /** Switch for enabling the Chrome Survey. */
+    public static final String CHROME_FORCE_ENABLE_SURVEY = "force-enable-chrome-survey";
 
     /** Switch to enable incognito tabs to be seen in Android Recents. */
     public static final String ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS =

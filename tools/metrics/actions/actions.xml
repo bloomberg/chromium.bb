@@ -1471,6 +1471,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Android.ChromeHome.Survey.ShowSurveyInfoBar">
+  <obsolete>
+    Deprecated 4/2018. Replaced with Android.Survey.ShowSurveyInfoBar action.
+  </obsolete>
   <owner>danielpark@chromium.org</owner>
   <description>The survey infobar was displayed.</description>
 </action>
@@ -1857,6 +1860,11 @@ should be able to be added at any place in this file.
   <description>
     A user clicked on a telephone number link in Chrome content.
   </description>
+</action>
+
+<action name="Android.Survey.ShowSurveyInfoBar">
+  <owner>danielpark@chromium.org</owner>
+  <description>The survey infobar was displayed.</description>
 </action>
 
 <action name="AppCloseButton_Clk">
