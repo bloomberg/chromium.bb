@@ -27,7 +27,7 @@ void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
   if (mode != heap_profiling::Mode::kNone) {
     heap_profiling::ProfilingProcessHost::Start(
         connection, mode, heap_profiling::GetStackModeForStartup(),
-        heap_profiling::GetSamplingRateForStartup());
+        heap_profiling::GetSamplingRateForStartup(), base::OnceClosure());
   }
 #endif
 }

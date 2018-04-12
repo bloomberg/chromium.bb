@@ -19,7 +19,8 @@ Controller::Controller(std::unique_ptr<service_manager::Connector> connector,
                        uint32_t sampling_rate)
     : connector_(std::move(connector)),
       sampling_rate_(sampling_rate),
-      stack_mode_(stack_mode) {
+      stack_mode_(stack_mode),
+      weak_factory_(this) {
   DCHECK_NE(sampling_rate, 0u);
 
   // Start the Heap Profiling service.
@@ -66,6 +67,16 @@ void Controller::GetProfiledPids(GetProfiledPidsCallback callback) {
 void Controller::SetKeepSmallAllocations(bool keep_small_allocations) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   heap_profiling_service_->SetKeepSmallAllocations(keep_small_allocations);
+}
+
+base::WeakPtr<Controller> Controller::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
+service_manager::Connector* Controller::GetConnector() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return connector_.get();
 }
 
 }  // namespace heap_profiling

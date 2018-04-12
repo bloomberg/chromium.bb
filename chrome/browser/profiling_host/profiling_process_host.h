@@ -11,29 +11,26 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
-#include "build/build_config.h"
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
-#include "components/services/heap_profiling/public/cpp/client.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
-#include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
-#include "content/public/browser/browser_child_process_observer.h"
-#include "content/public/browser/child_process_data.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/common/service_manager_connection.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace base {
 class FilePath;
 }  // namespace base
 
 namespace content {
-class RenderProcessHost;
+class ServiceManagerConnection;
 }  // namespace content
+
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
 
 namespace heap_profiling {
 
+class ChromeClientConnectionManager;
 class Controller;
 enum class Mode;
 
@@ -51,28 +48,19 @@ enum class Mode;
 // to support starting the profiling process very early in the startup
 // process (to get most memory events) before other infrastructure like the
 // I/O thread has been started.
-//
-// TODO(ajwong): This host class seems over kill at this point. Can this be
-// fully subsumed by the ProfilingService class?
-class ProfilingProcessHost : public content::BrowserChildProcessObserver,
-                             content::NotificationObserver {
+class ProfilingProcessHost {
  public:
-  // Returns the mode.
-  Mode GetMode() {
-    base::AutoLock l(mode_lock_);
-    return mode_;
-  }
-
   // Returns the mode specified by the command line or via about://flags.
+  Mode GetMode();
 
-  bool ShouldProfileNonRendererProcessType(int process_type);
-
-  // Launches the profiling process and returns a pointer to it.
-  static ProfilingProcessHost* Start(
-      content::ServiceManagerConnection* connection,
-      Mode mode,
-      mojom::StackMode stack_mode,
-      uint32_t sampling_rate);
+  // Launches the heap profiling service and connects clients. Must be called
+  // from the UI thread. This requires hopping to the IO thread and back.
+  // |callback| will be called on the UI thread after this is finished.
+  static void Start(content::ServiceManagerConnection* connection,
+                    Mode mode,
+                    mojom::StackMode stack_mode,
+                    uint32_t sampling_rate,
+                    base::OnceClosure callback);
 
   // Returns true if Start() has been called.
   static bool has_started() { return has_started_; }
@@ -122,11 +110,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Starts profiling the process with the given id.
   void StartManualProfiling(base::ProcessId pid);
 
-  // This function starts profiling all renderers. Attempting to start profiling
-  // a renderer that is already being profiled is a no-op [the new request is
-  // dropped by the profiling service].
-  void StartProfilingRenderersForTesting();
-
   // Public for testing. Controls whether the profiling service keeps small
   // allocations in heap dumps.
   void SetKeepSmallAllocations(bool keep_small_allocations);
@@ -136,43 +119,25 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   friend class BackgroundProfilingTriggersTest;
   friend class MemlogBrowserTest;
   friend class ProfilingTestDriver;
-  FRIEND_TEST_ALL_PREFIXES(ProfilingProcessHost, ShouldProfileNewRenderer);
 
   ProfilingProcessHost();
-  ~ProfilingProcessHost() override;
-
-  void Register();
-  void Unregister();
-
-  // Set/Get the profiling mode. Exposed for unittests.
-  void SetMode(Mode mode);
-
-  // BrowserChildProcessObserver
-  // Observe connection of non-renderer child processes.
-  void BrowserChildProcessLaunchedAndConnected(
-      const content::ChildProcessData& data) override;
-
-  // NotificationObserver
-  // Observe connection of renderer child processes.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  ~ProfilingProcessHost();
 
   // Starts the profiling process.
   void StartServiceOnIOThread(
       mojom::StackMode stack_mode,
       uint32_t sampling_rate,
-      std::unique_ptr<service_manager::Connector> connector);
+      std::unique_ptr<service_manager::Connector> connector,
+      Mode mode,
+      base::OnceClosure closure);
 
-  void StartProfilingBrowserProcessOnIOThread();
+  void FinishPostServiceSetupOnUIThread(
+      Mode mode,
+      base::OnceClosure closure,
+      base::WeakPtr<Controller> controller_weak_ptr);
 
   // Called on the UI thread after the heap dump has been added to the trace.
   void DumpProcessFinishedUIThread();
-
-  // Sends the end of the data pipe to the profiling service.
-  void AddClientToProfilingService(mojom::ProfilingClientPtr client,
-                                   base::ProcessId pid,
-                                   mojom::ProcessType process_type);
 
   void SaveTraceToFileOnBlockingThread(base::FilePath dest,
                                        std::string trace,
@@ -181,25 +146,11 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Reports the profiling mode.
   void ReportMetrics();
 
-  // Helpers for controlling process selection for the sampling modes.
-  bool ShouldProfileNewRenderer(content::RenderProcessHost* renderer);
-
-  // Sets up the profiling connection for the given child process.
-  void StartProfilingNonRendererChild(const content::ChildProcessData&);
-  void StartProfilingNonRendererChildOnIOThread(
-      int child_process_id,
-      base::ProcessId proc_id,
-      mojom::ProcessType process_type);
-
-  void StartProfilingRenderer(content::RenderProcessHost* host);
-
   void GetProfiledPidsOnIOThread(GetProfiledPidsCallback callback);
   void StartProfilingPidOnIOThread(base::ProcessId pid);
 
   bool TakingTraceForUpload();
   bool SetTakingTraceForUpload(bool new_state);
-
-  content::NotificationRegistrar registrar_;
 
   // Bound to the IO thread.
   std::unique_ptr<service_manager::Connector> connector_;
@@ -207,8 +158,8 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Bound to the IO thread.
   std::unique_ptr<Controller> controller_;
 
-  // Whether or not the host is registered to the |registrar_|.
-  bool is_registered_;
+  // Bound to the UI thread.
+  std::unique_ptr<ChromeClientConnectionManager> client_connection_manager_;
 
   // Handle background triggers on high memory pressure. A trigger will call
   // |RequestProcessReport| on this instance.
@@ -217,35 +168,11 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   // Every 24-hours, reports the profiling mode.
   base::RepeatingTimer metrics_timer_;
 
-  // The mode determines which processes should be profiled.
-  Mode mode_;
-  base::Lock mode_lock_;
-
-  // The stack mode determines the type of information that is stored for each
-  // stack.
-  mojom::StackMode stack_mode_;
-
   bool should_sample_ = false;
   uint32_t sampling_rate_ = 1;
 
   // Whether or not the profiling host is started.
   static bool has_started_;
-
-  // This is used to identify the currently profiled renderers. Elements should
-  // only be accessed on the UI thread and their values should be considered
-  // opaque.
-  //
-  // Semantically, the elements must be something that identifies which
-  // specific RenderProcess is being profiled. When the underlying RenderProcess
-  // goes away, the element must be removed. The RenderProcessHost
-  // pointer and the NOTIFICATION_RENDERER_PROCESS_CREATED notification can be
-  // used to provide these semantics.
-  //
-  // This variable represents renderers that have been instructed to start
-  // profiling - it does not reflect whether a renderer is currently still being
-  // profiled. That information is only known by the profiling service, and for
-  // simplicity, it's easier to just track this variable in this process.
-  std::unordered_set<void*> profiled_renderers_;
 
   // True if the instance is attempting to take a trace to upload to the crash
   // servers. Pruning of small allocations is always enabled for these traces.

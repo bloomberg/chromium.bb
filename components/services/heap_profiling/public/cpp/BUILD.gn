@@ -37,10 +37,13 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "sender_pipe_unittest.cc",
+    "switches_unittest.cc",
   ]
   deps = [
     ":cpp",
     "//base",
+    "//base/allocator:buildflags",
+    "//base/test:test_support",
     "//mojo/edk",
     "//testing/gtest",
   ]

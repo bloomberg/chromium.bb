@@ -6,6 +6,7 @@
 #define COMPONENTS_SERVICES_HEAP_PROFILING_PUBLIC_CPP_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
 #include "components/services/heap_profiling/public/mojom/heap_profiling_service.mojom.h"
@@ -57,6 +58,12 @@ class Controller {
   void GetProfiledPids(GetProfiledPidsCallback callback);
   void SetKeepSmallAllocations(bool keep_small_allocations);
 
+  // Careful! WeakPtrs are also sequence-affine.
+  // This method must be called from the same sequence the instance is bound to.
+  base::WeakPtr<Controller> GetWeakPtr();
+
+  service_manager::Connector* GetConnector();
+
  private:
   std::unique_ptr<service_manager::Connector> connector_;
   mojom::ProfilingServicePtr heap_profiling_service_;
@@ -66,6 +73,7 @@ class Controller {
   const mojom::StackMode stack_mode_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+  base::WeakPtrFactory<Controller> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Controller);
 };
 
