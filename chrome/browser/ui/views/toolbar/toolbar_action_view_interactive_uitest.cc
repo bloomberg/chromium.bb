@@ -31,6 +31,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/test/menu_test_utils.h"
 
 namespace {
 
@@ -127,6 +128,7 @@ void TestWhileContextMenuOpen(Browser* browser,
   ui_controls::SendMouseMove(action_view_loc.x(), action_view_loc.y());
   EXPECT_TRUE(ui_test_utils::SendMouseEventsSync(
       ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP));
+  views::test::WaitForMenuClosureAnimation();
   // Test resumes in the main test body.
 }
 
@@ -216,6 +218,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
 IN_PROC_BROWSER_TEST_F(ToolbarActionViewInteractiveUITest,
                        MAYBE_TestContextMenuOnOverflowedAction) {
   views::MenuController::TurnOffMenuSelectionHoldForTest();
+  views::test::DisableMenuClosureAnimations();
 
   // Load an extension that has a home page (important for the context menu's
   // first item being enabled).

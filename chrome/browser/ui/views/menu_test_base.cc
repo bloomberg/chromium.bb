@@ -11,6 +11,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/test/menu_test_utils.h"
 #include "ui/views/widget/widget.h"
 
 MenuTestBase::MenuTestBase()
@@ -29,6 +30,7 @@ void MenuTestBase::Click(views::View* view, const base::Closure& next) {
       ui_controls::LEFT,
       ui_controls::DOWN | ui_controls::UP,
       next);
+  views::test::WaitForMenuClosureAnimation();
 }
 
 void MenuTestBase::KeyPress(ui::KeyboardCode keycode, base::OnceClosure next) {
@@ -42,6 +44,8 @@ int MenuTestBase::GetMenuRunnerFlags() {
 }
 
 void MenuTestBase::SetUp() {
+  views::test::DisableMenuClosureAnimations();
+
   button_ = new views::MenuButton(base::ASCIIToUTF16("Menu Test"), this, true);
   menu_ = new views::MenuItemView(this);
   BuildMenu(menu_);

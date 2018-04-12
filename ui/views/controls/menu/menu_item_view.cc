@@ -628,6 +628,11 @@ void MenuItemView::SetMargins(int top_margin, int bottom_margin) {
   invalidate_dimensions();
 }
 
+void MenuItemView::SetForcedVisualSelection(bool selected) {
+  forced_visual_selection_ = selected;
+  SchedulePaint();
+}
+
 MenuItemView::MenuItemView(MenuItemView* parent,
                            int command,
                            MenuItemView::Type type)
@@ -654,6 +659,8 @@ MenuItemView::MenuItemView(MenuItemView* parent,
 }
 
 MenuItemView::~MenuItemView() {
+  if (GetMenuController())
+    GetMenuController()->OnMenuItemDestroying(this);
   delete submenu_;
   for (auto* item : removed_items_)
     delete item;
@@ -825,6 +832,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
       (mode == PB_NORMAL && IsSelected() &&
        parent_menu_item_->GetSubmenu()->GetShowSelection(this) &&
        (NonIconChildViewsCount() == 0));
+  if (forced_visual_selection_.has_value())
+    render_selection = *forced_visual_selection_;
 
   MenuDelegate *delegate = GetDelegate();
   bool emphasized =

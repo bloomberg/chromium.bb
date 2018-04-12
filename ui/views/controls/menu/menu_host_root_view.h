@@ -47,6 +47,7 @@ class MenuHostRootView : public internal::RootView {
 
   // Returns the MenuController for this MenuHostRootView.
   MenuController* GetMenuController();
+  MenuController* GetMenuControllerForInputEvents();
 
   // The SubmenuView we contain.
   SubmenuView* submenu_;

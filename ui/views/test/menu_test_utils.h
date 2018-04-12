@@ -98,6 +98,15 @@ class MenuControllerTestApi {
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTestApi);
 };
 
+// On platforms which have menu closure animations, these functions are
+// necessary to:
+//   1) Disable those animations (make them take zero time) to avoid slowing
+//      down tests;
+//   2) Wait for maybe-asynchronous menu closure to finish.
+// On platforms without menu closure animations, these do nothing.
+void DisableMenuClosureAnimations();
+void WaitForMenuClosureAnimation();
+
 }  // namespace test
 }  // namespace views
 

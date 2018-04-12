@@ -25,6 +25,10 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if defined(OS_MACOSX)
+#include "ui/views/controls/menu/menu_closure_animation_mac.h"
+#endif
+
 namespace ui {
 class OSExchangeData;
 }
@@ -204,6 +208,13 @@ class VIEWS_EXPORT MenuController
   }
   bool use_touchable_layout() const { return use_touchable_layout_; }
 
+  // Notifies |this| that |menu_item| is being destroyed.
+  void OnMenuItemDestroying(MenuItemView* menu_item);
+
+  // Returns whether this menu can handle input events right now. This method
+  // can return false while running animations.
+  bool CanProcessInputEvents() const;
+
  private:
   friend class internal::MenuRunnerImpl;
   friend class test::MenuControllerTest;
@@ -344,6 +355,7 @@ class VIEWS_EXPORT MenuController
   // Invoked when the user accepts the selected item. This is only used
   // when blocking. This schedules the loop to quit.
   void Accept(MenuItemView* item, int event_flags);
+  void ReallyAccept(MenuItemView* item, int event_flags);
 
   bool ShowSiblingMenu(SubmenuView* source, const gfx::Point& mouse_location);
 
@@ -698,6 +710,10 @@ class VIEWS_EXPORT MenuController
 
   // A mask of the EventFlags for the mouse buttons currently pressed.
   int current_mouse_pressed_state_ = 0;
+
+#if defined(OS_MACOSX)
+  std::unique_ptr<MenuClosureAnimationMac> menu_closure_animation_;
+#endif
 
 #if defined(USE_AURA)
   std::unique_ptr<MenuPreTargetHandler> menu_pre_target_handler_;

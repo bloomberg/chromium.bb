@@ -464,6 +464,7 @@ class MenuControllerTest : public ViewsTestBase {
 
   void Accept(MenuItemView* item, int event_flags) {
     menu_controller_->Accept(item, event_flags);
+    views::test::WaitForMenuClosureAnimation();
   }
 
   // Causes the |menu_controller_| to begin dragging. Use TestDragDropClient to
@@ -943,6 +944,8 @@ TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
 // Tests that a menu opened asynchronously, will notify its
 // MenuControllerDelegate when Accept is called.
 TEST_F(MenuControllerTest, AsynchronousAccept) {
+  views::test::DisableMenuClosureAnimations();
+
   MenuController* controller = menu_controller();
   controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
                   MENU_ANCHOR_TOPLEFT, false, false);
@@ -1254,6 +1257,7 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
 // Tests that having the MenuController deleted during OnGestureEvent does not
 // cause a crash. ASAN bots should not detect use-after-free in MenuController.
 TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
+  views::test::DisableMenuClosureAnimations();
   MenuController* controller = menu_controller();
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
@@ -1277,6 +1281,7 @@ TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
   // gesture event. The remainder of this test, and TearDown should not crash.
   DestroyMenuControllerOnMenuClosed(nested_delegate.get());
   controller->OnGestureEvent(sub_menu, &event);
+  views::test::WaitForMenuClosureAnimation();
 
   // Close to remove observers before test TearDown
   sub_menu->Close();

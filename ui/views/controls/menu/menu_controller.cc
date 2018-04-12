@@ -1148,6 +1148,13 @@ void MenuController::TurnOffMenuSelectionHoldForTest() {
   menu_selection_hold_time_ms = -1;
 }
 
+void MenuController::OnMenuItemDestroying(MenuItemView* menu_item) {
+#if defined(OS_MACOSX)
+  if (menu_closure_animation_ && menu_closure_animation_->item() == menu_item)
+    menu_closure_animation_.reset();
+#endif
+}
+
 void MenuController::SetSelection(MenuItemView* menu_item,
                                   int selection_types) {
   size_t paths_differ_at = 0;
@@ -1473,6 +1480,18 @@ void MenuController::UpdateInitialLocation(const gfx::Rect& bounds,
 }
 
 void MenuController::Accept(MenuItemView* item, int event_flags) {
+#if defined(OS_MACOSX)
+  menu_closure_animation_ = std::make_unique<MenuClosureAnimationMac>(
+      item,
+      base::BindOnce(&MenuController::ReallyAccept, base::Unretained(this),
+                     base::Unretained(item), event_flags));
+  menu_closure_animation_->Start();
+#else
+  ReallyAccept(item, event_flags);
+#endif
+}
+
+void MenuController::ReallyAccept(MenuItemView* item, int event_flags) {
   DCHECK(IsBlockingRun());
   result_ = item;
   if (item && !menu_stack_.empty() &&
@@ -2745,6 +2764,14 @@ void MenuController::SetHotTrackedButton(Button* hot_button) {
     hot_button->SetHotTracked(true);
     hot_button->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   }
+}
+
+bool MenuController::CanProcessInputEvents() const {
+#if defined(OS_MACOSX)
+  return !menu_closure_animation_;
+#else
+  return true;
+#endif
 }
 
 }  // namespace views
