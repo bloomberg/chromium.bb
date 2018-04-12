@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -36,6 +35,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -211,11 +211,11 @@ void AppLauncherLoginHandler::UpdateLogin() {
       sub_header = l10n_util::GetStringFUTF16(
           IDS_SYNC_PROMO_NOT_SIGNED_IN_STATUS_SUB_HEADER, signed_in_link);
 
-      base::RecordAction(
+      signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
           web_ui()->GetWebContents()->GetURL().spec() ==
                   chrome::kChromeUIAppsURL
-              ? base::UserMetricsAction("Signin_Impression_FromAppsPageLink")
-              : base::UserMetricsAction("Signin_Impression_FromNTP"));
+              ? signin_metrics::AccessPoint::ACCESS_POINT_APPS_PAGE_LINK
+              : signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK);
       // Record that the user was shown the promo.
       RecordInHistogram(NTP_SIGN_IN_PROMO_VIEWED);
     }

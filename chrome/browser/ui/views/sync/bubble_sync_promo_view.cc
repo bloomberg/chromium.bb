@@ -16,9 +16,11 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
 
-BubbleSyncPromoView::BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
-                                         int link_text_resource_id,
-                                         int message_text_resource_id)
+BubbleSyncPromoView::BubbleSyncPromoView(
+    BubbleSyncPromoDelegate* delegate,
+    signin_metrics::AccessPoint access_point,
+    int link_text_resource_id,
+    int message_text_resource_id)
     : StyledLabel(base::string16(), this), delegate_(delegate) {
   size_t offset = 0;
   base::string16 link_text = l10n_util::GetStringUTF16(link_text_resource_id);
@@ -37,6 +39,8 @@ BubbleSyncPromoView::BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
   gfx::Range after_link_range(offset + link_text.length(), promo_text.length());
   if (!after_link_range.is_empty())
     AddStyleRange(after_link_range, promo_style);
+
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(access_point);
 }
 
 BubbleSyncPromoView::~BubbleSyncPromoView() {}

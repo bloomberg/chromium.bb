@@ -5,13 +5,13 @@
 #import "chrome/browser/ui/cocoa/passwords/signin_promo_view_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/metrics/user_metrics.h"
 #include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #include "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -101,8 +101,8 @@
   [_closeButton setFrameOrigin:closeButtonOrigin];
   [view setFrame:NSMakeRect(0, 0, kDesiredBubbleWidth, height)];
   [self setView:view];
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromPasswordBubble"));
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE);
 }
 
 - (void)onSignInClicked:(id)sender {

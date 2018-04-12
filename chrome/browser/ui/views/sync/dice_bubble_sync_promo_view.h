@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/browser/ui/views/profiles/dice_accounts_menu.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -39,6 +40,7 @@ class DiceBubbleSyncPromoView : public views::View,
   // prominent.
   DiceBubbleSyncPromoView(Profile* profile,
                           BubbleSyncPromoDelegate* delegate,
+                          signin_metrics::AccessPoint access_point,
                           int no_accounts_promo_message_resource_id,
                           int accounts_promo_message_resource_id,
                           bool signin_button_prominent = true);

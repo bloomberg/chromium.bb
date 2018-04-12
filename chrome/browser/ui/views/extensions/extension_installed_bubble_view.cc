@@ -9,8 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/user_metrics.h"
-#include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -238,23 +236,26 @@ views::View* ExtensionInstalledBubbleView::CreateFootnoteView() {
   if (!(controller_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO))
     return nullptr;
 
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromExtensionInstallBubble"));
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   Profile* profile = browser()->profile();
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
     return new DiceBubbleSyncPromoView(
-        profile, this, IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE,
+        profile, this,
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
+        IDS_EXTENSION_INSTALLED_DICE_PROMO_SIGNIN_MESSAGE,
         IDS_EXTENSION_INSTALLED_DICE_PROMO_SYNC_MESSAGE);
   } else {
-    return new BubbleSyncPromoView(this,
-                                   IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
-                                   IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW);
+    return new BubbleSyncPromoView(
+        this,
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
+        IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
+        IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW);
   }
 #else
-  return new BubbleSyncPromoView(this,
-                                 IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
-                                 IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW);
+  return new BubbleSyncPromoView(
+      this, signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE,
+      IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
+      IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW);
 #endif
 }
 
@@ -365,8 +366,6 @@ void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
 
   views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->Show();
   bubble_view_->GetWidget()->AddObserver(this);
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromExtensionInstallBubble"));
 }
 
 void ExtensionInstalledBubbleUi::Close() {

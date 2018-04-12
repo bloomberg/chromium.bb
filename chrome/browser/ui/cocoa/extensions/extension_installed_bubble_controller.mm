@@ -11,7 +11,6 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action.h"
@@ -255,8 +254,8 @@ std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
   [self updateAnchorPosition];
 
   if (syncPromoController_) {
-    base::RecordAction(base::UserMetricsAction(
-        "Signin_Impression_FromExtensionInstallBubble"));
+    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+        signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE);
   }
   [super showWindow:sender];
 }

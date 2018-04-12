@@ -17178,12 +17178,39 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithAccount_FromAvatarBubbleSignin">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with an account in the
+    avatar bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithAccount_FromBookmarkBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with an account in the
+    bookmark bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE).
+  </description>
+</action>
+
 <action name="Signin_ImpressionWithAccount_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
-    Recorded when starting sign-in using the promo view, with a default account,
-    from bookmarks manager
+    Recorded when the personalized sign-in promo is shown with an account in the
+    in the bookmark manager.
     (signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithAccount_FromExtensionInstallBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with an account in the
+    extension install bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE).
   </description>
 </action>
 
@@ -17193,6 +17220,15 @@ should be able to be added at any place in this file.
     Recorded when starting sign-in using the promo view, with a default account,
     from NTP content suggestions
     (signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithAccount_FromPasswordBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    password saved bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE).
   </description>
 </action>
 
@@ -17220,6 +17256,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithNoAccount_FromAvatarBubbleSignin">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    avatar bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromBookmarkBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    bookmark bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE).
+  </description>
+</action>
+
 <action name="Signin_ImpressionWithNoAccount_FromBookmarkManager">
   <owner>jlebel@chromium.org</owner>
   <description>
@@ -17229,12 +17283,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_ImpressionWithNoAccount_FromExtensionInstallBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    extension install bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_EXTENSION_INSTALL_BUBBLE).
+  </description>
+</action>
+
 <action name="Signin_ImpressionWithNoAccount_FromNTPContentSuggestions">
   <owner>bsazonov@chromium.org</owner>
   <description>
     Recorded when starting sign-in using the promo view, with no default
     account, from NTP content suggestions
     (signin_metrics::AccessPoint::ACCESS_POINT_NTP_CONTENT_SUGGESTIONS).
+  </description>
+</action>
+
+<action name="Signin_ImpressionWithNoAccount_FromPasswordBubble">
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the personalized sign-in promo is shown with no account in the
+    password saved bubble.
+    (signin_metrics::AccessPoint::ACCESS_POINT_PASSWORD_BUBBLE).
   </description>
 </action>
 

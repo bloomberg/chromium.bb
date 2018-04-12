@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 
@@ -18,6 +19,7 @@ class BubbleSyncPromoView : public views::StyledLabel,
  public:
   // |delegate| is not owned by BubbleSyncPromoView.
   BubbleSyncPromoView(BubbleSyncPromoDelegate* delegate,
+                      signin_metrics::AccessPoint access_point,
                       int link_text_resource_id,
                       int message_text_resource_id);
   ~BubbleSyncPromoView() override;

@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/metrics/user_metrics.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar.h"
@@ -77,8 +77,8 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
     authService->SetPromptForSignIn(false);
     return nullptr;
   }
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromReSigninInfobar"));
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR);
   // User needs to be reminded to sign in again. Creates a new infobar delegate
   // and returns it.
   return std::make_unique<ReSignInInfoBarDelegate>(browser_state, presenter);
@@ -120,8 +120,8 @@ gfx::Image ReSignInInfoBarDelegate::GetIcon() const {
 }
 
 bool ReSignInInfoBarDelegate::Accept() {
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Signin_FromReSigninInfobar"));
+  signin_metrics::RecordSigninUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_RESIGNIN_INFOBAR);
   UIView* infobarView = static_cast<InfoBarIOS*>(infobar())->view();
   DCHECK(infobarView);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
