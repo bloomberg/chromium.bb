@@ -355,7 +355,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void AddFlattenInheritedTransformJSON(JSONObject&) const;
   class LayersAsJSONArray;
 
-  Vector<const PaintChunk*> AllChunkPointers() const;
   CompositedLayerRasterInvalidator& EnsureRasterInvalidator();
   void SetNeedsDisplayInRectInternal(const IntRect&);
 

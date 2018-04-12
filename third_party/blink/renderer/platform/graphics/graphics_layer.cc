@@ -353,8 +353,9 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     // Generate raster invalidations for SPv175 (but not SPv2).
     IntRect layer_bounds(layer_state_->offset, ExpandedIntSize(Size()));
-    EnsureRasterInvalidator().Generate(layer_bounds, AllChunkPointers(),
-                                       layer_state_->state, this);
+    EnsureRasterInvalidator().Generate(
+        layer_bounds, GetPaintController().GetPaintArtifact().PaintChunks(),
+        layer_state_->state, this);
   }
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
@@ -1383,15 +1384,6 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   layer_state_->offset = layer_offset;
 }
 
-Vector<const PaintChunk*> GraphicsLayer::AllChunkPointers() const {
-  const auto& chunks = GetPaintController().GetPaintArtifact().PaintChunks();
-  Vector<const PaintChunk*> result;
-  result.ReserveInitialCapacity(chunks.size());
-  for (const auto& chunk : chunks)
-    result.push_back(&chunk);
-  return result;
-}
-
 void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
                                   PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
@@ -1429,7 +1421,8 @@ void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
     PaintChunksToCcLayer::ConvertInto(
-        AllChunkPointers(), layer_state_->state,
+        GetPaintController().GetPaintArtifact().PaintChunks(),
+        layer_state_->state,
         gfx::Vector2dF(layer_state_->offset.X(), layer_state_->offset.Y()),
         paint_controller.GetPaintArtifact().GetDisplayItemList(),
         *web_display_item_list->GetCcDisplayItemList());

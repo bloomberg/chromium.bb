@@ -142,8 +142,10 @@ const TransformPaintPropertyNode*
 PaintArtifactCompositor::ScrollTranslationForScrollHitTestLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  DCHECK(pending_layer.paint_chunks.size());
-  const PaintChunk& first_paint_chunk = *pending_layer.paint_chunks[0];
+  auto paint_chunks =
+      paint_artifact.GetPaintChunkSubset(pending_layer.paint_chunk_indices);
+  DCHECK(paint_chunks.size());
+  const auto& first_paint_chunk = paint_chunks[0];
   if (first_paint_chunk.size() != 1)
     return nullptr;
 
@@ -222,14 +224,16 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
     gfx::Vector2dF& layer_offset,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
     Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers) {
-  DCHECK(pending_layer.paint_chunks.size());
-  const PaintChunk& first_paint_chunk = *pending_layer.paint_chunks[0];
+  auto paint_chunks =
+      paint_artifact.GetPaintChunkSubset(pending_layer.paint_chunk_indices);
+  DCHECK(paint_chunks.size());
+  const PaintChunk& first_paint_chunk = paint_chunks[0];
   DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
   if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
           paint_artifact, first_paint_chunk, layer_offset)) {
-    DCHECK_EQ(pending_layer.paint_chunks.size(), 1u);
+    DCHECK_EQ(paint_chunks.size(), 1u);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(foreign_layer);
     return foreign_layer;
@@ -252,7 +256,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   layer_offset = cc_combined_bounds.OffsetFromOrigin();
 
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
-      paint_artifact, cc_combined_bounds, pending_layer.paint_chunks,
+      paint_artifact.GetDisplayItemList(), cc_combined_bounds, paint_chunks,
       pending_layer.property_tree_state);
   new_content_layer_clients.push_back(std::move(content_layer_client));
   if (extra_data_for_testing_enabled_)
@@ -262,6 +266,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
     const PaintChunk& first_paint_chunk,
+    size_t chunk_index,
     bool chunk_requires_own_layer)
     : bounds(first_paint_chunk.bounds),
       rect_known_to_be_opaque(
@@ -270,14 +275,14 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
       property_tree_state(first_paint_chunk.properties.property_tree_state
                               .GetPropertyTreeState()),
       requires_own_layer(chunk_requires_own_layer) {
-  paint_chunks.push_back(&first_paint_chunk);
+  paint_chunk_indices.push_back(chunk_index);
 }
 
 void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   DCHECK(!requires_own_layer && !guest.requires_own_layer);
   DCHECK_EQ(backface_hidden, guest.backface_hidden);
 
-  paint_chunks.AppendVector(guest.paint_chunks);
+  paint_chunk_indices.AppendVector(guest.paint_chunk_indices);
   FloatClipRect guest_bounds_in_home(guest.bounds);
   GeometryMapper::LocalToAncestorVisualRect(
       guest.property_tree_state, property_tree_state, guest_bounds_in_home);
@@ -487,7 +492,10 @@ void PaintArtifactCompositor::LayerizeGroup(
                                 // TODO(pdr): This should require a direct
                                 // compositing reason.
                                 last_display_item.IsScrollHitTest();
-      pending_layers.push_back(PendingLayer(*chunk_it++, requires_own_layer));
+      pending_layers.push_back(PendingLayer(
+          *chunk_it, chunk_it - paint_artifact.PaintChunks().begin(),
+          requires_own_layer));
+      chunk_it++;
       if (requires_own_layer)
         continue;
     } else {

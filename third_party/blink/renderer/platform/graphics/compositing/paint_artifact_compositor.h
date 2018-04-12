@@ -56,12 +56,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // Updates the layer tree to match the provided paint artifact.
   //
-  // Populates |compositedElementIds| with the CompositorElementId of all
+  // Populates |composited_element_ids| with the CompositorElementId of all
   // animations for which we saw a paint chunk and created a layer.
-  //
-  // If |storeDebugInfo| is true, stores detailed debugging information in
-  // the layers that will be output as part of a call to layersAsJSON
-  // (if LayerTreeIncludesDebugInfo is specified).
   void Update(const PaintArtifact&,
               CompositorElementIdSet& composited_element_ids);
 
@@ -105,7 +101,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
   struct PLATFORM_EXPORT PendingLayer {
-    PendingLayer(const PaintChunk& first_paint_chunk, bool requires_own_layer);
+    PendingLayer(const PaintChunk& first_paint_chunk,
+                 size_t first_chunk_index,
+                 bool requires_own_layer);
     // Merge another pending layer after this one, appending all its paint
     // chunks after chunks in this layer, with appropriate space conversion
     // applied. The merged layer must have a property tree state that's deeper
@@ -120,7 +118,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     void Upcast(const PropertyTreeState&);
 
     FloatRect bounds;
-    Vector<const PaintChunk*> paint_chunks;
+    Vector<size_t> paint_chunk_indices;
     FloatRect rect_known_to_be_opaque;
     bool backface_hidden;
     PropertyTreeState property_tree_state;

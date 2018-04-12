@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 
@@ -80,7 +81,7 @@ class ConversionContext {
   // At last, close all pushed states to balance pairs (this happens when the
   // context object is destructed):
   //   Output: End_C4 End_C3 End_C2 End_C1
-  void Convert(const Vector<const PaintChunk*>&, const DisplayItemList&);
+  void Convert(const PaintChunkSubset&, const DisplayItemList&);
 
  private:
   // Adjust the translation of the whole display list relative to layer offset.
@@ -625,11 +626,9 @@ void ConversionContext::EndTransform() {
   previous_transform_ = nullptr;
 }
 
-void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
+void ConversionContext::Convert(const PaintChunkSubset& paint_chunks,
                                 const DisplayItemList& display_items) {
-  for (auto chunk_it = paint_chunks.begin(); chunk_it != paint_chunks.end();
-       chunk_it++) {
-    const PaintChunk& chunk = **chunk_it;
+  for (const auto& chunk : paint_chunks) {
     const auto& chunk_state = chunk.properties.property_tree_state;
     bool switched_to_chunk_state = false;
 
@@ -665,12 +664,11 @@ void ConversionContext::Convert(const Vector<const PaintChunk*>& paint_chunks,
 
 }  // unnamed namespace
 
-void PaintChunksToCcLayer::ConvertInto(
-    const Vector<const PaintChunk*>& paint_chunks,
-    const PropertyTreeState& layer_state,
-    const gfx::Vector2dF& layer_offset,
-    const DisplayItemList& display_items,
-    cc::DisplayItemList& cc_list) {
+void PaintChunksToCcLayer::ConvertInto(const PaintChunkSubset& paint_chunks,
+                                       const PropertyTreeState& layer_state,
+                                       const gfx::Vector2dF& layer_offset,
+                                       const DisplayItemList& display_items,
+                                       cc::DisplayItemList& cc_list) {
   if (RuntimeEnabledFeatures::DisablePaintChunksToCcLayerEnabled())
     return;
   ConversionContext(layer_state, layer_offset, cc_list)
@@ -678,7 +676,7 @@ void PaintChunksToCcLayer::ConvertInto(
 }
 
 scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
-    const Vector<const PaintChunk*>& paint_chunks,
+    const PaintChunkSubset& paint_chunks,
     const PropertyTreeState& layer_state,
     const gfx::Vector2dF& layer_offset,
     const DisplayItemList& display_items,

@@ -93,17 +93,10 @@ void PaintArtifact::Replay(PaintCanvas& canvas,
                            const IntPoint& offset) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());
-  Vector<const PaintChunk*> pointer_paint_chunks;
-  pointer_paint_chunks.ReserveInitialCapacity(PaintChunks().size());
-
-  // TODO(chrishtr): it's sad to have to copy this vector just to turn
-  // references into pointers.
-  for (const auto& chunk : PaintChunks())
-    pointer_paint_chunks.push_back(&chunk);
   scoped_refptr<cc::DisplayItemList> display_item_list =
       PaintChunksToCcLayer::Convert(
-          pointer_paint_chunks, replay_state,
-          gfx::Vector2dF(offset.X(), offset.Y()), GetDisplayItemList(),
+          PaintChunks(), replay_state, gfx::Vector2dF(offset.X(), offset.Y()),
+          GetDisplayItemList(),
           cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer);
   canvas.drawPicture(display_item_list->ReleaseAsRecord());
 }

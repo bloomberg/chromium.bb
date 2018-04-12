@@ -10,6 +10,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 
 namespace blink {
 
@@ -102,7 +103,7 @@ CompositedLayerRasterInvalidator::ChunkPropertiesChanged(
 // common cases that most of the chunks can be matched in-order, the complexity
 // is slightly larger than O(n).
 void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
-    const Vector<const PaintChunk*>& new_chunks,
+    const PaintChunkSubset& new_chunks,
     const PropertyTreeState& layer_state,
     Vector<PaintChunkInfo>& new_chunks_info) {
   ChunkToLayerMapper mapper(layer_state, layer_bounds_.OffsetFromOrigin());
@@ -110,8 +111,7 @@ void CompositedLayerRasterInvalidator::GenerateRasterInvalidations(
   old_chunks_matched.resize(paint_chunks_info_.size());
   size_t old_index = 0;
   size_t max_matched_old_index = 0;
-  for (size_t new_index = 0; new_index < new_chunks.size(); ++new_index) {
-    const auto& new_chunk = *new_chunks[new_index];
+  for (const auto& new_chunk : new_chunks) {
     mapper.SwitchToChunk(new_chunk);
     const auto& new_chunk_info =
         new_chunks_info.emplace_back(*this, mapper, new_chunk);
@@ -259,7 +259,7 @@ RasterInvalidationTracking& CompositedLayerRasterInvalidator::EnsureTracking() {
 
 void CompositedLayerRasterInvalidator::Generate(
     const gfx::Rect& layer_bounds,
-    const Vector<const PaintChunk*>& paint_chunks,
+    const PaintChunkSubset& paint_chunks,
     const PropertyTreeState& layer_state,
     const DisplayItemClient* layer_display_item_client) {
   if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
@@ -269,9 +269,9 @@ void CompositedLayerRasterInvalidator::Generate(
     EnsureTracking();
 
   if (tracking_info_) {
-    for (const auto* chunk : paint_chunks) {
+    for (const auto& chunk : paint_chunks) {
       tracking_info_->new_client_debug_names.insert(
-          &chunk->id.client, chunk->id.client.DebugName());
+          &chunk.id.client, chunk.id.client.DebugName());
     }
   }
 
@@ -286,9 +286,9 @@ void CompositedLayerRasterInvalidator::Generate(
     // bounds is empty, but we still need to update new_chunks_info for the
     // next cycle.
     ChunkToLayerMapper mapper(layer_state, layer_bounds.OffsetFromOrigin());
-    for (const auto* chunk : paint_chunks) {
-      mapper.SwitchToChunk(*chunk);
-      new_chunks_info.emplace_back(*this, mapper, *chunk);
+    for (const auto& chunk : paint_chunks) {
+      mapper.SwitchToChunk(chunk);
+      new_chunks_info.emplace_back(*this, mapper, chunk);
     }
   } else {
     GenerateRasterInvalidations(paint_chunks, layer_state, new_chunks_info);
@@ -301,10 +301,10 @@ void CompositedLayerRasterInvalidator::Generate(
         std::move(tracking_info_->new_client_debug_names);
   }
 
-  for (const auto* chunk : paint_chunks) {
-    chunk->client_is_just_created = false;
-    chunk->raster_invalidation_rects.clear();
-    chunk->raster_invalidation_tracking.clear();
+  for (const auto& chunk : paint_chunks) {
+    chunk.client_is_just_created = false;
+    chunk.raster_invalidation_rects.clear();
+    chunk.raster_invalidation_tracking.clear();
   }
 }
 

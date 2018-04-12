@@ -23,7 +23,7 @@ class Vector2dF;
 namespace blink {
 
 class DisplayItemList;
-struct PaintChunk;
+class PaintChunkSubset;
 class PropertyTreeState;
 class RasterInvalidationTracking;
 
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT PaintChunksToCcLayer {
   // layer_state.Transform() * (layer_offset + (x, y)) on the screen. It is
   // equivalent to say that |layer_offset| is the layer origin in the space
   // of layer_state.Transform().
-  static void ConvertInto(const Vector<const PaintChunk*>&,
+  static void ConvertInto(const PaintChunkSubset&,
                           const PropertyTreeState& layer_state,
                           const gfx::Vector2dF& layer_offset,
                           const DisplayItemList&,
@@ -63,7 +63,7 @@ class PLATFORM_EXPORT PaintChunksToCcLayer {
   // Similar to ConvertInto(), but returns a finalized new list instead of
   // appending converted items to an existing list.
   static scoped_refptr<cc::DisplayItemList> Convert(
-      const Vector<const PaintChunk*>&,
+      const PaintChunkSubset&,
       const PropertyTreeState& layer_state,
       const gfx::Vector2dF& layer_offset,
       const DisplayItemList&,
