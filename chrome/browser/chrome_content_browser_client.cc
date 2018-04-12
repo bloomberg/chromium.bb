@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -1645,6 +1646,17 @@ ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
 }
 
 bool ChromeContentBrowserClient::ShouldEnableStrictSiteIsolation() {
+  if (base::FeatureList::IsEnabled(
+          features::kSitePerProcessOnlyForHighMemoryClients)) {
+    constexpr int kDefaultMemoryThresholdMb = 1024;
+    int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+        features::kSitePerProcessOnlyForHighMemoryClients,
+        features::kSitePerProcessOnlyForHighMemoryClientsParamName,
+        kDefaultMemoryThresholdMb);
+    if (base::SysInfo::AmountOfPhysicalMemoryMB() <= memory_threshold_mb)
+      return false;
+  }
+
   return base::FeatureList::IsEnabled(features::kSitePerProcess);
 }
 

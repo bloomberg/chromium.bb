@@ -541,6 +541,20 @@ const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
 const base::Feature kSitePerProcess{"site-per-process",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// kSitePerProcessOnlyForHighMemoryClients is checked before kSitePerProcess,
+// and (if enabled) can restrict if kSitePerProcess feature is checked at all -
+// no check will be made on devices with low memory (these devices will have no
+// Site Isolation via kSitePerProcess trials and won't activate either the
+// control or the experiment group).  The threshold for what is considered a
+// "low memory" device is set (in MB) via a field trial param with the name
+// defined below ("site-per-process-low-memory-cutoff-mb") and compared against
+// base::SysInfo::AmountOfPhysicalMemoryMB().
+const base::Feature kSitePerProcessOnlyForHighMemoryClients{
+    "site-per-process-only-for-high-memory-clients",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+const char kSitePerProcessOnlyForHighMemoryClientsParamName[] =
+    "site-per-process-low-memory-cutoff-mb";
+
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
