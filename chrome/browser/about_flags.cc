@@ -2357,6 +2357,12 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesInDownloadHomeOpenInCctFeature)},
+    {"offline-pages-alternate-dino-page",
+     flag_descriptions::kOfflinePagesShowAlternateDinoPageName,
+     flag_descriptions::kOfflinePagesShowAlternateDinoPageDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         offline_pages::kOfflinePagesShowAlternateDinoPageFeature)},
 #endif  // OS_ANDROID
     {"disallow-doc-written-script-loads",
      flag_descriptions::kDisallowDocWrittenScriptsUiName,
