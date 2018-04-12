@@ -11,11 +11,22 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class CWVAutofillProfile;
+
 CWV_EXPORT
 // Exposes saved autofill data such as address profiles and credit cards.
 @interface CWVAutofillDataManager : NSObject
 
+// Returns all saved profiles for address autofill.
+@property(nonatomic, readonly) NSArray<CWVAutofillProfile*>* profiles;
+
 - (instancetype)init NS_UNAVAILABLE;
+
+// Updates the profile.
+- (void)updateProfile:(CWVAutofillProfile*)profile;
+
+// Deletes the profile.
+- (void)deleteProfile:(CWVAutofillProfile*)profile;
 
 @end
 
