@@ -695,9 +695,16 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, ServiceWorkerIntercept) {
   for (content::RenderProcessHost::iterator iter(
            content::RenderProcessHost::AllHostsIterator());
        !iter.IsAtEnd(); iter.Advance()) {
-    ++host_count;
+    // Don't count spare RenderProcessHosts.
+    if (!iter.GetCurrentValue()->HostHasNotBeenUsed())
+      ++host_count;
+
+    content::RenderProcessHostWatcher process_exit_observer(
+        iter.GetCurrentValue(),
+        content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
     // TODO(wez): This used to use wait=true.
     iter.GetCurrentValue()->Shutdown(content::RESULT_CODE_KILLED);
+    process_exit_observer.Wait();
   }
   // There should be at most one render_process_host, that created for the SW.
   EXPECT_EQ(1, host_count);

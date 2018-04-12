@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/export/password_manager_exporter.h"
 #include "components/password_manager/core/browser/ui/credential_provider_interface.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -214,6 +215,10 @@ class PasswordManagerPorterTest : public testing::Test {
   base::FilePath selected_file_;
 
  private:
+  // TODO(lukasza): https://crbug.com/832100: Move the factory into
+  // TestingProfile, so individual tests don't need to worry about it.
+  content::ScopedMockRenderProcessHostFactory process_factory_;
+
   // TODO(crbug.com/689520) This is needed for mojo not to crash on destruction.
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestPasswordManagerPorter> password_manager_porter_;

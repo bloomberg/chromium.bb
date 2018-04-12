@@ -18,6 +18,7 @@
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/test/test_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
@@ -198,6 +199,7 @@ class RenderWidgetHostViewGuestSurfaceTest
   }
 
  protected:
+  ScopedMockRenderProcessHostFactory rph_factory_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;
@@ -215,6 +217,7 @@ class RenderWidgetHostViewGuestSurfaceTest
 
  private:
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuestSurfaceTest);
 };
 

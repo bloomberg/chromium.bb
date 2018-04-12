@@ -251,6 +251,17 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };
 
+// Like MockRenderProcessHostFactory, but automatically registers itself as the
+// default factory via RenderProcessHostImpl::set_render_process_host_factory.
+class ScopedMockRenderProcessHostFactory : public MockRenderProcessHostFactory {
+ public:
+  ScopedMockRenderProcessHostFactory();
+  ~ScopedMockRenderProcessHostFactory() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ScopedMockRenderProcessHostFactory);
+};
+
 // Convenient method to retrieve |InputMsg_HandleInputEvent|s from process sink
 // and returns a string of WebInputEvent types. Will append a trailing '*' if
 // other types of messages were found.

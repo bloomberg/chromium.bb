@@ -1033,9 +1033,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     CHECK_NE(new_instance, current_instance);
 
   if (new_instance == current_instance) {
-    // If we're navigating to the same site instance, we won't need to use any
-    // spare RenderProcessHost.
-    RenderProcessHostImpl::CleanupSpareRenderProcessHost();
+    // If we're navigating to the same site instance, we won't need to use the
+    // current spare RenderProcessHost.
+    RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
+        browser_context);
   }
 
   // Double-check that the new SiteInstance is associated with the right

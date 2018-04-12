@@ -35,7 +35,11 @@ class SiteInstanceRenderProcessHostFactory : public RenderProcessHostFactory {
       SiteInstance* site_instance) const override {
     processes_.push_back(
         std::make_unique<MockRenderProcessHost>(browser_context));
-    last_site_instance_used_ = site_instance;
+
+    // A spare RenderProcessHost is created with a null SiteInstance.
+    if (site_instance)
+      last_site_instance_used_ = site_instance;
+
     return processes_.back().get();
   }
 

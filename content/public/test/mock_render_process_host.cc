@@ -352,6 +352,16 @@ void MockRenderProcessHost::DecrementKeepAliveRefCount(
 
 void MockRenderProcessHost::DisableKeepAliveRefCount() {
   keep_alive_ref_count_ = 0;
+
+  // RenderProcessHost::DisableKeepAliveRefCount() virtual method gets called as
+  // part of BrowserContext::NotifyWillBeDestroyed(...).  Normally
+  // MockRenderProcessHost::DisableKeepAliveRefCount doesn't call Cleanup,
+  // because the MockRenderProcessHost might be owned by a test.  However, when
+  // the MockRenderProcessHost is the spare RenderProcessHost, we know that it
+  // is owned by the SpareRenderProcessHostManager and we need to delete the
+  // spare to avoid reports/DCHECKs about memory leaks.
+  if (this == RenderProcessHostImpl::GetSpareRenderProcessHostForTesting())
+    Cleanup();
 }
 
 bool MockRenderProcessHost::IsKeepAliveRefCountDisabled() {
@@ -501,6 +511,14 @@ std::string GetInputMessageTypes(MockRenderProcessHost* process) {
   }
   process->sink().ClearMessages();
   return base::JoinString(result, " ");
+}
+
+ScopedMockRenderProcessHostFactory::ScopedMockRenderProcessHostFactory() {
+  RenderProcessHostImpl::set_render_process_host_factory(this);
+}
+
+ScopedMockRenderProcessHostFactory::~ScopedMockRenderProcessHostFactory() {
+  RenderProcessHostImpl::set_render_process_host_factory(nullptr);
 }
 
 }  // namespace content

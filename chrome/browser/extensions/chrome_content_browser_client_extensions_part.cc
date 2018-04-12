@@ -355,16 +355,11 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
 bool ChromeContentBrowserClientExtensionsPart::ShouldUseSpareRenderProcessHost(
     Profile* profile,
     const GURL& site_url) {
-  const Extension* extension =
-      GetEnabledExtensionFromEffectiveURL(profile, site_url);
-  if (!extension)
-    return true;
-
   // Extensions should not use a spare process, because they require passing a
   // command-line flag (switches::kExtensionProcess) to the renderer process
   // when it launches. A spare process is launched earlier, before it is known
   // which navigation will use it, so it lacks this flag.
-  return false;
+  return !site_url.SchemeIs(kExtensionScheme);
 }
 
 // static

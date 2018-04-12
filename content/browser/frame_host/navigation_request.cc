@@ -803,6 +803,15 @@ void NavigationRequest::OnRequestRedirected(
   speculative_site_instance_ =
       site_instance->HasProcess() ? site_instance : nullptr;
 
+  // If the new site instance doesn't yet have a process, then tell the
+  // SpareRenderProcessHostManager so it can decide whether to start warming up
+  // the spare at this time (note that the actual behavior depends on
+  // RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes).
+  if (!site_instance->HasProcess()) {
+    RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
+        site_instance->GetBrowserContext());
+  }
+
   // Check what the process of the SiteInstance is. It will be passed to the
   // NavigationHandle, and informed to expect a navigation to the redirected
   // URL.
@@ -1407,6 +1416,12 @@ void NavigationRequest::CommitNavigation() {
       std::move(body_), common_params_, request_params_, is_view_source_,
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
       devtools_navigation_token_);
+
+  // Give SpareRenderProcessHostManager a heads-up about the most recently used
+  // BrowserContext.  This is mostly needed to make sure the spare is warmed-up
+  // if it wasn't done in RenderProcessHostImpl::GetProcessHostForSiteInstance.
+  RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
+      render_frame_host->GetSiteInstance()->GetBrowserContext());
 }
 
 NavigationRequest::ContentSecurityPolicyCheckResult

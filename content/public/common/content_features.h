@@ -88,6 +88,7 @@ CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignInProcessIsolation;
 CONTENT_EXPORT extern const base::Feature kSlimmingPaintV175;
+CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
 CONTENT_EXPORT extern const base::Feature kStopInBackground;
 CONTENT_EXPORT extern const base::Feature kStopLoadingInBackground;
 CONTENT_EXPORT extern const base::Feature kStopNonTimersInBackground;

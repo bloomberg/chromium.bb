@@ -268,13 +268,7 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
   }
 
   int GetRenderProcessCount() {
-    int count = 0;
-    for (content::RenderProcessHost::iterator it(
-             content::RenderProcessHost::AllHostsIterator());
-         !it.IsAtEnd(); it.Advance()) {
-      count++;
-    }
-    return count;
+    return content::RenderProcessHost::GetCurrentRenderProcessCountForTesting();
   }
 
  private:

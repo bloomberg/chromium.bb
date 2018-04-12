@@ -280,6 +280,10 @@
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace content {
+
+using CheckOriginLockResult =
+    ChildProcessSecurityPolicyImpl::CheckOriginLockResult;
+
 namespace {
 
 const RenderProcessHostFactory* g_render_process_host_factory_ = nullptr;
@@ -588,48 +592,56 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     // launch time, but this cannot be done for spare RenderProcessHosts, which
     // are started before it is known which navigation might use them.  So, a
     // spare RenderProcessHost should not be used in such cases.
-    if (!GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
-            browser_context, site_instance->GetSiteURL()))
-      return nullptr;
+    bool should_use_spare =
+        GetContentClient()->browser()->ShouldUseSpareRenderProcessHost(
+            browser_context, site_instance->GetSiteURL());
 
     // Get the StoragePartition for |site_instance|.  Note that this might be
     // different than the default StoragePartition for |browser_context|.
     StoragePartition* site_storage =
         BrowserContext::GetStoragePartition(browser_context, site_instance);
-    if (!spare_render_process_host_ ||
-        browser_context != spare_render_process_host_->GetBrowserContext() ||
-        site_storage != spare_render_process_host_->GetStoragePartition() ||
-        is_for_guests_only) {
-      // As a new RenderProcessHost will almost certainly be created, we cleanup
-      // the non-matching one so as not to waste resources.
+
+    RenderProcessHost* returned_process = nullptr;
+    if (spare_render_process_host_ &&
+        browser_context == spare_render_process_host_->GetBrowserContext() &&
+        site_storage == spare_render_process_host_->GetStoragePartition() &&
+        !is_for_guests_only && should_use_spare) {
+      CHECK(spare_render_process_host_->HostHasNotBeenUsed());
+
+      // If the spare process ends up getting killed, the spare manager should
+      // discard the spare RPH, so if one exists, it should always be live here.
+      CHECK(spare_render_process_host_->HasConnection());
+
+      returned_process = spare_render_process_host_;
+      ReleaseSpareRenderProcessHost(spare_render_process_host_);
+    } else if (!RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes()) {
+      // If the spare shouldn't be kept around, then discard it as soon as we
+      // find that the current spare was mismatched.
       CleanupSpareRenderProcessHost();
-      return nullptr;
+    } else if (g_all_hosts.Get().size() >=
+               RenderProcessHostImpl::GetMaxRendererProcessCount()) {
+      // Drop the spare if we are at a process limit and the spare wasn't taken.
+      // This helps avoid process reuse.
+      CleanupSpareRenderProcessHost();
     }
 
-    CHECK(spare_render_process_host_->HostHasNotBeenUsed());
-    RenderProcessHost* rph = spare_render_process_host_;
-    DropSpareRenderProcessHost(spare_render_process_host_);
-    return rph;
+    return returned_process;
   }
 
-  // Remove |host| as a possible spare renderer. Does not shut it down cleanly;
-  // the assumption is that the host was shutdown somewhere else and has
-  // notifying the SpareRenderProcessHostManager.
-  void DropSpareRenderProcessHost(RenderProcessHost* host) {
-    if (spare_render_process_host_ && spare_render_process_host_ == host) {
-      spare_render_process_host_->RemoveObserver(this);
-      spare_render_process_host_ = nullptr;
-    }
-  }
-
-  // Remove |host| as a possible spare renderer. If |host| is not the spare
-  // renderer, then shut down the spare renderer. The idea is that a navigation
-  // was just made to |host|, and we do not expect another immediate navigation,
-  // so that the spare renderer can be dropped in order to free up resources.
-  void DropSpareOnProcessCreation(RenderProcessHost* new_host) {
-    if (spare_render_process_host_ == new_host) {
-      DropSpareRenderProcessHost(new_host);
+  // Prepares for future requests (with an assumption that a future navigation
+  // might require a new process for |browser_context|).
+  //
+  // Note that depending on the caller PrepareForFutureRequests can be called
+  // after the spare_render_process_host_ has either been 1) matched and taken
+  // or 2) mismatched and ignored or 3) matched and ignored.
+  void PrepareForFutureRequests(BrowserContext* browser_context) {
+    if (RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes()) {
+      // Always keep around a spare process for the most recently requested
+      // |browser_context|.
+      WarmupSpareRenderProcessHost(browser_context);
     } else {
+      // Discard the ignored (probably non-matching) spare so as not to waste
+      // resources.
       CleanupSpareRenderProcessHost();
     }
   }
@@ -656,6 +668,16 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   }
 
  private:
+  // Release ownership of |host| as a possible spare renderer.  Called when
+  // |host| has either been 1) claimed to be used in a navigation or 2) shutdown
+  // somewhere else.
+  void ReleaseSpareRenderProcessHost(RenderProcessHost* host) {
+    if (spare_render_process_host_ && spare_render_process_host_ == host) {
+      spare_render_process_host_->RemoveObserver(this);
+      spare_render_process_host_ = nullptr;
+    }
+  }
+
   // RenderProcessHostObserver::RenderProcessWillExit is not overriden because:
   // 1. This simplifies reasoning when Cleanup can be called.
   // 2. In practice the spare shouldn't go through graceful shutdown.
@@ -670,7 +692,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   }
 
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    DropSpareRenderProcessHost(host);
+    ReleaseSpareRenderProcessHost(host);
   }
 
   // This is a bare pointer, because RenderProcessHost manages the lifetime of
@@ -1290,6 +1312,24 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
 // static
 void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
   g_max_renderer_count_override = count;
+  if (g_all_hosts.Get().size() > count)
+    g_spare_render_process_host_manager.Get().CleanupSpareRenderProcessHost();
+}
+
+// static
+int RenderProcessHost::GetCurrentRenderProcessCountForTesting() {
+  content::RenderProcessHost::iterator it =
+      content::RenderProcessHost::AllHostsIterator();
+  int count = 0;
+  while (!it.IsAtEnd()) {
+    RenderProcessHost* host = it.GetCurrentValue();
+    if (host->HasConnection() &&
+        host != RenderProcessHostImpl::GetSpareRenderProcessHostForTesting()) {
+      count++;
+    }
+    it.Advance();
+  }
+  return count;
 }
 
 // static
@@ -1327,24 +1367,6 @@ RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
 // static
 const unsigned int RenderProcessHostImpl::kMaxFrameDepthForPriority =
     std::numeric_limits<unsigned int>::max();
-
-// static
-RenderProcessHost* RenderProcessHostImpl::CreateOrUseSpareRenderProcessHost(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance,
-    bool is_for_guests_only) {
-  RenderProcessHost* render_process_host =
-      g_spare_render_process_host_manager.Get().MaybeTakeSpareRenderProcessHost(
-          browser_context, site_instance, is_for_guests_only);
-
-  if (!render_process_host) {
-    render_process_host = CreateRenderProcessHost(
-        browser_context, nullptr, site_instance, is_for_guests_only);
-  }
-
-  DCHECK(render_process_host);
-  return render_process_host;
-}
 
 RenderProcessHostImpl::RenderProcessHostImpl(
     BrowserContext* browser_context,
@@ -2429,6 +2451,7 @@ void RenderProcessHostImpl::OnMediaStreamRemoved() {
   UpdateProcessPriority();
 }
 
+// static
 void RenderProcessHostImpl::set_render_process_host_factory(
     const RenderProcessHostFactory* rph_factory) {
   g_render_process_host_factory_ = rph_factory;
@@ -2511,14 +2534,32 @@ void RenderProcessHostImpl::RemoveExpectedNavigationToSite(
 }
 
 // static
-void RenderProcessHostImpl::CleanupSpareRenderProcessHost() {
-  g_spare_render_process_host_manager.Get().CleanupSpareRenderProcessHost();
+void RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
+    BrowserContext* browser_context) {
+  g_spare_render_process_host_manager.Get().PrepareForFutureRequests(
+      browser_context);
 }
 
 // static
 RenderProcessHost*
 RenderProcessHostImpl::GetSpareRenderProcessHostForTesting() {
   return g_spare_render_process_host_manager.Get().spare_render_process_host();
+}
+
+// static
+void RenderProcessHostImpl::DiscardSpareRenderProcessHostForTesting() {
+  g_spare_render_process_host_manager.Get().CleanupSpareRenderProcessHost();
+}
+
+// static
+bool RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes() {
+  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites())
+    return false;
+
+  if (!base::FeatureList::IsEnabled(features::kSpareRendererForSitePerProcess))
+    return false;
+
+  return true;
 }
 
 bool RenderProcessHostImpl::HostHasNotBeenUsed() {
@@ -3391,28 +3432,40 @@ bool RenderProcessHostImpl::IsSuitableHost(RenderProcessHost* host,
   if (!host->InSameStoragePartition(dest_partition))
     return false;
 
+  // Check WebUI bindings and origin locks.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->HasWebUIBindings(host->GetID()) !=
-      WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
-          browser_context, site_url)) {
-    return false;
-  }
-
-  // Sites requiring dedicated processes can only reuse a compatible process.
+  bool host_has_web_ui_bindings = policy->HasWebUIBindings(host->GetID());
   auto lock_state = policy->CheckOriginLock(host->GetID(), site_url);
-  if (lock_state !=
-      ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK) {
-    // If the process is already dedicated to a site, only allow the destination
-    // URL to reuse this process if the URL has the same site.
-    if (lock_state !=
-        ChildProcessSecurityPolicyImpl::CheckOriginLockResult::HAS_EQUAL_LOCK)
+  if (host->HostHasNotBeenUsed()) {
+    // If the host hasn't been used, it won't have the expected WebUI bindings
+    // or origin locks just *yet* - skip the checks in this case.  One example
+    // where this case can happen is when the spare RenderProcessHost gets used.
+    CHECK(!host_has_web_ui_bindings);
+    CHECK_EQ(CheckOriginLockResult::NO_LOCK, lock_state);
+  } else {
+    // WebUI checks.
+    bool url_requires_web_ui_bindings =
+        WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
+            browser_context, site_url);
+    if (host_has_web_ui_bindings != url_requires_web_ui_bindings)
       return false;
-  } else if (!host->IsUnused() && SiteInstanceImpl::ShouldLockToOrigin(
-                                      browser_context, host, site_url)) {
-    // Otherwise, if this process has been used to host any other content, it
-    // cannot be reused if the destination site indeed requires a dedicated
-    // process and can be locked to just that site.
-    return false;
+
+    // Sites requiring dedicated processes can only reuse a compatible process.
+    switch (lock_state) {
+      case CheckOriginLockResult::HAS_EQUAL_LOCK:
+        break;
+      case CheckOriginLockResult::HAS_WRONG_LOCK:
+        return false;
+      case CheckOriginLockResult::NO_LOCK:
+        if (!host->IsUnused() && SiteInstanceImpl::ShouldLockToOrigin(
+                                     browser_context, host, site_url)) {
+          // If this process has been used to host any other content, it cannot
+          // be reused if the destination site requires a dedicated process and
+          // should use a process locked to just that site.
+          return false;
+        }
+        break;
+    }
   }
 
   return GetContentClient()->browser()->IsSuitableHost(host, site_url);
@@ -3495,7 +3548,7 @@ bool RenderProcessHost::ShouldTryToUseExistingProcessHost(
 }
 
 // static
-RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
+RenderProcessHost* RenderProcessHostImpl::GetExistingProcessHost(
     BrowserContext* browser_context,
     const GURL& site_url) {
   // First figure out which existing renderers we can use.
@@ -3507,6 +3560,11 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
     if (iter.GetCurrentValue()->MayReuseHost() &&
         RenderProcessHostImpl::IsSuitableHost(iter.GetCurrentValue(),
                                               browser_context, site_url)) {
+      // The spare is always considered before process reuse.
+      DCHECK_NE(iter.GetCurrentValue(),
+                g_spare_render_process_host_manager.Get()
+                    .spare_render_process_host());
+
       suitable_renderers.push_back(iter.GetCurrentValue());
     }
     iter.Advance();
@@ -3516,10 +3574,6 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
   if (!suitable_renderers.empty()) {
     int suitable_count = static_cast<int>(suitable_renderers.size());
     int random_index = base::RandInt(0, suitable_count - 1);
-    // If the process chosen was the spare RenderProcessHost, ensure it won't be
-    // used as a spare in the future, or drop the spare if it wasn't used.
-    g_spare_render_process_host_manager.Get().DropSpareOnProcessCreation(
-        suitable_renderers[random_index]);
     return suitable_renderers[random_index];
   }
 
@@ -3640,6 +3694,16 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
         browser_context, site_url);
   }
 
+  // See if the spare RenderProcessHost can be used.
+  SpareRenderProcessHostManager& spare_process_manager =
+      g_spare_render_process_host_manager.Get();
+  bool spare_was_taken = false;
+  if (!render_process_host) {
+    render_process_host = spare_process_manager.MaybeTakeSpareRenderProcessHost(
+        browser_context, site_instance, is_for_guests_only);
+    spare_was_taken = (render_process_host != nullptr);
+  }
+
   // If not (or if none found), see if we should reuse an existing process.
   if (!render_process_host &&
       ShouldTryToUseExistingProcessHost(browser_context, site_url)) {
@@ -3663,15 +3727,27 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     CHECK(false) << "Unsuitable process reused for site " << site_url;
   }
 
-  // Otherwise, use the spare RenderProcessHost or create a new one.
+  // Otherwise, create a new RenderProcessHost.
   if (!render_process_host) {
     // Pass a null StoragePartition. Tests with TestBrowserContext using a
     // RenderProcessHostFactory may not instantiate a StoragePartition, and
     // creating one here with GetStoragePartition() can run into cross-thread
     // issues as TestBrowserContext initialization is done on the main thread.
-    render_process_host = CreateOrUseSpareRenderProcessHost(
-        browser_context, site_instance, is_for_guests_only);
+    render_process_host = CreateRenderProcessHost(
+        browser_context, nullptr, site_instance, is_for_guests_only);
   }
+
+  // It is important to call PrepareForFutureRequests *after* potentially
+  // creating a process a few statements earlier - doing this avoids violating
+  // the process limit.
+  //
+  // We should not warm-up another spare if the spare was not taken, because in
+  // this case we might have created a new process - we want to avoid spawning
+  // two processes at the same time.  In this case the call to
+  // PrepareForFutureRequests will be postponed until later (e.g. until the
+  // navigation commits or a cross-site redirect happens).
+  if (spare_was_taken)
+    spare_process_manager.PrepareForFutureRequests(browser_context);
 
   if (is_unmatched_service_worker) {
     UnmatchedServiceWorkerProcessTracker::Register(

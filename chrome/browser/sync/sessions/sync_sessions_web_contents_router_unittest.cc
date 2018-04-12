@@ -6,6 +6,7 @@
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +42,10 @@ class SyncSessionsWebContentsRouterTest : public testing::Test {
   content::WebContents* test_contents() { return test_contents_.get(); }
 
  private:
+  // TODO(lukasza): https://crbug.com/832100: Move the factory into
+  // TestingProfile, so individual tests don't need to worry about it.
+  content::ScopedMockRenderProcessHostFactory process_factory_;
+
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   SyncSessionsWebContentsRouter* router_;

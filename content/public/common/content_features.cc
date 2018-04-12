@@ -360,6 +360,12 @@ const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
 const base::Feature kSlimmingPaintV175{"SlimmingPaintV175",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether SpareRenderProcessHostManager tries to always have a warm
+// spare renderer process around for the most recently requested BrowserContext.
+// This feature is only consulted in site-per-process mode.
+const base::Feature kSpareRendererForSitePerProcess{
+    "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Stop scheduler task queues in background after allowed grace time.
 const base::Feature kStopInBackground {
   "stop-in-background",
