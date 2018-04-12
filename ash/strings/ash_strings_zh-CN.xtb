@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">抱歉，系统仍然无法验证您的密码。注意：如果您最近更改了密码，新密码将在您退出后生效。目前请在此处输入旧密码。</translation>
 <translation id="1677472565718498478">电量尚余 <ph name="TIME" /></translation>
 <translation id="1698760176351776263">IPv6 地址：<ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">设备管理员或许能监控您的活动。</translation>
 <translation id="1734367976349034509">此设备是受企业管理的设备</translation>
 <translation id="1746730358044914197">输入法是由您的管理员配置的。</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">溢出按钮</translation>
 <translation id="1951012854035635156">智能助理</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">设置语言</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="1995660704900986789">关机</translation>
 <translation id="2012624427112548395">Ctrl+搜索键+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 使用多帐号登录功能。
     所有用户都必须先退出帐号才能继续。</translation>
+<translation id="2696763960464195425">当您退出后，系统即会移除您的信息。<ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">设置键盘</translation>
 <translation id="2718395828230677721">夜间模式</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
 <translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
@@ -331,6 +335,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="8734991477317290293">当前连接的键盘可能会试图窃取您的击键操作</translation>
+<translation id="8809737090443522491">输入应用或文档的名称</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">将窗口移至其他桌面可能会导致出现意外行为。
 
