@@ -461,7 +461,6 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
     database_manager_->StopOnIOThread(shutdown);
   }
 #endif
-  ui_manager_->StopOnIOThread(shutdown);
 
   services_delegate_->StopOnIOThread(shutdown);
 
@@ -497,6 +496,7 @@ void SafeBrowsingService::Start() {
 
 void SafeBrowsingService::Stop(bool shutdown) {
   ping_manager_.reset();
+  ui_manager_->Stop(shutdown);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));

@@ -48,11 +48,11 @@ SafeBrowsingUIManager::SafeBrowsingUIManager(
 
 SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
 
-void SafeBrowsingUIManager::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void SafeBrowsingUIManager::Stop(bool shutdown) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (shutdown)
-    sb_service_ = NULL;
+    sb_service_ = nullptr;
 }
 
 void SafeBrowsingUIManager::CreateAndSendHitReport(
@@ -173,7 +173,7 @@ const GURL SafeBrowsingUIManager::default_safe_page() const {
 // when the report is ready.
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The service may delete the ping manager (i.e. when user disabling service,
   // etc). This happens on the IO thread.
