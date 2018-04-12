@@ -132,7 +132,7 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   ResetPage();
   mojom::PagePtr page;
   binding_.Bind(mojo::MakeRequest(&page));
-  GetTranslateDriver()->RegisterPage(
+  GetTranslateHandler()->RegisterPage(
       std::move(page), details, !details.has_notranslate && !language.empty());
 }
 
@@ -441,13 +441,13 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
       .Run(false, source_lang_, target_lang_, error);
 }
 
-const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateDriver() {
-  if (!translate_driver_) {
+const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateHandler() {
+  if (!translate_handler_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&translate_driver_));
+        mojo::MakeRequest(&translate_handler_));
   }
 
-  return translate_driver_;
+  return translate_handler_;
 }
 
 void TranslateHelper::ResetPage() {
