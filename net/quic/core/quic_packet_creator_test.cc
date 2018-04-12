@@ -135,10 +135,11 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
         data_("foo"),
         creator_(connection_id_, &client_framer_, &delegate_, &producer_),
         serialized_packet_(creator_.NoPacket()) {
-    creator_.SetEncrypter(ENCRYPTION_INITIAL,
-                          new NullEncrypter(Perspective::IS_CLIENT));
-    creator_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                          new NullEncrypter(Perspective::IS_CLIENT));
+    creator_.SetEncrypter(ENCRYPTION_INITIAL, QuicMakeUnique<NullEncrypter>(
+                                                  Perspective::IS_CLIENT));
+    creator_.SetEncrypter(
+        ENCRYPTION_FORWARD_SECURE,
+        QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
     client_framer_.set_visitor(&framer_visitor_);
     server_framer_.set_visitor(&framer_visitor_);
     client_framer_.set_data_producer(&producer_);
@@ -186,7 +187,8 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
   // the version.
   size_t GetPacketHeaderOverhead(QuicTransportVersion version) {
     return GetPacketHeaderSize(
-        version, creator_.connection_id_length(), kIncludeVersion,
+        version, creator_.GetConnectionIdLength(),
+        QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
         !kIncludeDiversificationNonce,
         QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
   }
@@ -798,8 +800,9 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
   creator_.SetMaxPacketLength(GetPacketLengthForOneStream(
       client_framer_.transport_version(),
       QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-      !kIncludeDiversificationNonce, creator_.connection_id_length(),
-      PACKET_1BYTE_PACKET_NUMBER, &payload_length));
+      !kIncludeDiversificationNonce, creator_.GetConnectionIdLength(),
+      QuicPacketCreatorPeer::GetPacketNumberLength(&creator_),
+      &payload_length));
   QuicFrame frame;
   const QuicString too_long_payload(payload_length * 2, 'a');
   MakeIOVector(too_long_payload, &iov_);
@@ -827,9 +830,10 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   EXPECT_EQ(max_plaintext_size -
                 GetPacketHeaderSize(
                     client_framer_.transport_version(),
-                    creator_.connection_id_length(),
+                    creator_.GetConnectionIdLength(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                    !kIncludeDiversificationNonce, PACKET_1BYTE_PACKET_NUMBER),
+                    !kIncludeDiversificationNonce,
+                    QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)),
             creator_.BytesFree());
 
   // Add a variety of frame types and then a padding frame.
@@ -874,9 +878,10 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   EXPECT_EQ(max_plaintext_size -
                 GetPacketHeaderSize(
                     client_framer_.transport_version(),
-                    creator_.connection_id_length(),
+                    creator_.GetConnectionIdLength(),
                     QuicPacketCreatorPeer::SendVersionInPacket(&creator_),
-                    !kIncludeDiversificationNonce, PACKET_1BYTE_PACKET_NUMBER),
+                    !kIncludeDiversificationNonce,
+                    QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)),
             creator_.BytesFree());
 }
 
@@ -982,9 +987,9 @@ TEST_P(QuicPacketCreatorTest, SendPendingPaddingInRetransmission) {
   QuicFrames frames;
   frames.push_back(QuicFrame(stream_frame));
   char buffer[kMaxPacketSize];
-  QuicPendingRetransmission retransmission(
-      CreateRetransmission(frames, true, /*num_padding_bytes=*/0,
-                           ENCRYPTION_NONE, PACKET_1BYTE_PACKET_NUMBER));
+  QuicPendingRetransmission retransmission(CreateRetransmission(
+      frames, true, /*num_padding_bytes=*/0, ENCRYPTION_NONE,
+      QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.AddPendingPadding(kMaxNumRandomPaddingBytes);

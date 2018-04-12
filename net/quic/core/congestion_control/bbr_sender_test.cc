@@ -250,6 +250,12 @@ class BbrSenderTest : public QuicTest {
   }
 };
 
+TEST_F(BbrSenderTest, SetInitialCongestionWindow) {
+  EXPECT_NE(3u * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  sender_->SetInitialCongestionWindowInPackets(3);
+  EXPECT_EQ(3u * kDefaultTCPMSS, sender_->GetCongestionWindow());
+}
+
 // Test a simple long data transfer in the default setup.
 TEST_F(BbrSenderTest, SimpleTransfer) {
   // Adding TSO CWND causes packet loss before exiting startup.

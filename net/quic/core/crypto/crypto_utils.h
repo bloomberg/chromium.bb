@@ -69,21 +69,37 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
     DiversificationNonce* nonce_;
   };
 
-  // Implements the HKDF-Expand-Label function as defined in section 7.1 of TLS
-  // 1.3. The HKDF-Expand-Label definition assumes that the TLS connection's PRF
-  // will be used as the Hash function for HKDF; in this function it is
-  // explicitly passed in as |prf|. The inputs to HKDF-Expand-Label are as
-  // follows:
+  // Implements the QHKDF-Expand function defined in section 5.2.3 of
+  // draft-ietf-quic-tls-09. The QHKDF-Expand function takes 3 explicit
+  // arguments, as well as an implicit PRF which is the hash function negotiated
+  // by TLS. This PRF is passed in as |prf|; the explicit arguments to
+  // QHKDF-Expand - Secret, Label, and Length - are passed in as |secret|,
+  // |label|, and |out_len|, respectively.
+  static std::vector<uint8_t> QhkdfExpand(const EVP_MD* prf,
+                                          const std::vector<uint8_t>& secret,
+                                          const std::string& label,
+                                          size_t out_len);
+
+  // SetKeyAndIV derives the key and IV from the given packet protection secret
+  // |pp_secret| and sets those fields on the given QuicEncrypter or
+  // QuicDecrypter |*crypter|. This follows the derivation described in section
+  // 5.2.4 of draft-ietf-quic-tls-09.
+  template <class QuicCrypter>
+  static void SetKeyAndIV(const EVP_MD* prf,
+                          const std::vector<uint8_t>& pp_secret,
+                          QuicCrypter* crypter);
+
+  // QUIC encrypts TLS handshake messages with a version-specific key (to
+  // prevent network observers that are not aware of that QUIC version from
+  // making decisions based on the TLS handshake). This packet protection secret
+  // is derived from the connection ID in the client's Initial packet.
   //
-  // Secret: |secret|
-  // Label: |label|
-  // Context: zero-length context
-  // Length: |out_len|
-  static std::vector<uint8_t> HkdfExpandLabel(
-      const EVP_MD* prf,
-      const std::vector<uint8_t>& secret,
-      const QuicString& label,
-      size_t out_len);
+  // This function takes that |connection_id| and creates the encrypter and
+  // decrypter (put in |*crypters|) to use for this packet protection, as well
+  // as setting the key and IV on those crypters.
+  static void CreateTlsInitialCrypters(Perspective perspective,
+                                       QuicConnectionId connection_id,
+                                       CrypterPair* crypters);
 
   // Generates the connection nonce. The nonce is formed as:
   //   <4 bytes> current time

@@ -225,25 +225,25 @@ void QuicCryptoServerHandshaker::
   // NOTE: the SHLO will be encrypted with the new server write key.
   session()->connection()->SetEncrypter(
       ENCRYPTION_INITIAL,
-      crypto_negotiated_params_->initial_crypters.encrypter.release());
+      std::move(crypto_negotiated_params_->initial_crypters.encrypter));
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
   // Set the decrypter immediately so that we no longer accept unencrypted
   // packets.
   session()->connection()->SetDecrypter(
       ENCRYPTION_INITIAL,
-      crypto_negotiated_params_->initial_crypters.decrypter.release());
+      std::move(crypto_negotiated_params_->initial_crypters.decrypter));
   session()->connection()->SetDiversificationNonce(*diversification_nonce);
 
   SendHandshakeMessage(*reply);
 
   session()->connection()->SetEncrypter(
       ENCRYPTION_FORWARD_SECURE,
-      crypto_negotiated_params_->forward_secure_crypters.encrypter.release());
+      std::move(crypto_negotiated_params_->forward_secure_crypters.encrypter));
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 
   session()->connection()->SetAlternativeDecrypter(
       ENCRYPTION_FORWARD_SECURE,
-      crypto_negotiated_params_->forward_secure_crypters.decrypter.release(),
+      std::move(crypto_negotiated_params_->forward_secure_crypters.decrypter),
       false /* don't latch */);
 
   encryption_established_ = true;

@@ -60,6 +60,13 @@ bssl::UniquePtr<SSL_CTX> TlsClientHandshaker::CreateSslCtx() {
 }
 
 bool TlsClientHandshaker::CryptoConnect() {
+  CrypterPair crypters;
+  CryptoUtils::CreateTlsInitialCrypters(Perspective::IS_CLIENT,
+                                        session()->connection_id(), &crypters);
+  session()->connection()->SetEncrypter(ENCRYPTION_NONE,
+                                        std::move(crypters.encrypter));
+  session()->connection()->SetDecrypter(ENCRYPTION_NONE,
+                                        std::move(crypters.decrypter));
   state_ = STATE_HANDSHAKE_RUNNING;
   // Configure certificate verification.
   // TODO(nharper): This only verifies certs on initial connection, not on
@@ -180,16 +187,21 @@ void TlsClientHandshaker::FinishHandshake() {
   }
 
   QUIC_LOG(INFO) << "Client: setting crypters";
-  QuicEncrypter* initial_encrypter = CreateEncrypter(client_secret);
-  session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, initial_encrypter);
-  QuicEncrypter* encrypter = CreateEncrypter(client_secret);
-  session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE, encrypter);
+  std::unique_ptr<QuicEncrypter> initial_encrypter =
+      CreateEncrypter(client_secret);
+  session()->connection()->SetEncrypter(ENCRYPTION_INITIAL,
+                                        std::move(initial_encrypter));
+  std::unique_ptr<QuicEncrypter> encrypter = CreateEncrypter(client_secret);
+  session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
+                                        std::move(encrypter));
 
-  QuicDecrypter* initial_decrypter = CreateDecrypter(server_secret);
-  session()->connection()->SetDecrypter(ENCRYPTION_INITIAL, initial_decrypter);
-  QuicDecrypter* decrypter = CreateDecrypter(server_secret);
+  std::unique_ptr<QuicDecrypter> initial_decrypter =
+      CreateDecrypter(server_secret);
+  session()->connection()->SetDecrypter(ENCRYPTION_INITIAL,
+                                        std::move(initial_decrypter));
+  std::unique_ptr<QuicDecrypter> decrypter = CreateDecrypter(server_secret);
   session()->connection()->SetAlternativeDecrypter(ENCRYPTION_FORWARD_SECURE,
-                                                   decrypter, true);
+                                                   std::move(decrypter), true);
 
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 

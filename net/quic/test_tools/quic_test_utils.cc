@@ -233,6 +233,10 @@ bool NoOpFramerVisitor::OnBlockedFrame(const QuicBlockedFrame& frame) {
   return true;
 }
 
+bool NoOpFramerVisitor::IsValidStatelessResetToken(uint128 token) const {
+  return false;
+}
+
 MockQuicConnectionVisitor::MockQuicConnectionVisitor() {}
 
 MockQuicConnectionVisitor::~MockQuicConnectionVisitor() {}

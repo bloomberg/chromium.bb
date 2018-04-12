@@ -48,6 +48,8 @@ class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public SendAlgorithmInterface {
   void AdjustNetworkParameters(QuicBandwidth bandwidth,
                                QuicTime::Delta rtt) override;
   void SetNumEmulatedConnections(int num_connections) override;
+  void SetInitialCongestionWindowInPackets(
+      QuicPacketCount congestion_window) override;
   void OnConnectionMigration() override;
   void OnCongestionEvent(bool rtt_updated,
                          QuicByteCount prior_in_flight,
@@ -88,7 +90,6 @@ class QUIC_EXPORT_PRIVATE TcpCubicSenderBytes : public SendAlgorithmInterface {
                      QuicTime event_time);
   void SetCongestionWindowFromBandwidthAndRtt(QuicBandwidth bandwidth,
                                               QuicTime::Delta rtt);
-  void SetCongestionWindowInPackets(QuicPacketCount congestion_window);
   void SetMinCongestionWindowInPackets(QuicPacketCount congestion_window);
   void ExitSlowstart();
   void OnPacketLost(QuicPacketNumber largest_loss,

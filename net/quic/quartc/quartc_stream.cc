@@ -66,11 +66,8 @@ int QuartcStream::stream_error() {
   return QuicStream::stream_error();
 }
 
-void QuartcStream::Write(const char* data,
-                         size_t size,
-                         const WriteParameters& param) {
-  struct iovec iov = {const_cast<char*>(data), size};
-  WritevData(&iov, 1, param.fin);
+void QuartcStream::Write(QuicMemSliceSpan data, const WriteParameters& param) {
+  WriteMemSlices(data, param.fin);
 }
 
 void QuartcStream::FinishWriting() {

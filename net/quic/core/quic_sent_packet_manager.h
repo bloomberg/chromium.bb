@@ -151,6 +151,9 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   bool HasUnackedPackets() const;
 
+  // Returns true if there's outstanding crypto data.
+  bool HasUnackedCryptoPackets() const;
+
   // Returns the smallest packet number of a serialized packet which has not
   // been acked by the peer.
   QuicPacketNumber GetLeastUnacked() const;
@@ -425,7 +428,7 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
 
   DebugDelegate* debug_delegate_;
   NetworkChangeVisitor* network_change_visitor_;
-  const QuicPacketCount initial_congestion_window_;
+  QuicPacketCount initial_congestion_window_;
   RttStats rtt_stats_;
   std::unique_ptr<SendAlgorithmInterface> send_algorithm_;
   // Not owned. Always points to |general_loss_algorithm_| outside of tests.

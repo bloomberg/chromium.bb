@@ -127,6 +127,16 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   void OnPacketComplete() override {}
 
+  bool IsValidStatelessResetToken(uint128 token) const override {
+    return false;
+  }
+
+  void OnAuthenticatedIetfStatelessResetPacket(
+      const QuicIetfStatelessResetPacket& packet) override {
+    stateless_reset_packet_ =
+        QuicMakeUnique<QuicIetfStatelessResetPacket>(packet);
+  }
+
   const QuicPacketHeader& header() const { return header_; }
   const std::vector<QuicAckFrame>& ack_frames() const { return ack_frames_; }
   const std::vector<QuicConnectionCloseFrame>& connection_close_frames() const {
@@ -161,6 +171,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   QuicPacketHeader header_;
   std::unique_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   std::unique_ptr<QuicPublicResetPacket> public_reset_packet_;
+  std::unique_ptr<QuicIetfStatelessResetPacket> stateless_reset_packet_;
   std::vector<QuicAckFrame> ack_frames_;
   std::vector<QuicStopWaitingFrame> stop_waiting_frames_;
   std::vector<QuicPaddingFrame> padding_frames_;

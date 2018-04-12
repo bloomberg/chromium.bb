@@ -154,6 +154,14 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
     return true;
   }
   void OnPacketComplete() override { std::cerr << "OnPacketComplete\n"; }
+  bool IsValidStatelessResetToken(uint128 token) const override {
+    std::cerr << "IsValidStatelessResetToken\n";
+    return false;
+  }
+  void OnAuthenticatedIetfStatelessResetPacket(
+      const QuicIetfStatelessResetPacket& packet) override {
+    std::cerr << "OnAuthenticatedIetfStatelessResetPacket\n";
+  }
 
  private:
   QuicFramer* framer_;  // Unowned.

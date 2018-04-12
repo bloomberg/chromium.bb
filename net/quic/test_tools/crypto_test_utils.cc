@@ -916,6 +916,13 @@ void MovePacketsForTlsHandshake(PacketSavingConnection* source_conn,
                                 PacketSavingConnection* dest_conn,
                                 Perspective dest_perspective) {
   SimpleQuicFramer framer(source_conn->supported_versions(), dest_perspective);
+  std::vector<std::unique_ptr<QuicStreamFrame>> stream_frames;
+  std::vector<std::vector<char>> buffers;
+
+  QuicConnectionPeer::SwapCrypters(dest_conn, framer.framer());
+
+  SimpleQuicFramer null_encryption_framer(source_conn->supported_versions(),
+                                          dest_perspective);
   size_t index = *inout_packet_index;
   for (; index < source_conn->encrypted_packets_.size(); index++) {
     if (!framer.ProcessPacket(*source_conn->encrypted_packets_[index])) {
@@ -923,12 +930,37 @@ void MovePacketsForTlsHandshake(PacketSavingConnection* source_conn,
       // the handshake is complete. Don't treat them as handshake packets.
       break;
     }
+    // Try to process the packet with a framer that only has the NullDecrypter
+    // for decryption. If ProcessPacket succeeds, that means the packet was
+    // encrypted with the NullEncrypter. With the TLS handshaker in use, no
+    // packets should ever be encrypted with the NullEncrypter, instead they're
+    // encrypted with an obfuscation cipher based on QUIC version and connection
+    // ID.
+    ASSERT_FALSE(null_encryption_framer.ProcessPacket(
+        *source_conn->encrypted_packets_[index]))
+        << "No TLS packets should be encrypted with the NullEncrypter";
 
     for (const auto& stream_frame : framer.stream_frames()) {
-      dest_conn->OnStreamFrame(*stream_frame);
+      // The stream frames from SimpleQuicFramer::stream_frames() are only valid
+      // until the next call to ProcessPacket. This copies the stream frames to
+      // |stream_frames|, including making a copy of the data buffer, since a
+      // QuicStreamFrame does not own the data it points to.
+      std::vector<char> buffer(stream_frame->data_length);
+      memcpy(buffer.data(), stream_frame->data_buffer,
+             stream_frame->data_length);
+      auto frame = QuicMakeUnique<QuicStreamFrame>(
+          stream_frame->stream_id, stream_frame->fin, stream_frame->offset,
+          QuicStringPiece(buffer.data(), buffer.size()));
+      stream_frames.push_back(std::move(frame));
+      buffers.push_back(std::move(buffer));
     }
   }
   *inout_packet_index = index;
+  QuicConnectionPeer::SwapCrypters(dest_conn, framer.framer());
+
+  for (const auto& stream_frame : stream_frames) {
+    dest_conn->OnStreamFrame(*stream_frame);
+  }
 }
 
 void MovePackets(PacketSavingConnection* source_conn,

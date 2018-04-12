@@ -384,13 +384,13 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
   // Be prepared to decrypt with the new server write key.
   session()->connection()->SetAlternativeDecrypter(
       ENCRYPTION_INITIAL,
-      crypto_negotiated_params_->initial_crypters.decrypter.release(),
+      std::move(crypto_negotiated_params_->initial_crypters.decrypter),
       true /* latch once used */);
   // Send subsequent packets under encryption on the assumption that the
   // server will accept the handshake.
   session()->connection()->SetEncrypter(
       ENCRYPTION_INITIAL,
-      crypto_negotiated_params_->initial_crypters.encrypter.release());
+      std::move(crypto_negotiated_params_->initial_crypters.encrypter));
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
 
   // TODO(ianswett): Merge ENCRYPTION_REESTABLISHED and
@@ -644,10 +644,10 @@ void QuicCryptoClientHandshaker::DoReceiveSHLO(
   // with the FORWARD_SECURE key until it receives a FORWARD_SECURE
   // packet from the client.
   session()->connection()->SetAlternativeDecrypter(
-      ENCRYPTION_FORWARD_SECURE, crypters->decrypter.release(),
+      ENCRYPTION_FORWARD_SECURE, std::move(crypters->decrypter),
       false /* don't latch */);
   session()->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                                        crypters->encrypter.release());
+                                        std::move(crypters->encrypter));
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
 
   handshake_confirmed_ = true;

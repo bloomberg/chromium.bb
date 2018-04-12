@@ -158,7 +158,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   void SetConnectionIdLength(uint32_t length);
 
   // Sets the encrypter to use for the encryption level.
-  void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
+  void SetEncrypter(EncryptionLevel level,
+                    std::unique_ptr<QuicEncrypter> encrypter);
 
   // Returns true if there are control frames or current constructed packet has
   // pending retransmittable frames.

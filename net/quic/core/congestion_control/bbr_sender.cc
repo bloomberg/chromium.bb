@@ -138,6 +138,14 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
 
 BbrSender::~BbrSender() {}
 
+void BbrSender::SetInitialCongestionWindowInPackets(
+    QuicPacketCount congestion_window) {
+  if (mode_ == STARTUP) {
+    initial_congestion_window_ = congestion_window * kDefaultTCPMSS;
+    congestion_window_ = congestion_window * kDefaultTCPMSS;
+  }
+}
+
 bool BbrSender::InSlowStart() const {
   return mode_ == STARTUP;
 }

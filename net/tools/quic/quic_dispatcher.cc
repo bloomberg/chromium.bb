@@ -725,6 +725,16 @@ void QuicDispatcher::OnPacketComplete() {
   DCHECK(false);
 }
 
+bool QuicDispatcher::IsValidStatelessResetToken(uint128 token) const {
+  DCHECK(false);
+  return false;
+}
+
+void QuicDispatcher::OnAuthenticatedIetfStatelessResetPacket(
+    const QuicIetfStatelessResetPacket& packet) {
+  DCHECK(false);
+}
+
 void QuicDispatcher::OnExpiredPackets(
     QuicConnectionId connection_id,
     BufferedPacketList early_arrived_packets) {

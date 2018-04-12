@@ -159,6 +159,25 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
              config.HasClientRequestedIndependentOption(kTPCC, perspective_)) {
     SetSendAlgorithm(kPCC);
   }
+  // Initial window.
+  if (GetQuicReloadableFlag(quic_unified_iw_options)) {
+    if (config.HasClientRequestedIndependentOption(kIW03, perspective_)) {
+      initial_congestion_window_ = 3;
+      send_algorithm_->SetInitialCongestionWindowInPackets(3);
+    }
+    if (config.HasClientRequestedIndependentOption(kIW10, perspective_)) {
+      initial_congestion_window_ = 10;
+      send_algorithm_->SetInitialCongestionWindowInPackets(10);
+    }
+    if (config.HasClientRequestedIndependentOption(kIW20, perspective_)) {
+      initial_congestion_window_ = 20;
+      send_algorithm_->SetInitialCongestionWindowInPackets(20);
+    }
+    if (config.HasClientRequestedIndependentOption(kIW50, perspective_)) {
+      initial_congestion_window_ = 50;
+      send_algorithm_->SetInitialCongestionWindowInPackets(50);
+    }
+  }
 
   using_pacing_ = !FLAGS_quic_disable_pacing_for_perf_tests;
 
@@ -416,6 +435,9 @@ void QuicSentPacketManager::MarkForRetransmission(
   QuicTransmissionInfo* transmission_info =
       unacked_packets_.GetMutableTransmissionInfo(packet_number);
   QUIC_BUG_IF(!unacked_packets_.HasRetransmittableFrames(*transmission_info));
+  // Handshake packets should never be sent as probing retransmissions.
+  DCHECK(!transmission_info->has_crypto_handshake ||
+         transmission_type != PROBING_RETRANSMISSION);
   // Both TLP and the new RTO leave the packets in flight and let the loss
   // detection decide if packets are lost.
   if (transmission_type != TLP_RETRANSMISSION &&
@@ -588,6 +610,10 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
 
 bool QuicSentPacketManager::HasUnackedPackets() const {
   return unacked_packets_.HasUnackedPackets();
+}
+
+bool QuicSentPacketManager::HasUnackedCryptoPackets() const {
+  return unacked_packets_.HasPendingCryptoPackets();
 }
 
 QuicPacketNumber QuicSentPacketManager::GetLeastUnacked() const {

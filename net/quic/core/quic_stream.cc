@@ -452,13 +452,13 @@ void QuicStream::CloseReadSide() {
   if (read_side_closed_) {
     return;
   }
-  QUIC_DLOG(INFO) << ENDPOINT << "Done reading from stream " << id();
+  QUIC_DVLOG(1) << ENDPOINT << "Done reading from stream " << id();
 
   read_side_closed_ = true;
   sequencer_.ReleaseBuffer();
 
   if (write_side_closed_) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Closing stream " << id();
+    QUIC_DVLOG(1) << ENDPOINT << "Closing stream " << id();
     session_->CloseStream(id());
   }
 }
@@ -467,11 +467,11 @@ void QuicStream::CloseWriteSide() {
   if (write_side_closed_) {
     return;
   }
-  QUIC_DLOG(INFO) << ENDPOINT << "Done writing to stream " << id();
+  QUIC_DVLOG(1) << ENDPOINT << "Done writing to stream " << id();
 
   write_side_closed_ = true;
   if (read_side_closed_) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Closing stream " << id();
+    QUIC_DVLOG(1) << ENDPOINT << "Closing stream " << id();
     session_->CloseStream(id());
   }
 }
@@ -490,7 +490,7 @@ HandshakeProtocol QuicStream::handshake_protocol() const {
 }
 
 void QuicStream::StopReading() {
-  QUIC_DLOG(INFO) << ENDPOINT << "Stop reading from stream " << id();
+  QUIC_DVLOG(1) << ENDPOINT << "Stop reading from stream " << id();
   sequencer_.StopReading();
 }
 

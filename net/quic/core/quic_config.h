@@ -453,10 +453,6 @@ class QUIC_EXPORT_PRIVATE QuicConfig {
   // Initial session flow control receive window in bytes.
   QuicFixedUint32 initial_session_flow_control_window_bytes_;
 
-  // Socket receive buffer in bytes.
-  // TODO(ianswett): Deprecate once QUIC_VERSION_34 is deprecated.
-  QuicFixedUint32 socket_receive_buffer_;
-
   // Whether tell peer not to attempt connection migration.
   QuicFixedUint32 connection_migration_disabled_;
 

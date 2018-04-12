@@ -9,6 +9,7 @@
 #include "net/quic/core/quic_session.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/quic/quartc/quartc_clock_interface.h"
 #include "net/quic/quartc/quartc_factory.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -217,14 +218,18 @@ class QuartcStreamTest : public ::testing::Test,
 // Write an entire string.
 TEST_F(QuartcStreamTest, WriteDataWhole) {
   CreateReliableQuicStream();
-  stream_->Write("Foo bar", 7, kDefaultParam);
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+  stream_->Write(data.span(), kDefaultParam);
   EXPECT_EQ("Foo bar", write_buffer_);
 }
 
 // Write part of a string.
 TEST_F(QuartcStreamTest, WriteDataPartial) {
   CreateReliableQuicStream();
-  stream_->Write("Foo bar", 5, kDefaultParam);
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 5)});
+  stream_->Write(data.span(), kDefaultParam);
   EXPECT_EQ("Foo b", write_buffer_);
 }
 
@@ -232,9 +237,12 @@ TEST_F(QuartcStreamTest, WriteDataPartial) {
 TEST_F(QuartcStreamTest, StreamBuffersData) {
   CreateReliableQuicStream();
 
+  char message[] = "Foo bar";
+  test::QuicTestMemSliceVector data({std::make_pair(message, 7)});
+
   // The stream is not yet writable, so data will be buffered.
   session_->set_writable(false);
-  stream_->Write("Foo bar", 7, kDefaultParam);
+  stream_->Write(data.span(), kDefaultParam);
 
   // Check that data is buffered.
   EXPECT_TRUE(stream_->HasBufferedData());
@@ -248,8 +256,11 @@ TEST_F(QuartcStreamTest, StreamBuffersData) {
   // (not data buffered by the stream).
   EXPECT_EQ(0ul, write_buffer_.size());
 
+  char message1[] = "xyzzy";
+  test::QuicTestMemSliceVector data1({std::make_pair(message1, 5)});
+
   // More writes go into the buffer.
-  stream_->Write("xyzzy", 5, kDefaultParam);
+  stream_->Write(data1.span(), kDefaultParam);
 
   EXPECT_TRUE(stream_->HasBufferedData());
   EXPECT_EQ(12u, stream_->bytes_buffered());
@@ -334,7 +345,8 @@ TEST_F(QuartcStreamTest, CloseOnFins) {
 
   QuartcStreamInterface::WriteParameters param;
   param.fin = true;
-  stream_->Write(nullptr, 0, param);
+  test::QuicTestMemSliceVector data({});
+  stream_->Write(data.span(), param);
 
   // Check that the OnClose() callback occurred.
   EXPECT_TRUE(mock_stream_delegate_->closed());

@@ -162,6 +162,9 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Returns a dummy packet that is valid but contains no useful information.
   static SerializedPacket NoPacket();
 
+  // Returns length of connection ID to send over the wire.
+  QuicConnectionIdLength GetConnectionIdLength() const;
+
   // Sets the encryption level that will be applied to new packets.
   void set_encryption_level(EncryptionLevel level) {
     packet_.encryption_level = level;
@@ -170,10 +173,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // packet number of the last created packet, or 0 if no packets have been
   // created.
   QuicPacketNumber packet_number() const { return packet_.packet_number; }
-
-  QuicConnectionIdLength connection_id_length() const {
-    return connection_id_length_;
-  }
 
   void SetConnectionIdLength(QuicConnectionIdLength length);
 
@@ -185,7 +184,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Sets the encrypter to use for the encryption level and updates the max
   // plaintext size.
-  void SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter);
+  void SetEncrypter(EncryptionLevel level,
+                    std::unique_ptr<QuicEncrypter> encrypter);
 
   // Indicates whether the packet creator is in a state where it can change
   // current maximum packet length.
@@ -252,7 +252,15 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Returns true if a diversification nonce should be included in the current
   // packet's header.
-  bool IncludeNonceInPublicHeader();
+  bool IncludeNonceInPublicHeader() const;
+
+  // Returns true if version should be included in current packet's header.
+  bool IncludeVersionInHeader() const;
+
+  // Returns length of packet number to send over the wire.
+  // packet_.packet_number_length should never be read directly, use this
+  // function instead.
+  QuicPacketNumberLength GetPacketNumberLength() const;
 
   // Returns true if |frame| starts with CHLO.
   bool StreamFrameStartsWithChlo(const QuicStreamFrame& frame) const;
@@ -263,6 +271,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   QuicFramer* framer_;
 
   // Controls whether version should be included while serializing the packet.
+  // send_version_in_packet_ should never be read directly, use
+  // IncludeVersionInHeader() instead.
   bool send_version_in_packet_;
   // If true, then |diversification_nonce_| will be included in the header of
   // all packets created at the initial encryption level.
@@ -271,7 +281,8 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Maximum length including headers and encryption (UDP payload length.)
   QuicByteCount max_packet_length_;
   size_t max_plaintext_size_;
-  // Length of connection_id to send over the wire.
+  // Length of connection_id to send over the wire. connection_id_length_ should
+  // never be read directly, use GetConnectionIdLength() instead.
   QuicConnectionIdLength connection_id_length_;
 
   // Frames to be added to the next SerializedPacket

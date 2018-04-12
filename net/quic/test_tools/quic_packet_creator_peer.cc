@@ -11,7 +11,7 @@ namespace test {
 
 // static
 bool QuicPacketCreatorPeer::SendVersionInPacket(QuicPacketCreator* creator) {
-  return creator->send_version_in_packet_;
+  return creator->IncludeVersionInHeader();
 }
 
 // static
@@ -31,7 +31,7 @@ void QuicPacketCreatorPeer::SetPacketNumberLength(
 // static
 QuicPacketNumberLength QuicPacketCreatorPeer::GetPacketNumberLength(
     QuicPacketCreator* creator) {
-  return creator->packet_.packet_number_length;
+  return creator->GetPacketNumberLength();
 }
 
 void QuicPacketCreatorPeer::SetPacketNumber(QuicPacketCreator* creator,

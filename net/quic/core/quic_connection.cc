@@ -310,6 +310,8 @@ QuicConnection::QuicConnection(
       consecutive_num_packets_with_no_retransmittable_frames_(0),
       fill_up_link_during_probing_(false),
       probing_retransmission_pending_(false),
+      stateless_reset_token_received_(false),
+      received_stateless_reset_token_(0),
       last_control_frame_id_(kInvalidControlFrameId),
       negotiate_version_early_(
           GetQuicReloadableFlag(quic_server_early_version_negotiation)),
@@ -415,6 +417,10 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (transport_version() > QUIC_VERSION_37 &&
       config.HasClientSentConnectionOption(kNSTP, perspective_)) {
     no_stop_waiting_frames_ = true;
+  }
+  if (config.HasReceivedStatelessResetToken()) {
+    stateless_reset_token_received_ = true;
+    received_stateless_reset_token_ = config.ReceivedStatelessResetToken();
   }
 }
 
@@ -1274,6 +1280,20 @@ void QuicConnection::OnPacketComplete() {
   CloseIfTooManyOutstandingSentPackets();
 }
 
+bool QuicConnection::IsValidStatelessResetToken(uint128 token) const {
+  return stateless_reset_token_received_ &&
+         token == received_stateless_reset_token_;
+}
+
+void QuicConnection::OnAuthenticatedIetfStatelessResetPacket(
+    const QuicIetfStatelessResetPacket& packet) {
+  // TODO(fayang): Add OnAuthenticatedIetfStatelessResetPacket to
+  // debug_visitor_.
+  const std::string error_details = "Received stateless reset.";
+  TearDownLocalConnectionState(QUIC_PUBLIC_RESET, error_details,
+                               ConnectionCloseSource::FROM_PEER);
+}
+
 void QuicConnection::MaybeQueueAck(bool was_missing) {
   ++num_packets_received_since_last_ack_sent_;
   // Always send an ack every 20 packets in order to allow the peer to discard
@@ -1672,7 +1692,14 @@ void QuicConnection::WriteIfNotBlocked() {
 void QuicConnection::WriteAndBundleAcksIfNotBlocked() {
   if (!writer_->IsWriteBlocked()) {
     ScopedPacketFlusher flusher(this, SEND_ACK_IF_QUEUED);
-    OnCanWrite();
+    if (GetQuicReloadableFlag(quic_is_write_blocked)) {
+      // TODO(ianswett): Merge OnCanWrite and WriteIfNotBlocked when deprecating
+      // this flag.
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_is_write_blocked);
+      WriteIfNotBlocked();
+    } else {
+      OnCanWrite();
+    }
   }
 }
 
@@ -2330,8 +2357,8 @@ void QuicConnection::OnRetransmissionTimeout() {
 }
 
 void QuicConnection::SetEncrypter(EncryptionLevel level,
-                                  QuicEncrypter* encrypter) {
-  packet_generator_.SetEncrypter(level, encrypter);
+                                  std::unique_ptr<QuicEncrypter> encrypter) {
+  packet_generator_.SetEncrypter(level, std::move(encrypter));
 }
 
 void QuicConnection::SetDiversificationNonce(
@@ -2351,14 +2378,15 @@ void QuicConnection::SetDefaultEncryptionLevel(EncryptionLevel level) {
 }
 
 void QuicConnection::SetDecrypter(EncryptionLevel level,
-                                  QuicDecrypter* decrypter) {
-  framer_.SetDecrypter(level, decrypter);
+                                  std::unique_ptr<QuicDecrypter> decrypter) {
+  framer_.SetDecrypter(level, std::move(decrypter));
 }
 
-void QuicConnection::SetAlternativeDecrypter(EncryptionLevel level,
-                                             QuicDecrypter* decrypter,
-                                             bool latch_once_used) {
-  framer_.SetAlternativeDecrypter(level, decrypter, latch_once_used);
+void QuicConnection::SetAlternativeDecrypter(
+    EncryptionLevel level,
+    std::unique_ptr<QuicDecrypter> decrypter,
+    bool latch_once_used) {
+  framer_.SetAlternativeDecrypter(level, std::move(decrypter), latch_once_used);
 }
 
 const QuicDecrypter* QuicConnection::decrypter() const {
@@ -3073,7 +3101,8 @@ bool QuicConnection::MaybeConsiderAsMemoryCorruption(
 void QuicConnection::MaybeSendProbingRetransmissions() {
   DCHECK(fill_up_link_during_probing_);
 
-  if (!sent_packet_manager_.handshake_confirmed()) {
+  if (!sent_packet_manager_.handshake_confirmed() ||
+      sent_packet_manager().HasUnackedCryptoPackets()) {
     return;
   }
 

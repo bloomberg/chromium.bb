@@ -26,6 +26,7 @@
 #include "net/quic/platform/api/quic_export.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/platform/api/quic_string_piece.h"
+#include "net/quic/platform/api/quic_uint128.h"
 
 namespace net {
 
@@ -95,6 +96,17 @@ struct QUIC_EXPORT_PRIVATE QuicVersionNegotiationPacket {
 
   QuicConnectionId connection_id;
   ParsedQuicVersionVector versions;
+};
+
+struct QUIC_EXPORT_PRIVATE QuicIetfStatelessResetPacket {
+  QuicIetfStatelessResetPacket();
+  QuicIetfStatelessResetPacket(const QuicPacketHeader& header,
+                               QuicUint128 token);
+  QuicIetfStatelessResetPacket(const QuicIetfStatelessResetPacket& other);
+  ~QuicIetfStatelessResetPacket();
+
+  QuicPacketHeader header;
+  QuicUint128 stateless_reset_token;
 };
 
 class QUIC_EXPORT_PRIVATE QuicData {

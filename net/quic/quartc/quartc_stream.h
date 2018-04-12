@@ -42,9 +42,7 @@ class QUIC_EXPORT_PRIVATE QuartcStream : public QuicStream,
 
   int stream_error() override;
 
-  void Write(const char* data,
-             size_t size,
-             const WriteParameters& param) override;
+  void Write(QuicMemSliceSpan data, const WriteParameters& param) override;
 
   void FinishWriting() override;
 

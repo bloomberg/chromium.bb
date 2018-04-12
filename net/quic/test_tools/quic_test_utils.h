@@ -260,6 +260,9 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnWindowUpdateFrame, bool(const QuicWindowUpdateFrame& frame));
   MOCK_METHOD1(OnBlockedFrame, bool(const QuicBlockedFrame& frame));
   MOCK_METHOD0(OnPacketComplete, void());
+  MOCK_CONST_METHOD1(IsValidStatelessResetToken, bool(uint128));
+  MOCK_METHOD1(OnAuthenticatedIetfStatelessResetPacket,
+               void(const QuicIetfStatelessResetPacket&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFramerVisitor);
@@ -295,6 +298,9 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
   bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
   void OnPacketComplete() override {}
+  bool IsValidStatelessResetToken(uint128 token) const override;
+  void OnAuthenticatedIetfStatelessResetPacket(
+      const QuicIetfStatelessResetPacket& packet) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NoOpFramerVisitor);
@@ -779,6 +785,8 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_METHOD2(SetFromConfig,
                void(const QuicConfig& config, Perspective perspective));
   MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
+  MOCK_METHOD1(SetInitialCongestionWindowInPackets,
+               void(QuicPacketCount packets));
   MOCK_METHOD1(SetMaxCongestionWindow,
                void(QuicByteCount max_congestion_window));
   MOCK_METHOD5(OnCongestionEvent,

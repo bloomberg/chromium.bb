@@ -10,6 +10,7 @@
 #include "net/quic/core/tls_client_handshaker.h"
 #include "net/quic/core/tls_server_handshaker.h"
 #include "net/quic/platform/api/quic_ptr_util.h"
+#include "net/quic/platform/api/quic_test_mem_slice_vector.h"
 #include "net/quic/quartc/quartc_factory.h"
 #include "net/quic/quartc/quartc_factory_interface.h"
 #include "net/quic/quartc/quartc_packet_writer.h"
@@ -531,9 +532,10 @@ class QuartcSessionTest : public ::testing::Test,
     outgoing_stream->SetDelegate(server_peer_->stream_delegate());
 
     // Send a test message from peer 1 to peer 2.
-    const char kTestMessage[] = "Hello";
-    outgoing_stream->Write(kTestMessage, strlen(kTestMessage),
-                           kDefaultWriteParam);
+    char kTestMessage[] = "Hello";
+    test::QuicTestMemSliceVector data(
+        {std::make_pair(kTestMessage, strlen(kTestMessage))});
+    outgoing_stream->Write(data.span(), kDefaultWriteParam);
     RunTasks();
 
     // Wait for peer 2 to receive messages.
@@ -546,8 +548,10 @@ class QuartcSessionTest : public ::testing::Test,
 
     EXPECT_EQ(client_peer_->data(), kTestMessage);
     // Send a test message from peer 2 to peer 1.
-    const char kTestResponse[] = "Response";
-    incoming->Write(kTestResponse, strlen(kTestResponse), kDefaultWriteParam);
+    char kTestResponse[] = "Response";
+    test::QuicTestMemSliceVector response(
+        {std::make_pair(kTestResponse, strlen(kTestResponse))});
+    incoming->Write(response.span(), kDefaultWriteParam);
     RunTasks();
     // Wait for peer 1 to receive messages.
     ASSERT_TRUE(server_peer_->has_data());
