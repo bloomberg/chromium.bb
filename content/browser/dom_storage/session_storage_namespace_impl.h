@@ -7,15 +7,21 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_namespace.h"
 
-namespace content {
+namespace base {
+class SequencedTaskRunner;
+}
 
+namespace content {
+class DOMStorageContextImpl;
 class DOMStorageContextWrapper;
-class DOMStorageSession;
 
 class SessionStorageNamespaceImpl : public SessionStorageNamespace {
  public:
@@ -27,32 +33,53 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
 
   // If there is an existing SessionStorageNamespaceImpl with the given id in
   // the DOMStorageContextWrapper, this will return that object. Otherwise this
-  // constructs a SessionStorageNamespaceImpl and assigns |namepace_id| to it.
+  // constructs a SessionStorageNamespaceImpl and assigns |namespace_id| to it.
   static scoped_refptr<SessionStorageNamespaceImpl> Create(
       scoped_refptr<DOMStorageContextWrapper> context,
-      const std::string& namepace_id);
+      std::string namespace_id);
 
   // Constructs a |SessionStorageNamespaceImpl| with id |namespace_id| by
-  // cloning |namespace_to_clone|.
+  // cloning |namespace_to_clone|. Allocates it a new ID.
   static scoped_refptr<SessionStorageNamespaceImpl> CloneFrom(
       scoped_refptr<DOMStorageContextWrapper> context,
-      std::string namepace_id,
-      const std::string& namepace_id_to_clone);
+      std::string namespace_id,
+      const std::string& namespace_id_to_clone);
+
+  DOMStorageContextWrapper* context() const { return context_wrapper_.get(); }
 
   // SessionStorageNamespace implementation.
   const std::string& id() const override;
   void SetShouldPersist(bool should_persist) override;
   bool should_persist() const override;
 
-  SessionStorageNamespaceImpl* Clone();
+  bool IsMojoSessionStorage() { return context_.get(); }
+
+  scoped_refptr<SessionStorageNamespaceImpl> Clone();
   bool IsFromContext(DOMStorageContextWrapper* context);
 
  private:
-  explicit SessionStorageNamespaceImpl(
-      std::unique_ptr<DOMStorageSession> session);
+  // Creates the non-mojo version.
+  SessionStorageNamespaceImpl(
+      scoped_refptr<DOMStorageContextWrapper> context_wrapper,
+      scoped_refptr<DOMStorageContextImpl> context_impl,
+      std::string namespace_id);
+  // Creates a mojo version.
+  SessionStorageNamespaceImpl(scoped_refptr<DOMStorageContextWrapper> context,
+                              std::string namespace_id);
+
   ~SessionStorageNamespaceImpl() override;
 
-  std::unique_ptr<DOMStorageSession> session_;
+  static void DeleteSessionNamespaceFromUIThread(
+      scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
+      scoped_refptr<DOMStorageContextWrapper> context_wrapper,
+      std::string namespace_id,
+      bool should_persist);
+
+  scoped_refptr<DOMStorageContextImpl> context_;
+  scoped_refptr<DOMStorageContextWrapper> context_wrapper_;
+  scoped_refptr<base::SequencedTaskRunner> mojo_task_runner_;
+  std::string namespace_id_;
+  bool should_persist_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStorageNamespaceImpl);
 };

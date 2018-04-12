@@ -54,8 +54,14 @@ class CONTENT_EXPORT SessionStorageContextMojo {
                               bool should_persist);
   void Flush();
 
+  // Used by content settings to alter the behavior around
+  // what data to keep and what data to discard at shutdown.
+  // The policy is not so straight forward to describe, see
+  // the implementation for details.
+  void SetForceKeepSessionState() { force_keep_session_state_ = true; }
+
   void GetStorageUsage(GetStorageUsageCallback callback);
-  void DeleteStorage(const GURL& origin,
+  void DeleteStorage(const url::Origin& origin,
                      const std::string& persistent_namespace_id);
 
   // Called when the owning BrowserContext is ending.
@@ -79,6 +85,8 @@ class CONTENT_EXPORT SessionStorageContextMojo {
   std::unique_ptr<service_manager::Connector> connector_;
   const base::Optional<base::FilePath> partition_directory_path_;
   std::string leveldb_name_;
+
+  bool force_keep_session_state_ = false;
 
   base::WeakPtrFactory<SessionStorageContextMojo> weak_ptr_factory_;
 };

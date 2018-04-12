@@ -260,7 +260,8 @@ void DOMStorageContextWrapper::DeleteSessionStorage(
     mojo_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&SessionStorageContextMojo::DeleteStorage,
                                   base::Unretained(mojo_session_state_),
-                                  usage_info.origin, usage_info.namespace_id));
+                                  url::Origin::Create(usage_info.origin),
+                                  usage_info.namespace_id));
     return;
   }
   DCHECK(context_.get());
@@ -304,6 +305,12 @@ void DOMStorageContextWrapper::SetForceKeepSessionState() {
       FROM_HERE,
       base::BindOnce(&LocalStorageContextMojo::SetForceKeepSessionState,
                      base::Unretained(mojo_state_)));
+  if (mojo_session_state_) {
+    mojo_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SessionStorageContextMojo::SetForceKeepSessionState,
+                       base::Unretained(mojo_session_state_)));
+  }
 }
 
 void DOMStorageContextWrapper::Shutdown() {

@@ -86,18 +86,18 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   void SetLocalStorageDatabaseForTesting(
       leveldb::mojom::LevelDBDatabaseAssociatedPtr database);
 
+  SessionStorageContextMojo* mojo_session_state() {
+    return mojo_session_state_;
+  }
+
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto
-  friend class DOMStorageSession;            // ditto
   friend class base::RefCountedThreadSafe<DOMStorageContextWrapper>;
   friend class DOMStorageBrowserTest;
 
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
-  SessionStorageContextMojo* mojo_session_state() {
-    return mojo_session_state_;
-  }
 
   base::SequencedTaskRunner* mojo_task_runner() {
     return mojo_task_runner_.get();
