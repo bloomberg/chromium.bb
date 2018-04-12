@@ -37,7 +37,8 @@ class LocalFrame;
 class SpeechGrammarList;
 class SpeechRecognition;
 
-class SpeechRecognitionClient {
+class SpeechRecognitionClient
+    : public GarbageCollectedFinalized<SpeechRecognitionClient> {
  public:
   virtual void Start(SpeechRecognition*,
                      const SpeechGrammarList*,
@@ -47,13 +48,13 @@ class SpeechRecognitionClient {
                      unsigned long max_alternatives) = 0;
   virtual void Stop(SpeechRecognition*) = 0;
   virtual void Abort(SpeechRecognition*) = 0;
+  virtual void Trace(blink::Visitor*) {}
 
   virtual ~SpeechRecognitionClient() = default;
 };
 
-MODULES_EXPORT void ProvideSpeechRecognitionTo(
-    LocalFrame&,
-    std::unique_ptr<SpeechRecognitionClient>);
+MODULES_EXPORT void ProvideSpeechRecognitionTo(LocalFrame&,
+                                               SpeechRecognitionClient*);
 
 }  // namespace blink
 
