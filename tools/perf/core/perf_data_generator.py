@@ -572,6 +572,7 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'blink_perf.parser',
     'blink_perf.shadow_dom',
     'blink_perf.svg',
+    'memory.top_10_mobile'
 ]
 
 
