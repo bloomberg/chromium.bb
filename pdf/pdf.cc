@@ -31,7 +31,8 @@ bool RenderPDFPageToDC(const void* pdf_buffer,
                        bool stretch_to_bounds,
                        bool keep_aspect_ratio,
                        bool center_in_bounds,
-                       bool autorotate) {
+                       bool autorotate,
+                       bool use_color) {
   if (!IsSDKInitializedViaPepper()) {
     if (!InitializeSDK()) {
       return false;
@@ -42,7 +43,7 @@ bool RenderPDFPageToDC(const void* pdf_buffer,
       dpi_x, dpi_y,
       pp::Rect(bounds_origin_x, bounds_origin_y, bounds_width, bounds_height),
       fit_to_bounds, stretch_to_bounds, keep_aspect_ratio, center_in_bounds,
-      autorotate);
+      autorotate, use_color);
   bool ret = engine_exports->RenderPDFPageToDC(pdf_buffer, buffer_size,
                                                page_number, settings, dc);
   if (!IsSDKInitializedViaPepper())
@@ -108,7 +109,8 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
                            int bitmap_height,
                            int dpi_x,
                            int dpi_y,
-                           bool autorotate) {
+                           bool autorotate,
+                           bool use_color) {
   if (!IsSDKInitializedViaPepper()) {
     if (!InitializeSDK())
       return false;
@@ -116,7 +118,7 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
   PDFEngineExports::RenderingSettings settings(
       dpi_x, dpi_y, pp::Rect(bitmap_width, bitmap_height), true, false, true,
-      true, autorotate);
+      true, autorotate, use_color);
   bool ret = engine_exports->RenderPDFPageToBitmap(
       pdf_buffer, pdf_buffer_size, page_number, settings, bitmap_buffer);
   if (!IsSDKInitializedViaPepper())

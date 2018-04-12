@@ -27,16 +27,19 @@ struct PdfRenderSettings {
 #endif
   };
 
-  PdfRenderSettings() : autorotate(false), mode(Mode::NORMAL) {}
+  PdfRenderSettings()
+      : autorotate(false), use_color(true), mode(Mode::NORMAL) {}
   PdfRenderSettings(const gfx::Rect& area,
                     const gfx::Point& offsets,
                     const gfx::Size& dpi,
                     bool autorotate,
+                    bool use_color,
                     Mode mode)
       : area(area),
         offsets(offsets),
         dpi(dpi),
         autorotate(autorotate),
+        use_color(use_color),
         mode(mode) {}
   ~PdfRenderSettings() {}
 
@@ -44,6 +47,7 @@ struct PdfRenderSettings {
   gfx::Point offsets;
   gfx::Size dpi;
   bool autorotate;
+  bool use_color;
   Mode mode;
 };
 

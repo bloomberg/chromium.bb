@@ -46,7 +46,8 @@ class PwgRasterConverter {
   // TODO(vitalybuka): Extract page size from pdf document data.
   static PdfRenderSettings GetConversionSettings(
       const cloud_devices::CloudDeviceDescription& printer_capabilities,
-      const gfx::Size& page_size);
+      const gfx::Size& page_size,
+      bool use_color);
 
   // Generates pwg bitmap settings to be used with the converter from
   // device capabilites and printing ticket.

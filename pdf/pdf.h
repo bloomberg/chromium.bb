@@ -53,6 +53,7 @@ enum PrintingMode {
 //     done) should be centered within the given bounds.
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
+// |use_color| specifies color or grayscale.
 // Returns false if the document or the page number are not valid.
 bool RenderPDFPageToDC(const void* pdf_buffer,
                        int buffer_size,
@@ -68,7 +69,8 @@ bool RenderPDFPageToDC(const void* pdf_buffer,
                        bool stretch_to_bounds,
                        bool keep_aspect_ratio,
                        bool center_in_bounds,
-                       bool autorotate);
+                       bool autorotate,
+                       bool use_color);
 
 void SetPDFEnsureTypefaceCharactersAccessible(
     PDFEnsureTypefaceCharactersAccessible func);
@@ -111,6 +113,7 @@ bool GetPDFPageSizeByIndex(const void* pdf_buffer,
 // |dpi_x| and |dpi_y| is the resolution.
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
+// |use_color| specifies color or grayscale.
 // Returns false if the document or the page number are not valid.
 bool RenderPDFPageToBitmap(const void* pdf_buffer,
                            int pdf_buffer_size,
@@ -120,7 +123,8 @@ bool RenderPDFPageToBitmap(const void* pdf_buffer,
                            int bitmap_height,
                            int dpi_x,
                            int dpi_y,
-                           bool autorotate);
+                           bool autorotate,
+                           bool use_color);
 
 }  // namespace chrome_pdf
 

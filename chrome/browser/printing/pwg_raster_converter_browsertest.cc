@@ -118,6 +118,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessColor) {
   PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 500, 500), gfx::Point(0, 0),
                                  /*dpi=*/gfx::Size(1000, 1000),
                                  /*autorotate=*/false,
+                                 /*use_color=*/true,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;
@@ -145,6 +146,7 @@ IN_PROC_BROWSER_TEST_F(PdfToPwgRasterBrowserTest, TestSuccessMono) {
   PdfRenderSettings pdf_settings(gfx::Rect(0, 0, 500, 500), gfx::Point(0, 0),
                                  /*dpi=*/gfx::Size(1000, 1000),
                                  /*autorotate=*/false,
+                                 /*use_color=*/false,
                                  PdfRenderSettings::Mode::NORMAL);
   PwgRasterSettings pwg_settings;
   pwg_settings.odd_page_transform = PwgRasterTransformType::TRANSFORM_NORMAL;

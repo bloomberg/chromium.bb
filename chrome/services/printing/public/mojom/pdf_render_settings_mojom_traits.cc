@@ -14,6 +14,7 @@ bool StructTraits<printing::mojom::PdfRenderSettingsDataView,
     Read(printing::mojom::PdfRenderSettingsDataView data,
          printing::PdfRenderSettings* out) {
   out->autorotate = data.autorotate();
+  out->use_color = data.use_color();
   return data.ReadArea(&out->area) && data.ReadOffsets(&out->offsets) &&
          data.ReadDpi(&out->dpi) && data.ReadMode(&out->mode);
 }

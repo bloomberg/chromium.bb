@@ -277,7 +277,7 @@ void PrintJob::StartPdfToEmfConversion(
       std::make_unique<PdfConversionState>(page_size, content_area);
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings().dpi_size(),
-      /*autorotate=*/true,
+      /*autorotate=*/true, settings_.color() == COLOR,
       print_text_with_gdi ? PdfRenderSettings::Mode::GDI_TEXT
                           : PdfRenderSettings::Mode::NORMAL);
   pdf_conversion_state_->Start(
@@ -333,7 +333,8 @@ void PrintJob::StartPdfToTextConversion(
   gfx::Rect page_area = gfx::Rect(0, 0, page_size.width(), page_size.height());
   PdfRenderSettings render_settings(
       page_area, gfx::Point(0, 0), settings().dpi_size(),
-      /*autorotate=*/true, PdfRenderSettings::Mode::TEXTONLY);
+      /*autorotate=*/true,
+      /*use_color=*/true, PdfRenderSettings::Mode::TEXTONLY);
   pdf_conversion_state_->Start(
       bytes, render_settings,
       base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
@@ -349,7 +350,7 @@ void PrintJob::StartPdfToPostScriptConversion(
       gfx::Size(), gfx::Rect());
   PdfRenderSettings render_settings(
       content_area, physical_offsets, settings().dpi_size(),
-      /*autorotate=*/true,
+      /*autorotate=*/true, settings_.color() == COLOR,
       ps_level2 ? PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2
                 : PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
   pdf_conversion_state_->Start(

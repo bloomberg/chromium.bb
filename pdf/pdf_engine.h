@@ -426,7 +426,8 @@ class PDFEngineExports {
                       bool stretch_to_bounds,
                       bool keep_aspect_ratio,
                       bool center_in_bounds,
-                      bool autorotate);
+                      bool autorotate,
+                      bool use_color);
     RenderingSettings(const RenderingSettings& that);
 
     int dpi_x;
@@ -437,6 +438,7 @@ class PDFEngineExports {
     bool keep_aspect_ratio;
     bool center_in_bounds;
     bool autorotate;
+    bool use_color;
   };
 
   PDFEngineExports() {}

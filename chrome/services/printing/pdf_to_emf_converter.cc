@@ -153,7 +153,8 @@ bool PdfToEmfConverter::RenderPdfPageToMetafile(int page_number,
           pdf_render_settings_.area.x() - offset_x,
           pdf_render_settings_.area.y() - offset_y,
           pdf_render_settings_.area.width(), pdf_render_settings_.area.height(),
-          true, false, true, true, pdf_render_settings_.autorotate)) {
+          true, false, true, true, pdf_render_settings_.autorotate,
+          pdf_render_settings_.use_color)) {
     return false;
   }
   metafile.FinishPage();

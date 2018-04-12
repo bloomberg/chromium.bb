@@ -302,7 +302,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         printer_dc_.Set(dc);
         saved_dc_ = SaveDC(printer_dc_.Get());
         delegate_ = delegate;
-        RenderPDFPages(print_data_file_path);
+        RenderPDFPages(print_data_file_path,
+                       printing::IsDevModeWithColor(dev_mode.get()));
         return true;
       }
 
@@ -415,7 +416,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       delegate_ = nullptr;
     }
 
-    void RenderPDFPages(const base::FilePath& pdf_path) {
+    void RenderPDFPages(const base::FilePath& pdf_path, bool use_color) {
       gfx::Size printer_dpi =
           gfx::Size(::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSX),
                     ::GetDeviceCaps(printer_dc_.Get(), LOGPIXELSY));
@@ -425,7 +426,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       PostIOThreadTask(
           FROM_HERE,
           base::BindOnce(&JobSpoolerWin::Core::RenderPDFPagesInSandbox, this,
-                         pdf_path, render_area, printer_dpi,
+                         pdf_path, render_area, printer_dpi, use_color,
                          base::ThreadTaskRunnerHandle::Get()));
     }
 
@@ -433,6 +434,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         const base::FilePath& pdf_path,
         const gfx::Rect& render_area,
         const gfx::Size& render_dpi,
+        bool use_color,
         const scoped_refptr<base::SingleThreadTaskRunner>& client_task_runner) {
       DCHECK(CurrentlyOnServiceIOThread());
       auto utility_host = std::make_unique<ServiceUtilityProcessHost>(
@@ -445,7 +447,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       if (utility_host->StartRenderPDFPagesToMetafile(
               pdf_path, printing::PdfRenderSettings(
                             render_area, gfx::Point(0, 0), render_dpi,
-                            /*autorotate=*/false,
+                            /*autorotate=*/false, use_color,
                             printing::PdfRenderSettings::Mode::NORMAL))) {
         // The object will self-destruct when the child process dies.
         ignore_result(utility_host.release());
