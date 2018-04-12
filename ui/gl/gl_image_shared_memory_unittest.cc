@@ -69,7 +69,8 @@ INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageTestTypes);
 
 // https://crbug.com/830653
-#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER)
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(THREAD_SANITIZER)
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemory,
                               GLImageCopyTest,
                               GLImageTestTypes);
@@ -113,7 +114,8 @@ class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
 };
 
 // https://crbug.com/830653
-#if !defined(THREAD_SANITIZER) && !defined(MEMORY_SANITIZER)
+#if !defined(ADDRESS_SANITIZER) && !defined(MEMORY_SANITIZER) && \
+    !defined(THREAD_SANITIZER)
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,
                               GLImageCopyTest,
                               GLImageSharedMemoryPoolTestDelegate);
