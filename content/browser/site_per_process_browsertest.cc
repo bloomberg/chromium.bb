@@ -1870,8 +1870,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 // resultant page scale factor is the same for OOPIF and non-OOPIF cases. This
 // also verifies that in response to the scroll command, the root-layer scrolls
 // correctly and the <input> is visible in visual viewport.
+#if defined(OS_ANDROID)
+// crbug.com/793616
+#define MAYBE_ScrollFocusedEditableElementIntoView \
+  DISABLED_ScrollFocusedEditableElementIntoView
+#else
+#define MAYBE_ScrollFocusedEditableElementIntoView \
+  ScrollFocusedEditableElementIntoView
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
-                       ScrollFocusedEditableElementIntoView) {
+                       MAYBE_ScrollFocusedEditableElementIntoView) {
   GURL url_a(embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
   GURL url_b(embedded_test_server()->GetURL("b.com", kIframeOutOfViewHTML));
 
