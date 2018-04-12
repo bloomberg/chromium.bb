@@ -516,6 +516,7 @@ TEST(JSONReaderTest, InvalidUTF16Escapes) {
 
 TEST(JSONReaderTest, LiteralRoots) {
   std::unique_ptr<Value> root = JSONReader::Read("null");
+  ASSERT_TRUE(root);
   EXPECT_TRUE(root->is_none());
 
   root = JSONReader::Read("true");

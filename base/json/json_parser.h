@@ -31,17 +31,16 @@ class JSONParserTest;
 // to be used directly; it encapsulates logic that need not be exposed publicly.
 //
 // This parser guarantees O(n) time through the input string. Iteration happens
-// on the byte level, with the functions CanConsume and NextChar. The conversion
-// from byte to JSON token happens without advancing the parser in
+// on the byte level, with the functions ConsumeChars() and ConsumeChar(). The
+// conversion from byte to JSON token happens without advancing the parser in
 // GetNextToken/ParseToken, that is tokenization operates on the current parser
 // position without advancing.
 //
 // Built on top of these are a family of Consume functions that iterate
 // internally. Invariant: on entry of a Consume function, the parser is wound
-// to the first byte of a valid JSON token. On exit, it is on the last byte
-// of a token, such that the next iteration of the parser will be at the byte
-// immediately following the token, which would likely be the first byte of the
-// next token.
+// to the first byte of a valid JSON token. On exit, it is on the first byte
+// after the token that was just consumed, which would likely be the first byte
+// of the next token.
 class BASE_EXPORT JSONParser {
  public:
   JSONParser(int options, int max_depth = JSONReader::kStackMaxDepth);
@@ -128,20 +127,22 @@ class BASE_EXPORT JSONParser {
     base::Optional<std::string> string_;
   };
 
-  // Quick check that the stream has capacity to consume |length| more bytes.
-  bool CanConsume(int length);
+  // Returns the next |count| bytes of the input stream, or nullopt if fewer
+  // than |count| bytes remain.
+  Optional<StringPiece> PeekChars(int count);
 
-  // Consumes one byte of the input stream by advancing the parser's position.
-  void NextChar();
+  // Calls PeekChars() with a |count| of 1.
+  Optional<char> PeekChar();
 
-  // Performs the equivalent of NextChar N times.
-  void NextNChars(int n);
+  // Returns the next |count| bytes of the input stream, or nullopt if fewer
+  // than |count| bytes remain, and advances the parser position by |count|.
+  Optional<StringPiece> ConsumeChars(int count);
+
+  // Calls ConsumeChars() with a |count| of 1.
+  Optional<char> ConsumeChar();
 
   // Returns a pointer to the current character position.
   const char* pos();
-
-  // Returns the character at the current position.
-  char current_char();
 
   // Skips over whitespace and comments to find the next token in the stream.
   // This does not advance the parser for non-whitespace or comment chars.
