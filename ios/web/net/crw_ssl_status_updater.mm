@@ -90,7 +90,7 @@ using web::SecurityStyle;
       item->GetSSL().cert_status_host = base::SysNSStringToUTF8(host);
       // Only recompute the SSLStatus information if the certificate or host has
       // since changed. Host can be changed in case of redirect.
-      if (!oldCert || !oldCert->Equals(cert.get()) ||
+      if (!oldCert || !oldCert->EqualsIncludingChain(cert.get()) ||
           oldHost != item->GetSSL().cert_status_host) {
         // Real SSL status is unknown, reset cert status and security style.
         // They will be asynchronously updated in
@@ -138,7 +138,7 @@ using web::SecurityStyle;
   std::string GURLHost = base::SysNSStringToUTF8(host);
   web::SSLStatus& SSLStatus = item->GetSSL();
   if (item->GetURL().SchemeIsCryptographic() && !!SSLStatus.certificate &&
-      SSLStatus.certificate->Equals(cert.get()) &&
+      SSLStatus.certificate->EqualsIncludingChain(cert.get()) &&
       item->GetURL().host() == GURLHost) {
     web::SSLStatus previousSSLStatus = item->GetSSL();
     SSLStatus.cert_status = certStatus;
