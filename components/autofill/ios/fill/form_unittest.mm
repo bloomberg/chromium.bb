@@ -113,13 +113,13 @@ TEST_F(FormJsTest, FormSameOriginIFrame) {
   EXPECT_EQ("form1", info->form_name);
 }
 
-// Tests that new form triggers form changed event.
-TEST_F(FormJsTest, FocusAddForm) {
+// Tests that a new form triggers form_changed event.
+TEST_F(FormJsTest, AddForm) {
   web::TestWebStateObserver observer(web_state());
-  LoadHtml(@"<form/>");
+  LoadHtml(@"<body></body>");
 
   ExecuteJavaScript(
-      @"__gCrWeb.form.trackFormUpdates(10);"
+      @"__gCrWeb.form.trackFormMutations(10);"
       @"var form = document.createElement('form');"
       @"document.body.appendChild(form);");
   web::TestWebStateObserver* block_observer = &observer;
@@ -132,15 +132,56 @@ TEST_F(FormJsTest, FocusAddForm) {
   EXPECT_FALSE(info->form_activity.input_missing);
 }
 
-// Tests that new input triggers form changed event.
-TEST_F(FormJsTest, FocusAddInput) {
+// Tests that a new input element triggers form_changed event.
+TEST_F(FormJsTest, AddInput) {
   web::TestWebStateObserver observer(web_state());
   LoadHtml(@"<form id='formId'/>");
 
   ExecuteJavaScript(
-      @"__gCrWeb.form.trackFormUpdates(10);"
+      @"__gCrWeb.form.trackFormMutations(10);"
       @"var input = document.createElement('input');"
       @"document.getElementById('formId').appendChild(input);");
+  web::TestWebStateObserver* block_observer = &observer;
+  __block web::TestFormActivityInfo* info = nil;
+  WaitForCondition(^{
+    info = block_observer->form_activity_info();
+    return info != nil;
+  });
+  EXPECT_EQ("form_changed", info->form_activity.type);
+  EXPECT_FALSE(info->form_activity.input_missing);
+}
+
+// Tests that a new select element triggers form_changed event.
+TEST_F(FormJsTest, AddSelect) {
+  web::TestWebStateObserver observer(web_state());
+  LoadHtml(@"<form id='formId'/>");
+
+  ExecuteJavaScript(
+      @"__gCrWeb.form.trackFormMutations(10);"
+      @"var select = document.createElement('select');"
+      @"document.getElementById('formId').appendChild(select);");
+  web::TestWebStateObserver* block_observer = &observer;
+  __block web::TestFormActivityInfo* info = nil;
+  WaitForCondition(^{
+    info = block_observer->form_activity_info();
+    return info != nil;
+  });
+  EXPECT_EQ("form_changed", info->form_activity.type);
+  EXPECT_FALSE(info->form_activity.input_missing);
+}
+
+// Tests that a new option element triggers form_changed event.
+TEST_F(FormJsTest, AddOption) {
+  web::TestWebStateObserver observer(web_state());
+  LoadHtml(
+      @"<form>"
+       "<select id='select1'><option value='CA'>CA</option></select>"
+       "</form>");
+
+  ExecuteJavaScript(
+      @"__gCrWeb.form.trackFormMutations(10);"
+      @"var option = document.createElement('option');"
+      @"document.getElementById('select1').appendChild(option);");
   web::TestWebStateObserver* block_observer = &observer;
   __block web::TestFormActivityInfo* info = nil;
   WaitForCondition(^{

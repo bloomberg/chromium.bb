@@ -39,6 +39,7 @@
 #include "ios/web/public/url_scheme_util.h"
 #include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/public/web_state/web_state.h"
 #include "ui/gfx/geometry/rect.h"
@@ -253,7 +254,6 @@ void GetFormAndField(autofill::FormData* form,
                   ofFormsSeen:(const FormDataVector&)forms {
   DCHECK(autofillManager);
   DCHECK(!forms.empty());
-  autofillManager->Reset();
   autofillManager->OnFormsSeen(forms, base::TimeTicks::Now());
 }
 
@@ -542,11 +542,26 @@ void GetFormAndField(autofill::FormData* form,
                completionHandler:completionHandler];
 }
 
+- (void)webState:(web::WebState*)webState
+    didStartNavigation:(web::NavigationContext*)navigation {
+  // Ignore navigations within the same document, e.g., history.pushState().
+  if (navigation->IsSameDocument())
+    return;
+
+  // Reset AutofillManager before processing the new page.
+  autofill::AutofillManager* autofillManager =
+      [self autofillManagerFromWebState:webState];
+  DCHECK(autofillManager);
+  autofillManager->Reset();
+
+  // Mark the page as not processed.
+  pageProcessed_ = NO;
+}
+
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   if (![self isAutofillEnabled])
     return;
 
-  pageProcessed_ = NO;
   [self processPage:webState];
 }
 
@@ -565,7 +580,7 @@ void GetFormAndField(autofill::FormData* form,
 
   web::URLVerificationTrustLevel trustLevel;
   const GURL pageURL(webState->GetCurrentURL(&trustLevel));
-  [jsAutofillManager_ trackFormUpdates];
+  [jsAutofillManager_ toggleTrackingFormMutations:YES];
   [self scanFormsInPage:webState pageURL:pageURL];
 }
 
