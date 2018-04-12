@@ -56,6 +56,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/loader/loader_io_thread_notifier.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
@@ -3804,6 +3805,26 @@ void WebContentsImpl::ReadyToCommitNavigation(
                "navigation_handle", navigation_handle);
   for (auto& observer : observers_)
     observer.ReadyToCommitNavigation(navigation_handle);
+
+  // If any domains are blocked from accessing 3D APIs because they may
+  // have caused the GPU to reset recently, unblock them here if the user
+  // initiated this navigation. This implies that the user was involved in
+  // the decision to navigate, so there's no concern about
+  // denial-of-service issues. Want to do this as early as
+  // possible to avoid race conditions with pages attempting to access
+  // WebGL early on.
+  //
+  // TODO(crbug.com/617904): currently navigations initiated by the browser
+  // (reload button, reload menu option, pressing return in the Omnibox)
+  // return false from HasUserGesture(). If or when that is addressed,
+  // remove the check for IsRendererInitiated() below.
+  //
+  // TODO(crbug.com/832180): HasUserGesture comes from the renderer
+  // process and isn't validated. Until it is, don't trust it.
+  if (!navigation_handle->IsRendererInitiated()) {
+    GpuDataManagerImpl::GetInstance()->UnblockDomainFrom3DAPIs(
+        navigation_handle->GetURL());
+  }
 
   if (navigation_handle->IsSameDocument())
     return;

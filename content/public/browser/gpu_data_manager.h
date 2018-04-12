@@ -12,8 +12,6 @@
 #include "base/process/process.h"
 #include "content/common/content_export.h"
 
-class GURL;
-
 namespace gpu {
 struct GPUInfo;
 struct VideoMemoryUsageStats;
@@ -57,10 +55,6 @@ class GpuDataManager {
   // Registers/unregister |observer|.
   virtual void AddObserver(GpuDataManagerObserver* observer) = 0;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) = 0;
-
-  // Allows a given domain previously blocked from accessing 3D APIs
-  // to access them again.
-  virtual void UnblockDomainFrom3DAPIs(const GURL& url) = 0;
 
   virtual void DisableHardwareAcceleration() = 0;
 

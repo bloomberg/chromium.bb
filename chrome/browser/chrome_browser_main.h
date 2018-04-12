@@ -27,7 +27,6 @@ class Profile;
 class StartupBrowserCreator;
 class StartupTimeBomb;
 class ShutdownWatcherHelper;
-class ThreeDAPIObserver;
 class WebUsbDetector;
 
 namespace base {
@@ -199,7 +198,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   Profile* profile_;
   bool run_message_loop_;
-  std::unique_ptr<ThreeDAPIObserver> three_d_observer_;
 
   // Initialized in |SetupFieldTrials()|.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;

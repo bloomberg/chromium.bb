@@ -691,7 +691,11 @@ WebGLRenderingContextBase::CreateWebGraphicsContext3DProvider(
     const CanvasContextCreationAttributesCore& attributes,
     unsigned webgl_version,
     bool* using_gpu_compositing) {
+  // The host might block creation of a new WebGL context despite the
+  // page settings; in particular, if WebGL contexts were lost one or
+  // more times via the GL_ARB_robustness extension.
   if (host->IsWebGLBlocked()) {
+    host->SetContextCreationWasBlocked();
     host->HostDispatchEvent(WebGLContextEvent::Create(
         EventTypeNames::webglcontextcreationerror,
         "Web page caused context loss and was blocked"));
