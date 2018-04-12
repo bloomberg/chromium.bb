@@ -105,7 +105,7 @@ interface BackgroundFetchService {
 
   // Gets size of the icon to display with the Background Fetch UI.
   GetIconDisplaySize()
-    => (gfx.mojom.Size icon_size_pixels);
+      => (gfx.mojom.Size icon_size_pixels);
 
   // Registers the |observer| to receive events for the given registration
   // that is identified by the |unique_id|.
