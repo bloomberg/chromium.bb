@@ -120,7 +120,7 @@ void WorkerThread::Start(
   waitable_event.Wait();
 
   inspector_task_runner_ =
-      InspectorTaskRunner::Create(GetTaskRunner(TaskType::kUnthrottled));
+      InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
 
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,

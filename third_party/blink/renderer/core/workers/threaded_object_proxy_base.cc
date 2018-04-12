@@ -49,7 +49,8 @@ void ThreadedObjectProxyBase::PostMessageToPageInspector(
   // The TaskType of Inspector tasks need to be Unthrottled because they need to
   // run even on a suspended page.
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnthrottled),
+      *GetParentExecutionContextTaskRunners()->Get(
+          TaskType::kInternalInspector),
       FROM_HERE,
       CrossThreadBind(&ThreadedMessagingProxyBase::PostMessageToPageInspector,
                       MessagingProxyWeakPtr(), session_id, message));

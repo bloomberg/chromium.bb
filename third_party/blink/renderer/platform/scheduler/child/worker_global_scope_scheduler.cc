@@ -69,6 +69,7 @@ WorkerGlobalScopeScheduler::GetTaskRunner(TaskType type) const {
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalIPC:
     case TaskType::kInternalUserInteraction:
+    case TaskType::kInternalInspector:
       // UnthrottledTaskRunner is generally discouraged in future.
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in

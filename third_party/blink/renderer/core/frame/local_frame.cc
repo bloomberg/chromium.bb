@@ -874,8 +874,8 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       page_zoom_factor_(ParentPageZoomFactor(this)),
       text_zoom_factor_(ParentTextZoomFactor(this)),
       in_view_source_mode_(false),
-      inspector_task_runner_(
-          InspectorTaskRunner::Create(GetTaskRunner(TaskType::kUnthrottled))),
+      inspector_task_runner_(InspectorTaskRunner::Create(
+          GetTaskRunner(TaskType::kInternalInspector))),
       interface_registry_(interface_registry) {
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
