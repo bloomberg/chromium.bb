@@ -7,7 +7,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/compositor/layer.h"
@@ -23,10 +22,6 @@ namespace {
 // Value from the spec controlling appearance of the shadow.
 constexpr int kElevation = 16;
 
-// The layout height (in DIPs) of the view drawing the separator above results.
-// The top of this view aligns with the bottom edge of the location bar.
-constexpr int kSeparatorViewHeightDIP = 1;
-
 // View at the top of the frame which paints transparent pixels to make a hole
 // so that the location bar shows through.
 class TopBackgroundView : public views::View {
@@ -39,25 +34,12 @@ class TopBackgroundView : public views::View {
   }
 };
 
-class SeparatorView : public views::View {
- public:
-  explicit SeparatorView(SkColor color) : color_(color) {}
-
-  // Views:View:
-  void OnPaint(gfx::Canvas* canvas) override {
-    BrowserView::Paint1pxHorizontalLine(canvas, color_, GetLocalBounds(), true);
-  }
-
- private:
-  const SkColor color_;
-};
-
 // Insets used to position |contents_| within |contents_host_|.
 gfx::Insets GetContentInsets(views::View* location_bar) {
   return gfx::Insets(
              RoundedOmniboxResultsFrame::kLocationBarAlignmentInsets.top(), 0,
              0, 0) +
-         gfx::Insets(location_bar->height() + kSeparatorViewHeightDIP, 0, 0, 0);
+         gfx::Insets(location_bar->height(), 0, 0, 0);
 }
 
 }  // namespace
@@ -69,7 +51,6 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
     LocationBarView* location_bar)
     : content_insets_(GetContentInsets(location_bar)),
       location_bar_height_(location_bar->height()),
-      separator_inset_(location_bar->GetTextInsetForNormalInputStart()),
       contents_(contents) {
   // Host the contents in its own View to simplify layout and clipping.
   contents_host_ = new views::View();
@@ -93,10 +74,7 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   contents_host_->layer()->SetMaskLayer(contents_mask_->layer());
 
   top_background_ = new TopBackgroundView(background_color);
-  separator_ = new SeparatorView(
-      GetOmniboxColor(OmniboxPart::RESULTS_SEPARATOR, location_bar->tint()));
   contents_host_->AddChildView(top_background_);
-  contents_host_->AddChildView(separator_);
   contents_host_->AddChildView(contents_);
 
   AddChildView(contents_host_);
@@ -140,11 +118,6 @@ void RoundedOmniboxResultsFrame::Layout() {
   top_bounds.Inset(kLocationBarAlignmentInsets);
   top_bounds.set_height(location_bar_height_);
   top_background_->SetBoundsRect(top_bounds);
-
-  top_bounds.set_y(top_bounds.bottom());  // Shift down.
-  top_bounds.Inset(separator_inset_, 0);  // Inset the width further.
-  top_bounds.set_height(kSeparatorViewHeightDIP);
-  separator_->SetBoundsRect(top_bounds);
 
   gfx::Rect results_bounds = gfx::Rect(bounds.size());
   results_bounds.Inset(content_insets_);

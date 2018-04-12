@@ -100,7 +100,6 @@ ui::NativeTheme::ColorId GetLegacyColorId(ui::NativeTheme* native_theme,
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
     case OmniboxPart::RESULTS_ICON:
     case OmniboxPart::RESULTS_TEXT_INVISIBLE:
-    case OmniboxPart::RESULTS_SEPARATOR:
       NOTREACHED();
       break;
   }
@@ -237,10 +236,6 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return color_utils::BlendTowardOppositeLuma(
           dark ? gfx::kGoogleGrey800 : SK_ColorWHITE,
           NormalHoveredSelectedOrBoth<SkAlpha>(state, 0x00, 0x0F, 0x14, 0x24));
-    case OmniboxPart::RESULTS_SEPARATOR:
-      // The dark base color doesn't appear in the Material spec, just Chrome's.
-      return dark ? SkColorSetARGB(0x6E, 0x16, 0x17, 0x1A)   // 43% alpha.
-                  : SkColorSetA(gfx::kGoogleGrey900, 0x24);  // 14% alpha.
 
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
