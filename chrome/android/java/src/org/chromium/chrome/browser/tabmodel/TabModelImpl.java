@@ -390,7 +390,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
         if (allowDelegation && mModelDelegate.closeAllTabsRequest(isIncognito())) return;
 
-        if (HomepageManager.isHomepageEnabled()) {
+        if (HomepageManager.shouldCloseAppWithZeroTabs()) {
             commitAllTabClosures();
 
             for (int i = 0; i < getCount(); i++) getTabAt(i).setClosing(true);
