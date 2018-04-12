@@ -44,8 +44,8 @@ class Component {
   ~Component();
 
   // Handles the current state of the component and makes it transition
-  // to the next component state before |callback| is invoked.
-  void Handle(CallbackHandleComplete callback);
+  // to the next component state before |callback_handle_complete_| is invoked.
+  void Handle(CallbackHandleComplete callback_handle_complete);
 
   CrxUpdateItem GetCrxUpdateItem() const;
 
@@ -60,7 +60,7 @@ class Component {
 
   // Returns true if the component has reached a final state and no further
   // handling and state transitions are possible.
-  bool IsHandled() const { return state_->IsFinal(); }
+  bool IsHandled() const { return is_handled_; }
 
   // Returns true if an update is available for this component, meaning that
   // the update server has return a response containing an update.
@@ -150,11 +150,13 @@ class Component {
 
     ComponentState state() const { return state_; }
 
-    bool IsFinal() const { return is_final_; }
-
    protected:
     // Initiates the transition to the new state.
     void TransitionState(std::unique_ptr<State> new_state);
+
+    // Makes the current state a final state where no other state transition
+    // can further occur.
+    void EndState();
 
     Component& component() { return component_; }
     const Component& component() const { return component_; }
@@ -167,9 +169,7 @@ class Component {
     virtual void DoHandle() = 0;
 
     Component& component_;
-    CallbackNextState callback_;
-
-    bool is_final_ = false;
+    CallbackNextState callback_next_state_;
   };
 
   class StateNew : public State {
@@ -429,6 +429,10 @@ class Component {
   base::OnceClosure update_check_complete_;
 
   ComponentState previous_state_ = ComponentState::kLastStatus;
+
+  // True if this component has reached a final state because all its states
+  // have been handled.
+  bool is_handled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Component);
 };
