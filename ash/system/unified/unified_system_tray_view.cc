@@ -20,6 +20,19 @@
 
 namespace ash {
 
+namespace {
+
+std::unique_ptr<views::Background> CreateUnifiedBackground() {
+  return views::CreateBackgroundFromPainter(
+      views::Painter::CreateSolidRoundRectPainter(
+          app_list::features::IsBackgroundBlurEnabled()
+              ? kUnifiedMenuBackgroundColorWithBlur
+              : kUnifiedMenuBackgroundColor,
+          kUnifiedTrayCornerRadius));
+}
+
+}  // namespace
+
 UnifiedSlidersContainerView::UnifiedSlidersContainerView(
     bool initially_expanded)
     : expanded_amount_(initially_expanded ? 1.0 : 0.0) {
@@ -79,24 +92,27 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       system_info_view_(new UnifiedSystemInfoView()) {
   DCHECK(controller_);
 
-  auto* layout = SetLayoutManager(
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(),
+      kUnifiedNotificationCenterSpacing));
 
-  SetBackground(views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(
-          app_list::features::IsBackgroundBlurEnabled()
-              ? kUnifiedMenuBackgroundColorWithBlur
-              : kUnifiedMenuBackgroundColor,
-          kUnifiedTrayCornerRadius)));
+  SetBackground(CreateUnifiedBackground());
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
   AddChildView(message_center_view_);
-  AddChildView(top_shortcuts_view_);
-  AddChildView(feature_pods_container_);
-  AddChildView(sliders_container_);
-  AddChildView(system_info_view_);
   layout->SetFlexForView(message_center_view_, 1);
+
+  auto* system_tray_container = new views::View;
+  system_tray_container->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  system_tray_container->SetBackground(CreateUnifiedBackground());
+  AddChildView(system_tray_container);
+
+  system_tray_container->AddChildView(top_shortcuts_view_);
+  system_tray_container->AddChildView(feature_pods_container_);
+  system_tray_container->AddChildView(sliders_container_);
+  system_tray_container->AddChildView(system_info_view_);
 }
 
 UnifiedSystemTrayView::~UnifiedSystemTrayView() = default;
