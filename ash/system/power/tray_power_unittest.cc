@@ -117,9 +117,11 @@ class TrayPowerTest : public AshTestBase {
               message_center_->remove_count() == prev_remove + 1);
   }
 
-  void SetUsbChargerConnected(bool connected) {
+  void SetUsbChargerWasConnected(bool connected) {
     tray_power_->usb_charger_was_connected_ = connected;
   }
+
+  void SetBatteryWasFull(bool full) { tray_power_->battery_was_full_ = full; }
 
   // Returns a discharging PowerSupplyProperties more appropriate for testing.
   static PowerSupplyProperties DefaultPowerSupplyProperties() {
@@ -155,7 +157,7 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(0, message_center()->remove_count());
-  SetUsbChargerConnected(true);
+  SetUsbChargerWasConnected(true);
 
   // Change in charge does not trigger the notification again.
   PowerSupplyProperties more_charge = DefaultPowerSupplyProperties();
@@ -172,13 +174,13 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   EXPECT_TRUE(MaybeShowUsbChargerNotification(discharging));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(1, message_center()->remove_count());
-  SetUsbChargerConnected(false);
+  SetUsbChargerWasConnected(false);
 
   // Notification shows when connecting a USB charger again.
   EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(2, message_center()->add_count());
   EXPECT_EQ(1, message_center()->remove_count());
-  SetUsbChargerConnected(true);
+  SetUsbChargerWasConnected(true);
 
   // Notification hides when external power switches to AC.
   PowerSupplyProperties ac_charger = DefaultPowerSupplyProperties();
@@ -187,32 +189,73 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   EXPECT_TRUE(MaybeShowUsbChargerNotification(ac_charger));
   EXPECT_EQ(2, message_center()->add_count());
   EXPECT_EQ(2, message_center()->remove_count());
-  SetUsbChargerConnected(false);
+  SetUsbChargerWasConnected(false);
 
   // Notification shows when external power switches back to USB.
   EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(3, message_center()->add_count());
   EXPECT_EQ(2, message_center()->remove_count());
-  SetUsbChargerConnected(true);
+  SetUsbChargerWasConnected(true);
 
   // Notification does not re-appear after being manually dismissed if
   // power supply flickers between AC and USB charger.
   message_center()->RemoveNotification(TrayPower::kUsbNotificationId, true);
   EXPECT_EQ(3, message_center()->remove_count());
   EXPECT_TRUE(MaybeShowUsbChargerNotification(ac_charger));
-  SetUsbChargerConnected(false);
+  SetUsbChargerWasConnected(false);
   EXPECT_FALSE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(3, message_center()->add_count());
-  SetUsbChargerConnected(true);
+  SetUsbChargerWasConnected(true);
 
   // Notification appears again after being manually dismissed if the charger
   // is removed, and then a USB charger is attached.
   MaybeShowUsbChargerNotification(discharging);
   EXPECT_EQ(3, message_center()->add_count());
-  SetUsbChargerConnected(false);
+  SetUsbChargerWasConnected(false);
   MaybeShowUsbChargerNotification(usb_connected);
   EXPECT_EQ(4, message_center()->add_count());
-  SetUsbChargerConnected(true);
+  SetUsbChargerWasConnected(true);
+}
+
+TEST_F(TrayPowerTest, AvoidUsbChargerNotificationWhenBatteryFull) {
+  PowerSupplyProperties full_proto;
+  full_proto.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  full_proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_FULL);
+  full_proto.set_battery_percent(100.0);
+  full_proto.set_is_calculating_battery_time(false);
+
+  PowerSupplyProperties not_full_proto;
+  not_full_proto.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_USB);
+  not_full_proto.set_battery_state(
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING);
+  full_proto.set_battery_percent(90.0);
+  full_proto.set_is_calculating_battery_time(false);
+
+  // When the battery is reported as full, a notification shouldn't be displayed
+  // for a low-power charger: http://b/64913617
+  SetUsbChargerWasConnected(false);
+  SetBatteryWasFull(false);
+  EXPECT_FALSE(MaybeShowUsbChargerNotification(full_proto));
+  EXPECT_EQ(0, message_center()->add_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // The notification should be displayed if the battery isn't full, though.
+  SetUsbChargerWasConnected(false);
+  SetBatteryWasFull(false);
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(not_full_proto));
+  EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(0, message_center()->remove_count());
+
+  // It should be dismissed if the battery becomes full again while the charger
+  // is still connected.
+  SetUsbChargerWasConnected(true);
+  SetBatteryWasFull(false);
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(full_proto));
+  EXPECT_EQ(1, message_center()->add_count());
+  EXPECT_EQ(1, message_center()->remove_count());
 }
 
 TEST_F(TrayPowerTest, MaybeShowDualRoleNotification) {
