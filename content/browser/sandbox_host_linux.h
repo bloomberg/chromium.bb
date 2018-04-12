@@ -38,6 +38,8 @@ class CONTENT_EXPORT SandboxHostLinux {
   }
   void Init();
 
+  bool IsInitialized() const { return initialized_; }
+
  private:
   friend struct base::DefaultSingletonTraits<SandboxHostLinux>;
   // This object must be constructed on the main thread.
