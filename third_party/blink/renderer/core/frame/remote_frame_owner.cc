@@ -77,4 +77,11 @@ void RemoteFrameOwner::IntrinsicSizingInfoChanged() {
       ->IntrinsicSizingInfoChanged(intrinsic_sizing_info);
 }
 
+bool RemoteFrameOwner::ShouldLazyLoadChildren() const {
+  // Don't use lazy load for children inside an OOPIF, since there's a good
+  // chance that the parent FrameOwner was previously deferred by lazy load
+  // and then loaded in for whatever reason.
+  return false;
+}
+
 }  // namespace blink

@@ -155,6 +155,9 @@ const char kIsolateOriginsFieldTrialParamName[] = "OriginsList";
 const base::Feature kKeyboardLockAPI{"KeyboardLockAPI",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kLazyFrameLoading{"LazyFrameLoading",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable lazy initialization of the media controls.
 const base::Feature kLazyInitializeMediaControls{
     "LazyInitializeMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -1829,6 +1829,7 @@ jumbo_source_set("unit_tests") {
     "html/html_dimension_test.cc",
     "html/html_embed_element_test.cc",
     "html/html_frame_element_test.cc",
+    "html/html_frame_owner_element_test.cc",
     "html/html_iframe_element_test.cc",
     "html/html_image_element_test.cc",
     "html/html_link_element_sizes_attribute_test.cc",
