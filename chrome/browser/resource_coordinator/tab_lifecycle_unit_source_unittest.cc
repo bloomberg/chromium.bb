@@ -331,7 +331,6 @@ TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
   LifecycleUnit* second_lifecycle_unit = nullptr;
   CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
                 &second_lifecycle_unit);
-  test_clock_.Advance(kTabFocusedProtectionTime);
 
   // Detach the non-active tab. Verify that it can no longer be discarded.
   EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
@@ -484,7 +483,6 @@ TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce) {
                 &foreground_lifecycle_unit);
   content::WebContents* initial_web_contents =
       tab_strip_model_->GetWebContentsAt(0);
-  test_clock_.Advance(kTabFocusedProtectionTime);
 
   // It should be possible to discard the background tab.
   EXPECT_FOR_ALL_DISCARD_REASONS(background_lifecycle_unit, CanDiscard, true);

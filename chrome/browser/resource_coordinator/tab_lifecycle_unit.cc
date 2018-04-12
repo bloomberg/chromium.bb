@@ -199,11 +199,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
   if (discard_count_ > 0)
     return false;
 
-  // Do not discard a tab that has recently been focused.
-  const base::TimeDelta time_since_focused = NowTicks() - last_focused_time_;
-  if (time_since_focused < kTabFocusedProtectionTime)
-    return false;
-
   return true;
 }
 
