@@ -37,7 +37,7 @@ const base::Feature kCastMediaRouteProvider{"CastMediaRouteProvider",
 
 // Controls if local media casting is enabled.
 const base::Feature kEnableCastLocalMedia{"EnableCastLocalMedia",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if defined(OS_ANDROID) || BUILDFLAG(ENABLE_EXTENSIONS)
