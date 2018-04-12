@@ -135,28 +135,38 @@ bool InitializeStaticCGLInternal(GLImplementation implementation) {
 }
 
 #if BUILDFLAG(USE_EGL_ON_MAC)
-const char kGLESv2ANGLELibraryName[] = "Libraries/libGLESv2.dylib";
-const char kEGLANGLELibraryName[] = "Libraries/libEGL.dylib";
+const char kGLESv2ANGLELibraryName[] = "libGLESv2.dylib";
+const char kEGLANGLELibraryName[] = "libEGL.dylib";
 
-const char kGLESv2SwiftShaderLibraryName[] =
-    "Libraries/libswiftshader_libGLESv2.dylib";
-const char kEGLSwiftShaderLibraryName[] =
-    "Libraries/libswiftshader_libEGL.dylib";
+const char kGLESv2SwiftShaderLibraryName[] = "libswiftshader_libGLESv2.dylib";
+const char kEGLSwiftShaderLibraryName[] = "libswiftshader_libEGL.dylib";
 
 bool InitializeStaticEGLInternal(GLImplementation implementation) {
-  base::FilePath module_path = base::mac::FrameworkBundlePath();
+  // Some unit test targets depend on Angle/SwiftShader but aren't built
+  // as app bundles. In that case, the .dylib is next to the executable.
+  base::FilePath base_dir;
+  if (base::mac::AmIBundled()) {
+    base_dir = base::mac::FrameworkBundlePath().Append("Libraries/");
+  } else {
+    if (!PathService::Get(base::FILE_EXE, &base_dir)) {
+      LOG(ERROR) << "PathService::Get failed.";
+      return false;
+    }
+    base_dir = base_dir.DirName();
+  }
+
   base::FilePath glesv2_path;
   base::FilePath egl_path;
   if (implementation == kGLImplementationSwiftShaderGL) {
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
-    glesv2_path = module_path.Append(kGLESv2SwiftShaderLibraryName);
-    egl_path = module_path.Append(kEGLSwiftShaderLibraryName);
+    glesv2_path = base_dir.Append(kGLESv2SwiftShaderLibraryName);
+    egl_path = base_dir.Append(kEGLSwiftShaderLibraryName);
 #else
     return false;
 #endif
   } else {
-    glesv2_path = module_path.Append(kGLESv2ANGLELibraryName);
-    egl_path = module_path.Append(kEGLANGLELibraryName);
+    glesv2_path = base_dir.Append(kGLESv2ANGLELibraryName);
+    egl_path = base_dir.Append(kEGLANGLELibraryName);
   }
 
   base::NativeLibrary gles_library = LoadLibraryAndPrintError(glesv2_path);
