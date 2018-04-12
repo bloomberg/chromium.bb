@@ -930,7 +930,7 @@ void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(
 
 void QuicChromiumClientSession::UnregisterStreamPriority(QuicStreamId id,
                                                          bool is_static) {
-  if (headers_include_h2_stream_dependency_) {
+  if (headers_include_h2_stream_dependency_ && !is_static) {
     priority_dependency_state_.OnStreamDestruction(id);
   }
   QuicSpdySession::UnregisterStreamPriority(id, is_static);
