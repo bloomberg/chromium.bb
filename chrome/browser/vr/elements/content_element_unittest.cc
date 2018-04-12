@@ -164,6 +164,10 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   content->OnFocusChanged(false);
   EXPECT_TRUE(input_forwarder_->clear_focus_called());
   EXPECT_TRUE(OnBeginFrame());
+  // OnBeginFrame on the keyboard delegate should be called despite of
+  // visibility.
+  EXPECT_CALL(*kb_delegate, OnBeginFrame()).InSequence(in_sequence_);
+  scene_->CallPerFrameCallbacks();
 }
 
 class ContentElementInputEditingTest : public UiTest {

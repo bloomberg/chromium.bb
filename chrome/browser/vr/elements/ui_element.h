@@ -430,7 +430,7 @@ class UiElement : public cc::AnimationTarget {
     return children_;
   }
 
-  void set_update_phase(UpdatePhase phase) { phase_ = phase; }
+  void set_update_phase(UpdatePhase phase) { update_phase_ = phase; }
 
   // This is true for all elements that respect the given view model matrix. If
   // this is ignored (say for head-locked elements that draw in screen space),
@@ -493,6 +493,8 @@ class UiElement : public cc::AnimationTarget {
   void set_world_space_transform_dirty() {
     world_space_transform_dirty_ = true;
   }
+
+  UpdatePhase update_phase() const { return update_phase_; }
 
   EventHandlers event_handlers_;
 
@@ -634,7 +636,7 @@ class UiElement : public cc::AnimationTarget {
   // TODO(crbug.com/829880): remove this once we've simplified our bindings.
   bool visibility_bindings_depend_on_child_visibility_ = false;
 
-  UpdatePhase phase_ = kClean;
+  UpdatePhase update_phase_ = kClean;
 
   AudioDelegate* audio_delegate_ = nullptr;
   Sounds sounds_;

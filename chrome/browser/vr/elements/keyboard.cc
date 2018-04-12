@@ -97,6 +97,16 @@ void Keyboard::OnButtonUp(const gfx::PointF& position) {
   delegate_->OnButtonUp(position);
 }
 
+void Keyboard::AdvanceKeyboardFrameIfNeeded() {
+  // If the update phase is not dirty, the frame will be advanced in
+  // OnBeginFrame. That is, we only call OnBeginFrame below when the element is
+  // not visible (i.e UiElement::kDirty is true).
+  if (!delegate_ || update_phase() != UiElement::kDirty)
+    return;
+
+  delegate_->OnBeginFrame();
+}
+
 bool Keyboard::OnBeginFrame(const gfx::Transform& head_pose) {
   if (!delegate_)
     return false;

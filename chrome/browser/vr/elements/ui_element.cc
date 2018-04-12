@@ -308,7 +308,7 @@ bool UiElement::IsOrWillBeLocallyVisible() const {
 }
 
 gfx::SizeF UiElement::size() const {
-  DCHECK_LE(kUpdatedSize, phase_);
+  DCHECK_LE(kUpdatedSize, update_phase_);
   return size_;
 }
 
@@ -431,7 +431,7 @@ float UiElement::ComputeTargetOpacity() const {
 }
 
 float UiElement::computed_opacity() const {
-  DCHECK_LE(kUpdatedComputedOpacity, phase_) << DebugName();
+  DCHECK_LE(kUpdatedComputedOpacity, update_phase_) << DebugName();
   return computed_opacity_;
 }
 
@@ -495,7 +495,7 @@ void UiElement::HitTest(const HitTestRequest& request,
 }
 
 const gfx::Transform& UiElement::world_space_transform() const {
-  DCHECK_LE(kUpdatedWorldSpaceTransform, phase_);
+  DCHECK_LE(kUpdatedWorldSpaceTransform, update_phase_);
   return world_space_transform_;
 }
 
@@ -554,21 +554,21 @@ void UiElement::DumpHierarchy(std::vector<size_t> counts,
   }
   *os << kReset;
 
-  if (phase_ < kUpdatedComputedOpacity || !IsVisible()) {
+  if (update_phase_ < kUpdatedComputedOpacity || !IsVisible()) {
     *os << kBlue;
   }
 
   *os << DebugName() << kReset << " " << kCyan << DrawPhaseToString(draw_phase_)
       << " " << kReset;
 
-  if (phase_ >= kUpdatedSize) {
+  if (update_phase_ >= kUpdatedSize) {
     if (size().width() != 0.0f || size().height() != 0.0f) {
       *os << kRed << "[" << size().width() << ", " << size().height() << "] "
           << kReset;
     }
   }
 
-  if (phase_ >= kUpdatedWorldSpaceTransform) {
+  if (update_phase_ >= kUpdatedWorldSpaceTransform) {
     *os << kGreen;
     DumpGeometry(os);
   }
@@ -844,7 +844,7 @@ void UiElement::DoLayOutChildren() {
 }
 
 void UiElement::LayOutChildren() {
-  DCHECK_LE(kUpdatedSize, phase_);
+  DCHECK_LE(kUpdatedSize, update_phase_);
   for (auto& child : children_) {
     if (!child->IsVisible())
       continue;

@@ -1500,6 +1500,8 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     ui_controller_update_time_.AddSample(controller_time);
   }
 
+  ui_->scene()->CallPerFrameCallbacks();
+
   bool textures_changed = ui_->scene()->UpdateTextures();
 
   // TODO(mthiesse): Determine if a visible controller is actually drawn in the

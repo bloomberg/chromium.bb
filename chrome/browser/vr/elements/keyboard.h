@@ -19,6 +19,9 @@ class Keyboard : public UiElement {
   Keyboard();
   ~Keyboard() override;
 
+  // The gvr keyboard requires that we advance its frame after initilization,
+  // for example, regardless of visibility.
+  void AdvanceKeyboardFrameIfNeeded();
   void SetKeyboardDelegate(KeyboardDelegate* keyboard_delegate);
   void OnTouchStateUpdated(bool is_touching, const gfx::PointF& touch_position);
   void HitTest(const HitTestRequest& request,
