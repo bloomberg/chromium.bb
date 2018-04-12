@@ -95,6 +95,7 @@ class ProviderHostEndpoints : public mojom::ServiceWorkerContainerHost {
       mojom::ServiceWorkerContainerHostRequest request) override {
     NOTIMPLEMENTED();
   }
+  void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
 
   mojom::ServiceWorkerContainerAssociatedPtr client_;
   mojo::AssociatedBinding<mojom::ServiceWorkerContainerHost> binding_;

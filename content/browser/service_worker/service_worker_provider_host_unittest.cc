@@ -225,6 +225,17 @@ class ServiceWorkerProviderHostTest : public testing::Test {
 
   void OnMojoError(const std::string& error) { bad_messages_.push_back(error); }
 
+  bool CanFindClientProviderHost(ServiceWorkerProviderHost* host) {
+    for (std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
+             context_->GetClientProviderHostIterator(
+                 host->document_url().GetOrigin());
+         !it->IsAtEnd(); it->Advance()) {
+      if (host == it->GetProviderHost())
+        return true;
+    }
+    return false;
+  }
+
   std::vector<std::string> bad_messages_;
   TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
@@ -796,6 +807,48 @@ TEST_F(ServiceWorkerProviderHostTest,
   ASSERT_TRUE(bad_messages_.empty());
   GetRegistrations(remote_endpoint.host_ptr()->get());
   EXPECT_EQ(1u, bad_messages_.size());
+}
+
+// Test that a "reserved" (i.e., not execution ready) shared worker client is
+// not included when iterating over client provider hosts. If it were, it'd be
+// undesirably exposed via the Clients API.
+TEST_F(ServiceWorkerProviderHostTest,
+       ReservedClientsAreNotExposedToClientsAPI) {
+  {
+    auto provider_info = mojom::ServiceWorkerProviderInfoForSharedWorker::New();
+    base::WeakPtr<ServiceWorkerProviderHost> host =
+        ServiceWorkerProviderHost::PreCreateForSharedWorker(
+            context_->AsWeakPtr(), helper_->mock_render_process_id(),
+            &provider_info);
+    const GURL url("https://www.example.com/shared_worker.js");
+    host->SetTopmostFrameUrl(url);
+    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+    host->CompleteSharedWorkerPreparation();
+    EXPECT_TRUE(CanFindClientProviderHost(host.get()));
+  }
+
+  {
+    std::unique_ptr<ServiceWorkerProviderHost> host =
+        ServiceWorkerProviderHost::PreCreateNavigationHost(
+            helper_->context()->AsWeakPtr(), true,
+            base::RepeatingCallback<WebContents*(void)>());
+    ServiceWorkerProviderHostInfo info(
+        host->provider_id(), 1 /* route_id */,
+        blink::mojom::ServiceWorkerProviderType::kForWindow,
+        true /* is_parent_frame_secure */);
+    ServiceWorkerRemoteProviderEndpoint remote_endpoint;
+    remote_endpoint.BindWithProviderHostInfo(&info);
+    host->SetDocumentUrl(GURL("https://www.example.com/page"));
+    EXPECT_FALSE(CanFindClientProviderHost(host.get()));
+
+    host->CompleteNavigationInitialized(
+        helper_->mock_render_process_id(), std::move(info),
+        helper_->GetDispatcherHostForProcess(helper_->mock_render_process_id())
+            ->AsWeakPtr());
+    auto* host_rawptr = host.get();
+    context_->AddProviderHost(std::move(host));
+    EXPECT_TRUE(CanFindClientProviderHost(host_rawptr));
+  }
 }
 
 }  // namespace content

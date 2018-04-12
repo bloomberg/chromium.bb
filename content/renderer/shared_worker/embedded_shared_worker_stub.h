@@ -11,12 +11,14 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "content/child/scoped_child_process_reference.h"
+#include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "content/common/shared_worker/shared_worker_info.mojom.h"
 #include "content/renderer/child_message_filter.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -57,6 +59,10 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
       bool pause_on_start,
       const base::UnguessableToken& devtools_worker_token,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
+      mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+          service_worker_provider_info,
+      network::mojom::URLLoaderFactoryAssociatedPtrInfo
+          script_loader_factory_info,
       mojom::SharedWorkerHostPtr host,
       mojom::SharedWorkerRequest request,
       service_manager::mojom::InterfaceProviderPtr interface_provider);
@@ -77,6 +83,9 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   CreateServiceWorkerNetworkProvider() override;
   std::unique_ptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext(
       blink::WebServiceWorkerNetworkProvider*) override;
+  void WaitForServiceWorkerControllerInfo(
+      blink::WebServiceWorkerNetworkProvider* web_network_provider,
+      base::OnceClosure callback) override;
 
  private:
   // WebSharedWorker will own |channel|.
@@ -103,6 +112,14 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
 
   ScopedChildProcessReference process_ref_;
   WebApplicationCacheHostImpl* app_cache_host_ = nullptr;  // Not owned.
+
+  // S13nServiceWorker: The info needed to connect to the
+  // ServiceWorkerProviderHost on the browser.
+  mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
+      service_worker_provider_info_;
+  // NetworkService: The URLLoaderFactory used for loading the shared worker
+  // script.
+  network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory_info_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedSharedWorkerStub);
 };

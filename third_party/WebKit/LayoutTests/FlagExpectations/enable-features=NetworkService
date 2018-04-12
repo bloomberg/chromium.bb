@@ -11,14 +11,12 @@ Bug(none) external/wpt/cookies/secure/set-from-wss.https.sub.html [ Failure ]
 Bug(none) external/wpt/css/css-fonts/font-display/font-display.html [ Failure Timeout ]
 Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.html [ Timeout ]
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/claim-shared-worker-fetch.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/clients-get-client-types.https.html [ Failure ]
 crbug.com/807271 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video-cache.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Pass Failure Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Timeout ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
 Bug(none) external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure Timeout ]
-Bug(none) external/wpt/service-workers/service-worker/shared-worker-controlled.https.html [ Timeout ]
 Bug(none) http/tests/appcache/top-frame-3.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/top-frame-4.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/local-content.html [ Pass Timeout ]
@@ -34,9 +32,6 @@ crbug.com/830472 external/wpt/service-workers/service-worker/navigation-preload/
 
 Bug(none) external/wpt/streams/readable-byte-streams/properties.serviceworker.https.html [ Timeout Pass ]
 Bug(none) external/wpt/wasm/wasm_service_worker_test.https.html [ Crash Timeout ]
-
-# Times out until shared worker support relands.
-crbug.com/796819 external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Skip ]
 
 Bug(none) fast/files/xhr-response-blob.html [ Crash Failure ]
 Bug(none) fast/history/history-back-twice-with-subframes-assert.html [ Pass Timeout ]
