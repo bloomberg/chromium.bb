@@ -7,7 +7,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
@@ -30,6 +32,22 @@ namespace {
 resource_coordinator::DiscardReason GetDiscardReason(bool urgent) {
   return urgent ? resource_coordinator::DiscardReason::kUrgent
                 : resource_coordinator::DiscardReason::kProactive;
+}
+
+mojom::LifecycleUnitVisibility GetLifecycleUnitVisibility(
+    content::Visibility visibility) {
+  switch (visibility) {
+    case content::Visibility::HIDDEN:
+      return mojom::LifecycleUnitVisibility::HIDDEN;
+    case content::Visibility::OCCLUDED:
+      return mojom::LifecycleUnitVisibility::OCCLUDED;
+    case content::Visibility::VISIBLE:
+      return mojom::LifecycleUnitVisibility::VISIBLE;
+  }
+#if defined(COMPILER_MSVC)
+  NOTREACHED();
+  return mojom::LifecycleUnitVisibility::VISIBLE;
+#endif
 }
 
 class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
@@ -69,6 +87,8 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       // showing the chrome://favicon default in that case.
       info->favicon_url = lifecycle_unit->GetIconURL();
       info->title = base::UTF16ToUTF8(lifecycle_unit->GetTitle());
+      info->visibility =
+          GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
       info->is_media = tab_lifecycle_unit_external->IsMediaTab();
       info->is_discarded = tab_lifecycle_unit_external->IsDiscarded();
       info->discard_count = tab_lifecycle_unit_external->GetDiscardCount();

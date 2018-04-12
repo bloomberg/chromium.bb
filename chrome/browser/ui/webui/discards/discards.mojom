@@ -4,6 +4,13 @@
 
 module mojom;
 
+// Identical to content::Visibility.
+enum LifecycleUnitVisibility {
+  HIDDEN = 0,
+  OCCLUDED = 1,
+  VISIBLE = 2,
+};
+
 // Discard related information about a single tab in a browser.
 struct TabDiscardsInfo {
   // The URL associated with the tab. This corresponds to GetLastCommittedURL,
@@ -13,6 +20,8 @@ struct TabDiscardsInfo {
   string favicon_url;
   // The title of the tab, as displayed on the tab itself.
   string title;
+  // The visibility of the LifecycleUnit.
+  LifecycleUnitVisibility visibility;
   // If the tab is currently using media functionality (casting, WebRTC, playing
   // audio, etc) this is true.
   bool is_media;
