@@ -39,6 +39,7 @@ TEST_F(DeclarativeManifestTest, ConditionMissingType) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\","
@@ -61,6 +62,7 @@ TEST_F(DeclarativeManifestTest, ConditionNotDictionary) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\","
@@ -81,6 +83,7 @@ TEST_F(DeclarativeManifestTest, ActionMissingType) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\","
@@ -102,6 +105,7 @@ TEST_F(DeclarativeManifestTest, ActionNotDictionary) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\","
@@ -123,6 +127,7 @@ TEST_F(DeclarativeManifestTest, EventRulesNotList) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": {}"
       "}");
   ManifestData manifest(std::move(manifest_data), "test");
@@ -135,6 +140,7 @@ TEST_F(DeclarativeManifestTest, EventRuleNotDictionary) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": [0,1,2]"
       "}");
   ManifestData manifest(std::move(manifest_data), "test");
@@ -147,6 +153,7 @@ TEST_F(DeclarativeManifestTest, EventMissingFromRule) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"actions\": [{"
@@ -169,6 +176,7 @@ TEST_F(DeclarativeManifestTest, RuleFailedToPopulate) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"event\": \"declarativeContent.onPageChanged\""

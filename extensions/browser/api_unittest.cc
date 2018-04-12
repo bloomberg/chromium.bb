@@ -37,13 +37,7 @@ void ApiUnitTest::SetUp() {
 
   user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
 
-  extension_ = ExtensionBuilder()
-                   .SetManifest(DictionaryBuilder()
-                                    .Set("name", "Test")
-                                    .Set("version", "1.0")
-                                    .Build())
-                   .SetLocation(Manifest::UNPACKED)
-                   .Build();
+  extension_ = ExtensionBuilder("Test").Build();
 }
 
 void ApiUnitTest::TearDown() {

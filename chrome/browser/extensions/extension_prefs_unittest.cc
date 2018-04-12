@@ -450,6 +450,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kName, "test");
     manifest.SetString(manifest_keys::kVersion, "1." + base::IntToString(num));
+    manifest.SetInteger(manifest_keys::kManifestVersion, 2);
     base::FilePath path =
         prefs_.extensions_dir().AppendASCII(base::IntToString(num));
     std::string errors;
@@ -562,6 +563,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     base::DictionaryValue dictionary;
     dictionary.SetString(manifest_keys::kName, "test");
     dictionary.SetString(manifest_keys::kVersion, "0.1");
+    dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
     dictionary.SetString(manifest_keys::kBackgroundPage, "background.html");
     scoped_refptr<Extension> extension =
         prefs_.AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
@@ -572,6 +574,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kName, "test");
     manifest.SetString(manifest_keys::kVersion, "0.2");
+    manifest.SetInteger(manifest_keys::kManifestVersion, 2);
     std::unique_ptr<base::ListValue> scripts(new base::ListValue);
     scripts->AppendString("test.js");
     manifest.Set(manifest_keys::kBackgroundScripts, std::move(scripts));
@@ -671,6 +674,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       base::DictionaryValue dictionary;
       dictionary.SetString(manifest_keys::kName, "from_webstore");
       dictionary.SetString(manifest_keys::kVersion, "0.1");
+      dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
       webstore_extension_ = prefs_.AddExtensionWithManifestAndFlags(
           dictionary, Manifest::INTERNAL, Extension::FROM_WEBSTORE);
     }
@@ -679,6 +683,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       base::DictionaryValue dictionary;
       dictionary.SetString(manifest_keys::kName, "from_bookmark");
       dictionary.SetString(manifest_keys::kVersion, "0.1");
+      dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
       bookmark_extension_ = prefs_.AddExtensionWithManifestAndFlags(
           dictionary, Manifest::INTERNAL, Extension::FROM_BOOKMARK);
     }
@@ -687,6 +692,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       base::DictionaryValue dictionary;
       dictionary.SetString(manifest_keys::kName, "was_installed_by_default");
       dictionary.SetString(manifest_keys::kVersion, "0.1");
+      dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
       default_extension_ = prefs_.AddExtensionWithManifestAndFlags(
           dictionary,
           Manifest::INTERNAL,
@@ -697,6 +703,7 @@ class ExtensionPrefsFlags : public ExtensionPrefsTest {
       base::DictionaryValue dictionary;
       dictionary.SetString(manifest_keys::kName, "was_installed_by_oem");
       dictionary.SetString(manifest_keys::kVersion, "0.1");
+      dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
       oem_extension_ = prefs_.AddExtensionWithManifestAndFlags(
           dictionary, Manifest::INTERNAL, Extension::WAS_INSTALLED_BY_OEM);
     }
@@ -727,6 +734,7 @@ PrefsPrepopulatedTestBase::PrefsPrepopulatedTestBase()
   std::string error;
 
   simple_dict.SetString(manifest_keys::kVersion, "1.0.0.0");
+  simple_dict.SetInteger(manifest_keys::kManifestVersion, 2);
   simple_dict.SetString(manifest_keys::kName, "unused");
 
   extension1_ = Extension::Create(
@@ -925,11 +933,7 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
   void Initialize() override {
     // Adding a component extension.
     component_extension_ =
-        ExtensionBuilder()
-            .SetManifest(DictionaryBuilder()
-                             .Set(manifest_keys::kName, "a")
-                             .Set(manifest_keys::kVersion, "0.1")
-                             .Build())
+        ExtensionBuilder("a")
             .SetLocation(Manifest::COMPONENT)
             .SetPath(prefs_.extensions_dir().AppendASCII("a"))
             .Build();
@@ -937,11 +941,7 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
 
     // Adding a non component extension.
     no_component_extension_ =
-        ExtensionBuilder()
-            .SetManifest(DictionaryBuilder()
-                             .Set(manifest_keys::kName, "b")
-                             .Set(manifest_keys::kVersion, "0.1")
-                             .Build())
+        ExtensionBuilder("b")
             .SetLocation(Manifest::INTERNAL)
             .SetPath(prefs_.extensions_dir().AppendASCII("b"))
             .Build();

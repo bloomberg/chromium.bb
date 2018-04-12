@@ -75,6 +75,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   DictionaryBuilder manifest;
   manifest.Set(manifest_keys::kName, "ext1")
       .Set(manifest_keys::kVersion, "0.1")
+      .Set(manifest_keys::kManifestVersion, 2)
       .Set(std::string(manifest_keys::kChromeURLOverrides),
            DictionaryBuilder().Set("bookmarks", kOverrideResource).Build());
   scoped_refptr<Extension> ext_unpacked(
@@ -110,6 +111,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   DictionaryBuilder manifest2;
   manifest2.Set(manifest_keys::kName, "ext2")
       .Set(manifest_keys::kVersion, "0.1")
+      .Set(manifest_keys::kManifestVersion, 2)
       .Set(std::string(manifest_keys::kChromeURLOverrides),
            DictionaryBuilder().Set("bookmarks", kOverrideResource2).Build());
   scoped_refptr<Extension> ext_component(

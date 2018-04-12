@@ -64,6 +64,7 @@ class PermissionsBasedManagementPolicyProviderTest : public testing::Test {
     base::DictionaryValue manifest_dict;
     manifest_dict.SetString(manifest_keys::kName, "test");
     manifest_dict.SetString(manifest_keys::kVersion, "0.1");
+    manifest_dict.SetInteger(manifest_keys::kManifestVersion, 2);
     if (required_permissions) {
       manifest_dict.Set(manifest_keys::kPermissions,
                         required_permissions->CreateDeepCopy());

@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/test_extension_prefs.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,16 +32,8 @@ class StandardManagementPolicyProviderTest : public testing::Test {
     return prefs_.prefs();
   }
 
-  scoped_refptr<const Extension> CreateExtension(Manifest::Location location,
-                                                 bool required) {
-    base::DictionaryValue values;
-    values.SetString(manifest_keys::kName, "test");
-    values.SetString(manifest_keys::kVersion, "0.1");
-    std::string error;
-    scoped_refptr<const Extension> extension = Extension::Create(
-        base::FilePath(), location, values, Extension::NO_FLAGS, &error);
-    CHECK(extension.get()) << error;
-    return extension;
+  scoped_refptr<const Extension> CreateExtension(Manifest::Location location) {
+    return ExtensionBuilder("test").SetLocation(location).Build();
   }
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
@@ -55,7 +48,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
 // extension required by policy.
 TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
   scoped_refptr<const Extension> extension =
-      CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD, true);
+      CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
   base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
@@ -73,7 +66,7 @@ TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
 // extension required by policy.
 TEST_F(StandardManagementPolicyProviderTest, NotRequiredExtension) {
   scoped_refptr<const Extension> extension =
-      CreateExtension(Manifest::INTERNAL, false);
+      CreateExtension(Manifest::INTERNAL);
 
   base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));

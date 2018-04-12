@@ -19,8 +19,10 @@
 
 namespace {
 
-const char kManifest[] = "{"
+const char kManifest[] =
+    "{"
     " \"version\" : \"1.0.0.0\","
+    " \"manifest_version\" : 2,"
     " \"name\" : \"Test\","
     " \"chrome_ui_overrides\" : {"
     "   \"bookmarks_ui\" : {"
@@ -30,8 +32,10 @@ const char kManifest[] = "{"
     "  }"
     "}";
 
-const char kBrokenManifest[] = "{"
+const char kBrokenManifest[] =
+    "{"
     " \"version\" : \"1.0.0.0\","
+    " \"manifest_version\" : 2,"
     " \"name\" : \"Test\","
     " \"chrome_ui_overrides\" : {"
     "  }"

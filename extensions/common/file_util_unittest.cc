@@ -349,7 +349,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->SetString("name", "test");
   value->SetString("version", "1");
-  value->SetInteger("manifest_version", 1);
+  value->SetInteger("manifest_version", 2);
 
   base::ListValue* scripts =
       value->SetList("background.scripts", std::make_unique<base::ListValue>());

@@ -74,6 +74,7 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
   base::DictionaryValue manifest;
   manifest.SetString("name", std::string("Test extension ") + id);
   manifest.SetString("version", "1.0");
+  manifest.SetInteger("manifest_version", 2);
 
   std::unique_ptr<base::ListValue> permissions(new base::ListValue());
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
