@@ -3,11 +3,11 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutNGBlockFlow {HTML} at (0,0) size 800x600
     LayoutNGBlockFlow {BODY} at (8,8) size 784x560
-      LayoutNGBlockFlow (anonymous) at (0,0) size 784x76
-        LayoutText {#text} at (0,0) size 741x76
-          text run at (0,0) width 741: "These two lines should both be Verdana. They"
-          text run at (0,38) width 313: "should be identical."
-      LayoutNGBlockFlow {P} at (0,108) size 784x76
-        LayoutText {#text} at (0,0) size 741x76
-          text run at (0,0) width 741: "These two lines should both be Verdana. They"
-          text run at (0,38) width 313: "should be identical."
+      LayoutNGBlockFlow (anonymous) at (0,0) size 784x74
+        LayoutText {#text} at (0,0) size 767x73
+          text run at (0,0) width 767: "These two lines should both be Verdana. They should"
+          text run at (0,37) width 172: "be identical."
+      LayoutNGBlockFlow {P} at (0,106) size 784x74
+        LayoutText {#text} at (0,0) size 767x73
+          text run at (0,0) width 767: "These two lines should both be Verdana. They should"
+          text run at (0,37) width 172: "be identical."
