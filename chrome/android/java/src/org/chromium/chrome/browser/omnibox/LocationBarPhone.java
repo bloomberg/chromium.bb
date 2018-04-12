@@ -154,7 +154,8 @@ public class LocationBarPhone extends LocationBarLayout {
      */
     public void finishUrlFocusChange(boolean hasFocus) {
         if (!hasFocus) {
-            mUrlBar.scrollToTLD();
+            // Scroll to ensure the TLD is visible, if necessary.
+            if (getScrollType() == UrlBar.SCROLL_TO_TLD) mUrlBar.scrollDisplayText();
 
             // The animation rendering may not yet be 100% complete and hiding the keyboard makes
             // the animation quite choppy.

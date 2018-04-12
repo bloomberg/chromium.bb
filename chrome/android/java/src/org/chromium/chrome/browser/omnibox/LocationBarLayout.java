@@ -2520,13 +2520,6 @@ public class LocationBarLayout
         return mIsTablet;
     }
 
-    /**
-     * Scroll to ensure the TLD is visible, if necessary.
-     */
-    public void scrollUrlBarToTld() {
-        if (getScrollType() == UrlBar.SCROLL_TO_TLD) mUrlBar.scrollToTLD();
-    }
-
     @Override
     public AutocompleteController getAutocompleteController() {
         return mAutocomplete;

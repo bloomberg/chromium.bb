@@ -695,17 +695,31 @@ public class UrlBar extends AutocompleteEditText {
         return textChanged;
     }
 
+    /**
+     * Scrolls the omnibox text to a position determined by the call to
+     * {@link UrlBarDelegate#getScrollType}.
+     */
     public void scrollDisplayText() {
+        @ScrollType
+        int scrollType = mUrlBarDelegate.getScrollType();
         if (isLayoutRequested()) {
-            if (mUrlBarDelegate.getScrollType() == NO_SCROLL) return;
-            mPendingScroll = true;
-        } else {
-            scrollDisplayTextInternal();
+            mPendingScroll = scrollType != NO_SCROLL;
+            return;
         }
+        scrollDisplayTextInternal(scrollType);
     }
 
-    private void scrollDisplayTextInternal() {
-        switch (mUrlBarDelegate.getScrollType()) {
+    /**
+     * Scrolls the omnibox text to the position specified, based on the {@link ScrollType}.
+     *
+     * @param scrollType What type of scroll to perform.
+     *                   SCROLL_TO_TLD: Scrolls the omnibox text to bring the TLD into view.
+     *                   SCROLL_TO_BEGINNING: Scrolls text that's too long to fit in the omnibox
+     *                                        to the beginning so we can see the first character.
+     */
+    private void scrollDisplayTextInternal(@ScrollType int scrollType) {
+        mPendingScroll = false;
+        switch (scrollType) {
             case SCROLL_TO_TLD:
                 scrollToTLD();
                 break;
@@ -717,6 +731,9 @@ public class UrlBar extends AutocompleteEditText {
         }
     }
 
+    /**
+     * Scrolls the omnibox text to show the very beginning of the text entered.
+     */
     private void scrollToBeginning() {
         if (mFocused) return;
 
@@ -734,7 +751,10 @@ public class UrlBar extends AutocompleteEditText {
         scrollTo((int) scrollPos, getScrollY());
     }
 
-    public void scrollToTLD() {
+    /**
+     * Scrolls the omnibox text to bring the TLD into view.
+     */
+    private void scrollToTLD() {
         if (mFocused) return;
 
         // Ensure any selection from the focus state is cleared.
@@ -819,10 +839,9 @@ public class UrlBar extends AutocompleteEditText {
         super.onLayout(changed, left, top, right, bottom);
 
         if (mPendingScroll) {
-            scrollDisplayTextInternal();
-            mPendingScroll = false;
+            scrollDisplayTextInternal(mUrlBarDelegate.getScrollType());
         } else if (mPreviousWidth != (right - left)) {
-            scrollDisplayTextInternal();
+            scrollDisplayTextInternal(mUrlBarDelegate.getScrollType());
             mPreviousWidth = right - left;
         }
     }
