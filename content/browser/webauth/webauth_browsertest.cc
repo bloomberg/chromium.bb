@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthLocalClientBrowserTest,
   // serviced at all, so the fake request should still be pending on the fake
   // factory.
   auto hid_discovery = ::device::FidoDiscovery::Create(
-      ::device::U2fTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
+      ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice, nullptr);
   ASSERT_TRUE(!!hid_discovery);
 
   // The next active document should be able to successfully call

@@ -15,8 +15,8 @@
 #include "base/optional.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/u2f_request.h"
-#include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -32,7 +32,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
 
   static std::unique_ptr<U2fRequest> TrySign(
       service_manager::Connector* connector,
-      const base::flat_set<U2fTransportProtocol>& transports,
+      const base::flat_set<FidoTransportProtocol>& transports,
       std::vector<std::vector<uint8_t>> registered_keys,
       std::vector<uint8_t> challenge_digest,
       std::vector<uint8_t> application_parameter,
@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fSign : public U2fRequest {
       SignResponseCallback completion_callback);
 
   U2fSign(service_manager::Connector* connector,
-          const base::flat_set<U2fTransportProtocol>& transports,
+          const base::flat_set<FidoTransportProtocol>& transports,
           std::vector<std::vector<uint8_t>> registered_keys,
           std::vector<uint8_t> challenge_digest,
           std::vector<uint8_t> application_parameter,

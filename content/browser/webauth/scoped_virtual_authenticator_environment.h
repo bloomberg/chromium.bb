@@ -54,7 +54,7 @@ class CONTENT_EXPORT ScopedVirtualAuthenticatorEnvironment
 
   // ScopedFidoDiscoveryFactory:
   std::unique_ptr<::device::FidoDiscovery> CreateFidoDiscovery(
-      device::U2fTransportProtocol transport,
+      device::FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
 
  private:

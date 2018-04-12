@@ -16,6 +16,7 @@
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -36,7 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
  public:
   MakeCredentialRequestHandler(
       service_manager::Connector* connector,
-      const base::flat_set<U2fTransportProtocol>& protocols,
+      const base::flat_set<FidoTransportProtocol>& protocols,
       CtapMakeCredentialRequest request_parameter,
       AuthenticatorSelectionCriteria authenticator_criteria,
       RegisterResponseCallback completion_callback);

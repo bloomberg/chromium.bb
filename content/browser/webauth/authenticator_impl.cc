@@ -29,6 +29,7 @@
 #include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/make_credential_request_handler.h"
 #include "device/fido/public_key_credential_descriptor.h"
@@ -36,7 +37,6 @@
 #include "device/fido/u2f_register.h"
 #include "device/fido/u2f_request.h"
 #include "device/fido/u2f_sign.h"
-#include "device/fido/u2f_transport_protocol.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -336,9 +336,9 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
   DCHECK(render_frame_host_);
   DCHECK(timer_);
 
-  protocols_.insert(device::U2fTransportProtocol::kUsbHumanInterfaceDevice);
+  protocols_.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
   if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
-    protocols_.insert(device::U2fTransportProtocol::kBluetoothLowEnergy);
+    protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }
 }
 

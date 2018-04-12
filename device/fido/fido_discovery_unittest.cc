@@ -23,7 +23,7 @@ using ::testing::UnorderedElementsAre;
 // A minimal implementation of FidoDiscovery that is no longer abstract.
 class ConcreteFidoDiscovery : public FidoDiscovery {
  public:
-  explicit ConcreteFidoDiscovery(U2fTransportProtocol transport)
+  explicit ConcreteFidoDiscovery(FidoTransportProtocol transport)
       : FidoDiscovery(transport) {}
   ~ConcreteFidoDiscovery() override = default;
 
@@ -43,7 +43,7 @@ class ConcreteFidoDiscovery : public FidoDiscovery {
 }  // namespace
 
 TEST(FidoDiscoveryTest, TestAddAndRemoveObserver) {
-  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
+  ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
   EXPECT_EQ(nullptr, discovery.observer());
 
@@ -55,7 +55,7 @@ TEST(FidoDiscoveryTest, TestAddAndRemoveObserver) {
 }
 
 TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
-  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
+  ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
 
@@ -76,7 +76,7 @@ TEST(FidoDiscoveryTest, TestNotificationsOnSuccessfulStart) {
 }
 
 TEST(FidoDiscoveryTest, TestNotificationsOnFailedStart) {
-  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
+  ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
 
@@ -90,7 +90,7 @@ TEST(FidoDiscoveryTest, TestNotificationsOnFailedStart) {
 }
 
 TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
-  ConcreteFidoDiscovery discovery(U2fTransportProtocol::kBluetoothLowEnergy);
+  ConcreteFidoDiscovery discovery(FidoTransportProtocol::kBluetoothLowEnergy);
   MockFidoDiscoveryObserver observer;
   discovery.set_observer(&observer);
   discovery.Start();

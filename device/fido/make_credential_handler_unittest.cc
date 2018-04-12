@@ -13,11 +13,11 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/make_credential_request_handler.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
-#include "device/fido/u2f_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,8 +56,8 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
 
     return std::make_unique<MakeCredentialRequestHandler>(
         nullptr,
-        base::flat_set<U2fTransportProtocol>(
-            {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         std::move(request_parameter), AuthenticatorSelectionCriteria(),
         cb_.callback());
   }

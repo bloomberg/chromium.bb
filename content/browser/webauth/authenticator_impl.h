@@ -19,7 +19,7 @@
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/webauth/authenticator.mojom.h"
 #include "url/origin.h"
@@ -133,7 +133,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator,
 
   RenderFrameHost* render_frame_host_;
   service_manager::Connector* connector_ = nullptr;
-  base::flat_set<device::U2fTransportProtocol> protocols_;
+  base::flat_set<device::FidoTransportProtocol> protocols_;
 
   std::unique_ptr<device::U2fRequest> u2f_request_;
   std::unique_ptr<device::FidoRequestHandlerBase> ctap_request_;

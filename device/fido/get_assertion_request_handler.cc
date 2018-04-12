@@ -15,7 +15,7 @@ namespace device {
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
     service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& protocols,
+    const base::flat_set<FidoTransportProtocol>& protocols,
     CtapGetAssertionRequest request,
     SignResponseCallback completion_callback)
     : FidoRequestHandler(connector, protocols, std::move(completion_callback)),

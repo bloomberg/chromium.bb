@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_U2F_U2F_TRANSPORT_PROTOCOL_H_
-#define DEVICE_U2F_U2F_TRANSPORT_PROTOCOL_H_
+#ifndef DEVICE_FIDO_FIDO_TRANSPORT_PROTOCOL_H_
+#define DEVICE_FIDO_FIDO_TRANSPORT_PROTOCOL_H_
 
 namespace device {
 
-// This enum represents the transport protocols over which U2F is currently
-// supported.
-enum class U2fTransportProtocol {
+// This enum represents the transport protocols over which Fido WebAuthN API is
+// currently supported.
+enum class FidoTransportProtocol {
   kUsbHumanInterfaceDevice,
   kNearFieldCommunication,
   kBluetoothLowEnergy,
@@ -17,4 +17,4 @@ enum class U2fTransportProtocol {
 
 }  // namespace device
 
-#endif  // DEVICE_U2F_U2F_TRANSPORT_PROTOCOL_H_
+#endif  // DEVICE_FIDO_FIDO_TRANSPORT_PROTOCOL_H_

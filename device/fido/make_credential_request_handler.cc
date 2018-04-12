@@ -16,7 +16,7 @@ namespace device {
 
 MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& protocols,
+    const base::flat_set<FidoTransportProtocol>& protocols,
     CtapMakeCredentialRequest request_parameter,
     AuthenticatorSelectionCriteria authenticator_selection_criteria,
     RegisterResponseCallback completion_callback)

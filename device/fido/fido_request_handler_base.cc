@@ -15,7 +15,7 @@ namespace device {
 
 FidoRequestHandlerBase::FidoRequestHandlerBase(
     service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& transports) {
+    const base::flat_set<FidoTransportProtocol>& transports) {
   for (const auto transport : transports) {
     auto discovery = FidoDiscovery::Create(transport, connector);
     if (discovery == nullptr) {

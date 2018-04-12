@@ -11,6 +11,7 @@
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
@@ -49,8 +50,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
 
     return std::make_unique<GetAssertionRequestHandler>(
         nullptr /* connector */,
-        base::flat_set<U2fTransportProtocol>(
-            {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         std::move(request_param), get_assertion_cb_.callback());
   }
 

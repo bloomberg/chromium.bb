@@ -20,10 +20,10 @@ namespace device {
 namespace {
 
 std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
-    U2fTransportProtocol transport,
+    FidoTransportProtocol transport,
     service_manager::Connector* connector) {
   switch (transport) {
-    case U2fTransportProtocol::kUsbHumanInterfaceDevice:
+    case FidoTransportProtocol::kUsbHumanInterfaceDevice:
 #if !defined(OS_ANDROID)
       DCHECK(connector);
       return std::make_unique<FidoHidDiscovery>(connector);
@@ -31,9 +31,9 @@ std::unique_ptr<FidoDiscovery> CreateFidoDiscoveryImpl(
       NOTREACHED() << "USB HID not supported on Android.";
       return nullptr;
 #endif  // !defined(OS_ANDROID)
-    case U2fTransportProtocol::kBluetoothLowEnergy:
+    case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::make_unique<FidoBleDiscovery>();
-    case U2fTransportProtocol::kNearFieldCommunication:
+    case FidoTransportProtocol::kNearFieldCommunication:
       // TODO(https://crbug.com/825949): Add NFC support.
       return nullptr;
   }
@@ -51,12 +51,12 @@ FidoDiscovery::FactoryFuncPtr FidoDiscovery::g_factory_func_ =
 
 // static
 std::unique_ptr<FidoDiscovery> FidoDiscovery::Create(
-    U2fTransportProtocol transport,
+    FidoTransportProtocol transport,
     service_manager::Connector* connector) {
   return (*g_factory_func_)(transport, connector);
 }
 
-FidoDiscovery::FidoDiscovery(U2fTransportProtocol transport)
+FidoDiscovery::FidoDiscovery(FidoTransportProtocol transport)
     : transport_(transport) {}
 
 FidoDiscovery::~FidoDiscovery() = default;
@@ -157,7 +157,7 @@ ScopedFidoDiscoveryFactory::~ScopedFidoDiscoveryFactory() {
 // static
 std::unique_ptr<FidoDiscovery>
 ScopedFidoDiscoveryFactory::ForwardCreateFidoDiscoveryToCurrentFactory(
-    U2fTransportProtocol transport,
+    FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
   DCHECK(g_current_factory);
   return g_current_factory->CreateFidoDiscovery(transport, connector);

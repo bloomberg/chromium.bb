@@ -16,7 +16,7 @@ namespace content {
 
 VirtualFidoDiscovery::VirtualFidoDiscovery(
     ScopedVirtualAuthenticatorEnvironment* environment,
-    ::device::U2fTransportProtocol transport)
+    ::device::FidoTransportProtocol transport)
     : FidoDiscovery(transport), environment_(environment) {}
 
 VirtualFidoDiscovery::~VirtualFidoDiscovery() {

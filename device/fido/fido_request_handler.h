@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace device {
 
@@ -29,7 +29,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
                               base::Optional<Response> response_data)>;
 
   FidoRequestHandler(service_manager::Connector* connector,
-                     const base::flat_set<U2fTransportProtocol>& transports,
+                     const base::flat_set<FidoTransportProtocol>& transports,
                      CompletionCallback completion_callback)
       : FidoRequestHandlerBase(connector, transports),
         completion_callback_(std::move(completion_callback)) {}
