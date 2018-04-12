@@ -39,7 +39,6 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
@@ -98,7 +97,7 @@ import java.util.List;
 /**
  * Java side of Android implementation of the page info UI.
  */
-public class PageInfoPopup implements OnClickListener, ModalDialogView.Controller {
+public class PageInfoPopup implements ModalDialogView.Controller {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR, OPENED_FROM_VR})
     private @interface OpenedFromSource {}
@@ -285,6 +284,13 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         public @ColorRes int iconTintColorResource;
         public @StringRes int warningTextResource;
         public @StringRes int subtitleTextResource;
+        public Runnable clickCallback;
+    }
+
+    /**  Parameters to configure the view of the connection message. */
+    private static class ConnectionInfoParams {
+        public CharSequence message;
+        public CharSequence summary;
         public Runnable clickCallback;
     }
 
@@ -716,6 +722,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
      */
     @CalledByNative
     private void setSecurityDescription(String summary, String details) {
+        ConnectionInfoParams connectionInfoParams = new ConnectionInfoParams();
+
         // Display the appropriate connection message.
         SpannableStringBuilder messageBuilder = new SpannableStringBuilder();
         if (mContentPublisher != null) {
@@ -737,8 +745,7 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             }
         } else {
             if (!TextUtils.equals(summary, details)) {
-                mConnectionSummary.setVisibility(View.VISIBLE);
-                mConnectionSummary.setText(summary);
+                connectionInfoParams.summary = summary;
             }
             messageBuilder.append(details);
         }
@@ -754,8 +761,23 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
                     blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             messageBuilder.append(detailsText);
         }
-        mConnectionMessage.setText(messageBuilder);
-        if (isConnectionDetailsLinkVisible()) mConnectionMessage.setOnClickListener(this);
+
+        connectionInfoParams.message = messageBuilder;
+        if (isConnectionDetailsLinkVisible()) {
+            connectionInfoParams.clickCallback = () -> {
+                runAfterDismiss(() -> {
+                    // TODO(crbug.com/819883): Port the connection info popup to VR.
+                    if (VrShellDelegate.isInVr()) {
+                        VrShellDelegate.requestToExitVrAndRunOnSuccess(
+                                PageInfoPopup.this ::showConnectionInfoPopup,
+                                UiUnsupportedMode.UNHANDLED_CONNECTION_INFO);
+                    } else {
+                        showConnectionInfoPopup();
+                    }
+                });
+            };
+        }
+        setConnectionInfo(connectionInfoParams);
     }
 
     /**
@@ -829,23 +851,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             task.run();
         } else {
             mContainer.postDelayed(task, FADE_DURATION + CLOSE_CLEANUP_DELAY);
-        }
-    }
-
-    @Override
-    public void onClick(View view) {
-        if (view == mConnectionMessage) {
-            runAfterDismiss(() -> {
-                // TODO(crbug.com/819883): Port the connection info popup to VR.
-                // TODO(crbug.com/826749): Track how often users encounter this via UMA.
-                if (VrShellDelegate.isInVr()) {
-                    VrShellDelegate.requestToExitVrAndRunOnSuccess(
-                            PageInfoPopup.this ::showConnectionInfoPopup,
-                            UiUnsupportedMode.UNHANDLED_CONNECTION_INFO);
-                } else {
-                    showConnectionInfoPopup();
-                }
-            });
         }
     }
 
@@ -1138,6 +1143,17 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         }
 
         return permissionRow;
+    }
+
+    private void setConnectionInfo(ConnectionInfoParams params) {
+        mConnectionMessage.setText(params.message);
+        if (params.summary != null) {
+            mConnectionSummary.setVisibility(View.VISIBLE);
+            mConnectionSummary.setText(params.summary);
+        }
+        if (params.clickCallback != null) {
+            mConnectionMessage.setOnClickListener((View v) -> { params.clickCallback.run(); });
+        }
     }
 
     /**
