@@ -51,6 +51,7 @@ source_set("ksv_unittests") {
     ":ksv",
     "//ash:test_support_without_content",
     "//testing/gtest",
+    "//ui/events:test_support",
     "//ui/views",
   ]
 }

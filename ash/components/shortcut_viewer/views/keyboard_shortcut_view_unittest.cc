@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 
@@ -171,6 +172,17 @@ TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
 
   // Cleaning up.
   widget->CloseNow();
+}
+
+// Test that the window can be closed by accelerator.
+TEST_F(KeyboardShortcutViewTest, CloseWindowByAccelerator) {
+  // Showing the widget.
+  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+  EXPECT_FALSE(widget->IsClosed());
+
+  ui::test::EventGenerator& event_generator = GetEventGenerator();
+  event_generator.PressKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(widget->IsClosed());
 }
 
 }  // namespace keyboard_shortcut_viewer
