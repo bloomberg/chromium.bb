@@ -238,6 +238,10 @@ def CanAccessToolchainBucket():
   return code == 0
 
 
+def UsesToolchainFromHttp():
+  return os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN_HTTP_BASE_URL') != None
+
+
 def RequestGsAuthentication():
   """Requests that the user authenticate to be able to access gs:// as a
   Googler. This allows much faster downloads, and pulling (old) toolchains
@@ -276,6 +280,30 @@ def DelayBeforeRemoving(target_dir):
     print
 
 
+def DownloadUsingHttp(filename):
+  """Downloads the given file from a url defined in
+     DEPOT_TOOLS_WIN_TOOLCHAIN_HTTP_BASE_URL environment variable."""
+  import urlparse
+  import urllib2
+  from contextlib import closing
+  temp_dir = tempfile.mkdtemp()
+  assert os.path.basename(filename) == filename
+  target_path = os.path.join(temp_dir, filename)
+  base_url = os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN_HTTP_BASE_URL')
+  if base_url == None:
+    sys.exit('Missing DEPOT_TOOLS_WIN_TOOLCHAIN_HTTP_BASE_URL environment '
+             'variable')
+  src_url = urlparse.urljoin(base_url, filename)
+  try:
+    with closing(urllib2.urlopen(src_url)) as fsrc, \
+         open(target_path, 'wb') as fdst:
+      shutil.copyfileobj(fsrc, fdst)
+  except urllib2.URLError as e:
+    RmDir(temp_dir)
+    sys.exit('Failed to retrieve file: %s' % e)
+  return temp_dir, target_path
+
+
 def DownloadUsingGsutil(filename):
   """Downloads the given file from Google Storage chrome-wintoolchain bucket."""
   temp_dir = tempfile.mkdtemp()
@@ -306,6 +334,8 @@ def DoTreeMirror(target_dir, tree_sha1):
   if use_local_zip:
     temp_dir = None
     local_zip = tree_sha1 + '.zip'
+  elif UsesToolchainFromHttp():
+    temp_dir, local_zip = DownloadUsingHttp(tree_sha1 + '.zip')
   else:
     temp_dir, local_zip = DownloadUsingGsutil(tree_sha1 + '.zip')
   sys.stdout.write('Extracting %s...\n' % local_zip)
@@ -452,14 +482,17 @@ def main():
   # based on timestamps to make that case fast.
   current_hashes = CalculateToolchainHashes(target_dir, True)
   if desired_hash not in current_hashes:
+    should_use_http = False
     should_use_gs = False
-    if (HaveSrcInternalAccess() or
+    if UsesToolchainFromHttp():
+      should_use_http = True
+    elif (HaveSrcInternalAccess() or
         LooksLikeGoogler() or
         CanAccessToolchainBucket()):
       should_use_gs = True
       if not CanAccessToolchainBucket():
         RequestGsAuthentication()
-    if not should_use_gs:
+    if not should_use_gs and not should_use_http:
       print('\n\n\nPlease follow the instructions at '
             'https://www.chromium.org/developers/how-tos/'
             'build-instructions-windows\n\n')
