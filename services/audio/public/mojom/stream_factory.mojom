@@ -5,6 +5,7 @@
 module audio.mojom;
 
 import "media/mojo/interfaces/audio_data_pipe.mojom";
+import "media/mojo/interfaces/audio_input_stream.mojom";
 import "media/mojo/interfaces/audio_logging.mojom";
 import "media/mojo/interfaces/audio_output_stream.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
@@ -22,8 +23,26 @@ interface LocalMuter {};
 //
 // The client must keep the connection to the factory while streams are
 // running.
-// TODO(803102): Add other stream creation functionality to this interface.
+// TODO(https://crbug.com/803102): Add other stream creation functionality to
+// this interface.
 interface StreamFactory {
+  // Creates an AudioInputStream and returns the AudioDataPipe it writes data
+  // to and a bool indicating whether the stream is initially muted. |data_pipe|
+  // is null and |initially_muted| is false in case stream creation failed.
+  // |device_id| is either the |unique_id| field from an AudioDeviceDescription
+  // obtained from the audio.mojom.SystemInfo interface, or "default".
+  // |shared_memory_count| indicates how many buffer segments can the input
+  // stream client read at once, to avoid data overwriting. |enable_agc| is used
+  // for enabling automatic gain control.
+  CreateInputStream(
+    media.mojom.AudioInputStream& stream,
+    media.mojom.AudioInputStreamClient client,
+    media.mojom.AudioInputStreamObserver observer,
+    media.mojom.AudioLog log,
+    string device_id, media.mojom.AudioParameters params,
+    uint32 shared_memory_count, bool enable_agc)
+    => (media.mojom.AudioDataPipe? data_pipe, bool initially_muted);
+
   // Creates an AudioOutputStream and returns the AudioDataPipe it reads data
   // from. |data_pipe| is null in case stream creation failed. |device_id| is
   // either the |unique_id| field from an AudioDeviceDescription obtained from
