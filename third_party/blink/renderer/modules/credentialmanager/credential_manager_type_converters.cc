@@ -108,8 +108,16 @@ CredentialManagerError
 TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
     const AuthenticatorStatus& status) {
   switch (status) {
-    case webauth::mojom::blink::AuthenticatorStatus::NOT_SUPPORTED_ERROR:
-      return CredentialManagerError::NOT_SUPPORTED;
+    case webauth::mojom::blink::AuthenticatorStatus::
+        AUTHENTICATOR_CRITERIA_UNSUPPORTED:
+      return CredentialManagerError::AUTHENTICATOR_CRITERIA_UNSUPPORTED;
+    case webauth::mojom::blink::AuthenticatorStatus::ALGORITHM_UNSUPPORTED:
+      return CredentialManagerError::ALGORITHM_UNSUPPORTED;
+    case webauth::mojom::blink::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS:
+      return CredentialManagerError::EMPTY_ALLOW_CREDENTIALS;
+    case webauth::mojom::blink::AuthenticatorStatus::
+        USER_VERIFICATION_UNSUPPORTED:
+      return CredentialManagerError::USER_VERIFICATION_UNSUPPORTED;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_ALLOWED_ERROR:
       return CredentialManagerError::NOT_ALLOWED;
     case webauth::mojom::blink::AuthenticatorStatus::UNKNOWN_ERROR:
@@ -118,8 +126,10 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
       return CredentialManagerError::PENDING_REQUEST;
     case webauth::mojom::blink::AuthenticatorStatus::INVALID_DOMAIN:
       return CredentialManagerError::INVALID_DOMAIN;
-    case webauth::mojom::blink::AuthenticatorStatus::INVALID_STATE:
-      return CredentialManagerError::INVALID_STATE;
+    case webauth::mojom::blink::AuthenticatorStatus::CREDENTIAL_EXCLUDED:
+      return CredentialManagerError::CREDENTIAL_EXCLUDED;
+    case webauth::mojom::blink::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED:
+      return CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
       return CredentialManagerError::NOT_IMPLEMENTED;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:

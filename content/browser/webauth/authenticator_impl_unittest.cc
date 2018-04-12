@@ -383,11 +383,11 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     TestMakeCredentialCallback cb;
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
+    EXPECT_EQ(AuthenticatorStatus::ALGORITHM_UNSUPPORTED, cb.status());
   }
 }
 
-// Test that service returns NOT_SUPPORTED_ERROR if no parameters contain
+// Test that service returns ALGORITHM_UNSUPPORTED if no parameters contain
 // a supported algorithm.
 TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   SimulateNavigation(GURL(kTestOrigin1));
@@ -400,11 +400,11 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::ALGORITHM_UNSUPPORTED, cb.status());
 }
 
-// Test that service returns NOT_ALLOWED_ERROR if user verification is
-// REQUIRED for get().
+// Test that service returns USER_VERIFICATION_UNSUPPORTED if user verification
+// is REQUIRED for get().
 TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   SimulateNavigation(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -416,11 +416,11 @@ TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   TestGetAssertionCallback cb;
   authenticator->GetAssertion(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::USER_VERIFICATION_UNSUPPORTED, cb.status());
 }
 
-// Test that service returns NOT_ALLOWED_ERROR if user verification is
-// REQUIRED for create().
+// Test that service returns AUTHENTICATOR_CRITERIA_UNSUPPORTED if user
+// verification is REQUIRED for create().
 TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   SimulateNavigation(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -433,11 +433,12 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
+            cb.status());
 }
 
-// Test that service returns NOT_ALLOWED_ERROR if resident key is
-// requested for create().
+// Test that service returns AUTHENTICATOR_CRITERIA_UNSUPPORTED if resident key
+// is requested for create().
 TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   SimulateNavigation(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -449,11 +450,12 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
+            cb.status());
 }
 
-// Test that service returns NOT_ALLOWED_ERROR if a platform authenticator is
-// requested for U2F.
+// Test that service returns AUTHENTICATOR_CRITERIA_UNSUPPORTED if a platform
+// authenticator is requested for U2F.
 TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
   SimulateNavigation(GURL(kTestOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -466,7 +468,8 @@ TEST_F(AuthenticatorImplTest, MakeCredentialPlatformAuthenticator) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+  EXPECT_EQ(AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
+            cb.status());
 }
 
 // Parses its arguments as JSON and expects that all the keys in the first are
@@ -612,7 +615,7 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
                  std::string(test_case.claimed_authority));
 
-    EXPECT_EQ(AuthenticatorStatus::INVALID_STATE,
+    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
   }
@@ -702,7 +705,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
     if (should_be_valid) {
       EXPECT_EQ(AuthenticatorStatus::SUCCESS, cb.status());
     } else {
-      EXPECT_EQ(AuthenticatorStatus::INVALID_STATE, cb.status());
+      EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED, cb.status());
     }
   }
 }
@@ -771,6 +774,23 @@ TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportGetAssertion) {
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
+}
+
+TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
+  device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+  TestServiceManagerContext service_manager_context;
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  AuthenticatorPtr authenticator = ConnectToAuthenticator();
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  options->allow_credentials.clear();
+
+  TestGetAssertionCallback cb;
+  authenticator->GetAssertion(std::move(options), cb.callback());
+  cb.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS, cb.status());
 }
 
 enum class IndividualAttestation {

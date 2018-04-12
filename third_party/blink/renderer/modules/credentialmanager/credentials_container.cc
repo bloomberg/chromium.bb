@@ -247,16 +247,42 @@ DOMException* CredentialManagerErrorToDOMException(
           kNotAllowedError,
           "The operation either timed out or was not allowed. See: "
           "https://w3c.github.io/webauthn/#sec-assertion-privacy.");
-    case CredentialManagerError::NOT_SUPPORTED:
-      return DOMException::Create(
-          kNotSupportedError,
-          "Parameters for this operation are not supported.");
+    case CredentialManagerError::AUTHENTICATOR_CRITERIA_UNSUPPORTED:
+      return DOMException::Create(kNotSupportedError,
+                                  "The specified `authenticatorSelection` "
+                                  "criteria cannot be fulfilled by CTAP1/U2F "
+                                  "authenticators, and CTAP2 authenticators "
+                                  "are not yet supported.");
+    case CredentialManagerError::ALGORITHM_UNSUPPORTED:
+      return DOMException::Create(kNotSupportedError,
+                                  "None of the algorithms specified in "
+                                  "`pubKeyCredParams` are compatible with "
+                                  "CTAP1/U2F authenticators, and CTAP2 "
+                                  "authenticators are not yet supported.");
+    case CredentialManagerError::EMPTY_ALLOW_CREDENTIALS:
+      return DOMException::Create(kNotSupportedError,
+                                  "The `allowCredentials` list cannot be left "
+                                  "empty for CTAP1/U2F authenticators, and "
+                                  "support for CTAP2 authenticators is not yet "
+                                  "implemented.");
+    case CredentialManagerError::USER_VERIFICATION_UNSUPPORTED:
+      return DOMException::Create(kNotSupportedError,
+                                  "The specified `userVerification` "
+                                  "requirement cannot be fulfilled by "
+                                  "CTAP1/U2F authenticators, and CTAP2 "
+                                  "authenticators are not yet supported.");
     case CredentialManagerError::INVALID_DOMAIN:
       return DOMException::Create(kSecurityError, "This is an invalid domain.");
-    case CredentialManagerError::INVALID_STATE:
+    case CredentialManagerError::CREDENTIAL_EXCLUDED:
       return DOMException::Create(
           kInvalidStateError,
-          "Attempting to register an already-registered key.");
+          "The user attempted to register an authenticator that contains one "
+          "of the credentials already registered with the relying party.");
+    case CredentialManagerError::CREDENTIAL_NOT_RECOGNIZED:
+      return DOMException::Create(kInvalidStateError,
+                                  "The user attempted to use an authenticator "
+                                  "that recognized none of the provided "
+                                  "credentials.");
     case CredentialManagerError::NOT_IMPLEMENTED:
       return DOMException::Create(kNotSupportedError, "Not implemented");
     case CredentialManagerError::NOT_FOCUSED:
