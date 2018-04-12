@@ -112,20 +112,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
               ['linux', 'mac', 'win'], bug=744658)
 
-    # TODO(liyuqian): Prepare for Skia's AA rebaseline
-    self.Fail('Pixel_OffscreenCanvasAccelerated2D',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
-    self.Fail('Pixel_OffscreenCanvasAccelerated2DWorker',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker',
-              ['mac', 'linux', 'win', 'android', 'chromeos'], bug=817110)
-
     # TODO(hubbe): Temporary supressions for rebaseline
     self.Fail('Pixel_Video_VP9', bug=754986)
     self.Fail('Pixel_DirectComposition_Video_VP9', bug=754986)
