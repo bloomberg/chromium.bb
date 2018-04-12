@@ -1307,14 +1307,14 @@
     },
     {
       name: "WebXR",
-      origin_trial_feature_name: "WebXR Device",
+      origin_trial_feature_name: "WebXRDevice",
       status: "test",
     },
     // Subset of the GamepadExtensions wanted for WebXR, which expose VR controller
     // functionality as Gamepads.
     {
       name: "WebXRGamepadSupport",
-      origin_trial_feature_name: "WebXR Gamepad Support",
+      origin_trial_feature_name: "WebXRGamepadSupport",
       // This feature is a strict subset of GamepadExtensions.
       implied_by: ["GamepadExtensions"],
       status: "test",

@@ -121,13 +121,12 @@ const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
     "FramebustingNeedsSameOriginOrUserGesture",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables extended Gamepad API features like motion tracking and haptics, and
-// exposing VR inputs and controllers as GamePads.
+// Enables extended Gamepad API features like motion tracking and haptics.
 const base::Feature kGamepadExtensions{"GamepadExtensions",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
-// Enables extended Gamepad API features that expose VR controllers as Gamepads
-// for use with WebXR Device API. Each XRInputSource will have a corresponding
-// Gamepad instance.
+// When WebXR Device API is enabled, exposes VR controllers as Gamepads and
+// enables additional Gamepad attributes for use with WebXR Device API. Each
+// XRInputSource will have a corresponding Gamepad instance.
 const base::Feature kWebXrGamepadSupport{"WebXRGamepadSupport",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 

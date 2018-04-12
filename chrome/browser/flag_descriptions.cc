@@ -760,8 +760,7 @@ const char kFramebustingDescription[] =
 
 const char kGamepadExtensionsName[] = "Gamepad Extensions";
 const char kGamepadExtensionsDescription[] =
-    "Enables experimental extensions to the Gamepad APIs, and exposes VR "
-    "controllers as Gamepads for WebVR";
+    "Enables experimental extensions to the Gamepad APIs.";
 
 const char kGpuRasterizationMsaaSampleCountName[] =
     "GPU rasterization MSAA sample count.";
@@ -1781,8 +1780,7 @@ const char kWebvrDescription[] =
     "WebVR 1.1 API. This feature will eventually be replaced by the WebXR "
     "Device API. Warning: Enabling this will also allow WebVR content on "
     "insecure origins to access these powerful APIs, and may pose a security "
-    "risk. Controllers are exposed as Gamepads and Gamepad Extensions are "
-    "enabled.";
+    "risk. Controllers are exposed as Gamepads.";
 
 const char kWebXrName[] = "WebXR Device API";
 const char kWebXrDescription[] =
@@ -1792,7 +1790,8 @@ const char kWebXrDescription[] =
 const char kWebXrGamepadSupportName[] = "WebXR Gamepad Support";
 const char kWebXrGamepadSupportDescription[] =
     "Expose VR controllers as Gamepads for use with the WebXR Device API. Each "
-    "XRInputSource will have a corresponding Gamepad instance.";
+    "XRInputSource will have a corresponding Gamepad instance. Requires that "
+    "WebXR Device API is also enabled.";
 
 const char kWebXrHitTestName[] = "WebXR Hit Test";
 const char kWebXrHitTestDescription[] =

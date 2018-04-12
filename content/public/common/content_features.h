@@ -40,7 +40,6 @@ CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature
     kFramebustingNeedsSameOriginOrUserGesture;
 CONTENT_EXPORT extern const base::Feature kGamepadExtensions;
-CONTENT_EXPORT extern const base::Feature kWebXrGamepadSupport;
 CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kHeapCompaction;
 CONTENT_EXPORT extern const base::Feature kImageCaptureAPI;
@@ -128,6 +127,7 @@ CONTENT_EXPORT extern const base::Feature kWebRtcUseGpuMemoryBufferVideoFrames;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 CONTENT_EXPORT extern const base::Feature kWebVrVsyncAlign;
 CONTENT_EXPORT extern const base::Feature kWebXr;
+CONTENT_EXPORT extern const base::Feature kWebXrGamepadSupport;
 CONTENT_EXPORT extern const base::Feature kWebXrHitTest;
 CONTENT_EXPORT extern const base::Feature kWebXrOrientationSensorDevice;
 CONTENT_EXPORT extern const base::Feature kWorkStealingInScriptRunner;
