@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_view_controller.h"
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
@@ -269,7 +270,7 @@ id<GREYMatcher> SettingsDoneButton() {
 }
 
 id<GREYMatcher> ToolsMenuView() {
-  return grey_accessibilityID(kToolsMenuTableViewId);
+  return grey_accessibilityID(kPopupMenuToolsMenuTableViewId);
 }
 
 id<GREYMatcher> OKButton() {

@@ -16,6 +16,7 @@ source_set("history_popup") {
     "//base",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/popup_menu:constants",
     "//ios/chrome/browser/ui/popup_menu:popup_menu_ui",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
