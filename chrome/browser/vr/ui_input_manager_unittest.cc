@@ -398,7 +398,7 @@ TEST_F(UiInputManagerTest, HitTestStrategy) {
 }
 
 TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
-  EXPECT_TRUE(RunFor(MsToDelta(500)));
+  EXPECT_TRUE(RunForMs(500));
   // It would be nice if the controller weren't platform specific and we could
   // mock out the underlying sensor data. For now, we will hallucinate
   // parameters to HandleInput.
@@ -432,7 +432,7 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
 TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {
   model_->active_modal_prompt_type =
       kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission;
-  EXPECT_TRUE(RunFor(MsToDelta(500)));
+  EXPECT_TRUE(RunForMs(500));
 
   UiElement* url_bar = scene_->GetUiElementByName(UiElementName::kUrlBar);
   gfx::Point3F url_bar_center = url_bar->GetCenter();
