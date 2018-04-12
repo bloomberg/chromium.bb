@@ -599,4 +599,28 @@ TEST_F(VisibleUnitsLineTest,
                 two->lastChild(), visible_position, kContentIsEditable));
 }
 
+TEST_F(VisibleUnitsLineTest, InSameLineSkippingEmptyEditableDiv) {
+  // This test records the InSameLine() results in
+  // editing/selection/skip-over-contenteditable.html
+  SetBodyContent(
+      "<p id=foo>foo</p>"
+      "<div contenteditable></div>"
+      "<p id=bar>bar</p>");
+  const Node* const foo = GetElementById("foo")->firstChild();
+  const Node* const bar = GetElementById("bar")->firstChild();
+
+  EXPECT_TRUE(InSameLine(
+      PositionWithAffinity(Position(foo, 3), TextAffinity::kDownstream),
+      PositionWithAffinity(Position(foo, 3), TextAffinity::kUpstream)));
+  EXPECT_FALSE(InSameLine(
+      PositionWithAffinity(Position(bar, 0), TextAffinity::kDownstream),
+      PositionWithAffinity(Position(foo, 3), TextAffinity::kDownstream)));
+  EXPECT_TRUE(InSameLine(
+      PositionWithAffinity(Position(bar, 3), TextAffinity::kDownstream),
+      PositionWithAffinity(Position(bar, 3), TextAffinity::kUpstream)));
+  EXPECT_FALSE(InSameLine(
+      PositionWithAffinity(Position(foo, 0), TextAffinity::kDownstream),
+      PositionWithAffinity(Position(bar, 0), TextAffinity::kDownstream)));
+}
+
 }  // namespace blink
