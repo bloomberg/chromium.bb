@@ -44,7 +44,10 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
 
   // For non-length properties and special cases.
   switch (property_id) {
+    case CSSPropertyColumnCount:
+      return round(value) != value || value < 1;
     case CSSPropertyBlockSize:
+    case CSSPropertyColumnRuleWidth:
     case CSSPropertyFlexGrow:
     case CSSPropertyFlexShrink:
     case CSSPropertyFontSize:

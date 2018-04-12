@@ -3306,6 +3306,8 @@
       type_name: "unsigned short",
       computed_style_custom_functions: ["setter"],
       custom_apply_functions_all: true,
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Number"]
     },
     {
       name: "column-gap",
@@ -3358,6 +3360,7 @@
       ],
       default_value: "none",
       type_name: "EBorderStyle",
+      typedom_types: ["Keyword"]
     },
     {
       name: "column-rule-width",
@@ -3370,6 +3373,8 @@
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertLineWidth<unsigned short>",
+      keywords: ["thin", "medium", "thick"],
+      typedom_types: ["Keyword", "Length"],
     },
     {
       name: "column-span",

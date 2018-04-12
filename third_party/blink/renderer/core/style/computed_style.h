@@ -513,7 +513,7 @@ class ComputedStyle : public ComputedStyleBase,
   // column-count (aka -webkit-column-count)
   void SetColumnCount(unsigned short c) {
     SetHasAutoColumnCountInternal(false);
-    SetColumnCountInternal(c);
+    SetColumnCountInternal(clampTo<unsigned short>(c, 1));
   }
   void SetHasAutoColumnCount() {
     SetHasAutoColumnCountInternal(true);
