@@ -260,6 +260,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // Finishes all outstanding rendering and disables swapping on this surface
   // until it is resized.
   void DisableSwapUntilResize();
+  void ReenableSwap();
 
   void SetLatencyInfo(const LatencyInfo& latency_info);
 
