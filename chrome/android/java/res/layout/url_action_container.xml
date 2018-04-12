@@ -12,27 +12,27 @@
 
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/delete_button"
-            style="@style/LocationBarButton"
+            style="@style/LocationBarActionButton"
             android:src="@drawable/btn_delete_24dp"
             android:visibility="invisible"
             android:contentDescription="@string/accessibility_toolbar_btn_delete_url" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/mic_button"
-            style="@style/LocationBarButton"
+            style="@style/LocationBarActionButton"
             android:src="@drawable/btn_mic"
             android:visibility="invisible"
             android:contentDescription="@string/accessibility_toolbar_btn_mic" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/bookmark_button"
-            style="@style/LocationBarButton"
+            style="@style/LocationBarActionButton"
             android:visibility="gone"
             android:contentDescription="@string/accessibility_menu_bookmark" />
 
        <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/save_offline_button"
-            style="@style/LocationBarButton"
+            style="@style/LocationBarActionButton"
             android:nextFocusForward="@+id/menu_button"
             android:src="@drawable/ic_file_download_white_24dp"
             android:visibility="gone"
