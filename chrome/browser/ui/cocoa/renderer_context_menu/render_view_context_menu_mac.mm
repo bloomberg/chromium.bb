@@ -222,7 +222,7 @@ bool RenderViewContextMenuMac::IsCommandIdChecked(int command_id) const {
 bool RenderViewContextMenuMac::IsCommandIdEnabled(int command_id) const {
   switch (command_id) {
     case IDC_CONTENT_CONTEXT_EMOJI:
-      return true;
+      return params_.is_editable;
 
     case IDC_CONTENT_CONTEXT_LOOK_UP:
       return true;
@@ -346,7 +346,10 @@ void RenderViewContextMenuMac::InitToolkitMenu() {
     menu_model_.InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
   }
 
-  if (base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
+  // The Emoji menu item is available for editable text fields, unless the
+  // selected text is a misspelling.
+  if (params_.is_editable && params_.misspelled_word.empty() &&
+      base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
     // The "Emoji" item is available near the top of the context menu, after
     // any "Look Up" of selected text.
     menu_model_.InsertItemWithStringIdAt(index++, IDC_CONTENT_CONTEXT_EMOJI,
