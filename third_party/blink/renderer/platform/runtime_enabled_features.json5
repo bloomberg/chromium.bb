@@ -614,6 +614,9 @@
       name: "LayoutNGFragmentCaching",
     },
     {
+      name: "LazyFrameLoading",
+    },
+    {
       name: "LazyInitializeMediaControls",
       // This is enabled by features::kLazyInitializeMediaControls.
     },

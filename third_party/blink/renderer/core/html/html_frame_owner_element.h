@@ -37,6 +37,8 @@ namespace blink {
 
 class ExceptionState;
 class Frame;
+class IntersectionObserver;
+class IntersectionObserverEntry;
 class LayoutEmbeddedContent;
 class WebPluginContainerImpl;
 
@@ -110,9 +112,16 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool IsDisplayNone() const override { return !embedded_content_view_; }
   AtomicString RequiredCsp() const override { return g_null_atom; }
   const ParsedFeaturePolicy& ContainerPolicy() const override;
+  bool ShouldLazyLoadChildren() const final;
 
   // For unit tests, manually trigger the UpdateContainerPolicy method.
   void UpdateContainerPolicyForTests() { UpdateContainerPolicy(); }
+
+  void CancelPendingLazyLoad();
+
+  // TODO(sclittle): Make the root margins configurable via field trial
+  // params instead of just hardcoding the value here.
+  static constexpr int kLazyLoadRootMarginPx = 800;
 
   virtual void Trace(blink::Visitor*);
 
@@ -166,11 +175,19 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return kReferrerPolicyDefault;
   }
 
+  void LoadIfHiddenOrNearViewport(
+      const ResourceRequest&,
+      FrameLoadType,
+      const HeapVector<Member<IntersectionObserverEntry>>&);
+
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   SandboxFlags sandbox_flags_;
 
   ParsedFeaturePolicy container_policy_;
+
+  Member<IntersectionObserver> lazy_load_intersection_observer_;
+  bool should_lazy_load_children_;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, IsFrameOwnerElement());

@@ -57,6 +57,7 @@ class CORE_EXPORT RemoteFrameOwner final
   const ParsedFeaturePolicy& ContainerPolicy() const override {
     return container_policy_;
   }
+  bool ShouldLazyLoadChildren() const final;
 
   void SetBrowsingContextContainerName(const WebString& name) {
     browsing_context_container_name_ = name;

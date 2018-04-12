@@ -61,6 +61,9 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool IsDisplayNone() const = 0;
   virtual AtomicString RequiredCsp() const = 0;
   virtual const ParsedFeaturePolicy& ContainerPolicy() const = 0;
+
+  // Returns whether or not children of the owned frame should be lazily loaded.
+  virtual bool ShouldLazyLoadChildren() const = 0;
 };
 
 // TODO(dcheng): This class is an internal implementation detail of provisional
@@ -100,6 +103,7 @@ class CORE_EXPORT DummyFrameOwner final
     DEFINE_STATIC_LOCAL(ParsedFeaturePolicy, container_policy, ());
     return container_policy;
   }
+  bool ShouldLazyLoadChildren() const override { return false; }
 
  private:
   // Intentionally private to prevent redundant checks when the type is

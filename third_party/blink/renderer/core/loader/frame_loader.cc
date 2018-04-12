@@ -872,6 +872,9 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
                        HistoryLoadType history_load_type) {
   DCHECK(frame_->GetDocument());
 
+  if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
+    element->CancelPendingLazyLoad();
+
   if (IsBackForwardLoadType(frame_load_type) && !frame_->IsNavigationAllowed())
     return;
 
