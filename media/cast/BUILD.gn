@@ -342,6 +342,7 @@ test("cast_unittests") {
     ":sender",
     ":test_support",
     "//base",
+    "//base:cfi_buildflags",
     "//base/test:test_support",
     "//media:test_support",
     "//media/test:run_all_unittests",

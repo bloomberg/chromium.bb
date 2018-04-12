@@ -1536,6 +1536,7 @@
       'ThinLTO Linux ToT',
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/830659
+      'Linux CFI',  # https://crbug.com/830659
       'Linux MSan Tests',  # https://crbug.com/830659
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/830659
       'Linux TSan Tests',  # https://crbug.com/830659
