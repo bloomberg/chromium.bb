@@ -29,6 +29,8 @@ class UiElement;
 
 class UiScene {
  public:
+  typedef base::RepeatingCallback<void()> PerFrameCallback;
+
   UiScene();
   ~UiScene();
 
@@ -44,6 +46,8 @@ class UiScene {
   // Returns true if *anything* was updated.
   bool OnBeginFrame(const base::TimeTicks& current_time,
                     const gfx::Transform& head_pose);
+
+  void CallPerFrameCallbacks();
 
   // Returns true if any textures were redrawn.
   bool UpdateTextures();
@@ -68,6 +72,9 @@ class UiScene {
   void set_dirty() { is_dirty_ = true; }
 
   void OnGlInitialized(SkiaSurfaceProvider* provider);
+  // The callback to call on every new frame. This is used for things we want to
+  // do every frame regardless of element or subtree visibility.
+  void AddPerFrameCallback(PerFrameCallback callback);
 
   SkiaSurfaceProvider* SurfaceProviderForTesting() { return provider_; }
 
@@ -87,6 +94,8 @@ class UiScene {
   bool is_dirty_ = false;
 
   std::vector<UiElement*> all_elements_;
+
+  std::vector<PerFrameCallback> per_frame_callback_;
 
   SkiaSurfaceProvider* provider_ = nullptr;
 

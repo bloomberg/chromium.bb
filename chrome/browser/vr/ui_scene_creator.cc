@@ -1943,6 +1943,9 @@ void UiSceneCreator::CreateKeyboard() {
           base::Unretained(keyboard.get()))));
   VR_BIND_VISIBILITY(keyboard,
                      model->editing_input || model->editing_web_input);
+  scene_->AddPerFrameCallback(base::BindRepeating(
+      [](Keyboard* keyboard) { keyboard->AdvanceKeyboardFrameIfNeeded(); },
+      base::Unretained(keyboard.get())));
   scaler->AddChild(std::move(keyboard));
   visibility_control_root->AddChild(std::move(scaler));
   scene_->AddUiElement(k2dBrowsingRepositioner,

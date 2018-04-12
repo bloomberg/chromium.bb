@@ -159,6 +159,12 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   return scene_dirty;
 }
 
+void UiScene::CallPerFrameCallbacks() {
+  for (auto callback : per_frame_callback_) {
+    callback.Run();
+  }
+}
+
 bool UiScene::UpdateTextures() {
   bool needs_redraw = false;
   std::vector<UiElement*> elements = GetVisibleElementsMutable();
@@ -233,6 +239,10 @@ void UiScene::OnGlInitialized(SkiaSurfaceProvider* provider) {
   gl_initialized_ = true;
   provider_ = provider;
   InitializeElementRecursive(root_element_.get(), provider_);
+}
+
+void UiScene::AddPerFrameCallback(PerFrameCallback callback) {
+  per_frame_callback_.push_back(callback);
 }
 
 void UiScene::InitializeElement(UiElement* element) {
