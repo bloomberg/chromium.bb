@@ -576,8 +576,9 @@ public class WebVrInputTest {
             @Override
             public void run() {
                 mTestRule.getActivity().getCurrentContentViewCore().onPause();
-                Assert.assertTrue(
-                        VrShellDelegateUtils.getDelegateInstance().isClearActivatePending());
+
+                Assert.assertFalse(
+                        VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate());
             }
         });
     }

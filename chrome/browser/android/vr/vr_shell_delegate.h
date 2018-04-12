@@ -115,7 +115,6 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   base::Optional<VrStartAction> pending_vr_start_action_;
   base::Optional<PresentationStartAction> possible_presentation_start_action_;
 
-  base::CancelableClosure clear_activate_task_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
