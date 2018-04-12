@@ -169,10 +169,6 @@ EasyUnlockServiceSignin::EasyUnlockServiceSignin(Profile* profile)
 
 EasyUnlockServiceSignin::~EasyUnlockServiceSignin() {}
 
-void EasyUnlockServiceSignin::SetCurrentUser(const AccountId& account_id) {
-  OnFocusedUserChanged(account_id);
-}
-
 void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
     const AccountId& account_id,
     const std::string& device_public_key,
@@ -220,15 +216,6 @@ AccountId EasyUnlockServiceSignin::GetAccountId() const {
 }
 
 void EasyUnlockServiceSignin::LaunchSetup() {
-  NOTREACHED();
-}
-
-const base::DictionaryValue* EasyUnlockServiceSignin::GetPermitAccess() const {
-  return nullptr;
-}
-
-void EasyUnlockServiceSignin::SetPermitAccess(
-    const base::DictionaryValue& permit) {
   NOTREACHED();
 }
 

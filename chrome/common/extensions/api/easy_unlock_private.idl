@@ -237,12 +237,6 @@ namespace easyUnlockPrivate {
         UnwrapSecureMessageOptions options,
         DataCallback callback);
 
-    // Saves the permit record for the local device.
-    // |permitAccess|: The permit record to be saved.
-    // |callback|: Called to indicate success or failure.
-    static void setPermitAccess(PermitRecord permitAccess,
-                                optional EmptyCallback callback);
-
     // Gets the permit record for the local device.
     static void getPermitAccess(GetPermitAccessCallback callback);
 

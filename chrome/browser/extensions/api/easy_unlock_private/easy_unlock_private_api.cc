@@ -447,26 +447,6 @@ void EasyUnlockPrivateUnwrapSecureMessageFunction::OnData(
   Respond(NoArguments());
 }
 
-EasyUnlockPrivateSetPermitAccessFunction::
-    EasyUnlockPrivateSetPermitAccessFunction() {
-}
-
-EasyUnlockPrivateSetPermitAccessFunction::
-    ~EasyUnlockPrivateSetPermitAccessFunction() {
-}
-
-ExtensionFunction::ResponseAction
-EasyUnlockPrivateSetPermitAccessFunction::Run() {
-  std::unique_ptr<easy_unlock_private::SetPermitAccess::Params> params(
-      easy_unlock_private::SetPermitAccess::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  Profile* profile = Profile::FromBrowserContext(browser_context());
-  chromeos::EasyUnlockService::Get(profile)->SetPermitAccess(
-      *params->permit_access.ToValue());
-  return RespondNow(NoArguments());
-}
-
 EasyUnlockPrivateGetPermitAccessFunction::
     EasyUnlockPrivateGetPermitAccessFunction() {
 }

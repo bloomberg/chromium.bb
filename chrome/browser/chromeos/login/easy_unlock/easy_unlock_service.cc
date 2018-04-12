@@ -378,14 +378,6 @@ bool EasyUnlockService::UpdateScreenlockState(ScreenlockState state) {
   return true;
 }
 
-ScreenlockState EasyUnlockService::GetScreenlockState() {
-  EasyUnlockScreenlockStateHandler* handler = GetScreenlockStateHandler();
-  if (!handler)
-    return ScreenlockState::INACTIVE;
-
-  return handler->state();
-}
-
 void EasyUnlockService::AttemptAuth(const AccountId& account_id) {
   const EasyUnlockAuthAttempt::Type auth_attempt_type =
       GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
@@ -524,12 +516,6 @@ void EasyUnlockService::Shutdown() {
   power_monitor_.reset();
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
-void EasyUnlockService::ReloadAppAndLockScreen() {
-  // Make sure lock screen state set by the extension gets reset.
-  ResetScreenlockState();
-  app_manager_->ReloadApp();
 }
 
 void EasyUnlockService::UpdateAppState() {
