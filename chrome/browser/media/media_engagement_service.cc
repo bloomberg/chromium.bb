@@ -396,7 +396,7 @@ std::vector<MediaEngagementScore> MediaEngagementService::GetAllStoredScores()
     auto* const site = it.second;
 
     std::unique_ptr<base::Value> clone =
-        std::make_unique<base::Value>(site->setting_value->Clone());
+        base::Value::ToUniquePtrValue(site->setting_value.Clone());
 
     data.push_back(MediaEngagementScore(
         clock_, origin, base::DictionaryValue::From(std::move(clone)),

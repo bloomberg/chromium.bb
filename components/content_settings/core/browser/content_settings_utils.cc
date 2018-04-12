@@ -129,8 +129,9 @@ void GetRendererContentSettingRules(const HostContentSettingsMap* map,
   // all origins.
   rules->image_rules.push_back(ContentSettingPatternSource(
       ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      ContentSettingToValue(CONTENT_SETTING_ALLOW), std::string(),
-      map->is_incognito()));
+      base::Value::FromUniquePtrValue(
+          ContentSettingToValue(CONTENT_SETTING_ALLOW)),
+      std::string(), map->is_incognito()));
 #endif
   map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,

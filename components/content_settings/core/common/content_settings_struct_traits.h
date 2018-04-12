@@ -100,7 +100,7 @@ struct StructTraits<
 
   static const base::Value& setting_value(
       const ContentSettingPatternSource& r) {
-    return *r.setting_value;
+    return r.setting_value;
   }
 
   static const std::string& source(const ContentSettingPatternSource& r) {

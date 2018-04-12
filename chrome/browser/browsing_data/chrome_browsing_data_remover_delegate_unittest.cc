@@ -2124,7 +2124,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveSelectedClientHints) {
   for (size_t i = 0; i < host_settings.size(); ++i) {
     EXPECT_EQ(ContentSettingsPattern::Wildcard(),
               host_settings.at(i).secondary_pattern);
-    EXPECT_EQ(*expiration_times_dictionary, *host_settings.at(i).setting_value);
+    EXPECT_EQ(*expiration_times_dictionary, host_settings.at(i).setting_value);
   }
 }
 

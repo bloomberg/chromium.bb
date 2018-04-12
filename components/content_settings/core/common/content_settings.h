@@ -45,7 +45,7 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
 struct ContentSettingPatternSource {
   ContentSettingPatternSource(const ContentSettingsPattern& primary_pattern,
                               const ContentSettingsPattern& secondary_patttern,
-                              std::unique_ptr<base::Value> setting_value,
+                              base::Value setting_value,
                               const std::string& source,
                               bool incognito);
   ContentSettingPatternSource(const ContentSettingPatternSource& other);
@@ -57,7 +57,7 @@ struct ContentSettingPatternSource {
 
   ContentSettingsPattern primary_pattern;
   ContentSettingsPattern secondary_pattern;
-  std::unique_ptr<base::Value> setting_value;
+  base::Value setting_value;
   std::string source;
   bool incognito;
 };
