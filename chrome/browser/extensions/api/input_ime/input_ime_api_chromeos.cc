@@ -386,14 +386,13 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
                             : ErrorWithArguments(std::move(results), error));
 }
 
-bool InputImeHideInputViewFunction::RunAsync() {
+ExtensionFunction::ResponseAction InputImeHideInputViewFunction::Run() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), extension_id());
-  if (!engine) {
-    return true;
-  }
+  if (!engine)
+    return RespondNow(NoArguments());
   engine->HideInputView();
-  return true;
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

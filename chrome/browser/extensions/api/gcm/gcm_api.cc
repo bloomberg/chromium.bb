@@ -86,19 +86,18 @@ bool IsMessageKeyValid(const std::string& key) {
 
 namespace extensions {
 
-bool GcmApiFunction::RunAsync() {
-  if (!IsGcmApiEnabled())
-    return false;
-
-  return DoWork();
+bool GcmApiFunction::PreRunValidation(std::string* error) {
+  return IsGcmApiEnabled(error);
 }
 
-bool GcmApiFunction::IsGcmApiEnabled() const {
+bool GcmApiFunction::IsGcmApiEnabled(std::string* error) const {
   Profile* profile = Profile::FromBrowserContext(browser_context());
 
   // GCM is not supported in incognito mode.
-  if (profile->IsOffTheRecord())
+  if (profile->IsOffTheRecord()) {
+    *error = "GCM is not supported in incognito mode.";
     return false;
+  }
 
   return gcm::GCMProfileService::IsGCMEnabled(profile->GetPrefs());
 }
@@ -112,7 +111,7 @@ GcmRegisterFunction::GcmRegisterFunction() {}
 
 GcmRegisterFunction::~GcmRegisterFunction() {}
 
-bool GcmRegisterFunction::DoWork() {
+ExtensionFunction::ResponseAction GcmRegisterFunction::Run() {
   std::unique_ptr<api::gcm::Register::Params> params(
       api::gcm::Register::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -122,42 +121,50 @@ bool GcmRegisterFunction::DoWork() {
       params->sender_ids,
       base::Bind(&GcmRegisterFunction::CompleteFunctionWithResult, this));
 
-  return true;
+  // Register() might have returned synchronously.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void GcmRegisterFunction::CompleteFunctionWithResult(
     const std::string& registration_id,
-    gcm::GCMClient::Result result) {
-  SetResult(std::make_unique<base::Value>(registration_id));
-  SetError(GcmResultToError(result));
-  SendResponse(gcm::GCMClient::SUCCESS == result);
+    gcm::GCMClient::Result gcm_result) {
+  auto result = std::make_unique<base::ListValue>();
+  result->AppendString(registration_id);
+
+  const bool succeeded = gcm::GCMClient::SUCCESS == gcm_result;
+  Respond(succeeded
+              ? ArgumentList(std::move(result))
+              // TODO(lazyboy): We shouldn't be using |result| in case of error.
+              : ErrorWithArguments(std::move(result),
+                                   GcmResultToError(gcm_result)));
 }
 
 GcmUnregisterFunction::GcmUnregisterFunction() {}
 
 GcmUnregisterFunction::~GcmUnregisterFunction() {}
 
-bool GcmUnregisterFunction::DoWork() {
+ExtensionFunction::ResponseAction GcmUnregisterFunction::Run() {
   UMA_HISTOGRAM_BOOLEAN("GCM.APICallUnregister", true);
 
   GetGCMDriver()->Unregister(
       extension()->id(),
       base::Bind(&GcmUnregisterFunction::CompleteFunctionWithResult, this));
 
-  return true;
+  // Unregister might have responded already (synchronously).
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void GcmUnregisterFunction::CompleteFunctionWithResult(
     gcm::GCMClient::Result result) {
-  SetError(GcmResultToError(result));
-  SendResponse(gcm::GCMClient::SUCCESS == result);
+  const bool succeeded = gcm::GCMClient::SUCCESS == result;
+  Respond(succeeded ? NoArguments() : Error(GcmResultToError(result)));
 }
 
 GcmSendFunction::GcmSendFunction() {}
 
 GcmSendFunction::~GcmSendFunction() {}
 
-bool GcmSendFunction::DoWork() {
+ExtensionFunction::ResponseAction GcmSendFunction::Run() {
   std::unique_ptr<api::gcm::Send::Params> params(
       api::gcm::Send::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -176,15 +183,22 @@ bool GcmSendFunction::DoWork() {
       outgoing_message,
       base::Bind(&GcmSendFunction::CompleteFunctionWithResult, this));
 
-  return true;
+  // Send might have already responded synchronously.
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void GcmSendFunction::CompleteFunctionWithResult(
     const std::string& message_id,
-    gcm::GCMClient::Result result) {
-  SetResult(std::make_unique<base::Value>(message_id));
-  SetError(GcmResultToError(result));
-  SendResponse(gcm::GCMClient::SUCCESS == result);
+    gcm::GCMClient::Result gcm_result) {
+  auto result = std::make_unique<base::ListValue>();
+  result->AppendString(message_id);
+
+  const bool succeeded = gcm::GCMClient::SUCCESS == gcm_result;
+  Respond(succeeded
+              ? ArgumentList(std::move(result))
+              // TODO(lazyboy): We shouldn't be using |result| in case of error.
+              : ErrorWithArguments(std::move(result),
+                                   GcmResultToError(gcm_result)));
 }
 
 bool GcmSendFunction::ValidateMessageData(const gcm::MessageData& data) const {

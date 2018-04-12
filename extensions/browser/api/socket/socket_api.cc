@@ -812,14 +812,14 @@ void SocketGetInfoFunction::Work() {
   SetResult(info.ToValue());
 }
 
-bool SocketGetNetworkListFunction::RunAsync() {
+ExtensionFunction::ResponseAction SocketGetNetworkListFunction::Run() {
   base::PostTaskWithTraits(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&SocketGetNetworkListFunction::GetNetworkListOnFileThread,
                  this));
-  return true;
+  return RespondLater();
 }
 
 void SocketGetNetworkListFunction::GetNetworkListOnFileThread() {
@@ -841,8 +841,7 @@ void SocketGetNetworkListFunction::GetNetworkListOnFileThread() {
 
 void SocketGetNetworkListFunction::HandleGetNetworkListError() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  error_ = kNetworkListError;
-  SendResponse(false);
+  Respond(Error(kNetworkListError));
 }
 
 void SocketGetNetworkListFunction::SendResponseOnUIThread(
@@ -859,8 +858,8 @@ void SocketGetNetworkListFunction::SendResponseOnUIThread(
     create_arg.push_back(std::move(info));
   }
 
-  results_ = api::socket::GetNetworkList::Results::Create(create_arg);
-  SendResponse(true);
+  Respond(
+      ArgumentList(api::socket::GetNetworkList::Results::Create(create_arg)));
 }
 
 SocketJoinGroupFunction::SocketJoinGroupFunction() {}

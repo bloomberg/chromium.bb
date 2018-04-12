@@ -17,7 +17,7 @@ namespace extensions {
 struct Alarm;
 using AlarmList = std::vector<std::unique_ptr<Alarm>>;
 
-class AlarmsCreateFunction : public AsyncExtensionFunction {
+class AlarmsCreateFunction : public UIThreadExtensionFunction {
  public:
   AlarmsCreateFunction();
   // Use |clock| instead of the default clock. Does not take ownership
@@ -27,8 +27,8 @@ class AlarmsCreateFunction : public AsyncExtensionFunction {
  protected:
   ~AlarmsCreateFunction() override;
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("alarms.create", ALARMS_CREATE)
  private:
   void Callback();
@@ -36,48 +36,48 @@ class AlarmsCreateFunction : public AsyncExtensionFunction {
   base::Clock* const clock_;
 };
 
-class AlarmsGetFunction : public AsyncExtensionFunction {
+class AlarmsGetFunction : public UIThreadExtensionFunction {
  protected:
   ~AlarmsGetFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void Callback(const std::string& name, Alarm* alarm);
   DECLARE_EXTENSION_FUNCTION("alarms.get", ALARMS_GET)
 };
 
-class AlarmsGetAllFunction : public AsyncExtensionFunction {
+class AlarmsGetAllFunction : public UIThreadExtensionFunction {
  protected:
   ~AlarmsGetAllFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void Callback(const AlarmList* alarms);
   DECLARE_EXTENSION_FUNCTION("alarms.getAll", ALARMS_GETALL)
 };
 
-class AlarmsClearFunction : public AsyncExtensionFunction {
+class AlarmsClearFunction : public UIThreadExtensionFunction {
  protected:
   ~AlarmsClearFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void Callback(const std::string& name, bool success);
   DECLARE_EXTENSION_FUNCTION("alarms.clear", ALARMS_CLEAR)
 };
 
-class AlarmsClearAllFunction : public AsyncExtensionFunction {
+class AlarmsClearAllFunction : public UIThreadExtensionFunction {
  protected:
   ~AlarmsClearAllFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void Callback();

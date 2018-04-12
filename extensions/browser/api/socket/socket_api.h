@@ -442,13 +442,15 @@ class SocketGetInfoFunction : public SocketAsyncApiFunction {
   std::unique_ptr<api::socket::GetInfo::Params> params_;
 };
 
-class SocketGetNetworkListFunction : public AsyncExtensionFunction {
+class SocketGetNetworkListFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("socket.getNetworkList", SOCKET_GETNETWORKLIST)
 
  protected:
   ~SocketGetNetworkListFunction() override {}
-  bool RunAsync() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
   void GetNetworkListOnFileThread();
