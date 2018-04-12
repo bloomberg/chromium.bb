@@ -34,12 +34,6 @@ class BaseUIManager
 
   BaseUIManager();
 
-  // Called to stop or shutdown operations on the io_thread. This may be called
-  // multiple times during the life of the UIManager. Should be called
-  // on IO thread. If shutdown is true, the manager is disabled permanently.
-  // This currently is a no-op in the base class.
-  virtual void StopOnIOThread(bool shutdown);
-
   // Called on the UI thread to display an interstitial page.
   // |url| is the url of the resource that matches a safe browsing list.
   // If the request contained a chain of redirects, |url| is the last url

@@ -113,11 +113,6 @@ namespace safe_browsing {
 
 BaseUIManager::BaseUIManager() {}
 
-void BaseUIManager::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return;
-}
-
 BaseUIManager::~BaseUIManager() {}
 
 bool BaseUIManager::IsWhitelisted(const UnsafeResource& resource) {
