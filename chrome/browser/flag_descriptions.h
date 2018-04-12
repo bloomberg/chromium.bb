@@ -569,9 +569,6 @@ extern const char kMacViewsAutofillPopupDescription[];
 extern const char kManualPasswordGenerationName[];
 extern const char kManualPasswordGenerationDescription[];
 
-extern const char kManualPasswordSavingName[];
-extern const char kManualPasswordSavingDescription[];
-
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
 extern const char kMarkHttpAsDangerous[];

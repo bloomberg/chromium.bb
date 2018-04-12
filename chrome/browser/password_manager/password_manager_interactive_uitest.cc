@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "components/password_manager/core/browser/test_password_store.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -53,25 +52,6 @@ void SimulateUserDeletingFieldContent(content::WebContents* web_contents,
 }  // namespace
 
 namespace password_manager {
-
-// This is a test fixture, just to enable the kManualSaving feature. The
-// fixture should be replaced by PasswordManagerBrowserTestBase once the
-// kManualSaving feature is deleted.
-class PasswordManagerBrowserTestForManualSaving
-    : public PasswordManagerBrowserTestBase {
- public:
-  PasswordManagerBrowserTestForManualSaving() = default;
-  ~PasswordManagerBrowserTestForManualSaving() override = default;
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kManualSaving);
-    PasswordManagerBrowserTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
   // At first let us save a credential to the password store.
@@ -133,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
             (stored_passwords.begin()->second)[1].username_value);
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ManualFallbackForSaving) {
   NavigateToFile("/password/password_form.html");
 
@@ -161,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
   CheckThatCredentialsStored(base::string16(), base::ASCIIToUTF16("ORARY"));
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ManualFallbackForSaving_HideAfterTimeout) {
   NavigateToFile("/password/password_form.html");
   ManagePasswordsUIController::set_save_fallback_timeout_in_seconds(0);
@@ -178,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
   EXPECT_FALSE(prompt_observer.IsSavePromptAvailable());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ManualFallbackForSaving_HideIcon) {
   NavigateToFile("/password/password_form.html");
 
@@ -193,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
   prompt_observer.WaitForInactiveState();
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ManualFallbackForSaving_GoToManagedState) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =

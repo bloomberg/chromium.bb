@@ -3439,11 +3439,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kDirectManipulationStylus)},
 #endif  // defined(OS_WIN)
 
-    {"enable-manual-password-saving",
-     flag_descriptions::kManualPasswordSavingName,
-     flag_descriptions::kManualPasswordSavingDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(password_manager::features::kManualSaving)},
-
 #if !defined(OS_ANDROID)
     {"remove-deprecared-gaia-signin-endpoint",
      flag_descriptions::kRemoveUsageOfDeprecatedGaiaSigninEndpointName,
