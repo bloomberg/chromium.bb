@@ -267,6 +267,9 @@ void NavigationManagerImpl::LoadURLWithParams(
         last_committed_url.EqualsIgnoringRef(pending_url)) {
       pending_item->SetIsCreatedFromHashChange(true);
     }
+
+    if (params.virtual_url.is_valid())
+      pending_item->SetVirtualURL(params.virtual_url);
   }
 
   // Add additional headers to the NavigationItem before loading it in the web

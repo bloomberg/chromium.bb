@@ -446,10 +446,11 @@ void WKBasedNavigationManagerImpl::Restore(
   // For now, use RELOAD because restoring history is kind of like a reload of
   // the current page.
   params.transition_type = ui::PAGE_TRANSITION_RELOAD;
-  LoadURLWithParams(params);
 
   // This pending item will become the first item in the restored history.
-  GetPendingItemImpl()->SetVirtualURL(items[0]->GetVirtualURL());
+  params.virtual_url = items[0]->GetVirtualURL();
+
+  LoadURLWithParams(params);
 }
 
 void WKBasedNavigationManagerImpl::LoadIfNecessary() {
