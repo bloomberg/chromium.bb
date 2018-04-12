@@ -16,6 +16,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 
 import org.chromium.content.R;
+import org.chromium.ui.widget.UiWidgetFactory;
 
 import java.util.List;
 
@@ -43,19 +44,22 @@ public class SelectPopupDialog implements SelectPopup.Ui {
         // crbug.com/653026
         listView.setCacheColorHint(0);
 
-        AlertDialog.Builder b = new AlertDialog.Builder(windowContext)
-                .setView(listView)
-                .setCancelable(true);
-        setInverseBackgroundForced(b);
+        mListBoxPopup = UiWidgetFactory.getInstance().createAlertDialog(windowContext);
+        mListBoxPopup.setView(listView);
+        mListBoxPopup.setCancelable(true);
+        setInverseBackgroundForced(mListBoxPopup);
 
         if (multiple) {
-            b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    notifySelection(getSelectedIndices(listView));
-                }
-            });
-            b.setNegativeButton(android.R.string.cancel,
+            mListBoxPopup.setButton(DialogInterface.BUTTON_POSITIVE,
+                    mListBoxPopup.getContext().getString(android.R.string.ok),
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            notifySelection(getSelectedIndices(listView));
+                        }
+                    });
+            mListBoxPopup.setButton(DialogInterface.BUTTON_NEGATIVE,
+                    mListBoxPopup.getContext().getString(android.R.string.cancel),
                     new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -63,7 +67,6 @@ public class SelectPopupDialog implements SelectPopup.Ui {
                         }
                     });
         }
-        mListBoxPopup = b.create();
         final SelectPopupAdapter adapter = new SelectPopupAdapter(
                 mListBoxPopup.getContext(), getSelectDialogLayout(multiple), items);
         listView.setAdapter(adapter);
@@ -98,11 +101,11 @@ public class SelectPopupDialog implements SelectPopup.Ui {
     }
 
     @SuppressWarnings("deprecation")
-    private static void setInverseBackgroundForced(AlertDialog.Builder builder) {
+    private static void setInverseBackgroundForced(AlertDialog dialog) {
         // This is needed for pre-Holo themes (e.g. android:Theme.Black), which can be used in
         // WebView. See http://crbug.com/596626. This can be removed if/when this class starts
         // using android.support.v7.app.AlertDialog.
-        builder.setInverseBackgroundForced(true);
+        dialog.setInverseBackgroundForced(true);
     }
 
     private int getSelectDialogLayout(boolean isMultiChoice) {
