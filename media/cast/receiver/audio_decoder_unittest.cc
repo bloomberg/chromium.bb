@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/cfi_buildflags.h"
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -237,6 +238,7 @@ TEST_P(AudioDecoderTest, RecoversFromDroppedFrames) {
   WaitForAllAudioToBeDecoded();
 }
 
+#if !BUILDFLAG(CFI_CAST_CHECK)  // https://crbug.com/831999
 INSTANTIATE_TEST_CASE_P(
     AudioDecoderTestScenarios,
     AudioDecoderTest,
@@ -245,6 +247,7 @@ INSTANTIATE_TEST_CASE_P(
          TestScenario(CODEC_AUDIO_PCM16, 2, 48000),
          TestScenario(CODEC_AUDIO_OPUS, 1, 8000),
          TestScenario(CODEC_AUDIO_OPUS, 2, 48000)));
+#endif
 
 }  // namespace cast
 }  // namespace media
