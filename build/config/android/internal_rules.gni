@@ -381,6 +381,23 @@ template("write_build_config") {
   }
 }
 
+# Copy a list of file into a destination directory. Potentially renaming
+# files are they are copied. This also ensures that symlinks are followed
+# during the copy (i.e. the symlinks are never copied, only their content).
+#
+# Variables:
+#  dest: Destination directory path.
+#  sources: List of source files or directories to copy to dest.
+#  renaming_sources: Optional list of source file paths that will be renamed
+#    during the copy operation. If provided, renaming_destinations is required.
+#  renaming_destinations: Optional list of destination file paths, required
+#    when renaming_sources is provided. Both lists should have the same size
+#    and matching entries.
+#  args: Optional. Additionnal arguments to the copy_ex.py script.
+#
+#  The following variables have the usual GN meaning: data, deps, inputs,
+#  outputs, testonly, visibility.
+#
 template("copy_ex") {
   set_sources_assignment_filter([])
   action(target_name) {
@@ -907,10 +924,13 @@ if (enable_java_templates) {
   #
   # Variables
   #   main_class: The class containing the program entry point.
-  #   jar_file: Optional first classpath entry.
-  #   script_name: Name of the script to generate.
   #   build_config: Path to .build_config for the jar (contains classpath).
+  #   jar_path: Optional. First classpath entry to be inserted before
+  #     the classpath extracted from the build_config.
+  #   script_name: Name of the script to generate.
   #   wrapper_script_args: List of extra arguments to pass to the executable.
+  #   bootclasspath: Optional. list of zip/jar file paths to add to the boot
+  #     class path when the script will invoke javac.
   #
   template("java_binary_script") {
     action(target_name) {
@@ -1157,6 +1177,32 @@ if (enable_java_templates) {
     }
   }
 
+  # TODO(digit): Document this!
+  #
+  # Variables:
+  #  testonly:
+  #  build_config:
+  #  input_jar_path:
+  #  output_jar_path:
+  #  enable_build_hooks:
+  #  enable_build_hooks_android:
+  #  supports_android:
+  #  emma_instrument:
+  #  jar_excluded_patterns: Optional list of .class file patterns to exclude
+  #    from the final .jar file.
+  #  jar_included_patterns: OPtional list of .class file patterns to include
+  #    in the final .jar file. jar_excluded_patterns take precedence over this.
+  #  strip_resource_classes:
+  #  alternative_android_sdk_ijar:
+  #  alternative_android_sdk_ijar_dep:
+  #  alternative_android_sdk:
+  #  deps:
+  #  java_files:
+  #  java_sources_file:
+  #  inputs:
+  #  data_deps:
+  #  visibility:
+  #
   template("process_java_prebuilt") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
@@ -1220,9 +1266,6 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        if (defined(invoker.public_deps)) {
-          public_deps = invoker.public_deps
-        }
         _android_sdk_jar = android_sdk_jar
         if (defined(invoker.alternative_android_sdk_jar)) {
           _android_sdk_jar = invoker.alternative_android_sdk_jar
@@ -1276,9 +1319,6 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        if (defined(invoker.public_deps)) {
-          public_deps = invoker.public_deps
-        }
         inputs = [
           _build_config,
           _desugar_input_jar,
@@ -1323,9 +1363,6 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        if (defined(invoker.public_deps)) {
-          public_deps = invoker.public_deps
-        }
         inputs = [
           _build_config,
           _filter_input_jar,
@@ -1362,9 +1399,6 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        if (defined(invoker.public_deps)) {
-          public_deps = invoker.public_deps
-        }
 
         forward_variables_from(invoker,
                                [
@@ -1391,9 +1425,6 @@ if (enable_java_templates) {
       deps = _deps
       if (defined(invoker.deps)) {
         deps += invoker.deps
-      }
-      if (defined(invoker.public_deps)) {
-        public_deps = invoker.public_deps
       }
       dest = _output_jar_path
       sources = [
@@ -1484,8 +1515,7 @@ if (enable_java_templates) {
   #     The default is to use 'aapt' to generate the file from the content
   #     of the resource directories.
   #
-  #   alternative_android_sdk_jar: Alternative android.jar to use.
-  #     TODO(digit): Not sure this is needed here.
+  #   alternative_android_sdk_jar: Alternative system android.jar to use.
   #
   #   shared_resources: (optional)
   #     If true, generate an R.java file that uses non-final resource ID
@@ -2292,6 +2322,66 @@ if (enable_java_templates) {
     }
   }
 
+  # Compile Java source files into a .jar file, potentially using an
+  # annotation processor, and/or the errorprone compiler.
+  #
+  # Note that the only way to specify custom annotation processors is
+  # by using build_config to point to a file that corresponds to a java-related
+  # target that includes javac:processor_classes entries (i.e. there is no
+  # variable here that can be used for this purpose).
+  #
+  # Note also the peculiar use of java_files / java_sources_file. The content
+  # of the java_files list and the java_sources_file file must match exactly.
+  # This rule uses java_files only to list the inputs to the action that
+  # calls the javac.py script, but will pass the list of Java source files
+  # with the '@${java_sources_file}" command-line syntax. Not a problem in
+  # practice since this is only called from java_library_impl() that sets up
+  # the variables properly.
+  #
+  # Variables:
+  #  java_files: Optional list of Java source file paths.
+  #  srcjar_deps: Optional list of .srcjar dependencies (not file paths).
+  #    The corresponding source files they contain will be compiled too.
+  #  java_sources_file: Optional path to file containing list of Java source
+  #    file paths. This must always be provided if java_files is not empty
+  #    and must match it exactly.
+  #  build_config: Path to the .build_config file of the corresponding
+  #    java_library_impl() target. The following entries will be used by this
+  #    template: javac:srcjars, deps_info:javac_full_classpath,
+  #    deps_info:javac_full_interface_classpath, javac:processor_classpath,
+  #    javac:processor_classes
+  #  javac_jar_path: Path to the final output .jar file.
+  #  javac_args: Optional list of extra arguments to pass to javac.
+  #  chromium_code: Whether this corresponds to Chromium-specific sources.
+  #  requires_android: True if these sources can only run on Android.
+  #  alternative_android_sdk_ijar: Optional path to alternative Android system
+  #    interface jar file (android.jar). Ignored it !requires_android.
+  #  alternative_android_sdk_ijar_dep: If alternative_android_sdk_ijar is
+  #    provided, this should be the dependency target that generates the
+  #    alternative .jar file.
+  #  additional_jar_files: Optional list of files to copy into the resulting
+  #    .jar file (by default, only .class files are put there). Each entry
+  #    has the 'srcPath:dstPath' format.
+  #  enable_incremental_javac_override: Optional. If provided, determines
+  #    whether incremental javac compilation (based on jmake) is enabled.
+  #    Otherwise, decision is based on the global enable_incremental_javac
+  #    build arg variable.
+  #  enable_errorprone: Optional. If True, use the errorprone compiler to
+  #    check for error-prone constructs in the language. If not provided,
+  #    whether this is enabled depends on chromium_code and the global
+  #    use_errorprone_java_compiler variable.
+  #  apk_name: Optional APK name. If provided, will tell javac.py to also
+  #    generate an .apk.jar.info file under size-info/${apk_name}.apk.jar.info
+  #  provider_configurations: Optional list of paths to Java service
+  #    provider configuration files [1]. These will be copied under
+  #    META-INF/services/ in the final .jar file.
+  #  processor_args_javac: List of annotation processor arguments, each one
+  #    will be passed to javac as -A<entry>.
+  #  deps: Dependencies for the corresponding target.
+  #  testonly: Usual meaning (should be True for test-only targets)
+  #
+  # [1] https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html
+  #
   template("compile_java") {
     forward_variables_from(invoker, [ "testonly" ])
 
@@ -2326,11 +2416,6 @@ if (enable_java_templates) {
     } else {
       # Default to build arg if not overridden.
       _enable_incremental_javac = enable_incremental_javac
-    }
-
-    _manifest_entries = []
-    if (defined(invoker.manifest_entries)) {
-      _manifest_entries = invoker.manifest_entries
     }
 
     _srcjar_deps = []
@@ -2403,9 +2488,6 @@ if (enable_java_templates) {
             rebase_path(_android_sdk_ijar, root_build_dir)
         args += [ "--bootclasspath=$_rebased_android_sdk_ijar" ]
       }
-      foreach(e, _manifest_entries) {
-        args += [ "--manifest-entry=" + e ]
-      }
       if (_chromium_code) {
         args += [ "--chromium-code=1" ]
       }
@@ -2452,6 +2534,127 @@ if (enable_java_templates) {
     }
   }
 
+  # A rule that will handle multiple Java-related targets.
+  #
+  # The caller can provide a list of source files with 'java_files'
+  # and 'srcjar_deps', or a prebuilt .jar file through 'jar_path'.
+  #
+  # In the case of a 'java_binary' target type, it can even provide none of
+  # that (and the rule will just generate its wrapper script).
+  #
+  # The template will process the input .jar file (either the prebuilt one,
+  # or the result of compiling the sources), for example to apply Proguard,
+  # but also other ranges of bytecode-level rewriting schemes.
+  #
+  # Variables:
+  #  type: type of Java target, valid values: 'java_library', 'java_binary',
+  #    'junit_binary', 'java_annotation_processor', and 'android_apk'
+  #  main_target_name: optional. If provided, overrides target_name when
+  #    creating sub-targets (e.g. "${main_target_name}__build_config") and
+  #    some output files (e.g. "${main_target_name}.sources"). Only used
+  #    for 'android_apk' types at the moment, where main_target_name will
+  #    be the name of the main APK target.
+  #  supports_android: Optional. True if target can run on Android.
+  #  requires_android: Optional. True if target can only run on Android.
+  #  java_files: Optional list of Java source file paths for this target.
+  #  srcjar_deps: Optional list of .srcjar targets (not file paths). The Java
+  #    source files they contain will also be compiled for this target.
+  #  java_sources_file: Optional path to a file which will be written with
+  #    the content of java_files. If not provided, the file will be written
+  #    under $target_gen_dir/$main_target_name.sources. Ignored if
+  #    java_files is empty. If not
+  #  jar_path: Optional path to a prebuilt .jar file for this target.
+  #    Mutually exclusive with java_files and srcjar_deps.
+  #  final_jar_path: Optional path to the final output .jar file (after
+  #    processing). If not provided, the output will go under
+  #    $root_build_dir/lib.java/
+  #  output_name: Optional output name for the final jar path. Ignored if
+  #    final_jar_path is provided. Otherwise, used to determine the name
+  #    of the final jar. If not provided, the default is to use the same
+  #    name as jar_path, if provided, or main_target_name.
+  #  dex_path: Optional. Path to the output dex.jar file for this target.
+  #    Ignored if !supports_android.
+  #  main_class: Main Java class name for 'java_binary', 'junit_binary' and
+  #    'java_annotation_processor' target types. Should not be set for other
+  #    ones.
+  #  deps: Dependencies for this target.
+  #  testonly: True iff target should only be used for tests.
+  #  no_build_hooks: Disables bytecode rewriting of asserts and android
+  #    resources methods.
+  #  chromium_code: Optional. Whether this is Chromium-specific code. If not
+  #    provided, this is determined automatically, based on the location of
+  #    the source files (i.e. anything under third_party/ is not
+  #    Chromium-specific unless it is in a 'chromium' sub-directory).
+  #  emma_never_instrument: Optional. If provided, whether to forbid
+  #    instrumentation with the Emma coverage processor. If not provided,
+  #    this is controlled by the global emma_coverage build arg variable
+  #    and only used for non-test Chromium code.
+  #  alternative_android_sdk_jar: Optional. Alternative Android system
+  #    android.jar to use.
+  #  alternative_android_sdk_ijar: Optional alternative Android system
+  #    interface jar path (i.e. the alternative_android_sdk_jar file processed
+  #    by the ijar tool).
+  #  alternative_android_sdk_ijar_dep: Optional. Dependency target that
+  #    generates alternative_android_sdk_ijar (if the latter is provided).
+  #  annotation_processor_deps: Optional list of dependencies corresponding
+  #    to annotation processors used to compile these sources.
+  #  input_jars_paths: Optional list of additional .jar file paths, which will
+  #    be added to the compile-time classpath when building this target (but
+  #    not to the runtime classpath).
+  #  classpath_deps: Optional list of additional java library dependencies,
+  #    whose .jar files will be added to the compile-time classpath when
+  #    building this target (but not to the runtime classpath).
+  #  gradle_treat_as_prebuilt: Cause generate_gradle.py to reference this
+  #    library via its built .jar rather than including its .java sources.
+  #  proguard_enabled: Optional. True to enable ProGuard obfuscation.
+  #  proguard_configs: Optional list of additional proguard config file paths.
+  #  bypass_platform_checks: Optional. If True, platform checks will not
+  #    be performed. They are used to verify that every target with
+  #    requires_android only depends on targets that, at least supports_android.
+  #    Similarly, if a target has !supports_android, then it cannot depend on
+  #    any other target that has requires_android.
+  #  include_java_resources: Optional. If True, include Java (not Android)
+  #    resources into final .jar file.
+  #  android_manifest_for_lint: Optional path to Android manifest to use
+  #    if Android linting is enabled. Ignored for 'android_apk' types
+  #    (since the value of android_manifest will be used instead).
+  #  lint_suppressions_file: Optional lint suppressions input file.
+  #  jar_excluded_patterns: Optional list of .class file patterns to exclude
+  #    from the final .jar file.
+  #  jar_included_patterns: Optional list of .class file patterns to include
+  #    in the final .jar file. jar_excluded_patterns take precedence over this.
+  #
+  # For 'android_apk' targets only:
+  #
+  #  apk_path: Path to the final APK file.
+  #  android_manifest: Path to AndroidManifest.xml file for the APK.
+  #  android_manifest_dep: Optional. Dependency target that generates
+  #    android_manifest.
+  #  apk_under_test: For 'android_apk' targets used to test other APKs,
+  #    this is the target name of APK being tested.
+  #  incremental_allowed: Optional (default false). True to allow the
+  #    generation of incremental APKs ('android_apk' targets only).
+  #  incremental_apk_path: If incremental_allowed, path to the incremental
+  #    output APK.
+  #  incremental_install_json_path: If incremental_allowed, path to the output
+  #    incremental install json configuration file.
+  #  non_native_packed_relocations: Optional. True if the target Android
+  #    system does not support compressed relocations in native shared
+  #    libraries.
+  #  shared_libraries_runtime_deps_file: Optional. Path to a file listing the
+  #    native shared libraries required at runtime by
+  #  secondary_abi_shared_libraries_runtime_deps_file:
+  #
+  #
+  # For 'java_binary' and 'junit_binary' targets only. Ignored by others:
+  #
+  #  bootclasspath: Optional list of boot class paths used by the generated
+  #    wrapper script.
+  #  wrapper_script_name: Optional name for the generated wrapper script.
+  #    Default is main target name.
+  #  wrapper_script_args: Optional list of extra arguments used by the
+  #    generated wrapper script.
+  #
   template("java_library_impl") {
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
@@ -2606,33 +2809,33 @@ if (enable_java_templates) {
     _build_config_target_name = "${_main_target_name}__build_config"
 
     write_build_config(_build_config_target_name) {
-      forward_variables_from(
-          invoker,
-          [
-            "alternative_android_sdk_ijar",
-            "annotation_processor_deps",
-            "apk_path",
-            "apk_under_test",
-            "classpath_deps",
-            "gradle_treat_as_prebuilt",
-            "incremental_allowed",
-            "incremental_apk_path",
-            "incremental_install_json_path",
-            "proguard_enabled",
-            "non_native_packed_relocations",
-            "shared_libraries_runtime_deps_file",
-            "secondary_abi_shared_libraries_runtime_deps_file",
-            "input_jars_paths",
-            "main_class",
-            "proguard_configs",
-            "type",
-          ])
+      forward_variables_from(invoker,
+                             [
+                               "alternative_android_sdk_ijar",
+                               "annotation_processor_deps",
+                               "classpath_deps",
+                               "gradle_treat_as_prebuilt",
+                               "proguard_enabled",
+                               "proguard_configs",
+                               "input_jars_paths",
+                               "main_class",
+                               "type",
+                             ])
       if (type == "android_apk") {
-        forward_variables_from(invoker,
-                               [
-                                 "android_manifest",
-                                 "android_manifest_dep",
-                               ])
+        forward_variables_from(
+            invoker,
+            [
+              "android_manifest",
+              "android_manifest_dep",
+              "apk_path",
+              "apk_under_test",
+              "incremental_allowed",
+              "incremental_apk_path",
+              "incremental_install_json_path",
+              "non_native_packed_relocations",
+              "shared_libraries_runtime_deps_file",
+              "secondary_abi_shared_libraries_runtime_deps_file",
+            ])
       }
       build_config = _build_config
       is_prebuilt = _is_prebuilt
@@ -2698,8 +2901,6 @@ if (enable_java_templates) {
                                  "alternative_android_sdk_ijar_dep",
                                  "enable_errorprone",
                                  "enable_incremental_javac_override",
-                                 "manifest_entries",
-                                 "processors_javac",
                                  "processor_args_javac",
                                  "provider_configurations",
                                  "javac_args",
