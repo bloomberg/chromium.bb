@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/after_startup_task_utils.h"
 
 namespace {
 
@@ -18,12 +20,23 @@ StringMapping GetPathMapping() {
   });
 }
 
-// Wrapper function for InspectModule() that takes the StringMapping via a
-// scoped_refptr. This saves a copy per invocation.
-std::unique_ptr<ModuleInspectionResult> InspectModuleOnBlockingSequence(
+// Does the inspection of the module and replies with the result by calling
+// |on_inspection_finished_callback| on |reply_task_runner|.
+// The StringMapping is wrapped in a RefCountedData to save a copy per
+// invocation.
+//
+// TODO(pmonette): When the Task Scheduler starts supporting after-startup
+// background sequences, change this to use base::PostTaskAndReplyWithResult().
+void InspectModuleOnBlockingSequenceAndReply(
     scoped_refptr<base::RefCountedData<StringMapping>> env_variable_mapping,
-    const ModuleInfoKey& module_key) {
-  return InspectModule(env_variable_mapping->data, module_key);
+    const ModuleInfoKey& module_key,
+    scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
+    base::OnceCallback<void(std::unique_ptr<ModuleInspectionResult>)>
+        on_inspection_finished_callback) {
+  reply_task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(on_inspection_finished_callback),
+                     InspectModule(env_variable_mapping->data, module_key)));
 }
 
 }  // namespace
@@ -31,7 +44,9 @@ std::unique_ptr<ModuleInspectionResult> InspectModuleOnBlockingSequence(
 ModuleInspector::ModuleInspector(
     const OnModuleInspectedCallback& on_module_inspected_callback)
     : on_module_inspected_callback_(on_module_inspected_callback),
-      inspection_task_priority_(base::TaskPriority::BACKGROUND),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       path_mapping_(base::MakeRefCounted<base::RefCountedData<StringMapping>>(
           GetPathMapping())),
       weak_ptr_factory_(this) {}
@@ -47,8 +62,11 @@ void ModuleInspector::AddModule(const ModuleInfoKey& module_key) {
 
 void ModuleInspector::IncreaseInspectionPriority() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Modify the TaskPriority so that future inspections are done faster.
-  inspection_task_priority_ = base::TaskPriority::USER_VISIBLE;
+  // Create a task runner with higher priority so that future inspections are
+  // done faster.
+  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
 }
 
 bool ModuleInspector::IsIdle() {
@@ -58,14 +76,24 @@ bool ModuleInspector::IsIdle() {
 void ModuleInspector::StartInspectingModule() {
   ModuleInfoKey module_key = queue_.front();
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      {base::MayBlock(), inspection_task_priority_,
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&InspectModuleOnBlockingSequence, path_mapping_,
-                     module_key),
-      base::BindOnce(&ModuleInspector::OnInspectionFinished,
-                     weak_ptr_factory_.GetWeakPtr(), module_key));
+  // There is a small priority inversion that happens when
+  // IncreaseInspectionPriority() is called while a module is currently being
+  // inspected.
+  //
+  // This is because all the subsequent tasks will be posted at a higher
+  // priority, but they are waiting on the current task that is currently
+  // running at a lower priority.
+  //
+  // In practice, this is not an issue because the only caller of
+  // IncreaseInspectionPriority() (chrome://conflicts) does not depend on the
+  // inspection to finish synchronously and is not blocking anything else.
+  AfterStartupTaskUtils::PostTask(
+      FROM_HERE, task_runner_,
+      base::BindOnce(
+          &InspectModuleOnBlockingSequenceAndReply, path_mapping_, module_key,
+          base::SequencedTaskRunnerHandle::Get(),
+          base::BindOnce(&ModuleInspector::OnInspectionFinished,
+                         weak_ptr_factory_.GetWeakPtr(), module_key)));
 }
 
 void ModuleInspector::OnInspectionFinished(

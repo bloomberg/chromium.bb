@@ -13,8 +13,7 @@
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
-#include "base/test/test_simple_task_runner.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -54,8 +53,11 @@ class ModuleInspectorTest : public testing::Test {
   }
 
  protected:
+  // A TestBrowserThreadBundle is required instead of a ScopedTaskEnvironment
+  // because of AfterStartupTaskUtils (DCHECK for BrowserThread::UI).
+  //
   // Must be before the ModuleInspector.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
 
  private:
   ModuleInspector module_inspector_;
@@ -72,10 +74,9 @@ TEST_F(ModuleInspectorTest, OneModule) {
       {GetKernel32DllFilePath(), 0, 0, 1},
   });
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
-  EXPECT_EQ(1u, inspected_modules().size());
-
+  ASSERT_EQ(1u, inspected_modules().size());
   EXPECT_TRUE(inspected_modules().front());
 }
 
@@ -88,7 +89,7 @@ TEST_F(ModuleInspectorTest, MultipleModules) {
       {base::FilePath(), 0, 0, 5},
   });
 
-  scoped_task_environment_.RunUntilIdle();
+  test_browser_thread_bundle_.RunUntilIdle();
 
   EXPECT_EQ(5u, inspected_modules().size());
   for (const auto& inspection_result : inspected_modules())
