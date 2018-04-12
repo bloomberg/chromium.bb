@@ -1936,7 +1936,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       td->cm = cm;
       td->xd = pbi->mb;
       td->xd.corrupted = 0;
-      td->xd.counts = NULL;
       av1_zero(td->dqcoeff);
       av1_tile_init(&td->xd.tile, td->cm, tile_row, tile_col);
       setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
@@ -3186,35 +3185,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   return 0;
 }
 
-#ifdef NDEBUG
-#define debug_check_frame_counts(cm) (void)0
-#else   // !NDEBUG
-static void debug_check_frame_counts(const AV1_COMMON *const cm) {
-  FRAME_COUNTS zero_counts;
-  av1_zero(zero_counts);
-  assert(cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD ||
-         cm->error_resilient_mode);
-  assert(!memcmp(cm->counts.partition, zero_counts.partition,
-                 sizeof(cm->counts.partition)));
-  assert(!memcmp(cm->counts.switchable_interp, zero_counts.switchable_interp,
-                 sizeof(cm->counts.switchable_interp)));
-  assert(!memcmp(cm->counts.inter_compound_mode,
-                 zero_counts.inter_compound_mode,
-                 sizeof(cm->counts.inter_compound_mode)));
-  assert(!memcmp(cm->counts.interintra, zero_counts.interintra,
-                 sizeof(cm->counts.interintra)));
-  assert(!memcmp(cm->counts.wedge_interintra, zero_counts.wedge_interintra,
-                 sizeof(cm->counts.wedge_interintra)));
-  assert(!memcmp(cm->counts.compound_type, zero_counts.compound_type,
-                 sizeof(cm->counts.compound_type)));
-  assert(!memcmp(cm->counts.motion_mode, zero_counts.motion_mode,
-                 sizeof(cm->counts.motion_mode)));
-  assert(!memcmp(cm->counts.intra_inter, zero_counts.intra_inter,
-                 sizeof(cm->counts.intra_inter)));
-  assert(!memcmp(cm->counts.skip, zero_counts.skip, sizeof(cm->counts.skip)));
-}
-#endif  // NDEBUG
-
 struct aom_read_bit_buffer *av1_init_read_bit_buffer(
     AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
     const uint8_t *data_end) {
@@ -3325,8 +3295,6 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Uninitialized entropy context.");
 
-  av1_zero(cm->counts);
-
   xd->corrupted = 0;
   return 0;
 }
@@ -3401,8 +3369,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
       *cm->fc = pbi->tile_data[cm->context_update_tile_id].tctx;
       av1_reset_cdf_symbol_counters(cm->fc);
-    } else {
-      debug_check_frame_counts(cm);
     }
   } else {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
