@@ -224,7 +224,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_scrollbars_update_(false),
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
-      forcing_layout_parent_view_(false),
       needs_intersection_observation_(false),
       needs_forced_compositing_update_(false),
       main_thread_scrolling_reasons_(0),
@@ -1057,7 +1056,6 @@ void LocalFrameView::PerformLayout(bool in_subtree_layout) {
     ScheduleOrthogonalWritingModeRootsForLayout();
   }
 
-
   DCHECK(!IsInPerformLayout());
   Lifecycle().AdvanceTo(DocumentLifecycle::kInPerformLayout);
 
@@ -1135,12 +1133,8 @@ void LocalFrameView::UpdateLayout() {
 
   ScriptForbiddenScope forbid_script;
 
-  // forcing_layout_parent_view_ means that we got here recursively via a call
-  // to ForceLayoutParentViewIfNeeded.  In that case, we don't do anything
-  // here, since the original call to UpdateLayout will do its work.  This is
-  // not just an optimization: SVG document size negotiation relies on this.
   if (IsInPerformLayout() || ShouldThrottleRendering() ||
-      forcing_layout_parent_view_ || !frame_->GetDocument()->IsActive())
+      !frame_->GetDocument()->IsActive())
     return;
 
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::layout");
