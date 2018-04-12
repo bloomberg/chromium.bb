@@ -634,7 +634,7 @@ public abstract class StackLayoutBase
     public void uiDoneClosingTab(long time, int id, boolean canUndo, boolean incognito) {
         // If homepage is enabled and there is a maximum of 1 tab in both models
         // (this is the last tab), the tab closure cannot be undone.
-        canUndo &= !(HomepageManager.isHomepageEnabled()
+        canUndo &= !(HomepageManager.shouldCloseAppWithZeroTabs()
                 && (mTabModelSelector.getModel(true).getCount()
                                    + mTabModelSelector.getModel(false).getCount()
                            < 2));

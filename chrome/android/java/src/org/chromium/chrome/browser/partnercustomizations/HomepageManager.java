@@ -11,6 +11,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
@@ -87,6 +88,14 @@ public class HomepageManager {
             return getInstance().getPrefHomepageEnabled();
         }
         return false;
+    }
+
+    /**
+     * @return Whether to close the app when the user has zero tabs.
+     */
+    public static boolean shouldCloseAppWithZeroTabs() {
+        return HomepageManager.isHomepageEnabled()
+                && !NewTabPage.isNTPUrl(HomepageManager.getHomepageUri());
     }
 
     /**
