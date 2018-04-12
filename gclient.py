@@ -1014,13 +1014,14 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         while file_list[i].startswith(('\\', '/')):
           file_list[i] = file_list[i][1:]
 
-    # Always parse the DEPS file.
-    self.ParseDepsFile(expand_vars=(command != 'flatten'))
+    if self.recursion_limit:
+      self.ParseDepsFile(expand_vars=(command != 'flatten'))
+
     self._run_is_done(file_list or [], parsed_url)
-    if command in ('update', 'revert') and not options.noprehooks:
-      self.RunPreDepsHooks()
 
     if self.recursion_limit:
+      if command in ('update', 'revert') and not options.noprehooks:
+        self.RunPreDepsHooks()
       # Parse the dependencies of this dependency.
       for s in self.dependencies:
         if s.should_process:

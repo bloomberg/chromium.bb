@@ -362,6 +362,35 @@ class GClientSmokeGIT(GClientSmokeBase):
     ])
     self.assertTree(tree)
 
+  def testSyncJsonOutput(self):
+    self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
+    output_json = os.path.join(self.root_dir, 'output.json')
+    self.gclient(['sync', '--deps', 'mac', '--output-json', output_json])
+    with open(output_json) as f:
+      output_json = json.load(f)
+
+    out = {
+        'solutions': {
+            'src/': {
+                'scm': 'git',
+                'url': self.git_base + 'repo_1',
+                'revision': self.githash('repo_1', 2),
+            },
+            'src/repo2/': {
+                'scm': 'git',
+                'url':
+                    self.git_base + 'repo_2@' + self.githash('repo_2', 1)[:7],
+                'revision': self.githash('repo_2', 1),
+            },
+            'src/repo2/repo_renamed/': {
+                'scm': 'git',
+                'url': '/repo_3',
+                'revision': self.githash('repo_3', 2),
+            },
+        },
+    }
+    self.assertEqual(out, output_json)
+
   def testSyncIgnoredSolutionName(self):
     """TODO(maruel): This will become an error soon."""
     if not self.enabled:
@@ -786,10 +815,9 @@ class GClientSmokeGIT(GClientSmokeBase):
         'name': 'src',
         'deps_file': 'DEPS',
         'custom_deps': {
-            'foo/bar': None,
             'src/repo2': '%srepo_2@%s' % (
                 self.git_base, self.githash('repo_2', 1)),
-            u'src/repo2/repo_renamed': '%srepo_3@%s' % (
+            'src/repo2/repo_renamed': '%srepo_3@%s' % (
                 self.git_base, self.githash('repo_3', 2)),
         },
     }]
