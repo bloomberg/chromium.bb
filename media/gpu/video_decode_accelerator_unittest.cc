@@ -372,14 +372,16 @@ gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
   gfx::GpuMemoryBufferHandle handle;
 #if defined(OS_CHROMEOS)
   CHECK(pixmap_);
-  int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(0)));
-  LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
   handle.type = gfx::NATIVE_PIXMAP;
-  handle.native_pixmap_handle.fds.emplace_back(
-      base::FileDescriptor(duped_fd, true));
-  handle.native_pixmap_handle.planes.emplace_back(
-      pixmap_->GetDmaBufPitch(0), pixmap_->GetDmaBufOffset(0), 0,
-      pixmap_->GetDmaBufModifier(0));
+  for (size_t i = 0; i < pixmap_->GetDmaBufFdCount(); i++) {
+    int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(i)));
+    LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
+    handle.native_pixmap_handle.fds.emplace_back(
+        base::FileDescriptor(duped_fd, true));
+    handle.native_pixmap_handle.planes.emplace_back(
+        pixmap_->GetDmaBufPitch(i), pixmap_->GetDmaBufOffset(i), i,
+        pixmap_->GetDmaBufModifier(i));
+  }
 #endif
   return handle;
 }
