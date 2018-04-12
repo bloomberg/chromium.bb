@@ -32,7 +32,7 @@ class PLATFORM_EXPORT XRFrameTransport final
     : public GarbageCollectedFinalized<XRFrameTransport>,
       public device::mojom::blink::VRSubmitFrameClient {
  public:
-  XRFrameTransport();
+  explicit XRFrameTransport();
   ~XRFrameTransport();
 
   device::mojom::blink::VRSubmitFrameClientPtr GetSubmitFrameClient();
@@ -41,6 +41,8 @@ class PLATFORM_EXPORT XRFrameTransport final
 
   void SetTransportOptions(
       device::mojom::blink::VRDisplayFrameTransportOptionsPtr);
+
+  bool DrawingIntoSharedBuffer();
 
   // Call before finalizing the frame's image snapshot.
   void FramePreImage(gpu::gles2::GLES2Interface*);

@@ -301,7 +301,8 @@ void XRSession::OnBlur() {
 }
 
 void XRSession::OnFrame(
-    std::unique_ptr<TransformationMatrix> base_pose_matrix) {
+    std::unique_ptr<TransformationMatrix> base_pose_matrix,
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
   DVLOG(2) << __FUNCTION__;
   // Don't process any outstanding frames once the session is ended.
   if (ended_)
@@ -327,7 +328,7 @@ void XRSession::OnFrame(
 
     // Cache the base layer, since it could change during the frame callback.
     XRLayer* frame_base_layer = base_layer_;
-    frame_base_layer->OnFrameStart();
+    frame_base_layer->OnFrameStart(buffer_mailbox_holder);
 
     // Resolve the queued requestAnimationFrame callbacks. All XR rendering will
     // happen within these calls. resolving_frame_ will be true for the duration

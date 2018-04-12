@@ -1158,6 +1158,9 @@ const FeatureEntry::FeatureParam kWebXrRenderPathChoiceClientWait[] = {
 const FeatureEntry::FeatureParam kWebXrRenderPathChoiceGpuFence[] = {
     {features::kWebXrRenderPathParamName,
      features::kWebXrRenderPathParamValueGpuFence}};
+const FeatureEntry::FeatureParam kWebXrRenderPathChoiceSharedBuffer[] = {
+    {features::kWebXrRenderPathParamName,
+     features::kWebXrRenderPathParamValueSharedBuffer}};
 
 const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
     {flag_descriptions::kWebXrRenderPathChoiceClientWaitDescription,
@@ -1165,7 +1168,10 @@ const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
      arraysize(kWebXrRenderPathChoiceClientWait), nullptr},
     {flag_descriptions::kWebXrRenderPathChoiceGpuFenceDescription,
      kWebXrRenderPathChoiceGpuFence, arraysize(kWebXrRenderPathChoiceGpuFence),
-     nullptr}};
+     nullptr},
+    {flag_descriptions::kWebXrRenderPathChoiceSharedBufferDescription,
+     kWebXrRenderPathChoiceSharedBuffer,
+     arraysize(kWebXrRenderPathChoiceSharedBuffer), nullptr}};
 #endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
 
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {

@@ -126,9 +126,9 @@ void UiElementRenderer::DrawReticle(
   reticle_renderer_->Draw(opacity, model_view_proj_matrix);
 }
 
-void UiElementRenderer::DrawWebVr(int texture_data_handle) {
+void UiElementRenderer::DrawWebVr(int texture_data_handle, float y_sign) {
   FlushIfNecessary(webvr_renderer_.get());
-  webvr_renderer_->Draw(texture_data_handle);
+  webvr_renderer_->Draw(texture_data_handle, y_sign);
 }
 
 void UiElementRenderer::DrawShadow(const gfx::Transform& model_view_proj_matrix,

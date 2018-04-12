@@ -13,11 +13,12 @@ namespace {
 // clang-format off
 static constexpr char const* kWebVrVertexShader = SHADER(
   precision mediump float;
+  uniform float u_Ysign;
   attribute vec4 a_Position;
   varying vec2 v_TexCoordinate;
 
   void main() {
-    v_TexCoordinate = vec2(0.5 + a_Position[0], 0.5 - a_Position[1]);
+    v_TexCoordinate = vec2(0.5 + a_Position[0], 0.5 + u_Ysign * a_Position[1]);
     gl_Position = vec4(a_Position.xyz * 2.0, 1.0);
   }
 );
@@ -38,10 +39,11 @@ static constexpr char const* kWebVrFragmentShader = OEIE_SHADER(
 WebVrRenderer::WebVrRenderer()
     : BaseQuadRenderer(kWebVrVertexShader, kWebVrFragmentShader) {
   texture_handle_ = glGetUniformLocation(program_handle_, "u_Texture");
+  y_sign_ = glGetUniformLocation(program_handle_, "u_Ysign");
 }
 
 // Draw the stereo WebVR frame
-void WebVrRenderer::Draw(int texture_handle) {
+void WebVrRenderer::Draw(int texture_handle, float y_sign) {
   glUseProgram(program_handle_);
 
   // Bind vertex attributes
@@ -58,6 +60,10 @@ void WebVrRenderer::Draw(int texture_handle) {
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_handle);
   SetTexParameters(GL_TEXTURE_EXTERNAL_OES);
   glUniform1i(texture_handle_, 0);
+
+  // Apply vertical flip here. TODO(klausw): why? Should this use
+  // the SurfaceTexture supplied transform?
+  glUniform1f(y_sign_, y_sign);
 
   // Blit texture to buffer
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_buffer_);

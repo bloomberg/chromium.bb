@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_LAYER_H_
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -24,7 +25,7 @@ class XRLayer : public ScriptWrappable {
   XRSession* session() const { return session_; }
   XRLayerType layerType() const { return layer_type_; }
 
-  virtual void OnFrameStart();
+  virtual void OnFrameStart(const base::Optional<gpu::MailboxHolder>&);
   virtual void OnFrameEnd();
   virtual void OnResize();
 

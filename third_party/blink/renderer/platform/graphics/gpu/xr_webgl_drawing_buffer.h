@@ -57,6 +57,9 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
 
   void SetMirrorClient(MirrorClient*);
 
+  void UseSharedBuffer(const gpu::MailboxHolder&);
+  void DoneWithSharedBuffer();
+
  private:
   struct ColorBuffer : public RefCounted<ColorBuffer> {
     ColorBuffer(XRWebGLDrawingBuffer*, const IntSize&, GLuint texture_id);
@@ -99,6 +102,7 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   scoped_refptr<ColorBuffer> CreateOrRecycleColorBuffer();
 
   bool WantExplicitResolve() const;
+  void BindAndResolveDestinationFramebuffer();
   void SwapColorBuffers();
 
   void MailboxReleased(scoped_refptr<ColorBuffer>,
@@ -118,6 +122,17 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   scoped_refptr<ColorBuffer> front_color_buffer_ = 0;
   GLuint depth_stencil_buffer_ = 0;
   IntSize size_;
+
+  // Nonzero for shared buffer mode from UseSharedBuffer until
+  // DoneWithSharedBuffer.
+  GLuint shared_buffer_texture_id_ = 0;
+
+  // Checking framebuffer completeness is extremely expensive, it's basically a
+  // glFinish followed by a synchronous wait for a reply. Do so only once per
+  // code path, and only in DCHECK mode.
+  bool framebuffer_complete_checked_for_resize_ = false;
+  bool framebuffer_complete_checked_for_swap_ = false;
+  bool framebuffer_complete_checked_for_sharedbuffer_ = false;
 
   // Color buffers that were released by the XR compositor can be used again.
   Deque<scoped_refptr<ColorBuffer>> recycled_color_buffer_queue_;
@@ -140,7 +155,6 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   bool storage_texture_supported_ = false;
   int max_texture_size_ = 0;
   int sample_count_ = 0;
-  bool framebuffer_incomplete_ = false;
 
   MirrorClient* mirror_client_ = nullptr;
 };

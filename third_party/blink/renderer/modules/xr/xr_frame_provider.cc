@@ -93,8 +93,10 @@ void XRFrameProvider::BeginExclusiveSession(XRSession* session,
 
   // Ensure we can only have one exclusive session at a time.
   DCHECK(!exclusive_session_);
+  DCHECK(!exclusive_session_can_send_frames_);
 
   exclusive_session_ = session;
+  exclusive_session_can_send_frames_ = false;
 
   pending_exclusive_session_resolver_ = resolver;
 
@@ -107,6 +109,7 @@ void XRFrameProvider::BeginExclusiveSession(XRSession* session,
         device::mojom::blink::VRRequestPresentOptions::New();
     options->preserve_drawing_buffer = false;
     options->webxr_input = true;
+    options->shared_buffer_draw_supported = true;
 
     // TODO(offenwanger): Once device activation is sorted out for WebXR, either
     // pass in the value for metrics, or remove it as soon as legacy API has
@@ -129,8 +132,10 @@ void XRFrameProvider::OnPresentComplete(
     frame_transport_->SetTransportOptions(std::move(transport_options));
     frame_transport_->PresentChange();
     pending_exclusive_session_resolver_->Resolve(exclusive_session_);
+    exclusive_session_can_send_frames_ = true;
   } else {
     exclusive_session_->ForceEnd();
+    exclusive_session_can_send_frames_ = false;
 
     if (pending_exclusive_session_resolver_) {
       DOMException* exception = DOMException::Create(
@@ -154,6 +159,7 @@ void XRFrameProvider::OnPresentationProviderConnectionError() {
   if (vsync_connection_failed_)
     return;
   exclusive_session_->ForceEnd();
+  exclusive_session_can_send_frames_ = false;
   vsync_connection_failed_ = true;
 }
 
@@ -165,6 +171,7 @@ void XRFrameProvider::OnExclusiveSessionEnded() {
   device_->xrDisplayHostPtr()->ExitPresent();
 
   exclusive_session_ = nullptr;
+  exclusive_session_can_send_frames_ = false;
   pending_exclusive_vsync_ = false;
   frame_id_ = -1;
 
@@ -234,7 +241,8 @@ void XRFrameProvider::OnExclusiveVSync(
     device::mojom::blink::VRPosePtr pose,
     WTF::TimeDelta time_delta,
     int16_t frame_id,
-    device::mojom::blink::VRPresentationProvider::VSyncStatus status) {
+    device::mojom::blink::VRPresentationProvider::VSyncStatus status,
+    const base::Optional<gpu::MailboxHolder>& buffer_holder) {
   DVLOG(2) << __FUNCTION__;
   vsync_connection_failed_ = false;
   switch (status) {
@@ -251,6 +259,8 @@ void XRFrameProvider::OnExclusiveVSync(
 
   frame_pose_ = std::move(pose);
   frame_id_ = frame_id;
+  buffer_mailbox_holder_ = buffer_holder;
+
   pending_exclusive_vsync_ = false;
 
   // Post a task to handle scheduled animations after the current
@@ -287,16 +297,20 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
   TRACE_EVENT1("gpu", "XRFrameProvider::ProcessScheduledFrame", "frame",
                frame_id_);
 
-  if (exclusive_session_) {
+  if (exclusive_session_can_send_frames_) {
     if (frame_pose_ && frame_pose_->input_state.has_value()) {
       exclusive_session_->OnInputStateChange(frame_id_,
                                              frame_pose_->input_state.value());
     }
 
-    // If there's an exclusive session active only process it's frame.
+    // If there's an exclusive session active only process its frame.
     std::unique_ptr<TransformationMatrix> pose_matrix =
         getPoseMatrix(frame_pose_);
-    exclusive_session_->OnFrame(std::move(pose_matrix));
+    // Sanity check: if drawing into a shared buffer, the optional mailbox
+    // holder must be present.
+    DCHECK(!frame_transport_->DrawingIntoSharedBuffer() ||
+           buffer_mailbox_holder_);
+    exclusive_session_->OnFrame(std::move(pose_matrix), buffer_mailbox_holder_);
   } else {
     // In the process of fulfilling the frame requests for each session they are
     // extremely likely to request another frame. Work off of a separate list
@@ -315,7 +329,7 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
 
       std::unique_ptr<TransformationMatrix> pose_matrix =
           getPoseMatrix(frame_pose_);
-      session->OnFrame(std::move(pose_matrix));
+      session->OnFrame(std::move(pose_matrix), base::nullopt);
     }
   }
 }
@@ -341,6 +355,21 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
   frame_transport_->FramePreImage(webgl_context->ContextGL());
 
   std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+
+  DCHECK(exclusive_session_can_send_frames_);
+  if (frame_transport_->DrawingIntoSharedBuffer()) {
+    // Image is written to shared buffer already. Just submit with a
+    // placeholder.
+    scoped_refptr<Image> image_ref = nullptr;
+    bool needs_copy = false;
+    DVLOG(3) << __FUNCTION__ << ": FrameSubmit for SharedBuffer mode";
+    frame_transport_->FrameSubmit(
+        presentation_provider_.get(), webgl_context->ContextGL(), webgl_context,
+        std::move(image_ref), std::move(image_release_callback), frame_id_,
+        needs_copy);
+    return;
+  }
+
   scoped_refptr<StaticBitmapImage> image_ref =
       layer->TransferToStaticBitmapImage(&image_release_callback);
 
