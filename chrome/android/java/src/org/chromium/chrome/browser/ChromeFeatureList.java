@@ -170,7 +170,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_HOME_PERSISTENT_IPH = "ChromeHomePersistentIph";
     public static final String CHROME_HOME_PULL_TO_REFRESH_IPH_AT_TOP =
             "ChromeHomePullToRefreshIphAtTop";
-    public static final String CHROME_HOME_SURVEY = "ChromeHomeSurvey";
     public static final String CHROME_HOME_SWIPE_VELOCITY_FEATURE = "ChromeHomeSwipeLogicVelocity";
     public static final String CHROME_MEMEX = "ChromeMemex";
     public static final String CHROME_MODERN_DESIGN = "ChromeModernDesign";

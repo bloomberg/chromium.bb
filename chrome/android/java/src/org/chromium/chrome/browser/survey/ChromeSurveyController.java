@@ -18,14 +18,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
 import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,7 +31,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.lang.annotation.Retention;
@@ -44,35 +41,35 @@ import java.util.Random;
 /**
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
  */
-public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnimationListener {
-    public static final String SURVEY_INFO_BAR_DISPLAYED_KEY =
-            "chrome_home_survey_info_bar_displayed";
-    public static final String PARAM_NAME = "survey_override_site_id";
-    public static final long REQUIRED_VISIBILITY_DURATION_MS = 5000;
+public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimationListener {
+    /**
+     *  The survey questions for this survey are the same as those in the survey used for Chrome
+     *  Home, so we reuse the old infobar key to prevent the users from seeing the same survey more
+     *  than once.
+     */
+    static final String SURVEY_INFO_BAR_DISPLAYED_KEY = "chrome_home_survey_info_bar_displayed";
+    static final String DATE_LAST_ROLLED_KEY = "last_rolled_for_chrome_survey_key";
 
-    private static final String CHROME_HOME_TRIAL_NAME = "ChromeHome";
-    private static final String HAPPINESS_SURVEY_TRIAL_NAME = "ChromeHomeHappinessSurvey";
+    private static final String CHROME_SURVEY_TRIAL_NAME = "ChromeSurvey";
     private static final String MAX_NUMBER = "max-number";
-    private static final String TEST_SITE_ID = "obw74vpeieqaw4xmw7o6qlpdbq";
+    private static final String SITE_ID_PARAM_NAME = "site-id";
+    private static final long REQUIRED_VISIBILITY_DURATION_MS = 5000;
 
     private static boolean sForceUmaEnabledForTesting;
 
-    static final long ONE_WEEK_IN_MILLIS = 604800000L;
-    static final String DATE_LAST_ROLLED_KEY = "chrome_home_date_last_rolled_for_survey";
+    public static final String COMMAND_LINE_PARAM_NAME = "survey_override_site_id";
 
     /**
      * Reasons that the user was rejected from being selected for a survey
      *  Note: these values must match the SurveyFilteringResult enum in enums.xml.
      */
     @IntDef({FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED,
-            FilteringResult.CHROME_HOME_ON_FOR_LESS_THAN_ONE_WEEK,
             FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT,
             FilteringResult.USER_ALREADY_SAMPLED_TODAY, FilteringResult.MAX_NUMBER_MISSING,
             FilteringResult.ROLLED_NON_ZERO_NUMBER, FilteringResult.USER_SELECTED_FOR_SURVEY})
     @Retention(RetentionPolicy.SOURCE)
     public @interface FilteringResult {
         int SURVEY_INFOBAR_ALREADY_DISPLAYED = 0;
-        int CHROME_HOME_ON_FOR_LESS_THAN_ONE_WEEK = 1;
         int FORCE_SURVEY_ON_COMMAND_PRESENT = 2;
         int USER_ALREADY_SAMPLED_TODAY = 3;
         int MAX_NUMBER_MISSING = 4;
@@ -102,7 +99,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     private TabModelSelectorObserver mTabModelObserver;
 
     @VisibleForTesting
-    ChromeHomeSurveyController() {
+    ChromeSurveyController() {
         // Empty constructor.
     }
 
@@ -113,7 +110,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
      */
     public static void initialize(TabModelSelector tabModelSelector) {
         assert tabModelSelector != null;
-        new StartDownloadIfEligibleTask(new ChromeHomeSurveyController(), tabModelSelector)
+        new StartDownloadIfEligibleTask(new ChromeSurveyController(), tabModelSelector)
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
@@ -138,20 +135,16 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
                 onSurveyAvailable(siteId);
             }
         };
-        String siteContext =
-                String.format("ChromeHomeEnabled=%s", FeatureUtilities.isChromeHomeEnabled());
-        surveyController.downloadSurvey(context, siteId, onSuccessRunnable, siteContext);
+        surveyController.downloadSurvey(context, siteId, onSuccessRunnable, null);
     }
 
     private String getSiteId() {
         CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(PARAM_NAME)) {
-            return commandLine.getSwitchValue(PARAM_NAME);
-        } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY)) {
-            return TEST_SITE_ID;
+        if (commandLine.hasSwitch(COMMAND_LINE_PARAM_NAME)) {
+            return commandLine.getSwitchValue(COMMAND_LINE_PARAM_NAME);
         } else {
             return VariationsAssociatedData.getVariationParamValue(
-                    HAPPINESS_SURVEY_TRIAL_NAME, PARAM_NAME);
+                    CHROME_SURVEY_TRIAL_NAME, SITE_ID_PARAM_NAME);
         }
     }
 
@@ -159,11 +152,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     private boolean doesUserQualifyForSurvey() {
         if (!isUMAEnabled() && !sForceUmaEnabledForTesting) return false;
         if (hasInfoBarBeenDisplayed()) return false;
-        if (!FeatureUtilities.isChromeHomeEnabled()) return true;
-        return wasChromeHomeEnabledForMinimumOneWeek()
-                || CommandLine.getInstance().hasSwitch(
-                           ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)
-                || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY);
+        return true;
     }
 
     /**
@@ -215,7 +204,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         SurveyInfoBar.showSurveyInfoBar(tab.getWebContents(), siteId, true,
                 R.drawable.chrome_sync_logo, getSurveyInfoBarDelegate());
 
-        RecordUserAction.record("Android.ChromeHome.Survey.ShowSurveyInfoBar");
+        RecordUserAction.record("Android.Survey.ShowSurveyInfoBar");
 
         mTabModelSelector.removeObserver(mTabModelObserver);
     }
@@ -263,30 +252,15 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         return PrivacyPreferencesManager.getInstance().isUsageAndCrashReportingPermittedByUser();
     }
 
-    /** @return If the survey info bar was logged as seen before. */
+    /** @return If the survey info bar for this survey was logged as seen before. */
     @VisibleForTesting
     boolean hasInfoBarBeenDisplayed() {
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
         if (sharedPreferences.getLong(SURVEY_INFO_BAR_DISPLAYED_KEY, -1L) != -1L) {
             recordSurveyFilteringResult(FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED);
             return true;
-        } else {
-            return false;
         }
-    }
-
-    /** @return If it has been over a week since ChromeHome was enabled. */
-    @VisibleForTesting
-    boolean wasChromeHomeEnabledForMinimumOneWeek() {
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        long earliestLoggedDate = sharedPreferences.getLong(
-                ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY, Long.MAX_VALUE);
-        if (System.currentTimeMillis() - earliestLoggedDate >= ONE_WEEK_IN_MILLIS) {
-            return true;
-        } else {
-            recordSurveyFilteringResult(FilteringResult.CHROME_HOME_ON_FOR_LESS_THAN_ONE_WEEK);
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -299,10 +273,10 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
         return tab != null && tab.getWebContents() != null && !tab.isIncognito();
     }
 
-    /** @return A new {@link ChromeHomeSurveyController} for testing. */
+    /** @return A new {@link ChromeSurveyController} for testing. */
     @VisibleForTesting
-    public static ChromeHomeSurveyController createChromeHomeSurveyControllerForTests() {
-        return new ChromeHomeSurveyController();
+    public static ChromeSurveyController createChromeSurveyControllerForTests() {
+        return new ChromeSurveyController();
     }
 
     @Override
@@ -367,7 +341,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     int getMaxNumber() {
         try {
             String number = VariationsAssociatedData.getVariationParamValue(
-                    CHROME_HOME_TRIAL_NAME, MAX_NUMBER);
+                    CHROME_SURVEY_TRIAL_NAME, MAX_NUMBER);
             if (TextUtils.isEmpty(number)) return -1;
             return Integer.parseInt(number);
         } catch (NumberFormatException e) {
@@ -429,7 +403,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
             @Override
             public String getSurveyPromptString() {
                 return ContextUtils.getApplicationContext().getString(
-                        R.string.chrome_home_survey_prompt);
+                        R.string.chrome_survey_prompt);
             }
         };
     }
@@ -460,21 +434,20 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
     private void recordSurveyFilteringResult(@FilteringResult int value) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Android.ChromeHome.Survey.SurveyFilteringResults", value,
-                FilteringResult.ENUM_BOUNDARY);
+                "Android.Survey.SurveyFilteringResults", value, FilteringResult.ENUM_BOUNDARY);
     }
 
     private void recordInfoBarClosingState(@InfoBarClosingState int value) {
-        RecordHistogram.recordEnumeratedHistogram("Android.ChromeHome.Survey.InfoBarClosingState",
-                value, InfoBarClosingState.ENUM_BOUNDARY);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.Survey.InfoBarClosingState", value, InfoBarClosingState.ENUM_BOUNDARY);
     }
 
     static class StartDownloadIfEligibleTask extends AsyncTask<Void, Void, Boolean> {
-        ChromeHomeSurveyController mController;
+        ChromeSurveyController mController;
         final TabModelSelector mSelector;
 
         public StartDownloadIfEligibleTask(
-                ChromeHomeSurveyController controller, TabModelSelector tabModelSelector) {
+                ChromeSurveyController controller, TabModelSelector tabModelSelector) {
             mController = controller;
             mSelector = tabModelSelector;
         }
@@ -489,8 +462,7 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
             } else {
                 boolean forceSurveyOn = false;
                 if (CommandLine.getInstance().hasSwitch(
-                            ChromeSwitches.CHROME_HOME_FORCE_ENABLE_SURVEY)
-                        || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_SURVEY)) {
+                            ChromeSwitches.CHROME_FORCE_ENABLE_SURVEY)) {
                     forceSurveyOn = true;
                     mController.recordSurveyFilteringResult(
                             FilteringResult.FORCE_SURVEY_ON_COMMAND_PRESENT);
@@ -509,5 +481,20 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
     @VisibleForTesting
     public static void forceIsUMAEnabledForTesting(boolean forcedUMAStatus) {
         sForceUmaEnabledForTesting = forcedUMAStatus;
+    }
+
+    @VisibleForTesting
+    public static Long getRequiredVisibilityDurationMs() {
+        return REQUIRED_VISIBILITY_DURATION_MS;
+    }
+
+    @VisibleForTesting
+    public static String getChromeSurveyInfoBarDisplayedKey() {
+        return SURVEY_INFO_BAR_DISPLAYED_KEY;
+    }
+
+    @VisibleForTesting
+    public static String getCommandLineParamName() {
+        return COMMAND_LINE_PARAM_NAME;
     }
 }

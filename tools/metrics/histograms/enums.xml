@@ -43081,7 +43081,7 @@ would be helpful to identify which type is being sent.
 
 <enum name="SurveyFilteringResult">
   <int value="0" label="Survey info bar already displayed"/>
-  <int value="1" label="Chrome Home enabled for less than one week"/>
+  <int value="1" label="Chrome Home enabled for less than one week [removed]"/>
   <int value="2" label="Force Survey On command present"/>
   <int value="3" label="User already sampled today"/>
   <int value="4" label="Max number is missing"/>

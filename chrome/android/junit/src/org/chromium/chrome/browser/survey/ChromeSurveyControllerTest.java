@@ -24,18 +24,17 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.WebContents;
 
 /**
- * Unit tests for ChromeHomeSurveyController.java.
+ * Unit tests for ChromeSurveyController.java.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class ChromeHomeSurveyControllerTest {
-    private TestChromeHomeSurveyController mTestController;
+public class ChromeSurveyControllerTest {
+    private TestChromeSurveyController mTestController;
     private RiggedSurveyController mRiggedController;
     private SharedPreferences mSharedPreferences;
 
@@ -53,7 +52,7 @@ public class ChromeHomeSurveyControllerTest {
         MockitoAnnotations.initMocks(this);
         RecordHistogram.setDisabledForTests(true);
 
-        mTestController = new TestChromeHomeSurveyController();
+        mTestController = new TestChromeSurveyController();
         mTestController.setTabModelSelector(mSelector);
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
         mSharedPreferences.edit().clear().apply();
@@ -68,39 +67,14 @@ public class ChromeHomeSurveyControllerTest {
 
     @Test
     public void testInfoBarDisplayedBefore() {
-        Assert.assertFalse(mSharedPreferences.contains(
-                ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY));
+        Assert.assertFalse(
+                mSharedPreferences.contains(ChromeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY));
         Assert.assertFalse(mTestController.hasInfoBarBeenDisplayed());
         mSharedPreferences.edit()
-                .putLong(ChromeHomeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY,
+                .putLong(ChromeSurveyController.SURVEY_INFO_BAR_DISPLAYED_KEY,
                         System.currentTimeMillis())
                 .apply();
         Assert.assertTrue(mTestController.hasInfoBarBeenDisplayed());
-    }
-
-    @Test
-    public void testChromeHomeEnabledForOneWeek() {
-        Assert.assertFalse(mTestController.wasChromeHomeEnabledForMinimumOneWeek());
-        Assert.assertFalse(mSharedPreferences.contains(
-                ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY));
-        mSharedPreferences.edit()
-                .putLong(ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY,
-                        System.currentTimeMillis() - ChromeHomeSurveyController.ONE_WEEK_IN_MILLIS)
-                .apply();
-        Assert.assertTrue(mTestController.wasChromeHomeEnabledForMinimumOneWeek());
-    }
-
-    @Test
-    public void testChromeHomeEnabledForLessThanOneWeek() {
-        Assert.assertFalse(mTestController.wasChromeHomeEnabledForMinimumOneWeek());
-        Assert.assertFalse(mSharedPreferences.contains(
-                ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY));
-        mSharedPreferences.edit()
-                .putLong(ChromePreferenceManager.CHROME_HOME_SHARED_PREFERENCES_KEY,
-                        System.currentTimeMillis()
-                                - ChromeHomeSurveyController.ONE_WEEK_IN_MILLIS / 2)
-                .apply();
-        Assert.assertFalse(mTestController.wasChromeHomeEnabledForMinimumOneWeek());
     }
 
     @Test
@@ -189,7 +163,7 @@ public class ChromeHomeSurveyControllerTest {
     @Test
     public void testEligibilityRolledYesterday() {
         mRiggedController = new RiggedSurveyController(0, 5, 10);
-        mSharedPreferences.edit().putInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, 4);
+        mSharedPreferences.edit().putInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, 4);
         Assert.assertTrue(
                 "Random selection should be true", mRiggedController.isRandomlySelectedForSurvey());
     }
@@ -197,9 +171,7 @@ public class ChromeHomeSurveyControllerTest {
     @Test
     public void testEligibilityRollingTwiceSameDay() {
         mRiggedController = new RiggedSurveyController(0, 5, 10);
-        mSharedPreferences.edit()
-                .putInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, 5)
-                .apply();
+        mSharedPreferences.edit().putInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, 5).apply();
         Assert.assertFalse("Random selection should be false",
                 mRiggedController.isRandomlySelectedForSurvey());
     }
@@ -208,25 +180,25 @@ public class ChromeHomeSurveyControllerTest {
     public void testEligibilityFirstTimeRollingQualifies() {
         mRiggedController = new RiggedSurveyController(0, 5, 10);
         Assert.assertFalse(
-                mSharedPreferences.contains(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY));
+                mSharedPreferences.contains(ChromeSurveyController.DATE_LAST_ROLLED_KEY));
         Assert.assertTrue(
                 "Random selection should be true", mRiggedController.isRandomlySelectedForSurvey());
         Assert.assertEquals("Numbers should match", 5,
-                mSharedPreferences.getInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, -1));
+                mSharedPreferences.getInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, -1));
     }
 
     @Test
     public void testEligibilityFirstTimeRollingDoesNotQualify() {
         mRiggedController = new RiggedSurveyController(5, 1, 10);
         Assert.assertFalse(
-                mSharedPreferences.contains(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY));
+                mSharedPreferences.contains(ChromeSurveyController.DATE_LAST_ROLLED_KEY));
         Assert.assertFalse(
                 "Random selection should be true", mRiggedController.isRandomlySelectedForSurvey());
         Assert.assertEquals("Numbers should match", 1,
-                mSharedPreferences.getInt(ChromeHomeSurveyController.DATE_LAST_ROLLED_KEY, -1));
+                mSharedPreferences.getInt(ChromeSurveyController.DATE_LAST_ROLLED_KEY, -1));
     }
 
-    class RiggedSurveyController extends ChromeHomeSurveyController {
+    class RiggedSurveyController extends ChromeSurveyController {
         private int mRandomNumberToReturn;
         private int mDayOfYear;
         private int mMaxNumber;
@@ -254,10 +226,10 @@ public class ChromeHomeSurveyControllerTest {
         }
     }
 
-    class TestChromeHomeSurveyController extends ChromeHomeSurveyController {
+    class TestChromeSurveyController extends ChromeSurveyController {
         private Tab mTab;
 
-        public TestChromeHomeSurveyController() {
+        public TestChromeSurveyController() {
             super();
         }
 
