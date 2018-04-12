@@ -29,6 +29,7 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/manifest_handlers/webview_info.h"
+#include "extensions/common/manifest_url_handlers.h"
 
 #if defined(OS_CHROMEOS)
 #include "extensions/common/manifest_handlers/action_handlers_handler.h"
@@ -64,6 +65,7 @@ void RegisterCommonManifestHandlers() {
   (new SandboxedPageHandler)->Register();
   (new SharedModuleHandler)->Register();
   (new SocketsManifestHandler)->Register();
+  (new UpdateURLHandler)->Register();
   (new UsbPrinterManifestHandler)->Register();
   (new WebAccessibleResourcesHandler)->Register();
   (new WebviewHandler)->Register();

@@ -60,7 +60,6 @@ void RegisterChromeManifestHandlers() {
   (new ThemeHandler)->Register();
   (new TtsEngineManifestHandler)->Register();
   (new UIOverridesHandler)->Register();
-  (new UpdateURLHandler)->Register();
   (new UrlHandlersParser)->Register();
   (new URLOverridesHandler)->Register();
 #if defined(OS_CHROMEOS)

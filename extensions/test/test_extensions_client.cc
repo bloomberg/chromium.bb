@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
 #include "extensions/common/api/generated_schemas.h"
@@ -61,7 +62,14 @@ void TestExtensionsClient::Initialize() {
 }
 
 void TestExtensionsClient::InitializeWebStoreUrls(
-    base::CommandLine* command_line) {}
+    base::CommandLine* command_line) {
+  // TODO (mxnguyen): Move |kAppsGalleryUpdateURL| constant from chrome/... to
+  // extensions/... to avoid referring to the constant value directly.
+  if (command_line->HasSwitch("apps-gallery-update-url")) {
+    webstore_update_url_ =
+        GURL(command_line->GetSwitchValueASCII("apps-gallery-update-url"));
+  }
+}
 
 const PermissionMessageProvider&
 TestExtensionsClient::GetPermissionMessageProvider() const {
