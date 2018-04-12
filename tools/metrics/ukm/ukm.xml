@@ -48,6 +48,18 @@ be describing additional metrics about the same event.
     |DeveloperEngagementMetric|.
   </summary>
   <metric name="DeveloperEngagement"/>
+  <metric name="FormTypes">
+    <summary>
+      Type of form. Stored as bitvector. A set ith bit implies enum FormType's
+      ith type was detected. Multiple types are possible.
+    </summary>
+  </metric>
+  <metric name="IsForCreditCard">
+    <summary>
+      True for credit card forms, false for address/profile forms. See
+      |FormStructure::IsCompleteCreditCardForm()|.
+    </summary>
+  </metric>
 </event>
 
 <event name="Autofill.FieldFillStatus">
@@ -153,6 +165,18 @@ be describing additional metrics about the same event.
       none of the field were autofilled. See |AutofillFormSubmittedState|.
     </summary>
   </metric>
+  <metric name="FormTypes">
+    <summary>
+      Type of form. Stored as bitvector. A set ith bit implies enum FormType's
+      ith type was detected. Multiple types are possible.
+    </summary>
+  </metric>
+  <metric name="IsForCreditCard">
+    <summary>
+      True for credit card forms, false for address/profile forms. See
+      |FormStructure::IsCompleteCreditCardForm()|.
+    </summary>
+  </metric>
   <metric name="MillisecondsSinceFormParsed">
     <summary>
       Time since form parse.
@@ -166,6 +190,12 @@ be describing additional metrics about the same event.
     Recorded when we parse a form to log form metadata and autofill settings
     that apply to all subsequent events for this form.
   </summary>
+  <metric name="FormTypes">
+    <summary>
+      Type of form. Stored as bitvector. A set ith bit implies enum FormType's
+      ith type was detected. Multiple types are possible.
+    </summary>
+  </metric>
   <metric name="IsForCreditCard">
     <summary>
       True for credit card forms, false for address/profile forms.

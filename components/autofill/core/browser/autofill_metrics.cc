@@ -1217,6 +1217,8 @@ void AutofillMetrics::LogProfileActionOnFormSubmitted(
 // static
 void AutofillMetrics::LogAutofillFormSubmittedState(
     AutofillFormSubmittedState state,
+    bool is_for_credit_card,
+    const std::set<FormType>& form_types,
     const base::TimeTicks& form_parsed_timestamp,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   UMA_HISTOGRAM_ENUMERATION("Autofill.FormSubmittedState", state,
@@ -1252,7 +1254,8 @@ void AutofillMetrics::LogAutofillFormSubmittedState(
       NOTREACHED();
       break;
   }
-  form_interactions_ukm_logger->LogFormSubmitted(state, form_parsed_timestamp);
+  form_interactions_ukm_logger->LogFormSubmitted(is_for_credit_card, form_types,
+                                                 state, form_parsed_timestamp);
 }
 
 // static
@@ -1319,6 +1322,8 @@ void AutofillMetrics::LogCardUploadDecisionsUkm(ukm::UkmRecorder* ukm_recorder,
 void AutofillMetrics::LogDeveloperEngagementUkm(
     ukm::UkmRecorder* ukm_recorder,
     const GURL& url,
+    bool is_for_credit_card,
+    std::set<FormType> form_types,
     int developer_engagement_metrics) {
   DCHECK(developer_engagement_metrics);
   DCHECK_LT(developer_engagement_metrics,
@@ -1328,6 +1333,8 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
   ukm::SourceId source_id = NewUkmSourceWithUrl(ukm_recorder, url);
   ukm::builders::Autofill_DeveloperEngagement(source_id)
       .SetDeveloperEngagement(developer_engagement_metrics)
+      .SetIsForCreditCard(is_for_credit_card)
+      .SetFormTypes(FormTypesToBitVector(form_types))
       .Record(ukm_recorder);
 }
 
@@ -1729,7 +1736,19 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
       .Record(ukm_recorder_);
 }
 
+int64_t AutofillMetrics::FormTypesToBitVector(
+    const std::set<FormType>& form_types) {
+  int64_t form_type_bv = 0;
+  for (const FormType& form_type : form_types) {
+    DCHECK_LT(static_cast<int64_t>(form_type), 63);
+    form_type_bv |= 1LL << static_cast<int64_t>(form_type);
+  }
+  return form_type_bv;
+}
+
 void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
+    bool is_for_credit_card,
+    const std::set<FormType>& form_types,
     AutofillFormSubmittedState state,
     const base::TimeTicks& form_parsed_timestamp) {
   if (!CanLog())
@@ -1739,7 +1758,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFormSubmitted(
     GetNewSourceID();
 
   ukm::builders::Autofill_FormSubmitted builder(source_id_);
-  builder.SetAutofillFormSubmittedState(static_cast<int>(state));
+  builder.SetAutofillFormSubmittedState(static_cast<int>(state))
+      .SetIsForCreditCard(is_for_credit_card)
+      .SetFormTypes(FormTypesToBitVector(form_types));
   if (form_parsed_timestamp.is_null())
     DCHECK(state == NON_FILLABLE_FORM_OR_NEW_DATA ||
            state == FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS)
