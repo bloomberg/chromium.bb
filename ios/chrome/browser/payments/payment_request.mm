@@ -551,7 +551,7 @@ void PaymentRequest::PopulatePaymentMethodCache(
 
   const auto first_complete_payment_method =
       std::find_if(payment_methods_.begin(), payment_methods_.end(),
-                   [this](PaymentInstrument* payment_method) {
+                   [](PaymentInstrument* payment_method) {
                      return payment_method->IsCompleteForPayment() &&
                             payment_method->IsExactlyMatchingMerchantRequest();
                    });
