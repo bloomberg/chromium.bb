@@ -9,7 +9,9 @@
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
+#include "components/version_info/channel.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
@@ -63,7 +65,9 @@ bool FullscreenControlHost::IsFullscreenExitUIEnabled() {
   // moves to the top of the screen.
   return false;
 #else
-  return base::FeatureList::IsEnabled(features::kFullscreenExitUI);
+  return chrome::GetChannel() == version_info::Channel::CANARY ||
+         chrome::GetChannel() == version_info::Channel::DEV ||
+         base::FeatureList::IsEnabled(features::kFullscreenExitUI);
 #endif
 }
 
