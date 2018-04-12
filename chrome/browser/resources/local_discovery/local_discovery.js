@@ -118,6 +118,7 @@ cr.define('local_discovery', function() {
     deviceContainer: function() {
       return $('register-device-list');
     },
+
     /**
      * Register the device.
      */
@@ -133,11 +134,8 @@ cr.define('local_discovery', function() {
      */
     showRegister: function() {
       recordUmaEvent(DEVICES_PAGE_EVENTS.REGISTER_CLICKED);
-      $('register-message').textContent = loadTimeData.getStringF(
-          isPrinter(this.info.type) ? 'registerPrinterConfirmMessage' :
-                                      'registerDeviceConfirmMessage',
-          this.info.display_name);
-      $('register-continue-button').onclick = this.register.bind(this);
+      $('register-continue').onclick = this.register.bind(this);
+
       showRegisterOverlay();
     },
     /**
@@ -521,7 +519,7 @@ cr.define('local_discovery', function() {
         isUserLoggedIn || isUserSupervisedOrOffTheRecord;
     $('register-overlay-login-promo').hidden =
         isUserLoggedIn || isUserSupervisedOrOffTheRecord;
-    $('register-continue-button').disabled =
+    $('register-continue').disabled =
         !isUserLoggedIn || isUserSupervisedOrOffTheRecord;
 
     $('my-devices-container').hidden = userSupervisedOrOffTheRecord;

@@ -36,10 +36,8 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_SERVICE_REGISTER);
   source->AddLocalizedString("manageDevice", IDS_LOCAL_DISCOVERY_MANAGE_DEVICE);
 
-  source->AddLocalizedString("registerPrinterConfirmMessage",
-                             IDS_LOCAL_DISCOVERY_REGISTER_PRINTER_CONFIRMATION);
-  source->AddLocalizedString("registerDeviceConfirmMessage",
-                             IDS_LOCAL_DISCOVERY_REGISTER_DEVICE_CONFIRMATION);
+  source->AddLocalizedString("registerPrinterInformationMessage",
+                             IDS_CLOUD_PRINT_REGISTER_PRINTER_INFORMATION);
   source->AddLocalizedString("registerUser",
                              IDS_LOCAL_DISCOVERY_REGISTER_USER);
   source->AddLocalizedString("confirmRegistration",
@@ -77,6 +75,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->AddLocalizedString("printersOnNetworkMultiple",
                              IDS_LOCAL_DISCOVERY_PRINTERS_ON_NETWORK_MULTIPLE);
   source->AddLocalizedString("cancel", IDS_CANCEL);
+  source->AddLocalizedString("confirm", IDS_CONFIRM);
   source->AddLocalizedString("ok", IDS_OK);
   source->AddLocalizedString("loading", IDS_LOCAL_DISCOVERY_LOADING);
   source->AddLocalizedString("addPrinters", IDS_LOCAL_DISCOVERY_ADD_PRINTERS);
