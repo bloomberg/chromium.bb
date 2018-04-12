@@ -238,11 +238,7 @@ class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
     if (!IsValidToFulfillPromise())
       return;
 
-    if (status != WebContentDecryptionModuleResult::kNewSession) {
-      NOTREACHED();
-      Reject(kInvalidStateError, "Unexpected completion.");
-    }
-
+    DCHECK_EQ(status, WebContentDecryptionModuleResult::kNewSession);
     session_->FinishGenerateRequest();
     Resolve();
   }
@@ -274,23 +270,14 @@ class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
     if (!IsValidToFulfillPromise())
       return;
 
-    switch (status) {
-      case WebContentDecryptionModuleResult::kNewSession:
-        session_->FinishLoad();
-        Resolve(true);
-        return;
-
-      case WebContentDecryptionModuleResult::kSessionNotFound:
-        Resolve(false);
-        return;
-
-      case WebContentDecryptionModuleResult::kSessionAlreadyExists:
-        NOTREACHED();
-        Reject(kInvalidStateError, "Unexpected completion.");
-        return;
+    if (status == WebContentDecryptionModuleResult::kSessionNotFound) {
+      Resolve(false);
+      return;
     }
 
-    NOTREACHED();
+    DCHECK_EQ(status, WebContentDecryptionModuleResult::kNewSession);
+    session_->FinishLoad();
+    Resolve(true);
   }
 
   void Trace(blink::Visitor* visitor) override {

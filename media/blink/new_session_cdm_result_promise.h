@@ -19,7 +19,7 @@
 namespace media {
 
 enum class SessionInitStatus {
-  // Error creating the session.
+  // Unable to determine the status.
   UNKNOWN_STATUS,
 
   // New session has been initialized.
@@ -39,7 +39,9 @@ typedef base::Callback<void(const std::string& session_id,
 // Special class for resolving a new session promise. Resolving a new session
 // promise returns the session ID (as a string), but the blink promise needs
 // to get passed a SessionStatus. This class converts the session id to a
-// SessionStatus by calling |new_session_created_cb|.
+// SessionStatus by calling |new_session_created_cb|. The value returned by
+// |new_session_created_cb| must be in |expected_statuses| for the promise to
+// be resolved. If it's not in the list, the promise will be rejected.
 class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
     : public CdmPromiseTemplate<std::string> {
  public:
@@ -47,7 +49,8 @@ class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
       const blink::WebContentDecryptionModuleResult& result,
       const std::string& key_system_uma_prefix,
       const std::string& uma_name,
-      const SessionInitializedCB& new_session_created_cb);
+      const SessionInitializedCB& new_session_created_cb,
+      const std::vector<SessionInitStatus>& expected_statuses);
   ~NewSessionCdmResultPromise() override;
 
   // CdmPromiseTemplate<T> implementation.
@@ -64,8 +67,10 @@ class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
   std::string uma_name_;
 
   // Called on resolve() to convert the session ID into a SessionInitStatus to
-  // be reported to blink.
+  // be reported to blink. Returned status must be in |expected_statuses_| or
+  // else the promise will be rejected.
   SessionInitializedCB new_session_created_cb_;
+  std::vector<SessionInitStatus> expected_statuses_;
 
   // Time when |this| is created.
   base::TimeTicks creation_time_;
