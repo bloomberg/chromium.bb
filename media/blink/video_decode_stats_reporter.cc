@@ -190,8 +190,9 @@ void VideoDecodeStatsReporter::StartNewRecord(
   frames_dropped_offset_ = frames_dropped_offset;
   frames_decoded_power_efficient_offset_ =
       frames_decoded_power_efficient_offset;
-  recorder_ptr_->StartNewRecord(video_config_.profile(), natural_size_,
-                                last_observed_fps_);
+  mojom::PredictionFeaturesPtr features = mojom::PredictionFeatures::New(
+      video_config_.profile(), natural_size_, last_observed_fps_);
+  recorder_ptr_->StartNewRecord(std::move(features));
 }
 
 void VideoDecodeStatsReporter::ResetFrameRateState() {
@@ -343,18 +344,17 @@ void VideoDecodeStatsReporter::UpdateStats() {
   if (stats.video_frames_decoded == frames_decoded_offset_)
     return;
 
-  uint32_t frames_decoded = stats.video_frames_decoded - frames_decoded_offset_;
-  uint32_t frames_dropped = stats.video_frames_dropped - frames_dropped_offset_;
-  uint32_t frames_decoded_power_efficient =
+  mojom::PredictionTargetsPtr targets = mojom::PredictionTargets::New(
+      stats.video_frames_decoded - frames_decoded_offset_,
+      stats.video_frames_dropped - frames_dropped_offset_,
       stats.video_frames_decoded_power_efficient -
-      frames_decoded_power_efficient_offset_;
+          frames_decoded_power_efficient_offset_);
 
-  DVLOG(2) << __func__ << " Recording -- dropped:" << frames_dropped << "/"
-           << frames_decoded
-           << " power efficient:" << frames_decoded_power_efficient << "/"
-           << frames_decoded;
-  recorder_ptr_->UpdateRecord(frames_decoded, frames_dropped,
-                              frames_decoded_power_efficient);
+  DVLOG(2) << __func__ << " Recording -- dropped:" << targets->frames_dropped
+           << "/" << targets->frames_decoded
+           << " power efficient:" << targets->frames_decoded_power_efficient
+           << "/" << targets->frames_decoded;
+  recorder_ptr_->UpdateRecord(std::move(targets));
 }
 
 }  // namespace media
