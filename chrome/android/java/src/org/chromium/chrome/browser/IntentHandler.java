@@ -417,7 +417,6 @@ public class IntentHandler {
 
         String referrerUrl = getReferrerUrlIncludingExtraHeaders(intent);
         String extraHeaders = getExtraHeadersFromIntent(intent);
-        extraHeaders = maybeAddAdditionalExtraHeaders(intent, url, extraHeaders);
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
@@ -425,13 +424,23 @@ public class IntentHandler {
             return true;
         }
 
+        processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
+                IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
+                tabIdToBringToFront, hasUserGesture, intent);
+        return true;
+    }
+
+    private void processUrlViewIntent(String url, String referrerUrl, String extraHeaders,
+            TabOpenType tabOpenType, String externalAppId, int tabIdToBringToFront,
+            boolean hasUserGesture, Intent intent) {
+        extraHeaders = maybeAddAdditionalExtraHeaders(intent, url, extraHeaders);
+
         // TODO(joth): Presumably this should check the action too.
         mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
                 tabIdToBringToFront, hasUserGesture, intent);
         recordExternalIntentSourceUMA(intent);
         recordAppHandlersForIntent(intent);
-        return true;
     }
 
     /**
@@ -606,11 +615,8 @@ public class IntentHandler {
 
     private void handleMhtmlFileOrContentIntent(final String url, final Intent intent) {
         OfflinePageUtils.getLoadUrlParamsForOpeningMhtmlFileOrContent(url, (loadUrlParams) -> {
-            mDelegate.processUrlViewIntent(loadUrlParams.getUrl(), null,
-                    loadUrlParams.getVerbatimHeaders(), TabOpenType.OPEN_NEW_TAB, null, 0, false,
-                    intent);
-            recordExternalIntentSourceUMA(intent);
-            recordAppHandlersForIntent(intent);
+            processUrlViewIntent(loadUrlParams.getUrl(), null, loadUrlParams.getVerbatimHeaders(),
+                    TabOpenType.OPEN_NEW_TAB, null, 0, false, intent);
         });
     }
 
