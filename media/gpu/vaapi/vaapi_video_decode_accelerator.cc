@@ -414,7 +414,8 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange(
 
   // All surfaces released, destroy them and dismiss all PictureBuffers.
   awaiting_va_surfaces_recycle_ = false;
-  available_va_surfaces_ = {};
+  base::queue<VASurfaceID> empty;
+  std::swap(available_va_surfaces_, empty);
   vaapi_wrapper_->DestroySurfaces();
 
   for (PictureMap::iterator iter = picture_map_.begin();
@@ -481,7 +482,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   base::AutoLock auto_lock(lock_);
   DCHECK(picture_map_.empty());
 
-  available_picture_buffers_ = {};
+  base::queue<int32_t> empty;
+  std::swap(available_picture_buffers_, empty);
 
   RETURN_AND_NOTIFY_ON_FAILURE(
       buffers.size() >= requested_num_pics_,
