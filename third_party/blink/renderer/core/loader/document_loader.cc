@@ -1099,13 +1099,19 @@ void DocumentLoader::InstallNewDocument(
   if (reason == InstallNewDocumentReason::kNavigation)
     DidCommitNavigation(global_object_reuse_policy);
 
-  if (document->GetSettings()
-          ->GetForceTouchEventFeatureDetectionForInspector()) {
-    OriginTrialContext::FromOrCreate(document)->AddFeature(
-        "ForceTouchEventFeatureDetectionForInspector");
+  // Initializing origin trials might force window proxy initialization,
+  // which later triggers CHECK when swapping in via WebFrame::Swap().
+  // We can safely omit installing original trials on initial empty document
+  // and wait for the real load.
+  if (GetFrameLoader().StateMachine()->CommittedFirstRealDocumentLoad()) {
+    if (document->GetSettings()
+            ->GetForceTouchEventFeatureDetectionForInspector()) {
+      OriginTrialContext::FromOrCreate(document)->AddFeature(
+          "ForceTouchEventFeatureDetectionForInspector");
+    }
+    OriginTrialContext::AddTokensFromHeader(
+        document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
   }
-  OriginTrialContext::AddTokensFromHeader(
-      document, response_.HttpHeaderField(HTTPNames::Origin_Trial));
 
   parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
 

@@ -323,16 +323,16 @@ WebContentsImpl* EmulationHandler::GetWebContents() {
 }
 
 void EmulationHandler::UpdateTouchEventEmulationState() {
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!widget_host)
+  if (!host_ || !host_->GetRenderWidgetHost())
+    return;
+  if (host_->GetParent() && !host_->IsCrossProcessSubframe())
     return;
   if (touch_emulation_enabled_) {
-    widget_host->GetTouchEmulator()->Enable(
+    host_->GetRenderWidgetHost()->GetTouchEmulator()->Enable(
         TouchEmulator::Mode::kEmulatingTouchFromMouse,
         TouchEmulationConfigurationToType(touch_emulation_configuration_));
   } else {
-    widget_host->GetTouchEmulator()->Disable();
+    host_->GetRenderWidgetHost()->GetTouchEmulator()->Disable();
   }
   if (GetWebContents()) {
     GetWebContents()->SetForceDisableOverscrollContent(
@@ -341,9 +341,9 @@ void EmulationHandler::UpdateTouchEventEmulationState() {
 }
 
 void EmulationHandler::UpdateDeviceEmulationState() {
-  RenderWidgetHostImpl* widget_host =
-      host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (!widget_host)
+  if (!host_ || !host_->GetRenderWidgetHost())
+    return;
+  if (host_->GetParent() && !host_->IsCrossProcessSubframe())
     return;
   // TODO(eseckler): Once we change this to mojo, we should wait for an ack to
   // these messages from the renderer. The renderer should send the ack once the
@@ -353,11 +353,12 @@ void EmulationHandler::UpdateDeviceEmulationState() {
   // ViewMsg and acknowledgment, as well as plump the acknowledgment back to the
   // EmulationHandler somehow. Mojo callbacks should make this much simpler.
   if (device_emulation_enabled_) {
-    widget_host->Send(new ViewMsg_EnableDeviceEmulation(
-        widget_host->GetRoutingID(), device_emulation_params_));
+    host_->GetRenderWidgetHost()->Send(new ViewMsg_EnableDeviceEmulation(
+        host_->GetRenderWidgetHost()->GetRoutingID(),
+        device_emulation_params_));
   } else {
-    widget_host->Send(new ViewMsg_DisableDeviceEmulation(
-        widget_host->GetRoutingID()));
+    host_->GetRenderWidgetHost()->Send(new ViewMsg_DisableDeviceEmulation(
+        host_->GetRenderWidgetHost()->GetRoutingID()));
   }
 }
 
