@@ -38,6 +38,7 @@ class InputStream final : public media::mojom::AudioInputStream,
               DeleteCallback delete_callback,
               media::mojom::AudioInputStreamRequest request,
               media::mojom::AudioInputStreamClientPtr client,
+              media::mojom::AudioInputStreamObserverPtr observer,
               media::mojom::AudioLogPtr log,
               media::AudioManager* manager,
               media::UserInputMonitor* user_input_monitor,
@@ -63,6 +64,7 @@ class InputStream final : public media::mojom::AudioInputStream,
 
   mojo::Binding<media::mojom::AudioInputStream> binding_;
   media::mojom::AudioInputStreamClientPtr client_;
+  media::mojom::AudioInputStreamObserverPtr observer_;
   const scoped_refptr<media::mojom::ThreadSafeAudioLogPtr> log_;
 
   // Notify stream client on creation.

@@ -11,7 +11,7 @@ import "media/mojo/interfaces/media_types.mojom";
 // On error, the message pipe is closed.
 // To close the stream, just close the message pipe.
 interface AudioInputStream {
-  // Starts recording audio.
+  // Starts recording audio, can be called only once.
   Record();
 
   // Sets volume. Volume must be in the range [0, 1].
@@ -23,4 +23,12 @@ interface AudioInputStream {
 interface AudioInputStreamClient {
   OnError();
   OnMutedStateChanged(bool is_muted);
+};
+
+// An AudioInputStreamObserver gets notifications about events related to an
+// AudioInputStream. DidStartRecording() is invoked when the stream starts
+// recording. Stream destruction is notified through binding connection error.
+interface AudioInputStreamObserver {
+  // It will be called only once when input stream starts recording.
+  DidStartRecording();
 };

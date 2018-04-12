@@ -25,6 +25,7 @@ InputStream::InputStream(CreatedCallback created_callback,
                          DeleteCallback delete_callback,
                          media::mojom::AudioInputStreamRequest request,
                          media::mojom::AudioInputStreamClientPtr client,
+                         media::mojom::AudioInputStreamObserverPtr observer,
                          media::mojom::AudioLogPtr log,
                          media::AudioManager* audio_manager,
                          media::UserInputMonitor* user_input_monitor,
@@ -34,6 +35,7 @@ InputStream::InputStream(CreatedCallback created_callback,
                          bool enable_agc)
     : binding_(this, std::move(request)),
       client_(std::move(client)),
+      observer_(std::move(observer)),
       log_(media::mojom::ThreadSafeAudioLogPtr::Create(std::move(log))),
       created_callback_(std::move(created_callback)),
       delete_callback_(std::move(delete_callback)),
@@ -48,6 +50,7 @@ InputStream::InputStream(CreatedCallback created_callback,
   DCHECK(audio_manager);
   DCHECK(binding_.is_bound());
   DCHECK(client_.is_bound());
+  DCHECK(observer_.is_bound());
   DCHECK(created_callback_);
   DCHECK(delete_callback_);
 
@@ -56,6 +59,7 @@ InputStream::InputStream(CreatedCallback created_callback,
       base::BindRepeating(&InputStream::OnStreamError, base::Unretained(this));
   binding_.set_connection_error_handler(error_handler);
   client_.set_connection_error_handler(error_handler);
+  observer_.set_connection_error_handler(std::move(error_handler));
   log_->get()->OnCreated(params, device_id);
 
   // Only MONO, STEREO and STEREO_AND_KEYBOARD_MIC channel layouts are expected,
@@ -100,6 +104,7 @@ void InputStream::Record() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   DCHECK(controller_);
   controller_->Record();
+  observer_->DidStartRecording();
   log_->get()->OnStarted();
 }
 
