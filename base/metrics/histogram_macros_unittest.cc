@@ -41,11 +41,17 @@ TEST(HistogramMacro, ScopedEnumeration) {
     SECOND_VALUE,
     THIRD_VALUE,
     kMaxValue = THIRD_VALUE,
+  };
+  UMA_HISTOGRAM_ENUMERATION("Test.ScopedEnumeration", TestEnum::FIRST_VALUE);
+
+  enum class TestEnum2 {
+    FIRST_VALUE,
+    SECOND_VALUE,
+    THIRD_VALUE,
     MAX_ENTRIES,
   };
-  UMA_HISTOGRAM_ENUMERATION("Test.ScopedEnumeration", TestEnum::SECOND_VALUE,
-                            TestEnum::MAX_ENTRIES);
-  UMA_HISTOGRAM_ENUMERATION("Test.ScopedEnumeration2", TestEnum::SECOND_VALUE);
+  UMA_HISTOGRAM_ENUMERATION("Test.ScopedEnumeration2", TestEnum2::SECOND_VALUE,
+                            TestEnum2::MAX_ENTRIES);
 }
 
 }  // namespace base
