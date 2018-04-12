@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -53,4 +54,14 @@ void CrostiniAppItem::Activate(int event_flags) {
   }
 
   CrostiniInstallerView::Show(this, profile());
+}
+
+ui::MenuModel* CrostiniAppItem::GetContextMenuModel() {
+  context_menu_.reset(
+      new CrostiniAppContextMenu(profile(), id(), GetController()));
+  return context_menu_->GetMenuModel();
+}
+
+app_list::AppContextMenu* CrostiniAppItem::GetAppContextMenu() {
+  return context_menu_.get();
 }

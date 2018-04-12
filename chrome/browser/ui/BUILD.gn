@@ -3624,6 +3624,8 @@ split_static_library("ui") {
         "app_list/arc/arc_vpn_provider_manager.h",
         "app_list/arc/arc_vpn_provider_manager_factory.cc",
         "app_list/arc/arc_vpn_provider_manager_factory.h",
+        "app_list/crostini/crostini_app_context_menu.cc",
+        "app_list/crostini/crostini_app_context_menu.h",
         "app_list/crostini/crostini_app_item.cc",
         "app_list/crostini/crostini_app_item.h",
         "app_list/crostini/crostini_app_model_builder.cc",
