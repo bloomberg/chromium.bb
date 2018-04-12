@@ -834,17 +834,6 @@ void ForEachMatchingFormFieldCommon(
   // are appended to the end of the form and are not visible.
   for (size_t i = 0; i < control_elements->size(); ++i) {
     WebFormControlElement* element = &(*control_elements)[i];
-
-    if (element->NameForAutofill().Utf16() != data.fields[i].name) {
-      // This case should be reachable only for pathological websites, which
-      // rename form fields while the user is interacting with the Autofill
-      // popup.  I (isherman) am not aware of any such websites, and so am
-      // optimistically including a NOTREACHED().  If you ever trip this check,
-      // please file a bug against me.
-      NOTREACHED();
-      continue;
-    }
-
     bool is_initiating_element = (*element == initiating_element);
 
     // Only autofill empty fields (or those with the field's default value
