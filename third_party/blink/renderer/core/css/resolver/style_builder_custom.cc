@@ -68,6 +68,8 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
@@ -373,6 +375,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(
       r = settings->GetTextAreasAreResizable() ? EResize::kBoth
                                                : EResize::kNone;
     }
+    UseCounter::Count(state.GetDocument(), WebFeature::kCSSResizeAuto);
   } else {
     r = identifier_value.ConvertTo<EResize>();
   }
