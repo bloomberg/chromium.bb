@@ -138,6 +138,8 @@ class Gamepad {
   GamepadHand hand;
 
   unsigned display_id;
+
+  bool is_xr = false;
 };
 
 #pragma pack(pop)
