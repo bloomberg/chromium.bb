@@ -41,6 +41,7 @@ class MockStreamClient : public media::mojom::AudioInputStreamClient {
   MockStreamClient() : binding_(this) {}
 
   media::mojom::AudioInputStreamClientPtr MakePtr() {
+    DCHECK(!binding_.is_bound());
     media::mojom::AudioInputStreamClientPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     binding_.set_connection_error_handler(base::BindOnce(
@@ -58,6 +59,31 @@ class MockStreamClient : public media::mojom::AudioInputStreamClient {
   mojo::Binding<media::mojom::AudioInputStreamClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MockStreamClient);
+};
+
+class MockStreamObserver : public media::mojom::AudioInputStreamObserver {
+ public:
+  MockStreamObserver() : binding_(this) {}
+
+  media::mojom::AudioInputStreamObserverPtr MakePtr() {
+    DCHECK(!binding_.is_bound());
+    media::mojom::AudioInputStreamObserverPtr ptr;
+    binding_.Bind(mojo::MakeRequest(&ptr));
+    binding_.set_connection_error_handler(base::BindOnce(
+        &MockStreamObserver::BindingConnectionError, base::Unretained(this)));
+    return ptr;
+  }
+
+  void CloseBinding() { binding_.Close(); }
+
+  MOCK_METHOD0(DidStartRecording, void());
+
+  MOCK_METHOD0(BindingConnectionError, void());
+
+ private:
+  mojo::Binding<media::mojom::AudioInputStreamObserver> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockStreamObserver);
 };
 
 class MockUserInputMonitor : public media::UserInputMonitor {
@@ -121,14 +147,17 @@ class AudioServiceInputStreamTest : public testing::Test {
                        base::Unretained(this)),
         base::BindOnce(&AudioServiceInputStreamTest::DeleteCallback,
                        base::Unretained(this)),
-        std::move(request), client_.MakePtr(), log_.MakePtr(), &audio_manager_,
-        &user_input_monitor_, media::AudioParameters::UnavailableDeviceParams(),
-        kDefaultDeviceId, kDefaultSharedMemoryCount, enable_agc);
+        std::move(request), client_.MakePtr(), observer_.MakePtr(),
+        log_.MakePtr(), &audio_manager_, &user_input_monitor_,
+        media::AudioParameters::UnavailableDeviceParams(), kDefaultDeviceId,
+        kDefaultSharedMemoryCount, enable_agc);
   }
 
   media::MockAudioManager& audio_manager() { return audio_manager_; }
 
   MockStreamClient& client() { return client_; }
+
+  MockStreamObserver& observer() { return observer_; }
 
   MockLog& log() { return log_; }
 
@@ -144,6 +173,7 @@ class AudioServiceInputStreamTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_env_;
   media::MockAudioManager audio_manager_;
   StrictMock<MockStreamClient> client_;
+  StrictMock<MockStreamObserver> observer_;
   NiceMock<MockLog> log_;
   NiceMock<MockUserInputMonitor> user_input_monitor_;
 
@@ -168,6 +198,7 @@ TEST_F(AudioServiceInputStreamTest, ConstructDestruct) {
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   stream.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -191,7 +222,32 @@ TEST_F(AudioServiceInputStreamTest,
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(*this, DeleteCallback(stream.get()));
+  EXPECT_CALL(observer(), BindingConnectionError());
   client().CloseBinding();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AudioServiceInputStreamTest,
+       ConstructStreamAndCloseObserverBinding_DestructsStream) {
+  NiceMock<MockStream> mock_stream;
+  audio_manager().SetMakeInputStreamCB(base::BindRepeating(
+      [](media::AudioInputStream* stream, const media::AudioParameters& params,
+         const std::string& device_id) { return stream; },
+      &mock_stream));
+
+  EXPECT_CALL(mock_stream, Open()).WillOnce(Return(true));
+  EXPECT_CALL(log(), OnCreated(_, _));
+  EXPECT_CALL(*this, CreatedCallback(kValidStream));
+  media::mojom::AudioInputStreamPtr stream_ptr;
+  std::unique_ptr<InputStream> stream =
+      CreateStream(mojo::MakeRequest(&stream_ptr), kDoNotEnableAGC);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_CALL(mock_stream, Close());
+  EXPECT_CALL(log(), OnClosed());
+  EXPECT_CALL(*this, DeleteCallback(stream.get()));
+  EXPECT_CALL(client(), BindingConnectionError());
+  observer().CloseBinding();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -215,6 +271,7 @@ TEST_F(AudioServiceInputStreamTest,
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   EXPECT_CALL(*this, DeleteCallback(stream.get()));
   stream_ptr.reset();
   base::RunLoop().RunUntilIdle();
@@ -237,6 +294,7 @@ TEST_F(AudioServiceInputStreamTest, Record) {
 
   EXPECT_CALL(mock_stream, Start(NotNull()));
   EXPECT_CALL(log(), OnStarted());
+  EXPECT_CALL(observer(), DidStartRecording());
   stream_ptr->Record();
   base::RunLoop().RunUntilIdle();
 
@@ -244,6 +302,7 @@ TEST_F(AudioServiceInputStreamTest, Record) {
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   stream.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -272,6 +331,7 @@ TEST_F(AudioServiceInputStreamTest, SetVolume) {
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   stream.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -296,6 +356,7 @@ TEST_F(AudioServiceInputStreamTest, SetNegativeVolume_BadMessage) {
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   stream_ptr->SetVolume(-0.618);
   base::RunLoop().RunUntilIdle();
 }
@@ -320,6 +381,7 @@ TEST_F(AudioServiceInputStreamTest, SetVolumeGreaterThanOne_BadMessage) {
   EXPECT_CALL(*this, DeleteCallback(stream.get()));
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   stream_ptr->SetVolume(1.618);
   base::RunLoop().RunUntilIdle();
 }
@@ -343,6 +405,7 @@ TEST_F(AudioServiceInputStreamTest, CreateStreamWithAGCEnable_PropagateAGC) {
   EXPECT_CALL(log(), OnClosed());
   EXPECT_CALL(mock_stream, Close());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   stream.reset();
   base::RunLoop().RunUntilIdle();
 }
@@ -359,6 +422,7 @@ TEST_F(AudioServiceInputStreamTest,
   EXPECT_CALL(log(), OnError());
   EXPECT_CALL(client(), OnError());
   EXPECT_CALL(client(), BindingConnectionError());
+  EXPECT_CALL(observer(), BindingConnectionError());
   EXPECT_CALL(*this, DeleteCallback(stream.get()));
   base::RunLoop().RunUntilIdle();
 }

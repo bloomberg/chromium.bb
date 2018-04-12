@@ -56,8 +56,8 @@ class MockClient : public media::mojom::AudioOutputStreamClient {
  public:
   MockClient() : binding_(this) {}
 
-  // Should only be called once.
   media::mojom::AudioOutputStreamClientPtr MakePtr() {
+    DCHECK(!binding_.is_bound());
     media::mojom::AudioOutputStreamClientPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     binding_.set_connection_error_handler(base::BindOnce(
@@ -81,8 +81,8 @@ class MockObserver : public media::mojom::AudioOutputStreamObserver {
  public:
   MockObserver() : binding_(this) {}
 
-  // Should only be called once.
   media::mojom::AudioOutputStreamObserverAssociatedPtrInfo MakePtrInfo() {
+    DCHECK(!binding_.is_bound());
     media::mojom::AudioOutputStreamObserverAssociatedPtrInfo ptr_info;
     binding_.Bind(mojo::MakeRequest(&ptr_info));
     binding_.set_connection_error_handler(base::BindOnce(
