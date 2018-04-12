@@ -17,6 +17,9 @@ class DisplayUtil {
 
   int64_t GetNearestDisplayIdToWindow(aura::Window* window) const;
   display::Display GetNearestDisplayToWindow(aura::Window* window) const;
+  display::Display FindAdjacentDisplayIfPointIsNearMargin(
+      const display::Display& current_display,
+      const gfx::Point& point) const;
 };
 
 }  // namespace keyboard
