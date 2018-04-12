@@ -323,7 +323,8 @@ void XRFrameProvider::ProcessScheduledFrame(double timestamp) {
 void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
   DCHECK(layer);
   DCHECK(layer->session() == exclusive_session_);
-  DCHECK(presentation_provider_);
+  if (!presentation_provider_.is_bound())
+    return;
 
   TRACE_EVENT1("gpu", "XRFrameProvider::SubmitWebGLLayer", "frame", frame_id_);
 
