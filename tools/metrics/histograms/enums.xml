@@ -35140,6 +35140,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Generated password submission would have failed"/>
 </enum>
 
+<enum name="PasswordSuggestionType">
+  <int value="0" label="Credential"/>
+  <int value="1" label="Show All"/>
+</enum>
+
 <enum name="PasswordSyncState">
   <int value="0" label="Syncing OK"/>
   <int value="1" label="Read failed"/>

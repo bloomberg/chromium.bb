@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -76,6 +77,16 @@ namespace {
 // Types of password infobars to display.
 enum class PasswordInfoBarType { SAVE, UPDATE };
 
+// Types of password suggestion in the keyboard accessory. Used for metrics
+// collection.
+enum class PasswordSuggestionType {
+  // Credentials are listed.
+  CREDENTIALS = 0,
+  // Only "Show All" is listed.
+  SHOW_ALL = 1,
+  COUNT
+};
+
 // Duration for notify user auto-sign in dialog being displayed.
 constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
@@ -85,7 +96,17 @@ constexpr char kCommandPrefix[] = "passwordForm";
 
 // The string ' •••' appended to the username in the suggestion.
 NSString* const kSuggestionSuffix = @" ••••••••";
+
+void LogSuggestionClicked(PasswordSuggestionType type) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SuggestionClicked", type,
+                            PasswordSuggestionType::COUNT);
 }
+
+void LogSuggestionShown(PasswordSuggestionType type) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SuggestionShown", type,
+                            PasswordSuggestionType::COUNT);
+}
+}  // namespace
 
 @interface PasswordController ()
 
@@ -170,6 +191,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
   bool is_password_field = [fieldType isEqualToString:@"password"];
 
   NSMutableArray* suggestions = [NSMutableArray array];
+  PasswordSuggestionType suggestion_type = PasswordSuggestionType::SHOW_ALL;
   if (fillData.IsSuggestionsAvailable(form_name, field_identifier,
                                       is_password_field)) {
     std::vector<password_manager::UsernameAndRealm> username_and_realms_ =
@@ -189,6 +211,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                                               displayDescription:origin
                                                             icon:nil
                                                       identifier:0]];
+      suggestion_type = PasswordSuggestionType::CREDENTIALS;
     }
   }
 
@@ -198,6 +221,7 @@ NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                                           displayDescription:nil
                                                         icon:nil
                                                   identifier:1]];
+  LogSuggestionShown(suggestion_type);
 
   return [suggestions copy];
 }
@@ -698,8 +722,10 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     // Navigate to the settings list.
     [self.delegate displaySavedPasswordList];
     completion();
+    LogSuggestionClicked(PasswordSuggestionType::SHOW_ALL);
     return;
   }
+  LogSuggestionClicked(PasswordSuggestionType::CREDENTIALS);
   base::string16 value = base::SysNSStringToUTF16(suggestion.value);
   DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
   value.erase(value.length() - kSuggestionSuffix.length);
