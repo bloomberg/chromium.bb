@@ -1220,6 +1220,9 @@ include_rules = [
   '+third_party/icu/source/common/unicode',
   '+third_party/icu/source/i18n/unicode',
   '+url',
+
+  # Chromium cannot directly depend on Abseil.
+  '-absl',
 ]
 
 
@@ -1229,6 +1232,7 @@ skip_child_includes = [
   'out',
   'skia',
   'testing',
+  'third_party/abseil-cpp',
   'third_party/breakpad/breakpad',
   'v8',
   'win8',
