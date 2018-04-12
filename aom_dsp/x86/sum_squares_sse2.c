@@ -17,7 +17,8 @@
 #include "./aom_dsp_rtcd.h"
 
 static INLINE __m128i xx_loadh_64(__m128i a, const void *b) {
-  return (__m128i)_mm_loadh_pd((__m128d)a, (double *)b);
+  const __m128d ad = _mm_castsi128_pd(a);
+  return _mm_castpd_si128(_mm_loadh_pd(ad, (double *)b));
 }
 
 static INLINE uint64_t xx_cvtsi128_si64(__m128i a) {
