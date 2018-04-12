@@ -80,8 +80,7 @@ config("runtime_library") {
       sysroot_hash =
           exec_script("//build/linux/sysroot_scripts/install-sysroot.py",
                       [ "--print-hash=$current_cpu" ],
-                      "trim string",
-                      [ "//build/linux/sysroot_scripts/sysroots.json" ])
+                      "trim string")
       defines += [ "CR_SYSROOT_HASH=$sysroot_hash" ]
     }
     asmflags += sysroot_flags
