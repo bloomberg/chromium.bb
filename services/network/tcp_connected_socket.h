@@ -25,6 +25,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 
 namespace net {
+class ClientSocketFactory;
 class NetLog;
 class StreamSocket;
 }  // namespace net
@@ -37,6 +38,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
   TCPConnectedSocket(
       mojom::TCPConnectedSocketObserverPtr observer,
       net::NetLog* net_log,
+      net::ClientSocketFactory* client_socket_factory,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   TCPConnectedSocket(
       mojom::TCPConnectedSocketObserverPtr observer,
@@ -77,6 +79,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPConnectedSocket
   mojom::TCPConnectedSocketObserverPtr observer_;
 
   net::NetLog* net_log_;
+  net::ClientSocketFactory* client_socket_factory_;
 
   std::unique_ptr<net::StreamSocket> socket_;
 

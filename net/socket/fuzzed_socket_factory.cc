@@ -144,7 +144,8 @@ FuzzedSocketFactory::CreateDatagramClientSocket(
   return std::make_unique<FuzzedDatagramClientSocket>(data_provider_);
 }
 
-std::unique_ptr<StreamSocket> FuzzedSocketFactory::CreateTransportClientSocket(
+std::unique_ptr<TransportClientSocket>
+FuzzedSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
     std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log,
