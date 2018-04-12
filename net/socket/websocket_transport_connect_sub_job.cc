@@ -16,12 +16,14 @@ namespace net {
 WebSocketTransportConnectSubJob::WebSocketTransportConnectSubJob(
     const AddressList& addresses,
     WebSocketTransportConnectJob* parent_job,
-    SubJobType type)
+    SubJobType type,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : parent_job_(parent_job),
       addresses_(addresses),
       current_address_index_(0),
       next_state_(STATE_NONE),
-      type_(type) {}
+      type_(type),
+      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager) {}
 
 WebSocketTransportConnectSubJob::~WebSocketTransportConnectSubJob() {
   // We don't worry about cancelling the TCP connect, since ~StreamSocket will
@@ -30,8 +32,7 @@ WebSocketTransportConnectSubJob::~WebSocketTransportConnectSubJob() {
     DCHECK_EQ(STATE_OBTAIN_LOCK_COMPLETE, next_state_);
     // The ~Waiter destructor will remove this object from the waiting list.
   } else if (next_state_ == STATE_TRANSPORT_CONNECT_COMPLETE) {
-    WebSocketEndpointLockManager::GetInstance()->UnlockEndpoint(
-        CurrentAddress());
+    websocket_endpoint_lock_manager_->UnlockEndpoint(CurrentAddress());
   }
 }
 
@@ -120,8 +121,8 @@ int WebSocketTransportConnectSubJob::DoLoop(int result) {
 }
 
 int WebSocketTransportConnectSubJob::DoEndpointLock() {
-  int rv = WebSocketEndpointLockManager::GetInstance()->LockEndpoint(
-      CurrentAddress(), this);
+  int rv =
+      websocket_endpoint_lock_manager_->LockEndpoint(CurrentAddress(), this);
   next_state_ = STATE_OBTAIN_LOCK_COMPLETE;
   return rv;
 }
@@ -146,10 +147,8 @@ int WebSocketTransportConnectSubJob::DoTransportConnect() {
 
 int WebSocketTransportConnectSubJob::DoTransportConnectComplete(int result) {
   next_state_ = STATE_DONE;
-  WebSocketEndpointLockManager* endpoint_lock_manager =
-      WebSocketEndpointLockManager::GetInstance();
   if (result != OK) {
-    endpoint_lock_manager->UnlockEndpoint(CurrentAddress());
+    websocket_endpoint_lock_manager_->UnlockEndpoint(CurrentAddress());
 
     if (current_address_index_ + 1 < addresses_.size()) {
       // Try falling back to the next address in the list.
@@ -161,8 +160,8 @@ int WebSocketTransportConnectSubJob::DoTransportConnectComplete(int result) {
     return result;
   }
 
-  endpoint_lock_manager->RememberSocket(transport_socket_.get(),
-                                        CurrentAddress());
+  websocket_endpoint_lock_manager_->RememberSocket(transport_socket_.get(),
+                                                   CurrentAddress());
 
   return result;
 }

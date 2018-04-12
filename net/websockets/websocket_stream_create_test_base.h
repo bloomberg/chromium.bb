@@ -77,9 +77,6 @@ class WebSocketStreamCreateTestBase {
   bool ssl_fatal_;
   URLRequest* url_request_;
 
-  // This temporarily sets WebSocketEndpointLockManager unlock delay to zero
-  // during tests.
-  ScopedWebSocketEndpointZeroUnlockDelay zero_unlock_delay_;
   base::RunLoop connect_run_loop_;
 
  private:

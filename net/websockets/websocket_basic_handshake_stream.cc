@@ -33,6 +33,7 @@
 #include "net/http/http_stream_parser.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/socket/websocket_transport_client_socket_pool.h"
 #include "net/websockets/websocket_basic_stream.h"
 #include "net/websockets/websocket_basic_stream_adapters.h"
@@ -167,7 +168,8 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     bool using_proxy,
     std::vector<std::string> requested_sub_protocols,
     std::vector<std::string> requested_extensions,
-    WebSocketStreamRequest* request)
+    WebSocketStreamRequest* request,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : result_(HandshakeResult::INCOMPLETE),
       state_(std::move(connection),
              using_proxy,
@@ -176,7 +178,8 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
       http_response_info_(nullptr),
       requested_sub_protocols_(requested_sub_protocols),
       requested_extensions_(requested_extensions),
-      stream_request_(request) {
+      stream_request_(request),
+      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager) {
   DCHECK(connect_delegate);
   DCHECK(request);
 }
@@ -363,7 +366,8 @@ std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
   // The HttpStreamParser object has a pointer to our ClientSocketHandle. Make
   // sure it does not touch it again before it is destroyed.
   state_.DeleteParser();
-  WebSocketTransportClientSocketPool::UnlockEndpoint(state_.connection());
+  WebSocketTransportClientSocketPool::UnlockEndpoint(
+      state_.connection(), websocket_endpoint_lock_manager_);
   std::unique_ptr<WebSocketStream> basic_stream =
       std::make_unique<WebSocketBasicStream>(
           std::make_unique<WebSocketClientSocketHandleAdapter>(

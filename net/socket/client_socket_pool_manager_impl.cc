@@ -52,6 +52,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
     CTPolicyEnforcer* ct_policy_enforcer,
     const std::string& ssl_session_cache_shard,
     SSLConfigService* ssl_config_service,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     HttpNetworkSession::SocketPoolType pool_type)
     : net_log_(net_log),
       socket_factory_(socket_factory),
@@ -73,6 +74,7 @@ ClientSocketPoolManagerImpl::ClientSocketPoolManagerImpl(
                                        max_sockets_per_group(pool_type),
                                        host_resolver,
                                        socket_factory_,
+                                       websocket_endpoint_lock_manager,
                                        net_log)
                                  : new TransportClientSocketPool(
                                        max_sockets_per_pool(pool_type),

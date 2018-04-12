@@ -1215,7 +1215,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       DCHECK(delegate_->websocket_handshake_stream_create_helper());
       websocket_stream_ =
           delegate_->websocket_handshake_stream_create_helper()
-              ->CreateBasicStream(std::move(connection_), using_proxy);
+              ->CreateBasicStream(std::move(connection_), using_proxy,
+                                  session_->websocket_endpoint_lock_manager());
     } else {
       stream_ = std::make_unique<HttpBasicStream>(
           std::move(connection_), using_proxy,

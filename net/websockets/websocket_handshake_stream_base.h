@@ -27,6 +27,7 @@ class ClientSocketHandle;
 class SpdySession;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class WebSocketEndpointLockManager;
 
 // WebSocketHandshakeStreamBase is the base class of
 // WebSocketBasicHandshakeStream.  net/http code uses this interface to handle
@@ -97,7 +98,8 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
     // HTTP authentication is needed.
     virtual std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
         std::unique_ptr<ClientSocketHandle> connection,
-        bool using_proxy) = 0;
+        bool using_proxy,
+        WebSocketEndpointLockManager* websocket_endpoint_lock_manager) = 0;
 
     // Create a WebSocketHttp2HandshakeStream. This is called after the
     // underlying HTTP/2 connection has been established but before the stream

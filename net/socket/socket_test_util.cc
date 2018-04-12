@@ -1858,21 +1858,6 @@ void MockSOCKSClientSocketPool::ReleaseSocket(
   return transport_pool_->ReleaseSocket(group_name, std::move(socket), id);
 }
 
-ScopedWebSocketEndpointZeroUnlockDelay::
-    ScopedWebSocketEndpointZeroUnlockDelay() {
-  old_delay_ =
-      WebSocketEndpointLockManager::GetInstance()->SetUnlockDelayForTesting(
-          base::TimeDelta());
-}
-
-ScopedWebSocketEndpointZeroUnlockDelay::
-    ~ScopedWebSocketEndpointZeroUnlockDelay() {
-  base::TimeDelta active_delay =
-      WebSocketEndpointLockManager::GetInstance()->SetUnlockDelayForTesting(
-          old_delay_);
-  EXPECT_EQ(active_delay, base::TimeDelta());
-}
-
 WrappedStreamSocket::WrappedStreamSocket(
     std::unique_ptr<StreamSocket> transport)
     : transport_(std::move(transport)) {}

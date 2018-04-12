@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/containers/linked_list.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -49,7 +49,8 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
     virtual void GotEndpointLock() = 0;
   };
 
-  static WebSocketEndpointLockManager* GetInstance();
+  WebSocketEndpointLockManager();
+  ~WebSocketEndpointLockManager();
 
   // Returns OK if lock was acquired immediately, ERR_IO_PENDING if not. If the
   // lock was not acquired, then |waiter->GotEndpointLock()| will be called when
@@ -88,8 +89,6 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   base::TimeDelta SetUnlockDelayForTesting(base::TimeDelta new_delay);
 
  private:
-  friend struct base::LazyInstanceTraitsBase<net::WebSocketEndpointLockManager>;
-
   struct LockInfo {
     typedef base::LinkedList<Waiter> WaiterQueue;
 
@@ -122,9 +121,6 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
   typedef std::map<IPEndPoint, LockInfo> LockInfoMap;
   typedef std::map<StreamSocket*, LockInfoMap::iterator> SocketLockInfoMap;
 
-  WebSocketEndpointLockManager();
-  ~WebSocketEndpointLockManager();
-
   void UnlockEndpointAfterDelay(const IPEndPoint& endpoint);
   void DelayedUnlockEndpoint(const IPEndPoint& endpoint);
   void EraseSocket(LockInfoMap::iterator lock_info_it);
@@ -145,6 +141,8 @@ class NET_EXPORT_PRIVATE WebSocketEndpointLockManager {
 
   // Number of sockets currently pending unlock.
   size_t pending_unlock_count_;
+
+  base::WeakPtrFactory<WebSocketEndpointLockManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEndpointLockManager);
 };

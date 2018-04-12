@@ -23,6 +23,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_key.h"
 #include "net/spdy/chromium/spdy_test_util_common.h"
@@ -156,7 +157,8 @@ class WebSocketHandshakeStreamCreateHelperTest
                     WebSocketExtraHeadersToString(extra_response_headers)));
 
         std::unique_ptr<WebSocketHandshakeStreamBase> handshake =
-            create_helper.CreateBasicStream(std::move(socket_handle), false);
+            create_helper.CreateBasicStream(std::move(socket_handle), false,
+                                            &websocket_endpoint_lock_manager_);
 
         // If in future the implementation type returned by CreateBasicStream()
         // changes, this static_cast will be wrong. However, in that case the
@@ -251,6 +253,7 @@ class WebSocketHandshakeStreamCreateHelperTest
   MockClientSocketHandleFactory socket_handle_factory_;
   TestConnectDelegate connect_delegate_;
   StrictMock<MockWebSocketStreamRequest> stream_request_;
+  WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
 };
 
 INSTANTIATE_TEST_CASE_P(,
