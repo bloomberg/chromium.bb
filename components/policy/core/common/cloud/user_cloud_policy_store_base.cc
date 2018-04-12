@@ -27,21 +27,18 @@ UserCloudPolicyStoreBase::UserCloudPolicyStoreBase(
     : background_task_runner_(background_task_runner),
       policy_scope_(policy_scope) {}
 
-UserCloudPolicyStoreBase::~UserCloudPolicyStoreBase() {
-}
+UserCloudPolicyStoreBase::~UserCloudPolicyStoreBase() {}
 
 std::unique_ptr<UserCloudPolicyValidator>
 UserCloudPolicyStoreBase::CreateValidator(
     std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
     CloudPolicyValidatorBase::ValidateTimestampOption timestamp_option) {
   // Configure the validator.
-  std::unique_ptr<UserCloudPolicyValidator> validator =
-      UserCloudPolicyValidator::Create(std::move(policy),
-                                       background_task_runner_);
+  auto validator = std::make_unique<UserCloudPolicyValidator>(
+      std::move(policy), background_task_runner_);
   validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
   validator->ValidateAgainstCurrentPolicy(
-      policy_.get(),
-      timestamp_option,
+      policy_.get(), timestamp_option,
       CloudPolicyValidatorBase::DM_TOKEN_REQUIRED,
       CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
   validator->ValidatePayload();

@@ -295,8 +295,8 @@ void PreSigninPolicyFetcher::NotifyCallback(
 std::unique_ptr<UserCloudPolicyValidator>
 PreSigninPolicyFetcher::CreateValidatorForCachedPolicy(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
-  std::unique_ptr<UserCloudPolicyValidator> validator =
-      UserCloudPolicyValidator::Create(std::move(policy), task_runner_);
+  auto validator = std::make_unique<UserCloudPolicyValidator>(std::move(policy),
+                                                              task_runner_);
 
   validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
   validator->ValidatePayload();
@@ -314,8 +314,8 @@ std::unique_ptr<UserCloudPolicyValidator>
 PreSigninPolicyFetcher::CreateValidatorForFetchedPolicy(
     std::unique_ptr<em::PolicyFetchResponse> policy) {
   // Configure the validator to validate based on cached policy.
-  std::unique_ptr<UserCloudPolicyValidator> validator =
-      UserCloudPolicyValidator::Create(std::move(policy), task_runner_);
+  auto validator = std::make_unique<UserCloudPolicyValidator>(std::move(policy),
+                                                              task_runner_);
 
   validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
   validator->ValidateAgainstCurrentPolicy(
