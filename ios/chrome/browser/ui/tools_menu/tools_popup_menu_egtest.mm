@@ -37,11 +37,20 @@ id<GREYMatcher> FindInPageButton() {
 
 @implementation ToolsPopupMenuTestCase
 
-// Tests that the menu is closed when tapping the close button.
+// Tests that the menu is closed when tapping the close button or the scrim.
 - (void)testOpenAndCloseToolsMenu {
   [ChromeEarlGreyUI openToolsMenu];
 
-  if (!IsCompactWidth()) {
+  // When the UIRefresh flag is enabled, a scrim covers the whole window and
+  // tapping on this scrim dismisses the tools menu.  The "Tools Menu" button
+  // happens to be outside of the bounds of the menu and is a convenient place
+  // to tap to activate the scrim.
+  //
+  // When the UIRefresh flag is disabled, a scrim is present on phone with the
+  // |IDS_IOS_TOOLBAR_CLOSE_MENU| accessibility label.  On tablet, the tools
+  // menu button is an item in the tools menu and can be pressed again to close
+  // the menu.
+  if (!IsCompactWidth() && !IsUIRefreshPhase1Enabled()) {
     [[EarlGrey
         selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
                                      IDS_IOS_TOOLBAR_CLOSE_MENU))]
