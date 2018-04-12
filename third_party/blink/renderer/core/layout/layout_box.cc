@@ -5061,8 +5061,15 @@ void LayoutBox::AddVisualEffectOverflow() {
 
   // Add in the final overflow with shadows, outsets and outline combined.
   LayoutRect visual_effect_overflow = BorderBoxRect();
-  visual_effect_overflow.Expand(ComputeVisualEffectOverflowOutsets());
+  LayoutRectOutsets outsets = ComputeVisualEffectOverflowOutsets();
+  visual_effect_overflow.Expand(outsets);
   AddSelfVisualOverflow(visual_effect_overflow);
+
+  if (overflow_) {
+    overflow_->SetHasSubpixelVisualEffectOutsets(
+        !IsIntegerValue(outsets.Top()) || !IsIntegerValue(outsets.Right()) ||
+        !IsIntegerValue(outsets.Bottom()) || !IsIntegerValue(outsets.Left()));
+  }
 }
 
 LayoutRectOutsets LayoutBox::ComputeVisualEffectOverflowOutsets() {
@@ -5989,6 +5996,14 @@ void LayoutBox::MutableForPainting::
   rare_data.previous_content_box_size_ = GetLayoutBox().ContentSize();
   rare_data.previous_physical_layout_overflow_rect_ =
       GetLayoutBox().PhysicalLayoutOverflowRect();
+}
+
+float LayoutBox::VisualRectOutsetForRasterEffects() const {
+  // If the box has subpixel visual effect outsets, as the visual effect may be
+  // painted along the pixel-snapped border box, the pixels on the anti-aliased
+  // edge of the effect may overflow the calculated visual rect. Expand visual
+  // rect by one pixel in the case.
+  return overflow_ && overflow_->HasSubpixelVisualEffectOutsets() ? 1 : 0;
 }
 
 }  // namespace blink
