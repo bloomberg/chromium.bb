@@ -367,6 +367,11 @@ TEST(SpanTest, Equality) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 == span3);
+
+  static double kArray4[] = {2.0, 7.0, 1.0, 8.0, 3.0};
+  span<double> span4(kArray4);
+
+  EXPECT_EQ(span3, span4);
 }
 
 TEST(SpanTest, Inequality) {
@@ -381,6 +386,11 @@ TEST(SpanTest, Inequality) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 != span3);
+
+  static double kArray4[] = {1.0, 4.0, 6.0, 8.0, 9.0};
+  span<double> span4(kArray4);
+
+  EXPECT_NE(span3, span4);
 }
 
 TEST(SpanTest, LessThan) {
@@ -395,6 +405,11 @@ TEST(SpanTest, LessThan) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 < span3);
+
+  static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0, 13.0};
+  span<double> span4(kArray4);
+
+  EXPECT_LT(span3, span4);
 }
 
 TEST(SpanTest, LessEqual) {
@@ -410,6 +425,11 @@ TEST(SpanTest, LessEqual) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 <= span3);
+
+  static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0, 13.0};
+  span<double> span4(kArray4);
+
+  EXPECT_LE(span3, span4);
 }
 
 TEST(SpanTest, GreaterThan) {
@@ -424,6 +444,11 @@ TEST(SpanTest, GreaterThan) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 > span3);
+
+  static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0};
+  span<double> span4(kArray4);
+
+  EXPECT_GT(span3, span4);
 }
 
 TEST(SpanTest, GreaterEqual) {
@@ -439,6 +464,11 @@ TEST(SpanTest, GreaterEqual) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 >= span3);
+
+  static double kArray4[] = {2.0, 3.0, 5.0, 7.0, 11.0};
+  span<double> span4(kArray4);
+
+  EXPECT_GE(span3, span4);
 }
 
 TEST(SpanTest, AsBytes) {
