@@ -56,7 +56,7 @@ bool RenderPdfPagesToPwgRaster(base::File pdf_file,
     if (!chrome_pdf::RenderPDFPageToBitmap(
             data.data(), data_size, page_number, image.pixel_data(),
             image.size().width(), image.size().height(), settings.dpi.width(),
-            settings.dpi.height(), settings.autorotate)) {
+            settings.dpi.height(), settings.autorotate, settings.use_color)) {
       return false;
     }
 

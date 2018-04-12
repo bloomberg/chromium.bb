@@ -76,6 +76,9 @@ class StructTraits<printing::mojom::PdfRenderSettingsDataView,
   static bool autorotate(const printing::PdfRenderSettings& settings) {
     return settings.autorotate;
   }
+  static bool use_color(const printing::PdfRenderSettings& settings) {
+    return settings.use_color;
+  }
   static printing::PdfRenderSettings::Mode mode(
       const printing::PdfRenderSettings& settings) {
     return settings.mode;

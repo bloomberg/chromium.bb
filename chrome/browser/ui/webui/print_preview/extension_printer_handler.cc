@@ -265,13 +265,16 @@ void ExtensionPrinterHandler::ConvertToPWGRaster(
     const gfx::Size& page_size,
     std::unique_ptr<extensions::PrinterProviderPrintJob> job,
     PrintJobCallback callback) {
-  if (!pwg_raster_converter_) {
+  if (!pwg_raster_converter_)
     pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
-  }
+
+  printing::PwgRasterSettings bitmap_settings =
+      PwgRasterConverter::GetBitmapSettings(printer_description, ticket);
   pwg_raster_converter_->Start(
       data.get(),
-      PwgRasterConverter::GetConversionSettings(printer_description, page_size),
-      PwgRasterConverter::GetBitmapSettings(printer_description, ticket),
+      PwgRasterConverter::GetConversionSettings(printer_description, page_size,
+                                                bitmap_settings.use_color),
+      bitmap_settings,
       base::BindOnce(&UpdateJobFileInfo, std::move(job), std::move(callback)));
 }
 

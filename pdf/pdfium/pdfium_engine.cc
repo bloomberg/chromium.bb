@@ -4623,7 +4623,8 @@ PDFEngineExports::RenderingSettings::RenderingSettings(int dpi_x,
                                                        bool stretch_to_bounds,
                                                        bool keep_aspect_ratio,
                                                        bool center_in_bounds,
-                                                       bool autorotate)
+                                                       bool autorotate,
+                                                       bool use_color)
     : dpi_x(dpi_x),
       dpi_y(dpi_y),
       bounds(bounds),
@@ -4631,7 +4632,8 @@ PDFEngineExports::RenderingSettings::RenderingSettings(int dpi_x,
       stretch_to_bounds(stretch_to_bounds),
       keep_aspect_ratio(keep_aspect_ratio),
       center_in_bounds(center_in_bounds),
-      autorotate(autorotate) {}
+      autorotate(autorotate),
+      use_color(use_color) {}
 
 PDFEngineExports::RenderingSettings::RenderingSettings(
     const RenderingSettings& that) = default;
@@ -4672,6 +4674,10 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
                     settings.bounds.x() + settings.bounds.width(),
                     settings.bounds.y() + settings.bounds.height());
 
+  int flags = FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH;
+  if (!settings.use_color)
+    flags |= FPDF_GRAYSCALE;
+
   // A "temporary" hack. Some PDFs seems to render very slowly if
   // FPDF_RenderPage() is directly used on a printer DC. I suspect it is
   // because of the code to talk Postscript directly to the printer if
@@ -4685,7 +4691,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
     // Clear the bitmap
     FPDFBitmap_FillRect(bitmap, 0, 0, dest.width(), dest.height(), 0xFFFFFFFF);
     FPDF_RenderPageBitmap(bitmap, page, 0, 0, dest.width(), dest.height(),
-                          rotate, FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
+                          rotate, flags);
     int stride = FPDFBitmap_GetStride(bitmap);
     BITMAPINFO bmi;
     memset(&bmi, 0, sizeof(bmi));
@@ -4702,7 +4708,7 @@ bool PDFiumEngineExports::RenderPDFPageToDC(const void* pdf_buffer,
     FPDFBitmap_Destroy(bitmap);
   } else {
     FPDF_RenderPage(dc, page, dest.x(), dest.y(), dest.width(), dest.height(),
-                    rotate, FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
+                    rotate, flags);
   }
   RestoreDC(dc, save_state);
   FPDF_ClosePage(page);
@@ -4749,9 +4755,13 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
                       settings.bounds.height(), 0xFFFFFFFF);
   // Shift top-left corner of bounds to (0, 0) if it's not there.
   dest.set_point(dest.point() - settings.bounds.point());
+
+  int flags = FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH;
+  if (!settings.use_color)
+    flags |= FPDF_GRAYSCALE;
+
   FPDF_RenderPageBitmap(bitmap, page, dest.x(), dest.y(), dest.width(),
-                        dest.height(), rotate,
-                        FPDF_ANNOT | FPDF_PRINTING | FPDF_NO_CATCH);
+                        dest.height(), rotate, flags);
   FPDFBitmap_Destroy(bitmap);
   FPDF_ClosePage(page);
   return true;

@@ -239,7 +239,8 @@ std::unique_ptr<PwgRasterConverter> PwgRasterConverter::CreateDefault() {
 // static
 PdfRenderSettings PwgRasterConverter::GetConversionSettings(
     const cloud_devices::CloudDeviceDescription& printer_capabilities,
-    const gfx::Size& page_size) {
+    const gfx::Size& page_size,
+    bool use_color) {
   gfx::Size dpi = gfx::Size(kDefaultPdfDpi, kDefaultPdfDpi);
   cloud_devices::printer::DpiCapability dpis;
   if (dpis.LoadFrom(printer_capabilities))
@@ -264,7 +265,7 @@ PdfRenderSettings PwgRasterConverter::GetConversionSettings(
   gfx::Rect area(final_page_size.width() * scale_x,
                  final_page_size.height() * scale_y);
   return PdfRenderSettings(area, gfx::Point(0, 0), dpi,
-                           /*autorotate=*/true,
+                           /*autorotate=*/true, use_color,
                            PdfRenderSettings::Mode::NORMAL);
 }
 

@@ -506,10 +506,13 @@ void PrivetLocalPrintOperationImpl::StartConvertToPWG() {
   if (!pwg_raster_converter_)
     pwg_raster_converter_ = PwgRasterConverter::CreateDefault();
 
+  printing::PwgRasterSettings bitmap_settings =
+      PwgRasterConverter::GetBitmapSettings(capabilities_, ticket_);
   pwg_raster_converter_->Start(
       data_.get(),
-      PwgRasterConverter::GetConversionSettings(capabilities_, page_size_),
-      PwgRasterConverter::GetBitmapSettings(capabilities_, ticket_),
+      PwgRasterConverter::GetConversionSettings(capabilities_, page_size_,
+                                                bitmap_settings.use_color),
+      bitmap_settings,
       base::BindOnce(&PrivetLocalPrintOperationImpl::OnPWGRasterConverted,
                      weak_factory_.GetWeakPtr()));
 }

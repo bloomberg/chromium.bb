@@ -24,5 +24,6 @@ struct PdfRenderSettings {
   gfx.mojom.Point offsets;
   gfx.mojom.Size dpi;
   bool autorotate;
+  bool use_color;
   Mode mode;
 };
