@@ -14,7 +14,7 @@ import time
 
 extra_cq_trybots = [
   {
-    "mastername": "master.tryserver.chromium.win",
+    "mastername": "luci.chromium.try",
     "buildernames": ["win_optional_gpu_tests_rel"]
   },
   {

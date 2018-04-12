@@ -143,13 +143,13 @@ this writing, they ran longer-running tests that can't run against all Chromium
 CLs due to lack of hardware capacity. They are added as part of the included
 tryservers for code changes to certain sub-directories.
 
-*   [linux_optional_gpu_tests_rel] on the [tryserver.chromium.linux] waterfall
-*   [mac_optional_gpu_tests_rel]   on the [tryserver.chromium.mac]   waterfall
-*   [win_optional_gpu_tests_rel]   on the [tryserver.chromium.win]   waterfall
+*   [linux_optional_gpu_tests_rel] on the [luci.chromium.try] waterfall
+*   [mac_optional_gpu_tests_rel]   on the [luci.chromium.try]   waterfall
+*   [win_optional_gpu_tests_rel]   on the [luci.chromium.try]   waterfall
 
-[linux_optional_gpu_tests_rel]: https://build.chromium.org/p/tryserver.chromium.linux/builders/linux_optional_gpu_tests_rel?numbuilds=200
-[mac_optional_gpu_tests_rel]:   https://build.chromium.org/p/tryserver.chromium.mac/builders/mac_optional_gpu_tests_rel?numbuilds=200
-[win_optional_gpu_tests_rel]:   https://build.chromium.org/p/tryserver.chromium.win/builders/win_optional_gpu_tests_rel?numbuilds=200
+[linux_optional_gpu_tests_rel]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_optional_gpu_tests_rel
+[mac_optional_gpu_tests_rel]:   https://ci.chromium.org/p/chromium/builders/luci.chromium.try/mac_optional_gpu_tests_rel
+[win_optional_gpu_tests_rel]:   https://ci.chromium.org/p/chromium/builders/luci.chromium.try/win_optional_gpu_tests_rel
 
 Tryservers for the [ANGLE project] are also present on the
 [tryserver.chromium.angle] waterfall. These are invoked from the Gerrit user
