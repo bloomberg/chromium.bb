@@ -21,6 +21,10 @@ public class WebResourceRequestAdapter implements WebResourceRequest {
         mRequest = request;
     }
 
+    /* package */ AwWebResourceRequest getAwResourceRequest() {
+        return mRequest;
+    }
+
     @Override
     public Uri getUrl() {
         return Uri.parse(mRequest.url);

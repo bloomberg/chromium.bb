@@ -5,6 +5,7 @@
 package org.chromium.support_lib_glue;
 
 import android.webkit.ServiceWorkerWebSettings;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 
 import com.android.webview.chromium.WebkitToSharedGlueConverter;
@@ -37,5 +38,13 @@ class SupportLibWebkitToCompatConverterAdapter implements WebkitToCompatConverte
                 new SupportLibServiceWorkerSettingsAdapter(
                         WebkitToSharedGlueConverter.getServiceWorkerSettings(
                                 (ServiceWorkerWebSettings) serviceWorkerWebSettings)));
+    }
+
+    // WebResourceRequestBoundaryInterface
+    @Override
+    public InvocationHandler convertWebResourceRequest(WebResourceRequest request) {
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibWebResourceRequest(
+                        WebkitToSharedGlueConverter.getWebResourceRequest(request)));
     }
 }

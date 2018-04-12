@@ -76,4 +76,8 @@ public class Features {
     // ServiceWorkerWebSettingsCompat.setBlockNetworkLoads
     public static final String SERVICE_WORKER_BLOCK_NETWORK_LOADS =
             "SERVICE_WORKER_BLOCK_NETWORK_LOADS";
+
+    // WebResourceRequest.isRedirect
+    public static final String WEB_RESOURCE_REQUEST_IS_REDIRECT =
+            "WEB_RESOURCE_REQUEST_IS_REDIRECT";
 }
