@@ -2865,18 +2865,19 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, MAYBE_WriteDuringDisconnect) {
 }
 
 #if defined(OS_MACOSX)
-#define MAYBE_WriteWithoutResponseDuringDisconnect \
-  WriteWithoutResponseDuringDisconnect
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect \
+  WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect
 #else
-#define MAYBE_WriteWithoutResponseDuringDisconnect \
-  DISABLED_WriteWithoutResponseDuringDisconnect
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect \
+  DISABLED_WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect
 #endif
 // Tests that writing without response during a disconnect results in an error.
 // Only applies to macOS whose events arrive all on the UI thread. See other
 // *DuringDisconnect tests for Android and Windows whose events arrive on a
 // different thread.
-TEST_F(BluetoothRemoteGattCharacteristicTest,
-       MAYBE_WriteWithoutResponseDuringDisconnect) {
+TEST_F(
+    BluetoothRemoteGattCharacteristicTest,
+    MAYBE_WriteWithoutResponseOnlyCharacteristic_WriteRemoteCharacteristicDuringDisconnect) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -2895,18 +2896,19 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 
 #if defined(OS_MACOSX)
-#define MAYBE_DisconnectCalledDuringWriteWithoutResponse \
-  DisconnectCalledDuringWriteWithoutResponse
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic \
+  WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic
 #else
-#define MAYBE_DisconnectCalledDuringWriteWithoutResponse \
-  DISABLED_DisconnectCalledDuringWriteWithoutResponse
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic \
+  DISABLED_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic
 #endif
 // Tests that disconnecting right after a write without response results in an
 // error.
 // TODO(crbug.com/726534): Enable on other platforms depending on the resolution
 // of crbug.com/726534.
-TEST_F(BluetoothRemoteGattCharacteristicTest,
-       MAYBE_DisconnectCalledDuringWriteWithoutResponse) {
+TEST_F(
+    BluetoothRemoteGattCharacteristicTest,
+    MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledDuringWriteRemoteCharacteristic) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -2928,18 +2930,19 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 }
 
 #if defined(OS_MACOSX)
-#define MAYBE_DisconnectCalledBeforeWriteWithoutResponse \
-  DisconnectCalledBeforeWriteWithoutResponse
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic \
+  WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic
 #else
-#define MAYBE_DisconnectCalledBeforeWriteWithoutResponse \
-  DISABLED_DisconnectCalledBeforeWriteWithoutResponse
+#define MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic \
+  DISABLED_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic
 #endif
 // Tests that disconnecting right before a write without response results in an
 // error.
 // TODO(crbug.com/726534): Enable on other platforms depending on the resolution
 // of crbug.com/726534.
-TEST_F(BluetoothRemoteGattCharacteristicTest,
-       MAYBE_DisconnectCalledBeforeWriteWithoutResponse) {
+TEST_F(
+    BluetoothRemoteGattCharacteristicTest,
+    MAYBE_WriteWithoutResponseOnlyCharacteristic_DisconnectCalledBeforeWriteRemoteCharacteristic) {
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -2958,6 +2961,128 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 
   SimulateGattDisconnection(device_);
   base::RunLoop().RunUntilIdle();
+}
+
+#if defined(OS_MACOSX)
+#define MAYBE_WriteWithoutResponse_PropertyNotPresent \
+  WriteWithoutResponse_PropertyNotPresent
+#else
+#define MAYBE_WriteWithoutResponse_PropertyNotPresent \
+  DISABLED_WriteWithoutResponse_PropertyNotPresent
+#endif
+// Tests that WriteWithoutResponse fails when a characteristic does not have the
+// required property.
+// TODO(https://crbug.com/831524): Enable for other platforms once supported.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       MAYBE_WriteWithoutResponse_PropertyNotPresent) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
+
+  std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
+  EXPECT_FALSE(characteristic1_->WriteWithoutResponse(test_vector));
+}
+
+#if defined(OS_MACOSX)
+#define MAYBE_WriteWithoutResponse_PendingWrite \
+  WriteWithoutResponse_PendingWrite
+#else
+#define MAYBE_WriteWithoutResponse_PendingWrite \
+  DISABLED_WriteWithoutResponse_PendingWrite
+#endif
+// Tests that WriteWithoutResponse fails when a characteristic already has a
+// pending write.
+// TODO(https://crbug.com/831524): Enable for other platforms once supported.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       MAYBE_WriteWithoutResponse_PendingWrite) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE |
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
+  characteristic1_->WriteRemoteCharacteristic(
+      test_vector, GetCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  // Explicitly make sure that the callback has not been invoked yet. Since
+  // WriteRemoteCharacteristic is still pending, this results in an error for
+  // WriteWithoutResponse.
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_FALSE(characteristic1_->WriteWithoutResponse(test_vector));
+
+  // Test that the failed WriteWithoutReponse request does not interfere with
+  // the pending WriteRemoteCharacteristic request.
+  SimulateGattCharacteristicWrite(characteristic1_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(test_vector, last_write_value_);
+}
+
+#if defined(OS_MACOSX)
+#define MAYBE_WriteWithoutResponse_PendingRead WriteWithoutResponse_PendingRead
+#else
+#define MAYBE_WriteWithoutResponse_PendingRead \
+  DISABLED_WriteWithoutResponse_PendingRead
+#endif
+// Tests that WriteWithoutResponse fails when a characteristic already has a
+// pending read.
+// TODO(https://crbug.com/831524): Enable for other platforms once supported.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       MAYBE_WriteWithoutResponse_PendingRead) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_READ |
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  characteristic1_->ReadRemoteCharacteristic(
+      GetReadValueCallback(Call::EXPECTED),
+      GetGattErrorCallback(Call::NOT_EXPECTED));
+
+  // Explicitly make sure that the callback has not been invoked yet. Since
+  // ReadRemoteCharacteristic is still pending, this results in an error for
+  // WriteWithoutResponse.
+  EXPECT_EQ(0, callback_count_);
+  std::vector<uint8_t> test_vector = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
+  EXPECT_FALSE(characteristic1_->WriteWithoutResponse(test_vector));
+
+  // Test that the failed WriteWithoutReponse request does not interfere with
+  // the pending ReadRemoteCharacteristic request.
+  SimulateGattCharacteristicRead(characteristic1_, test_vector);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(test_vector, last_read_value_);
+}
+
+#if defined(OS_MACOSX)
+#define MAYBE_WriteWithoutResponse_Success WriteWithoutResponse_Success
+#else
+#define MAYBE_WriteWithoutResponse_Success DISABLED_WriteWithoutResponse_Success
+#endif
+// Tests that WriteWithoutResponse indicates success if the proper conditions
+// are met.
+// TODO(https://crbug.com/831524): Enable for other platforms once supported.
+TEST_F(BluetoothRemoteGattCharacteristicTest,
+       MAYBE_WriteWithoutResponse_Success) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
+      BluetoothRemoteGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE));
+
+  std::vector<uint8_t> test_vector = {1, 2, 3, 4};
+  EXPECT_TRUE(characteristic1_->WriteWithoutResponse(test_vector));
+  EXPECT_EQ(test_vector, last_write_value_);
 }
 
 #if defined(OS_ANDROID)
