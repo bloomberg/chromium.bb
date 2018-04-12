@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 import tempfile
+import uuid
 
 from core import oauth_api
 from core import path_util
@@ -184,14 +185,15 @@ def _process_perf_results(output_json, configuration_name,
             oauth_file, tmpfile_dir, logdog_dict, is_ref)
         upload_failure = upload_failure or upload_fail
 
-      logdog_file_name = 'Results_Dashboard'
+      logdog_label = 'Results Dashboard'
+      logdog_file_name = 'Results_Dashboard_' + str(uuid.uuid4())
       if upload_failure:
-        logdog_file_name += '_Upload_Failure'
+        logdog_label += ' Upload Failure'
       _merge_json_output(output_json, test_results_list,
           logdog_helper.text(logdog_file_name,
               json.dumps(logdog_dict, sort_keys=True,
                   indent=4, separators=(',', ':'))),
-          logdog_file_name.replace('_', ' '))
+          logdog_label)
   finally:
     shutil.rmtree(tmpfile_dir)
   return upload_failure
