@@ -468,10 +468,25 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
          gurl1.port() == gurl2.port();
 }
 
-// Annotate |forms| with form and field signatures as HTML attributes.
-void AnnotateFormsWithSignatures(
-    blink::WebVector<blink::WebFormElement> forms) {
-  for (blink::WebFormElement form : forms) {
+// Annotate |fields| with field signatures as HTML attributes.
+void AnnotateFieldsWithSignatures(
+    std::vector<blink::WebFormControlElement>* fields) {
+  for (blink::WebFormControlElement& control_element : *fields) {
+    FieldSignature field_signature = CalculateFieldSignatureByNameAndType(
+        control_element.NameForAutofill().Utf16(),
+        control_element.FormControlTypeForAutofill().Utf8());
+    control_element.SetAttribute(
+        blink::WebString::FromASCII(kDebugAttributeForFieldSignature),
+        blink::WebString::FromUTF8(base::NumberToString(field_signature)));
+  }
+}
+
+// Annotate |forms| and all fields in the |frame| with form and field signatures
+// as HTML attributes.
+void AnnotateFormsAndFieldsWithSignatures(
+    blink::WebLocalFrame* frame,
+    blink::WebVector<blink::WebFormElement>* forms) {
+  for (blink::WebFormElement& form : *forms) {
     std::unique_ptr<PasswordForm> password_form(
         CreatePasswordFormFromWebForm(form, nullptr, nullptr, nullptr));
     if (password_form) {
@@ -479,26 +494,16 @@ void AnnotateFormsWithSignatures(
           blink::WebString::FromASCII(kDebugAttributeForFormSignature),
           blink::WebString::FromUTF8(base::NumberToString(
               CalculateFormSignature(password_form->form_data))));
-
-      std::vector<blink::WebFormControlElement> control_elements =
-          form_util::ExtractAutofillableElementsInForm(form);
-
-      if (control_elements.size() != password_form->form_data.fields.size())
-        return;
-
-      for (size_t i = 0; i < control_elements.size(); ++i) {
-        blink::WebFormControlElement control_element = control_elements[i];
-
-        const FormFieldData& field = password_form->form_data.fields[i];
-        if (field.name != control_element.NameForAutofill().Utf16())
-          continue;
-        control_element.SetAttribute(
-            blink::WebString::FromASCII(kDebugAttributeForFieldSignature),
-            blink::WebString::FromUTF8(
-                base::NumberToString(CalculateFieldSignatureForField(field))));
-      }
     }
+    std::vector<blink::WebFormControlElement> form_fields =
+        form_util::ExtractAutofillableElementsInForm(form);
+    AnnotateFieldsWithSignatures(&form_fields);
   }
+
+  std::vector<blink::WebFormControlElement> unowned_elements =
+      form_util::GetUnownedAutofillableFormFieldElements(
+          frame->GetDocument().All(), nullptr);
+  AnnotateFieldsWithSignatures(&unowned_elements);
 }
 
 // Returns true iff there is a password field in |frame|.
@@ -1090,7 +1095,7 @@ void PasswordAutofillAgent::SendPasswordForms(bool only_visible) {
   frame->GetDocument().Forms(forms);
 
   if (IsShowAutofillSignaturesEnabled())
-    AnnotateFormsWithSignatures(forms);
+    AnnotateFormsAndFieldsWithSignatures(frame, &forms);
   if (logger)
     logger->LogNumber(Logger::STRING_NUMBER_OF_ALL_FORMS, forms.size());
 
