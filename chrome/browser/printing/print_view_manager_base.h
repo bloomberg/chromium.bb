@@ -90,6 +90,15 @@ class PrintViewManagerBase : public content::NotificationObserver,
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
 
+  // Creates a new empty print job. It has no settings loaded. If there is
+  // currently a print job, safely disconnect from it. Returns false if it is
+  // impossible to safely disconnect from the current print job or it is
+  // impossible to create a new print job.
+  virtual bool CreateNewPrintJob(PrintJobWorkerOwner* job);
+
+  // Manages the low-level talk to the printer.
+  scoped_refptr<PrintJob> print_job_;
+
  private:
   // content::NotificationObserver implementation.
   void Observe(int type,
@@ -156,12 +165,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // RenderAllMissingPagesNow().
   void ShouldQuitFromInnerMessageLoop();
 
-  // Creates a new empty print job. It has no settings loaded. If there is
-  // currently a print job, safely disconnect from it. Returns false if it is
-  // impossible to safely disconnect from the current print job or it is
-  // impossible to create a new print job.
-  bool CreateNewPrintJob(PrintJobWorkerOwner* job);
-
   // Makes sure the current print_job_ has all its data before continuing, and
   // disconnect from it.
   void DisconnectFromCurrentPrintJob();
@@ -196,9 +199,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
 
   // The current RFH that is printing with a system printing dialog.
   content::RenderFrameHost* printing_rfh_;
-
-  // Manages the low-level talk to the printer.
-  scoped_refptr<PrintJob> print_job_;
 
   // Indication of success of the print job.
   bool printing_succeeded_;

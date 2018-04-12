@@ -35,17 +35,19 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
   // create new one. Can be called from any thread.
   scoped_refptr<PrinterQuery> PopPrinterQuery(int document_cookie);
 
-  // Creates new query.
-  scoped_refptr<PrinterQuery> CreatePrinterQuery(int render_process_id,
-                                                 int render_frame_id);
+  // Creates new query. Virtual so that tests can override it.
+  virtual scoped_refptr<PrinterQuery> CreatePrinterQuery(int render_process_id,
+                                                         int render_frame_id);
 
   void Shutdown();
+
+ protected:
+  // Protected for unit tests.
+  virtual ~PrintQueriesQueue();
 
  private:
   friend class base::RefCountedThreadSafe<PrintQueriesQueue>;
   using PrinterQueries = std::vector<scoped_refptr<PrinterQuery>>;
-
-  virtual ~PrintQueriesQueue();
 
   // Used to serialize access to |queued_queries_|.
   base::Lock lock_;
@@ -71,6 +73,9 @@ class PrintJobManager : public content::NotificationObserver {
   // Returns queries queue. Never returns NULL. Must be called on Browser UI
   // Thread. Reference could be stored and used from any thread.
   scoped_refptr<PrintQueriesQueue> queue();
+
+  // Sets the queries queue for testing.
+  void SetQueueForTest(scoped_refptr<PrintQueriesQueue> queue);
 
  private:
   using PrintJobs = std::set<scoped_refptr<PrintJob>>;

@@ -40,7 +40,8 @@ void HoldRefCallback(scoped_refptr<PrintJobWorkerOwner> owner,
 // worker thread so the caller never blocks. PrintJob will send notifications on
 // any state change. While printing, the PrintJobManager instance keeps a
 // reference to the job to be sure it is kept alive. All the code in this class
-// runs in the UI thread.
+// runs in the UI thread. All virtual functions are virtual only so that
+// TestPrintJob can override them in tests.
 class PrintJob : public PrintJobWorkerOwner,
                  public content::NotificationObserver {
  public:
@@ -50,9 +51,9 @@ class PrintJob : public PrintJobWorkerOwner,
 
   // Grabs the ownership of the PrintJobWorker from another job, which is
   // usually a PrinterQuery. Set the expected page count of the print job.
-  void Initialize(PrintJobWorkerOwner* job,
-                  const base::string16& name,
-                  int page_count);
+  virtual void Initialize(PrintJobWorkerOwner* job,
+                          const base::string16& name,
+                          int page_count);
 
 #if defined(OS_WIN)
   // Overwrites the PDF page mapping to fill in values of -1 for all indices
@@ -78,24 +79,24 @@ class PrintJob : public PrintJobWorkerOwner,
 
   // Starts the actual printing. Signals the worker that it should begin to
   // spool as soon as data is available.
-  void StartPrinting();
+  virtual void StartPrinting();
 
   // Asks for the worker thread to finish its queued tasks and disconnects the
   // delegate object. The PrintJobManager will remove its reference.
   // WARNING: This may have the side-effect of destroying the object if the
   // caller doesn't have a handle to the object. Use PrintJob::is_stopped() to
   // check whether the worker thread has actually stopped.
-  void Stop();
+  virtual void Stop();
 
   // Cancels printing job and stops the worker thread. Takes effect immediately.
   // The caller must have a reference to the PrintJob before calling Cancel(),
   // since Cancel() calls Stop(). See WARNING above for Stop().
-  void Cancel();
+  virtual void Cancel();
 
   // Synchronously wait for the job to finish. It is mainly useful when the
   // process is about to be shut down and we're waiting for the spooler to eat
   // our data.
-  bool FlushJob(base::TimeDelta timeout);
+  virtual bool FlushJob(base::TimeDelta timeout);
 
   // Returns true if the print job is pending, i.e. between a StartPrinting()
   // and the end of the spooling.
@@ -105,19 +106,19 @@ class PrintJob : public PrintJobWorkerOwner,
   PrintedDocument* document() const;
 
 #if defined(OS_WIN)
-  void StartPdfToEmfConversion(
+  virtual void StartPdfToEmfConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Size& page_size,
       const gfx::Rect& content_area,
       bool print_text_with_gdi);
 
-  void StartPdfToPostScriptConversion(
+  virtual void StartPdfToPostScriptConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Rect& content_area,
       const gfx::Point& physical_offset,
       bool ps_level2);
 
-  void StartPdfToTextConversion(
+  virtual void StartPdfToTextConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Size& page_size);
 #endif  // defined(OS_WIN)
@@ -125,13 +126,18 @@ class PrintJob : public PrintJobWorkerOwner,
  protected:
   ~PrintJob() override;
 
+  // The functions below are used for tests only.
+  void set_job_pending(bool pending);
+  void set_settings(const PrintSettings& settings);
+
+  // Updates |document_| to a new instance. Protected so that tests can access
+  // it.
+  void UpdatePrintedDocument(PrintedDocument* new_document);
+
  private:
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(PrintJobTest, PageRangeMapping);
 #endif
-
-  // Updates |document_| to a new instance.
-  void UpdatePrintedDocument(PrintedDocument* new_document);
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);

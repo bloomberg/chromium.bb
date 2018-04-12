@@ -57,8 +57,10 @@ class PrintViewManager : public PrintViewManagerBase,
 
   content::RenderFrameHost* print_preview_rfh() { return print_preview_rfh_; }
 
- private:
+ protected:
   explicit PrintViewManager(content::WebContents* web_contents);
+
+ private:
   friend class content::WebContentsUserData<PrintViewManager>;
 
   enum PrintPreviewState {
