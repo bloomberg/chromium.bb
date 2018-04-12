@@ -13,8 +13,4 @@ specific_include_rules = {
     # TODO(mash): Remove. http://crbug.com/770866
     "+ash/shell.h",
   ],
-  "keyboard_overlay_ui_browsertest\.cc": [
-    # TODO(mash): Remove. http://crbug.com/770866
-    "+ash/accelerators/accelerator_table.h",
-  ],
 }

@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/commands/commands.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
@@ -428,8 +427,7 @@ bool CommandService::RequestsBookmarkShortcutOverride(
   return RemovesBookmarkShortcut(extension) &&
          GetSuggestedExtensionCommand(
              extension->id(),
-             chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE),
-             nullptr);
+             chrome::GetPrimaryChromeAcceleratorForBookmarkPage(), nullptr);
 }
 
 void CommandService::AddObserver(Observer* observer) {
@@ -583,7 +581,7 @@ bool CommandService::CanAutoAssign(const Command &command,
     // Not a global command, check if Chrome shortcut and whether
     // we can override it.
     if (command.accelerator() ==
-        chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE) &&
+            chrome::GetPrimaryChromeAcceleratorForBookmarkPage() &&
         CommandService::RemovesBookmarkShortcut(extension)) {
       // If this check fails it either means we have an API to override a
       // key that isn't a ChromeAccelerator (and the API can therefore be

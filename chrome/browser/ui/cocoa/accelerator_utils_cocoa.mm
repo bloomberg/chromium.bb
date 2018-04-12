@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -48,9 +49,10 @@ bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
   return CommandForKeyEvent(event) != -1;
 }
 
-ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id) {
+ui::Accelerator GetPrimaryChromeAcceleratorForBookmarkPage() {
   const ui::Accelerator* accelerator =
-      AcceleratorsCocoa::GetInstance()->GetAcceleratorForCommand(command_id);
+      AcceleratorsCocoa::GetInstance()->GetAcceleratorForCommand(
+          IDC_BOOKMARK_PAGE);
 
   return accelerator ? *accelerator : ui::Accelerator();
 }

@@ -4,12 +4,13 @@
 
 #include <stddef.h>
 
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
 #include "ui/base/accelerators/accelerator.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/public/cpp/accelerators.h"
 #endif
 
 namespace chrome {
@@ -35,19 +36,10 @@ bool IsChromeAccelerator(const ui::Accelerator& accelerator, Profile* profile) {
   return false;
 }
 
-ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id) {
-  ui::Accelerator accelerator;
-  // GetAshAcceleratorForCommandId with HOST_DESKTOP_TYPE_ASH is used so we can
-  // find Ash accelerators if Ash is supported on this platform, even if it's
-  // not currently in use.
-  if (GetStandardAcceleratorForCommandId(command_id, &accelerator) ||
-      GetAshAcceleratorForCommandId(command_id, &accelerator)) {
-    return accelerator;
-  }
-
+ui::Accelerator GetPrimaryChromeAcceleratorForBookmarkPage() {
   std::vector<AcceleratorMapping> accelerators = GetAcceleratorList();
   for (size_t i = 0; i < accelerators.size(); ++i) {
-    if (accelerators[i].command_id == command_id) {
+    if (accelerators[i].command_id == IDC_BOOKMARK_PAGE) {
       return ui::Accelerator(accelerators[i].keycode,
                              accelerators[i].modifiers);
     }

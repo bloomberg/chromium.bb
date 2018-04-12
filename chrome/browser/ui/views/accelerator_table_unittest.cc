@@ -12,7 +12,7 @@
 #include "ui/events/event_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/public/cpp/accelerators.h"
 #endif
 
 namespace chrome {
@@ -76,7 +76,7 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
         ash_entry.action == ash::OPEN_FEEDBACK_PAGE ||
 #endif
         ash_entry.action == ash::RESTORE_TAB ||
-        ash_entry.action == ash::NEW_TAB) {
+        ash_entry.action == ash::NEW_TAB || ash_entry.action == ash::EXIT) {
       AcceleratorMapping entry;
       entry.keycode = ash_entry.keycode;
       entry.modifiers = ash_entry.modifiers;

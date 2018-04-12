@@ -18,7 +18,7 @@ namespace chrome {
 bool IsChromeAccelerator(const ui::Accelerator& accelerator,
                          Profile* profile);
 
-ui::Accelerator GetPrimaryChromeAcceleratorForCommandId(int command_id);
+ui::Accelerator GetPrimaryChromeAcceleratorForBookmarkPage();
 
 }  // namespace chrome
 

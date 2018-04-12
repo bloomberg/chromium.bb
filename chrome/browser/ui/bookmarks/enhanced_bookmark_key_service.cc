@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/accelerator_utils.h"
@@ -49,7 +48,7 @@ void EnhancedBookmarkKeyService::Observe(
   ui::Accelerator key = extensions::Command::StringToAccelerator(
       payload->accelerator, payload->command_name);
   ui::Accelerator bookmark_accelerator =
-      chrome::GetPrimaryChromeAcceleratorForCommandId(IDC_BOOKMARK_PAGE);
+      chrome::GetPrimaryChromeAcceleratorForBookmarkPage();
   if (key == bookmark_accelerator) {
     extensions::CommandService* command_service =
         extensions::CommandService::Get(browser_context_);
