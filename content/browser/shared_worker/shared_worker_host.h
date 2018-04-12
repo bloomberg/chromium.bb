@@ -63,8 +63,6 @@ class SharedWorkerHost : public mojom::SharedWorkerHost,
   // the request, but other web platform features may also use it someday.
   void Start(
       mojom::SharedWorkerFactoryPtr factory,
-      bool pause_on_start,
-      const base::UnguessableToken& devtools_worker_token,
       mojom::ServiceWorkerProviderInfoForSharedWorkerPtr
           service_worker_provider_info,
       network::mojom::URLLoaderFactoryAssociatedPtrInfo script_loader_factory);
