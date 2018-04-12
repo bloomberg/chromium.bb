@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -188,6 +189,7 @@ public class FeatureUtilities {
      * be made available immediately.
      */
     public static void cacheHomePageButtonForceEnabled() {
+        if (PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) return;
         ChromePreferenceManager.getInstance().setHomePageButtonForceEnabled(
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HOME_PAGE_BUTTON_FORCE_ENABLED));
     }
