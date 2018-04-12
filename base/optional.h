@@ -574,39 +574,57 @@ class OPTIONAL_DECLSPEC_EMPTY_BASES Optional
     return *this;
   }
 
-  constexpr const T* operator->() const { return &value(); }
+  constexpr const T* operator->() const {
+    CHECK(storage_.is_populated_);
+    return &storage_.value_;
+  }
 
-  constexpr T* operator->() { return &value(); }
+  constexpr T* operator->() {
+    CHECK(storage_.is_populated_);
+    return &storage_.value_;
+  }
 
-  constexpr const T& operator*() const& { return value(); }
+  constexpr const T& operator*() const & {
+    CHECK(storage_.is_populated_);
+    return storage_.value_;
+  }
 
-  constexpr T& operator*() & { return value(); }
+  constexpr T& operator*() & {
+    CHECK(storage_.is_populated_);
+    return storage_.value_;
+  }
 
-  constexpr const T&& operator*() const&& { return std::move(value()); }
+  constexpr const T&& operator*() const && {
+    CHECK(storage_.is_populated_);
+    return std::move(storage_.value_);
+  }
 
-  constexpr T&& operator*() && { return std::move(value()); }
+  constexpr T&& operator*() && {
+    CHECK(storage_.is_populated_);
+    return std::move(storage_.value_);
+  }
 
   constexpr explicit operator bool() const { return storage_.is_populated_; }
 
   constexpr bool has_value() const { return storage_.is_populated_; }
 
   constexpr T& value() & {
-    DCHECK(storage_.is_populated_);
+    CHECK(storage_.is_populated_);
     return storage_.value_;
   }
 
   constexpr const T& value() const & {
-    DCHECK(storage_.is_populated_);
+    CHECK(storage_.is_populated_);
     return storage_.value_;
   }
 
   constexpr T&& value() && {
-    DCHECK(storage_.is_populated_);
+    CHECK(storage_.is_populated_);
     return std::move(storage_.value_);
   }
 
   constexpr const T&& value() const && {
-    DCHECK(storage_.is_populated_);
+    CHECK(storage_.is_populated_);
     return std::move(storage_.value_);
   }
 
