@@ -238,7 +238,8 @@ TEST_F(CryptAuthClientTest, FindEligibleUnlockDevicesSuccess) {
   response_proto.add_eligible_devices();
   response_proto.mutable_eligible_devices(0)->set_public_key(kPublicKey1);
 
-  const std::string kIneligibilityReason = "You require more vespine gas.";
+  const cryptauth::IneligibilityReason kIneligibilityReason =
+      cryptauth::IneligibilityReason::UNKNOWN_INELIGIBILITY_REASON;
   response_proto.add_ineligible_devices();
   response_proto.mutable_ineligible_devices(0)
       ->mutable_device()
