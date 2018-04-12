@@ -9,7 +9,9 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/sysroot.gni")
 import("//build/toolchain/toolchain.gni")
 
-assert(is_posix)
+# TODO(crbug.com/830987): Come up with a better name for is POSIX + Fuchsia
+# configuration.
+assert(is_posix || is_fuchsia)
 
 group("posix") {
   visibility = [ "//:optimize_gn_gen" ]

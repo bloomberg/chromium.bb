@@ -1772,7 +1772,7 @@ test("content_unittests") {
     "//third_party/mesa:osmesa",
   ]
 
-  if (is_posix && !is_fuchsia) {
+  if (is_posix) {
     sources += [ "../browser/posix_file_descriptor_info_impl_unittest.cc" ]
   }
 

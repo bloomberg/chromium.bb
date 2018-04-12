@@ -178,7 +178,7 @@ static_library("test_support") {
     "//third_party/libxml",
   ]
 
-  if (!is_posix) {
+  if (!is_posix && !is_fuchsia) {
     sources -= [
       "scoped_locale.cc",
       "scoped_locale.h",

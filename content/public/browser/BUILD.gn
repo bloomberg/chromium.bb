@@ -352,7 +352,7 @@ jumbo_source_set("browser_sources") {
     "//content/browser",
   ]
 
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     sources += [ "posix_file_descriptor_info.h" ]
   }
 

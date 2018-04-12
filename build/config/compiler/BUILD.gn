@@ -145,12 +145,12 @@ declare_args() {
   # other architectures.
   #
   # lld doesn't have the bug.
-  use_icf =
-      is_posix && !using_sanitizer && !(is_android && use_order_profiling) &&
-      ((use_lld && !is_nacl) ||
-       (use_gold &&
-        ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
-         !(current_cpu == "x86" || current_cpu == "x64"))))
+  use_icf = (is_posix || is_fuchsia) && !using_sanitizer &&
+            !(is_android && use_order_profiling) &&
+            ((use_lld && !is_nacl) ||
+             (use_gold &&
+              ((!is_android && linux_use_bundled_binutils) || is_chromeos ||
+               !(current_cpu == "x86" || current_cpu == "x64"))))
 }
 
 # Apply the default logic for these values if they were not set explicitly.
@@ -253,7 +253,7 @@ config("compiler") {
       } else {
         cflags += [ "-fstack-protector" ]
       }
-    } else if (is_posix && !is_chromeos && !is_nacl) {
+    } else if ((is_posix && !is_chromeos && !is_nacl) || is_fuchsia) {
       # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
       # See also https://crbug.com/533294
       cflags += [ "--param=ssp-buffer-size=4" ]
@@ -308,9 +308,9 @@ config("compiler") {
     ]
   }
 
-  # Non-Mac Posix compiler flags setup.
+  # Non-Mac Posix and Fuchsia compiler flags setup.
   # -----------------------------------
-  if (is_posix && !(is_mac || is_ios)) {
+  if ((is_posix && !(is_mac || is_ios)) || is_fuchsia) {
     if (enable_profiling) {
       if (!is_debug) {
         cflags += [ "-g" ]
@@ -358,7 +358,7 @@ config("compiler") {
     }
   }
 
-  # Linux/Android common flags setup.
+  # Linux/Android/Fuchsia common flags setup.
   # ---------------------------------
   if (is_linux || is_android || is_fuchsia) {
     if (use_pic) {
@@ -402,7 +402,7 @@ config("compiler") {
     ldflags += [ "--gcc-toolchain=$_rebased_android_toolchain_root" ]
   }
 
-  if (is_posix && use_lld && !is_nacl) {
+  if ((is_posix || is_fuchsia) && use_lld && !is_nacl) {
     ldflags += [ "-fuse-ld=lld" ]
     if (current_cpu == "arm64") {
       # Reduce the page size from 65536 in order to reduce binary size slightly
@@ -658,7 +658,7 @@ config("compiler") {
   # Assign any flags set for the C compiler to asmflags so that they are sent
   # to the assembler. The Windows assembler takes different types of flags
   # so only do so for posix platforms.
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     asmflags += cflags
     asmflags += cflags_c
   }
@@ -674,7 +674,7 @@ config("compiler_cpu_abi") {
   ldflags = []
   defines = []
 
-  if (is_posix && !(is_mac || is_ios)) {
+  if ((is_posix && !(is_mac || is_ios)) || is_fuchsia) {
     # CPU architecture. We may or may not be doing a cross compile now, so for
     # simplicity we always explicitly set the architecture.
     if (current_cpu == "x64") {
@@ -1126,7 +1126,9 @@ config("runtime_library") {
     configs += [ "//build/config/android:runtime_library" ]
   }
 
-  if (is_posix) {
+  # TODO(crbug.com/830987): Come up with a better name for is POSIX + Fuchsia
+  # configuration.
+  if (is_posix || is_fuchsia) {
     configs += [ "//build/config/posix:runtime_library" ]
   }
 
@@ -1561,7 +1563,7 @@ config("no_rtti") {
 # 2. Remove the thin_archive config, so that the .a file actually contains all
 #    .o files, instead of just references to .o files in the build directoy
 config("thin_archive") {
-  if (is_posix && !is_nacl) {
+  if ((is_posix && !is_nacl) || is_fuchsia) {
     # TODO(thomasanderson): Enable on ChromeOS builds once
     # https://crbug.com/829956 is fixed.
     if (default_toolchain != "//build/toolchain/cros:target") {
@@ -1759,7 +1761,7 @@ if (is_win) {
 }
 
 config("default_stack_frames") {
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     if (enable_frame_pointers) {
       cflags = [ "-fno-omit-frame-pointer" ]
     } else {

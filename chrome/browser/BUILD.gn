@@ -3078,7 +3078,7 @@ jumbo_split_static_library("browser") {
     }
   }
 
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     deps += [ "//chrome/app:shutdown_signal_handlers" ]
   }
 
@@ -3169,7 +3169,7 @@ jumbo_split_static_library("browser") {
     ]
   }
 
-  if (is_posix && !is_mac && !is_fuchsia) {
+  if (is_posix && !is_mac) {
     # TODO(crbug.com/753619): Enable crash reporting on Fuchsia.
     sources += [
       "//chrome/app/chrome_crash_reporter_client.cc",
