@@ -2667,8 +2667,11 @@ crbug.com/626703 external/wpt/wasm/wasm_service_worker_test.https.html [ Failure
 crbug.com/816534 external/wpt/web-animations/animation-model/animation-types/accumulation-per-property.html [ Pass Crash ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-rollback.html [ Timeout ]
+crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setLocalDescription-rollback.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Timeout ]
+crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Timeout ]
+crbug.com/626703 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Timeout ]
 crbug.com/829401 external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Pass Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_partially_move_down.html [ Failure ]
@@ -4049,6 +4052,9 @@ crbug.com/826936 external/wpt/webauthn/getcredential-badargs-userverification.ht
 crbug.com/826936 external/wpt/webauthn/getcredential-extensions.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-passing.https.html [ Pass Timeout ]
 crbug.com/826936 external/wpt/webauthn/getcredential-timeout.https.html [ Pass Timeout ]
+
+# WebRTC with Unified Plan
+crbug.com/828866 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-tracks.https.html [ Timeout ]
 
 # Sheriff 2018-04-06
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
