@@ -297,7 +297,7 @@ namespace AV1HighbdConvolve2D {
 ::testing::internal::ParamGenerator<HighbdConvolve2DParam> BuildParams(
     highbd_convolve_2d_func filter, int has_subx, int has_suby) {
   return ::testing::Combine(
-      ::testing::Range(8, 12, 2), ::testing::Values(filter),
+      ::testing::Range(8, 13, 2), ::testing::Values(filter),
       ::testing::Values(has_subx), ::testing::Values(has_suby),
       ::testing::Range(BLOCK_4X4, BLOCK_SIZES_ALL));
 }
