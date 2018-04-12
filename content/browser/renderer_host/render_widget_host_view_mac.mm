@@ -307,6 +307,18 @@ RenderWidgetHostViewMac::GetFocusedRenderWidgetHostDelegate() {
   return host()->delegate();
 }
 
+RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForKeyboardEvent() {
+  DCHECK(in_keyboard_event_);
+  return RenderWidgetHostImpl::FromID(keyboard_event_widget_process_id_,
+                                      keyboard_event_widget_routing_id_);
+}
+
+RenderWidgetHostImpl* RenderWidgetHostViewMac::GetWidgetForIme() {
+  if (in_keyboard_event_)
+    return GetWidgetForKeyboardEvent();
+  return GetActiveWidget();
+}
+
 void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   if (!browser_compositor_)
     return;
@@ -1306,6 +1318,44 @@ void RenderWidgetHostViewMac::OnNSViewDisplayChanged(
   UpdateNSViewAndDisplayProperties();
 }
 
+void RenderWidgetHostViewMac::OnNSViewBeginKeyboardEvent() {
+  DCHECK(!in_keyboard_event_);
+  in_keyboard_event_ = true;
+  RenderWidgetHostImpl* widget_host = host();
+  if (widget_host && widget_host->delegate()) {
+    widget_host =
+        widget_host->delegate()->GetFocusedRenderWidgetHost(widget_host);
+  }
+  if (widget_host) {
+    keyboard_event_widget_process_id_ = widget_host->GetProcess()->GetID();
+    keyboard_event_widget_routing_id_ = widget_host->GetRoutingID();
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewEndKeyboardEvent() {
+  in_keyboard_event_ = false;
+  keyboard_event_widget_process_id_ = 0;
+  keyboard_event_widget_routing_id_ = 0;
+}
+
+void RenderWidgetHostViewMac::OnNSViewForwardKeyboardEvent(
+    const NativeWebKeyboardEvent& key_event,
+    const ui::LatencyInfo& latency_info) {
+  if (auto* widget_host = GetWidgetForKeyboardEvent()) {
+    widget_host->ForwardKeyboardEventWithLatencyInfo(key_event, latency_info);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewForwardKeyboardEventWithCommands(
+    const NativeWebKeyboardEvent& key_event,
+    const ui::LatencyInfo& latency_info,
+    const std::vector<EditCommand>& commands) {
+  if (auto* widget_host = GetWidgetForKeyboardEvent()) {
+    widget_host->ForwardKeyboardEventWithCommands(key_event, latency_info,
+                                                  &commands);
+  }
+}
+
 void RenderWidgetHostViewMac::OnNSViewRouteOrProcessMouseEvent(
     const blink::WebMouseEvent& const_web_event) {
   blink::WebMouseEvent web_event = const_web_event;
@@ -1423,6 +1473,39 @@ void RenderWidgetHostViewMac::OnNSViewGestureEnd(
 void RenderWidgetHostViewMac::OnNSViewSmartMagnify(
     const blink::WebGestureEvent& smart_magnify_event) {
   host()->ForwardGestureEvent(smart_magnify_event);
+}
+
+void RenderWidgetHostViewMac::OnNSViewImeSetComposition(
+    const base::string16& text,
+    const std::vector<ui::ImeTextSpan>& ime_text_spans,
+    const gfx::Range& replacement_range,
+    int selection_start,
+    int selection_end) {
+  if (auto* widget_host = GetWidgetForIme()) {
+    widget_host->ImeSetComposition(text, ime_text_spans, replacement_range,
+                                   selection_start, selection_end);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewImeCommitText(
+    const base::string16& text,
+    const gfx::Range& replacement_range) {
+  if (auto* widget_host = GetWidgetForIme()) {
+    widget_host->ImeCommitText(text, std::vector<ui::ImeTextSpan>(),
+                               replacement_range, 0);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewImeFinishComposingText() {
+  if (auto* widget_host = GetWidgetForIme()) {
+    widget_host->ImeFinishComposingText(false);
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewImeCancelComposition() {
+  if (auto* widget_host = GetWidgetForIme()) {
+    widget_host->ImeCancelComposition();
+  }
 }
 
 void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayFromRange(
