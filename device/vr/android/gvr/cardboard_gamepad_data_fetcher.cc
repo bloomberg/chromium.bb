@@ -85,6 +85,7 @@ void CardboardGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
     // This is the first time we've seen this device, so do some one-time
     // initialization
     pad.connected = true;
+    pad.is_xr = true;
     CopyToUString(pad.id, Gamepad::kIdLengthCap,
                   base::UTF8ToUTF16("Cardboard Button"));
     CopyToUString(pad.mapping, Gamepad::kMappingLengthCap,

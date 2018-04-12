@@ -95,6 +95,8 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
 
     pad.display_id = display_id_;
 
+    pad.is_xr = true;
+
     pad.hand =
         provided_data.right_handed ? GamepadHand::kRight : GamepadHand::kLeft;
   }

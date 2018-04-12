@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_dispatcher.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_event.h"
@@ -87,14 +88,31 @@ static void SampleGamepad(unsigned index,
 }
 
 template <typename GamepadType, typename ListType>
-static void SampleGamepads(ListType* into) {
+static void SampleGamepads(ListType* into, const ExecutionContext* context) {
   device::Gamepads gamepads;
 
   GamepadDispatcher::Instance().SampleGamepads(gamepads);
 
   for (unsigned i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& web_gamepad = gamepads.items[i];
-    if (web_gamepad.connected) {
+
+    bool hide_xr_gamepad = false;
+    if (web_gamepad.is_xr) {
+      bool webxr_enabled =
+          (context && OriginTrials::webXRGamepadSupportEnabled(context) &&
+           OriginTrials::webXREnabled(context));
+      bool webvr_enabled = (context && OriginTrials::webVREnabled(context));
+
+      if (!webxr_enabled && !webvr_enabled) {
+        // If neither WebXR nor WebVR are enabled, we should not expose XR-
+        // backed gamepads.
+        hide_xr_gamepad = true;
+      }
+    }
+
+    if (hide_xr_gamepad) {
+      into->Set(i, nullptr);
+    } else if (web_gamepad.connected) {
       GamepadType* gamepad = into->item(i);
       if (!gamepad)
         gamepad = GamepadType::Create();
@@ -261,6 +279,9 @@ void NavigatorGamepad::DidRemoveGamepadEventListeners() {
 }
 
 void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
+  ExecutionContext* execution_context =
+      DomWindow() ? DomWindow()->GetExecutionContext() : nullptr;
+
   if (StartUpdatingIfAttached()) {
     if (!gamepads_)
       gamepads_ = GamepadList::Create();
@@ -270,7 +291,7 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
 
       // Compare the current sample with the old data and enqueue connection
       // events for any differences.
-      SampleGamepads<Gamepad>(gamepads_back_.Get());
+      SampleGamepads<Gamepad>(gamepads_back_.Get(), execution_context);
       if (CheckConnectedGamepads(gamepads_.Get(), gamepads_back_.Get())) {
         // If we had any disconnected gamepads, we can't overwrite gamepads_
         // because the Gamepad object from the old buffer is reused as the
@@ -283,7 +304,7 @@ void NavigatorGamepad::SampleAndCheckConnectedGamepads() {
         dispatch_one_event_runner_->RunAsync();
       }
     }
-    SampleGamepads<Gamepad>(gamepads_.Get());
+    SampleGamepads<Gamepad>(gamepads_.Get(), execution_context);
   }
 }
 

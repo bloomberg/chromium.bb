@@ -94,6 +94,7 @@ void OpenVRGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
                                        sizeof(controller_state))) {
       pad.timestamp = controller_state.unPacketNum;
       pad.connected = true;
+      pad.is_xr = true;
 
       pad.pose.not_null = true;
 

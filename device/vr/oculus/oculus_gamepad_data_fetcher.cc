@@ -77,6 +77,7 @@ void SetTouchData(PadState* state,
   if (!state->is_initialized) {
     state->is_initialized = true;
     pad.connected = true;
+    pad.is_xr = true;
     pad.pose.not_null = true;
     pad.pose.has_orientation = true;
     pad.pose.has_position = true;
@@ -225,6 +226,7 @@ void OculusGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
         state->is_initialized = true;
         swprintf(pad.id, Gamepad::kIdLengthCap, L"Oculus Remote");
         pad.connected = true;
+        pad.is_xr = true;
         pad.display_id = display_id_;
       }
       pad.timestamp = input_state.TimeInSeconds;

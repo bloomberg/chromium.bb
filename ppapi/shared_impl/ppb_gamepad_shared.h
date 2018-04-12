@@ -112,8 +112,12 @@ struct WebKitGamepad {
   // Gamepad Extensions member, unused by ppapi.
   WebKitGamepadHand hand;
 
-  // ID of the VRDisplay this gamepad is associated with, if any.
+  // ID of the VRDisplay this gamepad is associated with, if any. Unused by
+  // ppapi.
   unsigned display_id;
+
+  // True if this controller is backed by VR APIs, unused by ppapi.
+  bool is_xr;
 };
 
 // This must match the definition of blink::Gamepads. The GamepadHost unit
