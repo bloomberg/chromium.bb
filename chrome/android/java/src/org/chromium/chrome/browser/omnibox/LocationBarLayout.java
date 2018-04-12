@@ -2524,4 +2524,9 @@ public class LocationBarLayout
     public AutocompleteController getAutocompleteController() {
         return mAutocomplete;
     }
+
+    @Override
+    public WindowAndroid getWindowAndroid() {
+        return mWindowAndroid;
+    }
 }

@@ -15,7 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.text.TextUtils;
 
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -36,6 +36,23 @@ public class LocationBarVoiceRecognitionHandler {
     // response (as opposed to treating it like a typed string in the Omnibox).
     @VisibleForTesting
     public static final float VOICE_SEARCH_CONFIDENCE_NAVIGATE_THRESHOLD = 0.9f;
+
+    private static final CachedMetrics
+            .EnumeratedHistogramSample VOICE_INTERACTION_START_SOURCE_METRIC =
+            new CachedMetrics.EnumeratedHistogramSample(
+                    "VoiceInteraction.StartEventSource", VoiceInteractionSource.HISTOGRAM_BOUNDARY);
+    private static final CachedMetrics
+            .EnumeratedHistogramSample VOICE_INTERACTION_FINISH_SOURCE_METRIC =
+            new CachedMetrics.EnumeratedHistogramSample("VoiceInteraction.FinishEventSource",
+                    VoiceInteractionSource.HISTOGRAM_BOUNDARY);
+    private static final CachedMetrics.BooleanHistogramSample VOICE_SEARCH_RESULT_METRIC =
+            new CachedMetrics.BooleanHistogramSample("VoiceInteraction.VoiceSearchResult");
+    // There's no percentage histogram sample in CachedMetrics, so we mimic what that does
+    // internally.
+    private static final CachedMetrics
+            .EnumeratedHistogramSample VOICE_SEARCH_CONFIDENCE_VALUE_METRIC =
+            new CachedMetrics.EnumeratedHistogramSample(
+                    "VoiceInteraction.VoiceResultConfidenceValue", 101);
 
     final private Delegate mDelegate;
     private WebContentsObserver mVoiceSearchWebContentsObserver;
@@ -87,6 +104,11 @@ public class LocationBarVoiceRecognitionHandler {
          *         {@link LocationBarLayout}.
          */
         AutocompleteController getAutocompleteController();
+
+        /**
+         * @return The current {@link WindowAndroid}.
+         */
+        WindowAndroid getWindowAndroid();
     }
 
     public LocationBarVoiceRecognitionHandler(Delegate delegate) {
@@ -200,9 +222,7 @@ public class LocationBarVoiceRecognitionHandler {
      * @param source The source of the voice recognition initiation, such as NTP or omnibox.
      */
     public void startVoiceRecognition(@VoiceInteractionSource int source) {
-        Tab tab = getCurrentTab();
-        if (tab == null) return;
-        WindowAndroid windowAndroid = tab.getWindowAndroid();
+        WindowAndroid windowAndroid = mDelegate.getWindowAndroid();
         if (windowAndroid == null) return;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) return;
@@ -268,13 +288,11 @@ public class LocationBarVoiceRecognitionHandler {
      * @return Whether or not voice search is enabled.
      */
     public boolean isVoiceSearchEnabled() {
-        Tab tab = getCurrentTab();
-        if (tab == null) return false;
         ToolbarDataProvider toolbarDataProvider = mDelegate.getToolbarDataProvider();
         if (toolbarDataProvider == null) return false;
 
         boolean isIncognito = toolbarDataProvider.isIncognito();
-        WindowAndroid windowAndroid = tab.getWindowAndroid();
+        WindowAndroid windowAndroid = mDelegate.getWindowAndroid();
         if (windowAndroid == null || isIncognito) return false;
 
         if (!windowAndroid.hasPermission(Manifest.permission.RECORD_AUDIO)
@@ -293,8 +311,7 @@ public class LocationBarVoiceRecognitionHandler {
      */
     @VisibleForTesting
     protected void recordVoiceSearchStartEventSource(@VoiceInteractionSource int source) {
-        RecordHistogram.recordEnumeratedHistogram("VoiceInteraction.StartEventSource", source,
-                VoiceInteractionSource.HISTOGRAM_BOUNDARY);
+        VOICE_INTERACTION_START_SOURCE_METRIC.record(source);
     }
 
     /**
@@ -304,8 +321,7 @@ public class LocationBarVoiceRecognitionHandler {
      */
     @VisibleForTesting
     protected void recordVoiceSearchFinishEventSource(@VoiceInteractionSource int source) {
-        RecordHistogram.recordEnumeratedHistogram("VoiceInteraction.FinishEventSource", source,
-                VoiceInteractionSource.HISTOGRAM_BOUNDARY);
+        VOICE_INTERACTION_FINISH_SOURCE_METRIC.record(source);
     }
 
     /**
@@ -314,7 +330,7 @@ public class LocationBarVoiceRecognitionHandler {
      */
     @VisibleForTesting
     protected void recordVoiceSearchResult(boolean result) {
-        RecordHistogram.recordBooleanHistogram("VoiceInteraction.VoiceSearchResult", result);
+        VOICE_SEARCH_RESULT_METRIC.record(result);
     }
 
     /**
@@ -325,16 +341,7 @@ public class LocationBarVoiceRecognitionHandler {
     @VisibleForTesting
     protected void recordVoiceSearchConfidenceValue(float value) {
         int percentage = Math.round(value * 100f);
-        RecordHistogram.recordPercentageHistogram(
-                "VoiceInteraction.VoiceResultConfidenceValue", percentage);
-    }
-
-    /**
-     * @return The currently active {@link Tab} provided by the {@link ToolbarDataProvider}.
-     */
-    private Tab getCurrentTab() {
-        ToolbarDataProvider toolbarDataProvider = mDelegate.getToolbarDataProvider();
-        return toolbarDataProvider != null ? toolbarDataProvider.getTab() : null;
+        VOICE_SEARCH_CONFIDENCE_VALUE_METRIC.record(percentage);
     }
 
     /**
