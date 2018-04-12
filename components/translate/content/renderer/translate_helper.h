@@ -118,7 +118,7 @@ class TranslateHelper : public content::RenderFrameObserver,
   static std::string BuildTranslationScript(const std::string& source_lang,
                                             const std::string& target_lang);
 
-  const mojom::ContentTranslateDriverPtr& GetTranslateDriver();
+  const mojom::ContentTranslateDriverPtr& GetTranslateHandler();
 
   // Cleanups all states and pending callbacks associated with the current
   // running page translation.
@@ -163,7 +163,11 @@ class TranslateHelper : public content::RenderFrameObserver,
   // The URL scheme for translate extensions.
   std::string extension_scheme_;
 
-  mojom::ContentTranslateDriverPtr translate_driver_;
+  // The Mojo pipe for communication with the browser process. Due to a
+  // refactor, the other end of the pipe is now attached to a
+  // LanguageDetectionTabHelper (which implements the ContentTranslateDriver
+  // Mojo interface).
+  mojom::ContentTranslateDriverPtr translate_handler_;
 
   mojo::Binding<mojom::Page> binding_;
 
