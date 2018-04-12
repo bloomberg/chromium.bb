@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/optional.h"
 
@@ -15,6 +14,7 @@ namespace blink {
 
 // This file provides utility functions for computing caret rect in LayoutNG.
 
+class NGPaintFragment;
 class LayoutBlockFlow;
 struct LocalCaretRect;
 
@@ -25,7 +25,7 @@ CORE_EXPORT LocalCaretRect ComputeNGLocalCaretRect(const LayoutBlockFlow&,
                                                    const PositionWithAffinity&);
 
 // An NGCaretPosition indicates a caret position relative to an inline
-// NGPhysicalFragment:
+// NGPaintFragment:
 // - When |fragment| is box, |position_type| is either |kBeforeBox| or
 // |kAfterBox|, indicating either of the two caret positions by the box sides;
 // |text_offset| is |nullopt| in this case.
@@ -40,7 +40,7 @@ struct NGCaretPosition {
 
   bool IsNull() const { return !fragment; }
 
-  scoped_refptr<const NGPhysicalFragment> fragment;
+  const NGPaintFragment* fragment = nullptr;  // owned by root LayoutNGMixin
   NGCaretPositionType position_type;
   Optional<unsigned> text_offset;
 };
