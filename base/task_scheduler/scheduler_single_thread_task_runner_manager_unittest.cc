@@ -20,6 +20,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -192,6 +193,51 @@ TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
     single_thread_task_runner_manager_->CreateSingleThreadTaskRunnerWithTraits(
         {WithBaseSyncPrimitives()}, SingleThreadTaskRunnerThreadMode::SHARED);
   });
+}
+
+// Regression test for https://crbug.com/829786
+TEST_F(TaskSchedulerSingleThreadTaskRunnerManagerTest,
+       ContinueOnShutdownDoesNotBlockBlockShutdown) {
+  WaitableEvent task_has_started(WaitableEvent::ResetPolicy::MANUAL,
+                                 WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent task_can_continue(WaitableEvent::ResetPolicy::MANUAL,
+                                  WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Post a CONTINUE_ON_SHUTDOWN task that waits on
+  // |task_can_continue| to a shared SingleThreadTaskRunner.
+  single_thread_task_runner_manager_
+      ->CreateSingleThreadTaskRunnerWithTraits(
+          {TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::SHARED)
+      ->PostTask(FROM_HERE, base::BindOnce(
+                                [](WaitableEvent* task_has_started,
+                                   WaitableEvent* task_can_continue) {
+                                  task_has_started->Signal();
+                                  ScopedAllowBaseSyncPrimitivesForTesting
+                                      allow_base_sync_primitives;
+                                  task_can_continue->Wait();
+                                },
+                                Unretained(&task_has_started),
+                                Unretained(&task_can_continue)));
+
+  task_has_started.Wait();
+
+  // Post a BLOCK_SHUTDOWN task to a shared SingleThreadTaskRunner.
+  single_thread_task_runner_manager_
+      ->CreateSingleThreadTaskRunnerWithTraits(
+          {TaskShutdownBehavior::BLOCK_SHUTDOWN},
+          SingleThreadTaskRunnerThreadMode::SHARED)
+      ->PostTask(FROM_HERE, DoNothing());
+
+  // Shutdown should not hang even though the first task hasn't finished.
+  task_tracker_.Shutdown();
+
+  // Let the first task finish.
+  task_can_continue.Signal();
+
+  // Tear down from the test body to prevent accesses to |task_can_continue|
+  // after it goes out of scope.
+  TearDownSingleThreadTaskRunnerManager();
 }
 
 namespace {
