@@ -126,7 +126,7 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
   device->OnListeningForActivateChanged(display2.get());
   EXPECT_TRUE(device->ListeningForActivate());
 
-  EXPECT_CALL(*display2, OnActivate(mounted, testing::_)).Times(3);
+  EXPECT_CALL(*display2, OnActivate(mounted, testing::_)).Times(2);
   device->FireDisplayActivate();
 
   EXPECT_CALL(*display1, ListeningForActivate())
@@ -141,15 +141,13 @@ TEST_F(VRDeviceTest, DisplayActivateRegsitered) {
   device->OnListeningForActivateChanged(display2.get());
   EXPECT_FALSE(device->ListeningForActivate());
 
-  // Even though the device says it's not listening for activate, we still send
-  // it the activation to handle raciness on Android.
+  // Make sure we don't send the DisplayActivate event.
   device->FireDisplayActivate();
 
   EXPECT_CALL(*display2, InFocusedFrame())
       .WillRepeatedly(testing::Return(false));
   device->OnFrameFocusChanged(display2.get());
 
-  // Now we no longer fire the activation.
   device->FireDisplayActivate();
 }
 

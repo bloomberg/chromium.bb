@@ -241,11 +241,6 @@ void VrShellDelegate::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     device->ResumeTracking();
 }
 
-bool VrShellDelegate::IsClearActivatePending(JNIEnv* env,
-                                             const JavaParamRef<jobject>& obj) {
-  return !clear_activate_task_.IsCancelled();
-}
-
 void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
@@ -317,22 +312,6 @@ void VrShellDelegate::OnActivateDisplayHandled(bool will_not_present) {
 }
 
 void VrShellDelegate::OnListeningForActivateChanged(bool listening) {
-  if (listening) {
-    SetListeningForActivate(true);
-  } else {
-    // We post here to ensure that this runs after Android finishes running all
-    // onPause handlers. This allows us to capture the pre-paused state during
-    // onPause in java, so we know that the pause is the cause of the focus
-    // loss, and that the page is still listening for activate.
-    clear_activate_task_.Reset(
-        base::BindRepeating(&VrShellDelegate::SetListeningForActivate,
-                            weak_ptr_factory_.GetWeakPtr(), false));
-    task_runner_->PostTask(FROM_HERE, clear_activate_task_.callback());
-  }
-}
-
-void VrShellDelegate::SetListeningForActivate(bool listening) {
-  clear_activate_task_.Cancel();
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_setListeningForWebVrActivate(env, j_vr_shell_delegate_,
                                                     listening);

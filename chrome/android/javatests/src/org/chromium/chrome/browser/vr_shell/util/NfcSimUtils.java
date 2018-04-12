@@ -38,7 +38,7 @@ public class NfcSimUtils {
 
     // VrCore always seems to recover within ~10 seconds, so give it that plus some extra to be safe
     private static final int NFC_SCAN_TIMEOUT_MS = 15000;
-    private static final int NFC_SCAN_INTERVAL_MS = 2000;
+    private static final int NFC_SCAN_INTERVAL_MS = 5000;
 
     /**
      * Makes an Intent that triggers VrCore as if the Daydream headset's NFC
@@ -78,10 +78,11 @@ public class NfcSimUtils {
      */
     public static void simNfcScanUntilVrEntry(final Context context) {
         final TestVrShellDelegate delegate = VrShellDelegateUtils.getDelegateInstance();
+        delegate.setExpectingBroadcast();
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (delegate.isVrEntryComplete()) return true;
+                if (!delegate.isExpectingBroadcast()) return true;
                 simNfcScan(context);
                 return false;
             }

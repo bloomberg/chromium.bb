@@ -806,8 +806,10 @@ void VRDisplay::StopPresenting() {
 void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
                            OnActivateCallback on_handled) {
   Document* doc = GetDocument();
-  if (!doc)
+  if (!doc) {
+    std::move(on_handled).Run(true /* will_not_present */);
     return;
+  }
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
