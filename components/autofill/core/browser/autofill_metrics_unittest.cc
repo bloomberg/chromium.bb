@@ -73,6 +73,10 @@ using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
 using ExpectedUkmMetrics =
     std::vector<std::vector<std::pair<const char*, int64_t>>>;
 
+int64_t Collapse(uint64_t sig) {
+  return sig % 1021;
+}
+
 void VerifyDeveloperEngagementUkm(
     const ukm::TestAutoSetUkmRecorder& ukm_recorder,
     const FormData& form,
@@ -145,11 +149,10 @@ void VerifySubmitFormUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
 
 void AppendFieldFillStatusUkm(const FormData& form,
                               ExpectedUkmMetrics* expected_metrics) {
-  int64_t form_signature = static_cast<int64_t>(CalculateFormSignature(form));
+  int64_t form_signature = Collapse(CalculateFormSignature(form));
   int64_t metric_type = static_cast<int64_t>(AutofillMetrics::TYPE_SUBMISSION);
   for (const FormFieldData& field : form.fields) {
-    int64_t field_signature =
-        static_cast<int64_t>(CalculateFieldSignatureForField(field));
+    int64_t field_signature = Collapse(CalculateFieldSignatureForField(field));
     expected_metrics->push_back(
         {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
          {UkmFieldFillStatusType::kFormSignatureName, form_signature},
@@ -169,7 +172,7 @@ void AppendFieldTypeUkm(const FormData& form,
   ASSERT_EQ(heuristic_types.size(), form.fields.size());
   ASSERT_EQ(server_types.size(), form.fields.size());
   ASSERT_EQ(actual_types.size(), form.fields.size());
-  int64_t form_signature = static_cast<int64_t>(CalculateFormSignature(form));
+  int64_t form_signature = Collapse(CalculateFormSignature(form));
   int64_t metric_type = static_cast<int64_t>(AutofillMetrics::TYPE_SUBMISSION);
   std::vector<int64_t> prediction_sources{
       AutofillMetrics::PREDICTION_SOURCE_HEURISTIC,
@@ -177,8 +180,7 @@ void AppendFieldTypeUkm(const FormData& form,
       AutofillMetrics::PREDICTION_SOURCE_OVERALL};
   for (size_t i = 0; i < form.fields.size(); ++i) {
     const FormFieldData& field = form.fields[i];
-    int64_t field_signature =
-        static_cast<int64_t>(CalculateFieldSignatureForField(field));
+    int64_t field_signature = Collapse(CalculateFieldSignatureForField(field));
     for (int64_t source : prediction_sources) {
       int64_t predicted_type = static_cast<int64_t>(
           (source == AutofillMetrics::PREDICTION_SOURCE_SERVER
