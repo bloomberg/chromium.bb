@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -53,7 +58,40 @@ void SimulateUserDeletingFieldContent(content::WebContents* web_contents,
 
 namespace password_manager {
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
+// Test fixture that condionally enable feature kAutofillExpandedPopupViews.
+// The fixture should be replaced with PasswordManagerBrowserTestBase once the
+// feature is deleted.
+//
+// Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+class PasswordManagerBrowserTestWithConditionalPopupViews
+    : public PasswordManagerBrowserTestBase,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  PasswordManagerBrowserTestWithConditionalPopupViews() = default;
+  ~PasswordManagerBrowserTestWithConditionalPopupViews() override = default;
+
+  void SetUp() override {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+    const bool popup_views_enabled = GetParam();
+    if (popup_views_enabled) {
+      enabled_features.push_back(autofill::kAutofillExpandedPopupViews);
+    } else {
+      disabled_features.push_back(autofill::kAutofillExpandedPopupViews);
+    }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+
+    PasswordManagerBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
+                       UsernameChanged) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -113,7 +151,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
             (stored_passwords.begin()->second)[1].username_value);
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
                        ManualFallbackForSaving) {
   NavigateToFile("/password/password_form.html");
 
@@ -141,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckThatCredentialsStored(base::string16(), base::ASCIIToUTF16("ORARY"));
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
                        ManualFallbackForSaving_HideAfterTimeout) {
   NavigateToFile("/password/password_form.html");
   ManagePasswordsUIController::set_save_fallback_timeout_in_seconds(0);
@@ -158,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_FALSE(prompt_observer.IsSavePromptAvailable());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
                        ManualFallbackForSaving_HideIcon) {
   NavigateToFile("/password/password_form.html");
 
@@ -173,7 +211,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   prompt_observer.WaitForInactiveState();
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithConditionalPopupViews,
                        ManualFallbackForSaving_GoToManagedState) {
   // At first let us save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -200,5 +238,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   SimulateUserDeletingFieldContent(WebContents(), "password_field");
   prompt_observer.WaitForManagementState();
 }
+
+INSTANTIATE_TEST_CASE_P(All,
+                        PasswordManagerBrowserTestWithConditionalPopupViews,
+                        /*popup_views_enabled=*/::testing::Bool());
 
 }  // namespace password_manager
