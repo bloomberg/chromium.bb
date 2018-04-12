@@ -56,26 +56,22 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionImage(
     return;
   }
 
-  // In order to fetch an image or favicon for a suggestion, we are synthesizing
-  // a suggestion ID for it, so that it could be cached in the cached image
-  // fetcher inside of the service.
-
-  // Short term implementation.
-  GURL image_url = ImageUrlFromId(suggestion_iter->second.image_id);
-
-  // This will be the same after this line.
-  ntp_snippets::ContentSuggestion::ID synthetic_id(
-      ntp_snippets::Category::FromKnownCategory(
-          ntp_snippets::KnownCategories::CONTEXTUAL),
-      suggestion_id);
-
-  service_->FetchContextualSuggestionImage(synthetic_id, image_url,
-                                           std::move(callback));
+  FetchImageImpl(suggestion_iter->second.image_id, std::move(callback));
 }
 
 void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionFavicon(
     const std::string& suggestion_id,
-    ntp_snippets::ImageFetchedCallback callback) {}
+    ntp_snippets::ImageFetchedCallback callback) {
+  auto suggestion_iter = suggestions_.find(suggestion_id);
+  if (suggestion_iter == suggestions_.end()) {
+    DVLOG(1) << "Unkown suggestion ID: " << suggestion_id;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), gfx::Image()));
+    return;
+  }
+
+  FetchImageImpl(suggestion_iter->second.favicon_image_id, std::move(callback));
+}
 
 void ContextualContentSuggestionsServiceProxy::ClearState() {
   suggestions_.clear();
@@ -102,6 +98,20 @@ void ContextualContentSuggestionsServiceProxy::FlushMetrics() {
   if (last_ukm_source_id_ != ukm::kInvalidSourceId)
     metrics_reporter_->Flush();
   last_ukm_source_id_ = ukm::kInvalidSourceId;
+}
+
+void ContextualContentSuggestionsServiceProxy::FetchImageImpl(
+    const std::string& image_id,
+    ntp_snippets::ImageFetchedCallback callback) {
+  GURL image_url = ImageUrlFromId(image_id);
+
+  ntp_snippets::ContentSuggestion::ID synthetic_cache_id(
+      ntp_snippets::Category::FromKnownCategory(
+          ntp_snippets::KnownCategories::CONTEXTUAL),
+      image_id);
+
+  service_->FetchContextualSuggestionImage(synthetic_cache_id, image_url,
+                                           std::move(callback));
 }
 
 void ContextualContentSuggestionsServiceProxy::CacheSuggestions(
