@@ -137,7 +137,8 @@ void DesktopProfileSessionDurationsService::OnStateChanged(
       sync_session_timer_ = std::make_unique<base::ElapsedTimer>();
     }
     sync_status_ = FeatureState::OFF;
-  } else if (sync->IsSyncActive()) {
+  } else if (sync->IsSyncActive() &&
+             sync->GetLastCycleSnapshot().is_initialized()) {
     if (sync_status_ == FeatureState::OFF && sync_session_timer_) {
       LogSyncDuration(sync_session_timer_->Elapsed());
       sync_session_timer_ = std::make_unique<base::ElapsedTimer>();

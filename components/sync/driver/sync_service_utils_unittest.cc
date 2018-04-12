@@ -4,6 +4,7 @@
 
 #include "components/sync/driver/sync_service_utils.h"
 
+#include <vector>
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -26,6 +27,7 @@ class TestSyncService : public FakeSyncService {
   void SetCustomPassphraseEnabled(bool enabled) {
     custom_passphrase_enabled_ = enabled;
   }
+  void SetSyncCycleComplete(bool complete) { sync_cycle_complete_ = complete; }
 
   // SyncService implementation.
   bool IsSyncAllowed() const override { return sync_allowed_; }
@@ -45,6 +47,17 @@ class TestSyncService : public FakeSyncService {
       return ModelTypeSet(syncer::PASSWORDS);
     return preferred_data_types_;
   }
+  SyncCycleSnapshot GetLastCycleSnapshot() const override {
+    if (sync_cycle_complete_) {
+      return SyncCycleSnapshot(ModelNeutralState(), ProgressMarkerMap(), false,
+                               5, 2, 7, false, 0, base::Time::Now(),
+                               base::Time::Now(),
+                               std::vector<int>(MODEL_TYPE_COUNT, 0),
+                               std::vector<int>(MODEL_TYPE_COUNT, 0),
+                               sync_pb::SyncEnums::UNKNOWN_ORIGIN);
+    }
+    return SyncCycleSnapshot();
+  }
   bool ConfigurationDone() const override { return configuration_done_; }
   bool IsUsingSecondaryPassphrase() const override {
     return custom_passphrase_enabled_;
@@ -53,6 +66,7 @@ class TestSyncService : public FakeSyncService {
  private:
   bool sync_allowed_ = false;
   bool sync_active_ = false;
+  bool sync_cycle_complete_ = false;
   bool local_sync_enabled_ = false;
   ModelTypeSet preferred_data_types_;
   bool configuration_done_ = false;
@@ -80,7 +94,8 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfSyncNotAllowed) {
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 }
 
-TEST(SyncServiceUtilsTest, UploadToGoogleInitializingUntilConfiguredAndActive) {
+TEST(SyncServiceUtilsTest,
+     UploadToGoogleInitializingUntilConfiguredAndActiveAndSyncCycleComplete) {
   TestSyncService service;
   service.SetSyncAllowed(true);
   service.SetPreferredDataTypes(ProtocolTypes());
@@ -94,8 +109,12 @@ TEST(SyncServiceUtilsTest, UploadToGoogleInitializingUntilConfiguredAndActive) {
   EXPECT_EQ(UploadState::INITIALIZING,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
-  // Only after sync is both configured and active is upload actually ACTIVE.
   service.SetSyncActive(true);
+  EXPECT_EQ(UploadState::INITIALIZING,
+            GetUploadToGoogleState(&service, syncer::BOOKMARKS));
+
+  // Only after sync is both configured and active is upload actually ACTIVE.
+  service.SetSyncCycleComplete(true);
   EXPECT_EQ(UploadState::ACTIVE,
             GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 }
@@ -105,6 +124,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledForModelType) {
   service.SetSyncAllowed(true);
   service.SetConfigurationDone(true);
   service.SetSyncActive(true);
+  service.SetSyncCycleComplete(true);
 
   // Sync is enabled only for a specific model type.
   service.SetPreferredDataTypes(ModelTypeSet(syncer::BOOKMARKS));
@@ -127,6 +147,11 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfLocalSyncEnabled) {
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
   service.SetConfigurationDone(true);
+  service.SetSyncCycleComplete(true);
+
+  // Sanity check: Upload is active now.
+  ASSERT_EQ(UploadState::ACTIVE,
+            GetUploadToGoogleState(&service, syncer::BOOKMARKS));
 
   // If we're in "local sync" mode, uploading should never be enabled, even if
   // configuration is done and all the data types are enabled.
@@ -142,6 +167,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledOnPersistentAuthError) {
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
   service.SetConfigurationDone(true);
+  service.SetSyncCycleComplete(true);
 
   // Sanity check: Upload is active now.
   ASSERT_EQ(UploadState::ACTIVE,
@@ -180,6 +206,7 @@ TEST(SyncServiceUtilsTest, UploadToGoogleDisabledIfCustomPassphraseInUse) {
   service.SetPreferredDataTypes(ProtocolTypes());
   service.SetSyncActive(true);
   service.SetConfigurationDone(true);
+  service.SetSyncCycleComplete(true);
 
   // Sanity check: Upload is ACTIVE, even for data types that are always
   // encrypted implicitly (PASSWORDS).
