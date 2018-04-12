@@ -1782,13 +1782,6 @@ void RasterDecoderImpl::DoBindTexImage2DCHROMIUM(GLuint client_id,
     return;
   }
 
-  Texture* texture = texture_ref->texture();
-  if (texture->IsImmutable()) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "BindTexImage2DCHROMIUM",
-                       "texture is immutable");
-    return;
-  }
-
   Texture::ImageState image_state = Texture::UNBOUND;
 
   {
