@@ -375,7 +375,7 @@ void GpuVideoAcceleratorFactoriesImpl::
             unbound_vea_provider) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!vea_provider_.is_bound());
-  vea_provider_.Bind(std::move(unbound_vea_provider));
+  vea_provider_.Bind(std::move(unbound_vea_provider), task_runner_);
 }
 
 void GpuVideoAcceleratorFactoriesImpl::ReleaseContextProvider() {
