@@ -331,7 +331,7 @@ const base::Feature kIncompatibleApplicationsWarning{
 #if !defined(OS_ANDROID)
 // Enables Casting a Presentation API-enabled website to a secondary display.
 const base::Feature kLocalScreenCasting{"LocalScreenCasting",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
