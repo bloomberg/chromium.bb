@@ -148,9 +148,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!input.ReadMetadata(&metadata))
     return false;
 
-  base::DictionaryValue* metadata_dict;
-  metadata.GetAsDictionary(&metadata_dict);
-  frame->metadata()->MergeInternalValuesFrom(*metadata_dict);
+  frame->metadata()->MergeInternalValuesFrom(metadata);
 
   *output = std::move(frame);
   return true;

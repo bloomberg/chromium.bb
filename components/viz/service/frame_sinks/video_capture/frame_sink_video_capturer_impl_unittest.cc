@@ -128,7 +128,7 @@ class MockConsumer : public mojom::FrameSinkVideoConsumer {
             info->visible_rect.size(), static_cast<uint8_t*>(mapping.get()),
             buffer_size, info->timestamp);
     ASSERT_TRUE(frame);
-    frame->metadata()->MergeInternalValuesFrom(*info->metadata);
+    frame->metadata()->MergeInternalValuesFrom(info->metadata);
     frame->AddDestructionObserver(base::BindOnce(
         [](mojo::ScopedSharedBufferMapping mapping) {}, std::move(mapping)));
     OnFrameCapturedMock(frame, update_rect, callbacks.get());

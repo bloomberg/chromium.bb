@@ -288,7 +288,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
 
   base::TimeTicks reference_time;
   media::VideoFrameMetadata frame_metadata;
-  frame_metadata.MergeInternalValuesFrom(*info->metadata);
+  frame_metadata.MergeInternalValuesFrom(info->metadata);
   const bool success = frame_metadata.GetTimeTicks(
       media::VideoFrameMetadata::REFERENCE_TIME, &reference_time);
   DCHECK(success);
@@ -332,7 +332,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
           &VideoCaptureImpl::OnClientBufferFinished, weak_factory_.GetWeakPtr(),
           buffer_id, std::move(buffer)))));
 
-  frame->metadata()->MergeInternalValuesFrom(*info->metadata);
+  frame->metadata()->MergeInternalValuesFrom(info->metadata);
 
   // TODO(qiangchen): Dive into the full code path to let frame metadata hold
   // reference time rather than using an extra parameter.

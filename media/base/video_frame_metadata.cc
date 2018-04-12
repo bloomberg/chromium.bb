@@ -157,9 +157,13 @@ std::unique_ptr<base::DictionaryValue> VideoFrameMetadata::CopyInternalValues()
   return dictionary_.CreateDeepCopy();
 }
 
-void VideoFrameMetadata::MergeInternalValuesFrom(
-    const base::DictionaryValue& in) {
-  dictionary_.MergeDictionary(&in);
+void VideoFrameMetadata::MergeInternalValuesFrom(const base::Value& in) {
+  const base::DictionaryValue* dict;
+  if (!in.GetAsDictionary(&dict)) {
+    NOTREACHED();
+    return;
+  }
+  dictionary_.MergeDictionary(dict);
 }
 
 void VideoFrameMetadata::MergeMetadataFrom(

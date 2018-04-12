@@ -185,7 +185,7 @@ class MockVideoCaptureObserver final
 
 media::mojom::VideoFrameInfoPtr GetVideoFrameInfo() {
   return media::mojom::VideoFrameInfo::New(
-      base::TimeDelta(), std::make_unique<base::DictionaryValue>(),
+      base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY),
       media::PIXEL_FORMAT_I420, media::VideoPixelStorage::CPU,
       gfx::Size(320, 180), gfx::Rect(320, 180));
 }
