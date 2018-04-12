@@ -48,9 +48,13 @@ struct SafeEnvironmentVariableInfo {
 };
 
 SafeEnvironmentVariableInfo kSafeEnvironmentVariables[] = {
-    {"HOME", true}, {"LANG", true},    {"PATH", true},
-    {"USER", true}, {"TMPDIR", false},
-};
+    {"HOME", true},
+    {"LANG", true},
+    {"PATH", true},
+    {"USER", true},
+    {"TMPDIR", false},
+    {"ICECC_VERSION", true},
+    {"ICECC_CLANG_REMOTE_CPP", true}};
 
 XcodeWriter::TargetOsType GetTargetOs(const Args& args) {
   const Value* target_os_value = args.GetArgOverride(variables::kTargetOs);
