@@ -45,6 +45,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
+      int frame_tree_node_id,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -85,6 +86,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   void OnDataComplete() override {}
 
   void OnNetworkConnectionError();
+
+  const int frame_tree_node_id_;
 
   scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory_;
 

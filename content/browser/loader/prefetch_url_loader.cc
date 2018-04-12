@@ -17,6 +17,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
+    int frame_tree_node_id,
     const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -24,7 +25,8 @@ PrefetchURLLoader::PrefetchURLLoader(
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     ResourceContext* resource_context,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
-    : network_loader_factory_(std::move(network_loader_factory)),
+    : frame_tree_node_id_(frame_tree_node_id),
+      network_loader_factory_(std::move(network_loader_factory)),
       client_binding_(this),
       forwarding_client_(std::move(client)),
       url_loader_throttles_getter_(url_loader_throttles_getter),
@@ -83,8 +85,8 @@ void PrefetchURLLoader::OnReceiveResponse(
     // Note that after this point this doesn't directly get upcalls from the
     // network. (Until |this| calls the handler's FollowRedirect.)
     web_package_prefetch_handler_ = std::make_unique<WebPackagePrefetchHandler>(
-        response, std::move(loader_), client_binding_.Unbind(),
-        network_loader_factory_, request_initiator_,
+        frame_tree_node_id_, response, std::move(loader_),
+        client_binding_.Unbind(), network_loader_factory_, request_initiator_,
         url_loader_throttles_getter_, resource_context_,
         request_context_getter_, this);
     return;

@@ -8,7 +8,9 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "url/origin.h"
 
@@ -30,7 +32,8 @@ class CONTENT_EXPORT SignedExchangeCertFetcherFactory {
   virtual std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeCertFetcher::CertificateCallback callback) = 0;
+      SignedExchangeCertFetcher::CertificateCallback callback,
+      const signed_exchange_utils::LogCallback& error_message_callback) = 0;
 
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;

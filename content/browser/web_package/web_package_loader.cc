@@ -80,6 +80,7 @@ WebPackageLoader::WebPackageLoader(
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     url::Origin request_initiator,
     uint32_t url_loader_options,
+    int frame_tree_node_id,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
     scoped_refptr<net::URLRequestContextGetter> request_context_getter)
@@ -89,6 +90,7 @@ WebPackageLoader::WebPackageLoader(
       url_loader_client_binding_(this),
       request_initiator_(request_initiator),
       url_loader_options_(url_loader_options),
+      frame_tree_node_id_(frame_tree_node_id),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
       request_context_getter_(std::move(request_context_getter)),
@@ -182,7 +184,8 @@ void WebPackageLoader::OnStartLoadingResponseBody(
       content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&WebPackageLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
-      std::move(cert_fetcher_factory), std::move(request_context_getter_));
+      std::move(cert_fetcher_factory), std::move(request_context_getter_),
+      frame_tree_node_id_);
 }
 
 void WebPackageLoader::OnComplete(
