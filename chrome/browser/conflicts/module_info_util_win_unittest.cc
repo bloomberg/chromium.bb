@@ -169,3 +169,16 @@ TEST(ModuleInfoUtilTest, InvalidNTHeader) {
   EXPECT_FALSE(GetModuleImageSizeAndTimeDateStamp(invalid_dll, &size_of_image,
                                                   &time_date_stamp));
 }
+
+TEST(ModuleInfoUtilTest, NormalizeCertificateSubject) {
+  CertificateInfo test_case;
+  test_case.subject = base::string16(L"signer\0", 7);
+  EXPECT_EQ(7u, test_case.subject.length());
+
+  CertificateInfo expected;
+  expected.subject = L"signer";
+
+  internal::NormalizeCertificateSubject(&test_case);
+
+  EXPECT_EQ(test_case.subject, expected.subject);
+}

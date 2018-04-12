@@ -70,4 +70,12 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
                                         uint32_t* size_of_image,
                                         uint32_t* time_date_stamp);
 
+namespace internal {
+
+// Removes trailing null characters from the certificate's subject.
+// Exposed for testing.
+void NormalizeCertificateSubject(CertificateInfo* certificate_info);
+
+}  // namespace internal
+
 #endif  // CHROME_BROWSER_CONFLICTS_MODULE_INFO_UTIL_WIN_H_

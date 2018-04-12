@@ -120,8 +120,6 @@ namespace internal {
 // - The path is split in 2 parts: The basename and the location.
 // - If it uses commas, the version string is modified to use periods.
 // - If there is one, the version string suffix is removed.
-// - If there is one, the trailing null character in the subject string of the
-//   certificate info is removed.
 //
 // Exposed for testing.
 void NormalizeInspectionResult(ModuleInspectionResult* inspection_result);
