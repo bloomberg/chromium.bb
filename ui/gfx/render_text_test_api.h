@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef UI_GFX_RENDER_TEXT_TEST_API_H_
+#define UI_GFX_RENDER_TEXT_TEST_API_H_
+
 #include "base/macros.h"
 #include "ui/gfx/break_list.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -35,6 +38,10 @@ class RenderTextTestApi {
 
   const BreakList<BaselineStyle>& baselines() const {
     return render_text_->baselines();
+  }
+
+  const BreakList<int>& font_size_overrides() const {
+    return render_text_->font_size_overrides();
   }
 
   const BreakList<Font::Weight>& weights() const {
@@ -85,3 +92,5 @@ class RenderTextTestApi {
 
 }  // namespace test
 }  // namespace gfx
+
+#endif  // UI_GFX_RENDER_TEXT_TEST_API_H_

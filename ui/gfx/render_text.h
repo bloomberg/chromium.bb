@@ -88,6 +88,7 @@ class StyleIterator {
  public:
   StyleIterator(const BreakList<SkColor>& colors,
                 const BreakList<BaselineStyle>& baselines,
+                const BreakList<int>& font_size_overrides,
                 const BreakList<Font::Weight>& weights,
                 const std::vector<BreakList<bool>>& styles);
   ~StyleIterator();
@@ -95,6 +96,7 @@ class StyleIterator {
   // Get the colors and styles at the current iterator position.
   SkColor color() const { return color_->second; }
   BaselineStyle baseline() const { return baseline_->second; }
+  int font_size_override() const { return font_size_override_->second; }
   bool style(TextStyle s) const { return style_[s]->second; }
   Font::Weight weight() const { return weight_->second; }
 
@@ -107,11 +109,13 @@ class StyleIterator {
  private:
   BreakList<SkColor> colors_;
   BreakList<BaselineStyle> baselines_;
+  BreakList<int> font_size_overrides_;
   BreakList<Font::Weight> weights_;
   std::vector<BreakList<bool> > styles_;
 
   BreakList<SkColor>::const_iterator color_;
   BreakList<BaselineStyle>::const_iterator baseline_;
+  BreakList<int>::const_iterator font_size_override_;
   BreakList<Font::Weight>::const_iterator weight_;
   std::vector<BreakList<bool>::const_iterator> style_;
 
@@ -365,10 +369,16 @@ class GFX_EXPORT RenderText {
   void SetColor(SkColor value);
   void ApplyColor(SkColor value, const Range& range);
 
+  // DEPRECATED.
   // Set the baseline style over the entire text or a logical character range.
   // The |range| should be valid, non-reversed, and within [0, text().length()].
+  // TODO(tapted): Remove this. The only client is moving to
+  // ApplyFontSizeOverride.
   void SetBaselineStyle(BaselineStyle value);
   void ApplyBaselineStyle(BaselineStyle value, const Range& range);
+
+  // Alters the font size in |range|.
+  void ApplyFontSizeOverride(int font_size_override, const Range& range);
 
   // Set various text styles over the entire text or a logical character range.
   // The respective |style| is applied if |value| is true, or removed if false.
@@ -537,6 +547,9 @@ class GFX_EXPORT RenderText {
 
   const BreakList<SkColor>& colors() const { return colors_; }
   const BreakList<BaselineStyle>& baselines() const { return baselines_; }
+  const BreakList<int>& font_size_overrides() const {
+    return font_size_overrides_;
+  }
   const BreakList<Font::Weight>& weights() const { return weights_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
   SkScalar strike_thickness_factor() const { return strike_thickness_factor_; }
@@ -777,6 +790,7 @@ class GFX_EXPORT RenderText {
   // TODO(msw): Expand to support cursor, selection, background, etc. colors.
   BreakList<SkColor> colors_;
   BreakList<BaselineStyle> baselines_;
+  BreakList<int> font_size_overrides_;
   BreakList<Font::Weight> weights_;
   std::vector<BreakList<bool> > styles_;
 

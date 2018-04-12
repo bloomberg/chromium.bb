@@ -597,6 +597,7 @@ TEST_P(RenderTextTest, DefaultStyles) {
   for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_TRUE(test_api()->colors().EqualsValueForTesting(SK_ColorBLACK));
     EXPECT_TRUE(test_api()->baselines().EqualsValueForTesting(NORMAL_BASELINE));
+    EXPECT_TRUE(test_api()->font_size_overrides().EqualsValueForTesting(0));
     for (size_t style = 0; style < NUM_TEXT_STYLES; ++style)
       EXPECT_TRUE(test_api()->styles()[style].EqualsValueForTesting(false));
     render_text->SetText(UTF8ToUTF16(cases[i]));
@@ -632,32 +633,27 @@ TEST_P(RenderTextTest, ApplyStyles) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(UTF8ToUTF16("012345678"));
 
+  constexpr int kTestFontSizeOverride = 20;
+
   // Apply a ranged color and style and check the resulting breaks.
   render_text->ApplyColor(SK_ColorRED, Range(1, 4));
   render_text->ApplyBaselineStyle(SUPERIOR, Range(2, 4));
   render_text->ApplyWeight(Font::Weight::BOLD, Range(2, 5));
-  std::vector<std::pair<size_t, SkColor> > expected_color;
-  expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorBLACK));
-  expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorRED));
-  expected_color.push_back(std::pair<size_t, SkColor>(4, SK_ColorBLACK));
-  EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
-  std::vector<std::pair<size_t, BaselineStyle>> expected_baseline_style;
-  expected_baseline_style.push_back(
-      std::pair<size_t, BaselineStyle>(0, NORMAL_BASELINE));
-  expected_baseline_style.push_back(
-      std::pair<size_t, BaselineStyle>(2, SUPERIOR));
-  expected_baseline_style.push_back(
-      std::pair<size_t, BaselineStyle>(4, NORMAL_BASELINE));
+  render_text->ApplyFontSizeOverride(kTestFontSizeOverride, Range(5, 7));
+
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting(
+      {{0, SK_ColorBLACK}, {1, SK_ColorRED}, {4, SK_ColorBLACK}}));
+
+  EXPECT_TRUE(test_api()->baselines().EqualsForTesting(
+      {{0, NORMAL_BASELINE}, {2, SUPERIOR}, {4, NORMAL_BASELINE}}));
+
+  EXPECT_TRUE(test_api()->font_size_overrides().EqualsForTesting(
+      {{0, 0}, {5, kTestFontSizeOverride}, {7, 0}}));
+
   EXPECT_TRUE(
-      test_api()->baselines().EqualsForTesting(expected_baseline_style));
-  std::vector<std::pair<size_t, Font::Weight>> expected_weight;
-  expected_weight.push_back(
-      std::pair<size_t, Font::Weight>(0, Font::Weight::NORMAL));
-  expected_weight.push_back(
-      std::pair<size_t, Font::Weight>(2, Font::Weight::BOLD));
-  expected_weight.push_back(
-      std::pair<size_t, Font::Weight>(5, Font::Weight::NORMAL));
-  EXPECT_TRUE(test_api()->weights().EqualsForTesting(expected_weight));
+      test_api()->weights().EqualsForTesting({{0, Font::Weight::NORMAL},
+                                              {2, Font::Weight::BOLD},
+                                              {5, Font::Weight::NORMAL}}));
 
   // Ensure that setting a value overrides the ranged values.
   render_text->SetColor(SK_ColorBLUE);
@@ -674,30 +670,18 @@ TEST_P(RenderTextTest, ApplyStyles) {
   render_text->ApplyColor(SK_ColorRED, Range(0, text_length));
   render_text->ApplyBaselineStyle(SUPERIOR, Range(0, text_length));
   render_text->ApplyWeight(Font::Weight::BOLD, Range(2, text_length));
-  std::vector<std::pair<size_t, SkColor> > expected_color_end;
-  expected_color_end.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
-  EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color_end));
-  std::vector<std::pair<size_t, BaselineStyle>> expected_baseline_end;
-  expected_baseline_end.push_back(
-      std::pair<size_t, BaselineStyle>(0, SUPERIOR));
-  EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline_end));
-  std::vector<std::pair<size_t, Font::Weight>> expected_weight_end;
-  expected_weight_end.push_back(
-      std::pair<size_t, Font::Weight>(0, Font::Weight::NORMAL));
-  expected_weight_end.push_back(
-      std::pair<size_t, Font::Weight>(2, Font::Weight::BOLD));
-  EXPECT_TRUE(test_api()->weights().EqualsForTesting(expected_weight_end));
+
+  EXPECT_TRUE(test_api()->colors().EqualsForTesting({{0, SK_ColorRED}}));
+  EXPECT_TRUE(test_api()->baselines().EqualsForTesting({{0, SUPERIOR}}));
+  EXPECT_TRUE(test_api()->weights().EqualsForTesting(
+      {{0, Font::Weight::NORMAL}, {2, Font::Weight::BOLD}}));
 
   // Ensure ranged values adjust to accommodate text length changes.
   render_text->ApplyStyle(ITALIC, true, Range(0, 2));
   render_text->ApplyStyle(ITALIC, true, Range(3, 6));
   render_text->ApplyStyle(ITALIC, true, Range(7, text_length));
-  std::vector<std::pair<size_t, bool> > expected_italic;
-  expected_italic.push_back(std::pair<size_t, bool>(0, true));
-  expected_italic.push_back(std::pair<size_t, bool>(2, false));
-  expected_italic.push_back(std::pair<size_t, bool>(3, true));
-  expected_italic.push_back(std::pair<size_t, bool>(6, false));
-  expected_italic.push_back(std::pair<size_t, bool>(7, true));
+  std::vector<std::pair<size_t, bool>> expected_italic = {
+      {0, true}, {2, false}, {3, true}, {6, false}, {7, true}};
   EXPECT_TRUE(test_api()->styles()[ITALIC].EqualsForTesting(expected_italic));
 
   // Changing the text should clear any breaks except for the first one.
@@ -721,44 +705,42 @@ TEST_P(RenderTextTest, ApplyStyles) {
     // Styles shouldn't be changed mid-grapheme.
     render_text->SetText(UTF8ToUTF16("0\u0915\u093f1\u0915\u093f2"));
     render_text->ApplyStyle(UNDERLINE, true, Range(2, 5));
-    std::vector<std::pair<size_t, bool>> expected_underline;
-    expected_underline.push_back(std::pair<size_t, bool>(0, false));
-    expected_underline.push_back(std::pair<size_t, bool>(1, true));
-    expected_underline.push_back(std::pair<size_t, bool>(6, false));
-    EXPECT_TRUE(
-        test_api()->styles()[UNDERLINE].EqualsForTesting(expected_underline));
+    EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(
+        {{0, false}, {1, true}, {6, false}}));
   }
 }
 
 TEST_P(RenderTextTest, AppendTextKeepsStyles) {
   RenderText* render_text = GetRenderText();
   // Setup basic functionality.
-  render_text->SetText(UTF8ToUTF16("abc"));
+  render_text->SetText(UTF8ToUTF16("abcd"));
   render_text->ApplyColor(SK_ColorRED, Range(0, 1));
   render_text->ApplyBaselineStyle(SUPERSCRIPT, Range(1, 2));
   render_text->ApplyStyle(UNDERLINE, true, Range(2, 3));
+  render_text->ApplyFontSizeOverride(20, Range(3, 4));
   // Verify basic functionality.
-  std::vector<std::pair<size_t, SkColor>> expected_color;
-  expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
-  expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorBLACK));
+  const std::vector<std::pair<size_t, SkColor>> expected_color = {
+      {0, SK_ColorRED}, {1, SK_ColorBLACK}};
   EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
-  std::vector<std::pair<size_t, BaselineStyle>> expected_baseline;
-  expected_baseline.push_back(
-      std::pair<size_t, BaselineStyle>(0, NORMAL_BASELINE));
-  expected_baseline.push_back(std::pair<size_t, BaselineStyle>(1, SUPERSCRIPT));
-  expected_baseline.push_back(
-      std::pair<size_t, BaselineStyle>(2, NORMAL_BASELINE));
+  const std::vector<std::pair<size_t, BaselineStyle>> expected_baseline = {
+      {0, NORMAL_BASELINE}, {1, SUPERSCRIPT}, {2, NORMAL_BASELINE}};
   EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
-  std::vector<std::pair<size_t, bool>> expected_style;
-  expected_style.push_back(std::pair<size_t, bool>(0, false));
-  expected_style.push_back(std::pair<size_t, bool>(2, true));
+  const std::vector<std::pair<size_t, bool>> expected_style = {
+      {0, false}, {2, true}, {3, false}};
   EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  const std::vector<std::pair<size_t, int>> expected_font_size = {{0, 0},
+                                                                  {3, 20}};
+  EXPECT_TRUE(
+      test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
+
   // Ensure AppendText maintains current text styles.
-  render_text->AppendText(UTF8ToUTF16("def"));
-  EXPECT_EQ(render_text->GetDisplayText(), UTF8ToUTF16("abcdef"));
+  render_text->AppendText(UTF8ToUTF16("efg"));
+  EXPECT_EQ(render_text->GetDisplayText(), UTF8ToUTF16("abcdefg"));
   EXPECT_TRUE(test_api()->colors().EqualsForTesting(expected_color));
   EXPECT_TRUE(test_api()->baselines().EqualsForTesting(expected_baseline));
   EXPECT_TRUE(test_api()->styles()[UNDERLINE].EqualsForTesting(expected_style));
+  EXPECT_TRUE(
+      test_api()->font_size_overrides().EqualsForTesting(expected_font_size));
 }
 
 void TestVisualCursorMotionInObscuredField(
@@ -5229,6 +5211,24 @@ TEST_P(RenderTextHarfBuzzTest, GlyphSpacing) {
   // The new width is the sum of |width_without_glyph_spacing| and the spacing.
   const float total_spacing = seuss.length() * kGlyphSpacing;
   EXPECT_EQ(width_without_glyph_spacing + total_spacing, run->width);
+}
+
+// Ensure font size overrides propagate through to text runs.
+TEST_P(RenderTextHarfBuzzTest, FontSizeOverride) {
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+  const int default_font_size = render_text->font_list().GetFontSize();
+  const int test_font_size_override = default_font_size + 5;
+  render_text->SetText(UTF8ToUTF16("0123456789"));
+  render_text->ApplyFontSizeOverride(test_font_size_override, gfx::Range(3, 7));
+  test_api()->EnsureLayout();
+  EXPECT_EQ(ToString16Vec({"012", "3456", "789"}), GetRunListStrings());
+
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  ASSERT_EQ(3U, run_list->size());
+
+  EXPECT_EQ(default_font_size, run_list->runs()[0].get()->font_size);
+  EXPECT_EQ(test_font_size_override, run_list->runs()[1].get()->font_size);
+  EXPECT_EQ(default_font_size, run_list->runs()[2].get()->font_size);
 }
 
 // Prefix for test instantiations intentionally left blank since each test

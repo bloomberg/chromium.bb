@@ -9,10 +9,11 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -21,10 +22,29 @@
 
 namespace {
 
+// Use the primary style for everything. TextStyle sometimes controls color, but
+// we use OmniboxTheme for that.
+constexpr int kTextStyle = views::style::STYLE_PRIMARY;
+
+// Indicates to use CONTEXT_OMNIBOX_PRIMARY when picking a font size in legacy
+// codepaths.
+constexpr int kInherit = INT_MIN;
+
 struct TextStyle {
-  ui::ResourceBundle::FontStyle font;
   OmniboxPart part;
-  gfx::BaselineStyle baseline;
+
+  // The legacy size delta, relative to the ui::ResourceBundle BaseFont, or
+  // kInherit to use CONTEXT_OMNIBOX_PRIMARY, to match the omnibox font.
+  // Note: the actual font size may differ due to |baseline| altering the size.
+  int legacy_size_delta = kInherit;
+
+  // The size delta from the Touchable chrome spec. This is always relative to
+  // CONTEXT_OMNIBOX_PRIMARY, which defaults to 15pt under touch. Only negative
+  // deltas are supported correctly (the line height will not increase to fit).
+  int touchable_size_delta = 0;
+
+  // The baseline shift. Ignored under touch (text is always baseline-aligned).
+  gfx::BaselineStyle baseline = gfx::NORMAL_BASELINE;
 };
 
 // Returns the styles that should be applied to the specified answer text type.
@@ -41,36 +61,67 @@ struct TextStyle {
 // first value even though this is not actually used (since they're not the
 // first value).
 TextStyle GetTextStyle(int type) {
+  // The size delta for large fonts in the legacy spec (per comment above, the
+  // result is usually smaller due to the baseline style).
+  constexpr int kLarge = ui::ResourceBundle::kLargeFontDelta;
+
+  // The size delta for the smaller of font size in the touchable style. This
+  // will always use the same baseline style.
+  constexpr int kTouchableSmall = -3;
+
   switch (type) {
     case SuggestionAnswer::TOP_ALIGNED:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_DIMMED,
+      return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge, kTouchableSmall,
               gfx::SUPERIOR};
+
     case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_NEGATIVE,
+      return {OmniboxPart::RESULTS_TEXT_NEGATIVE, kLarge, kTouchableSmall,
               gfx::INFERIOR};
+
     case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_POSITIVE,
+      return {OmniboxPart::RESULTS_TEXT_POSITIVE, kLarge, kTouchableSmall,
               gfx::INFERIOR};
-    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DEFAULT,
-              gfx::NORMAL_BASELINE};
+
     case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DIMMED,
-              gfx::NORMAL_BASELINE};
+      return {OmniboxPart::RESULTS_TEXT_DIMMED};
+
     case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_DIMMED,
-              gfx::NORMAL_BASELINE};
+      // Note: There is no large font in the touchable spec.
+      return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge};
+
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      return {ui::ResourceBundle::LargeFont, OmniboxPart::RESULTS_TEXT_DIMMED,
+      return {OmniboxPart::RESULTS_TEXT_DIMMED, kLarge, kTouchableSmall,
               gfx::INFERIOR};
+
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DIMMED,
-              gfx::NORMAL_BASELINE};
+      return {OmniboxPart::RESULTS_TEXT_DIMMED};
+
+    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
     case SuggestionAnswer::SUGGESTION:  // Fall through.
     default:
-      return {ui::ResourceBundle::BaseFont, OmniboxPart::RESULTS_TEXT_DEFAULT,
-              gfx::NORMAL_BASELINE};
+      return {OmniboxPart::RESULTS_TEXT_DEFAULT};
   }
+}
+
+const gfx::FontList& GetFontForType(int text_type) {
+  const gfx::FontList& omnibox_font =
+      views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle);
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+    int delta = GetTextStyle(text_type).touchable_size_delta;
+    if (delta == 0)
+      return omnibox_font;
+
+    // Use the cache in ResourceBundle (gfx::FontList::Derive() is slow and
+    // doesn't return a reference).
+    return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+        omnibox_font.GetFontSize() - gfx::FontList().GetFontSize() + delta);
+  }
+
+  int delta = GetTextStyle(text_type).legacy_size_delta;
+  if (delta == kInherit)
+    return omnibox_font;
+
+  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(delta);
 }
 
 }  // namespace
@@ -78,7 +129,6 @@ TextStyle GetTextStyle(int type) {
 OmniboxTextView::OmniboxTextView(OmniboxResultView* result_view,
                                  const gfx::FontList& font_list)
     : result_view_(result_view),
-      font_list_(font_list),
       font_height_(std::max(
           font_list.GetHeight(),
           font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())) {}
@@ -113,7 +163,8 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
   render_text->SetDisplayRect(gfx::Rect(gfx::Size(INT_MAX, 0)));
   render_text->SetCursorEnabled(false);
   render_text->SetElideBehavior(gfx::ELIDE_TAIL);
-  render_text->SetFontList(font_list_);
+  render_text->SetFontList(
+      views::style::GetFont(CONTEXT_OMNIBOX_PRIMARY, kTextStyle));
   render_text->SetText(text);
   return render_text;
 }
@@ -184,6 +235,7 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
   // sizes or use multiple RenderTexts.
   render_text_.reset();
   render_text_ = CreateText(line, GetFontForType(line.text_fields()[0].type()));
+  font_height_ = render_text_->font_list().GetHeight();
   SizeToPreferredSize();
 }
 
@@ -263,22 +315,16 @@ void OmniboxTextView::AppendTextHelper(gfx::RenderText* destination,
   destination->ApplyWeight(
       is_bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL, range);
   destination->ApplyColor(result_view_->GetColor(text_style.part), range);
-  destination->ApplyBaselineStyle(text_style.baseline, range);
+
+  // Baselines are always aligned under the touch UI. Font sizes change instead.
+  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+    destination->ApplyBaselineStyle(text_style.baseline, range);
+  } else if (text_style.touchable_size_delta != 0) {
+    destination->ApplyFontSizeOverride(GetFontForType(text_type).GetFontSize(),
+                                       range);
+  }
 }
 
 int OmniboxTextView::GetLineHeight() const {
   return font_height_;
-}
-
-const gfx::FontList& OmniboxTextView::GetFontForType(int text_type) const {
-  // When BaseFont is specified, reuse font_list_, which may have had size
-  // adjustments from BaseFont before it was provided to this class.  Otherwise,
-  // get the standard font list for the specified style.
-  ui::ResourceBundle::FontStyle font_style = GetTextStyle(text_type).font;
-  const gfx::FontList& font_list =
-      (font_style == ui::ResourceBundle::BaseFont)
-          ? font_list_
-          : ui::ResourceBundle::GetSharedInstance().GetFontList(font_style);
-  font_height_ = font_list.GetHeight();
-  return font_list;
 }

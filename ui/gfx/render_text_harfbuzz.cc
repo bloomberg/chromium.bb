@@ -1415,7 +1415,8 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   DCHECK_LE(text.size(), baselines().max());
   for (const BreakList<bool>& style : styles())
     DCHECK_LE(text.size(), style.max());
-  internal::StyleIterator style(empty_colors, baselines(), weights(), styles());
+  internal::StyleIterator style(empty_colors, baselines(),
+                                font_size_overrides(), weights(), styles());
 
   for (size_t run_break = 0; run_break < text.length();) {
     auto run = std::make_unique<internal::TextRunHarfBuzz>(
@@ -1423,6 +1424,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     run->range.set_start(run_break);
     run->italic = style.style(ITALIC);
     run->baseline_type = style.baseline();
+    run->font_size = style.font_size_override();
     run->strike = style.style(STRIKE);
     run->underline = style.style(UNDERLINE);
     run->heavy_underline = style.style(HEAVY_UNDERLINE);
@@ -1496,7 +1498,8 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
                                   internal::TextRunHarfBuzz* run) {
   const Font& primary_font = font_list().GetPrimaryFont();
   const std::string primary_family = primary_font.GetFontName();
-  run->font_size = primary_font.GetFontSize();
+  if (run->font_size == 0)
+    run->font_size = primary_font.GetFontSize();
   run->baseline_offset = 0;
   if (run->baseline_type != NORMAL_BASELINE) {
     // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
