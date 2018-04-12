@@ -395,6 +395,12 @@ component("bluetooth") {
           "dbus/dbus_thread_manager_linux.h",
         ]
       }
+      if (is_chromeos) {
+        sources += [
+          "chromeos/bluetooth_utils.cc",
+          "chromeos/bluetooth_utils.h",
+        ]
+      }
       deps += [ "//dbus" ]
     } else {  # !use_dbus
       if (is_chromecast && is_linux) {
