@@ -3967,6 +3967,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       boards=[
           'arm-generic', 'amd64-generic'
       ],
+      display_label=config_lib.DISPLAY_LABEL_UTILITY,
       build_type=constants.CHROOT_BUILDER_TYPE,
       active_waterfall=waterfall.WATERFALL_EXTERNAL,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
