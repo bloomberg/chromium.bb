@@ -16,6 +16,10 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/conflicts/module_info_win.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 // This class takes care of inspecting several modules (identified by their
 // ModuleInfoKey) and returning the result via the OnModuleInspectedCallback on
 // the SequencedTaskRunner where it was created.
@@ -63,10 +67,10 @@ class ModuleInspector {
   // The modules are put in queue until they are sent for inspection.
   base::queue<ModuleInfoKey> queue_;
 
-  // The TaskPriority of the task that inspects the modules. It originally
-  // starts at BACKGROUND priority, but is changed to USER_VISIBLE when
+  // The task runner where module inspections takes place. It originally starts
+  // at BACKGROUND priority, but is changed to USER_VISIBLE when
   // IncreaseInspectionPriority() is called.
-  base::TaskPriority inspection_task_priority_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The vector of paths to %env_var%, used to account for differences in
   // localization and where people keep their files.
