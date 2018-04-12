@@ -140,13 +140,13 @@ class ClientManager {
         public boolean highConfidencePrediction;
         private String mPackageName;
         private boolean mShouldHideDomain;
-        private boolean mShouldPrerenderOnCellular;
+        private boolean mShouldSpeculateLoadOnCellular;
         private boolean mShouldSendNavigationInfo;
         private boolean mShouldSendBottomBarScrollState;
         private KeepAliveServiceConnection mKeepAliveConnection;
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
-        private int mSpeculationMode;
+        private boolean mCanUseHiddenTab;
         private boolean mAllowParallelRequest;
 
         public SessionParams(Context context, int uid, DisconnectCallback callback,
@@ -156,7 +156,6 @@ class ClientManager {
             disconnectCallback = callback;
             this.postMessageHandler = postMessageHandler;
             if (postMessageHandler != null) this.postMessageHandler.setPackageName(mPackageName);
-            this.mSpeculationMode = CustomTabsConnection.SpeculationParams.PRERENDER;
         }
 
         /**
@@ -219,7 +218,7 @@ class ClientManager {
          * @return Whether the default parameters are used for this session.
          */
         public boolean isDefault() {
-            return !mIgnoreFragments && !mShouldPrerenderOnCellular;
+            return !mIgnoreFragments && !mShouldSpeculateLoadOnCellular;
         }
     }
 
@@ -568,14 +567,14 @@ class ClientManager {
     }
 
     /**
-     * @return Whether the fragment should be ignored for prerender matching.
+     * @return Whether the fragment should be ignored for speculation matching.
      */
     public synchronized boolean getIgnoreFragmentsForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params == null ? false : params.mIgnoreFragments;
     }
 
-    /** Sets whether the fragment should be ignored for prerender matching. */
+    /** Sets whether the fragment should be ignored for speculation matching. */
     public synchronized void setIgnoreFragmentsForSession(
             CustomTabsSessionToken session, boolean value) {
         SessionParams params = mSessionParams.get(session);
@@ -583,17 +582,17 @@ class ClientManager {
     }
 
     /**
-     * @return Whether prerender should be turned on for cellular networks for given session.
+     * @return Whether load speculation should be turned on for cellular networks for given session.
      */
-    public synchronized boolean shouldPrerenderOnCellularForSession(
+    public synchronized boolean shouldSpeculateLoadOnCellularForSession(
             CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
-        return params != null ? params.mShouldPrerenderOnCellular : false;
+        return params != null ? params.mShouldSpeculateLoadOnCellular : false;
     }
 
     /**
-     * @return Whether the session is using the default parameters (that is,
-     *         don't ignore fragments and don't prerender on cellular connections).
+     * @return Whether the session is using the default parameters (that is, don't ignore
+     *         fragments and don't speculate loads on cellular connections).
      */
     public synchronized boolean usesDefaultSessionParameters(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
@@ -601,31 +600,47 @@ class ClientManager {
     }
 
     /**
-     * Sets whether prerender should be turned on for mobile networks for given session.
+     * Sets whether speculation should be turned on for mobile networks for given session.
+     * If it is turned on, hidden tab speculation is turned on as well.
      */
+    public synchronized void setSpeculateLoadOnCellularForSession(
+            CustomTabsSessionToken session, boolean shouldSpeculate) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) {
+            params.mShouldSpeculateLoadOnCellular = shouldSpeculate;
+            params.mCanUseHiddenTab = shouldSpeculate;
+        }
+    }
+
+    /** TODO(mattcary): remove when downstream uses are removed. **/
     public synchronized void setPrerenderCellularForSession(
             CustomTabsSessionToken session, boolean prerender) {
-        SessionParams params = mSessionParams.get(session);
-        if (params != null) params.mShouldPrerenderOnCellular = prerender;
+        setSpeculateLoadOnCellularForSession(session, prerender);
     }
 
-    /**
-     * Sets the speculation mode to be used by default for given session.
-     */
+    /** TODO(mattcary): remove when downstream uses are removed. **/
     public synchronized void setSpeculationModeForSession(
-            CustomTabsSessionToken session, int speculationMode) {
-        SessionParams params = mSessionParams.get(session);
-        if (params != null) params.mSpeculationMode = speculationMode;
+            CustomTabsSessionToken session, int mode) {
+        // No-op.
     }
 
     /**
-     * Get the speculation mode to be used by default for the given session.
-     * If no value has been set will default to PRERENDER mode.
+     * Sets whether hidden tab speculation can be used.
      */
-    public synchronized int getSpeculationModeForSession(CustomTabsSessionToken session) {
+    public synchronized void setCanUseHiddenTab(
+            CustomTabsSessionToken session, boolean canUseHiddenTab) {
         SessionParams params = mSessionParams.get(session);
-        return params == null ? CustomTabsConnection.SpeculationParams.PRERENDER
-                              : params.mSpeculationMode;
+        if (params != null) {
+            params.mCanUseHiddenTab = canUseHiddenTab;
+        }
+    }
+
+    /**
+     * Get whether hidden tab speculation can be used. The default is false.
+     */
+    public synchronized boolean getCanUseHiddenTab(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        return params == null ? false : params.mCanUseHiddenTab;
     }
 
     public synchronized void setAllowParallelRequestForSession(
