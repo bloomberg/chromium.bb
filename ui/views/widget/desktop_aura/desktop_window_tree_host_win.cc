@@ -969,13 +969,8 @@ void DesktopWindowTreeHostWin::HandleWindowSizeUnchanged() {
   // changed (can occur on Windows 10 when snapping a window to the side of
   // the screen). In that case do a resize to the current size to reenable
   // swaps.
-  // TODO(ccameron): This will violate surface invariants.
-  if (compositor()) {
-    compositor()->SetScaleAndSize(
-        compositor()->device_scale_factor(),
-        message_handler_->GetClientAreaBounds().size(),
-        window()->GetLocalSurfaceId());
-  }
+  if (compositor())
+    compositor()->ReenableSwap();
 }
 
 void DesktopWindowTreeHostWin::HandleWindowScaleFactorChanged(

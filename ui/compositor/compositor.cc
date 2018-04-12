@@ -336,7 +336,13 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
 }
 
 void Compositor::DisableSwapUntilResize() {
+  DCHECK(context_factory_private_);
   context_factory_private_->ResizeDisplay(this, gfx::Size());
+}
+
+void Compositor::ReenableSwap() {
+  DCHECK(context_factory_private_);
+  context_factory_private_->ResizeDisplay(this, size_);
 }
 
 void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
