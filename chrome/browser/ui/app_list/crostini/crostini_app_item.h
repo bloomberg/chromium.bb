@@ -7,6 +7,8 @@
 
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 
+class CrostiniAppContextMenu;
+
 namespace gfx {
 class ImageSkia;
 }
@@ -25,6 +27,10 @@ class CrostiniAppItem : public ChromeAppListItem {
   // ChromeAppListItem:
   void Activate(int event_flags) override;
   const char* GetItemType() const override;
+  ui::MenuModel* GetContextMenuModel() override;
+  app_list::AppContextMenu* GetAppContextMenu() override;
+
+  std::unique_ptr<CrostiniAppContextMenu> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniAppItem);
 };
