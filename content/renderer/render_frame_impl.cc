@@ -4540,8 +4540,8 @@ void RenderFrameImpl::DidFailLoad(const WebURLError& error,
 
   const WebURLRequest& failed_request = document_loader->GetRequest();
   base::string16 error_description;
-  GetContentClient()->renderer()->PrepareErrorPage(this, failed_request, error,
-                                                   nullptr, &error_description);
+  GetContentClient()->renderer()->GetErrorDescription(failed_request, error,
+                                                      &error_description);
   Send(new FrameHostMsg_DidFailLoadWithError(
       routing_id_, failed_request.Url(), error.reason(), error_description));
 }
@@ -7057,8 +7057,8 @@ void RenderFrameImpl::SendFailedProvisionalLoad(
 
   FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.error_code = error.reason();
-  GetContentClient()->renderer()->PrepareErrorPage(
-      this, request, error, nullptr, &params.error_description);
+  GetContentClient()->renderer()->GetErrorDescription(
+      request, error, &params.error_description);
   params.url = error.url(),
   params.showing_repost_interstitial = show_repost_interstitial;
   Send(new FrameHostMsg_DidFailProvisionalLoadWithError(routing_id_, params));
