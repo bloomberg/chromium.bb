@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
-#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {

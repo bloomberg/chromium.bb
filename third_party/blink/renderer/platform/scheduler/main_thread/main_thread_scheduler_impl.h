@@ -28,7 +28,7 @@
 #include "third_party/blink/renderer/platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/deadline_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/idle_time_estimator.h"
-#include "third_party/blink/renderer/platform/scheduler/renderer/main_thread_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/queueing_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/render_widget_signals.h"

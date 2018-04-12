@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time_override.h"
-#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {
