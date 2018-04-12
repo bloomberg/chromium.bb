@@ -271,11 +271,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromDownloadsToDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDownloads")));
+// Disabled due to flakiness. https://crbug.com/831211
+// TestParameter(NOT_IN_GUEST_MODE, "transferFromDownloadsToDrive")
+// TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDrive")
+// TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")
 
 // Fails on official build. http://crbug.com/429294
 // Disabled due to flakiness. https://crbug.com/701924
