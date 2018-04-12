@@ -2275,11 +2275,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
-  _pi_hwtest_boards = frozenset([])
+  _pi_hwtest_boards = frozenset([
+      'kevin-arcnext',
+  ])
   _pi_no_hwtest_boards = frozenset([
       'betty-arcnext',
       'caroline-arcnext',
-      'kevin-arcnext',
   ])
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
@@ -2776,10 +2777,11 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('wizpig',         'edgar',          'cyan'),          # strago (BSW)
     ('cave',           'sentry',         'caroline'),      # glados (SKL)
     ('elm',            None,             'hana'),          # oak (MTK8173)
-    ('kevin',          None,             'bob'),           # gru (RK3399)
+    ('bob',            None,             'kevin'),         # gru (RK3399)
     ('reef',           None,             None),            # reef (APL)
     ('coral',          None,             None),            # coral (APL)
     (None,             'eve',            'soraka'),        # poppy (KBL)
+    (None,             None,             'kevin-arcnext'), # gru + arcnext
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
@@ -3821,6 +3823,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
       'cyan-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'kevin-arcnext-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
 
