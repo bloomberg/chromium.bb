@@ -272,34 +272,34 @@ class span {
 
 // [span.comparison], span comparison operators
 // Relational operators. Equality is a element-wise comparison.
-template <typename T>
-constexpr bool operator==(span<T> lhs, span<T> rhs) noexcept {
+template <typename T, typename U>
+constexpr bool operator==(span<T> lhs, span<U> rhs) noexcept {
   return std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
-template <typename T>
-constexpr bool operator!=(span<T> lhs, span<T> rhs) noexcept {
+template <typename T, typename U>
+constexpr bool operator!=(span<T> lhs, span<U> rhs) noexcept {
   return !(lhs == rhs);
 }
 
-template <typename T>
-constexpr bool operator<(span<T> lhs, span<T> rhs) noexcept {
+template <typename T, typename U>
+constexpr bool operator<(span<T> lhs, span<U> rhs) noexcept {
   return std::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(),
                                       rhs.cend());
 }
 
-template <typename T>
-constexpr bool operator<=(span<T> lhs, span<T> rhs) noexcept {
+template <typename T, typename U>
+constexpr bool operator<=(span<T> lhs, span<U> rhs) noexcept {
   return !(rhs < lhs);
 }
 
-template <typename T>
-constexpr bool operator>(span<T> lhs, span<T> rhs) noexcept {
+template <typename T, typename U>
+constexpr bool operator>(span<T> lhs, span<U> rhs) noexcept {
   return rhs < lhs;
 }
 
-template <typename T>
-constexpr bool operator>=(span<T> lhs, span<T> rhs) noexcept {
+template <typename T, typename U>
+constexpr bool operator>=(span<T> lhs, span<U> rhs) noexcept {
   return !(lhs < rhs);
 }
 
