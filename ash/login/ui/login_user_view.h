@@ -51,6 +51,8 @@ class ASH_EXPORT LoginUserView : public views::View,
   // Returns the width of this view for the given display style.
   static int WidthForLayoutStyle(LoginDisplayStyle style);
 
+  // Use null callbacks for |on_remove_warning_shown| and |on_remove| when
+  // |show_dropdown| arg is false.
   LoginUserView(LoginDisplayStyle style,
                 bool show_dropdown,
                 bool show_domain,

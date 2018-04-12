@@ -17,6 +17,7 @@
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_display_style.h"
+#include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_keyboard_test_base.h"
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_public_account_user_view.h"
@@ -1200,6 +1201,47 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
   ASSERT_FALSE(primary_big_view->auth_user());
   // user_view0 becomes auth user.
   EXPECT_FALSE(is_public_account(user_view0));
+}
+
+TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
+  // Build lock screen with 3 users: one public account user and two regular
+  // users.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  LockContentsView::TestApi lock_contents(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  AddPublicAccountUsers(1);
+  AddUsers(2);
+
+  views::View* main_view = lock_contents.main_view();
+  LoginExpandedPublicAccountView* expanded_view = lock_contents.expanded_view();
+  EXPECT_TRUE(main_view->visible());
+  EXPECT_FALSE(expanded_view->visible());
+
+  LoginBigUserView* primary_big_view = lock_contents.primary_big_view();
+  AccountId primary_id =
+      primary_big_view->GetCurrentUser()->basic_user_info->account_id;
+
+  // Open the expanded public session view.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+
+  EXPECT_FALSE(main_view->visible());
+  EXPECT_TRUE(expanded_view->visible());
+  EXPECT_EQ(expanded_view->current_user()->basic_user_info->account_id,
+            primary_id);
+
+  // Expect LanuchPublicSession mojo call when the submit button is clicked.
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+  EXPECT_CALL(*client, LaunchPublicSession(primary_id, _, _));
+
+  // Click on the submit button.
+  LoginExpandedPublicAccountView::TestApi expanded_view_api(expanded_view);
+  generator.MoveMouseTo(
+      expanded_view_api.submit_button()->GetBoundsInScreen().CenterPoint());
+  generator.ClickLeftButton();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace ash
