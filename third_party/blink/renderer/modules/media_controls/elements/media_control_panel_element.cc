@@ -14,21 +14,64 @@ namespace blink {
 
 namespace {
 
-// This is matching the `transition` property from mediaControls.css
-const double kFadeOutDuration = 0.3;
-
 // This is the class name to hide the panel.
 const char kTransparentClassName[] = "transparent";
 
 }  // anonymous namespace
 
+// Listens for the 'transitionend' event.
+class MediaControlPanelElement::TransitionEventListener final
+    : public EventListener {
+ public:
+  using Callback = base::RepeatingCallback<void()>;
+
+  // |element| is the element to listen for the 'transitionend' event on.
+  // |callback| is the callback to call when the event is handled.
+  explicit TransitionEventListener(Element* element, Callback callback)
+      : EventListener(EventListener::kCPPEventListenerType),
+        callback_(callback),
+        element_(element) {
+    DCHECK(callback_);
+    DCHECK(element_);
+
+    element->addEventListener(EventTypeNames::transitionend, this, false);
+  }
+
+  void Detach() {
+    element_->removeEventListener(EventTypeNames::transitionend, this, false);
+  }
+
+  bool operator==(const EventListener& other) const override {
+    return this == &other;
+  }
+
+  virtual void Trace(blink::Visitor* visitor) {
+    EventListener::Trace(visitor);
+    visitor->Trace(element_);
+  }
+
+ private:
+  void handleEvent(ExecutionContext* context, Event* event) {
+    if (event->type() == EventTypeNames::transitionend) {
+      callback_.Run();
+      return;
+    }
+
+    NOTREACHED();
+  }
+
+  Callback callback_;
+  Member<Element> element_;
+};
+
 MediaControlPanelElement::MediaControlPanelElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaControlsPanel),
-      transition_timer_(
-          media_controls.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
+      event_listener_(new MediaControlPanelElement::TransitionEventListener(
           this,
-          &MediaControlPanelElement::TransitionTimerFired) {
+          WTF::BindRepeating(
+              &MediaControlPanelElement::HandleTransitionEndEvent,
+              WrapWeakPersistent(this)))) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-panel"));
 }
 
@@ -49,11 +92,11 @@ void MediaControlPanelElement::MakeOpaque() {
   if (opaque_)
     return;
 
-  removeAttribute("class");
   opaque_ = true;
 
   if (is_displayed_) {
     SetIsWanted(true);
+    removeAttribute("class");
     DidBecomeVisible();
   }
 }
@@ -65,7 +108,15 @@ void MediaControlPanelElement::MakeTransparent() {
   setAttribute("class", kTransparentClassName);
 
   opaque_ = false;
-  StartTimer();
+}
+
+void MediaControlPanelElement::RemovedFrom(ContainerNode*) {
+  event_listener_->Detach();
+}
+
+void MediaControlPanelElement::Trace(blink::Visitor* visitor) {
+  MediaControlDivElement::Trace(visitor);
+  visitor->Trace(event_listener_);
 }
 
 void MediaControlPanelElement::SetKeepDisplayedForAccessibility(bool value) {
@@ -86,30 +137,15 @@ bool MediaControlPanelElement::KeepEventInNode(Event* event) {
   return MediaControlElementsHelper::IsUserInteractionEvent(event);
 }
 
-void MediaControlPanelElement::StartTimer() {
-  StopTimer();
-
-  // The timer is required to set the property display:'none' on the panel,
-  // such that captions are correctly displayed at the bottom of the video
-  // at the end of the fadeout transition.
-  // FIXME: Racing a transition with a setTimeout like this is wrong.
-  transition_timer_.StartOneShot(kFadeOutDuration, FROM_HERE);
-}
-
-void MediaControlPanelElement::StopTimer() {
-  transition_timer_.Stop();
-}
-
-void MediaControlPanelElement::TransitionTimerFired(TimerBase*) {
-  if (!opaque_ && !keep_displayed_for_accessibility_)
-    SetIsWanted(false);
-
-  StopTimer();
-}
-
 void MediaControlPanelElement::DidBecomeVisible() {
   DCHECK(is_displayed_ && opaque_);
   MediaElement().MediaControlsDidBecomeVisible();
+}
+
+void MediaControlPanelElement::HandleTransitionEndEvent() {
+  // Hide the element in the DOM once we have finished the transition.
+  if (!opaque_ && !keep_displayed_for_accessibility_)
+    SetIsWanted(false);
 }
 
 }  // namespace blink

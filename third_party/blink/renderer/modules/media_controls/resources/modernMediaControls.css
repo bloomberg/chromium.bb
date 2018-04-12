@@ -73,11 +73,15 @@ video::-webkit-media-controls-panel {
   background:
     -webkit-image-set(url('default_100_percent/modern/gradient_bg.png') 1x)
     repeat-x bottom left;
+
+  opacity: 1;
+  transition: opacity 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 audio::-webkit-media-controls-panel.transparent,
 video::-webkit-media-controls-panel.transparent {
   opacity: 0;
+  transition: opacity 1s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 video::-webkit-media-controls-panel.scrubbing-message {
@@ -140,6 +144,20 @@ video::-internal-media-controls-button-spacer {
 audio::-internal-media-controls-button-spacer,
 video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-button-spacer"] {
   display: none;
+}
+
+audio::-internal-media-controls-button-panel,
+video::-internal-media-controls-button-panel,
+audio::-webkit-media-controls-timeline,
+video::-webkit-media-controls-timeline {
+  opacity: 1;
+  transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.transparent div[pseudo="-internal-media-controls-button-panel"],
+.transparent input[pseudo="-webkit-media-controls-timeline"] {
+  opacity: 0;
+  transition: opacity 0.75s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /**
