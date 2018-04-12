@@ -9,6 +9,12 @@
 namespace gfx {
 
 #if defined(OS_LINUX)
+const char kTestFontName[] = "Arimo";
+#else
+const char kTestFontName[] = "Arial";
+#endif
+
+#if defined(OS_LINUX)
 const char kSymbolFontName[] = "DejaVu Sans";
 #else
 const char kSymbolFontName[] = "Symbol";

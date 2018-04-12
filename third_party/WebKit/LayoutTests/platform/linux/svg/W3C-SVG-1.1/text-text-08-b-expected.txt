@@ -2,19 +2,19 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (19,-4.19) size 465x257.98
-      LayoutSVGText {text} at (19,-4.19) size 389.39x78 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,-4.19) size 389.39x78
-          chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 389.40: "Normal Text"
-      LayoutSVGText {text} at (19,55.80) size 343.80x78 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,55.80) size 343.80x78
-          chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 343.80: "Fill opacity"
-      LayoutSVGText {text} at (19,115.80) size 465x78 contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,115.80) size 465x78
-          chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 465.00: "Stroke opacity"
-      LayoutSVGText {text} at (19,175.80) size 243x78 [opacity=0.50] contains 1 chunk(s)
-        LayoutSVGInlineText {#text} at (19,175.80) size 243x78 [opacity=0.50]
-          chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 243.00: "Opacity"
+    LayoutSVGContainer {g} at (19,2.39) size 409.80x251.39
+      LayoutSVGText {text} at (19,2.39) size 343.80x71.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,2.39) size 343.80x71.39
+          chunk 1 text run 1 at (19.00,60.00) startOffset 0 endOffset 11 width 343.80: "Normal Text"
+      LayoutSVGText {text} at (19,62.39) size 305.39x71.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,62.39) size 305.39x71.39
+          chunk 1 text run 1 at (19.00,120.00) startOffset 0 endOffset 12 width 305.40: "Fill opacity"
+      LayoutSVGText {text} at (19,122.39) size 409.80x71.39 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,122.39) size 409.80x71.39
+          chunk 1 text run 1 at (19.00,180.00) startOffset 0 endOffset 14 width 409.80: "Stroke opacity"
+      LayoutSVGText {text} at (19,182.39) size 219x71.39 [opacity=0.50] contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (19,182.39) size 219x71.39 [opacity=0.50]
+          chunk 1 text run 1 at (19.00,240.00) startOffset 0 endOffset 7 width 219.00: "Opacity"
     LayoutSVGText {text} at (10,304) size 268.19x45.59 contains 1 chunk(s)
       LayoutSVGInlineText {#text} at (10,304) size 268.19x45.59
         chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 268.20: "$Revision: 1.3 $"
