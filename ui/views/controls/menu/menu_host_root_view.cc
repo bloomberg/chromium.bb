@@ -14,40 +14,41 @@ MenuHostRootView::MenuHostRootView(Widget* widget, SubmenuView* submenu)
     : internal::RootView(widget), submenu_(submenu) {}
 
 bool MenuHostRootView::OnMousePressed(const ui::MouseEvent& event) {
-  return GetMenuController() &&
-         GetMenuController()->OnMousePressed(submenu_, event);
+  return GetMenuControllerForInputEvents() &&
+         GetMenuControllerForInputEvents()->OnMousePressed(submenu_, event);
 }
 
 bool MenuHostRootView::OnMouseDragged(const ui::MouseEvent& event) {
-  return GetMenuController() &&
-         GetMenuController()->OnMouseDragged(submenu_, event);
+  return GetMenuControllerForInputEvents() &&
+         GetMenuControllerForInputEvents()->OnMouseDragged(submenu_, event);
 }
 
 void MenuHostRootView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (GetMenuController())
-    GetMenuController()->OnMouseReleased(submenu_, event);
+  if (GetMenuControllerForInputEvents())
+    GetMenuControllerForInputEvents()->OnMouseReleased(submenu_, event);
 }
 
 void MenuHostRootView::OnMouseMoved(const ui::MouseEvent& event) {
-  if (GetMenuController())
-    GetMenuController()->OnMouseMoved(submenu_, event);
+  if (GetMenuControllerForInputEvents())
+    GetMenuControllerForInputEvents()->OnMouseMoved(submenu_, event);
 }
 
 bool MenuHostRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
-  return GetMenuController() &&
-      GetMenuController()->OnMouseWheel(submenu_, event);
+  return GetMenuControllerForInputEvents() &&
+         GetMenuControllerForInputEvents()->OnMouseWheel(submenu_, event);
 }
 
 View* MenuHostRootView::GetTooltipHandlerForPoint(const gfx::Point& point) {
-  return GetMenuController()
-             ? GetMenuController()->GetTooltipHandlerForPoint(submenu_, point)
+  return GetMenuControllerForInputEvents()
+             ? GetMenuControllerForInputEvents()->GetTooltipHandlerForPoint(
+                   submenu_, point)
              : nullptr;
 }
 
 void MenuHostRootView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (GetMenuController())
-    GetMenuController()->ViewHierarchyChanged(submenu_, details);
+  if (GetMenuControllerForInputEvents())
+    GetMenuControllerForInputEvents()->ViewHierarchyChanged(submenu_, details);
   RootView::ViewHierarchyChanged(details);
 }
 
@@ -85,6 +86,12 @@ void MenuHostRootView::OnEventProcessingFinished(ui::Event* event) {
 
 MenuController* MenuHostRootView::GetMenuController() {
   return submenu_ ? submenu_->GetMenuItem()->GetMenuController() : NULL;
+}
+
+MenuController* MenuHostRootView::GetMenuControllerForInputEvents() {
+  return GetMenuController() && GetMenuController()->CanProcessInputEvents()
+             ? GetMenuController()
+             : nullptr;
 }
 
 }  // namespace views
