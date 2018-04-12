@@ -105,7 +105,6 @@ UserInputMonitorLinuxCore::~UserInputMonitorLinuxCore() {
 void UserInputMonitorLinuxCore::WillDestroyCurrentMessageLoop() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   StopMonitor();
-  StopMonitor();
 }
 
 size_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
@@ -200,8 +199,6 @@ void UserInputMonitorLinuxCore::StopMonitor() {
     XFree(x_record_range_);
     x_record_range_ = NULL;
   }
-  if (x_record_range_)
-    return;
 
   // Context must be disabled via the control channel because we can't send
   // any X protocol traffic over the data channel while it's recording.
