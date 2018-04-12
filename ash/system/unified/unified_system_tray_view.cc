@@ -16,6 +16,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/painter.h"
 
 namespace ash {
 
@@ -81,10 +82,12 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   auto* layout = SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
 
-  SetBackground(
-      views::CreateSolidBackground(app_list::features::IsBackgroundBlurEnabled()
-                                       ? kUnifiedMenuBackgroundColorWithBlur
-                                       : kUnifiedMenuBackgroundColor));
+  SetBackground(views::CreateBackgroundFromPainter(
+      views::Painter::CreateSolidRoundRectPainter(
+          app_list::features::IsBackgroundBlurEnabled()
+              ? kUnifiedMenuBackgroundColorWithBlur
+              : kUnifiedMenuBackgroundColor,
+          kUnifiedTrayCornerRadius)));
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
