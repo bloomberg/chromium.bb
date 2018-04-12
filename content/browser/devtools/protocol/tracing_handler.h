@@ -26,10 +26,14 @@ namespace base {
 class Timer;
 }
 
+namespace media {
+class VideoFrame;
+}
+
 namespace content {
 
 class DevToolsAgentHostImpl;
-class DevToolsFrameTraceRecorderForViz;
+class DevToolsVideoConsumer;
 class DevToolsIOContext;
 class FrameTreeNode;
 class NavigationHandleImpl;
@@ -92,7 +96,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   void OnMemoryDumpFinished(std::unique_ptr<RequestMemoryDumpCallback> callback,
                             bool success,
                             uint64_t dump_id);
-
+  void OnFrameFromVideoConsumer(scoped_refptr<media::VideoFrame> frame);
   // Assuming that the input is a potentially incomplete string representation
   // of a comma separated list of JSON objects, return the longest prefix that
   // is a valid list and store the rest to be used in subsequent calls.
@@ -119,7 +123,8 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   bool return_as_stream_;
   bool gzip_compression_;
   TraceDataBufferState trace_data_buffer_state_;
-  std::unique_ptr<DevToolsFrameTraceRecorderForViz> frame_trace_recorder_;
+  std::unique_ptr<DevToolsVideoConsumer> video_consumer_;
+  int number_of_screenshots_from_video_consumer_ = 0;
   base::WeakPtrFactory<TracingHandler> weak_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(TracingHandlerTest,
