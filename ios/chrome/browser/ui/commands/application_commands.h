@@ -65,9 +65,6 @@
 
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;
-// Deprecated |-startVoiceSearchCommand|.
-// TODO(crbug.com/805123): Remove this command.
-- (void)startVoiceSearch:(StartVoiceSearchCommand*)command;
 
 // Shows the History UI.
 - (void)showHistory;

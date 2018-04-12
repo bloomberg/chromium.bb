@@ -16,7 +16,6 @@ source_set("voice") {
     "voice_search_language.mm",
     "voice_search_prefs.cc",
     "voice_search_prefs.h",
-    "voice_search_presenter.h",
     "voice_search_provider.h",
     "voice_search_provider.mm",
   ]
