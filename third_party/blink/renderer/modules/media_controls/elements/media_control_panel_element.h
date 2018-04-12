@@ -25,6 +25,8 @@ class MediaControlPanelElement final : public MediaControlDivElement {
   void MakeOpaque();
   void MakeTransparent();
 
+  void SetKeepDisplayedForAccessibility(bool);
+
  private:
   void DefaultEventHandler(Event*) override;
   bool KeepEventInNode(Event*) override;
@@ -36,6 +38,7 @@ class MediaControlPanelElement final : public MediaControlDivElement {
 
   bool is_displayed_ = false;
   bool opaque_ = true;
+  bool keep_displayed_for_accessibility_ = false;
 
   TaskRunnerTimer<MediaControlPanelElement> transition_timer_;
 };

@@ -68,6 +68,10 @@ void MediaControlPanelElement::MakeTransparent() {
   StartTimer();
 }
 
+void MediaControlPanelElement::SetKeepDisplayedForAccessibility(bool value) {
+  keep_displayed_for_accessibility_ = value;
+}
+
 void MediaControlPanelElement::DefaultEventHandler(Event* event) {
   // Suppress the media element activation behavior (toggle play/pause) when
   // any part of the control panel is clicked.
@@ -97,7 +101,7 @@ void MediaControlPanelElement::StopTimer() {
 }
 
 void MediaControlPanelElement::TransitionTimerFired(TimerBase*) {
-  if (!opaque_)
+  if (!opaque_ && !keep_displayed_for_accessibility_)
     SetIsWanted(false);
 
   StopTimer();
