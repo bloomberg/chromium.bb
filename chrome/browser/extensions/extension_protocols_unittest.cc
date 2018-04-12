@@ -40,6 +40,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -120,22 +121,13 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
 }
 
 scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
-  base::DictionaryValue manifest;
-  manifest.SetString("name", "An extension with web-accessible resources");
-  manifest.SetString("version", "2");
-
-  auto web_accessible_list = std::make_unique<base::ListValue>();
-  web_accessible_list->AppendString("test.dat");
-  manifest.Set("web_accessible_resources", std::move(web_accessible_list));
-
-  base::FilePath path = GetTestPath("response_headers");
-
-  std::string error;
-  scoped_refptr<Extension> extension(
-      Extension::Create(path, Manifest::UNPACKED, manifest,
-                        Extension::NO_FLAGS, &error));
-  EXPECT_TRUE(extension.get()) << error;
-  return extension;
+  DictionaryBuilder web_accessible_resources;
+  web_accessible_resources.Set("web_accessible_resources",
+                               ListBuilder().Append("test.dat").Build());
+  return ExtensionBuilder("An extension with web-accessible resources")
+      .MergeManifest(web_accessible_resources.Build())
+      .SetPath(GetTestPath("response_headers"))
+      .Build();
 }
 
 // Helper function to create a |ResourceRequest| for testing purposes.

@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,20 +29,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
   base::FilePath path;
   PathService::Get(DIR_TEST_DATA, &path);
 
-  base::DictionaryValue manifest;
-  manifest.SetString(keys::kVersion, "1.0.0.0");
-  manifest.SetString(keys::kName, name);
-
-  std::string error;
-  scoped_refptr<Extension> extension =
-      Extension::Create(path.AppendASCII(name),
-                        Manifest::INVALID_LOCATION,
-                        manifest,
-                        Extension::NO_FLAGS,
-                        &error);
-  EXPECT_TRUE(extension.get()) << error;
-
-  return extension;
+  return ExtensionBuilder(name).SetPath(path.AppendASCII(name)).Build();
 }
 
 // Test that the InfoMap handles refcounting properly.

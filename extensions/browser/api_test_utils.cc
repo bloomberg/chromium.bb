@@ -114,7 +114,12 @@ scoped_refptr<Extension> CreateExtension(
 scoped_refptr<Extension> CreateEmptyExtensionWithLocation(
     Manifest::Location location) {
   std::unique_ptr<base::DictionaryValue> test_extension_value =
-      ParseDictionary("{\"name\": \"Test\", \"version\": \"1.0\"}");
+      ParseDictionary(R"(
+          {
+            "name": "Test",
+            "version": "1.0",
+            "manifest_version": 2
+          })");
   return CreateExtension(location, test_extension_value.get(), std::string());
 }
 

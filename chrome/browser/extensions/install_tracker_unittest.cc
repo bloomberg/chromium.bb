@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/install_tracker.h"
+
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/active_install_data.h"
-#include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,20 +29,10 @@ const char kExtensionId2[] = "ahionppacfhbbmpmlcbkdgcpokfpflji";
 const char kExtensionId3[] = "ladmcjmmmmgonboiadnaindoekpbljde";
 
 scoped_refptr<Extension> CreateDummyExtension(const std::string& id) {
-  base::DictionaryValue manifest;
-  manifest.SetString(extensions::manifest_keys::kVersion, "1.0");
-  manifest.SetString(extensions::manifest_keys::kName, "Dummy name");
-
-  std::string error;
-  scoped_refptr<Extension> extension;
-  extension = Extension::Create(base::FilePath(),
-                                extensions::Manifest::INTERNAL,
-                                manifest,
-                                Extension::NO_FLAGS,
-                                id,
-                                &error);
-  EXPECT_TRUE(extension.get()) << "Error creating extension: " << error;
-  return extension;
+  return extensions::ExtensionBuilder("Dummy name")
+      .SetLocation(extensions::Manifest::INTERNAL)
+      .SetID(id)
+      .Build();
 }
 
 }  // namespace

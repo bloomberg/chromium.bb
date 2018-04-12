@@ -19,8 +19,10 @@
 
 namespace {
 
-const char kManifest[] = "{"
+const char kManifest[] =
+    "{"
     " \"version\" : \"1.0.0.0\","
+    " \"manifest_version\" : 2,"
     " \"name\" : \"Test\","
     " \"chrome_settings_overrides\" : {"
     "   \"homepage\" : \"http://www.homepage.com\","
@@ -40,6 +42,7 @@ const char kManifest[] = "{"
 const char kPrepopulatedManifest[] =
     "{"
     " \"version\" : \"1.0.0.0\","
+    " \"manifest_version\" : 2,"
     " \"name\" : \"Test\","
     " \"chrome_settings_overrides\" : {"
     "   \"search_provider\" : {"
@@ -50,8 +53,10 @@ const char kPrepopulatedManifest[] =
     "  }"
     "}";
 
-const char kBrokenManifest[] = "{"
+const char kBrokenManifest[] =
+    "{"
     " \"version\" : \"1.0.0.0\","
+    " \"manifest_version\" : 2,"
     " \"name\" : \"Test\","
     " \"chrome_settings_overrides\" : {"
     "   \"homepage\" : \"{invalid}\","

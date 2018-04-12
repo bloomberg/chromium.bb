@@ -342,6 +342,7 @@ class MockService : public TestExtensionService {
                          base::StringPrintf("%d.0.0.0", i));
       manifest.SetString(manifest_keys::kName,
                          base::StringPrintf("Extension %d.%d", id, i));
+      manifest.SetInteger(manifest_keys::kManifestVersion, 2);
       if (update_url)
         manifest.SetString(manifest_keys::kUpdateURL, *update_url);
       scoped_refptr<Extension> e =

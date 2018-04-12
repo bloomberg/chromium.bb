@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 
@@ -61,25 +62,16 @@ class IdentityApiTest : public ApiUnitTest {
   // testing::Test:
   void SetUp() override {
     ApiUnitTest::SetUp();
+    DictionaryBuilder oauth2;
+    oauth2.Set("client_id", "123456.apps.googleusercontent.com")
+        .Set("scopes", ListBuilder()
+                           .Append("https://www.googleapis.com/auth/drive")
+                           .Build());
     // Create an extension with OAuth2 scopes.
     set_extension(
-        ExtensionBuilder()
-            .SetManifest(
-                DictionaryBuilder()
-                    .Set("name", "Test")
-                    .Set("version", "1.0")
-                    .Set("oauth2",
-                         DictionaryBuilder()
-                             .Set("client_id",
-                                  "123456.apps.googleusercontent.com")
-                             .Set("scopes",
-                                  ListBuilder()
-                                      .Append("https://www.googleapis.com/"
-                                              "auth/drive")
-                                      .Build())
-                             .Build())
-                    .Build())
-            .SetLocation(Manifest::UNPACKED)
+        ExtensionBuilder("Test")
+            .MergeManifest(
+                DictionaryBuilder().Set("oauth2", oauth2.Build()).Build())
             .Build());
   }
 };

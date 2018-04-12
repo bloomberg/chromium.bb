@@ -237,6 +237,7 @@ class ExtensionManagementServiceTest : public testing::Test {
     base::DictionaryValue manifest_dict;
     manifest_dict.SetString(manifest_keys::kName, "test");
     manifest_dict.SetString(manifest_keys::kVersion, version);
+    manifest_dict.SetInteger(manifest_keys::kManifestVersion, 2);
     manifest_dict.SetString(manifest_keys::kUpdateURL, update_url);
     std::string error;
     scoped_refptr<const Extension> extension =
@@ -275,6 +276,7 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
                                  base::DictionaryValue* values) {
     values->SetString(extensions::manifest_keys::kName, "test");
     values->SetString(extensions::manifest_keys::kVersion, "0.1");
+    values->SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     std::string error;
     extension_ = Extension::Create(base::FilePath(), location, *values,
                                    Extension::NO_FLAGS, &error);

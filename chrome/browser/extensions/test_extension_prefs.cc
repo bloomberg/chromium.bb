@@ -142,6 +142,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtension(
   base::DictionaryValue dictionary;
   dictionary.SetString(manifest_keys::kName, name);
   dictionary.SetString(manifest_keys::kVersion, "0.1");
+  dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
   return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
 }
 

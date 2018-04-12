@@ -32,6 +32,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
   base::DictionaryValue manifest;
   manifest.SetString("name", name);
   manifest.SetString("version", "1");
+  manifest.SetInteger("manifest_version", 2);
 
   if (!launch_url.empty())
     manifest.SetString("app.launch.web_url", launch_url);

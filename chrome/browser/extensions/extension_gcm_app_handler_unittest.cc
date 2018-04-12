@@ -55,6 +55,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -281,18 +282,12 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
 
   // Returns a barebones test extension.
   scoped_refptr<Extension> CreateExtension() {
-    base::DictionaryValue manifest;
-    manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
-    manifest.SetString(manifest_keys::kName, kTestExtensionName);
-    auto permission_list = std::make_unique<base::ListValue>();
-    permission_list->AppendString("gcm");
-    manifest.Set(manifest_keys::kPermissions, std::move(permission_list));
-
-    std::string error;
-    scoped_refptr<Extension> extension = Extension::Create(
-        temp_dir_.GetPath(), Manifest::UNPACKED, manifest, Extension::NO_FLAGS,
-        "ldnnhddmnhbkjipkidpdiheffobcpfmf", &error);
-    EXPECT_TRUE(extension.get()) << error;
+    scoped_refptr<Extension> extension =
+        ExtensionBuilder(kTestExtensionName)
+            .AddPermission("gcm")
+            .SetPath(temp_dir_.GetPath())
+            .SetID("ldnnhddmnhbkjipkidpdiheffobcpfmf")
+            .Build();
     EXPECT_TRUE(
         extension->permissions_data()->HasAPIPermission(APIPermission::kGcm));
 

@@ -33,11 +33,8 @@ class ShellSystemLogsFetcherTest : public ExtensionsTest {
   scoped_refptr<Extension> BuildExtension(const std::string& name,
                                           const std::string& version,
                                           const std::string& id) {
-    return ExtensionBuilder()
-        .SetManifest(DictionaryBuilder()
-                         .Set("name", name)
-                         .Set("version", version)
-                         .Build())
+    return ExtensionBuilder(name)
+        .MergeManifest(DictionaryBuilder().Set("version", version).Build())
         .SetID(id)
         .Build();
   }

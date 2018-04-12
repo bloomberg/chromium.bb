@@ -56,6 +56,7 @@ class RequirementsCheckerTest : public ExtensionsTest {
   void CreateExtension() {
     manifest_dict_->SetString("name", "dummy name");
     manifest_dict_->SetString("version", "1");
+    manifest_dict_->SetInteger("manifest_version", 2);
 
     std::string error;
     extension_ =

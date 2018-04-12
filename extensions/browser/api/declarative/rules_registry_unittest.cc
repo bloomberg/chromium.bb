@@ -127,15 +127,8 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   EXPECT_EQ(kRuleId, *get_rules_4b[0]->id);
 
   // Create extension
-  std::unique_ptr<base::DictionaryValue> manifest = ParseDictionary(
-      "{"
-      "  \"name\": \"Test\","
-      "  \"version\": \"1\""
-      "}");
-  scoped_refptr<Extension> extension = ExtensionBuilder()
-                                           .SetManifest(std::move(manifest))
-                                           .SetID(kExtensionId)
-                                           .Build();
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder("Test").SetID(kExtensionId).Build();
   registry->OnExtensionUninstalled(extension.get());
   EXPECT_EQ(0u /*extensions*/ + 0u /*rules*/,
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
@@ -189,6 +182,7 @@ TEST(RulesRegistryTest, TwoRulesInManifest) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": ["
       "    {"
       "      \"id\": \"000\","
@@ -269,6 +263,7 @@ TEST(RulesRegistryTest, DeleteRuleInManifest) {
       "{"
       "  \"name\": \"Test\","
       "  \"version\": \"1\","
+      "  \"manifest_version\": 2,"
       "  \"event_rules\": [{"
       "    \"id\":  \"manifest_rule_0\","
       "    \"event\": \"declarativeContent.onPageChanged\","

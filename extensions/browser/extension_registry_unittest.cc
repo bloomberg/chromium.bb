@@ -280,6 +280,7 @@ TEST_F(ExtensionRegistryTest, TerminatedExtensionStoredVersion) {
           .SetManifest(DictionaryBuilder()
                            .Set("name", "Test")
                            .Set("version", kVersionString)
+                           .Set("manifest_version", 2)
                            .Build())
           .Build();
   const ExtensionId extension_id = extension->id();

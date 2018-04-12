@@ -19,6 +19,7 @@
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,14 +77,7 @@ class PolicyCheckTest : public ExtensionsTest {
     // Replace the MockExtensionSystemFactory set by ExtensionsTest.
     extensions_browser_client()->set_extension_system_factory(&factory_);
 
-    base::DictionaryValue manifest_dict;
-    manifest_dict.SetString("name", "dummy name");
-    manifest_dict.SetString("version", "1");
-    std::string error;
-
-    extension_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                   manifest_dict, Extension::NO_FLAGS, &error);
-    EXPECT_TRUE(extension_.get()) << error;
+    extension_ = ExtensionBuilder("dummy name").Build();
   }
 
  protected:
