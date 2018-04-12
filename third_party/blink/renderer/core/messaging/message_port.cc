@@ -27,6 +27,8 @@
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 
 #include <memory>
+
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"

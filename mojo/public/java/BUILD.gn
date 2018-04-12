@@ -66,3 +66,13 @@ android_library("bindings_java") {
 
   srcjar_deps = [ "../interfaces/bindings:bindings_java_sources" ]
 }
+
+android_library("base_java") {
+  java_files = [ "base/src/org/chromium/mojo_base/BigBufferUtil.java" ]
+
+  deps = [
+    ":system_java",
+    "//mojo/android:system_java",
+    "//mojo/public/mojom/base:base_java",
+  ]
+}

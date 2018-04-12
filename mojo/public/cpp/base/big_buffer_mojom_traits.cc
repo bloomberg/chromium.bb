@@ -89,4 +89,58 @@ bool UnionTraits<mojo_base::mojom::BigBufferDataView, mojo_base::BigBuffer>::
   return false;
 }
 
+// static
+mojo_base::mojom::BigBufferDataView::Tag UnionTraits<
+    mojo_base::mojom::BigBufferDataView,
+    mojo_base::BigBufferView>::GetTag(const mojo_base::BigBufferView& view) {
+  switch (view.storage_type()) {
+    case mojo_base::BigBuffer::StorageType::kBytes:
+      return mojo_base::mojom::BigBufferDataView::Tag::BYTES;
+    case mojo_base::BigBuffer::StorageType::kSharedMemory:
+      return mojo_base::mojom::BigBufferDataView::Tag::SHARED_MEMORY;
+  }
+
+  NOTREACHED();
+  return mojo_base::mojom::BigBufferDataView::Tag::BYTES;
+}
+
+// static
+base::span<const uint8_t> UnionTraits<
+    mojo_base::mojom::BigBufferDataView,
+    mojo_base::BigBufferView>::bytes(const mojo_base::BigBufferView& view) {
+  return view.bytes();
+}
+
+// static
+mojo_base::internal::BigBufferSharedMemoryRegion& UnionTraits<
+    mojo_base::mojom::BigBufferDataView,
+    mojo_base::BigBufferView>::shared_memory(mojo_base::BigBufferView& view) {
+  return view.shared_memory();
+}
+
+// static
+bool UnionTraits<
+    mojo_base::mojom::BigBufferDataView,
+    mojo_base::BigBufferView>::Read(mojo_base::mojom::BigBufferDataView data,
+                                    mojo_base::BigBufferView* out) {
+  switch (data.tag()) {
+    case mojo_base::mojom::BigBufferDataView::Tag::BYTES: {
+      mojo::ArrayDataView<uint8_t> bytes_view;
+      data.GetBytesDataView(&bytes_view);
+      out->SetBytes(bytes_view);
+      return true;
+    }
+
+    case mojo_base::mojom::BigBufferDataView::Tag::SHARED_MEMORY: {
+      mojo_base::internal::BigBufferSharedMemoryRegion shared_memory;
+      if (!data.ReadSharedMemory(&shared_memory))
+        return false;
+      out->SetSharedMemory(std::move(shared_memory));
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace mojo

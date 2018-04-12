@@ -921,6 +921,34 @@ public class PostMessageTest {
         Assert.assertEquals("12", channelContainer.getMessage());
     }
 
+    // Make sure very large messages can be sent and received.
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Android-PostMessage"})
+    public void testVeryLargeMessage() throws Throwable {
+        mWebServer.setResponse(IFRAME_URL, ECHO_PAGE, null);
+        mActivityTestRule.triggerPopup(mAwContents, mContentsClient, mWebServer,
+                MAIN_PAGE_FOR_POPUP_TEST, POPUP_PAGE_WITH_IFRAME, POPUP_URL, "createPopup()");
+        mActivityTestRule.connectPendingPopup(mAwContents);
+        final ChannelContainer channelContainer = new ChannelContainer();
+
+        final StringBuilder longMessageBuilder = new StringBuilder();
+        for (int i = 0; i < 100000; ++i) longMessageBuilder.append(HELLO);
+        final String longMessage = longMessageBuilder.toString();
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            AppWebMessagePort[] channel = mAwContents.createMessageChannel();
+            channelContainer.set(channel);
+            channel[0].setMessageCallback(
+                    (message, sentPorts) -> channelContainer.setMessage(message), null);
+            mAwContents.postMessageToFrame(null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(),
+                    new AppWebMessagePort[] {channel[1]});
+            channel[0].postMessage(longMessage, null);
+        });
+        channelContainer.waitForMessage();
+        Assert.assertEquals(longMessage + JS_MESSAGE, channelContainer.getMessage());
+    }
+
     // Make sure messages are dispatched on the correct looper.
     @Test
     @SmallTest

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_MESSAGING_BLINK_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
 
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/array_traits_wtf_vector.h"
 #include "mojo/public/cpp/bindings/string_traits_wtf.h"
 #include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
@@ -18,9 +19,9 @@ namespace mojo {
 template <>
 struct CORE_EXPORT StructTraits<blink::mojom::blink::CloneableMessage::DataView,
                                 blink::BlinkCloneableMessage> {
-  static base::span<const uint8_t> encoded_message(
+  static mojo_base::BigBuffer encoded_message(
       blink::BlinkCloneableMessage& input) {
-    return input.message->GetWireData();
+    return mojo_base::BigBuffer(input.message->GetWireData());
   }
 
   static Vector<scoped_refptr<blink::BlobDataHandle>> blobs(

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
 #define THIRD_PARTY_WEBKIT_COMMON_MESSAGE_PORT_CLONEABLE_MESSAGE_STRUCT_TRAITS_H_
 
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/common/message_port/cloneable_message.h"
 #include "third_party/blink/public/mojom/message_port/message_port.mojom.h"
 
@@ -14,7 +15,7 @@ template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::CloneableMessage::DataView,
                  blink::CloneableMessage> {
-  static base::span<const uint8_t> encoded_message(
+  static mojo_base::BigBufferView encoded_message(
       blink::CloneableMessage& input);
 
   static std::vector<blink::mojom::SerializedBlobPtr>& blobs(

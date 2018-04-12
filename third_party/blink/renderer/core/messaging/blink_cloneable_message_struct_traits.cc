@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message_struct_traits.h"
 
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 
 namespace mojo {
@@ -22,8 +23,10 @@ bool StructTraits<blink::mojom::blink::CloneableMessage::DataView,
                   blink::BlinkCloneableMessage>::
     Read(blink::mojom::blink::CloneableMessage::DataView data,
          blink::BlinkCloneableMessage* out) {
-  mojo::ArrayDataView<uint8_t> message_data;
-  data.GetEncodedMessageDataView(&message_data);
+  mojo_base::BigBufferView message_view;
+  if (!data.ReadEncodedMessage(&message_view))
+    return false;
+  auto message_data = message_view.data();
   out->message = blink::SerializedScriptValue::Create(
       reinterpret_cast<const char*>(message_data.data()), message_data.size());
 

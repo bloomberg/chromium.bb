@@ -26,9 +26,9 @@ struct BLINK_COMMON_EXPORT
     return blink::MessagePortChannel::ReleaseHandles(input.ports);
   }
 
-  static const std::vector<blink::mojom::SerializedArrayBufferContentsPtr>&
+  static std::vector<blink::mojom::SerializedArrayBufferContentsPtr>
   array_buffer_contents_array(blink::TransferableMessage& input) {
-    return input.array_buffer_contents_array;
+    return std::move(input.array_buffer_contents_array);
   }
 
   static const std::vector<SkBitmap>& image_bitmap_contents_array(
