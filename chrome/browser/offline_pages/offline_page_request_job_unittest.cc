@@ -1322,7 +1322,7 @@ TEST_F(OfflinePageRequestJobTest, DoNotLoadOfflinePageOnConnectedNetwork) {
                                 AGGREGATED_REQUEST_RESULT_MAX);
 }
 
-TEST_F(OfflinePageRequestJobTest, LoadMostRecentlyCreatedOfflinePage) {
+TEST_F(OfflinePageRequestJobTest, DISABLED_LoadMostRecentlyCreatedOfflinePage) {
   SimulateHasNetworkConnectivity(false);
 
   // Save 2 offline pages associated with same online URL, but pointing to
@@ -1384,7 +1384,7 @@ TEST_F(OfflinePageRequestJobTest, FailToLoadByOfflineIDOnUrlMismatch) {
                                 PAGE_NOT_FOUND_ON_CONNECTED_NETWORK);
 }
 
-TEST_F(OfflinePageRequestJobTest, LoadOfflinePageForUrlWithFragment) {
+TEST_F(OfflinePageRequestJobTest, DISABLED_LoadOfflinePageForUrlWithFragment) {
   SimulateHasNetworkConnectivity(false);
 
   // Save an offline page associated with online URL without fragment.
