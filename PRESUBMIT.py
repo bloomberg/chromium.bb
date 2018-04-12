@@ -337,7 +337,9 @@ _BANNED_CPP_FUNCTIONS = (
         'Specify libraries to link with in build files and not in the source.',
       ),
       True,
-      (),
+      (
+          r'^third_party[\\\/]abseil-cpp[\\\/].*',
+      ),
     ),
     (
       'base::SequenceChecker',
