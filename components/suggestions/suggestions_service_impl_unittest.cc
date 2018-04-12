@@ -91,6 +91,7 @@ class MockSyncService : public syncer::FakeSyncService {
   MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
   MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
+  MOCK_CONST_METHOD0(GetLastCycleSnapshot, syncer::SyncCycleSnapshot());
 };
 
 class TestSuggestionsStore : public suggestions::SuggestionsStore {
@@ -174,6 +175,14 @@ class SuggestionsServiceTest : public testing::Test {
         .Times(AnyNumber())
         .WillRepeatedly(
             Return(syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)));
+    EXPECT_CALL(*sync_service(), GetLastCycleSnapshot())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(syncer::SyncCycleSnapshot(
+            syncer::ModelNeutralState(), syncer::ProgressMarkerMap(), false, 5,
+            2, 7, false, 0, base::Time::Now(), base::Time::Now(),
+            std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
+            std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
+            sync_pb::SyncEnums::UNKNOWN_ORIGIN)));
     // These objects are owned by the SuggestionsService, but we keep the
     // pointers around for testing.
     test_suggestions_store_ = new TestSuggestionsStore();
