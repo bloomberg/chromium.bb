@@ -193,23 +193,25 @@ views::View* BookmarkBubbleView::CreateFootnoteView() {
   if (!SyncPromoUI::ShouldShowSyncPromo(profile_))
     return nullptr;
 
-  base::RecordAction(UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
-
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile_)) {
     footnote_view_ = new DiceBubbleSyncPromoView(
-        profile_, delegate_.get(), IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE,
+        profile_, delegate_.get(),
+        signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+        IDS_BOOKMARK_DICE_PROMO_SIGNIN_MESSAGE,
         IDS_BOOKMARK_DICE_PROMO_SYNC_MESSAGE,
         false /* signin_button_prominent */);
   } else {
-    footnote_view_ =
-        new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
-                                IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
+    footnote_view_ = new BubbleSyncPromoView(
+        delegate_.get(),
+        signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+        IDS_BOOKMARK_SYNC_PROMO_LINK, IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
   }
 #else
-  footnote_view_ =
-      new BubbleSyncPromoView(delegate_.get(), IDS_BOOKMARK_SYNC_PROMO_LINK,
-                              IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
+  footnote_view_ = new BubbleSyncPromoView(
+      delegate_.get(),
+      signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
+      IDS_BOOKMARK_SYNC_PROMO_LINK, IDS_BOOKMARK_SYNC_PROMO_MESSAGE);
 #endif
   return footnote_view_;
 }

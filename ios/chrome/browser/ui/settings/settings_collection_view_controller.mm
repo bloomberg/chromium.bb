@@ -7,7 +7,6 @@
 #include <memory>
 
 #import "base/mac/foundation_util.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -17,6 +16,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/util.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -447,8 +447,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   if (!_hasRecordedSigninImpression) {
     // Once the Settings are open, this button impression will at most be
     // recorded once until they are closed.
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromSettings"));
+    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+        signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
     _hasRecordedSigninImpression = YES;
   }
   AccountSignInItem* signInTextItem =
@@ -750,7 +750,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
 
   switch (itemType) {
     case ItemTypeSignInButton:
-      base::RecordAction(base::UserMetricsAction("Signin_Signin_FromSettings"));
+      signin_metrics::RecordSigninUserActionForAccessPoint(
+          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
       [self showSignInWithIdentity:nil
                        promoAction:signin_metrics::PromoAction::
                                        PROMO_ACTION_NO_SIGNIN_PROMO

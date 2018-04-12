@@ -401,8 +401,15 @@ void LogIsShared(const bool is_shared, const ReportingType type);
 // -----------------------------------------------------------------------------
 
 // Records corresponding sign in user action for an access point.
-void RecordSigninUserActionForAccessPoint(
-    signin_metrics::AccessPoint access_point);
+void RecordSigninUserActionForAccessPoint(AccessPoint access_point);
+
+// Records |Signin_ImpressionWithAccount_From*| user action.
+void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point);
+
+// Records |Signin_Impression{With|No}Account_From*| user action.
+void RecordSigninImpressionWithAccountUserActionForAccessPoint(
+    AccessPoint access_point,
+    bool with_account);
 
 }  // namespace signin_metrics
 

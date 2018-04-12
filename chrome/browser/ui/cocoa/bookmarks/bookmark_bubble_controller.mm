@@ -94,8 +94,8 @@ NSString* const kDoneTouchBarId = @"DONE";
 
   Browser* browser = chrome::FindBrowserWithWindow(self.parentWindow);
   if (SyncPromoUI::ShouldShowSyncPromo(browser->profile())) {
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
+    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+        signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE);
 
     syncPromoController_.reset(
         [[BubbleSyncPromoController alloc]

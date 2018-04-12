@@ -24,6 +24,7 @@
 DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
     Profile* profile,
     BubbleSyncPromoDelegate* delegate,
+    signin_metrics::AccessPoint access_point,
     int no_accounts_promo_message_resource_id,
     int accounts_promo_message_resource_id,
     bool signin_button_prominent)
@@ -72,6 +73,9 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
           tracker_service->GetAccountImage(account.account_id));
     }
   }
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(access_point);
+  signin_metrics::RecordSigninImpressionWithAccountUserActionForAccessPoint(
+      access_point, !accounts.empty() /* with_account */);
   AddChildView(signin_button_view_);
 }
 

@@ -12,9 +12,6 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/sparse_histogram.h"
-#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +23,7 @@
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -41,7 +39,7 @@ bool IsAutofillWarningEntry(int frontend_id) {
          frontend_id == POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
 }
 
-} // anonymous namespace
+}  // namespace
 
 AutofillExternalDelegate::AutofillExternalDelegate(AutofillManager* manager,
                                                    AutofillDriver* driver)
@@ -143,8 +141,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     signin_promo_suggestion.frontend_id =
         POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
     suggestions.push_back(signin_promo_suggestion);
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromAutofillDropdown"));
+    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+        signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
   }
 
 #if !defined(OS_ANDROID)

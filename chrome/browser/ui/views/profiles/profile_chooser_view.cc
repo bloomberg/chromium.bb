@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -1052,8 +1050,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                       IDS_SYNC_START_SYNC_BUTTON_LABEL,
                       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
     extra_links_view->AddChildView(signin_current_profile_button_);
-    base::RecordAction(
-        base::UserMetricsAction("Signin_Impression_FromAvatarBubbleSignin"));
+    signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+        signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
     extra_links_view->SetBorder(views::CreateEmptyBorder(
         0, 0,
         provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),

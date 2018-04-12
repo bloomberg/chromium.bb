@@ -54,6 +54,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/zoom/zoom_controller.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -903,8 +904,8 @@ bool AppMenuModel::AddGlobalErrorMenuItems() {
               error->MenuItemIcon());
       menu_items_added = true;
       if (IDC_SHOW_SIGNIN_ERROR == error->MenuItemCommandID()) {
-        base::RecordAction(
-            base::UserMetricsAction("Signin_Impression_FromMenu"));
+        signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+            signin_metrics::AccessPoint::ACCESS_POINT_MENU);
       }
     }
   }

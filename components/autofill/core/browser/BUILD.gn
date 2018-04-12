@@ -235,6 +235,7 @@ static_library("browser") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/security_state/core",
+    "//components/signin/core/browser:signin_metrics",
     "//components/strings",
     "//components/sync",
     "//components/variations/net",

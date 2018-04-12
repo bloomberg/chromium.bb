@@ -32,8 +32,8 @@ WelcomeHandler::~WelcomeHandler() {
   // construct-time on some platforms because this page is shown immediately
   // after a new installation of Chrome and loads while the user is deciding
   // whether or not to opt in to logging.
-  base::RecordAction(
-      base::UserMetricsAction("Signin_Impression_FromStartPage"));
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
 
   UMA_HISTOGRAM_ENUMERATION("Welcome.SignInPromptResult", result_,
                             WelcomeResult::WELCOME_RESULT_MAX);
