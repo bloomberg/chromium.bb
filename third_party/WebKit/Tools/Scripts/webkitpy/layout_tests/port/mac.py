@@ -94,7 +94,7 @@ class MacPort(base.Port):
 
     def path_to_apache_config_file(self):
         config_file_basename = 'apache2-httpd-' + self._apache_version()
-        if self._version == 'mac10.13':
+        if self.host.platform.os_version == 'mac10.13':
             config_file_basename += '-php7'
         return self._filesystem.join(self.apache_config_directory(), config_file_basename + '.conf')
 
