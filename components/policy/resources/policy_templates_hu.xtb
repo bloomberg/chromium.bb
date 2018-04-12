@@ -58,17 +58,6 @@
 
       Ha használatban van a házirend, akkor a felhasználó minden nyomtatót használhat, kivéve azokat, amelyek azonosítója szerepel a házirend felsorolásában.
       </translation>
-<translation id="1181881366217399113">
-      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
-      Ha a házirend engedélyezve van, a vesszővel tagolt listán lévő összes
-      megnevezett eredet a saját folyamatát futtatja. A megnevezett eredetek el is
-      különülnek aldomainek szerint; pl. a https://example.com/ megadásával a
-      https://foo.example.com/ webhely is el lesz szigetelve a
-      https://example.com/ webhely részeként.
-      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
-      Ha a házirend nincs konfigurálva, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> rendszer alatt ajánlott ugyanerre az értékre beállítani a(z) <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirendet. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      </translation>
 <translation id="1198465924256827162">Milyen gyakran küld állapotfrissítéseket az eszköz (ezredmásodpercben).
 
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
@@ -663,17 +652,6 @@
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a képernyő kikapcsolásának késleltetésénél (ha be van állítva) és a tétlenségi késleltetésnél.</translation>
 <translation id="2987155890997901449">ARC engedélyezése</translation>
 <translation id="2987227569419001736">A Web Bluetooth API használatának irányítása</translation>
-<translation id="2998886474614739865">
-      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. Ehhez hasonló a következő házirend, amely a felhasználói munkamenetre vonatkozik: <ph name="ISOLATE_ORIGINS_POLICY_NAME" />. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni igyekszik a felhasználói házirend által meghatározott értéket.
-      Ha a házirend engedélyezve van, a vesszővel tagolt listán lévő összes
-      megnevezett eredet a saját folyamatát futtatja. A megnevezett eredetek el is
-      különülnek aldomainek szerint; pl. a https://example.com/ megadásával a
-      https://foo.example.com/ webhely is el lesz szigetelve a
-      https://example.com/ webhely részeként.
-      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
-      Ha a házirend nincs beállítva, akkor a rendszer az operációs rendszer alapértelmezett webhely-elszigetelési beállításait fogja használni a bejelentkezési képernyőn.
-      </translation>
 <translation id="3016255526521614822">A(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén engedélyezett jegyzetkészítő alkalmazások engedélyezőlistára tétele</translation>
 <translation id="3021562480854470924">A visszaállításnál engedélyezett mérföldkövek száma</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
@@ -777,17 +755,6 @@
 
           Ha a házirend egy nem üres karakterláncként van meghatározva, akkor a rendszer azt a karakterláncot használja a(z) <ph name="PRODUCT_NAME" /> céljának neveként. Egyébként az eszköz neve lesz a cél neve. Ha a házirend nincs beállítva, a cél neve az eszköz neve lesz, az eszköz tulajdonosának (vagy az eszközt kezelő domain felhasználójának) pedig lehetősége lesz módosítani. A név hossza legfeljebb 24 karakter lehet.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
-<translation id="3386001018488754001">
-      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
-      Ez a házirend a bejelentkezési képernyőre vonatkozik. Ehhez hasonló a következő házirend, amely a felhasználói munkamenetre vonatkozik: <ph name="SITE_PER_PROCESS_POLICY_NAME" />. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni igyekszik a felhasználói házirend által meghatározott értéket.
-      Ha szeretné használni az elszigetelést, mégis kisebb hatást gyakorolna a
-      felhasználókra, tekintse meg az IsolateOrigins házirend beállításait, melynek
-      listáján az elszigetelni kívánt webhelyek vannak. Ez a beállítás,
-      a SitePerProcess, az összes webhelyet elszigeteli.
-      Ha a házirend engedélyezve van, minden webhely a saját folyamatát futtatja.
-      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
-      Ha a házirend nincs konfigurálva, a felhasználó módosíthatja ezt a beállítást.
-      </translation>
 <translation id="3395348522300156660">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
 
       A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_WHITELIST" /> lehetőség van kiválasztva a(z) <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> házirendnél.
@@ -1376,17 +1343,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelvet nem állítja be, vagy üres karakterláncot, illetve érvénytelen porttartományt ad meg, akkor a WebRTC bármelyik rendelkezésre álló helyi UDP-portot használhatja.</translation>
 <translation id="5290940294294002042">Adja meg a felhasználó által be- vagy kikapcsolható bővítmények listáját</translation>
-<translation id="5301787427319106606">
-      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
-      Ha szeretné használni az elszigetelést, mégis kisebb hatást gyakorolna a
-      felhasználókra, tekintse meg az IsolateOrigins házirend beállításait, melynek
-      listáján az elszigetelni kívánt webhelyek vannak. Ez a beállítás,
-      a SitePerProcess, az összes webhelyet elszigeteli.
-      Ha a házirend engedélyezve van, minden webhely a saját folyamatát futtatja.
-      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
-      Ha a házirend nincs konfigurálva, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> rendszer alatt ajánlott ugyanerre az értékre beállítani a(z) <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirendet. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni igyekszik a felhasználói házirend által meghatározott értéket.
-      </translation>
 <translation id="5302612588919538756">Ez a házirend elavult, használja helyette a SyncDisabled házirendet.
 
       Lehetővé teszi, hogy a felhasználó bejelentkezzen a <ph name="PRODUCT_NAME" /> termékbe.

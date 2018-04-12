@@ -29,7 +29,6 @@
 <translation id="1966382378801805537">Chromium не може да определи или зададе браузъра по подразбиране</translation>
 <translation id="1967743265616885482">Известно е, че модул със същото име влиза в конфликт с Chromium.</translation>
 <translation id="2008474315282236005">1 елемент ще се изтрие от това устройство. За да извлечете данните си по-късно, влезте в Chromium като <ph name="USER_EMAIL" />.</translation>
-<translation id="2077129598763517140">Да се използва хардуерно ускорение, когато е налице</translation>
 <translation id="2117378023188580026">Администраторът ви моли да рестартирате Chromium, за да се приложи тази актуализация</translation>
 <translation id="2119636228670142020">Всичко за &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Лицензи за отворен код за Chromium OS</translation>
@@ -85,11 +84,9 @@
 <translation id="3852700440713538496">Закачване на Chromium към лентата на задачите</translation>
 <translation id="3889543394854987837">Кликнете върху името си, за да отворите Chromium и да започнете да сърфирате.</translation>
 <translation id="3898493977366060150">Интелигентен начин за сърфиране в мрежата, създаден от Google</translation>
-<translation id="390894725198123737">Под Mac паролите може да се запазват в Keychain и да се използват или синхронизират от други потребители на Chromium, споделящи този профил в OS X.</translation>
 <translation id="4036079820698952681">Помогнете за подобряването на Chromium, като подадете сигнал за <ph name="BEGIN_LINK" />текущите настройки<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">В последната версия са налице важни подобрения в сигурността и нови функции.</translation>
 <translation id="407254336480250557">Изберете <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" /></translation>
-<translation id="4077262827416206768">Моля, затворете всички прозорци на Chromium и го стартирайте отново, за да влезе в сила тази промяна.</translation>
 <translation id="421369550622382712">Открийте отлични приложения, игри, разширения и теми за Chromium.</translation>
 <translation id="4222580632002216401">Вече влязохте в Chromium! Синхронизирането е деактивирано от администратора ви.</translation>
 <translation id="4224199872375172890">Chromium е актуален.</translation>
@@ -103,7 +100,6 @@
 <translation id="4421155425831608516">Функцията за влизане в Chromium е деактивирана от администратора на това устройство.</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium ще стартира отново след един час}other{Chromium ще стартира отново след # часа}}</translation>
-<translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4469812139324097969">Chromium не е актуален, защото не е бил стартиран отново известно време. Налице е актуализация, която ще бъде приложена веднага, когато рестартирате.</translation>
 <translation id="4488554488975128561">Можете да ни помогнете да направим браузъра Chromium по-надежден и по-лесен за използване, като автоматично изпращате до Google системна информация и част от съдържанието на страниците, за да ни съдействате при откриването на опасни приложения и сайтове.</translation>
 <translation id="4567424176335768812">Влезли сте като <ph name="USER_EMAIL_ADDRESS" />. Сега имате достъп до отметките, историята и другите си настройки на всички устройства, на които сте влезли.</translation>
@@ -138,7 +134,6 @@
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
 <translation id="5726838626470692954">Мениджърът ви трябва да ви премахне от Chromium и да ви добави отново.</translation>
 <translation id="5768914737813585044">Показване на Chromium OS на този език</translation>
-<translation id="5772805321386874569">(изисква <ph name="BEGIN_BUTTON" />рестартиране<ph name="END_BUTTON" /> на Chromium)</translation>
 <translation id="5796460469508169315">Chromium е почти готов.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>

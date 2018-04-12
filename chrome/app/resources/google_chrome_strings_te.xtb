@@ -40,7 +40,6 @@
 <translation id="1877026089748256423">Chrome కాలం చెల్లినది</translation>
 <translation id="2007150628464581396">{0,plural, =1{1 నిమిషంలో Chrome పునఃప్రారంభించబడుతుంది}other{# నిమిషాలలో Chrome పునఃప్రారంభించబడుతుంది}}</translation>
 <translation id="2063848847527508675">నవీకరణను వర్తింపజేయడానికి Chrome OSని పునఃప్రారంభించాలి.</translation>
-<translation id="2077129598763517140">హార్డ్‌వేర్ త్వరితం అందుబాటులో ఉన్నప్పుడు ఉపయోగించు</translation>
 <translation id="2084710999043359739">Chromeకి జోడించు</translation>
 <translation id="2094919256425865063">ఏదేమైనా Chromeని మూసివేయాలా?</translation>
 <translation id="210890598424854131">{0,plural, =0{Chrome ఇప్పుడు పునఃప్రారంభించబడుతుంది}=1{1 సెకనులో Chrome పునఃప్రారంభించబడుతుంది}other{# సెకన్లలో Chrome పునఃప్రారంభించబడుతుంది}}</translation>
@@ -125,12 +124,10 @@
 <translation id="4251615635259297716">మీ Chrome డేటాను ఈ ఖాతాకు జోడించాలా?</translation>
 <translation id="4251625577313994583">మీ iPhoneలో Chromeని పొందండి</translation>
 <translation id="4293420128516039005">మీ పరికరాల అంతటా Chromeని సమకాలీకరించడం మరియు వ్యక్తిగతీకరించడం కోసం సైన్ ఇన్ చేయండి</translation>
-<translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
 <translation id="4328355335528187361">Google Chrome డెవలపర్ (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">Chromeకు <ph name="EXTENSION_NAME" /> జోడించబడింది</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4458285410772214805">దయచేసి ఈ మార్పు ప్రభావవంతం కావడానికి సైన్ అవుట్ చేసి, మళ్లీ సైన్ ఇన్ చేయండి.</translation>
 <translation id="4458462641685292929">Google Chromeలో మరొక వ్యవస్థాపన జరుగుతోంది. దయచేసి తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="4480040274068703980">సైన్ ఇన్ చేయడంలో లోపం సంభవించినందున Chrome OS మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="4561051373932531560">Google Chrome వెబ్‌లో మిమ్మళ్ని ఫోన్ నంబర్ క్లిక్ చెయ్యనిస్తుంది మరియు Skypeతో కాల్ చేస్తుంది!</translation>
@@ -155,7 +152,6 @@
 <translation id="495931528404527476">Chromeలో</translation>
 <translation id="4990567037958725628">Google Chrome కేనరీ</translation>
 <translation id="5028489144783860647">Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది. దయచేసి మీ సమకాలీకరణ రహస్య పదబంధాన్ని నవీకరించండి.</translation>
-<translation id="5037239767309817516">దయచేసి ఈ మార్పు అమలులోకి రావడానికి అన్ని Google Chrome విండోలను మూసివేయండి మరియు దీన్ని మళ్ళీ ప్రారంభించండి.</translation>
 <translation id="5131923704757666404">{0,plural, =1{ఒక గంటలో Chrome తిరిగి ప్రారంభించబడుతుంది}other{# గంటల్లో Chrome తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="5132929315877954718">Google Chrome కోసం గొప్ప అనువర్తనాలు, ఆటలు, పొడిగింపులు మరియు థీమ్‌లను కనుగొనండి.</translation>
 <translation id="5166975452760862670">Google Chrome ఈ భాషలో ప్రదర్శించబడుతోంది</translation>
@@ -179,7 +175,6 @@
 <translation id="5877064549588274448">ఛానెల్ మార్చబడింది. మార్పులను వర్తింపజేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5906655207909574370">దాదాపు నవీకృతంగా ఉంది! నవీకరణను పూర్తి చేయడానికి మీ పరికరాన్ని పునఃప్రారంభించండి.</translation>
-<translation id="5931853610562009806">Macలో, పాస్‌వర్డ్‌లు మీ కీచెయిన్‌కి సేవ్ చేయబడవచ్చు మరియు ఈ OS X ఖాతాను భాగస్వామ్యం చేసుకునే ఇతర Chrome వినియోగదారులు వాటిని ప్రాప్యత చేయవచ్చు లేదా సమకాలీకరించవచ్చు.</translation>
 <translation id="5940385492829620908">మీ వెబ్, బుక్‌మార్క్‌లు మరియు ఇతర Chrome అంశాలు ఇక్కడ చూపబడతాయి.</translation>
 <translation id="5941830788786076944">Google Chromeను డిఫాల్ట్ బ్రౌజర్‌గా చేసుకోండి</translation>
 <translation id="6014844626092547096">ఇప్పుడు మీరు Chromeకు సైన్ ఇన్ చేసారు! మీ నిర్వాహకులు సమకాలీకరణని నిలిపివేసారు.</translation>

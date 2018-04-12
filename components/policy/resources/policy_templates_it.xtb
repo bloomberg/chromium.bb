@@ -56,16 +56,6 @@
 
       Se viene usata questa norma, gli utenti avranno a disposizione tutte le stampanti tranne quelle i cui ID sono elencati in questa norma.
       </translation>
-<translation id="1181881366217399113">
-      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
-      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche 
-      le origini dei sottodomini corrispondenti, ad es. specificando https://example.com/ si isolerà anche
-      https://foo.example.com/, perché fa parte del sito
-      https://example.com/.
-      Se la norma non è attivata, si attiverà la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, l'utente sarà in grado di modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare sullo stesso valore anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      </translation>
 <translation id="1198465924256827162">Consente di stabilire la frequenza di invio, in millisecondi, dei caricamenti dello stato del dispositivo.
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
@@ -646,14 +636,6 @@ Se questa norma non viene impostata, viene utilizzato un periodo di tempo predef
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere inferiori o uguali al ritardo di disattivazione dello schermo (se impostato) e al ritardo di inattività.</translation>
 <translation id="2987155890997901449">Attiva ARC</translation>
 <translation id="2987227569419001736">Controlla l'utilizzo dell'API Web Bluetooth</translation>
-<translation id="2998886474614739865">
-      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
-      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Se la norma è attivata, ciascuna delle origini denominate in un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini dei sottodomini corrispondenti, ad es. specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito
-      https://example.com/ site.
-      Se la norma non è attivata, si attiverà la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, si utilizzeranno le impostazioni predefinite di isolamento del sito della piattaforma per la schermata di accesso.
-      </translation>
 <translation id="3016255526521614822">Autorizza l'uso di app per scrivere note nella schermata di blocco di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Numero di obiettivi consentiti per il rollback</translation>
 <translation id="3030000825273123558">Attiva rapporti sulle metriche</translation>
@@ -754,14 +736,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
-<translation id="3386001018488754001">
-      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
-      Questa norma si applica alla schermata di accesso. Vedi anche la norma <ph name="SITE_PER_PROCESS_POLICY_NAME" />, che viene applicata alla sessione utente. È consigliabile impostare lo stesso valore per entrambe le norme. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
-      Se la norma è disattivata, verrà applicata la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
-      </translation>
 <translation id="3395348522300156660">Consente di specificare le stampanti utilizzabili dagli utenti.
 
       Questa norma viene usata soltanto se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" /> per la norma <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1342,14 +1316,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
       Se la norma non viene impostata oppure è impostata sulla stringa vuota o su un intervallo di porte non valido, WebRTC è autorizzato a utilizzare qualsiasi porta UDP locale disponibile.</translation>
 <translation id="5290940294294002042">Specifica un elenco di plug-in che l'utente può attivare o disattivare</translation>
-<translation id="5301787427319106606">
-      NOTA: questa norma è sperimentale ed è possibile che interrompa la funzionalità.
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere sia l'isolamento sia un impatto limitato per gli utenti. Usa IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione, SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
-      Se la norma non è attivata, verrà applicata la logica di gestione del processo di isolamento in base al sito.
-      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" /> si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      </translation>
 <translation id="5302612588919538756">Questa norma è stata ritirata; utilizzare la norma SyncDisabled.
 
       Consente all'utente di accedere a <ph name="PRODUCT_NAME" />.

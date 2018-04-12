@@ -40,7 +40,6 @@
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
 <translation id="2007150628464581396">{0,plural, =1{Chrome 1 मिनट में फिर से लॉन्च होगा}one{Chrome # मिनट में फिर से लॉन्च होगा}other{Chrome # मिनट में फिर से लॉन्च होगा}}</translation>
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
-<translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
 <translation id="2094919256425865063">फिर भी Chrome छोड़ें?</translation>
 <translation id="210890598424854131">{0,plural, =0{अब Chrome फिर से लॉन्च होगा}=1{Chrome 1 सेकंड में फिर से लॉन्च होगा}one{Chrome # सेकंड में फिर से लॉन्च होगा}other{Chrome # सेकंड में फिर से लॉन्च होगा}}</translation>
@@ -125,12 +124,10 @@
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="4251625577313994583">अपने iPhone पर Chrome पाएं</translation>
 <translation id="4293420128516039005">Chrome को अपने सभी डिवाइस पर सिंक करने और मनमुताबिक बनाने के लिए साइन इन करें</translation>
-<translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
 <translation id="4328355335528187361">Google Chrome डेवलपर (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> को Chrome में जोड़ दिया गया है</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया प्रस्थान करें और पुन: प्रवेश करें.</translation>
 <translation id="4458462641685292929">Google Chrome पर कोई और क्रिया चल रही है. कृपया बाद में फिर से कोशिश करें.</translation>
 <translation id="4480040274068703980">प्रवेश करने संबंधी गड़बड़ी के कारण Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
@@ -155,7 +152,6 @@
 <translation id="495931528404527476">Chrome में</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="5028489144783860647">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका. कृपया अपना समन्‍वयन पासफ़्रेज़ अपडेट करें.</translation>
-<translation id="5037239767309817516">यह परिवर्तन लागू करने के लिए कृपया सभी Google Chrome विंडो बंद करें और इसे पुन: लॉन्‍च करें.</translation>
 <translation id="5131923704757666404">{0,plural, =1{Chrome एक घंटे के अंदर फिर से लॉन्च होगा}one{Chrome # घंटों के अंदर फिर से लॉन्च होगा}other{Chrome # घंटों के अंदर फिर से लॉन्च होगा}}</translation>
 <translation id="5132929315877954718">Google Chrome के लिए बेहतरीन ऐप्स ,गेम, एक्सटेंशन और थीम खोजें.</translation>
 <translation id="5166975452760862670">Google Chrome इस भाषा में प्रदर्शित किया जा रहा है</translation>
@@ -181,7 +177,6 @@
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
 <translation id="5895138241574237353">पुन: प्रारंभ करें</translation>
 <translation id="5906655207909574370">लगभग अप टू डेट हो गया है! अपडेट करना पूरा करने के लिए अपना डिवाइस पुन: प्रारंभ करें.</translation>
-<translation id="5931853610562009806">Mac पर, पासवर्ड आपके कीचेन पर सहेजे जा सकते हैं और उन्हें इस OS X खाते को साझा करने वाले अन्य Chrome उपयोगकर्ताओं द्वारा ऐक्सेस या समन्‍वयित किया जा सकता है.</translation>
 <translation id="5940385492829620908">आपके वेब, बुकमार्क और अन्य Chrome सामग्री यहां मौजूद रहती है.</translation>
 <translation id="5941830788786076944">Google Chrome को सामान्य ब्राउज़र बनाएं</translation>
 <translation id="6014844626092547096">अब आपने Chrome में प्रवेश कर लिया हैं! सिंक को आपके व्यवस्थापक द्वारा अक्षम किया गया है.</translation>

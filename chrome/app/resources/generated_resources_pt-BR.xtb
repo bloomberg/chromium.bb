@@ -1140,7 +1140,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2731392572903530958">R&amp;eabrir janela fechada</translation>
 <translation id="2731700343119398978">Aguarde...</translation>
 <translation id="2731710757838467317">Criando seu usuário supervisionado. Isso pode demorar alguns instantes.</translation>
-<translation id="2733364097704495499">Você deseja registrar a impressora <ph name="PRINTER_NAME" /> no Google Cloud Print?</translation>
 <translation id="2735438478659026460">Clicar automaticamente quando o cursor do mouse parar</translation>
 <translation id="2735712963799620190">Programar</translation>
 <translation id="2737363922397526254">Recolher...</translation>
@@ -1722,6 +1721,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3596235046596950091">Ativar serviços em nuvem</translation>
 <translation id="3599863153486145794">Limpa o histórico de todos os dispositivos conectados. Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Silenciar sites que reproduzem sons</translation>
+<translation id="3602290021589620013">Visualizar</translation>
 <translation id="3603533104205588786">Você pode clicar no ícone da estrela para adicionar uma página aos favoritos</translation>
 <translation id="3603622770190368340">Obter certificado de rede</translation>
 <translation id="3604048165392640554">Nenhuma conexão móvel encontrada. Ative o tethering instantâneo nos seus outros dispositivos e tente novamente. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>

@@ -29,7 +29,6 @@
 <translation id="1966382378801805537">Chromium ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না</translation>
 <translation id="1967743265616885482">একই নামের একটি মডিউল Chromium সঙ্গে বিরোধে জ্ঞাত হয়েছে৷</translation>
 <translation id="2008474315282236005">এটি এই ডিভাইস থেকে ১টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chromium এ <ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন।</translation>
-<translation id="2077129598763517140">যখনই উপলব্ধ তখন হার্ডওয়্যার অ্যাক্সিলারেশন ব্যবহার করুন</translation>
 <translation id="2117378023188580026">এই আপডেটটি প্রয়োগ করতে আপনার অ্যাডমিনিস্ট্রেটর চান যে আপনি Chromium আবার চালু করুন</translation>
 <translation id="2119636228670142020">&amp;Chromium OS সম্পর্কে</translation>
 <translation id="2158734852934720349">Chromium OS মুক্ত উৎসে লাইসেন্সগুলি</translation>
@@ -87,11 +86,9 @@
 <translation id="3852700440713538496">Chromium কে আপনার কার্যদণ্ডে পিন করুন</translation>
 <translation id="3889543394854987837">Chromium খোলার জন্য আপনার নামের উপরে ক্লিক করুন এবং ব্রাউজ করা শুরু করুন৷</translation>
 <translation id="3898493977366060150">Google স্মার্ট ব্যবহার করে ওয়েব ব্রাউজিং</translation>
-<translation id="390894725198123737">Mac এ, পাসওয়ার্ডগুলি আপনার Keychain এ সংরক্ষিত হতে পারে এবং এই OS X অ্যাকাউন্টটি শেয়ার করে এমন অন্য Chromium ব্যবহারকারীরা এটি অ্যাক্সেস বা সিঙ্ক করতে পারবে।</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />বর্তমান সেটিংসের<ph name="END_LINK" /> প্রতিবেদন করে Chromium কে আরও ভালো করে তুলতে সাহায্য করুন</translation>
 <translation id="4050175100176540509">গুরুত্বপূর্ণ নিরাপত্তা উন্নতি এবং নতুন বৈশিষ্ট্যগুলি সর্বশেষ সংস্করণে উপলব্ধ।</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> বেছে নিন</translation>
-<translation id="4077262827416206768">দয়া করে সব Chromium উইন্ডো বন্ধ করুন এবং এই পরিবর্তন কার্যকরী করতে Chromium আবার চালু করুন৷</translation>
 <translation id="421369550622382712">Chromium-এর জন্য খুব ভালো অ্যাপ্লিকেশান, গেম, এক্সটেনশন এবং থিমসমূহ আবিষ্কার করুন৷</translation>
 <translation id="4222580632002216401">আপনি এখন Chromium এ প্রবেশ করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="4224199872375172890">Chromium আপ-টু-ডেট আছে৷</translation>
@@ -105,7 +102,6 @@
 <translation id="4421155425831608516">এই ডিভাইসের প্রশাসক Chromium এর মাধ্যমে সাইন-ইন করা অক্ষম করেছেন।</translation>
 <translation id="4423735387467980091">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="4449801103833300785">{0,plural, =1{এক ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}one{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}other{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}}</translation>
-<translation id="4458285410772214805">দয়া করে পরিবর্তনটি সম্ভব করতে প্রস্থান করুন এবং পুনরায় প্রবেশ করুন৷</translation>
 <translation id="4469812139324097969">Chromium পুরানো হয়ে গেছে কারণ কিছু সময় ধরে এটিকে পুনঃলঞ্চ করা হয়নি। একটি আপডেট উপলব্ধ রয়েছে এবং আপনি পুনঃলঞ্চ করার সাথে সাথেই এটি প্রয়োগ করা হবে।</translation>
 <translation id="4488554488975128561">বিপজ্জনক অ্যাপ্লিকেশান এবং সাইট শনাক্ত করতে সহায়তা দিতে স্বয়ংক্রিয়ভাবে কিছু তথ্য ও পৃষ্ঠা সামগ্রী Google এ পাঠানোর মাধ্যমে Chromium কে আরও নিরাপদ ও সহজে ব্যবহারযোগ্য করে তুলতে সাহায্য করতে পারেন।</translation>
 <translation id="4567424176335768812">আপনি <ph name="USER_EMAIL_ADDRESS" /> হিসাবে প্রবেশ করেছেন৷ এখন আপনি আপনার সমস্ত প্রবেশ করা ডিভাইসে আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস অ্যাক্সেস করতে পারেন৷</translation>
@@ -140,7 +136,6 @@
 <translation id="5698481217667032250">এই ভাষায় Chromium প্রদর্শন করুন</translation>
 <translation id="5726838626470692954">আপনার পরিচালককে আপনাকে অবশ্যই Chromium থেকে সরিয়ে আবার যোগ করতে হবে।</translation>
 <translation id="5768914737813585044">এই ভাষায় Chromium OS প্রদর্শন করুন</translation>
-<translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />আবার চালু করা<ph name="END_BUTTON" /> প্রয়োজন)</translation>
 <translation id="5796460469508169315">Chromium প্রায় প্রস্তুত।</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromium-এ স্বাগতম</translation>

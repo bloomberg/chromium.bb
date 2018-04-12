@@ -58,18 +58,6 @@
 
       Se esta política for utilizada, todas as impressoras são disponibilizadas ao utilizador, exceto aquelas cujos IDs forem indicados nesta política.
       </translation>
-<translation id="1181881366217399113">
-      NOTA: esta política é experimental e pode interferir no funcionamento!
-      Se a política estiver ativada, cada uma das origens nomeadas numa
-      lista separada por vírgulas é executada no seu próprio processo. Deste modo, são
-      também isoladas as origens nomeadas por subdomínios. Por exemplo, ao
-      especificar https://example.com/, https://foo.example.com/ também é isolado
-      como parte do site https://example.com/.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
-      isolamento por site.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador for aplicado.
-      </translation>
 <translation id="1198465924256827162">Com que frequência os carregamentos do estado do dispositivo são enviados, em milissegundos.
 
       Se esta política não for definida, a frequência predefinida é de 3 horas. A frequência mínima
@@ -672,18 +660,6 @@
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso para desligar o ecrã (se estiver definido) e ao atraso de inatividade.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controlar a utilização da API Web Bluetooth</translation>
-<translation id="2998886474614739865">
-      NOTA: esta política é experimental e pode interferir no funcionamento!
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas com o mesmo valor. Se os valores forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Se a política estiver ativada, cada uma das origens nomeadas numa
-      lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas
-      as origens nomeadas por subdomínios. Por exemplo, ao especificar https://example.com/,
-      https://foo.example.com/ também é isolado como parte do site
-      https://example.com/.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
-      isolamento por site.
-      Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
-      </translation>
 <translation id="3016255526521614822">Adicionar à lista de autorizações as aplicações para tirar notas permitidas no ecrã de bloqueio do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Número de marcos para os quais é autorizada a reversão.</translation>
 <translation id="3030000825273123558">Ativar relatório de métricas</translation>
@@ -787,18 +763,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
          Se esta política estiver definida como uma string não vazia, essa string é utilizada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino é o nome do dispositivo. Se esta política não estiver definida, o nome do destino é o nome do dispositivo e o proprietário do dispositivo (ou um utilizador do domínio que gere o dispositivo) pode alterá-lo. O nome tem um limite de 24 carateres.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
-<translation id="3386001018488754001">
-      NOTA: esta política é experimental e pode interferir no funcionamento!
-      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas com o mesmo valor. Se os valores forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o
-      melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a
-      IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição,
-      SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
-      isolamento por site.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      </translation>
 <translation id="3395348522300156660">Especifica as impressoras disponíveis para um utilizador.
 
       Esta política é apenas utilizada se <ph name="PRINTERS_WHITELIST" /> for selecionado para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1394,18 +1358,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se a política não for definida ou se for definida para a string vazia ou um intervalo de portas inválido, o WebRTC está autorizado a utilizar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Indique uma lista de plug-ins que o utilizador pode ativar ou desativar</translation>
-<translation id="5301787427319106606">
-      NOTA: esta política é experimental e pode interferir no funcionamento!
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o
-      melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a
-      IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição,
-      SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
-      isolamento por site.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      </translation>
 <translation id="5302612588919538756">Esta política foi descontinuada. Considere a utilização de SyncDisabled em alternativa.
 
       Permite que o utilizador inicie sessão no <ph name="PRODUCT_NAME" />.

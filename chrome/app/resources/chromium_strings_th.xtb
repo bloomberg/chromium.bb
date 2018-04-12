@@ -29,7 +29,6 @@
 <translation id="1966382378801805537">Chromium ไม่สามารถกำหนดหรือตั้งค่าเบราว์เซอร์เริ่มต้น</translation>
 <translation id="1967743265616885482">เป็นที่ทราบกันว่าโมดูลที่มีชื่อเดียวกันนี้จะขัดแย้งกับ Chromium</translation>
 <translation id="2008474315282236005">การดำเนินการนี้จะลบ 1 รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chromium ด้วย <ph name="USER_EMAIL" /></translation>
-<translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
 <translation id="2117378023188580026">ผู้ดูแลระบบขอให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้</translation>
 <translation id="2119636228670142020">เกี่ยวกับ &amp;Chromium OS</translation>
 <translation id="2158734852934720349">ใบอนุญาตโอเพนซอร์สของ Chromium OS</translation>
@@ -87,11 +86,9 @@
 <translation id="3852700440713538496">ตรึง Chromium กับแถบงาน</translation>
 <translation id="3889543394854987837">คลิกชื่อของคุณเพื่อเปิด Chromium และเริ่มท่องเว็บ</translation>
 <translation id="3898493977366060150">การท่องเว็บพร้อมฟีเจอร์เจ๋งๆ จาก Google</translation>
-<translation id="390894725198123737">สำหรับ Mac ระบบจะบันทึกรหัสผ่านไว้ใน Keychain และผู้ใช้ Chromium คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="4036079820698952681">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงาน<ph name="BEGIN_LINK" />การตั้งค่าปัจจุบัน<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและฟีเจอร์ใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
 <translation id="407254336480250557">เลือก <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="4077262827416206768">โปรดปิดหน้าต่าง Chromium ทั้งหมดและเปิด Chromium อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="421369550622382712">พบกับแอป เกม ส่วนขยาย และธีมเด็ดๆ สำหรับ Chromium</translation>
 <translation id="4222580632002216401">ขณะนี้คุณลงชื่อเข้าใช้ Chromium แล้ว! การซิงค์ถูกปิดใช้งานโดยผู้ดูแลระบบของคุณ</translation>
 <translation id="4224199872375172890">Chromium อัปเดตแล้ว</translation>
@@ -105,7 +102,6 @@
 <translation id="4421155425831608516">ผู้ดูแลระบบอุปกรณ์เครื่องนี้ปิดไม่ให้ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="4423735387467980091">กำหนดค่าและควบคุม Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium จะเปิดขึ้นมาใหม่ภายใน 1 ชั่วโมง}other{Chromium จะเปิดขึ้นมาใหม่ภายใน # ชั่วโมง}}</translation>
-<translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4469812139324097969">Chromium ล้าสมัยเพราะไม่ได้เปิดใหม่มาระยะหนึ่งแล้ว มีเวอร์ชันอัปเดตพร้อมใช้งานและระบบจะนำเวอร์ชันอัปเดตดังกล่าวไปใช้เมื่อคุณเปิดเครื่องใหม่</translation>
 <translation id="4488554488975128561">คุณสามารถช่วยปรับปรุงให้ Chromium ปลอดภัยและใช้งานง่ายขึ้นด้วยการส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บไปยัง Google เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตราย</translation>
 <translation id="4567424176335768812">คุณกำลังลงชื่อเข้าใช้เป็น <ph name="USER_EMAIL_ADDRESS" /> ตอนนี้คุณสามารถเข้าถึงบุ๊กมาร์ก ประวัติการเข้าชม และการตั้งค่าอื่นๆ บนอุปกรณ์ทั้งหมดที่ลงชื่อเข้าใช้</translation>
@@ -140,7 +136,6 @@
 <translation id="5698481217667032250">แสดง Chromium ในภาษานี้</translation>
 <translation id="5726838626470692954">ผู้จัดการต้องนำคุณออกแล้วเพิ่มคุณกลับเข้าไปใน Chromium ใหม่</translation>
 <translation id="5768914737813585044">แสดงระบบปฏิบัติการ Chromium ในภาษานี้</translation>
-<translation id="5772805321386874569">(จำเป็นต้อง <ph name="BEGIN_BUTTON" />รีสตาร์ท<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium เกือบจะพร้อมใช้งานแล้ว</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">ยินดีต้อนรับสู่ Chromium</translation>

@@ -29,7 +29,6 @@
 <translation id="1966382378801805537">Chromium не може визначити чи встановити веб-переглядач за умовчанням</translation>
 <translation id="1967743265616885482">Відомо, що модуль із такою назвою конфліктує з Chromium.</translation>
 <translation id="2008474315282236005">1 елемент буде видалено з цього пристрою. Щоб відновити дані пізніше, увійдіть в обліковий запис Chromium як <ph name="USER_EMAIL" />.</translation>
-<translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
 <translation id="2117378023188580026">Адміністратор просить перезапустити Chromium, щоб застосувати це оновлення</translation>
 <translation id="2119636228670142020">Про &amp;ОС Chromium</translation>
 <translation id="2158734852934720349">Ліцензії ОС Chromium із відкритим кодом</translation>
@@ -87,11 +86,9 @@
 <translation id="3852700440713538496">Як закріпити значок Chromium на панелі завдань</translation>
 <translation id="3889543394854987837">Натисніть своє ім’я, щоб відкрити Chromium і розпочати перегляд сайтів.</translation>
 <translation id="3898493977366060150">Перегляд веб-сторінок із розумними функціями Google</translation>
-<translation id="390894725198123737">В ОС Mac паролі можуть зберігатися в системі Keychain, де їх можуть застосовувати чи синхронізувати інші користувачі Chromium, які спільно користуються цим обліковим записом ОС X.</translation>
 <translation id="4036079820698952681">Допоможіть покращити Chromium, надсилаючи звіти про <ph name="BEGIN_LINK" />поточні налаштування<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="407254336480250557">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="4077262827416206768">Щоб зміна почала діяти, закрийте всі вікна Chromium і перезапустіть його.</translation>
 <translation id="421369550622382712">Знаходьте чудові додатки, ігри, розширення й теми для Chromium.</translation>
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="4224199872375172890">У вас остання версія Chromium.</translation>
@@ -105,7 +102,6 @@
 <translation id="4421155425831608516">Адміністратор цього пристрою вимкнув вхід у Chromium.</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium перезапуститься через годину}one{Chromium перезапуститься через # годину}few{Chromium перезапуститься через # години}many{Chromium перезапуститься через # годин}other{Chromium перезапуститься через # години}}</translation>
-<translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
 <translation id="4469812139324097969">Chromium застарів, оскільки протягом якогось часу його не перезапускали. Оновлення доступне та буде застосоване одразу після перезапуску.</translation>
 <translation id="4488554488975128561">Ви можете зробити Chromium безпечнішим і простішим у користуванні, автоматично надсилаючи в Google деяку інформацію про систему та вміст сторінок, щоб допомогти виявляти небезпечні додатки й сайти.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS" />. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
@@ -140,7 +136,6 @@
 <translation id="5698481217667032250">Вибрати цю мову для Chromium</translation>
 <translation id="5726838626470692954">Вашому адміністратору потрібно вилучити й знову додати вас у Chromium.</translation>
 <translation id="5768914737813585044">Вибрати цю мову для ОС Chromium</translation>
-<translation id="5772805321386874569">(потрібно <ph name="BEGIN_BUTTON" />перезапустити<ph name="END_BUTTON" /> Chromium)</translation>
 <translation id="5796460469508169315">Chromium майже готовий.</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
 <translation id="5862307444128926510">Вітаємо в Chromium</translation>

@@ -31,7 +31,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1966382378801805537">Chromium cannot determine or set the default browser</translation>
 <translation id="1967743265616885482">A module with the same name has been known to conflict with Google Chrome.</translation>
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
-<translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2117378023188580026">Your administrator asks that you relaunch Chromium to apply this update</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS open source licences</translation>
@@ -89,11 +88,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3852700440713538496">Pin Chromium to your taskbar</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="3898493977366060150">Web browsing with Google smarts</translation>
-<translation id="390894725198123737">On Mac, passwords may be saved to your Keychain and accessed or synced by other Chromium users sharing this OS X account.</translation>
 <translation id="4036079820698952681">Help make Chromium better by reporting the <ph name="BEGIN_LINK" />current settings<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="407254336480250557">Select <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="4077262827416206768">Please close all Chromium windows and relaunch Chromium for this change to take effect.</translation>
 <translation id="421369550622382712">Discover great apps, games, extensions and themes for Chromium.</translation>
 <translation id="4222580632002216401">You're now signed in to Chromium! Sync is disabled by your administrator.</translation>
 <translation id="4224199872375172890">Chromium is up to date.</translation>
@@ -107,7 +104,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4421155425831608516">Sign in to Chromium is disabled by the administrator of this device.</translation>
 <translation id="4423735387467980091">Customise and control Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium will relaunch in an hour}other{Chromium will relaunch in # hours}}</translation>
-<translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
 <translation id="4469812139324097969">Chromium is out of date because it hasn't been relaunched for a while. An update is available and will be applied as soon as you relaunch.</translation>
 <translation id="4488554488975128561">You can help make Chromium safer and easier to use by automatically sending some system information and page content to Google to help detect dangerous apps and sites.</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS" />. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
@@ -142,7 +138,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5726838626470692954">Your manager must remove and add you back to Chromium.</translation>
 <translation id="5768914737813585044">Display Chromium OS in this language</translation>
-<translation id="5772805321386874569">(requires Chromium <ph name="BEGIN_BUTTON" />restart<ph name="END_BUTTON" />)</translation>
 <translation id="5796460469508169315">Chromium is almost ready.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>

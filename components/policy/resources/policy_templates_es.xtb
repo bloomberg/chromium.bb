@@ -58,17 +58,6 @@ Si esta política se establece en False, no se informará sobre el estado del co
 
       Si se usa esta política, el usuario tendrá acceso a todas las impresoras, excepto a los ID indicados en ella.
       </translation>
-<translation id="1181881366217399113">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-       Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/ también
-      se aislará https://foo.example.com/ como parte
-      del sitio web https://example.com/).
-      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al introducir una sesión de usuario mientras se aplica el valor de especificado por la política del usuario.
-      </translation>
 <translation id="1198465924256827162">Frecuencia con la que se envían los informes del estado del dispositivo, expresada en milisegundos.
 
 Si no se establece ningún valor para esta política, la frecuencia predeterminada serán 3 horas. La frecuencia mínima permitida son 60 segundos.</translation>
@@ -320,7 +309,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
-<translation id="2132732175597591362">Controla la lista blanca de patrones de URL en los que la reproducción automática siempre estará habilitada.
+<translation id="2132732175597591362">Controla la lista blanca de patrones de URL con los que la reproducción automática siempre estará habilitada.
 
       Si la reproducción automática está habilitada, los vídeos se reproducirán automáticamente con audio en <ph name="PRODUCT_NAME" /> (sin el consentimiento del usuario).
 
@@ -330,7 +319,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 
       Si se le asigna el valor "False" a la política AutoplayAllowed, los patrones de URL establecidos en esta política seguirán teniendo permiso para reproducirse.
 
-      Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando y esta política cambia, dichos cambios se aplicarán a las pestañas que se abran a partir de ese momento Por tanto, es posible que algunas pestañas aún conserven el comportamiento anterior.</translation>
+      Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando y esta política cambia, dichos cambios se aplicarán a las pestañas que se abran a partir de ese momento. Por tanto, es posible que algunas pestañas aún conserven el comportamiento anterior.</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
 <translation id="2137064848866899664">Si se establece esta política, se girará cada pantalla a la
       orientación especificada cada vez que se reinicie el dispositivo y la primera vez que se conecte
@@ -685,17 +674,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           El valor de la política se debe especificar en milisegundos. Los valores están establecidos para ser inferiores o iguales al retraso de desconexión de pantalla (si está establecido) y al retraso de inactividad.</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API Bluetooth web</translation>
-<translation id="2998886474614739865">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/ también
-      se aislará https://foo.example.com/ como parte
-      del sitio web https://example.com/).
-      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
-      Si no se configura, se utilizarán los ajustes predeterminados de aislamiento de sitios web de la plataforma para la pantalla de inicio de sesión.
-      </translation>
 <translation id="3016255526521614822">Aplicaciones para tomar notas incluidas en la lista blanca que están permitidas en la pantalla de bloqueo de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Se permite restaurar el número de eventos clave</translation>
 <translation id="3030000825273123558">Habilitar los informes estadísticos</translation>
@@ -802,17 +780,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
           Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
-<translation id="3386001018488754001">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Esta política se aplica a la pantalla de inicio de sesión. También puedes consultar la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica a la sesión del usuario. Te recomendamos que asignes el mismo valor a ambas políticas. Si los valores no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      Para conseguir tanto aislamiento
-      como un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      </translation>
 <translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
 
       Esta política solo se usará si se asigna <ph name="PRINTERS_WHITELIST" /> a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -977,7 +944,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Cada entrada de la lista contiene un diccionario, que debe incluir el ID de la extensión en el campo "extension-id" y una URL de actualización en el campo "update-url".</translation>
 <translation id="3873159954366380945">Permite definir cada cuánto tiempo muestra <ph name="PRODUCT_NAME" /> las notificaciones de reinicio para aplicar una actualización pendiente.
 
-      Puedes utilizar esta opción de la política para controlar el periodo (en milisegundos) en el que se informa al usuario de forma progresiva de que debe reiniciar <ph name="PRODUCT_NAME" /> (o de que debe reiniciar <ph name="PRODUCT_OS_NAME" />) para aplicar una actualización. En este periodo, el usuario recibe una notificación de forma periódica indicando que es necesario aplicar una actualización de acuerdo con el ajuste de la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se le asigna ningún valor, se utiliza el periodo predeterminado, que es de 345.600.000 milisegundos (cuatro días) para <ph name="PRODUCT_OS_NAME" /> y 604.800.000 milisegundos (una semana) para el resto de plataformas.</translation>
+      Puedes utilizar esta opción de la política para controlar el periodo (en milisegundos) en el que se informa al usuario de forma progresiva de que debe reiniciar <ph name="PRODUCT_NAME" /> (o de que debe reiniciar <ph name="PRODUCT_OS_NAME" />) para aplicar una actualización. En este periodo, el usuario recibe una notificación de forma repetida que indica que es necesario aplicar una actualización de acuerdo con el ajuste de la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />. Si no se le asigna ningún valor, se utiliza el periodo predeterminado, que es de 345.600.000 milisegundos (cuatro días) para <ph name="PRODUCT_OS_NAME" /> y 604.800.000 milisegundos (una semana) para el resto de plataformas.</translation>
 <translation id="3877517141460819966">Modo de autenticación de dos factores integrado</translation>
 <translation id="388237772682176890">Esta política está obsoleta en M53 y se ha quitado de M54, ya que se ha retirado la compatibilidad con SPDY/3.1.
 
@@ -1443,17 +1410,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si esta política no se configura o si se le asigna una cadena vacía o un intervalo de puertos no válido, WebRTC podrá utilizar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que los usuarios puedan habilitar o inhabilitar</translation>
-<translation id="5301787427319106606">
-      NOTA: Esta política es experimental y puede hacer que el funcionamiento no sea correcto.
-      Para conseguir tanto aislamiento
-      como un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, se aplicará la lógica de administración de procesos de aislamiento del sitio web.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" /> también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="5302612588919538756">Esta política está obsoleta, pero puedes utilizar SyncDisabled en su lugar.
 
       Permite que el usuario inicie sesión en <ph name="PRODUCT_NAME" />.
@@ -2657,11 +2613,11 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 
 Los controladores de protocolos registrados por la política se combinan con los registrados por el usuario, y ambos pueden utilizarse. El usuario puede anular los controladores de protocolos instalados por la política. Para ello, debe instalar un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>
-<translation id="9123211093995421438">Especifica el número mínimo de restauraciones de eventos clave de <ph name="PRODUCT_OS_NAME" /> que se deberían permitir desde la versión estable en cualquier momento.
+<translation id="9123211093995421438">Especifica el número mínimo de reversiones a versiones principales de <ph name="PRODUCT_OS_NAME" /> que se deberían permitir desde la versión estable en cualquier momento.
 
       El valor predeterminado es 0 para dispositivos de consumo y 4 (aproximadamente medio año) para los dispositivos registrados por empresas.
 
-      Si se configura esta política, la protección de reversión no se aplicará al menos a ese número de eventos clave.
+      Si se configura esta política, la protección de reversión no se aplicará al menos a ese número de versiones principales.
 
       Si se asigna un valor inferior a esta política, el efecto será permanente: el dispositivo no podrá volver a instalar versiones anteriores aunque se le vuelva a asignar un valor superior a la política.
 

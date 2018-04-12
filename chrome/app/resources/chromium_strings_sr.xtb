@@ -31,7 +31,6 @@
 <translation id="1966382378801805537">Chromium не може да одреди ни да подеси подразумевани прегледач</translation>
 <translation id="1967743265616885482">Модул истог назива се већ сукобљавао са Chromium-ом.</translation>
 <translation id="2008474315282236005">Овим ћете избрисати 1 ставку са овог уређаја. Да бисте касније вратили податке, пријавите се у Chromium као <ph name="USER_EMAIL" />.</translation>
-<translation id="2077129598763517140">Користи хардверско убрзање када је доступно</translation>
 <translation id="2117378023188580026">Администратор тражи да поново покренете Chromium да бисте применили ово ажурирање</translation>
 <translation id="2119636228670142020">О &amp;Chromium ОС-у</translation>
 <translation id="2158734852934720349">Лиценце отвореног кода за Chromium ОС</translation>
@@ -89,11 +88,9 @@
 <translation id="3852700440713538496">Закачите Chromium на траку задатака</translation>
 <translation id="3889543394854987837">Кликните на име да бисте отворили Chromium и почните да прегледате.</translation>
 <translation id="3898493977366060150">Веб-прегледање помоћу паметних Google функција</translation>
-<translation id="390894725198123737">На Mac-у лозинке могу да се чувају у Keychain и други корисници Chromium-а који деле овај ОС X налог могу да им приступају или да их синхронизују.</translation>
 <translation id="4036079820698952681">Помозите да побољшамо Chromium тако што ћете послати извештај о <ph name="BEGIN_LINK" />актуелним подешавањима<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="407254336480250557">Изаберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
-<translation id="4077262827416206768">Затворите све Chromium прозоре и рестартујте Chromium да би ова промена ступила на снагу.</translation>
 <translation id="421369550622382712">Откријте одличне апликације, игре, додатке и теме за Chromium.</translation>
 <translation id="4222580632002216401">Сада сте пријављени у Chromium! Администратор је онемогућио синхронизацију.</translation>
 <translation id="4224199872375172890">Chromium је ажуриран.</translation>
@@ -107,7 +104,6 @@
 <translation id="4421155425831608516">Пријављивање у Chromium је онемогућио администратор овог уређаја.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Поново ћемо покренути Chromium за један сат}one{Поново ћемо покренути Chromium за # сат}few{Поново ћемо покренути Chromium за # сата}other{Поново ћемо покренути Chromium за # сати}}</translation>
-<translation id="4458285410772214805">Одјавите се и поново се пријавите да би ова промена ступила на снагу.</translation>
 <translation id="4469812139324097969">Chromium је застарео јер дуго није поново покренут. Ажурирање је доступно и биће примењено чим га поново покренете.</translation>
 <translation id="4488554488975128561">Можете да помогнете да Chromium буде безбеднији и лакши за коришћење тако што ћете Google-у аутоматски слати неке системске информације и садржаје страница да бисмо открили опасне апликације и сајтове.</translation>
 <translation id="4567424176335768812">Пријављени сте као <ph name="USER_EMAIL_ADDRESS" />. Сада можете да приступате обележивачима, историји и другим подешавањима на свим уређајима на којима сте пријављени.</translation>
@@ -142,7 +138,6 @@
 <translation id="5698481217667032250">Приказуј Chromium на овом језику</translation>
 <translation id="5726838626470692954">Менаџер мора да вас уклони из Chromium-а, па да вас поново дода.</translation>
 <translation id="5768914737813585044">Приказуј Chromium ОС на овом језику</translation>
-<translation id="5772805321386874569">(захтева <ph name="BEGIN_BUTTON" />поновно покретање<ph name="END_BUTTON" /> Chromium-а)</translation>
 <translation id="5796460469508169315">Chromium је скоро спреман.</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
 <translation id="5862307444128926510">Добро дошли у Chromium</translation>

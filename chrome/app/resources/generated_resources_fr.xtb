@@ -1140,7 +1140,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2731392572903530958">&amp;Rouvrir la fenêtre fermée</translation>
 <translation id="2731700343119398978">Veuillez patienter…</translation>
 <translation id="2731710757838467317">Création de l'utilisateur supervisé en cours. Cette opération peut prendre quelques instants…</translation>
-<translation id="2733364097704495499">Voulez-vous enregistrer l'imprimante <ph name="PRINTER_NAME" /> sur Google Cloud Print ?</translation>
 <translation id="2735438478659026460">Cliquer automatiquement en cas d'arrêt du curseur de la souris</translation>
 <translation id="2735712963799620190">Calendrier</translation>
 <translation id="2737363922397526254">Réduire...</translation>
@@ -1722,6 +1721,7 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3596235046596950091">Activer les services cloud</translation>
 <translation id="3599863153486145794">Efface l'historique de tous les appareils sur lesquels vous êtes connecté à votre compte Google. Ce dernier peut conserver d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Couper le son des sites</translation>
+<translation id="3602290021589620013">Aperçu</translation>
 <translation id="3603533104205588786">Vous pouvez cliquer sur l'étoile pour ajouter une page à vos favoris</translation>
 <translation id="3603622770190368340">Obtenir un certificat réseau</translation>
 <translation id="3604048165392640554">Aucune connexion mobile détectée. Activez le partage de connexion instantané sur vos autres appareils et réessayez. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>

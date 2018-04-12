@@ -58,17 +58,6 @@
 
       Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām.
       </translation>
-<translation id="1181881366217399113">
-      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei
-      tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem,
-      piemēram, norādot https://example.com/, tiks
-      izolēta arī vietne https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      </translation>
 <translation id="1198465924256827162">Ierīces statusa augšupielāžu sūtīšanas biežums milisekundēs.
 
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
@@ -691,17 +680,6 @@
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz ekrāna izslēgšanai (ja tāda ir iestatīta) un dīkstāvei vai kas ir vienādas ar to.</translation>
 <translation id="2987155890997901449">ARC iespējošana</translation>
 <translation id="2987227569419001736">Web Bluetooth API lietošanas pārvaldība</translation>
-<translation id="2998886474614739865">
-      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei tiks
-      izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem,
-      piemēram, norādot https://example.com/, tiks izolēta arī vietne
-      https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
-      Ja politika nav konfigurēta, pierakstīšanās ekrānam tiks izmantoti platformas noklusējuma vietnes izolācijas iestatījumi.
-      </translation>
 <translation id="3016255526521614822">Baltajā sarakstā iekļautas piezīmju lietotnes, kas ir atļautas <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā</translation>
 <translation id="3021562480854470924">Atritei atļauto atskaites punktu skaits</translation>
 <translation id="3030000825273123558">Iespējot metrikas ziņošanu</translation>
@@ -811,17 +789,6 @@
 
           Ja šai politikai tiks iestatīta virkne, kas nav tukša, šī virkne tiks izmantota kā <ph name="PRODUCT_NAME" /> galamērķa nosaukums. Pretējā gadījumā kā galamērķa nosaukums tiks izmantots ierīces nosaukums. Ja šī politika netiks iestatīta, kā galamērķa nosaukums tiks izmantots ierīces nosaukums un to varēs mainīt ierīces īpašnieks vai lietotājs no domēna, kurā ierīce tiek pārvaldīta. Nosaukuma garums nedrīkst pārsniegt 24 rakstzīmes.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
-<translation id="3386001018488754001">
-      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu ar izolējamo vietņu
-      sarakstu, lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties
-      izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot iestatījumu
-      SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      </translation>
 <translation id="3395348522300156660">Norāda printerus, ko lietotājs var izmantot.
 
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
@@ -1447,17 +1414,6 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja politika nav iestatīta vai tā ir iestatīta uz tukšu virkni vai nederīgu portu diapazonu, saskarnei WebRTC ir atļauts izmantot jebkuru pieejamu lokālo UDP portu.</translation>
 <translation id="5290940294294002042">Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot</translation>
-<translation id="5301787427319106606">
-      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu ar izolējamo vietņu
-      sarakstu, lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties
-      izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot iestatījumu
-      SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
-      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      </translation>
 <translation id="5302612588919538756">Šī politika ir novecojusi. Tās vietā varat lietot politiku SyncDisabled.
 
       Ļauj lietotājam pierakstīties pārlūkā <ph name="PRODUCT_NAME" />.

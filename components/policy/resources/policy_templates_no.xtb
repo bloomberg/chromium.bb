@@ -58,17 +58,6 @@
 
       Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen.
       </translation>
-<translation id="1181881366217399113">
-      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal.
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i sine egne prosesser. Da isoleres også
-      opprinnelser som har navn basert på underdomener. Hvis for eksempel
-      https://example.com/ angis, isoleres også https://foo.example.com/ som
-      en del av nettstedet https://example.com/.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
-      Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      </translation>
 <translation id="1198465924256827162">Hvor ofte opplastinger av enhetsstatusen sendes, i millisekunder.
 
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
@@ -678,17 +667,6 @@
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
-<translation id="2998886474614739865">
-      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal.
-      Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i kommadelte
-      lister i sine egne prosesser. Da isoleres også opprinnelser som har navn som er
-      basert på underdomener. Hvis for eksempel https://example.com/ angis,
-      isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
-      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
-      </translation>
 <translation id="3016255526521614822">Godkjenn notatapper for å tillate dem på låseskjermen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Antall milepæler rollback er tillatt for</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
@@ -787,18 +765,6 @@
 
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
-<translation id="3386001018488754001">
-      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal.
-      Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      Det kan være lurt å endre innstillingen for IsolateOrigins-regelen
-      for å få det beste fra begge verdener – isolering og begrenset
-      innvirkning for brukere – ved å bruke IsolateOrigins sammen med
-      en liste over nettstedene du vil isolere. Denne innstillingen
-      (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
-      Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
-      </translation>
 <translation id="3395348522300156660">Angir skriverne som en bruker kan bruke.
 
       Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1406,17 +1372,6 @@
 
       Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
-<translation id="5301787427319106606">
-      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal!
-      Det kan være lurt å endre innstillingen for IsolateOrigins-regelen for å få
-      det beste fra begge verdener – isolering og begrenset innvirkning for brukere –
-      ved å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
-      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
-      Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi enhetsinnstillingene for <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      </translation>
 <translation id="5302612588919538756">Denne regelen er avviklet. Vurder å bruke SyncDisabled i stedet.
 
       Tillater at brukeren logger på <ph name="PRODUCT_NAME" />.

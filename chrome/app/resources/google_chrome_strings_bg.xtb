@@ -42,7 +42,6 @@
 <translation id="1877026089748256423">Chrome не е актуален</translation>
 <translation id="2007150628464581396">{0,plural, =1{Chrome ще се рестартира след 1 минута}other{Chrome ще се рестартира след # минути}}</translation>
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
-<translation id="2077129598763517140">Да се използва хардуерно ускорение, когато е налице</translation>
 <translation id="2084710999043359739">Добавяне</translation>
 <translation id="2094919256425865063">Искате ли да затворите Chrome въпреки това?</translation>
 <translation id="210890598424854131">{0,plural, =0{Chrome ще се рестартира сега}=1{Chrome ще се рестартира след 1 секунда}other{Chrome ще се рестартира след # секунди}}</translation>
@@ -127,12 +126,10 @@
 <translation id="4251615635259297716">Да се свържат ли данните ви в Chrome с този профил?</translation>
 <translation id="4251625577313994583">Изтеглете Chrome за своя iPhone</translation>
 <translation id="4293420128516039005">Влезте в профила си, за да синхронизирате и персонализирате Chrome на всичките си устройства</translation>
-<translation id="4309555186815777032">(изисква <ph name="BEGIN_BUTTON" />рестартиране<ph name="END_BUTTON" /> на Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">Разширението <ph name="EXTENSION_NAME" /> бе добавено към Chrome</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
 <translation id="4458462641685292929">Извършва се друго действие, свързано с Google Chrome. Моля, опитайте отново по-късно.</translation>
 <translation id="4480040274068703980">Chrome OS не можа да синхронизира данните ви поради грешка при влизане в профила.</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
@@ -157,7 +154,6 @@
 <translation id="495931528404527476">В Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
-<translation id="5037239767309817516">Моля, затворете всички прозорци на Google Chrome и го стартирайте отново, за да влезе в сила промяната.</translation>
 <translation id="5131923704757666404">{0,plural, =1{Chrome ще стартира отново след един час}other{Chrome ще стартира отново след # часа}}</translation>
 <translation id="5132929315877954718">Открийте отлични приложения, игри, разширения и теми за Google Chrome.</translation>
 <translation id="5166975452760862670">Google Chrome се показва на този език</translation>
@@ -181,7 +177,6 @@
 <translation id="5877064549588274448">Каналът бе променен. Рестартирайте устройството си, за да се приложат промените.</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5906655207909574370">Актуализирането почти завърши! Остава само да рестартирате устройството си.</translation>
-<translation id="5931853610562009806">Под Mac паролите може да се запазват в Keychain и да се използват или синхронизират от други потребители на Chrome, споделящи този профил в OS X.</translation>
 <translation id="5940385492829620908">Тук ще намерите посещаваните от вас места в мрежата, отметките и другите си неща в Chrome.</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
 <translation id="6014844626092547096">Вече влязохте в Chrome! Синхронизирането е деактивирано от администратора ви.</translation>
