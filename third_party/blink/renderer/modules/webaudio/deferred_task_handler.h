@@ -218,6 +218,10 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Nodes that are processing its tail.
   Vector<scoped_refptr<AudioHandler>> tail_processing_handlers_;
+  // Tail processing nodes that are now finished and want the output to be
+  // disabled.  This is updated in the audio thread (with the graph lock).  The
+  // main thread will disable the outputs.
+  Vector<scoped_refptr<AudioHandler>> finished_tail_processing_handlers_;
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;
