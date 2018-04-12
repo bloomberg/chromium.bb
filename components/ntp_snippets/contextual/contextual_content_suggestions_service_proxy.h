@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/ntp_snippets/contextual/cluster.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
 
 class GURL;
@@ -24,9 +25,8 @@ namespace contextual_suggestions {
 // torn down with a part of UI that owns it, which doesn't affect other proxies.
 class ContextualContentSuggestionsServiceProxy {
  public:
-  using ClustersCallback = ntp_snippets::ContextualContentSuggestionsService::
-      FetchContextualSuggestionClustersCallback;
-  using Cluster = ntp_snippets::ContextualContentSuggestionsService::Cluster;
+  using ClustersCallback = ntp_snippets::FetchClustersCallback;
+  using Cluster = ntp_snippets::Cluster;
 
   explicit ContextualContentSuggestionsServiceProxy(
       ntp_snippets::ContextualContentSuggestionsService* service);

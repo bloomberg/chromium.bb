@@ -14,6 +14,16 @@
 
 namespace contextual_suggestions {
 
+namespace {
+// TODO(pnoland): check if this is the correct base URL for all images.
+static constexpr char kImageURLFormat[] =
+    "http://www.google.com/images?q=tbn:%s";
+
+GURL ImageUrlFromId(const std::string& image_id) {
+  return GURL(base::StringPrintf(kImageURLFormat, image_id.c_str()));
+}
+}  // namespace
+
 ContextualContentSuggestionsServiceProxy::
     ContextualContentSuggestionsServiceProxy(
         ntp_snippets::ContextualContentSuggestionsService* service)
@@ -47,7 +57,7 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionImage(
   // fetcher inside of the service.
 
   // Short term implementation.
-  GURL image_url = suggestion_iter->second.salient_image_url();
+  GURL image_url = ImageUrlFromId(suggestion_iter->second.image_id);
 
   // This will be the same after this line.
   ntp_snippets::ContentSuggestion::ID synthetic_id(
@@ -81,7 +91,7 @@ void ContextualContentSuggestionsServiceProxy::CacheSuggestions(
   suggestions_.clear();
   for (auto& cluster : clusters) {
     for (auto& suggestion : cluster.suggestions) {
-      suggestions_.emplace(std::make_pair(suggestion->id(), *suggestion));
+      suggestions_.emplace(std::make_pair(suggestion.id, suggestion));
     }
   }
   std::move(callback).Run(peek_text, std::move(clusters));

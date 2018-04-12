@@ -4,94 +4,61 @@
 
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 
-#include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
-#include "components/ntp_snippets/category.h"
-
-namespace {
-
-// dict.Get() specialization for base::Time values
-bool GetTimeValue(const base::DictionaryValue& dict,
-                  const std::string& key,
-                  base::Time* time) {
-  // TODO(gaschler): Replace all usages of GetString(key, &str) by
-  // FindKey(key)->GetString().
-  std::string time_value;
-  return dict.GetString(key, &time_value) &&
-         base::Time::FromString(time_value.c_str(), time);
-}
-
-// dict.Get() specialization for GURL values
-bool GetURLValue(const base::DictionaryValue& dict,
-                 const std::string& key,
-                 GURL* url) {
-  std::string spec;
-  if (!dict.GetString(key, &spec)) {
-    return false;
-  }
-  *url = GURL(spec);
-  return url->is_valid();
-}
-
-}  // namespace
-
 namespace ntp_snippets {
 
-ContextualSuggestion::ContextualSuggestion(const std::string& id) : id_(id) {}
+ContextualSuggestion::ContextualSuggestion() = default;
 
 ContextualSuggestion::ContextualSuggestion(const ContextualSuggestion& other) =
     default;
 
+// MSVC doesn't support defaulted move constructors, so we have to define it
+// ourselves.
+ContextualSuggestion::ContextualSuggestion(
+    ContextualSuggestion&& other) noexcept
+    : id(std::move(other.id)),
+      title(std::move(other.title)),
+      url(std::move(other.url)),
+      publisher_name(std::move(other.publisher_name)),
+      snippet(std::move(other.snippet)),
+      image_id(std::move(other.image_id)),
+      favicon_image_id(std::move(other.favicon_image_id)) {}
+
 ContextualSuggestion::~ContextualSuggestion() = default;
 
-// static
-std::unique_ptr<ContextualSuggestion>
-ContextualSuggestion::CreateFromDictionary(const base::DictionaryValue& dict) {
-  std::string id;
-  if (!dict.GetString("url", &id) || id.empty()) {
-    return nullptr;
-  }
-  auto suggestion = MakeUnique(id);
-  GetURLValue(dict, "url", &suggestion->url_);
-  if (!dict.GetString("title", &suggestion->title_)) {
-    dict.GetString("source", &suggestion->title_);
-  }
-  dict.GetString("snippet", &suggestion->snippet_);
-  GetTimeValue(dict, "creationTime", &suggestion->publish_date_);
-  GetURLValue(dict, "imageUrl", &suggestion->salient_image_url_);
-  if (!dict.GetString("attribution", &suggestion->publisher_name_)) {
-    dict.GetString("source", &suggestion->publisher_name_);
-  }
-  return suggestion;
+SuggestionBuilder::SuggestionBuilder(const GURL& url) {
+  suggestion_.url = url;
+  suggestion_.id = url.spec();
 }
 
-ContentSuggestion ContextualSuggestion::ToContentSuggestion() const {
-  ContentSuggestion suggestion(
-      Category::FromKnownCategory(KnownCategories::CONTEXTUAL), id_, url_);
-  suggestion.set_title(base::UTF8ToUTF16(title_));
-  suggestion.set_snippet_text(base::UTF8ToUTF16(snippet_));
-  suggestion.set_publish_date(publish_date_);
-  suggestion.set_publisher_name(base::UTF8ToUTF16(publisher_name_));
-  return suggestion;
+SuggestionBuilder& SuggestionBuilder::Title(const std::string& title) {
+  suggestion_.title = title;
+  return *this;
 }
 
-// static
-std::unique_ptr<ContextualSuggestion> ContextualSuggestion::CreateForTesting(
-    const std::string& to_url,
-    const std::string& image_url) {
-  auto suggestion = MakeUnique({to_url});
-  suggestion->url_ = GURL(to_url);
-  suggestion->salient_image_url_ = GURL(image_url);
-  return suggestion;
+SuggestionBuilder& SuggestionBuilder::PublisherName(
+    const std::string& publisher_name) {
+  suggestion_.publisher_name = publisher_name;
+  return *this;
 }
 
-// static
-std::unique_ptr<ContextualSuggestion> ContextualSuggestion::MakeUnique(
-    const std::string& id) {
-  return base::WrapUnique(new ContextualSuggestion(id));
+SuggestionBuilder& SuggestionBuilder::Snippet(const std::string& snippet) {
+  suggestion_.snippet = snippet;
+  return *this;
+}
+
+SuggestionBuilder& SuggestionBuilder::ImageId(const std::string& image_id) {
+  suggestion_.image_id = image_id;
+  return *this;
+}
+
+SuggestionBuilder& SuggestionBuilder::FaviconImageId(
+    const std::string& favicon_image_id) {
+  suggestion_.favicon_image_id = favicon_image_id;
+  return *this;
+}
+
+ContextualSuggestion SuggestionBuilder::Build() {
+  return std::move(suggestion_);
 }
 
 }  // namespace ntp_snippets

@@ -5,10 +5,12 @@
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
@@ -20,7 +22,9 @@
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_manager_connection.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 
 #if defined(OS_ANDROID)
@@ -70,7 +74,6 @@ ContextualContentSuggestionsServiceFactory::
     : BrowserContextKeyedServiceFactory(
           "ContextualContentSuggestionsService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(IdentityManagerFactory::GetInstance());
 }
 
 ContextualContentSuggestionsServiceFactory::
@@ -86,16 +89,14 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   }
 
   PrefService* pref_service = profile->GetPrefs();
-  identity::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(profile);
   scoped_refptr<net::URLRequestContextGetter> request_context =
       profile->GetRequestContext();
+  content::StoragePartition* storage_partition =
+      content::BrowserContext::GetDefaultStoragePartition(context);
   auto contextual_suggestions_fetcher =
       std::make_unique<ContextualSuggestionsFetcherImpl>(
-          identity_manager, request_context, pref_service,
-          base::Bind(&data_decoder::SafeJsonParser::Parse,
-                     content::ServiceManagerConnection::GetForProcess()
-                         ->GetConnector()));
+          storage_partition->GetURLLoaderFactoryForBrowserProcess(),
+          g_browser_process->GetApplicationLocale());
   const base::FilePath::CharType kDatabaseFolder[] =
       FILE_PATH_LITERAL("contextualSuggestionsDatabase");
   base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));
