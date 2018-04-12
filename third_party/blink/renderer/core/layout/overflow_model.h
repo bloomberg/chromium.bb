@@ -181,19 +181,11 @@ class BoxOverflowModel {
     layout_client_after_edge_ = client_after_edge;
   }
 
-  void SetHasSubpixelVisualEffectOutsets(bool b) {
-    has_subpixel_visual_effect_outsets_ = b;
-  }
-  bool HasSubpixelVisualEffectOutsets() const {
-    return has_subpixel_visual_effect_outsets_;
-  }
-
  private:
   LayoutRect layout_overflow_;
   LayoutRect self_visual_overflow_;
   LayoutRect contents_visual_overflow_;
   LayoutUnit layout_client_after_edge_;
-  bool has_subpixel_visual_effect_outsets_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BoxOverflowModel);
 };
