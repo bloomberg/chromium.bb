@@ -54,7 +54,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   {# Security checks #}
   {% if method.is_check_security_for_return_value %}
   {{define_exception_state}}
-  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, exceptionState)) {
+  if (!BindingSecurity::ShouldAllowAccessTo(CurrentDOMWindow(info.GetIsolate()), {{method.cpp_value}}, BindingSecurity::ErrorReportOption::kDoNotReport)) {
     UseCounter::Count(CurrentExecutionContext(info.GetIsolate()),
                       WebFeature::kCrossOrigin{{interface_name}}{{method.name|blink_capitalize}});
     V8SetReturnValueNull(info);

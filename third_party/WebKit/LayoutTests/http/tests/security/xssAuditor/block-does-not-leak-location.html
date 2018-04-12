@@ -9,7 +9,7 @@
         window.jsTestIsAsync = true;
 
         function checkFrames() {
-            shouldThrow('xssed.contentDocument');
+            shouldBeNull('xssed.contentDocument');
             shouldThrow('xssed.contentWindow.location.href');
             finishJSTest();
         }

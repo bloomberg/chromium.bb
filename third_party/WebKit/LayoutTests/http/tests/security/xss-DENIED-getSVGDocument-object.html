@@ -1,20 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
 function runTest() {
-    try {
-        var svgDoc = document.getElementById("svgobject").getSVGDocument();
-        console.log("FAIL: got SVGDocument: " + svgDoc);
-    } catch (e) {
-        console.log("PASS: SVGDocument access threw: '" + e.toString() + "'.");
-    }
-    if (window.testRunner)
-        testRunner.notifyDone();
+    test(() => {
+      assert_equals(document.getElementById("svgobject").getSVGDocument(), null);
+    }, "getSVGDocument() returns null for cross-origin documents");
 }
 </script>
 </head>
@@ -22,6 +15,5 @@ function runTest() {
 <object onload="runTest()"
         id="svgobject" data="http://localhost:8080/security/resources/empty-svg.php"
         type="image/svg+xml" width="400" height="300"></object> 
-<div id="output"></div>
 </body>
 </html>
