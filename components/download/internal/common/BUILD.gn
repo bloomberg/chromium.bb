@@ -31,6 +31,7 @@ source_set("internal") {
     "download_stats.cc",
     "download_task_runner.cc",
     "download_ukm_helper.cc",
+    "download_url_loader_factory_getter.cc",
     "download_utils.cc",
     "download_worker.cc",
     "download_worker.h",

@@ -34,15 +34,18 @@
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_stats.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/download/public/common/download_url_loader_factory_getter.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/resource_downloader.h"
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/download/blob_download_url_loader_factory_getter.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_utils.h"
+#include "content/browser/download/network_download_url_loader_factory_getter.h"
 #include "content/browser/download/url_downloader.h"
 #include "content/browser/download/url_downloader_factory.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -204,8 +207,8 @@ void BeginDownload(std::unique_ptr<download::DownloadUrlParameters> params,
 void BeginResourceDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     std::unique_ptr<network::ResourceRequest> request,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
-    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter,
     uint32_t download_id,
     base::WeakPtr<DownloadManagerImpl> download_manager,
     const GURL& site_url,
@@ -226,26 +229,13 @@ void BeginResourceDownload(
         download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
         download_manager);
   } else {
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory;
-    if (params->url().SchemeIs(url::kBlobScheme)) {
-      network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
-      storage::BlobURLLoaderFactory::Create(
-          std::move(blob_data_handle), params->url(),
-          mojo::MakeRequest(&url_loader_factory_ptr_info));
-      shared_url_loader_factory =
-          base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
-              std::move(url_loader_factory_ptr_info));
-    } else {
-      shared_url_loader_factory =
-          url_loader_factory_getter->GetNetworkFactory();
-    }
     // TODO(qinmin): Check the storage permission before creating the URLLoader.
     // This is already done for context menu download, but it is missing for
     // download service and download resumption.
     downloader.reset(
         download::ResourceDownloader::BeginDownload(
             download_manager, std::move(params), std::move(request),
-            std::move(shared_url_loader_factory), site_url, tab_url,
+            url_loader_factory_getter->GetURLLoaderFactory(), site_url, tab_url,
             tab_referrer_url, download_id, false, task_runner)
             .release());
   }
@@ -1326,12 +1316,22 @@ void DownloadManagerImpl::BeginDownloadInternal(
       }
     }
 
+    scoped_refptr<download::DownloadURLLoaderFactoryGetter>
+        url_loader_factory_getter;
+    if (params->url().SchemeIs(url::kBlobScheme)) {
+      url_loader_factory_getter =
+          base::MakeRefCounted<BlobDownloadURLLoaderFactoryGetter>(
+              params->url(), std::move(blob_data_handle));
+    } else {
+      url_loader_factory_getter =
+          base::MakeRefCounted<NetworkDownloadURLLoaderFactoryGetter>(
+              storage_partition->url_loader_factory_getter());
+    }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&BeginResourceDownload, std::move(params),
-                       std::move(request), std::move(blob_data_handle),
-                       storage_partition->url_loader_factory_getter(), id,
-                       weak_factory_.GetWeakPtr(), site_url, tab_url,
+                       std::move(request), std::move(url_loader_factory_getter),
+                       id, weak_factory_.GetWeakPtr(), site_url, tab_url,
                        tab_referrer_url,
                        base::MessageLoop::current()->task_runner()));
   } else {

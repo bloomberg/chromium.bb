@@ -20,7 +20,7 @@ COMPONENTS_DOWNLOAD_EXPORT void SetIOTaskRunner(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
 // Returns the task runner used to save files and do other blocking operations.
-COMPONENTS_DOWNLOAD_EXPORT scoped_refptr<base::SequencedTaskRunner>
+COMPONENTS_DOWNLOAD_EXPORT scoped_refptr<base::SingleThreadTaskRunner>
 GetIOTaskRunner();
 
 }  // namespace download

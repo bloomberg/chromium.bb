@@ -44,6 +44,7 @@ component("public") {
     "download_stats.h",
     "download_task_runner.h",
     "download_ukm_helper.h",
+    "download_url_loader_factory_getter.h",
     "download_url_parameters.cc",
     "download_url_parameters.h",
     "download_utils.h",
