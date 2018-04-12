@@ -38,6 +38,22 @@ XRFrameTransport::GetSubmitFrameClient() {
   return submit_frame_client;
 }
 
+bool XRFrameTransport::DrawingIntoSharedBuffer() {
+  switch (transport_options_->transport_method) {
+    case device::mojom::blink::VRDisplayFrameTransportMethod::
+        SUBMIT_AS_TEXTURE_HANDLE:
+    case device::mojom::blink::VRDisplayFrameTransportMethod::
+        SUBMIT_AS_MAILBOX_HOLDER:
+      return false;
+    case device::mojom::blink::VRDisplayFrameTransportMethod::
+        DRAW_INTO_TEXTURE_MAILBOX:
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 void XRFrameTransport::FramePreImage(gpu::gles2::GLES2Interface* gl) {
   frame_wait_time_ = WTF::TimeDelta();
 
@@ -168,6 +184,19 @@ void XRFrameTransport::FrameSubmit(
         vr_frame_id, gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D),
         frame_wait_time_);
     TRACE_EVENT_END0("gpu", "XRFrameTransport::SubmitFrame");
+  } else if (transport_options_->transport_method ==
+             device::mojom::blink::VRDisplayFrameTransportMethod::
+                 DRAW_INTO_TEXTURE_MAILBOX) {
+    TRACE_EVENT0("gpu", "XRFrameTransport::SubmitFrameDrawnIntoTexture");
+    gpu::SyncToken sync_token;
+    {
+      TRACE_EVENT0("gpu", "GenSyncTokenCHROMIUM");
+      gl->GenSyncTokenCHROMIUM(sync_token.GetData());
+    }
+    if (waiting_for_previous_frame_render_)
+      frame_wait_time_ += WaitForPreviousRenderToFinish();
+    vr_presentation_provider->SubmitFrameDrawnIntoTexture(
+        vr_frame_id, sync_token, frame_wait_time_);
   } else {
     NOTREACHED() << "Unimplemented frame transport method";
   }

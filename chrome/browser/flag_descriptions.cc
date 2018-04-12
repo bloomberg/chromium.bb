@@ -2341,6 +2341,8 @@ const char kWebXrRenderPathChoiceClientWaitDescription[] =
     "ClientWait (Baseline)";
 const char kWebXrRenderPathChoiceGpuFenceDescription[] =
     "GpuFence (Android N+)";
+const char kWebXrRenderPathChoiceSharedBufferDescription[] =
+    "SharedBuffer (Android O+)";
 
 // Non-Android -----------------------------------------------------------------
 

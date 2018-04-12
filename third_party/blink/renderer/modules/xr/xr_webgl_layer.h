@@ -64,7 +64,7 @@ class XRWebGLLayer final : public XRLayer,
 
   void UpdateViewports();
 
-  void OnFrameStart() override;
+  void OnFrameStart(const base::Optional<gpu::MailboxHolder>&) override;
   void OnFrameEnd() override;
   void OnResize() override;
 
@@ -100,6 +100,7 @@ class XRWebGLLayer final : public XRLayer,
   double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
   bool mirroring_ = false;
+  bool is_direct_draw_frame = false;
 };
 
 }  // namespace blink

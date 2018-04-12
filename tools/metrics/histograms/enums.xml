@@ -48187,6 +48187,7 @@ Full version information for the fingerprint enum values:
 <enum name="XRRenderPath">
   <int value="0" label="ClientWait"/>
   <int value="1" label="GpuFence"/>
+  <int value="2" label="SharedBuffer"/>
 </enum>
 
 <enum name="XRRuntimeAvailable">

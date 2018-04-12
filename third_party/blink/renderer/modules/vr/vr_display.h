@@ -148,7 +148,8 @@ class VRDisplay final : public EventTargetWithInlineData,
       device::mojom::blink::VRPosePtr,
       WTF::TimeDelta,
       int16_t frame_id,
-      device::mojom::blink::VRPresentationProvider::VSyncStatus);
+      device::mojom::blink::VRPresentationProvider::VSyncStatus,
+      const base::Optional<gpu::MailboxHolder>& buffer_holder);
   void OnPresentationProviderConnectionError();
 
   void OnMagicWindowPose(device::mojom::blink::VRPosePtr);

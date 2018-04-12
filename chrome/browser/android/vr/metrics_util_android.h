@@ -22,6 +22,7 @@ class MetricsUtilAndroid {
   enum class XRRenderPath : int {
     kClientWait = 0,
     kGpuFence = 1,
+    kSharedBuffer = 2,
 
     // This must be last.
     kCount

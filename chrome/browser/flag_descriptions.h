@@ -1420,6 +1420,7 @@ extern const char kWebXrRenderPathName[];
 extern const char kWebXrRenderPathDescription[];
 extern const char kWebXrRenderPathChoiceClientWaitDescription[];
 extern const char kWebXrRenderPathChoiceGpuFenceDescription[];
+extern const char kWebXrRenderPathChoiceSharedBufferDescription[];
 
 // Non-Android ----------------------------------------------------------------
 

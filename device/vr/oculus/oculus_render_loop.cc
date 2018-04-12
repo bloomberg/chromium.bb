@@ -74,6 +74,14 @@ void OculusRenderLoop::SubmitFrame(int16_t frame_index,
   NOTREACHED();
 }
 
+void OculusRenderLoop::SubmitFrameDrawnIntoTexture(
+    int16_t frame_index,
+    const gpu::SyncToken& sync_token,
+    base::TimeDelta time_waited) {
+  // Not currently implemented for Windows.
+  NOTREACHED();
+}
+
 void OculusRenderLoop::SubmitFrameWithTextureHandle(
     int16_t frame_index,
     mojo::ScopedHandle texture_handle) {
@@ -252,7 +260,8 @@ void OculusRenderLoop::GetVSync(
   base::TimeDelta time = base::TimeDelta::FromSecondsD(predicted_time);
 
   std::move(callback).Run(std::move(pose), time, frame,
-                          mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
+                          mojom::VRPresentationProvider::VSyncStatus::SUCCESS,
+                          base::nullopt);
 }
 
 std::vector<mojom::XRInputSourceStatePtr> OculusRenderLoop::GetInputState(

@@ -47,7 +47,8 @@ class XRFrameProvider final
       device::mojom::blink::VRPosePtr,
       WTF::TimeDelta,
       int16_t frame_id,
-      device::mojom::blink::VRPresentationProvider::VSyncStatus);
+      device::mojom::blink::VRPresentationProvider::VSyncStatus,
+      const base::Optional<gpu::MailboxHolder>& buffer_holder);
   void OnNonExclusivePose(device::mojom::blink::VRPosePtr);
 
   void ScheduleExclusiveFrame();
@@ -64,6 +65,13 @@ class XRFrameProvider final
   Member<ScriptPromiseResolver> pending_exclusive_session_resolver_;
   Member<XRFrameTransport> frame_transport_;
 
+  // Careful, exclusive_session_ being true does not mean it's OK to send
+  // frames. The initialization handshake may not be complete yet. This boolean
+  // starts out false at the start of a session, becomes true after a
+  // successful OnPresentComplete(), and remains true for the lifetime of the
+  // exclusive session.
+  bool exclusive_session_can_send_frames_ = false;
+
   // Non-exclusive Sessions which have requested a frame update.
   HeapVector<Member<XRSession>> requesting_sessions_;
 
@@ -78,6 +86,8 @@ class XRFrameProvider final
   bool pending_exclusive_vsync_ = false;
   bool pending_non_exclusive_vsync_ = false;
   bool vsync_connection_failed_ = false;
+
+  base::Optional<gpu::MailboxHolder> buffer_mailbox_holder_;
 };
 
 }  // namespace blink

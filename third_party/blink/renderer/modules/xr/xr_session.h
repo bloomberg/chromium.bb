@@ -101,7 +101,8 @@ class XRSession final : public EventTargetWithInlineData {
 
   void OnFocus();
   void OnBlur();
-  void OnFrame(std::unique_ptr<TransformationMatrix>);
+  void OnFrame(std::unique_ptr<TransformationMatrix>,
+               const base::Optional<gpu::MailboxHolder>&);
   void OnInputStateChange(
       int16_t frame_id,
       const WTF::Vector<device::mojom::blink::XRInputSourceStatePtr>&);

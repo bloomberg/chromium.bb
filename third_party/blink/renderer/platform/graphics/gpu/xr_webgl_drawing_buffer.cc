@@ -122,6 +122,7 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
       Extensions3DUtil::Create(gl);
 
   gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
+  DVLOG(2) << __FUNCTION__ << ": max_texture_size_=" << max_texture_size_;
 
   // Check context capabilities
   int max_sample_count = 0;
@@ -137,6 +138,8 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
       anti_aliasing_mode_ = kScreenSpaceAntialiasing;
     }
   }
+  DVLOG(2) << __FUNCTION__
+           << ": anti_aliasing_mode_=" << static_cast<int>(anti_aliasing_mode_);
 
   storage_texture_supported_ =
       (drawing_buffer_->webgl_version() > DrawingBuffer::kWebGL1 ||
@@ -191,6 +194,89 @@ IntSize XRWebGLDrawingBuffer::AdjustSize(const IntSize& new_size) {
   }
 
   return IntSize(width, height);
+}
+
+void XRWebGLDrawingBuffer::UseSharedBuffer(
+    const gpu::MailboxHolder& buffer_mailbox_holder) {
+  DVLOG(3) << __FUNCTION__;
+
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  // Create a texture backed by the shared buffer image.
+  DCHECK(!shared_buffer_texture_id_);
+  shared_buffer_texture_id_ =
+      gl->CreateAndConsumeTextureCHROMIUM(buffer_mailbox_holder.mailbox.name);
+
+  if (WantExplicitResolve()) {
+    // Bind the shared texture to the destination framebuffer of
+    // the explicit resolve step.
+    if (!resolved_framebuffer_) {
+      gl->GenFramebuffers(1, &resolved_framebuffer_);
+    }
+    gl->BindFramebuffer(GL_FRAMEBUFFER, resolved_framebuffer_);
+  } else {
+    // Bind the shared texture directly to the drawing framebuffer.
+    gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+  }
+
+  if (anti_aliasing_mode_ == kMSAAImplicitResolve) {
+    gl->FramebufferTexture2DMultisampleEXT(
+        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+        shared_buffer_texture_id_, 0, sample_count_);
+  } else {
+    // Explicit resolve, screen space antialiasing, or no antialiasing.
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             GL_TEXTURE_2D, shared_buffer_texture_id_, 0);
+  }
+
+  if (!framebuffer_complete_checked_for_sharedbuffer_) {
+    DCHECK(gl->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
+           GL_FRAMEBUFFER_COMPLETE);
+    framebuffer_complete_checked_for_sharedbuffer_ = true;
+  }
+
+  if (discard_framebuffer_supported_) {
+    const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
+                                    GL_STENCIL_ATTACHMENT};
+    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
+  }
+
+  DrawingBuffer::Client* client = drawing_buffer_->client();
+  client->DrawingBufferClientRestoreFramebufferBinding();
+}
+
+void XRWebGLDrawingBuffer::DoneWithSharedBuffer() {
+  DVLOG(3) << __FUNCTION__;
+
+  BindAndResolveDestinationFramebuffer();
+
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+  if (discard_framebuffer_supported_) {
+    // Discard the depth and stencil attachments since we're done with them.
+    // Don't discard the color buffer, we do need this rendered into the
+    // shared buffer.
+    if (WantExplicitResolve()) {
+      gl->BindFramebuffer(GL_FRAMEBUFFER, resolved_framebuffer_);
+    } else {
+      gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
+    }
+    const GLenum kAttachments[] = {GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER,
+                              sizeof(kAttachments) / sizeof(kAttachments[0]),
+                              kAttachments);
+  }
+
+  // Always bind to the default framebuffer as a hint to the GPU to start
+  // rendering now.
+  gl->BindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // Done with the texture created by CreateAndConsumeTexture, delete it.
+  DCHECK(shared_buffer_texture_id_);
+  gl->DeleteTextures(1, &shared_buffer_texture_id_);
+  shared_buffer_texture_id_ = 0;
+
+  DrawingBuffer::Client* client = drawing_buffer_->client();
+  client->DrawingBufferClientRestoreFramebufferBinding();
 }
 
 void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
@@ -277,11 +363,10 @@ void XRWebGLDrawingBuffer::Resize(const IntSize& new_size) {
                              GL_TEXTURE_2D, back_color_buffer_->texture_id, 0);
   }
 
-  if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    DLOG(ERROR) << "Framebuffer incomplete";
-    framebuffer_incomplete_ = true;
-  } else {
-    framebuffer_incomplete_ = false;
+  if (!framebuffer_complete_checked_for_resize_) {
+    DCHECK(gl->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
+           GL_FRAMEBUFFER_COMPLETE);
+    framebuffer_complete_checked_for_resize_ = true;
   }
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
@@ -336,16 +421,17 @@ bool XRWebGLDrawingBuffer::WantExplicitResolve() const {
   return anti_aliasing_mode_ == kMSAAExplicitResolve;
 }
 
-// Swap the front and back buffers. After this call the front buffer should
-// contain the previously rendered content, resolved from the multisample
-// renderbuffer if needed.
-void XRWebGLDrawingBuffer::SwapColorBuffers() {
+void XRWebGLDrawingBuffer::BindAndResolveDestinationFramebuffer() {
+  // Ensure that the mode-appropriate destination framebuffer's color
+  // attachment contains the drawn content after any antialiasing steps needed.
+
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   DrawingBuffer::Client* client = drawing_buffer_->client();
 
   // Resolve multisample buffers if needed
   if (WantExplicitResolve()) {
+    DVLOG(3) << __FUNCTION__ << ": explicit resolve";
     gl->BindFramebuffer(GL_READ_FRAMEBUFFER_ANGLE, framebuffer_);
     gl->BindFramebuffer(GL_DRAW_FRAMEBUFFER_ANGLE, resolved_framebuffer_);
     gl->Disable(GL_SCISSOR_TEST);
@@ -361,9 +447,27 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
     client->DrawingBufferClientRestoreScissorTest();
   } else {
     gl->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
-    if (anti_aliasing_mode_ == kScreenSpaceAntialiasing)
+    if (anti_aliasing_mode_ == kScreenSpaceAntialiasing) {
+      DVLOG(3) << __FUNCTION__ << ": screen space antialiasing";
       gl->ApplyScreenSpaceAntialiasingCHROMIUM();
+    } else {
+      DVLOG(3) << __FUNCTION__ << ": nothing to do";
+    }
   }
+
+  // On exit, leaves the destination framebuffer active. Caller is responsible
+  // for restoring client bindings.
+}
+
+// Swap the front and back buffers. After this call the front buffer should
+// contain the previously rendered content, resolved from the multisample
+// renderbuffer if needed.
+void XRWebGLDrawingBuffer::SwapColorBuffers() {
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+
+  DrawingBuffer::Client* client = drawing_buffer_->client();
+
+  BindAndResolveDestinationFramebuffer();
 
   // Swap buffers
   front_color_buffer_ = back_color_buffer_;
@@ -378,17 +482,16 @@ void XRWebGLDrawingBuffer::SwapColorBuffers() {
                              GL_TEXTURE_2D, back_color_buffer_->texture_id, 0);
   }
 
-  if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    DLOG(ERROR) << "Framebuffer incomplete";
-    framebuffer_incomplete_ = true;
-  } else {
-    framebuffer_incomplete_ = false;
+  if (!framebuffer_complete_checked_for_swap_) {
+    DCHECK(gl->CheckFramebufferStatus(GL_FRAMEBUFFER) ==
+           GL_FRAMEBUFFER_COMPLETE);
+    framebuffer_complete_checked_for_swap_ = true;
+  }
 
-    if (discard_framebuffer_supported_) {
-      const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
-                                      GL_STENCIL_ATTACHMENT};
-      gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
-    }
+  if (discard_framebuffer_supported_) {
+    const GLenum kAttachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
+                                    GL_STENCIL_ATTACHMENT};
+    gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, kAttachments);
   }
 
   client->DrawingBufferClientRestoreFramebufferBinding();
@@ -403,7 +506,7 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
 
   // Ensure the context isn't lost and the framebuffer is complete before
   // continuing.
-  if (!ContextLost() && !framebuffer_incomplete_) {
+  if (!ContextLost()) {
     SwapColorBuffers();
 
     buffer = front_color_buffer_;

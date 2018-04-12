@@ -594,6 +594,7 @@ const base::Feature kWebXrRenderPath{"WebXrRenderPath",
 const char kWebXrRenderPathParamName[] = "RenderPath";
 const char kWebXrRenderPathParamValueClientWait[] = "ClientWait";
 const char kWebXrRenderPathParamValueGpuFence[] = "GpuFence";
+const char kWebXrRenderPathParamValueSharedBuffer[] = "SharedBuffer";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX)

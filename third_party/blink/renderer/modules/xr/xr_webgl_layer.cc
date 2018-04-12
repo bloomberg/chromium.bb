@@ -241,7 +241,8 @@ void XRWebGLLayer::UpdateViewports() {
   }
 }
 
-void XRWebGLLayer::OnFrameStart() {
+void XRWebGLLayer::OnFrameStart(
+    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
   // If the requested scale has changed since the last from, update it now.
   if (viewport_scale_ != requested_viewport_scale_) {
     viewport_scale_ = requested_viewport_scale_;
@@ -250,10 +251,20 @@ void XRWebGLLayer::OnFrameStart() {
 
   framebuffer_->MarkOpaqueBufferComplete(true);
   framebuffer_->SetContentsChanged(false);
+  if (buffer_mailbox_holder) {
+    drawing_buffer_->UseSharedBuffer(buffer_mailbox_holder.value());
+    is_direct_draw_frame = true;
+  } else {
+    is_direct_draw_frame = false;
+  }
 }
 
 void XRWebGLLayer::OnFrameEnd() {
   framebuffer_->MarkOpaqueBufferComplete(false);
+  if (is_direct_draw_frame) {
+    drawing_buffer_->DoneWithSharedBuffer();
+    is_direct_draw_frame = false;
+  }
 
   // Submit the frame to the XR compositor.
   if (session()->exclusive()) {

@@ -715,7 +715,13 @@ void VRDisplay::submitFrame() {
 
   frame_transport_->FramePreImage(context_gl_);
 
+  // Shared buffer draw is not supposed to be enabled for WebVR 1.1 since
+  // we don't currently have a way to override the canvas drawing buffer's
+  // bindings. Sanity check that it's off.
+  DCHECK(!frame_transport_->DrawingIntoSharedBuffer());
+
   std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+
   scoped_refptr<Image> image_ref = GetFrameImage(&image_release_callback);
   if (!image_ref)
     return;
@@ -911,18 +917,32 @@ void VRDisplay::OnPresentingVSync(
     device::mojom::blink::VRPosePtr pose,
     WTF::TimeDelta time_delta,
     int16_t frame_id,
-    device::mojom::blink::VRPresentationProvider::VSyncStatus status) {
-  DVLOG(2) << __FUNCTION__;
+    device::mojom::blink::VRPresentationProvider::VSyncStatus status,
+    const base::Optional<gpu::MailboxHolder>& buffer_holder) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
   switch (status) {
     case device::mojom::blink::VRPresentationProvider::VSyncStatus::SUCCESS:
       break;
     case device::mojom::blink::VRPresentationProvider::VSyncStatus::CLOSING:
       return;
   }
+
+  if (!context_gl_) {
+    DVLOG(1) << __FUNCTION__ << ": lost context";
+    return;
+  }
+
+  // All early exits that want this VSync converted to a magic window
+  // VSync must happen before this line. Once it's set to not pending,
+  // an early exit woud break animation.
   pending_presenting_vsync_ = false;
 
   frame_pose_ = std::move(pose);
   vr_frame_id_ = frame_id;
+
+  if (frame_transport_ && frame_transport_->DrawingIntoSharedBuffer()) {
+    NOTIMPLEMENTED();
+  }
 
   // Post a task to handle scheduled animations after the current
   // execution context finishes, so that we yield to non-mojo tasks in
