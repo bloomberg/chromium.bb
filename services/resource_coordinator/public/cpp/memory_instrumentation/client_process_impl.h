@@ -63,13 +63,12 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
   // mojom::ClientProcess implementation. The Coordinator calls this.
   void RequestChromeMemoryDump(
       const base::trace_event::MemoryDumpRequestArgs& args,
-      const RequestChromeMemoryDumpCallback& callback) override;
+      RequestChromeMemoryDumpCallback callback) override;
 
   // mojom::ClientProcess implementation.
   // TODO(ssid): Use for GPU process.
-  void EnableHeapProfiling(
-      base::trace_event::HeapProfilingMode mode,
-      const EnableHeapProfilingCallback& callback) override;
+  void EnableHeapProfiling(base::trace_event::HeapProfilingMode mode,
+                           EnableHeapProfilingCallback callback) override;
 
   // Callback passed to base::MemoryDumpManager::CreateProcessDump().
   void OnChromeMemoryDumpDone(
@@ -78,14 +77,13 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ClientProcessImpl
       std::unique_ptr<base::trace_event::ProcessMemoryDump>);
 
   // mojom::ClientProcess implementation. The Coordinator calls this.
-  void RequestOSMemoryDump(
-      mojom::MemoryMapOption mmap_option,
-      const std::vector<base::ProcessId>& ids,
-      const RequestOSMemoryDumpCallback& callback) override;
+  void RequestOSMemoryDump(mojom::MemoryMapOption mmap_option,
+                           const std::vector<base::ProcessId>& ids,
+                           RequestOSMemoryDumpCallback callback) override;
 
   struct OSMemoryDumpArgs {
     OSMemoryDumpArgs();
-    OSMemoryDumpArgs(const OSMemoryDumpArgs&);
+    OSMemoryDumpArgs(OSMemoryDumpArgs&&);
     ~OSMemoryDumpArgs();
     mojom::MemoryMapOption mmap_option;
     std::vector<base::ProcessId> pids;

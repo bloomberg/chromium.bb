@@ -25,7 +25,7 @@ using OSMemDumpMap =
 
 // Holds data for pending requests enqueued via RequestGlobalMemoryDump().
 struct QueuedRequest {
-  using RequestGlobalMemoryDumpInternalCallback = base::Callback<
+  using RequestGlobalMemoryDumpInternalCallback = base::OnceCallback<
       void(bool, uint64_t, memory_instrumentation::mojom::GlobalMemoryDumpPtr)>;
 
   struct Args {
@@ -69,7 +69,7 @@ struct QueuedRequest {
 
   QueuedRequest(const Args& args,
                 uint64_t dump_guid,
-                const RequestGlobalMemoryDumpInternalCallback& callback);
+                RequestGlobalMemoryDumpInternalCallback callback);
   ~QueuedRequest();
 
   base::trace_event::MemoryDumpRequestArgs GetRequestArgs();
@@ -87,7 +87,7 @@ struct QueuedRequest {
 
   const Args args;
   const uint64_t dump_guid;
-  const RequestGlobalMemoryDumpInternalCallback callback;
+  RequestGlobalMemoryDumpInternalCallback callback;
 
   // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
   // set contains a |PendingResponse| for each |RequestChromeMemoryDump| and
@@ -111,11 +111,10 @@ struct QueuedRequest {
 struct QueuedVmRegionRequest {
   QueuedVmRegionRequest(
       uint64_t dump_guid,
-      const mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback&
-          callback);
+      mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback callback);
   ~QueuedVmRegionRequest();
   const uint64_t dump_guid;
-  const mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback callback;
+  mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback callback;
 
   struct Response {
     Response();

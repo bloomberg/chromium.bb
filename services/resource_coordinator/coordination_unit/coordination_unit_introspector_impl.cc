@@ -20,7 +20,7 @@ CoordinationUnitIntrospectorImpl::CoordinationUnitIntrospectorImpl() = default;
 CoordinationUnitIntrospectorImpl::~CoordinationUnitIntrospectorImpl() = default;
 
 void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
-    const GetProcessToURLMapCallback& callback) {
+    GetProcessToURLMapCallback callback) {
   std::vector<resource_coordinator::mojom::ProcessInfoPtr> process_infos;
   std::vector<ProcessCoordinationUnitImpl*> process_cus =
       ProcessCoordinationUnitImpl::GetAllProcessCoordinationUnits();
@@ -59,7 +59,7 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
     }
     process_infos.push_back(std::move(process_info));
   }
-  callback.Run(std::move(process_infos));
+  std::move(callback).Run(std::move(process_infos));
 }
 
 void CoordinationUnitIntrospectorImpl::BindToInterface(

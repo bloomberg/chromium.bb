@@ -97,9 +97,9 @@ MemoryInstrumentation::GetCoordinatorBindingForCurrentThread() {
     // invoking methods on the |coordinator| proxy objects.
     connector_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &MemoryInstrumentation::BindCoordinatorRequestOnConnectorThread,
-            base::Unretained(this), base::Passed(std::move(coordinator_req))));
+            base::Unretained(this), std::move(coordinator_req)));
   }
   DCHECK(*coordinator);
   return *coordinator;

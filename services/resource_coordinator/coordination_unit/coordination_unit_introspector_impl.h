@@ -26,7 +26,7 @@ class CoordinationUnitIntrospectorImpl
       const service_manager::BindSourceInfo& source_info);
 
   // Overridden from mojom::CoordinationUnitIntrospector:
-  void GetProcessToURLMap(const GetProcessToURLMapCallback& callback) override;
+  void GetProcessToURLMap(GetProcessToURLMapCallback callback) override;
 
  private:
   mojo::BindingSet<mojom::CoordinationUnitIntrospector> bindings_;

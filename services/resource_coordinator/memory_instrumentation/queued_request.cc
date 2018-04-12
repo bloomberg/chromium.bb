@@ -32,11 +32,10 @@ bool QueuedRequest::PendingResponse::operator<(
 QueuedRequest::Response::Response() {}
 QueuedRequest::Response::~Response() = default;
 
-QueuedRequest::QueuedRequest(
-    const Args& args,
-    uint64_t dump_guid,
-    const RequestGlobalMemoryDumpInternalCallback& callback)
-    : args(args), dump_guid(dump_guid), callback(callback) {}
+QueuedRequest::QueuedRequest(const Args& args,
+                             uint64_t dump_guid,
+                             RequestGlobalMemoryDumpInternalCallback callback)
+    : args(args), dump_guid(dump_guid), callback(std::move(callback)) {}
 QueuedRequest::~QueuedRequest() = default;
 
 base::trace_event::MemoryDumpRequestArgs QueuedRequest::GetRequestArgs() {
@@ -52,9 +51,8 @@ QueuedVmRegionRequest::Response::~Response() = default;
 
 QueuedVmRegionRequest::QueuedVmRegionRequest(
     uint64_t dump_guid,
-    const mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback&
-        callback)
-    : dump_guid(dump_guid), callback(callback) {}
+    mojom::HeapProfilerHelper::GetVmRegionsForHeapProfilerCallback callback)
+    : dump_guid(dump_guid), callback(std::move(callback)) {}
 QueuedVmRegionRequest::~QueuedVmRegionRequest() = default;
 
 }  // namespace memory_instrumentation

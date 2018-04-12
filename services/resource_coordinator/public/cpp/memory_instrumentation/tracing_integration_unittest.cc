@@ -121,16 +121,16 @@ class MockCoordinator : public Coordinator, public mojom::Coordinator {
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
       const std::vector<std::string>& allocator_dump_names,
-      const RequestGlobalMemoryDumpCallback&) override;
+      RequestGlobalMemoryDumpCallback) override;
 
   void RequestGlobalMemoryDumpForPid(
       base::ProcessId pid,
-      const RequestGlobalMemoryDumpForPidCallback&) override {}
+      RequestGlobalMemoryDumpForPidCallback) override {}
 
   void RequestGlobalMemoryDumpAndAppendToTrace(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
-      const RequestGlobalMemoryDumpAndAppendToTraceCallback&) override;
+      RequestGlobalMemoryDumpAndAppendToTraceCallback) override;
 
  private:
   mojo::BindingSet<mojom::Coordinator> bindings_;
@@ -173,20 +173,21 @@ class MemoryTracingIntegrationTest : public testing::Test {
     bool success = false;
     uint64_t req_guid = ++guid_counter_;
     MemoryDumpRequestArgs request_args{req_guid, dump_type, level_of_detail};
-    ClientProcessImpl::RequestChromeMemoryDumpCallback callback = base::Bind(
-        [](bool* curried_success, base::Closure curried_quit_closure,
-           std::unique_ptr<base::trace_event::ProcessMemoryDump>*
-               curried_result,
-           uint64_t curried_expected_guid, bool success, uint64_t dump_guid,
-           std::unique_ptr<base::trace_event::ProcessMemoryDump> result) {
-          EXPECT_EQ(curried_expected_guid, dump_guid);
-          *curried_success = success;
-          if (curried_result)
-            *curried_result = std::move(result);
-          curried_quit_closure.Run();
-        },
-        &success, run_loop.QuitClosure(), result, req_guid);
-    client_process_->RequestChromeMemoryDump(request_args, callback);
+    ClientProcessImpl::RequestChromeMemoryDumpCallback callback =
+        base::BindOnce(
+            [](bool* curried_success, base::OnceClosure curried_quit_closure,
+               std::unique_ptr<base::trace_event::ProcessMemoryDump>*
+                   curried_result,
+               uint64_t curried_expected_guid, bool success, uint64_t dump_guid,
+               std::unique_ptr<base::trace_event::ProcessMemoryDump> result) {
+              EXPECT_EQ(curried_expected_guid, dump_guid);
+              *curried_success = success;
+              if (curried_result)
+                *curried_result = std::move(result);
+              std::move(curried_quit_closure).Run();
+            },
+            &success, run_loop.QuitClosure(), result, req_guid);
+    client_process_->RequestChromeMemoryDump(request_args, std::move(callback));
     run_loop.Run();
     return success;
   }
@@ -195,10 +196,12 @@ class MemoryTracingIntegrationTest : public testing::Test {
                          MemoryDumpLevelOfDetail level_of_detail) {
     uint64_t req_guid = ++guid_counter_;
     MemoryDumpRequestArgs request_args{req_guid, dump_type, level_of_detail};
-    ClientProcessImpl::RequestChromeMemoryDumpCallback callback = base::Bind(
-        [](bool success, uint64_t dump_guid,
-           std::unique_ptr<base::trace_event::ProcessMemoryDump> result) {});
-    client_process_->RequestChromeMemoryDump(request_args, callback);
+    ClientProcessImpl::RequestChromeMemoryDumpCallback callback =
+        base::BindOnce(
+            [](bool success, uint64_t dump_guid,
+               std::unique_ptr<base::trace_event::ProcessMemoryDump> result) {
+            });
+    client_process_->RequestChromeMemoryDump(request_args, std::move(callback));
   }
 
  protected:
@@ -249,17 +252,17 @@ void MockCoordinator::RequestGlobalMemoryDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
     const std::vector<std::string>& allocator_dump_names,
-    const RequestGlobalMemoryDumpCallback& callback) {
+    RequestGlobalMemoryDumpCallback callback) {
   client_->RequestChromeDump(dump_type, level_of_detail);
-  callback.Run(true, mojom::GlobalMemoryDumpPtr());
+  std::move(callback).Run(true, mojom::GlobalMemoryDumpPtr());
 }
 
 void MockCoordinator::RequestGlobalMemoryDumpAndAppendToTrace(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
-    const RequestGlobalMemoryDumpAndAppendToTraceCallback& callback) {
+    RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
   client_->RequestChromeDump(dump_type, level_of_detail);
-  callback.Run(1, true);
+  std::move(callback).Run(1, true);
 }
 
 // Checks that is the ClientProcessImpl is initialized after tracing already
@@ -526,11 +529,11 @@ TEST_F(MemoryTracingIntegrationTest, GenerationChangeDoesntReenterMDM) {
   base::RunLoop run_loop;
   thread->PostTask(
       FROM_HERE,
-      Bind(
+      base::BindOnce(
           [](scoped_refptr<base::SequencedTaskRunner> main_task_runner,
-             base::Closure quit_closure) {
+             base::OnceClosure quit_closure) {
             TRACE_EVENT0(MemoryDumpManager::kTraceCategory, "foo");
-            main_task_runner->PostTask(FROM_HERE, quit_closure);
+            main_task_runner->PostTask(FROM_HERE, std::move(quit_closure));
           },
           base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure()));
   run_loop.Run();

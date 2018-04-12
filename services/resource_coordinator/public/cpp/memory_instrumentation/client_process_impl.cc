@@ -74,7 +74,7 @@ ClientProcessImpl::~ClientProcessImpl() {}
 
 void ClientProcessImpl::RequestChromeMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
-    const RequestChromeMemoryDumpCallback& callback) {
+    RequestChromeMemoryDumpCallback callback) {
   DCHECK(!callback.is_null());
   most_recent_chrome_memory_dump_guid_ = args.dump_guid;
   auto it_and_inserted =
@@ -106,10 +106,10 @@ void ClientProcessImpl::OnChromeMemoryDumpDone(
   }
 
   if (!process_memory_dump) {
-    callback.Run(false, dump_guid, nullptr);
+    std::move(callback).Run(false, dump_guid, nullptr);
     return;
   }
-  callback.Run(success, dump_guid, std::move(process_memory_dump));
+  std::move(callback).Run(success, dump_guid, std::move(process_memory_dump));
 }
 
 void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
@@ -118,8 +118,8 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ClientProcessImpl::RequestGlobalMemoryDump_NoCallback,
-                   base::Unretained(this), dump_type, level_of_detail));
+        base::BindOnce(&ClientProcessImpl::RequestGlobalMemoryDump_NoCallback,
+                       base::Unretained(this), dump_type, level_of_detail));
     return;
   }
 
@@ -130,19 +130,20 @@ void ClientProcessImpl::RequestGlobalMemoryDump_NoCallback(
 
 void ClientProcessImpl::EnableHeapProfiling(
     base::trace_event::HeapProfilingMode mode,
-    const EnableHeapProfilingCallback& callback) {
-  callback.Run(base::trace_event::MemoryDumpManager::GetInstance()->
-                   EnableHeapProfiling(mode));
+    EnableHeapProfilingCallback callback) {
+  std::move(callback).Run(
+      base::trace_event::MemoryDumpManager::GetInstance()->EnableHeapProfiling(
+          mode));
 }
 
 void ClientProcessImpl::RequestOSMemoryDump(
     mojom::MemoryMapOption mmap_option,
     const std::vector<base::ProcessId>& pids,
-    const RequestOSMemoryDumpCallback& callback) {
+    RequestOSMemoryDumpCallback callback) {
   OSMemoryDumpArgs args;
   args.mmap_option = mmap_option;
   args.pids = pids;
-  args.callback = callback;
+  args.callback = std::move(callback);
 
 #if defined(OS_MACOSX)
   // If the most recent chrome memory dump hasn't finished, wait for that to
@@ -174,7 +175,7 @@ void ClientProcessImpl::PerformOSMemoryDump(OSMemoryDumpArgs args) {
       results[pid] = std::move(result);
     global_success = global_success && success;
   }
-  args.callback.Run(global_success, std::move(results));
+  std::move(args.callback).Run(global_success, std::move(results));
 }
 
 ClientProcessImpl::Config::Config(service_manager::Connector* connector,
@@ -187,7 +188,7 @@ ClientProcessImpl::Config::Config(service_manager::Connector* connector,
 ClientProcessImpl::Config::~Config() {}
 
 ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs() = default;
-ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs(const OSMemoryDumpArgs&) =
+ClientProcessImpl::OSMemoryDumpArgs::OSMemoryDumpArgs(OSMemoryDumpArgs&&) =
     default;
 ClientProcessImpl::OSMemoryDumpArgs::~OSMemoryDumpArgs() = default;
 

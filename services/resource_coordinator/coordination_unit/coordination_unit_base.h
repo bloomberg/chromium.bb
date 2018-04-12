@@ -117,9 +117,8 @@ class CoordinationUnitInterface : public CoordinationUnitBase,
 
   void Bind(MojoRequestClass request) { binding_.Bind(std::move(request)); }
 
-  void GetID(
-      const typename MojoInterfaceClass::GetIDCallback& callback) override {
-    callback.Run(id_);
+  void GetID(typename MojoInterfaceClass::GetIDCallback callback) override {
+    std::move(callback).Run(id_);
   }
   void AddBinding(MojoRequestClass request) override {
     bindings_.AddBinding(this, std::move(request));
