@@ -86,6 +86,16 @@ ukm::SourceId NewUkmSourceWithUrl(ukm::UkmRecorder* ukm_recorder,
   return source_id;
 }
 
+// Reduce FormSignature space (in UKM) to a small range for privacy reasons.
+int64_t HashFormSignature(autofill::FormSignature form_signature) {
+  return static_cast<uint64_t>(form_signature) % 1021;
+}
+
+// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
+int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
+  return static_cast<uint64_t>(field_signature) % 1021;
+}
+
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -1699,8 +1709,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldFillStatus(
   ukm::builders::Autofill_FieldFillStatus(source_id_)
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
-      .SetFormSignature(static_cast<int64_t>(form.form_signature()))
-      .SetFieldSignature(static_cast<int64_t>(field.GetFieldSignature()))
+      .SetFormSignature(HashFormSignature(form.form_signature()))
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
       .SetValidationEvent(static_cast<int64_t>(metric_type))
       .SetIsAutofilled(static_cast<int64_t>(field.is_autofilled))
       .SetWasPreviouslyAutofilled(
@@ -1727,8 +1737,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogFieldType(
   ukm::builders::Autofill_FieldTypeValidation(source_id_)
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
-      .SetFormSignature(static_cast<int64_t>(form_signature))
-      .SetFieldSignature(static_cast<int64_t>(field_signature))
+      .SetFormSignature(HashFormSignature(form_signature))
+      .SetFieldSignature(HashFieldSignature(field_signature))
       .SetValidationEvent(static_cast<int64_t>(metric_type))
       .SetPredictionSource(static_cast<int64_t>(prediction_source))
       .SetPredictedType(static_cast<int64_t>(predicted_type))
