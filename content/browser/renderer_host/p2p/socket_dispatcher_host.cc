@@ -43,6 +43,11 @@ const uint8_t kPublicIPv6Host[] = {
     0x20, 0x01, 0x48, 0x60, 0x48, 0x60, 0, 0, 0, 0, 0, 0, 0, 0, 0x88, 0x88};
 const int kPublicPort = 53;  // DNS port.
 
+// Experimentation shows that creating too many sockets creates odd problems
+// because of resource exhaustion in the Unix sockets domain.
+// Trouble has been seen on Linux at 3479 sockets in test, so leave a margin.
+const int kMaxSimultaneousSockets = 3000;
+
 }  // namespace
 
 const size_t kMaximumPacketSize = 32768;
@@ -266,6 +271,11 @@ void P2PSocketDispatcherHost::OnCreateSocket(
     proxy_resolving_socket_factory_ =
         std::make_unique<network::ProxyResolvingClientSocketFactory>(
             nullptr, url_context_->GetURLRequestContext());
+  }
+  if (sockets_.size() > kMaxSimultaneousSockets) {
+    LOG(ERROR) << "Too many sockets created";
+    Send(new P2PMsg_OnError(socket_id));
+    return;
   }
   std::unique_ptr<P2PSocketHost> socket(P2PSocketHost::Create(
       this, socket_id, type, url_context_.get(),

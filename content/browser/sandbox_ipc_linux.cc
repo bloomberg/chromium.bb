@@ -144,7 +144,13 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
       base::UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
   if (len == -1) {
     // TODO: should send an error reply, or the sender might block forever.
-    NOTREACHED() << "Sandbox host message is larger than kMaxFontFamilyLength";
+    if (errno == EMSGSIZE) {
+      NOTREACHED()
+          << "Sandbox host message is larger than kMaxFontFamilyLength";
+    } else {
+      PLOG(ERROR) << "Recvmsg failed";
+      NOTREACHED();
+    }
     return;
   }
   if (fds.empty())

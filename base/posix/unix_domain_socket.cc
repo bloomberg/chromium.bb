@@ -189,6 +189,11 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   }
 
   if (msg.msg_flags & MSG_TRUNC || msg.msg_flags & MSG_CTRUNC) {
+    if (msg.msg_flags & MSG_CTRUNC) {
+      // Extraordinary case, not caller fixable. Log something.
+      LOG(ERROR) << "recvmsg returned MSG_CTRUNC flag, buffer len is "
+                 << msg.msg_controllen;
+    }
     for (unsigned i = 0; i < wire_fds_len; ++i)
       close(wire_fds[i]);
     errno = EMSGSIZE;
