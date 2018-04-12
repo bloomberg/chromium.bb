@@ -48,7 +48,8 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.RECEIVE_WEB_RESOURCE_ERROR,
                     Features.RECEIVE_HTTP_ERROR,
                     Features.SAFE_BROWSING_HIT,
-                    Features.SHOULD_OVERRIDE_WITH_REDIRECTS
+                    Features.SHOULD_OVERRIDE_WITH_REDIRECTS,
+                    Features.WEB_RESOURCE_REQUEST_IS_REDIRECT
             };
     // clang-format on
 
