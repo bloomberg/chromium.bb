@@ -1668,6 +1668,8 @@ jumbo_source_set("browser") {
     "web_package/signed_exchange_signature_verifier.h",
     "web_package/signed_exchange_url_loader_factory_for_non_network_service.cc",
     "web_package/signed_exchange_url_loader_factory_for_non_network_service.h",
+    "web_package/signed_exchange_utils.cc",
+    "web_package/signed_exchange_utils.h",
     "web_package/web_package_context_impl.cc",
     "web_package/web_package_context_impl.h",
     "web_package/web_package_loader.cc",

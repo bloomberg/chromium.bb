@@ -16,6 +16,7 @@
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_header_parser.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "crypto/signature_verifier.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_util.h"
@@ -137,16 +138,18 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
   return cbor::CBORValue(map);
 }
 
-bool VerifySignature(base::span<const uint8_t> sig,
-                     base::span<const uint8_t> msg,
-                     scoped_refptr<net::X509Certificate> cert) {
+bool VerifySignature(
+    base::span<const uint8_t> sig,
+    base::span<const uint8_t> msg,
+    scoped_refptr<net::X509Certificate> cert,
+    const signed_exchange_utils::LogCallback& error_message_callback) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
   base::StringPiece spki;
   if (!net::asn1::ExtractSPKIFromDERCert(
           net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
           &spki)) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
-                     "error", "Failed to extract SPKI.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "VerifySignature", error_message_callback, "Failed to extract SPKI.");
     return false;
   }
 
@@ -157,8 +160,9 @@ bool VerifySignature(base::span<const uint8_t> sig,
   if (type != net::X509Certificate::kPublicKeyTypeRSA) {
     // TODO(crbug.com/803774): Add support for ecdsa_secp256r1_sha256 and
     // ecdsa_secp384r1_sha384.
-    TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
-                     "error", "Unsupported public key type.", "type", type);
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "VerifySignature", error_message_callback,
+        base::StringPrintf("Unsupported public key type: %d", type));
     return false;
   }
 
@@ -168,14 +172,14 @@ bool VerifySignature(base::span<const uint8_t> sig,
   if (!verifier.VerifyInit(
           crypto::SignatureVerifier::RSA_PSS_SHA256, sig.data(), sig.size(),
           reinterpret_cast<const uint8_t*>(spki.data()), spki.size())) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
-                     "error", "VerifyInit failed.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "VerifySignature", error_message_callback, "VerifyInit failed.");
     return false;
   }
   verifier.VerifyUpdate(msg.data(), msg.size());
   if (!verifier.VerifyFinal()) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature",
-                     "error", "VerifyFinal failed.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "VerifySignature", error_message_callback, "VerifyFinal failed.");
     return false;
   }
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"), "VerifySignature");
@@ -259,34 +263,33 @@ bool VerifyTimestamps(const SignedExchangeHeader& header,
 SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
     const SignedExchangeHeader& header,
     scoped_refptr<net::X509Certificate> certificate,
-    const base::Time& verification_time) {
+    const base::Time& verification_time,
+    const signed_exchange_utils::LogCallback& error_message_callback) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeSignatureVerifier::Verify");
 
   if (!VerifyTimestamps(header, verification_time)) {
-    TRACE_EVENT_END2(
-        TRACE_DISABLED_BY_DEFAULT("loading"),
-        "SignedExchangeSignatureVerifier::Verify", "error",
-        "Invalid timestamp.", "info",
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
         base::StringPrintf(
-            "creation_time: %" PRIu64 ", expires_time: %" PRIu64
-            ", verification_time: %" PRIu64,
+            "Invalid timestamp. creation_time: %" PRIu64
+            ", expires_time: %" PRIu64 ", verification_time: %" PRIu64,
             header.signature().date, header.signature().expires,
             (verification_time - base::Time::UnixEpoch()).InSeconds()));
     return Result::kErrInvalidTimestamp;
   }
 
   if (!certificate) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureVerifier::Verify", "error",
-                     "No certificate set.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
+        "No certificate set.");
     return Result::kErrNoCertificate;
   }
 
   if (!header.signature().cert_sha256.has_value()) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureVerifier::Verify", "error",
-                     "No certSha256 set.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
+        "No certSha256 set.");
     return Result::kErrNoCertificateSHA256;
   }
 
@@ -294,17 +297,17 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   if (*header.signature().cert_sha256 !=
       net::X509Certificate::CalculateFingerprint256(
           certificate->cert_buffer())) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureVerifier::Verify", "error",
-                     "certSha256 mismatch.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
+        "certSha256 mismatch.");
     return Result::kErrCertificateSHA256Mismatch;
   }
 
   auto message = GenerateSignedMessage(header);
   if (!message) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureVerifier::Verify", "error",
-                     "Failed to reconstruct signed message.");
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
+        "Failed to reconstruct signed message.");
     return Result::kErrInvalidSignatureFormat;
   }
 
@@ -312,17 +315,16 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   if (!VerifySignature(
           base::make_span(reinterpret_cast<const uint8_t*>(sig.data()),
                           sig.size()),
-          *message, certificate)) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "SignedExchangeSignatureVerifier::Verify", "error",
-                     "Failed to verify signature \"sig\".");
+          *message, certificate, error_message_callback)) {
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
+        "Failed to verify signature \"sig\".");
     return Result::kErrSignatureVerificationFailed;
   }
 
   if (!base::EqualsCaseInsensitiveASCII(header.signature().integrity, "mi")) {
-    TRACE_EVENT_END1(
-        TRACE_DISABLED_BY_DEFAULT("loading"),
-        "SignedExchangeSignatureVerifier::Verify", "error",
+    signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
+        "SignedExchangeSignatureVerifier::Verify", error_message_callback,
         "The current implemention only supports \"mi\" integrity scheme.");
     return Result::kErrInvalidSignatureIntegrity;
   }

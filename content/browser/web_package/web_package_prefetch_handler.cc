@@ -29,6 +29,7 @@ bool WebPackagePrefetchHandler::IsResponseForWebPackage(
 }
 
 WebPackagePrefetchHandler::WebPackagePrefetchHandler(
+    int frame_tree_node_id,
     const network::ResourceResponseHead& response,
     network::mojom::URLLoaderPtr network_loader,
     network::mojom::URLLoaderClientRequest network_client_request,
@@ -56,8 +57,8 @@ WebPackagePrefetchHandler::WebPackagePrefetchHandler(
   web_package_loader_ = std::make_unique<WebPackageLoader>(
       response, std::move(client), std::move(endpoints),
       std::move(request_initiator), network::mojom::kURLLoadOptionNone,
-      std::move(url_loader_factory), loader_throttles_getter,
-      request_context_getter);
+      frame_tree_node_id, std::move(url_loader_factory),
+      loader_throttles_getter, request_context_getter);
 }
 
 WebPackagePrefetchHandler::~WebPackagePrefetchHandler() = default;

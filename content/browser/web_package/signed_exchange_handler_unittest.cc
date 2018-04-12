@@ -5,12 +5,14 @@
 #include "content/browser/web_package/signed_exchange_handler.h"
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "net/base/io_buffer.h"
@@ -58,7 +60,9 @@ class MockSignedExchangeCertFetcherFactory
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeCertFetcher::CertificateCallback callback) override {
+      SignedExchangeCertFetcher::CertificateCallback callback,
+      const signed_exchange_utils::LogCallback& error_message_callback)
+      override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
     auto cert_chain = SignedExchangeCertificateChain::Parse(cert_str_);
@@ -103,7 +107,8 @@ class SignedExchangeHandlerTest
         "application/signed-exchange;v=b0", std::move(source),
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
-        std::move(cert_fetcher_factory), request_context_getter_);
+        std::move(cert_fetcher_factory), request_context_getter_,
+        -1 /* frame_tree_node_id */);
   }
 
   void TearDown() override {

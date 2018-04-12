@@ -4,12 +4,14 @@
 
 #include "content/browser/web_package/signed_exchange_header.h"
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +49,8 @@ base::Optional<SignedExchangeHeader> GenerateHeaderAndParse(
 
   auto serialized = cbor::CBORWriter::Write(cbor::CBORValue(std::move(array)));
   return SignedExchangeHeader::Parse(
-      base::make_span(serialized->data(), serialized->size()));
+      base::make_span(serialized->data(), serialized->size()),
+      signed_exchange_utils::LogCallback());
 }
 
 }  // namespace
@@ -88,7 +91,8 @@ TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
       contents_bytes + SignedExchangeHeader::kEncodedHeaderLengthInBytes,
       header_size);
   const base::Optional<SignedExchangeHeader> header =
-      SignedExchangeHeader::Parse(cbor_bytes);
+      SignedExchangeHeader::Parse(cbor_bytes,
+                                  signed_exchange_utils::LogCallback());
   ASSERT_TRUE(header.has_value());
   EXPECT_EQ(header->request_url(), GURL("https://test.example.org/test/"));
   EXPECT_EQ(header->request_method(), "GET");

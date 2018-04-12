@@ -25,7 +25,9 @@ class SignedExchangeCertFetcherFactoryImpl
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
-      SignedExchangeCertFetcher::CertificateCallback callback) override;
+      SignedExchangeCertFetcher::CertificateCallback callback,
+      const signed_exchange_utils::LogCallback& error_message_callback)
+      override;
 
  private:
   url::Origin request_initiator_;
@@ -37,14 +39,16 @@ std::unique_ptr<SignedExchangeCertFetcher>
 SignedExchangeCertFetcherFactoryImpl::CreateFetcherAndStart(
     const GURL& cert_url,
     bool force_fetch,
-    SignedExchangeCertFetcher::CertificateCallback callback) {
+    SignedExchangeCertFetcher::CertificateCallback callback,
+    const signed_exchange_utils::LogCallback& error_message_callback) {
   DCHECK(url_loader_factory_);
   DCHECK(url_loader_throttles_getter_);
   std::vector<std::unique_ptr<URLLoaderThrottle>> throttles =
       std::move(url_loader_throttles_getter_).Run();
   return SignedExchangeCertFetcher::CreateAndStart(
       std::move(url_loader_factory_), std::move(throttles), cert_url,
-      std::move(request_initiator_), force_fetch, std::move(callback));
+      std::move(request_initiator_), force_fetch, std::move(callback),
+      std::move(error_message_callback));
 }
 
 // static

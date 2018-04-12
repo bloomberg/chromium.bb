@@ -408,6 +408,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           GetURLLoaderOptions(request_info->is_main_frame),
+          request_info->frame_tree_node_id,
           base::MakeRefCounted<
               SignedExchangeURLLoaderFactoryForNonNetworkService>(
               resource_context_, url_request_context_getter),
@@ -588,6 +589,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           GetURLLoaderOptions(request_info->is_main_frame),
+          request_info->frame_tree_node_id,
           default_url_loader_factory_getter_->GetNetworkFactory(),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,

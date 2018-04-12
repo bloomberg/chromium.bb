@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
+#include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/content_export.h"
 #include "net/cert/x509_certificate.h"
 
@@ -45,9 +47,11 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrInvalidTimestamp
   };
 
-  static Result Verify(const SignedExchangeHeader& header,
-                       scoped_refptr<net::X509Certificate> certificate,
-                       const base::Time& verification_time);
+  static Result Verify(
+      const SignedExchangeHeader& header,
+      scoped_refptr<net::X509Certificate> certificate,
+      const base::Time& verification_time,
+      const signed_exchange_utils::LogCallback& error_message_callback);
 
   static base::Optional<std::vector<uint8_t>> EncodeCanonicalExchangeHeaders(
       const SignedExchangeHeader& header);

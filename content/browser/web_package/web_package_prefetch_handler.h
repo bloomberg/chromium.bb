@@ -37,6 +37,7 @@ class WebPackagePrefetchHandler final : public network::mojom::URLLoaderClient {
   // |forwarding_client| is a pointer to the downstream client (typically who
   // creates this handler).
   WebPackagePrefetchHandler(
+      int frame_tree_node_id,
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr network_loader,
       network::mojom::URLLoaderClientRequest network_client_request,

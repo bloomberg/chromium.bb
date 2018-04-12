@@ -70,8 +70,9 @@ void PrefetchURLLoaderService::CreateLoaderAndStart(
   // TODO(kinuko): Revisit this.
   mojo::MakeStrongBinding(
       std::make_unique<PrefetchURLLoader>(
-          routing_id, request_id, options, resource_request, std::move(client),
-          traffic_annotation, std::move(network_loader_factory),
+          routing_id, request_id, options, frame_tree_node_id, resource_request,
+          std::move(client), traffic_annotation,
+          std::move(network_loader_factory),
           base::BindRepeating(
               &PrefetchURLLoaderService::CreateURLLoaderThrottles, this,
               resource_request, frame_tree_node_id),
