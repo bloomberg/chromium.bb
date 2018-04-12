@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -156,19 +157,16 @@ class ExtensionAppShimHandlerTest : public testing::Test {
         host_bb_(profile_path_b_, kTestAppIdB, handler_.get()),
         host_aa_duplicate_(profile_path_a_, kTestAppIdA, handler_.get()) {
     base::FilePath extension_path("/fake/path");
-    base::DictionaryValue manifest;
-    manifest.SetString("name", "Fake Name");
-    manifest.SetString("version", "1");
-    std::string error;
-    extension_a_ = Extension::Create(
-        extension_path, extensions::Manifest::INTERNAL, manifest,
-        Extension::NO_FLAGS, kTestAppIdA, &error);
-    EXPECT_TRUE(extension_a_.get()) << error;
-
-    extension_b_ = Extension::Create(
-        extension_path, extensions::Manifest::INTERNAL, manifest,
-        Extension::NO_FLAGS, kTestAppIdB, &error);
-    EXPECT_TRUE(extension_b_.get()) << error;
+    extension_a_ = extensions::ExtensionBuilder("Fake Name")
+                       .SetLocation(extensions::Manifest::INTERNAL)
+                       .SetPath(extension_path)
+                       .SetID(kTestAppIdA)
+                       .Build();
+    extension_b_ = extensions::ExtensionBuilder("Fake Name")
+                       .SetLocation(extensions::Manifest::INTERNAL)
+                       .SetPath(extension_path)
+                       .SetID(kTestAppIdB)
+                       .Build();
 
     EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
         .WillRepeatedly(Return(true));
