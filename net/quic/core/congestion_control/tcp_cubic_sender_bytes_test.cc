@@ -544,6 +544,7 @@ TEST_F(TcpCubicSenderBytesTest, MultipleLossesInOneWindow) {
 }
 
 TEST_F(TcpCubicSenderBytesTest, ConfigureMaxInitialWindow) {
+  SetQuicReloadableFlag(quic_unified_iw_options, false);
   QuicConfig config;
 
   // Verify that kCOPT: kIW10 forces the congestion window to the default of 10.
@@ -552,6 +553,12 @@ TEST_F(TcpCubicSenderBytesTest, ConfigureMaxInitialWindow) {
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   sender_->SetFromConfig(config, Perspective::IS_SERVER);
   EXPECT_EQ(10u * kDefaultTCPMSS, sender_->GetCongestionWindow());
+}
+
+TEST_F(TcpCubicSenderBytesTest, SetInitialCongestionWindow) {
+  EXPECT_NE(3u * kDefaultTCPMSS, sender_->GetCongestionWindow());
+  sender_->SetInitialCongestionWindowInPackets(3);
+  EXPECT_EQ(3u * kDefaultTCPMSS, sender_->GetCongestionWindow());
 }
 
 TEST_F(TcpCubicSenderBytesTest, 2ConnectionCongestionAvoidanceAtEndOfRecovery) {

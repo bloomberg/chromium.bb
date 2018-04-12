@@ -54,8 +54,8 @@ QuicPacketCreator::~QuicPacketCreator() {
 }
 
 void QuicPacketCreator::SetEncrypter(EncryptionLevel level,
-                                     QuicEncrypter* encrypter) {
-  framer_->SetEncrypter(level, encrypter);
+                                     std::unique_ptr<QuicEncrypter> encrypter) {
+  framer_->SetEncrypter(level, std::move(encrypter));
   max_plaintext_size_ = framer_->GetMaxPlaintextSize(max_packet_length_);
 }
 
@@ -182,7 +182,7 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                                           QuicFrame* frame) {
   DCHECK_GT(max_packet_length_,
             StreamFramePacketOverhead(framer_->transport_version(),
-                                      connection_id_length_, kIncludeVersion,
+                                      GetConnectionIdLength(), kIncludeVersion,
                                       IncludeNonceInPublicHeader(),
                                       PACKET_6BYTE_PACKET_NUMBER, offset));
 
@@ -398,10 +398,10 @@ size_t QuicPacketCreator::PacketSize() {
   if (!queued_frames_.empty()) {
     return packet_size_;
   }
-  packet_size_ =
-      GetPacketHeaderSize(framer_->transport_version(), connection_id_length_,
-                          send_version_in_packet_, IncludeNonceInPublicHeader(),
-                          packet_.packet_number_length);
+  packet_size_ = GetPacketHeaderSize(
+      framer_->transport_version(), GetConnectionIdLength(),
+      IncludeVersionInHeader(), IncludeNonceInPublicHeader(),
+      GetPacketNumberLength());
   return packet_size_;
 }
 
@@ -511,11 +511,19 @@ SerializedPacket QuicPacketCreator::NoPacket() {
                           false);
 }
 
+QuicConnectionIdLength QuicPacketCreator::GetConnectionIdLength() const {
+  return connection_id_length_;
+}
+
+QuicPacketNumberLength QuicPacketCreator::GetPacketNumberLength() const {
+  return packet_.packet_number_length;
+}
+
 void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   header->connection_id = connection_id_;
-  header->connection_id_length = connection_id_length_;
+  header->connection_id_length = GetConnectionIdLength();
   header->reset_flag = false;
-  header->version_flag = send_version_in_packet_;
+  header->version_flag = IncludeVersionInHeader();
   if (IncludeNonceInPublicHeader()) {
     DCHECK_EQ(Perspective::IS_SERVER, framer_->perspective());
     header->nonce = &diversification_nonce_;
@@ -554,7 +562,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   }
   size_t frame_len = framer_->GetSerializedFrameLength(
       frame, BytesFree(), queued_frames_.empty(), true,
-      packet_.packet_number_length);
+      GetPacketNumberLength());
   if (frame_len == 0) {
     // Current open packet is full.
     Flush();
@@ -619,9 +627,13 @@ void QuicPacketCreator::MaybeAddPadding() {
   DCHECK(success);
 }
 
-bool QuicPacketCreator::IncludeNonceInPublicHeader() {
+bool QuicPacketCreator::IncludeNonceInPublicHeader() const {
   return have_diversification_nonce_ &&
          packet_.encryption_level == ENCRYPTION_INITIAL;
+}
+
+bool QuicPacketCreator::IncludeVersionInHeader() const {
+  return send_version_in_packet_;
 }
 
 void QuicPacketCreator::AddPendingPadding(QuicByteCount size) {

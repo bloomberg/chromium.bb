@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_mem_slice_span.h"
 
 namespace net {
 
@@ -41,9 +42,7 @@ class QUIC_EXPORT_PRIVATE QuartcStreamInterface {
 
   // Sends data reliably and in-order.  Returns the amount sent.
   // Does not buffer data.
-  virtual void Write(const char* data,
-                     size_t size,
-                     const WriteParameters& param) = 0;
+  virtual void Write(QuicMemSliceSpan data, const WriteParameters& param) = 0;
 
   // Marks this stream as finished writing.  Asynchronously sends a FIN and
   // closes the write-side.  The stream will no longer call OnCanWrite().

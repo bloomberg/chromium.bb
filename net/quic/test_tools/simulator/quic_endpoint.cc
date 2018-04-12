@@ -84,9 +84,9 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
   connection_.SetSelfAddress(GetAddressFromName(name));
   connection_.set_visitor(this);
   connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                           new NullEncrypter(perspective));
+                           QuicMakeUnique<NullEncrypter>(perspective));
   connection_.SetDecrypter(ENCRYPTION_FORWARD_SECURE,
-                           new NullDecrypter(perspective));
+                           QuicMakeUnique<NullDecrypter>(perspective));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   connection_.SetDataProducer(&producer_);
   connection_.SetSessionNotifier(this);

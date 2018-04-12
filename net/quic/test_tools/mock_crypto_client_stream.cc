@@ -9,6 +9,7 @@
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
 #include "net/quic/core/quic_spdy_client_session_base.h"
+#include "net/quic/platform/api/quic_ptr_util.h"
 #include "net/quic/test_tools/mock_decrypter.h"
 #include "net/quic/test_tools/mock_encrypter.h"
 #include "net/quic/test_tools/quic_config_peer.h"
@@ -77,14 +78,18 @@ bool MockCryptoClientStream::CryptoConnect() {
       }
       if (use_mock_crypter_) {
         session()->connection()->SetDecrypter(
-            ENCRYPTION_INITIAL, new MockDecrypter(Perspective::IS_CLIENT));
+            ENCRYPTION_INITIAL,
+            QuicMakeUnique<MockDecrypter>(Perspective::IS_CLIENT));
         session()->connection()->SetEncrypter(
-            ENCRYPTION_INITIAL, new MockEncrypter(Perspective::IS_CLIENT));
+            ENCRYPTION_INITIAL,
+            QuicMakeUnique<MockEncrypter>(Perspective::IS_CLIENT));
       } else {
         session()->connection()->SetDecrypter(
-            ENCRYPTION_INITIAL, new NullDecrypter(Perspective::IS_CLIENT));
+            ENCRYPTION_INITIAL,
+            QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
         session()->connection()->SetEncrypter(
-            ENCRYPTION_INITIAL, new NullEncrypter(Perspective::IS_CLIENT));
+            ENCRYPTION_INITIAL,
+            QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
       }
       session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
       session()->OnCryptoHandshakeEvent(
@@ -105,17 +110,17 @@ bool MockCryptoClientStream::CryptoConnect() {
       if (use_mock_crypter_) {
         session()->connection()->SetDecrypter(
             ENCRYPTION_FORWARD_SECURE,
-            new MockDecrypter(Perspective::IS_CLIENT));
+            QuicMakeUnique<MockDecrypter>(Perspective::IS_CLIENT));
         session()->connection()->SetEncrypter(
             ENCRYPTION_FORWARD_SECURE,
-            new MockEncrypter(Perspective::IS_CLIENT));
+            QuicMakeUnique<MockEncrypter>(Perspective::IS_CLIENT));
       } else {
         session()->connection()->SetDecrypter(
             ENCRYPTION_FORWARD_SECURE,
-            new NullDecrypter(Perspective::IS_CLIENT));
+            QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
         session()->connection()->SetEncrypter(
             ENCRYPTION_FORWARD_SECURE,
-            new NullEncrypter(Perspective::IS_CLIENT));
+            QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
       }
       session()->connection()->SetDefaultEncryptionLevel(
           ENCRYPTION_FORWARD_SECURE);
@@ -163,14 +168,18 @@ void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
     SetConfigNegotiated();
     if (use_mock_crypter_) {
       session()->connection()->SetDecrypter(
-          ENCRYPTION_FORWARD_SECURE, new MockDecrypter(Perspective::IS_CLIENT));
+          ENCRYPTION_FORWARD_SECURE,
+          QuicMakeUnique<MockDecrypter>(Perspective::IS_CLIENT));
       session()->connection()->SetEncrypter(
-          ENCRYPTION_FORWARD_SECURE, new MockEncrypter(Perspective::IS_CLIENT));
+          ENCRYPTION_FORWARD_SECURE,
+          QuicMakeUnique<MockEncrypter>(Perspective::IS_CLIENT));
     } else {
       session()->connection()->SetDecrypter(
-          ENCRYPTION_FORWARD_SECURE, new NullDecrypter(Perspective::IS_CLIENT));
+          ENCRYPTION_FORWARD_SECURE,
+          QuicMakeUnique<NullDecrypter>(Perspective::IS_CLIENT));
       session()->connection()->SetEncrypter(
-          ENCRYPTION_FORWARD_SECURE, new NullEncrypter(Perspective::IS_CLIENT));
+          ENCRYPTION_FORWARD_SECURE,
+          QuicMakeUnique<NullEncrypter>(Perspective::IS_CLIENT));
     }
     session()->connection()->SetDefaultEncryptionLevel(
         ENCRYPTION_FORWARD_SECURE);

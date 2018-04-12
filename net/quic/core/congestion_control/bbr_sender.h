@@ -109,6 +109,8 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   void AdjustNetworkParameters(QuicBandwidth bandwidth,
                                QuicTime::Delta rtt) override;
   void SetNumEmulatedConnections(int num_connections) override {}
+  void SetInitialCongestionWindowInPackets(
+      QuicPacketCount congestion_window) override;
   void OnCongestionEvent(bool rtt_updated,
                          QuicByteCount prior_in_flight,
                          QuicTime event_time,

@@ -1861,17 +1861,19 @@ QuicStringPiece QuicFramer::GetAssociatedDataFromEncryptedPacket(
                               packet_number_length));
 }
 
-void QuicFramer::SetDecrypter(EncryptionLevel level, QuicDecrypter* decrypter) {
+void QuicFramer::SetDecrypter(EncryptionLevel level,
+                              std::unique_ptr<QuicDecrypter> decrypter) {
   DCHECK(alternative_decrypter_ == nullptr);
   DCHECK_GE(level, decrypter_level_);
-  decrypter_.reset(decrypter);
+  decrypter_ = std::move(decrypter);
   decrypter_level_ = level;
 }
 
-void QuicFramer::SetAlternativeDecrypter(EncryptionLevel level,
-                                         QuicDecrypter* decrypter,
-                                         bool latch_once_used) {
-  alternative_decrypter_.reset(decrypter);
+void QuicFramer::SetAlternativeDecrypter(
+    EncryptionLevel level,
+    std::unique_ptr<QuicDecrypter> decrypter,
+    bool latch_once_used) {
+  alternative_decrypter_ = std::move(decrypter);
   alternative_decrypter_level_ = level;
   alternative_decrypter_latch_ = latch_once_used;
 }
@@ -1884,10 +1886,11 @@ const QuicDecrypter* QuicFramer::alternative_decrypter() const {
   return alternative_decrypter_.get();
 }
 
-void QuicFramer::SetEncrypter(EncryptionLevel level, QuicEncrypter* encrypter) {
+void QuicFramer::SetEncrypter(EncryptionLevel level,
+                              std::unique_ptr<QuicEncrypter> encrypter) {
   DCHECK_GE(level, 0);
   DCHECK_LT(level, NUM_ENCRYPTION_LEVELS);
-  encrypter_[level].reset(encrypter);
+  encrypter_[level] = std::move(encrypter);
 }
 
 size_t QuicFramer::EncryptInPlace(EncryptionLevel level,

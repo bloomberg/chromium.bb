@@ -37,6 +37,12 @@ enum class QuartcBbrOptions {
                               //  once.
   kFillUpLinkDuringProbing,   // Sends probing retransmissions whenever we
                               // become application limited.
+  kInitialWindow3,            // Use a 3-packet initial congestion window.
+  kInitialWindow10,           // Use a 10-packet initial congestion window.
+  kInitialWindow20,           // Use a 20-packet initial congestion window.
+  kInitialWindow50,           // Use a 50-packet initial congestion window.
+  kStartup1RTT,               // Stay in STARTUP for 1 RTT.
+  kStartup2RTT,               // Stay in STARTUP for 2 RTTs.
 };
 
 // Used to create instances for Quartc objects such as QuartcSession.

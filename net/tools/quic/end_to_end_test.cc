@@ -600,6 +600,7 @@ class EndToEndTestWithTls : public EndToEndTest {
  protected:
   EndToEndTestWithTls() : EndToEndTest() {
     FLAGS_quic_reloadable_flag_delay_quic_server_handshaker_construction = true;
+    SetQuicReloadableFlag(quic_server_early_version_negotiation, true);
   }
 };
 
@@ -1623,6 +1624,26 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
       client_->client()->network_helper()->GetLatestClientAddress();
   EXPECT_EQ(old_address.host(), new_address.host());
   EXPECT_NE(old_address.port(), new_address.port());
+}
+
+TEST_P(EndToEndTest, NegotiatedInitialCongestionWindow) {
+  SetQuicReloadableFlag(quic_unified_iw_options, true);
+  client_extra_copts_.push_back(kIW03);
+
+  ASSERT_TRUE(Initialize());
+
+  // Values are exchanged during crypto handshake, so wait for that to finish.
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+  server_thread_->Pause();
+
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSession* session = dispatcher->session_map().begin()->second.get();
+  QuicConnection* server_connection = session->connection();
+  QuicPacketCount cwnd =
+      server_connection->sent_packet_manager().initial_congestion_window();
+  EXPECT_EQ(3u, cwnd);
 }
 
 TEST_P(EndToEndTest, DifferentFlowControlWindows) {

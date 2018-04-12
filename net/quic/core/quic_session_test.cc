@@ -136,7 +136,7 @@ class TestSession : public QuicSession {
     Initialize();
     this->connection()->SetEncrypter(
         ENCRYPTION_FORWARD_SECURE,
-        new NullEncrypter(connection->perspective()));
+        QuicMakeUnique<NullEncrypter>(connection->perspective()));
   }
 
   ~TestSession() override { delete connection(); }

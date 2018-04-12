@@ -346,9 +346,10 @@ void QuicPacketGenerator::set_encryption_level(EncryptionLevel level) {
   packet_creator_.set_encryption_level(level);
 }
 
-void QuicPacketGenerator::SetEncrypter(EncryptionLevel level,
-                                       QuicEncrypter* encrypter) {
-  packet_creator_.SetEncrypter(level, encrypter);
+void QuicPacketGenerator::SetEncrypter(
+    EncryptionLevel level,
+    std::unique_ptr<QuicEncrypter> encrypter) {
+  packet_creator_.SetEncrypter(level, std::move(encrypter));
 }
 
 void QuicPacketGenerator::AddRandomPadding() {
