@@ -102,6 +102,7 @@ class ASH_EXPORT HeaderView : public views::View,
 
   FrameCaptionButton* GetBackButton();
 
+ private:
   // ImmersiveFullscreenControllerDelegate:
   void OnImmersiveRevealStarted() override;
   void OnImmersiveRevealEnded() override;
@@ -110,7 +111,6 @@ class ASH_EXPORT HeaderView : public views::View,
   void SetVisibleFraction(double visible_fraction) override;
   std::vector<gfx::Rect> GetVisibleBoundsInScreen() const override;
 
- private:
   // The widget that the caption buttons act on.
   views::Widget* target_widget_;
 
