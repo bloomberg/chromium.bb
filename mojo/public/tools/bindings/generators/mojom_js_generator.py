@@ -89,6 +89,54 @@ _kind_to_closure_type = {
   mojom.NULLABLE_SHAREDBUFFER: "mojo.MojoHandle",
 }
 
+_js_reserved_keywords = [
+    'arguments',
+    'await',
+    'break'
+    'case',
+    'catch',
+    'class',
+    'const',
+    'continue',
+    'debugger',
+    'default',
+    'delete',
+    'do',
+    'else',
+    'enum',
+    'export',
+    'extends',
+    'finally',
+    'for',
+    'function',
+    'if',
+    'implements',
+    'import',
+    'in',
+    'instanceof',
+    'interface',
+    'let',
+    'new',
+    'package',
+    'private',
+    'protected',
+    'public',
+    'return',
+    'static',
+    'super',
+    'switch',
+    'this',
+    'throw',
+    'try',
+    'typeof',
+    'var',
+    'void',
+    'while',
+    'with',
+    'yield',
+]
+
+
 def JavaScriptPayloadSize(packed):
   packed_fields = packed.packed_fields
   if not packed_fields:
@@ -204,6 +252,7 @@ class Generator(generator.Generator):
       "validate_nullable_params": self._JavaScriptNullableParam,
       "validate_struct_params": self._JavaScriptValidateStructParams,
       "validate_union_params": self._JavaScriptValidateUnionParams,
+      "sanitize_identifier": self._JavaScriptSanitizeIdentifier,
     }
     return js_filters
 
@@ -448,6 +497,12 @@ class Generator(generator.Generator):
     values_nullable = "true" if mojom.IsNullableKind(values_kind) else "false"
     return "%s, %s, %s, %s" % \
         (nullable, keys_type, values_type, values_nullable)
+
+  def _JavaScriptSanitizeIdentifier(self, identifier):
+    if identifier in _js_reserved_keywords:
+      return identifier + '_'
+
+    return identifier
 
   def _TranslateConstants(self, token):
     if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
