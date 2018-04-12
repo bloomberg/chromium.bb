@@ -153,8 +153,10 @@ The toolchain files available at the time of this writing are:
 
  - arm64-ios.cmake
  - arm64-linux-gcc.cmake
+ - arm64-mingw-gcc.cmake
  - armv7-ios.cmake
  - armv7-linux-gcc.cmake
+ - armv7-mingw-gcc.cmake
  - armv7s-ios.cmake
  - mips32-linux-gcc.cmake
  - mips64-linux-gcc.cmake
