@@ -245,4 +245,46 @@ void BlinkNotificationServiceImpl::
   std::move(callback).Run(blink::mojom::PersistentNotificationError::NONE);
 }
 
+void BlinkNotificationServiceImpl::GetNotifications(
+    int64_t service_worker_registration_id,
+    const std::string& filter_tag,
+    GetNotificationsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (CheckPermissionStatus() != blink::mojom::PermissionStatus::GRANTED) {
+    // No permission has been granted for the given origin. It is harmless to
+    // try to get notifications without permission, so return empty vectors
+    // indicating that no (accessible) notifications exist at this time.
+    std::move(callback).Run(std::vector<std::string>(),
+                            std::vector<PlatformNotificationData>());
+    return;
+  }
+
+  notification_context_->ReadAllNotificationDataForServiceWorkerRegistration(
+      origin_.GetURL(), service_worker_registration_id,
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &BlinkNotificationServiceImpl::DidGetNotifications,
+          weak_ptr_factory_.GetWeakPtr(), filter_tag, std::move(callback))));
+}
+
+void BlinkNotificationServiceImpl::DidGetNotifications(
+    const std::string& filter_tag,
+    GetNotificationsCallback callback,
+    bool success,
+    const std::vector<NotificationDatabaseData>& notifications) {
+  std::vector<std::string> ids;
+  std::vector<PlatformNotificationData> datas;
+
+  for (const NotificationDatabaseData& database_data : notifications) {
+    // An empty filter tag matches all, else we need an exact match.
+    if (filter_tag.empty() ||
+        filter_tag == database_data.notification_data.tag) {
+      ids.push_back(database_data.notification_id);
+      datas.push_back(database_data.notification_data);
+    }
+  }
+
+  std::move(callback).Run(ids, datas);
+}
+
 }  // namespace content

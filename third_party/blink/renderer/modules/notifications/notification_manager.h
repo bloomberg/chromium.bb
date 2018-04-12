@@ -66,6 +66,15 @@ class NotificationManager final
       std::unique_ptr<blink::WebNotificationResources> notification_resources,
       std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks);
 
+  // Asynchronously gets the persistent notifications belonging to the Service
+  // Worker Registration. If |filter_tag| is not an empty string, only the
+  // notification with the given tag will be considered. Will take ownership of
+  // the WebNotificationGetCallbacks object.
+  void GetNotifications(
+      WebServiceWorkerRegistration* service_worker_registration,
+      const WebString& filter_tag,
+      std::unique_ptr<WebNotificationGetCallbacks> callbacks);
+
   virtual void Trace(blink::Visitor* visitor);
 
  private:
@@ -74,6 +83,11 @@ class NotificationManager final
   void DidDisplayPersistentNotification(
       std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks,
       mojom::blink::PersistentNotificationError error);
+
+  void DidGetNotifications(
+      std::unique_ptr<WebNotificationGetCallbacks> callbacks,
+      const Vector<String>& notification_ids,
+      const Vector<WebNotificationData>& notification_datas);
 
   // Returns an initialized NotificationServicePtr. A connection will be
   // established the first time this method is called.

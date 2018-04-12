@@ -65,4 +65,21 @@ interface NotificationService {
         NotificationResources notification_resources)
                 => (PersistentNotificationError error);
 
+  // Retrieves currently-displayed persistent notifications for a given
+  // service worker registration (i.e. notifications shown via
+  // DisplayPersistentNotification which were not yet closed or replaced).
+  //
+  // If |filter_tag| is non-empty an exact-match filter is applied against
+  // the notification tag, so 0 or 1 notifications will be returned (because
+  // notifications with the same tag replace each other).
+  //
+  // If |filter_tag| is empty no filtering is applied, so multiple
+  // notifications may be returned.
+  //
+  // Returns parallel lists of notification ids and their corresponding data.
+  GetNotifications(
+        int64 service_worker_registration_id,
+        string filter_tag)
+                => (array<string> notification_ids,
+                    array<NotificationData> notification_datas);
 };

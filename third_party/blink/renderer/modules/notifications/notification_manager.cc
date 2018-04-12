@@ -162,6 +162,35 @@ void NotificationManager::DidDisplayPersistentNotification(
   NOTREACHED();
 }
 
+void NotificationManager::GetNotifications(
+    WebServiceWorkerRegistration* service_worker_registration,
+    const WebString& filter_tag,
+    std::unique_ptr<WebNotificationGetCallbacks> callbacks) {
+  GetNotificationService()->GetNotifications(
+      service_worker_registration->RegistrationId(), filter_tag,
+      WTF::Bind(&NotificationManager::DidGetNotifications, WrapPersistent(this),
+                std::move(callbacks)));
+}
+
+void NotificationManager::DidGetNotifications(
+    std::unique_ptr<WebNotificationGetCallbacks> callbacks,
+    const Vector<String>& notification_ids,
+    const Vector<WebNotificationData>& notification_datas) {
+  DCHECK_EQ(notification_ids.size(), notification_datas.size());
+
+  WebVector<WebPersistentNotificationInfo> notifications(
+      notification_ids.size());
+
+  for (size_t i = 0; i < notification_ids.size(); ++i) {
+    WebPersistentNotificationInfo notification_info;
+    notification_info.notification_id = notification_ids[i];
+    notification_info.data = notification_datas[i];
+    notifications[i] = notification_info;
+  }
+
+  callbacks->OnSuccess(notifications);
+}
+
 const mojom::blink::NotificationServicePtr&
 NotificationManager::GetNotificationService() {
   if (!notification_service_) {
