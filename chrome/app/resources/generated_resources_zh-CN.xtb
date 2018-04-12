@@ -1133,7 +1133,6 @@
 <translation id="2731392572903530958">重新打开关闭的窗口(&amp;E)</translation>
 <translation id="2731700343119398978">请稍候...</translation>
 <translation id="2731710757838467317">正在创建您的受监管用户，这可能需要一段时间。</translation>
-<translation id="2733364097704495499">要将打印机“<ph name="PRINTER_NAME" />”注册到 Google 云打印吗？</translation>
 <translation id="2735438478659026460">鼠标光标停止时自动点击</translation>
 <translation id="2735712963799620190">排定时间</translation>
 <translation id="2737363922397526254">收起...</translation>
@@ -1709,6 +1708,7 @@
 <translation id="3596235046596950091">启用云服务</translation>
 <translation id="3599863153486145794">清除所有登录过的设备上的历史记录。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="3600792891314830896">将播放声音的网站静音</translation>
+<translation id="3602290021589620013">预览</translation>
 <translation id="3603533104205588786">点击星形图标即可为网页添加书签</translation>
 <translation id="3603622770190368340">获取网络证书</translation>
 <translation id="3604048165392640554">未找到任何移动网络连接。请在您的其他设备上打开即时网络共享，然后重试。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>

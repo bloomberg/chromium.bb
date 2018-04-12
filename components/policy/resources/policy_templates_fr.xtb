@@ -58,15 +58,6 @@
 
       Lorsqu'elle est appliquée, toutes les imprimantes sont mises à la disposition de l'utilisateur excepté pour les ID répertoriés dans cette règle.
       </translation>
-<translation id="1181881366217399113">
-      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
-       Si cette règle est activée, chacune des origines définies et répertoriées dans une liste d'éléments séparés par des virgules
-       exécute son propre processus. Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez
-       "https://example.com/", https://foo.example.com/ est également isolé en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, la logique de gestion du processus d'isolation par site prend effet.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, il est recommandé de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut se produire lors de l'accès à une session utilisateur pendant que la valeur spécifiée par la règle relative aux utilisateurs est appliquée.
-      </translation>
 <translation id="1198465924256827162">Fréquence d'envoi des informations sur l'état de l'appareil, en millisecondes.
 
       Si cette règle n'est pas définie, le délai par défaut entre deux transmissions
@@ -696,17 +687,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
                       La valeur de cette règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'arrêt de l'écran (le cas échéant) et au délai d'inactivité.</translation>
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
-<translation id="2998886474614739865">
-      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par des virgules exécute son propre
-      processus. Elle isole également les origines par sous-domaines. Par
-      exemple, si vous indiquez "https://example.com/", "https://foo.example.com/"
-      est également isolé en tant que partie du site "https://example.com/".
-      Si cette règle est désactivée, la logique préliminaire de gestion du processus d'isolation de site prend effet.
-      Si cette règle n'est pas configurée, les paramètres d'isolation de site par défaut de la plate-forme sont utilisés pour l'écran de connexion.
-      </translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Nombre de versions intermédiaires autorisées pour le rollback</translation>
 <translation id="3030000825273123558">Activer la génération de rapports sur les statistiques</translation>
@@ -816,17 +796,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si cette règle est définie sur une chaîne non vide, cette chaîne devient le nom de la destination <ph name="PRODUCT_NAME" />. Sinon, le nom de la destination est le nom de l'appareil. Si cette règle n'est pas définie, le nom de la destination est celui de l'appareil, et le propriétaire de l'appareil (ou un utilisateur du domaine gérant l'appareil) peut le modifier. Le nom est limité à 24 caractères.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
-<translation id="3386001018488754001">
-      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
-      Cette règle s'applique à l'écran de connexion. Veuillez également consulter la règle <ph name="SITE_PER_PROCESS_POLICY_NAME" /> qui s'applique à la session utilisateur. Nous vous recommandons de définir les deux règles sur les mêmes valeurs. Si les valeurs sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins
-      pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité
-      sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que
-      vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si elle est désactivée, la logique de gestion du processus d'isolation par site prend effet.
-      Si elle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      </translation>
 <translation id="3395348522300156660">Indique les imprimantes qu'un utilisateur peut employer.
 
       Cette règle est utilisée uniquement si <ph name="PRINTERS_WHITELIST" /> est sélectionné pour <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1459,17 +1428,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle n'est pas définie, ou si elle est définie sur la chaîne vide ou sur une portée de port non valide, WebRTC peut utiliser n'importe quel port UDP local disponible.</translation>
 <translation id="5290940294294002042">Répertorier les plug-ins pouvant être activés ou désactivés par l'utilisateur</translation>
-<translation id="5301787427319106606">
-      REMARQUE : Il s'agit d'une règle expérimentale qui peut bloquer certaines fonctionnalités.
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins
-      pour obtenir le meilleur résultat, c'est-à-dire l'isolation avec un impact limité
-      sur les utilisateurs, et d'utiliser IsolateOrigins avec une liste des sites que
-      vous souhaitez isoler. Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si elle est désactivée, la logique de gestion du processus d'isolation par site prend effet.
-      Si elle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, il est recommandé de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      </translation>
 <translation id="5302612588919538756">Cette règle est abandonnée. Veuillez utiliser SyncDisabled à la place.
 
       Permet à l'utilisateur de se connecter à <ph name="PRODUCT_NAME" />.

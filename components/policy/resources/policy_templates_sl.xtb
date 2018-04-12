@@ -58,18 +58,6 @@
 
       Če se uporablja ta pravilnik, so uporabniku na voljo vsi tiskalniki z izjemo ID-jev, navedenih v tem pravilniku.
       </translation>
-<translation id="1181881366217399113">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Če je pravilnik omogočen, se bo vsak naveden izvor s seznama, ločenega
-      z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi izvori, ki jih
-      navedejo poddomene; če na primer navedete https://example.com/, bo kot
-      del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
-      https://foo.example.com/.
-      Če je pravilnik onemogočen, se uveljavi logika
-      upravljanja procesov osamitve posameznih spletnih mest.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      Priporočamo, da v sistemu <ph name="PRODUCT_OS_NAME" /> na isto vrednost nastavite tudi pravilnik o napravah <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Če se vrednosti, navedene v teh dveh pravilnikih, ne ujemajo, lahko pri vstopu v uporabniško sejo pride do zakasnitve, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
-      </translation>
 <translation id="1198465924256827162">Kako pogosto se pošljejo nalaganja stanja naprave (v milisekundah).
 
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
@@ -691,17 +679,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik izklopa zaslona (če je nastavljen) in časovnik zamik nedejavnosti.</translation>
 <translation id="2987155890997901449">Omogočanje ARC-ja</translation>
 <translation id="2987227569419001736">Nadzor uporabe API-ja za Web Bluetooth</translation>
-<translation id="2998886474614739865">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-      Če je pravilnik omogočen, se bo vsak naveden izvor
-      s seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
-      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
-      bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto 
-      https://foo.example.com/.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest.
-      Če pravilnik ni konfiguriran, bodo za zaslon za prijavo uporabljene privzete nastavitve osamitve spletnih mest za okolje.
-      </translation>
 <translation id="3016255526521614822">Uvrščanje aplikacij za zapiske, ki so omogočene na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />, na seznam dovoljenih</translation>
 <translation id="3021562480854470924">Število mejnikov, za katere je dovoljena povrnitev</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
@@ -811,17 +788,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če je pravilnik nastavljen na niz, ki ni prazen, je ta niz uporabljen kot ime cilja za napravo <ph name="PRODUCT_NAME" />, sicer pa je ime cilja ime naprave. Če ta pravilnik ni nastavljen, je ime cilja ime naprave in lastnik naprave (ali uporabnik v domeni, ki upravlja napravo) ga sme spremeniti. Ime je omejeno na 24 znakov dolžine.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
-<translation id="3386001018488754001">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti
-      prednosti obeh nastavitev, osamitve in omejenega vpliva za uporabnike,
-      tako da uporabite pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
-      SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      </translation>
 <translation id="3395348522300156660">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
@@ -1450,17 +1416,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če pravilnik ni nastavljen ali je nastavljen na prazen niz oziroma neveljaven obseg vrat, je tehnologiji WebRTC dovoljeno uporabljati katera koli lokalna vrata UDP, ki so na voljo.</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
-<translation id="5301787427319106606">
-      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
-      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti
-      prednosti obeh nastavitev, osamitve in omejenega vpliva za uporabnike, tako da uporabite pravilnik
-      IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
-      SitePerProcess, osami vsa spletna mesta.
-      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
-      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest.
-      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
-      V brskalniku <ph name="PRODUCT_OS_NAME" /> je prav tako priporočljivo nastaviti pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na enako vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
-      </translation>
 <translation id="5302612588919538756">Ta pravilnik je zastarel, namesto njega lahko uporabite SyncDisabled.
 
       Dovoljuje uporabniku prijavo v <ph name="PRODUCT_NAME" />.

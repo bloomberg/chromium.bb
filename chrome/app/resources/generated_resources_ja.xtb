@@ -1141,7 +1141,6 @@
 <translation id="2731392572903530958">閉じたウインドウを開く(&amp;E)</translation>
 <translation id="2731700343119398978">お待ちください...</translation>
 <translation id="2731710757838467317">監視対象ユーザーを作成しています。この処理には数分かかる場合があります。</translation>
-<translation id="2733364097704495499">プリンタ <ph name="PRINTER_NAME" /> を Google クラウド プリントに登録しますか？</translation>
 <translation id="2735438478659026460">マウスカーソルの停止時に自動的にクリックする</translation>
 <translation id="2735712963799620190">スケジュール</translation>
 <translation id="2737363922397526254">折りたたむ...</translation>
@@ -1723,6 +1722,7 @@
 <translation id="3596235046596950091">クラウド サービスを有効にする</translation>
 <translation id="3599863153486145794">ログインしているすべての端末の履歴を削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="3600792891314830896">音声が再生されるサイトをミュートする</translation>
+<translation id="3602290021589620013">プレビュー</translation>
 <translation id="3603533104205588786">ページをブックマークするにはスターアイコンをクリックします</translation>
 <translation id="3603622770190368340">ネットワーク証明書を取得</translation>
 <translation id="3604048165392640554">モバイル接続が見つかりませんでした。他の端末でインスタント テザリングをオンにしてもう一度お試しください。&lt;a target="_blank" href="<ph name="URL" />"&gt;詳細&lt;/a&gt;</translation>

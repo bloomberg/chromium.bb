@@ -58,14 +58,6 @@
 
       Ikiwa sera hii inatumiwa, printa zote hutolewa kwa mtumiaji isipokuwa vitambulisho vilivyoorodheshwa katika sera hii.
       </translation>
-<translation id="1181881366217399113">
-      KUMBUKA: Sera hii ni ya jaribio na huenda ikaathiri utendaji!
-      Kama sera imewashwa, kila chanzo kilichobainishwa kwenye orodha inayotenganishwa kwa kutumia koma itatumika katika mchakato wake. Hali hii pia itatenga vyanzo vilivyobainishwa kwa kutumia vikoa vidogo; kwa mfano, kubainisha https://example.com/ pia kutasababisha https://foo.example.com/ kutengwa kama sehemu ya tovuti ya
-      https://example.com/.
-      Kama sera imezimwa, dhana ya usimamizi wa mchakato wa Utengaji kwa Tovuti itatumika.
-      Kama mipangilio ya sera hii haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, inapendekezwa pia uweke sera ya kifaa cha <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> iwe thamani sawa. Iwapo thamani zilizobainishwa na sera hizi mbili hazilingani, huenda shughuli ya kuanzisha kipindi cha mtumiaji ikakawia wakati inaweka thamani iliyobainishwa na sera ya mtumiaji.
-      </translation>
 <translation id="1198465924256827162">Ni mara ngapi vipakiwa vya hali ya kifaa hutumwa, katika milisekunde.
 
      Sera hii isipowekwa, idadi chaguo-msingi ni saa 3. Idadi ya chini inayoruhusiwa ni sekunde 60.</translation>
@@ -674,14 +666,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
 <translation id="2987155890997901449">Washa kipengele cha ARC</translation>
 <translation id="2987227569419001736">Dhibiti matumizi ya API ya Bluetooth ya Wavuti</translation>
-<translation id="2998886474614739865">
-      KUMBUKA: Sera hii ni ya jaribio na huenda ikaathiri utendaji!
-      Sera hii inatumika kwenye skrini unayotumia kuingia katika akaunti. Tafadhali angalia pia sera ya <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> ambayo inatumika katika kipindi cha mtumiaji. Tunapendekeza uweke sera zote katika thamani sawa. Kama thamani hazilingani, huenda shughuli ya kuanzisha kipindi cha mtumiaji ikakawia wakati inaweka thamani iliyobainishwa na sera ya mtumiaji.
-      Ikiwa sera imewashwa, kila chanzo ulichotaja katika orodha inayotenganishwa kwa koma kitatumia mchakato wake. Hatua hii pia itatenganisha vyanzo vilivyotajwa na vikoa vidogo; kwa mfano, kubainisha https://example.com/
-      kutasababisha pia https://foo.example.com/ kutenganishwa kwenye tovuti ya https://example.com/.
-      Ikiwa sera imezimwa, itatumia dhana ya udhibiti wa mchakato wa Utengaji kulingana na Tovuti.
-      Ikiwa sera hii haijawekwa, itatumia mipangilio chaguo-msingi ya mfumo wa kutenga tovuti katika skrini unayotumia kuingia kwenye akaunti.
-      </translation>
 <translation id="3016255526521614822">Toa idhini kwa programu za kuandika madokezo zinazoruhusiwa kwenye skrini iliyofungwa ya <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Idadi ya matukio ya urejeshaji inaruhusiwa</translation>
 <translation id="3030000825273123558">Wezesha kuripoti kwa metriki</translation>
@@ -789,16 +773,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
           Ikiwa sera hii imewekwa kwenye mfuatano ulio na maudhui, mfuatano huo utatumika kama jina la mahali ambapo <ph name="PRODUCT_NAME" /> inatuma. Vinginevyo, jina la mahali litakuwa jina la kifaa. Ikiwa sera hii haijawekwa, jina mahali litakuwa jina la kifaa na mmiliki wa kifaa (au mmiliki kutoka kwenye kikoa kinachodhibiti kifaa) ataruhusiwa kulibadilisha. Jina halitakiwi kuwa na zaidi ya herufi 24.</translation>
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguo-msingi</translation>
-<translation id="3386001018488754001">
-      KUMBUKA: Sera hii ni ya jaribio na huenda ikaathiri utendaji!
-      Sera hii inatumika kwenye skrini unayotumia kuingia katika akaunti. Tafadhali angalia pia sera ya <ph name="SITE_PER_PROCESS_POLICY_NAME" /> ambayo inatumika katika kipindi cha mtumiaji. Tunapendekeza uweke sera zote katika thamani sawa. Kama thamani hazilingani, huenda shughuli ya kuanzisha kipindi cha mtumiaji ikakawia wakati inaweka thamani iliyobainishwa na sera ya mtumiaji.
-      Huenda ukataka kuangalia mipangilio ya sera ya IsolateOrigins ili upate sehemu bora kati ya hizi mbili, utenganishaji na athari chache kwa watumiaji, kwa kutumia
-      IsolateOrigins yenye orodha za tovuti unazotaka kutenganisha. Mipangilio hii,
-      SitePerProcess, inatenganisha tovuti zote.
-      Ikiwa sera imewashwa, kila tovuti itatumia mchakato wake.
-      Ikiwa sera imezimwa, itatumia dhana ya udhibiti wa mchakato wa Utenganishaji kulingana na Tovuti.
-      Ikiwa sera hii haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
-      </translation>
 <translation id="3395348522300156660">Hubainisha printa ambazo mtumiaji anaweza kutumia. 
 
       Sera hii hutumika tu ikiwa mipangilio ya <ph name="PRINTERS_WHITELIST" /> imechaguliwa katika <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1417,15 +1391,6 @@ Ikiwa sera hii haijawekwa, hakuna programu au viendelezi vitakavyosakinishwa kio
 
       Sera hii isipowekwa, au ikiwekwa kwenye mfuatano wazi au masafa ya mlango yasiyo sahihi, WebRTC itaruhusiwa kutumia mlango wowote wa ndani wa UDP.</translation>
 <translation id="5290940294294002042">Bainisha orodha ya programu jalizi ambayo mtumiaji anaweza kuwezesha au kulemaza</translation>
-<translation id="5301787427319106606">
-      KUMBUKA: Sera hii ni ya jaribio na huenda ikaathiri utendaji!
-      Huenda ukataka kuangalia mipangilio ya sera ya IsolateOrigiins ili upate sehemu bora kati ya hizi mbili, utengaji na athari chache kwa watumiaji, kwa kutumia IsolateOrigins katika orodha ya tovuti ambazo ungependa kutenganisha. Mipangilio hii,
-      SitePerProcess, inatenganisha tovuti zote.
-      Ikiwa sera imewashwa, kila tovuti itatumia mchakato wake.
-      Ikiwa sera imezimwa, itatumia dhana ya udhibiti wa mchakato wa Utenganishaji kulingana na Tovuti.
-      Ikiwa sera hii haijawekwa, mtumiaji ataweza kubadilisha mipangilio hii.
-      Kwenye <ph name="PRODUCT_OS_NAME" />, tunapendekeza uweke pia sera ya kifaa ya <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kuwa na thamani sawa. Kama thamani hazilingani, huenda shughuli ya kuanzisha kipindi cha mtumiaji ikakawia wakati inaweka thamani iliyobainishwa na sera ya mtumiaji.
-      </translation>
 <translation id="5302612588919538756">Sera hii imeacha kuendesha huduma, badala yake jaribu kutumia kipengee cha SyncDisabled.
 
       Humruhusu mtumiaji kuingia katika <ph name="PRODUCT_NAME" />.

@@ -58,17 +58,6 @@
 
       Jika dasar ini digunakan, semua pencetak akan disediakan kepada pengguna kecuali ID yang disenaraikan dalam dasar ini.
       </translation>
-<translation id="1181881366217399113">
-      NOTA: Dasar ini ialah percubaan dan mungkin keluar daripada fungsi!
-      Jika dasar ini didayakan, setiap asalan yang dinamakan dalam
-      senarai yang dipisahkan oleh koma akan dijalankan dalam prosesnya sendiri. Ini juga akan mengasingkan
-      asalan yang dinamakan oleh subdomain; cth. menyatakan https://example.com/ akan
-      turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada
-      tapak https://example.com/.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan mengikut Tapak akan berkuat kuasa.
-      Jika dasar tidak dikonfiguraskan, pengguna akan dapat menukar tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan supaya turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh dua dasar ini tidak sepadan, kelengahan akan berlaku apabila memasuki sesi pengguna semasa nilai yang ditentukan oleh dasar pengguna sedang digunakan.
-      </translation>
 <translation id="1198465924256827162">Kekerapan muat naik status peranti dihantar, dalam milisaat.
 
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 jam. Kekerapan
@@ -688,18 +677,6 @@
           Nilai dasar ini harus ditetapkan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan pemadaman skrin (jika ditetapkan) dan kelewatan melahu.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
-<translation id="2998886474614739865">
-      NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      Jika dasar didayakan, setiap tempat asal yang dinamakan dalam
-      senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri.
-      Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut
-      subdomain, mis. menyatakan https://example.com/ turut menyebabkan
-      https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
-      Jika dasar ini tidak dikonfigurasi, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
-      </translation>
 <translation id="3016255526521614822">Apl pencatatan nota senarai putih dibenarkan pada skrin kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Bilangan pengunduran pencapaian yang dibenarkan</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
@@ -809,18 +786,6 @@
 
           Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama bagi destinasi <ph name="PRODUCT_NAME" />. Jika tidak, nama peranti akan dijadikan nama destinasi. Jika dasar ini tidak ditetapkan, nama peranti akan dijadikan nama destinasi dan pemilik peranti (atau pengguna daripada domain yang mengurus peranti tersebut) akan dibenarkan untuk menukar nama itu. Nama dihadkan kepada 24 aksara.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
-<translation id="3386001018488754001">
-      NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk
-      memanfaatkan kedua-dua keadaan, pengasingan dan kesan yang
-      terhad untuk pengguna, dengan menggunakan IsolateOrigins dengan
-      senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess,
-      mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan menjalankan proses masing-masing.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      </translation>
 <translation id="3395348522300156660">Menentukan pencetak yang boleh digunakan oleh pengguna.
 
       Dasar ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1446,18 +1411,6 @@
 
       Jika dasar ini tidak ditetapkan, atau ditetapkan pada rentetan kosong atau julat port yang tidak sah, WebRTC dibenarkan untuk menggunakan mana-mana port UDP setempat yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna</translation>
-<translation id="5301787427319106606">
-      NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
-      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk
-      memanfaatkan kedua-dua keadaan, pengasingan dan kesan yang
-      terhad untuk pengguna, dengan menggunakan IsolateOrigins dengan
-      senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess,
-      mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan menjalankan proses masing-masing.
-      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      </translation>
 <translation id="5302612588919538756">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan SyncDisabled.
 
       Membenarkan pengguna log masuk ke <ph name="PRODUCT_NAME" />.

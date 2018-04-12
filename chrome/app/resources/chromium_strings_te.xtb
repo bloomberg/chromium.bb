@@ -29,7 +29,6 @@
 <translation id="1966382378801805537">Chromium డిఫాల్ట్ బ్రౌజర్‌ను నిశ్చయించలేదు లేదా సెట్ చేయలేదు</translation>
 <translation id="1967743265616885482">Chromiumతో వైరుధ్యం అయ్యే అదే పేరుతో మాడ్యూల్ ఉంది.</translation>
 <translation id="2008474315282236005">ఇది ఈ పరికరం నుండి 1 అంశాన్ని తొలగిస్తుంది. మీ డేటాను తర్వాత తిరిగి పొందడానికి, Chromiumకి <ph name="USER_EMAIL" /> వలె సైన్ ఇన్ చేయండి.</translation>
-<translation id="2077129598763517140">హార్డ్‌వేర్ త్వరితం అందుబాటులో ఉన్నప్పుడు ఉపయోగించు</translation>
 <translation id="2117378023188580026">ఈ అప్‌డేట్‌ని వర్తింపజేయడం కోసం మీరు Chromiumని పునఃప్రారంభించాలని మీ నిర్వాహకుడు కోరుతున్నారు</translation>
 <translation id="2119636228670142020">&amp;Chromium OS గురించి</translation>
 <translation id="2158734852934720349">Chromium OS ఓపెన్ సోర్స్ లైసెన్స్‌లు</translation>
@@ -85,11 +84,9 @@
 <translation id="3852700440713538496">Chromiumని మీ విధి పట్టీకి పిన్ చేయండి</translation>
 <translation id="3889543394854987837">Chromiumని తెరిచి, బ్రౌజింగ్‌ను ప్రారంభించడానికి మీ పేరుని క్లిక్ చేయండి.</translation>
 <translation id="3898493977366060150">Google స్మార్ట్‌లతో వెబ్ బ్రౌజింగ్</translation>
-<translation id="390894725198123737">Macలో, పాస్‌వర్డ్‌లు మీ కీచెయిన్‌కి సేవ్ చేయబడవచ్చు మరియు ఈ OS X ఖాతాను భాగస్వామ్యం చేసుకునే ఇతర Chromium వినియోగదారులు వాటిని ప్రాప్యత చేయవచ్చు లేదా సమకాలీకరించవచ్చు.</translation>
 <translation id="4036079820698952681"><ph name="BEGIN_LINK" />ప్రస్తుత సెట్టింగ్‌లను<ph name="END_LINK" /> నివేదించడం ద్వారా Chromiumని మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="4050175100176540509">ముఖ్యమైన భద్రతా మెరుగుదలలు మరియు కొత్త లక్షణాలు తాజా సంస్కరణలో అందుబాటులో ఉన్నాయి.</translation>
 <translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />ని ఎంచుకోండి</translation>
-<translation id="4077262827416206768">దయచేసి అన్ని Chromium విండోలను మూసివేసి, ఈ మార్పు ప్రభావాన్ని కావడం కోసం Chromiumని మళ్లీ ప్రారంభించండి.</translation>
 <translation id="421369550622382712">Chromium కోసం గొప్ప అనువర్తనాలు, ఆటలు, పొడిగింపులు మరియు థీమ్‌లను కనుగొనండి.</translation>
 <translation id="4222580632002216401">ఇప్పుడు మీరు Chromiumకు సైన్ ఇన్ చేసారు! మీ నిర్వాహకులు సమకాలీకరణను నిలిపివేసారు.</translation>
 <translation id="4224199872375172890">Chromium తాజాగా ఉంది.</translation>
@@ -103,7 +100,6 @@
 <translation id="4421155425831608516">Chromiumకు సైన్ ఇన్ చేయడాన్ని ఈ పరికరం యొక్క నిర్వాహకులు నిలిపివేసారు.</translation>
 <translation id="4423735387467980091">Chromiumను అనుకూలీకరించండి మరియు నియంత్రించండి</translation>
 <translation id="4449801103833300785">{0,plural, =1{ఒక గంటలో Chromium తిరిగి ప్రారంభించబడుతుంది}other{# గంటలలో Chromium తిరిగి ప్రారంభించబడుతుంది}}</translation>
-<translation id="4458285410772214805">దయచేసి ఈ మార్పు ప్రభావవంతం కావడానికి సైన్ అవుట్ చేసి, మళ్లీ సైన్ ఇన్ చేయండి.</translation>
 <translation id="4469812139324097969">Chromiumని కొంత కాలంగా పునఃప్రారంభించనందున దాని గడువు తేదీ ముగిసింది. నవీకరణ అందుబాటులో ఉంది, మీరు పునఃప్రారంభించిన తక్షణం వర్తింపజేయబడుతుంది.</translation>
 <translation id="4488554488975128561">హానికరమైన అనువర్తనాలు మరియు సైట్‌లను గుర్తించడంలో సహాయపడటానికి కొంత సిస్టమ్ సమాచారాన్ని మరియు పేజీ కంటెంట్‌ను Googleకి స్వయంచాలకంగా పంపడం ద్వారా మీరు Chromiumని ఉపయోగించడానికి సురక్షితమైనదిగా మరియు సులభమైనదిగా చేయడంలో సహాయపడవచ్చు.</translation>
 <translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. ఇప్పుడు మీరు మీ సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను ప్రాప్యత చేయవచ్చు.</translation>
@@ -138,7 +134,6 @@
 <translation id="5698481217667032250">Chromiumను ఈ భాషలో ప్రదర్శించు</translation>
 <translation id="5726838626470692954">మీ నిర్వాహకులు తప్పనిసరిగా మిమ్మల్ని Chromium నుండి తీసివేసి, తిరిగి జోడించాలి.</translation>
 <translation id="5768914737813585044">Chromium OSను ఈ భాషలో ప్రదర్శించు</translation>
-<translation id="5772805321386874569">(Chromium <ph name="BEGIN_BUTTON" />పునఃప్రారంభం<ph name="END_BUTTON" /> అవసరం)</translation>
 <translation id="5796460469508169315">Chromium దాదాపు సిద్ధంగా ఉంది.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Chromiumకు స్వాగతం</translation>

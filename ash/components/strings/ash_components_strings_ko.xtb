@@ -42,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="TAB" /> 또는 <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">현재 웹페이지를 북마크로 저장</translation>
 <translation id="2750942583782703988">현재 페이지를 새로고침</translation>
+<translation id="2764005613199379871">검색주소창에 포커스를 둡니다.</translation>
 <translation id="2789868185375229787">페이지를 축소</translation>
 <translation id="2804480015716812239"><ph name="ALT" />를 누른 상태에서 링크를 클릭</translation>
 <translation id="2830827904629746450">오른쪽에 창 고정</translation>
@@ -53,6 +54,7 @@
 <translation id="3105917916468784889">스크린샷 찍기</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">주소 표시줄로 이동</translation>
+<translation id="3256109297135787951">실행기에 있는 항목에서 강조표시를 삭제합니다.</translation>
 <translation id="3288816184963444640">현재 창 닫기</translation>
 <translation id="3407560819924487926">작업 관리자 호출</translation>
 <translation id="3422679037938588196">검색과 일치하는 이전 항목으로 이동</translation>
@@ -67,6 +69,7 @@
 <translation id="3720939646656082033">새 탭에서 링크를 열고 새 탭으로 전환</translation>
 <translation id="3725795051337497754">현재 탭 닫기</translation>
 <translation id="3751033133896282964">마지막 작업 실행취소</translation>
+<translation id="3792178297143798024">실행기에서 강조표시된 항목을 엽니다.</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1부터 8</translation>
 <translation id="3837047332182291558">키보드 밝게(백라이트 키보드만 해당)</translation>
 <translation id="3976863468609830880">실행기의 마지막 아이콘 클릭</translation>
@@ -153,11 +156,13 @@
 <translation id="7787242579016742662">브라우저에서 파일 열기</translation>
 <translation id="7822267121073044318">다음 언어 입력 방법으로 전환</translation>
 <translation id="7917881398263220094">현재 페이지 로드를 중지</translation>
+<translation id="7952165122793773711">1~8번째 탭으로 이동합니다.</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> 또는 <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8104889575691864804">앱 메뉴 표시</translation>
 <translation id="8130528849632411619">문서 처음으로 이동</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 또는 <ph name="E" /></translation>
+<translation id="8232835244134740473">상태 영역(계정 사진이 표시되는 곳), 런처, 검색주소창, 북마크바(표시된 경우), 열려 있는 웹페이지, 다운로드바(표시된 경우) 사이에 포커스를 전환합니다.</translation>
 <translation id="8234414138295101081">화면 90도 회전</translation>
 <translation id="8264941229485248811">Developer Tools 검사기 표시 또는 숨기기</translation>
 <translation id="836869401750819675">다운로드 페이지 열기</translation>

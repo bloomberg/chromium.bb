@@ -58,15 +58,6 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 
       Hvis denne politik anvendes, kan alle printere anvendes af brugeren, medmindre deres id er angivet i denne politik.
       </translation>
-<translation id="1181881366217399113">BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste i sin egen proces. Dette isolerer også
-      websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af websitet
-      https://eksempel.dk/.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken til isolering af hvert website.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.</translation>
 <translation id="1198465924256827162">Hvor ofte der sendes enhedsstatusuploads (i millisekunder).
 
       Hvis denne politik ikke angives, er standardfrekvensen tre timer. Den laveste
@@ -662,17 +653,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Politikkens værdi skal angives i millisekunder. Værdierne reduceres, så de er mindre end eller lig med skærmslukforsinkelsen (hvis angivet) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Aktivér ARC</translation>
 <translation id="2987227569419001736">Kontrollér brugen af Web Bluetooth API</translation>
-<translation id="2998886474614739865">
-      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
-      Politikken gælder for loginskærmen. Se også politikken <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste i sin egen proces. Dette isolerer også
-      websites, der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af websitet
-      https://eksempel.dk/.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken til isolering af hvert website.
-      Hvis politikken ikke konfigureres, anvendes platformens standardindstillinger for isolering af website på loginskærmen.
-      </translation>
 <translation id="3016255526521614822">Hvidlistedeapps til notatskrivning er tilladt på <ph name="PRODUCT_OS_NAME" />-låseskærmen</translation>
 <translation id="3021562480854470924">Hvor mange gange tidligere versioner kan gendannes</translation>
 <translation id="3030000825273123558">Aktivér metrics-rapportering</translation>
@@ -776,17 +756,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis denne politik er angivet som en udfyldt streng, anvendes strengen som navnet på destinationen for <ph name="PRODUCT_NAME" />. Hvis ikke, er navnet på destinationen det samme som navnet på enheden. Hvis denne politik ikke er angivet, er navnet på destinationen det samme som navnet på enheden, og enhedsejeren (eller en bruger fra domænet, som administrerer enheden) kan ændre det. Navnet må højst indeholde 24 tegn.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
-<translation id="3386001018488754001">
-      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
-      Politikken gælder for loginskærmen. Se også politikken <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gælder for brugersessionen. Det anbefales, at der angives den samme værdi for begge politikker. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste
-      fra begge verdener (isolering og begrænset indvirkning på brugerne). Det opnår du ved at bruge
-      IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling,
-      SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website i sin egen proces.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken til isolering af hvert website.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      </translation>
 <translation id="3395348522300156660">Angiver, hvilke printere en bruger kan anvende..
 
       Denne politik anvendes kun, hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1385,17 +1354,6 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 
       Hvis politikken ikke er angivet, eller hvis den ikke er angivet til en tom streng eller et ugyldigt portinterval, har WebRTC tilladelse til at anvende enhver tilgængelig lokal UDP-port.</translation>
 <translation id="5290940294294002042">Angiv en liste over plugins, som brugeren kan aktivere eller deaktivere</translation>
-<translation id="5301787427319106606">
-      BEMÆRK! Denne politik er eksperimentel og kan ødelægge funktionaliteten.
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få det bedste
-      fra begge verdener (isolering og begrænset indvirkning på brugerne). Det opnår du ved at bruge
-      IsolateOrigins sammen med en liste over de websites, du vil isolere. Denne indstilling,
-      SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website i sin egen proces.
-      Hvis politikken er deaktiveret, anvendes processtyringslogikken til isolering af hvert website.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis politikkerne har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      </translation>
 <translation id="5302612588919538756">Denne politik er udfaset. Du kan eventuelt bruge SyncDisabled i stedet.
 
       Giver brugeren mulighed for at logge ind på <ph name="PRODUCT_NAME" />.

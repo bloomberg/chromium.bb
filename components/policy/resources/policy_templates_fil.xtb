@@ -58,17 +58,6 @@
 
       Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
       </translation>
-<translation id="1181881366217399113">
-      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
-      Kung ie-enable ang patakaran, ang bawat isa sa mga tinukoy na pinagmulan sa isang
-      comma-separated list ay magpapatakbo ng sarili nitong proseso. Ihihiwalay rin nito
-      ang mga pinagmulang tinukoy ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
-      mahihiwalay rin ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran sa device na <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      </translation>
 <translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
@@ -686,17 +675,6 @@
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng delay ng pag-off ng screen (kung nakatakda) at idle delay ang mga halaga.</translation>
 <translation id="2987155890997901449">I-enable ang ARC</translation>
 <translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
-<translation id="2998886474614739865">
-      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa iisang value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      Kung ie-enable ang patakaran, ang bawat isa sa mga tinukoy na pinagmulan sa isang
-      comma-separated list ay magpapatakbo ng sarili nitong proseso. Ia-isolate din nito ang
-      mga pinagmulang tinukoy ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
-      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
-      site na https://example.com/.
-      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
-      Kung hindi iko-configure ang patakaran, gagamitin ang mga default na setting sa pag-isolate ng site ng platform para sa screen ng pag-sign in.
-      </translation>
 <translation id="3016255526521614822">Pinapayagan ang mga app sa paggawa ng tala ng Whitelist sa lock screen ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Pinapayagan ang bilang ng pag-rollback ng mga milestone</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
@@ -805,17 +783,6 @@
 
           Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
-<translation id="3386001018488754001">
-      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
-      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa iisang value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      Mainam na suriin ang setting ng patakarang IsolateOrigins para
-      masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user, sa pamamagitan ng paggamit sa
-      IsolateOrigins nang may listahan ng mga site na gusto mong i-isolate. Ina-isolate
-      ng setting na SitePerProcess ang lahat ng site.
-      Kung ie-enable ang patakaran, magpapatakbo ang bawat site ng sarili nitong proseso.
-      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      </translation>
 <translation id="3395348522300156660">Tumutukoy sa mga printer na magagamit ng user.
 
       Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1437,17 +1404,6 @@
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa walang lamang string o di-wastong hanay ng port, pinapayagan ang WebRTC na gamitin ang anumang available na lokal na UDP port.</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
-<translation id="5301787427319106606">
-      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
-      Mainam na suriin ang setting ng patakarang IsolateOrigins para
-      masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user, sa pamamagitan ng paggamit sa
-      IsolateOrigins nang may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng
-      setting na ito na SitePerProcess ang lahat ng site.
-      Kung ie-enable ang patakaran, magpapatakbo ang bawat site ng sarili nitong proseso.
-      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
-      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
-      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
-      </translation>
 <translation id="5302612588919538756">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang SyncDisabled.
 
       Pinapayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME" />.

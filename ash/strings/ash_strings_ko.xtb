@@ -32,6 +32,7 @@
 <translation id="1658406695958299976">비밀번호를 여전히 확인할 수 없습니다. 참고: 최근에 비밀번호를 변경한 경우 로그아웃해야 새로운 비밀번호가 적용됩니다. 이전 비밀번호를 사용해 보세요.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
 <translation id="1698760176351776263">IPv6 주소: <ph name="ADDRESS" /></translation>
+<translation id="170389796989115980">기기 관리자가 내 활동을 모니터링할 수도 있습니다.</translation>
 <translation id="1734367976349034509">기업에서 관리하는 기기입니다.</translation>
 <translation id="1746730358044914197">입력 방법은 관리자가 설정합니다.</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
@@ -46,6 +47,7 @@
 <translation id="1942830294380034169">오버플로 버튼</translation>
 <translation id="1951012854035635156">어시스턴트</translation>
 <translation id="1957803754585243749">0°</translation>
+<translation id="1957958912175573503">언어 설정</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="1995660704900986789">끄기</translation>
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
@@ -81,6 +83,8 @@
 <translation id="2653659639078652383">제출</translation>
 <translation id="2675319268637823299">관리자가 <ph name="USER_EMAIL" />의 멀티 로그인을 허용하지 않았습니다.
     계속하려면 모든 사용자가 로그아웃해야 합니다.</translation>
+<translation id="2696763960464195425">로그아웃하면 사용자 정보가 삭제됩니다. <ph name="LEARN_MORE" /></translation>
+<translation id="2700493154570097719">키보드 설정</translation>
 <translation id="2718395828230677721">야간 조명</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
@@ -330,6 +334,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="8734991477317290293">키 입력 내용을 도용하려는 시도일 수 있습니다.</translation>
+<translation id="8809737090443522491">앱 또는 문서 이름 입력</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8814715559352963456">창을 다른 데스크톱으로 이동하면 예기치 못한 동작이 나타날 수 있습니다.
 

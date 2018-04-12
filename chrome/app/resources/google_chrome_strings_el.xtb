@@ -42,7 +42,6 @@
 <translation id="1877026089748256423">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="2007150628464581396">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chrome θα γίνει σε # λεπτά}}</translation>
 <translation id="2063848847527508675">Για να εφαρμοστεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση του Chrome OS.</translation>
-<translation id="2077129598763517140">Χρήση της επιτάχυνσης υλικού όταν είναι διαθέσιμη</translation>
 <translation id="2084710999043359739">Προσθήκη στο Chrome</translation>
 <translation id="2094919256425865063">Να τερματιστεί η λειτουργία του Chrome ούτως ή άλλως;</translation>
 <translation id="210890598424854131">{0,plural, =0{Η επανεκκίνηση του Chrome θα γίνει τώρα}=1{Η επανεκκίνηση του Chrome θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chrome θα γίνει σε # δευτερόλεπτα}}</translation>
@@ -127,12 +126,10 @@
 <translation id="4251615635259297716">Να συνδεθούν τα δεδομένα σας στο Chrome με αυτόν το λογαριασμό;</translation>
 <translation id="4251625577313994583">λήψη Chrome στο iPhone</translation>
 <translation id="4293420128516039005">Συνδεθείτε, για να συγχρονίσετε και να εξατομικεύσετε το Chrome στις συσκευές σας</translation>
-<translation id="4309555186815777032">(απαιτείται <ph name="BEGIN_BUTTON" />επανεκκίνηση<ph name="END_BUTTON" /> του Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">Η επέκταση <ph name="EXTENSION_NAME" /> προστέθηκε στο Chrome</translation>
 <translation id="4407807842708586359">Λειτουργικό σύστημα Google Chrome</translation>
-<translation id="4458285410772214805">Για να εφαρμοστεί αυτή η αλλαγή, αποσυνδεθείτε και συνδεθείτε ξανά.</translation>
 <translation id="4458462641685292929">Μια άλλη λειτουργία βρίσκεται σε εξέλιξη στο Google Chrome. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="4480040274068703980">Το Chrome OS δεν μπόρεσε να συγχρονίσει τα δεδομένα σας λόγω σφάλματος κατά τη σύνδεση.</translation>
 <translation id="4561051373932531560">Το Google Chrome σάς επιτρέπει να κάνετε κλικ σε έναν τηλεφωνικό αριθμό στον ιστό και να τον καλέσετε με το Skype!</translation>
@@ -157,7 +154,6 @@
 <translation id="495931528404527476">Στο Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
-<translation id="5037239767309817516">Κλείστε όλα τα παράθυρα του Google Chrome και επανεκκινήστε τον για να εφαρμοστεί αυτή η αλλαγή.</translation>
 <translation id="5131923704757666404">{0,plural, =1{Το Chrome θα επανεκκινηθεί σε μία ώρα}other{Το Chrome θα επανεκκινηθεί σε # ώρες}}</translation>
 <translation id="5132929315877954718">Ανακαλύψτε υπέροχες εφαρμογές, παιχνίδια, επεκτάσεις και θέματα για το Google Chrome.</translation>
 <translation id="5166975452760862670">Το Google Chrome εμφανίζεται σε αυτήν τη γλώσσα</translation>
@@ -183,7 +179,6 @@
 <translation id="5877064549588274448">Το κανάλι έχει αλλάξει. Επανεκκινήστε τη συσκευή σας για να εφαρμόσετε τις αλλαγές.</translation>
 <translation id="5895138241574237353">Επανεκκίνηση</translation>
 <translation id="5906655207909574370">Η ενημέρωση σχεδόν ολοκληρώθηκε! Επανεκκινήστε τη συσκευή σας για να ολοκληρωθεί η ενημέρωση.</translation>
-<translation id="5931853610562009806">Στο Mac, οι κωδικοί πρόσβασης μπορεί να αποθηκευτούν στο Keychain και ενδέχεται άλλοι χρήστες του Chrome, που μοιράζονται αυτόν τον λογαριασμό OS X, να αποκτήσουν πρόσβαση σε αυτούς ή να τους συγχρονίσουν.</translation>
 <translation id="5940385492829620908">Εδώ μπορείτε να βρείτε τις ιστοσελίδες, τους σελιδοδείκτες σας και άλλα δεδομένα του Chrome.</translation>
 <translation id="5941830788786076944">Ορισμός Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="6014844626092547096">Έχετε πλέον συνδεθεί στο Chrome! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>

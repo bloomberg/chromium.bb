@@ -58,18 +58,6 @@
 
       Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld.
       </translation>
-<translation id="1181881366217399113">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in
-      een door komma's gescheiden lijst uitgevoerd in een eigen proces.
-      Hiermee worden ook herkomsten geïsoleerd die worden benoemd door
-      subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook
-      https://foo.example.com/ geïsoleerd als onderdeel van de site
-      https://example.com/.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
-      Als het beleid niet is ingesteld, kan de gebruiker deze instelling wijzigen.
-      Voor <ph name="PRODUCT_OS_NAME" /> is het raadzaam ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> in te stellen op dezelfde waarde. Als de waarden van twee beleidsregels niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      </translation>
 <translation id="1198465924256827162">De frequentie, in milliseconden, waarmee uploads van de apparaatstatus worden verzonden.
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
@@ -687,18 +675,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan of gelijk zijn aan de vertraging van scherm uitschakelen (indien ingesteld) en de inactieve vertraging.</translation>
 <translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
-<translation id="2998886474614739865">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten
-      in een door komma's gescheiden lijst uitgevoerd in een eigen proces.
-      Hiermee worden ook herkomsten geïsoleerd die worden benoemd door
-      subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook
-      https://foo.example.com/ geïsoleerd als onderdeel van de site
-      https://example.com/.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
-      Als het beleid niet is ingesteld, worden de standaardinstellingen van het platform voor site-isolatie gebruikt voor het inlogscherm.
-      </translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
 <translation id="3021562480854470924">Aantal mijlpalen dat rollback kan terugzetten</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
@@ -808,17 +784,6 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
-<translation id="3386001018488754001">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik
-      te maken van beide functies (isolatie en beperkte impact voor gebruikers)
-      door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren.
-      Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
-      Als het beleid niet is ingesteld, kan de gebruiker deze instelling wijzigen.
-      </translation>
 <translation id="3395348522300156660">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
       Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -1435,17 +1400,6 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Als het beleid niet wordt ingesteld, of als dit wordt ingesteld voor een lege tekenreeks of een ongeldig poortbereik, kan WebRTC gebruikmaken van elke lokale UDP-poort.</translation>
 <translation id="5290940294294002042">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen</translation>
-<translation id="5301787427319106606">
-      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
-      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik
-      te maken van beide functies (isolatie en beperkte impact voor gebruikers)
-      door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren.
-      Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
-      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
-      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
-      Als het beleid niet is ingesteld, kan de gebruiker deze instelling wijzigen.
-      Voor <ph name="PRODUCT_OS_NAME" /> is het raadzaam ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> in te stellen op dezelfde waarde. Als de waarden van twee beleidsregels niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
-      </translation>
 <translation id="5302612588919538756">Dit beleid is verouderd. Je kunt in plaats hiervan SyncDisabled gebruiken.
 
       Hiermee wordt toegestaan dat de gebruiker inlogt bij <ph name="PRODUCT_NAME" />.

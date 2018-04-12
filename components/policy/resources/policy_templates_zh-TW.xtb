@@ -58,17 +58,6 @@
 
       一旦設定了這項政策，除了本政策中列出的 ID 外，其他所有印表機皆可供使用者使用。
       </translation>
-<translation id="1181881366217399113">
-      注意：這項政策仍在實驗階段，可能導致服務中斷！
-      如果啟用這項政策，逗號分隔的清單中的已命名來源
-      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
-      例如，指定 https://example.com/
-      也會造成 https://foo.example.com/ 遭到隔離，
-      因為後者同樣屬於 https://example.com/ 網站。
-      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      </translation>
 <translation id="1198465924256827162">裝置狀態上傳的傳送頻率 (以毫秒數為單位)。
 
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
@@ -664,17 +653,6 @@
           指定政策值時需以毫秒為單位。該值需小於或等於螢幕關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
-<translation id="2998886474614739865">
-      注意：這項政策仍在實驗階段，可能導致服務中斷！
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      如果啟用這項政策，逗號分隔的清單中的已命名來源
-      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
-      例如，指定 https://example.com/
-      也會造成 https://foo.example.com/ 遭到隔離，
-      因為後者同樣屬於 https://example.com/ 網站。
-      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
-      如果未設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
-      </translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3021562480854470924">允許復原的重要事件數</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
@@ -778,17 +756,6 @@
 
           如果這項政策設為非空白字串，該字串就會成為「<ph name="PRODUCT_NAME" />」目的地的名稱，否則目的地名稱將會是裝置名稱。如果未設定這項政策，則目的地名稱會是裝置名稱，且裝置擁有者 (或裝置管理網域中的使用者) 可進行變更。名稱長度上限為 24 個字元。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
-<translation id="3386001018488754001">
-      注意：這項政策仍在實驗階段，可能導致服務中斷！
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      為了儘可能減少隔離功能對使用者的影響，
-      建議你先查看 IsolateOrigins 政策設定，
-      瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。
-      SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      </translation>
 <translation id="3395348522300156660">指定哪些印表機是可以使用的。
 
       只有在為 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，這項政策才有作用
@@ -1380,17 +1347,6 @@
 
       如果未設定這項政策，或是將這項政策設為空白字串或無效的通訊埠範圍，WebRTC 即可使用任何可用的本機 UDP 通訊埠。</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
-<translation id="5301787427319106606">
-      注意：這項政策仍在實驗階段，可能導致服務中斷！
-      為了儘可能減少隔離功能對使用者的影響，
-      建議你先查看 IsolateOrigins 政策設定，
-      瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。
-      SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      </translation>
 <translation id="5302612588919538756">這項政策已不適用，請考慮改用 SyncDisabled。
 
       允許使用者登入 <ph name="PRODUCT_NAME" />。

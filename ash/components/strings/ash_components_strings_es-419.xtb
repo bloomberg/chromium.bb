@@ -42,6 +42,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, luego <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2699509451653686398">Guardar la página web actual en Favoritos</translation>
 <translation id="2750942583782703988">Volver a cargar la página actual</translation>
+<translation id="2764005613199379871">Hacer foco en la barra de direcciones en la búsqueda</translation>
 <translation id="2789868185375229787">Alejar la página</translation>
 <translation id="2804480015716812239">Presiona <ph name="ALT" /> y haz clic en un vínculo</translation>
 <translation id="2830827904629746450">Acoplar una ventana a la derecha</translation>
@@ -53,6 +54,7 @@
 <translation id="3105917916468784889">Tomar captura de pantalla</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Enfoque en la barra de direcciones</translation>
+<translation id="3256109297135787951">Dejar de destacar un elemento en la biblioteca</translation>
 <translation id="3288816184963444640">Cerrar la ventana actual</translation>
 <translation id="3407560819924487926">Mostrar el Administrador de tareas</translation>
 <translation id="3422679037938588196">Ir a la coincidencia de búsqueda anterior</translation>
@@ -67,6 +69,7 @@
 <translation id="3720939646656082033">Abrir el vínculo en una pestaña nueva y cambiar a esa pestaña</translation>
 <translation id="3725795051337497754">Cerrar la pestaña actual</translation>
 <translation id="3751033133896282964">Deshacer la última acción</translation>
+<translation id="3792178297143798024">Abrir el elemento destacado en la biblioteca</translation>
 <translation id="379295446891231126"><ph name="CTRL" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="3837047332182291558">Aumentar el brillo del teclado (solo para teclados retroiluminados)</translation>
 <translation id="3976863468609830880">Hacer clic en el último ícono de la biblioteca</translation>
@@ -153,11 +156,13 @@
 <translation id="7787242579016742662">Abrir un archivo en el navegador</translation>
 <translation id="7822267121073044318">Cambiar al método de entrada del siguiente idioma</translation>
 <translation id="7917881398263220094">Detener la carga de la página actual</translation>
+<translation id="7952165122793773711">Ir a las pestañas 1 a 8</translation>
 <translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8104889575691864804">Mostrar menú de apps</translation>
 <translation id="8130528849632411619">Ir al principio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
+<translation id="8232835244134740473">Alternar el foco entre el área de estado (donde se muestra la imagen de tu cuenta), el Selector, la barra de direcciones, la barra de favoritos (si está visible), la página web que se abre y la barra de descargas (si está visible)</translation>
 <translation id="8234414138295101081">Rotar la pantalla 90 grados</translation>
 <translation id="8264941229485248811">Mostrar u ocultar el inspector de Herramientas para desarrolladores</translation>
 <translation id="836869401750819675">Abrir la página de descargas</translation>

@@ -58,17 +58,6 @@
 
       Nếu sử dụng chính sách này, thì tất cả máy in sẽ được cung cấp cho người dùng trừ các máy in có id nằm trong chính sách này.
       </translation>
-<translation id="1181881366217399113">
-      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cách ly
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến cho https://foo.example.com/ bị cách ly vì là một phần của
-      trang https://example.com/.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly mỗi trang web sẽ có hiệu lực.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị do hai chính sách chỉ định không khớp nhau, thì có thể sẽ xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      </translation>
 <translation id="1198465924256827162">Tần suất tải lên trạng thái thiết bị, bằng mili giây.
 
       Nếu chính sách này không được đặt thì tần suất mặc định là 3 giờ. Tần
@@ -689,17 +678,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng độ trễ tắt màn hình (nếu được đặt) và độ trễ khi không sử dụng.</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
-<translation id="2998886474614739865">
-      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách thành cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể sẽ xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Cài đặt này cũng sẽ cách ly
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/ cũng sẽ
-      khiến cho https://foo.example.com/ bị cách ly vì là một phần của
-      trang https://example.com/.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly mỗi trang web sẽ có hiệu lực.
-      Nếu bạn không định cấu hình chính sách này, cài đặt cách ly trang web mặc định của nền tảng sẽ được sử dụng cho màn hình đăng nhập.
-      </translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
 <translation id="3021562480854470924">Số mốc cho phép khôi phục</translation>
 <translation id="3030000825273123558">Bật báo cáo số liệu</translation>
@@ -808,17 +786,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
-<translation id="3386001018488754001">
-      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
-      Chính sách này áp dụng cho màn hình đăng nhập. Vui lòng xem cả chính sách <ph name="SITE_PER_PROCESS_POLICY_NAME" /> áp dụng cho phiên người dùng. Bạn nên đặt cả hai chính sách thành cùng một giá trị. Nếu các giá trị không khớp nhau, thì có thể sẽ xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      Bạn nên xem cài đặt của chính sách IsolateOrigins để
-      khai thác tối đa cả hai khía cạnh, cách cách ly cũng như cách hạn chế tác động đến người dùng, bằng cách sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cách ly. Cài đặt này,
-      SitePerProcess, sẽ cách ly mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly mỗi trang web sẽ có hiệu lực.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      </translation>
 <translation id="3395348522300156660">Chỉ định các máy in mà người dùng có thể sử dụng.
 
       Chỉ sử dụng chính sách này nếu đã chọn <ph name="PRINTERS_WHITELIST" /> cho <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -1438,17 +1405,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chưa đặt chính sách hoặc nếu chính sách được đặt thành chuỗi trống hoặc phạm vi cổng không hợp lệ thì WebRTC được phép sử dụng bất kỳ cổng UDP cục bộ khả dụng nào.</translation>
 <translation id="5290940294294002042">Chỉ định danh sách plugin mà người dùng có thể bật hoặc tắt</translation>
-<translation id="5301787427319106606">
-      LƯU Ý: Chính sách này chỉ mang tính thử nghiệm và có thể làm hỏng chức năng!
-      Bạn nên xem cài đặt của chính sách IsolateOrigins để
-      khai thác tối đa cả hai khía cạnh, cách cách ly cũng như cách hạn chế tác động đến người dùng, bằng cách sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cách ly. Cài đặt này,
-      SitePerProcess, sẽ cách ly mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, logic quản lý quy trình Cách ly trước khi khởi chạy trang web sẽ có hiệu lực.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị mà hai chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      </translation>
 <translation id="5302612588919538756">Chính sách này không được dùng nữa, thay vào đó hãy cân nhắc sử dụng SyncDisabled.
 
       Cho phép người dùng đăng nhập vào <ph name="PRODUCT_NAME" />.
