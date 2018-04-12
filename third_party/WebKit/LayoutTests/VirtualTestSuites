@@ -673,5 +673,10 @@
     "prefix": "off-main-thread-websocket",
     "base": "http/tests/security/mixedContent/websocket",
     "args": ["--enable-features=OffMainThreadWebSocket"]
+  },
+  {
+    "prefix": "webrtc-wpt-unified-plan",
+    "base": "external/wpt/webrtc",
+    "args": ["--enable-blink-features=RTCUnifiedPlanByDefault"]
   }
 ]

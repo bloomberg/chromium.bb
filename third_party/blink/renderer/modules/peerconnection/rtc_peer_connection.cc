@@ -485,6 +485,11 @@ RTCPeerConnection* RTCPeerConnection::Create(
       ParseConfiguration(context, rtc_configuration, exception_state);
   if (exception_state.HadException())
     return nullptr;
+  // Override default SDP semantics if RuntimeEnabled=RTCUnifiedPlanByDefault.
+  if (!rtc_configuration.hasSdpSemantics() &&
+      RuntimeEnabledFeatures::RTCUnifiedPlanByDefaultEnabled()) {
+    configuration.sdp_semantics = WebRTCSdpSemantics::kUnifiedPlan;
+  }
 
   // Make sure no certificates have expired.
   if (configuration.certificates.size() > 0) {
