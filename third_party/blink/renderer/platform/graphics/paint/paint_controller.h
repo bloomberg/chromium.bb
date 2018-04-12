@@ -161,7 +161,7 @@ class PLATFORM_EXPORT PaintController {
 
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to WebPaintController.
-  // Should only be called right after commitNewDisplayItems.
+  // Should only be called after a full document life cycle update.
   size_t ApproximateUnsharedMemoryUsage() const;
 
   // Get the artifact generated after the last commit.

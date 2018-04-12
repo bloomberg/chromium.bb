@@ -46,6 +46,8 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
 
   const gfx::Rect& LayerBounds() const { return layer_bounds_; }
 
+  size_t ApproximateUnsharedMemoryUsage() const;
+
  private:
   friend class CompositedLayerRasterInvalidatorTest;
 
