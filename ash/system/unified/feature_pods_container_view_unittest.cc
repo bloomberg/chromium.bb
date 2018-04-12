@@ -22,7 +22,8 @@ class FeaturePodsContainerViewTest : public AshTestBase,
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    container_ = std::make_unique<FeaturePodsContainerView>();
+    container_ = std::make_unique<FeaturePodsContainerView>(
+        true /* initially_expanded */);
     container_->AddObserver(this);
   }
 

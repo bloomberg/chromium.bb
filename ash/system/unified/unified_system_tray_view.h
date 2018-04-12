@@ -21,7 +21,7 @@ class UnifiedSystemTrayController;
 // intermediate state during animation.
 class UnifiedSlidersContainerView : public views::View {
  public:
-  UnifiedSlidersContainerView();
+  explicit UnifiedSlidersContainerView(bool initially_expanded);
   ~UnifiedSlidersContainerView() override;
 
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
@@ -36,7 +36,7 @@ class UnifiedSlidersContainerView : public views::View {
   // Update opacity of each child slider views based on |expanded_amount_|.
   void UpdateOpacity();
 
-  double expanded_amount_ = 1.0;
+  double expanded_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSlidersContainerView);
 };
@@ -44,7 +44,8 @@ class UnifiedSlidersContainerView : public views::View {
 // View class of the main bubble in UnifiedSystemTray.
 class UnifiedSystemTrayView : public views::View {
  public:
-  explicit UnifiedSystemTrayView(UnifiedSystemTrayController* controller);
+  UnifiedSystemTrayView(UnifiedSystemTrayController* controller,
+                        bool initially_expanded);
   ~UnifiedSystemTrayView() override;
 
   // Set the maximum height that the view can take.

@@ -6,28 +6,26 @@
 #define ASH_SYSTEM_BRIGHTNESS_UNIFIED_BRIGHTNESS_VIEW_H_
 
 #include "ash/system/unified/unified_slider_view.h"
-#include "chromeos/dbus/power_manager_client.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 
 namespace ash {
 
 class UnifiedBrightnessSliderController;
 
 // View of a slider that can change display brightness. It observes current
-// brightness level from PowerManagerClient.
+// brightness level from UnifiedSystemTrayModel.
 class UnifiedBrightnessView : public UnifiedSliderView,
-                              public chromeos::PowerManagerClient::Observer {
+                              public UnifiedSystemTrayModel::Observer {
  public:
-  explicit UnifiedBrightnessView(UnifiedBrightnessSliderController* controller);
+  UnifiedBrightnessView(UnifiedBrightnessSliderController* controller,
+                        UnifiedSystemTrayModel* model);
   ~UnifiedBrightnessView() override;
 
+  // UnifiedSystemTrayModel::Observer:
+  void OnBrightnessChanged() override;
+
  private:
-  void HandleInitialBrightness(base::Optional<double> percent);
-
-  // chromeos::PowerManagerClient::Observer:
-  void ScreenBrightnessChanged(
-      const power_manager::BacklightBrightnessChange& change) override;
-
-  base::WeakPtrFactory<UnifiedBrightnessView> weak_ptr_factory_{this};
+  UnifiedSystemTrayModel* const model_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBrightnessView);
 };

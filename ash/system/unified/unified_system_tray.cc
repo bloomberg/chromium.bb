@@ -7,6 +7,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -93,7 +94,8 @@ bool UnifiedSystemTray::UiDelegate::ShowNotifierSettings() {
 
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
-      ui_delegate_(std::make_unique<UiDelegate>(this)) {
+      ui_delegate_(std::make_unique<UiDelegate>(this)),
+      model_(std::make_unique<UnifiedSystemTrayModel>()) {
   // On the first step, features in the status area button are still provided by
   // TrayViews in SystemTray.
   // TODO(tetsui): Remove SystemTray from StatusAreaWidget and provide these

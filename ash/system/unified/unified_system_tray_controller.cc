@@ -26,6 +26,7 @@
 #include "ash/system/unified/accessibility_feature_pod_controller.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/numerics/ranges.h"
@@ -45,10 +46,12 @@ const int kDragThreshold = 200;
 }  // namespace
 
 UnifiedSystemTrayController::UnifiedSystemTrayController(
+    UnifiedSystemTrayModel* model,
     SystemTray* system_tray)
-    : system_tray_(system_tray),
+    : model_(model),
+      system_tray_(system_tray),
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
-  animation_->Reset(1.0);
+  animation_->Reset(model->expanded_on_open() ? 1.0 : 0.0);
   animation_->SetSlideDuration(kExpandAnimationDurationMs);
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
 }
@@ -57,14 +60,14 @@ UnifiedSystemTrayController::~UnifiedSystemTrayController() = default;
 
 UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   DCHECK(!unified_view_);
-  unified_view_ = new UnifiedSystemTrayView(this);
+  unified_view_ = new UnifiedSystemTrayView(this, model_->expanded_on_open());
   InitFeaturePods();
 
   volume_slider_controller_ = std::make_unique<UnifiedVolumeSliderController>();
   unified_view_->AddSliderView(volume_slider_controller_->CreateView());
 
   brightness_slider_controller_ =
-      std::make_unique<UnifiedBrightnessSliderController>();
+      std::make_unique<UnifiedBrightnessSliderController>(model_);
   unified_view_->AddSliderView(brightness_slider_controller_->CreateView());
 
   return unified_view_;
@@ -195,7 +198,10 @@ void UnifiedSystemTrayController::ShowSystemTrayDetailedView(
 }
 
 void UnifiedSystemTrayController::UpdateExpandedAmount() {
-  unified_view_->SetExpandedAmount(animation_->GetCurrentValue());
+  double expanded_amount = animation_->GetCurrentValue();
+  unified_view_->SetExpandedAmount(expanded_amount);
+  if (expanded_amount == 0.0 || expanded_amount == 1.0)
+    model_->set_expanded_on_open(expanded_amount == 1.0);
 }
 
 double UnifiedSystemTrayController::GetDragExpandedAmount(

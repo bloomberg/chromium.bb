@@ -21,6 +21,7 @@ constexpr int kPaddingFromScreenTop = 8;
 
 UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
     : controller_(std::make_unique<UnifiedSystemTrayController>(
+          tray->model(),
           tray->shelf()->GetStatusAreaWidget()->system_tray())),
       tray_(tray) {
   views::TrayBubbleView::InitParams init_params;

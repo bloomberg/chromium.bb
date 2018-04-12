@@ -9,10 +9,12 @@
 
 namespace ash {
 
+class UnifiedSystemTrayModel;
+
 // Controller of a slider that can change display brightness.
 class UnifiedBrightnessSliderController : public UnifiedSliderListener {
  public:
-  UnifiedBrightnessSliderController();
+  explicit UnifiedBrightnessSliderController(UnifiedSystemTrayModel* model);
   ~UnifiedBrightnessSliderController() override;
 
   // Instantiates UnifiedSliderView. The view will be onwed by views hierarchy.
@@ -27,6 +29,7 @@ class UnifiedBrightnessSliderController : public UnifiedSliderListener {
                           views::SliderChangeReason reason) override;
 
  private:
+  UnifiedSystemTrayModel* model_;
   UnifiedSliderView* slider_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBrightnessSliderController);
