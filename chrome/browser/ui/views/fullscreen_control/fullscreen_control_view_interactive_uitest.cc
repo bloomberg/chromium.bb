@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_view.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +22,9 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
  public:
   FullscreenControlViewTest() = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableExperimentalFullscreenExitUI);
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kFullscreenExitUI);
+    InProcessBrowserTest::SetUp();
   }
 
  protected:
@@ -42,6 +43,8 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlViewTest);
 };
 

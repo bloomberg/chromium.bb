@@ -153,6 +153,8 @@ extern const base::Feature kOpenVR;
 
 #endif  // ENABLE_VR
 
+extern const base::Feature kFullscreenExitUI;
+
 #if defined(OS_MACOSX)
 extern const base::Feature kFullscreenToolbarReveal;
 #endif

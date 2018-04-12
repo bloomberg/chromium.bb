@@ -276,6 +276,11 @@ const base::Feature kOpenVR{"OpenVR", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // BUILDFLAG(ENABLE_VR)
 
+// Enables a floating action button-like full screen exit UI to allow exiting
+// fullscreen using mouse or touch.
+const base::Feature kFullscreenExitUI{"FullscreenExitUI",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_WIN)
 // Enables using GDI to print text as simply text.
 const base::Feature kGdiTextPrinting {"GdiTextPrinting",

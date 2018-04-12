@@ -26178,6 +26178,7 @@ from previous Chrome versions.
   <int value="-1633586675" label="TabModalJsDialog:enabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
+  <int value="-1625881240" label="FullscreenExitUI:disabled"/>
   <int value="-1624854957" label="enable-es3-apis"/>
   <int value="-1620804800" label="NoScriptPreviews:disabled"/>
   <int value="-1620568042" label="FeaturePolicy:disabled"/>
@@ -27143,6 +27144,7 @@ from previous Chrome versions.
   <int value="679931272" label="DcheckIsFatal:enabled"/>
   <int value="680070635"
       label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
+  <int value="681622885" label="FullscreenExitUI:enabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
