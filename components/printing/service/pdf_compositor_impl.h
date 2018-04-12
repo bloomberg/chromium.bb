@@ -49,6 +49,7 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       mojo::ScopedSharedBufferHandle serialized_content,
       const ContentToFrameMap& subframe_content_map,
       mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) override;
+  void SetWebContentsURL(const GURL& url) override;
 
  protected:
   // This is the uniform underlying type for both
