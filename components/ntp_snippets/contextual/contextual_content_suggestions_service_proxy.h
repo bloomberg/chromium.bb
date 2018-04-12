@@ -28,8 +28,9 @@ class ContextualContentSuggestionsServiceProxy {
   using ClustersCallback = ntp_snippets::FetchClustersCallback;
   using Cluster = ntp_snippets::Cluster;
 
-  explicit ContextualContentSuggestionsServiceProxy(
-      ntp_snippets::ContextualContentSuggestionsService* service);
+  ContextualContentSuggestionsServiceProxy(
+      ntp_snippets::ContextualContentSuggestionsService* service,
+      std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter);
   ~ContextualContentSuggestionsServiceProxy();
 
   // Fetches contextual suggestions for a given |url|.
@@ -53,6 +54,9 @@ class ContextualContentSuggestionsServiceProxy {
   // Reports user interface event to the service.
   void ReportEvent(ukm::SourceId, ContextualSuggestionsEvent event);
 
+  // Ensures that all metrics are properly flushed.
+  void FlushMetrics();
+
  private:
   void CacheSuggestions(ClustersCallback callback,
                         std::string peek_text,
@@ -61,6 +65,14 @@ class ContextualContentSuggestionsServiceProxy {
   ntp_snippets::ContextualContentSuggestionsService* service_;
   // Cache of contextual suggestions.
   std::map<std::string, ntp_snippets::ContextualSuggestion> suggestions_;
+
+  // Sink for reporting metrics for this proxy.
+  std::unique_ptr<contextual_suggestions::ContextualSuggestionsMetricsReporter>
+      metrics_reporter_;
+
+  // The most recent SourceId in use by metrics_reporter_, or
+  // ukm::kInvalidSourceId.
+  ukm::SourceId last_ukm_source_id_;
 
   // Weak pointer factory to cancel pending callbacks.
   base::WeakPtrFactory<ContextualContentSuggestionsServiceProxy>

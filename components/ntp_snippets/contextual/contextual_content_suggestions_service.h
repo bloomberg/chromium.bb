@@ -20,6 +20,10 @@
 #include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
+namespace contextual_suggestions {
+class ContextualContentSuggestionsServiceProxy;
+}
+
 namespace ntp_snippets {
 
 using contextual_suggestions::Cluster;
@@ -32,7 +36,6 @@ class RemoteSuggestionsDatabase;
 // for contextual suggestion, using caching.
 class ContextualContentSuggestionsService : public KeyedService {
  public:
-
   ContextualContentSuggestionsService(
       std::unique_ptr<ContextualSuggestionsFetcher>
           contextual_suggestions_fetcher,
@@ -40,8 +43,8 @@ class ContextualContentSuggestionsService : public KeyedService {
       std::unique_ptr<RemoteSuggestionsDatabase>
           contextual_suggestions_database,
       std::unique_ptr<
-          contextual_suggestions::ContextualSuggestionsMetricsReporter>
-          metrics_reporter);
+          contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>
+          metrics_reporter_provider);
   ~ContextualContentSuggestionsService() override;
 
   using FetchContextualSuggestionsCallback =
@@ -72,13 +75,9 @@ class ContextualContentSuggestionsService : public KeyedService {
       const ContentSuggestion::ID& suggestion_id,
       ImageFetchedCallback callback);
 
-  // Used to report events using various metrics (e.g. UMA, UKM).
-  virtual void ReportEvent(
-      ukm::SourceId sourceId,
-      contextual_suggestions::ContextualSuggestionsEvent event);
-
-  // KeyedService overrides.
-  void Shutdown() override;
+  std::unique_ptr<
+      contextual_suggestions::ContextualContentSuggestionsServiceProxy>
+  CreateProxy();
 
  private:
   // Cache for images of contextual suggestions, needed by CachedImageFetcher.
@@ -89,12 +88,9 @@ class ContextualContentSuggestionsService : public KeyedService {
 
   std::unique_ptr<CachedImageFetcher> image_fetcher_;
 
-  std::unique_ptr<contextual_suggestions::ContextualSuggestionsMetricsReporter>
-      metrics_reporter_;
-
-  // The most recent SourceId in use by metrics_reporter_, or
-  // ukm::kInvalidSourceId.
-  ukm::SourceId last_ukm_source_id_;
+  std::unique_ptr<
+      contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>
+      metrics_reporter_provider_;
 
   // Look up by ContentSuggestion::ID::id_within_category() aka std::string to
   // get image URL.

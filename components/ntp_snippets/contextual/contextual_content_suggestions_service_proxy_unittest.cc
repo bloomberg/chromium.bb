@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "components/ntp_snippets/contextual/contextual_content_suggestions_service.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -91,8 +92,10 @@ class ContextualContentSuggestionsServiceProxyTest : public testing::Test {
 
 void ContextualContentSuggestionsServiceProxyTest::SetUp() {
   service_ = std::make_unique<FakeContextualContentSuggestionsService>();
+  auto metrics_reporter =
+      std::make_unique<ContextualSuggestionsMetricsReporter>();
   proxy_ = std::make_unique<ContextualContentSuggestionsServiceProxy>(
-      service_.get());
+      service_.get(), std::move(metrics_reporter));
 }
 
 TEST_F(ContextualContentSuggestionsServiceProxyTest,

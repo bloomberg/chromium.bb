@@ -15,12 +15,13 @@
 #include "components/ntp_snippets/remote/cached_image_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
+#include "contextual_content_suggestions_service_proxy.h"
 #include "ui/gfx/image/image.h"
 
 namespace ntp_snippets {
 
-using contextual_suggestions::ContextualSuggestionsMetricsReporter;
 using contextual_suggestions::Cluster;
+using contextual_suggestions::ContextualSuggestionsMetricsReporterProvider;
 using contextual_suggestions::FetchClustersCallback;
 
 ContextualContentSuggestionsService::ContextualContentSuggestionsService(
@@ -28,14 +29,14 @@ ContextualContentSuggestionsService::ContextualContentSuggestionsService(
         contextual_suggestions_fetcher,
     std::unique_ptr<CachedImageFetcher> image_fetcher,
     std::unique_ptr<RemoteSuggestionsDatabase> contextual_suggestions_database,
-    std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter)
+    std::unique_ptr<ContextualSuggestionsMetricsReporterProvider>
+        metrics_reporter_provider)
     : contextual_suggestions_database_(
           std::move(contextual_suggestions_database)),
       contextual_suggestions_fetcher_(
           std::move(contextual_suggestions_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
-      metrics_reporter_(std::move(metrics_reporter)),
-      last_ukm_source_id_(ukm::kInvalidSourceId) {}
+      metrics_reporter_provider_(std::move(metrics_reporter_provider)) {}
 
 ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
     default;
@@ -77,26 +78,13 @@ void ContextualContentSuggestionsService::FetchContextualSuggestionImageLegacy(
   FetchContextualSuggestionImage(suggestion_id, image_url, std::move(callback));
 }
 
-void ContextualContentSuggestionsService::ReportEvent(
-    ukm::SourceId ukm_source_id,
-    contextual_suggestions::ContextualSuggestionsEvent event) {
-  DCHECK(ukm_source_id != ukm::kInvalidSourceId);
-
-  // Flush the previous page (if any) and setup the new page.
-  if (ukm_source_id != last_ukm_source_id_) {
-    if (last_ukm_source_id_ != ukm::kInvalidSourceId)
-      metrics_reporter_->Flush();
-    last_ukm_source_id_ = ukm_source_id;
-    metrics_reporter_->SetupForPage(ukm_source_id);
-  }
-
-  metrics_reporter_->RecordEvent(event);
+std::unique_ptr<
+    contextual_suggestions::ContextualContentSuggestionsServiceProxy>
+ContextualContentSuggestionsService::CreateProxy() {
+  return std::make_unique<
+      contextual_suggestions::ContextualContentSuggestionsServiceProxy>(
+      this, metrics_reporter_provider_->CreateMetricsReporter());
 }
 
-void ContextualContentSuggestionsService::Shutdown() {
-  if (last_ukm_source_id_ != ukm::kInvalidSourceId)
-    metrics_reporter_->Flush();
-  last_ukm_source_id_ = ukm::kInvalidSourceId;
-}
 
 }  // namespace ntp_snippets
