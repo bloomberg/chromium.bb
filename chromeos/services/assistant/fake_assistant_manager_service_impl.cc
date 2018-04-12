@@ -24,6 +24,15 @@ bool FakeAssistantManagerServiceImpl::IsRunning() const {
   return running_;
 }
 
+AssistantSettingsManager*
+FakeAssistantManagerServiceImpl::GetAssistantSettingsManager() {
+  return nullptr;
+}
+
+void FakeAssistantManagerServiceImpl::SendGetSettingsUiRequest(
+    const std::string& selector,
+    GetSettingsUiResponseCallback callback) {}
+
 void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantEventSubscriber(

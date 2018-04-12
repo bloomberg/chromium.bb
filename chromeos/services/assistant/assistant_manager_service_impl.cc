@@ -49,6 +49,11 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token) {
 
   // Set the flag to avoid starting the service multiple times.
   running_ = true;
+
+  if (!assistant_settings_manager_) {
+    assistant_settings_manager_ =
+        std::make_unique<AssistantSettingsManagerImpl>(this);
+  }
 }
 
 bool AssistantManagerServiceImpl::IsRunning() const {
@@ -68,6 +73,32 @@ void AssistantManagerServiceImpl::SetAccessToken(
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
   assistant_manager_->EnableListening(enable);
+}
+
+AssistantSettingsManager*
+AssistantManagerServiceImpl::GetAssistantSettingsManager() {
+  return assistant_settings_manager_.get();
+}
+
+void AssistantManagerServiceImpl::SendGetSettingsUiRequest(
+    const std::string& selector,
+    GetSettingsUiResponseCallback callback) {
+  std::string serialized_proto = SerializeGetSettingsUiRequest(selector);
+  assistant_manager_internal_->SendGetSettingsUiRequest(serialized_proto, [
+    callback, weak_ptr = weak_factory_.GetWeakPtr(),
+    task_runner = main_thread_task_runner_
+  ](const assistant_client::VoicelessResponse& response) {
+    // This callback may be called from server multiple times. We should only
+    // process non-empty response.
+    std::string settings = UnwrapGetSettingsUiResponse(response);
+    if (!settings.empty()) {
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &AssistantManagerServiceImpl::HandleGetSettingsResponse,
+              std::move(weak_ptr), callback, settings));
+    }
+  });
 }
 
 void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
@@ -167,6 +198,12 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
     base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());
   }
   return user_agent;
+}
+
+void AssistantManagerServiceImpl::HandleGetSettingsResponse(
+    GetSettingsUiResponseCallback callback,
+    const std::string& settings) {
+  callback.Run(settings);
 }
 
 void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(

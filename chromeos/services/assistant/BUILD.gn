@@ -13,8 +13,11 @@ assert(enable_cros_assistant)
 source_set("lib") {
   sources = [
     "assistant_manager_service.h",
+    "assistant_settings_manager.h",
     "fake_assistant_manager_service_impl.cc",
     "fake_assistant_manager_service_impl.h",
+    "fake_assistant_settings_manager_impl.cc",
+    "fake_assistant_settings_manager_impl.h",
     "service.cc",
     "service.h",
   ]
@@ -39,6 +42,8 @@ source_set("lib") {
     sources += [
       "assistant_manager_service_impl.cc",
       "assistant_manager_service_impl.h",
+      "assistant_settings_manager_impl.cc",
+      "assistant_settings_manager_impl.h",
       "platform/audio_input_provider_impl.cc",
       "platform/audio_input_provider_impl.h",
       "platform/file_provider_impl.cc",

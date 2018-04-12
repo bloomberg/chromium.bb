@@ -14,6 +14,7 @@
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
+#include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "services/identity/public/mojom/constants.mojom.h"
@@ -23,8 +24,10 @@
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/services/assistant/assistant_manager_service_impl.h"
+#include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #else
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
+#include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #endif
 
 namespace chromeos {
@@ -95,6 +98,12 @@ void Service::OnLockStateChanged(bool locked) {
   UpdateListeningState();
 }
 
+void Service::BindAssistantSettingsManager(
+    mojom::AssistantSettingsManagerRequest request) {
+  DCHECK(assistant_settings_manager_);
+  assistant_settings_manager_->BindRequest(std::move(request));
+}
+
 void Service::RequestAccessToken() {
   GetIdentityManager()->GetPrimaryAccountInfo(base::BindOnce(
       &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
@@ -163,6 +172,15 @@ void Service::GetAccessTokenCallback(const base::Optional<std::string>& token,
     DVLOG(1) << "Assistant started";
   } else {
     assistant_manager_service_->SetAccessToken(token.value());
+  }
+
+  if (!assistant_settings_manager_) {
+    assistant_settings_manager_ =
+        assistant_manager_service_.get()->GetAssistantSettingsManager();
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+    registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
+        &Service::BindAssistantSettingsManager, base::Unretained(this)));
+#endif
   }
 
   token_refresh_timer_->Start(FROM_HERE, expiration_time - base::Time::Now(),

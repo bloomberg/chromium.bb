@@ -1,0 +1,11 @@
+# Copyright 2018 Google Inc. All Rights Reserved.
+
+import("//third_party/protobuf/proto_library.gni")
+
+proto_library("proto") {
+  sources = [
+    "about_me_settings_ui.proto",
+    "get_settings_ui.proto",
+    "settings_ui.proto",
+  ]
+}

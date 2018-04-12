@@ -8,6 +8,7 @@ mojom("mojom") {
   sources = [
     "assistant.mojom",
     "constants.mojom",
+    "settings.mojom",
   ]
 
   public_deps = [

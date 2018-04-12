@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
+#include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace chromeos {
@@ -29,6 +31,16 @@ class AssistantManagerService : public mojom::Assistant {
 
   // Turn on / off hotword listening.
   virtual void EnableListening(bool enable) = 0;
+
+  // Returns a pointer of AssistantSettingsManager.
+  virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
+
+  using GetSettingsUiResponseCallback =
+      base::RepeatingCallback<void(const std::string&)>;
+  // Send request for getting settings ui.
+  virtual void SendGetSettingsUiRequest(
+      const std::string& selector,
+      GetSettingsUiResponseCallback callback) = 0;
 };
 
 }  // namespace assistant
