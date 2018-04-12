@@ -214,6 +214,7 @@ dist_yaml_TESTS =			  \
 	yaml/issue-400.yaml		  \
 	yaml/issue-401.yaml		  \
 	yaml/issue-406.yaml		  \
+	yaml/issue-412.yaml		  \
 	yaml/issue-479.yaml		  \
 	yaml/issue-498.yaml		  \
 	yaml/issue-537.yaml		  \

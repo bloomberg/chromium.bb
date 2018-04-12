@@ -244,7 +244,7 @@ for, license information and include tables you need for your table.
 Following this, you'll write various translation rules and lastly you
 write special rules to handle certain situations.
 
-@cindex opcode
+@cindex Opcode
 A translation rule is composed of at least three parts: the opcode
 (translation command), character(s) and braille dots. An opcode is a
 command you give to a machine or a program to perform something on
@@ -355,7 +355,7 @@ always world 456-2456 A word and the dot pattern of its contraction
 Most opcodes have both a "characters" operand and a "dots" operand,
 though some have only one and a few have other types.
 
-@cindex characters operand
+@cindex Characters operand
 The characters operand consists of any combination of characters and
 escape sequences proceeded and followed by whitespace. Escape
 sequences are used to represent difficult characters. They begin with
@@ -394,18 +394,18 @@ Full 32-bit value.
 
 @end table
 
-@cindex dots operand
+@cindex Dots operand
 The dots operand is a braille dot pattern. The real braille dots, 1
 through 8, must be specified with their standard numbers.
 
-@cindex virtual dots
+@cindex Virtual dots
 @anchor{virtual dots}
 liblouis recognizes @emph{virtual dots}, which are used for special
 purposes, such as distinguishing accent marks. There are seven virtual
 dots. They are specified by the number 9 and the letters @samp{a}
 through @samp{f}.
 
-@cindex multi-cell dot pattern
+@cindex Multi-cell dot pattern
 For a multi-cell dot pattern, the cell specifications must be
 separated from one another by a dash (@samp{-}). For example, the
 contraction for the English word @samp{lord} (the letter @samp{l}
@@ -2676,6 +2676,11 @@ defined defaults to 0. Valid mode values are @samp{noContractions},
 For a description of the various translation mode flags, please see
 the function @ref{lou_translateString}.
 
+@item maxOutputLength
+Define a maximum length of the output. This can be used to test the
+behavior of liblouis in the face of a limited output buffer, for
+example the length of the refreshable braille display.
+
 @end table
 
 @end table
@@ -3636,4 +3641,4 @@ directory. Usage information is included in the Python module itself.
 @c  LocalWords:  lbu EOF heckTable fn ispell getTypeformForEmphClass
 @c  LocalWords:  indexTables begcapsword endcapsword typeforms
 @c  LocalWords:  endemphphraseopcode emphClass BrailleSense HumanWare
-@c  LocalWords:  BrailleNote
+@c  LocalWords:  BrailleNote refreshable

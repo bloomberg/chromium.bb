@@ -549,7 +549,7 @@ read_typeforms(yaml_parser_t *parser, int len) {
 void
 read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 		translationModes *mode, formtype **typeform, int **inPos, int **outPos,
-		int *cursorPos, int *cursorOutPos) {
+		int *cursorPos, int *cursorOutPos, int *maxOutputLen) {
 	yaml_event_t event;
 	char *option_name;
 	int parse_error = 1;
@@ -583,6 +583,22 @@ read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail,
 		} else if (!strcmp(option_name, "cursorPos")) {
 			yaml_event_delete(&event);
 			read_cursorPos(parser, cursorPos, cursorOutPos, wordLen, translationLen);
+		} else if (!strcmp(option_name, "maxOutputLength")) {
+			yaml_event_delete(&event);
+			if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
+				yaml_error(YAML_SCALAR_EVENT, &event);
+			*maxOutputLen = parse_number((const char *)event.data.scalar.value,
+					"Maximum output length", event.start_mark.line + 1);
+			if (*maxOutputLen <= 0)
+				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+						"Maximum output length (%i) must be a positive number\n",
+						*maxOutputLen);
+			if (*maxOutputLen < translationLen)
+				error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+						"Expected translation length (%i) must not exceed maximum output "
+						"length (%i)\n",
+						translationLen, *maxOutputLen);
+			yaml_event_delete(&event);
 		} else {
 			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 					"Unsupported option %s", option_name);
@@ -618,6 +634,7 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	int *outPos = NULL;
 	int cursorPos = -1;
 	int cursorOutPos = -1;
+	int maxOutputLen = -1;
 
 	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
 		simple_error("Word expected", parser, &event);
@@ -648,7 +665,8 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	if (event.type == YAML_MAPPING_START_EVENT) {
 		yaml_event_delete(&event);
 		read_options(parser, my_strlen_utf8_c(word), my_strlen_utf8_c(translation),
-				&xfail, &mode, &typeform, &inPos, &outPos, &cursorPos, &cursorOutPos);
+				&xfail, &mode, &typeform, &inPos, &outPos, &cursorPos, &cursorOutPos,
+				&maxOutputLen);
 
 		if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SEQUENCE_END_EVENT))
 			yaml_error(YAML_SEQUENCE_END_EVENT, &event);
@@ -672,7 +690,8 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 			result |= check(*table, word, translation, .typeform = typeform, .mode = mode,
 					.expected_inputPos = inPos, .expected_outputPos = outPos,
 					.cursorPos = cursorPos, .expected_cursorPos = cursorOutPos,
-					.direction = direction, .diagnostics = !xfail);
+					.max_outlen = maxOutputLen, .direction = direction,
+					.diagnostics = !xfail);
 		}
 		table++;
 	}
