@@ -2866,6 +2866,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->intra_only) {
       cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+      if (pbi->refresh_frame_flags == 0xFF) {
+        aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Intra only frames cannot have refresh flags 0xFF");
+      }
       setup_frame_size(cm, frame_size_override_flag, rb);
       if (pbi->need_resync) {
         memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));

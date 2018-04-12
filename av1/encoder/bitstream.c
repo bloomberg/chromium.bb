@@ -2894,6 +2894,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   // NOTE: By default all coded frames to be used as a reference
   cm->is_reference_frame = 1;
+  cm->frame_type = cm->intra_only ? INTRA_ONLY_FRAME : cm->frame_type;
 
   if (cm->seq_params.still_picture) {
     assert(cm->show_existing_frame == 0);
@@ -2939,10 +2940,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       aom_wb_write_bit(wb, 0);  // show_existing_frame
     }
 
-    cm->frame_type = cm->intra_only ? INTRA_ONLY_FRAME : cm->frame_type;
     aom_wb_write_literal(wb, cm->frame_type, 2);
-
-    if (cm->intra_only) cm->frame_type = INTRA_ONLY_FRAME;
 
     aom_wb_write_bit(wb, cm->show_frame);
 #if CONFIG_BUFFER_MODEL
@@ -3038,6 +3036,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
 #endif
   if (cm->frame_type == KEY_FRAME) {
+    cpi->refresh_frame_mask = get_refresh_mask(cpi);
+    if (!cm->show_frame) {  // unshown keyframe (forward keyframe)
+      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+    } else {
+      assert(cpi->refresh_frame_mask == 0xFF);
+    }
     write_frame_size(cm, frame_size_override_flag, wb);
     assert(av1_superres_unscaled(cm) ||
            !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
@@ -3064,6 +3068,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
     if (cm->frame_type == INTRA_ONLY_FRAME) {
       cpi->refresh_frame_mask = get_refresh_mask(cpi);
+      assert(cpi->refresh_frame_mask != 0xFF);
       int updated_fb = -1;
       for (int i = 0; i < REF_FRAMES; i++) {
         // If more than one frame is refreshed, it doesn't matter which one
@@ -3075,15 +3080,13 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       }
       assert(updated_fb >= 0);
       cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
-      if (cm->intra_only) {
-        aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-        write_frame_size(cm, frame_size_override_flag, wb);
-        assert(av1_superres_unscaled(cm) ||
-               !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-        if (cm->allow_screen_content_tools &&
-            (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-          aom_wb_write_bit(wb, cm->allow_intrabc);
-      }
+      aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
+      write_frame_size(cm, frame_size_override_flag, wb);
+      assert(av1_superres_unscaled(cm) ||
+             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+      if (cm->allow_screen_content_tools &&
+          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+        aom_wb_write_bit(wb, cm->allow_intrabc);
     } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
       MV_REFERENCE_FRAME ref_frame;
 
