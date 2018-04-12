@@ -125,6 +125,7 @@ source_set("browser") {
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/external_search:features",
+    "//ios/chrome/browser/ui/fullscreen:features",
     "//ios/chrome/browser/ui/history:history_base_feature",
     "//ios/chrome/browser/ui/main:feature_flags",
     "//ios/chrome/browser/ui/omnibox",

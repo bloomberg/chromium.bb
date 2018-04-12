@@ -62,6 +62,12 @@ const char kFeedbackKitV2WithSSOServiceName[] =
 const char kFeedbackKitV2WithSSOServiceDescription[] =
     "Send SSOService with configuration for FeedbackKit V2.";
 
+const char kFullscreenContentInsetName[] = "Fullscreen ContentInset";
+const char kFullscreenContentInsetDescription[] =
+    "When enabled, fullscreen will be implemented by adjusting the "
+    "contentInset of the WKWebView's scroll view rather than adjusting its "
+    "frame.";
+
 const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
 const char kHistoryBatchUpdatesFilterDescription[] =
     "When enabled History inserts and deletes history items in the same "

@@ -46,6 +46,7 @@
 #include "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_flags.h"
@@ -266,6 +267,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ui-refresh-location-bar", flag_descriptions::kUIRefreshLocationBarName,
      flag_descriptions::kUIRefreshLocationBarDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUIRefreshLocationBar)},
+    {"fullscreen-content-inset", flag_descriptions::kFullscreenContentInsetName,
+     flag_descriptions::kFullscreenContentInsetDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(fullscreen::features::kFullscreenContentInset)},
 };
 
 // Add all switches from experimental flags to |command_line|.
