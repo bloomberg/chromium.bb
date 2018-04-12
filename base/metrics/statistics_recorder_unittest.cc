@@ -63,10 +63,6 @@ class StatisticsRecorderTest : public testing::TestWithParam<bool> {
   const int32_t kAllocatorMemorySize = 64 << 10;  // 64 KiB
 
   StatisticsRecorderTest() : use_persistent_histogram_allocator_(GetParam()) {
-    // Get this first so it never gets created in persistent storage and will
-    // not appear in the StatisticsRecorder after it is re-initialized.
-    PersistentHistogramAllocator::GetCreateHistogramResultHistogram();
-
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
