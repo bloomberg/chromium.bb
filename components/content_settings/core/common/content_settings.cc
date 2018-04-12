@@ -107,7 +107,7 @@ int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
 ContentSettingPatternSource::ContentSettingPatternSource(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
-    std::unique_ptr<base::Value> setting_value,
+    base::Value setting_value,
     const std::string& source,
     bool incognito)
     : primary_pattern(primary_pattern),
@@ -127,8 +127,7 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
     const ContentSettingPatternSource& other) {
   primary_pattern = other.primary_pattern;
   secondary_pattern = other.secondary_pattern;
-  if (other.setting_value)
-    setting_value = std::make_unique<base::Value>(other.setting_value->Clone());
+  setting_value = other.setting_value.Clone();
   source = other.source;
   incognito = other.incognito;
   return *this;
@@ -137,7 +136,7 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
 ContentSettingPatternSource::~ContentSettingPatternSource() {}
 
 ContentSetting ContentSettingPatternSource::GetContentSetting() const {
-  return content_settings::ValueToContentSetting(setting_value.get());
+  return content_settings::ValueToContentSetting(&setting_value);
 }
 
 RendererContentSettingRules::RendererContentSettingRules() {}

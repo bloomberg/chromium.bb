@@ -323,7 +323,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
     EXPECT_EQ(ContentSettingsPattern::Wildcard(),
               client_hints_settings.at(i).secondary_pattern);
     EXPECT_EQ(*expiration_times_dictionary,
-              *client_hints_settings.at(i).setting_value);
+              client_hints_settings.at(i).setting_value);
   }
 
   // Add setting for hosts[1].
@@ -342,7 +342,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
     EXPECT_EQ(ContentSettingsPattern::Wildcard(),
               client_hints_settings.at(i).secondary_pattern);
     EXPECT_EQ(*expiration_times_dictionary,
-              *client_hints_settings.at(i).setting_value);
+              client_hints_settings.at(i).setting_value);
   }
 
   // Add settings again for hosts[0].
@@ -361,7 +361,7 @@ TEST_F(HostContentSettingsMapTest, GetWebsiteSettingsForOneType) {
     EXPECT_EQ(ContentSettingsPattern::Wildcard(),
               client_hints_settings.at(i).secondary_pattern);
     EXPECT_EQ(*expiration_times_dictionary,
-              *client_hints_settings.at(i).setting_value);
+              client_hints_settings.at(i).setting_value);
   }
 }
 
