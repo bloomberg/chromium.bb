@@ -31,7 +31,10 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/text_offset_mapping.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
 
@@ -76,20 +79,25 @@ PositionTemplate<Strategy> EndOfWordAlgorithm(
   return NextBoundary(p, EndWordBoundary);
 }
 
-unsigned NextWordPositionBoundary(
-    const UChar* characters,
-    unsigned length,
-    unsigned offset,
-    BoundarySearchContextAvailability may_have_more_context,
-    bool& need_more_context) {
-  if (may_have_more_context &&
-      EndOfFirstWordBoundaryContext(characters + offset, length - offset) ==
-          static_cast<int>(length - offset)) {
-    need_more_context = true;
-    return length;
+PositionInFlatTree NextWordPositionInternal(
+    const PositionInFlatTree& position) {
+  PositionInFlatTree block_end_position;
+  for (const LayoutBlock* block =
+           &TextOffsetMapping::ComputeContainigBlock(position);
+       block; block = TextOffsetMapping::NextBlockFor(*block)) {
+    const TextOffsetMapping mapping(*block);
+    const String text = mapping.GetText();
+    const int offset =
+        block_end_position.IsNull() ? mapping.ComputeTextOffset(position) : 0;
+    const int word_end =
+        FindNextWordForward(text.Characters16(), text.length(), offset);
+    if (offset < word_end)
+      return mapping.GetPositionAfter(word_end);
+    block_end_position = mapping.GetRange().EndPosition();
   }
-  need_more_context = false;
-  return FindNextWordForward(characters, length, offset);
+  // TODO(yosin): Once we have a case, we should remove following |DCHECK()|.
+  DCHECK(block_end_position.IsNotNull()) << block_end_position;
+  return block_end_position;
 }
 
 unsigned PreviousWordPositionBoundary(
@@ -167,13 +175,32 @@ VisiblePositionInFlatTree EndOfWord(const VisiblePositionInFlatTree& position,
                                TextAffinity::kUpstreamIfPossible);
 }
 
+// ----
+// TODO(editing-dev): Because of word boundary can not be an upstream position,
+// we should make this function to return |PositionInFlatTree|.
+PositionInFlatTreeWithAffinity NextWordPosition(
+    const PositionInFlatTree& start) {
+  const PositionInFlatTree next = NextWordPositionInternal(start);
+  // Note: The word boundary can not be upstream position.
+  const PositionInFlatTreeWithAffinity adjusted =
+      AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+          PositionInFlatTreeWithAffinity(next), start);
+  DCHECK_EQ(adjusted.Affinity(), TextAffinity::kDownstream);
+  return adjusted;
+}
+
+PositionWithAffinity NextWordPosition(const Position& start) {
+  const PositionInFlatTreeWithAffinity& next =
+      NextWordPosition(ToPositionInFlatTree(start));
+  return PositionWithAffinity(ToPositionInDOMTree(next.GetPosition()),
+                              next.Affinity());
+}
+
+// TODO(yosin): This function will be removed by replacing call sites to use
+// |Position| version. since there are only two call sites, one is in test.
 VisiblePosition NextWordPosition(const VisiblePosition& c) {
   DCHECK(c.IsValid()) << c;
-  VisiblePosition next =
-      CreateVisiblePosition(NextBoundary(c, NextWordPositionBoundary),
-                            TextAffinity::kUpstreamIfPossible);
-  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-      next, c.DeepEquivalent());
+  return CreateVisiblePosition(NextWordPosition(c.DeepEquivalent()));
 }
 
 VisiblePosition PreviousWordPosition(const VisiblePosition& c) {
