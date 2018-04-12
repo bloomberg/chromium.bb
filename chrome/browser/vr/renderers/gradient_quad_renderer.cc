@@ -127,6 +127,12 @@ void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
                                 float opacity,
                                 const gfx::SizeF& element_size,
                                 const CornerRadii& radii) {
+  DCHECK(opacity > 0.f);
+  if (SkColorGetA(edge_color) == SK_AlphaTRANSPARENT &&
+      SkColorGetA(center_color) == SK_AlphaTRANSPARENT) {
+    return;
+  }
+
   glUseProgram(program_handle_);
 
   glBindBuffer(GL_ARRAY_BUFFER, TexturedQuadRenderer::VertexBuffer());

@@ -41,9 +41,11 @@ void Rect::NotifyClientColorAnimated(SkColor color,
 }
 
 void Rect::Render(UiElementRenderer* renderer, const CameraModel& model) const {
+  float opacity = computed_opacity() * local_opacity_;
+  if (opacity <= 0.f)
+    return;
   renderer->DrawGradientQuad(model.view_proj_matrix * world_space_transform(),
-                             edge_color_, center_color_,
-                             computed_opacity() * local_opacity_, size(),
+                             edge_color_, center_color_, opacity, size(),
                              corner_radii());
 }
 
