@@ -132,6 +132,38 @@ void RasterDecoderTestBase::AddExpectationsForRestoreAttribState(
   }
 }
 
+void RasterDecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
+  if (es3_capable) {
+    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    if (group_->feature_info()->feature_flags().ext_window_rectangles) {
+      EXPECT_CALL(*gl_, WindowRectanglesEXT(GL_EXCLUSIVE_EXT, 0, nullptr))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+  }
+}
+
+void RasterDecoderTestBase::SetupInitStateManualExpectationsForDoLineWidth(
+    GLfloat width) {
+  EXPECT_CALL(*gl_, LineWidth(width)).Times(1).RetiresOnSaturation();
+}
+
+void RasterDecoderTestBase::ExpectEnableDisable(GLenum cap, bool enable) {
+  if (enable) {
+    EXPECT_CALL(*gl_, Enable(cap)).Times(1).RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, Disable(cap)).Times(1).RetiresOnSaturation();
+  }
+}
+
 void RasterDecoderTestBase::InitDecoderWithWorkarounds(
     std::initializer_list<std::string> extensions) {
   std::string all_extensions;
@@ -225,6 +257,9 @@ void RasterDecoderTestBase::InitDecoderWithWorkarounds(
         .RetiresOnSaturation();
   }
   EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0)).Times(1).RetiresOnSaturation();
+
+  SetupInitCapabilitiesExpectations(group_->feature_info()->IsES3Capable());
+  SetupInitStateExpectations(group_->feature_info()->IsES3Capable());
 
   decoder_.reset(RasterDecoder::Create(this, command_buffer_service_.get(),
                                        &outputter_, group_.get()));
@@ -461,6 +496,11 @@ void RasterDecoderTestBase::SetupClearTextureExpectations(
 const GLint RasterDecoderTestBase::kMaxTextureSize;
 const GLint RasterDecoderTestBase::kNumTextureUnits;
 const GLint RasterDecoderTestBase::kNumVertexAttribs;
+
+const GLint RasterDecoderTestBase::kViewportX;
+const GLint RasterDecoderTestBase::kViewportY;
+const GLint RasterDecoderTestBase::kViewportWidth;
+const GLint RasterDecoderTestBase::kViewportHeight;
 
 const GLuint RasterDecoderTestBase::kServiceBufferId;
 const GLuint RasterDecoderTestBase::kServiceTextureId;
