@@ -114,8 +114,8 @@ bool WindowSelectorController::ToggleOverview() {
     if (!IsNewOverviewUi() && windows.empty())
       return false;
 
-    Shell::Get()->NotifyOverviewModeStarting();
     window_selector_.reset(new WindowSelector(this));
+    Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
     OnSelectionStarted();
   }

@@ -106,8 +106,6 @@ void AppListPresenterImpl::Show(int64_t display_id,
 
   is_visible_ = true;
   RequestPresentationTime(display_id, event_time_stamp);
-  NotifyTargetVisibilityChanged(GetTargetVisibility());
-  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 
   if (view_) {
     ScheduleAnimation();
@@ -123,6 +121,8 @@ void AppListPresenterImpl::Show(int64_t display_id,
   }
   presenter_delegate_->OnShown(display_id);
   view_delegate_->ViewShown(display_id);
+  NotifyTargetVisibilityChanged(GetTargetVisibility());
+  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 }
 
 void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
@@ -135,8 +135,6 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   is_visible_ = false;
   const int64_t display_id = GetDisplayId();
   RequestPresentationTime(display_id, event_time_stamp);
-  NotifyTargetVisibilityChanged(GetTargetVisibility());
-  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
   // The dismissal may have occurred in response to the app list losing
   // activation. Otherwise, our widget is currently active. When the animation
   // completes we'll hide the widget, changing activation. If a menu is shown
@@ -149,6 +147,8 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   view_delegate_->ViewClosing();
   presenter_delegate_->OnDismissed();
   ScheduleAnimation();
+  NotifyTargetVisibilityChanged(GetTargetVisibility());
+  NotifyVisibilityChanged(GetTargetVisibility(), display_id);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
