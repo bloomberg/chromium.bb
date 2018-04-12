@@ -2280,10 +2280,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   _pi_no_hwtest_boards = frozenset([
       'betty-arcnext',
       'caroline-arcnext',
-      'kevin-arcnext',
   ])
   _pi_no_hwtest_experimental_boards = frozenset([
       'eve-arcnext',
+  ])
+  _pi_hwtest_experimental_boards = frozenset([
+      'kevin-arcnext',
   ])
   _pi_vmtest_boards = frozenset([])
 
@@ -2371,6 +2373,15 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
           site_config.templates.pi_android_pfq,
           important=False,
           active_waterfall=waterfall.WATERFALL_INTERNAL,
+      ) +
+      site_config.AddForBoards(
+          'pi-android-pfq',
+          _pi_hwtest_experimental_boards,
+          board_configs,
+          site_config.templates.pi_android_pfq,
+          important=False,
+          active_waterfall=waterfall.WATERFALL_INTERNAL,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
       ) +
       site_config.AddForBoards(
           'pi-android-pfq',
@@ -2493,7 +2504,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'kahlee',
       'kevin',
-      'kevin-arcnext',
       'kip',
       'lakitu',
       'lakitu-gpu',
@@ -2558,6 +2568,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
+      'kevin-arcnext', # contact: ddmail@ (b/74621032)
       'fizz-accelerator', # contact:perley@
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
@@ -2781,6 +2792,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     ('reef',           None,             None),            # reef (APL)
     ('coral',          None,             None),            # coral (APL)
     (None,             'eve',            'soraka'),        # poppy (KBL)
+    (None,             None,             'kevin-arcnext'), # gru + arcnext
   ])
 
   sharded_hw_tests = hw_test_list.DefaultListCQ()
@@ -3823,6 +3835,11 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'cyan-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'kevin-arcnext-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+          'important': False,
       },
 
       'peppy-chrome-pfq': {
