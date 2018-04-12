@@ -349,7 +349,7 @@ if (current_os == "win" || current_os == "winuwp") {
   is_linux = false
   is_mac = false
   is_nacl = false
-  is_posix = true
+  is_posix = false
   is_win = false
 } else if (current_os == "ios") {
   is_android = false
@@ -400,7 +400,9 @@ if (current_os == "win" || current_os == "winuwp") {
 # DO NOT ADD MORE PATTERNS TO THIS LIST, see set_sources_assignment_filter call
 # below.
 sources_assignment_filter = []
-if (!is_posix) {
+
+# TODO(crbug.com/812974): Clean up _posix files and remove Fuchsia here.
+if (!is_posix && !is_fuchsia) {
   sources_assignment_filter += [
     "*_posix.h",
     "*_posix.cc",
@@ -555,6 +557,10 @@ if (is_posix) {
     default_compiler_configs +=
         [ "//build/config/gcc:symbol_visibility_hidden" ]
   }
+}
+
+if (is_fuchsia) {
+  default_compiler_configs += [ "//build/config/gcc:symbol_visibility_hidden" ]
 }
 
 if (is_android) {

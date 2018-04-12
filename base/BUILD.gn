@@ -1455,7 +1455,7 @@ jumbo_component("base") {
       if (is_win) {
         sources +=
             [ "allocator/partition_allocator/page_allocator_internals_win.h" ]
-      } else if (is_posix) {
+      } else if (is_posix || is_fuchsia) {
         sources +=
             [ "allocator/partition_allocator/page_allocator_internals_posix.h" ]
       }
@@ -1669,20 +1669,20 @@ jumbo_component("base") {
     set_sources_assignment_filter(sources_assignment_filter)
   }
 
-  # Android, Fuchsia, and MacOS have their own custom shared memory handle
+  # Android and MacOS have their own custom shared memory handle
   # implementations. e.g. due to supporting both POSIX and native handles.
-  if (is_posix && !is_android && !is_fuchsia && !is_mac) {
+  if (is_posix && !is_android && !is_mac) {
     sources += [
       "memory/platform_shared_memory_region_posix.cc",
       "memory/shared_memory_handle_posix.cc",
     ]
   }
 
-  if (is_posix && !is_fuchsia && !is_mac && !is_nacl) {
+  if (is_posix && !is_mac && !is_nacl) {
     sources += [ "memory/shared_memory_posix.cc" ]
   }
 
-  if (is_posix && !is_fuchsia && !is_mac && !is_ios) {
+  if (is_posix && !is_mac && !is_ios) {
     sources += [
       "time/time_conversion_posix.cc",
       "time/time_exploded_posix.cc",
@@ -1690,8 +1690,9 @@ jumbo_component("base") {
     ]
   }
 
-  if (is_posix && !is_mac && !is_ios && !is_android && !is_chromeos) {
-    sources += [ "power_monitor/power_monitor_device_source_posix.cc" ]
+  if ((is_posix && !is_mac && !is_ios && !is_android && !is_chromeos) ||
+      is_fuchsia) {
+    sources += [ "power_monitor/power_monitor_device_source_stub.cc" ]
   }
 
   if (!use_glib) {
@@ -2498,7 +2499,7 @@ test("base_unittests") {
     sources -= [ "message_loop/message_pump_glib_unittest.cc" ]
   }
 
-  if (is_posix && !is_ios && !is_fuchsia) {
+  if (is_posix && !is_ios) {
     sources += [ "message_loop/message_pump_libevent_unittest.cc" ]
     deps += [ "//base/third_party/libevent" ]
   }

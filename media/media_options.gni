@@ -97,7 +97,7 @@ declare_args() {
 
   # Alsa should be used on non-Android, non-Mac POSIX systems.
   # Alsa should be used on desktop Chromecast and audio-only Chromecast builds.
-  if (is_posix && !is_android && !is_mac && !is_fuchsia &&
+  if (is_posix && !is_android && !is_mac &&
       (!is_chromecast || is_cast_desktop_build || is_cast_audio_only)) {
     use_alsa = true
 

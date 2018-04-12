@@ -37,8 +37,8 @@ posix_avoid_mmap = is_android && current_cpu != "x86"
 use_v8_in_net = !is_ios && !is_proto_quic
 enable_built_in_dns = !is_ios && !is_proto_quic
 
-# Unix sockets are not supported on iOS, Fuchsia or NaCl.
-enable_unix_sockets = is_posix && !is_ios && !is_fuchsia && !is_nacl
+# Unix sockets are not supported on iOS or NaCl.
+enable_unix_sockets = is_posix && !is_ios && !is_nacl
 
 # Android and Fuchsia can't run testserver.py directly, so they use remote
 # test server.
@@ -471,8 +471,6 @@ component("net") {
       "base/network_delegate.h",
       "base/network_delegate_impl.cc",
       "base/network_delegate_impl.h",
-      "base/network_interfaces_getifaddrs.cc",
-      "base/network_interfaces_getifaddrs.h",
       "base/network_interfaces_linux.cc",
       "base/network_interfaces_linux.h",
       "base/network_interfaces_nacl.cc",
@@ -1860,7 +1858,7 @@ component("net") {
       ]
     }
 
-    if (is_posix) {
+    if (is_posix || is_fuchsia) {
       if (posix_avoid_mmap) {
         sources -= [ "disk_cache/blockfile/mapped_file_posix.cc" ]
       } else {
@@ -1905,8 +1903,8 @@ component("net") {
     }
 
     # Use getifaddrs() on POSIX platforms, except Linux and Android.
-    if (!is_posix || is_linux || is_android || is_fuchsia) {
-      sources -= [
+    if (is_posix && !is_linux && !is_android) {
+      sources += [
         "base/network_interfaces_getifaddrs.cc",
         "base/network_interfaces_getifaddrs.h",
       ]
@@ -4722,7 +4720,6 @@ test("net_unittests") {
     "base/network_activity_monitor_unittest.cc",
     "base/network_change_notifier_unittest.cc",
     "base/network_change_notifier_win_unittest.cc",
-    "base/network_interfaces_getifaddrs_unittest.cc",
     "base/network_interfaces_linux_unittest.cc",
     "base/network_interfaces_unittest.cc",
     "base/network_interfaces_win_unittest.cc",
@@ -5657,9 +5654,9 @@ test("net_unittests") {
     ]
   }
 
-  # Use getifaddrs() on POSIX platforms, except Linux, Android and Fuchsia.
-  if (!is_posix || is_linux || is_android || is_fuchsia) {
-    sources -= [ "base/network_interfaces_getifaddrs_unittest.cc" ]
+  # Use getifaddrs() on POSIX platforms, except Linux and Android.
+  if (is_posix && !is_linux && !is_android) {
+    sources += [ "base/network_interfaces_getifaddrs_unittest.cc" ]
   }
 
   # Unit tests that aren't supported by the current ICU alternatives on Android.

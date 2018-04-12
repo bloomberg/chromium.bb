@@ -170,7 +170,7 @@ config("default_sanitizer_ldflags") {
     ":deps",
   ]
 
-  if (is_posix) {
+  if (is_posix || is_fuchsia) {
     ldflags = []
     if (is_asan) {
       ldflags += [ "-fsanitize=address" ]

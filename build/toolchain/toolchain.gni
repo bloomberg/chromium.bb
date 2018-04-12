@@ -77,7 +77,7 @@ if (is_mac || is_ios) {
   # By appending .cr, we prevent name collisions with libraries already
   # loaded by the Android zygote.
   shlib_extension = ".cr.so"
-} else if (is_posix) {
+} else if (is_posix || is_fuchsia) {
   shlib_extension = ".so"
 } else if (is_win) {
   shlib_extension = ".dll"
@@ -86,7 +86,7 @@ if (is_mac || is_ios) {
 }
 
 # Prefix for shared library files.
-if (is_posix) {
+if (is_posix || is_fuchsia) {
   shlib_prefix = "lib"
 } else {
   shlib_prefix = ""
