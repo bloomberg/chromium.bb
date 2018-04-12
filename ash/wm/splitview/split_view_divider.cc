@@ -19,6 +19,8 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -43,6 +45,7 @@ constexpr int kWhiteBarCornerRadius = 1;
 constexpr SkColor kDividerBackgroundColor = SK_ColorBLACK;
 constexpr SkColor kWhiteBarBackgroundColor = SK_ColorWHITE;
 constexpr int kDividerBoundsChangeDurationMs = 250;
+constexpr int kWhiteBarBoundsChangeDurationMs = 150;
 
 // The distance to the divider edge in which a touch gesture will be considered
 // as a valid event on the divider.
@@ -95,10 +98,14 @@ class DividerHandlerView : public RoundedRectView {
 };
 
 // The divider view class. Passes the mouse/gesture events to the controller.
-class DividerView : public views::View, public views::ViewTargeterDelegate {
+class DividerView : public views::View,
+                    public views::ViewTargeterDelegate,
+                    public gfx::AnimationDelegate {
  public:
   explicit DividerView(SplitViewDivider* divider)
-      : controller_(Shell::Get()->split_view_controller()), divider_(divider) {
+      : controller_(Shell::Get()->split_view_controller()),
+        divider_(divider),
+        white_bar_animation_(this) {
     divider_view_ = new views::View();
     divider_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     divider_view_->layer()->SetColor(kDividerBackgroundColor);
@@ -112,30 +119,14 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
 
     SetEventTargeter(
         std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+    white_bar_animation_.SetSlideDuration(kWhiteBarBoundsChangeDurationMs);
   }
-  ~DividerView() override = default;
+  ~DividerView() override { white_bar_animation_.Stop(); }
 
   // views::View:
   void Layout() override {
     divider_view_->SetBoundsRect(GetLocalBounds());
-
-    // Calculate the bounds of the divider handler.
-    gfx::Rect white_bar_bounds(GetLocalBounds());
-    if (controller_->is_resizing()) {
-      white_bar_bounds.ClampToCenteredSize(
-          gfx::Size(kWhiteBarRadius * 2, kWhiteBarRadius * 2));
-      divider_handler_view_->SetCornerRadius(kWhiteBarRadius);
-    } else {
-      if (controller_->IsCurrentScreenOrientationLandscape()) {
-        white_bar_bounds.ClampToCenteredSize(
-            gfx::Size(kWhiteBarShortSideLength, kWhiteBarLongSideLength));
-      } else {
-        white_bar_bounds.ClampToCenteredSize(
-            gfx::Size(kWhiteBarLongSideLength, kWhiteBarShortSideLength));
-      }
-      divider_handler_view_->SetCornerRadius(kWhiteBarCornerRadius);
-    }
-    divider_handler_view_->SetBoundsRect(white_bar_bounds);
+    UpdateWhiteHandlerBounds();
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -195,6 +186,19 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     return true;
   }
 
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override {
+    UpdateWhiteHandlerBounds();
+  }
+
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    UpdateWhiteHandlerBounds();
+  }
+
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    UpdateWhiteHandlerBounds();
+  }
+
  private:
   void OnResizeStatusChanged() {
     // It's possible that when this function is called, split view mode has
@@ -203,8 +207,15 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     if (!controller_->IsSplitViewModeActive())
       return;
 
-    Layout();
+    // Do the white handler bar enlarge/shrink animation when starting/ending
+    // dragging.
+    if (controller_->is_resizing())
+      white_bar_animation_.Show();
+    else
+      white_bar_animation_.Hide();
+
     // Do the divider enlarge/shrink animation when starting/ending dragging.
+    divider_view_->SetBoundsRect(GetLocalBounds());
     const gfx::Rect old_bounds =
         divider_->GetDividerBoundsInScreen(/*is_dragging=*/false);
     const gfx::Rect new_bounds =
@@ -225,10 +236,48 @@ class DividerView : public views::View, public views::ViewTargeterDelegate {
     divider_view_->SetTransform(transform);
   }
 
+  // Returns the expected bounds of the white divider handler.
+  void UpdateWhiteHandlerBounds() {
+    // Calculate the width/height/radius for the rounded rectangle.
+    int width, height, radius;
+    const int expected_width_unselected =
+        controller_->IsCurrentScreenOrientationLandscape()
+            ? kWhiteBarShortSideLength
+            : kWhiteBarLongSideLength;
+    const int expected_height_unselected =
+        controller_->IsCurrentScreenOrientationLandscape()
+            ? kWhiteBarLongSideLength
+            : kWhiteBarShortSideLength;
+    if (white_bar_animation_.is_animating()) {
+      width = white_bar_animation_.CurrentValueBetween(
+          expected_width_unselected, kWhiteBarRadius * 2);
+      height = white_bar_animation_.CurrentValueBetween(
+          expected_height_unselected, kWhiteBarRadius * 2);
+      radius = white_bar_animation_.CurrentValueBetween(kWhiteBarCornerRadius,
+                                                        kWhiteBarRadius);
+    } else {
+      if (controller_->is_resizing()) {
+        width = kWhiteBarRadius * 2;
+        height = kWhiteBarRadius * 2;
+        radius = kWhiteBarRadius;
+      } else {
+        width = expected_width_unselected;
+        height = expected_height_unselected;
+        radius = kWhiteBarCornerRadius;
+      }
+    }
+
+    gfx::Rect white_bar_bounds(GetLocalBounds());
+    white_bar_bounds.ClampToCenteredSize(gfx::Size(width, height));
+    divider_handler_view_->SetCornerRadius(radius);
+    divider_handler_view_->SetBoundsRect(white_bar_bounds);
+  }
+
   views::View* divider_view_ = nullptr;
   DividerHandlerView* divider_handler_view_ = nullptr;
   SplitViewController* controller_;
   SplitViewDivider* divider_;
+  gfx::SlideAnimation white_bar_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(DividerView);
 };
