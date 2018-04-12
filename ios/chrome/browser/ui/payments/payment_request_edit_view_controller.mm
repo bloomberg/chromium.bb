@@ -194,7 +194,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
         initWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                 style:UIBarButtonItemStylePlain
                target:self
-               action:@selector(onCancel)];
+               action:@selector(didCancel)];
     [cancelButton setTitleTextAttributes:@{
       NSForegroundColorAttributeName : [UIColor lightGrayColor]
     }
@@ -203,19 +203,19 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
         setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_CANCEL)];
     [self navigationItem].leftBarButtonItem = cancelButton;
 
-    // Set up trailing (done) button.
-    UIBarButtonItem* doneButton =
-        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_DONE)
+    // Set up trailing (save) button.
+    UIBarButtonItem* saveButton =
+        [[UIBarButtonItem alloc] initWithTitle:l10n_util::GetNSString(IDS_SAVE)
                                          style:UIBarButtonItemStylePlain
                                         target:nil
-                                        action:@selector(onDone)];
-    [doneButton setTitleTextAttributes:@{
+                                        action:@selector(didSave)];
+    [saveButton setTitleTextAttributes:@{
       NSForegroundColorAttributeName : [UIColor lightGrayColor]
     }
                               forState:UIControlStateDisabled];
-    [doneButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_DONE)];
-    doneButton.enabled = NO;  // Disabled until form has been validated.
-    [self navigationItem].rightBarButtonItem = doneButton;
+    [saveButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_SAVE)];
+    saveButton.enabled = NO;  // Disabled until form has been validated.
+    [self navigationItem].rightBarButtonItem = saveButton;
   }
 
   return self;
@@ -892,11 +892,11 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 
 #pragma mark - PaymentRequestEditViewControllerActions methods
 
-- (void)onCancel {
+- (void)didCancel {
   [self.delegate paymentRequestEditViewControllerDidCancel:self];
 }
 
-- (void)onDone {
+- (void)didSave {
   [_currentEditingCell.textField resignFirstResponder];
 
   [self.delegate paymentRequestEditViewController:self
@@ -906,7 +906,7 @@ PaymentsTextItem* ErrorMessageItemForError(NSString* errorMessage) {
 #pragma mark - UIAccessibilityAction
 
 - (BOOL)accessibilityPerformEscape {
-  [self onCancel];
+  [self didCancel];
   return YES;
 }
 

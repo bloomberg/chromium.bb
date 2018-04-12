@@ -9,10 +9,10 @@
 @protocol PaymentRequestEditViewControllerActions
 
 // Called when the user presses the cancel button.
-- (void)onCancel;
+- (void)didCancel;
 
-// Called when the user presses the done button.
-- (void)onDone;
+// Called when the user presses the save button.
+- (void)didSave;
 
 @end
 
