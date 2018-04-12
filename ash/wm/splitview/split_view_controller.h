@@ -303,6 +303,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   void StartOverview();
   void EndOverview();
 
+  // Finalizes and cleans up after a drag or resize is finished for a window.
+  void FinishWindowDrag(aura::Window* window);
+
   // Bindings for the SplitViewController interface.
   mojo::BindingSet<mojom::SplitViewController> bindings_;
 
