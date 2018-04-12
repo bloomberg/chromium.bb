@@ -17,7 +17,7 @@ class AssistantSettingsManager : public mojom::AssistantSettingsManager {
  public:
   ~AssistantSettingsManager() override = default;
 
-  virtual void BindRequest(mojom::AssistantSettingsManagerRequest request);
+  virtual void BindRequest(mojom::AssistantSettingsManagerRequest request) = 0;
 };
 
 }  // namespace assistant
