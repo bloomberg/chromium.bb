@@ -4073,3 +4073,7 @@ crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Time
 crbug.com/818426 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/818324 [ Linux ] external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Pass Timeout ]
 
+# Sheriff 2018-04-12
+crbug.com/818324 [ Linux ] external/wpt/html/syntax/parsing/html5lib_template.html?run_type=uri [ Pass Timeout ]
+crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-position.html [ Pass Timeout ]
+
