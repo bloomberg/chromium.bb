@@ -260,8 +260,6 @@ void GetNativeRtcConfiguration(
 
   switch (blink_config.sdp_semantics) {
     case blink::WebRTCSdpSemantics::kDefault:
-      webrtc_config->sdp_semantics = webrtc::SdpSemantics::kDefault;
-      break;
     case blink::WebRTCSdpSemantics::kPlanB:
       webrtc_config->sdp_semantics = webrtc::SdpSemantics::kPlanB;
       break;
@@ -748,12 +746,6 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
             static_cast<webrtc::KeyExchangeProtocolType>(counter),
             webrtc::kEnumCounterKeyProtocolMax);
         break;
-      case webrtc::kEnumCounterSdpSemanticRequested:
-        UMA_HISTOGRAM_ENUMERATION(
-            "WebRTC.PeerConnection.SdpSemanticRequested",
-            static_cast<webrtc::SdpSemanticRequested>(counter),
-            webrtc::kSdpSemanticRequestMax);
-        break;
       case webrtc::kEnumCounterSdpSemanticNegotiated:
         UMA_HISTOGRAM_ENUMERATION(
             "WebRTC.PeerConnection.SdpSemanticNegotiated",
@@ -928,6 +920,27 @@ size_t GetRemoteStreamUsageCount(
       ++usage_count;
   }
   return usage_count;
+}
+
+enum SdpSemanticRequested {
+  kSdpSemanticRequestedDefault,
+  kSdpSemanticRequestedPlanB,
+  kSdpSemanticRequestedUnifiedPlan,
+  kSdpSemanticRequestedMax
+};
+
+SdpSemanticRequested GetSdpSemanticRequested(
+    blink::WebRTCSdpSemantics sdp_semantics) {
+  switch (sdp_semantics) {
+    case blink::WebRTCSdpSemantics::kDefault:
+      return kSdpSemanticRequestedDefault;
+    case blink::WebRTCSdpSemantics::kPlanB:
+      return kSdpSemanticRequestedPlanB;
+    case blink::WebRTCSdpSemantics::kUnifiedPlan:
+      return kSdpSemanticRequestedUnifiedPlan;
+  }
+  NOTREACHED();
+  return kSdpSemanticRequestedDefault;
 }
 
 }  // namespace
@@ -1354,6 +1367,12 @@ bool RTCPeerConnectionHandler::Initialize(
 
   uma_observer_ = new rtc::RefCountedObject<PeerConnectionUMAObserver>();
   native_peer_connection_->RegisterUMAObserver(uma_observer_.get());
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "WebRTC.PeerConnection.SdpSemanticRequested",
+      GetSdpSemanticRequested(server_configuration.sdp_semantics),
+      kSdpSemanticRequestedMax);
+
   return true;
 }
 
