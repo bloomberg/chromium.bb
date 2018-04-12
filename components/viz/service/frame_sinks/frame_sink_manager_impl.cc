@@ -197,6 +197,11 @@ void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
   DCHECK(!base::ContainsKey(children, child_frame_sink_id));
   children.insert(child_frame_sink_id);
 
+  for (auto& observer : observer_list_) {
+    observer.OnRegisteredFrameSinkHierarchy(parent_frame_sink_id,
+                                            child_frame_sink_id);
+  }
+
   // If the parent has no source, then attaching it to this child will
   // not change any downstream sources.
   BeginFrameSource* parent_source =
@@ -206,11 +211,6 @@ void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
 
   DCHECK_EQ(registered_sources_.count(parent_source), 1u);
   RecursivelyAttachBeginFrameSource(child_frame_sink_id, parent_source);
-
-  for (auto& observer : observer_list_) {
-    observer.OnRegisteredFrameSinkHierarchy(parent_frame_sink_id,
-                                            child_frame_sink_id);
-  }
 }
 
 void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
