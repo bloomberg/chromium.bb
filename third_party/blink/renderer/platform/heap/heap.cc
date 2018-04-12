@@ -738,16 +738,13 @@ bool ThreadHeap::AdvanceLazySweep(double deadline_seconds) {
   return true;
 }
 
-void ThreadHeap::WriteBarrier(const void* value) {
-  if (!value || !thread_state_->IsIncrementalMarking())
-    return;
-
-  WriteBarrierInternal(PageFromObject(value), value);
-}
-
-void ThreadHeap::WriteBarrierInternal(BasePage* page, const void* value) {
+void ThreadHeap::WriteBarrier(void* value) {
   DCHECK(thread_state_->IsIncrementalMarking());
   DCHECK(value);
+  // '-1' is used to indicate deleted values.
+  DCHECK_NE(value, reinterpret_cast<void*>(-1));
+
+  BasePage* const page = PageFromObject(value);
   HeapObjectHeader* const header =
       page->IsLargeObjectPage()
           ? static_cast<LargeObjectPage*>(page)->GetHeapObjectHeader()

@@ -465,9 +465,6 @@ class PLATFORM_EXPORT ThreadHeap {
   enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
   void TakeSnapshot(SnapshotType);
 
-  // Write barrier used after adding an object to the graph.
-  void WriteBarrier(const void* value);
-
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
   void PoisonAllHeaps();
@@ -495,9 +492,9 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void InvokeEphemeronCallbacks(Visitor*);
 
-  // Fast write barrier assuming that incremental marking is running and
-  // |value| is not nullptr.
-  void WriteBarrierInternal(BasePage*, const void* value);
+  // Write barrier assuming that incremental marking is running and value is not
+  // nullptr. Use MarkingVisitor::WriteBarrier as entrypoint.
+  void WriteBarrier(void* value);
 
   ThreadState* thread_state_;
   ThreadHeapStats stats_;
@@ -532,6 +529,7 @@ class PLATFORM_EXPORT ThreadHeap {
   static ThreadHeap* main_thread_heap_;
 
   friend class incremental_marking_test::IncrementalMarkingScopeBase;
+  friend class MarkingVisitor;
   template <typename T>
   friend class Member;
   friend class ThreadState;
