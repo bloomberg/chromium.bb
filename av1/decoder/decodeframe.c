@@ -2690,7 +2690,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->cur_frame->showable_frame = cm->showable_frame;
     cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
     cm->error_resilient_mode =
-        frame_is_sframe(cm) || cm->frame_type == KEY_FRAME
+        frame_is_sframe(cm) || (cm->frame_type == KEY_FRAME && cm->show_frame)
             ? 1
             : aom_rb_read_bit(rb);
   }
@@ -2807,22 +2807,35 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       cm->frame_refs[i].idx = INVALID_IDX;
       cm->frame_refs[i].buf = NULL;
     }
-
-    setup_frame_size(cm, frame_size_override_flag, rb);
-
     if (pbi->need_resync) {
       memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
       pbi->need_resync = 0;
     }
-    if (cm->allow_screen_content_tools &&
-        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-      cm->allow_intrabc = aom_rb_read_bit(rb);
-    cm->allow_ref_frame_mvs = 0;
-    cm->prev_frame = NULL;
   } else {
+    if (cm->intra_only) {
+      pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
+      if (pbi->refresh_frame_flags == 0xFF) {
+        aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
+                           "Intra only frames cannot have refresh flags 0xFF");
+      }
+      if (pbi->need_resync) {
+        memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
+        pbi->need_resync = 0;
+      }
+    } else if (pbi->need_resync != 1) { /* Skip if need resync */
+      pbi->refresh_frame_flags =
+          frame_is_sframe(cm) ? 0xFF : aom_rb_read_literal(rb, REF_FRAMES);
+      if (!pbi->refresh_frame_flags) {
+        // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
+        //       will not be used as a reference
+        cm->is_reference_frame = 0;
+      }
+    }
+  }
+
+  if (!frame_is_intra_only(cm) || pbi->refresh_frame_flags != 0xFF) {
     // Read all ref frame order hints if error_resilient_mode == 1
-    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint &&
-        cm->frame_type != KEY_FRAME) {
+    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Read order hint from bit stream
         unsigned int frame_offset =
@@ -2860,33 +2873,27 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         }
       }
     }
+  }
 
+  if (cm->frame_type == KEY_FRAME) {
+    setup_frame_size(cm, frame_size_override_flag, rb);
+
+    if (cm->allow_screen_content_tools &&
+        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+      cm->allow_intrabc = aom_rb_read_bit(rb);
+    cm->allow_ref_frame_mvs = 0;
+    cm->prev_frame = NULL;
+  } else {
     cm->allow_ref_frame_mvs = 0;
 
     if (cm->intra_only) {
       cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
-      pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
-      if (pbi->refresh_frame_flags == 0xFF) {
-        aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
-                           "Intra only frames cannot have refresh flags 0xFF");
-      }
       setup_frame_size(cm, frame_size_override_flag, rb);
-      if (pbi->need_resync) {
-        memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
-        pbi->need_resync = 0;
-      }
       if (cm->allow_screen_content_tools &&
           (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
         cm->allow_intrabc = aom_rb_read_bit(rb);
-    } else if (pbi->need_resync != 1) { /* Skip if need resync */
-      pbi->refresh_frame_flags =
-          frame_is_sframe(cm) ? 0xFF : aom_rb_read_literal(rb, REF_FRAMES);
 
-      if (!pbi->refresh_frame_flags) {
-        // NOTE: "pbi->refresh_frame_flags == 0" indicates that the coded frame
-        //       will not be used as a reference
-        cm->is_reference_frame = 0;
-      }
+    } else if (pbi->need_resync != 1) { /* Skip if need resync */
 
       // Frame refs short signaling is off when error resilient mode is on.
       if (cm->seq_params.enable_order_hint)

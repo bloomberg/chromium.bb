@@ -2963,7 +2963,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
     if (frame_is_sframe(cm)) {
       assert(cm->error_resilient_mode);
-    } else if (cm->frame_type != KEY_FRAME) {
+    } else if (!(cm->frame_type == KEY_FRAME && cm->show_frame)) {
       aom_wb_write_bit(wb, cm->error_resilient_mode);
     }
   }
@@ -3042,39 +3042,15 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     }
   }
 #endif
+  cpi->refresh_frame_mask = get_refresh_mask(cpi);
   if (cm->frame_type == KEY_FRAME) {
-    cpi->refresh_frame_mask = get_refresh_mask(cpi);
     if (!cm->show_frame) {  // unshown keyframe (forward keyframe)
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
     } else {
       assert(cpi->refresh_frame_mask == 0xFF);
     }
-    write_frame_size(cm, frame_size_override_flag, wb);
-    assert(av1_superres_unscaled(cm) ||
-           !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-    if (cm->allow_screen_content_tools &&
-        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-      aom_wb_write_bit(wb, cm->allow_intrabc);
-    // all eight fbs are refreshed, pick one that will live long enough
-    cm->fb_of_context_type[REGULAR_FRAME] = 0;
   } else {
-    // Write all ref frame order hints if error_resilient_mode == 1
-    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint &&
-        cm->frame_type != KEY_FRAME) {
-      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
-      for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
-        // Get buffer index
-        const int buf_idx = cm->ref_frame_map[ref_idx];
-        assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
-
-        // Write order hint to bit stream
-        aom_wb_write_literal(wb, frame_bufs[buf_idx].cur_frame_offset,
-                             cm->seq_params.order_hint_bits_minus1 + 1);
-      }
-    }
-
     if (cm->frame_type == INTRA_ONLY_FRAME) {
-      cpi->refresh_frame_mask = get_refresh_mask(cpi);
       assert(cpi->refresh_frame_mask != 0xFF);
       int updated_fb = -1;
       for (int i = 0; i < REF_FRAMES; i++) {
@@ -3088,22 +3064,12 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       assert(updated_fb >= 0);
       cm->fb_of_context_type[cm->frame_context_idx] = updated_fb;
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
-      write_frame_size(cm, frame_size_override_flag, wb);
-      assert(av1_superres_unscaled(cm) ||
-             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
-      if (cm->allow_screen_content_tools &&
-          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
-        aom_wb_write_bit(wb, cm->allow_intrabc);
     } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
-      MV_REFERENCE_FRAME ref_frame;
-
-      cpi->refresh_frame_mask = get_refresh_mask(cpi);
       if (cm->frame_type == INTER_FRAME) {
         aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
       } else {
         assert(frame_is_sframe(cm) && cpi->refresh_frame_mask == 0xFF);
       }
-
       int updated_fb = -1;
       for (int i = 0; i < REF_FRAMES; i++) {
         // If more than one frame is refreshed, it doesn't matter which one
@@ -3123,8 +3089,45 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         //       will not be used as a reference
         cm->is_reference_frame = 0;
       }
+    }
+  }
 
-      assert(cm->frame_refs_short_signaling == 0);
+  if (!frame_is_intra_only(cm) || cpi->refresh_frame_mask != 0xFF) {
+    // Write all ref frame order hints if error_resilient_mode == 1
+    if (cm->error_resilient_mode && cm->seq_params.enable_order_hint) {
+      RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
+      for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
+        // Get buffer index
+        const int buf_idx = cm->ref_frame_map[ref_idx];
+        assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
+
+        // Write order hint to bit stream
+        aom_wb_write_literal(wb, frame_bufs[buf_idx].cur_frame_offset,
+                             cm->seq_params.order_hint_bits_minus1 + 1);
+      }
+    }
+  }
+
+  if (cm->frame_type == KEY_FRAME) {
+    write_frame_size(cm, frame_size_override_flag, wb);
+    assert(av1_superres_unscaled(cm) ||
+           !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+    if (cm->allow_screen_content_tools &&
+        (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+      aom_wb_write_bit(wb, cm->allow_intrabc);
+    // all eight fbs are refreshed, pick one that will live long enough
+    cm->fb_of_context_type[REGULAR_FRAME] = 0;
+  } else {
+    if (cm->frame_type == INTRA_ONLY_FRAME) {
+      write_frame_size(cm, frame_size_override_flag, wb);
+      assert(av1_superres_unscaled(cm) ||
+             !(cm->allow_intrabc && NO_FILTER_FOR_IBC));
+      if (cm->allow_screen_content_tools &&
+          (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
+        aom_wb_write_bit(wb, cm->allow_intrabc);
+    } else if (cm->frame_type == INTER_FRAME || frame_is_sframe(cm)) {
+      MV_REFERENCE_FRAME ref_frame;
+
       // NOTE: Error resilient mode turns off frame_refs_short_signaling
       //       automatically.
       if (cm->seq_params.enable_order_hint)
