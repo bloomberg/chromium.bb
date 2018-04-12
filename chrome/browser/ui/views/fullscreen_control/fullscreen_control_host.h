@@ -30,6 +30,8 @@ class FullscreenControlHost : public ui::EventHandler {
                                  views::View* host_view);
   ~FullscreenControlHost() override;
 
+  static bool IsFullscreenExitUIEnabled();
+
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;

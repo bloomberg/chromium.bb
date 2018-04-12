@@ -2027,8 +2027,7 @@ void BrowserView::ViewHierarchyChanged(
 
 #if defined(USE_AURA)
   if (init) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalFullscreenExitUI)) {
+    if (FullscreenControlHost::IsFullscreenExitUIEnabled()) {
       widget->GetNativeView()->AddPreTargetHandler(GetFullscreenControlHost());
     }
   } else if (fullscreen_control_host_) {

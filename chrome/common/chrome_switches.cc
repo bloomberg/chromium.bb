@@ -295,11 +295,6 @@ const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
-// Enables an experimental full screen exit UI to allow exiting fullscreen from
-// mouse or touch.
-const char kEnableExperimentalFullscreenExitUI[] =
-    "enable-experimental-fullscreen-exit-ui";
-
 // Enables logging for extension activity.
 const char kEnableExtensionActivityLogging[] =
     "enable-extension-activity-logging";

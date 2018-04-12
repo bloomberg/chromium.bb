@@ -3336,7 +3336,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalFullscreenExitUIName,
      flag_descriptions::kExperimentalFullscreenExitUIDescription,
      kOsWin | kOsLinux | kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableExperimentalFullscreenExitUI)},
+     FEATURE_VALUE_TYPE(features::kFullscreenExitUI)},
 #endif  // defined(TOOLKIT_VIEWS)
 
     {"network-service", flag_descriptions::kEnableNetworkServiceName,
