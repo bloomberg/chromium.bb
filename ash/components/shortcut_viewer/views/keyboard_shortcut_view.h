@@ -35,6 +35,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   static views::Widget* Show(gfx::NativeWindow context);
 
   // views::View:
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void Layout() override;
 
   // search_box::SearchBoxViewDelegate:

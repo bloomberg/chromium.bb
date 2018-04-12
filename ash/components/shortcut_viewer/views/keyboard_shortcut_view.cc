@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/default_style.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -138,10 +139,21 @@ views::Widget* KeyboardShortcutView::Show(gfx::NativeWindow context) {
     window->SetProperty(aura::client::kWindowIconKey,
                         new gfx::ImageSkia(*icon));
 
+    g_ksv_view->AddAccelerator(
+        ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
+
     g_ksv_view->GetWidget()->Show();
     g_ksv_view->search_box_view_->search_box()->RequestFocus();
   }
   return g_ksv_view->GetWidget();
+}
+
+bool KeyboardShortcutView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
+  DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
+  GetWidget()->Close();
+  return true;
 }
 
 void KeyboardShortcutView::Layout() {
