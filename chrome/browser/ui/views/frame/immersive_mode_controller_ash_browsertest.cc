@@ -10,30 +10,37 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/macros.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
+#include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/web_application_info.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 
 class ImmersiveModeControllerAshHostedAppBrowserTest
-    : public InProcessBrowserTest {
+    : public ExtensionBrowserTest {
  public:
   ImmersiveModeControllerAshHostedAppBrowserTest() = default;
   ~ImmersiveModeControllerAshHostedAppBrowserTest() override = default;
 
   // InProcessBrowserTest override:
   void SetUpOnMainThread() override {
-    Browser::CreateParams params = Browser::CreateParams::CreateForApp(
-        "test_browser_app", true /* trusted_source */, gfx::Rect(),
-        InProcessBrowserTest::browser()->profile(), true);
-    browser_ = new Browser(params);
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = GURL("https://example.org");
+    web_app_info.theme_color = SK_ColorBLUE;
+
+    const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    browser_ = LaunchAppBrowser(app);
     controller_ = browser_view()->immersive_mode_controller();
 
     // Disable animations in immersive fullscreen before we show the window,
@@ -96,9 +103,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   ASSERT_FALSE(browser_view()->GetWidget()->IsFullscreen());
   ASSERT_FALSE(controller()->IsEnabled());
 
-  // The tabstrip and toolbar are not visible for hosted apps.
+  // The tabstrip is not visible for hosted apps.
   EXPECT_FALSE(tabstrip->visible());
-  EXPECT_FALSE(toolbar->visible());
+  EXPECT_TRUE(toolbar->visible());
 
   // The window header should be above the web contents.
   int header_height = GetBoundsInWidget(contents_web_view).y();
@@ -119,10 +126,10 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   // Reveal the window header.
   AttemptReveal();
 
-  // The tabstrip and toolbar should still be hidden and the web contents should
-  // still be flush with the top of the screen.
+  // The tabstrip should still be hidden and the web contents should still be
+  // flush with the top of the screen.
   EXPECT_FALSE(tabstrip->visible());
-  EXPECT_FALSE(toolbar->visible());
+  EXPECT_TRUE(toolbar->visible());
   EXPECT_EQ(0, GetBoundsInWidget(contents_web_view).y());
 
   // During an immersive reveal, the window header should be painted to the
@@ -138,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
   EXPECT_FALSE(browser_view()->GetWidget()->IsFullscreen());
   EXPECT_FALSE(controller()->IsEnabled());
   EXPECT_FALSE(tabstrip->visible());
-  EXPECT_FALSE(toolbar->visible());
+  EXPECT_TRUE(toolbar->visible());
   EXPECT_EQ(header_height, GetBoundsInWidget(contents_web_view).y());
 }
 
@@ -220,6 +227,16 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   EXPECT_FALSE(frame_test_api.size_button()->visible());
 
+  // Button layers in the browser frame are disabled in immersive mode so that
+  // buttons render correctly.
+  HostedAppButtonContainer* container =
+      frame_view->hosted_app_button_container_;
+  EXPECT_FALSE(container->GetContentSettingContainerForTesting()->layer());
+  views::test::InkDropHostViewTestApi ink_drop_api(container->app_menu_button_);
+  EXPECT_EQ(ink_drop_api.ink_drop_mode(),
+            views::InkDropHostView::InkDropMode::OFF);
+  EXPECT_FALSE(container->app_menu_button_->layer());
+
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
   tablet_mode_controller->EnableTabletModeWindowManager(false);
@@ -231,4 +248,9 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
       frame_test_api.close_button()->GetBoundsInScreen()));
   EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
       frame_test_api.minimize_button()->GetBoundsInScreen()));
+
+  // Button layers are re-enabled when immersive mode is exited.
+  EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
+  EXPECT_EQ(ink_drop_api.ink_drop_mode(),
+            views::InkDropHostView::InkDropMode::ON);
 }

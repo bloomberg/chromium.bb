@@ -60,6 +60,9 @@ class ImmersiveModeController {
     // Called when the immersive mode controller has been destroyed.
     virtual void OnImmersiveModeControllerDestroyed() {}
 
+    // Called when immersive mode is exited.
+    virtual void OnImmersiveFullscreenExited() {}
+
    protected:
     virtual ~Observer() {}
   };

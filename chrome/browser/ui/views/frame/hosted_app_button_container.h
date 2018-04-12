@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -31,7 +32,8 @@ class MenuButton;
 // A container for hosted app buttons in the title bar.
 class HostedAppButtonContainer : public views::AccessiblePaneView,
                                  public BrowserActionsContainer::Delegate,
-                                 public ToolbarButtonProvider {
+                                 public ToolbarButtonProvider,
+                                 public ImmersiveModeController::Observer {
  public:
   // |active_icon_color| and |inactive_icon_color| indicate the colors to use
   // for button icons when the window is focused and blurred respectively.
@@ -51,11 +53,15 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   void StartTitlebarAnimation(base::TimeDelta origin_text_slide_duration);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
+                           FrameLayout);
   friend class HostedAppNonClientFrameViewAshTest;
 
   static void DisableAnimationForTesting();
 
   class ContentSettingsContainer;
+
+  views::View* GetContentSettingContainerForTesting();
 
   const std::vector<ContentSettingImageView*>&
   GetContentSettingViewsForTesting() const;
@@ -79,6 +85,10 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   AppMenuButton* GetAppMenuButton() override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
+
+  // ImmersiveModeController::Observer:
+  void OnImmersiveRevealStarted() override;
+  void OnImmersiveFullscreenExited() override;
 
   // The containing browser view.
   BrowserView* browser_view_;
