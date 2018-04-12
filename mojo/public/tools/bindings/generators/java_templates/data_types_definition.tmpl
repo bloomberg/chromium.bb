@@ -1,34 +1,6 @@
 {%- from "constant_definition.tmpl" import constant_def %}
 {%- from "enum_definition.tmpl" import enum_def %}
 
-{%- macro equality(kind, v1, v2, ne=False) -%}
-{%-   if kind|is_reference_kind -%}
-{%-     if kind|is_array_kind -%}
-{%-       if kind.kind|is_reference_kind -%}
-{%- if ne %}!{%- endif %}java.util.Arrays.deepEquals({{v1}}, {{v2}})
-{%-       else -%}
-{%- if ne %}!{%- endif %}java.util.Arrays.equals({{v1}}, {{v2}})
-{%-       endif -%}
-{%-     else -%}
-{%- if ne %}!{%- endif %}org.chromium.mojo.bindings.BindingsHelper.equals({{v1}}, {{v2}})
-{%-     endif -%}
-{%-   else -%}
-{{v1}} {%- if ne %}!={%- else %}=={%- endif %} {{v2}}
-{%-   endif -%}
-{%- endmacro -%}
-
-{%- macro hash(kind, v) -%}
-{%-   if kind|is_array_kind -%}
-{%-     if kind.kind|is_reference_kind -%}
-java.util.Arrays.deepHashCode({{v}})
-{%-     else -%}
-java.util.Arrays.hashCode({{v}})
-{%-     endif -%}
-{%-   else -%}
-org.chromium.mojo.bindings.BindingsHelper.hashCode({{v}})
-{%-   endif -%}
-{%- endmacro -%}
-
 {%- macro array_element_size(kind) -%}
 {%-  if kind|is_union_kind %}
 org.chromium.mojo.bindings.BindingsHelper.UNION_SIZE
@@ -188,9 +160,6 @@ if ({{variable}} != null) {
      * @throws org.chromium.mojo.bindings.DeserializationException on deserialization failure.
      */
     public static {{struct|name}} deserialize(java.nio.ByteBuffer data) {
-        if (data == null)
-            return null;
-
         return deserialize(new org.chromium.mojo.bindings.Message(
                 data, new java.util.ArrayList<org.chromium.mojo.system.Handle>()));
     }
@@ -204,14 +173,26 @@ if ({{variable}} != null) {
         {{struct|name}} result;
         try {
             org.chromium.mojo.bindings.DataHeader mainDataHeader = decoder0.readAndValidateDataHeader(VERSION_ARRAY);
-            result = new {{struct|name}}(mainDataHeader.elementsOrVersion);
+            final int elementsOrVersion = mainDataHeader.elementsOrVersion;
+            result = new {{struct|name}}(elementsOrVersion);
+{%- set prev_ver = [0] %}
 {%- for byte in struct.bytes %}
 {%-   for packed_field in byte.packed_fields %}
-            if (mainDataHeader.elementsOrVersion >= {{packed_field.min_version}}) {
-                {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(16)}}
+{%-     if packed_field.min_version != prev_ver[-1] %}
+{%-       if prev_ver[-1] != 0 %}
             }
+{%-       endif %}
+{%-       set _ = prev_ver.append(packed_field.min_version) %}
+            if (elementsOrVersion >= {{packed_field.min_version}}) {
+{%-     endif %}
+                {
+                    {{decode('result.' ~ packed_field.field|name, packed_field.field.kind, 8+packed_field.offset, packed_field.bit)|indent(16)}}
+                }
 {%-   endfor %}
 {%- endfor %}
+{%- if prev_ver[-1] != 0 %}
+            }
+{%- endif %}
         } finally {
             decoder0.decreaseStackDepth();
         }
@@ -232,40 +213,6 @@ if ({{variable}} != null) {
 {%-   endfor %}
 {%- endfor %}
     }
-
-    /**
-     * @see Object#equals(Object)
-     */
-    @Override
-    public boolean equals(Object object) {
-        if (object == this)
-            return true;
-        if (object == null)
-            return false;
-        if (getClass() != object.getClass())
-            return false;
-{%- if struct.fields|length %}
-        {{struct|name}} other = ({{struct|name}}) object;
-{%-   for field in struct.fields %}
-        if ({{equality(field.kind, 'this.'~field|name, 'other.'~field|name, True)}})
-            return false;
-{%-   endfor %}
-{%- endif %}
-        return true;
-    }
-
-    /**
-     * @see Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = prime + getClass().hashCode();
-{%- for field in struct.fields %}
-        result = prime * result + {{hash(field.kind, 'this.'~field|name)}};
-{%- endfor %}
-        return result;
-    }
 }
 {%- endmacro %}
 
@@ -279,27 +226,19 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
 {%-   endfor %}
     };
 
-    private int mTag_ = -1;
 {%-   for field in union.fields %}
     private {{field.kind|java_type}} m{{field|ucc}};
 {%-   endfor %}
 
-    public int which() {
-      return mTag_;
-    }
-
-    public boolean isUnknown() {
-      return mTag_ == -1;
-    }
 {%-   for field in union.fields %}
 
     public void set{{field|ucc}}({{field.kind|java_type}} {{field|name}}) {
-        this.mTag_ = Tag.{{field|ucc}};
+        this.mTag = Tag.{{field|ucc}};
         this.m{{field|ucc}} = {{field|name}};
     }
 
     public {{field.kind|java_type}} get{{field|ucc}}() {
-        assert this.mTag_ == Tag.{{field|ucc}};
+        assert this.mTag == Tag.{{field|ucc}};
         return this.m{{field|ucc}};
     }
 {%-   endfor %}
@@ -308,8 +247,8 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
     @Override
     protected final void encode(org.chromium.mojo.bindings.Encoder encoder0, int offset) {
         encoder0.encode(org.chromium.mojo.bindings.BindingsHelper.UNION_SIZE, offset);
-        encoder0.encode(this.mTag_, offset + 4);
-        switch (mTag_) {
+        encoder0.encode(this.mTag, offset + 4);
+        switch (mTag) {
 {%-   for field in union.fields %}
             case Tag.{{field|ucc}}: {
 {%-     if field.kind|is_union_kind %}
@@ -352,54 +291,7 @@ public final class {{union|name}} extends org.chromium.mojo.bindings.Union {
 {%-     else %}
                 {{decode('result.m'~field|ucc, field.kind, 'offset + org.chromium.mojo.bindings.DataHeader.HEADER_SIZE', 0)|indent(16)}}
 {%-     endif %}
-                result.mTag_ = Tag.{{field|ucc}};
-                break;
-            }
-{%-   endfor %}
-            default: {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * @see Object#equals(Object)
-     */
-    @Override
-    public boolean equals(Object object) {
-        if (object == this)
-            return true;
-        if (object == null)
-            return false;
-        if (getClass() != object.getClass())
-            return false;
-        {{union|name}} other = ({{union|name}}) object;
-        if (this.mTag_ != other.mTag_)
-            return false;
-        switch (this.mTag_) {
-{%-   for field in union.fields %}
-            case Tag.{{field|ucc}}:
-                return {{equality(field.kind, 'this.m'~field|ucc, 'other.m'~field|ucc)}};
-{%-   endfor %}
-            default:
-                break;
-        }
-        return false;
-    }
-
-    /**
-     * @see Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = prime + getClass().hashCode();
-        result = prime * result + org.chromium.mojo.bindings.BindingsHelper.hashCode(mTag_);
-        switch (this.mTag_) {
-{%-   for field in union.fields %}
-            case Tag.{{field|ucc}}: {
-                result = prime * result + {{hash(field.kind, 'this.m'~field|ucc)}};
+                result.mTag = Tag.{{field|ucc}};
                 break;
             }
 {%-   endfor %}

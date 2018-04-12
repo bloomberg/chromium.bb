@@ -31,8 +31,6 @@ import org.chromium.mojo.system.MessagePipeHandle;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Testing generated classes and associated features.
@@ -214,7 +212,7 @@ public class BindingsTest {
         Foo typicalFoo = createFoo();
         Message serializedFoo = typicalFoo.serialize(null);
         Foo deserializedFoo = Foo.deserialize(serializedFoo);
-        Assert.assertEquals(typicalFoo, deserializedFoo);
+        Assert.assertTrue(BindingsTestUtils.structsEqual(typicalFoo, deserializedFoo));
     }
 
     /**
@@ -227,24 +225,5 @@ public class BindingsTest {
         Message serializedStruct = new EmptyStruct().serialize(null);
         EmptyStruct emptyStruct = EmptyStruct.deserialize(serializedStruct);
         Assert.assertNotNull(emptyStruct);
-    }
-
-    // In testing maps we want to make sure that the key used when inserting an
-    // item the key used when looking it up again are different objects. Java
-    // has default implementations of equals and hashCode that use reference
-    // equality and hashing, respectively, and that's not what we want for our
-    // mojom values.
-    @Test
-    @SmallTest
-    public void testHashMapStructKey() {
-        Map<Rect, Integer> map = new HashMap<>();
-        map.put(createRect(1, 2, 3, 4), 123);
-
-        Rect key = createRect(1, 2, 3, 4);
-        Assert.assertNotNull(map.get(key));
-        Assert.assertEquals(123, map.get(key).intValue());
-
-        map.remove(key);
-        Assert.assertTrue(map.isEmpty());
     }
 }

@@ -105,4 +105,10 @@ public class BindingsTestUtils {
         manager.bind(impl, handles.second);
         return proxy;
     }
+
+    public static boolean structsEqual(Struct s1, Struct s2) {
+        if (s1 == s2) return true;
+        if (s1 == null || s2 == null) return false;
+        return s1.serialize(null).getData().equals(s2.serialize(null).getData());
+    }
 }
