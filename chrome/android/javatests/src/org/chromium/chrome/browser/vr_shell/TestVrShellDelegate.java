@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import org.junit.Assert;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 
@@ -16,7 +14,6 @@ import org.chromium.chrome.browser.ChromeActivity;
  * - Allows us to have test-specific behavior if necessary without changing production code
  */
 public class TestVrShellDelegate extends VrShellDelegate {
-    private boolean mOnResumeCalled;
     private Runnable mOnVSyncPausedCallback;
     private static TestVrShellDelegate sInstance;
     private boolean mDisableVrBrowsing;
@@ -110,7 +107,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
             mTestWorkaroundDontCancelVrEntryOnResume = true;
         }
         super.onResume();
-        mOnResumeCalled = true;
         mTestWorkaroundDontCancelVrEntryOnResume = false;
     }
 
@@ -130,19 +126,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
 
     public boolean isExpectingBroadcast() {
         return mExpectingBroadcast;
-    }
-
-    /**
-     * Make sure that onResume is called before onPause.
-     *
-     * This is necessary since we don't want weird problems to show up caused by the delayed
-     * onResume being called after onPause.
-     */
-    @Override
-    protected void onPause() {
-        Assert.assertTrue(mOnResumeCalled);
-        mOnResumeCalled = false;
-        super.onPause();
     }
 
     /**

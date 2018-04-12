@@ -1900,6 +1900,7 @@ public class VrShellDelegate
         mListeningForWebVrActivate = listening;
         if (mListeningForWebVrActivate) {
             registerDaydreamIntent(mActivity);
+            if (mNeedsAnimationCancel || mCancellingEntryAnimation) return;
             if (mAutopresentWebVr || mActivateFromHeadsetInsertion) {
                 // Dispatch vrdisplayactivate so that the WebVr page can call requestPresent
                 // to start presentation.
