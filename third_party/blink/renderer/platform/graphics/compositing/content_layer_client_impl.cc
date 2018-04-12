@@ -9,9 +9,10 @@
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/logging_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/wtf/optional.h"
@@ -149,25 +150,25 @@ static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {
 }
 
 scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
-    const PaintArtifact& paint_artifact,
+    const DisplayItemList& display_item_list,
     const gfx::Rect& layer_bounds,
-    const Vector<const PaintChunk*>& paint_chunks,
+    const PaintChunkSubset& paint_chunks,
     const PropertyTreeState& layer_state) {
   // TODO(wangxianzhu): Avoid calling DebugName() in official release build.
-  debug_name_ = paint_chunks[0]->id.client.DebugName();
+  debug_name_ = paint_chunks[0].id.client.DebugName();
 
 #if DCHECK_IS_ON()
   paint_chunk_debug_data_ = JSONArray::Create();
-  for (const auto* chunk : paint_chunks) {
+  for (const auto& chunk : paint_chunks) {
     auto json = JSONObject::Create();
-    json->SetString("data", chunk->ToString());
+    json->SetString("data", chunk.ToString());
     json->SetArray("displayItems",
-                   paint_artifact.GetDisplayItemList().SubsequenceAsJSON(
-                       chunk->begin_index, chunk->end_index,
+                   display_item_list.SubsequenceAsJSON(
+                       chunk.begin_index, chunk.end_index,
                        DisplayItemList::kSkipNonDrawings |
                            DisplayItemList::kShownOnlyDisplayItemTypes));
     json->SetString("propertyTreeState",
-                    chunk->properties.property_tree_state.ToTreeString());
+                    chunk.properties.property_tree_state.ToTreeString());
     paint_chunk_debug_data_->PushObject(std::move(json));
   }
 #endif
@@ -186,13 +187,12 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   }
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
-      paint_artifact.GetDisplayItemList(),
-      cc::DisplayItemList::kTopLevelDisplayItemList,
+      display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
       WTF::OptionalOrNullptr(params));
 
-  if (paint_chunks[0]->size()) {
+  if (paint_chunks[0].size()) {
     cc_picture_layer_->SetBackgroundColor(DisplayItemBackgroundColor(
-        paint_artifact.GetDisplayItemList()[paint_chunks[0]->begin_index]));
+        display_item_list[paint_chunks[0].begin_index]));
   }
 
   return cc_picture_layer_;

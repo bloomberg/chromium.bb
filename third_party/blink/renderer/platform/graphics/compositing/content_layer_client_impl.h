@@ -9,7 +9,6 @@
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -17,9 +16,10 @@
 
 namespace blink {
 
+class DisplayItemList;
 class JSONArray;
 class JSONObject;
-class PaintArtifact;
+class PaintChunkSubset;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
@@ -68,9 +68,9 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   std::unique_ptr<JSONObject> LayerAsJSON(LayerAsJSONContext&) const;
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
-      const PaintArtifact&,
+      const DisplayItemList&,
       const gfx::Rect& layer_bounds,
-      const Vector<const PaintChunk*>&,
+      const PaintChunkSubset&,
       const PropertyTreeState&);
 
  private:

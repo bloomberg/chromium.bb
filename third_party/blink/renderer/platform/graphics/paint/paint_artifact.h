@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
@@ -51,6 +52,11 @@ class PLATFORM_EXPORT PaintArtifact final {
 
   Vector<PaintChunk>& PaintChunks() { return paint_chunks_; }
   const Vector<PaintChunk>& PaintChunks() const { return paint_chunks_; }
+
+  PaintChunkSubset GetPaintChunkSubset(
+      const Vector<size_t>& subset_indices) const {
+    return PaintChunkSubset(paint_chunks_, subset_indices);
+  }
 
   Vector<PaintChunk>::const_iterator FindChunkByDisplayItemIndex(
       size_t index) const {
