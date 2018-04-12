@@ -67,7 +67,6 @@ import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingsResources;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
@@ -152,8 +151,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         // will show the full, expanded text.
         private boolean mIsShowingTruncatedText = true;
 
-        // The profile to use when getting the end index for the origin.
-        private Profile mProfile;
+        // The length of the URL's origin in number of characters.
+        private int mOriginLength = -1;
 
         // The maximum number of lines currently shown in the view
         private int mCurrentMaxLines = Integer.MAX_VALUE;
@@ -190,15 +189,11 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             setMaxLines(Integer.MAX_VALUE);
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            assert mProfile != null : "setProfile() must be called before layout.";
+            assert mOriginLength >= 0 : "setUrl() must be called before layout.";
             String urlText = getText().toString();
 
-            // Lay out the URL in a StaticLayout that is the same size as our final
-            // container.
-            int originEndIndex = OmniboxUrlEmphasizer.getOriginEndIndex(urlText, mProfile);
-
             // Find the range of lines containing the origin.
-            int originEndLine = getLineForIndex(originEndIndex);
+            int originEndLine = getLineForIndex(mOriginLength);
 
             // Display an extra line so we don't accidentally hide the origin with
             // ellipses
@@ -229,13 +224,16 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         }
 
         /**
-         * Sets the profile to use when calculating the end index of the origin.
+         * Sets the URL and the length of the URL's origin.
          * Must be called before layout.
          *
-         * @param profile The profile to use when coloring the URL.
+         * @param url The URL.
+         * @param originLength The length of the URL's origin in number of characters.
          */
-        public void setProfile(Profile profile) {
-            mProfile = profile;
+        public void setUrl(CharSequence url, int originLength) {
+            assert originLength >= 0 && originLength <= url.length();
+            setText(url);
+            mOriginLength = originLength;
         }
 
         /**
@@ -273,10 +271,9 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         public Runnable siteSettingsButtonClickCallback;
         public Runnable openOnlineButtonClickCallback;
 
-        // TODO: Refactor profile out of ElidedUrlTextView and PageInfoViewParams.
-        public Profile profile;
         public boolean alwaysShowFullUrl;
         public CharSequence url;
+        public int urlOriginLength;
     }
 
     // Delay enter to allow the triggering button to animate before we cover it.
@@ -376,7 +373,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         mWindowAndroid = mTab.getWebContents().getTopLevelNativeWindow();
         mContentPublisher = publisher;
 
-        viewParams.profile = mTab.getProfile();
         viewParams.alwaysShowFullUrl = mIsBottomPopup;
         viewParams.urlTitleClickCallback = () -> {
             // Expand/collapse the displayed URL title.
@@ -429,6 +425,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
             }
         }
         viewParams.url = displayUrlBuilder;
+        viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
+                displayUrlBuilder.toString(), mTab.getProfile());
 
         if (mParsedUrl == null || mParsedUrl.getScheme() == null || isShowingOfflinePage()
                 || !(mParsedUrl.getScheme().equals(UrlConstants.HTTP_SCHEME)
@@ -1088,9 +1086,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         mSiteSettingsButton = (Button) mContainer.findViewById(R.id.page_info_site_settings_button);
         mOpenOnlineButton = (Button) mContainer.findViewById(R.id.page_info_open_online_button);
 
-        mUrlTitle.setProfile(params.profile);
         mUrlTitle.setAlwaysShowFullUrl(params.alwaysShowFullUrl);
-        mUrlTitle.setText(params.url);
+        mUrlTitle.setUrl(params.url, params.urlOriginLength);
         if (params.urlTitleLongClickCallback != null) {
             mUrlTitle.setOnLongClickListener((View v) -> {
                 params.urlTitleLongClickCallback.run();
