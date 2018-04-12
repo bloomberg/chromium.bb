@@ -7660,46 +7660,45 @@ static INLINE int get_ref_mv_offset(int single_mode, const MB_MODE_INFO *mbmi) {
   return ref_mv_offset;
 }
 
-static INLINE int get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
-                              const AV1_COMMON *cm, const MACROBLOCK *x) {
-  const MACROBLOCKD *const xd = &x->e_mbd;
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+static INLINE int get_single_mode(int this_mode, int ref_idx,
+                                  int is_comp_pred) {
   int single_mode;
-  const int is_comp_pred = has_second_ref(mbmi);
   if (is_comp_pred) {
     single_mode =
         ref_idx ? compound_ref1_mode(this_mode) : compound_ref0_mode(this_mode);
   } else {
     single_mode = this_mode;
   }
+  return single_mode;
+}
+
+static INLINE void get_this_mv(int_mv *this_mv, int this_mode, int ref_idx,
+                               const MACROBLOCK *x) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+  const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  const int is_comp_pred = has_second_ref(mbmi);
+  const int single_mode = get_single_mode(this_mode, ref_idx, is_comp_pred);
   assert(is_single_inter_mode(single_mode));
   if (single_mode == NEWMV) {
     this_mv->as_int = INVALID_MV;
-    return 1;
   } else if (single_mode == GLOBALMV) {
-    return clamp_and_check_mv(
-        this_mv, mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]], cm, x);
+    *this_mv = mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]];
   } else {
     assert(single_mode == NEARMV || single_mode == NEARESTMV);
     const int ref_mv_offset = get_ref_mv_offset(single_mode, mbmi);
     if (ref_mv_offset < mbmi_ext->ref_mv_count[ref_frame_type]) {
       assert(ref_mv_offset >= 0);
       if (ref_idx == 0) {
-        return clamp_and_check_mv(
-            this_mv,
-            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].this_mv, cm,
-            x);
+        *this_mv =
+            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].this_mv;
       } else {
-        return clamp_and_check_mv(
-            this_mv,
-            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].comp_mv, cm,
-            x);
+        *this_mv =
+            mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].comp_mv;
       }
     } else {
-      return clamp_and_check_mv(
-          this_mv, mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]], cm, x);
+      *this_mv = mbmi_ext->global_mvs[mbmi->ref_frame[ref_idx]];
     }
   }
 }
@@ -7712,7 +7711,14 @@ static INLINE int build_cur_mv(int_mv *cur_mv, int this_mode,
   const int is_comp_pred = has_second_ref(mbmi);
   int ret = 1;
   for (int i = 0; i < is_comp_pred + 1; ++i) {
-    ret &= get_this_mv(cur_mv + i, this_mode, i, cm, x);
+    int_mv this_mv;
+    get_this_mv(&this_mv, this_mode, i, x);
+    const int single_mode = get_single_mode(this_mode, i, is_comp_pred);
+    if (single_mode == NEWMV) {
+      cur_mv[i] = this_mv;
+    } else {
+      ret &= clamp_and_check_mv(cur_mv + i, this_mv, cm, x);
+    }
   }
   return ret;
 }
