@@ -72,7 +72,7 @@ class BluetoothSocketCreateFunction : public BluetoothSocketAsyncApiFunction {
   ResponseAction Run() override;
 
  private:
-  std::unique_ptr<bluetooth_socket::Create::Params> params_;
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketCreateFunction);
 };
 
 class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
@@ -88,7 +88,7 @@ class BluetoothSocketUpdateFunction : public BluetoothSocketAsyncApiFunction {
   ResponseAction Run() override;
 
  private:
-  std::unique_ptr<bluetooth_socket::Update::Params> params_;
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketUpdateFunction);
 };
 
 class BluetoothSocketSetPausedFunction
@@ -106,7 +106,7 @@ class BluetoothSocketSetPausedFunction
   ResponseAction Run() override;
 
  private:
-  std::unique_ptr<bluetooth_socket::SetPaused::Params> params_;
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketSetPausedFunction);
 };
 
 class BluetoothSocketListenFunction : public BluetoothSocketAsyncApiFunction {
@@ -258,7 +258,7 @@ class BluetoothSocketDisconnectFunction
  private:
   virtual void OnSuccess();
 
-  std::unique_ptr<bluetooth_socket::Disconnect::Params> params_;
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketDisconnectFunction);
 };
 
 class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
@@ -274,7 +274,7 @@ class BluetoothSocketCloseFunction : public BluetoothSocketAsyncApiFunction {
   ResponseAction Run() override;
 
  private:
-  std::unique_ptr<bluetooth_socket::Close::Params> params_;
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketCloseFunction);
 };
 
 class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
@@ -294,9 +294,10 @@ class BluetoothSocketSendFunction : public BluetoothSocketAsyncApiFunction {
   void OnError(BluetoothApiSocket::ErrorReason reason,
                const std::string& message);
 
-  std::unique_ptr<bluetooth_socket::Send::Params> params_;
   scoped_refptr<net::IOBuffer> io_buffer_;
   size_t io_buffer_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketSendFunction);
 };
 
 class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
@@ -313,7 +314,7 @@ class BluetoothSocketGetInfoFunction : public BluetoothSocketAsyncApiFunction {
   ResponseAction Run() override;
 
  private:
-  std::unique_ptr<bluetooth_socket::GetInfo::Params> params_;
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketGetInfoFunction);
 };
 
 class BluetoothSocketGetSocketsFunction
