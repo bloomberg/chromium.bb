@@ -159,6 +159,26 @@ Status ScrollElementRegionIntoViewHelper(
     middle.Offset(region.Width() / 2, region.Height() / 2);
     status = VerifyElementClickable(
         frame, web_view, clickable_element_id, middle);
+    if (status.code() == kUnknownError &&
+        status.message().find("is not clickable") != std::string::npos) {
+      // Clicking at the target location isn't reaching the target element.
+      // One possible cause is a scroll event handler has shifted the element.
+      // Try again to get the updated location of the target element.
+      status = web_view->CallFunction(
+          frame,
+          webdriver::atoms::asString(webdriver::atoms::GET_LOCATION_IN_VIEW),
+          args, &result);
+      if (status.IsError())
+        return status;
+      if (!ParseFromValue(result.get(), &tmp_location)) {
+        return Status(kUnknownError,
+                      "failed to parse value of GET_LOCATION_IN_VIEW");
+      }
+      middle = tmp_location;
+      middle.Offset(region.Width() / 2, region.Height() / 2);
+      status =
+          VerifyElementClickable(frame, web_view, clickable_element_id, middle);
+    }
     if (status.IsError())
       return status;
   }
