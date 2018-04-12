@@ -349,7 +349,8 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
           result, adapter_->GetKeySystemUMAPrefix(), kGenerateRequestUMAName,
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
-              weak_ptr_factory_.GetWeakPtr()))));
+              weak_ptr_factory_.GetWeakPtr()),
+          {SessionInitStatus::NEW_SESSION})));
 }
 
 void WebContentDecryptionModuleSessionImpl::Load(
@@ -384,7 +385,9 @@ void WebContentDecryptionModuleSessionImpl::Load(
           result, adapter_->GetKeySystemUMAPrefix(), kLoadSessionUMAName,
           base::Bind(
               &WebContentDecryptionModuleSessionImpl::OnSessionInitialized,
-              weak_ptr_factory_.GetWeakPtr()))));
+              weak_ptr_factory_.GetWeakPtr()),
+          {SessionInitStatus::NEW_SESSION,
+           SessionInitStatus::SESSION_NOT_FOUND})));
 }
 
 void WebContentDecryptionModuleSessionImpl::Update(
