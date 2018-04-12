@@ -119,7 +119,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
 
   // This is the last method that is called on this class. Notifies the final
   // result to |client_| and clears all mojo connections etc.
-  void CommitCompleted(const network::URLLoaderCompletionStatus& status);
+  void CommitCompleted(const network::URLLoaderCompletionStatus& status,
+                       const std::string& status_message);
 
   const GURL request_url_;
 

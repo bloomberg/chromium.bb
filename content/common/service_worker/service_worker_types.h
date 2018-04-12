@@ -46,7 +46,13 @@ extern const char kServiceWorkerUpdateErrorPrefix[];
 extern const char kServiceWorkerUnregisterErrorPrefix[];
 extern const char kServiceWorkerGetRegistrationErrorPrefix[];
 extern const char kServiceWorkerGetRegistrationsErrorPrefix[];
-extern const char kFetchScriptError[];
+extern const char kServiceWorkerFetchScriptError[];
+extern const char kServiceWorkerBadHTTPResponseError[];
+extern const char kServiceWorkerSSLError[];
+extern const char kServiceWorkerBadMIMEError[];
+extern const char kServiceWorkerNoMIMEError[];
+extern const char kServiceWorkerRedirectError[];
+extern const char kServiceWorkerAllowed[];
 
 // Constants for invalid identifiers.
 static const int kInvalidEmbeddedWorkerThreadId = -1;

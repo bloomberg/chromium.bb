@@ -19,8 +19,19 @@ const char kServiceWorkerGetRegistrationErrorPrefix[] =
     "Failed to get a ServiceWorkerRegistration: ";
 const char kServiceWorkerGetRegistrationsErrorPrefix[] =
     "Failed to get ServiceWorkerRegistration objects: ";
-const char kFetchScriptError[] =
+const char kServiceWorkerFetchScriptError[] =
     "An unknown error occurred when fetching the script.";
+const char kServiceWorkerBadHTTPResponseError[] =
+    "A bad HTTP response code (%d) was received when fetching the script.";
+const char kServiceWorkerSSLError[] =
+    "An SSL certificate error occurred when fetching the script.";
+const char kServiceWorkerBadMIMEError[] =
+    "The script has an unsupported MIME type ('%s').";
+const char kServiceWorkerNoMIMEError[] =
+    "The script does not have a MIME type.";
+const char kServiceWorkerRedirectError[] =
+    "The script resource is behind a redirect, which is disallowed.";
+const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest() = default;
 

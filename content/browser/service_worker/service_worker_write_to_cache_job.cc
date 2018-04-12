@@ -34,17 +34,8 @@ namespace content {
 namespace {
 
 const char kKilledError[] = "The request to fetch the script was interrupted.";
-const char kBadHTTPResponseError[] =
-    "A bad HTTP response code (%d) was received when fetching the script.";
-const char kSSLError[] =
-    "An SSL certificate error occurred when fetching the script.";
-const char kBadMIMEError[] = "The script has an unsupported MIME type ('%s').";
-const char kNoMIMEError[] = "The script does not have a MIME type.";
 const char kClientAuthenticationError[] =
     "Client authentication was required to fetch the script.";
-const char kRedirectError[] =
-    "The script resource is behind a redirect, which is disallowed.";
-const char kServiceWorkerAllowed[] = "Service-Worker-Allowed";
 
 bool ShouldIgnoreSSLError(net::URLRequest* request) {
   const net::HttpNetworkSession::Params* session_params =
@@ -185,7 +176,7 @@ int ServiceWorkerWriteToCacheJob::ReadRawData(net::IOBuffer* buf,
 
   if (rv < 0) {
     net::Error error = static_cast<net::Error>(rv);
-    error = NotifyFinishedCaching(error, kFetchScriptError);
+    error = NotifyFinishedCaching(error, kServiceWorkerFetchScriptError);
     DCHECK_EQ(rv, error);
     return error;
   }
@@ -271,7 +262,7 @@ void ServiceWorkerWriteToCacheJob::OnReceivedRedirect(
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerWriteToCacheJob::OnReceivedRedirect");
   // Script resources can't redirect.
-  NotifyStartErrorHelper(net::ERR_UNSAFE_REDIRECT, kRedirectError);
+  NotifyStartErrorHelper(net::ERR_UNSAFE_REDIRECT, kServiceWorkerRedirectError);
 }
 
 void ServiceWorkerWriteToCacheJob::OnAuthRequired(
@@ -307,7 +298,7 @@ void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
   } else {
     NotifyStartErrorHelper(
         net::Error(net::MapCertStatusToNetError(ssl_info.cert_status)),
-        kSSLError);
+        kServiceWorkerSSLError);
   }
 }
 
@@ -318,12 +309,12 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
 
   if (net_error != net::OK) {
     net::Error error = static_cast<net::Error>(net_error);
-    NotifyStartErrorHelper(error, kFetchScriptError);
+    NotifyStartErrorHelper(error, kServiceWorkerFetchScriptError);
     return;
   }
   if (request->GetResponseCode() / 100 != 2) {
-    std::string error_message =
-        base::StringPrintf(kBadHTTPResponseError, request->GetResponseCode());
+    std::string error_message = base::StringPrintf(
+        kServiceWorkerBadHTTPResponseError, request->GetResponseCode());
     NotifyStartErrorHelper(net::ERR_INVALID_RESPONSE, error_message);
     // TODO(michaeln): Instead of error'ing immediately, send the net
     // response to our consumer, just don't cache it?
@@ -335,7 +326,7 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
       !ShouldIgnoreSSLError(request)) {
     NotifyStartErrorHelper(net::Error(net::MapCertStatusToNetError(
                                request->ssl_info().cert_status)),
-                           kSSLError);
+                           kServiceWorkerSSLError);
     return;
   }
 
@@ -344,9 +335,9 @@ void ServiceWorkerWriteToCacheJob::OnResponseStarted(net::URLRequest* request,
     request->GetMimeType(&mime_type);
     if (!blink::IsSupportedJavascriptMimeType(mime_type)) {
       std::string error_message =
-          mime_type.empty()
-              ? kNoMIMEError
-              : base::StringPrintf(kBadMIMEError, mime_type.c_str());
+          mime_type.empty() ? kServiceWorkerNoMIMEError
+                            : base::StringPrintf(kServiceWorkerBadMIMEError,
+                                                 mime_type.c_str());
       NotifyStartErrorHelper(net::ERR_INSECURE_RESPONSE, error_message);
       return;
     }
@@ -409,7 +400,7 @@ void ServiceWorkerWriteToCacheJob::OnReadCompleted(net::URLRequest* request,
   int result;
   if (bytes_read < 0) {
     net::Error error = static_cast<net::Error>(bytes_read);
-    result = NotifyFinishedCaching(error, kFetchScriptError);
+    result = NotifyFinishedCaching(error, kServiceWorkerFetchScriptError);
   } else {
     result = HandleNetData(bytes_read);
   }
@@ -474,7 +465,8 @@ net::Error ServiceWorkerWriteToCacheJob::NotifyFinishedCaching(
     // response.
     version_->embedded_worker()->AddMessageToConsole(
         blink::WebConsoleMessage::kLevelError,
-        status_message.empty() ? kFetchScriptError : status_message);
+        status_message.empty() ? kServiceWorkerFetchScriptError
+                               : status_message);
   } else {
     size = cache_writer_->bytes_written();
   }

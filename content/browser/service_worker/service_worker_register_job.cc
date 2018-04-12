@@ -388,7 +388,7 @@ void ServiceWorkerRegisterJob::OnStartWorkerFinished(
   if (main_script_status.status() != net::URLRequestStatus::SUCCESS) {
     message = new_version()->script_cache_map()->main_script_status_message();
     if (message.empty())
-      message = kFetchScriptError;
+      message = kServiceWorkerFetchScriptError;
   }
   Complete(status, message);
 }
