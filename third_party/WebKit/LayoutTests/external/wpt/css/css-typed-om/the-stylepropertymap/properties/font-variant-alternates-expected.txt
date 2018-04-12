@@ -6,6 +6,7 @@ FAIL Can set 'font-variant-alternates' to the 'historical-forms' keyword Failed 
 PASS Setting 'font-variant-alternates' to a length throws TypeError
 PASS Setting 'font-variant-alternates' to a percent throws TypeError
 PASS Setting 'font-variant-alternates' to a time throws TypeError
+PASS Setting 'font-variant-alternates' to an angle throws TypeError
 PASS Setting 'font-variant-alternates' to a flexible length throws TypeError
 PASS Setting 'font-variant-alternates' to a number throws TypeError
 PASS Setting 'font-variant-alternates' to a position throws TypeError

@@ -8,6 +8,7 @@ FAIL Can set 'paint-order' to the 'markers' keyword assert_equals: expected "CSS
 PASS Setting 'paint-order' to a length throws TypeError
 PASS Setting 'paint-order' to a percent throws TypeError
 PASS Setting 'paint-order' to a time throws TypeError
+PASS Setting 'paint-order' to an angle throws TypeError
 PASS Setting 'paint-order' to a flexible length throws TypeError
 PASS Setting 'paint-order' to a number throws TypeError
 PASS Setting 'paint-order' to a position throws TypeError

@@ -9,6 +9,7 @@ PASS Can set 'image-rendering' to the 'pixelated' keyword
 PASS Setting 'image-rendering' to a length throws TypeError
 PASS Setting 'image-rendering' to a percent throws TypeError
 PASS Setting 'image-rendering' to a time throws TypeError
+PASS Setting 'image-rendering' to an angle throws TypeError
 PASS Setting 'image-rendering' to a flexible length throws TypeError
 PASS Setting 'image-rendering' to a number throws TypeError
 PASS Setting 'image-rendering' to a position throws TypeError

@@ -5,6 +5,7 @@ FAIL Can set 'stop-opacity' to a number assert_approx_equals: expected 0 +/- 0.0
 PASS Setting 'stop-opacity' to a length throws TypeError
 PASS Setting 'stop-opacity' to a percent throws TypeError
 PASS Setting 'stop-opacity' to a time throws TypeError
+PASS Setting 'stop-opacity' to an angle throws TypeError
 PASS Setting 'stop-opacity' to a flexible length throws TypeError
 PASS Setting 'stop-opacity' to a position throws TypeError
 PASS Setting 'stop-opacity' to a URL throws TypeError

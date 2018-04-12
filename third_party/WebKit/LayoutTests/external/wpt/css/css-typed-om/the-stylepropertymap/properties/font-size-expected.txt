@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 58 tests; 31 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 61 tests; 34 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Can set 'font-size' to CSS-wide keywords
 PASS Can set 'font-size' to var() references
 PASS Can set 'font-size' to the 'xx-small' keyword
@@ -14,6 +14,7 @@ PASS Can set 'font-size' to the 'smaller' keyword
 PASS Can set 'font-size' to a length
 PASS Can set 'font-size' to a percent
 PASS Setting 'font-size' to a time throws TypeError
+PASS Setting 'font-size' to an angle throws TypeError
 PASS Setting 'font-size' to a flexible length throws TypeError
 PASS Setting 'font-size' to a number throws TypeError
 PASS Setting 'font-size' to a position throws TypeError
@@ -33,6 +34,7 @@ FAIL Can set 'font-min-size' to the 'smaller' keyword Failed to execute 'set' on
 FAIL Can set 'font-min-size' to a length Failed to execute 'set' on 'StylePropertyMap': Invalid propertyName: font-min-size
 FAIL Can set 'font-min-size' to a percent Failed to execute 'set' on 'StylePropertyMap': Invalid propertyName: font-min-size
 PASS Setting 'font-min-size' to a time throws TypeError
+PASS Setting 'font-min-size' to an angle throws TypeError
 PASS Setting 'font-min-size' to a flexible length throws TypeError
 PASS Setting 'font-min-size' to a number throws TypeError
 PASS Setting 'font-min-size' to a position throws TypeError
@@ -53,6 +55,7 @@ FAIL Can set 'font-max-size' to the 'smaller' keyword Failed to execute 'set' on
 FAIL Can set 'font-max-size' to a length Failed to execute 'set' on 'StylePropertyMap': Invalid propertyName: font-max-size
 FAIL Can set 'font-max-size' to a percent Failed to execute 'set' on 'StylePropertyMap': Invalid propertyName: font-max-size
 PASS Setting 'font-max-size' to a time throws TypeError
+PASS Setting 'font-max-size' to an angle throws TypeError
 PASS Setting 'font-max-size' to a flexible length throws TypeError
 PASS Setting 'font-max-size' to a number throws TypeError
 PASS Setting 'font-max-size' to a position throws TypeError

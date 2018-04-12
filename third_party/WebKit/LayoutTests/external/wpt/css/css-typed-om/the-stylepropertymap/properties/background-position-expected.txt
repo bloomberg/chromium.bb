@@ -5,6 +5,7 @@ FAIL Can set 'background-position' to a position Failed to execute 'set' on 'Sty
 PASS Setting 'background-position' to a length throws TypeError
 PASS Setting 'background-position' to a percent throws TypeError
 PASS Setting 'background-position' to a time throws TypeError
+PASS Setting 'background-position' to an angle throws TypeError
 PASS Setting 'background-position' to a flexible length throws TypeError
 PASS Setting 'background-position' to a number throws TypeError
 PASS Setting 'background-position' to a URL throws TypeError

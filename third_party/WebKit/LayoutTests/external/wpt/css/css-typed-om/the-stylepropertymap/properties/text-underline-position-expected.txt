@@ -8,6 +8,7 @@ FAIL Can set 'text-underline-position' to the 'right' keyword Failed to execute 
 PASS Setting 'text-underline-position' to a length throws TypeError
 PASS Setting 'text-underline-position' to a percent throws TypeError
 PASS Setting 'text-underline-position' to a time throws TypeError
+PASS Setting 'text-underline-position' to an angle throws TypeError
 PASS Setting 'text-underline-position' to a flexible length throws TypeError
 PASS Setting 'text-underline-position' to a number throws TypeError
 PASS Setting 'text-underline-position' to a position throws TypeError

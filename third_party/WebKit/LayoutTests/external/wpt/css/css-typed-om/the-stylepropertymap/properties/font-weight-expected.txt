@@ -9,6 +9,7 @@ FAIL Can set 'font-weight' to a number assert_approx_equals: expected -3.14 +/- 
 PASS Setting 'font-weight' to a length throws TypeError
 PASS Setting 'font-weight' to a percent throws TypeError
 PASS Setting 'font-weight' to a time throws TypeError
+PASS Setting 'font-weight' to an angle throws TypeError
 PASS Setting 'font-weight' to a flexible length throws TypeError
 PASS Setting 'font-weight' to a position throws TypeError
 PASS Setting 'font-weight' to a URL throws TypeError

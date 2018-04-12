@@ -6,6 +6,7 @@ FAIL Can set 'mask-image' to an image Failed to execute 'get' on 'StylePropertyM
 PASS Setting 'mask-image' to a length throws TypeError
 PASS Setting 'mask-image' to a percent throws TypeError
 PASS Setting 'mask-image' to a time throws TypeError
+PASS Setting 'mask-image' to an angle throws TypeError
 PASS Setting 'mask-image' to a flexible length throws TypeError
 PASS Setting 'mask-image' to a number throws TypeError
 PASS Setting 'mask-image' to a position throws TypeError

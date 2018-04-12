@@ -39,6 +39,13 @@ bool IsCSSStyleValueTime(const CSSStyleValue& value) {
     MatchesBaseType(CSSNumericValueType::BaseType::kTime);
 }
 
+bool IsCSSStyleValueAngle(const CSSStyleValue& value) {
+  if (!value.IsNumericValue())
+    return false;
+  return static_cast<const CSSNumericValue&>(value).Type().
+    MatchesBaseType(CSSNumericValueType::BaseType::kAngle);
+}
+
 bool IsCSSStyleValuePercentage(const CSSStyleValue& value) {
   if (!value.IsNumericValue())
     return false;

@@ -6,6 +6,7 @@ FAIL Can set 'flex-basis' to the 'content' keyword Failed to execute 'set' on 'S
 PASS Can set 'flex-basis' to a length
 PASS Can set 'flex-basis' to a percent
 PASS Setting 'flex-basis' to a time throws TypeError
+PASS Setting 'flex-basis' to an angle throws TypeError
 PASS Setting 'flex-basis' to a flexible length throws TypeError
 PASS Setting 'flex-basis' to a number throws TypeError
 PASS Setting 'flex-basis' to a position throws TypeError

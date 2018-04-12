@@ -97,6 +97,18 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
+    case CSSPropertyOffsetRotate: {
+      // level 1 only accepts single values, which are stored internally
+      // as a single element list.
+      const auto* value = style_value.ToCSSValue();
+      if ((value->IsIdentifierValue() && !value->IsCSSWideKeyword()) ||
+          value->IsPrimitiveValue()) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
+        return list;
+      }
+      break;
+    }
     case CSSPropertyPaintOrder: {
       // level 1 only accepts single keywords
       const auto* value = style_value.ToCSSValue();

@@ -10,6 +10,7 @@ FAIL Can set 'stroke-linejoin' to the 'stupid' keyword Failed to execute 'set' o
 PASS Setting 'stroke-linejoin' to a length throws TypeError
 PASS Setting 'stroke-linejoin' to a percent throws TypeError
 PASS Setting 'stroke-linejoin' to a time throws TypeError
+PASS Setting 'stroke-linejoin' to an angle throws TypeError
 PASS Setting 'stroke-linejoin' to a flexible length throws TypeError
 PASS Setting 'stroke-linejoin' to a number throws TypeError
 PASS Setting 'stroke-linejoin' to a position throws TypeError

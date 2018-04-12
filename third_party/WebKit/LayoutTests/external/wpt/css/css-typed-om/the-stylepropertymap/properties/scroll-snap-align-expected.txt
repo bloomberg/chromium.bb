@@ -8,6 +8,7 @@ FAIL Can set 'scroll-snap-align' to the 'center' keyword assert_equals: expected
 PASS Setting 'scroll-snap-align' to a length throws TypeError
 PASS Setting 'scroll-snap-align' to a percent throws TypeError
 PASS Setting 'scroll-snap-align' to a time throws TypeError
+PASS Setting 'scroll-snap-align' to an angle throws TypeError
 PASS Setting 'scroll-snap-align' to a flexible length throws TypeError
 PASS Setting 'scroll-snap-align' to a number throws TypeError
 PASS Setting 'scroll-snap-align' to a position throws TypeError

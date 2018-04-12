@@ -6,6 +6,7 @@ PASS Can set 'text-combine-upright' to the 'all' keyword
 PASS Setting 'text-combine-upright' to a length throws TypeError
 PASS Setting 'text-combine-upright' to a percent throws TypeError
 PASS Setting 'text-combine-upright' to a time throws TypeError
+PASS Setting 'text-combine-upright' to an angle throws TypeError
 PASS Setting 'text-combine-upright' to a flexible length throws TypeError
 PASS Setting 'text-combine-upright' to a number throws TypeError
 PASS Setting 'text-combine-upright' to a position throws TypeError

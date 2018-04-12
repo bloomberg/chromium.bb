@@ -5,6 +5,7 @@ FAIL Can set 'flood-opacity' to a number assert_approx_equals: expected 0 +/- 0.
 PASS Setting 'flood-opacity' to a length throws TypeError
 PASS Setting 'flood-opacity' to a percent throws TypeError
 PASS Setting 'flood-opacity' to a time throws TypeError
+PASS Setting 'flood-opacity' to an angle throws TypeError
 PASS Setting 'flood-opacity' to a flexible length throws TypeError
 PASS Setting 'flood-opacity' to a position throws TypeError
 PASS Setting 'flood-opacity' to a URL throws TypeError
