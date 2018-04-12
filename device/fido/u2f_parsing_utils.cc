@@ -64,5 +64,20 @@ base::span<const uint8_t> ExtractSuffixSpan(base::span<const uint8_t> span,
   return span.subspan(pos);
 }
 
+std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
+                                                 size_t max_chunk_size) {
+  DCHECK_NE(0u, max_chunk_size);
+  std::vector<base::span<const uint8_t>> chunks;
+  const size_t num_chunks = (span.size() + max_chunk_size - 1) / max_chunk_size;
+  chunks.reserve(num_chunks);
+  while (!span.empty()) {
+    const size_t chunk_size = std::min(span.size(), max_chunk_size);
+    chunks.emplace_back(span.subspan(0, chunk_size));
+    span = span.subspan(chunk_size);
+  }
+
+  return chunks;
+}
+
 }  // namespace u2f_parsing_utils
 }  // namespace device

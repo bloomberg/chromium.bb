@@ -73,6 +73,14 @@ bool ExtractArray(base::span<const uint8_t> span,
   return true;
 }
 
+// Partitions |span| into N = ⌈span.size() / max_chunk_size⌉ consecutive chunks.
+// The first N-1 chunks are of size |max_chunk_size|, and the Nth chunk is of
+// size span.size() % max_chunk_size. |max_chunk_size| must be greater than 0.
+// Returns an empty vector in case |span| is empty.
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::vector<base::span<const uint8_t>> SplitSpan(base::span<const uint8_t> span,
+                                                 size_t max_chunk_size);
+
 }  // namespace u2f_parsing_utils
 }  // namespace device
 
