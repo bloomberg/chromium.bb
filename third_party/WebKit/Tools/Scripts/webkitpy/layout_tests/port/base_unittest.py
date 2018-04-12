@@ -87,23 +87,6 @@ class PortTest(unittest.TestCase):
         self.assertIn('canvas', dirs)
         self.assertIn('css2.1', dirs)
 
-    def test_skipped_perf_tests(self):
-        port = self.make_port()
-
-        def add_text_file(dirname, filename, content='some content'):
-            dirname = port.host.filesystem.join(
-                PathFinder(port.host.filesystem).perf_tests_dir(), dirname)
-            port.host.filesystem.maybe_make_directory(dirname)
-            port.host.filesystem.write_text_file(port.host.filesystem.join(dirname, filename), content)
-
-        add_text_file('inspector', 'test1.html')
-        add_text_file('inspector', 'unsupported_test1.html')
-        add_text_file('inspector', 'test2.html')
-        add_text_file('inspector/resources', 'resource_file.html')
-        add_text_file('unsupported', 'unsupported_test2.html')
-        add_text_file('', 'Skipped', '\n'.join(['Layout', '', 'SunSpider', 'Supported/some-test.html']))
-        self.assertEqual(port.skipped_perf_tests(), ['Layout', 'SunSpider', 'Supported/some-test.html'])
-
     def test_get_option__set(self):
         options, _ = optparse.OptionParser().parse_args([])
         options.foo = 'bar'
