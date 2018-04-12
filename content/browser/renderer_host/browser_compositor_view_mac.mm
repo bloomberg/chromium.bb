@@ -543,9 +543,11 @@ void BrowserCompositorMac::GetRendererScreenInfo(
   DisplayUtil::DisplayToScreenInfo(screen_info, dfh_display_);
 }
 
-const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId()
-    const {
-  return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
+  if (dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid())
+    return dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+
+  return dfh_local_surface_id_allocator_.GenerateId();
 }
 
 }  // namespace content

@@ -17,7 +17,8 @@ MockRenderWidgetHostDelegate::~MockRenderWidgetHostDelegate() = default;
 void MockRenderWidgetHostDelegate::ResizeDueToAutoResize(
     RenderWidgetHostImpl* render_widget_host,
     const gfx::Size& new_size,
-    uint64_t sequence_number) {}
+    uint64_t sequence_number,
+    const viz::LocalSurfaceId& local_surface_id) {}
 
 KeyboardEventProcessingResult
 MockRenderWidgetHostDelegate::PreHandleKeyboardEvent(

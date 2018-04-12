@@ -19,12 +19,12 @@ ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
 
 const LocalSurfaceId& ParentLocalSurfaceIdAllocator::UpdateFromChild(
     const LocalSurfaceId& child_allocated_local_surface_id) {
-  DCHECK_GE(child_allocated_local_surface_id.child_sequence_number(),
-            current_local_surface_id_.child_sequence_number());
-
-  current_local_surface_id_.child_sequence_number_ =
-      child_allocated_local_surface_id.child_sequence_number_;
-  is_invalid_ = false;
+  if (child_allocated_local_surface_id.child_sequence_number() >
+      current_local_surface_id_.child_sequence_number()) {
+    current_local_surface_id_.child_sequence_number_ =
+        child_allocated_local_surface_id.child_sequence_number_;
+    is_invalid_ = false;
+  }
   return current_local_surface_id_;
 }
 

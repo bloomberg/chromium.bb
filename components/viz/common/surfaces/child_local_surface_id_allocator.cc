@@ -17,17 +17,13 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
-  DCHECK_GE(parent_allocated_local_surface_id.parent_sequence_number(),
-            current_local_surface_id_.parent_sequence_number());
-  if (!current_local_surface_id_.embed_token().is_empty()) {
-    DCHECK_EQ(parent_allocated_local_surface_id.embed_token(),
-              current_local_surface_id_.embed_token());
+  if (parent_allocated_local_surface_id.parent_sequence_number() >
+      current_local_surface_id_.parent_sequence_number()) {
+    current_local_surface_id_.parent_sequence_number_ =
+        parent_allocated_local_surface_id.parent_sequence_number_;
+    current_local_surface_id_.embed_token_ =
+        parent_allocated_local_surface_id.embed_token_;
   }
-
-  current_local_surface_id_.parent_sequence_number_ =
-      parent_allocated_local_surface_id.parent_sequence_number_;
-  current_local_surface_id_.embed_token_ =
-      parent_allocated_local_surface_id.embed_token_;
   return current_local_surface_id_;
 }
 

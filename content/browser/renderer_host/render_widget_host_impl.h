@@ -756,6 +756,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                            AutoResizeWithBrowserInitiatedResize);
   FRIEND_TEST_ALL_PREFIXES(DevToolsManagerTest,
                            NoUnresponsiveDialogInInspectedContents);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           ChildAllocationAcceptedInParent);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           ConflictingAllocationsResolve);
   friend class MockRenderWidgetHost;
   friend class TestRenderViewHost;
 
@@ -951,6 +955,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   uint64_t last_auto_resize_request_number_ = 0ul;
   uint64_t last_auto_resize_response_number_ = 0ul;
+  base::Optional<viz::LocalSurfaceId> last_auto_resize_surface_id_;
 
   bool waiting_for_screen_rects_ack_;
   gfx::Rect last_view_screen_rect_;

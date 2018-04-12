@@ -103,6 +103,9 @@ class AURA_EXPORT WindowPort {
   virtual viz::ScopedSurfaceIdAllocator GetSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task) = 0;
 
+  virtual void UpdateLocalSurfaceIdFromEmbeddedClient(
+      const viz::LocalSurfaceId& embedded_client_local_surface_id) = 0;
+
   // Gets the current viz::LocalSurfaceId. The viz::LocalSurfaceId is allocated
   // lazily on call, and will be updated on changes to size or device scale
   // factor.

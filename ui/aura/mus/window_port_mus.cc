@@ -426,6 +426,12 @@ viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
                                        std::move(allocation_task));
 }
 
+void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
+    const viz::LocalSurfaceId& embedded_client_local_surface_id) {
+  local_surface_id_ = parent_local_surface_id_allocator_.UpdateFromChild(
+      embedded_client_local_surface_id);
+}
+
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
   if (base::FeatureList::IsEnabled(features::kMash))
     return local_surface_id_;

@@ -242,6 +242,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetFrameSinkIdFromServer(const viz::FrameSinkId& frame_sink_id) override;
   const viz::LocalSurfaceId& GetOrAllocateLocalSurfaceId(
       const gfx::Size& surface_size_in_pixels) override;
+  void UpdateLocalSurfaceIdFromEmbeddedClient(
+      const viz::LocalSurfaceId& embedded_client_local_surface_id) override;
   void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;

@@ -181,6 +181,11 @@ class InteractiveRenderWidget : public RenderWidget {
 
   void SetAutoResizeMode(bool enable) { auto_resize_mode_ = enable; }
 
+  void UpdateChildLocalSurfaceIdAllocatorForAutoResize(
+      const viz::LocalSurfaceId& parent_local_surface_id) {
+    child_local_surface_id_allocator_.UpdateFromParent(parent_local_surface_id);
+  }
+
  protected:
   ~InteractiveRenderWidget() override { webwidget_internal_ = nullptr; }
 
@@ -403,6 +408,8 @@ TEST_F(RenderWidgetUnittest, AckResizeOnHide) {
   resize_params.screen_info = ScreenInfo();
   resize_params.new_size = size;
   resize_params.compositor_viewport_pixel_size = size;
+  resize_params.local_surface_id =
+      viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create());
   resize_params.visible_viewport_size = size;
   resize_params.content_source_id = widget()->GetContentSourceId();
   resize_params.needs_resize_ack = true;
@@ -427,6 +434,11 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
   widget()->InitializeLayerTreeView();
   widget()->SetAutoResizeMode(true);
 
+  viz::ParentLocalSurfaceIdAllocator allocator;
+  viz::LocalSurfaceId initial_local_surface_id = allocator.GenerateId();
+  widget()->UpdateChildLocalSurfaceIdAllocatorForAutoResize(
+      initial_local_surface_id);
+
   // Issue an auto-resize.
   widget()->DidAutoResize(auto_size);
   widget()->sink()->ClearMessages();
@@ -445,7 +457,6 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
   widget()->DidAutoResize(auto_size2);
 
   // Send the LocalSurfaceId for the first Auto-Resize.
-  viz::ParentLocalSurfaceIdAllocator allocator;
   content::ResizeParams resize_params;
   resize_params.auto_resize_enabled = true;
   resize_params.auto_resize_sequence_number = auto_resize_sequence_number;
@@ -457,7 +468,64 @@ TEST_F(RenderWidgetUnittest, SurfaceSynchronizationAutoResizeThrottling) {
 
   // The LocalSurfaceId should not take because there's another in-flight auto-
   // resize operation.
-  EXPECT_FALSE(widget()->local_surface_id().is_valid());
+  EXPECT_NE(widget()->local_surface_id(), resize_params.local_surface_id);
+}
+
+// Tests that if a RenderWidget is auto-resized, it allocates its own
+// viz::LocalSurfaceId
+TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
+#if !defined(USE_AURA)
+  // Only Aura platforms support child allocation of viz::LocalSurfaceIds
+  return;
+#endif
+  viz::LocalSurfaceId fake_parent_local_surface_id(
+      1, base::UnguessableToken::Create());
+  widget()->UpdateChildLocalSurfaceIdAllocatorForAutoResize(
+      fake_parent_local_surface_id);
+  widget()->SetAutoResizeMode(true);
+
+  constexpr gfx::Size size(200, 200);
+  widget()->DidAutoResize(size);
+
+  widget()->sink()->ClearMessages();
+  widget()->OnMessageReceived(ViewMsg_WasHidden(widget()->routing_id()));
+  base::Optional<viz::LocalSurfaceId> local_surface_id1;
+  ASSERT_EQ(1u, widget()->sink()->message_count());
+  {
+    const IPC::Message* msg = widget()->sink()->GetMessageAt(0);
+    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_ResizeOrRepaint_ACK::ID),
+              msg->type());
+    ViewHostMsg_ResizeOrRepaint_ACK::Param params;
+    EXPECT_TRUE(ViewHostMsg_ResizeOrRepaint_ACK::Read(msg, &params));
+    ViewHostMsg_ResizeOrRepaint_ACK_Params actual_params = std::get<0>(params);
+    local_surface_id1 = actual_params.child_allocated_local_surface_id;
+    EXPECT_TRUE(local_surface_id1.has_value());
+  }
+
+  constexpr gfx::Size size2(100, 100);
+  widget()->DidAutoResize(size2);
+
+  widget()->sink()->ClearMessages();
+  widget()->OnMessageReceived(ViewMsg_WasHidden(widget()->routing_id()));
+  base::Optional<viz::LocalSurfaceId> local_surface_id2;
+  ASSERT_EQ(1u, widget()->sink()->message_count());
+  {
+    const IPC::Message* msg = widget()->sink()->GetMessageAt(0);
+    EXPECT_EQ(static_cast<uint32_t>(ViewHostMsg_ResizeOrRepaint_ACK::ID),
+              msg->type());
+    ViewHostMsg_ResizeOrRepaint_ACK::Param params;
+    EXPECT_TRUE(ViewHostMsg_ResizeOrRepaint_ACK::Read(msg, &params));
+    ViewHostMsg_ResizeOrRepaint_ACK_Params actual_params = std::get<0>(params);
+    local_surface_id2 = actual_params.child_allocated_local_surface_id;
+    EXPECT_TRUE(local_surface_id2.has_value());
+  }
+
+  EXPECT_NE(local_surface_id1, local_surface_id2);
+  EXPECT_EQ(local_surface_id1->parent_sequence_number(),
+            local_surface_id2->parent_sequence_number());
+  EXPECT_EQ(local_surface_id1->child_sequence_number() + 1,
+            local_surface_id2->child_sequence_number());
+  EXPECT_EQ(local_surface_id1->embed_token(), local_surface_id2->embed_token());
 }
 
 class PopupRenderWidget : public RenderWidget {

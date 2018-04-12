@@ -1315,6 +1315,17 @@ gfx::Size RenderWidget::GetSizeForWebWidget() const {
 }
 
 void RenderWidget::Resize(const ResizeParams& params) {
+  viz::LocalSurfaceId new_local_surface_id;
+  // If the content_source_id of ResizeParams doesn't match
+  // |current_content_source_id_|, then the given LocalSurfaceId was generated
+  // before the navigation. Continue with the resize but don't use the
+  // LocalSurfaceId until the right one comes.
+  if (params.local_surface_id &&
+      params.content_source_id == current_content_source_id_) {
+    new_local_surface_id = child_local_surface_id_allocator_.UpdateFromParent(
+        params.local_surface_id.value());
+  }
+
   if (params.auto_resize_enabled && auto_resize_mode_ &&
       (!params.auto_resize_sequence_number ||
        auto_resize_sequence_number_ != params.auto_resize_sequence_number)) {
@@ -1343,15 +1354,6 @@ void RenderWidget::Resize(const ResizeParams& params) {
   if (!GetWebWidget())
     return;
 
-  // If the content_source_id of ResizeParams doesn't match
-  // |current_content_source_id_|, then the given LocalSurfaceId was generated
-  // before the navigation. Continue with the resize but don't use the
-  // LocalSurfaceId until the right one comes.
-  viz::LocalSurfaceId new_local_surface_id;
-  if (params.local_surface_id &&
-      params.content_source_id == current_content_source_id_) {
-    new_local_surface_id = *params.local_surface_id;
-  }
   gfx::Size new_compositor_viewport_pixel_size =
       params.auto_resize_enabled
           ? gfx::ScaleToCeiledSize(size_,
@@ -2351,9 +2353,11 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     ++auto_resize_sequence_number_;
     gfx::Size new_compositor_viewport_pixel_size =
         gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor);
-    UpdateSurfaceAndScreenInfo(viz::LocalSurfaceId(),
-                               new_compositor_viewport_pixel_size,
-                               screen_info_);
+    viz::LocalSurfaceId local_surface_id;
+    if (!compositor_viewport_pixel_size_.IsEmpty())
+      local_surface_id = child_local_surface_id_allocator_.GenerateId();
+    UpdateSurfaceAndScreenInfo(
+        local_surface_id, new_compositor_viewport_pixel_size, screen_info_);
 
     if (!resizing_mode_selector_->is_synchronous_mode()) {
       need_resize_ack_for_auto_resize_ = true;
@@ -2700,6 +2704,11 @@ void RenderWidget::DidResizeOrRepaintAck() {
   params.view_size = size_;
   params.flags = next_paint_flags_;
   params.sequence_number = auto_resize_sequence_number_;
+  if (child_local_surface_id_allocator_.GetCurrentLocalSurfaceId().is_valid()) {
+    params.child_allocated_local_surface_id =
+        child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
+    DCHECK(params.child_allocated_local_surface_id.value().is_valid());
+  }
 
   Send(new ViewHostMsg_ResizeOrRepaint_ACK(routing_id_, params));
   next_paint_flags_ = 0;

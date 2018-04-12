@@ -2392,6 +2392,8 @@ void RenderViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_size,
   resize_params.auto_resize_enabled = true;
   resize_params.min_size_for_auto_resize = min_size;
   resize_params.max_size_for_auto_resize = max_size;
+  resize_params.local_surface_id = base::Optional<viz::LocalSurfaceId>(
+      viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
   OnResize(resize_params);
 }
 

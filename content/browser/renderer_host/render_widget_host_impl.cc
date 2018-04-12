@@ -2169,6 +2169,7 @@ void RenderWidgetHostImpl::OnResizeOrRepaintACK(
   DidCompleteResizeOrRepaint(params, paint_start);
 
   last_auto_resize_request_number_ = params.sequence_number;
+  last_auto_resize_surface_id_ = params.child_allocated_local_surface_id;
 
   if (auto_resize_enabled_) {
     bool post_callback = new_auto_size_.IsEmpty();
@@ -2633,12 +2634,13 @@ void RenderWidgetHostImpl::DelayedAutoResized() {
 
   if (view_) {
     viz::ScopedSurfaceIdAllocator scoped_allocator =
-        view_->ResizeDueToAutoResize(new_size,
-                                     last_auto_resize_request_number_);
+        view_->ResizeDueToAutoResize(new_size, last_auto_resize_request_number_,
+                                     last_auto_resize_surface_id_.value());
 
     if (delegate_) {
       delegate_->ResizeDueToAutoResize(this, new_size,
-                                       last_auto_resize_request_number_);
+                                       last_auto_resize_request_number_,
+                                       last_auto_resize_surface_id_.value());
     }
   }
 }

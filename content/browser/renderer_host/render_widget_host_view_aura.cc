@@ -661,7 +661,7 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
   // If the primary surface was evicted, we should create a new primary.
   if (features::IsSurfaceSynchronizationEnabled() && delegated_frame_host_ &&
       delegated_frame_host_->IsPrimarySurfaceEvicted()) {
-    WasResized(cc::DeadlinePolicy::UseDefaultDeadline());
+    WasResized(cc::DeadlinePolicy::UseDefaultDeadline(), base::nullopt);
   }
 
   TRACE_EVENT_ASYNC_BEGIN0("latency", "TabSwitching::Latency",
@@ -1970,8 +1970,12 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 }
 
 void RenderWidgetHostViewAura::WasResized(
-    const cc::DeadlinePolicy& deadline_policy) {
-  window_->AllocateLocalSurfaceId();
+    const cc::DeadlinePolicy& deadline_policy,
+    const base::Optional<viz::LocalSurfaceId>&
+        child_allocated_local_surface_id) {
+  DCHECK(window_);
+  window_->UpdateLocalSurfaceIdFromEmbeddedClient(
+      child_allocated_local_surface_id);
   SyncSurfaceProperties(deadline_policy);
 }
 
@@ -2408,15 +2412,16 @@ void RenderWidgetHostViewAura::ScrollFocusedEditableNodeIntoRect(
 }
 
 void RenderWidgetHostViewAura::OnSynchronizedDisplayPropertiesChanged() {
-  WasResized(cc::DeadlinePolicy::UseDefaultDeadline());
+  WasResized(cc::DeadlinePolicy::UseDefaultDeadline(), base::nullopt);
 }
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewAura::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number) {
+    uint64_t sequence_number,
+    const viz::LocalSurfaceId& child_local_surface_id) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
       &RenderWidgetHostViewAura::WasResized, weak_ptr_factory_.GetWeakPtr(),
-      cc::DeadlinePolicy::UseDefaultDeadline());
+      cc::DeadlinePolicy::UseDefaultDeadline(), child_local_surface_id);
   return window_->GetSurfaceIdAllocator(std::move(allocation_task));
 }
 
@@ -2426,7 +2431,7 @@ bool RenderWidgetHostViewAura::IsLocalSurfaceIdAllocationSuppressed() const {
 }
 
 void RenderWidgetHostViewAura::DidNavigate() {
-  WasResized(cc::DeadlinePolicy::UseExistingDeadline());
+  WasResized(cc::DeadlinePolicy::UseExistingDeadline(), base::nullopt);
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();
 }
