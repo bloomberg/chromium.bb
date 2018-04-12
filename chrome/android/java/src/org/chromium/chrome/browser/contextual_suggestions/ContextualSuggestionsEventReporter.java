@@ -44,8 +44,7 @@ class ContextualSuggestionsEventReporter implements SuggestionsEventReporter {
         int eventId = windowOpenDisposition == WindowOpenDisposition.SAVE_TO_DISK
                 ? ContextualSuggestionsEvent.SUGGESTION_DOWNLOADED
                 : ContextualSuggestionsEvent.SUGGESTION_CLICKED;
-        mSuggestionSource.getBridge().reportEvent(
-                mTabModelSelector.getCurrentTab().getWebContents(), eventId);
+        mSuggestionSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), eventId);
     }
 
     @Override
