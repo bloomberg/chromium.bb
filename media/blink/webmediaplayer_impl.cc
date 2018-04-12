@@ -402,7 +402,7 @@ void WebMediaPlayerImpl::OnSurfaceIdUpdated(viz::SurfaceId surface_id) {
   // TODO(726619): Handle the behavior when Picture-in-Picture mode is
   // disabled.
   if (client_ && client_->IsInPictureInPictureMode())
-    pip_surface_info_cb_.Run(pip_surface_id_);
+    pip_surface_info_cb_.Run(pip_surface_id_, pipeline_metadata_.natural_size);
 }
 
 bool WebMediaPlayerImpl::SupportsOverlayFullscreenVideo() {
@@ -780,7 +780,7 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
   if (!pip_surface_id_.is_valid())
     return;
 
-  pip_surface_info_cb_.Run(pip_surface_id_);
+  pip_surface_info_cb_.Run(pip_surface_id_, pipeline_metadata_.natural_size);
 
   // Updates the MediaWebContentsObserver with |delegate_id_| to track which
   // media player is in Picture-in-Picture mode.

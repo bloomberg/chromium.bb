@@ -1406,13 +1406,13 @@ void Browser::OnDidBlockFramebust(content::WebContents* web_contents,
       url, FramebustBlockTabHelper::ClickCallback());
 }
 
-void Browser::UpdatePictureInPictureSurfaceId(
-    const viz::SurfaceId& surface_id) {
+void Browser::UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
+                                              const gfx::Size& natural_size) {
   if (!pip_window_controller_)
     pip_window_controller_.reset(
         content::PictureInPictureWindowController::GetOrCreateForWebContents(
             tab_strip_model_->GetActiveWebContents()));
-  pip_window_controller_->EmbedSurface(surface_id);
+  pip_window_controller_->EmbedSurface(surface_id, natural_size);
   pip_window_controller_->Show();
 }
 

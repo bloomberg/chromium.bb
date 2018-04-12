@@ -7,6 +7,10 @@
 
 #include "content/common/content_export.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace viz {
 class SurfaceId;
 }  // namespace viz
@@ -31,7 +35,8 @@ class PictureInPictureWindowController {
 
   virtual void Show() = 0;
   virtual void Close() = 0;
-  virtual void EmbedSurface(const viz::SurfaceId& surface_id) = 0;
+  virtual void EmbedSurface(const viz::SurfaceId& surface_id,
+                            const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
 
  protected:

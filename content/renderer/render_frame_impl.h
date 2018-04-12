@@ -876,8 +876,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // frame.
   void FrameDidCallFocus();
 
-  // Send SurfaceId information to FrameHost to use for Picture-in-Picture.
-  void OnPictureInPictureSurfaceIdUpdated(const viz::SurfaceId& surface_id);
+  // Send viz::SurfaceId and video information to FrameHost to use for
+  // Picture-in-Picture.
+  void OnPictureInPictureSurfaceIdUpdated(const viz::SurfaceId& surface_id,
+                                          const gfx::Size& natural_size);
 
   // Send signal that Picture-in-Picture mode has ended.
   void OnExitPictureInPicture();

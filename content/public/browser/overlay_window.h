@@ -11,6 +11,7 @@
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace ui {
@@ -39,6 +40,7 @@ class OverlayWindow {
   virtual ui::Layer* GetLayer() = 0;
   // Retrieves the window's current bounds, including its window.
   virtual gfx::Rect GetBounds() const = 0;
+  virtual void UpdateVideoSize(const gfx::Size& natural_size) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OverlayWindow);
