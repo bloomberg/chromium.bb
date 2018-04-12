@@ -144,6 +144,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         mContext = context;
         mWebView = webView;
         mWebViewDelegate = webViewDelegate;
+        mSupportLibClient = new SupportLibWebViewContentsClientAdapter();
         setWebViewClient(null);
 
         mUiThreadHandler = new Handler() {
@@ -182,7 +183,7 @@ class WebViewContentsClientAdapter extends AwContentsClient {
         }
         // Always reset mSupportLibClient, since the WebViewClient may no longer be a
         // WebViewClientCompat, or may support a different set of Features.
-        mSupportLibClient = new SupportLibWebViewContentsClientAdapter(mWebViewClient);
+        mSupportLibClient.setWebViewClient(mWebViewClient);
     }
 
     WebViewClient getWebViewClient() {

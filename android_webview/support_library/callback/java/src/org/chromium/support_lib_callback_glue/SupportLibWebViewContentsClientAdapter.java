@@ -23,16 +23,18 @@ import org.chromium.support_lib_boundary.util.Features;
 import java.lang.reflect.InvocationHandler;
 
 /**
- * Support library glue version of WebViewContentsClientAdapter.
+ * Support library glue version of WebViewContentsClientAdapter. This should be 1:1 with
+ * WebViewContentsClientAdapter.
  */
 public class SupportLibWebViewContentsClientAdapter {
     private static final String WEBVIEW_CLIENT_COMPAT_NAME = "androidx.webkit.WebViewClientCompat";
+    private static final String[] EMPTY_FEATURE_LIST = new String[0];
 
     // If {@code null}, this indicates the WebViewClient is not a WebViewClientCompat. Otherwise,
     // this is a Proxy for the WebViewClientCompat.
     @Nullable
     private WebViewClientBoundaryInterface mWebViewClient;
-    final private String[] mWebViewClientSupportedFeatures;
+    private String[] mWebViewClientSupportedFeatures;
 
     private static class SafeBrowsingResponseDelegate
             implements SafeBrowsingResponseBoundaryInterface {
@@ -78,10 +80,14 @@ public class SupportLibWebViewContentsClientAdapter {
         }
     };
 
-    public SupportLibWebViewContentsClientAdapter(WebViewClient possiblyCompatClient) {
+    public SupportLibWebViewContentsClientAdapter() {
+        mWebViewClientSupportedFeatures = EMPTY_FEATURE_LIST;
+    }
+
+    public void setWebViewClient(WebViewClient possiblyCompatClient) {
         mWebViewClient = convertCompatClient(possiblyCompatClient);
         mWebViewClientSupportedFeatures =
-                mWebViewClient == null ? new String[0] : mWebViewClient.getSupportedFeatures();
+                mWebViewClient == null ? EMPTY_FEATURE_LIST : mWebViewClient.getSupportedFeatures();
     }
 
     @Nullable
