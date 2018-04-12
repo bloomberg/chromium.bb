@@ -405,14 +405,8 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   // smoother resizing visual result.
   UpdateSnappedWindowsAndDividerBounds();
 
-  for (auto* window : {left_window_, right_window_}) {
-    if (window == nullptr)
-      continue;
-    wm::WindowState* window_state = wm::GetWindowState(window);
-    window_state->OnCompleteDrag(
-        GetEndDragLocationInScreen(window, location_in_screen));
-    window_state->DeleteDragDetails();
-  }
+  FinishWindowDrag(left_window_);
+  FinishWindowDrag(right_window_);
 
   // Need to update snapped windows bounds even if the split view mode may have
   // to exit. Otherwise it's possible for a snapped window stuck in the edge of
@@ -450,6 +444,14 @@ void SplitViewController::ShowAppCannotSnapToast() {
 void SplitViewController::EndSplitView() {
   if (!IsSplitViewModeActive())
     return;
+
+  // If we are currently in a resize but split view is ending, make sure to end
+  // the resize. This can happen, for example, on the transition back to
+  // clamshell mode or when a task is minimized during a resize.
+  if (is_resizing_) {
+    FinishWindowDrag(left_window_);
+    FinishWindowDrag(right_window_);
+  }
 
   // Remove observers when the split view mode ends.
   Shell::Get()->RemoveShellObserver(this);
@@ -983,6 +985,13 @@ void SplitViewController::OnSnappedWindowMinimizedOrDestroyed(
     right_window_ = nullptr;
   }
 
+  if (is_resizing_) {
+    // If the window is minimized or destroyed before the resize ends, if/when
+    // EndResize() is eventually called, it will have no way of knowing that
+    // it should finish the drag for the destroyed window. So, do it here.
+    FinishWindowDrag(window);
+  }
+
   if (!left_window_ && !right_window_) {
     // If there is no snapped window at this moment, ends split view mode. Note
     // this will update overview window grid bounds if the overview mode is
@@ -1247,6 +1256,15 @@ void SplitViewController::StartOverview() {
 void SplitViewController::EndOverview() {
   if (Shell::Get()->window_selector_controller()->IsSelecting())
     Shell::Get()->window_selector_controller()->ToggleOverview();
+}
+
+void SplitViewController::FinishWindowDrag(aura::Window* window) {
+  if (window != nullptr) {
+    wm::WindowState* window_state = wm::GetWindowState(window);
+    window_state->OnCompleteDrag(
+        GetEndDragLocationInScreen(window, previous_event_location_));
+    window_state->DeleteDragDetails();
+  }
 }
 
 }  // namespace ash

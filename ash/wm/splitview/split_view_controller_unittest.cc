@@ -19,6 +19,7 @@
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/stl_util.h"
@@ -110,6 +111,24 @@ class SplitViewControllerTest : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(SplitViewControllerTest);
 };
 
+class TestWindowStateDelegate : public wm::WindowStateDelegate {
+ public:
+  TestWindowStateDelegate() = default;
+  ~TestWindowStateDelegate() override = default;
+
+  // wm::WindowStateDelegate:
+  void OnDragStarted(int component) override { drag_in_progress_ = true; }
+  void OnDragFinished(bool cancel, const gfx::Point& location) override {
+    drag_in_progress_ = false;
+  }
+
+  bool drag_in_progress() { return drag_in_progress_; }
+
+ private:
+  bool drag_in_progress_ = false;
+  DISALLOW_COPY_AND_ASSIGN(TestWindowStateDelegate);
+};
+
 // Tests the basic functionalities.
 TEST_F(SplitViewControllerTest, Basic) {
   const gfx::Rect bounds(0, 0, 400, 400);
@@ -165,7 +184,7 @@ TEST_F(SplitViewControllerTest, DefaultSnappedWindow) {
 
 // Tests that if there are two snapped windows, closing one of them will open
 // overview window grid on the closed window side of the screen. If there is
-// only one snapped windows, closing the sanpped window will end split view mode
+// only one snapped windows, closing the snapped window will end split view mode
 // and adjust the overview window grid bounds if the overview mode is active at
 // that moment.
 TEST_F(SplitViewControllerTest, WindowCloseTest) {
@@ -1264,6 +1283,135 @@ TEST_F(SplitViewControllerTest, NewWindowTest) {
   // Now new a window. Test it won't end the overview mode
   std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
+}
+
+// Tests that when split view ends because of a transition from tablet mode to
+// laptop mode during a resize operation, drags are properly completed.
+TEST_F(SplitViewControllerTest, ExitTabletModeDuringResizeCompletesDrags) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  auto* w1_state = wm::GetWindowState(window1.get());
+  auto* w2_state = wm::GetWindowState(window2.get());
+
+  // Setup delegates
+  auto* window_state_delegate1 = new TestWindowStateDelegate();
+  auto* window_state_delegate2 = new TestWindowStateDelegate();
+  w1_state->SetDelegate(base::WrapUnique(window_state_delegate1));
+  w2_state->SetDelegate(base::WrapUnique(window_state_delegate2));
+
+  // Set up windows.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  // Start a drag but don't release the mouse button.
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+  const int screen_width =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseTo(screen_width * 0.67f, 0);
+
+  // Drag is started for both windows.
+  EXPECT_TRUE(window_state_delegate1->drag_in_progress());
+  EXPECT_TRUE(window_state_delegate2->drag_in_progress());
+  EXPECT_NE(nullptr, w1_state->drag_details());
+  EXPECT_NE(nullptr, w2_state->drag_details());
+
+  // End tablet mode.
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+
+  // Drag is ended for both windows.
+  EXPECT_EQ(nullptr, w1_state->drag_details());
+  EXPECT_EQ(nullptr, w2_state->drag_details());
+  EXPECT_FALSE(window_state_delegate1->drag_in_progress());
+  EXPECT_FALSE(window_state_delegate2->drag_in_progress());
+}
+
+// Tests that when a single window is present in split view mode is minimized
+// during a resize operation, then drags are properly completed.
+TEST_F(SplitViewControllerTest,
+       MinimizeSingleWindowDuringResizeCompletesDrags) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  auto* w1_state = wm::GetWindowState(window1.get());
+
+  // Setup delegate
+  auto* window_state_delegate1 = new TestWindowStateDelegate();
+  w1_state->SetDelegate(base::WrapUnique(window_state_delegate1));
+
+  // Set up window.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+
+  // Start a drag but don't release the mouse button.
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+  const int screen_width =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseTo(screen_width * 0.67f, 0);
+
+  // Drag is started.
+  EXPECT_TRUE(window_state_delegate1->drag_in_progress());
+  EXPECT_NE(nullptr, w1_state->drag_details());
+
+  // Minimize the window.
+  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
+  wm::GetWindowState(window1.get())->OnWMEvent(&minimize_event);
+
+  // Drag is ended.
+  EXPECT_FALSE(window_state_delegate1->drag_in_progress());
+  EXPECT_EQ(nullptr, w1_state->drag_details());
+}
+
+// Tests that when two windows are present in split view mode and one of them
+// is minimized during a resize, then drags are properly completed.
+TEST_F(SplitViewControllerTest,
+       MinimizeOneOfTwoWindowsDuringResizeCompletesDrags) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  auto* w1_state = wm::GetWindowState(window1.get());
+  auto* w2_state = wm::GetWindowState(window2.get());
+
+  // Setup delegates
+  auto* window_state_delegate1 = new TestWindowStateDelegate();
+  auto* window_state_delegate2 = new TestWindowStateDelegate();
+  w1_state->SetDelegate(base::WrapUnique(window_state_delegate1));
+  w2_state->SetDelegate(base::WrapUnique(window_state_delegate2));
+
+  // Set up windows.
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  // Start a drag but don't release the mouse button.
+  gfx::Rect divider_bounds =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+  const int screen_width =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
+  GetEventGenerator().set_current_location(divider_bounds.CenterPoint());
+  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().MoveMouseTo(screen_width * 0.67f, 0);
+
+  // Drag is started for both windows.
+  EXPECT_TRUE(window_state_delegate1->drag_in_progress());
+  EXPECT_TRUE(window_state_delegate2->drag_in_progress());
+  EXPECT_NE(nullptr, w1_state->drag_details());
+  EXPECT_NE(nullptr, w2_state->drag_details());
+
+  // Minimize the left window.
+  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
+  wm::GetWindowState(window1.get())->OnWMEvent(&minimize_event);
+
+  // Drag is ended just for the left window.
+  EXPECT_FALSE(window_state_delegate1->drag_in_progress());
+  EXPECT_TRUE(window_state_delegate2->drag_in_progress());
+  EXPECT_EQ(nullptr, w1_state->drag_details());
+  EXPECT_NE(nullptr, w2_state->drag_details());
 }
 
 }  // namespace ash
