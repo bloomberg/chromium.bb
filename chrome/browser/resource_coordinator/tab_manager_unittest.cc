@@ -432,10 +432,6 @@ TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
   tab_strip2->GetWebContentsAt(0)->WasHidden();
   tab_strip2->GetWebContentsAt(1)->WasHidden();
 
-  // Fast-forward time until no tab is protected from being discarded for having
-  // recently been used.
-  task_runner_->FastForwardBy(TabManager::kDiscardProtectionTime);
-
   for (int i = 0; i < 4; ++i)
     tab_manager_->DiscardTab(DiscardReason::kProactive);
 
@@ -1062,8 +1058,6 @@ TEST_F(TabManagerTest, TrackingNumberOfLoadedLifecycleUnits) {
     tab_strip->AppendWebContents(CreateWebContents(), false);
     EXPECT_EQ(tab_manager_->num_loaded_lifecycle_units_, i);
   }
-
-  task_runner_->FastForwardBy(TabManager::kDiscardProtectionTime);
 
   // Number of loaded LifecycleUnits should go down by 1 for each discarded
   // WebContents.

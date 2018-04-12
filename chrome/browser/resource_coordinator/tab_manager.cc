@@ -128,8 +128,6 @@ int GetNumLoadedLifecycleUnits(LifecycleUnitSet lifecycle_unit_set) {
 ////////////////////////////////////////////////////////////////////////////////
 // TabManager
 
-constexpr base::TimeDelta TabManager::kDiscardProtectionTime;
-
 class TabManager::TabManagerSessionRestoreObserver final
     : public SessionRestoreObserver {
  public:

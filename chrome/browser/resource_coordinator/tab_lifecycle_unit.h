@@ -30,10 +30,6 @@ class TabLifecycleObserver;
 static constexpr base::TimeDelta kTabAudioProtectionTime =
     base::TimeDelta::FromMinutes(1);
 
-// Time during which a tab cannot be discarded after having been focused.
-static constexpr base::TimeDelta kTabFocusedProtectionTime =
-    base::TimeDelta::FromMinutes(10);
-
 // Represents a tab.
 class TabLifecycleUnitSource::TabLifecycleUnit
     : public LifecycleUnitBase,

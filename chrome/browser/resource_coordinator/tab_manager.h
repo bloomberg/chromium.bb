@@ -201,11 +201,6 @@ class TabManager : public LifecycleUnitObserver,
   TabLoadTracker& tab_load_tracker() { return tab_load_tracker_; }
   const TabLoadTracker& tab_load_tracker() const { return tab_load_tracker_; }
 
-  // Duration during which a tab cannot be automatically discarded after having
-  // been active.
-  static constexpr base::TimeDelta kDiscardProtectionTime =
-      base::TimeDelta::FromMinutes(10);
-
  private:
   friend class TabManagerStatsCollectorTest;
 
