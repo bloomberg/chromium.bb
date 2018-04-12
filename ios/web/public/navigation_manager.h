@@ -51,6 +51,9 @@ class NavigationManager {
     // The URL to load. Must be set.
     GURL url;
 
+    // The URL to display in Omnibox. If empty, |url| will be displayed.
+    GURL virtual_url;
+
     // The referrer for the load. May be empty.
     Referrer referrer;
 
