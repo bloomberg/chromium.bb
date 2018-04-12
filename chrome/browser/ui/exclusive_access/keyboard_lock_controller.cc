@@ -77,7 +77,10 @@ bool KeyboardLockController::IsKeyboardLockActive() const {
 }
 
 bool KeyboardLockController::RequiresPressAndHoldEscToExit() const {
-  return keyboard_lock_state_ == KeyboardLockState::kLockedWithEsc;
+  DCHECK_EQ(keyboard_lock_state_ == KeyboardLockState::kUnlocked,
+            exclusive_access_tab() == nullptr);
+  return IsExperimentalKeyboardLockUIEnabled() ||
+         keyboard_lock_state_ == KeyboardLockState::kLockedWithEsc;
 }
 
 void KeyboardLockController::RequestKeyboardLock(WebContents* web_contents,
@@ -101,8 +104,7 @@ bool KeyboardLockController::HandleKeyEvent(
   // active keyboard lock request which requires press and hold, then we just
   // return as the simple 'press esc to exit' case is handled by the caller
   // (which is the ExclusiveAccessManager in this case).
-  if (!IsExperimentalKeyboardLockUIEnabled() &&
-      !(IsKeyboardLockActive() && RequiresPressAndHoldEscToExit()))
+  if (!RequiresPressAndHoldEscToExit())
     return false;
 
   // TODO(joedow): Hook up press and hold exit animation here.
