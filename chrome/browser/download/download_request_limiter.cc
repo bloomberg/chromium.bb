@@ -28,11 +28,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/feature_list.h"
-#include "chrome/browser/android/chrome_feature_list.h"
-#endif
-
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -229,15 +224,8 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
-#if defined(OS_ANDROID)
-  if (vr::VrTabHelper::IsInVr(web_contents_) &&
-      !base::FeatureList::IsEnabled(
-          chrome::android::kVrBrowsingNativeAndroidUi)) {
-#else
-  if (vr::VrTabHelper::IsInVr(web_contents_)) {
-#endif
-    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kDownloadPermission);
-
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          web_contents_, vr::UiSuppressedElement::kDownloadPermission)) {
     // Permission request UI cannot currently be rendered binocularly in VR
     // mode, so we suppress the UI and return cancelled to inform the caller
     // that the request will not progress. crbug.com/736568

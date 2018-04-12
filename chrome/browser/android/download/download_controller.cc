@@ -262,34 +262,24 @@ void DownloadController::AcquireFileAccessPermission(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = web_contents_getter.Run();
-  if (vr::VrTabHelper::IsInVr(web_contents) &&
-      !base::FeatureList::IsEnabled(
-          chrome::android::kVrBrowsingNativeAndroidUi)) {
-    vr::VrTabHelper::UISuppressed(
-        vr::UiSuppressedElement::kFileAccessPermission);
+
+  if (HasFileAccessPermission()) {
+    RecordStoragePermission(
+        StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
+    RecordStoragePermission(
+        StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(cb, true));
+    return;
+  } else if (vr::VrTabHelper::IsUiSuppressedInVr(
+                 web_contents,
+                 vr::UiSuppressedElement::kFileAccessPermission)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::BindOnce(cb, false));
     return;
   }
 
   RecordStoragePermission(StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
-
-  if (HasFileAccessPermission()) {
-    RecordStoragePermission(
-        StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(cb, true));
-    return;
-  } else if (vr::VrTabHelper::IsInVr(web_contents)) {
-    // Requests native permission is not supported yet in VR.
-    // See https://crbug.com/642934
-    vr::VrTabHelper::UISuppressed(
-        vr::UiSuppressedElement::kFileAccessPermission);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(cb, false));
-    return;
-  }
-
   AcquirePermissionCallback callback(
       base::Bind(&OnRequestFileAccessResult, web_contents_getter,
                  base::Bind(&OnStoragePermissionDecided, cb)));

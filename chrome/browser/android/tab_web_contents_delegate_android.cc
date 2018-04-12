@@ -125,9 +125,9 @@ TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() {
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     const FileChooserParams& params) {
-  if (vr::VrTabHelper::IsInVr(
-          WebContents::FromRenderFrameHost(render_frame_host))) {
-    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kFileChooser);
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          WebContents::FromRenderFrameHost(render_frame_host),
+          vr::UiSuppressedElement::kFileChooser)) {
     return;
   }
   FileSelectHelper::RunFileChooser(render_frame_host, params);
@@ -137,8 +137,9 @@ std::unique_ptr<BluetoothChooser>
 TabWebContentsDelegateAndroid::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
-  if (vr::VrTabHelper::IsInVr(WebContents::FromRenderFrameHost(frame))) {
-    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kBluetoothChooser);
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          WebContents::FromRenderFrameHost(frame),
+          vr::UiSuppressedElement::kBluetoothChooser)) {
     return nullptr;
   }
   return std::make_unique<BluetoothChooserAndroid>(frame, event_handler);
@@ -273,10 +274,8 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 content::JavaScriptDialogManager*
 TabWebContentsDelegateAndroid::GetJavaScriptDialogManager(
     WebContents* source) {
-  if (vr::VrTabHelper::IsInVr(source) &&
-      !base::FeatureList::IsEnabled(
-          chrome::android::kVrBrowsingNativeAndroidUi)) {
-    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kJavascriptDialog);
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          source, vr::UiSuppressedElement::kJavascriptDialog)) {
     return nullptr;
   }
   if (base::FeatureList::IsEnabled(chrome::android::kTabModalJsDialog) ||
@@ -298,12 +297,10 @@ void TabWebContentsDelegateAndroid::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  if (vr::VrTabHelper::IsInVr(web_contents) &&
-      !base::FeatureList::IsEnabled(
-          chrome::android::kVrBrowsingNativeAndroidUi)) {
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          web_contents, vr::UiSuppressedElement::kMediaPermission)) {
     callback.Run(content::MediaStreamDevices(),
                  content::MEDIA_DEVICE_NOT_SUPPORTED, nullptr);
-    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kMediaPermission);
     return;
   }
   MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(

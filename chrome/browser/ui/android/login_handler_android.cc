@@ -54,8 +54,8 @@ class LoginHandlerAndroid : public LoginHandler {
     ViewAndroidHelper* view_helper = ViewAndroidHelper::FromWebContents(
         web_contents);
 
-    if (vr::VrTabHelper::IsInVr(web_contents)) {
-      vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kHttpAuth);
+    if (vr::VrTabHelper::IsUiSuppressedInVr(
+            web_contents, vr::UiSuppressedElement::kHttpAuth)) {
       CancelAuth();
       return;
     }

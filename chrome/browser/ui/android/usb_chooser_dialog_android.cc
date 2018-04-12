@@ -35,8 +35,8 @@ std::unique_ptr<UsbChooserDialogAndroid> UsbChooserDialogAndroid::Create(
 
   // TODO(asimjour): This should be removed once we have proper
   // implementation of USB chooser in VR.
-  if (vr::VrTabHelper::IsInVr(web_contents)) {
-    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kUsbChooser);
+  if (vr::VrTabHelper::IsUiSuppressedInVr(
+          web_contents, vr::UiSuppressedElement::kUsbChooser)) {
     return nullptr;
   }
 
