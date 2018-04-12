@@ -55,6 +55,11 @@ extern const char kFeedbackKitV2Description[];
 extern const char kFeedbackKitV2WithSSOServiceName[];
 extern const char kFeedbackKitV2WithSSOServiceDescription[];
 
+// Title and description for the flag used to enable fullscreen's contentInset
+// based implementation.
+extern const char kFullscreenContentInsetName[];
+extern const char kFullscreenContentInsetDescription[];
+
 // Title and description for the flag to enable History batch filtering.
 extern const char kHistoryBatchUpdatesFilterName[];
 extern const char kHistoryBatchUpdatesFilterDescription[];

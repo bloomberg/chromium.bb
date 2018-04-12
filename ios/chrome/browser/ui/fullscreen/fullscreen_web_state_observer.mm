@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_observer.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_view_proxy_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
@@ -81,7 +82,10 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   // - For normal pages, using |contentInset| breaks the layout of fixed-
   //   position DOM elements, so top padding must be accomplished by updating
   //   the WKWebView's frame.
+  bool force_content_inset = base::FeatureList::IsEnabled(
+      fullscreen::features::kFullscreenContentInset);
   web_state->GetWebViewProxy().shouldUseViewContentInset =
+      force_content_inset ||
       web_state->GetContentsMimeType() == "application/pdf";
   // Reset the model so that the toolbar is visible for the new page.
   model_->ResetForNavigation();
