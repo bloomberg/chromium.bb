@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/union_traits.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -41,6 +43,20 @@ struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
 
   static bool Read(mojo_base::mojom::BigBufferDataView data,
                    mojo_base::BigBuffer* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
+    UnionTraits<mojo_base::mojom::BigBufferDataView, mojo_base::BigBufferView> {
+  static mojo_base::mojom::BigBufferDataView::Tag GetTag(
+      const mojo_base::BigBufferView& view);
+
+  static base::span<const uint8_t> bytes(const mojo_base::BigBufferView& view);
+  static mojo_base::internal::BigBufferSharedMemoryRegion& shared_memory(
+      mojo_base::BigBufferView& view);
+
+  static bool Read(mojo_base::mojom::BigBufferDataView data,
+                   mojo_base::BigBufferView* out);
 };
 
 }  // namespace mojo

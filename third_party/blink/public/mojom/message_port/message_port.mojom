@@ -4,6 +4,7 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "third_party/blink/public/mojom/array_buffer/array_buffer_contents.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "skia/public/interfaces/bitmap.mojom";
@@ -17,7 +18,7 @@ import "skia/public/interfaces/bitmap.mojom";
 // This struct represents the cloneable part of messages that are sent across
 // postMessage style APIs. In particular this is used for BroadcastChannel.
 struct CloneableMessage {
-  array<uint8> encoded_message;
+  mojo_base.mojom.BigBuffer encoded_message;
   // Blob handles for any blobs being sent in this message.
   array<SerializedBlob> blobs;
   // Stack trace captured by sender.

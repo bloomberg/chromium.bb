@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h"
+
+#include "mojo/public/cpp/base/big_buffer_mojom_traits.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
@@ -105,17 +107,19 @@ bool StructTraits<blink::mojom::blink::SerializedArrayBufferContents::DataView,
                   WTF::ArrayBufferContents>::
     Read(blink::mojom::blink::SerializedArrayBufferContents::DataView data,
          WTF::ArrayBufferContents* out) {
-  mojo::ArrayDataView<uint8_t> mojo_contents;
-  data.GetContentsDataView(&mojo_contents);
+  mojo_base::BigBufferView contents_view;
+  if (!data.ReadContents(&contents_view))
+    return false;
+  auto contents_data = contents_view.data();
   auto handle = WTF::ArrayBufferContents::CreateDataHandle(
-      mojo_contents.size(), WTF::ArrayBufferContents::kZeroInitialize);
+      contents_data.size(), WTF::ArrayBufferContents::kZeroInitialize);
   if (!handle)
     return false;
 
   WTF::ArrayBufferContents array_buffer_contents(
       std::move(handle), WTF::ArrayBufferContents::kNotShared);
-  memcpy(array_buffer_contents.Data(), mojo_contents.data(),
-         mojo_contents.size());
+  memcpy(array_buffer_contents.Data(), contents_data.data(),
+         contents_data.size());
   *out = std::move(array_buffer_contents);
   return true;
 }

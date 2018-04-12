@@ -78,6 +78,7 @@ mojom("mojom_core") {
 
   public_deps = [
     ":mojom_platform",
+    "//mojo/public/mojom/base",
     "//skia/public/interfaces",
     "//url/mojom:url_mojom_gurl",
   ]

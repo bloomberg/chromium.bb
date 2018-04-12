@@ -110,6 +110,7 @@ _CONFIG = [
             # Blink already has a signal for contexts being destroyed, and
             # other types of failures should be explicitly signalled.
             'mojo::(?!WrapCallback).+',
+            'mojo_base::BigBuffer.*',
             '(?:.+::)?mojom::.+',
             "service_manager::BinderRegistry",
             # TODO(dcheng): Remove this once Connector isn't needed in Blink
