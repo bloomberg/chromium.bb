@@ -4069,6 +4069,7 @@ crbug.com/829952 [ Linux ] fast/webgl/texImage-imageBitmap-from-image-resize.htm
 crbug.com/829938 [ Linux ] css3/filters/blur-filter-page-scroll.html [ Pass Timeout ]
 crbug.com/818426 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
 crbug.com/818324 [ Linux ] external/wpt/content-security-policy/embedded-enforcement/required_csp-header.html [ Pass Timeout ]
+crbug.com/800745 [ Linux ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Pass Timeout ]
 
 crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
 
