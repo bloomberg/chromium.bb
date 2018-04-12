@@ -225,6 +225,7 @@ class BrowserActionsContainer : public views::View,
   bool ShownInsideMenu() const override;
   void OnToolbarActionViewDragDone() override;
   views::MenuButton* GetOverflowReferenceView() override;
+  gfx::Size GetToolbarActionSize() override;
 
   // ToolbarActionsBarDelegate:
   void AddViewForAction(ToolbarActionViewController* action,

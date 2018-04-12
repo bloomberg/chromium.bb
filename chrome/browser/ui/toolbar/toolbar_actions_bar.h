@@ -82,11 +82,11 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
                     ToolbarActionsBar* main_bar);
   ~ToolbarActionsBar() override;
 
-  // Returns the size of ToolbarActionView.
-  static gfx::Size GetViewSize();
-
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // Returns the size of ToolbarActionView.
+  virtual gfx::Size GetViewSize() const;
 
   // Returns the default/full size for the toolbar; this does *not* reflect any
   // animations that may be running.

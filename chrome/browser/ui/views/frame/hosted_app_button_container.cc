@@ -27,12 +27,20 @@ namespace {
 
 bool g_animation_disabled_for_testing = false;
 
+constexpr int kBrowserActionSize = 32;
+
 constexpr base::TimeDelta kContentSettingsFadeInDuration =
     base::TimeDelta::FromMilliseconds(500);
 
 class HostedAppToolbarActionsBar : public ToolbarActionsBar {
  public:
   using ToolbarActionsBar::ToolbarActionsBar;
+
+  gfx::Size GetViewSize() const override {
+    // TODO(calamity): Unify this toolbar action size with other clients once
+    // all toolbar button sizings are consolidated. https://crbug.com/822967.
+    return gfx::Size(kBrowserActionSize, kBrowserActionSize);
+  }
 
   size_t GetIconCount() const override {
     // Only show an icon when an extension action is popped out due to
