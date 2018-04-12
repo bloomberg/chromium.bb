@@ -45,7 +45,8 @@ TEST(CFIBacktraceAndroidTest, TestUnwinding) {
   }
 }
 
-TEST(CFIBacktraceAndroidTest, TestFindCFIRow) {
+// Flaky: https://bugs.chromium.org/p/chromium/issues/detail?id=829555
+TEST(CFIBacktraceAndroidTest, DISABLED_TestFindCFIRow) {
   auto* unwinder = CFIBacktraceAndroid::GetInitializedInstance();
   /* Input is generated from the CFI file:
   STACK CFI INIT 1000 500
