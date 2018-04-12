@@ -19,13 +19,7 @@
 namespace {
 scoped_refptr<const extensions::Extension> CreateGoodExtension(
     const std::string& name) {
-  return extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder()
-                       .Set("name", name)
-                       .Set("version", "1.0")
-                       .Build())
-      .SetID(crx_file::id_util::GenerateId(name))
-      .Build();
+  return extensions::ExtensionBuilder(name).Build();
 }
 }  // namespace
 
