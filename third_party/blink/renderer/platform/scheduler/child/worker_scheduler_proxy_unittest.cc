@@ -86,14 +86,14 @@ class WorkerSchedulerProxyTest : public testing::Test {
   WorkerSchedulerProxyTest()
       : mock_main_thread_task_runner_(
             new cc::OrderedSimpleTaskRunner(&clock_, true)),
-        renderer_scheduler_(std::make_unique<RendererSchedulerImpl>(
+        main_thread_scheduler_(std::make_unique<MainThreadSchedulerImpl>(
             TaskQueueManagerForTest::Create(nullptr,
                                             mock_main_thread_task_runner_,
                                             &clock_),
             base::nullopt)),
         page_scheduler_(
             std::make_unique<PageSchedulerImpl>(nullptr,
-                                                renderer_scheduler_.get(),
+                                                main_thread_scheduler_.get(),
                                                 false)),
         frame_scheduler_(page_scheduler_->CreateFrameSchedulerImpl(
             nullptr,
@@ -102,14 +102,14 @@ class WorkerSchedulerProxyTest : public testing::Test {
   ~WorkerSchedulerProxyTest() {
     frame_scheduler_.reset();
     page_scheduler_.reset();
-    renderer_scheduler_->Shutdown();
+    main_thread_scheduler_->Shutdown();
   }
 
  protected:
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_main_thread_task_runner_;
 
-  std::unique_ptr<RendererSchedulerImpl> renderer_scheduler_;
+  std::unique_ptr<MainThreadSchedulerImpl> main_thread_scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
 };

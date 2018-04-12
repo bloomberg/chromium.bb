@@ -12,13 +12,13 @@
 namespace blink {
 namespace scheduler {
 
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 
 class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
  public:
   MainThreadSchedulerHelper(
       std::unique_ptr<TaskQueueManager> task_queue_manager,
-      RendererSchedulerImpl* renderer_scheduler);
+      MainThreadSchedulerImpl* main_thread_scheduler);
   ~MainThreadSchedulerHelper() override;
 
   scoped_refptr<MainThreadTaskQueue> NewTaskQueue(
@@ -32,7 +32,7 @@ class PLATFORM_EXPORT MainThreadSchedulerHelper : public SchedulerHelper {
   scoped_refptr<TaskQueue> ControlTaskQueue() override;
 
  private:
-  RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
+  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
   const scoped_refptr<MainThreadTaskQueue> default_task_queue_;
   const scoped_refptr<MainThreadTaskQueue> control_task_queue_;

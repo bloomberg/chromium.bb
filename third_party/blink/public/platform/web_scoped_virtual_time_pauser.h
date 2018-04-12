@@ -11,7 +11,7 @@
 
 namespace blink {
 namespace scheduler {
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 }  // namespace scheduler
 
 // A move only RAII style helper which makes it easier for subsystems to pause
@@ -25,7 +25,7 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
 
   // Note simply creating a WebScopedVirtualTimePauser doesn't cause VirtualTime
   // to pause, instead you need to call PauseVirtualTime.
-  WebScopedVirtualTimePauser(scheduler::RendererSchedulerImpl*,
+  WebScopedVirtualTimePauser(scheduler::MainThreadSchedulerImpl*,
                              VirtualTaskDuration,
                              const WebString& debug_name);
 
@@ -51,7 +51,7 @@ class BLINK_PLATFORM_EXPORT WebScopedVirtualTimePauser {
   base::TimeTicks virtual_time_when_paused_;
   bool paused_ = false;
   VirtualTaskDuration duration_ = VirtualTaskDuration::kInstant;
-  scheduler::RendererSchedulerImpl* scheduler_;  // NOT OWNED
+  scheduler::MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
   WebString debug_name_;
   int trace_id_;
 

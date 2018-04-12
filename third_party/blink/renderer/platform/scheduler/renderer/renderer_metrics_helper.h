@@ -23,7 +23,7 @@ namespace scheduler {
 
 enum class MainThreadTaskLoadState;
 class MainThreadTaskQueue;
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 
 // This enum is used for histogram and should not be renumbered.
 // It tracks the following possible transitions:
@@ -43,14 +43,14 @@ enum class BackgroundedRendererTransition {
   kCount = 5
 };
 
-// Helper class to take care of metrics on behalf of RendererScheduler.
+// Helper class to take care of metrics on behalf of MainThreadScheduler.
 // This class should be used only on the main thread.
 class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
  public:
   static void RecordBackgroundedTransition(
       BackgroundedRendererTransition transition);
 
-  RendererMetricsHelper(RendererSchedulerImpl* renderer_scheduler,
+  RendererMetricsHelper(MainThreadSchedulerImpl* main_thread_scheduler,
                         base::TimeTicks now,
                         bool renderer_backgrounded);
   ~RendererMetricsHelper();
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT RendererMetricsHelper : public MetricsHelper {
   void ResetForTest(base::TimeTicks now);
 
  private:
-  RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
+  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
   base::Optional<base::TimeTicks> last_reported_task_;
 

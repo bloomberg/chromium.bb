@@ -92,7 +92,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
     std::unique_ptr<internal::TaskQueueImpl> impl,
     const TaskQueue::Spec& spec,
     const QueueCreationParams& params,
-    RendererSchedulerImpl* renderer_scheduler)
+    MainThreadSchedulerImpl* main_thread_scheduler)
     : TaskQueue(std::move(impl), spec),
       queue_type_(params.queue_type),
       queue_class_(QueueClassForQueueType(params.queue_type)),
@@ -102,14 +102,14 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_stopped_(params.can_be_stopped),
       freeze_when_keep_active_(params.freeze_when_keep_active),
       used_for_important_tasks_(params.used_for_important_tasks),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       frame_scheduler_(nullptr) {
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to
-    // RendererSchedulerImpl::OnTaskStarted/Completed. At the moment this
+    // MainThreadSchedulerImpl::OnTaskStarted/Completed. At the moment this
     // is not possible due to task queue being created inside
-    // RendererScheduler's constructor.
+    // MainThreadScheduler's constructor.
     GetTaskQueueImpl()->SetOnTaskStartedHandler(base::BindRepeating(
         &MainThreadTaskQueue::OnTaskStarted, base::Unretained(this)));
     GetTaskQueueImpl()->SetOnTaskCompletedHandler(base::BindRepeating(
@@ -121,8 +121,8 @@ MainThreadTaskQueue::~MainThreadTaskQueue() = default;
 
 void MainThreadTaskQueue::OnTaskStarted(const TaskQueue::Task& task,
                                         base::TimeTicks start) {
-  if (renderer_scheduler_)
-    renderer_scheduler_->OnTaskStarted(this, task, start);
+  if (main_thread_scheduler_)
+    main_thread_scheduler_->OnTaskStarted(this, task, start);
 }
 
 void MainThreadTaskQueue::OnTaskCompleted(
@@ -130,22 +130,24 @@ void MainThreadTaskQueue::OnTaskCompleted(
     base::TimeTicks start,
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {
-  if (renderer_scheduler_)
-    renderer_scheduler_->OnTaskCompleted(this, task, start, end, thread_time);
+  if (main_thread_scheduler_) {
+    main_thread_scheduler_->OnTaskCompleted(this, task, start, end,
+                                            thread_time);
+  }
 }
 
-void MainThreadTaskQueue::DetachFromRendererScheduler() {
+void MainThreadTaskQueue::DetachFromMainThreadScheduler() {
   // Frame has already been detached.
-  if (!renderer_scheduler_)
+  if (!main_thread_scheduler_)
     return;
 
   if (GetTaskQueueImpl()) {
     GetTaskQueueImpl()->SetOnTaskStartedHandler(
-        base::BindRepeating(&RendererSchedulerImpl::OnTaskStarted,
-                            renderer_scheduler_->GetWeakPtr(), nullptr));
+        base::BindRepeating(&MainThreadSchedulerImpl::OnTaskStarted,
+                            main_thread_scheduler_->GetWeakPtr(), nullptr));
     GetTaskQueueImpl()->SetOnTaskCompletedHandler(
-        base::BindRepeating(&RendererSchedulerImpl::OnTaskCompleted,
-                            renderer_scheduler_->GetWeakPtr(), nullptr));
+        base::BindRepeating(&MainThreadSchedulerImpl::OnTaskCompleted,
+                            main_thread_scheduler_->GetWeakPtr(), nullptr));
   }
 
   ClearReferencesToSchedulers();
@@ -157,9 +159,9 @@ void MainThreadTaskQueue::ShutdownTaskQueue() {
 }
 
 void MainThreadTaskQueue::ClearReferencesToSchedulers() {
-  if (renderer_scheduler_)
-    renderer_scheduler_->OnShutdownTaskQueue(this);
-  renderer_scheduler_ = nullptr;
+  if (main_thread_scheduler_)
+    main_thread_scheduler_->OnShutdownTaskQueue(this);
+  main_thread_scheduler_ = nullptr;
   frame_scheduler_ = nullptr;
 }
 

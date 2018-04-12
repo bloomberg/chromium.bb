@@ -80,10 +80,10 @@ class TaskQueueThrottlerTest : public testing::Test {
     clock_->Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(clock_.get(), true);
-    scheduler_.reset(
-        new RendererSchedulerImpl(TaskQueueManagerForTest::Create(
-                                      nullptr, mock_task_runner_, clock_.get()),
-                                  base::nullopt));
+    scheduler_.reset(new MainThreadSchedulerImpl(
+        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_,
+                                        clock_.get()),
+        base::nullopt));
     task_queue_throttler_ = scheduler_->task_queue_throttler();
     timer_queue_ = scheduler_->NewTimerTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameThrottleable);
@@ -133,7 +133,7 @@ class TaskQueueThrottlerTest : public testing::Test {
 
   std::unique_ptr<AutoAdvancingTestClock> clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   scoped_refptr<TaskQueue> timer_queue_;
   TaskQueueThrottler* task_queue_throttler_;  // NOT OWNED
 
@@ -558,7 +558,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   timer_queue_->PostTask(FROM_HERE, base::BindOnce(&NopTask));
 
   scheduler_->EnableVirtualTime(
-      RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
 
   EXPECT_FALSE(IsQueueBlocked(timer_queue_.get()));
@@ -576,7 +576,7 @@ TEST_P(TaskQueueThrottlerWithAutoAdvancingTimeTest,
   EXPECT_TRUE(IsQueueBlocked(timer_queue_.get()));
 
   scheduler_->EnableVirtualTime(
-      RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
   EXPECT_FALSE(IsQueueBlocked(timer_queue_.get()));
   EXPECT_EQ(timer_queue_->GetTimeDomain(), scheduler_->GetVirtualTimeDomain());
 }

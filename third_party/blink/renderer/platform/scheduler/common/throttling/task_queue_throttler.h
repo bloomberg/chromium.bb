@@ -31,7 +31,7 @@ namespace blink {
 namespace scheduler {
 
 class BudgetPool;
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 class ThrottledTimeDomain;
 class CPUTimeBudgetPool;
 class WakeUpBudgetPool;
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT BudgetPoolController {
 // posted from a throttled task run next time the queue is pumped.
 //
 // Of course the TaskQueueThrottler isn't the only sub-system that wants to
-// enable or disable queues. E.g. RendererSchedulerImpl also does this for
+// enable or disable queues. E.g. MainThreadSchedulerImpl also does this for
 // policy reasons. To prevent the systems from fighting, clients of
 // TaskQueueThrottler must use SetQueueEnabled rather than calling the function
 // directly on the queue.
@@ -94,9 +94,9 @@ class PLATFORM_EXPORT BudgetPoolController {
 class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
                                            public BudgetPoolController {
  public:
-  // We use tracing controller from RendererSchedulerImpl because an instance
+  // We use tracing controller from MainThreadSchedulerImpl because an instance
   // of this class is always its member, so has the same lifetime.
-  TaskQueueThrottler(RendererSchedulerImpl* renderer_scheduler,
+  TaskQueueThrottler(MainThreadSchedulerImpl* main_thread_scheduler,
                      TraceableVariableController* tracing_controller);
 
   ~TaskQueueThrottler() override;
@@ -200,7 +200,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   base::RepeatingCallback<void(TaskQueue*, base::TimeTicks)>
       forward_immediate_work_callback_;
   scoped_refptr<TaskQueue> control_task_queue_;
-  RendererSchedulerImpl* renderer_scheduler_;        // NOT OWNED
+  MainThreadSchedulerImpl* main_thread_scheduler_;   // NOT OWNED
   TraceableVariableController* tracing_controller_;  // NOT OWNED
   const base::TickClock* tick_clock_;                // NOT OWNED
   std::unique_ptr<ThrottledTimeDomain> time_domain_;

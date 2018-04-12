@@ -14,7 +14,7 @@ class FrameScheduler;
 
 namespace scheduler {
 
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 
 class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
  public:
@@ -60,7 +60,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   // lifetime.
   static const char* NameForQueueType(QueueType queue_type);
 
-  // High-level category used by RendererScheduler to make scheduling decisions.
+  // High-level category used by MainThreadScheduler to make scheduling
+  // decisions.
   enum class QueueClass {
     kNone = 0,
     kLoading = 1,
@@ -166,9 +167,9 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
                        base::TimeTicks end,
                        base::Optional<base::TimeDelta> thread_time);
 
-  void DetachFromRendererScheduler();
+  void DetachFromMainThreadScheduler();
 
-  // Override base method to notify RendererScheduler about shutdown queue.
+  // Override base method to notify MainThreadScheduler about shutdown queue.
   void ShutdownTaskQueue() override;
 
   FrameScheduler* GetFrameScheduler() const;
@@ -178,14 +179,14 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                       const Spec& spec,
                       const QueueCreationParams& params,
-                      RendererSchedulerImpl* renderer_scheduler);
+                      MainThreadSchedulerImpl* main_thread_scheduler);
 
  private:
   friend class TaskQueueManager;
 
   // Clear references to main thread scheduler and frame scheduler and dispatch
   // appropriate notifications. This is the common part of ShutdownTaskQueue and
-  // DetachFromRendererScheduler.
+  // DetachFromMainThreadScheduler.
   void ClearReferencesToSchedulers();
 
   QueueType queue_type_;
@@ -198,7 +199,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   const bool used_for_important_tasks_;
 
   // Needed to notify renderer scheduler about completed tasks.
-  RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
+  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
 
   FrameScheduler* frame_scheduler_;  // NOT OWNED
 

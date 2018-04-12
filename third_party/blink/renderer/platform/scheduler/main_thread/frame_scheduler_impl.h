@@ -29,13 +29,13 @@ class TracedValue;
 namespace blink {
 namespace scheduler {
 
+class MainThreadSchedulerImpl;
 class MainThreadTaskQueue;
 class PageSchedulerImpl;
-class RendererSchedulerImpl;
 class TaskQueue;
 
-namespace renderer_scheduler_impl_unittest {
-class RendererSchedulerImplTest;
+namespace main_thread_scheduler_impl_unittest {
+class MainThreadSchedulerImplTest;
 }
 
 namespace frame_scheduler_impl_unittest {
@@ -48,7 +48,7 @@ class PageSchedulerImplTest;
 
 class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
  public:
-  FrameSchedulerImpl(RendererSchedulerImpl* renderer_scheduler,
+  FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
                      PageSchedulerImpl* parent_page_scheduler,
                      base::trace_event::BlameContext* blame_context,
                      FrameScheduler::FrameType frame_type);
@@ -93,7 +93,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
 
  private:
   friend class PageSchedulerImpl;
-  friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
+  friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
 
@@ -161,7 +161,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
       throttleable_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> deferrable_queue_enabled_voter_;
   std::unique_ptr<TaskQueue::QueueEnabledVoter> pausable_queue_enabled_voter_;
-  RendererSchedulerImpl* renderer_scheduler_;       // NOT OWNED
+  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
   std::set<Observer*> loader_observers_;            // NOT OWNED

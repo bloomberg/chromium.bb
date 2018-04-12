@@ -18,13 +18,13 @@ namespace scheduler {
 
 // TODO(kraynov): Ditch kDeprecatedNone here.
 RendererWebSchedulerImpl::RendererWebSchedulerImpl(
-    RendererSchedulerImpl* renderer_scheduler)
-    : WebSchedulerImpl(renderer_scheduler,
-                       renderer_scheduler->IdleTaskRunner(),
-                       renderer_scheduler->V8TaskQueue()),
-      renderer_scheduler_(renderer_scheduler),
+    MainThreadSchedulerImpl* main_thread_scheduler)
+    : WebSchedulerImpl(main_thread_scheduler,
+                       main_thread_scheduler->IdleTaskRunner(),
+                       main_thread_scheduler->V8TaskQueue()),
+      main_thread_scheduler_(main_thread_scheduler),
       compositor_task_runner_(
-          TaskRunnerImpl::Create(renderer_scheduler_->CompositorTaskQueue(),
+          TaskRunnerImpl::Create(main_thread_scheduler_->CompositorTaskQueue(),
                                  TaskType::kDeprecatedNone)) {}
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() = default;
@@ -35,26 +35,26 @@ base::SingleThreadTaskRunner* RendererWebSchedulerImpl::CompositorTaskRunner() {
 
 std::unique_ptr<RendererWebSchedulerImpl::RendererPauseHandle>
 RendererWebSchedulerImpl::PauseScheduler() {
-  return renderer_scheduler_->PauseRenderer();
+  return main_thread_scheduler_->PauseRenderer();
 }
 
 std::unique_ptr<blink::PageScheduler>
 RendererWebSchedulerImpl::CreatePageScheduler(
     PageScheduler::Delegate* delegate) {
   return base::WrapUnique(
-      new PageSchedulerImpl(delegate, renderer_scheduler_,
+      new PageSchedulerImpl(delegate, main_thread_scheduler_,
                             !blink::RuntimeEnabledFeatures::
                                 TimerThrottlingForBackgroundTabsEnabled()));
 }
 
 base::TimeTicks RendererWebSchedulerImpl::MonotonicallyIncreasingVirtualTime()
     const {
-  return renderer_scheduler_->GetActiveTimeDomain()->Now();
+  return main_thread_scheduler_->GetActiveTimeDomain()->Now();
 }
 
 WebMainThreadScheduler*
 RendererWebSchedulerImpl::GetWebMainThreadSchedulerForTest() {
-  return renderer_scheduler_;
+  return main_thread_scheduler_;
 }
 
 }  // namespace scheduler

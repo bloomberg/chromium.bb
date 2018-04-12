@@ -74,11 +74,11 @@ RendererMetricsHelper::PerQueueTypeDurationReporters::
       hidden_music(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".HiddenMusic") {}
 
 RendererMetricsHelper::RendererMetricsHelper(
-    RendererSchedulerImpl* renderer_scheduler,
+    MainThreadSchedulerImpl* main_thread_scheduler,
     base::TimeTicks now,
     bool renderer_backgrounded)
     : MetricsHelper(WebThreadType::kMainThread),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       main_thread_load_tracker_(
           now,
           base::BindRepeating(&RendererMetricsHelper::RecordMainThreadTaskLoad,
@@ -247,13 +247,13 @@ void RendererMetricsHelper::RecordTaskMetrics(
   TaskType task_type = static_cast<TaskType>(task.task_type());
   per_task_type_duration_reporter_.RecordTask(task_type, duration);
 
-  if (renderer_scheduler_->main_thread_only().renderer_backgrounded) {
+  if (main_thread_scheduler_->main_thread_only().renderer_backgrounded) {
     per_queue_type_reporters_.background.RecordTask(queue_type, duration);
 
     // Collect detailed breakdown for first five minutes given that we stop
     // timers on mobile after five minutes.
     base::TimeTicks backgrounded_at =
-        renderer_scheduler_->main_thread_only().background_status_changed_at;
+        main_thread_scheduler_->main_thread_only().background_status_changed_at;
 
     per_queue_type_reporters_.background_first_minute.RecordTask(
         queue_type, DurationOfIntervalOverlap(
@@ -292,7 +292,8 @@ void RendererMetricsHelper::RecordTaskMetrics(
             std::max(backgrounded_at + base::TimeDelta::FromMinutes(5),
                      end_time)));
 
-    if (renderer_scheduler_->main_thread_only().keep_active_fetch_or_worker) {
+    if (main_thread_scheduler_->main_thread_only()
+            .keep_active_fetch_or_worker) {
       per_queue_type_reporters_.background_keep_active_after_fifth_minute
           .RecordTask(
               queue_type,
@@ -310,7 +311,7 @@ void RendererMetricsHelper::RecordTaskMetrics(
     // For foreground tabs we do not expect such a notable difference as it is
     // the case with background tabs, so we limit breakdown to three minutes.
     base::TimeTicks foregrounded_at =
-        renderer_scheduler_->main_thread_only().background_status_changed_at;
+        main_thread_scheduler_->main_thread_only().background_status_changed_at;
 
     per_queue_type_reporters_.foreground_first_minute.RecordTask(
         queue_type, DurationOfIntervalOverlap(
@@ -340,10 +341,10 @@ void RendererMetricsHelper::RecordTaskMetrics(
     foreground_per_task_type_duration_reporter_.RecordTask(task_type, duration);
   }
 
-  if (renderer_scheduler_->main_thread_only().renderer_hidden) {
+  if (main_thread_scheduler_->main_thread_only().renderer_hidden) {
     per_queue_type_reporters_.hidden.RecordTask(queue_type, duration);
 
-    if (renderer_scheduler_->ShouldDisableThrottlingBecauseOfAudio(
+    if (main_thread_scheduler_->ShouldDisableThrottlingBecauseOfAudio(
             start_time)) {
       per_queue_type_reporters_.hidden_music.RecordTask(queue_type, duration);
     }
@@ -381,7 +382,8 @@ void RendererMetricsHelper::RecordTaskMetrics(
                               frame_status, FrameStatus::kCount);
   }
 
-  UseCase use_case = renderer_scheduler_->main_thread_only().current_use_case;
+  UseCase use_case =
+      main_thread_scheduler_->main_thread_only().current_use_case;
   per_task_use_case_duration_reporter_.RecordTask(use_case, duration);
   if (use_case == UseCase::kNone) {
     no_use_case_per_task_type_duration_reporter_.RecordTask(task_type,
@@ -417,14 +419,14 @@ void RendererMetricsHelper::RecordMainThreadTaskLoad(base::TimeTicks time,
 
   UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME, load_percentage);
 
-  if (renderer_scheduler_->main_thread_only().process_type ==
+  if (main_thread_scheduler_->main_thread_only().process_type ==
       RendererProcessType::kExtensionRenderer) {
     UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME,
                              load_percentage);
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.RendererMainThreadLoad", load_percentage);
+                 "MainThreadScheduler.RendererMainThreadLoad", load_percentage);
 }
 
 void RendererMetricsHelper::RecordForegroundMainThreadTaskLoad(
@@ -433,7 +435,7 @@ void RendererMetricsHelper::RecordForegroundMainThreadTaskLoad(
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  switch (renderer_scheduler_->main_thread_only().process_type) {
+  switch (main_thread_scheduler_->main_thread_only().process_type) {
     case RendererProcessType::kExtensionRenderer:
       UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME
                                ".Foreground",
@@ -443,7 +445,7 @@ void RendererMetricsHelper::RecordForegroundMainThreadTaskLoad(
       UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Foreground",
                                load_percentage);
 
-      if (time - renderer_scheduler_->main_thread_only()
+      if (time - main_thread_scheduler_->main_thread_only()
                      .background_status_changed_at >
           base::TimeDelta::FromMinutes(1)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
@@ -454,7 +456,7 @@ void RendererMetricsHelper::RecordForegroundMainThreadTaskLoad(
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.RendererMainThreadLoad.Foreground",
+                 "MainThreadScheduler.RendererMainThreadLoad.Foreground",
                  load_percentage);
 }
 
@@ -464,7 +466,7 @@ void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
   int load_percentage = static_cast<int>(load * 100);
   DCHECK_LE(load_percentage, 100);
 
-  switch (renderer_scheduler_->main_thread_only().process_type) {
+  switch (main_thread_scheduler_->main_thread_only().process_type) {
     case RendererProcessType::kExtensionRenderer:
       UMA_HISTOGRAM_PERCENTAGE(EXTENSIONS_MAIN_THREAD_LOAD_METRIC_NAME
                                ".Background",
@@ -474,7 +476,7 @@ void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
       UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME ".Background",
                                load_percentage);
 
-      if (time - renderer_scheduler_->main_thread_only()
+      if (time - main_thread_scheduler_->main_thread_only()
                      .background_status_changed_at >
           base::TimeDelta::FromMinutes(1)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
@@ -485,7 +487,7 @@ void RendererMetricsHelper::RecordBackgroundMainThreadTaskLoad(
   }
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererScheduler.RendererMainThreadLoad.Background",
+                 "MainThreadScheduler.RendererMainThreadLoad.Background",
                  load_percentage);
 }
 

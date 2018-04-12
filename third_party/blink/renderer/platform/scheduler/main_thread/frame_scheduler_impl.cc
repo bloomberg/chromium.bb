@@ -84,12 +84,12 @@ FrameSchedulerImpl::ThrottlingObserverHandleImpl::
 }
 
 FrameSchedulerImpl::FrameSchedulerImpl(
-    RendererSchedulerImpl* renderer_scheduler,
+    MainThreadSchedulerImpl* main_thread_scheduler,
     PageSchedulerImpl* parent_page_scheduler,
     base::trace_event::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type)
     : frame_type_(frame_type),
-      renderer_scheduler_(renderer_scheduler),
+      main_thread_scheduler_(main_thread_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
       throttling_state_(FrameScheduler::ThrottlingState::kNotThrottled),
@@ -108,7 +108,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                    this,
                    &tracing_controller_,
                    FrozenStateToString),
-      keep_active_(renderer_scheduler->SchedulerKeepActive(),
+      keep_active_(main_thread_scheduler->SchedulerKeepActive(),
                    "FrameScheduler.KeepActive",
                    this,
                    &tracing_controller_,
@@ -146,7 +146,7 @@ namespace {
 void CleanUpQueue(MainThreadTaskQueue* queue) {
   if (!queue)
     return;
-  queue->DetachFromRendererScheduler();
+  queue->DetachFromMainThreadScheduler();
   queue->SetFrameScheduler(nullptr);
   queue->SetBlameContext(nullptr);
   queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
@@ -194,8 +194,9 @@ void FrameSchedulerImpl::
   if (!time_budget_pool)
     return;
 
-  time_budget_pool->RemoveQueue(renderer_scheduler_->tick_clock()->NowTicks(),
-                                throttleable_task_queue_.get());
+  time_budget_pool->RemoveQueue(
+      main_thread_scheduler_->tick_clock()->NowTicks(),
+      throttleable_task_queue_.get());
 }
 
 std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
@@ -323,7 +324,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
-    loading_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
+    loading_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoading);
     loading_task_queue_->SetBlameContext(blame_context_);
     loading_task_queue_->SetFrameScheduler(this);
@@ -337,7 +338,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
 scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_control_task_queue_) {
-    loading_control_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
+    loading_control_task_queue_ = main_thread_scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoadingControl);
     loading_control_task_queue_->SetBlameContext(blame_context_);
     loading_control_task_queue_->SetFrameScheduler(this);
@@ -352,7 +353,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!throttleable_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
-    throttleable_task_queue_ = renderer_scheduler_->NewTaskQueue(
+    throttleable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetCanBeThrottled(true)
@@ -369,8 +370,9 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
     CPUTimeBudgetPool* time_budget_pool =
         parent_page_scheduler_->BackgroundCPUTimeBudgetPool();
     if (time_budget_pool) {
-      time_budget_pool->AddQueue(renderer_scheduler_->tick_clock()->NowTicks(),
-                                 throttleable_task_queue_.get());
+      time_budget_pool->AddQueue(
+          main_thread_scheduler_->tick_clock()->NowTicks(),
+          throttleable_task_queue_.get());
     }
     UpdateTaskQueueThrottling();
   }
@@ -380,7 +382,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
 scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!deferrable_task_queue_) {
-    deferrable_task_queue_ = renderer_scheduler_->NewTaskQueue(
+    deferrable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameDeferrable)
             .SetCanBeDeferred(true)
@@ -399,7 +401,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
 scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!pausable_task_queue_) {
-    pausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
+    pausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFramePausable)
             .SetCanBeStopped(
@@ -417,7 +419,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
 scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!unpausable_task_queue_) {
-    unpausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
+    unpausable_task_queue_ = main_thread_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameUnpausable));
     unpausable_task_queue_->SetBlameContext(blame_context_);
@@ -428,7 +430,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
 
 scoped_refptr<TaskQueue> FrameSchedulerImpl::ControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
-  return renderer_scheduler_->ControlTaskQueue();
+  return main_thread_scheduler_->ControlTaskQueue();
 }
 
 blink::PageScheduler* FrameSchedulerImpl::GetPageScheduler() const {
@@ -436,21 +438,21 @@ blink::PageScheduler* FrameSchedulerImpl::GetPageScheduler() const {
 }
 
 void FrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
-  renderer_scheduler_->DidStartProvisionalLoad(is_main_frame);
+  main_thread_scheduler_->DidStartProvisionalLoad(is_main_frame);
 }
 
 void FrameSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
     bool is_reload,
     bool is_main_frame) {
-  renderer_scheduler_->DidCommitProvisionalLoad(is_web_history_inert_commit,
-                                                is_reload, is_main_frame);
+  main_thread_scheduler_->DidCommitProvisionalLoad(is_web_history_inert_commit,
+                                                   is_reload, is_main_frame);
 }
 
 WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
     const WTF::String& name,
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
-  return WebScopedVirtualTimePauser(renderer_scheduler_, duration, name);
+  return WebScopedVirtualTimePauser(main_thread_scheduler_, duration, name);
 }
 
 void FrameSchedulerImpl::DidOpenActiveConnection() {
@@ -597,7 +599,7 @@ FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState()
 }
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
-  renderer_scheduler_->OnFirstMeaningfulPaint();
+  main_thread_scheduler_->OnFirstMeaningfulPaint();
 }
 
 std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
@@ -625,10 +627,10 @@ void FrameSchedulerImpl::UpdateTaskQueueThrottling() {
   task_queue_throttled_ = should_throttle;
 
   if (should_throttle) {
-    renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
+    main_thread_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
         throttleable_task_queue_.get());
   } else {
-    renderer_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
+    main_thread_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
         throttleable_task_queue_.get());
   }
 }

@@ -47,7 +47,7 @@ TestingPlatformSupportWithMockScheduler::
       scheduler::TaskQueueManagerForTest::Create(nullptr, mock_task_runner_,
                                                  &clock_);
   task_queue_manager_ = task_queue_manager.get();
-  scheduler_ = std::make_unique<scheduler::RendererSchedulerImpl>(
+  scheduler_ = std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::move(task_queue_manager), base::nullopt);
   thread_ = scheduler_->CreateMainThread();
   // Set the work batch size to one so RunPendingTasks behaves as expected.
@@ -135,8 +135,8 @@ void TestingPlatformSupportWithMockScheduler::SetAutoAdvanceNowToPendingTasks(
   mock_task_runner_->SetAutoAdvanceNowToPendingTasks(auto_advance);
 }
 
-scheduler::RendererSchedulerImpl*
-TestingPlatformSupportWithMockScheduler::GetRendererScheduler() const {
+scheduler::MainThreadSchedulerImpl*
+TestingPlatformSupportWithMockScheduler::GetMainThreadScheduler() const {
   return scheduler_.get();
 }
 

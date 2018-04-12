@@ -22,15 +22,15 @@ namespace blink {
 namespace scheduler {
 
 namespace {
-class RendererSchedulerImplForTest : public RendererSchedulerImpl {
+class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
  public:
-  RendererSchedulerImplForTest(
+  MainThreadSchedulerImplForTest(
       std::unique_ptr<TaskQueueManager> task_queue_manager,
       base::Optional<base::Time> initial_virtual_time)
-      : RendererSchedulerImpl(std::move(task_queue_manager),
-                              initial_virtual_time){};
+      : MainThreadSchedulerImpl(std::move(task_queue_manager),
+                                initial_virtual_time){};
 
-  using RendererSchedulerImpl::SetCurrentUseCaseForTest;
+  using MainThreadSchedulerImpl::SetCurrentUseCaseForTest;
 };
 }  // namespace
 
@@ -48,7 +48,7 @@ class RendererMetricsHelperTest : public testing::Test {
     histogram_tester_.reset(new base::HistogramTester());
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
-    scheduler_ = std::make_unique<RendererSchedulerImplForTest>(
+    scheduler_ = std::make_unique<MainThreadSchedulerImplForTest>(
         TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
@@ -223,7 +223,7 @@ class RendererMetricsHelperTest : public testing::Test {
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<RendererSchedulerImplForTest> scheduler_;
+  std::unique_ptr<MainThreadSchedulerImplForTest> scheduler_;
   RendererMetricsHelper* metrics_helper_;  // NOT OWNED
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<FakePageScheduler> playing_view_ =

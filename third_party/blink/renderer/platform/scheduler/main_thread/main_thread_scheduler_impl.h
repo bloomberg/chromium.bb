@@ -46,17 +46,16 @@ class ConvertableToTraceFormat;
 
 namespace blink {
 namespace scheduler {
-namespace renderer_scheduler_impl_unittest {
-class RendererSchedulerImplForTest;
-class RendererSchedulerImplTest;
-FORWARD_DECLARE_TEST(RendererSchedulerImplTest, Tracing);
-}  // namespace renderer_scheduler_impl_unittest
+namespace main_thread_scheduler_impl_unittest {
+class MainThreadSchedulerImplForTest;
+class MainThreadSchedulerImplTest;
+FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, Tracing);
+}  // namespace main_thread_scheduler_impl_unittest
 class PageSchedulerImpl;
 class TaskQueueThrottler;
 class WebRenderWidgetSchedulingState;
 
-// TODO(yutak): Rename this class to MainThreadSchedulerImpl.
-class PLATFORM_EXPORT RendererSchedulerImpl
+class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public WebMainThreadScheduler,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
@@ -91,12 +90,12 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // If |initial_virtual_time| is specified then the scheduler will be created
   // with virtual time enabled and paused with base::Time will be overridden to
   // start at |initial_virtual_time|.
-  RendererSchedulerImpl(std::unique_ptr<TaskQueueManager> task_queue_manager,
-                        base::Optional<base::Time> initial_virtual_time);
+  MainThreadSchedulerImpl(std::unique_ptr<TaskQueueManager> task_queue_manager,
+                          base::Optional<base::Time> initial_virtual_time);
 
-  ~RendererSchedulerImpl() override;
+  ~MainThreadSchedulerImpl() override;
 
-  // RendererScheduler implementation:
+  // WebMainThreadSchedulerScheduler implementation:
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
@@ -222,7 +221,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void AddTaskTimeObserver(TaskTimeObserver*);
   void RemoveTaskTimeObserver(TaskTimeObserver*);
 
-  // Snapshots this RendererScheduler for tracing.
+  // Snapshots this MainThreadSchedulerImpl for tracing.
   void CreateTraceEventObjectSnapshot() const;
 
   // Called when one of associated page schedulers has changed audio state.
@@ -283,7 +282,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
 
-  base::WeakPtr<RendererSchedulerImpl> GetWeakPtr();
+  base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
  protected:
   // WebMainThreadScheduler implementation.
@@ -303,10 +302,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   friend class RendererMetricsHelper;
 
   friend class RendererMetricsHelperTest;
-  friend class renderer_scheduler_impl_unittest::RendererSchedulerImplForTest;
-  friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
+  friend class main_thread_scheduler_impl_unittest::
+      MainThreadSchedulerImplForTest;
+  friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
   FRIEND_TEST_ALL_PREFIXES(
-      renderer_scheduler_impl_unittest::RendererSchedulerImplTest,
+      main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
       Tracing);
 
   enum class ExpensiveTaskPolicy { kRun, kBlock, kThrottle };
@@ -454,11 +454,11 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   class RendererPauseHandleImpl : public RendererPauseHandle {
    public:
-    explicit RendererPauseHandleImpl(RendererSchedulerImpl* scheduler);
+    explicit RendererPauseHandleImpl(MainThreadSchedulerImpl* scheduler);
     ~RendererPauseHandleImpl() override;
 
    private:
-    RendererSchedulerImpl* scheduler_;  // NOT OWNED
+    MainThreadSchedulerImpl* scheduler_;  // NOT OWNED
   };
 
   // IdleHelper::Delegate implementation:
@@ -653,7 +653,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   struct MainThreadOnly {
     MainThreadOnly(
-        RendererSchedulerImpl* renderer_scheduler_impl,
+        MainThreadSchedulerImpl* main_thread_scheduler_impl,
         const scoped_refptr<MainThreadTaskQueue>& compositor_task_runner,
         const base::TickClock* time_source,
         base::TimeTicks now);
@@ -749,7 +749,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   };
 
   struct AnyThread {
-    explicit AnyThread(RendererSchedulerImpl* renderer_scheduler_impl);
+    explicit AnyThread(MainThreadSchedulerImpl* main_thread_scheduler_impl);
     ~AnyThread();
 
     base::TimeTicks last_idle_period_end_time;
@@ -821,9 +821,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
 
   PollableThreadSafeFlag policy_may_need_update_;
 
-  base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<MainThreadSchedulerImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImpl);
+  DISALLOW_COPY_AND_ASSIGN(MainThreadSchedulerImpl);
 };
 
 }  // namespace scheduler

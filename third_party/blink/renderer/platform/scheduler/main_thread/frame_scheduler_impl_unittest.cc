@@ -32,7 +32,7 @@ class FrameSchedulerImplTest : public testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
-    scheduler_.reset(new RendererSchedulerImpl(
+    scheduler_.reset(new MainThreadSchedulerImpl(
         TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt));
     page_scheduler_.reset(
@@ -87,7 +87,7 @@ class FrameSchedulerImplTest : public testing::Test {
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
 };

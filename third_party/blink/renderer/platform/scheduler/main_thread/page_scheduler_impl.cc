@@ -93,10 +93,11 @@ BackgroundThrottlingSettings GetBackgroundThrottlingSettings() {
 
 }  // namespace
 
-PageSchedulerImpl::PageSchedulerImpl(PageScheduler::Delegate* delegate,
-                                     RendererSchedulerImpl* renderer_scheduler,
-                                     bool disable_background_timer_throttling)
-    : renderer_scheduler_(renderer_scheduler),
+PageSchedulerImpl::PageSchedulerImpl(
+    PageScheduler::Delegate* delegate,
+    MainThreadSchedulerImpl* main_thread_scheduler,
+    bool disable_background_timer_throttling)
+    : main_thread_scheduler_(main_thread_scheduler),
       page_visibility_(kDefaultPageVisibility),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       is_audio_playing_(false),
@@ -108,7 +109,7 @@ PageSchedulerImpl::PageSchedulerImpl(PageScheduler::Delegate* delegate,
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
-  renderer_scheduler->AddPageScheduler(this);
+  main_thread_scheduler->AddPageScheduler(this);
 }
 
 PageSchedulerImpl::~PageSchedulerImpl() {
@@ -117,7 +118,7 @@ PageSchedulerImpl::~PageSchedulerImpl() {
   for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->DetachFromPageScheduler();
   }
-  renderer_scheduler_->RemovePageScheduler(this);
+  main_thread_scheduler_->RemovePageScheduler(this);
 
   if (background_time_budget_pool_)
     background_time_budget_pool_->Close();
@@ -169,7 +170,7 @@ std::unique_ptr<FrameSchedulerImpl> PageSchedulerImpl::CreateFrameSchedulerImpl(
     FrameScheduler::FrameType frame_type) {
   MaybeInitializeBackgroundCPUTimeBudgetPool();
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler(new FrameSchedulerImpl(
-      renderer_scheduler_, this, blame_context, frame_type));
+      main_thread_scheduler_, this, blame_context, frame_type));
   frame_scheduler->SetPageVisibility(page_visibility_);
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
@@ -195,49 +196,49 @@ void PageSchedulerImpl::ReportIntervention(const std::string& message) {
 }
 
 base::TimeTicks PageSchedulerImpl::EnableVirtualTime() {
-  return renderer_scheduler_->EnableVirtualTime(
-      RendererSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
+  return main_thread_scheduler_->EnableVirtualTime(
+      MainThreadSchedulerImpl::BaseTimeOverridePolicy::DO_NOT_OVERRIDE);
 }
 
 void PageSchedulerImpl::DisableVirtualTimeForTesting() {
-  renderer_scheduler_->DisableVirtualTimeForTesting();
+  main_thread_scheduler_->DisableVirtualTimeForTesting();
 }
 
 void PageSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
-  renderer_scheduler_->SetVirtualTimePolicy(policy);
+  main_thread_scheduler_->SetVirtualTimePolicy(policy);
 }
 
 void PageSchedulerImpl::SetInitialVirtualTimeOffset(base::TimeDelta offset) {
-  renderer_scheduler_->SetInitialVirtualTimeOffset(offset);
+  main_thread_scheduler_->SetInitialVirtualTimeOffset(offset);
 }
 
 bool PageSchedulerImpl::VirtualTimeAllowedToAdvance() const {
-  return renderer_scheduler_->VirtualTimeAllowedToAdvance();
+  return main_thread_scheduler_->VirtualTimeAllowedToAdvance();
 }
 
 void PageSchedulerImpl::GrantVirtualTimeBudget(
     base::TimeDelta budget,
     base::OnceClosure budget_exhausted_callback) {
-  renderer_scheduler_->VirtualTimeControlTaskQueue()->PostDelayedTask(
+  main_thread_scheduler_->VirtualTimeControlTaskQueue()->PostDelayedTask(
       FROM_HERE, std::move(budget_exhausted_callback), budget);
   // This can shift time forwards if there's a pending MaybeAdvanceVirtualTime,
   // so it's important this is called second.
-  renderer_scheduler_->GetVirtualTimeDomain()->SetVirtualTimeFence(
-      renderer_scheduler_->GetVirtualTimeDomain()->Now() + budget);
+  main_thread_scheduler_->GetVirtualTimeDomain()->SetVirtualTimeFence(
+      main_thread_scheduler_->GetVirtualTimeDomain()->Now() + budget);
 }
 
 void PageSchedulerImpl::AddVirtualTimeObserver(VirtualTimeObserver* observer) {
-  renderer_scheduler_->AddVirtualTimeObserver(observer);
+  main_thread_scheduler_->AddVirtualTimeObserver(observer);
 }
 
 void PageSchedulerImpl::RemoveVirtualTimeObserver(
     VirtualTimeObserver* observer) {
-  renderer_scheduler_->RemoveVirtualTimeObserver(observer);
+  main_thread_scheduler_->RemoveVirtualTimeObserver(observer);
 }
 
 void PageSchedulerImpl::AudioStateChanged(bool is_audio_playing) {
   is_audio_playing_ = is_audio_playing;
-  renderer_scheduler_->OnAudioStateChanged();
+  main_thread_scheduler_->OnAudioStateChanged();
 }
 
 bool PageSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
@@ -312,9 +313,9 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
     return;
 
   background_time_budget_pool_ =
-      renderer_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
+      main_thread_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
           "background");
-  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+  LazyNow lazy_now(main_thread_scheduler_->tick_clock());
 
   BackgroundThrottlingSettings settings = GetBackgroundThrottlingSettings();
 
@@ -364,7 +365,7 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
   if (!background_time_budget_pool_)
     return;
 
-  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+  LazyNow lazy_now(main_thread_scheduler_->tick_clock());
   if (page_visibility_ == PageVisibilityState::kVisible ||
       has_active_connection_) {
     background_time_budget_pool_->DisableThrottling(&lazy_now);
@@ -379,7 +380,7 @@ size_t PageSchedulerImpl::FrameCount() const {
 
 void PageSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
     int max_task_starvation_count) {
-  renderer_scheduler_->SetMaxVirtualTimeTaskStarvationCount(
+  main_thread_scheduler_->SetMaxVirtualTimeTaskStarvationCount(
       max_task_starvation_count);
 }
 

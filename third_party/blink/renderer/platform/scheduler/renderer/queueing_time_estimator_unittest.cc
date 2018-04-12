@@ -35,9 +35,9 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "RendererScheduler.ExpectedTaskQueueingDuration3",
           queueing_time.InMicroseconds(),
-          RendererSchedulerImpl::kMinExpectedQueueingTimeBucket,
-          RendererSchedulerImpl::kMaxExpectedQueueingTimeBucket,
-          RendererSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
+          MainThreadSchedulerImpl::kMinExpectedQueueingTimeBucket,
+          MainThreadSchedulerImpl::kMaxExpectedQueueingTimeBucket,
+          MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
     }
   }
   void OnReportFineGrainedExpectedQueueingTime(const char* split_description,
@@ -45,12 +45,12 @@ class TestQueueingTimeEstimatorClient : public QueueingTimeEstimator::Client {
     if (split_eqts_.find(split_description) == split_eqts_.end())
       split_eqts_[split_description] = std::vector<base::TimeDelta>();
     split_eqts_[split_description].push_back(queueing_time);
-    // Mimic RendererSchedulerImpl::OnReportFineGrainedExpectedQueueingTime.
+    // Mimic MainThreadSchedulerImpl::OnReportFineGrainedExpectedQueueingTime.
     base::UmaHistogramCustomCounts(
         split_description, queueing_time.InMicroseconds(),
-        RendererSchedulerImpl::kMinExpectedQueueingTimeBucket,
-        RendererSchedulerImpl::kMaxExpectedQueueingTimeBucket,
-        RendererSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
+        MainThreadSchedulerImpl::kMinExpectedQueueingTimeBucket,
+        MainThreadSchedulerImpl::kMaxExpectedQueueingTimeBucket,
+        MainThreadSchedulerImpl::kNumberExpectedQueueingTimeBuckets);
   }
   const std::vector<base::TimeDelta>& expected_queueing_times() {
     return expected_queueing_times_;

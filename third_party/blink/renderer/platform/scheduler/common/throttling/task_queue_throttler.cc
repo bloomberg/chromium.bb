@@ -63,12 +63,12 @@ base::Optional<T> Max(const base::Optional<T>& a, const base::Optional<T>& b) {
 }  // namespace
 
 TaskQueueThrottler::TaskQueueThrottler(
-    RendererSchedulerImpl* renderer_scheduler,
+    MainThreadSchedulerImpl* main_thread_scheduler,
     TraceableVariableController* tracing_controller)
-    : control_task_queue_(renderer_scheduler->ControlTaskQueue()),
-      renderer_scheduler_(renderer_scheduler),
+    : control_task_queue_(main_thread_scheduler->ControlTaskQueue()),
+      main_thread_scheduler_(main_thread_scheduler),
       tracing_controller_(tracing_controller),
-      tick_clock_(renderer_scheduler->tick_clock()),
+      tick_clock_(main_thread_scheduler->tick_clock()),
       time_domain_(new ThrottledTimeDomain()),
       allow_throttling_(true),
       weak_factory_(this) {
@@ -78,7 +78,7 @@ TaskQueueThrottler::TaskQueueThrottler(
       base::BindRepeating(&TaskQueueThrottler::OnQueueNextWakeUpChanged,
                           weak_factory_.GetWeakPtr());
 
-  renderer_scheduler_->RegisterTimeDomain(time_domain_.get());
+  main_thread_scheduler_->RegisterTimeDomain(time_domain_.get());
 }
 
 TaskQueueThrottler::~TaskQueueThrottler() {
@@ -87,14 +87,14 @@ TaskQueueThrottler::~TaskQueueThrottler() {
   for (const TaskQueueMap::value_type& map_entry : queue_details_) {
     TaskQueue* task_queue = map_entry.first;
     if (IsThrottled(task_queue)) {
-      task_queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
+      task_queue->SetTimeDomain(main_thread_scheduler_->GetActiveTimeDomain());
       task_queue->RemoveFence();
     }
     if (map_entry.second.throttling_ref_count != 0)
       task_queue->SetObserver(nullptr);
   }
 
-  renderer_scheduler_->UnregisterTimeDomain(time_domain_.get());
+  main_thread_scheduler_->UnregisterTimeDomain(time_domain_.get());
 }
 
 void TaskQueueThrottler::IncreaseThrottleRefCount(TaskQueue* task_queue) {
@@ -151,7 +151,7 @@ void TaskQueueThrottler::DecreaseThrottleRefCount(TaskQueue* task_queue) {
   if (!allow_throttling_)
     return;
 
-  task_queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
+  task_queue->SetTimeDomain(main_thread_scheduler_->GetActiveTimeDomain());
   task_queue->RemoveFence();
 }
 
@@ -172,7 +172,7 @@ void TaskQueueThrottler::ShutdownTaskQueue(TaskQueue* task_queue) {
 
   // Reset a time domain reference to a valid domain, otherwise it's possible
   // to get a stale reference when deleting queue.
-  task_queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
+  task_queue->SetTimeDomain(main_thread_scheduler_->GetActiveTimeDomain());
   task_queue->RemoveFence();
 
   std::unordered_set<BudgetPool*> budget_pools = find_it->second.budget_pools;
@@ -540,7 +540,7 @@ void TaskQueueThrottler::DisableThrottling() {
 
     TaskQueue* queue = map_entry.first;
 
-    queue->SetTimeDomain(renderer_scheduler_->GetActiveTimeDomain());
+    queue->SetTimeDomain(main_thread_scheduler_->GetActiveTimeDomain());
     queue->RemoveFence();
   }
 

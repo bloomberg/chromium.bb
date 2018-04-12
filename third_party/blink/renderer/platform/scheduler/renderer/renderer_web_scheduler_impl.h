@@ -10,11 +10,12 @@
 namespace blink {
 namespace scheduler {
 
-class RendererSchedulerImpl;
+class MainThreadSchedulerImpl;
 
 class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
  public:
-  explicit RendererWebSchedulerImpl(RendererSchedulerImpl* renderer_scheduler);
+  explicit RendererWebSchedulerImpl(
+      MainThreadSchedulerImpl* main_thread_scheduler);
 
   ~RendererWebSchedulerImpl() override;
 
@@ -30,7 +31,7 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   WebMainThreadScheduler* GetWebMainThreadSchedulerForTest() override;
 
  private:
-  RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
+  MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   scoped_refptr<TaskRunnerImpl> compositor_task_runner_;
 };
 

@@ -39,7 +39,7 @@ class PageSchedulerImplTest : public testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
-    scheduler_.reset(new RendererSchedulerImpl(
+    scheduler_.reset(new MainThreadSchedulerImpl(
         TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(
@@ -94,7 +94,7 @@ class PageSchedulerImplTest : public testing::Test {
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<RendererSchedulerImpl> scheduler_;
+  std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
 };
@@ -215,7 +215,7 @@ namespace {
 
 void RunVirtualTimeRecorderTask(
     base::SimpleTestTickClock* clock,
-    RendererSchedulerImpl* scheduler,
+    MainThreadSchedulerImpl* scheduler,
     std::vector<base::TimeTicks>* out_real_times,
     std::vector<base::TimeTicks>* out_virtual_times) {
   out_real_times->push_back(clock->NowTicks());
@@ -224,7 +224,7 @@ void RunVirtualTimeRecorderTask(
 
 base::OnceClosure MakeVirtualTimeRecorderTask(
     base::SimpleTestTickClock* clock,
-    RendererSchedulerImpl* scheduler,
+    MainThreadSchedulerImpl* scheduler,
     std::vector<base::TimeTicks>* out_real_times,
     std::vector<base::TimeTicks>* out_virtual_times) {
   return WTF::Bind(&RunVirtualTimeRecorderTask, WTF::Unretained(clock),
@@ -563,11 +563,12 @@ TEST_F(PageSchedulerImplTest,
 
 namespace {
 
-void RecordVirtualTime(RendererSchedulerImpl* scheduler, base::TimeTicks* out) {
+void RecordVirtualTime(MainThreadSchedulerImpl* scheduler,
+                       base::TimeTicks* out) {
   *out = scheduler->GetVirtualTimeDomain()->Now();
 }
 
-void PauseAndUnpauseVirtualTime(RendererSchedulerImpl* scheduler,
+void PauseAndUnpauseVirtualTime(MainThreadSchedulerImpl* scheduler,
                                 FrameSchedulerImpl* frame_scheduler,
                                 base::TimeTicks* paused,
                                 base::TimeTicks* unpaused) {
