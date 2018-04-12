@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/display_info_provider_win.h"
+#include "chrome/browser/extensions/system_display/display_info_provider_win.h"
 
-#include <windows.h>
 #include <stddef.h>
+#include <windows.h>
 
 #include "base/hash.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,8 +22,10 @@ using api::system_display::DisplayUnitInfo;
 
 namespace {
 
-BOOL CALLBACK
-EnumMonitorCallback(HMONITOR monitor, HDC hdc, LPRECT rect, LPARAM data) {
+BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
+                                  HDC hdc,
+                                  LPRECT rect,
+                                  LPARAM data) {
   DisplayInfoProvider::DisplayUnitInfoList* all_displays =
       reinterpret_cast<DisplayInfoProvider::DisplayUnitInfoList*>(data);
   DCHECK(all_displays);
@@ -56,8 +58,8 @@ void DisplayInfoProviderWin::UpdateDisplayUnitInfoForPlatform(
     const display::Display& display,
     extensions::api::system_display::DisplayUnitInfo* unit) {
   DisplayUnitInfoList all_displays;
-  EnumDisplayMonitors(
-      NULL, NULL, EnumMonitorCallback, reinterpret_cast<LPARAM>(&all_displays));
+  EnumDisplayMonitors(NULL, NULL, EnumMonitorCallback,
+                      reinterpret_cast<LPARAM>(&all_displays));
   for (size_t i = 0; i < all_displays.size(); ++i) {
     if (unit->id == all_displays[i].id) {
       unit->name = all_displays[i].name;

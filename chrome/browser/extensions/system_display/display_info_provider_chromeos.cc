@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/display_info_provider_chromeos.h"
+#include "chrome/browser/extensions/system_display/display_info_provider_chromeos.h"
 
 #include <stdint.h>
 #include <cmath>

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/display_info_provider_chromeos.h"
+#include "chrome/browser/extensions/system_display/display_info_provider_chromeos.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "extensions/common/api/system_display.h"
 #include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"

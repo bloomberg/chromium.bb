@@ -513,12 +513,6 @@ static_library("extensions") {
     "device_permissions_dialog_controller.h",
     "devtools_util.cc",
     "devtools_util.h",
-    "display_info_provider_chromeos.cc",
-    "display_info_provider_chromeos.h",
-    "display_info_provider_mac.cc",
-    "display_info_provider_mac.h",
-    "display_info_provider_win.cc",
-    "display_info_provider_win.h",
     "error_console/error_console.cc",
     "error_console/error_console.h",
     "error_console/error_console_factory.cc",
@@ -711,6 +705,12 @@ static_library("extensions") {
     "suspicious_extension_bubble_delegate.h",
     "sync_bundle.cc",
     "sync_bundle.h",
+    "system_display/display_info_provider_chromeos.cc",
+    "system_display/display_info_provider_chromeos.h",
+    "system_display/display_info_provider_mac.cc",
+    "system_display/display_info_provider_mac.h",
+    "system_display/display_info_provider_win.cc",
+    "system_display/display_info_provider_win.h",
     "tab_helper.cc",
     "tab_helper.h",
     "theme_installed_infobar_delegate.cc",
@@ -1089,8 +1089,8 @@ static_library("extensions") {
     ]
   } else if (use_aura && !is_chromeos) {
     sources += [
-      "display_info_provider_aura.cc",
-      "display_info_provider_aura.h",
+      "system_display/display_info_provider_aura.cc",
+      "system_display/display_info_provider_aura.h",
     ]
   }
 
