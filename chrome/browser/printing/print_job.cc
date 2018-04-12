@@ -486,6 +486,14 @@ void PrintJob::Quit() {
   base::RunLoop::QuitCurrentWhenIdleDeprecated();
 }
 
+void PrintJob::set_settings(const PrintSettings& settings) {
+  settings_ = settings;
+}
+
+void PrintJob::set_job_pending(bool pending) {
+  is_job_pending_ = pending;
+}
+
 #if defined(OS_WIN)
 JobEventDetails::JobEventDetails(Type type,
                                  int job_id,

@@ -66,6 +66,10 @@ int PrinterQuery::cookie() const {
   return cookie_;
 }
 
+void PrinterQuery::set_callback(base::OnceClosure callback) {
+  callback_ = std::move(callback);
+}
+
 void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                int expected_page_count,
                                bool has_selection,

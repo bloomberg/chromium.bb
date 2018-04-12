@@ -81,6 +81,12 @@ scoped_refptr<PrintQueriesQueue> PrintJobManager::queue() {
   return queue_;
 }
 
+void PrintJobManager::SetQueueForTest(scoped_refptr<PrintQueriesQueue> queue) {
+  if (queue_)
+    queue_->Shutdown();
+  queue_ = queue;
+}
+
 void PrintJobManager::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!is_shutdown_);

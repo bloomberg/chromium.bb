@@ -3775,7 +3775,13 @@ test("unit_tests") {
       "../browser/printing/print_preview_dialog_controller_unittest.cc",
       "../browser/printing/print_preview_test.cc",
       "../browser/printing/print_preview_test.h",
+      "../browser/printing/print_test_utils.cc",
+      "../browser/printing/print_test_utils.h",
       "../browser/printing/print_view_manager_unittest.cc",
+      "../browser/printing/test_print_job.cc",
+      "../browser/printing/test_print_job.h",
+      "../browser/printing/test_printer_query.cc",
+      "../browser/printing/test_printer_query.h",
       "../browser/ui/webui/print_preview/extension_printer_handler_unittest.cc",
       "../browser/ui/webui/print_preview/pdf_printer_handler_unittest.cc",
       "../browser/ui/webui/print_preview/pdf_printer_handler_win_unittest.cc",
@@ -3786,6 +3792,7 @@ test("unit_tests") {
 
     deps += [
       "//ipc",
+      "//printing",
       "//printing:test_support",
     ]
 

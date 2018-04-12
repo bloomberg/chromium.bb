@@ -17,8 +17,9 @@ namespace printing {
 
 class PrintSettings;
 
-bool PrintSettingsFromJobSettings(const base::DictionaryValue& job_settings,
-                                  PrintSettings* print_settings);
+PRINTING_EXPORT bool PrintSettingsFromJobSettings(
+    const base::DictionaryValue& job_settings,
+    PrintSettings* print_settings);
 
 // Use for debug only, because output is not completely consistent with format
 // of |PrintSettingsFromJobSettings| input.

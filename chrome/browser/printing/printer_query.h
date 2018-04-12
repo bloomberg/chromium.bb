@@ -52,8 +52,8 @@ class PrinterQuery : public PrintJobWorkerOwner {
                    base::OnceClosure callback);
 
   // Updates the current settings with |new_settings| dictionary values.
-  void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
-                   base::OnceClosure callback);
+  virtual void SetSettings(std::unique_ptr<base::DictionaryValue> new_settings,
+                           base::OnceClosure callback);
 
 #if defined(OS_CHROMEOS)
   // Updates the current settings with |new_settings|.
@@ -62,7 +62,7 @@ class PrinterQuery : public PrintJobWorkerOwner {
 #endif
 
   // Stops the worker thread since the client is done with this object.
-  void StopWorker();
+  virtual void StopWorker();
 
   // Returns true if a GetSettings() call is pending completion.
   bool is_callback_pending() const;
@@ -72,17 +72,21 @@ class PrinterQuery : public PrintJobWorkerOwner {
   // Returns if a worker thread is still associated to this instance.
   bool is_valid() const;
 
- private:
-  // Refcounted class.
-  ~PrinterQuery() override;
-
-  // Lazy create the worker thread. There is one worker thread per print job.
-  void StartWorker(base::OnceClosure callback);
+ protected:
+  // For unit tests to manually set the print callback.
+  void set_callback(base::OnceClosure callback);
 
   // All the UI is done in a worker thread because many Win32 print functions
   // are blocking and enters a message loop without your consent. There is one
   // worker thread per print job.
   std::unique_ptr<PrintJobWorker> worker_;
+
+  // Refcounted class.
+  ~PrinterQuery() override;
+
+ private:
+  // Lazy create the worker thread. There is one worker thread per print job.
+  void StartWorker(base::OnceClosure callback);
 
   // Cache of the print context settings for access in the UI thread.
   PrintSettings settings_;
