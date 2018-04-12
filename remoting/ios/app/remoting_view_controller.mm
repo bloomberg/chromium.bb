@@ -219,8 +219,24 @@ using remoting::HostListService;
   [super viewWillAppear:animated];
 
   // Just in case the view controller misses the host list state event before
-  // gthe listener is registered.
+  // the listener is registered.
   [self refreshContent];
+  _hostListService->RequestFetch();
+
+  [NSNotificationCenter.defaultCenter
+      addObserver:self
+         selector:@selector(applicationDidBecomeActive:)
+             name:UIApplicationDidBecomeActiveNotification
+           object:nil];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+
+  [NSNotificationCenter.defaultCenter
+      removeObserver:self
+                name:UIApplicationDidBecomeActiveNotification
+              object:nil];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {
@@ -329,7 +345,11 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (void)refreshContent {
   if (_hostListService->state() == HostListService::State::FETCHING) {
-    if (![self isAnyRefreshControlRefreshing]) {
+    // We don't need to show the fetching view when host list is being fetched
+    // while the previous host list is already on screen. Refresh control will
+    // handle the user-triggered refresh, and we don't need to show anything if
+    // that's a background refresh (e.g. user just closed the session).
+    if (self.contentViewController != _collectionViewController) {
       self.contentViewController = _fetchingViewController;
     }
     return;
@@ -404,6 +424,10 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   for (id<RemotingRefreshControl> control in _refreshControls) {
     [control endRefreshing];
   }
+}
+
+- (void)applicationDidBecomeActive:(UIApplication*)application {
+  _hostListService->RequestFetch();
 }
 
 @end
