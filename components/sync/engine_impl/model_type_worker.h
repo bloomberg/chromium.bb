@@ -121,8 +121,6 @@ class ModelTypeWorker : public UpdateHandler,
   base::WeakPtr<ModelTypeWorker> AsWeakPtr();
 
  private:
-  using EntityMap = std::map<std::string, std::unique_ptr<WorkerEntityTracker>>;
-
   // Attempts to decrypt the given specifics and return them in the |out|
   // parameter. Assumes cryptographer.CanDecrypt(specifics) returned true.
   //
@@ -159,9 +157,7 @@ class ModelTypeWorker : public UpdateHandler,
   bool UpdateEncryptionKeyName();
 
   // Iterates through all elements in |entries_pending_decryption_| and tries to
-  // decrypt anything that has encrypted data. Also updates
-  // |has_encrypted_updates_| to reflect whether anything in
-  // |entries_pending_decryption_| was not decryptable by |cryptographer_|.
+  // decrypt anything that has encrypted data.
   // Should only be called during a GetUpdates cycle.
   void DecryptStoredEntities();
 
@@ -197,17 +193,13 @@ class ModelTypeWorker : public UpdateHandler,
   // Interface used to access and send nudges to the sync scheduler. Not owned.
   NudgeHandler* nudge_handler_;
 
-  // A map of per-entity information, keyed by server_id.
+  // A map of update responses, keyed by server_id.
   // Holds updates encrypted with pending keys.
-  EntityMap entries_pending_decryption_;
+  std::map<std::string, UpdateResponseData> entries_pending_decryption_;
 
   // Accumulates all the updates from a single GetUpdates cycle in memory so
   // they can all be sent to the processor at once.
   UpdateResponseDataList pending_updates_;
-
-  // Whether there are outstanding encrypted updates in
-  // |entries_pending_decryption_|.
-  bool has_encrypted_updates_ = false;
 
   // Indicates if processor has local changes. Processor only nudges worker once
   // and worker might not be ready to commit entities at the time.

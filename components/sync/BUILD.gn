@@ -368,8 +368,6 @@ jumbo_static_library("sync") {
     "engine_impl/update_handler.h",
     "engine_impl/uss_migrator.cc",
     "engine_impl/uss_migrator.h",
-    "engine_impl/worker_entity_tracker.cc",
-    "engine_impl/worker_entity_tracker.h",
     "js/js_backend.h",
     "js/js_controller.h",
     "js/js_event_details.cc",

@@ -21,7 +21,6 @@
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/non_blocking_type_commit_contribution.h"
-#include "components/sync/engine_impl/worker_entity_tracker.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 
 namespace syncer {
@@ -141,14 +140,9 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       case SUCCESS:
         pending_updates_.push_back(response_data);
         break;
-      case DECRYPTION_PENDING: {
-        auto entity = std::make_unique<WorkerEntityTracker>();
-        entity->ReceiveEncryptedUpdate(response_data);
-        entries_pending_decryption_[update_entity->id_string()] =
-            std::move(entity);
-        has_encrypted_updates_ = true;
+      case DECRYPTION_PENDING:
+        entries_pending_decryption_[update_entity->id_string()] = response_data;
         break;
-      }
       case FAILED_TO_DECRYPT:
         // Failed to decrypt the entity. Likely it is corrupt. Move on.
         break;
@@ -244,14 +238,7 @@ void ModelTypeWorker::ApplyPendingUpdates() {
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
 
-  // If there are still encrypted updates left at this point, they're about to
-  // to be potentially lost if the progress marker is saved to disk. Typically
-  // the nigori update should arrive simultaneously with the first of the
-  // encrypted data. It is possible that non-immediately consistent updates do
-  // not follow this pattern.
-  UMA_HISTOGRAM_BOOLEAN("Sync.WorkerApplyHasEncryptedUpdates",
-                        has_encrypted_updates_);
-  DCHECK(!has_encrypted_updates_);
+  DCHECK(entries_pending_decryption_.empty());
 
   model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
 
@@ -324,7 +311,6 @@ void ModelTypeWorker::AbortMigration() {
   model_type_state_ = sync_pb::ModelTypeState();
   entries_pending_decryption_.clear();
   pending_updates_.clear();
-  has_encrypted_updates_ = false;
   nudge_handler_->NudgeForInitialDownload(type_);
 }
 
@@ -370,34 +356,28 @@ bool ModelTypeWorker::UpdateEncryptionKeyName() {
 }
 
 void ModelTypeWorker::DecryptStoredEntities() {
-  has_encrypted_updates_ = false;
-  for (const auto& kv : entries_pending_decryption_) {
-    WorkerEntityTracker* entity = kv.second.get();
-    DCHECK(entity->HasEncryptedUpdate());
-    const UpdateResponseData& encrypted_update = entity->GetEncryptedUpdate();
+  for (auto it = entries_pending_decryption_.begin();
+       it != entries_pending_decryption_.end();) {
+    const UpdateResponseData& encrypted_update = it->second;
     EntityDataPtr data = encrypted_update.entity;
     DCHECK(data->specifics.has_encrypted());
 
-    if (cryptographer_->CanDecrypt(data->specifics.encrypted())) {
-      sync_pb::EntitySpecifics specifics;
-      if (DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
-        UpdateResponseData decrypted_update;
-        decrypted_update.response_version = encrypted_update.response_version;
-        // Copy the encryption_key_name from data->specifics before it gets
-        // overriden in data->UpdateSpecifics().
-        decrypted_update.encryption_key_name =
-            data->specifics.encrypted().key_name();
-        decrypted_update.entity = data->UpdateSpecifics(specifics);
-        pending_updates_.push_back(decrypted_update);
-
-        entity->ClearEncryptedUpdate();
-      }
-    } else {
-      has_encrypted_updates_ = true;
+    sync_pb::EntitySpecifics specifics;
+    if (!cryptographer_->CanDecrypt(data->specifics.encrypted()) ||
+        !DecryptSpecifics(*cryptographer_, data->specifics, &specifics)) {
+      ++it;
+      continue;
     }
-  }
-  if (!has_encrypted_updates_) {
-    entries_pending_decryption_.clear();
+
+    UpdateResponseData decrypted_update;
+    decrypted_update.response_version = encrypted_update.response_version;
+    // Copy the encryption_key_name from data->specifics before it gets
+    // overriden in data->UpdateSpecifics().
+    decrypted_update.encryption_key_name =
+        data->specifics.encrypted().key_name();
+    decrypted_update.entity = data->UpdateSpecifics(specifics);
+    pending_updates_.push_back(decrypted_update);
+    it = entries_pending_decryption_.erase(it);
   }
 }
 
