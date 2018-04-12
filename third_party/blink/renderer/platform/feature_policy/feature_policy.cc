@@ -216,6 +216,8 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
       return true;
     case mojom::FeaturePolicyFeature::kUnsizedMedia:
       return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
+    case mojom::FeaturePolicyFeature::kVerticalScroll:
+      return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
     default:
       return false;
   }
@@ -268,6 +270,8 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                    mojom::FeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("unsized-media",
                                    mojom::FeaturePolicyFeature::kUnsizedMedia);
+      default_feature_name_map.Set(
+          "vertical-scroll", mojom::FeaturePolicyFeature::kVerticalScroll);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
       default_feature_name_map.Set("autoplay",

@@ -83,6 +83,8 @@ enum FeaturePolicyFeature {
   kUnsizedMedia,
   // Controls access to Picture-in-Picture.
   kPictureInPicture,
+  // Controls the ability to block and interfere with vertical scrolling.
+  kVerticalScroll,
 };
 
 // This struct holds feature policy whitelist data that needs to be replicated
