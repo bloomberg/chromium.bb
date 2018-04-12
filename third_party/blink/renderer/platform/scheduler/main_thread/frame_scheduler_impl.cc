@@ -300,6 +300,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
+    case TaskType::kInternalAnimation:
       return TaskRunnerImpl::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:

@@ -48,11 +48,12 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
       started_(false),
       paused_(false),
       document_order_indexes_dirty_(false),
-      wakeup_timer_(owner.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
-                    this,
-                    &SMILTimeContainer::WakeupTimerFired),
+      wakeup_timer_(
+          owner.GetDocument().GetTaskRunner(TaskType::kInternalAnimation),
+          this,
+          &SMILTimeContainer::WakeupTimerFired),
       animation_policy_once_timer_(
-          owner.GetDocument().GetTaskRunner(TaskType::kUnspecedTimer),
+          owner.GetDocument().GetTaskRunner(TaskType::kInternalAnimation),
           this,
           &SMILTimeContainer::AnimationPolicyTimerFired),
       owner_svg_element_(&owner) {}

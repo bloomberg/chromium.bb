@@ -170,7 +170,10 @@ enum class TaskType : unsigned {
   // Tasks related to the inspector.
   kInternalInspector = 33,
 
-  kCount = 34,
+  // Tasks related to animation like blinking caret or CSS animation.
+  kInternalAnimation = 34,
+
+  kCount = 35,
 };
 
 }  // namespace blink
