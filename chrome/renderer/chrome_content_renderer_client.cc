@@ -1171,6 +1171,17 @@ void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
       error_description);
 }
 
+void ChromeContentRendererClient::GetErrorDescription(
+    const blink::WebURLRequest& failed_request,
+    const blink::WebURLError& error,
+    base::string16* error_description) {
+  GetErrorDescriptionInternal(
+      failed_request,
+      error_page::Error::NetError(error.url(), error.reason(),
+                                  error.has_copy_in_cache()),
+      error_description);
+}
+
 void ChromeContentRendererClient::PrepareErrorPageInternal(
     content::RenderFrame* render_frame,
     const WebURLRequest& failed_request,
@@ -1182,6 +1193,15 @@ void ChromeContentRendererClient::PrepareErrorPageInternal(
       failed_request.GetCacheMode() == FetchCacheMode::kBypassCache;
   NetErrorHelper::Get(render_frame)
       ->PrepareErrorPage(error, is_post, is_ignoring_cache, error_html);
+  if (error_description)
+    GetErrorDescriptionInternal(failed_request, error, error_description);
+}
+
+void ChromeContentRendererClient::GetErrorDescriptionInternal(
+    const blink::WebURLRequest& failed_request,
+    const error_page::Error& error,
+    base::string16* error_description) {
+  bool is_post = failed_request.HttpMethod().Ascii() == "POST";
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
         error.domain(), error.reason(), is_post);

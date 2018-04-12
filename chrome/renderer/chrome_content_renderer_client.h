@@ -139,6 +139,10 @@ class ChromeContentRendererClient
       std::string* error_html,
       base::string16* error_description) override;
 
+  void GetErrorDescription(const blink::WebURLRequest& failed_request,
+                           const blink::WebURLError& error,
+                           base::string16* error_description) override;
+
   void DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
                       const base::Closure& closure) override;
@@ -279,6 +283,10 @@ class ChromeContentRendererClient
                                 const error_page::Error& error,
                                 std::string* error_html,
                                 base::string16* error_description);
+
+  void GetErrorDescriptionInternal(const blink::WebURLRequest& failed_request,
+                                   const error_page::Error& error,
+                                   base::string16* error_description);
 
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.
