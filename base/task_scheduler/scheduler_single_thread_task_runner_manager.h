@@ -80,6 +80,15 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
  private:
   class SchedulerSingleThreadTaskRunner;
 
+  enum ContinueOnShutdown {
+    IS_CONTINUE_ON_SHUTDOWN,
+    IS_NOT_CONTINUE_ON_SHUTDOWN,
+    CONTINUE_ON_SHUTDOWN_COUNT,
+  };
+
+  static ContinueOnShutdown TraitsToContinueOnShutdown(
+      const TaskTraits& traits);
+
   template <typename DelegateType>
   scoped_refptr<SchedulerSingleThreadTaskRunner> CreateTaskRunnerWithTraitsImpl(
       const TaskTraits& traits,
@@ -110,10 +119,17 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   std::vector<scoped_refptr<SchedulerWorker>> workers_;
   int next_worker_id_ = 0;
 
-  SchedulerWorker* shared_scheduler_workers_[ENVIRONMENT_COUNT] = {};
-
+  // Workers for SingleThreadTaskRunnerThreadMode::SHARED tasks. It is
+  // important to have separate threads for CONTINUE_ON_SHUTDOWN and non-
+  // CONTINUE_ON_SHUTDOWN to avoid being in a situation where a
+  // CONTINUE_ON_SHUTDOWN task effectively blocks shutdown by preventing a
+  // BLOCK_SHUTDOWN task to be scheduled. https://crbug.com/829786
+  SchedulerWorker* shared_scheduler_workers_[ENVIRONMENT_COUNT]
+                                            [CONTINUE_ON_SHUTDOWN_COUNT] = {};
 #if defined(OS_WIN)
-  SchedulerWorker* shared_com_scheduler_workers_[ENVIRONMENT_COUNT] = {};
+  SchedulerWorker* shared_com_scheduler_workers_[ENVIRONMENT_COUNT]
+                                                [CONTINUE_ON_SHUTDOWN_COUNT] =
+                                                    {};
 #endif  // defined(OS_WIN)
 
   // Set to true when Start() is called.
