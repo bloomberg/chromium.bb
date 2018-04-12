@@ -46,6 +46,10 @@ void JNI_CaptivePortalHelper_SetOSReportsCaptivePortalForTesting(
                      os_reports_captive_portal));
 }
 
+void ReportNetworkConnectivity(JNIEnv* env) {
+  Java_CaptivePortalHelper_reportNetworkConnectivity(env);
+}
+
 std::string GetCaptivePortalServerUrl(JNIEnv* env) {
   return base::android::ConvertJavaStringToUTF8(
       Java_CaptivePortalHelper_getCaptivePortalServerUrl(env));

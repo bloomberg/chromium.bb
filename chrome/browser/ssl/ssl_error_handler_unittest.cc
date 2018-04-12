@@ -267,6 +267,8 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
 
   bool IsErrorOverridable() const override { return is_overridable_error_; }
 
+  void ReportNetworkConnectivity(base::OnceClosure callback) override {}
+
   Profile* profile_;
   bool captive_portal_checked_;
   bool os_reports_captive_portal_;

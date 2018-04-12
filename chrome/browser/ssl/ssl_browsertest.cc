@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -5903,12 +5904,19 @@ IN_PROC_BROWSER_TEST_P(SSLUICaptivePortalListTest, Enabled_FromProto) {
 }
 
 // Tests the scenario where the OS reports a captive portal. A captive portal
-// interstitial should be displayed.
+// interstitial should be displayed. The test then switches OS captive portal
+// status to false and reloads the page. This time, a normal SSL interstitial
+// will be displayed.
 IN_PROC_BROWSER_TEST_P(SSLUITest, OSReportsCaptivePortal) {
   ASSERT_TRUE(https_server_mismatched_.Start());
   base::HistogramTester histograms;
-
+  bool netwok_connectivity_reported = false;
   SSLErrorHandler::SetOSReportsCaptivePortalForTesting(true);
+  SSLErrorHandler::SetReportNetworkConnectivityCallbackForTesting(
+      base::BindLambdaForTesting([&]() {
+        SSLErrorHandler::SetOSReportsCaptivePortalForTesting(false);
+        netwok_connectivity_reported = true;
+      }));
 
   // Navigate to an unsafe page on the server.
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -5929,6 +5937,13 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, OSReportsCaptivePortal) {
       SSLErrorHandler::SHOW_CAPTIVE_PORTAL_INTERSTITIAL_OVERRIDABLE, 1);
   histograms.ExpectBucketCount(SSLErrorHandler::GetHistogramNameForTesting(),
                                SSLErrorHandler::OS_REPORTS_CAPTIVE_PORTAL, 1);
+
+  // Reload the URL. This time the OS should not report a captive portal.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_mismatched_.GetURL("/ssl/blank_page.html"));
+  WaitForInterstitial(tab);
+  ASSERT_NO_FATAL_FAILURE(ExpectSSLInterstitial(tab));
+  EXPECT_TRUE(netwok_connectivity_reported);
 }
 
 // Tests the scenario where the OS reports a captive portal but captive portal

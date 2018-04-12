@@ -13,6 +13,8 @@ namespace android {
 
 std::string GetCaptivePortalServerUrl(JNIEnv* env);
 
+void ReportNetworkConnectivity(JNIEnv* env);
+
 }  // namespace android
 }  // namespace chrome
 

@@ -121,6 +121,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     virtual void ShowBadClockInterstitial(
         const base::Time& now,
         ssl_errors::ClockState clock_state) = 0;
+    virtual void ReportNetworkConnectivity(base::OnceClosure callback) = 0;
   };
 
   // Entry point for the class. All parameters except
@@ -155,6 +156,8 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetClockForTesting(base::Clock* testing_clock);
   static void SetNetworkTimeTrackerForTesting(
       network_time::NetworkTimeTracker* tracker);
+  static void SetReportNetworkConnectivityCallbackForTesting(
+      base::OnceClosure callback);
   static void SetEnterpriseManagedForTesting(bool enterprise_managed);
   static bool IsEnterpriseManagedFlagSetForTesting();
   static std::string GetHistogramNameForTesting();
