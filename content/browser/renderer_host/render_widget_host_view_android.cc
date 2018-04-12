@@ -912,15 +912,19 @@ void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
 }
 
 void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
-  if (!base::FeatureList::IsEnabled(
+  if (!host()->delegate()->IsFullscreenForCurrentTab() ||
+      current_surface_size_ == view_.GetPhysicalBackingSize() ||
+      !base::FeatureList::IsEnabled(
           features::kHideIncorrectlySizedFullscreenFrames)) {
     return;
   }
-  if (host()->delegate()->IsFullscreenForCurrentTab() &&
-      current_surface_size_ != view_.GetPhysicalBackingSize()) {
-    // When we're in a fullscreen and the frame size doesn't match the view
-    // size (e.g. during a fullscreen rotation), we show black instead of the
-    // incorrectly-sized frame.
+  // When we're in a fullscreen and and doing a resize we show black
+  // instead of the incorrectly-sized frame. However when we are just
+  // adjusting the height we keep the frames because it is a less jarring
+  // experience for the user instead frames shown as black.
+  bool is_width_same =
+      current_surface_size_.width() == view_.GetPhysicalBackingSize().width();
+  if (!is_width_same) {
     EvictDelegatedFrame();
     UpdateBackgroundColor(SK_ColorBLACK);
   }
