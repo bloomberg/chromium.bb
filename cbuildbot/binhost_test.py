@@ -14,7 +14,6 @@ import unittest
 import warnings
 
 from chromite.cbuildbot import binhost
-from chromite.lib.const import waterfall
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -159,6 +158,25 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
       self.COMPAT_IDS[board_key] = compat_id
     return compat_id
 
+  def _GuessActiveConfigs(self):
+    """Guess at which build configs are artively used.
+
+    LUCI Scheduler's config is the source of truth, but that's
+    not available here, so take a guess at "good enough".
+    See crbug.com/831929
+
+    Returns:
+      A map of build configs. { name: config }
+    """
+    result = {}
+    for name, config in self.site_config.items():
+      if config.master and config.important:
+        result[name] = config
+        for s in config.slave_configs:
+          result[s] = self.site_config[s]
+
+    return result
+
   def testChromePrebuiltsPresent(self, filename=None):
     """Verify Chrome prebuilts exist for all configs that build Chrome.
 
@@ -178,21 +196,15 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
         self.Complain(msg % (', '.join(str(x) for x in pfqs), compat_id),
                       fatal=False)
 
-    for _name, config in sorted(self.site_config.items()):
+    # Sort the names to ensure consistent errors.
+    for _name, config in sorted(self._GuessActiveConfigs().items()):
+
       # Skip over configs that don't have Chrome or have >1 board.
       if config.sync_chrome is False or len(config.boards) != 1:
         continue
 
       # Look for boards with missing prebuilts.
-      builds_chrome = config.usepkg_build_packages and not config.chrome_rev
-
-      production_config = (
-          (config.build_type == config_lib.CONFIG_TYPE_PRECQ) or
-          (config.active_waterfall and
-           config.active_waterfall != waterfall.WATERFALL_TRYBOT)
-      )
-
-      if builds_chrome and production_config:
+      if config.usepkg_build_packages and not config.chrome_rev:
         self.AssertChromePrebuilts(pfq_configs, config)
 
         # Check that we have a builder for the version w/o custom useflags as
