@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_macros.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -80,6 +81,7 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
   DCHECK_EQ(delegate_, delegate);
   // Since the creation callback won't fire if the provider binding is gone
   // and |this| owns |stream_provider_|, unretained is safe.
+  stream_creation_start_time_ = base::TimeTicks::Now();
   media::mojom::AudioOutputStreamClientPtr client_ptr;
   binding_.Bind(mojo::MakeRequest(&client_ptr));
   stream_provider_->Acquire(mojo::MakeRequest(&stream_), std::move(client_ptr),
@@ -197,6 +199,9 @@ void MojoAudioOutputIPC::StreamCreated(
     media::mojom::AudioDataPipePtr data_pipe) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate_);
+
+  UMA_HISTOGRAM_TIMES("Media.Audio.Render.OutputDeviceStreamCreationTime",
+                      base::TimeTicks::Now() - stream_creation_start_time_);
 
   base::PlatformFile socket_handle;
   auto result =

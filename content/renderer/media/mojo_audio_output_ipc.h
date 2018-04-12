@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_output_stream_factory.mojom.h"
 #include "media/audio/audio_output_ipc.h"
@@ -79,6 +80,8 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   media::mojom::AudioOutputStreamPtr stream_;
   media::AudioOutputIPCDelegate* delegate_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  base::TimeTicks stream_creation_start_time_;
 
   // To make sure we don't send an "authorization completed" callback for a
   // stream after it's closed, we use this weak factory.

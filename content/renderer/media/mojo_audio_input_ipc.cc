@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "media/audio/audio_device_description.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -39,6 +40,7 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
   factory_client_binding_.set_connection_error_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
+  stream_creation_start_time_ = base::TimeTicks::Now();
   stream_creator_.Run(std::move(client), session_id, params,
                       automatic_gain_control, total_segments);
 }
@@ -74,6 +76,9 @@ void MojoAudioInputIPC::StreamCreated(
   DCHECK(delegate_);
   DCHECK(!stream_);
   DCHECK(!stream_client_binding_.is_bound());
+
+  UMA_HISTOGRAM_TIMES("Media.Audio.Render.InputDeviceStreamCreationTime",
+                      base::TimeTicks::Now() - stream_creation_start_time_);
 
   stream_ = std::move(stream);
   stream_client_binding_.Bind(std::move(stream_client_request));
