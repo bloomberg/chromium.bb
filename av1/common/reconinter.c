@@ -753,8 +753,7 @@ void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
 static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                           int plane, const MB_MODE_INFO *mi,
                                           int build_for_obmc, int bw, int bh,
-                                          int x, int y, int w, int h, int mi_x,
-                                          int mi_y) {
+                                          int mi_x, int mi_y) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   int is_compound = has_second_ref(mi);
   int ref;
@@ -803,29 +802,23 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const BLOCK_SIZE plane_bsize = scale_chroma_bsize(bsize, ss_x, ss_y);
     const int b8_w = block_size_wide[plane_bsize] >> ss_x;
     const int b8_h = block_size_high[plane_bsize] >> ss_y;
-    int idx, idy;
     assert(!is_compound);
-
-    const int x_base = x;
-    const int y_base = y;
 
     const struct buf_2d orig_pred_buf[2] = { pd->pre[0], pd->pre[1] };
 
     int row = row_start;
-    for (idy = 0; idy < b8_h; idy += b4_h) {
+    for (int y = 0; y < b8_h; y += b4_h) {
       int col = col_start;
-      for (idx = 0; idx < b8_w; idx += b4_w) {
+      for (int x = 0; x < b8_w; x += b4_w) {
         MB_MODE_INFO *this_mbmi = xd->mi[row * xd->mi_stride + col];
         is_compound = has_second_ref(this_mbmi);
         DECLARE_ALIGNED(32, CONV_BUF_TYPE, tmp_dst[8 * 8]);
         int tmp_dst_stride = 8;
-        assert(w < 8 || h < 8);
+        assert(bw < 8 || bh < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
             0, 0, plane, tmp_dst, tmp_dst_stride, is_compound, xd->bd);
         conv_params.use_jnt_comp_avg = 0;
         struct buf_2d *const dst_buf = &pd->dst;
-        x = x_base + idx;
-        y = y_base + idy;
         uint8_t *dst = dst_buf->buf + dst_buf->stride * y + x;
 
         ref = 0;
@@ -918,7 +911,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   {
     struct buf_2d *const dst_buf = &pd->dst;
-    uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
+    uint8_t *const dst = dst_buf->buf;
     uint8_t *pre[2];
     SubpelParams subpel_params[2];
     DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
@@ -933,14 +926,13 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         // Note: The various inputs here have different units:
         // * mi_x/mi_y are in units of luma pixels
         // * mv is in units of 1/8 luma pixels
-        // * x/y are in units of pixels *in the current plane*
         // Here we unify these into a q4-format position within the current
         // plane, then project into the reference frame
         int ssx = pd->subsampling_x;
         int ssy = pd->subsampling_y;
-        int orig_pos_y = (pre_y + y) << SUBPEL_BITS;
+        int orig_pos_y = pre_y << SUBPEL_BITS;
         orig_pos_y += mv.row * (1 << (1 - ssy));
-        int orig_pos_x = (pre_x + x) << SUBPEL_BITS;
+        int orig_pos_x = pre_x << SUBPEL_BITS;
         orig_pos_x += mv.col * (1 << (1 - ssx));
         int pos_y = sf->scale_value_y(orig_pos_y, sf);
         int pos_x = sf->scale_value_x(orig_pos_x, sf);
@@ -974,9 +966,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                       << SCALE_EXTRA_BITS;
         subpel_params[ref].xs = SCALE_SUBPEL_SHIFTS;
         subpel_params[ref].ys = SCALE_SUBPEL_SHIFTS;
-        pre[ref] = pre_buf->buf +
-                   (y + (mv_q4.row >> SUBPEL_BITS)) * pre_buf->stride +
-                   (x + (mv_q4.col >> SUBPEL_BITS));
+        pre[ref] = pre_buf->buf + (mv_q4.row >> SUBPEL_BITS) * pre_buf->stride +
+                   (mv_q4.col >> SUBPEL_BITS);
       }
     }
 
@@ -1003,19 +994,19 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       if (ref && is_masked_compound_type(mi->interinter_compound_type))
         av1_make_masked_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
-            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
-            &conv_params, mi->interp_filters, subpel_params[ref].xs,
+            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, bw,
+            bh, &conv_params, mi->interp_filters, subpel_params[ref].xs,
             subpel_params[ref].ys, plane, &warp_types,
-            (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
-            ref, xd, cm->allow_warped_motion);
+            mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, ref, xd,
+            cm->allow_warped_motion);
       else
         av1_make_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
-            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, w, h,
-            &conv_params, mi->interp_filters, &warp_types,
-            (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
-            plane, ref, mi, build_for_obmc, subpel_params[ref].xs,
-            subpel_params[ref].ys, xd, cm->allow_warped_motion);
+            subpel_params[ref].subpel_x, subpel_params[ref].subpel_y, sf, bw,
+            bh, &conv_params, mi->interp_filters, &warp_types,
+            mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, plane, ref,
+            mi, build_for_obmc, subpel_params[ref].xs, subpel_params[ref].ys,
+            xd, cm->allow_warped_motion);
     }
   }
 }
@@ -1036,8 +1027,7 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
                              pd->subsampling_y))
       continue;
 
-    build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, 0, 0, bw, bh,
-                           mi_x, mi_y);
+    build_inter_predictors(cm, xd, plane, xd->mi[0], 0, bw, bh, mi_x, mi_y);
   }
 }
 
@@ -1373,8 +1363,7 @@ static INLINE void build_prediction_by_above_pred(
                    block_size_high[BLOCK_64X64] >> (pd->subsampling_y + 1));
 
     if (skip_u4x4_pred_in_obmc(bsize, pd, 0)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, above_mbmi, 1, bw, bh, 0, 0, bw, bh,
-                           mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, xd, j, above_mbmi, 1, bw, bh, mi_x, mi_y);
   }
   *above_mbmi = backup_mbmi;
 }
@@ -1457,8 +1446,7 @@ static INLINE void build_prediction_by_left_pred(
     int bh = (left_mi_height << MI_SIZE_LOG2) >> pd->subsampling_y;
 
     if (skip_u4x4_pred_in_obmc(bsize, pd, 1)) continue;
-    build_inter_predictors(ctxt->cm, xd, j, left_mbmi, 1, bw, bh, 0, 0, bw, bh,
-                           mi_x, mi_y);
+    build_inter_predictors(ctxt->cm, xd, j, left_mbmi, 1, bw, bh, mi_x, mi_y);
   }
   *left_mbmi = backup_mbmi;
 }
