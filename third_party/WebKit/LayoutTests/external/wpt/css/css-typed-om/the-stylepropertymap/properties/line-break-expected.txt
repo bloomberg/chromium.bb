@@ -9,6 +9,7 @@ FAIL Can set 'line-break' to the 'anywhere' keyword Failed to execute 'set' on '
 PASS Setting 'line-break' to a length throws TypeError
 PASS Setting 'line-break' to a percent throws TypeError
 PASS Setting 'line-break' to a time throws TypeError
+PASS Setting 'line-break' to an angle throws TypeError
 PASS Setting 'line-break' to a flexible length throws TypeError
 PASS Setting 'line-break' to a number throws TypeError
 PASS Setting 'line-break' to a position throws TypeError

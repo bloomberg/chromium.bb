@@ -9,6 +9,7 @@ PASS Can set 'user-select' to the 'all' keyword
 PASS Setting 'user-select' to a length throws TypeError
 PASS Setting 'user-select' to a percent throws TypeError
 PASS Setting 'user-select' to a time throws TypeError
+PASS Setting 'user-select' to an angle throws TypeError
 PASS Setting 'user-select' to a flexible length throws TypeError
 PASS Setting 'user-select' to a number throws TypeError
 PASS Setting 'user-select' to a position throws TypeError

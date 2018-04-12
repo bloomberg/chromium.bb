@@ -13,6 +13,7 @@ FAIL Can set 'dominant-baseline' to the 'text-top' keyword Failed to execute 'se
 PASS Setting 'dominant-baseline' to a length throws TypeError
 PASS Setting 'dominant-baseline' to a percent throws TypeError
 PASS Setting 'dominant-baseline' to a time throws TypeError
+PASS Setting 'dominant-baseline' to an angle throws TypeError
 PASS Setting 'dominant-baseline' to a flexible length throws TypeError
 PASS Setting 'dominant-baseline' to a number throws TypeError
 PASS Setting 'dominant-baseline' to a position throws TypeError

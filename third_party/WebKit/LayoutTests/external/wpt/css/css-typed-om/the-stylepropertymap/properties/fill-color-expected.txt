@@ -5,6 +5,7 @@ FAIL Can set 'fill-color' to the 'currentcolor' keyword Failed to execute 'set' 
 PASS Setting 'fill-color' to a length throws TypeError
 PASS Setting 'fill-color' to a percent throws TypeError
 PASS Setting 'fill-color' to a time throws TypeError
+PASS Setting 'fill-color' to an angle throws TypeError
 PASS Setting 'fill-color' to a flexible length throws TypeError
 PASS Setting 'fill-color' to a number throws TypeError
 PASS Setting 'fill-color' to a position throws TypeError

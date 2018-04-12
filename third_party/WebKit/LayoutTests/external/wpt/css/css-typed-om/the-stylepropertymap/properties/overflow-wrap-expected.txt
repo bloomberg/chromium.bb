@@ -7,6 +7,7 @@ FAIL Can set 'overflow-wrap' to the 'break-spaces' keyword Failed to execute 'se
 PASS Setting 'overflow-wrap' to a length throws TypeError
 PASS Setting 'overflow-wrap' to a percent throws TypeError
 PASS Setting 'overflow-wrap' to a time throws TypeError
+PASS Setting 'overflow-wrap' to an angle throws TypeError
 PASS Setting 'overflow-wrap' to a flexible length throws TypeError
 PASS Setting 'overflow-wrap' to a number throws TypeError
 PASS Setting 'overflow-wrap' to a position throws TypeError

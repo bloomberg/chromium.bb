@@ -10,6 +10,7 @@ FAIL Can set 'scroll-snap-type' to the 'both' keyword assert_equals: expected "C
 PASS Setting 'scroll-snap-type' to a length throws TypeError
 PASS Setting 'scroll-snap-type' to a percent throws TypeError
 PASS Setting 'scroll-snap-type' to a time throws TypeError
+PASS Setting 'scroll-snap-type' to an angle throws TypeError
 PASS Setting 'scroll-snap-type' to a flexible length throws TypeError
 PASS Setting 'scroll-snap-type' to a number throws TypeError
 PASS Setting 'scroll-snap-type' to a position throws TypeError

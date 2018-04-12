@@ -5,6 +5,7 @@ FAIL Can set 'word-spacing' to the 'normal' keyword assert_equals: expected "CSS
 PASS Can set 'word-spacing' to a length
 FAIL Can set 'word-spacing' to a percent Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
 PASS Setting 'word-spacing' to a time throws TypeError
+PASS Setting 'word-spacing' to an angle throws TypeError
 PASS Setting 'word-spacing' to a flexible length throws TypeError
 PASS Setting 'word-spacing' to a number throws TypeError
 PASS Setting 'word-spacing' to a position throws TypeError

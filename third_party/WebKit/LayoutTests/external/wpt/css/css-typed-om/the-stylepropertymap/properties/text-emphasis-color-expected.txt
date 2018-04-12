@@ -5,6 +5,7 @@ FAIL Can set 'text-emphasis-color' to the 'currentcolor' keyword Failed to execu
 PASS Setting 'text-emphasis-color' to a length throws TypeError
 PASS Setting 'text-emphasis-color' to a percent throws TypeError
 PASS Setting 'text-emphasis-color' to a time throws TypeError
+PASS Setting 'text-emphasis-color' to an angle throws TypeError
 PASS Setting 'text-emphasis-color' to a flexible length throws TypeError
 PASS Setting 'text-emphasis-color' to a number throws TypeError
 PASS Setting 'text-emphasis-color' to a position throws TypeError

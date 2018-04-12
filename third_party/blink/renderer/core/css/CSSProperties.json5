@@ -2112,6 +2112,8 @@
       default_value: "StyleOffsetRotation(0, OffsetRotationType::kAuto)",
       type_name: "StyleOffsetRotation",
       converter: "ConvertOffsetRotate",
+      keywords: ["auto", "reverse"],
+      typedom_types: ["Keyword", "Angle"]
     },
     {
       name: "opacity",

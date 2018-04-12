@@ -6,6 +6,7 @@ FAIL Can set 'font-optical-sizing' to the 'none' keyword Failed to execute 'set'
 PASS Setting 'font-optical-sizing' to a length throws TypeError
 PASS Setting 'font-optical-sizing' to a percent throws TypeError
 PASS Setting 'font-optical-sizing' to a time throws TypeError
+PASS Setting 'font-optical-sizing' to an angle throws TypeError
 PASS Setting 'font-optical-sizing' to a flexible length throws TypeError
 PASS Setting 'font-optical-sizing' to a number throws TypeError
 PASS Setting 'font-optical-sizing' to a position throws TypeError

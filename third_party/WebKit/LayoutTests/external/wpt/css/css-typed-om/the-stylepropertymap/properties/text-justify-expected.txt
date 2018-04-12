@@ -8,6 +8,7 @@ FAIL Can set 'text-justify' to the 'inter-character' keyword Failed to execute '
 PASS Setting 'text-justify' to a length throws TypeError
 PASS Setting 'text-justify' to a percent throws TypeError
 PASS Setting 'text-justify' to a time throws TypeError
+PASS Setting 'text-justify' to an angle throws TypeError
 PASS Setting 'text-justify' to a flexible length throws TypeError
 PASS Setting 'text-justify' to a number throws TypeError
 PASS Setting 'text-justify' to a position throws TypeError

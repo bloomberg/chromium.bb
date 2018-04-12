@@ -14,6 +14,7 @@ PASS Can set 'outline-style' to the 'outset' keyword
 PASS Setting 'outline-style' to a length throws TypeError
 PASS Setting 'outline-style' to a percent throws TypeError
 PASS Setting 'outline-style' to a time throws TypeError
+PASS Setting 'outline-style' to an angle throws TypeError
 PASS Setting 'outline-style' to a flexible length throws TypeError
 PASS Setting 'outline-style' to a number throws TypeError
 PASS Setting 'outline-style' to a position throws TypeError

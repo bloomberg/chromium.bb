@@ -9,6 +9,7 @@ FAIL Can set 'writing-mode' to the 'sideways-lr' keyword Failed to execute 'set'
 PASS Setting 'writing-mode' to a length throws TypeError
 PASS Setting 'writing-mode' to a percent throws TypeError
 PASS Setting 'writing-mode' to a time throws TypeError
+PASS Setting 'writing-mode' to an angle throws TypeError
 PASS Setting 'writing-mode' to a flexible length throws TypeError
 PASS Setting 'writing-mode' to a number throws TypeError
 PASS Setting 'writing-mode' to a position throws TypeError

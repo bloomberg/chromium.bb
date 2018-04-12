@@ -9,6 +9,7 @@ PASS Can set 'overflow-x' to the 'auto' keyword
 PASS Setting 'overflow-x' to a length throws TypeError
 PASS Setting 'overflow-x' to a percent throws TypeError
 PASS Setting 'overflow-x' to a time throws TypeError
+PASS Setting 'overflow-x' to an angle throws TypeError
 PASS Setting 'overflow-x' to a flexible length throws TypeError
 PASS Setting 'overflow-x' to a number throws TypeError
 PASS Setting 'overflow-x' to a position throws TypeError
@@ -24,6 +25,7 @@ PASS Can set 'overflow-y' to the 'auto' keyword
 PASS Setting 'overflow-y' to a length throws TypeError
 PASS Setting 'overflow-y' to a percent throws TypeError
 PASS Setting 'overflow-y' to a time throws TypeError
+PASS Setting 'overflow-y' to an angle throws TypeError
 PASS Setting 'overflow-y' to a flexible length throws TypeError
 PASS Setting 'overflow-y' to a number throws TypeError
 PASS Setting 'overflow-y' to a position throws TypeError

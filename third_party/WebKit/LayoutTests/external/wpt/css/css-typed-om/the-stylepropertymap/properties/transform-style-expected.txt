@@ -7,6 +7,7 @@ PASS Can set 'transform-style' to the 'preserve-3d' keyword
 PASS Setting 'transform-style' to a length throws TypeError
 PASS Setting 'transform-style' to a percent throws TypeError
 PASS Setting 'transform-style' to a time throws TypeError
+PASS Setting 'transform-style' to an angle throws TypeError
 PASS Setting 'transform-style' to a flexible length throws TypeError
 PASS Setting 'transform-style' to a number throws TypeError
 PASS Setting 'transform-style' to a position throws TypeError

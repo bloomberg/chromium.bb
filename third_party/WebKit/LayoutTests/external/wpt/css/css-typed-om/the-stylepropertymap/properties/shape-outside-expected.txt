@@ -10,6 +10,7 @@ PASS Can set 'shape-outside' to an image
 PASS Setting 'shape-outside' to a length throws TypeError
 PASS Setting 'shape-outside' to a percent throws TypeError
 PASS Setting 'shape-outside' to a time throws TypeError
+PASS Setting 'shape-outside' to an angle throws TypeError
 PASS Setting 'shape-outside' to a flexible length throws TypeError
 PASS Setting 'shape-outside' to a number throws TypeError
 PASS Setting 'shape-outside' to a position throws TypeError

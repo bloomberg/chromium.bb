@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 59 tests; 54 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 62 tests; 57 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Can set 'break-after' to CSS-wide keywords
 PASS Can set 'break-after' to var() references
 PASS Can set 'break-after' to the 'auto' keyword
@@ -17,6 +17,7 @@ PASS Can set 'break-after' to the 'verso' keyword
 PASS Setting 'break-after' to a length throws TypeError
 PASS Setting 'break-after' to a percent throws TypeError
 PASS Setting 'break-after' to a time throws TypeError
+PASS Setting 'break-after' to an angle throws TypeError
 PASS Setting 'break-after' to a flexible length throws TypeError
 PASS Setting 'break-after' to a number throws TypeError
 PASS Setting 'break-after' to a position throws TypeError
@@ -39,6 +40,7 @@ PASS Can set 'break-before' to the 'verso' keyword
 PASS Setting 'break-before' to a length throws TypeError
 PASS Setting 'break-before' to a percent throws TypeError
 PASS Setting 'break-before' to a time throws TypeError
+PASS Setting 'break-before' to an angle throws TypeError
 PASS Setting 'break-before' to a flexible length throws TypeError
 PASS Setting 'break-before' to a number throws TypeError
 PASS Setting 'break-before' to a position throws TypeError
@@ -54,6 +56,7 @@ FAIL Can set 'break-inside' to the 'avoid-region' keyword Failed to execute 'set
 PASS Setting 'break-inside' to a length throws TypeError
 PASS Setting 'break-inside' to a percent throws TypeError
 PASS Setting 'break-inside' to a time throws TypeError
+PASS Setting 'break-inside' to an angle throws TypeError
 PASS Setting 'break-inside' to a flexible length throws TypeError
 PASS Setting 'break-inside' to a number throws TypeError
 PASS Setting 'break-inside' to a position throws TypeError

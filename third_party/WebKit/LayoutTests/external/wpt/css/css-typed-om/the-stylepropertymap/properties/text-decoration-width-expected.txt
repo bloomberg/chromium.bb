@@ -5,6 +5,7 @@ FAIL Can set 'text-decoration-width' to the 'auto' keyword Failed to execute 'se
 FAIL Can set 'text-decoration-width' to a length Failed to execute 'set' on 'StylePropertyMap': Invalid propertyName: text-decoration-width
 PASS Setting 'text-decoration-width' to a percent throws TypeError
 PASS Setting 'text-decoration-width' to a time throws TypeError
+PASS Setting 'text-decoration-width' to an angle throws TypeError
 PASS Setting 'text-decoration-width' to a flexible length throws TypeError
 PASS Setting 'text-decoration-width' to a number throws TypeError
 PASS Setting 'text-decoration-width' to a position throws TypeError

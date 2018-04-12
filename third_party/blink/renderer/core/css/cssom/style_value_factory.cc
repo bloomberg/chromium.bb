@@ -112,6 +112,13 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       FALLTHROUGH;
     case CSSPropertyObjectPosition:
       return CSSPositionValue::FromCSSValue(value);
+    case CSSPropertyOffsetRotate: {
+      const auto& value_list = ToCSSValueList(value);
+      // Only single keywords are supported in level 1.
+      if (value_list.length() == 1U)
+        return CreateStyleValue(value_list.Item(0));
+      return nullptr;
+    }
     case CSSPropertyAlignItems: {
       // Computed align-items is a ValueList of either length 1 or 2.
       // Typed OM level 1 can't support "pairs", so we only return

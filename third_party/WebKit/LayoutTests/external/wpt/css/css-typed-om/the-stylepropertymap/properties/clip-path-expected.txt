@@ -13,6 +13,7 @@ PASS Can set 'clip-path' to a URL
 PASS Setting 'clip-path' to a length throws TypeError
 PASS Setting 'clip-path' to a percent throws TypeError
 PASS Setting 'clip-path' to a time throws TypeError
+PASS Setting 'clip-path' to an angle throws TypeError
 PASS Setting 'clip-path' to a flexible length throws TypeError
 PASS Setting 'clip-path' to a number throws TypeError
 PASS Setting 'clip-path' to a position throws TypeError

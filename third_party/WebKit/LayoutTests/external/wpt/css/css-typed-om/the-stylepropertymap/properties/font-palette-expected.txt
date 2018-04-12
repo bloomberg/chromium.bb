@@ -7,6 +7,7 @@ FAIL Can set 'font-palette' to the 'dark' keyword Failed to execute 'set' on 'St
 PASS Setting 'font-palette' to a length throws TypeError
 PASS Setting 'font-palette' to a percent throws TypeError
 PASS Setting 'font-palette' to a time throws TypeError
+PASS Setting 'font-palette' to an angle throws TypeError
 PASS Setting 'font-palette' to a flexible length throws TypeError
 PASS Setting 'font-palette' to a number throws TypeError
 PASS Setting 'font-palette' to a position throws TypeError

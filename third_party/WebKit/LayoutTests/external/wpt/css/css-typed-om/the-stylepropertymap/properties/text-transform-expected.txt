@@ -9,6 +9,7 @@ FAIL Can set 'text-transform' to the 'full-width' keyword Failed to execute 'set
 PASS Setting 'text-transform' to a length throws TypeError
 PASS Setting 'text-transform' to a percent throws TypeError
 PASS Setting 'text-transform' to a time throws TypeError
+PASS Setting 'text-transform' to an angle throws TypeError
 PASS Setting 'text-transform' to a flexible length throws TypeError
 PASS Setting 'text-transform' to a number throws TypeError
 PASS Setting 'text-transform' to a position throws TypeError

@@ -8,6 +8,7 @@ FAIL Can set 'font-synthesis' to the 'small-caps' keyword Failed to execute 'set
 PASS Setting 'font-synthesis' to a length throws TypeError
 PASS Setting 'font-synthesis' to a percent throws TypeError
 PASS Setting 'font-synthesis' to a time throws TypeError
+PASS Setting 'font-synthesis' to an angle throws TypeError
 PASS Setting 'font-synthesis' to a flexible length throws TypeError
 PASS Setting 'font-synthesis' to a number throws TypeError
 PASS Setting 'font-synthesis' to a position throws TypeError
