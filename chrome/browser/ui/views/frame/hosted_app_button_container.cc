@@ -124,6 +124,10 @@ void HostedAppButtonContainer::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
+views::View* HostedAppButtonContainer::GetContentSettingContainerForTesting() {
+  return content_settings_container_;
+}
+
 const std::vector<ContentSettingImageView*>&
 HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
   return content_settings_container_->GetContentSettingViewsForTesting();
@@ -196,9 +200,15 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
   AddChildView(app_menu_button_);
 
   browser_view_->SetToolbarButtonProvider(this);
+  browser_view_->immersive_mode_controller()->AddObserver(this);
 }
 
-HostedAppButtonContainer::~HostedAppButtonContainer() {}
+HostedAppButtonContainer::~HostedAppButtonContainer() {
+  ImmersiveModeController* immersive_controller =
+      browser_view_->immersive_mode_controller();
+  if (immersive_controller)
+    immersive_controller->RemoveObserver(this);
+}
 
 void HostedAppButtonContainer::RefreshContentSettingViews() {
   content_settings_container_->RefreshContentSettingViews();
@@ -231,6 +241,28 @@ void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
   }
 
   PreferredSizeChanged();
+}
+
+void HostedAppButtonContainer::OnImmersiveRevealStarted() {
+  // Cancel the content setting animation as icons need immediately show in
+  // immersive mode.
+  if (fade_in_content_setting_buttons_timer_.IsRunning()) {
+    fade_in_content_setting_buttons_timer_.AbandonAndStop();
+    content_settings_container_->SetVisible(true);
+  }
+  // Remove layers so that buttons display correctly when painted into the
+  // immersive mode top container view.
+  // See https://crbug.com/787640 for details.
+  // TODO(calamity): Make immersive mode support button layers.
+  content_settings_container_->DestroyLayer();
+  // Disable the ink drop as ink drops also render layers.
+  app_menu_button_->SetInkDropMode(HostedAppMenuButton::InkDropMode::OFF);
+}
+
+void HostedAppButtonContainer::OnImmersiveFullscreenExited() {
+  content_settings_container_->SetPaintToLayer();
+  content_settings_container_->layer()->SetFillsBoundsOpaquely(false);
+  app_menu_button_->SetInkDropMode(HostedAppMenuButton::InkDropMode::ON);
 }
 
 void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {
