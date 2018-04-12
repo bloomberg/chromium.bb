@@ -1561,8 +1561,7 @@ config("no_rtti") {
 # 2. Remove the thin_archive config, so that the .a file actually contains all
 #    .o files, instead of just references to .o files in the build directoy
 config("thin_archive") {
-  # TODO(crbug.com/830843): Re-enable for Android after fixing supersize.
-  if (is_posix && !is_nacl && !is_android) {
+  if (is_posix && !is_nacl) {
     # TODO(thomasanderson): Enable on ChromeOS builds once
     # https://crbug.com/829956 is fixed.
     if (default_toolchain != "//build/toolchain/cros:target") {
