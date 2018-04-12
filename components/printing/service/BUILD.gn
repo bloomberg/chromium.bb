@@ -17,6 +17,7 @@ static_library("service") {
 
   deps = [
     "//base",
+    "//components/crash/core/common:crash_key",
     "//components/discardable_memory/client",
     "//components/discardable_memory/public/interfaces",
     "//content/public/child",
@@ -56,6 +57,7 @@ if (enable_basic_printing || enable_print_preview) {
       ":service",
       "//base/test:test_support",
       "//cc/paint:paint",
+      "//components/crash/core/common:crash_key",
       "//components/printing/service/public/interfaces",
       "//mojo/common",
       "//services/service_manager/public/cpp:service_test_support",

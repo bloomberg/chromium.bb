@@ -8,4 +8,7 @@ mojom("interfaces") {
   sources = [
     "pdf_compositor.mojom",
   ]
+  public_deps = [
+    "//url/mojom:url_mojom_gurl",
+  ]
 }

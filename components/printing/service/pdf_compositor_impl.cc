@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/stl_util.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/printing/service/public/cpp/pdf_service_mojo_types.h"
 #include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -94,6 +95,13 @@ void PdfCompositorImpl::CompositeDocumentToPdf(
   HandleCompositionRequest(frame_guid, base::nullopt,
                            std::move(serialized_content), subframe_content_map,
                            std::move(callback));
+}
+
+void PdfCompositorImpl::SetWebContentsURL(const GURL& url) {
+  // Record the most recent url we tried to print. This should be sufficient
+  // for users using print preview by default.
+  static crash_reporter::CrashKeyString<1024> crash_key("main-frame-url");
+  crash_key.Set(url.spec());
 }
 
 void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(
