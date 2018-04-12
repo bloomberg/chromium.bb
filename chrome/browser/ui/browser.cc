@@ -1212,8 +1212,8 @@ bool Browser::CanOverscrollContent() const {
   if (is_app() || is_devtools() || !is_type_tabbed())
     return false;
 
-  return content::OverscrollConfig::GetMode() !=
-         content::OverscrollConfig::Mode::kDisabled;
+  return content::OverscrollConfig::GetHistoryNavigationMode() !=
+         content::OverscrollConfig::HistoryNavigationMode::kDisabled;
 }
 
 bool Browser::ShouldPreserveAbortedURLs(WebContents* source) {

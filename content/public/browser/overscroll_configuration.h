@@ -12,18 +12,30 @@ namespace content {
 
 class CONTENT_EXPORT OverscrollConfig {
  public:
-  // Determines overscroll history navigation mode according to its
-  // corresponding flag.
-  enum class Mode {
-    // Overscroll history navigation is disabled.
+  // Determines overscroll history navigation mode according to
+  // --overscroll-history-navigation flag.
+  enum class HistoryNavigationMode {
+    // History navigation is disabled.
     kDisabled,
 
-    // Overscroll history navigation is enabled and uses the UI with parallax
-    // effect and screenshots.
+    // History navigation is enabled and uses the UI with parallax effect and
+    // screenshots.
     kParallaxUi,
 
-    // Overscroll history navigation is enabled and uses the simplified UI.
+    // History navigation is enabled and uses the simplified UI.
     kSimpleUi,
+  };
+
+  // Determines pull-to-refresh mode according to --pull-to-refresh flag.
+  enum class PullToRefreshMode {
+    // Pull-to-refresh is disabled.
+    kDisabled,
+
+    // Pull-to-refresh is enabled for both touchscreen and touchpad.
+    kEnabled,
+
+    // Pull-to-refresh is enabled only for touchscreen.
+    kEnabledTouchschreen,
   };
 
   // Specifies an overscroll controller threshold.
@@ -43,17 +55,24 @@ class CONTENT_EXPORT OverscrollConfig {
     kStartTouchscreen,
   };
 
-  static Mode GetMode();
+  static HistoryNavigationMode GetHistoryNavigationMode();
+  static PullToRefreshMode GetPullToRefreshMode();
 
   static float GetThreshold(Threshold threshold);
 
  private:
-  friend class ScopedOverscrollMode;
+  friend class ScopedHistoryNavigationMode;
+  friend class ScopedPullToRefreshMode;
 
-  // Helper functions used by |ScopedOverscrollMode| to set and reset mode in
+  // Helper functions used by |ScopedHistoryNavigationMode| to set and reset
+  // mode in tests.
+  static void SetHistoryNavigationMode(HistoryNavigationMode mode);
+  static void ResetHistoryNavigationMode();
+
+  // Helper functions used by |ScopedPullToRefreshMode| to set and reset mode in
   // tests.
-  static void SetMode(Mode mode);
-  static void ResetMode();
+  static void SetPullToRefreshMode(PullToRefreshMode mode);
+  static void ResetPullToRefreshMode();
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OverscrollConfig);
 };

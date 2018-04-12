@@ -17,11 +17,6 @@ namespace content {
 
 namespace {
 
-bool IsPullToRefreshEnabled() {
-  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-             switches::kPullToRefresh) == "1";
-}
-
 bool IsGestureEventFromTouchpad(const blink::WebInputEvent& event) {
   DCHECK(blink::WebInputEvent::IsGestureEventType(event.GetType()));
   const blink::WebGestureEvent& gesture =
@@ -465,9 +460,15 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
 
   // The vertical overscroll is used for pull-to-refresh. Enable it only if
   // pull-to-refresh is enabled.
-  if ((new_mode == OVERSCROLL_SOUTH || new_mode == OVERSCROLL_NORTH) &&
-      !IsPullToRefreshEnabled())
-    new_mode = OVERSCROLL_NONE;
+  if (new_mode == OVERSCROLL_SOUTH || new_mode == OVERSCROLL_NORTH) {
+    auto ptr_mode = OverscrollConfig::GetPullToRefreshMode();
+    if (ptr_mode == OverscrollConfig::PullToRefreshMode::kDisabled ||
+        (ptr_mode ==
+             OverscrollConfig::PullToRefreshMode::kEnabledTouchschreen &&
+         is_touchpad)) {
+      new_mode = OVERSCROLL_NONE;
+    }
+  }
 
   if (overscroll_mode_ == OVERSCROLL_NONE) {
     SetOverscrollMode(new_mode, is_touchpad ? OverscrollSource::TOUCHPAD

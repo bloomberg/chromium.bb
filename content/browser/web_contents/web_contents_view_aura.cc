@@ -556,19 +556,20 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
     RenderWidgetHostViewAura* view) {
-  const OverscrollConfig::Mode mode = OverscrollConfig::GetMode();
+  const OverscrollConfig::HistoryNavigationMode mode =
+      OverscrollConfig::GetHistoryNavigationMode();
   switch (mode) {
-    case OverscrollConfig::Mode::kDisabled:
+    case OverscrollConfig::HistoryNavigationMode::kDisabled:
       navigation_overlay_.reset();
       break;
-    case OverscrollConfig::Mode::kParallaxUi:
+    case OverscrollConfig::HistoryNavigationMode::kParallaxUi:
       view->overscroll_controller()->set_delegate(this);
       if (!navigation_overlay_ && !is_mus_browser_plugin_guest_) {
         navigation_overlay_.reset(
             new OverscrollNavigationOverlay(web_contents_, window_.get()));
       }
       break;
-    case OverscrollConfig::Mode::kSimpleUi:
+    case OverscrollConfig::HistoryNavigationMode::kSimpleUi:
       navigation_overlay_.reset();
       if (!gesture_nav_simple_)
         gesture_nav_simple_.reset(new GestureNavSimple(web_contents_));

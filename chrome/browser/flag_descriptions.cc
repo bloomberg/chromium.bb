@@ -1216,6 +1216,7 @@ const char kProtectSyncCredentialOnReauthDescription[] =
 const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
+const char kPullToRefreshEnabledTouchscreen[] = "Enabled for touchscreen only";
 
 const char kPushApiBackgroundModeName[] = "Enable Push API background mode";
 const char kPushApiBackgroundModeDescription[] =

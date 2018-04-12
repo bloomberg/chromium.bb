@@ -381,8 +381,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 
   cursor_manager_.reset(new CursorManager(this));
 
-  SetOverscrollControllerEnabled(OverscrollConfig::GetMode() !=
-                                 OverscrollConfig::Mode::kDisabled);
+  SetOverscrollControllerEnabled(
+      OverscrollConfig::GetHistoryNavigationMode() !=
+      OverscrollConfig::HistoryNavigationMode::kDisabled);
 
   selection_controller_client_.reset(
       new TouchSelectionControllerClientAura(this));

@@ -11,9 +11,13 @@
 
 namespace {
 
-bool g_is_mode_initialized = false;
-content::OverscrollConfig::Mode g_mode =
-    content::OverscrollConfig::Mode::kSimpleUi;
+bool g_is_history_navigation_mode_initialized = false;
+content::OverscrollConfig::HistoryNavigationMode g_history_navigation_mode =
+    content::OverscrollConfig::HistoryNavigationMode::kSimpleUi;
+
+bool g_is_ptr_mode_initialized = false;
+content::OverscrollConfig::PullToRefreshMode g_ptr_mode =
+    content::OverscrollConfig::PullToRefreshMode::kDisabled;
 
 const float kThresholdCompleteTouchpad = 0.3f;
 const float kThresholdCompleteTouchscreen = 0.25f;
@@ -42,21 +46,36 @@ float GetStartThresholdMultiplier() {
 namespace content {
 
 // static
-OverscrollConfig::Mode OverscrollConfig::GetMode() {
-  if (g_is_mode_initialized)
-    return g_mode;
-
-  g_is_mode_initialized = true;
+OverscrollConfig::HistoryNavigationMode
+OverscrollConfig::GetHistoryNavigationMode() {
+  if (g_is_history_navigation_mode_initialized)
+    return g_history_navigation_mode;
 
   const std::string mode =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kOverscrollHistoryNavigation);
   if (mode == "0")
-    g_mode = Mode::kDisabled;
+    g_history_navigation_mode = HistoryNavigationMode::kDisabled;
   else if (mode == "1")
-    g_mode = Mode::kParallaxUi;
+    g_history_navigation_mode = HistoryNavigationMode::kParallaxUi;
+  g_is_history_navigation_mode_initialized = true;
+  return g_history_navigation_mode;
+}
 
-  return g_mode;
+// static
+OverscrollConfig::PullToRefreshMode OverscrollConfig::GetPullToRefreshMode() {
+  if (g_is_ptr_mode_initialized)
+    return g_ptr_mode;
+
+  const std::string mode =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPullToRefresh);
+  if (mode == "1")
+    g_ptr_mode = PullToRefreshMode::kEnabled;
+  else if (mode == "2")
+    g_ptr_mode = PullToRefreshMode::kEnabledTouchschreen;
+  g_is_ptr_mode_initialized = true;
+  return g_ptr_mode;
 }
 
 // static
@@ -84,15 +103,28 @@ float OverscrollConfig::GetThreshold(Threshold threshold) {
 }
 
 // static
-void OverscrollConfig::SetMode(Mode mode) {
-  g_mode = mode;
-  g_is_mode_initialized = true;
+void OverscrollConfig::SetHistoryNavigationMode(HistoryNavigationMode mode) {
+  g_history_navigation_mode = mode;
+  g_is_history_navigation_mode_initialized = true;
 }
 
 // static
-void OverscrollConfig::ResetMode() {
-  g_is_mode_initialized = false;
-  g_mode = OverscrollConfig::Mode::kSimpleUi;
+void OverscrollConfig::ResetHistoryNavigationMode() {
+  g_is_history_navigation_mode_initialized = false;
+  g_history_navigation_mode =
+      OverscrollConfig::HistoryNavigationMode::kSimpleUi;
+}
+
+// static
+void OverscrollConfig::SetPullToRefreshMode(PullToRefreshMode mode) {
+  g_ptr_mode = mode;
+  g_is_ptr_mode_initialized = true;
+}
+
+// static
+void OverscrollConfig::ResetPullToRefreshMode() {
+  g_is_ptr_mode_initialized = false;
+  g_ptr_mode = OverscrollConfig::PullToRefreshMode::kDisabled;
 }
 
 }  // namespace content
