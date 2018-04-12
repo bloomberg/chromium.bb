@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
 
 #include <stddef.h>
 
@@ -31,4 +31,4 @@ BLINK_COMMON_EXPORT extern const size_t kWebEffectiveConnectionTypeMappingCount;
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_CLIENT_HINTS_CLIENT_HINTS_H_

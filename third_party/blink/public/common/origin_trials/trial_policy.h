@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_
 
 #include "base/strings/string_piece.h"
 #include "third_party/blink/common/common_export.h"
@@ -25,4 +25,4 @@ class BLINK_COMMON_EXPORT TrialPolicy {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_ORIGIN_TRIALS_TRIAL_POLICY_H_

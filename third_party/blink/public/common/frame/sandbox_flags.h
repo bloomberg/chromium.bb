@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be found
 // in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
 
 namespace blink {
 
@@ -53,4 +53,4 @@ inline constexpr WebSandboxFlags operator~(WebSandboxFlags flags) {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_SANDBOX_FLAGS_H_

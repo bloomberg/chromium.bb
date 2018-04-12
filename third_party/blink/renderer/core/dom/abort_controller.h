@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTCONTROLLER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTCONTROLLER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ABORT_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ABORT_CONTROLLER_H_
 
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -41,4 +41,4 @@ class AbortController final : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTCONTROLLER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ABORT_CONTROLLER_H_
