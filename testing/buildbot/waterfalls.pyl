@@ -849,6 +849,14 @@
           'gtest_tests': 'goma_gtests',
         },
       },
+      'Chromium Linux Goma RBE Staging': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
       'Chromium Linux Goma Staging': {
         'additional_compile_targets': [
           'all',

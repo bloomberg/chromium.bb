@@ -271,6 +271,7 @@
       'Chromium Mac Goma GCE Staging': 'release_bot',
       'CrWinClexeGomaGCEStaging': 'release_bot_x86_minimal_symbols_disable_nacl_no_clang',
       'CrWinClangGomaGCEStaging': 'win_clang_release_bot_disable_nacl',
+      'Chromium Linux Goma RBE Staging': 'release_bot',
     },
 
     'chromium.gpu': {
