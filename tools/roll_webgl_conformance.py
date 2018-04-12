@@ -14,7 +14,7 @@ import time
 
 extra_trybots = [
   {
-    "mastername": "master.tryserver.chromium.win",
+    "mastername": "luci.chromium.try",
     "buildernames": ["win_optional_gpu_tests_rel"]
   },
   {
@@ -36,7 +36,7 @@ extra_trybots = [
     "buildernames": ["linux_angle_rel_ng"]
   },
   {
-    "mastername": "master.tryserver.chromium.angle",
+    "mastername": "luci.chromium.try",
     "buildernames": ["win_angle_rel_ng"]
   },
 ]
