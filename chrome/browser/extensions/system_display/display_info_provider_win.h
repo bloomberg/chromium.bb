@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_WIN_H_
-#define CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_WIN_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SYSTEM_DISPLAY_DISPLAY_INFO_PROVIDER_WIN_H_
+#define CHROME_BROWSER_EXTENSIONS_SYSTEM_DISPLAY_DISPLAY_INFO_PROVIDER_WIN_H_
 
 #include "base/macros.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
@@ -25,4 +25,4 @@ class DisplayInfoProviderWin : public DisplayInfoProvider {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_DISPLAY_INFO_PROVIDER_WIN_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_SYSTEM_DISPLAY_DISPLAY_INFO_PROVIDER_WIN_H_
