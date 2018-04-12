@@ -7,6 +7,7 @@
 
 namespace gfx {
 
+extern const char kTestFontName[];
 extern const char kSymbolFontName[];
 extern const char kCJKFontName[];
 

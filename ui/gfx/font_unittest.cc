@@ -21,12 +21,6 @@ namespace {
 
 using FontTest = testing::Test;
 
-#if defined(OS_LINUX)
-const char kTestFontName[] = "Arimo";
-#else
-const char kTestFontName[] = "Arial";
-#endif
-
 #if defined(OS_WIN)
 class ScopedMinimumFontSizeCallback {
  public:

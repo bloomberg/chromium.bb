@@ -373,27 +373,27 @@ TEST_F(FontRenderParamsTest, MissingFamily) {
 }
 
 TEST_F(FontRenderParamsTest, SubstituteFamily) {
-  // Configure Fontconfig to use Verdana for both Helvetica and Arimo.
+  // Configure Fontconfig to use Tinos for both Helvetica and Arimo.
   ASSERT_TRUE(LoadConfigDataIntoFontconfig(
       temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) +
-          base::CreateFontconfigAliasStanza("Helvetica", "Verdana") +
+          base::CreateFontconfigAliasStanza("Helvetica", "Tinos") +
           kFontconfigMatchPatternHeader +
           base::CreateFontconfigTestStanza("family", "eq", "string", "Arimo") +
-          base::CreateFontconfigEditStanza("family", "string", "Verdana") +
+          base::CreateFontconfigEditStanza("family", "string", "Tinos") +
           kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
   query.families.push_back("Helvetica");
   std::string suggested_family;
   GetFontRenderParams(query, &suggested_family);
-  EXPECT_EQ("Verdana", suggested_family);
+  EXPECT_EQ("Tinos", suggested_family);
 
   query.families.clear();
   query.families.push_back("Arimo");
   suggested_family.clear();
   GetFontRenderParams(query, &suggested_family);
-  EXPECT_EQ("Verdana", suggested_family);
+  EXPECT_EQ("Tinos", suggested_family);
 }
 
 }  // namespace gfx

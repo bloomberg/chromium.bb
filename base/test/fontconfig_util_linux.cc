@@ -51,18 +51,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     <acceptfont>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Impact.ttf</glob>
     </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf</glob>
-    </acceptfont>
   </selectfont>
 
   <!-- Default properties. -->
@@ -231,6 +219,16 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     </edit>
   </match>
 
+  <match target="pattern">
+    <test qual="any" name="family">
+      <string>Verdana</string>
+    </test>
+    <!-- NOT metrically compatible! -->
+    <edit name="family" mode="assign">
+      <string>Arimo</string>
+    </edit>
+  </match>
+
   <!-- TODO(thomasanderson): Move these configs to be test-specific. -->
   <match target="pattern">
     <test name="family" compare="eq">
@@ -261,7 +259,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>NonHintedSans</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Verdana</string>
+      <string>Arimo</string>
     </edit>
     <!-- These deliberately contradict each other. The 'hinting' preference
          should take priority -->

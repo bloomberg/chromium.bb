@@ -1,8 +1,8 @@
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
-layer at (0,0) size 800x444
-  LayoutBlockFlow {HTML} at (0,0) size 800x444
-    LayoutBlockFlow {BODY} at (8,8) size 784x428
+layer at (0,0) size 800x445
+  LayoutBlockFlow {HTML} at (0,0) size 800x445
+    LayoutBlockFlow {BODY} at (8,8) size 784x429
       LayoutBlockFlow (anonymous) at (0,0) size 784x92
         LayoutTextControl {INPUT} at (4,4) size 183x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,3) size 177x16
@@ -41,7 +41,7 @@ layer at (0,0) size 800x444
           LayoutFlexibleBox {DIV} at (3,3) size 127x16
             LayoutBlockFlow {DIV} at (0,0) size 114x16
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow (anonymous) at (0,137) size 784x291
+      LayoutBlockFlow (anonymous) at (0,137) size 784x292
         LayoutTextControl {INPUT} at (4,4) size 183x22 [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,3) size 177x16
             LayoutBlockFlow {DIV} at (0,0) size 164x16
@@ -92,9 +92,9 @@ layer at (0,0) size 800x444
         LayoutText {#text} at (633,226) size 4x19
           text run at (633,226) width 4: " "
         LayoutBR {BR} at (637,226) size 0x19
-        LayoutTextControl {INPUT} at (4,266) size 152x21 [bgcolor=#FFFFFF] [border: (1px solid #BDC7D8)]
-          LayoutFlexibleBox {DIV} at (18,4) size 130x13
-            LayoutBlockFlow {DIV} at (0,0) size 118x13
+        LayoutTextControl {INPUT} at (4,266) size 156x22 [bgcolor=#FFFFFF] [border: (1px solid #BDC7D8)]
+          LayoutFlexibleBox {DIV} at (18,4) size 134x14
+            LayoutBlockFlow {DIV} at (0,0) size 122x14
         LayoutText {#text} at (0,0) size 0x0
 layer at (15,15) size 164x16
   LayoutBlockFlow {DIV} at (0,0) size 164x16
@@ -160,12 +160,12 @@ layer at (293,360) size 307x33
   LayoutBlockFlow {DIV} at (0,0) size 307x33
     LayoutText {#text} at (0,0) size 38x32
       text run at (0,0) width 38: "foo"
-layer at (30,415) size 118x13
-  LayoutBlockFlow {DIV} at (18,4) size 118x13 [color=#757575]
-    LayoutText {#text} at (0,0) size 102x13
-      text run at (0,0) width 102: "Search for Events"
-layer at (30,415) size 118x13
-  LayoutBlockFlow {DIV} at (0,0) size 118x13
+layer at (30,415) size 122x14
+  LayoutBlockFlow {DIV} at (18,4) size 122x14 [color=#757575]
+    LayoutText {#text} at (0,0) size 88x14
+      text run at (0,0) width 88: "Search for Events"
+layer at (30,415) size 122x14
+  LayoutBlockFlow {DIV} at (0,0) size 122x14
 layer at (180,19) size 9x9 transparent
   LayoutBlockFlow {DIV} at (165,3.50) size 9x9
 layer at (180,49) size 9x9 transparent
@@ -196,6 +196,6 @@ layer at (246,372) size 14x14 transparent
   LayoutBlockFlow {DIV} at (227.50,5) size 14x14
 layer at (602,367) size 19x19 transparent
   LayoutBlockFlow {DIV} at (309,7) size 19x19
-layer at (149,418) size 8x8 transparent
-  LayoutBlockFlow {DIV} at (119,2.50) size 8x8
+layer at (153,418) size 8x8 transparent
+  LayoutBlockFlow {DIV} at (123,3) size 8x8
 caret: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 10 {INPUT} of body
