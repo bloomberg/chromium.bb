@@ -4060,7 +4060,7 @@ crbug.com/828866 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConn
 crbug.com/829921 external/wpt/feature-policy/feature-policy-frame-policy-allowed-for-some.https.sub.html [ Pass Timeout ]
 
 # Sheriff 2018-04-11
-crbug.com/831701 [ Linux ] external/wpt/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.worker.html [ Pass Timeout ]
+crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831686 [ Linux ] fast/webgl/texImage-imageBitmap-from-offscreen-canvas-resize.html [ Pass Timeout ]
 crbug.com/831685 [ Linux ] external/wpt/2dcontext/compositing/2d.composite.canvas.lighter.html [ Pass Timeout ]
 crbug.com/831673 [ Linux ] http/tests/devtools/reveal-objects.js [ Pass Timeout ]
