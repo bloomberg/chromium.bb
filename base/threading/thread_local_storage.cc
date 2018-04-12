@@ -364,7 +364,7 @@ void* ThreadLocalStorage::Slot::Get() const {
           base::subtle::NoBarrier_Load(&g_native_tls_key)));
   DCHECK_NE(tls_data, kDestroyed);
   if (!tls_data)
-    tls_data = ConstructTlsVector();
+    return nullptr;
   DCHECK_NE(slot_, kInvalidSlotValue);
   DCHECK_LT(slot_, kThreadLocalStorageSize);
   // Version mismatches means this slot was previously freed.
