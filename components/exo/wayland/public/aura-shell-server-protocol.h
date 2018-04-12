@@ -224,15 +224,24 @@ struct zaura_surface_interface {
 				 struct wl_resource *resource,
 				 uint32_t active_color,
 				 uint32_t inactive_color);
-        /**
-         * set the startup ID of this surface
-         *
-         * Set the startup ID.
-         * @since 4
-         */
-        void (*set_startup_id)(struct wl_client* client,
-                               struct wl_resource* resource,
-                               const char* startup_id);
+	/**
+	 * set the startup ID of this surface
+	 *
+	 * Set the startup ID.
+	 * @since 4
+	 */
+	void (*set_startup_id)(struct wl_client *client,
+			       struct wl_resource *resource,
+			       const char *startup_id);
+	/**
+	 * set the application ID of this surface
+	 *
+	 * Set the application ID.
+	 * @since 5
+	 */
+	void (*set_application_id)(struct wl_client *client,
+				   struct wl_resource *resource,
+				   const char *application_id);
 };
 
 
@@ -252,6 +261,10 @@ struct zaura_surface_interface {
  * @ingroup iface_zaura_surface
  */
 #define ZAURA_SURFACE_SET_STARTUP_ID_SINCE_VERSION 4
+/**
+ * @ingroup iface_zaura_surface
+ */
+#define ZAURA_SURFACE_SET_APPLICATION_ID_SINCE_VERSION 5
 
 #ifndef ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
 #define ZAURA_OUTPUT_SCALE_PROPERTY_ENUM
@@ -292,12 +305,30 @@ enum zaura_output_scale_factor {
 };
 #endif /* ZAURA_OUTPUT_SCALE_FACTOR_ENUM */
 
+#ifndef ZAURA_OUTPUT_CONNECTION_TYPE_ENUM
+#define ZAURA_OUTPUT_CONNECTION_TYPE_ENUM
+enum zaura_output_connection_type {
+	ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN = 0,
+	ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL = 1,
+};
+#endif /* ZAURA_OUTPUT_CONNECTION_TYPE_ENUM */
+
 #define ZAURA_OUTPUT_SCALE 0
+#define ZAURA_OUTPUT_CONNECTION 1
+#define ZAURA_OUTPUT_DEVICE_SCALE_FACTOR 2
 
 /**
  * @ingroup iface_zaura_output
  */
-#define ZAURA_OUTPUT_SCALE_SINCE_VERSION 1
+#define ZAURA_OUTPUT_SCALE_SINCE_VERSION 2
+/**
+ * @ingroup iface_zaura_output
+ */
+#define ZAURA_OUTPUT_CONNECTION_SINCE_VERSION 5
+/**
+ * @ingroup iface_zaura_output
+ */
+#define ZAURA_OUTPUT_DEVICE_SCALE_FACTOR_SINCE_VERSION 5
 
 
 /**
@@ -311,6 +342,30 @@ static inline void
 zaura_output_send_scale(struct wl_resource *resource_, uint32_t flags, uint32_t scale)
 {
 	wl_resource_post_event(resource_, ZAURA_OUTPUT_SCALE, flags, scale);
+}
+
+/**
+ * @ingroup iface_zaura_output
+ * Sends an connection event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param connection output connection
+ */
+static inline void
+zaura_output_send_connection(struct wl_resource *resource_, uint32_t connection)
+{
+	wl_resource_post_event(resource_, ZAURA_OUTPUT_CONNECTION, connection);
+}
+
+/**
+ * @ingroup iface_zaura_output
+ * Sends an device_scale_factor event to the client owning the resource.
+ * @param resource_ The client's resource
+ * @param scale output device scale factor
+ */
+static inline void
+zaura_output_send_device_scale_factor(struct wl_resource *resource_, uint32_t scale)
+{
+	wl_resource_post_event(resource_, ZAURA_OUTPUT_DEVICE_SCALE_FACTOR, scale);
 }
 
 #ifdef  __cplusplus

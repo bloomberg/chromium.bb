@@ -1706,7 +1706,7 @@ void xdg_toplevel_v6_set_title(wl_client* client,
 void xdg_toplevel_v6_set_app_id(wl_client* client,
                                 wl_resource* resource,
                                 const char* app_id) {
-  GetUserDataAs<WaylandToplevel>(resource)->SetApplicationId(app_id);
+  NOTIMPLEMENTED();
 }
 
 void xdg_toplevel_v6_show_window_menu(wl_client* client,
@@ -2776,6 +2776,11 @@ class AuraSurface : public SurfaceObserver {
       surface_->SetStartupId(startup_id);
   }
 
+  void SetApplicationId(const char* application_id) {
+    if (surface_)
+      surface_->SetApplicationId(application_id);
+  }
+
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override {
     surface->RemoveSurfaceObserver(this);
@@ -2831,9 +2836,16 @@ void aura_surface_set_startup_id(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetStartupId(startup_id);
 }
 
+void aura_surface_set_application_id(wl_client* client,
+                                     wl_resource* resource,
+                                     const char* application_id) {
+  GetUserDataAs<AuraSurface>(resource)->SetApplicationId(application_id);
+}
+
 const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_frame, aura_surface_set_parent,
-    aura_surface_set_frame_colors, aura_surface_set_startup_id};
+    aura_surface_set_frame_colors, aura_surface_set_startup_id,
+    aura_surface_set_application_id};
 
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
@@ -2845,28 +2857,47 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
   // Overridden from WaylandDisplayObserver::ScaleObserver:
   void OnDisplayScalesChanged(const display::Display& display) override {
     display::DisplayManager* display_manager =
-        ash::Shell::Get()->display_manager();
-    if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
-      display::ManagedDisplayMode active_mode;
-      bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
-                                                           &active_mode);
-      DCHECK(rv);
-      const display::ManagedDisplayInfo& display_info =
+          ash::Shell::Get()->display_manager();
+    const display::ManagedDisplayInfo& display_info =
           display_manager->GetDisplayInfo(display.id());
-      for (auto& mode : display_info.display_modes()) {
-        uint32_t flags = 0;
-        if (mode.is_default())
-          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
-        if (active_mode.IsEquivalent(mode))
-          flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
 
-        zaura_output_send_scale(resource_, flags, mode.ui_scale() * 1000);
+    if (wl_resource_get_version(resource_) >=
+        ZAURA_OUTPUT_SCALE_SINCE_VERSION) {
+      if (display_manager->GetDisplayIdForUIScaling() == display.id()) {
+        display::ManagedDisplayMode active_mode;
+        bool rv = display_manager->GetActiveModeForDisplayId(display.id(),
+                                                             &active_mode);
+        DCHECK(rv);
+        for (auto& mode : display_info.display_modes()) {
+          uint32_t flags = 0;
+          if (mode.is_default())
+            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED;
+          if (active_mode.IsEquivalent(mode))
+            flags |= ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT;
+
+          zaura_output_send_scale(resource_, flags, mode.ui_scale() * 1000);
+        }
+      } else {
+        zaura_output_send_scale(resource_,
+                                ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT |
+                                    ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED,
+                                ZAURA_OUTPUT_SCALE_FACTOR_1000);
       }
-    } else {
-      zaura_output_send_scale(resource_,
-                              ZAURA_OUTPUT_SCALE_PROPERTY_CURRENT |
-                                  ZAURA_OUTPUT_SCALE_PROPERTY_PREFERRED,
-                              ZAURA_OUTPUT_SCALE_FACTOR_1000);
+    }
+
+    if (wl_resource_get_version(resource_) >=
+        ZAURA_OUTPUT_CONNECTION_SINCE_VERSION) {
+      zaura_output_send_connection(resource_,
+                                   display.IsInternal()
+                                       ? ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL
+                                       : ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN);
+    }
+
+    if (wl_resource_get_version(resource_) >=
+        ZAURA_OUTPUT_DEVICE_SCALE_FACTOR_SINCE_VERSION) {
+      zaura_output_send_device_scale_factor(resource_,
+                                            display_info.device_scale_factor() *
+                                            1000);
     }
   }
 
@@ -2924,7 +2955,7 @@ void aura_shell_get_aura_output(wl_client* client,
 const struct zaura_shell_interface aura_shell_implementation = {
     aura_shell_get_aura_surface, aura_shell_get_aura_output};
 
-const uint32_t aura_shell_version = 4;
+const uint32_t aura_shell_version = 5;
 
 void bind_aura_shell(wl_client* client,
                      void* data,

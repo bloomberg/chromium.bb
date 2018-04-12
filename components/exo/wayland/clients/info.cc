@@ -17,9 +17,11 @@
 
 namespace {
 
-// This struct contains globals and all the fields that will be set by
+// This struct contains all the fields that will be set by output
 // interface listener callbacks.
 struct Info {
+  int32_t connection;
+  int32_t device_scale_factor;
   struct {
     int32_t x, y;
     int32_t physical_width, physical_height;
@@ -35,7 +37,6 @@ struct Info {
   };
   // |next_modes| are swapped with |modes| after receiving output done event.
   std::vector<Mode> modes, next_modes;
-  int32_t device_scale_factor;
   struct Scale {
     uint32_t flags;
     int32_t scale;
@@ -43,8 +44,13 @@ struct Info {
   // |next_scales| are swapped with |scales| after receiving output done event.
   std::vector<Scale> scales, next_scales;
   std::unique_ptr<wl_output> output;
+  std::unique_ptr<zaura_output> aura_output;
+};
+
+// This struct contains globals and all outputs.
+struct Globals {
   std::unique_ptr<zaura_shell> aura_shell;
-  wl_output_listener output_listener;
+  std::vector<Info> outputs;
 };
 
 void RegistryHandler(void* data,
@@ -52,16 +58,22 @@ void RegistryHandler(void* data,
                      uint32_t id,
                      const char* interface,
                      uint32_t version) {
-  Info* info = static_cast<Info*>(data);
+  Globals* globals = static_cast<Globals*>(data);
 
   if (strcmp(interface, "wl_output") == 0) {
-    info->output.reset(static_cast<wl_output*>(
+    globals->outputs.push_back(
+        {.connection = ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN,
+         .device_scale_factor = ZAURA_OUTPUT_SCALE_FACTOR_1000,
+         .geometry = {.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN,
+                      .make = "unknown",
+                      .model = "unknown",
+                      .transform = WL_OUTPUT_TRANSFORM_NORMAL}});
+    globals->outputs.back().output.reset(static_cast<wl_output*>(
         wl_registry_bind(registry, id, &wl_output_interface, 2)));
-    wl_output_add_listener(info->output.get(), &info->output_listener, info);
   } else if (strcmp(interface, "zaura_shell") == 0) {
     if (version >= 2) {
-      info->aura_shell.reset(static_cast<zaura_shell*>(
-          wl_registry_bind(registry, id, &zaura_shell_interface, 2)));
+      globals->aura_shell.reset(static_cast<zaura_shell*>(
+          wl_registry_bind(registry, id, &zaura_shell_interface, 5)));
     }
   }
 }
@@ -115,7 +127,7 @@ void OutputDone(void* data, wl_output* output) {
 void OutputScale(void* data, wl_output* output, int32_t scale) {
   Info* info = static_cast<Info*>(data);
 
-  info->device_scale_factor = scale;
+  info->device_scale_factor = scale * 1000;
 }
 
 void AuraOutputScale(void* data,
@@ -125,6 +137,22 @@ void AuraOutputScale(void* data,
   Info* info = static_cast<Info*>(data);
 
   info->next_scales.push_back({flags, scale});
+}
+
+void AuraOutputConnection(void* data,
+                          zaura_output* output,
+                          uint32_t connection) {
+  Info* info = static_cast<Info*>(data);
+
+  info->connection = connection;
+}
+
+void AuraOutputDeviceScaleFactor(void* data,
+                                 zaura_output* output,
+                                 uint32_t device_scale_factor) {
+  Info* info = static_cast<Info*>(data);
+
+  info->device_scale_factor = device_scale_factor;
 }
 
 std::string OutputSubpixelToString(int32_t subpixel) {
@@ -209,6 +237,17 @@ std::string AuraOutputScaleFactorToString(int32_t scale) {
   }
 }
 
+std::string AuraOutputConnectionToString(uint32_t connection_type) {
+  switch (connection_type) {
+    case ZAURA_OUTPUT_CONNECTION_TYPE_UNKNOWN:
+      return "unknown";
+    case ZAURA_OUTPUT_CONNECTION_TYPE_INTERNAL:
+      return "internal";
+    default:
+      return "invalid";
+  }
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -218,61 +257,73 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  Info info = {
-      .geometry = {.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN,
-                   .make = "unknown",
-                   .model = "unknown",
-                   .transform = WL_OUTPUT_TRANSFORM_NORMAL},
-      .output_listener = {OutputGeometry, OutputMode, OutputDone, OutputScale}};
+  Globals globals;
 
   wl_registry_listener registry_listener = {RegistryHandler, RegistryRemover};
   wl_registry* registry = wl_display_get_registry(display.get());
-  wl_registry_add_listener(registry, &registry_listener, &info);
+  wl_registry_add_listener(registry, &registry_listener, &globals);
 
   wl_display_roundtrip(display.get());
 
-  std::unique_ptr<zaura_output> aura_output;
-  zaura_output_listener aura_output_listener = {AuraOutputScale};
-  if (info.output && info.aura_shell) {
-    aura_output.reset(static_cast<zaura_output*>(
-        zaura_shell_get_aura_output(info.aura_shell.get(), info.output.get())));
-    zaura_output_add_listener(aura_output.get(), &aura_output_listener, &info);
+  wl_output_listener output_listener = {OutputGeometry, OutputMode, OutputDone,
+                                        OutputScale};
+
+  zaura_output_listener aura_output_listener = {
+      AuraOutputScale, AuraOutputConnection, AuraOutputDeviceScaleFactor};
+  for (auto& info : globals.outputs) {
+    wl_output_add_listener(info.output.get(), &output_listener, &info);
+    if (globals.aura_shell) {
+      info.aura_output.reset(
+          static_cast<zaura_output*>(zaura_shell_get_aura_output(
+              globals.aura_shell.get(), info.output.get())));
+      zaura_output_add_listener(info.aura_output.get(), &aura_output_listener,
+                                &info);
+    }
   }
 
   wl_display_roundtrip(display.get());
 
-  std::cout << "geometry:" << std::endl
-            << "   x:                 " << info.geometry.x << std::endl
-            << "   y:                 " << info.geometry.y << std::endl
-            << "   physical width:    " << info.geometry.physical_width << " mm"
-            << std::endl
-            << "   physical height:   " << info.geometry.physical_height
-            << " mm" << std::endl
-            << "   subpixel:          "
-            << OutputSubpixelToString(info.geometry.subpixel) << std::endl
-            << "   make:              " << info.geometry.make << std::endl
-            << "   model:             " << info.geometry.model << std::endl
-            << "   transform:         "
-            << OutputTransformToString(info.geometry.transform) << std::endl
-            << std::endl;
-  std::cout << "modes:" << std::endl;
-  for (auto& mode : info.modes) {
-    std::cout << "   " << std::left << std::setw(19)
-              << base::StringPrintf("%dx%d:", mode.width, mode.height)
-              << std::left << std::setw(14)
-              << base::StringPrintf("%.2f Hz", mode.refresh / 1000.0)
-              << OutputModeFlagsToString(mode.flags) << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << "device scale factor:  " << info.device_scale_factor
-            << std::endl;
-  if (!info.scales.empty()) {
-    std::cout << std::endl;
-    std::cout << "scales:" << std::endl;
-    for (auto& scale : info.scales) {
-      std::cout << "   " << std::left << std::setw(19)
-                << (AuraOutputScaleFactorToString(scale.scale) + ":")
-                << AuraOutputScaleFlagsToString(scale.flags) << std::endl;
+  for (auto& info : globals.outputs) {
+    int id = &info - &globals.outputs[0];
+    if (id)
+      std::cout << std::endl;
+    std::cout << "OUTPUT" << id << ":" << std::endl << std::endl;
+    std::cout << "  connection:          "
+              << AuraOutputConnectionToString(info.connection) << std::endl;
+    std::cout << "  device scale factor: "
+              << AuraOutputScaleFactorToString(info.device_scale_factor)
+              << std::endl
+              << std::endl;
+    std::cout << "  geometry:" << std::endl
+              << "    x:                 " << info.geometry.x << std::endl
+              << "    y:                 " << info.geometry.y << std::endl
+              << "    physical width:    " << info.geometry.physical_width
+              << " mm" << std::endl
+              << "    physical height:   " << info.geometry.physical_height
+              << " mm" << std::endl
+              << "    subpixel:          "
+              << OutputSubpixelToString(info.geometry.subpixel) << std::endl
+              << "    make:              " << info.geometry.make << std::endl
+              << "    model:             " << info.geometry.model << std::endl
+              << "    transform:         "
+              << OutputTransformToString(info.geometry.transform) << std::endl
+              << std::endl;
+    std::cout << "  modes:" << std::endl;
+    for (auto& mode : info.modes) {
+      std::cout << "    " << std::left << std::setw(19)
+                << base::StringPrintf("%dx%d:", mode.width, mode.height)
+                << std::left << std::setw(14)
+                << base::StringPrintf("%.2f Hz", mode.refresh / 1000.0)
+                << OutputModeFlagsToString(mode.flags) << std::endl;
+    }
+    if (!info.scales.empty()) {
+      std::cout << std::endl;
+      std::cout << "  scales:" << std::endl;
+      for (auto& scale : info.scales) {
+        std::cout << "    " << std::left << std::setw(19)
+                  << (AuraOutputScaleFactorToString(scale.scale) + ":")
+                  << AuraOutputScaleFlagsToString(scale.flags) << std::endl;
+      }
     }
   }
 

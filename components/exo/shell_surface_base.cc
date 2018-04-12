@@ -822,6 +822,10 @@ void ShellSurfaceBase::OnSetStartupId(const char* startup_id) {
   SetStartupId(startup_id);
 }
 
+void ShellSurfaceBase::OnSetApplicationId(const char* application_id) {
+  SetApplicationId(application_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SurfaceObserver overrides:
 
