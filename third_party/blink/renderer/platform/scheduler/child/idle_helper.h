@@ -12,7 +12,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 #include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
-#include "third_party/blink/renderer/platform/scheduler/child/scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {

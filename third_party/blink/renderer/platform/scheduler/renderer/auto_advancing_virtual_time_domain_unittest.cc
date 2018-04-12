@@ -11,7 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
-#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
 
