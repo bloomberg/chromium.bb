@@ -197,6 +197,33 @@ class AvSettings {
   // Returns true if successful.
   virtual bool KeepSystemAwake(int time_ms) = 0;
 
+  // Sets screen (backlight) brightness.
+  // |brightness|: Range is 0.0 (off) to 1.0 (max).
+  // |smooth|: If true, will gradually change brightness in a ramp. If true and
+  // unsupported, returns false and does nothing. If false, sets brightness
+  // immediately. If another ramp is already in progress, it is cancelled and a
+  // new one is started from the current brightness of the display.
+  // If the implementation rounds to discrete values, it should round up so that
+  // non-0 |brightness| values don't turn off the display.
+  // Returns false if set fails. Returns true otherwise.
+  // Not all displays support this function.
+  static bool SetDisplayBrightness(float brightness, bool smooth)
+      __attribute__((weak));
+
+  // Gets the current screen (backlight) brightness.
+  // |brightness|: Range is 0.0 (off) to 1.0 (max).
+  // Returns false and does not modify |brightness| if get fails.
+  // Returns true and sets |brightness| to the current brightness otherwise.
+  // Not all displays support this function.
+  static bool GetDisplayBrightness(float* brightness) __attribute__((weak));
+
+  // Gets the nits output by the display at 100% brightness.
+  // |nits|: The maximum brightness in nits.
+  // Returns false and does not modify |nits| if get fails.
+  // Returns true and sets |nits| on success.
+  // Not all displays support this function.
+  static bool GetDisplayMaxBrightnessNits(float* nits) __attribute__((weak));
+
   // Returns the type of volume control, i.e. MASTER_VOLUME, FIXED_VOLUME or
   // ATTENUATION_VOLUME. For example, normal TVs, devices of CEC audio
   // controls, and audio devices are master volume systems. The counter
