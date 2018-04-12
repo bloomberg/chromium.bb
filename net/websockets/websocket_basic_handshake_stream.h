@@ -25,7 +25,7 @@ class ClientSocketHandle;
 class HttpResponseHeaders;
 class HttpResponseInfo;
 class HttpStreamParser;
-
+class WebSocketEndpointLockManager;
 struct WebSocketExtensionParams;
 class WebSocketStreamRequest;
 
@@ -39,7 +39,8 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
       bool using_proxy,
       std::vector<std::string> requested_sub_protocols,
       std::vector<std::string> requested_extensions,
-      WebSocketStreamRequest* request);
+      WebSocketStreamRequest* request,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
 
   ~WebSocketBasicHandshakeStream() override;
 
@@ -145,7 +146,9 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   // to avoid including extension-related header files here.
   std::unique_ptr<WebSocketExtensionParams> extension_params_;
 
-  WebSocketStreamRequest* stream_request_;
+  WebSocketStreamRequest* const stream_request_;
+
+  WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketBasicHandshakeStream);
 };

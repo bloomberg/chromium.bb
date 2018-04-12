@@ -40,6 +40,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
     HostResolver* host_resolver,
     ClientSocketHandle* handle,
     Delegate* delegate,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     NetLog* pool_net_log,
     const NetLogWithSource& request_net_log)
     : ConnectJob(group_name,
@@ -57,6 +58,7 @@ WebSocketTransportConnectJob::WebSocketTransportConnectJob(
       next_state_(STATE_NONE),
       race_result_(TransportConnectJob::RACE_UNKNOWN),
       handle_(handle),
+      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
       callback_(callback),
       request_net_log_(request_net_log),
       had_ipv4_(false),
@@ -173,13 +175,13 @@ int WebSocketTransportConnectJob::DoTransportConnect() {
   if (!ipv4_addresses.empty()) {
     had_ipv4_ = true;
     ipv4_job_.reset(new WebSocketTransportConnectSubJob(
-        ipv4_addresses, this, SUB_JOB_IPV4));
+        ipv4_addresses, this, SUB_JOB_IPV4, websocket_endpoint_lock_manager_));
   }
 
   if (!ipv6_addresses.empty()) {
     had_ipv6_ = true;
     ipv6_job_.reset(new WebSocketTransportConnectSubJob(
-        ipv6_addresses, this, SUB_JOB_IPV6));
+        ipv6_addresses, this, SUB_JOB_IPV6, websocket_endpoint_lock_manager_));
     result = ipv6_job_->Start();
     switch (result) {
       case OK:
@@ -286,6 +288,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets_per_group,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
     NetLog* net_log)
     : TransportClientSocketPool(max_sockets,
                                 max_sockets_per_group,
@@ -297,6 +300,7 @@ WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
       pool_net_log_(net_log),
       client_socket_factory_(client_socket_factory),
       host_resolver_(host_resolver),
+      websocket_endpoint_lock_manager_(websocket_endpoint_lock_manager),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
       flushing_(false),
@@ -313,12 +317,13 @@ WebSocketTransportClientSocketPool::~WebSocketTransportClientSocketPool() {
 
 // static
 void WebSocketTransportClientSocketPool::UnlockEndpoint(
-    ClientSocketHandle* handle) {
+    ClientSocketHandle* handle,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager) {
   DCHECK(handle->is_initialized());
   DCHECK(handle->socket());
   IPEndPoint address;
   if (handle->socket()->GetPeerAddress(&address) == OK)
-    WebSocketEndpointLockManager::GetInstance()->UnlockEndpoint(address);
+    websocket_endpoint_lock_manager->UnlockEndpoint(address);
 }
 
 int WebSocketTransportClientSocketPool::RequestSocket(
@@ -365,7 +370,8 @@ int WebSocketTransportClientSocketPool::RequestSocket(
       new WebSocketTransportConnectJob(
           group_name, priority, respect_limits, casted_params,
           ConnectionTimeout(), callback, client_socket_factory_, host_resolver_,
-          handle, &connect_job_delegate_, pool_net_log_, request_net_log));
+          handle, &connect_job_delegate_, websocket_endpoint_lock_manager_,
+          pool_net_log_, request_net_log));
 
   int result = connect_job->Connect();
 
@@ -427,7 +433,7 @@ void WebSocketTransportClientSocketPool::ReleaseSocket(
     const std::string& group_name,
     std::unique_ptr<StreamSocket> socket,
     int id) {
-  WebSocketEndpointLockManager::GetInstance()->UnlockSocket(socket.get());
+  websocket_endpoint_lock_manager_->UnlockSocket(socket.get());
   CHECK_GT(handed_out_socket_count_, 0);
   --handed_out_socket_count_;
 
@@ -562,7 +568,7 @@ void WebSocketTransportClientSocketPool::OnConnectJobComplete(
   // See comment in FlushWithError.
   if (flushing_) {
     std::unique_ptr<StreamSocket> socket = job->PassSocket();
-    WebSocketEndpointLockManager::GetInstance()->UnlockSocket(socket.get());
+    websocket_endpoint_lock_manager_->UnlockSocket(socket.get());
     return;
   }
 

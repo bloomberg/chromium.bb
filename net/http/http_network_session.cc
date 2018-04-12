@@ -36,6 +36,7 @@
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
 
 namespace net {
@@ -47,7 +48,8 @@ base::AtomicSequenceNumber g_next_shard_id;
 std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
     HttpNetworkSession::SocketPoolType pool_type,
     const HttpNetworkSession::Context& context,
-    const std::string& ssl_session_cache_shard) {
+    const std::string& ssl_session_cache_shard,
+    WebSocketEndpointLockManager* websocket_endpoint_lock_manager) {
   // TODO(yutak): Differentiate WebSocket pool manager and allow more
   // simultaneous connections for WebSockets.
   return std::make_unique<ClientSocketPoolManagerImpl>(
@@ -59,7 +61,7 @@ std::unique_ptr<ClientSocketPoolManager> CreateSocketPoolManager(
       context.cert_verifier, context.channel_id_service,
       context.transport_security_state, context.cert_transparency_verifier,
       context.ct_policy_enforcer, ssl_session_cache_shard,
-      context.ssl_config_service, pool_type);
+      context.ssl_config_service, websocket_endpoint_lock_manager, pool_type);
 }
 
 }  // unnamed namespace
@@ -180,6 +182,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       http_auth_handler_factory_(context.http_auth_handler_factory),
       proxy_resolution_service_(context.proxy_resolution_service),
       ssl_config_service_(context.ssl_config_service),
+      websocket_endpoint_lock_manager_(
+          std::make_unique<WebSocketEndpointLockManager>()),
       push_delegate_(nullptr),
       quic_stream_factory_(
           context.net_log,
@@ -243,9 +247,11 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
   const std::string ssl_session_cache_shard =
       "http_network_session/" + base::IntToString(g_next_shard_id.GetNext());
   normal_socket_pool_manager_ = CreateSocketPoolManager(
-      NORMAL_SOCKET_POOL, context, ssl_session_cache_shard);
+      NORMAL_SOCKET_POOL, context, ssl_session_cache_shard,
+      websocket_endpoint_lock_manager_.get());
   websocket_socket_pool_manager_ = CreateSocketPoolManager(
-      WEBSOCKET_SOCKET_POOL, context, ssl_session_cache_shard);
+      WEBSOCKET_SOCKET_POOL, context, ssl_session_cache_shard,
+      websocket_endpoint_lock_manager_.get());
 
   if (params_.enable_http2) {
     next_protos_.push_back(kProtoHTTP2);

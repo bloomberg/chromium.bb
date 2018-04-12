@@ -41,6 +41,7 @@ class SSLClientSocketPool;
 class SSLConfigService;
 class TransportClientSocketPool;
 class TransportSecurityState;
+class WebSocketEndpointLockManager;
 
 class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
     : public ClientSocketPoolManager,
@@ -59,6 +60,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolManagerImpl
       CTPolicyEnforcer* ct_policy_enforcer,
       const std::string& ssl_session_cache_shard,
       SSLConfigService* ssl_config_service,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       HttpNetworkSession::SocketPoolType pool_type);
   ~ClientSocketPoolManagerImpl() override;
 

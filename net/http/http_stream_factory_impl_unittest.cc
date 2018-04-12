@@ -89,6 +89,7 @@ class DictionaryValue;
 namespace net {
 
 class BidirectionalStreamImpl;
+class WebSocketEndpointLockManager;
 
 namespace {
 
@@ -334,7 +335,8 @@ class WebSocketStreamCreateHelper
 
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connection,
-      bool using_proxy) override {
+      bool using_proxy,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager) override {
     return std::make_unique<WebSocketBasicHandshakeStream>(
         std::move(connection));
   }

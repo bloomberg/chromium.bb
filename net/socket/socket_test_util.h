@@ -21,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
@@ -1069,18 +1068,6 @@ class MockSOCKSClientSocketPool : public SOCKSClientSocketPool {
   TransportClientSocketPool* const transport_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSOCKSClientSocketPool);
-};
-
-// Convenience class to temporarily set the WebSocketEndpointLockManager unlock
-// delay to zero for testing purposes. Automatically restores the original value
-// when destroyed.
-class ScopedWebSocketEndpointZeroUnlockDelay {
- public:
-  ScopedWebSocketEndpointZeroUnlockDelay();
-  ~ScopedWebSocketEndpointZeroUnlockDelay();
-
- private:
-  base::TimeDelta old_delay_;
 };
 
 // WrappedStreamSocket is a base class that wraps an existing StreamSocket,

@@ -55,6 +55,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
       HostResolver* host_resolver,
       ClientSocketHandle* handle,
       Delegate* delegate,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
       NetLog* pool_net_log,
       const NetLogWithSource& request_net_log);
   ~WebSocketTransportConnectJob() override;
@@ -73,7 +74,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 
  private:
   friend class WebSocketTransportConnectSubJob;
-  friend class WebSocketEndpointLockManager;
 
   enum State {
     STATE_RESOLVE_HOST,
@@ -124,6 +124,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
   base::OneShotTimer fallback_timer_;
   TransportConnectJob::RaceResult race_result_;
   ClientSocketHandle* const handle_;
+  WebSocketEndpointLockManager* const websocket_endpoint_lock_manager_;
   CompletionCallback callback_;
   NetLogWithSource request_net_log_;
 
@@ -136,11 +137,13 @@ class NET_EXPORT_PRIVATE WebSocketTransportConnectJob : public ConnectJob {
 class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     : public TransportClientSocketPool {
  public:
-  WebSocketTransportClientSocketPool(int max_sockets,
-                                     int max_sockets_per_group,
-                                     HostResolver* host_resolver,
-                                     ClientSocketFactory* client_socket_factory,
-                                     NetLog* net_log);
+  WebSocketTransportClientSocketPool(
+      int max_sockets,
+      int max_sockets_per_group,
+      HostResolver* host_resolver,
+      ClientSocketFactory* client_socket_factory,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
+      NetLog* net_log);
 
   ~WebSocketTransportClientSocketPool() override;
 
@@ -149,7 +152,9 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   // This only works if the socket is connected, however the caller does not
   // need to explicitly check for this. Instead, ensure that dead sockets are
   // returned to ReleaseSocket() in a timely fashion.
-  static void UnlockEndpoint(ClientSocketHandle* handle);
+  static void UnlockEndpoint(
+      ClientSocketHandle* handle,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
 
   // ClientSocketPool implementation.
   int RequestSocket(const std::string& group_name,
@@ -263,6 +268,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   NetLog* const pool_net_log_;
   ClientSocketFactory* const client_socket_factory_;
   HostResolver* const host_resolver_;
+  WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;
   const int max_sockets_;
   int handed_out_socket_count_;
   bool flushing_;

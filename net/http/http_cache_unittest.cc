@@ -83,6 +83,8 @@ namespace net {
 
 using CacheEntryStatus = HttpResponseInfo::CacheEntryStatus;
 
+class WebSocketEndpointLockManager;
+
 namespace {
 
 // Returns a simple text serialization of the given
@@ -644,7 +646,8 @@ class FakeWebSocketHandshakeStreamCreateHelper
   ~FakeWebSocketHandshakeStreamCreateHelper() override = default;
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateBasicStream(
       std::unique_ptr<ClientSocketHandle> connect,
-      bool using_proxy) override {
+      bool using_proxy,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager) override {
     return nullptr;
   }
   std::unique_ptr<WebSocketHandshakeStreamBase> CreateHttp2Stream(
