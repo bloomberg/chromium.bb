@@ -19,13 +19,13 @@ class DevToolsTraceableScreenshot
 
   DevToolsTraceableScreenshot(const SkBitmap& bitmap);
 
+  ~DevToolsTraceableScreenshot() override;
+
   // base::trace_event::ConvertableToTraceFormat implementation.
   void AppendAsTraceFormat(std::string* out) const override;
 
  private:
   static base::subtle::Atomic32 number_of_instances_;
-
-  ~DevToolsTraceableScreenshot() override;
 
   SkBitmap frame_;
 

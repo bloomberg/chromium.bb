@@ -25,9 +25,11 @@
 #include "base/trace_event/tracing_agent.h"
 #include "components/tracing/common/trace_config_file.h"
 #include "components/viz/common/features.h"
-#include "content/browser/devtools/devtools_frame_trace_recorder_for_viz.h"
+#include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_session.h"
+#include "content/browser/devtools/devtools_traceable_screenshot.h"
+#include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -47,6 +49,17 @@ namespace {
 const double kMinimumReportingInterval = 250.0;
 
 const char kRecordModeParam[] = "record_mode";
+
+// Settings for |video_consumer_|.
+// Tracing requires a 10ms minimum capture period.
+constexpr base::TimeDelta kMinCapturePeriod =
+    base::TimeDelta::FromMilliseconds(10);
+
+// Frames need to be at least 1x1, otherwise nothing would be captured.
+constexpr gfx::Size kMinFrameSize = gfx::Size(1, 1);
+
+// Frames do not need to be greater than 500x500 for tracing.
+constexpr gfx::Size kMaxFrameSize = gfx::Size(500, 500);
 
 // Convert from camel case to separator + lowercase.
 std::string ConvertFromCamelCase(const std::string& in_str, char separator) {
@@ -204,8 +217,9 @@ TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor) ||
       base::FeatureList::IsEnabled(
           features::kUseVideoCaptureApiForDevToolsSnapshots)) {
-    frame_trace_recorder_ =
-        std::make_unique<DevToolsFrameTraceRecorderForViz>();
+    video_consumer_ =
+        std::make_unique<DevToolsVideoConsumer>(base::BindRepeating(
+            &TracingHandler::OnFrameFromVideoConsumer, base::Unretained(this)));
   }
 }
 
@@ -221,9 +235,9 @@ std::vector<TracingHandler*> TracingHandler::ForAgentHost(
 
 void TracingHandler::SetRenderer(int process_host_id,
                                  RenderFrameHostImpl* frame_host) {
-  if (!frame_trace_recorder_ || !frame_host)
+  if (!video_consumer_ || !frame_host)
     return;
-  frame_trace_recorder_->SetFrameSinkId(
+  video_consumer_->SetFrameSinkId(
       frame_host->GetRenderWidgetHost()->GetFrameSinkId());
 }
 
@@ -448,8 +462,13 @@ void TracingHandler::OnRecordingEnabled(
   bool screenshot_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(
       TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), &screenshot_enabled);
-  if (frame_trace_recorder_ && screenshot_enabled)
-    frame_trace_recorder_->StartCapture();
+  if (video_consumer_ && screenshot_enabled) {
+    // Reset number of screenshots received, each time tracing begins.
+    number_of_screenshots_from_video_consumer_ = 0;
+    video_consumer_->SetMinCapturePeriod(kMinCapturePeriod);
+    video_consumer_->SetMinAndMaxFrameSize(kMinFrameSize, kMaxFrameSize);
+    video_consumer_->StartCapture();
+  }
 }
 
 void TracingHandler::OnBufferUsage(float percent_full,
@@ -493,6 +512,27 @@ void TracingHandler::OnMemoryDumpFinished(
   callback->sendSuccess(base::StringPrintf("0x%" PRIx64, dump_id), success);
 }
 
+void TracingHandler::OnFrameFromVideoConsumer(
+    scoped_refptr<media::VideoFrame> frame) {
+  const SkBitmap skbitmap = DevToolsVideoConsumer::GetSkBitmapFromFrame(frame);
+
+  base::TimeTicks reference_time;
+  const bool had_reference_time = frame->metadata()->GetTimeTicks(
+      media::VideoFrameMetadata::REFERENCE_TIME, &reference_time);
+  DCHECK(had_reference_time);
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
+      TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,
+      reference_time, std::make_unique<DevToolsTraceableScreenshot>(skbitmap));
+
+  ++number_of_screenshots_from_video_consumer_;
+  DCHECK(video_consumer_);
+  if (number_of_screenshots_from_video_consumer_ >=
+      DevToolsFrameTraceRecorder::kMaximumNumberOfScreenshots) {
+    video_consumer_->StopCapture();
+  }
+}
+
 Response TracingHandler::RecordClockSyncMarker(const std::string& sync_id) {
   if (!IsTracing())
     return Response::Error("Tracing is not started");
@@ -524,8 +564,8 @@ void TracingHandler::StopTracing(
   buffer_usage_poll_timer_.reset();
   TracingController::GetInstance()->StopTracing(endpoint, agent_label);
   did_initiate_recording_ = false;
-  if (frame_trace_recorder_)
-    frame_trace_recorder_->StopCapture();
+  if (video_consumer_)
+    video_consumer_->StopCapture();
 }
 
 bool TracingHandler::IsTracing() const {
