@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -25,7 +26,8 @@ public class EnabledStateMonitor
         void onEnabledStateChanged(boolean enabled);
     }
 
-    private final Observer mObserver;
+    @VisibleForTesting
+    protected Observer mObserver;
     private boolean mEnabled;
 
     /**
@@ -34,6 +36,16 @@ public class EnabledStateMonitor
      */
     EnabledStateMonitor(Observer observer) {
         mObserver = observer;
+        init();
+    }
+
+    /**
+     * Initializes the EnabledStateMonitor. Intended to encapsulate creating connections to native
+     * code, so that this can be easily stubbed out during tests. This method should only be
+     * overridden for testing.
+     */
+    @VisibleForTesting
+    protected void init() {
         ProfileSyncService.get().addSyncStateChangedListener(this);
         SigninManager.get().addSignInStateObserver(this);
         TemplateUrlService.getInstance().addObserver(this);

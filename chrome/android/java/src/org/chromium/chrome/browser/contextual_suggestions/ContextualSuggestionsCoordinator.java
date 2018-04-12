@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.support.annotation.Nullable;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
@@ -164,5 +165,15 @@ public class ContextualSuggestionsCoordinator {
             mBottomSheetContent.destroy();
             mBottomSheetContent = null;
         }
+    }
+
+    @VisibleForTesting
+    ContextualSuggestionsMediator getMediatorForTesting() {
+        return mMediator;
+    }
+
+    @VisibleForTesting
+    ContextualSuggestionsModel getModelForTesting() {
+        return mModel;
     }
 }

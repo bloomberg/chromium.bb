@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -72,7 +73,9 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
 
         // Create a state monitor that will alert this mediator if the enabled state for contextual
         // suggestions changes.
-        mEnabledStateMonitor = new EnabledStateMonitor(this);
+        mEnabledStateMonitor =
+                ContextualSuggestionsDependencyFactory.getInstance().createEnabledStateMonitor(
+                        this);
 
         fullscreenManager.addListener(new FullscreenListener() {
             @Override
@@ -131,8 +134,10 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     @Override
     public void onEnabledStateChanged(boolean enabled) {
         if (enabled) {
-            mSuggestionsSource = new ContextualSuggestionsSource(mProfile);
-            mFetchHelper = new FetchHelper(this, mTabModelSelector);
+            mSuggestionsSource = ContextualSuggestionsDependencyFactory.getInstance()
+                                         .createContextualSuggestionSource(mProfile);
+            mFetchHelper = ContextualSuggestionsDependencyFactory.getInstance().createFetchHelper(
+                    this, mTabModelSelector);
         } else {
             clearSuggestions();
 
@@ -151,7 +156,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     @Override
     public void requestSuggestions(String url) {
         mCurrentRequestUrl = url;
-        mSuggestionsSource.getBridge().fetchSuggestions(url, (suggestionsResult) -> {
+        mSuggestionsSource.fetchSuggestions(url, (suggestionsResult) -> {
             if (mSuggestionsSource == null) return;
 
             // Avoiding double fetches causing suggestions for incorrect context.
@@ -190,7 +195,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         mCoordinator.removeSuggestions();
         mCurrentRequestUrl = "";
 
-        if (mSuggestionsSource != null) mSuggestionsSource.getBridge().clearState();
+        if (mSuggestionsSource != null) mSuggestionsSource.clearState();
 
         if (mSheetObserver != null) {
             mCoordinator.removeBottomSheetObserver(mSheetObserver);
@@ -277,8 +282,7 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     }
 
     private void reportEvent(@ContextualSuggestionsEvent int event) {
-        mSuggestionsSource.getBridge().reportEvent(
-                mTabModelSelector.getCurrentTab().getWebContents(), event);
+        mSuggestionsSource.reportEvent(mTabModelSelector.getCurrentTab().getWebContents(), event);
     }
 
     private ClusterList generateClusterList(List<ContextualSuggestionsCluster> clusters) {
@@ -287,5 +291,10 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
         }
 
         return new ClusterList(clusters);
+    }
+
+    @VisibleForTesting
+    void showContentInSheetForTesting() {
+        showContentInSheet();
     }
 }

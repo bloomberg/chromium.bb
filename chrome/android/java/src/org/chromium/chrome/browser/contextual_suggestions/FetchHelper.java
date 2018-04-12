@@ -35,8 +35,8 @@ class FetchHelper {
     }
 
     private final Delegate mDelegate;
-    private final TabModelSelectorTabModelObserver mTabModelObserver;
-    private final TabObserver mTabObserver;
+    private TabModelSelectorTabModelObserver mTabModelObserver;
+    private TabObserver mTabObserver;
 
     @Nullable
     private Tab mLastTab;
@@ -50,7 +50,14 @@ class FetchHelper {
      */
     FetchHelper(Delegate delegate, TabModelSelector tabModelSelector) {
         mDelegate = delegate;
+        init(tabModelSelector);
+    }
 
+    /**
+     * Initializes the FetchHelper. Intended to encapsulate creating connections to native code,
+     * so that this can be easily stubbed out during tests.
+     */
+    protected void init(TabModelSelector tabModelSelector) {
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onUpdateUrl(Tab tab, String url) {

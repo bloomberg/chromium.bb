@@ -2363,4 +2363,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public float getLastActiveDensity() {
         return mDensityDpi;
     }
+
+    @VisibleForTesting
+    public ContextualSuggestionsCoordinator getContextualSuggestionsCoordinatorForTesting() {
+        return mContextualSuggestionsCoordinator;
+    }
 }

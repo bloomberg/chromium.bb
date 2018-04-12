@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsBridge.ContextualSuggestionsResult;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.List;
 
@@ -18,7 +20,7 @@ import java.util.List;
  * Provides content for contextual suggestions.
  */
 class ContextualSuggestionsSource implements SuggestionsSource {
-    private final ContextualSuggestionsBridge mBridge;
+    private ContextualSuggestionsBridge mBridge;
 
     /**
      * Creates a ContextualSuggestionsSource for getting contextual suggestions for the current
@@ -27,6 +29,14 @@ class ContextualSuggestionsSource implements SuggestionsSource {
      * @param profile Profile of the user.
      */
     ContextualSuggestionsSource(Profile profile) {
+        init(profile);
+    }
+
+    /**
+     * Initializes the ContextualSuggestionsSource. Intended to encapsulate creating connections
+     * to native code, so that this can be easily stubbed out during tests.
+     */
+    protected void init(Profile profile) {
         mBridge = new ContextualSuggestionsBridge(profile);
     }
 
@@ -53,11 +63,27 @@ class ContextualSuggestionsSource implements SuggestionsSource {
     }
 
     /**
-     * @return The {@link ContextualSuggestionsBridge} used communicate with the contextual
-     *         suggestions C++ component.
+     * Fetches suggestions for a given URL.
+     * @param url URL for which to fetch suggestions.
+     * @param callback Callback used to return suggestions for a given URL.
      */
-    ContextualSuggestionsBridge getBridge() {
-        return mBridge;
+    void fetchSuggestions(String url, Callback<ContextualSuggestionsResult> callback) {
+        mBridge.fetchSuggestions(url, callback);
+    }
+
+    /**
+     * Reports an event happening in the context of the current URL.
+     *
+     * @param webContents Web contents with the document for which event is reported.
+     * @param eventId The Id of the reported event as a {@link ContextualSuggestionsEvent} integer.
+     */
+    void reportEvent(WebContents webContents, @ContextualSuggestionsEvent int eventId) {
+        mBridge.reportEvent(webContents, eventId);
+    }
+
+    /** Requests the backend to clear state. */
+    void clearState() {
+        mBridge.clearState();
     }
 
     // The following methods are not applicable to contextual suggestions.
