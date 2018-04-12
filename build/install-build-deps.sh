@@ -259,6 +259,7 @@ lib_list="\
   libspeechd2
   libstdc++6
   libsqlite3-0
+  libwayland-egl1-mesa
   libx11-6
   libx11-xcb1
   libxau6
