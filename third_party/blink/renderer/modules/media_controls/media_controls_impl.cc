@@ -676,7 +676,8 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   StringBuilder builder;
   builder.Append(kStateCSSClasses[state]);
 
-  if (MediaElement().IsHTMLVideoElement() && !is_acting_as_audio_controls_ &&
+  if (MediaElement().ShouldShowControls() &&
+      MediaElement().IsHTMLVideoElement() && !is_acting_as_audio_controls_ &&
       !VideoElement().HasAvailableVideoFrame() &&
       VideoElement().PosterImageURL().IsEmpty() &&
       state <= ControlsState::kLoadingMetadata) {
@@ -847,6 +848,7 @@ void MediaControlsImpl::MaybeShow() {
     loading_panel_->OnControlsShown();
 
   timeline_->OnControlsShown();
+  UpdateCSSClassFromState();
 }
 
 void MediaControlsImpl::Hide() {
@@ -870,6 +872,8 @@ void MediaControlsImpl::Hide() {
     EndScrubbing();
   }
   timeline_->OnControlsHidden();
+
+  UpdateCSSClassFromState();
 }
 
 bool MediaControlsImpl::IsVisible() const {
