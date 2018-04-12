@@ -12,6 +12,16 @@
 
 namespace syncer {
 
+void FakeSyncService::SetAuthenticatedAccountInfo(
+    const AccountInfo& account_info) {
+  account_info_ = account_info;
+}
+AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
+  return account_info_;
+}
+
+// Dummy methods
+
 FakeSyncService::FakeSyncService()
     : error_(GoogleServiceAuthError::NONE),
       user_share_(std::make_unique<UserShare>()) {}
@@ -204,10 +214,6 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
 
 void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
-
-AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
-  return AccountInfo();
-}
 
 GlobalIdMapper* FakeSyncService::GetGlobalIdMapper() const {
   return nullptr;

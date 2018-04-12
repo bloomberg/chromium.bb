@@ -37,7 +37,12 @@ syncer::UserEventService* UserEventServiceFactory::GetForProfile(
 UserEventServiceFactory::UserEventServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "UserEventService",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  // TODO(vitaliii): This is missing
+  // DependsOn(ProfileSyncServiceFactory::GetInstance()), which we can't
+  // simply add because ProfileSyncServiceFactory itself depends on this
+  // factory.
+}
 
 UserEventServiceFactory::~UserEventServiceFactory() {}
 
@@ -61,7 +66,7 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
                               chrome::GetChannel()));
   auto bridge = std::make_unique<syncer::UserEventSyncBridge>(
       std::move(store_factory), std::move(change_processor),
-      sync_service->GetGlobalIdMapper());
+      sync_service->GetGlobalIdMapper(), sync_service);
   return new syncer::UserEventServiceImpl(sync_service, std::move(bridge));
 }
 
