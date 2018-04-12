@@ -11,6 +11,7 @@
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/download_manager.h"
+#include "ui/gfx/geometry/size.h"
 
 class SkBitmap;
 

@@ -21,6 +21,7 @@ namespace {
 
 const char kExampleUniqueId[] = "7e57ab1e-c0de-a150-ca75-1e75f005ba11";
 const char kExampleUniqueId2[] = "17467386-60b4-4c5b-b66c-aabf793fd39b";
+const int kIconDisplaySize = 192;
 
 class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
  public:
@@ -28,7 +29,9 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
   // BackgroundFetchDelegate implementation:
   void GetIconDisplaySize(
-      BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override {}
+      BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override {
+    std::move(callback).Run(gfx::Size(kIconDisplaySize, kIconDisplaySize));
+  }
   void CreateDownloadJob(
       const std::string& job_unique_id,
       const std::string& title,
@@ -115,6 +118,13 @@ class FakeController : public BackgroundFetchDelegateProxy::Controller {
 class BackgroundFetchDelegateProxyTest : public BackgroundFetchTestBase {
  public:
   BackgroundFetchDelegateProxyTest() : delegate_proxy_(&delegate_) {}
+  void DidGetIconDisplaySize(base::Closure quit_closure,
+                             gfx::Size* out_display_size,
+                             const gfx::Size& display_size) {
+    DCHECK(out_display_size);
+    *out_display_size = display_size;
+    std::move(quit_closure).Run();
+  }
 
  protected:
   FakeBackgroundFetchDelegate delegate_;
@@ -205,6 +215,17 @@ TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
   EXPECT_FALSE(controller.request_completed_) << "Aborted job completed";
   EXPECT_TRUE(controller2.request_started_) << "Normal job did not start";
   EXPECT_TRUE(controller2.request_completed_) << "Normal job did not complete";
+}
+
+TEST_F(BackgroundFetchDelegateProxyTest, GetIconDisplaySize) {
+  gfx::Size out_display_size;
+  base::RunLoop run_loop;
+  delegate_proxy_.GetIconDisplaySize(base::BindOnce(
+      &BackgroundFetchDelegateProxyTest::DidGetIconDisplaySize,
+      base::Unretained(this), run_loop.QuitClosure(), &out_display_size));
+  run_loop.Run();
+  EXPECT_EQ(out_display_size.width(), kIconDisplaySize);
+  EXPECT_EQ(out_display_size.height(), kIconDisplaySize);
 }
 
 }  // namespace content

@@ -18,13 +18,10 @@
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 class SkBitmap;
 
 namespace content {
-
-class BackgroundFetchDelegate;
 
 // Proxy class for passing messages between BackgroundFetchJobControllers on the
 // IO thread and BackgroundFetchDelegate on the UI thread.
