@@ -177,7 +177,6 @@ void ResourceDispatcher::OnReceivedResponse(
 
   request_info->mime_type = response_head.mime_type;
   request_info->network_accessed = response_head.network_accessed;
-  request_info->priority = response_head.priority;
   if (!IsResourceTypeFrame(request_info->resource_type)) {
     NotifySubresourceStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
@@ -287,7 +286,6 @@ void ResourceDispatcher::OnRequestComplete(
     resource_load_info->ip = request_info->parsed_ip;
   resource_load_info->mime_type = request_info->mime_type;
   resource_load_info->network_accessed = request_info->network_accessed;
-  resource_load_info->priority = request_info->priority;
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
   resource_load_info->request_start = request_info->request_start;
@@ -390,7 +388,6 @@ void ResourceDispatcher::DidChangePriority(int request_id,
     return;
   }
 
-  request_info->priority = new_priority;
   request_info->url_loader->SetPriority(new_priority, intra_priority_value);
 }
 
