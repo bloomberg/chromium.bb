@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
@@ -29,6 +30,9 @@
 #include "extensions/browser/updater/extension_update_data.h"
 #include "extensions/browser/updater/update_service.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
+#include "extensions/common/extension_urls.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -725,6 +729,95 @@ TEST_F(UpdateServiceTest, InProgressUpdate_4Overlapped) {
   update_client()->RunDelayedUpdate(2);
   ASSERT_TRUE(executed4);
 }
+
+class UpdateServiceCanUpdateTest : public UpdateServiceTest,
+                                   public ::testing::WithParamInterface<bool> {
+ public:
+  UpdateServiceCanUpdateTest() {}
+  ~UpdateServiceCanUpdateTest() override {}
+
+  void SetUp() override {
+    UpdateServiceTest::SetUp();
+
+    if (GetParam()) {
+      scoped_feature_list_.InitAndEnableFeature(
+          features::kNewExtensionUpdaterService);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kNewExtensionUpdaterService);
+    }
+
+    store_extension_ =
+        ExtensionBuilder("store_extension")
+            .MergeManifest(
+                DictionaryBuilder()
+                    .Set("update_url",
+                         extension_urls::GetDefaultWebstoreUpdateUrl().spec())
+                    .Build())
+            .Build();
+    offstore_extension_ =
+        ExtensionBuilder("offstore_extension")
+            .MergeManifest(
+                DictionaryBuilder()
+                    .Set("update_url", "http://localhost/test/updates.xml")
+                    .Build())
+            .Build();
+
+    ASSERT_TRUE(store_extension_.get());
+    ASSERT_TRUE(ExtensionRegistry::Get(browser_context())
+                    ->AddEnabled(store_extension_));
+    ASSERT_TRUE(offstore_extension_.get());
+    ASSERT_TRUE(ExtensionRegistry::Get(browser_context())
+                    ->AddEnabled(offstore_extension_));
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<Extension> store_extension_;
+  scoped_refptr<Extension> offstore_extension_;
+};
+
+class UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl
+    : public UpdateServiceCanUpdateTest {
+ public:
+  void SetUp() override {
+    UpdateServiceCanUpdateTest::SetUp();
+
+    // Change the webstore update url.
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    // Note: |offstore_extension_|'s update url is the same.
+    command_line->AppendSwitchASCII("apps-gallery-update-url",
+                                    "http://localhost/test/updates.xml");
+    ExtensionsClient::Get()->InitializeWebStoreUrls(
+        base::CommandLine::ForCurrentProcess());
+  }
+};
+
+TEST_P(UpdateServiceCanUpdateTest, UpdateService_CanUpdate) {
+  // Update service can only update webstore extensions when enabled.
+  EXPECT_EQ(GetParam(), update_service()->CanUpdate(store_extension_->id()));
+  // It can't update off-store extrensions.
+  EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
+  // ... or extensions that don't exist.
+  EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));
+}
+
+TEST_P(UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
+       UpdateService_CanUpdate) {
+  // Update service cannot update extensions when the default webstore update
+  // url is changed.
+  EXPECT_FALSE(update_service()->CanUpdate(store_extension_->id()));
+  EXPECT_FALSE(update_service()->CanUpdate(offstore_extension_->id()));
+  EXPECT_FALSE(update_service()->CanUpdate(std::string(32, 'a')));
+}
+
+INSTANTIATE_TEST_CASE_P(CanUpdateTest,
+                        UpdateServiceCanUpdateTest,
+                        ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(CanUpdateTest,
+                        UpdateServiceCanUpdateFeatureEnabledNonDefaultUpdateUrl,
+                        ::testing::Bool());
 
 }  // namespace
 

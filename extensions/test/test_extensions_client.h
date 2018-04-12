@@ -65,7 +65,7 @@ class TestExtensionsClient : public ExtensionsClient {
   std::set<BrowserImagePathsFilter*> browser_image_filters_;
 
   const GURL webstore_base_url_;
-  const GURL webstore_update_url_;
+  GURL webstore_update_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TestExtensionsClient);
 };
