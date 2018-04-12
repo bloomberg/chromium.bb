@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"

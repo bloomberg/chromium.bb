@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
-#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"

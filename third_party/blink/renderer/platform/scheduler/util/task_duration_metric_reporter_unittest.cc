@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/values.h"

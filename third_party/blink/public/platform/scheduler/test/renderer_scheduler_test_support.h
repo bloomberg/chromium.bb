@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_SCHEDULER_TEST_RENDERER_SCHEDULER_TEST_SUPPORT_H_
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 
 namespace base {
 class SequencedTaskRunner;

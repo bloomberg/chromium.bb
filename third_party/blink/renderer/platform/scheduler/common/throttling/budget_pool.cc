@@ -6,7 +6,6 @@
 
 #include <cstdint>
 
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 

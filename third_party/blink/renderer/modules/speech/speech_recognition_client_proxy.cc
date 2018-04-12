@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_speech_grammar.h"

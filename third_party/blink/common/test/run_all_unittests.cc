@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/test/test_suite.h"
 
 int main(int argc, char** argv) {
