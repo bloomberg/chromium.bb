@@ -296,3 +296,19 @@ D. Local Modifications
     upstream bug: https://ssl.icu-project.org/trac/ticket/13692
     (62-to-be does not have this issue)
   - bug: crbug.com/829144
+
+11. Limit the recursion depth of UnicodeSet pattern
+
+  - patches/uset_depth.patch
+    upstream bug: https://ssl.icu-project.org/trac/ticket/13547
+
+12. Fix a bug in non-BMP character handling in dictionary-based CJK
+    break iterator.
+
+  - patches/cjkdict_nonbmp.patch
+    upstream bug: https://ssl.icu-project.org/trac/ticket/13549
+
+13. Fix the undefined behavior in decimal number parsing
+
+  - patches/number_ub.patch
+  - upstream bug: https://ssl.icu-project.org/trac/ticket/13550
