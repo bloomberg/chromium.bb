@@ -228,6 +228,8 @@ class ServiceManager::Instance
   }
 
   void Stop() {
+    DCHECK_NE(state_, State::STOPPED);
+
     // Shutdown all bindings. This way the process should see the pipes closed
     // and exit, as well as waking up any potential
     // sync/WaitForIncomingResponse().
@@ -244,10 +246,15 @@ class ServiceManager::Instance
       // Notify the ServiceManager that this Instance is really going away.
       service_manager_->OnInstanceStopped(identity_);
     }
+
+    state_ = State::STOPPED;
   }
 
   ~Instance() override {
-    Stop();
+    // The instance may have already been stopped prior to destruction if the
+    // ServiceManager itself is being torn down.
+    if (state_ != State::STOPPED)
+      Stop();
   }
 
   bool CallOnBindInterface(std::unique_ptr<ConnectParams>* in_params) {
@@ -373,7 +380,10 @@ class ServiceManager::Instance
     STARTING,
 
     // The service was started successfully.
-    STARTED
+    STARTED,
+
+    // The service has been stopped.
+    STOPPED,
   };
 
   class InterfaceProviderImpl : public mojom::InterfaceProvider {
@@ -897,10 +907,12 @@ ServiceManager::~ServiceManager() {
   // the case where one Instance's destructor blocks waiting for its Runner to
   // quit, while that Runner's corresponding Service blocks its shutdown on a
   // distinct Service receiving a connection error.
-  for (const auto& instance : instances_)
-    instance.first->Stop();
-  service_manager_instance->Stop();
+  for (const auto& instance : instances_) {
+    if (instance.first != service_manager_instance_)
+      instance.first->Stop();
+  }
 
+  service_manager_instance->Stop();
   instances_.clear();
 }
 
