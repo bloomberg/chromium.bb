@@ -345,6 +345,21 @@ void GpuDataManagerImplPrivate::RequestCompleteGpuInfoIfNeeded() {
       }));
 }
 
+void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion() {
+#if defined(OS_WIN)
+  base::OnceClosure task = base::BindOnce([]() {
+    GpuProcessHost* host = GpuProcessHost::Get(
+        GpuProcessHost::GPU_PROCESS_KIND_UNSANDBOXED, true /* force_create */);
+    if (!host)
+      return;
+    host->gpu_service()->GetGpuSupportedRuntimeVersion();
+  });
+
+  BrowserThread::PostDelayedTask(BrowserThread::IO, FROM_HERE, std::move(task),
+                                 base::TimeDelta::FromMilliseconds(15000));
+#endif
+}
+
 bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
   // We always update GPUInfo and GpuFeatureInfo from GPU process together.
   return IsGpuFeatureInfoAvailable();

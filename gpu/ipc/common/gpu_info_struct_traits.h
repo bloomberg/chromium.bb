@@ -242,6 +242,13 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static const gpu::DxDiagNode& dx_diagnostics(const gpu::GPUInfo& input) {
     return input.dx_diagnostics;
   }
+
+  static bool supports_dx12(const gpu::GPUInfo& input) {
+    return input.supports_dx12;
+  }
+  static bool supports_vulkan(const gpu::GPUInfo& input) {
+    return input.supports_vulkan;
+  }
 #endif
 
   static const gpu::VideoDecodeAcceleratorCapabilities&

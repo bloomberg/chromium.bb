@@ -103,6 +103,10 @@ struct GpuInfo {
   bool can_support_threaded_texture_mailbox;
   [EnableIf=is_win]
   DxDiagNode dx_diagnostics;
+  [EnableIf=is_win]
+  bool supports_dx12;
+  [EnableIf=is_win]
+  bool supports_vulkan;
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
   array<VideoEncodeAcceleratorSupportedProfile>
     video_encode_accelerator_supported_profiles;

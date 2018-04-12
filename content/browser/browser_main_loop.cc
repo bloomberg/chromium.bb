@@ -1391,6 +1391,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
                        true /* force_create */));
   }
 
+#if defined(OS_WIN)
+  GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
+#endif
+
 #if defined(OS_MACOSX)
   ThemeHelperMac::GetInstance();
   SystemHotkeyHelperMac::GetInstance()->DeferredLoadSystemHotkeys();

@@ -220,6 +220,12 @@ struct GPU_EXPORT GPUInfo {
 #if defined(OS_WIN)
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
+
+  // True if the GPU driver supports DX12.
+  bool supports_dx12 = false;
+
+  // True if the GPU driver supports Vulkan.
+  bool supports_vulkan = false;
 #endif
 
   VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
