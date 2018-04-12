@@ -31,7 +31,17 @@ bool OriginTrials::{{feature.first_lowered_name}}Enabled(const ExecutionContext*
 {% endif %}
 
   const OriginTrialContext* context = OriginTrialContext::From(executionContext);
-  return context && context->IsTrialEnabled(OriginTrials::k{{feature.name}}TrialName);
+  if (!context) return false;
+  if (context->IsTrialEnabled(k{{feature.name}}TrialName))
+    return true;
+{% for implied_by_name in feature.implied_by_origin_trials %}
+  // TODO(crbug.com/831346): This check should be redundant with
+  // GetImpliedTrials() being checked in OriginTrialContext::EnableTrialFromToken().
+  // Remove when verified by further testing.
+  if (context->IsTrialEnabled(k{{implied_by_name}}TrialName))
+    return true;
+{% endfor %}
+  return false;
 {% if feature.origin_trial_os %}
 #else
   return false;
@@ -41,5 +51,19 @@ bool OriginTrials::{{feature.first_lowered_name}}Enabled(const ExecutionContext*
 
 {% endif %}
 {% endfor %}
+
+Vector<AtomicString> OriginTrials::GetImpliedTrials(const String& trial_name) {
+{% for implied_by_name, implied_list in implied_origin_trial_features.items() %}
+  if (trial_name == k{{implied_by_name}}TrialName) {
+    Vector<AtomicString> implied_trials = {
+{%- for implied_name in implied_list %}
+AtomicString(k{{implied_name}}TrialName),
+{%- endfor %}
+};
+    return implied_trials;
+  }
+{% endfor %}
+  return Vector<AtomicString>();
+}
 
 } // namespace blink

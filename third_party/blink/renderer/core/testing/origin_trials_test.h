@@ -52,6 +52,8 @@ class OriginTrialsTest : public ScriptWrappable {
   bool secureMethod() { return true; }
   static bool secureStaticMethod() { return true; }
 
+  bool impliedAttribute() { return true; }
+
  private:
   OriginTrialsTest() = default;
 };

@@ -99,6 +99,12 @@ void InstallOriginTrialFeaturesForTesting(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);
     }
+    if (blink::OriginTrials::originTrialsSampleAPIImpliedEnabled(
+            execution_context)) {
+      blink::V8OriginTrialsTest::installOriginTrialsSampleAPIImplied(
+          script_state->GetIsolate(), script_state->World(),
+          v8::Local<v8::Object>(), prototype_object, interface_object);
+    }
   }
 }
 
@@ -130,12 +136,23 @@ void InstallPendingOriginTrialFeatureForTesting(
                                                               script_state);
   v8::Local<v8::Object> prototype_object;
   v8::Local<v8::Function> interface_object;
-  if (feature == "Frobulate") {
+  if (feature == blink::OriginTrials::kOriginTrialsSampleAPITrialName) {
     if (script_state->PerContextData()
             ->GetExistingConstructorAndPrototypeForType(
                 &blink::V8OriginTrialsTest::wrapperTypeInfo, &prototype_object,
                 &interface_object)) {
       blink::V8OriginTrialsTest::installOriginTrialsSampleAPI(
+          script_state->GetIsolate(), script_state->World(),
+          v8::Local<v8::Object>(), prototype_object, interface_object);
+    }
+    return;
+  }
+  if (feature == blink::OriginTrials::kOriginTrialsSampleAPIImpliedTrialName) {
+    if (script_state->PerContextData()
+            ->GetExistingConstructorAndPrototypeForType(
+                &blink::V8OriginTrialsTest::wrapperTypeInfo, &prototype_object,
+                &interface_object)) {
+      blink::V8OriginTrialsTest::installOriginTrialsSampleAPIImplied(
           script_state->GetIsolate(), script_state->World(),
           v8::Local<v8::Object>(), prototype_object, interface_object);
     }

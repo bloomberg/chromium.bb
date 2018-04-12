@@ -46,11 +46,39 @@ class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
             (self.file_basename + '.cc'): self.generate_implementation,
             (self.file_basename + '.h'): self.generate_header,
         }
+        # Set up the implied_by relationships between trials.
+        implied_mappings = dict()
+        for implied_feature in (
+                feature for feature in self._origin_trial_features
+                if feature['implied_by']):
+            # An origin trial can only be implied by other features that also
+            # have a trial defined.
+            implied_by_trials = []
+            for implied_by_name in implied_feature['implied_by']:
+                if any(implied_by_name == feature['name']
+                       for feature in self._origin_trial_features):
+
+                    implied_by_trials.append(implied_by_name)
+
+                    # Keep a list of origin trial features implied for each
+                    # trial. This is essentially an inverse of the implied_by
+                    # list attached to each feature.
+                    implied_list = implied_mappings.get(implied_by_name)
+                    if implied_list is None:
+                        implied_list = set()
+                        implied_mappings[implied_by_name] = implied_list
+                    implied_list.add(implied_feature['name'])
+
+            implied_feature['implied_by_origin_trials'] = implied_by_trials
+
+        self._implied_mappings = implied_mappings
 
     @template_expander.use_jinja('templates/' + file_basename + '.cc.tmpl')
     def generate_implementation(self):
         return {
             'features': self._features,
+            'origin_trial_features': self._origin_trial_features,
+            'implied_origin_trial_features': self._implied_mappings,
             'input_files': self._input_files,
         }
 
@@ -58,6 +86,8 @@ class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
     def generate_header(self):
         return {
             'features': self._features,
+            'origin_trial_features': self._origin_trial_features,
+            'implied_origin_trial_features': self._implied_mappings,
             'input_files': self._input_files,
         }
 

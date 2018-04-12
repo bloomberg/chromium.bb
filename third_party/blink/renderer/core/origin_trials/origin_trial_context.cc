@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/origin_trial_features.h"
 #include "third_party/blink/renderer/platform/histogram.h"
@@ -265,6 +266,12 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
   if (token_result == OriginTrialTokenStatus::kSuccess) {
     valid = true;
     enabled_trials_.insert(trial_name);
+    // Also enable any trials implied by this trial
+    Vector<AtomicString> implied_trials =
+        OriginTrials::GetImpliedTrials(trial_name);
+    for (const AtomicString& implied_trial_name : implied_trials) {
+      enabled_trials_.insert(implied_trial_name);
+    }
   }
 
   TokenValidationResultHistogram().Count(static_cast<int>(token_result));

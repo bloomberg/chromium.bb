@@ -7,14 +7,16 @@
 #define BLINK_CORE_ORIGIN_TRIALS_ORIGIN_TRIALS_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 class ExecutionContext;
 
-// A namespace with dynamic tests for experimental features which can be enabled through the
-// experimental framework via origin trial tokens.
+// A namespace with dynamic tests for experimental features which can be
+// enabled by the origin trials framework via origin trial tokens.
 namespace OriginTrials {
 
 {% for feature in features %}
@@ -28,6 +30,8 @@ CORE_EXPORT extern const char k{{feature.name}}TrialName[];
 CORE_EXPORT bool {{feature.first_lowered_name}}Enabled(const ExecutionContext*);
 {% endif %}
 {% endfor %}
+
+CORE_EXPORT Vector<AtomicString> GetImpliedTrials(const String& trial_name);
 
 } // namespace OriginTrials
 
