@@ -50,8 +50,7 @@ ExclusiveAccessManager::GetExclusiveAccessExitBubbleType() const {
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
     }
 
-    if (keyboard_lock_controller_.IsKeyboardLockActive() &&
-        keyboard_lock_controller_.RequiresPressAndHoldEscToExit())
+    if (keyboard_lock_controller_.RequiresPressAndHoldEscToExit())
       return EXCLUSIVE_ACCESS_BUBBLE_TYPE_KEYBOARD_LOCK_EXIT_INSTRUCTION;
 
     if (mouse_lock_controller_.IsMouseLocked())
