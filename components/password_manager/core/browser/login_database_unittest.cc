@@ -1517,6 +1517,8 @@ TEST_F(LoginDatabaseTest, ReportMetricsTest) {
       "PasswordManager.EmptyUsernames.WithoutCorrespondingNonempty",
       1,
       1);
+  histogram_tester.ExpectUniqueSample("PasswordManager.InaccessiblePasswords",
+                                      0, 1);
 }
 
 TEST_F(LoginDatabaseTest, PasswordReuseMetrics) {
