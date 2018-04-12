@@ -108,12 +108,6 @@ const int kMaxFetchCount = 100;
   return self.tableView.indexPathsForSelectedRows.count;
 }
 
-- (void)showHistoryMatchingQuery:(NSString*)query {
-  self.finishedLoading = NO;
-  self.currentQuery = query;
-  [self fetchHistoryForQuery:query continuation:false];
-}
-
 - (void)deleteSelectedItemsFromHistory {
   // TODO(crbug.com/805190): Migrate.
 }
@@ -394,6 +388,17 @@ const int kMaxFetchCount = 100;
 }
 
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
+  // TODO(crbug.com/805190): Migrate.
+}
+
+#pragma mark - HistoryTableUpdaterDelegate
+
+- (void)showHistoryMatchingQuery:(NSString*)query {
+  self.finishedLoading = NO;
+  self.currentQuery = query;
+  [self fetchHistoryForQuery:query continuation:false];
+}
+- (void)deleteSelectedItems {
   // TODO(crbug.com/805190): Migrate.
 }
 
