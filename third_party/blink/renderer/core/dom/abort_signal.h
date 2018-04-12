@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTSIGNAL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTSIGNAL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ABORT_SIGNAL_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ABORT_SIGNAL_H_
 
 #include "base/callback_forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -69,4 +69,4 @@ class CORE_EXPORT AbortSignal final : public EventTargetWithInlineData {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_CORE_DOM_ABORTSIGNAL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ABORT_SIGNAL_H_

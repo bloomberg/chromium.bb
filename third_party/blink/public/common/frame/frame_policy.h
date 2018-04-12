@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
-#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -35,4 +35,4 @@ struct BLINK_COMMON_EXPORT FramePolicy {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_FRAME_FRAME_POLICY_H_

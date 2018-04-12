@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H__
-#define THIRD_PARTY_WEBKIT_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H__
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H_
 
 #include <string>
 #include "third_party/blink/common/common_export.h"
@@ -25,4 +25,4 @@ bool BLINK_COMMON_EXPORT IsSupportedMimeType(const std::string& mime_type);
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H__
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MIME_UTIL_MIME_UTIL_H_
