@@ -9,6 +9,7 @@
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 
 using views::Button;
@@ -24,13 +25,15 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
 
-    controller_ =
-        std::make_unique<UnifiedSystemTrayController>(GetPrimarySystemTray());
+    model_ = std::make_unique<UnifiedSystemTrayModel>();
+    controller_ = std::make_unique<UnifiedSystemTrayController>(
+        model_.get(), GetPrimarySystemTray());
   }
 
   void TearDown() override {
     controller_.reset();
     top_shortcuts_view_.reset();
+    model_.reset();
     NoSessionAshTestBase::TearDown();
   }
 
@@ -60,6 +63,7 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
   }
 
  private:
+  std::unique_ptr<UnifiedSystemTrayModel> model_;
   std::unique_ptr<UnifiedSystemTrayController> controller_;
   std::unique_ptr<TopShortcutsView> top_shortcuts_view_;
 

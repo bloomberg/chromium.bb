@@ -6,6 +6,7 @@
 
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 
 namespace ash {
@@ -19,14 +20,16 @@ class AccessibilityFeaturePodControllerTest : public NoSessionAshTestBase {
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
 
-    tray_controller_ =
-        std::make_unique<UnifiedSystemTrayController>(GetPrimarySystemTray());
+    tray_model_ = std::make_unique<UnifiedSystemTrayModel>();
+    tray_controller_ = std::make_unique<UnifiedSystemTrayController>(
+        tray_model_.get(), GetPrimarySystemTray());
   }
 
   void TearDown() override {
     button_.reset();
     controller_.reset();
     tray_controller_.reset();
+    tray_model_.reset();
     NoSessionAshTestBase::TearDown();
   }
 
@@ -44,6 +47,7 @@ class AccessibilityFeaturePodControllerTest : public NoSessionAshTestBase {
   FeaturePodButton* button() { return button_.get(); }
 
  private:
+  std::unique_ptr<UnifiedSystemTrayModel> tray_model_;
   std::unique_ptr<UnifiedSystemTrayController> tray_controller_;
   std::unique_ptr<AccessibilityFeaturePodController> controller_;
   std::unique_ptr<FeaturePodButton> button_;

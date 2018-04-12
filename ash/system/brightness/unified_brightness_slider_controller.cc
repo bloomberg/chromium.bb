@@ -8,17 +8,20 @@
 #include "ash/system/brightness/tray_brightness.h"
 #include "ash/system/brightness/unified_brightness_view.h"
 #include "ash/system/brightness_control_delegate.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 
 namespace ash {
 
-UnifiedBrightnessSliderController::UnifiedBrightnessSliderController() =
-    default;
+UnifiedBrightnessSliderController::UnifiedBrightnessSliderController(
+    UnifiedSystemTrayModel* model)
+    : model_(model) {}
+
 UnifiedBrightnessSliderController::~UnifiedBrightnessSliderController() =
     default;
 
 views::View* UnifiedBrightnessSliderController::CreateView() {
   DCHECK(!slider_);
-  slider_ = new UnifiedBrightnessView(this);
+  slider_ = new UnifiedBrightnessView(this, model_);
   return slider_;
 }
 

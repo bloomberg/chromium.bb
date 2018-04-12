@@ -17,7 +17,7 @@ namespace ash {
 // horizontally placed.
 class ASH_EXPORT FeaturePodsContainerView : public views::View {
  public:
-  FeaturePodsContainerView();
+  explicit FeaturePodsContainerView(bool initially_expanded);
   ~FeaturePodsContainerView() override;
 
   // Change the expanded state. 0.0 if collapsed, and 1.0 if expanded.
@@ -41,7 +41,7 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View {
   void UpdateCollapsedSidePadding();
 
   // The last |expanded_amount| passed to SetExpandedAmount().
-  double expanded_amount_ = 1.0;
+  double expanded_amount_;
 
   // Horizontal side padding in dip for collapsed state.
   int collapsed_side_padding_ = 0;

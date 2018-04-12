@@ -9,7 +9,8 @@
 
 namespace ash {
 
-FeaturePodsContainerView::FeaturePodsContainerView() {}
+FeaturePodsContainerView::FeaturePodsContainerView(bool initially_expanded)
+    : expanded_amount_(initially_expanded ? 1.0 : 0.0) {}
 
 FeaturePodsContainerView::~FeaturePodsContainerView() = default;
 

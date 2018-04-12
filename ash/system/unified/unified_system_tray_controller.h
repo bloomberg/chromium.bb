@@ -24,6 +24,7 @@ class SystemTray;
 class SystemTrayItem;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
+class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
 // Controller class of UnifiedSystemTrayView. Handles events of the view.
@@ -31,7 +32,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
  public:
   // |system_tray| is used to show detailed views which are still not
   // implemented on UnifiedSystemTray.
-  UnifiedSystemTrayController(SystemTray* system_tray);
+  UnifiedSystemTrayController(UnifiedSystemTrayModel* model,
+                              SystemTray* system_tray);
   ~UnifiedSystemTrayController() override;
 
   // Create the view. The created view is unowned.
@@ -69,6 +71,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
 
+  UnifiedSystemTrayModel* model() { return model_; }
+
  private:
   // Initialize feature pod controllers and their views.
   // If you want to add a new feature pod item, you have to add here.
@@ -91,6 +95,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // value. For example, if the view is expanded and it's dragged to the top, it
   // keeps returning 1.0.
   double GetDragExpandedAmount(const gfx::Point& location) const;
+
+  // Model that stores UI specific variables. Unowned.
+  UnifiedSystemTrayModel* const model_;
 
   // Only used to show detailed views which are still not implemented on
   // UnifiedSystemTray. Unowned.

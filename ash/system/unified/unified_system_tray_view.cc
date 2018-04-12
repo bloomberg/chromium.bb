@@ -11,6 +11,7 @@
 #include "ash/system/unified/unified_message_center_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/unified_system_tray_model.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/background.h"
@@ -18,7 +19,11 @@
 
 namespace ash {
 
-UnifiedSlidersContainerView::UnifiedSlidersContainerView() = default;
+UnifiedSlidersContainerView::UnifiedSlidersContainerView(
+    bool initially_expanded)
+    : expanded_amount_(initially_expanded ? 1.0 : 0.0) {
+  SetVisible(initially_expanded);
+}
 
 UnifiedSlidersContainerView::~UnifiedSlidersContainerView() = default;
 
@@ -62,13 +67,14 @@ void UnifiedSlidersContainerView::UpdateOpacity() {
 }
 
 UnifiedSystemTrayView::UnifiedSystemTrayView(
-    UnifiedSystemTrayController* controller)
+    UnifiedSystemTrayController* controller,
+    bool initially_expanded)
     : controller_(controller),
       message_center_view_(
           new UnifiedMessageCenterView(message_center::MessageCenter::Get())),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
-      feature_pods_container_(new FeaturePodsContainerView()),
-      sliders_container_(new UnifiedSlidersContainerView()),
+      feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
+      sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),
       system_info_view_(new UnifiedSystemInfoView()) {
   DCHECK(controller_);
 
