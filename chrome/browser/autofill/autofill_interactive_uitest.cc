@@ -1847,6 +1847,33 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
   ExpectFieldValue("phone_form1", "");
 }
 
+// Test that we can Autofill forms where some fields name change during the
+// fill.
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FieldsChangeName) {
+  CreateTestProfile();
+
+  GURL url = embedded_test_server()->GetURL(
+      "/autofill/field_changing_name_during_fill.html");
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+
+  TriggerFormFill("firstname");
+
+  // Wait for the fill to happen.
+  bool has_filled = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(GetRenderViewHost(),
+                                                   "hasFilled()", &has_filled));
+  ASSERT_TRUE(has_filled);
+
+  // Make sure the form was filled correctly.
+  ExpectFieldValue("firstname", "Milton");
+  ExpectFieldValue("address", "4120 Freidrich Lane");
+  ExpectFieldValue("state", "TX");
+  ExpectFieldValue("city", "Austin");
+  ExpectFieldValue("company", "Initech");
+  ExpectFieldValue("email", "red.swingline@initech.com");
+  ExpectFieldValue("phone", "15125551234");
+}
+
 // An extension of the test fixture for tests with site isolation.
 class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
  protected:
