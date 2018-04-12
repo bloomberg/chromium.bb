@@ -669,10 +669,14 @@ DevToolsURLInterceptorRequestJob::GetHttpResponseHeaders() const {
 
 bool DevToolsURLInterceptorRequestJob::GetMimeType(
     std::string* mime_type) const {
+  if (sub_request_) {
+    sub_request_->request()->GetMimeType(mime_type);
+    return true;
+  }
   const net::HttpResponseHeaders* response_headers = GetHttpResponseHeaders();
-  if (!response_headers)
-    return false;
-  return response_headers->GetMimeType(mime_type);
+  if (response_headers)
+    return response_headers->GetMimeType(mime_type);
+  return false;
 }
 
 bool DevToolsURLInterceptorRequestJob::GetCharset(std::string* charset) {
