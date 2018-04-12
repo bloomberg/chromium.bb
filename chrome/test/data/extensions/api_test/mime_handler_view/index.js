@@ -146,7 +146,77 @@ var tests = [
   function testResizeBeforeAttach() {
     checkStreamDetails('testResizeBeforeAttach.csv', true);
     chrome.test.succeed();
-  }
+  },
+
+  function testFullscreen() {
+    function waitForFullscreenAnimation() {
+      return new Promise(resolve => {
+        chrome.runtime.getPlatformInfo(info => {
+          if (info.os != 'mac') {
+            resolve();
+            return;
+          }
+          // Switching in and out of fullscreen doesn't finish until the
+          // animation finishes on Mac.
+          window.setTimeout(resolve, 1000);
+        });
+      });
+    }
+    checkStreamDetails('testFullscreen.csv', false);
+    var calls = 0;
+    var windowId;
+    window.addEventListener('webkitfullscreenchange', async e => {
+      switch (calls) {
+        case 0:  // On fullscreen entered.
+          chrome.test.assertTrue(document.webkitIsFullScreen);
+          chrome.test.assertEq(document.body, document.webkitFullscreenElement);
+          await waitForFullscreenAnimation();
+          chrome.tabs.get(streamDetails.tabId, tab => {
+            chrome.test.assertTrue(tab != null);
+            windowId = tab.windowId;
+            chrome.windows.get(windowId, currentWindow => {
+              chrome.test.assertEq('fullscreen', currentWindow.state);
+              // The mime handler decides to exit fullscreen.
+              document.webkitExitFullscreen();
+            });
+          });
+          break;
+        case 1:  // On fullscreen exited.
+          chrome.test.assertFalse(document.webkitIsFullScreen);
+          chrome.test.assertEq(null, document.webkitFullscreenElement);
+          await waitForFullscreenAnimation();
+          chrome.windows.get(windowId, currentWindow => {
+            chrome.test.assertFalse('fullscreen' == currentWindow.state,
+                                    currentWindow.state);
+            chrome.test.runWithUserGesture(
+                () => document.body.webkitRequestFullscreen());
+          });
+          break;
+        case 2:  // On fullscreen entered again.
+          chrome.test.assertTrue(document.webkitIsFullScreen);
+          chrome.test.assertEq(document.body, document.webkitFullscreenElement);
+          await waitForFullscreenAnimation();
+          chrome.windows.get(windowId, currentWindow => {
+            chrome.test.assertEq('fullscreen', currentWindow.state);
+            // Emulate the user pressing escape to exit fullscreen.
+            chrome.windows.update(windowId, {state: 'normal'});
+          });
+          break;
+        case 3:  // On fullscreen exited.
+          chrome.test.assertFalse(document.webkitIsFullScreen);
+          chrome.test.assertEq(null, document.webkitFullscreenElement);
+          await waitForFullscreenAnimation();
+          chrome.windows.get(windowId, currentWindow => {
+            chrome.test.assertEq('normal', currentWindow.state);
+            chrome.test.succeed();
+          });
+          break;
+      }
+      calls++;
+    });
+    chrome.test.runWithUserGesture(
+        () => document.body.webkitRequestFullscreen());
+  },
 ];
 
 var testsByName = {};

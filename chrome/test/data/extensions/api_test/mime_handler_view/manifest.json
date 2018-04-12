@@ -6,5 +6,9 @@
   "mime_types": [
     "text/csv"
   ],
-  "mime_types_handler": "index.html"
+  "mime_types_handler": "index.html",
+  "permissions": [
+    "tabs",
+    "windows"
+  ]
 }

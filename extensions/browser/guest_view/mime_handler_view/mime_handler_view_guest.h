@@ -104,6 +104,7 @@ class MimeHandlerViewGuest :
                          const WebContentsCreatedCallback& callback) override;
   void DidAttachToEmbedder() override;
   void DidInitialize(const base::DictionaryValue& create_params) final;
+  void EmbedderFullscreenToggled(bool entered_fullscreen) final;
   bool ZoomPropagatesFromEmbedderToGuest() const final;
   bool ShouldDestroyOnDetach() const final;
 
@@ -120,6 +121,15 @@ class MimeHandlerViewGuest :
       content::WebContents* source) final;
   bool SaveFrame(const GURL& url, const content::Referrer& referrer) final;
   void OnRenderFrameHostDeleted(int process_id, int routing_id) final;
+  void EnterFullscreenModeForTab(content::WebContents* web_contents,
+                                 const GURL& origin) override;
+  void ExitFullscreenModeForTab(content::WebContents*) override;
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const override;
+
+  // Updates the fullscreen state for the guest. Returns whether the change
+  // needs to be propagated to the embedder.
+  bool SetFullscreenState(bool is_fullscreen);
 
   // content::WebContentsObserver implementation.
   void DocumentOnLoadCompletedInMainFrame() final;
@@ -138,6 +148,9 @@ class MimeHandlerViewGuest :
   int embedder_widget_routing_id_;
 
   service_manager::BinderRegistry registry_;
+
+  bool is_guest_fullscreen_ = false;
+  bool is_embedder_fullscreen_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewGuest);
 };
