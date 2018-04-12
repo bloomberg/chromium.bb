@@ -2427,9 +2427,6 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_PDF_SelectionChanged,
                      PP_FloatPoint /* right */,
                      int32_t /* right_height */)
 
-// Notify that the plugin has scrolled.
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_DidScroll)
-
 // VideoCapture ----------------------------------------------------------------
 
 // VideoCapture_Dev, plugin -> host

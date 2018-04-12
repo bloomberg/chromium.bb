@@ -173,9 +173,6 @@ struct PPB_PDF {
                            const struct PP_FloatPoint* right,
                            int32_t right_height);
 
-  // Notifies embedder that the PDF has scrolled.
-  void (*DidScroll)(PP_Instance instance);
-
   // Displays an alert dialog.
   void (*ShowAlertDialog)(PP_Instance instance, const char* message);
 

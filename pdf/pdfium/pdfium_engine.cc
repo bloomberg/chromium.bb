@@ -1117,6 +1117,7 @@ void PDFiumEngine::ScrolledToXPosition(int position) {
   position_.set_x(position);
   CalculateVisiblePages();
   client_->DidScroll(pp::Point(old_x - position, 0));
+  OnSelectionPositionChanged();
 }
 
 void PDFiumEngine::ScrolledToYPosition(int position) {
@@ -1126,6 +1127,7 @@ void PDFiumEngine::ScrolledToYPosition(int position) {
   position_.set_y(position);
   CalculateVisiblePages();
   client_->DidScroll(pp::Point(0, old_y - position));
+  OnSelectionPositionChanged();
 }
 
 void PDFiumEngine::PrePaint() {
@@ -3770,8 +3772,10 @@ PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
     }
   }
 
-  if (selection_changed)
-    engine_->OnSelectionChanged();
+  if (selection_changed) {
+    engine_->OnSelectionTextChanged();
+    engine_->OnSelectionPositionChanged();
+  }
 }
 
 std::vector<pp::Rect>
@@ -4021,10 +4025,12 @@ void PDFiumEngine::GetRegion(const pp::Point& location,
   *region = buffer;
 }
 
-void PDFiumEngine::OnSelectionChanged() {
+void PDFiumEngine::OnSelectionTextChanged() {
   DCHECK(!in_form_text_area_);
   pp::PDF::SetSelectedText(GetPluginInstance(), GetSelectedText().c_str());
+}
 
+void PDFiumEngine::OnSelectionPositionChanged() {
   // We need to determine the top-left and bottom-right points of the selection
   // in order to report those to the embedder. This code assumes that the
   // selection list is out of order.

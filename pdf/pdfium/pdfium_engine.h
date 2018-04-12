@@ -444,7 +444,8 @@ class PDFiumEngine : public PDFEngine,
                  int* stride) const;
 
   // Called when the selection changes.
-  void OnSelectionChanged();
+  void OnSelectionTextChanged();
+  void OnSelectionPositionChanged();
 
   // Common code shared by RotateClockwise() and RotateCounterclockwise().
   void RotateInternal();
