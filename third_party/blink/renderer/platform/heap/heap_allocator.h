@@ -129,12 +129,7 @@ class PLATFORM_EXPORT HeapAllocator {
   static bool ExpandHashTableBacking(void*, size_t);
 
   static void BackingWriteBarrier(void* address) {
-#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    if (!address || !ThreadState::IsAnyIncrementalMarking())
-      return;
-    ThreadState* state = PageFromObject(address)->Arena()->GetThreadState();
-    state->Heap().WriteBarrier(address);
-#endif
+    MarkingVisitor::WriteBarrier(address);
   }
 
   template <typename Return, typename Metadata>

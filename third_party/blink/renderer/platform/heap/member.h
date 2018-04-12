@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
+#include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_traits.h"
@@ -270,17 +271,11 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::kTraced> {
   }
 
  protected:
-  ALWAYS_INLINE void WriteBarrier(const T* value) const {
+  ALWAYS_INLINE void WriteBarrier(T* value) const {
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
-    if (LIKELY(value && !this->IsHashTableDeletedValue()) &&
-        ThreadState::IsAnyIncrementalMarking()) {
-      ThreadState* const thread_state = ThreadState::Current();
-      if (thread_state->IsIncrementalMarking()) {
-        // The following method for retrieving a page works as allocation of
-        // mixins on large object pages is prohibited.
-        BasePage* const page = PageFromObject(value);
-        thread_state->Heap().WriteBarrierInternal(page, value);
-      }
+    if (LIKELY(!this->IsHashTableDeletedValue())) {
+      MarkingVisitor::WriteBarrier(
+          const_cast<typename std::remove_const<T>::type*>(value));
     }
 #endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   }

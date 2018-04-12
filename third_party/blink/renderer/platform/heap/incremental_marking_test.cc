@@ -256,16 +256,15 @@ TEST(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
   {
     ExpectWriteBarrierFires<Object> scope(ThreadState::Current(), {object});
     EXPECT_FALSE(object->IsMarked());
-    ThreadState::Current()->Heap().WriteBarrier(object);
+    MarkingVisitor::WriteBarrier(object);
     EXPECT_TRUE(object->IsMarked());
   }
 }
 
 TEST(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
   Object* object = Object::Create();
-  ThreadHeap& heap = ThreadState::Current()->Heap();
   EXPECT_FALSE(object->IsMarked());
-  heap.WriteBarrier(object);
+  MarkingVisitor::WriteBarrier(object);
   EXPECT_FALSE(object->IsMarked());
 }
 

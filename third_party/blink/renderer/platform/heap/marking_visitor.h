@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_MARKING_VISITOR_H_
 
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_buildflags.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 
@@ -33,6 +34,8 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   };
 
   static std::unique_ptr<MarkingVisitor> Create(ThreadState*, MarkingMode);
+
+  inline static void WriteBarrier(void* value);
 
   MarkingVisitor(ThreadState*, MarkingMode);
   virtual ~MarkingVisitor();
@@ -168,6 +171,19 @@ inline void MarkingVisitor::MarkHeader(HeapObjectHeader* header,
     marking_worklist_.Push(
         {reinterpret_cast<void*>(header->Payload()), callback});
   }
+}
+
+inline void MarkingVisitor::WriteBarrier(void* value) {
+#if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
+  if (!ThreadState::IsAnyIncrementalMarking() || !value)
+    return;
+
+  ThreadState* const thread_state = ThreadState::Current();
+  if (!thread_state->IsIncrementalMarking())
+    return;
+
+  thread_state->Heap().WriteBarrier(value);
+#endif  // BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
 }
 
 }  // namespace blink
