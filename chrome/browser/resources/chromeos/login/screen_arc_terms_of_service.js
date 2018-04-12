@@ -418,6 +418,22 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
     },
 
     /**
+     * Checks if class exsists in the list of classes of root OOBE MD style and
+     * legacy style root elements.
+     * @param {string} className class to check.
+     *
+     * @private
+     */
+    hasClass_: function(className) {
+      if (this.useMDOobe) {
+        return $('arc-tos-md')
+            .getElement('arc-tos-dialog-md')
+            .classList.contains(className);
+      }
+      return this.classList.contains(className);
+    },
+
+    /**
      * Handles event when terms view is loaded.
      */
     onTermsViewContentLoad: function() {
@@ -510,6 +526,28 @@ login.createScreen('ArcTermsOfServiceScreen', 'arc-tos', function() {
       // height of ToS webview is not correctly caculated. Recaculate the
       // height here.
       this.updateTermViewHight_();
+      this.focusButton_();
+    },
+
+    /**
+     * Ensures the correct button is focused when the page is shown.
+     *
+     * @private
+     */
+    focusButton_() {
+      var id;
+      if (this.hasClass_('arc-tos-loaded')) {
+        id = 'arc-tos-next-button';
+      } else if (this.hasClass_('error')) {
+        id = 'arc-tos-retry-button';
+      }
+
+      if (typeof id === 'undefined')
+        return;
+
+      setTimeout(function() {
+        this.getElement_(id).focus();
+      }.bind(this), 0);
     },
 
     /**
