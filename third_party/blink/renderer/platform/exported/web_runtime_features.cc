@@ -140,10 +140,6 @@ void WebRuntimeFeatures::EnableGamepadExtensions(bool enable) {
   RuntimeEnabledFeatures::SetGamepadExtensionsEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebXRGamepadSupport(bool enable) {
-  RuntimeEnabledFeatures::SetWebXRGamepadSupportEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableGenericSensor(bool enable) {
   RuntimeEnabledFeatures::SetSensorEnabled(enable);
 }
@@ -356,6 +352,10 @@ void WebRuntimeFeatures::EnableWebVR(bool enable) {
 
 void WebRuntimeFeatures::EnableWebXR(bool enable) {
   RuntimeEnabledFeatures::SetWebXREnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableWebXRGamepadSupport(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRGamepadSupportEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {

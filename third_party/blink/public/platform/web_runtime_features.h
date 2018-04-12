@@ -83,7 +83,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableFileSystem(bool);
   BLINK_PLATFORM_EXPORT static void EnableForceTallerSelectPopup(bool);
   BLINK_PLATFORM_EXPORT static void EnableGamepadExtensions(bool);
-  BLINK_PLATFORM_EXPORT static void EnableWebXRGamepadSupport(bool);
   BLINK_PLATFORM_EXPORT static void EnableGenericSensor(bool);
   BLINK_PLATFORM_EXPORT static void EnableGenericSensorExtraClasses(bool);
   BLINK_PLATFORM_EXPORT static void EnableHeapCompaction(bool);
@@ -151,6 +150,7 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableWebUsb(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebVR(bool);
   BLINK_PLATFORM_EXPORT static void EnableWebXR(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWebXRGamepadSupport(bool);
   BLINK_PLATFORM_EXPORT static void EnableXSLT(bool);
   BLINK_PLATFORM_EXPORT static void ForceOverlayFullscreenVideo(bool);
   BLINK_PLATFORM_EXPORT static void EnableAutoplayMutedVideos(bool);
