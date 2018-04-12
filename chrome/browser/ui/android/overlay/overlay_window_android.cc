@@ -5,6 +5,7 @@
 #include "content/public/browser/overlay_window.h"
 
 // static
-std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create() {
+std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
+    PictureInPictureWindowController* controller) {
   return nullptr;
 }

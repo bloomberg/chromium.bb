@@ -14,7 +14,8 @@
 // implemented in views, which will support all desktop platforms.
 class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
  public:
-  OverlayWindowViews();
+  explicit OverlayWindowViews(
+      content::PictureInPictureWindowController* controller);
   ~OverlayWindowViews() override;
 
   // OverlayWindow:
@@ -31,6 +32,7 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnNativeWidgetWorkspaceChanged() override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
 
  private:
   // Determine the intended bounds of |this|. This should be called when there
@@ -38,6 +40,9 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   // playing a new video (i.e. different aspect ratio). This also updates
   // |min_size_| and |max_size_|.
   gfx::Rect CalculateAndUpdateBounds();
+
+  // Not owned; |controller_| owns |this|.
+  content::PictureInPictureWindowController* controller_;
 
   // The upper and lower bounds of |current_size_|. These are determined by the
   // size of the primary display work area when Picture-in-Picture is initiated.

@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/picture_in_picture_window_controller.h"
 #include "media/base/video_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,8 +18,9 @@
 #include "ui/views/window/non_client_view.h"
 
 // static
-std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create() {
-  return base::WrapUnique(new OverlayWindowViews());
+std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
+    content::PictureInPictureWindowController* controller) {
+  return base::WrapUnique(new OverlayWindowViews(controller));
 }
 
 namespace {
@@ -93,7 +95,9 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowWidgetDelegate);
 };
 
-OverlayWindowViews::OverlayWindowViews() {
+OverlayWindowViews::OverlayWindowViews(
+    content::PictureInPictureWindowController* controller)
+    : controller_(controller) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateBounds();
@@ -181,6 +185,14 @@ gfx::Rect OverlayWindowViews::GetBounds() const {
   return views::Widget::GetRestoredBounds();
 }
 
+void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
+  DCHECK(!natural_size.IsEmpty());
+  natural_size_ = natural_size;
+
+  // Update the views::Widget bounds to adhere to sizing spec.
+  SetBounds(CalculateAndUpdateBounds());
+}
+
 gfx::Size OverlayWindowViews::GetMinimumSize() const {
   return min_size_;
 }
@@ -195,10 +207,10 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
   // does not trigger this function. http://crbug.com/819673
 }
 
-void OverlayWindowViews::UpdateVideoSize(const gfx::Size& natural_size) {
-  DCHECK(!natural_size.IsEmpty());
-  natural_size_ = natural_size;
-
-  // Update the views::Widget bounds to adhere to sizing spec.
-  SetBounds(CalculateAndUpdateBounds());
+void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->IsOnlyLeftMouseButton() &&
+      event->type() == ui::ET_MOUSE_RELEASED) {
+    controller_->TogglePlayPause();
+    event->SetHandled();
+  }
 }
