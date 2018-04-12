@@ -1167,7 +1167,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // return a new OverlayWindow.
   // May return nullptr if embedder does not support this functionality. The
   // default implementation provides nullptr OverlayWindow.
-  virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture();
+  virtual std::unique_ptr<OverlayWindow> CreateWindowForPictureInPicture(
+      PictureInPictureWindowController* controller);
 };
 
 }  // namespace content

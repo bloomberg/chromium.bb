@@ -39,6 +39,9 @@ class PictureInPictureWindowController {
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
 
+  // Commands.
+  virtual void TogglePlayPause() = 0;
+
  protected:
   // Use PictureInPictureWindowController::GetOrCreateForWebContents() to
   // create an instance.

@@ -432,8 +432,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool is_main_frame,
       ui::PageTransition page_transition,
       bool has_user_gesture) override;
-  std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture()
-      override;
+  std::unique_ptr<content::OverlayWindow> CreateWindowForPictureInPicture(
+      content::PictureInPictureWindowController* controller) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

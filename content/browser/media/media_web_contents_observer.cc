@@ -41,6 +41,17 @@ void CheckFullscreenDetectionEnabled(WebContents* web_contents) {
 #endif  // defined(OS_ANDROID)
 }
 
+// Returns true if |player_id| exists in |player_map|.
+bool MediaPlayerEntryExists(
+    const WebContentsObserver::MediaPlayerId& player_id,
+    const MediaWebContentsObserver::ActiveMediaPlayerMap& player_map) {
+  const auto& players = player_map.find(player_id.first);
+  if (players == player_map.end())
+    return false;
+
+  return players->second.find(player_id.second) != players->second.end();
+}
+
 }  // anonymous namespace
 
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
@@ -83,13 +94,7 @@ bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
     return false;
 
   // Check that the player is active.
-  const auto& players = active_video_players_.find(fullscreen_player_->first);
-  if (players == active_video_players_.end())
-    return false;
-  if (players->second.find(fullscreen_player_->second) == players->second.end())
-    return false;
-
-  return true;
+  return MediaPlayerEntryExists(*fullscreen_player_, active_video_players_);
 }
 
 bool MediaWebContentsObserver::IsPictureInPictureAllowedForFullscreenVideo()
@@ -169,6 +174,14 @@ void MediaWebContentsObserver::RequestPersistentVideo(bool value) {
   int delegate_id = fullscreen_player_->second;
   target_frame->Send(new MediaPlayerDelegateMsg_BecamePersistentVideo(
       target_frame->GetRoutingID(), delegate_id, value));
+}
+
+bool MediaWebContentsObserver::IsPlayerActive(
+    const MediaPlayerId& player_id) const {
+  if (MediaPlayerEntryExists(player_id, active_video_players_))
+    return true;
+
+  return MediaPlayerEntryExists(player_id, active_audio_players_);
 }
 
 void MediaWebContentsObserver::OnMediaDestroyed(

@@ -32,11 +32,13 @@ class PictureInPictureWindowControllerImpl
 
   ~PictureInPictureWindowControllerImpl() override;
 
+  // PictureInPictureWindowController:
   CONTENT_EXPORT void Show() override;
   CONTENT_EXPORT void Close() override;
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
+  CONTENT_EXPORT void TogglePlayPause() override;
 
  private:
   friend class WebContentsUserData<PictureInPictureWindowControllerImpl>;
@@ -48,6 +50,7 @@ class PictureInPictureWindowControllerImpl
 
   std::unique_ptr<OverlayWindow> window_;
   std::unique_ptr<OverlaySurfaceEmbedder> embedder_;
+  content::WebContents* const initiator_;
 
   viz::SurfaceId surface_id_;
 

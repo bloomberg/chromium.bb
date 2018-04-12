@@ -715,7 +715,8 @@ bool ContentBrowserClient::HandleExternalProtocol(
 }
 
 std::unique_ptr<OverlayWindow>
-ContentBrowserClient::CreateWindowForPictureInPicture() {
+ContentBrowserClient::CreateWindowForPictureInPicture(
+    PictureInPictureWindowController* controller) {
   return nullptr;
 }
 

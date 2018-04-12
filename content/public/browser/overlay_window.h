@@ -20,6 +20,8 @@ class Layer;
 
 namespace content {
 
+class PictureInPictureWindowController;
+
 // This window will always float above other windows. The intention is to show
 // content perpetually while the user is still interacting with the other
 // browser windows.
@@ -30,7 +32,8 @@ class OverlayWindow {
 
   // Returns a created OverlayWindow. This is defined in the platform-specific
   // implementation for the class.
-  static std::unique_ptr<OverlayWindow> Create();
+  static std::unique_ptr<OverlayWindow> Create(
+      PictureInPictureWindowController* controller);
 
   virtual bool IsActive() const = 0;
   virtual void Show() = 0;
