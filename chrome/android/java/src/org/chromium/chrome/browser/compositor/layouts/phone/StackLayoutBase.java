@@ -943,8 +943,7 @@ public abstract class StackLayoutBase
 
         float getTopHeightOffset() {
             if (FeatureUtilities.isChromeHomeEnabled()) return MODERN_TOP_MARGIN_DP;
-            return (StackLayoutBase.this.getHeight() - getHeightMinusBrowserControls())
-                    * mStackOffsetYPercent;
+            return getTopBrowserControlsHeight() * mStackOffsetYPercent;
         }
     }
 

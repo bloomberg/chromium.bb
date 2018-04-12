@@ -617,7 +617,6 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public float getHeightMinusBrowserControls() {
         return getHeight() - (getTopControlsHeightPixels() + getBottomControlsHeightPixels());
-
     }
 
     @Override
@@ -733,16 +732,12 @@ public class CompositorViewHolder extends FrameLayout
                 : ColorUtils.getTextBoxAlphaForToolbarBackground(mTabVisible);
     }
 
-    /**
-     * @return The height of the top browser controls in pixels.
-     */
+    @Override
     public int getTopControlsHeightPixels() {
         return mFullscreenManager != null ? mFullscreenManager.getTopControlsHeight() : 0;
     }
 
-    /**
-     * @return The height of the bottom conrols in pixels.
-     */
+    @Override
     public int getBottomControlsHeightPixels() {
         return mFullscreenManager != null ? mFullscreenManager.getBottomControlsHeight() : 0;
     }

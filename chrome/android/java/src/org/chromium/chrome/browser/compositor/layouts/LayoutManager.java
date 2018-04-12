@@ -515,7 +515,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             mHost.getWindowViewport(mCachedWindowViewport);
             mHost.getVisibleViewport(mCachedVisibleViewport);
             getActiveLayout().sizeChanged(mCachedVisibleViewport, mCachedWindowViewport,
-                    mHost.getHeightMinusBrowserControls(), getOrientation());
+                    mHost.getTopControlsHeightPixels(), mHost.getBottomControlsHeightPixels(),
+                    getOrientation());
         }
 
         for (int i = 0; i < mTabCache.size(); i++) {

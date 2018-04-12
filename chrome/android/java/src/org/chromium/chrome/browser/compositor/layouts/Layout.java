@@ -79,7 +79,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     // Drawing area properties.
     private float mWidthDp;
     private float mHeightDp;
-    private float mHeightMinusBrowserControlsDp;
+    private float mTopBrowserControlsHeightDp;
+    private float mBottomBrowserControlsHeightDp;
 
     /** A {@link Context} instance. */
     private Context mContext;
@@ -128,7 +129,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         // Invalid sizes
         mWidthDp = -1;
         mHeightDp = -1;
-        mHeightMinusBrowserControlsDp = -1;
+        mTopBrowserControlsHeightDp = -1;
+        mBottomBrowserControlsHeightDp = -1;
 
         mCurrentOrientation = Orientation.UNSET;
         mDpToPx = context.getResources().getDisplayMetrics().density;
@@ -309,22 +311,26 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      *                               {@link Orientation}.
      */
     public final void sizeChanged(RectF visibleViewportPx, RectF screenViewportPx,
-            float heightMinusBrowserControlsPx, int orientation) {
+            float topBrowserControlsHeightPx, float bottomBrowserControlsHeightPx,
+            int orientation) {
         // 1. Pull out this Layout's width and height properties based on the viewport.
         float width = screenViewportPx.width() / mDpToPx;
         float height = screenViewportPx.height() / mDpToPx;
-        float heightMinusBrowserControlsDp = heightMinusBrowserControlsPx / mDpToPx;
+        float topBrowserControlsHeightDp = topBrowserControlsHeightPx / mDpToPx;
+        float bottomBrowserControlsHeightDp = bottomBrowserControlsHeightPx / mDpToPx;
 
         // 2. Check if any Layout-specific properties have changed.
         boolean layoutPropertiesChanged = Float.compare(mWidthDp, width) != 0
                 || Float.compare(mHeightDp, height) != 0
-                || Float.compare(mHeightMinusBrowserControlsDp, heightMinusBrowserControlsDp) != 0
+                || Float.compare(mTopBrowserControlsHeightDp, topBrowserControlsHeightDp) != 0
+                || Float.compare(mBottomBrowserControlsHeightDp, bottomBrowserControlsHeightDp) != 0
                 || mCurrentOrientation != orientation;
 
         // 3. Update the internal sizing properties.
         mWidthDp = width;
         mHeightDp = height;
-        mHeightMinusBrowserControlsDp = heightMinusBrowserControlsDp;
+        mTopBrowserControlsHeightDp = topBrowserControlsHeightDp;
+        mBottomBrowserControlsHeightDp = bottomBrowserControlsHeightDp;
         mCurrentOrientation = orientation;
 
         // 4. Notify the actual Layout if necessary.
@@ -557,10 +563,24 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /**
+     * @return The height of the top browser controls in dp.
+     */
+    public float getTopBrowserControlsHeight() {
+        return mTopBrowserControlsHeightDp;
+    }
+
+    /**
+     * @return The height of the bottom browser controls in dp.
+     */
+    public float getBottomBrowserControlsHeight() {
+        return mBottomBrowserControlsHeightDp;
+    }
+
+    /**
      * @return The height of the drawing area minus the browser controls in dp.
      */
     public float getHeightMinusBrowserControls() {
-        return mHeightMinusBrowserControlsDp;
+        return getHeight() - (getTopBrowserControlsHeight() + getBottomBrowserControlsHeight());
     }
 
     /**
