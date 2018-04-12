@@ -63,7 +63,7 @@ extern NSString* const kWarningMessageAccessibilityID;
 
 // Convenience initializer. Initializes this view controller with the
 // CollectionViewControllerStyleAppBar style and sets up the leading (cancel)
-// and the trailing (done) buttons.
+// and the trailing (save) buttons.
 - (instancetype)init;
 
 @end

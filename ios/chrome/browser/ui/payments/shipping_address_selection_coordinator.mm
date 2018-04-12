@@ -143,6 +143,8 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)addressEditCoordinator:(AddressEditCoordinator*)coordinator
        didFinishEditingAddress:(autofill::AutofillProfile*)address {
+  BOOL isEditing = [self.viewController isEditing];
+
   // Update the data source with the new data.
   [self.mediator loadItems];
 
@@ -158,10 +160,13 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
       self.mediator.selectableItems[position - shippingProfiles.begin()];
   editedItem.complete = YES;
 
-  if (![self.viewController isEditing]) {
+  if (!isEditing) {
     // Update the data source with the selection.
     self.mediator.selectedItemIndex = position - shippingProfiles.begin();
   }
+
+  // Exit 'edit' mode, if applicable.
+  [self.viewController setEditing:NO];
 
   [self.viewController loadModel];
   [self.viewController.collectionView reloadData];
@@ -169,7 +174,7 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   [self.addressEditCoordinator stop];
   self.addressEditCoordinator = nil;
 
-  if (![self.viewController isEditing]) {
+  if (!isEditing) {
     // Inform |self.delegate| that |address| has been selected.
     [self.delegate shippingAddressSelectionCoordinator:self
                               didSelectShippingAddress:address];
@@ -177,6 +182,13 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }
 
 - (void)addressEditCoordinatorDidCancel:(AddressEditCoordinator*)coordinator {
+  // Exit 'edit' mode, if applicable.
+  if ([self.viewController isEditing]) {
+    [self.viewController setEditing:NO];
+    [self.viewController loadModel];
+    [self.viewController.collectionView reloadData];
+  }
+
   [self.addressEditCoordinator stop];
   self.addressEditCoordinator = nil;
 }
