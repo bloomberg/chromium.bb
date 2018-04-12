@@ -44,4 +44,8 @@ interface OriginTrialsTest {
     [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] static readonly attribute boolean secureStaticAttribute;
     [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] boolean secureMethod();
     [SecureContext, OriginTrialEnabled=OriginTrialsSampleAPI] static boolean secureStaticMethod();
+
+    // These are available if the specified trial is available, and also if the
+    // implied by trial is enabled
+    [OriginTrialEnabled=OriginTrialsSampleAPIImplied] readonly attribute boolean impliedAttribute;
 };

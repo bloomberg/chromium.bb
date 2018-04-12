@@ -138,6 +138,19 @@ expect_failure = (skip_worker) => {
   }
 };
 
+// These tests verify that any gated parts of the API are not available for an
+// implied trial.
+expect_failure_implied = (skip_worker) => {
+
+  test(() => {
+      expect_member_fails('impliedAttribute');
+    }, 'Implied attribute should not exist, with trial disabled');
+
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/implied-disabled-worker.js'));
+  }
+};
+
 // These tests verify that the API functions correctly with an enabled trial.
 expect_success = () => {
 
@@ -160,6 +173,22 @@ expect_success = () => {
     }, 'Constant should exist on interface and return value');
 
   fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
+};
+
+// These tests verify that the API functions correctly with an implied trial
+// that is enabled.
+expect_success_implied = (opt_description_suffix, skip_worker) => {
+  var description_suffix = opt_description_suffix || '';
+
+  test(() => {
+      expect_member('impliedAttribute', (testObject) => {
+          return testObject.impliedAttribute;
+        });
+    }, 'Implied attribute should exist on object and return value' + description_suffix);
+
+  if (!skip_worker) {
+    fetch_tests_from_worker(new Worker('resources/implied-enabled-worker.js'));
+  }
 };
 
 // These tests should pass, regardless of the state of the trial. These are

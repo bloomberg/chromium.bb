@@ -45,6 +45,20 @@ expect_failure_worker = () => {
   done();
 }
 
+// Test whether the origin-trial-enabled attributes are *NOT* attached in a
+// worker where the implied trial is not enabled.
+expect_failure_worker_implied = () => {
+  // Use |worker_type| to make the test descriptions unique when multiple
+  // workers are created in a single test file.
+  var worker_type = get_worker_type();
+  test(() => {
+    var testObject = self.internals.originTrialsTest();
+    assert_not_exists(testObject, 'impliedAttribute');
+    assert_equals(testObject.impliedAttribute, undefined);
+  }, 'Implied attribute should not exist in ' + worker_type + ' worker');
+  done();
+}
+
 // Test whether the origin-trial-enabled attributes are attached in a worker
 // where the trial is enabled.
 // This is deliberately just a minimal set of tests to ensure that trials are
@@ -74,5 +88,19 @@ expect_success_worker = () => {
       testObject.CONSTANT = 10;
       assert_equals(testObject.CONSTANT, 1, 'Constant should not be modifiable');
     }, 'Constant should exist and not be modifiable in ' + worker_type + ' worker');
+  done();
+}
+
+// Test whether the origin-trial-enabled attributes are attached in a worker
+// where the implied trial is enabled, either directly or by the related trial.
+expect_success_worker_implied = () => {
+  // Use |worker_type| to make the test descriptions unique when multiple
+  // workers are created in a single test file.
+  var worker_type = get_worker_type();
+  test(() => {
+      var testObject = self.internals.originTrialsTest();
+      assert_idl_attribute(testObject, 'impliedAttribute');
+      assert_true(testObject.impliedAttribute, 'Attribute should return boolean value');
+    }, 'Implied attribute should exist and return value in ' + worker_type + ' worker');
   done();
 }

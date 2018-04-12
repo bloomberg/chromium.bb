@@ -11,7 +11,7 @@
 //   below will expire in 2033, but it would be better to always have a token which
 //   is guaranteed to be valid when the tests are run. -->
 // Generate this token with the command:
-// generate_token.py http://127.0.0.1:8000 Frobulate -expire-timestamp=2000000000
+// generate_token.py http://127.0.0.1:8000 Frobulate --expire-timestamp=2000000000
 var token = "AlCoOPbezqtrGMzSzbLQC4c+oPqO6yuioemcBPjgcXajF8jtmZr4B8tJRPAARPbsX6hDeVyXCKHzEJfpBXvZgQEAAABReyJvcmlnaW4iOiAiaHR0cDovLzEyNy4wLjAuMTo4MDAwIiwgImZlYXR1cmUiOiAiRnJvYnVsYXRlIiwgImV4cGlyeSI6IDIwMDAwMDAwMDB9";
 
 // The trial is not enabled, as no token is provided.
@@ -20,6 +20,7 @@ var token = "AlCoOPbezqtrGMzSzbLQC4c+oPqO6yuioemcBPjgcXajF8jtmZr4B8tJRPAARPbsX6h
 var skip_worker = true;
 expect_failure(skip_worker);
 expect_failure_bindings(' [disabled]');
+expect_failure_implied(skip_worker);
 
 // Add the token to enable the trial
 OriginTrialsHelper.add_token(token);
@@ -27,5 +28,6 @@ OriginTrialsHelper.add_token(token);
 // The trial is now enabled, by the token added via script.
 expect_success();
 expect_success_bindings();
+expect_success_implied();
 
 </script>
