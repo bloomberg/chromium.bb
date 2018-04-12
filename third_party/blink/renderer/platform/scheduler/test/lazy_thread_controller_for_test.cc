@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/test/lazy_thread_controller_for_test.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/default_tick_clock.h"
 

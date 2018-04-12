@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"

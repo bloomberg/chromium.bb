@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"

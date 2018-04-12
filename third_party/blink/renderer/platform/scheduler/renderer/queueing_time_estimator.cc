@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/platform/scheduler/renderer/queueing_time_estimator.h"
 
-#include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 #include <algorithm>

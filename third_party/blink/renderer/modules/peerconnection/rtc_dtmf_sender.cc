@@ -27,7 +27,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
