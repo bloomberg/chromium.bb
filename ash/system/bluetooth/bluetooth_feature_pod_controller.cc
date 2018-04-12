@@ -34,7 +34,7 @@ FeaturePodButton* BluetoothFeaturePodController::CreateButton() {
   return button_;
 }
 
-void BluetoothFeaturePodController::OnPressed() {
+void BluetoothFeaturePodController::OnIconPressed() {
   tray_controller_->ShowBluetoothDetailedView();
 }
 

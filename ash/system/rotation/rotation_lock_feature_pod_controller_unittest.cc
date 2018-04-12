@@ -85,7 +85,7 @@ TEST_F(RotationLockFeaturePodControllerTest,
   EXPECT_FALSE(button_view()->visible());
 }
 
-TEST_F(RotationLockFeaturePodControllerTest, OnPressed) {
+TEST_F(RotationLockFeaturePodControllerTest, OnIconPressed) {
   SetUpController();
   TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
@@ -96,12 +96,12 @@ TEST_F(RotationLockFeaturePodControllerTest, OnPressed) {
   ASSERT_TRUE(button_view()->visible());
   EXPECT_FALSE(button_view()->IsToggled());
 
-  controller()->OnPressed();
+  controller()->OnIconPressed();
   EXPECT_TRUE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(button_view()->visible());
   EXPECT_TRUE(button_view()->IsToggled());
 
-  controller()->OnPressed();
+  controller()->OnIconPressed();
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
   EXPECT_TRUE(button_view()->visible());
   EXPECT_FALSE(button_view()->IsToggled());

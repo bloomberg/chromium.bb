@@ -29,7 +29,7 @@ class FeaturePodsContainerViewTest : public AshTestBase,
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override { return nullptr; }
-  void OnPressed() override {}
+  void OnIconPressed() override {}
 
   // views::ViewObserver:
   void OnViewPreferredSizeChanged(views::View* observed_view) override {

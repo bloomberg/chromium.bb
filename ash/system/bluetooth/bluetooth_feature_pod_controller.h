@@ -23,7 +23,7 @@ class BluetoothFeaturePodController : public FeaturePodControllerBase,
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
-  void OnPressed() override;
+  void OnIconPressed() override;
 
  private:
   void UpdateButton();

@@ -35,7 +35,7 @@ FeaturePodButton* RotationLockFeaturePodController::CreateButton() {
   return button_;
 }
 
-void RotationLockFeaturePodController::OnPressed() {
+void RotationLockFeaturePodController::OnIconPressed() {
   Shell::Get()->screen_orientation_controller()->ToggleUserRotationLock();
 }
 

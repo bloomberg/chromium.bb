@@ -21,7 +21,7 @@ class VPNFeaturePodController : public FeaturePodControllerBase {
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
-  void OnPressed() override;
+  void OnIconPressed() override;
 
  private:
   void Update();

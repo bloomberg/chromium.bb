@@ -24,7 +24,7 @@ class ASH_EXPORT RotationLockFeaturePodController
 
   // FeaturePodControllerBase:
   FeaturePodButton* CreateButton() override;
-  void OnPressed() override;
+  void OnIconPressed() override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
