@@ -47,6 +47,12 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
 // static
 SiteIsolationPolicy::CrossSiteDocumentBlockingEnabledState
 SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled() {
+  // --disable-web-security also disables cross-origin response blocking (CORB).
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSecurity)) {
+    return XSDB_DISABLED;
+  }
+
   if (base::FeatureList::IsEnabled(
           ::features::kCrossSiteDocumentBlockingAlways)) {
     return XSDB_ENABLED_UNCONDITIONALLY;
