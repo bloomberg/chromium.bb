@@ -56,6 +56,8 @@ class AppMenuButton : public views::MenuButton {
   // App model and menu.
   // Note that the menu should be destroyed before the model it uses, so the
   // menu should be listed later.
+  // TODO(mgiuca): Simplify this model so that correctness does not depend on
+  // destruction order. https://crbug.com/831902
   std::unique_ptr<AppMenuModel> menu_model_;
   std::unique_ptr<AppMenu> menu_;
 
