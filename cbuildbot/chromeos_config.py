@@ -3910,32 +3910,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
     site_config[config_name].apply(**overrides)
 
 
-def EnrollBoardsForCWPBasedAFDO(site_config):
-  """Enroll selected boards in the AFDO experiment.
-
-  The 14 *-release builders will compile chrome with field profiles. Each of
-  them represent a uarch or SoC.
-
-  All boards except them are still built with profiles trained by a set of
-  benchmarks. Only those selected boards are switched from benchmarks to
-  profiles collected directly from field.
-
-  A roughtly 8% decrease in Chrome CPU usage is expected.
-
-  Args:
-    site_config: config_lib.SiteConfig containing builds to have their
-                 waterfall values updated.
-  """
-  cwp_afdo_boards = ['cyan', 'auron_yuna', 'snappy', 'falco', 'parrot_ivb',
-                     'eve', 'kip', 'cave', 'elm', 'kevin',
-                     'nyan_blaze', 'veyron_minnie', 'daisy']
-
-  for board in cwp_afdo_boards:
-    config_name = board + '-release'
-    site_config[config_name].apply(useflags=append_useflags(['afdo_chrome_exp1',
-                                                             'afdo_use']))
-
-
 def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   """Add a variety of specialized builders or tryjobs.
 
@@ -4302,8 +4276,6 @@ def GetConfig():
 
   # Assign waterfalls to builders that don't have them yet.
   InsertWaterfallDefaults(site_config, ge_build_config)
-
-  EnrollBoardsForCWPBasedAFDO(site_config)
 
   ApplyCustomOverrides(site_config, ge_build_config)
 
