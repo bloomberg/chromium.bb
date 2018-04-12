@@ -68,14 +68,15 @@ class PersistentTabRestoreTimeFactory
 class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   PersistentTabRestoreServiceTest()
-    : url1_("http://1"),
-      url2_("http://2"),
-      url3_("http://3"),
-      user_agent_override_(
-          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
-          " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19"),
-      time_factory_(NULL) {
-  }
+      : url1_("http://1"),
+        url2_("http://2"),
+        url3_("http://3"),
+        user_agent_override_(
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19"
+            " (KHTML, like Gecko) Chrome/18.0.1025.45 Safari/535.19"),
+        time_factory_(NULL),
+        window_id_(SessionID::FromSerializedValue(1)),
+        tab_id_(SessionID::FromSerializedValue(2)) {}
 
   ~PersistentTabRestoreServiceTest() override {}
 
@@ -142,8 +143,8 @@ class PersistentTabRestoreServiceTest : public ChromeRenderViewHostTestHarness {
   // If |pinned| is true, the tab is marked as pinned in the session service.
   void AddWindowWithOneTabToSessionService(bool pinned) {
     // Create new window / tab IDs so that these remain distinct.
-    window_id_ = SessionID();
-    tab_id_ = SessionID();
+    window_id_ = SessionID::NewUnique();
+    tab_id_ = SessionID::NewUnique();
 
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile());

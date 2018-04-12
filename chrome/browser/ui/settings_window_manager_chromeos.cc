@@ -64,7 +64,10 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   params.user_gesture = true;
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   Navigate(&params);
-  settings_session_map_[profile] = params.browser->session_id();
+
+  // operator[] not used because SessionID has no default constructor.
+  settings_session_map_.emplace(profile, SessionID::InvalidValue())
+      .first->second = params.browser->session_id();
   DCHECK(params.browser->is_trusted_source());
 
   for (SettingsWindowManagerObserver& observer : observers_)

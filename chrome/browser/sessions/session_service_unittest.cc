@@ -108,7 +108,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   // pinned state of the tab is updated. The session service is then recreated
   // and the pinned state of the read back tab is returned.
   bool CreateAndWriteSessionWithOneTab(bool pinned_state, bool write_always) {
-    SessionID tab_id;
+    SessionID tab_id = SessionID::NewUnique();
     SerializedNavigationEntry nav1 =
         SerializedNavigationEntryTestHelper::CreateNavigation(
             "http://google.com", "abc");
@@ -166,7 +166,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
 
   const std::string window_workspace = "abc";
 
-  SessionID window_id;
+  const SessionID window_id = SessionID::NewUnique();
 
   // Path used in testing.
   base::ScopedTempDir temp_dir_;
@@ -176,7 +176,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
 };
 
 TEST_F(SessionServiceTest, Basic) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
 
   SerializedNavigationEntry nav1 =
@@ -207,7 +207,7 @@ TEST_F(SessionServiceTest, Basic) {
 
 // Make sure we persist post entries.
 TEST_F(SessionServiceTest, PersistPostData) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
 
   SerializedNavigationEntry nav1 =
@@ -225,8 +225,8 @@ TEST_F(SessionServiceTest, PersistPostData) {
 }
 
 TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
-  SessionID tab_id;
-  SessionID tab2_id;
+  SessionID tab_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(tab_id, tab2_id);
 
   SerializedNavigationEntry nav1 =
@@ -258,7 +258,7 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
 }
 
 TEST_F(SessionServiceTest, Pruning) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
@@ -294,9 +294,9 @@ TEST_F(SessionServiceTest, Pruning) {
 }
 
 TEST_F(SessionServiceTest, TwoWindows) {
-  SessionID window2_id;
-  SessionID tab1_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab1_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   SerializedNavigationEntry nav1;
   SerializedNavigationEntry nav2;
 
@@ -338,9 +338,9 @@ TEST_F(SessionServiceTest, TwoWindows) {
 }
 
 TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
-  SessionID window2_id;
-  SessionID tab1_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab1_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
@@ -372,8 +372,8 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
 }
 
 TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
-  SessionID tab_id;
-  SessionID tab2_id;
+  SessionID tab_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(tab_id, tab2_id);
 
   SerializedNavigationEntry nav1 =
@@ -409,9 +409,9 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
 }
 
 TEST_F(SessionServiceTest, LockingWindowRemembersAll) {
-  SessionID window2_id;
-  SessionID tab1_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab1_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   SerializedNavigationEntry nav1;
   SerializedNavigationEntry nav2;
 
@@ -440,9 +440,9 @@ TEST_F(SessionServiceTest, LockingWindowRemembersAll) {
 }
 
 TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
-  SessionID window2_id;
-  SessionID tab_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
   service()->SetWindowType(window2_id,
@@ -484,9 +484,9 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
 
 // Makes sure we don't track popups.
 TEST_F(SessionServiceTest, IgnorePopups) {
-  SessionID window2_id;
-  SessionID tab_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
   service()->SetWindowType(window2_id,
@@ -538,9 +538,9 @@ TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
 #if defined (OS_CHROMEOS)
 // Makes sure we track apps. Only applicable on chromeos.
 TEST_F(SessionServiceTest, RestoreApp) {
-  SessionID window2_id;
-  SessionID tab_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
   service()->SetWindowType(window2_id,
@@ -594,7 +594,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
 // Tests pruning from the front.
 TEST_F(SessionServiceTest, PruneFromFront) {
   const std::string base_url("http://google.com/");
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
 
@@ -637,7 +637,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
 // Prunes from front so that we have no entries.
 TEST_F(SessionServiceTest, PruneToEmpty) {
   const std::string base_url("http://google.com/");
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
 
@@ -677,7 +677,7 @@ TEST_F(SessionServiceTest, PinnedTrue) {
 
 // Make sure application extension ids are persisted.
 TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
   std::string app_id("foo");
 
@@ -698,7 +698,7 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
 
 // Check that user agent overrides are persisted.
 TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
   std::string user_agent_override = "Mozilla/5.0 (X11; Linux x86_64) "
       "AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.45 "
@@ -725,7 +725,7 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
 
 // Makes sure a tab closed by a user gesture is not restored.
 TEST_F(SessionServiceTest, CloseTabUserGesture) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
 
   SerializedNavigationEntry nav1 =
@@ -744,7 +744,7 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
 
 // Verifies SetWindowBounds maps SHOW_STATE_DEFAULT to SHOW_STATE_NORMAL.
 TEST_F(SessionServiceTest, DontPersistDefault) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(
@@ -762,7 +762,7 @@ TEST_F(SessionServiceTest, DontPersistDefault) {
 }
 
 TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
 
   // Create a page state representing a HTTP body without posted passwords.
@@ -803,7 +803,7 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
 }
 
 TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
 
   // Create a page state representing a HTTP body with posted passwords.
@@ -834,7 +834,7 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
 
 TEST_F(SessionServiceTest, ReplacePendingNavigation) {
   const std::string base_url("http://google.com/");
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
 
@@ -865,7 +865,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
 
 TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   const std::string base_url("http://google.com/");
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
 
@@ -901,9 +901,9 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
 }
 
 TEST_F(SessionServiceTest, RestoreActivation1) {
-  SessionID window2_id;
-  SessionID tab1_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab1_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   SerializedNavigationEntry nav1;
   SerializedNavigationEntry nav2;
 
@@ -923,9 +923,9 @@ TEST_F(SessionServiceTest, RestoreActivation1) {
 // It's easier to have two separate tests with setup/teardown than to manualy
 // reset the state for the different flavors of the test.
 TEST_F(SessionServiceTest, RestoreActivation2) {
-  SessionID window2_id;
-  SessionID tab1_id;
-  SessionID tab2_id;
+  SessionID window2_id = SessionID::NewUnique();
+  SessionID tab1_id = SessionID::NewUnique();
+  SessionID tab2_id = SessionID::NewUnique();
   SerializedNavigationEntry nav1;
   SerializedNavigationEntry nav2;
 
@@ -946,7 +946,7 @@ TEST_F(SessionServiceTest, RestoreActivation2) {
 
 // Makes sure we don't track blacklisted URLs.
 TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
-  SessionID tab_id;
+  SessionID tab_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =
       SerializedNavigationEntryTestHelper::CreateNavigation(

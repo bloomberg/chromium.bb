@@ -34,17 +34,11 @@ class SESSIONS_EXPORT SessionID {
   // SessionID instance. Note that zero is also considered invalid.
   static constexpr bool IsValidValue(id_type value) { return value > 0; }
 
-  // Generates a new unique ID (deprecated: use NewUnique() instead).
-  SessionID();
-
   // All IDs are valid except InvalidValue() above.
   bool is_valid() const { return IsValidValue(id_); }
 
   // Returns the underlying id.
   id_type id() const { return id_; }
-
-  // Sets underlying type (deprecated: use FromSerializedValue() instead).
-  void set_id(id_type id) { id_ = id; }
 
   struct Hasher {
     inline std::size_t operator()(SessionID id) const { return id.id(); }

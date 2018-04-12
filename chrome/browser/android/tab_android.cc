@@ -184,6 +184,8 @@ void TabAndroid::AttachTabHelpers(content::WebContents* web_contents) {
 
 TabAndroid::TabAndroid(JNIEnv* env, const JavaRef<jobject>& obj)
     : weak_java_tab_(env, obj),
+      session_tab_id_(SessionID::NewUnique()),
+      session_window_id_(SessionID::InvalidValue()),
       content_layer_(cc::Layer::Create()),
       tab_content_manager_(NULL),
       synced_tab_delegate_(new browser_sync::SyncedTabDelegateAndroid(this)),
@@ -417,8 +419,8 @@ void TabAndroid::InitWebContents(
 
   SetWindowSessionID(session_window_id_);
 
-  session_tab_id_.set_id(
-      SessionTabHelper::FromWebContents(web_contents())->session_id().id());
+  session_tab_id_ =
+      SessionTabHelper::FromWebContents(web_contents())->session_id();
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
       jcontext_menu_populator);
   ViewAndroidHelper::FromWebContents(web_contents())->

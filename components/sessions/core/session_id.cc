@@ -10,11 +10,7 @@ static SessionID::id_type next_id = 1;
 
 // static
 SessionID SessionID::NewUnique() {
-  return SessionID();
-}
-
-SessionID::SessionID() {
-  id_ = next_id++;
+  return SessionID(next_id++);
 }
 
 std::ostream& operator<<(std::ostream& out, SessionID id) {

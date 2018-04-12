@@ -24,6 +24,13 @@ namespace {
 typedef base::OnceCallback<SessionID(void)> TabIdGetter;
 typedef base::OnceCallback<void(SessionID)> TabIdCallback;
 
+// Temporary workaround because base::PostTaskAndReplyWithResult() does not
+// support types without a default constructor.
+// TODO(crbug.com/823798): Revert once a default constructor is reintroduced.
+SessionID::id_type WrapTabIdGetter(TabIdGetter tab_id_getter) {
+  return std::move(tab_id_getter).Run().id();
+}
+
 }  // namespace
 
 // Object that can run a list of callbacks that take tab IDs. New callbacks
@@ -44,7 +51,7 @@ class TabIdProvider::CallbackRunner {
 
   // Runs all the callbacks in the order that they were added. This method must
   // not be called more than once.
-  void RunAll(SessionID tab_info) {
+  void RunAll(SessionID::id_type tab_info_value) {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(!is_done_);
     is_done_ = true;
@@ -52,6 +59,7 @@ class TabIdProvider::CallbackRunner {
     std::vector<TabIdCallback> running_callbacks;
     running_callbacks.swap(callbacks_);
 
+    SessionID tab_info = SessionID::FromSerializedValue(tab_info_value);
     for (auto& callback : running_callbacks)
       std::move(callback).Run(tab_info);
   }
@@ -84,7 +92,8 @@ TabIdProvider::TabIdProvider(base::TaskRunner* task_runner,
   // -1 to OnTabIdReady, so that case doesn't need to be explicitly handled
   // here.
   base::PostTaskAndReplyWithResult(
-      task_runner, from_here, std::move(tab_id_getter),
+      task_runner, from_here,
+      base::BindOnce(&WrapTabIdGetter, std::move(tab_id_getter)),
       base::BindOnce(&CallbackRunner::RunAll,
                      base::Owned(callback_runner.release())));
 }

@@ -58,7 +58,7 @@ void AddTabToDistantSession(const sessions::SessionTab& session_tab,
 
 namespace synced_sessions {
 
-DistantTab::DistantTab() {}
+DistantTab::DistantTab() : tab_id(SessionID::InvalidValue()) {}
 
 size_t DistantTab::hashOfUserVisibleProperties() {
   std::stringstream ss;

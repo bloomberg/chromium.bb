@@ -34,7 +34,7 @@ struct WindowMetrics {
   bool operator!=(const WindowMetrics& other) { return !operator==(other); }
 
   // ID for the window, unique within the Chrome session.
-  SessionID window_id;
+  SessionID window_id = SessionID::InvalidValue();
   WindowMetricsEvent::Type type;
   // TODO(michaelpg): Observe the show state and log when it changes.
   WindowMetricsEvent::ShowState show_state;
