@@ -26,8 +26,12 @@ GURL ImageUrlFromId(const std::string& image_id) {
 
 ContextualContentSuggestionsServiceProxy::
     ContextualContentSuggestionsServiceProxy(
-        ntp_snippets::ContextualContentSuggestionsService* service)
-    : service_(service), weak_ptr_factory_(this) {}
+        ntp_snippets::ContextualContentSuggestionsService* service,
+        std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter)
+    : service_(service),
+      metrics_reporter_(std::move(metrics_reporter)),
+      last_ukm_source_id_(ukm::kInvalidSourceId),
+      weak_ptr_factory_(this) {}
 
 ContextualContentSuggestionsServiceProxy::
     ~ContextualContentSuggestionsServiceProxy() {}
@@ -81,7 +85,23 @@ void ContextualContentSuggestionsServiceProxy::ClearState() {
 void ContextualContentSuggestionsServiceProxy::ReportEvent(
     ukm::SourceId ukm_source_id,
     ContextualSuggestionsEvent event) {
-  service_->ReportEvent(ukm_source_id, event);
+  DCHECK(ukm_source_id != ukm::kInvalidSourceId);
+
+  // Flush the previous page (if any) and setup the new page.
+  if (ukm_source_id != last_ukm_source_id_) {
+    if (last_ukm_source_id_ != ukm::kInvalidSourceId)
+      metrics_reporter_->Flush();
+    last_ukm_source_id_ = ukm_source_id;
+    metrics_reporter_->SetupForPage(ukm_source_id);
+  }
+
+  metrics_reporter_->RecordEvent(event);
+}
+
+void ContextualContentSuggestionsServiceProxy::FlushMetrics() {
+  if (last_ukm_source_id_ != ukm::kInvalidSourceId)
+    metrics_reporter_->Flush();
+  last_ukm_source_id_ = ukm::kInvalidSourceId;
 }
 
 void ContextualContentSuggestionsServiceProxy::CacheSuggestions(

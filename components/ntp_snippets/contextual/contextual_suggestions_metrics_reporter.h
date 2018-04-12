@@ -62,6 +62,24 @@ enum ContextualSuggestionsEvent {
   kMaxValue = SUGGESTION_CLICKED,
 };
 
+class ContextualSuggestionsMetricsReporter;
+
+// Class producing |ContextualSuggestionsMetricsReporter| instances. It enables
+// classes like |ContextualContentSuggestionService| to produce metrics
+// reporters when needed, e.g. creation of service proxy, without knowing how to
+// initialize them.
+class ContextualSuggestionsMetricsReporterProvider {
+ public:
+  ContextualSuggestionsMetricsReporterProvider();
+  virtual ~ContextualSuggestionsMetricsReporterProvider();
+
+  virtual std::unique_ptr<ContextualSuggestionsMetricsReporter>
+  CreateMetricsReporter();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsMetricsReporterProvider);
+};
+
 // Tracks various UKM and UMA metrics based on reports of events that take place
 // within the Contextual Suggestions component.
 //

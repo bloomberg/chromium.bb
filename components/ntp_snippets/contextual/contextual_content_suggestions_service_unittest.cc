@@ -78,13 +78,13 @@ class ContextualContentSuggestionsServiceTest : public testing::Test {
     std::unique_ptr<FakeContextualSuggestionsFetcher> fetcher =
         std::make_unique<FakeContextualSuggestionsFetcher>();
     fetcher_ = fetcher.get();
-    auto metrics_reporter = std::make_unique<
-        contextual_suggestions::ContextualSuggestionsMetricsReporter>();
+    auto metrics_reporter_provider = std::make_unique<
+        contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>();
     source_ = std::make_unique<ContextualContentSuggestionsService>(
         std::move(fetcher),
         std::make_unique<FakeCachedImageFetcher>(&pref_service_),
         std::unique_ptr<RemoteSuggestionsDatabase>(),
-        std::move(metrics_reporter));
+        std::move(metrics_reporter_provider));
   }
 
   FakeContextualSuggestionsFetcher* fetcher() { return fetcher_; }

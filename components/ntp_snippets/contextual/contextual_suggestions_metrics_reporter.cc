@@ -10,6 +10,17 @@
 
 namespace contextual_suggestions {
 
+ContextualSuggestionsMetricsReporterProvider::
+    ContextualSuggestionsMetricsReporterProvider() = default;
+
+ContextualSuggestionsMetricsReporterProvider::
+    ~ContextualSuggestionsMetricsReporterProvider() = default;
+
+std::unique_ptr<ContextualSuggestionsMetricsReporter>
+ContextualSuggestionsMetricsReporterProvider::CreateMetricsReporter() {
+  return std::make_unique<ContextualSuggestionsMetricsReporter>();
+}
+
 ContextualSuggestionsMetricsReporter::ContextualSuggestionsMetricsReporter()
     : sheet_peeked_(false),
       sheet_opened_(false),

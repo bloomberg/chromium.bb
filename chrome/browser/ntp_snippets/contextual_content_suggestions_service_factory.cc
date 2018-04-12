@@ -108,12 +108,13 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
               std::make_unique<suggestions::ImageDecoderImpl>(),
               request_context.get()),
           pref_service, contextual_suggestions_database.get());
-  auto metrics_reporter = std::make_unique<
-      contextual_suggestions::ContextualSuggestionsMetricsReporter>();
+  auto metrics_reporter_provider = std::make_unique<
+      contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>();
   auto* service = new ContextualContentSuggestionsService(
       std::move(contextual_suggestions_fetcher),
       std::move(cached_image_fetcher),
-      std::move(contextual_suggestions_database), std::move(metrics_reporter));
+      std::move(contextual_suggestions_database),
+      std::move(metrics_reporter_provider));
 
   return service;
 }

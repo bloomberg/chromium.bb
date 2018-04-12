@@ -43,8 +43,7 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
           ContextualContentSuggestionsServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<ContextualContentSuggestionsServiceProxy> service_proxy =
-      std::make_unique<ContextualContentSuggestionsServiceProxy>(
-          contextual_suggestions_service);
+      contextual_suggestions_service->CreateProxy();
 
   ContextualSuggestionsBridge* contextual_suggestions_bridge =
       new ContextualSuggestionsBridge(env, std::move(service_proxy));
@@ -77,6 +76,7 @@ ContextualSuggestionsBridge::~ContextualSuggestionsBridge() {}
 
 void ContextualSuggestionsBridge::Destroy(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
+  service_proxy_->FlushMetrics();
   delete this;
 }
 
