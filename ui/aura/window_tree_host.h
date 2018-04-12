@@ -98,10 +98,10 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
 
   // Updates the root window's size using |host_size_in_pixels|, current
   // transform and outsets.
-  // TODO(ccameron): Make this function take no arguments, and make this
-  // function no longer public. The interaction between this call, GetBounds,
-  // and OnHostResizedInPixels is ambiguous and allows for inconsistencies.
-  void UpdateRootWindowSizeInPixels(const gfx::Size& host_size_in_pixels);
+  // TODO(ccameron): Make this function no longer public. The interaction
+  // between this call, GetBounds, and OnHostResizedInPixels is ambiguous and
+  // allows for inconsistencies.
+  void UpdateRootWindowSizeInPixels();
 
   // Converts |point| from the root window's coordinate system to native
   // screen's.

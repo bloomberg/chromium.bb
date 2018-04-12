@@ -157,7 +157,7 @@ void RootWindowController::CloseAppWindows() {
 }
 
 void RootWindowController::UpdateSize(const gfx::Size& size) {
-  host_->UpdateRootWindowSizeInPixels(size);
+  host_->SetBoundsInPixels(gfx::Rect(size));
 }
 
 aura::Window* RootWindowController::GetDefaultParent(aura::Window* window,
