@@ -72,7 +72,7 @@ void HeapProfilingService::GetProfiledPids(GetProfiledPidsCallback callback) {
 
 void HeapProfilingService::DumpProcessesForTracing(
     bool strip_path_from_mapped_files,
-    const DumpProcessesForTracingCallback& callback) {
+    DumpProcessesForTracingCallback callback) {
   if (!helper_) {
     context()->connector()->BindInterface(
         resource_coordinator::mojom::kServiceName, &helper_);
@@ -88,16 +88,17 @@ void HeapProfilingService::DumpProcessesForTracing(
     // Need a memory map to make sense of the dump. The dump will be triggered
     // in the memory map global dump callback.
     helper_->GetVmRegionsForHeapProfiler(
-        pids, base::Bind(&HeapProfilingService::
-                             OnGetVmRegionsCompleteForDumpProcessesForTracing,
-                         weak_factory_.GetWeakPtr(),
-                         strip_path_from_mapped_files, callback));
+        pids,
+        base::BindOnce(&HeapProfilingService::
+                           OnGetVmRegionsCompleteForDumpProcessesForTracing,
+                       weak_factory_.GetWeakPtr(), strip_path_from_mapped_files,
+                       std::move(callback)));
   }
 }
 
 void HeapProfilingService::OnGetVmRegionsCompleteForDumpProcessesForTracing(
     bool strip_path_from_mapped_files,
-    const DumpProcessesForTracingCallback& callback,
+    DumpProcessesForTracingCallback callback,
     VmRegions vm_regions) {
   connection_manager_.DumpProcessesForTracing(
       keep_small_allocations_, strip_path_from_mapped_files,

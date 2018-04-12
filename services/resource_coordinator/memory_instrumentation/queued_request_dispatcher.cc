@@ -225,8 +225,9 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
     // https://bugs.chromium.org/p/chromium/issues/detail?id=812346#c16 for more
     // details.
     request->pending_responses.insert({client, ResponseType::kChromeDump});
-    client->RequestChromeMemoryDump(request->GetRequestArgs(),
-                                    base::Bind(chrome_callback, client));
+    client->RequestChromeMemoryDump(
+        request->GetRequestArgs(),
+        base::BindOnce(std::move(chrome_callback), client));
 
 // On most platforms each process can dump data about their own process
 // so ask each process to do so Linux is special see below.
@@ -234,7 +235,7 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
     request->pending_responses.insert({client, ResponseType::kOSDump});
     client->RequestOSMemoryDump(request->memory_map_option(),
                                 {base::kNullProcessId},
-                                base::Bind(os_callback, client));
+                                base::BindOnce(os_callback, client));
 #endif  // !defined(OS_LINUX)
 
     // If we are in the single pid case, then we've already found the only
@@ -263,9 +264,9 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
   }
   if (browser_client && pids.size() > 0) {
     request->pending_responses.insert({browser_client, ResponseType::kOSDump});
-    const auto callback = base::Bind(os_callback, browser_client);
+    auto callback = base::BindOnce(os_callback, browser_client);
     browser_client->RequestOSMemoryDump(request->memory_map_option(), pids,
-                                        callback);
+                                        std::move(callback));
   }
 #endif  // defined(OS_LINUX)
 
@@ -304,9 +305,9 @@ void QueuedRequestDispatcher::SetUpAndDispatchVmRegionRequest(
 
   request->pending_responses.insert(browser_client);
   request->responses[browser_client].process_id = browser_client_pid;
-  const auto callback = base::Bind(os_callback, browser_client);
+  auto callback = base::BindOnce(os_callback, browser_client);
   browser_client->RequestOSMemoryDump(mojom::MemoryMapOption::MODULES,
-                                      desired_pids, callback);
+                                      desired_pids, std::move(callback));
 #else
   for (const auto& client_info : clients) {
     if (std::find(desired_pids.begin(), desired_pids.end(), client_info.pid) !=
@@ -316,7 +317,7 @@ void QueuedRequestDispatcher::SetUpAndDispatchVmRegionRequest(
       request->responses[client].process_id = client_info.pid;
       client->RequestOSMemoryDump(mojom::MemoryMapOption::MODULES,
                                   {base::kNullProcessId},
-                                  base::Bind(os_callback, client));
+                                  base::BindOnce(os_callback, client));
     }
   }
 #endif  // defined(OS_LINUX)
@@ -539,8 +540,9 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   if (request->args.pid != base::kNullProcessId && !global_success) {
     global_dump = nullptr;
   }
-  const auto& callback = request->callback;
-  callback.Run(global_success, request->dump_guid, std::move(global_dump));
+  auto& callback = request->callback;
+  std::move(callback).Run(global_success, request->dump_guid,
+                          std::move(global_dump));
   UMA_HISTOGRAM_MEDIUM_TIMES("Memory.Experimental.Debug.GlobalDumpDuration",
                              base::Time::Now() - request->start_time);
   UMA_HISTOGRAM_COUNTS_1000(

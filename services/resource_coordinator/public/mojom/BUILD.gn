@@ -29,7 +29,4 @@ mojom_component("mojom") {
   if (is_linux || is_android) {
     enabled_features += [ "private_swap_info" ]
   }
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }

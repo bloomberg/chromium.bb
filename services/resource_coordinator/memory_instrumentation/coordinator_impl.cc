@@ -112,57 +112,60 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
     const std::vector<std::string>& allocator_dump_names,
-    const RequestGlobalMemoryDumpCallback& callback) {
+    RequestGlobalMemoryDumpCallback callback) {
   // This merely strips out the |dump_guid| argument.
-  auto adapter = [](const RequestGlobalMemoryDumpCallback& callback,
-                    bool success, uint64_t,
-                    mojom::GlobalMemoryDumpPtr global_memory_dump) {
-    callback.Run(success, std::move(global_memory_dump));
+  auto adapter = [](RequestGlobalMemoryDumpCallback callback, bool success,
+                    uint64_t, mojom::GlobalMemoryDumpPtr global_memory_dump) {
+    std::move(callback).Run(success, std::move(global_memory_dump));
   };
 
   QueuedRequest::Args args(dump_type, level_of_detail, allocator_dump_names,
                            false /* add_to_trace */, base::kNullProcessId);
-  RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
+  RequestGlobalMemoryDumpInternal(args,
+                                  base::BindOnce(adapter, std::move(callback)));
 }
 
 void CoordinatorImpl::RequestGlobalMemoryDumpForPid(
     base::ProcessId pid,
-    const RequestGlobalMemoryDumpForPidCallback& callback) {
+    RequestGlobalMemoryDumpForPidCallback callback) {
   // Error out early if process id is null to avoid confusing with global
   // dump for all processes case when pid is kNullProcessId.
   if (pid == base::kNullProcessId) {
-    callback.Run(false, nullptr);
+    std::move(callback).Run(false, nullptr);
     return;
   }
 
   // This merely strips out the |dump_guid| argument; this is not relevant
   // as we are not adding to trace.
-  auto adapter = [](const RequestGlobalMemoryDumpForPidCallback& callback,
+  auto adapter = [](RequestGlobalMemoryDumpForPidCallback callback,
                     bool success, uint64_t,
                     mojom::GlobalMemoryDumpPtr global_memory_dump) {
-    callback.Run(success, std::move(global_memory_dump));
+    std::move(callback).Run(success, std::move(global_memory_dump));
   };
 
   QueuedRequest::Args args(
       base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, {},
       false /* add_to_trace */, pid);
-  RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
+  RequestGlobalMemoryDumpInternal(args,
+                                  base::BindOnce(adapter, std::move(callback)));
 }
 
 void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
-    const RequestGlobalMemoryDumpAndAppendToTraceCallback& callback) {
+    RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
   // This merely strips out the |dump_ptr| argument.
-  auto adapter =
-      [](const RequestGlobalMemoryDumpAndAppendToTraceCallback& callback,
-         bool success, uint64_t dump_guid,
-         mojom::GlobalMemoryDumpPtr) { callback.Run(success, dump_guid); };
+  auto adapter = [](RequestGlobalMemoryDumpAndAppendToTraceCallback callback,
+                    bool success, uint64_t dump_guid,
+                    mojom::GlobalMemoryDumpPtr) {
+    std::move(callback).Run(success, dump_guid);
+  };
 
   QueuedRequest::Args args(dump_type, level_of_detail, {},
                            true /* add_to_trace */, base::kNullProcessId);
-  RequestGlobalMemoryDumpInternal(args, base::BindRepeating(adapter, callback));
+  RequestGlobalMemoryDumpInternal(args,
+                                  base::BindOnce(adapter, std::move(callback)));
 }
 
 void CoordinatorImpl::RegisterHeapProfiler(
@@ -173,11 +176,11 @@ void CoordinatorImpl::RegisterHeapProfiler(
 
 void CoordinatorImpl::GetVmRegionsForHeapProfiler(
     const std::vector<base::ProcessId>& pids,
-    const GetVmRegionsForHeapProfilerCallback& callback) {
+    GetVmRegionsForHeapProfilerCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   uint64_t dump_guid = ++next_dump_id_;
   std::unique_ptr<QueuedVmRegionRequest> request =
-      std::make_unique<QueuedVmRegionRequest>(dump_guid, callback);
+      std::make_unique<QueuedVmRegionRequest>(dump_guid, std::move(callback));
   in_progress_vm_region_requests_[dump_guid] = std::move(request);
 
   std::vector<QueuedRequestDispatcher::ClientInfo> clients;
@@ -189,8 +192,9 @@ void CoordinatorImpl::GetVmRegionsForHeapProfiler(
 
   QueuedVmRegionRequest* request_ptr =
       in_progress_vm_region_requests_[dump_guid].get();
-  auto os_callback = base::Bind(&CoordinatorImpl::OnOSMemoryDumpForVMRegions,
-                                base::Unretained(this), dump_guid);
+  auto os_callback =
+      base::BindRepeating(&CoordinatorImpl::OnOSMemoryDumpForVMRegions,
+                          base::Unretained(this), dump_guid);
   QueuedRequestDispatcher::SetUpAndDispatchVmRegionRequest(request_ptr, clients,
                                                            pids, os_callback);
   FinalizeVmRegionDumpIfAllManagersReplied(dump_guid);
@@ -202,8 +206,8 @@ void CoordinatorImpl::RegisterClientProcess(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   mojom::ClientProcess* client_process = client_process_ptr.get();
   client_process_ptr.set_connection_error_handler(
-      base::Bind(&CoordinatorImpl::UnregisterClientProcess,
-                 base::Unretained(this), client_process));
+      base::BindOnce(&CoordinatorImpl::UnregisterClientProcess,
+                     base::Unretained(this), client_process));
   auto identity = GetClientIdentityForCurrentRequest();
   auto client_info = std::make_unique<ClientInfo>(
       std::move(identity), std::move(client_process_ptr), process_type);
@@ -260,7 +264,7 @@ void CoordinatorImpl::UnregisterClientProcess(
 
 void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
     const QueuedRequest::Args& args,
-    const RequestGlobalMemoryDumpInternalCallback& callback) {
+    RequestGlobalMemoryDumpInternalCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   UMA_HISTOGRAM_COUNTS_1000("Memory.Experimental.Debug.GlobalDumpQueueLength",
@@ -283,14 +287,15 @@ void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
                 << base::trace_event::MemoryDumpLevelOfDetailToString(
                        args.level_of_detail)
                 << ") is already in the queue";
-        callback.Run(false /* success */, 0 /* dump_guid */,
-                     nullptr /* global_memory_dump */);
+        std::move(callback).Run(false /* success */, 0 /* dump_guid */,
+                                nullptr /* global_memory_dump */);
         return;
       }
     }
   }
 
-  queued_memory_dump_requests_.emplace_back(args, ++next_dump_id_, callback);
+  queued_memory_dump_requests_.emplace_back(args, ++next_dump_id_,
+                                            std::move(callback));
 
   // If another dump is already in queued, this dump will automatically be
   // scheduled when the other dump finishes.
@@ -490,7 +495,7 @@ void CoordinatorImpl::FinalizeVmRegionDumpIfAllManagersReplied(
 
   QueuedRequestDispatcher::VmRegions results =
       QueuedRequestDispatcher::FinalizeVmRegionRequest(it->second.get());
-  it->second->callback.Run(std::move(results));
+  std::move(it->second->callback).Run(std::move(results));
   in_progress_vm_region_requests_.erase(it);
 }
 
@@ -578,8 +583,8 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   if (!queued_memory_dump_requests_.empty()) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&CoordinatorImpl::PerformNextQueuedGlobalMemoryDump,
-                   base::Unretained(this)));
+        base::BindOnce(&CoordinatorImpl::PerformNextQueuedGlobalMemoryDump,
+                       base::Unretained(this)));
   }
 }
 

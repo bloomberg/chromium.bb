@@ -47,8 +47,8 @@ TEST_F(ResourceCoordinatorTest, ResourceCoordinatorInstantiate) {
   provider->CreatePageCoordinationUnit(mojo::MakeRequest(&coordination_unit),
                                        new_id);
 
-  coordination_unit->GetID(base::Bind(&ResourceCoordinatorTest::GetIDCallback,
-                                      base::Unretained(this)));
+  coordination_unit->GetID(base::BindOnce(
+      &ResourceCoordinatorTest::GetIDCallback, base::Unretained(this)));
 
   base::RunLoop loop;
   SetRunLoopToQuit(&loop);

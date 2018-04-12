@@ -54,7 +54,7 @@ class HeapProfilingService
   // HeapProfiler implementation.
   void DumpProcessesForTracing(
       bool strip_path_from_mapped_files,
-      const DumpProcessesForTracingCallback& callback) override;
+      DumpProcessesForTracingCallback callback) override;
 
  private:
   void OnProfilingServiceRequest(mojom::ProfilingServiceRequest request);
@@ -63,7 +63,7 @@ class HeapProfilingService
 
   void OnGetVmRegionsCompleteForDumpProcessesForTracing(
       bool strip_path_from_mapped_files,
-      const DumpProcessesForTracingCallback& callback,
+      DumpProcessesForTracingCallback callback,
       VmRegions vm_regions);
 
   service_manager::BinderRegistry registry_;
