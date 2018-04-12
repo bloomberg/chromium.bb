@@ -95,7 +95,7 @@ class GpuVSyncWorker : public base::Thread,
     kGetMonitorInfo = 1,
     kOpenAdapter = 2,
     kWaitForVBlankEvent = 3,
-    kMaxValue = 4
+    kMaxValue = kWaitForVBlankEvent,
   };
 
   void Reschedule();
@@ -353,8 +353,7 @@ void GpuVSyncWorker::WaitForVSyncOnThread() {
 }
 
 void GpuVSyncWorker::ReportErrorCode(WaitForVBlankErrorCode error_code) {
-  UMA_HISTOGRAM_ENUMERATION("GPU.WaitForVBlankErrorCode", error_code,
-                            WaitForVBlankErrorCode::kMaxValue);
+  UMA_HISTOGRAM_ENUMERATION("GPU.WaitForVBlankErrorCode", error_code);
 }
 
 void GpuVSyncWorker::AddTimestamp(base::TimeTicks timestamp) {
