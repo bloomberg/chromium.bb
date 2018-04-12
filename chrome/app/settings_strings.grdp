@@ -3282,7 +3282,7 @@
       Cancel sync
     </message>
     <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT" desc="The text displayed to prompt users to sign in to chrome.">
-      Sync and personalize Chrome across your device
+      Sync and personalize Chrome across your devices
     </message>
     <message name="IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_SECONDARY" desc="The secondary text displayed to prompt users to sign in to chrome.">
       Turns on the features listed here. Uses your browser activity, content on some sites you visit, and other browser interactions for personalization.
