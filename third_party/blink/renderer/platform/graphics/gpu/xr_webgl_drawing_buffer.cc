@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
@@ -145,7 +146,14 @@ bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
       (drawing_buffer_->webgl_version() > DrawingBuffer::kWebGL1 ||
        extensions_util->SupportsExtension("GL_EXT_texture_storage")) &&
       anti_aliasing_mode_ == kScreenSpaceAntialiasing;
+
+#if defined(OS_ANDROID)
+  // On Android devices use a smaller numer of samples to provide more breathing
+  // room for fill-rate-bound applications.
+  sample_count_ = std::min(2, max_sample_count);
+#else
   sample_count_ = std::min(4, max_sample_count);
+#endif
 
   Resize(size);
 
