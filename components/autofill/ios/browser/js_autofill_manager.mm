@@ -75,9 +75,11 @@
              }];
 }
 
-- (void)trackFormUpdates {
-  [_receiver executeJavaScript:@"__gCrWeb.form.trackFormUpdates(500)"
-             completionHandler:nil];
+- (void)toggleTrackingFormMutations:(BOOL)state {
+  NSString* script =
+      [NSString stringWithFormat:@"__gCrWeb.form.trackFormMutations(%d);",
+                                 state ? 200 : 0];
+  [_receiver executeJavaScript:script completionHandler:nil];
 }
 
 - (void)fillForm:(NSString*)dataString

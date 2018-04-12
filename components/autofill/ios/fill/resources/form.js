@@ -49,15 +49,14 @@ __gCrWeb.form.kNamelessFormIDPrefix = 'gChrome~form~';
 __gCrWeb.form.kNamelessFieldIDPrefix = 'gChrome~field~';
 
 /**
- * The interval watching for form changes.
+ * The MutationObserver tracking form related changes.
  */
-__gCrWeb.form.formWatcherInterval = null;
+__gCrWeb.form.formMutationObserver = null;
 
 /**
- * The value of the form signature last time formWatcherInterval was
- * triggerred.
+ * The form mutation message scheduled to be sent to browser.
  */
-__gCrWeb.form.lastFormSignature = {};
+__gCrWeb.form.formMutationMessageToSend = null;
 
 /**
  * Based on Element::isFormControlElement() (WebKit)
@@ -361,46 +360,72 @@ var getFullyQualifiedUrl_ = function(originalURL) {
 };
 
 /**
- * Returns a simple signature of the form content of the page. Must be fast
- * as it is called regularly.
+ * Schedules |msg| to be sent after |delay|. Until |msg| is sent, further calls
+ * to this function are ignored.
  */
-var getFormSignature_ = function() {
-  return {
-    forms: document.forms.length,
-    input: document.getElementsByTagName('input').length
-  };
+var sendFormMutationMessageAfterDelay_ = function(msg, delay) {
+  if (__gCrWeb.form.formMutationMessageToSend)
+    return;
+
+  __gCrWeb.form.formMutationMessageToSend = msg;
+  setTimeout(function() {
+    __gCrWeb.message.invokeOnHost(__gCrWeb.form.formMutationMessageToSend);
+    __gCrWeb.form.formMutationMessageToSend = null;
+  }, delay);
 };
 
 /**
- * Install a watcher to check the form changes. Delay is the interval between
- * checks in milliseconds.
+ * Installs a MutationObserver to track form related changes. Waits |delay|
+ * milliseconds before sending a message to browser. A delay is used because
+ * form mutations are likely to come in batches. An undefined or zero value for
+ * |delay| would stop the MutationObserver, if any.
+ * @suppress {checkTypes} Required for for...of loop on mutations.
  */
-__gCrWeb.form['trackFormUpdates'] = function(delay) {
-  if (__gCrWeb.form.formWatcherInterval) {
-    clearInterval(__gCrWeb.form.formWatcherInterval);
-    __gCrWeb.form.formWatcherInterval = null;
+__gCrWeb.form['trackFormMutations'] = function(delay) {
+  if (__gCrWeb.form.formMutationObserver) {
+    __gCrWeb.form.formMutationObserver.disconnect();
+    __gCrWeb.form.formMutationObserver = null;
   }
-  if (delay) {
-    __gCrWeb.form.lastFormSignature = getFormSignature_();
-    __gCrWeb.form.formWatcherInterval = setInterval(function() {
-      var signature = getFormSignature_();
-      var old_signature = __gCrWeb.form.lastFormSignature;
-      if (signature.forms != old_signature.forms ||
-          signature.input != old_signature.input) {
-        var msg = {
-          'command': 'form.activity',
-          'formName': '',
-          'fieldName': '',
-          'fieldIdentifier': '',
-          'fieldType': '',
-          'type': 'form_changed',
-          'value': ''
-        };
-        __gCrWeb.form.lastFormSignature = signature;
-        __gCrWeb.message.invokeOnHost(msg);
-      }
-    }, delay);
-  }
+
+  if (!delay)
+    return;
+
+  __gCrWeb.form.formMutationObserver =
+      new MutationObserver(function(mutations) {
+        for (var i = 0; i < mutations.length; i++) {
+          var mutation = mutations[i];
+          // Only process mutations to the tree of nodes.
+          if (mutation.type != 'childList')
+            continue;
+          var addedElements = [];
+          for (var j = 0; j < mutation.addedNodes.length; j++) {
+            var node = mutation.addedNodes[j];
+            // Ignore non-element nodes.
+            if (node.nodeType != Node.ELEMENT_NODE)
+              continue;
+            addedElements.push(node);
+            [].push.apply(
+                addedElements, [].slice.call(node.getElementsByTagName('*')));
+          }
+          var form_changed = addedElements.find(function(element) {
+            return element.tagName.match(/(FORM|INPUT|SELECT|OPTION)/);
+          });
+          if (form_changed) {
+            var msg = {
+              'command': 'form.activity',
+              'formName': '',
+              'fieldName': '',
+              'fieldIdentifier': '',
+              'fieldType': '',
+              'type': 'form_changed',
+              'value': ''
+            };
+            return sendFormMutationMessageAfterDelay_(msg, delay);
+          }
+        }
+      });
+  __gCrWeb.form.formMutationObserver.observe(
+      document, {childList: true, subtree: true});
 };
 
 /** Flush the message queue. */

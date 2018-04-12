@@ -1397,7 +1397,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
       continue;
 
     // Don't fill previously autofilled fields except the initiating field or
-    // when it's a refill
+    // when it's a refill.
     if (result.fields[i].is_autofilled && !cached_field->SameFieldAs(field) &&
         !is_refill) {
       continue;
