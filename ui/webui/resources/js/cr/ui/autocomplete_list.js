@@ -28,7 +28,7 @@ cr.define('cr.ui', function() {
    */
   AutocompleteListItem.decorate = function(el) {
     el.__proto__ = AutocompleteListItem.prototype;
-    el.decorate();
+    /** @type {AutocompleteListItem} */ (el).decorate();
   };
 
   AutocompleteListItem.prototype = {

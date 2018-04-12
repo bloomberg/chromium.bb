@@ -247,7 +247,8 @@ MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
 MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
   var volumeInfo = /** @type {!VolumeInfo} */ (this.volumeInfoList.item(0));
   if (util.isFakeEntry(entry)) {
-    return new EntryLocationImpl(volumeInfo, entry.rootType, true, true);
+    var fakeEntry = /** @type {!FakeEntry} */ (entry);
+    return new EntryLocationImpl(volumeInfo, fakeEntry.rootType, true, true);
   }
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
     var rootType = VolumeManagerCommon.RootType.DRIVE;

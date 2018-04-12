@@ -201,7 +201,8 @@ cr.define('cr.ui.table', function() {
       var minDistance = TableHeader.TOUCH_DRAG_AREA_WIDTH;
       var candidate;
 
-      var splitters = this.querySelectorAll('.table-header-splitter');
+      var splitters = /** @type {NodeList<cr.ui.TableSplitter>} */ (
+          this.querySelectorAll('.table-header-splitter'));
       for (var i = 0; i < splitters.length; i++) {
         var r = splitters[i].getBoundingClientRect();
         if (clientX <= r.left && r.left - clientX <= minDistance) {

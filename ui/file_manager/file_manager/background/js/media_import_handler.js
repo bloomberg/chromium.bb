@@ -93,7 +93,7 @@ importer.MediaImportHandler.prototype.generateTaskId_ = function() {
 /**
  * Sends updates to the ProgressCenter when an import is happening.
  *
- * @param {!importer.TaskQueue.Task} task
+ * @param {!importer.MediaImportHandler.ImportTask} task
  * @param {string} updateType
  * @private
  */

@@ -99,7 +99,7 @@ var MENU_TREE_ITEM_INNER_HTML =
  * @constructor
  */
 function DirectoryItem(label, tree) {
-  var item = new cr.ui.TreeItem();
+  var item = /** @type {DirectoryItem} */ (new cr.ui.TreeItem());
   item.__proto__ = DirectoryItem.prototype;
   item.parentTree_ = tree;
   item.directoryModel_ = tree.directoryModel;
@@ -526,7 +526,8 @@ SubDirectoryItem.prototype.updateSharedStatusIcon = function() {
  * @constructor
  */
 function VolumeItem(modelItem, tree) {
-  var item = new DirectoryItem(modelItem.volumeInfo.label, tree);
+  var item = /** @type {VolumeItem} */ (
+      new DirectoryItem(modelItem.volumeInfo.label, tree));
   item.__proto__ = VolumeItem.prototype;
 
   item.modelItem_ = modelItem;
@@ -850,7 +851,7 @@ DriveVolumeItem.prototype.selectByEntry = function(entry) {
  * @constructor
  */
 function ShortcutItem(modelItem, tree) {
-  var item = new cr.ui.TreeItem();
+  var item = /** @type {ShortcutItem} */ (new cr.ui.TreeItem());
   item.__proto__ = ShortcutItem.prototype;
 
   item.parentTree_ = tree;

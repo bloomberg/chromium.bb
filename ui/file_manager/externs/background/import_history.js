@@ -78,7 +78,9 @@ importer.ImportHistory.prototype.removeObserver;
 /**
  * @typedef {{
  *   state: !importer.ImportHistoryState,
- *   entry: !FileEntry
+ *   entry: !FileEntry,
+ *   destination: !importer.Destination,
+ *   destinationUrl: (string|undefined)
  * }}
  */
 importer.ImportHistory.ChangedEvent;

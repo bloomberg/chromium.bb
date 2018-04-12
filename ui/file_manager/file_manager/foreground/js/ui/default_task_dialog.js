@@ -143,7 +143,7 @@ cr.define('cr.filebrowser', function() {
    * @param {!Event} event triggered by cr.ui.List.
    */
   DefaultTaskDialog.prototype.onListChange_ = function(event) {
-    var list = event.target;
+    var list = /** @type {cr.ui.List} */ (event.target);
     var activeItem =
         list.getListItemByIndex(list.selectionModel_.selectedIndex);
     if (activeItem)

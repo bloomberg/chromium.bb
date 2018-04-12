@@ -860,8 +860,7 @@ importer.DriveSyncWatcher.prototype.onHistoryChanged_ = function(event) {
     // to mark be marked as copied.
     this.checkSyncStatus_(
         event.destination,
-        event.destinationUrl,
-        event.entry);
+        /**@type {string}*/ (event.destinationUrl), event.entry);
   }
 };
 

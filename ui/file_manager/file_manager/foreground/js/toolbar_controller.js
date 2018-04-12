@@ -156,14 +156,15 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
     var bodyClassList = this.filesSelectedLabel_.ownerDocument.body.classList;
     bodyClassList.toggle('selecting', selection.totalCount > 0);
     if (bodyClassList.contains('check-select') !=
-        this.directoryModel_.getFileListSelection().getCheckSelectMode()) {
+        /** @type {!FileListSelectionModel} */
+        (this.directoryModel_.getFileListSelection()).getCheckSelectMode()) {
       bodyClassList.toggle('check-select');
       // Some custom styles depend on |check-select| class. We need to
       // re-evaluate the custom styles when the class value is changed.
       Polymer.updateStyles();
     }
   }
-}
+};
 
 /**
  * Handles click event for cancel button to change the selection state.
@@ -171,7 +172,7 @@ ToolbarController.prototype.onSelectionChanged_ = function() {
  */
 ToolbarController.prototype.onCancelSelectionButtonClicked_ = function() {
   this.directoryModel_.selectEntries([]);
-}
+};
 
 /**
  * Handles click event for delete button to execute the delete command.
@@ -181,7 +182,7 @@ ToolbarController.prototype.onDeleteButtonClicked_ = function() {
   this.deleteButton_.blur();
   this.deleteCommand_.canExecuteChange(this.listContainer_.currentList);
   this.deleteCommand_.execute(this.listContainer_.currentList);
-}
+};
 
 /**
  * Handles the relayout event occured on the navigation list.
@@ -192,7 +193,7 @@ ToolbarController.prototype.onNavigationListRelayout_ = function() {
   var navWidth = parseFloat(
       window.getComputedStyle(this.navigationList_).width);
   this.cancelSelectionButtonWrapper_.style.width = navWidth + 'px';
-}
+};
 
 /**
  * Handles the mutation event occurd on attibutes of toolbar buttons.
@@ -201,4 +202,4 @@ ToolbarController.prototype.onNavigationListRelayout_ = function() {
  */
 ToolbarController.prototype.onToolbarButtonsMutated_ = function() {
   this.locationLine_.truncate();
-}
+};
