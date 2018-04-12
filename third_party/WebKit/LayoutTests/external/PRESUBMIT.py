@@ -19,7 +19,7 @@ def _LintWPT(input_api, output_api):
     paths_in_wpt = []
     for f in input_api.AffectedFiles():
         abs_path = f.AbsoluteLocalPath()
-        if abs_path.startswith(wpt_path):
+        if abs_path.endswith(input_api.os_path.relpath(abs_path, wpt_path)):
             paths_in_wpt.append(abs_path)
 
     # If there are changes in LayoutTests/external that aren't in wpt, e.g.

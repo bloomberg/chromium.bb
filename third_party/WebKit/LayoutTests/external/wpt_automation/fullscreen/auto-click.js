@@ -30,7 +30,8 @@ const observer = new MutationObserver(mutations => {
       if (node.localName == 'button')
         click(node);
       else if (node.localName == 'iframe')
-        observe(node.contentDocument);
+        if (node.contentDocument)
+          observe(node.contentDocument);
     }
   }
 });
@@ -44,17 +45,12 @@ for (const button of document.getElementsByTagName('button')) {
   click(button);
 }
 for (const iframe of document.getElementsByTagName('iframe')) {
-  try {
+  if (iframe.contentDocument)
     observe(iframe.contentDocument);
-    iframe.addEventListener('load', () => {
+  iframe.addEventListener('load', () => {
+    if (iframe.contentDocument)
       observe(iframe.contentDocument);
-    });
-  } catch (e) {
-    // Skip cross-origin iframes, but report other errors
-    if (e.name != "SecurityError") {
-        throw e;
-    }
-  }
+  });
 }
 
 // Observe future changes.
