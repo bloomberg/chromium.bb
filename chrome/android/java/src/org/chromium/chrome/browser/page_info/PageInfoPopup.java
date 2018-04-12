@@ -22,7 +22,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.annotation.ColorRes;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.IntDef;
+import android.support.annotation.StringRes;
 import android.support.v7.widget.AppCompatTextView;
 import android.text.Layout;
 import android.text.Spannable;
@@ -260,7 +263,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
 
     /**  Parameters to configure the view of the page info popup. */
     private static class PageInfoViewParams {
-        public boolean permissionsListShown = true;
         public boolean instantAppButtonShown = true;
         public boolean siteSettingsButtonShown = true;
         public boolean openOnlineButtonShown = true;
@@ -274,6 +276,16 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         public boolean alwaysShowFullUrl;
         public CharSequence url;
         public int urlOriginLength;
+    }
+
+    /**  Parameters to configure the view of a permission row. */
+    private static class PermissionParams {
+        public CharSequence status;
+        public @DrawableRes int iconResource;
+        public @ColorRes int iconTintColorResource;
+        public @StringRes int warningTextResource;
+        public @StringRes int subtitleTextResource;
+        public Runnable clickCallback;
     }
 
     // Delay enter to allow the triggering button to animate before we cover it.
@@ -388,9 +400,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         };
 
         mDisplayedPermissions = new ArrayList<PageInfoPermissionEntry>();
-
-        // Hide the permissions list for sites with no permissions.
-        viewParams.permissionsListShown = false;
 
         // Work out the URL and connection message and status visibility.
         mFullUrl = isShowingOfflinePage() ? offlinePageUrl : mTab.getOriginalUrl();
@@ -530,17 +539,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
     }
 
     /**
-     * Sets the visibility of the permissions list, which contains padding and borders that should
-     * not be shown if a site has no permissions.
-     *
-     * @param isVisible Whether to show or hide the dialog area.
-     */
-    private void setVisibilityOfPermissionsList(boolean isVisible) {
-        int visibility = isVisible ? View.VISIBLE : View.GONE;
-        mPermissionsList.setVisibility(visibility);
-    }
-
-    /**
      * Finds the Image resource of the icon to use for the given permission.
      *
      * @param permission A valid ContentSettingsType that can be displayed in the PageInfo dialog to
@@ -584,8 +582,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
      */
     @CalledByNative
     private void addPermissionSection(String name, int type, int currentSettingValue) {
-        // We have at least one permission, so show the lower permissions area.
-        setVisibilityOfPermissionsList(true);
         mDisplayedPermissions.add(new PageInfoPermissionEntry(name, type, ContentSetting
                 .fromInt(currentSettingValue)));
     }
@@ -595,69 +591,93 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
      */
     @CalledByNative
     private void updatePermissionDisplay() {
-        mPermissionsList.removeAllViews();
+        List<PermissionParams> permissionParamsList = new ArrayList<>();
         for (PageInfoPermissionEntry permission : mDisplayedPermissions) {
-            addReadOnlyPermissionSection(permission);
+            permissionParamsList.add(createPermissionParams(permission));
         }
+        setPermissions(permissionParamsList);
     }
 
-    private void addReadOnlyPermissionSection(PageInfoPermissionEntry permission) {
-        View permissionRow = LayoutInflater.from(mContext).inflate(
-                R.layout.page_info_permission_row, null);
+    private Runnable createPermissionClickCallback(
+            Intent intentOverride, String[] androidPermissions) {
+        return () -> {
+            if (intentOverride == null && mWindowAndroid != null) {
+                // Try and immediately request missing Android permissions where possible.
+                for (int i = 0; i < androidPermissions.length; i++) {
+                    if (!mWindowAndroid.canRequestPermission(androidPermissions[i])) continue;
 
-        ImageView permissionIcon = (ImageView) permissionRow.findViewById(
-                R.id.page_info_permission_icon);
-        permissionIcon.setImageDrawable(TintedDrawable.constructTintedDrawable(
-                permissionIcon.getResources(), getImageResourceForPermission(permission.type)));
-
-        if (permission.setting == ContentSetting.ALLOW) {
-            int warningTextResource = 0;
-
-            // If warningTextResource is non-zero, then the view must be tagged with either
-            // permission_intent_override or permission_type.
-            LocationUtils locationUtils = LocationUtils.getInstance();
-            if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
-                    && !locationUtils.isSystemLocationSettingEnabled()) {
-                warningTextResource = R.string.page_info_android_location_blocked;
-                permissionRow.setTag(R.id.permission_intent_override,
-                        locationUtils.getSystemLocationSettingsIntent());
-            } else if (!hasAndroidPermission(permission.type)) {
-                warningTextResource = R.string.page_info_android_permission_blocked;
-                permissionRow.setTag(R.id.permission_type,
-                        PrefServiceBridge.getAndroidPermissionsForContentSetting(permission.type));
+                    // If any permissions can be requested, attempt to request them all.
+                    mWindowAndroid.requestPermissions(androidPermissions, new PermissionCallback() {
+                        @Override
+                        public void onRequestPermissionsResult(
+                                String[] permissions, int[] grantResults) {
+                            boolean allGranted = true;
+                            for (int i = 0; i < grantResults.length; i++) {
+                                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                                    allGranted = false;
+                                    break;
+                                }
+                            }
+                            if (allGranted) updatePermissionDisplay();
+                        }
+                    });
+                    return;
+                }
             }
 
-            if (warningTextResource != 0) {
-                TextView permissionUnavailable = (TextView) permissionRow.findViewById(
-                        R.id.page_info_permission_unavailable_message);
-                permissionUnavailable.setVisibility(View.VISIBLE);
-                permissionUnavailable.setText(warningTextResource);
+            runAfterDismiss(() -> {
+                Intent settingsIntent;
+                if (intentOverride != null) {
+                    settingsIntent = intentOverride;
+                } else {
+                    settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                    settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
+                }
+                settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(settingsIntent);
+            });
+        };
+    }
 
-                permissionIcon.setImageResource(R.drawable.exclamation_triangle);
-                permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.google_blue_700));
+    private PermissionParams createPermissionParams(PageInfoPermissionEntry permission) {
+        PermissionParams permissionParams = new PermissionParams();
 
-                permissionRow.setOnClickListener(this);
+        permissionParams.iconResource = getImageResourceForPermission(permission.type);
+        if (permission.setting == ContentSetting.ALLOW) {
+            LocationUtils locationUtils = LocationUtils.getInstance();
+            Intent intentOverride = null;
+            String[] androidPermissions = null;
+            if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_GEOLOCATION
+                    && !locationUtils.isSystemLocationSettingEnabled()) {
+                permissionParams.warningTextResource = R.string.page_info_android_location_blocked;
+                intentOverride = locationUtils.getSystemLocationSettingsIntent();
+            } else if (!hasAndroidPermission(permission.type)) {
+                permissionParams.warningTextResource =
+                        R.string.page_info_android_permission_blocked;
+                androidPermissions =
+                        PrefServiceBridge.getAndroidPermissionsForContentSetting(permission.type);
+            }
+
+            if (permissionParams.warningTextResource != 0) {
+                permissionParams.iconResource = R.drawable.exclamation_triangle;
+                permissionParams.iconTintColorResource = R.color.google_blue_700;
+                permissionParams.clickCallback =
+                        createPermissionClickCallback(intentOverride, androidPermissions);
             }
         }
 
         // The ads permission requires an additional static subtitle.
         if (permission.type == ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS) {
-            TextView permissionSubtitle =
-                    (TextView) permissionRow.findViewById(R.id.page_info_permission_subtitle);
-            permissionSubtitle.setVisibility(View.VISIBLE);
-            permissionSubtitle.setText(R.string.page_info_permission_ads_subtitle);
+            permissionParams.subtitleTextResource = R.string.page_info_permission_ads_subtitle;
         }
 
-        TextView permissionStatus = (TextView) permissionRow.findViewById(
-                R.id.page_info_permission_status);
         SpannableStringBuilder builder = new SpannableStringBuilder();
         SpannableString nameString = new SpannableString(permission.name);
         final StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
         nameString.setSpan(boldSpan, 0, nameString.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
         builder.append(nameString);
-        builder.append(" – ");  // en-dash.
+        builder.append(" – "); // en-dash.
         String status_text = "";
         switch (permission.setting) {
             case ALLOW:
@@ -668,21 +688,22 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
                 break;
             default:
                 assert false : "Invalid setting " + permission.setting + " for permission "
-                        + permission.type;
+                               + permission.type;
         }
         if (WebsitePreferenceBridge.isPermissionControlledByDSE(permission.type, mFullUrl, false)) {
-            status_text = statusTextForDSEPermission(permission);
+            status_text = statusTextForDSEPermission(permission.setting);
         }
         builder.append(status_text);
-        permissionStatus.setText(builder);
-        mPermissionsList.addView(permissionRow);
+        permissionParams.status = builder;
+
+        return permissionParams;
     }
 
     /**
-     * Update the permission string for the Default Search Engine.
+     * Returns the permission string for the Default Search Engine.
      */
-    private String statusTextForDSEPermission(PageInfoPermissionEntry permission) {
-        if (permission.setting == ContentSetting.ALLOW) {
+    private String statusTextForDSEPermission(ContentSetting setting) {
+        if (setting == ContentSetting.ALLOW) {
             return mContext.getString(R.string.page_info_dse_permission_allowed);
         }
 
@@ -823,48 +844,6 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
                             UiUnsupportedMode.UNHANDLED_CONNECTION_INFO);
                 } else {
                     showConnectionInfoPopup();
-                }
-            });
-        } else if (view.getId() == R.id.page_info_permission_row) {
-            final Object intentOverride = view.getTag(R.id.permission_intent_override);
-
-            if (intentOverride == null && mWindowAndroid != null) {
-                // Try and immediately request missing Android permissions where possible.
-                final String[] permissionType = (String[]) view.getTag(R.id.permission_type);
-                for (int i = 0; i < permissionType.length; i++) {
-                    if (!mWindowAndroid.canRequestPermission(permissionType[i])) continue;
-
-                    // If any permissions can be requested, attempt to request them all.
-                    mWindowAndroid.requestPermissions(permissionType, new PermissionCallback() {
-                        @Override
-                        public void onRequestPermissionsResult(
-                                String[] permissions, int[] grantResults) {
-                            boolean allGranted = true;
-                            for (int i = 0; i < grantResults.length; i++) {
-                                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
-                                    allGranted = false;
-                                    break;
-                                }
-                            }
-                            if (allGranted) updatePermissionDisplay();
-                        }
-                    });
-                    return;
-                }
-            }
-
-            runAfterDismiss(new Runnable() {
-                @Override
-                public void run() {
-                    Intent settingsIntent;
-                    if (intentOverride != null) {
-                        settingsIntent = (Intent) intentOverride;
-                    } else {
-                        settingsIntent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                        settingsIntent.setData(Uri.parse("package:" + mContext.getPackageName()));
-                    }
-                    settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    mContext.startActivity(settingsIntent);
                 }
             });
         }
@@ -1096,7 +1075,8 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         }
 
         initializePageInfoViewChild(mUrlTitle, true, params.urlTitleClickCallback);
-        initializePageInfoViewChild(mPermissionsList, params.permissionsListShown, null);
+        // Hide the permissions list for sites with no permissions.
+        initializePageInfoViewChild(mPermissionsList, false, null);
         initializePageInfoViewChild(mInstantAppButton, params.instantAppButtonShown,
                 params.instantAppButtonClickCallback);
         initializePageInfoViewChild(mSiteSettingsButton, params.siteSettingsButtonShown,
@@ -1109,6 +1089,55 @@ public class PageInfoPopup implements OnClickListener, ModalDialogView.Controlle
         child.setVisibility(shown ? View.VISIBLE : View.GONE);
         if (clickCallback == null) return;
         child.setOnClickListener((View v) -> { clickCallback.run(); });
+    }
+
+    private void setPermissions(List<PermissionParams> permissionParamsList) {
+        mPermissionsList.removeAllViews();
+        // If we have at least one permission show the lower permissions area.
+        mPermissionsList.setVisibility(!permissionParamsList.isEmpty() ? View.VISIBLE : View.GONE);
+        for (PermissionParams params : permissionParamsList) {
+            mPermissionsList.addView(createPermissionRow(params));
+        }
+    }
+
+    private View createPermissionRow(PermissionParams params) {
+        View permissionRow =
+                LayoutInflater.from(mContext).inflate(R.layout.page_info_permission_row, null);
+
+        TextView permissionStatus =
+                (TextView) permissionRow.findViewById(R.id.page_info_permission_status);
+        permissionStatus.setText(params.status);
+
+        ImageView permissionIcon =
+                (ImageView) permissionRow.findViewById(R.id.page_info_permission_icon);
+        if (params.iconTintColorResource == 0) {
+            permissionIcon.setImageDrawable(TintedDrawable.constructTintedDrawable(
+                    mContext.getResources(), params.iconResource));
+        } else {
+            permissionIcon.setImageResource(params.iconResource);
+            permissionIcon.setColorFilter(ApiCompatibilityUtils.getColor(
+                    mContext.getResources(), params.iconTintColorResource));
+        }
+
+        if (params.warningTextResource != 0) {
+            TextView permissionUnavailable = (TextView) permissionRow.findViewById(
+                    R.id.page_info_permission_unavailable_message);
+            permissionUnavailable.setVisibility(View.VISIBLE);
+            permissionUnavailable.setText(params.warningTextResource);
+        }
+
+        if (params.subtitleTextResource != 0) {
+            TextView permissionSubtitle =
+                    (TextView) permissionRow.findViewById(R.id.page_info_permission_subtitle);
+            permissionSubtitle.setVisibility(View.VISIBLE);
+            permissionSubtitle.setText(params.subtitleTextResource);
+        }
+
+        if (params.clickCallback != null) {
+            permissionRow.setOnClickListener((View v) -> { params.clickCallback.run(); });
+        }
+
+        return permissionRow;
     }
 
     /**
