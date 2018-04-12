@@ -937,6 +937,8 @@ SelectToSpeak.prototype = {
 
           voices.sort(function(a, b) {
             function score(voice) {
+              if (voice.lang === undefined)
+                return -1;
               var lang = voice.lang.toLowerCase();
               var s = 0;
               if (lang == uiLocale)
