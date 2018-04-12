@@ -57,6 +57,14 @@ constexpr float kFixedPositionRatios[] = {0.f, 0.5f, 1.0f};
 constexpr float kOneThirdPositionRatio = 0.33f;
 constexpr float kTwoThirdPositionRatio = 0.67f;
 
+// The black scrim starts to fade in when the divider is moved past the two
+// optional positions (kOneThirdPositionRatio, kTwoThirdPositionRatio) and
+// reaches to its maximum opacity (kBlackScrimOpacity) after moving
+// kBlackScrimFadeInRatio of the screen width. See https://crbug.com/827730 for
+// details.
+constexpr float kBlackScrimFadeInRatio = 0.1f;
+constexpr float kBlackScrimOpacity = 0.4f;
+
 // Toast data.
 constexpr char kAppCannotSnapToastId[] = "split_view_app_cannot_snap";
 constexpr int kAppCannotSnapToastDurationMs = 2500;
@@ -774,19 +782,21 @@ void SplitViewController::UpdateBlackScrim(
 
   // Update its opacity. The opacity increases as it gets closer to the edge of
   // the screen.
-  float opacity = 0.f;
-  const gfx::Rect work_area_bounds =
+  const int location = IsCurrentScreenOrientationLandscape()
+                           ? location_in_screen.x()
+                           : location_in_screen.y();
+  gfx::Rect work_area_bounds =
       GetDisplayWorkAreaBoundsInScreen(GetDefaultSnappedWindow());
-  if (IsCurrentScreenOrientationLandscape()) {
-    int distance_x =
-        std::min(std::abs(location_in_screen.x() - work_area_bounds.x()),
-                 std::abs(work_area_bounds.right() - location_in_screen.x()));
-    opacity = 1.f - float(distance_x) / float(work_area_bounds.width());
-  } else {
-    int distance_y =
-        std::min(std::abs(location_in_screen.y() - work_area_bounds.y()),
-                 std::abs(work_area_bounds.bottom() - location_in_screen.y()));
-    opacity = 1.f - float(distance_y) / float(work_area_bounds.height());
+  if (!IsCurrentScreenOrientationLandscape())
+    TransposeRect(&work_area_bounds);
+  float opacity = kBlackScrimOpacity;
+  const float ratio = kOneThirdPositionRatio - kBlackScrimFadeInRatio;
+  const int distance = std::min(std::abs(location - work_area_bounds.x()),
+                                std::abs(work_area_bounds.right() - location));
+  if (distance > work_area_bounds.width() * ratio) {
+    opacity -= kBlackScrimOpacity *
+               (distance - work_area_bounds.width() * ratio) /
+               (work_area_bounds.width() * kBlackScrimFadeInRatio);
   }
   black_scrim_layer_->SetOpacity(opacity);
 }
