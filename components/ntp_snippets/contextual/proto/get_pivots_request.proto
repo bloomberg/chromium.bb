@@ -31,6 +31,9 @@ message GetPivotsQuery {
   // Parameters related to clustering pivot items (documents, queries,
   // questions, etc.).
   optional PivotClusteringParams clustering_params = 6;
+
+  // Parameters related to peek text.
+  optional PivotPeekTextParams peek_text_params = 7;
 }
 
 // One piece of historical context in the user's exploration session.
@@ -74,4 +77,10 @@ message PivotClusteringParams {
 
   // Maximum number of clusters we should return.
   optional int32 max = 3;
+}
+
+// Parameters related to the peek text.
+message PivotPeekTextParams {
+  // Whether or not to return peek text.
+  optional bool enabled = 1 [default = false];
 }

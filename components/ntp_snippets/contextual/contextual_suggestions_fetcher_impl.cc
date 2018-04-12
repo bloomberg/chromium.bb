@@ -12,21 +12,34 @@ ContextualSuggestionsFetcherImpl::ContextualSuggestionsFetcherImpl(
     const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory,
     const std::string& application_language_code)
     : loader_factory_(loader_factory),
-      bcp_language_code_(application_language_code) {
-  // Use loader_factory_ to suppress unused variable compiler warning.
-  loader_factory_.get();
-}
+      bcp_language_code_(application_language_code) {}
 
 ContextualSuggestionsFetcherImpl::~ContextualSuggestionsFetcherImpl() = default;
 
 void ContextualSuggestionsFetcherImpl::FetchContextualSuggestionsClusters(
     const GURL& url,
-    FetchClustersCallback callback) {}
+    FetchClustersCallback callback) {
+  auto fetch =
+      std::make_unique<ContextualSuggestionsFetch>(url, bcp_language_code_);
+  ContextualSuggestionsFetch* fetch_unowned = fetch.get();
+  pending_requests_.emplace(std::move(fetch));
+
+  FetchClustersCallback internal_callback = base::BindOnce(
+      &ContextualSuggestionsFetcherImpl::FetchFinished, base::Unretained(this),
+      fetch_unowned, std::move(callback));
+  fetch_unowned->Start(std::move(internal_callback), loader_factory_);
+}
 
 void ContextualSuggestionsFetcherImpl::FetchFinished(
     ContextualSuggestionsFetch* fetch,
     FetchClustersCallback callback,
     std::string peek_text,
-    std::vector<Cluster> clusters) {}
+    std::vector<Cluster> clusters) {
+  auto fetch_iterator = pending_requests_.find(fetch);
+  CHECK(fetch_iterator != pending_requests_.end());
+  pending_requests_.erase(fetch_iterator);
+
+  std::move(callback).Run(peek_text, std::move(clusters));
+}
 
 }  // namespace ntp_snippets

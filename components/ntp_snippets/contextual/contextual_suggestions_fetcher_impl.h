@@ -43,7 +43,7 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
                      std::string peek_text,
                      std::vector<Cluster> clusters);
 
-  const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory_;
+  const scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
   /// BCP47 formatted language code to use.
   const std::string bcp_language_code_;
 

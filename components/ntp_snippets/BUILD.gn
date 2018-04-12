@@ -177,6 +177,7 @@ static_library("ntp_snippets") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//third_party/icu/",
+    "//third_party/protobuf:protobuf_lite",
     "//ui/gfx",
   ]
 }
@@ -245,6 +246,7 @@ source_set("unit_tests") {
   }
 
   deps = [
+    ":explore_protos",
     ":ntp_snippets",
     ":test_support",
     "//base",

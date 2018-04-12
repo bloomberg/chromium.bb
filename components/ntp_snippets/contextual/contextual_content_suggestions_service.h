@@ -47,16 +47,6 @@ class ContextualContentSuggestionsService : public KeyedService {
           metrics_reporter_provider);
   ~ContextualContentSuggestionsService() override;
 
-  using FetchContextualSuggestionsCallback =
-      base::OnceCallback<void(Status status_code,
-                              const GURL& url,
-                              std::vector<ContentSuggestion> suggestions)>;
-
-  // Asynchronously fetches contextual suggestions for the given URL.
-  virtual void FetchContextualSuggestions(
-      const GURL& url,
-      FetchContextualSuggestionsCallback callback);
-
   // Asynchronously fetches contextual suggestions for the given URL.
   virtual void FetchContextualSuggestionClusters(
       const GURL& url,
