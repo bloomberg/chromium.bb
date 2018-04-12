@@ -59,6 +59,7 @@ class MockImmersiveFullscreenControllerDelegate
     visible_fraction_ = 0;
   }
   void OnImmersiveRevealEnded() override { visible_fraction_ = 0; }
+  void OnImmersiveFullscreenEntered() override {}
   void OnImmersiveFullscreenExited() override {
     enabled_ = false;
     visible_fraction_ = 1;

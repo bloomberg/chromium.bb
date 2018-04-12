@@ -91,6 +91,7 @@ class ImmersiveFullscreenControllerDelegateMus
     SetVisibleFraction(0);
   }
   void OnImmersiveRevealEnded() override { DestroyTitleAreaWindow(); }
+  void OnImmersiveFullscreenEntered() override {}
   void OnImmersiveFullscreenExited() override { DestroyTitleAreaWindow(); }
   void SetVisibleFraction(double visible_fraction) override {
     aura::Window* title_area_window = GetTitleAreaWindow();

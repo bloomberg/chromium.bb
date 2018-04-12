@@ -432,7 +432,6 @@ void ClientControlledShellSurface::UpdateAutoHideFrame() {
     bool enabled = frame_type_ == SurfaceFrameType::AUTOHIDE;
     immersive_fullscreen_controller_->SetEnabled(
         ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enabled);
-    GetFrameView()->set_zero_top_border_height(enabled);
   }
 }
 

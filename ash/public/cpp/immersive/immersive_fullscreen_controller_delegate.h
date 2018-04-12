@@ -25,6 +25,9 @@ class ASH_PUBLIC_EXPORT ImmersiveFullscreenControllerDelegate {
   // prior to OnImmersiveRevealEnded().
   virtual void OnImmersiveRevealEnded() = 0;
 
+  // Called as a result of enabling immersive fullscreen via SetEnabled().
+  virtual void OnImmersiveFullscreenEntered() = 0;
+
   // Called as a result of disabling immersive fullscreen via SetEnabled().
   virtual void OnImmersiveFullscreenExited() = 0;
 

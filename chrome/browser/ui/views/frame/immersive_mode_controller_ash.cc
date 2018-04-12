@@ -282,6 +282,8 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
     observer.OnImmersiveRevealEnded();
 }
 
+void ImmersiveModeControllerAsh::OnImmersiveFullscreenEntered() {}
+
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
   DestroyMashRevealWidget();
   browser_view_->top_container()->DestroyLayer();
