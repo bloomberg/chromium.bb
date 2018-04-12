@@ -22,6 +22,7 @@
 #include "components/signin/core/browser/signin_buildflags.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "components/user_manager/user_manager.h"
@@ -55,6 +56,8 @@ class ChromeOSChildAccountReconcilorDelegate
           primary_user->GetAccountId(), true /* force_online_signin */);
 
       // Force a logout.
+      UMA_HISTOGRAM_BOOLEAN(
+          "ChildAccountReconcilor.ForcedUserExitOnReconcileError", true);
       chrome::AttemptUserExit();
     }
   }
@@ -76,8 +79,7 @@ AccountReconcilorFactory::AccountReconcilorFactory()
 AccountReconcilorFactory::~AccountReconcilorFactory() {}
 
 // static
-AccountReconcilor* AccountReconcilorFactory::GetForProfile(
-    Profile* profile) {
+AccountReconcilor* AccountReconcilorFactory::GetForProfile(Profile* profile) {
   return static_cast<AccountReconcilor*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
