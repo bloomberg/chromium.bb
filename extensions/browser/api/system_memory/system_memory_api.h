@@ -10,15 +10,20 @@
 
 namespace extensions {
 
-class SystemMemoryGetInfoFunction : public AsyncExtensionFunction {
+class SystemMemoryGetInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.memory.getInfo", SYSTEM_MEMORY_GETINFO)
   SystemMemoryGetInfoFunction();
 
  private:
   ~SystemMemoryGetInfoFunction() override;
-  bool RunAsync() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
   void OnGetMemoryInfoCompleted(bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(SystemMemoryGetInfoFunction);
 };
 
 }  // namespace extensions

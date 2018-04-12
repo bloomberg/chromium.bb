@@ -624,58 +624,10 @@ void IOThreadExtensionFunction::Destruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
-AsyncExtensionFunction::AsyncExtensionFunction() {
-}
-
-void AsyncExtensionFunction::SetError(const std::string& error) {
-  error_ = error;
-}
-
-const std::string& AsyncExtensionFunction::GetError() const {
-  return error_.empty() ? UIThreadExtensionFunction::GetError() : error_;
-}
-
-AsyncExtensionFunction::~AsyncExtensionFunction() {
-}
-
-void AsyncExtensionFunction::SetResult(std::unique_ptr<base::Value> result) {
-  results_.reset(new base::ListValue());
-  results_->Append(std::move(result));
-}
-
-void AsyncExtensionFunction::SetResultList(
-    std::unique_ptr<base::ListValue> results) {
-  results_ = std::move(results);
-}
-
 ExtensionFunction::ScopedUserGestureForTests::ScopedUserGestureForTests() {
   UserGestureForTests::GetInstance()->IncrementCount();
 }
 
 ExtensionFunction::ScopedUserGestureForTests::~ScopedUserGestureForTests() {
   UserGestureForTests::GetInstance()->DecrementCount();
-}
-
-ExtensionFunction::ResponseAction AsyncExtensionFunction::Run() {
-  if (RunAsync())
-    return RespondLater();
-  DCHECK(!results_);
-  return RespondNow(Error(error_));
-}
-
-// static
-bool AsyncExtensionFunction::ValidationFailure(
-    AsyncExtensionFunction* function) {
-  return false;
-}
-
-void AsyncExtensionFunction::SendResponse(bool success) {
-  ResponseValue response;
-  if (success) {
-    response = ArgumentList(std::move(results_));
-  } else {
-    response = results_ ? ErrorWithArguments(std::move(results_), error_)
-                        : Error(error_);
-  }
-  Respond(std::move(response));
 }

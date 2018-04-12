@@ -103,7 +103,7 @@ class InputImeDeleteSurroundingTextFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-class InputImeHideInputViewFunction : public AsyncExtensionFunction {
+class InputImeHideInputViewFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.hideInputView",
                              INPUT_IME_HIDEINPUTVIEW)
@@ -111,8 +111,8 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
  protected:
   ~InputImeHideInputViewFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 };
 
 class InputMethodPrivateNotifyImeMenuItemActivatedFunction

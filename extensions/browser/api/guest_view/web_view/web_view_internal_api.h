@@ -20,24 +20,6 @@
 // abuse by normal renderer processes.
 namespace extensions {
 
-// TODO(lazyboy): Remove this once CL 997106 lands.
-// An abstract base class for async webview APIs. It does a process ID check
-// in RunAsync, and then calls RunAsyncSafe which must be overriden by all
-// subclasses.
-class LegacyWebViewInternalExtensionFunction : public AsyncExtensionFunction {
- public:
-  LegacyWebViewInternalExtensionFunction() {}
-
- protected:
-  ~LegacyWebViewInternalExtensionFunction() override {}
-
-  // ExtensionFunction implementation.
-  bool RunAsync() final;
-
- private:
-  virtual bool RunAsyncSafe(WebViewGuest* guest) = 0;
-};
-
 class WebViewInternalExtensionFunction : public UIThreadExtensionFunction {
  public:
   WebViewInternalExtensionFunction() {}

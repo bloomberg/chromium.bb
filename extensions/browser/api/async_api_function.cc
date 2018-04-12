@@ -42,6 +42,18 @@ void AsyncApiFunction::AsyncWorkStart() {
   AsyncWorkCompleted();
 }
 
+// static
+bool AsyncApiFunction::ValidationFailure(AsyncApiFunction* function) {
+  return false;
+}
+
+ExtensionFunction::ResponseAction AsyncApiFunction::Run() {
+  if (RunAsync())
+    return RespondLater();
+  DCHECK(!results_);
+  return RespondNow(Error(error_));
+}
+
 void AsyncApiFunction::AsyncWorkCompleted() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     bool rv = BrowserThread::PostTask(
@@ -53,6 +65,23 @@ void AsyncApiFunction::AsyncWorkCompleted() {
   }
 }
 
+void AsyncApiFunction::SetResult(std::unique_ptr<base::Value> result) {
+  results_.reset(new base::ListValue());
+  results_->Append(std::move(result));
+}
+
+void AsyncApiFunction::SetResultList(std::unique_ptr<base::ListValue> results) {
+  results_ = std::move(results);
+}
+
+void AsyncApiFunction::SetError(const std::string& error) {
+  error_ = error;
+}
+
+const std::string& AsyncApiFunction::GetError() const {
+  return error_.empty() ? UIThreadExtensionFunction::GetError() : error_;
+}
+
 void AsyncApiFunction::WorkOnWorkThread() {
   DCHECK(work_task_runner_->RunsTasksInCurrentSequence());
   AsyncWorkStart();
@@ -61,6 +90,17 @@ void AsyncApiFunction::WorkOnWorkThread() {
 void AsyncApiFunction::RespondOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendResponse(Respond());
+}
+
+void AsyncApiFunction::SendResponse(bool success) {
+  ResponseValue response;
+  if (success) {
+    response = ArgumentList(std::move(results_));
+  } else {
+    response = results_ ? ErrorWithArguments(std::move(results_), error_)
+                        : Error(error_);
+  }
+  UIThreadExtensionFunction::Respond(std::move(response));
 }
 
 }  // namespace extensions

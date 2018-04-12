@@ -9,15 +9,20 @@
 
 namespace extensions {
 
-class SystemCpuGetInfoFunction : public AsyncExtensionFunction {
+class SystemCpuGetInfoFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.cpu.getInfo", SYSTEM_CPU_GETINFO)
   SystemCpuGetInfoFunction();
 
  private:
   ~SystemCpuGetInfoFunction() override;
-  bool RunAsync() override;
+
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
+
   void OnGetCpuInfoCompleted(bool success);
+
+  DISALLOW_COPY_AND_ASSIGN(SystemCpuGetInfoFunction);
 };
 
 }  // namespace extensions

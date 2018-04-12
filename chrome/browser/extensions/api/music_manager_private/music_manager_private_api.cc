@@ -29,29 +29,26 @@ MusicManagerPrivateGetDeviceIdFunction::
     ~MusicManagerPrivateGetDeviceIdFunction() {
 }
 
-bool MusicManagerPrivateGetDeviceIdFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+MusicManagerPrivateGetDeviceIdFunction::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeviceId::GetDeviceId(
       this->extension_id(),
       base::Bind(
           &MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback,
           this));
-  return true;  // Still processing!
+  // GetDeviceId will respond asynchronously.
+  return RespondLater();
 }
 
 void MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback(
     const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool response;
   if (device_id.empty()) {
-    SetError(kDeviceIdNotSupported);
-    response = false;
+    Respond(Error(kDeviceIdNotSupported));
   } else {
-    SetResult(std::make_unique<base::Value>(device_id));
-    response = true;
+    Respond(OneArgument(std::make_unique<base::Value>(device_id)));
   }
-
-  SendResponse(response);
 }
 
 } // namespace api

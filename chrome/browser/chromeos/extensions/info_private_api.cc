@@ -227,10 +227,10 @@ ChromeosInfoPrivateGetFunction::ChromeosInfoPrivateGetFunction() {
 ChromeosInfoPrivateGetFunction::~ChromeosInfoPrivateGetFunction() {
 }
 
-bool ChromeosInfoPrivateGetFunction::RunAsync() {
-  base::ListValue* list = NULL;
+ExtensionFunction::ResponseAction ChromeosInfoPrivateGetFunction::Run() {
+  base::ListValue* list = nullptr;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &list));
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  auto result = std::make_unique<base::DictionaryValue>();
   for (size_t i = 0; i < list->GetSize(); ++i) {
     std::string property_name;
     EXTENSION_FUNCTION_VALIDATE(list->GetString(i, &property_name));
@@ -238,9 +238,7 @@ bool ChromeosInfoPrivateGetFunction::RunAsync() {
     if (value)
       result->Set(property_name, std::move(value));
   }
-  SetResult(std::move(result));
-  SendResponse(true);
-  return true;
+  return RespondNow(OneArgument(std::move(result)));
 }
 
 std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(

@@ -18,7 +18,7 @@ class ResourceContext;
 
 namespace extensions {
 
-class DnsResolveFunction : public AsyncExtensionFunction {
+class DnsResolveFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("dns.resolve", DNS_RESOLVE)
 
@@ -27,13 +27,13 @@ class DnsResolveFunction : public AsyncExtensionFunction {
  protected:
   ~DnsResolveFunction() override;
 
-  // ExtensionFunction:
-  bool RunAsync() override;
-
-  void WorkOnIOThread();
-  void RespondOnUIThread();
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
  private:
+  void WorkOnIOThread();
+  void RespondOnUIThread(std::unique_ptr<base::ListValue> results);
+
   void OnLookupFinished(int result);
 
   std::string hostname_;

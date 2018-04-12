@@ -268,17 +268,6 @@ std::unique_ptr<extensions::UserScriptList> ParseContentScripts(
 
 namespace extensions {
 
-bool LegacyWebViewInternalExtensionFunction::RunAsync() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
-  WebViewGuest* guest = WebViewGuest::From(
-      render_frame_host()->GetProcess()->GetID(), instance_id);
-  if (!guest)
-    return false;
-
-  return RunAsyncSafe(guest);
-}
-
 bool WebViewInternalExtensionFunction::PreRunValidation(std::string* error) {
   if (!UIThreadExtensionFunction::PreRunValidation(error))
     return false;

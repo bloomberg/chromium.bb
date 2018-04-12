@@ -10,7 +10,8 @@
 namespace extensions {
 namespace api {
 
-class MusicManagerPrivateGetDeviceIdFunction : public AsyncExtensionFunction {
+class MusicManagerPrivateGetDeviceIdFunction
+    : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("musicManagerPrivate.getDeviceId",
                              MUSICMANAGERPRIVATE_GETDEVICEID)
@@ -20,8 +21,8 @@ class MusicManagerPrivateGetDeviceIdFunction : public AsyncExtensionFunction {
  protected:
   ~MusicManagerPrivateGetDeviceIdFunction() override;
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 
   void DeviceIdCallback(const std::string& device_id);
 };

@@ -17,7 +17,7 @@ class Profile;
 
 namespace extensions {
 
-class GcmApiFunction : public AsyncExtensionFunction {
+class GcmApiFunction : public UIThreadExtensionFunction {
  public:
   GcmApiFunction() {}
 
@@ -25,13 +25,10 @@ class GcmApiFunction : public AsyncExtensionFunction {
   ~GcmApiFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() final;
-
-  // Actual implementation of specific functions.
-  virtual bool DoWork() = 0;
+  bool PreRunValidation(std::string* error) final;
 
   // Checks that the GCM API is enabled.
-  bool IsGcmApiEnabled() const;
+  bool IsGcmApiEnabled(std::string* error) const;
 
   gcm::GCMDriver* GetGCMDriver() const;
 };
@@ -45,8 +42,8 @@ class GcmRegisterFunction : public GcmApiFunction {
  protected:
   ~GcmRegisterFunction() override;
 
-  // Register function implementation.
-  bool DoWork() final;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() final;
 
  private:
   void CompleteFunctionWithResult(const std::string& registration_id,
@@ -62,8 +59,8 @@ class GcmUnregisterFunction : public GcmApiFunction {
  protected:
   ~GcmUnregisterFunction() override;
 
-  // Register function implementation.
-  bool DoWork() final;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() final;
 
  private:
   void CompleteFunctionWithResult(gcm::GCMClient::Result result);
@@ -78,8 +75,8 @@ class GcmSendFunction : public GcmApiFunction {
  protected:
   ~GcmSendFunction() override;
 
-  // Send function implementation.
-  bool DoWork() final;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() final;
 
  private:
   void CompleteFunctionWithResult(const std::string& message_id,

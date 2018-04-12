@@ -16,18 +16,17 @@ SystemCpuGetInfoFunction::SystemCpuGetInfoFunction() {
 SystemCpuGetInfoFunction::~SystemCpuGetInfoFunction() {
 }
 
-bool SystemCpuGetInfoFunction::RunAsync() {
+ExtensionFunction::ResponseAction SystemCpuGetInfoFunction::Run() {
   CpuInfoProvider::Get()->StartQueryInfo(
       base::Bind(&SystemCpuGetInfoFunction::OnGetCpuInfoCompleted, this));
-  return true;
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void SystemCpuGetInfoFunction::OnGetCpuInfoCompleted(bool success) {
   if (success)
-    SetResult(CpuInfoProvider::Get()->cpu_info().ToValue());
+    Respond(OneArgument(CpuInfoProvider::Get()->cpu_info().ToValue()));
   else
-    SetError("Error occurred when querying cpu information.");
-  SendResponse(success);
+    Respond(Error("Error occurred when querying cpu information."));
 }
 
 }  // namespace extensions
