@@ -5,7 +5,7 @@
 #include <queue>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"

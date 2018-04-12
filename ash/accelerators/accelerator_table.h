@@ -8,11 +8,15 @@
 #include <stddef.h>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ash {
 
+// The complete list of Ash accelerators is in ash/public/cpp/accelerators.h.
+// This file mainly keeps track of special categories of accelerator.
+//
 // There are five classes of accelerators in Ash:
 //
 // Ash (OS) reserved:
@@ -48,115 +52,6 @@ namespace ash {
 // There are also various restrictions on accelerators allowed at the login
 // screen, when running in "forced app mode" (like a kiosk), etc. See the
 // various kActionsAllowed* below.
-//
-// Please put if/def sections at the end of the bare section and keep the list
-// within each section in alphabetical order.
-enum AcceleratorAction {
-  BRIGHTNESS_DOWN,
-  BRIGHTNESS_UP,
-  CYCLE_BACKWARD_MRU,
-  CYCLE_FORWARD_MRU,
-  DEBUG_PRINT_LAYER_HIERARCHY,
-  DEBUG_PRINT_VIEW_HIERARCHY,
-  DEBUG_PRINT_WINDOW_HIERARCHY,
-  DEBUG_SHOW_TOAST,
-  DEBUG_TOGGLE_DEVICE_SCALE_FACTOR,
-  DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
-  DEBUG_TOGGLE_SHOW_FPS_COUNTER,
-  DEBUG_TOGGLE_SHOW_PAINT_RECTS,
-  DEBUG_TOGGLE_TOUCH_PAD,
-  DEBUG_TOGGLE_TOUCH_SCREEN,
-  DEBUG_TOGGLE_TABLET_MODE,
-  DEBUG_TOGGLE_WALLPAPER_MODE,
-  DEBUG_TRIGGER_CRASH,  // Intentionally crash the ash process.
-  DEV_ADD_REMOVE_DISPLAY,
-  DEV_TOGGLE_UNIFIED_DESKTOP,
-  DISABLE_CAPS_LOCK,
-  EXIT,
-  FOCUS_NEXT_PANE,
-  FOCUS_PREVIOUS_PANE,
-  FOCUS_SHELF,
-  KEYBOARD_BRIGHTNESS_DOWN,
-  KEYBOARD_BRIGHTNESS_UP,
-  LAUNCH_APP_0,
-  LAUNCH_APP_1,
-  LAUNCH_APP_2,
-  LAUNCH_APP_3,
-  LAUNCH_APP_4,
-  LAUNCH_APP_5,
-  LAUNCH_APP_6,
-  LAUNCH_APP_7,
-  LAUNCH_LAST_APP,
-  LOCK_PRESSED,
-  LOCK_RELEASED,
-  LOCK_SCREEN,
-  MAGNIFIER_ZOOM_IN,
-  MAGNIFIER_ZOOM_OUT,
-  MEDIA_NEXT_TRACK,
-  MEDIA_PLAY_PAUSE,
-  MEDIA_PREV_TRACK,
-  MOVE_ACTIVE_WINDOW_BETWEEN_DISPLAYS,
-  NEW_INCOGNITO_WINDOW,
-  NEW_TAB,
-  NEW_WINDOW,
-  NEXT_IME,
-  OPEN_CROSH,
-  OPEN_FEEDBACK_PAGE,
-  OPEN_FILE_MANAGER,
-  OPEN_GET_HELP,
-  POWER_PRESSED,
-  POWER_RELEASED,
-  PREVIOUS_IME,
-  PRINT_UI_HIERARCHIES,
-  RESTORE_TAB,
-  ROTATE_SCREEN,
-  ROTATE_WINDOW,
-  SCALE_UI_DOWN,
-  SCALE_UI_RESET,
-  SCALE_UI_UP,
-  SHOW_IME_MENU_BUBBLE,
-  SHOW_KEYBOARD_OVERLAY,
-  SHOW_STYLUS_TOOLS,
-  SHOW_TASK_MANAGER,
-  START_VOICE_INTERACTION,
-  SUSPEND,
-  SWAP_PRIMARY_DISPLAY,
-  SWITCH_IME,  // Switch to another IME depending on the accelerator.
-  SWITCH_TO_NEXT_USER,
-  SWITCH_TO_PREVIOUS_USER,
-  TAKE_PARTIAL_SCREENSHOT,
-  TAKE_SCREENSHOT,
-  TAKE_WINDOW_SCREENSHOT,
-  TOGGLE_APP_LIST,
-  TOGGLE_CAPS_LOCK,
-  TOGGLE_DICTATION,
-  TOGGLE_FULLSCREEN,
-  TOGGLE_HIGH_CONTRAST,
-  TOGGLE_MAXIMIZED,
-  TOGGLE_MESSAGE_CENTER_BUBBLE,
-  TOGGLE_MIRROR_MODE,
-  TOGGLE_OVERVIEW,
-  TOGGLE_SPOKEN_FEEDBACK,
-  TOGGLE_SYSTEM_TRAY_BUBBLE,
-  TOGGLE_WIFI,
-  TOUCH_HUD_CLEAR,
-  TOUCH_HUD_MODE_CHANGE,
-  UNPIN,
-  VOLUME_DOWN,
-  VOLUME_MUTE,
-  VOLUME_UP,
-  WINDOW_CYCLE_SNAP_LEFT,
-  WINDOW_CYCLE_SNAP_RIGHT,
-  WINDOW_MINIMIZE,
-  WINDOW_POSITION_CENTER,
-};
-
-struct AcceleratorData {
-  bool trigger_on_press;
-  ui::KeyboardCode keycode;
-  int modifiers;
-  AcceleratorAction action;
-};
 
 // Gathers the needed data to handle deprecated accelerators.
 struct DeprecatedAcceleratorData {
@@ -189,10 +84,6 @@ enum DeprecatedAcceleratorUsage {
   NEW_USED,                // The new accelerator is used.
   DEPRECATED_USAGE_COUNT,  // Maximum value of this enum for histogram use.
 };
-
-// Accelerators handled by AcceleratorController.
-ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
-ASH_EXPORT extern const size_t kAcceleratorDataLength;
 
 // The list of the deprecated accelerators.
 ASH_EXPORT extern const AcceleratorData kDeprecatedAccelerators[];

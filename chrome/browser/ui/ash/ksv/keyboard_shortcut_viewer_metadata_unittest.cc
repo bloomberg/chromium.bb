@@ -7,9 +7,9 @@
 #include <tuple>
 #include <vector>
 
-#include "ash/accelerators/accelerator_table.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
+#include "ash/public/cpp/accelerators.h"
 #include "base/macros.h"
 #include "base/md5.h"
 #include "base/strings/string_util.h"
@@ -24,9 +24,9 @@ constexpr int kAshAcceleratorsTotalNum = 98;
 // The hash of Ash accelerators.
 constexpr char kAshAcceleratorsHash[] = "71c96531d7639ba0ecf255a59546c243";
 // The total number of Chrome accelerators (available on Chrome OS).
-constexpr int kChromeAcceleratorsTotalNum = 91;
+constexpr int kChromeAcceleratorsTotalNum = 92;
 // The hash of Chrome accelerators (available on Chrome OS).
-constexpr char kChromeAcceleratorsHash[] = "cde825b73b85f0ff34a1ff78086e61c8";
+constexpr char kChromeAcceleratorsHash[] = "b6e72a2f2c8e86938e645663e2b0d1fe";
 
 const char* BooleanToString(bool value) {
   return value ? "true" : "false";

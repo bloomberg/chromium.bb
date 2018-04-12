@@ -45,10 +45,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "ash/accelerators/accelerator_table.h"
-#endif
-
 namespace {
 
 // Initial comamnd ID's for navigatable (and hence executable) tab/window menu
@@ -214,26 +210,9 @@ RecentTabsSubMenuModel::RecentTabsSubMenuModel(
 
   Build();
 
-  // Retrieve accelerator key for IDC_RESTORE_TAB now, because on ASH, it's not
-  // defined in |accelerator_provider|, but in shell, so simply retrieve it now
-  // for all ASH and non-ASH for use in |GetAcceleratorForCommandId|.
-#if defined(OS_CHROMEOS)
-  for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {
-    const ash::AcceleratorData& accel_data = ash::kAcceleratorData[i];
-    if (accel_data.action == ash::RESTORE_TAB) {
-      reopen_closed_tab_accelerator_ = ui::Accelerator(accel_data.keycode,
-                                                       accel_data.modifiers);
-      break;
-    }
-  }
-#else
   if (accelerator_provider) {
     accelerator_provider->GetAcceleratorForCommandId(
         IDC_RESTORE_TAB, &reopen_closed_tab_accelerator_);
-  }
-#endif  // defined(OS_CHROMEOS)
-
-  if (accelerator_provider) {
     accelerator_provider->GetAcceleratorForCommandId(
         IDC_SHOW_HISTORY, &show_history_accelerator_);
   }

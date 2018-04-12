@@ -565,8 +565,7 @@ bool BrowserView::GetAccelerator(int cmd_id,
       return true;
     }
   }
-  // Else, we retrieve the accelerator information from Ash (if applicable).
-  return GetAshAcceleratorForCommandId(cmd_id, accelerator);
+  return false;
 }
 
 bool BrowserView::IsAcceleratorRegistered(const ui::Accelerator& accelerator) {

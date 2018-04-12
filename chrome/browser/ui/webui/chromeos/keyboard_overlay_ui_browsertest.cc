@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/accelerators/accelerator_table.h"
+#include "ash/public/cpp/accelerators.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
@@ -125,11 +125,21 @@ bool ContainsShortcut(const std::string& shortcut,
 
 using KeyboardOverlayUIBrowserTest = InProcessBrowserTest;
 
+// This test verifies two things:
+//
+// 1. That all accelerators in kAcceleratorData appear in the keyboard overlay
+// UI. This will fail when a new shortcut is added (or replaced) in
+// kAcceleratorData but not the overlay UI.
+//
+// 2. That the number of accelerators shared by the Ash table and the UI is the
+// expected value. This will fail when a new shortcut is added to
+// kAcceleratorData but not the overlay UI.
 IN_PROC_BROWSER_TEST_F(KeyboardOverlayUIBrowserTest,
                        AcceleratorsShouldHaveKeyboardOverlay) {
   content::WebContents* const web_contents = StartKeyboardOverlayUI(browser());
   const bool is_display_ui_scaling_enabled =
       IsDisplayUIScalingEnabled(web_contents);
+  int found_accelerators = 0;
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {
     const ash::AcceleratorData& entry = ash::kAcceleratorData[i];
     if (ShouldSkip(entry))
@@ -143,32 +153,26 @@ IN_PROC_BROWSER_TEST_F(KeyboardOverlayUIBrowserTest,
       }
     }
 
-    EXPECT_TRUE(ContainsShortcut(shortcut, web_contents))
-        << "Please add the new accelerators to keyboard "
-           "overlay. Add one entry '" +
-               shortcut +
-               "' in the 'shortcut' section"
-               " at the bottom of the file of "
-               "'/chrome/browser/resources/chromeos/"
-               "keyboard_overlay_data.js'. Please keep it in "
-               "alphabetical order.";
+    if (ContainsShortcut(shortcut, web_contents)) {
+      found_accelerators++;
+    } else {
+      ADD_FAILURE() << "Please add the new accelerators to keyboard "
+                       "overlay. Add one entry '" +
+                           shortcut +
+                           "' in the 'shortcut' section"
+                           " at the bottom of the file of "
+                           "'/chrome/browser/resources/chromeos/"
+                           "keyboard_overlay_data.js'. Please keep it in "
+                           "alphabetical order.";
+    }
   }
-}
 
-IN_PROC_BROWSER_TEST_F(KeyboardOverlayUIBrowserTest,
-                       DeprecatedAcceleratorsShouldNotHaveKeyboardOverlay) {
-  content::WebContents* const web_contents = StartKeyboardOverlayUI(browser());
-  for (size_t i = 0; i < ash::kDeprecatedAcceleratorsLength; ++i) {
-    const ash::AcceleratorData& entry = ash::kDeprecatedAccelerators[i];
-    if (ShouldSkip(entry))
-      continue;
-
-    const std::string shortcut = GenerateShortcutKey(entry, web_contents);
-    EXPECT_FALSE(ContainsShortcut(shortcut, web_contents))
-        << "Please remove the deprecated accelerator '" + shortcut +
-               "' from the 'shortcut' section"
-               " at the bottom of the file of "
-               "'/chrome/browser/resources/chromeos/"
-               "keyboard_overlay_data.js'.";
-  }
+  constexpr int kExpectedFoundAccelerators = 60;
+  DCHECK_EQ(kExpectedFoundAccelerators, found_accelerators)
+      << "It seems ash::kAcceleratorData or the 'shortcut' section of "
+         "'/chrome/browser/resources/chromeos/keyboard_overlay_data.js' has "
+         "changed. Please keep the two in sync. If you've deprecated an "
+         "accelerator, remove it from keyboard_overlay_data.js. If you have "
+         "added the accelerator in both places, update "
+         "kExpectedFoundAccelerators.";
 }
