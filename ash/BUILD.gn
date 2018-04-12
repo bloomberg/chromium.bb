@@ -96,6 +96,8 @@ component("ash") {
     "ash_view_ids.h",
     "assistant/ash_assistant_controller.cc",
     "assistant/ash_assistant_controller.h",
+    "assistant/model/assistant_interaction_model_impl.cc",
+    "assistant/model/assistant_interaction_model_impl.h",
     "autoclick/autoclick_controller.cc",
     "autoclick/autoclick_controller.h",
     "cancel_mode.cc",
