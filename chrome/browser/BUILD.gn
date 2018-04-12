@@ -3866,8 +3866,6 @@ jumbo_split_static_library("browser") {
       "renderer_host/pepper/pepper_flash_drm_host.h",
       "renderer_host/pepper/pepper_isolated_file_system_message_filter.cc",
       "renderer_host/pepper/pepper_isolated_file_system_message_filter.h",
-      "renderer_host/pepper/pepper_platform_verification_message_filter.cc",
-      "renderer_host/pepper/pepper_platform_verification_message_filter.h",
     ]
     deps += [
       "//components/pdf/browser",

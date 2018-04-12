@@ -245,8 +245,6 @@ component("proxy") {
       "host_var_serialization_rules.h",
       "pdf_resource.cc",
       "pdf_resource.h",
-      "platform_verification_private_resource.cc",
-      "platform_verification_private_resource.h",
       "ppb_broker_proxy.cc",
       "ppb_broker_proxy.h",
       "ppb_buffer_proxy.cc",

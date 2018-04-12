@@ -242,8 +242,6 @@ source_set("objects") {
     "private/pass_file_handle.h",
     "private/pdf.cc",
     "private/pdf.h",
-    "private/platform_verification.cc",
-    "private/platform_verification.h",
     "private/tcp_server_socket_private.cc",
     "private/tcp_server_socket_private.h",
     "private/tcp_socket_private.cc",
