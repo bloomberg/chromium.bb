@@ -125,7 +125,16 @@ ToolbarActionsBar::~ToolbarActionsBar() {
 }
 
 // static
-gfx::Size ToolbarActionsBar::GetViewSize() {
+void ToolbarActionsBar::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kToolbarIconSurfacingBubbleAcknowledged, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kToolbarIconSurfacingBubbleLastShowTime,
+                              0);
+}
+
+gfx::Size ToolbarActionsBar::GetViewSize() const {
 #if defined(OS_MACOSX)
   // On the Mac, the spec is a 24x24 button in a 28x28 space.
   constexpr gfx::Size kSize(24, 24);
@@ -135,17 +144,6 @@ gfx::Size ToolbarActionsBar::GetViewSize() {
   gfx::Rect rect(kSize);
   rect.Inset(-GetLayoutInsets(TOOLBAR_ACTION_VIEW));
   return rect.size();
-}
-
-// static
-void ToolbarActionsBar::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(
-      prefs::kToolbarIconSurfacingBubbleAcknowledged,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterInt64Pref(prefs::kToolbarIconSurfacingBubbleLastShowTime,
-                              0);
 }
 
 gfx::Size ToolbarActionsBar::GetFullSize() const {

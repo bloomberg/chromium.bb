@@ -422,7 +422,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 - (void)addViewForAction:(ToolbarActionViewController*)action
                withIndex:(NSUInteger)index {
-  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  const gfx::Size size = toolbarActionsBar_->GetViewSize();
   NSRect buttonFrame = NSMakeRect(NSMaxX([containerView_ bounds]), 0,
                                   size.width(), size.height());
   BrowserActionButton* newButton =
@@ -700,7 +700,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   // Calculate the row index and the index in the row. We bound the latter
   // because the view can go farther right than the right-most icon in the last
   // row of the overflow menu.
-  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  const gfx::Size size = toolbarActionsBar_->GetViewSize();
   NSInteger rowIndex = midPoint.y / size.height();
   int icons_per_row = isOverflow_ ?
       toolbarActionsBar_->platform_settings().icons_per_overflow_menu_row :
@@ -733,7 +733,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
 - (NSRect)frameForIndex:(NSUInteger)index {
   gfx::Rect frameRect = toolbarActionsBar_->GetFrameForIndex(index);
-  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  const gfx::Size size = toolbarActionsBar_->GetViewSize();
   int iconWidth = size.width();
   // The toolbar actions bar will return an empty rect if the index is for an
   // action that is before range we show (i.e., is for a button that's on the

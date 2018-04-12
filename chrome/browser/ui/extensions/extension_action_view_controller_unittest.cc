@@ -27,7 +27,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionWantsToRunAppearance) {
 
   AddTab(browser(), GURL("chrome://newtab"));
 
-  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  const gfx::Size size = toolbar_actions_bar()->GetViewSize();
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ExtensionActionViewController* action =
@@ -79,7 +79,7 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionBlockedActions) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  const gfx::Size size = ToolbarActionsBar::GetViewSize();
+  const gfx::Size size = toolbar_actions_bar()->GetViewSize();
   std::unique_ptr<IconWithBadgeImageSource> image_source =
       browser_action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());

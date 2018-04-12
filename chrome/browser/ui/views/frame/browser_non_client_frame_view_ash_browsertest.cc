@@ -7,6 +7,7 @@
 #include <string>
 
 #include "ash/ash_constants.h"
+#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
@@ -691,6 +692,17 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
   EXPECT_EQ(GetThemeColor(), frame_header_->GetActiveFrameColor());
   EXPECT_EQ(GetThemeColor(), frame_header_->GetInactiveFrameColor());
   EXPECT_EQ(SK_ColorWHITE, GetActiveIconColor(hosted_app_button_container_));
+}
+
+// Make sure that for hosted apps, the height of the frame header and its
+// contents don't exceed the height of the caption buttons.
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
+  EXPECT_EQ(frame_header_->GetHeaderHeight(),
+            GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height());
+  EXPECT_LE(app_menu_button_->size().height(),
+            frame_header_->GetHeaderHeight());
+  EXPECT_LE(hosted_app_button_container_->size().height(),
+            frame_header_->GetHeaderHeight());
 }
 
 // Tests that the focus toolbar command focuses the app menu button in web app

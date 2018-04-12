@@ -208,7 +208,7 @@ gfx::ImageSkia ToolbarActionView::GetIconForTest() {
 }
 
 gfx::Size ToolbarActionView::CalculatePreferredSize() const {
-  return ToolbarActionsBar::GetViewSize();
+  return delegate_->GetToolbarActionSize();
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {

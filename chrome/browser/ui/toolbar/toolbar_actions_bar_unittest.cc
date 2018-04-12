@@ -254,7 +254,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
 
   // By default, all three actions should be visible.
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
-  const gfx::Size view_size = ToolbarActionsBar::GetViewSize();
+  const gfx::Size view_size = toolbar_actions_bar()->GetViewSize();
   // Check the widths.
   int expected_width = 3 * view_size.width();
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
@@ -442,8 +442,8 @@ TEST_P(ToolbarActionsBarUnitTest, TestHighlightMode) {
 
 // Test the bounds calculation for different indices.
 TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
-  const auto icon_rect = [](int x, int y) {
-    const auto size = ToolbarActionsBar::GetViewSize();
+  const auto size = toolbar_actions_bar()->GetViewSize();
+  const auto icon_rect = [size](int x, int y) {
     return gfx::Rect(gfx::Point(x * size.width(), y * size.height()), size);
   };
 
@@ -457,7 +457,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
                           ActionType::BROWSER_ACTION);
   }
   toolbar_model()->SetVisibleIconCount(kNumExtensions);
-  const int icon_width = ToolbarActionsBar::GetViewSize().width();
+  const int icon_width = toolbar_actions_bar()->GetViewSize().width();
   overflow_bar()->SetOverflowRowWidth(icon_width * kIconsPerOverflowRow);
   EXPECT_EQ(kIconsPerOverflowRow,
             overflow_bar()->platform_settings().icons_per_overflow_menu_row);
@@ -493,7 +493,7 @@ TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
 }
 
 TEST_P(ToolbarActionsBarUnitTest, TestStartAndEndIndexes) {
-  const int icon_width = ToolbarActionsBar::GetViewSize().width();
+  const int icon_width = toolbar_actions_bar()->GetViewSize().width();
 
   for (int i = 0; i < 3; ++i) {
     CreateAndAddExtension(base::StringPrintf("extension %d", i),

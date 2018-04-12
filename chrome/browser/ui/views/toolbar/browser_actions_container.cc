@@ -151,6 +151,10 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
   return delegate_->GetOverflowReferenceView();
 }
 
+gfx::Size BrowserActionsContainer::GetToolbarActionSize() {
+  return toolbar_actions_bar_->GetViewSize();
+}
+
 void BrowserActionsContainer::AddViewForAction(
    ToolbarActionViewController* view_controller,
    size_t index) {
@@ -348,7 +352,8 @@ gfx::Size BrowserActionsContainer::CalculatePreferredSize() const {
   preferred_width = base::ClampToRange(preferred_width, GetResizeAreaWidth(),
                                        GetWidthWithAllActionsVisible());
 
-  return gfx::Size(preferred_width, ToolbarActionsBar::GetViewSize().height());
+  return gfx::Size(preferred_width,
+                   toolbar_actions_bar_->GetViewSize().height());
 }
 
 int BrowserActionsContainer::GetHeightForWidth(int width) const {
@@ -360,7 +365,7 @@ int BrowserActionsContainer::GetHeightForWidth(int width) const {
 gfx::Size BrowserActionsContainer::GetMinimumSize() const {
   DCHECK(interactive_);
   return gfx::Size(GetResizeAreaWidth(),
-                   ToolbarActionsBar::GetViewSize().height());
+                   toolbar_actions_bar_->GetViewSize().height());
 }
 
 void BrowserActionsContainer::Layout() {
@@ -442,7 +447,7 @@ int BrowserActionsContainer::OnDragUpdated(
     // event coordinate into the index of the icon we want to display the
     // indicator before. We also mirror the event.x() so that our calculations
     // are consistent with left-to-right.
-    const auto size = ToolbarActionsBar::GetViewSize();
+    const auto size = toolbar_actions_bar_->GetViewSize();
     const int offset_into_icon_area =
         GetMirroredXInView(event.x()) + (size.width() / 2);
     const int before_icon_unclamped = offset_into_icon_area / size.width();
@@ -545,7 +550,8 @@ void BrowserActionsContainer::WriteDragDataForView(View* sender,
   ToolbarActionViewController* view_controller = (*it)->view_controller();
   data->provider().SetDragImage(
       view_controller
-          ->GetIcon(GetCurrentWebContents(), ToolbarActionsBar::GetViewSize())
+          ->GetIcon(GetCurrentWebContents(),
+                    toolbar_actions_bar_->GetViewSize())
           .AsImageSkia(),
       press_pt.OffsetFromOrigin());
   // Fill in the remaining info.
@@ -636,7 +642,7 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
 
     // Convert back to a pixel offset into the container.  First find the X
     // coordinate of the drop icon.
-    const auto size = ToolbarActionsBar::GetViewSize();
+    const auto size = toolbar_actions_bar_->GetViewSize();
     const int drop_icon_x =
         drop_position_->icon_in_row * size.width() - (kDropIndicatorWidth / 2);
 
@@ -697,7 +703,7 @@ int BrowserActionsContainer::GetWidthForIconCount(size_t num_icons) const {
   if (num_icons == 0)
     return 0;
   return GetSeparatorAreaWidth() +
-         num_icons * ToolbarActionsBar::GetViewSize().width();
+         num_icons * toolbar_actions_bar_->GetViewSize().width();
 }
 
 int BrowserActionsContainer::GetWidthWithAllActionsVisible() const {
