@@ -173,7 +173,7 @@ QUIC_FLAG(
 
 // If true, QUIC streams are registered in the QuicStream constructor instead
 // of in the QuicSpdyStream constructor.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early2, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_streams_early2, true)
 
 // If this flag and
 // FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash
