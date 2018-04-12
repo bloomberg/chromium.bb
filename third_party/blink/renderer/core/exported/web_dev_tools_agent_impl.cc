@@ -463,12 +463,10 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
 
   inspector_session_->Append(new InspectorAuditsAgent(network_agent_));
 
-  if (agent_->include_view_agents_) {
-    // TODO(dgozman): we should actually pass the view instead of frame, but
-    // during remote->local transition we cannot access mainFrameImpl() yet, so
-    // we have to store the frame which will become the main frame later.
-    inspector_session_->Append(new InspectorEmulationAgent(frame_.Get()));
-  }
+  // TODO(dgozman): we should actually pass the view instead of frame, but
+  // during remote->local transition we cannot access mainFrameImpl() yet, so
+  // we have to store the frame which will become the main frame later.
+  inspector_session_->Append(new InspectorEmulationAgent(frame_.Get()));
 
   // Call session init callbacks registered from higher layers
   CoreInitializer::GetInstance().InitInspectorAgentSession(
