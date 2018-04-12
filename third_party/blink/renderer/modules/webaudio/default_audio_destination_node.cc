@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet.h"
+#include "third_party/blink/renderer/modules/webaudio/audio_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 
 namespace blink {
@@ -90,11 +91,13 @@ void DefaultAudioDestinationHandler::CreateDestination() {
 void DefaultAudioDestinationHandler::StartDestination() {
   DCHECK(!destination_->IsPlaying());
 
-  // Use Experimental AudioWorkletThread only when AudioWorklet is enabled, and
-  // the worklet thread and the global scope are ready.
-  if (Context()->audioWorklet() && Context()->audioWorklet()->IsReady()) {
-    destination_->StartWithWorkletThread(
-        Context()->audioWorklet()->GetBackingThread());
+  AudioWorklet* audio_worklet = Context()->audioWorklet();
+  if (audio_worklet && audio_worklet->IsReady()) {
+    // This task runner is only used to fire the audio render callback, so it
+    // MUST not be throttled to avoid potential audio glitch.
+    destination_->StartWithWorkletTaskRunner(
+        audio_worklet->GetMessagingProxy()->GetBackingWorkerThread()
+                     ->GetTaskRunner(TaskType::kUnthrottled));
   } else {
     destination_->Start();
   }

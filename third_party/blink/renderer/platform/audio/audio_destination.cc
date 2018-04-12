@@ -106,9 +106,6 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
   TRACE_EVENT_BEGIN2("webaudio", "AudioDestination::Render",
                      "callback_buffer_size", number_of_frames, "frames skipped",
                      prior_frames_skipped);
-  DCHECK(
-      !(worklet_backing_thread_ && worklet_backing_thread_->IsCurrentThread()));
-
   CHECK_EQ(destination_data.size(), number_of_output_channels_);
   CHECK_EQ(number_of_frames, callback_buffer_size_);
 
@@ -132,11 +129,11 @@ void AudioDestination::Render(const WebVector<float*>& destination_data,
 
   size_t frames_to_render = fifo_->Pull(output_bus_.get(), number_of_frames);
 
-  // Use the dual-thread rendering model if the thread from AudioWorkletThread
-  // is available.
-  if (worklet_backing_thread_) {
+ // Use the dual-thread rendering model if the AudioWorklet is activated.
+  if (worklet_task_runner_) {
     PostCrossThreadTask(
-        *worklet_backing_thread_->GetTaskRunner(), FROM_HERE,
+        *worklet_task_runner_,
+        FROM_HERE,
         CrossThreadBind(&AudioDestination::RequestRender, WrapRefCounted(this),
                         number_of_frames, frames_to_render, delay,
                         delay_timestamp, prior_frames_skipped));
@@ -157,9 +154,6 @@ void AudioDestination::RequestRender(size_t frames_requested,
   TRACE_EVENT2("webaudio", "AudioDestination::RequestRender",
                "frames_to_render", frames_to_render, "timestamp (s)",
                delay_timestamp);
-
-  DCHECK(
-      !worklet_backing_thread_ || worklet_backing_thread_->IsCurrentThread());
 
   frames_elapsed_ -= std::min(frames_elapsed_, prior_frames_skipped);
   AudioIOPosition output_position;
@@ -205,13 +199,13 @@ void AudioDestination::Start() {
   }
 }
 
-void AudioDestination::StartWithWorkletThread(
-    WebThread* worklet_backing_thread) {
+void AudioDestination::StartWithWorkletTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner) {
   DCHECK(IsMainThread());
 
   if (web_audio_device_ && !is_playing_) {
     TRACE_EVENT0("webaudio", "AudioDestination::Start");
-    worklet_backing_thread_ = worklet_backing_thread;
+    worklet_task_runner_ = std::move(worklet_task_runner);
     web_audio_device_->Start();
     is_playing_ = true;
   }
@@ -225,7 +219,7 @@ void AudioDestination::Stop() {
   if (web_audio_device_ && is_playing_) {
     TRACE_EVENT0("webaudio", "AudioDestination::Stop");
     web_audio_device_->Stop();
-    worklet_backing_thread_ = nullptr;
+    worklet_task_runner_ = nullptr;
     is_playing_ = false;
   }
 }

@@ -42,12 +42,6 @@ void AudioWorklet::NotifyGlobalScopeIsUpdated() {
   }
 }
 
-WebThread* AudioWorklet::GetBackingThread() {
-  DCHECK(IsMainThread());
-  DCHECK(GetMessagingProxy());
-  return GetMessagingProxy()->GetBackingWebThread();
-}
-
 BaseAudioContext* AudioWorklet::GetBaseAudioContext() const {
   DCHECK(IsMainThread());
   return context_.Get();
@@ -69,7 +63,7 @@ bool AudioWorklet::IsProcessorRegistered(const String& name) {
 
 bool AudioWorklet::IsReady() {
   DCHECK(IsMainThread());
-  return GetMessagingProxy() && GetBackingThread();
+  return GetMessagingProxy() && GetMessagingProxy()->GetBackingWorkerThread();
 }
 
 bool AudioWorklet::NeedsToCreateGlobalScope() {

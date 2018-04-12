@@ -40,8 +40,6 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
   // in AudioWorklet or BaseAudioContext.
   void NotifyGlobalScopeIsUpdated();
 
-  WebThread* GetBackingThread();
-
   BaseAudioContext* GetBaseAudioContext() const;
 
   // Returns |nullptr| if there is no active WorkletGlobalScope().

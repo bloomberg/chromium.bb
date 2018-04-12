@@ -123,11 +123,13 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
                             AudioBus* destination_bus,
                             size_t number_of_frames);
 
-  // The context can run on two types of threads: when the AudioWorklet is
-  // enabled, the context runs on AudioWorkletThread whereas it runs on the
-  // normal WebThread owned by AudioDestination without AudioWorklet feature.
-  // This method returns the current thread regardless of the thread type.
-  WebThread* GetRenderingThread();
+  // Prepares a task runner for the rendering based on the operation mode
+  // (i.e. non-AudioWorklet or AudioWorklet). This is called when the
+  // rendering restarts such as context.resume() after context.suspend().
+  // The only possible transition is from the non-AudioWorklet mode to the
+  // AudioWorklet mode. Once the AudioWorklet mode is activated, the task runner
+  // from AudioWorkletThread will be used until the rendering is finished.
+  void PrepareTaskRunnerForRendering();
 
   // This AudioHandler renders into this AudioBuffer.
   // This Persistent doesn't make a reference cycle including the owner
@@ -135,13 +137,6 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   CrossThreadPersistent<AudioBuffer> render_target_;
   // Temporary AudioBus for each render quantum.
   scoped_refptr<AudioBus> render_bus_;
-
-  // Rendering thread.
-  std::unique_ptr<WebThread> render_thread_;
-
-  // The experimental worklet rendering thread. Points the thread borrowed from
-  // AudioWorkletThread.
-  WebThread* worklet_backing_thread_ = nullptr;
 
   // These variables are for counting the number of frames for the current
   // progress and the remaining frames to be processed.
@@ -156,7 +151,12 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   unsigned number_of_channels_;
   float sample_rate_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // The rendering thread for the non-AudioWorklet mode. For the AudioWorklet
+  // node, AudioWorkletThread will drive the rendering.
+  std::unique_ptr<WebThread> render_thread_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 };
 
 class OfflineAudioDestinationNode final : public AudioDestinationNode {

@@ -16,7 +16,6 @@ class CrossThreadAudioParamInfo;
 class CrossThreadAudioWorkletProcessorInfo;
 class ExecutionContext;
 class MessagePortChannel;
-class WebThread;
 class WorkerThread;
 
 // AudioWorkletMessagingProxy is a main thread interface for
@@ -56,7 +55,7 @@ class AudioWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
   const Vector<CrossThreadAudioParamInfo> GetParamInfoListForProcessor(
       const String& name) const;
 
-  WebThread* GetBackingWebThread();
+  // Returns a WorkerThread object backs the AudioWorkletThread instance.
   WorkerThread* GetBackingWorkerThread();
 
   void Trace(Visitor*);
