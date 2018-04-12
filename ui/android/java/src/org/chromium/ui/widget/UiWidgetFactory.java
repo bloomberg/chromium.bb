@@ -5,6 +5,7 @@
 package org.chromium.ui.widget;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.widget.PopupWindow;
 
@@ -43,6 +44,16 @@ public class UiWidgetFactory {
      */
     public PopupWindow createPopupWindow(Context context) {
         return new PopupWindow(context);
+    }
+
+    /**
+     * Returns a new android.app.AlertDialog using the given context.
+     *
+     * @param context The Context that is used to create a new AlertDialog.
+     * @return a new AlertDialog.
+     */
+    public AlertDialog createAlertDialog(Context context) {
+        return new AlertDialog.Builder(context).create();
     }
 
     /**
