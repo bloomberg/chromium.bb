@@ -4261,6 +4261,10 @@ bool ChromeContentBrowserClient::
   return IsWebauthnRPIDListedInEnterprisePolicy(browser_context, rp_id);
 }
 
+bool ChromeContentBrowserClient::ShouldEnforceFocusChecksForWebauthn() {
+  return true;
+}
+
 void ChromeContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
     content::RenderFrameHost* rfh,
     const std::string& rp_id,
@@ -4290,8 +4294,17 @@ void ChromeContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
   }
 
   // The created AttestationPermissionRequest deletes itself once complete.
-  permission_request_manager->AddRequest(
-      NewAttestationPermissionRequest(origin, std::move(callback)));
+  //
+  // |callback| is called via the |MessageLoop| because otherwise the
+  // permissions bubble will have focus and |AuthenticatorImpl| checks that the
+  // frame still has focus before returning any results.
+  permission_request_manager->AddRequest(NewAttestationPermissionRequest(
+      origin, base::BindOnce(
+                  [](base::OnceCallback<void(bool)> callback, bool result) {
+                    base::ThreadTaskRunnerHandle::Get()->PostTask(
+                        FROM_HERE, base::BindOnce(std::move(callback), result));
+                  },
+                  std::move(callback))));
 #endif
 }
 

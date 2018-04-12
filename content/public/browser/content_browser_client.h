@@ -1120,6 +1120,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& origin,
       base::OnceCallback<void(bool)> callback);
 
+  // Returns true if the Webauthn implementation should require that the
+  // |RenderFrameHost|'s View has focus before processing requests, and before
+  // sending replies.
+  virtual bool ShouldEnforceFocusChecksForWebauthn();
+
   // Get platform ClientCertStore. May return nullptr.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(
       ResourceContext* resource_context);

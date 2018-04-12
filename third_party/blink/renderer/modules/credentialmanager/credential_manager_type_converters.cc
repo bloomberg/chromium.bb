@@ -122,6 +122,8 @@ TypeConverter<CredentialManagerError, AuthenticatorStatus>::Convert(
       return CredentialManagerError::INVALID_STATE;
     case webauth::mojom::blink::AuthenticatorStatus::NOT_IMPLEMENTED:
       return CredentialManagerError::NOT_IMPLEMENTED;
+    case webauth::mojom::blink::AuthenticatorStatus::NOT_FOCUSED:
+      return CredentialManagerError::NOT_FOCUSED;
     case webauth::mojom::blink::AuthenticatorStatus::SUCCESS:
       NOTREACHED();
       break;

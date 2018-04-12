@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -426,6 +427,13 @@ void AuthenticatorImpl::MakeCredential(
     return;
   }
 
+  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
+      !render_frame_host_->GetView()->HasFocus()) {
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+                            nullptr);
+    return;
+  }
+
   url::Origin caller_origin = render_frame_host_->GetLastCommittedOrigin();
   relying_party_id_ = options->relying_party->id;
 
@@ -536,6 +544,13 @@ void AuthenticatorImpl::GetAssertion(
   if (u2f_request_ || ctap_request_) {
     std::move(callback).Run(
         webauth::mojom::AuthenticatorStatus::PENDING_REQUEST, nullptr);
+    return;
+  }
+
+  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
+      !render_frame_host_->GetView()->HasFocus()) {
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+                            nullptr);
     return;
   }
 
@@ -788,7 +803,14 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     MakeCredentialCallback callback,
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::MakeCredentialAuthenticatorResponsePtr response) {
-  std::move(callback).Run(status, std::move(response));
+  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
+      !render_frame_host_->GetView()->HasFocus()) {
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+                            nullptr);
+  } else {
+    std::move(callback).Run(status, std::move(response));
+  }
+
   Cleanup();
 }
 
@@ -796,7 +818,14 @@ void AuthenticatorImpl::InvokeCallbackAndCleanup(
     GetAssertionCallback callback,
     webauth::mojom::AuthenticatorStatus status,
     webauth::mojom::GetAssertionAuthenticatorResponsePtr response) {
-  std::move(callback).Run(status, std::move(response));
+  if (GetContentClient()->browser()->ShouldEnforceFocusChecksForWebauthn() &&
+      !render_frame_host_->GetView()->HasFocus()) {
+    std::move(callback).Run(webauth::mojom::AuthenticatorStatus::NOT_FOCUSED,
+                            nullptr);
+  } else {
+    std::move(callback).Run(status, std::move(response));
+  }
+
   Cleanup();
 }
 

@@ -20,6 +20,7 @@ enum AuthenticatorStatus {
   INVALID_DOMAIN,
   INVALID_STATE,
   NOT_IMPLEMENTED,
+  NOT_FOCUSED,
   UNKNOWN_ERROR,
 };
 

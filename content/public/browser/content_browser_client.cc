@@ -683,6 +683,10 @@ void ContentBrowserClient::ShouldReturnAttestationForWebauthnRPID(
   std::move(callback).Run(true);
 }
 
+bool ContentBrowserClient::ShouldEnforceFocusChecksForWebauthn() {
+  return false;
+}
+
 std::unique_ptr<net::ClientCertStore>
 ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
   return nullptr;
