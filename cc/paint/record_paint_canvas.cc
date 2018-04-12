@@ -4,7 +4,6 @@
 
 #include "cc/paint/record_paint_canvas.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_record.h"

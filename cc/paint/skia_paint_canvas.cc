@@ -4,7 +4,6 @@
 
 #include "cc/paint/skia_paint_canvas.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/scoped_raster_flags.h"

@@ -14,7 +14,6 @@
 
 #include "base/atomicops.h"
 #include "base/containers/circular_deque.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"

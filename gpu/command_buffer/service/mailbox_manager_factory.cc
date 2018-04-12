@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/mailbox_manager_factory.h"
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/mailbox_manager_sync.h"

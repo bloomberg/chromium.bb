@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "cc/blink/scrollbar_impl.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"

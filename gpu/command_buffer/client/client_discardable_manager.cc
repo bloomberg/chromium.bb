@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/client/client_discardable_manager.h"
 
 #include "base/containers/flat_set.h"
-#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 
 namespace gpu {

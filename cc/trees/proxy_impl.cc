@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/auto_reset.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/devtools_instrumentation.h"

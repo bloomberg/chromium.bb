@@ -8,7 +8,6 @@
 #include <set>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/layer_collections.h"

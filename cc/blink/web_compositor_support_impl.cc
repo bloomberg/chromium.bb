@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "cc/blink/web_content_layer_impl.h"
 #include "cc/blink/web_display_item_list_impl.h"
 #include "cc/blink/web_external_texture_layer_impl.h"

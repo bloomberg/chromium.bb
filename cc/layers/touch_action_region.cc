@@ -4,7 +4,6 @@
 
 #include "cc/layers/touch_action_region.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

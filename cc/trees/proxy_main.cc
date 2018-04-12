@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/completion_event.h"

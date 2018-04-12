@@ -4,7 +4,6 @@
 
 #include "cc/animation/keyframe_model.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/trees/target_property.h"

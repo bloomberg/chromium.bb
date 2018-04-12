@@ -5,7 +5,6 @@
 #include "cc/tiles/checker_image_tracker.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/paint/paint_image_builder.h"

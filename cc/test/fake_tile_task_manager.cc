@@ -4,7 +4,6 @@
 
 #include "cc/test/fake_tile_task_manager.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace cc {
 

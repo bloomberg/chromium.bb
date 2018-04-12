@@ -4,7 +4,6 @@
 
 #include "cc/layers/ui_resource_layer.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/ui_resource_layer_impl.h"
 #include "cc/resources/scoped_ui_resource.h"

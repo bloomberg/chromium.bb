@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "gpu/tools/compositor_model_bench/forward_render_model.h"
 
 const char* ModelToString(RenderModel m) {
