@@ -947,4 +947,26 @@ TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateForm) {
   EXPECT_EQ("1", generation_mark.Utf8());
 }
 
+TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateUnownedFields) {
+  LoadHTMLWithUserGesture(kAccountCreationNoForm);
+  WebDocument document = GetMainFrame()->GetDocument();
+
+  // Check field signatures are set.
+  blink::WebElement username_element =
+      document.GetElementById(blink::WebString::FromUTF8("username"));
+  ASSERT_FALSE(username_element.IsNull());
+  blink::WebString username_signature = username_element.GetAttribute(
+      blink::WebString::FromUTF8("field_signature"));
+  ASSERT_FALSE(username_signature.IsNull());
+  EXPECT_EQ("239111655", username_signature.Ascii());
+
+  blink::WebElement password_element =
+      document.GetElementById(blink::WebString::FromUTF8("first_password"));
+  ASSERT_FALSE(password_element.IsNull());
+  blink::WebString password_signature = password_element.GetAttribute(
+      blink::WebString::FromUTF8("field_signature"));
+  ASSERT_FALSE(password_signature.IsNull());
+  EXPECT_EQ("3933215845", password_signature.Ascii());
+}
+
 }  // namespace autofill
