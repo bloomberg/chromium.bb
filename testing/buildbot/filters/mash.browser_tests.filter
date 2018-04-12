@@ -71,6 +71,8 @@
 # aura::CrashInFlightChange::ChangeFailed() when searching PDF.
 -ChromeFindRequestManagerTest.*
 -PDFExtensionTest.*
+-PDFExtensionHitTestTest.*
+-PDFExtensionLoadTest.*
 
 # Need screenshot support. http://crbug.com/754899
 -ChromeScreenshotGrabberBrowserTest.*

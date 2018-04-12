@@ -1303,9 +1303,15 @@ bool RenderWidgetHostInputEventRouter::TransformPointToTargetCoordSpace(
   target_ancestors.push_back(target->GetFrameSinkId());
   RenderWidgetHostViewBase* cur_view = target;
   while (cur_view->IsRenderWidgetHostViewChildFrame()) {
-    cur_view =
-        static_cast<RenderWidgetHostViewChildFrame*>(cur_view)->GetParentView();
-    DCHECK(cur_view);
+    if (cur_view->IsRenderWidgetHostViewGuest()) {
+      cur_view = static_cast<RenderWidgetHostViewGuest*>(cur_view)
+                     ->GetOwnerRenderWidgetHostView();
+    } else {
+      cur_view = static_cast<RenderWidgetHostViewChildFrame*>(cur_view)
+                     ->GetParentView();
+    }
+    if (!cur_view)
+      return false;
     target_ancestors.push_back(cur_view->GetFrameSinkId());
   }
   DCHECK_EQ(cur_view, root_view);

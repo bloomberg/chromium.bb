@@ -39,6 +39,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/download/public/common/download_item.h"
+#include "components/viz/common/features.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/test/zoom_test_utils.h"
 #include "components/zoom/zoom_controller.h"
@@ -104,8 +105,7 @@ bool GetGuestCallback(WebContents** guest_out, WebContents* guest) {
   return false;
 }
 
-class PDFExtensionTest : public ExtensionApiTest,
-                         public testing::WithParamInterface<int> {
+class PDFExtensionTest : public ExtensionApiTest {
  public:
   ~PDFExtensionTest() override {}
 
@@ -349,6 +349,28 @@ class PDFExtensionTest : public ExtensionApiTest,
   }
 };
 
+class PDFExtensionLoadTest : public PDFExtensionTest,
+                             public testing::WithParamInterface<int> {
+ public:
+  PDFExtensionLoadTest() {}
+};
+
+class PDFExtensionHitTestTest : public PDFExtensionTest,
+                                public testing::WithParamInterface<bool> {
+ public:
+  PDFExtensionHitTestTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PDFExtensionTest::SetUpCommandLine(command_line);
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+    }
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+};
+
 // Disabled because it's flaky.
 // See the issue for details: https://crbug.com/826055.
 #if defined(MEMORY_SANITIZER) || defined(LEAK_SANITIZER) || \
@@ -357,7 +379,7 @@ class PDFExtensionTest : public ExtensionApiTest,
 #else
 #define MAYBE_Load Load
 #endif
-IN_PROC_BROWSER_TEST_P(PDFExtensionTest, MAYBE_Load) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionLoadTest, MAYBE_Load) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Load private PDFs.
   LoadAllPdfsTest("pdf_private", GetParam());
@@ -424,10 +446,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DisablePlugin) {
   downloads[0]->Cancel(false);
 }
 
-// We break PDFTest.Load up into kNumberLoadTestParts.
+// We break PDFExtensionLoadTest up into kNumberLoadTestParts.
 INSTANTIATE_TEST_CASE_P(PDFTestFiles,
-                        PDFExtensionTest,
+                        PDFExtensionLoadTest,
                         testing::Range(0, kNumberLoadTestParts));
+
+INSTANTIATE_TEST_CASE_P(/* no prefix */,
+                        PDFExtensionHitTestTest,
+                        testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Basic) {
   RunTestsInFile("basic_test.js", "test.pdf");
@@ -1606,7 +1632,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, CtrlWheelInvokesCustomZoom) {
 
 #endif  // defined(OS_MACOSX)
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, ContextMenuCoordinates) {
+IN_PROC_BROWSER_TEST_P(PDFExtensionHitTestTest, ContextMenuCoordinates) {
   GURL url = embedded_test_server()->GetURL("/pdf/pdf_embed.html");
 
   // Load page with embedded PDF and make sure it succeeds.

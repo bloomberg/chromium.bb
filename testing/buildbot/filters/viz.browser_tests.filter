@@ -25,7 +25,7 @@
 
 #### Compositor Frame Observation Timeouts
 # WaitForChildFrameSurfaceReady crashes crbug.com/787945
--PDFExtensionTest.ContextMenuCoordinates
+-PDFExtensionHitTestTest.ContextMenuCoordinates*
 -SitePerProcessDevToolsSanityTest.InputDispatchEventsToOOPIF
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
