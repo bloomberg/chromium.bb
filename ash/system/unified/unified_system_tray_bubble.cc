@@ -32,6 +32,8 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
   init_params.parent_window = tray->GetBubbleWindowContainer();
   init_params.anchor_view =
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchor();
+  init_params.corner_radius = kUnifiedTrayCornerRadius;
+  init_params.has_shadow = false;
 
   auto* bubble_view = new views::TrayBubbleView(init_params);
   int max_height =

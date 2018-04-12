@@ -211,7 +211,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(
           arrow(),
-          BubbleBorder::NO_ASSETS,
+          init_params.has_shadow ? BubbleBorder::NO_ASSETS
+                                 : BubbleBorder::NO_SHADOW,
           init_params.bg_color.value_or(gfx::kPlaceholderColor))),
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
@@ -222,6 +223,8 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   bubble_border_->set_use_theme_background_color(!init_params.bg_color);
   bubble_border_->set_alignment(BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
   bubble_border_->set_paint_arrow(BubbleBorder::PAINT_NONE);
+  if (init_params.corner_radius)
+    bubble_border_->SetCornerRadius(init_params.corner_radius.value());
   set_parent_window(params_.parent_window);
   set_can_activate(false);
   set_notify_enter_exit_on_child(true);
@@ -328,9 +331,11 @@ void TrayBubbleView::SizeToContents() {
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
-  // Apply a WM-provided shadow (see ui/wm/core/).
-  params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
-  params->shadow_elevation = wm::kShadowElevationActiveWindow;
+  if (bubble_border_->shadow() == BubbleBorder::NO_ASSETS) {
+    // Apply a WM-provided shadow (see ui/wm/core/).
+    params->shadow_type = Widget::InitParams::SHADOW_TYPE_DROP;
+    params->shadow_elevation = wm::kShadowElevationActiveWindow;
+  }
 }
 
 void TrayBubbleView::OnWidgetClosing(Widget* widget) {

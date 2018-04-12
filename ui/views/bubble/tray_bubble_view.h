@@ -96,6 +96,8 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
     bool show_by_click = false;
     // If not provided, the bg color will be derived from the NativeTheme.
     base::Optional<SkColor> bg_color;
+    base::Optional<int> corner_radius;
+    bool has_shadow = true;
   };
 
   explicit TrayBubbleView(const InitParams& init_params);
