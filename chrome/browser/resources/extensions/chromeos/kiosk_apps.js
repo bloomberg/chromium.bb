@@ -120,17 +120,18 @@ cr.define('extensions', function() {
    *     app info objects and disable bailout shortcut flag.
    */
   KioskAppsOverlay.setSettings = function(settings) {
-    $('kiosk-app-list').setApps(settings.apps);
+    /** @type {extensions.KioskAppList} */ ($('kiosk-app-list'))
+        .setApps(settings.apps);
     $('kiosk-disable-bailout-shortcut').checked = settings.disableBailout;
     $('kiosk-disable-bailout-shortcut').disabled = !settings.hasAutoLaunchApp;
   };
 
   /**
    * Update an app in kiosk-app-list.
-   * @param {!Object} app App info to be updated.
+   * @param {!AppDict} app App info to be updated.
    */
   KioskAppsOverlay.updateApp = function(app) {
-    $('kiosk-app-list').updateApp(app);
+    /** @type {extensions.KioskAppList} */ ($('kiosk-app-list')).updateApp(app);
   };
 
   /**
@@ -149,7 +150,8 @@ cr.define('extensions', function() {
     $('add-kiosk-app').hidden = !params.kioskEnabled;
     $('kiosk-disable-bailout-shortcut').parentNode.hidden =
         !params.autoLaunchEnabled;
-    $('kiosk-app-list').setAutoLaunchEnabled(params.autoLaunchEnabled);
+    /** @type {extensions.KioskAppList} */ ($('kiosk-app-list'))
+        .setAutoLaunchEnabled(params.autoLaunchEnabled);
   };
 
   // Export

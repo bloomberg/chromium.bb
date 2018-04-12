@@ -13,7 +13,7 @@ cr.define('extensions', function() {
    */
   function ExtensionLoadError(div) {
     div.__proto__ = ExtensionLoadError.prototype;
-    div.init();
+    /** @type {ExtensionLoadError} */ (div).init();
     return div;
   }
 

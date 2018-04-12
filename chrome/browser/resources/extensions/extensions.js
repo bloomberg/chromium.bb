@@ -202,7 +202,8 @@ cr.define('extensions', function() {
       this.updateDevToggleControlledIndicator_(developerModeControlledByPolicy);
 
       $('load-unpacked').disabled = !profileInfo.canLoadUnpacked;
-      var extensionList = $('extension-settings-list');
+      var extensionList = /** @type {extensions.ExtensionList} */ (
+          $('extension-settings-list'));
       extensionList.updateExtensionsData(
           profileInfo.isIncognitoAvailable,
           profileInfo.appInfoDialogEnabled).then(function() {
@@ -331,7 +332,9 @@ cr.define('extensions', function() {
     /** @override */
     onExtensionCountChanged: function() {
       /** @const */
-      var hasExtensions = $('extension-settings-list').getNumExtensions() != 0;
+      var hasExtensions =
+          /** @type {extensions.ExtensionList} */ ($('extension-settings-list'))
+              .getNumExtensions() != 0;
       $('no-extensions').hidden = hasExtensions;
       $('extension-list-wrapper').hidden = !hasExtensions;
     },

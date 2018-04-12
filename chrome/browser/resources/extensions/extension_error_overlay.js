@@ -44,7 +44,7 @@ cr.define('extensions', function() {
         querySelector('.extension-error-overlay-runtime-content').
         cloneNode(true);
     contentArea.__proto__ = RuntimeErrorContent.prototype;
-    contentArea.init();
+    /** @type {RuntimeErrorContent} */ (contentArea).init();
     return contentArea;
   }
 
@@ -360,7 +360,9 @@ cr.define('extensions', function() {
       // Remove all previous content.
       this.codeDiv_.clear();
 
-      this.overlayDiv_.querySelector('.extension-error-list').onRemoved();
+      /** @type {extensions.ExtensionErrorList} */ (
+          this.overlayDiv_.querySelector('.extension-error-list'))
+          .onRemoved();
 
       this.clearRuntimeContent_();
 
