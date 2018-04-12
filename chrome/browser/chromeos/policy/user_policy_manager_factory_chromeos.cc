@@ -74,6 +74,12 @@ constexpr base::TimeDelta kPolicyRefreshTimeout =
 const char kUMAHasPolicyPrefNotMigrated[] =
     "Enterprise.UserPolicyChromeOS.HasPolicyPrefNotMigrated";
 
+void OnUserPolicyFatalError(const AccountId& account_id) {
+  // TODO(emaxx): Add a UMA metric.
+  user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, true);
+  chrome::AttemptUserExit();
+}
+
 }  // namespace
 
 // static
@@ -358,7 +364,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   if (is_active_directory) {
     auto manager = std::make_unique<UserActiveDirectoryPolicyManager>(
         account_id, policy_refresh_timeout,
-        base::BindOnce(&chrome::AttemptUserExit), std::move(store),
+        base::BindOnce(&OnUserPolicyFatalError, account_id), std::move(store),
         std::move(external_data_manager));
     manager->Init(
         SchemaRegistryServiceFactory::GetForContext(profile)->registry());
@@ -371,8 +377,8 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
             std::move(store), std::move(external_data_manager),
             component_policy_cache_dir, enforcement_type,
             policy_refresh_timeout,
-            base::BindOnce(&chrome::AttemptUserExit) /* fatal_error_callback */,
-            account_id, base::ThreadTaskRunnerHandle::Get(), io_task_runner);
+            base::BindOnce(&OnUserPolicyFatalError, account_id), account_id,
+            base::ThreadTaskRunnerHandle::Get(), io_task_runner);
 
     bool wildcard_match = false;
     if (connector->IsEnterpriseManaged() &&
