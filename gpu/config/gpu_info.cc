@@ -132,7 +132,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool can_support_threaded_texture_mailbox;
 #if defined(OS_WIN)
     DxDiagNode dx_diagnostics;
+    bool supports_dx12;
+    bool supports_vulkan;
 #endif
+
     VideoDecodeAcceleratorCapabilities video_decode_accelerator_capabilities;
     VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
@@ -189,6 +192,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("canSupportThreadedTextureMailbox",
                       can_support_threaded_texture_mailbox);
   // TODO(kbr): add dx_diagnostics on Windows.
+#if defined(OS_WIN)
+  enumerator->AddBool("supportsDX12", supports_dx12);
+  enumerator->AddBool("supportsVulkan", supports_vulkan);
+#endif
   enumerator->AddInt("videoDecodeAcceleratorFlags",
                      video_decode_accelerator_capabilities.flags);
   for (const auto& profile :

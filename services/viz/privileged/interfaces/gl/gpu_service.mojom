@@ -72,6 +72,7 @@ interface GpuService {
   GetVideoMemoryUsageStats() => (gpu.mojom.VideoMemoryUsageStats stats);
 
   RequestCompleteGpuInfo() => (gpu.mojom.GpuInfo gpu_info);
+  GetGpuSupportedRuntimeVersion();
 
   // Requests that the GPU process query system availability of HDR output and
   // return it.

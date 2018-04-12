@@ -105,6 +105,11 @@ void GpuDataManagerImpl::GetDisabledExtensions(
   private_->GetDisabledExtensions(disabled_extensions);
 }
 
+void GpuDataManagerImpl::RequestGpuSupportedRuntimeVersion() const {
+  base::AutoLock auto_lock(lock_);
+  private_->RequestGpuSupportedRuntimeVersion();
+}
+
 bool GpuDataManagerImpl::GpuProcessStartAllowed() const {
   base::AutoLock auto_lock(lock_);
   return private_->GpuProcessStartAllowed();

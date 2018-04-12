@@ -184,6 +184,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void GetVideoMemoryUsageStats(
       GetVideoMemoryUsageStatsCallback callback) override;
   void RequestCompleteGpuInfo(RequestCompleteGpuInfoCallback callback) override;
+  void GetGpuSupportedRuntimeVersion() override;
   void RequestHDRStatus(RequestHDRStatusCallback callback) override;
   void LoadedShader(const std::string& key, const std::string& data) override;
   void DestroyingVideoSurface(int32_t surface_id,

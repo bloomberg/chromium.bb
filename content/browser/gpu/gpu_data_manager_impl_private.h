@@ -44,6 +44,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   bool GpuAccessAllowed(std::string* reason) const;
   bool GpuProcessStartAllowed() const;
   void RequestCompleteGpuInfoIfNeeded();
+  void RequestGpuSupportedRuntimeVersion();
   bool IsEssentialGpuInfoAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;

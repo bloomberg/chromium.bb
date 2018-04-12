@@ -153,8 +153,6 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   basic_info->Append(NewDescriptionValuePair(
       "Optimus", std::make_unique<base::Value>(gpu_info.optimus)));
   basic_info->Append(NewDescriptionValuePair(
-      "Optimus", std::make_unique<base::Value>(gpu_info.optimus)));
-  basic_info->Append(NewDescriptionValuePair(
       "AMD switchable",
       std::make_unique<base::Value>(gpu_info.amd_switchable)));
 #if defined(OS_WIN)
@@ -177,6 +175,13 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
     basic_info->Append(
         NewDescriptionValuePair(description_string, size_string));
   }
+
+  basic_info->Append(NewDescriptionValuePair(
+      "DX12", std::make_unique<base::Value>(gpu_info.supports_dx12)));
+
+  basic_info->Append(NewDescriptionValuePair(
+      "Vulkan", std::make_unique<base::Value>(gpu_info.supports_vulkan)));
+
 #endif
 
   std::string disabled_extensions;
