@@ -33,9 +33,6 @@ namespace base {
 
 namespace {
 
-// Name of histogram for storing results of local operations.
-const char kResultHistogram[] = "UMA.CreatePersistentHistogram.Result";
-
 // Type identifiers used when storing in persistent memory so they can be
 // identified during extraction; the first 4 bytes of the SHA1 of the name
 // is used as a unique integer. A "version number" is added to the base
@@ -304,7 +301,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::GetHistogram(
       // but that doesn't work because the allocated block may have been
       // aligned to the next boundary value.
       HashMetricName(data->name) != data->samples_metadata.id) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_METADATA);
     NOTREACHED();
     return nullptr;
   }
@@ -323,10 +319,8 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
   // This also allows differentiating on the dashboard between allocations
   // failed due to a corrupt allocator and the number of process instances
   // with one, the latter being idicated by "newly corrupt", below.
-  if (memory_allocator_->IsCorrupt()) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_ALLOCATOR_CORRUPT);
+  if (memory_allocator_->IsCorrupt())
     return nullptr;
-  }
 
   // Create the metadata necessary for a persistent sparse histogram. This
   // is done first because it is a small subset of what is required for
@@ -431,21 +425,8 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::AllocateHistogram(
     return histogram;
   }
 
-  CreateHistogramResultType result;
-  if (memory_allocator_->IsCorrupt()) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_ALLOCATOR_NEWLY_CORRUPT);
-    result = CREATE_HISTOGRAM_ALLOCATOR_CORRUPT;
-  } else if (memory_allocator_->IsFull()) {
-    result = CREATE_HISTOGRAM_ALLOCATOR_FULL;
-  } else {
-    result = CREATE_HISTOGRAM_ALLOCATOR_ERROR;
-  }
-  RecordCreateHistogramResult(result);
-
-  // Crash for failures caused by internal bugs but not "full" which is
-  // dependent on outside code.
-  if (result != CREATE_HISTOGRAM_ALLOCATOR_FULL)
-    NOTREACHED() << memory_allocator_->Name() << ", error=" << result;
+  if (memory_allocator_->IsCorrupt())
+    NOTREACHED() << memory_allocator_->Name() << " is corrupt!";
 
   return nullptr;
 }
@@ -521,58 +502,9 @@ void PersistentHistogramAllocator::ClearLastCreatedReferenceForTesting() {
   subtle::NoBarrier_Store(&last_created_, 0);
 }
 
-// static
-HistogramBase*
-PersistentHistogramAllocator::GetCreateHistogramResultHistogram() {
-  // A value that can be stored in an AtomicWord as a flag. It must not be zero
-  // or a valid address.
-  constexpr subtle::AtomicWord kHistogramUnderConstruction = 1;
-
-  // This is a similar to LazyInstance but with return-if-under-construction
-  // rather than yielding the CPU until construction completes. This is
-  // necessary because the FactoryGet() below creates a histogram and thus
-  // recursively calls this method to try to store the result.
-
-  // Get the existing pointer. If the "under construction" flag is present,
-  // abort now. It's okay to return null from this method.
-  static subtle::AtomicWord atomic_histogram_pointer = 0;
-  subtle::AtomicWord histogram_value =
-      subtle::Acquire_Load(&atomic_histogram_pointer);
-  if (histogram_value == kHistogramUnderConstruction)
-    return nullptr;
-
-  // If a valid histogram pointer already exists, return it.
-  if (histogram_value)
-    return reinterpret_cast<HistogramBase*>(histogram_value);
-
-  // Set the "under construction" flag; abort if something has changed.
-  if (subtle::NoBarrier_CompareAndSwap(&atomic_histogram_pointer, 0,
-                                       kHistogramUnderConstruction) != 0) {
-    return nullptr;
-  }
-
-  // Only one thread can be here. Even recursion will be thwarted above.
-
-  if (GlobalHistogramAllocator::Get()) {
-    DVLOG(1) << "Creating the results-histogram inside persistent"
-             << " memory can cause future allocations to crash if"
-             << " that memory is ever released (for testing).";
-  }
-
-  HistogramBase* histogram_pointer = LinearHistogram::FactoryGet(
-      kResultHistogram, 1, CREATE_HISTOGRAM_MAX, CREATE_HISTOGRAM_MAX + 1,
-      HistogramBase::kUmaTargetedHistogramFlag);
-  subtle::Release_Store(
-      &atomic_histogram_pointer,
-      reinterpret_cast<subtle::AtomicWord>(histogram_pointer));
-
-  return histogram_pointer;
-}
-
 std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
     PersistentHistogramData* histogram_data_ptr) {
   if (!histogram_data_ptr) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_METADATA_POINTER);
     NOTREACHED();
     return nullptr;
   }
@@ -585,7 +517,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
                                           &histogram_data_ptr->logged_metadata);
     DCHECK(histogram);
     histogram->SetFlags(histogram_data_ptr->flags);
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_SUCCESS);
     return histogram;
   }
 
@@ -616,7 +547,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   if (!ranges_data || histogram_bucket_count < 2 ||
       histogram_bucket_count >= max_buckets ||
       allocated_bytes < required_bytes) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_RANGES_ARRAY);
     NOTREACHED();
     return nullptr;
   }
@@ -624,7 +554,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   std::unique_ptr<const BucketRanges> created_ranges = CreateRangesFromData(
       ranges_data, histogram_ranges_checksum, histogram_bucket_count + 1);
   if (!created_ranges) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_RANGES_ARRAY);
     NOTREACHED();
     return nullptr;
   }
@@ -638,7 +567,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   if (counts_bytes == 0 ||
       (counts_ref != 0 &&
        memory_allocator_->GetAllocSize(counts_ref) < counts_bytes)) {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_INVALID_COUNTS_ARRAY);
     NOTREACHED();
     return nullptr;
   }
@@ -701,9 +629,6 @@ std::unique_ptr<HistogramBase> PersistentHistogramAllocator::CreateHistogram(
   if (histogram) {
     DCHECK_EQ(histogram_type, histogram->GetHistogramType());
     histogram->SetFlags(histogram_flags);
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_SUCCESS);
-  } else {
-    RecordCreateHistogramResult(CREATE_HISTOGRAM_UNKNOWN_TYPE);
   }
 
   return histogram;
@@ -738,14 +663,6 @@ PersistentHistogramAllocator::GetOrCreateStatisticsRecorderHistogram(
   DCHECK_EQ(0, existing->flags() & HistogramBase::kIPCSerializationSourceFlag);
   // Record the newly created histogram in the SR.
   return StatisticsRecorder::RegisterOrDeleteDuplicate(existing);
-}
-
-// static
-void PersistentHistogramAllocator::RecordCreateHistogramResult(
-    CreateHistogramResultType result) {
-  HistogramBase* result_histogram = GetCreateHistogramResultHistogram();
-  if (result_histogram)
-    result_histogram->Add(result);
 }
 
 GlobalHistogramAllocator::~GlobalHistogramAllocator() = default;
@@ -1020,15 +937,6 @@ GlobalHistogramAllocator::ReleaseForTesting() {
   const PersistentHistogramData* data;
   while ((data = iter.GetNextOfObject<PersistentHistogramData>()) != nullptr) {
     StatisticsRecorder::ForgetHistogramForTesting(data->name);
-
-    // If a test breaks here then a memory region containing a histogram
-    // actively used by this code is being released back to the test.
-    // If that memory segment were to be deleted, future calls to create
-    // persistent histograms would crash. To avoid this, have the test call
-    // the method GetCreateHistogramResultHistogram() *before* setting
-    // the (temporary) memory allocator via SetGlobalAllocator() so that
-    // histogram is instead allocated from the process heap.
-    DCHECK_NE(kResultHistogram, data->name);
   }
 
   subtle::Release_Store(&g_histogram_allocator, 0);

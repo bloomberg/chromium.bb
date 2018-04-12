@@ -74,8 +74,6 @@ class FileMetricsProviderTest : public testing::TestWithParam<bool> {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     FileMetricsProvider::RegisterPrefs(prefs_->registry(), kMetricsName);
     FileMetricsProvider::SetTaskRunnerForTesting(task_runner_);
-    // Get this first so it isn't created inside the persistent allocator.
-    base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
   }
 
   ~FileMetricsProviderTest() override {

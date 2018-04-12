@@ -287,9 +287,6 @@ class BASE_EXPORT PersistentHistogramAllocator {
   // operation without that optimization.
   void ClearLastCreatedReferenceForTesting();
 
-  // Histogram containing creation results. Visible for testing.
-  static HistogramBase* GetCreateHistogramResultHistogram();
-
  protected:
   // The structure used to hold histogram data in persistent memory. It is
   // defined and used entirely within the .cc file.
@@ -307,42 +304,6 @@ class BASE_EXPORT PersistentHistogramAllocator {
                                                             Reference ignore);
 
  private:
-  // Enumerate possible creation results for reporting.
-  enum CreateHistogramResultType {
-    // Everything was fine.
-    CREATE_HISTOGRAM_SUCCESS = 0,
-
-    // Pointer to metadata was not valid.
-    CREATE_HISTOGRAM_INVALID_METADATA_POINTER,
-
-    // Histogram metadata was not valid.
-    CREATE_HISTOGRAM_INVALID_METADATA,
-
-    // Ranges information was not valid.
-    CREATE_HISTOGRAM_INVALID_RANGES_ARRAY,
-
-    // Counts information was not valid.
-    CREATE_HISTOGRAM_INVALID_COUNTS_ARRAY,
-
-    // Could not allocate histogram memory due to corruption.
-    CREATE_HISTOGRAM_ALLOCATOR_CORRUPT,
-
-    // Could not allocate histogram memory due to lack of space.
-    CREATE_HISTOGRAM_ALLOCATOR_FULL,
-
-    // Could not allocate histogram memory due to unknown error.
-    CREATE_HISTOGRAM_ALLOCATOR_ERROR,
-
-    // Histogram was of unknown type.
-    CREATE_HISTOGRAM_UNKNOWN_TYPE,
-
-    // Instance has detected a corrupt allocator (recorded only once).
-    CREATE_HISTOGRAM_ALLOCATOR_NEWLY_CORRUPT,
-
-    // Always keep this at the end.
-    CREATE_HISTOGRAM_MAX
-  };
-
   // Create a histogram based on saved (persistent) information about it.
   std::unique_ptr<HistogramBase> CreateHistogram(
       PersistentHistogramData* histogram_data_ptr);
@@ -352,9 +313,6 @@ class BASE_EXPORT PersistentHistogramAllocator {
   // one could not be created.
   HistogramBase* GetOrCreateStatisticsRecorderHistogram(
       const HistogramBase* histogram);
-
-  // Record the result of a histogram creation.
-  static void RecordCreateHistogramResult(CreateHistogramResultType result);
 
   // The memory allocator that provides the actual histogram storage.
   std::unique_ptr<PersistentMemoryAllocator> memory_allocator_;
