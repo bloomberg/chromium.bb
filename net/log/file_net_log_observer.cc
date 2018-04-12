@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -41,31 +42,34 @@ scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 
-// Opens |path| in write mode. Returns the file handle on success, or nullptr on
-// failure.
-base::ScopedFILE OpenFileForWrite(const base::FilePath& path) {
-  base::ScopedFILE result(base::OpenFile(path, "wb"));
-  LOG_IF(ERROR, !result) << "Failed opening: " << path.value();
+// Opens |path| in write mode.
+base::File OpenFileForWrite(const base::FilePath& path) {
+  base::File result(path,
+                    base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  LOG_IF(ERROR, !result.IsValid()) << "Failed opening: " << path.value();
   return result;
 }
 
-// Helper that writes data to a file. The |file| handle may optionally be null,
+// Helper that writes data to a file. |file->IsValid()| may be false,
 // in which case nothing will be written. Returns the number of bytes
 // successfully written (may be less than input data in case of errors).
-size_t WriteToFile(FILE* file,
+size_t WriteToFile(base::File* file,
                    base::StringPiece data1,
                    base::StringPiece data2 = base::StringPiece(),
                    base::StringPiece data3 = base::StringPiece()) {
   size_t bytes_written = 0;
 
-  if (file) {
+  if (file->IsValid()) {
     // Append each of data1, data2 and data3.
     if (!data1.empty())
-      bytes_written += fwrite(data1.data(), 1, data1.size(), file);
+      bytes_written +=
+          std::max(0, file->WriteAtCurrentPos(data1.data(), data1.size()));
     if (!data2.empty())
-      bytes_written += fwrite(data2.data(), 1, data2.size(), file);
+      bytes_written +=
+          std::max(0, file->WriteAtCurrentPos(data2.data(), data2.size()));
     if (!data3.empty())
-      bytes_written += fwrite(data3.data(), 1, data3.size(), file);
+      bytes_written +=
+          std::max(0, file->WriteAtCurrentPos(data3.data(), data3.size()));
   }
 
   return bytes_written;
@@ -74,7 +78,7 @@ size_t WriteToFile(FILE* file,
 // Copies all of the data at |source_path| and appends it to |destination_file|,
 // then deletes |source_path|.
 void AppendToFileThenDelete(const base::FilePath& source_path,
-                            FILE* destination_file,
+                            base::File* destination_file,
                             char* read_buffer,
                             size_t read_buffer_size) {
   base::ScopedFILE source_file(base::OpenFile(source_path, "rb"));
@@ -247,16 +251,16 @@ class FileNetLogObserver::FileWriter {
 
   // Writes |constants_value| to a file.
   static void WriteConstantsToFile(std::unique_ptr<base::Value> constants_value,
-                                   FILE* file);
+                                   base::File* file);
 
   // Writes |polled_data| to a file.
   static void WritePolledDataToFile(std::unique_ptr<base::Value> polled_data,
-                                    FILE* file);
+                                    base::File* file);
 
   // If any events were written (wrote_event_bytes_), rewinds |file| by 2 bytes
   // in order to overwrite the trailing ",\n" that was written by the last event
   // line.
-  void RewindIfWroteEventBytes(FILE* file) const;
+  void RewindIfWroteEventBytes(base::File* file) const;
 
   // Concatenates all the log files to assemble the final
   // |final_log_file_|. This single "stitched" file is what other
@@ -264,20 +268,19 @@ class FileNetLogObserver::FileWriter {
   void StitchFinalLogFile();
 
   // Creates the .inprogress directory used by bounded mode.
-  void CreateInprogressDirectory() const;
+  void CreateInprogressDirectory();
 
   // The path (and associated file handle) where the final netlog is written. In
   // bounded mode this is mostly written to once logging is stopped, whereas in
   // unbounded mode events will be directly written to it.
   const base::FilePath final_log_path_;
-  base::ScopedFILE final_log_file_;
+  base::File final_log_file_;
 
-  // Holds the file handle for the numbered events file where data is currently
-  // being written to. The file path of this file is
-  // GetEventFilePath(current_event_file_number_). The
-  // file handle may be null if an error previously occurred opening the file,
-  // or logging has been stopped.
-  base::ScopedFILE current_event_file_;
+  // Holds the numbered events file where data is currently being written to.
+  // The file path of this file is GetEventFilePath(current_event_file_number_).
+  // The file may be !IsValid() if an error previously occurred opening the
+  // file, or logging has been stopped.
+  base::File current_event_file_;
   size_t current_event_file_size_;
 
   // Indicates the total number of netlog event files allowed.
@@ -488,10 +491,10 @@ void FileNetLogObserver::FileWriter::Initialize(
 
   if (IsBounded()) {
     CreateInprogressDirectory();
-    base::ScopedFILE constants_file = OpenFileForWrite(GetConstantsFilePath());
-    WriteConstantsToFile(std::move(constants_value), constants_file.get());
+    base::File constants_file = OpenFileForWrite(GetConstantsFilePath());
+    WriteConstantsToFile(std::move(constants_value), &constants_file);
   } else {
-    WriteConstantsToFile(std::move(constants_value), final_log_file_.get());
+    WriteConstantsToFile(std::move(constants_value), &final_log_file_);
   }
 }
 
@@ -501,11 +504,11 @@ void FileNetLogObserver::FileWriter::Stop(
 
   // Write out the polled data.
   if (IsBounded()) {
-    base::ScopedFILE closing_file = OpenFileForWrite(GetClosingFilePath());
-    WritePolledDataToFile(std::move(polled_data), closing_file.get());
+    base::File closing_file = OpenFileForWrite(GetClosingFilePath());
+    WritePolledDataToFile(std::move(polled_data), &closing_file);
   } else {
-    RewindIfWroteEventBytes(final_log_file_.get());
-    WritePolledDataToFile(std::move(polled_data), final_log_file_.get());
+    RewindIfWroteEventBytes(&final_log_file_);
+    WritePolledDataToFile(std::move(polled_data), &final_log_file_);
   }
 
   // If operating in bounded mode, the events were written to separate files
@@ -515,7 +518,7 @@ void FileNetLogObserver::FileWriter::Stop(
     StitchFinalLogFile();
 
   // Ensure the final log file has been flushed.
-  final_log_file_.reset();
+  final_log_file_.Close();
 }
 
 void FileNetLogObserver::FileWriter::Flush(
@@ -526,7 +529,7 @@ void FileNetLogObserver::FileWriter::Flush(
   write_queue->SwapQueue(&local_file_queue);
 
   while (!local_file_queue.empty()) {
-    FILE* output_file;
+    base::File* output_file;
 
     // If in bounded mode, output events to the current event file. Otherwise
     // output events to the final log path.
@@ -535,9 +538,9 @@ void FileNetLogObserver::FileWriter::Flush(
           current_event_file_size_ >= max_event_file_size_) {
         IncrementCurrentEventFile();
       }
-      output_file = current_event_file_.get();
+      output_file = &current_event_file_;
     } else {
-      output_file = final_log_file_.get();
+      output_file = &final_log_file_;
     }
 
     size_t bytes_written =
@@ -556,10 +559,10 @@ void FileNetLogObserver::FileWriter::Flush(
 void FileNetLogObserver::FileWriter::DeleteAllFiles() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-  final_log_file_.reset();
+  final_log_file_.Close();
 
   if (IsBounded()) {
-    current_event_file_.reset();
+    current_event_file_.Close();
     base::DeleteFile(GetInprogressDirectory(), true);
   }
 
@@ -620,7 +623,7 @@ size_t FileNetLogObserver::FileWriter::FileNumberToIndex(
 
 void FileNetLogObserver::FileWriter::WriteConstantsToFile(
     std::unique_ptr<base::Value> constants_value,
-    FILE* file) {
+    base::File* file) {
   // Print constants to file and open events array.
   std::string json;
 
@@ -632,7 +635,7 @@ void FileNetLogObserver::FileWriter::WriteConstantsToFile(
 
 void FileNetLogObserver::FileWriter::WritePolledDataToFile(
     std::unique_ptr<base::Value> polled_data,
-    FILE* file) {
+    base::File* file) {
   // Close the events array.
   WriteToFile(file, "]");
 
@@ -648,18 +651,19 @@ void FileNetLogObserver::FileWriter::WritePolledDataToFile(
   WriteToFile(file, "}\n");
 }
 
-void FileNetLogObserver::FileWriter::RewindIfWroteEventBytes(FILE* file) const {
-  if (file && wrote_event_bytes_) {
+void FileNetLogObserver::FileWriter::RewindIfWroteEventBytes(
+    base::File* file) const {
+  if (file->IsValid() && wrote_event_bytes_) {
     // To be valid JSON the events array should not end with a comma. If events
     // were written though, they will have been terminated with "\n," so strip
     // it before closing the events array.
-    fseek(file, -2, SEEK_END);
+    file->Seek(base::File::FROM_END, -2);
   }
 }
 
 void FileNetLogObserver::FileWriter::StitchFinalLogFile() {
   // Make sure all the events files are flushed (as will read them next).
-  current_event_file_.reset();
+  current_event_file_.Close();
 
   // Allocate a 64K buffer used for reading the files. At most kReadBufferSize
   // bytes will be in memory at a time.
@@ -670,7 +674,7 @@ void FileNetLogObserver::FileWriter::StitchFinalLogFile() {
   final_log_file_ = OpenFileForWrite(final_log_path_);
 
   // Append the constants file.
-  AppendToFileThenDelete(GetConstantsFilePath(), final_log_file_.get(),
+  AppendToFileThenDelete(GetConstantsFilePath(), &final_log_file_,
                          read_buffer.get(), kReadBufferSize);
 
   // Iterate over the events files, from oldest to most recent, and append them
@@ -682,16 +686,16 @@ void FileNetLogObserver::FileWriter::StitchFinalLogFile() {
   for (size_t filenumber = begin_filenumber; filenumber < end_filenumber;
        ++filenumber) {
     AppendToFileThenDelete(GetEventFilePath(FileNumberToIndex(filenumber)),
-                           final_log_file_.get(), read_buffer.get(),
+                           &final_log_file_, read_buffer.get(),
                            kReadBufferSize);
   }
 
   // Account for the final event line ending in a ",\n". Strip it to form valid
   // JSON.
-  RewindIfWroteEventBytes(final_log_file_.get());
+  RewindIfWroteEventBytes(&final_log_file_);
 
   // Append the polled data.
-  AppendToFileThenDelete(GetClosingFilePath(), final_log_file_.get(),
+  AppendToFileThenDelete(GetClosingFilePath(), &final_log_file_,
                          read_buffer.get(), kReadBufferSize);
 
   // Delete the inprogress directory (and anything that may still be left inside
@@ -699,13 +703,13 @@ void FileNetLogObserver::FileWriter::StitchFinalLogFile() {
   base::DeleteFile(GetInprogressDirectory(), true);
 }
 
-void FileNetLogObserver::FileWriter::CreateInprogressDirectory() const {
+void FileNetLogObserver::FileWriter::CreateInprogressDirectory() {
   DCHECK(IsBounded());
 
   // base::CreateDirectory() creates missing parent directories. Since the
   // target directory is a sibling to |final_log_path_|, if that file couldn't
   // be opened don't attempt to create the directory either.
-  if (!final_log_file_)
+  if (!final_log_file_.IsValid())
     return;
 
   if (!base::CreateDirectory(GetInprogressDirectory())) {
@@ -724,7 +728,7 @@ void FileNetLogObserver::FileWriter::CreateInprogressDirectory() const {
   // stopping) however if logging does not end gracefully the comments are
   // useful for recovery.
   WriteToFile(
-      final_log_file_.get(), "Logging is in progress writing data to:\n    ",
+      &final_log_file_, "Logging is in progress writing data to:\n    ",
       in_progress_path,
       "\n\n"
       "That data will be stitched into a single file (this one) once logging\n"
@@ -735,7 +739,6 @@ void FileNetLogObserver::FileWriter::CreateInprogressDirectory() const {
       "\n"
       "https://chromium.googlesource.com/chromium/src/+/master/net/tools/"
       "stitch_net_log_files.py\n");
-  fflush(final_log_file_.get());
 }
 
 }  // namespace net
