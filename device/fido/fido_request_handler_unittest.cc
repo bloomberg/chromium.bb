@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/numerics/safe_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
@@ -35,9 +36,14 @@ using FakeHandlerCallbackReceiver =
     test::StatusAndValueCallbackReceiver<FidoReturnCode,
                                          base::Optional<std::vector<uint8_t>>>;
 
-// Fake FidoTask implementation that treats all response from FidoDevice as
-// success if the response is a non-empty vector and sends an empty byte array
-// to the device when StartTask() is invoked.
+enum class FakeTaskResponse : uint8_t {
+  kSuccess = 0x00,
+  kErrorReceivedAfterObtainingUserPresence = 0x01,
+  kProcessingError = 0x02,
+};
+
+// Fake FidoTask implementation that sends an empty byte array to the device
+// when StartTask() is invoked.
 class FakeFidoTask : public FidoTask {
  public:
   FakeFidoTask(FidoDevice* device, FakeTaskCallback callback)
@@ -50,25 +56,26 @@ class FakeFidoTask : public FidoTask {
                                             weak_factory_.GetWeakPtr()));
   }
 
-  // Fake callback that treats all response with non-empty |device_response| as
-  // a successful response, empty (not base::nullopt) response as an error
-  // received after obtaining user presence, and base::nullopt as a device
-  // processing error.
-  // TODO(hongjunchoi): Change criteria for deciding when to return success,
-  // UP-verified error, or processing error for readability.
   void CompletionCallback(
       base::Optional<std::vector<uint8_t>> device_response) {
-    if (!device_response) {
-      std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
-                               base::nullopt);
-      return;
-    }
+    DCHECK(device_response && device_response->size() == 1);
+    switch (static_cast<FakeTaskResponse>(device_response->front())) {
+      case FakeTaskResponse::kSuccess:
+        std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
+                                 std::vector<uint8_t>());
+        return;
 
-    device_response->empty()
-        ? std::move(callback_).Run(
-              CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt)
-        : std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
-                                   std::vector<uint8_t>());
+      case FakeTaskResponse::kErrorReceivedAfterObtainingUserPresence:
+        std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
+                                 std::vector<uint8_t>());
+        return;
+
+      case FakeTaskResponse::kProcessingError:
+      default:
+        std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                                 base::nullopt);
+        return;
+    }
   }
 
  private:
@@ -99,8 +106,16 @@ class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
 };
 
 std::vector<uint8_t> CreateFakeSuccessDeviceResponse() {
-  return std::vector<uint8_t>{
-      base::strict_cast<uint8_t>(CtapDeviceResponseCode::kSuccess)};
+  return {base::strict_cast<uint8_t>(FakeTaskResponse::kSuccess)};
+}
+
+std::vector<uint8_t> CreateFakeUserPresenceVerifiedError() {
+  return {base::strict_cast<uint8_t>(
+      FakeTaskResponse::kErrorReceivedAfterObtainingUserPresence)};
+}
+
+std::vector<uint8_t> CreateFakeDeviceProcesssingError() {
+  return {base::strict_cast<uint8_t>(FakeTaskResponse::kProcessingError)};
 }
 
 }  // namespace
@@ -136,7 +151,7 @@ TEST_F(FidoRequestHandlerTest, TestSingleDeviceSuccess) {
 
   auto device = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
-  // Device returns success (non-empty vector) response.
+  // Device returns success response.
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
 
@@ -212,7 +227,6 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
   auto device0 = std::make_unique<MockFidoDevice>();
   device0->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  // Device responds successfully after short delay.
   device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeSuccessDeviceResponse(),
                                        base::TimeDelta::FromMicroseconds(1));
@@ -221,9 +235,7 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleSuccessResponses) {
   // delay.
   auto device1 = std::make_unique<MockFidoDevice>();
   device1->set_supported_protocol(ProtocolVersion::kCtap);
-
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
-  // Returns success response after long delay.
   device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeSuccessDeviceResponse(),
                                        base::TimeDelta::FromMicroseconds(10));
@@ -249,31 +261,29 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   auto request_handler = CreateFakeHandler();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  // Represents a connected device that immediately responds with processing
+  // Represents a connected device that immediately responds with a processing
   // error.
   auto device0 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device0, GetId()).WillRepeatedly(testing::Return("device0"));
-  // Responds with base::nullopt which represents a processing error.
-  device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(), base::nullopt);
+  device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeDeviceProcesssingError());
 
-  // Represents a device that returns UP verified failure response after a small
-  // time delay.
+  // Represents a device that returns an UP verified failure response after a
+  // small time delay.
   auto device1 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device1, GetId()).WillRepeatedly(testing::Return("device1"));
-  device1->ExpectRequestAndRespondWith(
-      std::vector<uint8_t>(),
-      // Responds with an empty vector that represents a UP-verified error.
-      std::vector<uint8_t>(), base::TimeDelta::FromMicroseconds(1));
+  device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeUserPresenceVerifiedError(),
+                                       base::TimeDelta::FromMicroseconds(1));
 
-  // Represents a device that returns UP verified failure response after a big
-  // time delay.
+  // Represents a device that returns an UP verified failure response after a
+  // big time delay.
   auto device2 = std::make_unique<MockFidoDevice>();
   device2->set_supported_protocol(ProtocolVersion::kCtap);
   EXPECT_CALL(*device2, GetId()).WillRepeatedly(testing::Return("device2"));
-  device2->ExpectRequestAndRespondWith(
-      std::vector<uint8_t>(),
-      // Responds with an empty vector that represents a UP-verified error.
-      std::vector<uint8_t>(), base::TimeDelta::FromMicroseconds(10));
+  device2->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeDeviceProcesssingError(),
+                                       base::TimeDelta::FromMicroseconds(10));
   EXPECT_CALL(*device2, Cancel());
 
   discovery()->AddDevice(std::move(device0));
