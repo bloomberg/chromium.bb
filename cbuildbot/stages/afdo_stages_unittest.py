@@ -28,7 +28,8 @@ class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
     # Don't call the getters; Use mock responses instead.
     self.PatchDict(afdo.PROFILE_SOURCES,
                    {'benchmark': lambda *_: 'benchmark.afdo',
-                    'silvermont': lambda *_: 'silvermont.afdo'})
+                    'silvermont': lambda *_: 'silvermont.afdo'},
+                   clear=True)
     self._Prepare()
 
   def ConstructStage(self):

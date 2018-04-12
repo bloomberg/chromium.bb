@@ -98,7 +98,12 @@ KERNEL_EBUILD_ROOT = os.path.join(
 )
 
 PROFILE_SOURCES = {}
-GSURL_CWP_SUBDIR = {'silvermont': ''}
+GSURL_CWP_SUBDIR = {
+    'silvermont': '',
+    'airmont': 'airmont',
+    'haswell': 'haswell',
+    'broadwell': 'broadwell',
+}
 
 
 # Filename pattern of CWP profiles for Chrome
@@ -751,3 +756,6 @@ def ProfileAge(profile_version):
 
 PROFILE_SOURCES['benchmark'] = GetBenchmarkProfile
 PROFILE_SOURCES['silvermont'] = GetCWPProfile
+PROFILE_SOURCES['airmont'] = GetCWPProfile
+PROFILE_SOURCES['haswell'] = GetCWPProfile
+PROFILE_SOURCES['broadwell'] = GetCWPProfile
