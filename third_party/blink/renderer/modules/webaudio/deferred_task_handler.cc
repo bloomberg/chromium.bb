@@ -194,7 +194,9 @@ void DeferredTaskHandler::RemoveTailProcessingHandler(
 #endif
 
     if (disable_outputs) {
-      handler->DisableOutputs();
+      // Disabling of outputs should happen on the main thread so save this
+      // handler so it can be processed there.
+      finished_tail_processing_handlers_.push_back(handler);
     }
     tail_processing_handlers_.EraseAt(index);
   }
@@ -326,6 +328,14 @@ void DeferredTaskHandler::DeleteHandlersOnMainThread() {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(*this);
   deletable_orphan_handlers_.clear();
+  // Tail processing nodes have finished processing their tails so we need to
+  // disable their outputs to indicate to downstream nodes that they're done.
+  // This has to be done in the main thread because DisableOutputs() can causing
+  // summing juctions to go away, which must be done on the main thread.
+  for (auto& handler : finished_tail_processing_handlers_) {
+    handler->DisableOutputs();
+  }
+  finished_tail_processing_handlers_.clear();
 }
 
 void DeferredTaskHandler::ClearHandlersToBeDeleted() {
