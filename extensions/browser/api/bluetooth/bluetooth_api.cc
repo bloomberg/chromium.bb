@@ -20,6 +20,10 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/api/bluetooth.h"
 
+#if defined(OS_CHROMEOS)
+#include "device/bluetooth/chromeos/bluetooth_utils.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 
@@ -120,13 +124,34 @@ BluetoothGetDevicesFunction::BluetoothGetDevicesFunction() = default;
 
 BluetoothGetDevicesFunction::~BluetoothGetDevicesFunction() = default;
 
+bool BluetoothGetDevicesFunction::CreateParams() {
+  params_ = GetDevices::Params::Create(*args_);
+  return params_ != nullptr;
+}
+
 void BluetoothGetDevicesFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<base::ListValue> device_list(new base::ListValue);
 
-  BluetoothAdapter::DeviceList devices = adapter->GetDevices();
+  BluetoothAdapter::DeviceList devices;
+#if defined(OS_CHROMEOS)
+  // Default filter values.
+  bluetooth::FilterType filter_type = bluetooth::FilterType::FILTER_TYPE_ALL;
+  int limit = 0; /*no limit*/
+  if (params_->filter) {
+    filter_type = params_->filter->filter_type;
+    if (params_->filter->limit)
+      limit = *params_->filter->limit;
+  }
+
+  devices = device::FilterBluetoothDeviceList(
+      adapter->GetDevices(), ToBluetoothDeviceFilterType(filter_type), limit);
+#else
+  devices = adapter->GetDevices();
+#endif
+
   for (BluetoothAdapter::DeviceList::const_iterator iter = devices.begin();
        iter != devices.end();
        ++iter) {
