@@ -19,6 +19,7 @@
 #include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_detachable_base_model.h"
+#include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/login/ui/login_public_account_user_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
@@ -220,6 +221,15 @@ views::View* LockContentsView::TestApi::dev_channel_info() const {
   return view_->dev_channel_info_;
 }
 
+LoginExpandedPublicAccountView* LockContentsView::TestApi::expanded_view()
+    const {
+  return view_->expanded_view_;
+}
+
+views::View* LockContentsView::TestApi::main_view() const {
+  return view_->main_view_;
+}
+
 LockContentsView::UserState::UserState(AccountId account_id)
     : account_id(account_id) {}
 
@@ -276,6 +286,13 @@ LockContentsView::LockContentsView(
   note_action_ = new NoteActionLaunchButton(initial_note_action_state);
   top_header_->AddChildView(note_action_);
 
+  // Public Session expanded view.
+  expanded_view_ = new LoginExpandedPublicAccountView(
+      base::BindRepeating(&LockContentsView::SetDisplayStyle,
+                          base::Unretained(this), DisplayStyle::kAll));
+  expanded_view_->SetVisible(false);
+  AddChildView(expanded_view_);
+
   OnLockScreenNoteStateChanged(initial_note_action_state);
   Shell::Get()->AddShellObserver(this);
 }
@@ -299,6 +316,7 @@ LockContentsView::~LockContentsView() {
 void LockContentsView::Layout() {
   View::Layout();
   LayoutTopHeader();
+  LayoutPublicSessionView();
 
   if (users_list_)
     users_list_->Layout();
@@ -743,6 +761,12 @@ void LockContentsView::LayoutTopHeader() {
                            gfx::Vector2d(preferred_width, 0));
 }
 
+void LockContentsView::LayoutPublicSessionView() {
+  gfx::Rect bounds = GetContentsBounds();
+  bounds.ClampToCenteredSize(expanded_view_->GetPreferredSize());
+  expanded_view_->SetBoundsRect(bounds);
+}
+
 views::View* LockContentsView::MakeOrientationViewWithWidths(int landscape,
                                                              int portrait) {
   auto* view = new MultiSizedView(gfx::Size(landscape, kNonEmptyHeightDp),
@@ -994,7 +1018,14 @@ keyboard::KeyboardController* LockContentsView::GetKeyboardController() const {
 }
 
 void LockContentsView::OnPublicAccountTapped() {
-  NOTIMPLEMENTED();
+  // Update expanded_view_ in case CurrentBigUserView has changed.
+  // 1. It happens when the active big user is changed. For example both
+  // primary and secondary big user are public account and user switches from
+  // primary to secondary.
+  // 2. LoginUserInfo in the big user could be changed if we get updates from
+  // OnPublicSessionDisplayNameChanged and OnPublicSessionLocalesChanged.
+  expanded_view_->UpdateForUser(CurrentBigUserView()->GetCurrentUser());
+  SetDisplayStyle(DisplayStyle::kExclusivePublicAccountExpandedView);
 }
 
 LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
@@ -1115,6 +1146,15 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
     if (opt_to_hide)
       opt_to_hide->ApplyAnimationPostLayout();
   }
+}
+
+void LockContentsView::SetDisplayStyle(DisplayStyle style) {
+  const bool show_expanded_view =
+      style == DisplayStyle::kExclusivePublicAccountExpandedView;
+  expanded_view_->SetVisible(show_expanded_view);
+  main_view_->SetVisible(!show_expanded_view);
+  top_header_->SetVisible(!show_expanded_view);
+  Layout();
 }
 
 }  // namespace ash

@@ -75,7 +75,7 @@ constexpr SkColor kDomainTextColor =
     SkColorSetARGBMacro(0xAB, 0xFF, 0xFF, 0xFF);
 constexpr int kEnterpriseIconSizeDp = 12;
 constexpr int kBetweenEnterpriseIconAndDomainDp = 8;
-constexpr int kVerticalSpacingBetweenUserNameAndDomainDp = 17;
+constexpr int kVerticalSpacingBetweenUserNameAndDomainDp = 14;
 
 int GetImageSize(LoginDisplayStyle style) {
   switch (style) {

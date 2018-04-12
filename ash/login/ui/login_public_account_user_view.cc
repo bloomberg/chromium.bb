@@ -77,7 +77,7 @@ LoginPublicAccountUserView::LoginPublicAccountUserView(
       login_layout_util::WrapViewForPreferredSize(user_view_);
 
   auto add_padding = [&](int amount) {
-    auto* padding = new views::View();
+    auto* padding = new NonAccessibleView();
     padding->SetPreferredSize(gfx::Size(kNonEmptyWidth, amount));
     AddChildView(padding);
   };
