@@ -29,6 +29,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
+using contextual_suggestions::ClusterBuilder;
 using testing::_;
 using testing::AllOf;
 using testing::ElementsAre;
@@ -41,12 +42,36 @@ namespace ntp_snippets {
 
 namespace {
 
-// TODO(pnoland): Re-implement for new fetcher.
+class MockClustersCallback {
+ public:
+  void Done(std::string peek_text, std::vector<Cluster> clusters) {
+    EXPECT_FALSE(has_run);
+    has_run = true;
+    response_peek_text = peek_text;
+    response_clusters = std::move(clusters);
+  }
+
+  bool has_run = false;
+  std::string response_peek_text;
+  std::vector<Cluster> response_clusters;
+};
+
+// Always fetches the result that was set by SetFakeResponse.
 class FakeContextualSuggestionsFetcher : public ContextualSuggestionsFetcher {
  public:
   void FetchContextualSuggestionsClusters(
       const GURL& url,
-      FetchClustersCallback callback) override {}
+      FetchClustersCallback callback) override {
+    std::move(callback).Run("peek text", std::move(fake_suggestions_));
+    fake_suggestions_.clear();
+  }
+
+  void SetFakeResponse(std::vector<Cluster> fake_suggestions) {
+    fake_suggestions_ = std::move(fake_suggestions);
+  }
+
+ private:
+  std::vector<Cluster> fake_suggestions_;
 };
 
 // Always fetches a fake image if the given URL is valid.
@@ -113,6 +138,30 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   // TODO(gaschler): Verify with a mock that the image fetcher is not called if
   // the id is unknown.
   base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(ContextualContentSuggestionsServiceTest,
+       ShouldFetchContextualSuggestionsClusters) {
+  MockClustersCallback mock_callback;
+  std::vector<Cluster> clusters;
+  GURL context_url("http://www.from.url");
+
+  clusters.emplace_back(ClusterBuilder("Title")
+                            .AddSuggestion(SuggestionBuilder(context_url)
+                                               .Title("Title1")
+                                               .PublisherName("from.url")
+                                               .Snippet("Summary")
+                                               .ImageId("abc")
+                                               .Build())
+                            .Build());
+
+  fetcher()->SetFakeResponse(std::move(clusters));
+  source()->FetchContextualSuggestionClusters(
+      context_url, base::BindOnce(&MockClustersCallback::Done,
+                                  base::Unretained(&mock_callback)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(mock_callback.has_run);
 }
 
 }  // namespace ntp_snippets

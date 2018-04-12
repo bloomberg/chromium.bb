@@ -41,11 +41,6 @@ ContextualContentSuggestionsService::ContextualContentSuggestionsService(
 ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
     default;
 
-// TODO(pnoland): remove this
-void ContextualContentSuggestionsService::FetchContextualSuggestions(
-    const GURL& url,
-    FetchContextualSuggestionsCallback callback) {}
-
 void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
     const GURL& url,
     FetchClustersCallback callback) {
