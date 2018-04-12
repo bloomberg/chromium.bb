@@ -2599,6 +2599,7 @@ void LayerTreeHostImpl::RecreateTileResources() {
 void LayerTreeHostImpl::CreateTileManagerResources() {
   raster_buffer_provider_ = CreateRasterBufferProvider();
 
+  size_t max_prepaint_tasks;
   if (use_gpu_rasterization_) {
     int max_texture_size = layer_tree_frame_sink_->context_provider()
                                ->ContextCapabilities()
@@ -2609,11 +2610,16 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes, max_texture_size);
+    if (settings_.enable_oop_rasterization)
+      max_prepaint_tasks = settings_.max_prepaint_oop_raster_tasks;
+    else
+      max_prepaint_tasks = settings_.max_prepaint_gpu_raster_tasks;
   } else {
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes);
+    max_prepaint_tasks = settings_.max_prepaint_cpu_raster_tasks;
   }
 
   // Pass the single-threaded synchronous task graph runner to the worker pool
@@ -2628,7 +2634,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 
   tile_manager_.SetResources(resource_pool_.get(), image_decode_cache_.get(),
                              task_graph_runner, raster_buffer_provider_.get(),
-                             use_gpu_rasterization_);
+                             max_prepaint_tasks, use_gpu_rasterization_);
   tile_manager_.SetCheckerImagingForceDisabled(
       settings_.only_checker_images_with_gpu_raster && !use_gpu_rasterization_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());

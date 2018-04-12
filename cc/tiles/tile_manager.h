@@ -156,6 +156,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
                     ImageDecodeCache* image_decode_cache,
                     TaskGraphRunner* task_graph_runner,
                     RasterBufferProvider* raster_buffer_provider,
+                    size_t max_prepaint_tasks,
                     bool use_gpu_rasterization);
 
   // This causes any completed raster work to finalize, so that tiles get up to
@@ -312,16 +313,22 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   };
 
   struct Signals {
+    Signals();
+    ~Signals();
+
     bool activate_tile_tasks_completed = false;
     bool draw_tile_tasks_completed = false;
     bool all_tile_tasks_completed = false;
 
     bool activate_gpu_work_completed = false;
     bool draw_gpu_work_completed = false;
+    bool prepaint_gpu_work_completed = false;
 
     bool did_notify_ready_to_activate = false;
     bool did_notify_ready_to_draw = false;
     bool did_notify_all_tile_tasks_completed = false;
+
+    bool should_schedule_more_tile_tasks = false;
   };
 
   struct PrioritizedWorkToSchedule {
@@ -337,6 +344,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
     CheckerImageTracker::ImageDecodeQueue checker_image_decode_queue;
   };
 
+  bool ShouldConsiderTileReady(const Tile* tile) const;
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);
   scoped_refptr<TileTask> CreateRasterTask(
@@ -401,6 +409,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   RasterBufferProvider* raster_buffer_provider_;
   GlobalStateThatImpactsTilePriority global_state_;
   size_t scheduled_raster_task_limit_;
+  size_t max_prepaint_tasks_ = std::numeric_limits<size_t>::max();
 
   const TileManagerSettings tile_manager_settings_;
   bool use_gpu_rasterization_;
@@ -420,8 +429,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   TaskGraph graph_;
 
-  UniqueNotifier more_tiles_need_prepare_check_notifier_;
-
   Signals signals_;
 
   UniqueNotifier signals_check_notifier_;
@@ -434,6 +441,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   std::unordered_set<Tile*> pending_gpu_work_tiles_;
   uint64_t pending_required_for_activation_callback_id_ = 0;
   uint64_t pending_required_for_draw_callback_id_ = 0;
+  uint64_t pending_prepaint_work_callback_id_ = 0;
   // If true, we should re-compute tile requirements in
   // CheckPendingGpuWorkAndIssueSignals.
   bool pending_tile_requirements_dirty_ = false;

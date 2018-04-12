@@ -35,7 +35,7 @@ void TileDrawInfo::SetResource(ResourcePool::InUsePoolResource resource,
   resource_ = std::move(resource);
 }
 
-const ResourcePool::InUsePoolResource& TileDrawInfo::GetResource() {
+const ResourcePool::InUsePoolResource& TileDrawInfo::GetResource() const {
   DCHECK_EQ(mode_, RESOURCE_MODE);
   DCHECK(resource_);
   return resource_;

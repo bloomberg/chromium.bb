@@ -363,10 +363,6 @@ TileManager::TileManager(
                              this,
                              tile_manager_settings_.enable_checker_imaging,
                              tile_manager_settings_.min_image_bytes_to_checker),
-      more_tiles_need_prepare_check_notifier_(
-          task_runner_,
-          base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
-                     base::Unretained(this))),
       signals_check_notifier_(task_runner_,
                               base::Bind(&TileManager::FlushAndIssueSignals,
                                          base::Unretained(this))),
@@ -396,7 +392,6 @@ void TileManager::FinishTasksAndCleanUp() {
 
   tile_task_manager_ = nullptr;
   resource_pool_ = nullptr;
-  more_tiles_need_prepare_check_notifier_.Cancel();
   signals_check_notifier_.Cancel();
   task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
   ready_to_draw_callback_weak_ptr_factory_.InvalidateWeakPtrs();
@@ -414,6 +409,7 @@ void TileManager::SetResources(ResourcePool* resource_pool,
                                ImageDecodeCache* image_decode_cache,
                                TaskGraphRunner* task_graph_runner,
                                RasterBufferProvider* raster_buffer_provider,
+                               size_t max_prepaint_tasks,
                                bool use_gpu_rasterization) {
   DCHECK(!tile_task_manager_);
   DCHECK(task_graph_runner);
@@ -422,6 +418,7 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   resource_pool_ = resource_pool;
   image_controller_.SetImageDecodeCache(image_decode_cache);
   tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner);
+  max_prepaint_tasks_ = max_prepaint_tasks;
   raster_buffer_provider_ = raster_buffer_provider;
 }
 
@@ -471,11 +468,11 @@ void TileManager::DidFinishRunningAllTileTasks() {
     // TODO(vmpstr): Temporary check to debug crbug.com/642927.
     CHECK(tile_task_manager_);
     signals_.all_tile_tasks_completed = true;
-    signals_check_notifier_.Schedule();
-    return;
+  } else {
+    signals_.should_schedule_more_tile_tasks = true;
   }
 
-  more_tiles_need_prepare_check_notifier_.Schedule();
+  signals_check_notifier_.Schedule();
 }
 
 bool TileManager::PrepareTiles(
@@ -635,6 +632,8 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
   DCHECK(resource_pool_);
   DCHECK(tile_task_manager_);
 
+  size_t num_prepaint_tasks = 0;
+
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
   unsigned schedule_priority = 1u;
@@ -713,6 +712,15 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
         scheduled_raster_task_limit_) {
       all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
       break;
+    }
+
+    // Don't schedule too many tasks at once.
+    if (tile->is_prepaint()) {
+      num_prepaint_tasks++;
+      if (num_prepaint_tasks > max_prepaint_tasks_) {
+        all_tiles_that_need_to_be_rasterized_are_scheduled_ = false;
+        break;
+      }
     }
 
     DCHECK(tile->draw_info().mode() == TileDrawInfo::OOM_MODE ||
@@ -840,6 +848,23 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
                    "had_enough_memory_to_schedule_tiles_needed_now",
                    had_enough_memory_to_schedule_tiles_needed_now);
   return work_to_schedule;
+}
+
+bool TileManager::ShouldConsiderTileReady(const Tile* tile) const {
+  bool in_smoothness = global_state_.tree_priority == SMOOTHNESS_TAKES_PRIORITY;
+  if (in_smoothness || tile->is_prepaint()) {
+    // In SMOOTHNESS_TAKES_PRIORITY mode, we wait for GPU work to complete for a
+    // tile before setting it as ready to draw.  This prevents the display
+    // compositor from being blocked on work that has not completed.
+    // prepaint (non-required) tiles also wait for GPU work to complete to
+    // provider backpressure and not have the renderer get too far ahead.
+    return raster_buffer_provider_->IsResourceReadyToDraw(
+        tile->draw_info().GetResource());
+  }
+
+  // Always consider non-prepaint work to be ready immediately when we're
+  // not in smoothness mode.
+  return true;
 }
 
 void TileManager::FreeResourcesForTile(Tile* tile) {
@@ -1258,14 +1283,6 @@ void TileManager::OnRasterTaskCompleted(
   // compositor, by giving it a ResourceId.
   resource_pool_->PrepareForExport(resource);
 
-  // In SMOOTHNESS_TAKES_PRIORITY mode, we wait for GPU work to complete for a
-  // tile before setting it as ready to draw.
-  bool is_ready_for_draw = true;
-  if (global_state_.tree_priority == SMOOTHNESS_TAKES_PRIORITY) {
-    is_ready_for_draw =
-        raster_buffer_provider_->IsResourceReadyToDraw(resource);
-  }
-
   TileDrawInfo& draw_info = tile->draw_info();
   bool needs_swizzle =
       raster_buffer_provider_->IsResourceSwizzleRequired(!tile->is_opaque());
@@ -1274,14 +1291,15 @@ void TileManager::OnRasterTaskCompleted(
   draw_info.SetResource(std::move(resource),
                         raster_task_was_scheduled_with_checker_images,
                         needs_swizzle, is_premultiplied);
+
   if (raster_task_was_scheduled_with_checker_images)
     num_of_tiles_with_checker_images_++;
 
-  if (!is_ready_for_draw) {
-    pending_gpu_work_tiles_.insert(tile);
-  } else {
+  if (ShouldConsiderTileReady(tile)) {
     draw_info.set_resource_ready_for_draw();
     client_->NotifyTileStateChanged(tile);
+  } else {
+    pending_gpu_work_tiles_.insert(tile);
   }
 }
 
@@ -1361,6 +1379,13 @@ void TileManager::FlushAndIssueSignals() {
 }
 
 void TileManager::IssueSignals() {
+  // More prepaint work to do.
+  if (signals_.should_schedule_more_tile_tasks &&
+      signals_.prepaint_gpu_work_completed) {
+    signals_.should_schedule_more_tile_tasks = false;
+    CheckIfMoreTilesNeedToBePrepared();
+  }
+
   // Ready to activate.
   if (signals_.activate_tile_tasks_completed &&
       signals_.activate_gpu_work_completed &&
@@ -1550,6 +1575,7 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
 
   std::vector<const ResourcePool::InUsePoolResource*> required_for_activation;
   std::vector<const ResourcePool::InUsePoolResource*> required_for_draw;
+  std::vector<const ResourcePool::InUsePoolResource*> prepaint_work;
 
   for (auto it = pending_gpu_work_tiles_.begin();
        it != pending_gpu_work_tiles_.end();) {
@@ -1558,8 +1584,7 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
     const ResourcePool::InUsePoolResource& resource =
         tile->draw_info().GetResource();
 
-    if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY ||
-        raster_buffer_provider_->IsResourceReadyToDraw(resource)) {
+    if (ShouldConsiderTileReady(tile)) {
       tile->draw_info().set_resource_ready_for_draw();
       client_->NotifyTileStateChanged(tile);
       it = pending_gpu_work_tiles_.erase(it);
@@ -1575,6 +1600,8 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
       required_for_activation.push_back(&resource);
     if (tile->required_for_draw())
       required_for_draw.push_back(&resource);
+    if (tile->is_prepaint())
+      prepaint_work.push_back(&resource);
 
     ++it;
   }
@@ -1601,11 +1628,24 @@ void TileManager::CheckPendingGpuWorkAndIssueSignals() {
             pending_required_for_draw_callback_id_);
   }
 
+  if (prepaint_work.empty()) {
+    pending_prepaint_work_callback_id_ = 0;
+  } else {
+    pending_prepaint_work_callback_id_ =
+        raster_buffer_provider_->SetReadyToDrawCallback(
+            prepaint_work,
+            base::Bind(&TileManager::CheckPendingGpuWorkAndIssueSignals,
+                       ready_to_draw_callback_weak_ptr_factory_.GetWeakPtr()),
+            pending_prepaint_work_callback_id_);
+  }
+
   // Update our signals now that we know whether we have pending resources.
   signals_.activate_gpu_work_completed =
-      (pending_required_for_activation_callback_id_ == 0);
+      pending_required_for_activation_callback_id_ == 0;
   signals_.draw_gpu_work_completed =
-      (pending_required_for_draw_callback_id_ == 0);
+      pending_required_for_draw_callback_id_ == 0;
+  signals_.prepaint_gpu_work_completed =
+      pending_prepaint_work_callback_id_ == 0;
 
   // We've just updated all pending tile requirements if necessary.
   pending_tile_requirements_dirty_ = false;
@@ -1755,5 +1795,9 @@ TileManager::PrioritizedWorkToSchedule::PrioritizedWorkToSchedule() = default;
 TileManager::PrioritizedWorkToSchedule::PrioritizedWorkToSchedule(
     PrioritizedWorkToSchedule&& other) = default;
 TileManager::PrioritizedWorkToSchedule::~PrioritizedWorkToSchedule() = default;
+
+TileManager::Signals::Signals() = default;
+
+TileManager::Signals::~Signals() = default;
 
 }  // namespace cc

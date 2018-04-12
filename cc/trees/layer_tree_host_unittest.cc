@@ -6982,6 +6982,8 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
 
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->gpu_rasterization_forced = true;
+    settings->max_prepaint_gpu_raster_tasks =
+        std::numeric_limits<size_t>::max();
   }
 
   void SetupTree() override {
