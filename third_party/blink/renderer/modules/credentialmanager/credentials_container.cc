@@ -259,6 +259,10 @@ DOMException* CredentialManagerErrorToDOMException(
           "Attempting to register an already-registered key.");
     case CredentialManagerError::NOT_IMPLEMENTED:
       return DOMException::Create(kNotSupportedError, "Not implemented");
+    case CredentialManagerError::NOT_FOCUSED:
+      return DOMException::Create(kNotAllowedError,
+                                  "The operation is not allowed at this time "
+                                  "because the page does not have focus.");
     case CredentialManagerError::UNKNOWN:
       return DOMException::Create(kNotReadableError,
                                   "An unknown error occurred while talking "
