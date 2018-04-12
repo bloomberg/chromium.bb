@@ -25,14 +25,16 @@ namespace ash {
 class ASH_EXPORT FrameCaptionButton : public views::Button {
  public:
   enum Animate { ANIMATE_YES, ANIMATE_NO };
+  enum class ColorMode { kDefault, kThemed };
 
   static const char kViewClassName[];
 
   FrameCaptionButton(views::ButtonListener* listener, CaptionButtonIcon icon);
   ~FrameCaptionButton() override;
 
-  // Gets the color to use for a frame caption button.
-  static SkColor GetButtonColor(bool use_light_images);
+  // Gets the color to use for a frame caption button while a theme color is
+  // set.
+  static SkColor GetButtonColor(ColorMode color_mode, SkColor background_color);
 
   // Gets the alpha ratio for the colors of inactive frame caption buttons.
   static float GetInactiveButtonColorAlphaRatio();
@@ -57,11 +59,15 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
   void OnGestureEvent(ui::GestureEvent* event) override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
 
+  void set_background_color(SkColor background_color) {
+    background_color_ = background_color;
+  }
+
+  void set_color_mode(ColorMode color_mode) { color_mode_ = color_mode; }
+
   void set_paint_as_active(bool paint_as_active) {
     paint_as_active_ = paint_as_active;
   }
-
-  void set_use_light_images(bool light) { use_light_images_ = light; }
 
   CaptionButtonIcon icon() const { return icon_; }
 
@@ -81,11 +87,14 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
   // The button's current icon.
   CaptionButtonIcon icon_;
 
+  // The current background color.
+  SkColor background_color_;
+
+  // The algorithm to determine button colors.
+  ColorMode color_mode_;
+
   // Whether the button should be painted as active.
   bool paint_as_active_;
-
-  // Whether to paint in a lighter color (for use on dark backgrounds).
-  bool use_light_images_;
 
   // Current alpha to use for painting.
   int alpha_;

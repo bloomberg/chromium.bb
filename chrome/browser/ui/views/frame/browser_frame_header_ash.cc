@@ -142,14 +142,13 @@ void BrowserFrameHeaderAsh::Init(
 
   view_ = header_view;
   window_icon_ = window_icon;
+  SkColor frame_color = view_->GetFrameColor(true);
   caption_button_container_ = caption_button_container;
-  // Use light images in incognito, even when a custom theme is installed. The
-  // incognito window with a custom theme is still darker than a normal window.
-  caption_button_container_->SetUseLightImages(is_incognito_);
+  caption_button_container_->SetBackgroundColor(frame_color);
 
   back_button_ = back_button;
   if (back_button_)
-    back_button_->set_use_light_images(is_incognito_);
+    back_button_->set_background_color(frame_color);
 }
 
 int BrowserFrameHeaderAsh::GetMinimumHeaderWidth() const {
@@ -213,9 +212,13 @@ void BrowserFrameHeaderAsh::SchedulePaintForTitle() {
 }
 
 void BrowserFrameHeaderAsh::SetPaintAsActive(bool paint_as_active) {
+  SkColor frame_color = view_->GetFrameColor(paint_as_active);
   caption_button_container_->SetPaintAsActive(paint_as_active);
-  if (back_button_)
+  caption_button_container_->SetBackgroundColor(frame_color);
+  if (back_button_) {
     back_button_->set_paint_as_active(paint_as_active);
+    back_button_->set_background_color(frame_color);
+  }
 }
 
 void BrowserFrameHeaderAsh::OnShowStateChanged(ui::WindowShowState show_state) {

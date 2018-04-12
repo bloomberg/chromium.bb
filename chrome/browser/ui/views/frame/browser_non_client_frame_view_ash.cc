@@ -633,13 +633,14 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     if (theme_color) {
       SkColor opaque_theme_color =
           SkColorSetA(theme_color.value(), SK_AlphaOPAQUE);
-      default_frame_header->SetFrameColors(opaque_theme_color,
-                                           opaque_theme_color);
+      default_frame_header->SetThemeColor(opaque_theme_color);
     }
 
     // Add the container for extra hosted app buttons (e.g app menu button).
     SkColor active_color = ash::FrameCaptionButton::GetButtonColor(
-        default_frame_header->ShouldUseLightImages());
+        theme_color ? ash::FrameCaptionButton::ColorMode::kThemed
+                    : ash::FrameCaptionButton::ColorMode::kDefault,
+        default_frame_header->GetActiveFrameColor());
     const float inactive_alpha_ratio =
         ash::FrameCaptionButton::GetInactiveButtonColorAlphaRatio();
     SkColor inactive_color =
@@ -652,9 +653,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     frame_header_origin_text_ =
         std::make_unique<ash::FrameHeaderOriginText>(
             browser->hosted_app_controller()->GetFormattedUrlOrigin(),
-            active_color, inactive_color,
-            default_frame_header->GetActiveFrameColor(),
-            default_frame_header->GetInactiveFrameColor())
+            active_color, inactive_color)
             .release();
     AddChildView(frame_header_origin_text_);
 

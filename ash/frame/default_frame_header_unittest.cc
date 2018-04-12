@@ -57,8 +57,8 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   EXPECT_EQ(0, back.bounds().x());
 }
 
-// Ensure the light icons are used when appropriate.
-TEST_F(DefaultFrameHeaderTest, LightIcons) {
+// Ensure the right frame colors are used.
+TEST_F(DefaultFrameHeaderTest, FrameColors) {
   std::unique_ptr<Widget> w = CreateTestWidget(
       nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   FrameCaptionButtonContainerView container(w.get());
@@ -70,34 +70,14 @@ TEST_F(DefaultFrameHeaderTest, LightIcons) {
   DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
                                   &container);
 
-  // Check by default light icons are not used.
+  // Check frame color is sensitive to mode.
+  SkColor active = SkColorSetRGB(70, 70, 70);
+  SkColor inactive = SkColorSetRGB(200, 200, 200);
+  frame_header.SetFrameColors(active, inactive);
   frame_header.mode_ = FrameHeader::MODE_ACTIVE;
-  EXPECT_FALSE(frame_header.ShouldUseLightImages());
+  EXPECT_EQ(active, frame_header.GetCurrentFrameColor());
   frame_header.mode_ = FrameHeader::MODE_INACTIVE;
-  EXPECT_FALSE(frame_header.ShouldUseLightImages());
-
-  // Check that setting dark colors should use light icons.
-  frame_header.SetFrameColors(SkColorSetRGB(0, 0, 0), SkColorSetRGB(0, 0, 0));
-  frame_header.mode_ = FrameHeader::MODE_ACTIVE;
-  EXPECT_TRUE(frame_header.ShouldUseLightImages());
-  frame_header.mode_ = FrameHeader::MODE_INACTIVE;
-  EXPECT_TRUE(frame_header.ShouldUseLightImages());
-
-  // Check that inactive and active colors are used properly.
-  frame_header.SetFrameColors(SkColorSetRGB(0, 0, 0),
-                              SkColorSetRGB(255, 255, 255));
-  frame_header.mode_ = FrameHeader::MODE_ACTIVE;
-  EXPECT_TRUE(frame_header.ShouldUseLightImages());
-  frame_header.mode_ = FrameHeader::MODE_INACTIVE;
-  EXPECT_FALSE(frame_header.ShouldUseLightImages());
-
-  // Check not so light or dark colors.
-  frame_header.SetFrameColors(SkColorSetRGB(70, 70, 70),
-                              SkColorSetRGB(200, 200, 200));
-  frame_header.mode_ = FrameHeader::MODE_ACTIVE;
-  EXPECT_TRUE(frame_header.ShouldUseLightImages());
-  frame_header.mode_ = FrameHeader::MODE_INACTIVE;
-  EXPECT_FALSE(frame_header.ShouldUseLightImages());
+  EXPECT_EQ(inactive, frame_header.GetCurrentFrameColor());
 }
 
 }  // namespace ash

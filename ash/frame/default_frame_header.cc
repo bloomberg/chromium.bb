@@ -165,7 +165,8 @@ void DefaultFrameHeader::LayoutHeader() {
     caption_button_container_->SetButtonSize(button_size);
   }
 
-  caption_button_container_->SetUseLightImages(ShouldUseLightImages());
+  caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
+  caption_button_container_->SetColorMode(button_color_mode_);
   UpdateSizeButtonImages();
 
   gfx::Size caption_button_container_size =
@@ -177,7 +178,8 @@ void DefaultFrameHeader::LayoutHeader() {
 
   int origin = 0;
   if (back_button_) {
-    back_button_->set_use_light_images(ShouldUseLightImages());
+    back_button_->set_background_color(GetCurrentFrameColor());
+    back_button_->set_color_mode(button_color_mode_);
     gfx::Size size = back_button_->GetPreferredSize();
     back_button_->SetBounds(0, 0, size.width(),
                             caption_button_container_size.height());
@@ -229,6 +231,21 @@ void DefaultFrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
 
 void DefaultFrameHeader::SetFrameColors(SkColor active_frame_color,
                                         SkColor inactive_frame_color) {
+  button_color_mode_ = FrameCaptionButton::ColorMode::kDefault;
+  SetFrameColorsImpl(active_frame_color, inactive_frame_color);
+}
+
+void DefaultFrameHeader::SetThemeColor(SkColor theme_color) {
+  button_color_mode_ = FrameCaptionButton::ColorMode::kThemed;
+  SetFrameColorsImpl(theme_color, theme_color);
+}
+
+SkColor DefaultFrameHeader::GetCurrentFrameColor() const {
+  return mode_ == MODE_ACTIVE ? active_frame_color_ : inactive_frame_color_;
+}
+
+void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
+                                            SkColor inactive_frame_color) {
   bool updated = false;
   if (active_frame_color_ != active_frame_color) {
     active_frame_color_ = active_frame_color;
@@ -252,12 +269,8 @@ SkColor DefaultFrameHeader::GetInactiveFrameColor() const {
 }
 
 SkColor DefaultFrameHeader::GetTitleColor() const {
-  return ShouldUseLightImages() ? kLightTitleTextColor : kTitleTextColor;
-}
-
-bool DefaultFrameHeader::ShouldUseLightImages() const {
-  return color_utils::IsDark(mode_ == MODE_INACTIVE ? inactive_frame_color_
-                                                    : active_frame_color_);
+  return color_utils::IsDark(GetCurrentFrameColor()) ? kLightTitleTextColor
+                                                     : kTitleTextColor;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -318,9 +331,11 @@ void DefaultFrameHeader::PaintHeaderContentSeparator(gfx::Canvas* canvas) {
 }
 
 void DefaultFrameHeader::UpdateAllButtonImages() {
-  caption_button_container_->SetUseLightImages(ShouldUseLightImages());
+  caption_button_container_->SetBackgroundColor(GetCurrentFrameColor());
+  caption_button_container_->SetColorMode(button_color_mode_);
   if (back_button_) {
-    back_button_->set_use_light_images(ShouldUseLightImages());
+    back_button_->set_background_color(GetCurrentFrameColor());
+    back_button_->set_color_mode(button_color_mode_);
     back_button_->SetImage(CAPTION_BUTTON_ICON_BACK,
                            FrameCaptionButton::ANIMATE_NO,
                            kWindowControlBackIcon);

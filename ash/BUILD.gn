@@ -1498,6 +1498,7 @@ test("ash_unittests") {
     "first_run/first_run_helper_unittest.cc",
     "focus_cycler_unittest.cc",
     "frame/caption_buttons/frame_caption_button_container_view_unittest.cc",
+    "frame/caption_buttons/frame_caption_button_unittest.cc",
     "frame/caption_buttons/frame_size_button_unittest.cc",
     "frame/custom_frame_view_ash_unittest.cc",
     "frame/default_frame_header_unittest.cc",
