@@ -433,6 +433,7 @@
     'ipc_tests': {},
     'jingle_unittests': {},
     'media_blink_unittests': {},
+    'media_service_unittests': {},
     'media_unittests': {
       'android_swarming': {
         'hard_timeout': 900,
@@ -938,11 +939,6 @@
     },
   },
 
-  'linux_and_chromeos_non_clang_specific_chromium_gtests': {
-    # TOOD(kbr): rename back to linux_and_chromeos_specific_chromium_gtests.
-    'media_service_unittests': {},
-  },
-
   'linux_and_mac_non_clang_specific_chromium_gtests': {
     # TODO(kbr): merge back into linux_and_mac_specific_chromium_gtests.
     'snapshot_unittests': {},
@@ -1108,7 +1104,6 @@
   },
 
   'mojo_windows_specific_gtests': {
-    'media_service_unittests': {},
     'services_unittests': {},
   },
 
@@ -1962,7 +1957,6 @@
     'chromium_gtests_for_linux_and_chromeos_only',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_flavor_specific_chromium_gtests',
     'linux_incl_clang_specific_chromium_gtests',
@@ -2002,7 +1996,6 @@
     'chromium_gtests_for_linux_and_chromeos_only',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
@@ -2030,7 +2023,6 @@
     'chromium_gtests_for_linux_and_chromeos_only',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
-    'linux_and_chromeos_non_clang_specific_chromium_gtests',
     'linux_and_mac_non_clang_specific_chromium_gtests',
     'linux_chromeos_specific_gtests',
     'linux_chromeos_rel_mus_specific_gtests',
