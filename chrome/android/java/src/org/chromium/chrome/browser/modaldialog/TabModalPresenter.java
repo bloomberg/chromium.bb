@@ -246,6 +246,9 @@ public class TabModalPresenter
                 mDidClearTextControls = true;
             }
 
+            // Hide app menu in case it is opened.
+            mChromeActivity.getAppMenuHandler().hideAppMenu();
+
             // Force toolbar to show and disable overflow menu.
             mActiveTab.onTabModalDialogStateChanged(true);
 
