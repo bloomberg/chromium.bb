@@ -48,7 +48,7 @@ class RenderFrameMetadataObserverImpl
   bool report_all_frame_submissions_for_testing_enabled_ = false;
 
   uint32_t last_frame_token_ = 0;
-  cc::RenderFrameMetadata last_render_frame_metadata_;
+  base::Optional<cc::RenderFrameMetadata> last_render_frame_metadata_;
 
   // Not owned.
   cc::FrameTokenAllocator* frame_token_allocator_ = nullptr;

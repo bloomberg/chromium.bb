@@ -36,10 +36,12 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
       last_frame_token_ = frame_token_allocator_->GetOrAllocateFrameToken();
       render_frame_metadata_observer_client_->OnFrameSubmissionForTesting(
           last_frame_token_);
-      send_metadata = last_render_frame_metadata_ != metadata;
+      send_metadata = !last_render_frame_metadata_ ||
+                      *last_render_frame_metadata_ != metadata;
     } else {
-      send_metadata = cc::RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
-          last_render_frame_metadata_, metadata);
+      send_metadata = !last_render_frame_metadata_ ||
+                      cc::RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
+                          *last_render_frame_metadata_, metadata);
     }
   }
 
@@ -48,11 +50,14 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
   // compared the two for changes.
   last_render_frame_metadata_ = metadata;
 
+  // If the metadata is different, updates all the observers; or the metadata is
+  // generated for first time and same as the default value, update the default
+  // value to all the observers.
   if (send_metadata && render_frame_metadata_observer_client_) {
     // Sending |root_scroll_offset| outside of tests would leave the browser
     // process with out of date information. It is an optional parameter
     // which we clear here.
-    if (!render_frame_metadata_observer_client_)
+    if (!report_all_frame_submissions_for_testing_enabled_)
       metadata.root_scroll_offset = base::nullopt;
 
     last_frame_token_ = frame_token_allocator_->GetOrAllocateFrameToken();
@@ -75,8 +80,9 @@ void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(
 
   // When enabled for testing send the cached metadata.
   DCHECK(render_frame_metadata_observer_client_);
+  DCHECK(last_render_frame_metadata_.has_value());
   render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
-      last_frame_token_, last_render_frame_metadata_);
+      last_frame_token_, *last_render_frame_metadata_);
 }
 
 }  // namespace content
