@@ -285,6 +285,8 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
                            {mojom::FeaturePolicyFeature::kUnsizedMedia,
                             FeaturePolicy::FeatureDefault::EnableForAll},
                            {mojom::FeaturePolicyFeature::kPictureInPicture,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {mojom::FeaturePolicyFeature::kVerticalScroll,
                             FeaturePolicy::FeatureDefault::EnableForAll}}));
   return default_feature_list;
 }
