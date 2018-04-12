@@ -42,18 +42,18 @@ class WebSpeechRecognizer {
   // the client.
   virtual void Start(const WebSpeechRecognitionHandle&,
                      const WebSpeechRecognitionParams&,
-                     WebSpeechRecognizerClient*) = 0;
+                     const WebSpeechRecognizerClient&) = 0;
 
   // Stop speech recognition for the specified handle, returning any results for
   // the audio recorded so far. Notifications and errors are sent via the
   // client.
   virtual void Stop(const WebSpeechRecognitionHandle&,
-                    WebSpeechRecognizerClient*) = 0;
+                    const WebSpeechRecognizerClient&) = 0;
 
   // Abort speech recognition for the specified handle, discarding any recorded
   // audio. Notifications and errors are sent via the client.
   virtual void Abort(const WebSpeechRecognitionHandle&,
-                     WebSpeechRecognizerClient*) = 0;
+                     const WebSpeechRecognizerClient&) = 0;
 
  protected:
   virtual ~WebSpeechRecognizer() = default;

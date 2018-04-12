@@ -33,23 +33,22 @@ const char SpeechRecognitionController::kSupplementName[] =
     "SpeechRecognitionController";
 
 SpeechRecognitionController::SpeechRecognitionController(
-    std::unique_ptr<SpeechRecognitionClient> client)
-    : client_(std::move(client)) {}
+    SpeechRecognitionClient* client)
+    : client_(client) {}
 
 SpeechRecognitionController::~SpeechRecognitionController() {
   // FIXME: Call m_client->pageDestroyed(); once we have implemented a client.
 }
 
 SpeechRecognitionController* SpeechRecognitionController::Create(
-    std::unique_ptr<SpeechRecognitionClient> client) {
-  return new SpeechRecognitionController(std::move(client));
+    SpeechRecognitionClient* client) {
+  return new SpeechRecognitionController(client);
 }
 
-void ProvideSpeechRecognitionTo(
-    LocalFrame& frame,
-    std::unique_ptr<SpeechRecognitionClient> client) {
+void ProvideSpeechRecognitionTo(LocalFrame& frame,
+                                SpeechRecognitionClient* client) {
   SpeechRecognitionController::ProvideTo(
-      frame, SpeechRecognitionController::Create(std::move(client)));
+      frame, SpeechRecognitionController::Create(client));
 }
 
 }  // namespace blink

@@ -11,13 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/blink/public/web/web_speech_recognizer.h"
+#include "third_party/blink/public/web/web_speech_recognizer_client.h"
 
 namespace blink {
 class WebSpeechRecognitionHandle;
 class WebSpeechRecognitionParams;
 class WebSpeechRecognizerClient;
 class WebString;
-}
+}  // namespace blink
 
 namespace test_runner {
 
@@ -33,11 +34,11 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   // WebSpeechRecognizer implementation:
   void Start(const blink::WebSpeechRecognitionHandle& handle,
              const blink::WebSpeechRecognitionParams& params,
-             blink::WebSpeechRecognizerClient* client) override;
+             const blink::WebSpeechRecognizerClient& client) override;
   void Stop(const blink::WebSpeechRecognitionHandle& handle,
-            blink::WebSpeechRecognizerClient* client) override;
+            const blink::WebSpeechRecognizerClient& client) override;
   void Abort(const blink::WebSpeechRecognitionHandle& handle,
-             blink::WebSpeechRecognizerClient* client) override;
+             const blink::WebSpeechRecognizerClient& client) override;
 
   // Methods accessed by layout tests:
   void AddMockResult(const blink::WebString& transcript, float confidence);
@@ -45,15 +46,16 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   bool WasAborted() const { return was_aborted_; }
 
   // Methods accessed from Task objects:
-  blink::WebSpeechRecognizerClient* Client() { return client_; }
+  blink::WebSpeechRecognizerClient& Client() { return client_; }
   blink::WebSpeechRecognitionHandle& Handle() { return handle_; }
 
   void SetClientContext(const blink::WebSpeechRecognitionHandle&,
-                        blink::WebSpeechRecognizerClient*);
+                        const blink::WebSpeechRecognizerClient&);
 
   class Task {
    public:
-    Task(MockWebSpeechRecognizer* recognizer) : recognizer_(recognizer) {}
+    explicit Task(MockWebSpeechRecognizer* recognizer)
+        : recognizer_(recognizer) {}
     virtual ~Task() {}
     virtual void run() = 0;
     virtual bool isNewContextTask() const;
@@ -74,7 +76,7 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   bool HasPendingNewContextTasks() const;
 
   blink::WebSpeechRecognitionHandle handle_;
-  blink::WebSpeechRecognizerClient* client_;
+  blink::WebSpeechRecognizerClient client_;
   std::vector<blink::WebString> mock_transcripts_;
   std::vector<float> mock_confidences_;
   bool was_aborted_;

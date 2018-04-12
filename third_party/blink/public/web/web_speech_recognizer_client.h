@@ -26,16 +26,19 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SPEECH_RECOGNIZER_CLIENT_H_
 
+#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace blink {
 
+class SpeechRecognitionClientProxy;
 class WebSpeechRecognitionResult;
 class WebSpeechRecognitionHandle;
 class WebString;
 
 // A client for reporting progress on speech recognition for a specific handle.
-class WebSpeechRecognizerClient {
+class BLINK_EXPORT WebSpeechRecognizerClient {
  public:
   enum ErrorCode {
     kOtherError = 0,
@@ -49,23 +52,39 @@ class WebSpeechRecognizerClient {
     kLanguageNotSupportedError = 8
   };
 
+  WebSpeechRecognizerClient() = default;
+  WebSpeechRecognizerClient(const WebSpeechRecognizerClient& other) {
+    Assign(other);
+  }
+  WebSpeechRecognizerClient& operator=(const WebSpeechRecognizerClient& other) {
+    Assign(other);
+    return *this;
+  }
+  ~WebSpeechRecognizerClient();
+
+  bool operator==(const WebSpeechRecognizerClient& other) const;
+  bool operator!=(const WebSpeechRecognizerClient& other) const;
+
+  void Reset();
+  bool IsNull() const { return private_.IsNull(); }
+
   // These methods correspond to the events described in the spec:
   // http://speech-javascript-api-spec.googlecode.com/git/speechapi.html#speechreco-events
 
   // To be called when the embedder has started to capture audio.
-  virtual void DidStartAudio(const WebSpeechRecognitionHandle&) = 0;
+  void DidStartAudio(const WebSpeechRecognitionHandle&);
 
   // To be called when some sound, possibly speech, has been detected.
   // This is expected to be called after didStartAudio.
-  virtual void DidStartSound(const WebSpeechRecognitionHandle&) = 0;
+  void DidStartSound(const WebSpeechRecognitionHandle&);
 
   // To be called when sound is no longer detected.
   // This is expected to be called after didEndSpeech.
-  virtual void DidEndSound(const WebSpeechRecognitionHandle&) = 0;
+  void DidEndSound(const WebSpeechRecognitionHandle&);
 
   // To be called when audio capture has stopped.
   // This is expected to be called after didEndSound.
-  virtual void DidEndAudio(const WebSpeechRecognitionHandle&) = 0;
+  void DidEndAudio(const WebSpeechRecognitionHandle&);
 
   // To be called when the speech recognizer provides new results.
   // - newFinalResults contains zero or more final results that are new since
@@ -73,31 +92,37 @@ class WebSpeechRecognizerClient {
   // - currentInterimResults contains zero or more inteirm results that
   // replace the interim results that were reported the last time this
   // function was called.
-  virtual void DidReceiveResults(
+  void DidReceiveResults(
       const WebSpeechRecognitionHandle&,
       const WebVector<WebSpeechRecognitionResult>& new_final_results,
-      const WebVector<WebSpeechRecognitionResult>& current_interim_results) = 0;
+      const WebVector<WebSpeechRecognitionResult>& current_interim_results);
 
   // To be called when the speech recognizer returns a final result with no
   // recognizion hypothesis.
-  virtual void DidReceiveNoMatch(const WebSpeechRecognitionHandle&,
-                                 const WebSpeechRecognitionResult&) = 0;
+  void DidReceiveNoMatch(const WebSpeechRecognitionHandle&,
+                         const WebSpeechRecognitionResult&);
 
   // To be called when a speech recognition error occurs.
-  virtual void DidReceiveError(const WebSpeechRecognitionHandle&,
-                               const WebString& message,
-                               ErrorCode) = 0;
+  void DidReceiveError(const WebSpeechRecognitionHandle&,
+                       const WebString& message,
+                       ErrorCode);
 
   // To be called when the recognizer has begun to listen to the audio with
   // the intention of recognizing.
-  virtual void DidStart(const WebSpeechRecognitionHandle&) = 0;
+  void DidStart(const WebSpeechRecognitionHandle&);
 
   // To be called when the recognition session has ended. This must always be
   // called, no matter the reason for the end.
-  virtual void DidEnd(const WebSpeechRecognitionHandle&) = 0;
+  void DidEnd(const WebSpeechRecognitionHandle&);
 
- protected:
-  virtual ~WebSpeechRecognizerClient() = default;
+#if INSIDE_BLINK
+  explicit WebSpeechRecognizerClient(SpeechRecognitionClientProxy*);
+#endif
+
+ private:
+  void Assign(const WebSpeechRecognizerClient&);
+
+  WebPrivatePtr<SpeechRecognitionClientProxy> private_;
 };
 
 }  // namespace blink

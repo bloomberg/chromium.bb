@@ -56,21 +56,20 @@ class SpeechRecognitionController final
   void Stop(SpeechRecognition* recognition) { client_->Stop(recognition); }
   void Abort(SpeechRecognition* recognition) { client_->Abort(recognition); }
 
-  static SpeechRecognitionController* Create(
-      std::unique_ptr<SpeechRecognitionClient>);
+  static SpeechRecognitionController* Create(SpeechRecognitionClient*);
   static SpeechRecognitionController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<SpeechRecognitionController>(frame);
   }
 
   virtual void Trace(blink::Visitor* visitor) {
     Supplement<LocalFrame>::Trace(visitor);
+    visitor->Trace(client_);
   }
 
  private:
-  explicit SpeechRecognitionController(
-      std::unique_ptr<SpeechRecognitionClient>);
+  explicit SpeechRecognitionController(SpeechRecognitionClient*);
 
-  std::unique_ptr<SpeechRecognitionClient> client_;
+  Member<SpeechRecognitionClient> client_;
 };
 
 }  // namespace blink

@@ -47,9 +47,9 @@ namespace blink {
 
 SpeechRecognitionClientProxy::~SpeechRecognitionClientProxy() = default;
 
-std::unique_ptr<SpeechRecognitionClientProxy>
-SpeechRecognitionClientProxy::Create(WebSpeechRecognizer* recognizer) {
-  return base::WrapUnique(new SpeechRecognitionClientProxy(recognizer));
+SpeechRecognitionClientProxy* SpeechRecognitionClientProxy::Create(
+    WebSpeechRecognizer* recognizer) {
+  return new SpeechRecognitionClientProxy(recognizer);
 }
 
 void SpeechRecognitionClientProxy::Start(SpeechRecognition* recognition,
@@ -68,15 +68,15 @@ void SpeechRecognitionClientProxy::Start(SpeechRecognition* recognition,
       web_speech_grammars, lang, continuous, interim_results, max_alternatives,
       WebSecurityOrigin(
           recognition->GetExecutionContext()->GetSecurityOrigin()));
-  recognizer_->Start(recognition, params, this);
+  recognizer_->Start(recognition, params, WebSpeechRecognizerClient(this));
 }
 
 void SpeechRecognitionClientProxy::Stop(SpeechRecognition* recognition) {
-  recognizer_->Stop(recognition, this);
+  recognizer_->Stop(recognition, WebSpeechRecognizerClient(this));
 }
 
 void SpeechRecognitionClientProxy::Abort(SpeechRecognition* recognition) {
-  recognizer_->Abort(recognition, this);
+  recognizer_->Abort(recognition, WebSpeechRecognizerClient(this));
 }
 
 void SpeechRecognitionClientProxy::DidStartAudio(
@@ -156,6 +156,10 @@ void SpeechRecognitionClientProxy::DidEnd(
     const WebSpeechRecognitionHandle& handle) {
   SpeechRecognition* recognition(handle);
   recognition->DidEnd();
+}
+
+void SpeechRecognitionClientProxy::Trace(blink::Visitor* visitor) {
+  SpeechRecognitionClient::Trace(visitor);
 }
 
 SpeechRecognitionClientProxy::SpeechRecognitionClientProxy(

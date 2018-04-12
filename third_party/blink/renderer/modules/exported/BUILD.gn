@@ -19,6 +19,7 @@ blink_modules_sources("exported") {
     "web_speech_grammar.cc",
     "web_speech_recognition_handle.cc",
     "web_speech_recognition_result.cc",
+    "web_speech_recognizer_client.cc",
     "web_storage_event_dispatcher_impl.cc",
     "web_user_media_request.cc",
   ]
