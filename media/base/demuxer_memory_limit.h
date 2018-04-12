@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -33,6 +34,14 @@ constexpr size_t kDemuxerStreamAudioMemoryLimitLow = 2 * 1024 * 1024;
 // Low video memory limit: 30MB (1 minute of 4Mbps content).
 constexpr size_t kDemuxerStreamVideoMemoryLimitDefault = 150 * 1024 * 1024;
 constexpr size_t kDemuxerStreamVideoMemoryLimitLow = 30 * 1024 * 1024;
+
+#if defined(OS_ANDROID)
+// Special "very low" settings for 512MiB Android Go devices:
+// * audio memory limit: 1MB (30 seconds of 256Kbps content).
+// * video memory limit: 15MB (30 seconds of 4Mbps content).
+constexpr size_t kDemuxerStreamAudioMemoryLimitVeryLow = 1 * 1024 * 1024;
+constexpr size_t kDemuxerStreamVideoMemoryLimitVeryLow = 15 * 1024 * 1024;
+#endif
 
 }  // namespace internal
 

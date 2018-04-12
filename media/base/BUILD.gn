@@ -352,7 +352,7 @@ source_set("base") {
   if (is_chromecast) {
     sources += [ "demuxer_memory_limit_low.cc" ]
   } else if (is_android) {
-    sources += [ "demuxer_memory_limit_select.cc" ]
+    sources += [ "demuxer_memory_limit_android.cc" ]
   } else {
     sources += [ "demuxer_memory_limit_default.cc" ]
   }
