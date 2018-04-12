@@ -257,6 +257,11 @@ public class LocationBarVoiceRecognitionHandlerTest {
             return mAutocomplete;
         }
 
+        @Override
+        public WindowAndroid getWindowAndroid() {
+            return mWindowAndroid;
+        }
+
         public boolean updatedMicButtonState() {
             return mUpdatedMicButtonState;
         }
