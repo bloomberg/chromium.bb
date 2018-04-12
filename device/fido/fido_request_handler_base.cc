@@ -62,8 +62,10 @@ void FidoRequestHandlerBase::DeviceAdded(FidoDiscovery* discovery,
 void FidoRequestHandlerBase::DeviceRemoved(FidoDiscovery* discovery,
                                            FidoDevice* device) {
   // Device connection has been lost or device has already been removed.
-  // Thus, calling CancelTask() is not necessary.
-  DCHECK(base::ContainsKey(ongoing_tasks_, device->GetId()));
+  // Thus, calling CancelTask() is not necessary. Also, below
+  // ongoing_tasks_.erase() will have no effect for the devices that have been
+  // already removed due to processing error or due to invocation of
+  // CancelOngoingTasks().
   ongoing_tasks_.erase(device->GetId());
 }
 
