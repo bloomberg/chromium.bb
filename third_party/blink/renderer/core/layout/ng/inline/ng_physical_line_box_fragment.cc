@@ -87,14 +87,6 @@ bool NGPhysicalLineBoxFragment::HasSoftWrapToNextLine() const {
   return !break_token.IsFinished() && !break_token.IsForcedBreak();
 }
 
-// TODO(xiaochengh): Try avoid passing |previous_line|.
-bool NGPhysicalLineBoxFragment::HasSoftWrapFromPreviousLine(
-    const NGPhysicalLineBoxFragment* previous_line) const {
-  if (!previous_line)
-    return false;
-  return previous_line->HasSoftWrapToNextLine();
-}
-
 PositionWithAffinity NGPhysicalLineBoxFragment::PositionForPoint(
     const NGPhysicalOffset& point) const {
   return PositionForPointInInlineLevelBox(point);
