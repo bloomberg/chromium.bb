@@ -77,7 +77,12 @@ class TestLibrary {
   explicit TestLibrary(const NativeLibraryOptions& options)
     : library_(nullptr) {
     base::FilePath exe_path;
+
+#if !defined(OS_FUCHSIA)
+    // Libraries do not sit alongside the executable in Fuchsia. NativeLibrary
+    // is aware of this and is able to resolve library paths correctly.
     CHECK(base::PathService::Get(base::DIR_EXE, &exe_path));
+#endif
 
     library_ = LoadNativeLibraryWithOptions(
         exe_path.AppendASCII(kTestLibraryName), options, nullptr);
