@@ -13,6 +13,7 @@
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
+#include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/contrib/core/macros.h"
@@ -27,7 +28,11 @@ class AssistantManagerInternal;
 namespace chromeos {
 namespace assistant {
 
-// Implementation of AssistantManagerService based on libassistant.
+// Implementation of AssistantManagerService based on LibAssistant.
+// This is the main class that ineracts with LibAssistant.
+// Since LibAssistant is a standalone library, all callbacks come from it
+// running on threads not owned by Chrome. Thus we need to post the callbacks
+// onto the main thread.
 class AssistantManagerServiceImpl
     : public AssistantManagerService,
       public ::chromeos::assistant::action::AssistantActionObserver,
@@ -42,6 +47,10 @@ class AssistantManagerServiceImpl
   bool IsRunning() const override;
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
+  AssistantSettingsManager* GetAssistantSettingsManager() override;
+  void SendGetSettingsUiRequest(
+      const std::string& selector,
+      GetSettingsUiResponseCallback callback) override;
 
   // mojom::Assistant overrides:
   void SendTextQuery(const std::string& query) override;
@@ -68,6 +77,9 @@ class AssistantManagerServiceImpl
                               const std::string& arc_version);
   std::string BuildUserAgent(const std::string& arc_version) const;
 
+  void HandleGetSettingsResponse(GetSettingsUiResponseCallback callback,
+                                 const std::string& settings);
+
   void OnShowHtmlOnMainThread(const std::string& html);
   void OnShowSuggestionsOnMainThread(
       const std::vector<std::string>& suggestions);
@@ -83,6 +95,7 @@ class AssistantManagerServiceImpl
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
+  std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
   assistant_client::AssistantManagerInternal* const assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;

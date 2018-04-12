@@ -27,6 +27,10 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void SetAccessToken(const std::string& access_token) override;
   void EnableListening(bool enable) override;
   bool IsRunning() const override;
+  AssistantSettingsManager* GetAssistantSettingsManager() override;
+  void SendGetSettingsUiRequest(
+      const std::string& selector,
+      GetSettingsUiResponseCallback callback) override;
 
   // mojom::AssistantEvent overrides:
   void SendTextQuery(const std::string& query) override;
