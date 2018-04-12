@@ -73,7 +73,7 @@ function FileSelection(indexes, entries) {
     }
     this.totalCount++;
   }.bind(this));
-};
+}
 
 FileSelection.prototype.computeAdditional = function(metadataModel) {
   if (!this.additionalPromise_) {
@@ -144,14 +144,14 @@ function FileSelectionHandler(
   this.selection = new FileSelection([], []);
 
   /**
-   * @private {number}
+   * @private {?number}
    */
   this.selectionUpdateTimer_ = 0;
 
   /**
-   * @private {!Date}
+   * @private {number}
    */
-  this.lastFileSelectionTime_ = new Date();
+  this.lastFileSelectionTime_ = Date.now();
 
   util.addEventListenerToBackgroundComponent(
       assert(fileOperationManager), 'entries-changed',

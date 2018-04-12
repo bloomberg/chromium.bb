@@ -45,14 +45,15 @@ FileGrid.prototype = {
 
 /**
  * Decorates an HTML element to be a FileGrid.
- * @param {!Element} self The grid to decorate.
+ * @param {!Element} element The grid to decorate.
  * @param {!MetadataModel} metadataModel File system metadata.
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {!importer.HistoryLoader} historyLoader
  */
 FileGrid.decorate = function(
-    self, metadataModel, volumeManager, historyLoader) {
-  cr.ui.Grid.decorate(self);
+    element, metadataModel, volumeManager, historyLoader) {
+  cr.ui.Grid.decorate(element);
+  var self = /** @type {!FileGrid} */ (element);
   self.__proto__ = FileGrid.prototype;
   self.metadataModel_ = metadataModel;
   self.volumeManager_ = volumeManager;
@@ -977,13 +978,14 @@ FileGridSelectionController.prototype.getIndexBelow = function(index) {
   if (index === this.getLastIndex())
     return -1;
 
-  var row = this.grid_.getItemRow(index);
-  var col = this.grid_.getItemColumn(index);
-  var nextIndex = this.grid_.getItemIndex(row + 1, col);
+  var grid = /** @type {!FileGrid} */ (this.grid_);
+  var row = grid.getItemRow(index);
+  var col = grid.getItemColumn(index);
+  var nextIndex = grid.getItemIndex(row + 1, col);
   if (nextIndex === -1) {
-    return row + 1 < this.grid_.getFolderRowCount() ?
-        this.grid_.dataModel.getFolderCount() - 1 :
-        this.grid_.dataModel.length - 1;
+    return row + 1 < grid.getFolderRowCount() ?
+        grid.dataModel.getFolderCount() - 1 :
+        grid.dataModel.length - 1;
   }
   return nextIndex;
 };
@@ -995,15 +997,16 @@ FileGridSelectionController.prototype.getIndexAbove = function(index) {
   if (index == 0)
     return -1;
 
-  var row = this.grid_.getItemRow(index);
+  var grid = /** @type {!FileGrid} */ (this.grid_);
+  var row = grid.getItemRow(index);
   if (row - 1 < 0)
     return 0;
-  var col = this.grid_.getItemColumn(index);
-  var nextIndex = this.grid_.getItemIndex(row - 1, col);
+  var col = grid.getItemColumn(index);
+  var nextIndex = grid.getItemIndex(row - 1, col);
   if (nextIndex === -1) {
-    return row - 1 < this.grid_.getFolderRowCount() ?
-        this.grid_.dataModel.getFolderCount() - 1 :
-        this.grid_.dataModel.length - 1;
+    return row - 1 < grid.getFolderRowCount() ?
+        grid.dataModel.getFolderCount() - 1 :
+        grid.dataModel.length - 1;
   }
   return nextIndex;
 };

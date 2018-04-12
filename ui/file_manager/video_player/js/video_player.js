@@ -714,7 +714,8 @@ VideoPlayer.prototype.onCastButtonClicked_ = function() {
  * @private
  */
 VideoPlayer.prototype.updateCheckOnCastMenu_ = function() {
-  var menuItems = getRequiredElement('cast-menu').menuItems;
+  var menuItems =
+      /** @type {cr.ui.Menu} */ (getRequiredElement('cast-menu')).menuItems;
   for (var i = 0; i < menuItems.length; i++) {
     var item = menuItems[i];
     if (this.currentCast_ === null) {

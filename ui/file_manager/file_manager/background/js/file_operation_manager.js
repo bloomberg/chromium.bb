@@ -28,7 +28,7 @@ function FileOperationManager() {
   this.runningCopyTasks_ = {};
 
   /**
-   * @private {!Array<!fileOperationUtil.Task>}
+   * @private {!Array<!fileOperationUtil.DeleteTask>}
    */
   this.deleteTasks_ = [];
 
@@ -269,7 +269,8 @@ FileOperationManager.prototype.serviceAllTasks_ = function() {
 
     // Fails a copy task of which it fails to get volume info. The destination
     // volume might be already unmounted.
-    var volumeInfo = this.volumeManager_.getVolumeInfo(task.targetDirEntry);
+    var volumeInfo = this.volumeManager_.getVolumeInfo(
+        /** @type {!DirectoryEntry} */ (task.targetDirEntry));
     if (volumeInfo === null) {
       this.eventRouter_.sendProgressEvent(
           fileOperationUtil.EventRouter.EventType.ERROR,
@@ -356,15 +357,15 @@ FileOperationManager.DELETE_TIMEOUT = 30 * 1000;
  * @param {Array<Entry>} entries The entries.
  */
 FileOperationManager.prototype.deleteEntries = function(entries) {
-  // TODO(hirono): Make fileOperationUtil.DeleteTask.
-  var task = Object.preventExtensions({
-    entries: entries,
-    taskId: this.generateTaskId(),
-    entrySize: {},
-    totalBytes: 0,
-    processedBytes: 0,
-    cancelRequested: false
-  });
+  var task =
+      /** @type {!fileOperationUtil.DeleteTask} */ (Object.preventExtensions({
+        entries: entries,
+        taskId: this.generateTaskId(),
+        entrySize: {},
+        totalBytes: 0,
+        processedBytes: 0,
+        cancelRequested: false
+      }));
 
   // Obtains entry size and sum them up.
   var group = new AsyncUtil.Group();

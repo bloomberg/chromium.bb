@@ -1213,6 +1213,18 @@ fileOperationUtil.ZipTask.prototype.run = function(
 };
 
 /**
+ * @typedef {{
+ *  entries: Array<Entry>,
+ *  taskId: string,
+ *  entrySize: Object,
+ *  totalBytes: number,
+ *  processedBytes: number,
+ *  cancelRequested: boolean
+ * }}
+ */
+fileOperationUtil.DeleteTask;
+
+/**
  * Error class used to report problems with a copy operation.
  * If the code is UNEXPECTED_SOURCE_FILE, data should be a path of the file.
  * If the code is TARGET_EXISTS, data should be the existing Entry.

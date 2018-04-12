@@ -7,6 +7,20 @@
 // require: list_selection_controller.js
 // require: list_item.js
 
+cr.exportPath('cr.ui');
+
+/**
+ *  @typedef {{
+ *    height: number,
+ *    marginBottom: number,
+ *    marginLeft: number,
+ *    marginRight: number,
+ *    marginTop: number,
+ *    width: number
+ *  }}
+ */
+cr.ui.Size;
+
 /**
  * @fileoverview This implements a list control.
  */
@@ -53,8 +67,7 @@ cr.define('cr.ui', function() {
      * is needed. Note that lead item is allowed to have a different height, to
      * accommodate lists where a single item at a time can be expanded to show
      * more detail.
-     * @type {?{height: number, marginTop: number, marginBottom: number,
-     *     width: number, marginLeft: number, marginRight: number}}
+     * @type {?cr.ui.Size}
      * @private
      */
     measured_: null,
@@ -375,8 +388,8 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @return {{height: number, width: number}} The height and width
-     *     of default item, measuring it if necessary.
+     * @return {!cr.ui.Size} The height and width of default item, measuring it
+     *     if necessary.
      * @protected
      */
     getDefaultItemSize_: function() {
@@ -392,11 +405,8 @@ cr.define('cr.ui', function() {
      * @param {cr.ui.ListItem=} opt_item The list item to use to do the
      *     measuring. If this is not provided an item will be created based on
      *     the first value in the model.
-     * @return {{height: number, marginTop: number, marginBottom: number,
-     *     width: number, marginLeft: number, marginRight: number}}
-     *     The height and width of the item, taking
-     *     margins into account, and the top, bottom, left and right margins
-     *     themselves.
+     * @return {!cr.ui.Size} The height and width of the item, taking margins
+     *     into account, and the top, bottom, left and right margins themselves.
      */
     measureItem: function(opt_item) {
       var dataModel = this.dataModel;

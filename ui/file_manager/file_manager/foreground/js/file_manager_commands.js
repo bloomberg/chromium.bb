@@ -172,7 +172,8 @@ CommandUtil.canExecuteAlways = function(event) {
  */
 CommandUtil.forceDefaultHandler = function(node, commandId) {
   var doc = node.ownerDocument;
-  var command = doc.querySelector('command[id="' + commandId + '"]');
+  var command = /** @type {!cr.ui.Command} */ (
+      doc.querySelector('command[id="' + commandId + '"]'));
   node.addEventListener('keydown', function(e) {
     if (command.matchesEvent(e)) {
       // Prevent cr.ui.CommandManager of handling it and leave it

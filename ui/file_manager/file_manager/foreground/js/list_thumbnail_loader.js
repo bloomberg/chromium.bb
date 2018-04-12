@@ -45,7 +45,7 @@ function ListThumbnailLoader(
       opt_thumbnailLoaderConstructor || ThumbnailLoader;
 
   /**
-   * @private {Object<!ListThumbnailLoader.Task>}
+   * @private {!Object<!ListThumbnailLoader.Task>}
    */
   this.active_ = {};
 
@@ -302,7 +302,7 @@ ListThumbnailLoader.prototype.dispatchThumbnailLoaded_ = function(
   // change had happened in the data model during thumbnail fetch.
   var item = this.dataModel_.item(index);
   if (item && item.toURL() !== thumbnail.fileUrl) {
-    index = -1;;
+    index = -1;
     for (var i = 0; i < this.dataModel_.length; i++) {
       if (this.dataModel_.item(i).toURL() === thumbnail.fileUrl) {
         index = i;

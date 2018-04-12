@@ -153,16 +153,18 @@ function FileTransferController(
   this.sourceNotFoundErrorCount_ = 0;
 
   /**
-   * @private {!Element}
+   * @private {!cr.ui.Command}
    * @const
    */
-  this.copyCommand_ = queryRequiredElement('command#copy', this.document_);
+  this.copyCommand_ = /** @type {!cr.ui.Command} */ (
+      queryRequiredElement('command#copy', this.document_));
 
   /**
-   * @private {!Element}
+   * @private {!cr.ui.Command}
    * @const
    */
-  this.cutCommand_ = queryRequiredElement('command#cut', this.document_);
+  this.cutCommand_ = /** @type {!cr.ui.Command} */ (
+      queryRequiredElement('command#cut', this.document_));
 
   /**
    * @private {DirectoryEntry}
