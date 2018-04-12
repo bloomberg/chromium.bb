@@ -126,6 +126,9 @@
     'arc_power': {
       'filepath': 'components/arc/power/',
     },
+    'arc_video_accelerator': {
+      'filepath': 'components/arc/video_accelerator',
+    },
     'ash': {
       'filepath': 'ash/',
     },
@@ -1539,6 +1542,9 @@
     'usb': {
       'filepath': '/usb/',
     },
+    'v4l2': {
+      'filepath': 'media/gpu/v4l2',
+    },
     'vaapi': {
       'filepath': 'media/gpu/vaapi',
     },
@@ -1693,6 +1699,7 @@
                 'cernekee@chromium.org',
                 'snanda@chromium.org'],
     'arc_power': ['ejcaruso+watch@chromium.org'],
+    'arc_video_accelerator': ['hiroh+watch@chromium.org'],
     'ash': ['kalyan.kondapally@intel.com',
             'sadrul@chromium.org'],
     'assistant': ['croissant-eng+reviews@chromium.org'],
@@ -2332,6 +2339,7 @@
     'ui_strings': ['srahim+watch@chromium.org'],
     'usb': ['cco3+watch@chromium.org',
             'mattreynolds+watch@chromium.org'],
+    'v4l2': ['hiroh+watch@chromium.org'],
     'vaapi': ['vaapi-reviews@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org'],
