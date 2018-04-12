@@ -45,7 +45,7 @@ void ScopedVirtualAuthenticatorEnvironment::CreateAuthenticator(
     webauth::test::mojom::VirtualAuthenticatorOptionsPtr options,
     CreateAuthenticatorCallback callback) {
   auto authenticator = std::make_unique<VirtualAuthenticator>(
-      mojo::ConvertTo<::device::U2fTransportProtocol>(options->transport));
+      mojo::ConvertTo<::device::FidoTransportProtocol>(options->transport));
   auto* authenticator_ptr = authenticator.get();
   authenticators_.emplace(authenticator_ptr->unique_id(),
                           std::move(authenticator));
@@ -98,7 +98,7 @@ void ScopedVirtualAuthenticatorEnvironment::ClearAuthenticators(
 
 std::unique_ptr<::device::FidoDiscovery>
 ScopedVirtualAuthenticatorEnvironment::CreateFidoDiscovery(
-    device::U2fTransportProtocol transport,
+    device::FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
   auto discovery = std::make_unique<VirtualFidoDiscovery>(this, transport);
   for (auto& authenticator : authenticators_) {

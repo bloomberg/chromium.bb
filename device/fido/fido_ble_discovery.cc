@@ -24,7 +24,7 @@
 namespace device {
 
 FidoBleDiscovery::FidoBleDiscovery()
-    : FidoDiscovery(U2fTransportProtocol::kBluetoothLowEnergy),
+    : FidoDiscovery(FidoTransportProtocol::kBluetoothLowEnergy),
       weak_factory_(this) {}
 FidoBleDiscovery::~FidoBleDiscovery() {
   if (adapter_)

@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/virtual_fido_device.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/blink/public/platform/modules/webauth/virtual_authenticator.mojom.h"
@@ -26,12 +26,12 @@ namespace content {
 class CONTENT_EXPORT VirtualAuthenticator
     : public webauth::test::mojom::VirtualAuthenticator {
  public:
-  explicit VirtualAuthenticator(::device::U2fTransportProtocol transport);
+  explicit VirtualAuthenticator(::device::FidoTransportProtocol transport);
   ~VirtualAuthenticator() override;
 
   void AddBinding(webauth::test::mojom::VirtualAuthenticatorRequest request);
 
-  ::device::U2fTransportProtocol transport() const { return transport_; }
+  ::device::FidoTransportProtocol transport() const { return transport_; }
   const std::string& unique_id() const { return unique_id_; }
 
   // Constructs a VirtualFidoDevice instance that will perform cryptographic
@@ -55,7 +55,7 @@ class CONTENT_EXPORT VirtualAuthenticator
   void GetUserPresence(GetUserPresenceCallback callback) override;
 
  private:
-  const ::device::U2fTransportProtocol transport_;
+  const ::device::FidoTransportProtocol transport_;
   const std::string unique_id_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
   mojo::BindingSet<webauth::test::mojom::VirtualAuthenticator> binding_set_;

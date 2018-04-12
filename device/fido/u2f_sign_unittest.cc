@@ -15,6 +15,7 @@
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
@@ -84,8 +85,8 @@ class U2fSignTest : public ::testing::Test {
     ForgeNextHidDiscovery();
     return std::make_unique<U2fSign>(
         nullptr /* connector */,
-        base::flat_set<U2fTransportProtocol>(
-            {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         std::move(registered_keys), challenge_parameter_,
         application_parameter_, base::nullopt,
         sign_callback_receiver_.callback());
@@ -103,7 +104,7 @@ class U2fSignTest : public ::testing::Test {
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
   TestSignCallback sign_callback_receiver_;
-  base::flat_set<U2fTransportProtocol> protocols_;
+  base::flat_set<FidoTransportProtocol> protocols_;
 };
 
 TEST_F(U2fSignTest, TestCreateSignApduCommand) {
@@ -507,8 +508,8 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
   ForgeNextHidDiscovery();
   auto request = std::make_unique<U2fSign>(
       nullptr /* connector */,
-      base::flat_set<U2fTransportProtocol>(
-          {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+      base::flat_set<FidoTransportProtocol>(
+          {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
       std::vector<std::vector<uint8_t>>({signing_key_handle}),
       std::vector<uint8_t>(32), primary_app_param, alt_app_param,
       sign_callback_receiver_.callback());

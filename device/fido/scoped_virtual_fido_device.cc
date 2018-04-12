@@ -20,7 +20,7 @@ class VirtualFidoDeviceDiscovery : public FidoDiscovery {
  public:
   explicit VirtualFidoDeviceDiscovery(
       scoped_refptr<VirtualFidoDevice::State> state)
-      : FidoDiscovery(U2fTransportProtocol::kUsbHumanInterfaceDevice),
+      : FidoDiscovery(FidoTransportProtocol::kUsbHumanInterfaceDevice),
         state_(std::move(state)) {}
   ~VirtualFidoDeviceDiscovery() override = default;
 
@@ -48,9 +48,9 @@ VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
 }
 
 std::unique_ptr<FidoDiscovery> ScopedVirtualFidoDevice::CreateFidoDiscovery(
-    U2fTransportProtocol transport,
+    FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
-  if (transport != U2fTransportProtocol::kUsbHumanInterfaceDevice) {
+  if (transport != FidoTransportProtocol::kUsbHumanInterfaceDevice) {
     return nullptr;
   }
   return std::make_unique<VirtualFidoDeviceDiscovery>(state_);

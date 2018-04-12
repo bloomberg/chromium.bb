@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "device/fido/fido_discovery.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -32,9 +32,9 @@ namespace test {
 //   auto* fake_ble_discovery = factory.ForgeNextBleDiscovery();
 //
 //   // Run the production code that will eventually call:
-//   //// FidoDiscovery::Create(U2fTransportProtocol::kUsbHumanInterfaceDevice)
+//   //// FidoDiscovery::Create(FidoTransportProtocol::kUsbHumanInterfaceDevice)
 //   //// hid_instance->Start();
-//   //// FidoDiscovery::Create(U2fTransportProtocol::kBluetoothLowEnergy)
+//   //// FidoDiscovery::Create(FidoTransportProtocol::kBluetoothLowEnergy)
 //   //// ble_instance->Start();
 //
 //   // Wait, i.e. spin the message loop until the fake discoveries are started.
@@ -65,7 +65,7 @@ class FakeFidoDiscovery : public FidoDiscovery,
     kAutomatic
   };
 
-  explicit FakeFidoDiscovery(U2fTransportProtocol transport,
+  explicit FakeFidoDiscovery(FidoTransportProtocol transport,
                              StartMode mode = StartMode::kManual);
   ~FakeFidoDiscovery() override;
 
@@ -115,7 +115,7 @@ class ScopedFakeFidoDiscoveryFactory
 
  protected:
   std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
-      U2fTransportProtocol transport,
+      FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
 
  private:

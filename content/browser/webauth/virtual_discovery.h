@@ -27,7 +27,7 @@ class CONTENT_EXPORT VirtualFidoDiscovery : public ::device::FidoDiscovery {
  public:
   // The |environment| must outlive this instance.
   VirtualFidoDiscovery(ScopedVirtualAuthenticatorEnvironment* environment,
-                       ::device::U2fTransportProtocol transport);
+                       ::device::FidoTransportProtocol transport);
 
   // Notifies the |environment| of this instance being destroyed.
   ~VirtualFidoDiscovery() override;

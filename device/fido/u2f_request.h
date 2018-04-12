@@ -21,7 +21,7 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "device/fido/fido_discovery.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRequest
   // TODO(https://crbug.com/769631): Remove the dependency on Connector once U2F
   // is servicified.
   U2fRequest(service_manager::Connector* connector,
-             const base::flat_set<U2fTransportProtocol>& transports,
+             const base::flat_set<FidoTransportProtocol>& transports,
              std::vector<uint8_t> application_parameter,
              std::vector<uint8_t> challenge_digest,
              std::vector<std::vector<uint8_t>> registered_keys);

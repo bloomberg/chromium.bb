@@ -27,7 +27,7 @@ class ScopedVirtualFidoDevice
 
  protected:
   std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
-      U2fTransportProtocol transport,
+      FidoTransportProtocol transport,
       ::service_manager::Connector* connector) override;
 
  private:

@@ -15,7 +15,7 @@ namespace device {
 // static
 std::unique_ptr<U2fRequest> U2fSign::TrySign(
     service_manager::Connector* connector,
-    const base::flat_set<U2fTransportProtocol>& transports,
+    const base::flat_set<FidoTransportProtocol>& transports,
     std::vector<std::vector<uint8_t>> registered_keys,
     std::vector<uint8_t> challenge_digest,
     std::vector<uint8_t> application_parameter,
@@ -31,7 +31,7 @@ std::unique_ptr<U2fRequest> U2fSign::TrySign(
 }
 
 U2fSign::U2fSign(service_manager::Connector* connector,
-                 const base::flat_set<U2fTransportProtocol>& transports,
+                 const base::flat_set<FidoTransportProtocol>& transports,
                  std::vector<std::vector<uint8_t>> registered_keys,
                  std::vector<uint8_t> challenge_digest,
                  std::vector<uint8_t> application_parameter,

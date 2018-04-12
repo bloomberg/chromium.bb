@@ -64,6 +64,7 @@ component("fido") {
     "fido_request_handler_base.h",
     "fido_task.cc",
     "fido_task.h",
+    "fido_transport_protocol.h",
     "get_assertion_request_handler.cc",
     "get_assertion_request_handler.h",
     "get_assertion_task.cc",
@@ -96,7 +97,6 @@ component("fido") {
     "u2f_request.h",
     "u2f_sign.cc",
     "u2f_sign.h",
-    "u2f_transport_protocol.h",
     "virtual_fido_device.cc",
     "virtual_fido_device.h",
   ]

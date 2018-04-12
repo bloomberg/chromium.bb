@@ -18,7 +18,7 @@ namespace test {
 
 // FakeFidoDiscovery ----------------------------------------------------------
 
-FakeFidoDiscovery::FakeFidoDiscovery(U2fTransportProtocol transport,
+FakeFidoDiscovery::FakeFidoDiscovery(FidoTransportProtocol transport,
                                      StartMode mode)
     : FidoDiscovery(transport), mode_(mode) {}
 FakeFidoDiscovery::~FakeFidoDiscovery() = default;
@@ -55,34 +55,34 @@ ScopedFakeFidoDiscoveryFactory::~ScopedFakeFidoDiscoveryFactory() = default;
 FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextHidDiscovery(
     FakeFidoDiscovery::StartMode mode) {
   next_hid_discovery_ = std::make_unique<FakeFidoDiscovery>(
-      U2fTransportProtocol::kUsbHumanInterfaceDevice, mode);
+      FidoTransportProtocol::kUsbHumanInterfaceDevice, mode);
   return next_hid_discovery_.get();
 }
 
 FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextNfcDiscovery(
     FakeFidoDiscovery::StartMode mode) {
   next_nfc_discovery_ = std::make_unique<FakeFidoDiscovery>(
-      U2fTransportProtocol::kNearFieldCommunication, mode);
+      FidoTransportProtocol::kNearFieldCommunication, mode);
   return next_nfc_discovery_.get();
 }
 
 FakeFidoDiscovery* ScopedFakeFidoDiscoveryFactory::ForgeNextBleDiscovery(
     FakeFidoDiscovery::StartMode mode) {
   next_ble_discovery_ = std::make_unique<FakeFidoDiscovery>(
-      U2fTransportProtocol::kBluetoothLowEnergy, mode);
+      FidoTransportProtocol::kBluetoothLowEnergy, mode);
   return next_ble_discovery_.get();
 }
 
 std::unique_ptr<FidoDiscovery>
 ScopedFakeFidoDiscoveryFactory::CreateFidoDiscovery(
-    U2fTransportProtocol transport,
+    FidoTransportProtocol transport,
     ::service_manager::Connector* connector) {
   switch (transport) {
-    case U2fTransportProtocol::kUsbHumanInterfaceDevice:
+    case FidoTransportProtocol::kUsbHumanInterfaceDevice:
       return std::move(next_hid_discovery_);
-    case U2fTransportProtocol::kNearFieldCommunication:
+    case FidoTransportProtocol::kNearFieldCommunication:
       return std::move(next_nfc_discovery_);
-    case U2fTransportProtocol::kBluetoothLowEnergy:
+    case FidoTransportProtocol::kBluetoothLowEnergy:
       return std::move(next_ble_discovery_);
   }
   NOTREACHED();

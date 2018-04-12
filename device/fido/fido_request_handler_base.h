@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
 #include "device/fido/fido_discovery.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
 
   FidoRequestHandlerBase(
       service_manager::Connector* connector,
-      const base::flat_set<U2fTransportProtocol>& transports);
+      const base::flat_set<FidoTransportProtocol>& transports);
   ~FidoRequestHandlerBase() override;
 
   // Triggers cancellation of all per-device FidoTasks, except for the device

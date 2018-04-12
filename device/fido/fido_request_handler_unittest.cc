@@ -14,9 +14,9 @@
 #include "device/fido/fido_request_handler.h"
 #include "device/fido/fido_task.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/u2f_transport_protocol.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,7 +85,7 @@ class FakeFidoTask : public FidoTask {
 
 class FakeFidoRequestHandler : public FidoRequestHandler<std::vector<uint8_t>> {
  public:
-  FakeFidoRequestHandler(const base::flat_set<U2fTransportProtocol>& protocols,
+  FakeFidoRequestHandler(const base::flat_set<FidoTransportProtocol>& protocols,
                          FakeHandlerCallback callback)
       : FidoRequestHandler(nullptr /* connector */,
                            protocols,
@@ -129,8 +129,8 @@ class FidoRequestHandlerTest : public ::testing::Test {
   std::unique_ptr<FakeFidoRequestHandler> CreateFakeHandler() {
     ForgeNextHidDiscovery();
     return std::make_unique<FakeFidoRequestHandler>(
-        base::flat_set<U2fTransportProtocol>(
-            {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         cb_.callback());
   }
 

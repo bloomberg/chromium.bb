@@ -14,6 +14,7 @@
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -34,7 +35,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
  public:
   GetAssertionRequestHandler(
       service_manager::Connector* connector,
-      const base::flat_set<U2fTransportProtocol>& protocols,
+      const base::flat_set<FidoTransportProtocol>& protocols,
       CtapGetAssertionRequest request_parameter,
       SignResponseCallback completion_callback);
   ~GetAssertionRequestHandler() override;

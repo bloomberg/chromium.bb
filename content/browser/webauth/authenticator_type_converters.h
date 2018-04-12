@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "device/fido/authenticator_selection_criteria.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
 #include "device/fido/public_key_credential_rp_entity.h"
 #include "device/fido/public_key_credential_user_entity.h"
-#include "device/fido/u2f_transport_protocol.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/blink/public/platform/modules/webauth/authenticator.mojom.h"
 
@@ -22,9 +22,9 @@
 namespace mojo {
 
 template <>
-struct TypeConverter<::device::U2fTransportProtocol,
+struct TypeConverter<::device::FidoTransportProtocol,
                      ::webauth::mojom::AuthenticatorTransport> {
-  static ::device::U2fTransportProtocol Convert(
+  static ::device::FidoTransportProtocol Convert(
       const ::webauth::mojom::AuthenticatorTransport& input);
 };
 

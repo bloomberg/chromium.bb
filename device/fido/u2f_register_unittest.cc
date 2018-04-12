@@ -19,6 +19,7 @@
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
@@ -181,8 +182,8 @@ class U2fRegisterTest : public ::testing::Test {
     ForgeNextHidDiscovery();
     return std::make_unique<U2fRegister>(
         nullptr /* connector */,
-        base::flat_set<U2fTransportProtocol>(
-            {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}),
         registered_keys,
         u2f_parsing_utils::Materialize(test_data::kChallengeParameter),
         u2f_parsing_utils::Materialize(test_data::kApplicationParameter),
@@ -201,7 +202,7 @@ class U2fRegisterTest : public ::testing::Test {
   std::vector<uint8_t> challenge_parameter_ =
       u2f_parsing_utils::Materialize(test_data::kChallengeParameter);
   std::vector<std::vector<uint8_t>> key_handles_;
-  base::flat_set<U2fTransportProtocol> protocols_;
+  base::flat_set<FidoTransportProtocol> protocols_;
   test::ScopedFakeFidoDiscoveryFactory scoped_fake_discovery_factory_;
   test::FakeFidoDiscovery* discovery_;
   TestRegisterCallback register_callback_receiver_;
@@ -761,8 +762,8 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
     TestRegisterCallback cb;
     auto request = std::make_unique<U2fRegister>(
         nullptr /* connector */,
-        base::flat_set<U2fTransportProtocol>(
-            {U2fTransportProtocol::kUsbHumanInterfaceDevice}) /* transports */,
+        base::flat_set<FidoTransportProtocol>(
+            {FidoTransportProtocol::kUsbHumanInterfaceDevice}) /* transports */,
         key_handles_, challenge_parameter_, application_parameter_,
         individual_attestation, cb.callback());
     request->Start();

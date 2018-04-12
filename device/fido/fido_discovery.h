@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "device/fido/u2f_transport_protocol.h"
+#include "device/fido/fido_transport_protocol.h"
 
 namespace service_manager {
 class Connector;
@@ -57,10 +57,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   // Factory function to construct an instance that discovers authenticators on
   // the given |transport| protocol.
   //
-  // U2fTransportProtocol::kUsbHumanInterfaceDevice requires specifying a valid
+  // FidoTransportProtocol::kUsbHumanInterfaceDevice requires specifying a valid
   // |connector| on Desktop, and is not valid on Android.
   static std::unique_ptr<FidoDiscovery> Create(
-      U2fTransportProtocol transport,
+      FidoTransportProtocol transport,
       ::service_manager::Connector* connector);
 
   virtual ~FidoDiscovery();
@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
     observer_ = observer;
   }
 
-  U2fTransportProtocol transport() const { return transport_; }
+  FidoTransportProtocol transport() const { return transport_; }
   bool is_start_requested() const { return state_ != State::kIdle; }
   bool is_running() const { return state_ == State::kRunning; }
 
@@ -84,7 +84,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   const FidoDevice* GetDevice(base::StringPiece device_id) const;
 
  protected:
-  FidoDiscovery(U2fTransportProtocol transport);
+  FidoDiscovery(FidoTransportProtocol transport);
 
   void NotifyDiscoveryStarted(bool success);
   void NotifyDeviceAdded(FidoDevice* device);
@@ -110,7 +110,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscovery {
   using FactoryFuncPtr = decltype(&Create);
   static FactoryFuncPtr g_factory_func_;
 
-  const U2fTransportProtocol transport_;
+  const FidoTransportProtocol transport_;
   State state_ = State::kIdle;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDiscovery);
@@ -132,13 +132,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ScopedFidoDiscoveryFactory {
 
  protected:
   virtual std::unique_ptr<FidoDiscovery> CreateFidoDiscovery(
-      U2fTransportProtocol transport,
+      FidoTransportProtocol transport,
       ::service_manager::Connector* connector) = 0;
 
  private:
   static std::unique_ptr<FidoDiscovery>
   ForwardCreateFidoDiscoveryToCurrentFactory(
-      U2fTransportProtocol transport,
+      FidoTransportProtocol transport,
       ::service_manager::Connector* connector);
 
   static ScopedFidoDiscoveryFactory* g_current_factory;

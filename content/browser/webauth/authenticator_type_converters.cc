@@ -21,19 +21,19 @@ using ::webauth::mojom::AuthenticatorAttachment;
 using ::webauth::mojom::UserVerificationRequirement;
 
 // static
-::device::U2fTransportProtocol
-TypeConverter<::device::U2fTransportProtocol, AuthenticatorTransport>::Convert(
+::device::FidoTransportProtocol
+TypeConverter<::device::FidoTransportProtocol, AuthenticatorTransport>::Convert(
     const AuthenticatorTransport& input) {
   switch (input) {
     case AuthenticatorTransport::USB:
-      return ::device::U2fTransportProtocol::kUsbHumanInterfaceDevice;
+      return ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice;
     case AuthenticatorTransport::NFC:
-      return ::device::U2fTransportProtocol::kNearFieldCommunication;
+      return ::device::FidoTransportProtocol::kNearFieldCommunication;
     case AuthenticatorTransport::BLE:
-      return ::device::U2fTransportProtocol::kBluetoothLowEnergy;
+      return ::device::FidoTransportProtocol::kBluetoothLowEnergy;
   }
   NOTREACHED();
-  return ::device::U2fTransportProtocol::kUsbHumanInterfaceDevice;
+  return ::device::FidoTransportProtocol::kUsbHumanInterfaceDevice;
 }
 
 // static
