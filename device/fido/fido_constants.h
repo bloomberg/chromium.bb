@@ -203,6 +203,15 @@ enum class U2fApduInstruction : uint8_t {
 
 enum class CredentialType { kPublicKey };
 
+// User verification constraint passed on from the relying party as a parameter
+// for AuthenticatorSelectionCriteria and for CtapGetAssertion request.
+// https://w3c.github.io/webauthn/#enumdef-userverificationrequirement
+enum class UserVerificationRequirement {
+  kRequired,
+  kPreferred,
+  kDiscouraged,
+};
+
 // Parameters for fake U2F registration used to check for user presence.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const std::array<uint8_t, 32> kBogusAppParam;

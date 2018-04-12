@@ -85,25 +85,20 @@ TypeConverter<std::vector<::device::PublicKeyCredentialDescriptor>,
 }
 
 // static
-::device::AuthenticatorSelectionCriteria::UserVerificationRequirement
-TypeConverter<
-    ::device::AuthenticatorSelectionCriteria::UserVerificationRequirement,
-    UserVerificationRequirement>::
+::device::UserVerificationRequirement
+TypeConverter<::device::UserVerificationRequirement,
+              UserVerificationRequirement>::
     Convert(const ::webauth::mojom::UserVerificationRequirement& input) {
   switch (input) {
     case UserVerificationRequirement::PREFERRED:
-      return ::device::AuthenticatorSelectionCriteria::
-          UserVerificationRequirement::kPreferred;
+      return ::device::UserVerificationRequirement::kPreferred;
     case UserVerificationRequirement::REQUIRED:
-      return ::device::AuthenticatorSelectionCriteria::
-          UserVerificationRequirement::kRequired;
+      return ::device::UserVerificationRequirement::kRequired;
     case UserVerificationRequirement::DISCOURAGED:
-      return ::device::AuthenticatorSelectionCriteria::
-          UserVerificationRequirement::kDiscouraged;
+      return ::device::UserVerificationRequirement::kDiscouraged;
   }
   NOTREACHED();
-  return ::device::AuthenticatorSelectionCriteria::UserVerificationRequirement::
-      kPreferred;
+  return ::device::UserVerificationRequirement::kPreferred;
 }
 
 // static
@@ -136,8 +131,8 @@ TypeConverter<::device::AuthenticatorSelectionCriteria,
           ::device::AuthenticatorSelectionCriteria::AuthenticatorAttachment>(
           input->authenticator_attachment),
       input->require_resident_key,
-      ConvertTo<::device::AuthenticatorSelectionCriteria::
-                    UserVerificationRequirement>(input->user_verification));
+      ConvertTo<::device::UserVerificationRequirement>(
+          input->user_verification));
 }
 
 // static

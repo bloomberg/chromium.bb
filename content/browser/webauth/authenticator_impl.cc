@@ -237,9 +237,9 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
           options->allow_credentials);
 
   request_parameter.SetAllowList(std::move(allowed_list));
-  request_parameter.SetUserVerificationRequired(
-      options->user_verification ==
-      webauth::mojom::UserVerificationRequirement::REQUIRED);
+  request_parameter.SetUserVerification(
+      mojo::ConvertTo<device::UserVerificationRequirement>(
+          options->user_verification));
   return request_parameter;
 }
 

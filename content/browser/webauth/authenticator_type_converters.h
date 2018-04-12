@@ -62,11 +62,10 @@ struct TypeConverter<
 };
 
 template <>
-struct TypeConverter<
-    ::device::AuthenticatorSelectionCriteria::UserVerificationRequirement,
-    ::webauth::mojom::UserVerificationRequirement> {
-  static ::device::AuthenticatorSelectionCriteria::UserVerificationRequirement
-  Convert(const ::webauth::mojom::UserVerificationRequirement& input);
+struct TypeConverter<::device::UserVerificationRequirement,
+                     ::webauth::mojom::UserVerificationRequirement> {
+  static ::device::UserVerificationRequirement Convert(
+      const ::webauth::mojom::UserVerificationRequirement& input);
 };
 
 template <>
