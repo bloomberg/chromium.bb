@@ -604,6 +604,7 @@
       'desc': '''Configure Safe Browsing related policies.''',
       'policies': [
         'SafeBrowsingEnabled',
+        'SafeBrowsingExtendedReportingEnabled',
         'SafeBrowsingExtendedReportingOptInAllowed',
         'SafeBrowsingWhitelistDomains',
         'PasswordProtectionWarningTrigger',
@@ -11366,7 +11367,7 @@
           'caption': '''Password protection warning is triggered by password reuse on phishing page''',
         },
       ],
-      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11406,7 +11407,7 @@
           'caption': '''Password protection at-risk account flagging is triggered by password reuse on phishing page''',
         },
       ],
-      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11502,7 +11503,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11527,7 +11528,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11548,7 +11549,7 @@
       'name': 'PasswordProtectionChangePasswordURL',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
