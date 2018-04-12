@@ -6,6 +6,7 @@
 #define DEVICE_FIDO_AUTHENTICATOR_SELECTION_CRITERIA_H_
 
 #include "base/component_export.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -18,12 +19,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSelectionCriteria {
     kAny,
     kPlatform,
     kCrossPlatform,
-  };
-
-  enum class UserVerificationRequirement {
-    kRequired,
-    kPreferred,
-    kDiscouraged,
   };
 
   AuthenticatorSelectionCriteria();

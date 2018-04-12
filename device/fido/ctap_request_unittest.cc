@@ -185,11 +185,11 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
       // "public-key"
       0x70, 0x75, 0x62, 0x6C, 0x69, 0x63, 0x2D, 0x6B, 0x65, 0x79,
 
-      0x07,        // unsigned(7) - options
+      0x05,        // unsigned(5) - options
       0xa2,        // map(2)
       0x62,        // text(2)
       0x75, 0x70,  // "up"
-      0xf5,        // True(21)
+      0xf4,        // False(20)
       0x62,        // text(2)
       0x75, 0x76,  // "uv"
       0xf5         // True(21)
@@ -219,8 +219,8 @@ TEST(CTAPRequestTest, TestConstructGetAssertionRequest) {
        0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03}));
 
   get_assertion_req.SetAllowList(std::move(allowed_list))
-      .SetUserPresenceRequired(true)
-      .SetUserVerificationRequired(true);
+      .SetUserPresenceRequired(false)
+      .SetUserVerification(UserVerificationRequirement::kRequired);
 
   auto serialized_data = get_assertion_req.EncodeAsCBOR();
   EXPECT_THAT(serialized_data, ::testing::ElementsAreArray(kSerializedRequest));

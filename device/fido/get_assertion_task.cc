@@ -46,6 +46,12 @@ void GetAssertionTask::StartTask() {
 }
 
 void GetAssertionTask::GetAssertion() {
+  if (!CheckUserVerificationCompatible()) {
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                             base::nullopt);
+    return;
+  }
+
   device()->DeviceTransact(
       request_.EncodeAsCBOR(),
       base::BindOnce(&GetAssertionTask::OnCtapGetAssertionResponseReceived,
@@ -124,6 +130,35 @@ void GetAssertionTask::OnCtapGetAssertionResponseReceived(
   }
 
   std::move(callback_).Run(response_code, std::move(parsed_response));
+}
+
+bool GetAssertionTask::CheckUserVerificationCompatible() {
+  DCHECK(device()->device_info());
+  const auto uv_availability =
+      device()->device_info()->options().user_verification_availability();
+
+  switch (request_.user_verification()) {
+    case UserVerificationRequirement::kRequired:
+      return uv_availability ==
+             AuthenticatorSupportedOptions::UserVerificationAvailability::
+                 kSupportedAndConfigured;
+
+    case UserVerificationRequirement::kDiscouraged:
+      return true;
+
+    case UserVerificationRequirement::kPreferred:
+      if (uv_availability ==
+          AuthenticatorSupportedOptions::UserVerificationAvailability::
+              kSupportedAndConfigured) {
+        request_.SetUserVerification(UserVerificationRequirement::kRequired);
+      } else {
+        request_.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      }
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace device

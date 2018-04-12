@@ -70,8 +70,6 @@ void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(
 bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {
   using AuthenticatorAttachment =
       AuthenticatorSelectionCriteria::AuthenticatorAttachment;
-  using UvRequirement =
-      AuthenticatorSelectionCriteria::UserVerificationRequirement;
   using UvAvailability =
       AuthenticatorSupportedOptions::UserVerificationAvailability;
 
@@ -81,7 +79,7 @@ bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {
   if (!device_info) {
     return !authenticator_selection_criteria_.require_resident_key() &&
            authenticator_selection_criteria_.user_verification_requirement() !=
-               UvRequirement::kRequired &&
+               UserVerificationRequirement::kRequired &&
            authenticator_selection_criteria_.authenticator_attachement() !=
                AuthenticatorAttachment::kPlatform;
   }
@@ -101,8 +99,14 @@ bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {
     return false;
   }
 
-  return authenticator_selection_criteria_.user_verification_requirement() !=
-             UvRequirement::kRequired ||
+  const auto user_verification_requirement =
+      authenticator_selection_criteria_.user_verification_requirement();
+  if (user_verification_requirement == UserVerificationRequirement::kRequired) {
+    request_parameter_.SetUserVerificationRequired(true);
+  }
+
+  return user_verification_requirement !=
+             UserVerificationRequirement::kRequired ||
          options.user_verification_availability() ==
              UvAvailability::kSupportedAndConfigured;
 }

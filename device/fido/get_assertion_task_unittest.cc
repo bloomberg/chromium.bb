@@ -150,4 +150,26 @@ TEST_F(FidoGetAssertionTaskTest, TestIncorrectGetAssertionResponse) {
   EXPECT_FALSE(get_assertion_callback_receiver().value());
 }
 
+TEST_F(FidoGetAssertionTaskTest, TestIncompatibleUserVerificationSetting) {
+  auto device = std::make_unique<MockFidoDevice>();
+
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponseWithoutUvSupport);
+
+  auto request = CtapGetAssertionRequest(
+      kRpId, u2f_parsing_utils::Materialize(kClientDataHash));
+  request.SetUserVerification(UserVerificationRequirement::kRequired);
+
+  auto task = std::make_unique<GetAssertionTask>(
+      device.get(), std::move(request),
+      get_assertion_callback_receiver().callback());
+
+  get_assertion_callback_receiver().WaitForCallback();
+  EXPECT_EQ(device->supported_protocol(), ProtocolVersion::kCtap);
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrOther,
+            get_assertion_callback_receiver().status());
+  EXPECT_FALSE(get_assertion_callback_receiver().value());
+}
+
 }  // namespace device

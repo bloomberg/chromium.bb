@@ -59,11 +59,22 @@ std::vector<uint8_t> CtapMakeCredentialRequest::EncodeAsCBOR() const {
   }
 
   cbor::CBORValue::MapValue option_map;
-  option_map[cbor::CBORValue(kResidentKeyMapKey)] =
-      cbor::CBORValue(resident_key_supported_);
-  option_map[cbor::CBORValue(kUserVerificationMapKey)] =
-      cbor::CBORValue(user_verification_required_);
-  cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
+
+  // Resident keys are not supported by default.
+  if (resident_key_supported_) {
+    option_map[cbor::CBORValue(kResidentKeyMapKey)] =
+        cbor::CBORValue(resident_key_supported_);
+  }
+
+  // User verification is not required by default.
+  if (user_verification_required_) {
+    option_map[cbor::CBORValue(kUserVerificationMapKey)] =
+        cbor::CBORValue(user_verification_required_);
+  }
+
+  if (!option_map.empty()) {
+    cbor_map[cbor::CBORValue(7)] = cbor::CBORValue(std::move(option_map));
+  }
 
   auto serialized_param =
       cbor::CBORWriter::Write(cbor::CBORValue(std::move(cbor_map)));
