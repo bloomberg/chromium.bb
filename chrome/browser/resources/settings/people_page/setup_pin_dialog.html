@@ -55,14 +55,14 @@
         close-text="$i18n{close}">
       <div slot="title">[[getTitleMessage_(isConfirmStep_)]]</div>
       <div slot="body">
-        <!-- Pin keyboard -->
+        <!-- PIN keyboard -->
         <div id="pinKeyboardDiv" class="settings-box continuation">
           <pin-keyboard id="pinKeyboard" on-pin-change="onPinChange_"
               on-submit="onPinSubmit_" value="{{pinKeyboardValue_}}"
               has-error$="[[hasError_(problemMessage_, problemClass_)]]">
             <!-- Warning/error; only shown if title is hidden. -->
             <div id="problemDiv" class$="[[problemClass_]]"
-                hidden="[[!problemMessage_]]" problem>
+                invisible$="[[!problemMessage_]]" problem>
               <iron-icon icon="cr:error-outline"></iron-icon>
               <span id="problemMessage">[[problemMessage_]]</span>
             </div>
@@ -73,7 +73,6 @@
         <paper-button class="cancel-button" on-click="onCancelTap_">
           $i18n{cancel}
         </paper-button>
-
         <paper-button class="action-button" on-click="onPinSubmit_"
             disabled$="[[!enableSubmit_]]">
           <span>[[getContinueMessage_(isConfirmStep_)]]</span>

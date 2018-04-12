@@ -197,6 +197,17 @@ Polymer({
   },
 
   /**
+   * Transfers focus to the input. Called when a non button element on the
+   * PIN button area is clicked to prevent focus from leaving the input.
+   */
+  focusInput_: function() {
+    // Focus the input and place the selected region to its exact previous
+    // location, as this function will not be called by something that will also
+    // modify the input value.
+    this.focus(this.selectionStart_, this.selectionEnd_);
+  },
+
+  /**
    * Called when a keypad number has been tapped.
    * @param {Event} event The event object.
    * @private
@@ -372,7 +383,7 @@ Polymer({
    * @private
    */
   hasInput_: function(value) {
-    return value.length > 0;
+    return value.length > 0 && this.selectionStart_ > 0;
   },
 
   /**

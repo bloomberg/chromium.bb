@@ -84,9 +84,11 @@ Polymer({
   attached: function() {
     this.writeUma_(LockScreenProgress.START_SCREEN_LOCK);
     this.$.dialog.showModal();
+    // This needs to occur at the next paint otherwise the password input will
+    // not receive focus.
     this.async(() => {
       this.$.passwordInput.focus();
-    });
+    }, 1);
   },
 
   /** @private */
