@@ -2146,7 +2146,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
             web_contents->GetLoadStateHost());
 }
 
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, PausePageScheduledTasks) {
+// Disabled due to flakes on Linux. https://crbug.com/832191
+#if defined(OS_LINUX)
+#define MAYBE_PausePageScheduledTasks DISABLED_PausePageScheduledTasks
+#else
+#define MAYBE_PausePageScheduledTasks PausePageScheduledTasks
+#endif
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       MAYBE_PausePageScheduledTasks) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL test_url = embedded_test_server()->GetURL("/pause_schedule_task.html");
