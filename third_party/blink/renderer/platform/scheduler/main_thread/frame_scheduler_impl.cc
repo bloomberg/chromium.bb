@@ -305,6 +305,9 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
     case TaskType::kInternalIPC:
+    // The TaskType of Inspector tasks needs to be unpausable because they need
+    // to run even on a paused page.
+    case TaskType::kInternalInspector:
       return TaskRunnerImpl::Create(UnpausableTaskQueue(), type);
     case TaskType::kDeprecatedNone:
     case TaskType::kCount:

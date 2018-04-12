@@ -167,7 +167,10 @@ enum class TaskType : unsigned {
   // Tasks related to user interaction like clicking or inputting texts.
   kInternalUserInteraction = 32,
 
-  kCount = 33,
+  // Tasks related to the inspector.
+  kInternalInspector = 33,
+
+  kCount = 34,
 };
 
 }  // namespace blink

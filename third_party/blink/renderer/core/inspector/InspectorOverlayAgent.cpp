@@ -223,9 +223,10 @@ InspectorOverlayAgent::InspectorOverlayAgent(
       draw_view_size_(false),
       resize_timer_active_(false),
       omit_tooltip_(false),
-      timer_(frame_impl->GetFrame()->GetTaskRunner(TaskType::kUnspecedTimer),
-             this,
-             &InspectorOverlayAgent::OnTimer),
+      timer_(
+          frame_impl->GetFrame()->GetTaskRunner(TaskType::kInternalInspector),
+          this,
+          &InspectorOverlayAgent::OnTimer),
       suspended_(false),
       disposed_(false),
       show_reloading_blanket_(false),

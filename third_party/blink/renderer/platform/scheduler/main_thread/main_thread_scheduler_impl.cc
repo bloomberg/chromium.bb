@@ -179,6 +179,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalIPC";
     case TaskType::kInternalUserInteraction:
       return "InternalUserInteraction";
+    case TaskType::kInternalInspector:
+      return "InternalInspector";
     case TaskType::kCount:
       return "Count";
   }
