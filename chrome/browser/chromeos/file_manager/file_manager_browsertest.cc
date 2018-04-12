@@ -157,7 +157,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
         TestParameter(IN_GUEST_MODE, "renameFileDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
+
+        // Test is disabled due to flakiness: https://crbug.com/832192
+        // TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
+
         TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
         TestParameter(IN_GUEST_MODE, "renameNewDirectoryDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads"),
