@@ -34,12 +34,6 @@ const base::Feature kEnableManualFallbacksFillingStandalone = {
     "EnableManualFallbacksFillingStandalone",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable that an omnibox icon is shown when the user types into a password
-// field. When the user clicks on the icon, a password save/update bubble is
-// shown.
-const base::Feature kManualSaving = {"ManualSaving",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable a context menu item in the password field that allows the user
 // to manually enforce saving of their password.
 const base::Feature kPasswordForceSaving = {
