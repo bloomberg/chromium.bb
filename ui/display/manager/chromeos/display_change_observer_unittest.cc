@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/fake_display_snapshot.h"

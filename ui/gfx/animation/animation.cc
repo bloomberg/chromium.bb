@@ -4,7 +4,6 @@
 
 #include "ui/gfx/animation/animation.h"
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/gfx/animation/animation_container.h"
 #include "ui/gfx/animation/animation_delegate.h"

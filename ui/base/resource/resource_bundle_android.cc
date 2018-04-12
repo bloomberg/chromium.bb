@@ -8,7 +8,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "jni/ResourceBundle_jni.h"
 #include "ui/base/l10n/l10n_util.h"

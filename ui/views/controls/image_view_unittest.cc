@@ -5,7 +5,6 @@
 #include "ui/views/controls/image_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"

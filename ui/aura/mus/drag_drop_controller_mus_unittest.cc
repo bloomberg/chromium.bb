@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"

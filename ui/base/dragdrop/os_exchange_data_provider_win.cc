@@ -18,7 +18,6 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"

@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "base/memory/ptr_util.h"
 
 #include "base/logging.h"
 #include "ui/gfx/animation/tween.h"

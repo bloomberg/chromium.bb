@@ -4,7 +4,6 @@
 
 #include "ui/wm/core/window_util.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"

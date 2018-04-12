@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/app_list_view_delegate.h"

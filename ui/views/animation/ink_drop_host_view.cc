@@ -4,7 +4,6 @@
 
 #include "ui/views/animation/ink_drop_host_view.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/events/event.h"
 #include "ui/events/scoped_target_handler.h"
 #include "ui/gfx/color_palette.h"

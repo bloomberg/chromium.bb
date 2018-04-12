@@ -4,7 +4,6 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_builder_mac.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_mac.h"
 
 namespace ui {

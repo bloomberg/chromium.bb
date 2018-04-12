@@ -7,7 +7,6 @@
 #include <glib.h>
 #include "ui/gfx/x/x11.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace ui {
 

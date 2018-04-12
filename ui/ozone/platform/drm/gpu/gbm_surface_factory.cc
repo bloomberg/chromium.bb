@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/buffer_format_util.h"

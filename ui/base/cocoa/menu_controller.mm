@@ -7,7 +7,6 @@
 #include "base/cancelable_callback.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/accelerators/accelerator.h"

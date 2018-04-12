@@ -4,7 +4,6 @@
 
 #include "ui/events/ozone/device/device_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 
 #if defined(USE_UDEV)

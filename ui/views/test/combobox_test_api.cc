@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/menu/menu_runner.h"

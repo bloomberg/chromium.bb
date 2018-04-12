@@ -9,7 +9,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/image/image_skia.h"

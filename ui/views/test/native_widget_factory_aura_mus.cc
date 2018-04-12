@@ -4,7 +4,6 @@
 
 #include "ui/views/test/native_widget_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"

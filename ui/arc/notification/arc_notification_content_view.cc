@@ -6,7 +6,6 @@
 
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
-#include "base/memory/ptr_util.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/accessibility/ax_node_data.h"

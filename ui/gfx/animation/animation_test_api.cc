@@ -4,7 +4,6 @@
 
 #include "ui/gfx/animation/animation_test_api.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/gfx/animation/animation.h"
 

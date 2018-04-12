@@ -5,7 +5,6 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_flags.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"

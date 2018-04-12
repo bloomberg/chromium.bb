@@ -4,7 +4,6 @@
 
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 
 #if defined(USE_X11)

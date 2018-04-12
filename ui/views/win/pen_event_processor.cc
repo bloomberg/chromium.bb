@@ -4,7 +4,6 @@
 
 #include "pen_event_processor.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/events/event_utils.h"
 

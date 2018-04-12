@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/i18n/break_iterator.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

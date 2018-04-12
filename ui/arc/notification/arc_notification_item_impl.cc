@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/shelf/shelf_constants.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/arc/notification/arc_notification_delegate.h"

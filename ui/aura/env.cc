@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"

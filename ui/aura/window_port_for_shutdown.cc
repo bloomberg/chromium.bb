@@ -4,7 +4,6 @@
 
 #include "ui/aura/window_port_for_shutdown.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "ui/aura/window.h"
 

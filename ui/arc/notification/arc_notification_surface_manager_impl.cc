@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/exo/notification_surface.h"
 #include "ui/arc/notification/arc_notification_surface_impl.h"
 

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_local.h"
 #include "ui/events/platform/platform_event_dispatcher.h"

@@ -4,7 +4,6 @@
 
 #include "ui/aura/mus/client_surface_embedder.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/dip_util.h"
 

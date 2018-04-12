@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/memory/ptr_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/nine_image_painter.h"
 

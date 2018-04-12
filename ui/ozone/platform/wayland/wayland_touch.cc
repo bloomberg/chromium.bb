@@ -8,7 +8,6 @@
 #include <wayland-client.h>
 
 #include "base/files/scoped_file.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/ui_features.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"

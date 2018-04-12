@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/files/platform_file.h"
-#include "base/memory/ptr_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/point.h"

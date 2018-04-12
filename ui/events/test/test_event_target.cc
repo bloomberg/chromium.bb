@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "ui/events/event.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/event_targeter.h"

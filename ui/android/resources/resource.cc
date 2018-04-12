@@ -4,7 +4,6 @@
 
 #include "ui/android/resources/resource.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_usage_estimator.h"
 
 namespace ui {

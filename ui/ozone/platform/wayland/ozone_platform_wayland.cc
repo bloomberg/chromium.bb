@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ui_features.h"
 #include "ui/display/manager/fake_display_delegate.h"

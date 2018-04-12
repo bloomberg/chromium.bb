@@ -4,7 +4,6 @@
 
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
 
-#include "base/memory/ptr_util.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/test/mus/test_window_manager_client.h"
 #include "ui/aura/test/mus/test_window_tree.h"

@@ -5,7 +5,6 @@
 #include "ui/views/layout/layout_provider.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/style/typography.h"

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/ui/common/task_runner_test_base.h"

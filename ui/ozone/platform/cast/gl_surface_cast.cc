@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/cast/gl_surface_cast.h"
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"

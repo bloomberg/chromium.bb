@@ -5,7 +5,6 @@
 #include "ui/views/painter.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_owner.h"

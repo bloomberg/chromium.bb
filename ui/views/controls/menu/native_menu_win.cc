@@ -5,7 +5,6 @@
 #include "ui/views/controls/menu/native_menu_win.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"

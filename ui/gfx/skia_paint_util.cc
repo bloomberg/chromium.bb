@@ -4,7 +4,6 @@
 
 #include "ui/gfx/skia_paint_util.h"
 
-#include "base/memory/ptr_util.h"
 #include "cc/paint/paint_image_builder.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkMaskFilter.h"
