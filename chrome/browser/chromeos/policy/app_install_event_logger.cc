@@ -260,7 +260,7 @@ void AppInstallEventLogger::OnComplianceReportReceived(
   SetPref(arc::prefs::kArcPushInstallAppsPending, current_pending);
 
   if (!current_pending.empty()) {
-    UpdateCollector({} /* added */, removed);
+    UpdateCollector(current_pending);
   } else {
     StopCollector();
   }
@@ -290,13 +290,12 @@ void AppInstallEventLogger::SetPref(const std::string& pref_name,
 }
 
 void AppInstallEventLogger::UpdateCollector(
-    const std::set<std::string>& added,
-    const std::set<std::string>& removed) {
+    const std::set<std::string>& pending) {
   if (!log_collector_) {
     log_collector_ =
-        std::make_unique<AppInstallEventLogCollector>(this, profile_, added);
+        std::make_unique<AppInstallEventLogCollector>(this, profile_, pending);
   } else {
-    log_collector_->OnPendingPackagesChanged(added, removed);
+    log_collector_->OnPendingPackagesChanged(pending);
   }
 }
 
@@ -329,11 +328,9 @@ void AppInstallEventLogger::EvaluatePolicy(const policy::PolicyMap& policy,
   SetPref(arc::prefs::kArcPushInstallAppsPending, current_pending);
 
   if (!current_pending.empty()) {
+    UpdateCollector(current_pending);
     if (initial) {
-      UpdateCollector(current_pending /* added */, {} /* removed */);
       log_collector_->AddLoginEvent();
-    } else {
-      UpdateCollector(added, removed);
     }
   } else {
     StopCollector();

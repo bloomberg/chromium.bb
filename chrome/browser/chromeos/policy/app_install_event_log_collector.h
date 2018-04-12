@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/arc/common/policy.mojom.h"
 #include "net/base/network_change_notifier.h"
@@ -30,7 +31,8 @@ namespace policy {
 class AppInstallEventLogCollector
     : public chromeos::PowerManagerClient::Observer,
       public arc::ArcPolicyBridge::Observer,
-      public net::NetworkChangeNotifier::NetworkChangeObserver {
+      public net::NetworkChangeNotifier::NetworkChangeObserver,
+      public ArcAppListPrefs::Observer {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
   class Delegate {
@@ -62,8 +64,7 @@ class AppInstallEventLogCollector
   ~AppInstallEventLogCollector() override;
 
   // Called whenever the list of pending app-install requests changes.
-  void OnPendingPackagesChanged(const std::set<std::string>& added,
-                                const std::set<std::string>& removed);
+  void OnPendingPackagesChanged(const std::set<std::string>& pending_packages);
 
   // Called in case of login and pending apps.
   void AddLoginEvent();
@@ -88,12 +89,20 @@ class AppInstallEventLogCollector
                         const std::string& package_name,
                         arc::mojom::InstallErrorReason reason) override;
 
+  // ArcAppListPrefs::Observer:
+  void OnInstallationStarted(const std::string& package_name) override;
+  void OnInstallationFinished(const std::string& package_name,
+                              bool success) override;
+
  private:
   Delegate* const delegate_;
   Profile* const profile_;
 
   // Whether the device is currently online.
   bool online_ = false;
+
+  // Set of apps whose push-install is currently pending.
+  std::set<std::string> pending_packages_;
 
   DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogCollector);
 };
