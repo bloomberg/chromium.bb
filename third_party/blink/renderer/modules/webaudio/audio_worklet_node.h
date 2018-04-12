@@ -84,8 +84,7 @@ class AudioWorkletHandler final : public AudioHandler {
   // method or the value of |tail_time_|.
   bool RequiresTailProcessing() const { return true; }
 
-  // A reference to the main thread task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 };
 
 class AudioWorkletNode final : public AudioNode,

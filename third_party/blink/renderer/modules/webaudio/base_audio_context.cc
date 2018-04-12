@@ -1006,7 +1006,9 @@ void BaseAudioContext::NotifyWorkletIsReady() {
   DCHECK(IsMainThread());
   DCHECK(audioWorklet()->IsReady());
 
-  worklet_backing_worker_thread_ =
+  // At this point, the WorkletGlobalScope must be ready so it is safe to keep
+  // the reference to the AudioWorkletThread for the future worklet operation.
+  audio_worklet_thread_ =
       audioWorklet()->GetMessagingProxy()->GetBackingWorkerThread();
 
   // If the context is running or suspended, restart the destination to switch
@@ -1020,27 +1022,12 @@ void BaseAudioContext::NotifyWorkletIsReady() {
 void BaseAudioContext::UpdateWorkletGlobalScopeOnRenderingThread() {
   DCHECK(!IsMainThread());
 
-  // Only if the worklet is properly initialized and ready.
-  if (worklet_backing_worker_thread_) {
+  if (audio_worklet_thread_) {
     AudioWorkletGlobalScope* global_scope =
-        ToAudioWorkletGlobalScope(
-              worklet_backing_worker_thread_->GlobalScope());
-
-    // When BaseAudioContext is being torn down, AudioWorkletGlobalScope might
-    // be already gone at this point because it's destroyed on the main thread
-    // but the audio thread may not have stopped. So we check |global_scope|
-    // before we update it.
-    if (global_scope) {
-      global_scope->SetCurrentFrame(CurrentSampleFrame());
-    }
+        ToAudioWorkletGlobalScope(audio_worklet_thread_->GlobalScope());
+    DCHECK(global_scope);
+    global_scope->SetCurrentFrame(CurrentSampleFrame());
   }
-}
-
-bool BaseAudioContext::CheckWorkletGlobalScopeOnRenderingThread() {
-  DCHECK(!IsMainThread());
-
-  return worklet_backing_worker_thread_ &&
-         worklet_backing_worker_thread_->GlobalScope();
 }
 
 }  // namespace blink

@@ -341,21 +341,10 @@ class MODULES_EXPORT BaseAudioContext
   // the first script evaluation.
   void NotifyWorkletIsReady();
 
-  // Update the information in AudioWorkletGlobalScope if necessary. Must be
-  // called from the rendering thread. Does nothing when the global scope
-  // does not exist.
+  // Update the information in AudioWorkletGlobalScope synchronously on the
+  // worklet rendering thread. Must be called from the rendering thread.
+  // Does nothing when the worklet global scope does not exist.
   void UpdateWorkletGlobalScopeOnRenderingThread();
-
-  // In the shut-down process, the AudioWorkletGlobalScope can already be gone
-  // while the backing worker thread is still running. This is called by
-  // AudioWorkletHandler before it requests the render task to the processor
-  // which lives on the AudioWorkletGlobalScope. Returns true if there is a
-  // valid WorkletGloblaScope for the worklet-related task.
-  //
-  // TODO(hongchan): This is a short-term fix for https://crbug.com/822725.
-  // The lifetime of the render task should be managed by not the explicit
-  // context check but per-global-scope task queues.
-  bool CheckWorkletGlobalScopeOnRenderingThread();
 
  protected:
   enum ContextType { kRealtimeContext, kOfflineContext };
@@ -529,9 +518,12 @@ class MODULES_EXPORT BaseAudioContext
 
   Member<AudioWorklet> audio_worklet_;
 
-  // Only for the access to AudioWorkletGlobalScope from the render thread.
-  // Use the WebThread in the destination nodes for the task scheduling.
-  WorkerThread* worklet_backing_worker_thread_ = nullptr;
+  // In order to update some information (e.g. current frame) in
+  // AudioWorkletGlobalScope *synchronously*, the context needs to keep the
+  // reference to the WorkerThread associated with the AudioWorkletGlobalScope.
+  // This cannot be nullptr once it is assigned from AudioWorkletThread until
+  // the BaseAudioContext goes away.
+  WorkerThread* audio_worklet_thread_ = nullptr;
 };
 
 }  // namespace blink

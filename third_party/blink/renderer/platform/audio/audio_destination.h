@@ -94,8 +94,9 @@ class PLATFORM_EXPORT AudioDestination
   virtual void Start();
   virtual void Stop();
 
-  // For AudioWorklet experimental threading.
-  void StartWithWorkletThread(WebThread* worklet_backing_thread);
+  // Starts the destination with the AudioWorklet support.
+  void StartWithWorkletTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner);
 
   // Getters must be accessed from the main thread.
   size_t CallbackBufferSize() const;
@@ -124,9 +125,9 @@ class PLATFORM_EXPORT AudioDestination
   size_t callback_buffer_size_;
   bool is_playing_;
 
-  // The experimental rendering thread from AudioWorkletThread. This stays
-  // |nullptr| when AudioWorklet is not enabled.
-  WebThread* worklet_backing_thread_ = nullptr;
+  // The task runner for AudioWorklet operation. This is only valid when
+  // the AudioWorklet is activated.
+  scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner_;
 
   // Can be accessed by both threads: resolves the buffer size mismatch between
   // the WebAudio engine and the callback function from the actual audio device.

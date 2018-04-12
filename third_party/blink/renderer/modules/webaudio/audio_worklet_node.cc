@@ -55,8 +55,11 @@ AudioWorkletHandler::AudioWorkletHandler(
   }
 
   if (Context()->GetExecutionContext()) {
-    task_runner_ =
-        Context()->GetExecutionContext()->GetTaskRunner(TaskType::kUnthrottled);
+    // Cross-thread tasks between AWN/AWP is okay to be throttled, thus
+    // kMiscPlatformAPI. It is for post-creation/destruction chores.
+    main_thread_task_runner_ = Context()->GetExecutionContext()->GetTaskRunner(
+        TaskType::kMiscPlatformAPI);
+    DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   }
 
   Initialize();
@@ -82,8 +85,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
   // Render and update the node state when the processor is ready with no error.
   // We also need to check if the global scope is valid before we request
   // the rendering in the AudioWorkletGlobalScope.
-  if (processor_ && !processor_->hasErrorOccured() &&
-      Context()->CheckWorkletGlobalScopeOnRenderingThread()) {
+  if (processor_ && !processor_->hasErrorOccured()) {
     Vector<AudioBus*> input_buses;
     Vector<AudioBus*> output_buses;
     for (unsigned i = 0; i < NumberOfInputs(); ++i) {
@@ -161,7 +163,7 @@ void AudioWorkletHandler::SetProcessorOnRenderThread(
     processor_ = processor;
   } else {
     PostCrossThreadTask(
-        *task_runner_, FROM_HERE,
+        *main_thread_task_runner_, FROM_HERE,
         CrossThreadBind(&AudioWorkletHandler::NotifyProcessorError,
                         WrapRefCounted(this),
                         AudioWorkletProcessorErrorState::kConstructionError));
@@ -176,7 +178,7 @@ void AudioWorkletHandler::FinishProcessorOnRenderThread() {
   AudioWorkletProcessorErrorState error_state = processor_->GetErrorState();
   if (error_state == AudioWorkletProcessorErrorState::kProcessError) {
     PostCrossThreadTask(
-        *task_runner_, FROM_HERE,
+        *main_thread_task_runner_, FROM_HERE,
         CrossThreadBind(&AudioWorkletHandler::NotifyProcessorError,
                         WrapRefCounted(this),
                         error_state));
