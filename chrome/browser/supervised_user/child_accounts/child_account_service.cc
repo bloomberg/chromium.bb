@@ -37,10 +37,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
-#if !defined(OS_ANDROID)
-const char kChildAccountDetectionFieldTrialName[] = "ChildAccountDetection";
-#endif
-
 const char kGaiaCookieManagerSource[] = "child_account_service";
 
 // Normally, re-check the family info once per day.
@@ -90,15 +86,13 @@ ChildAccountService::~ChildAccountService() {
 
 // static
 bool ChildAccountService::IsChildAccountDetectionEnabled() {
-  // Child account detection is always enabled on Android.
-#if !defined(OS_ANDROID)
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kChildAccountDetectionFieldTrialName);
-  if (group_name == "Disabled")
-    return false;
-#endif
-
+// Child account detection is always enabled on Android and ChromeOS, and
+// disabled in other platforms.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   return true;
+#else
+  return false;
+#endif
 }
 
 void ChildAccountService::RegisterProfilePrefs(

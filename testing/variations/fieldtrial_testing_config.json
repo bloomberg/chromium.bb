@@ -711,18 +711,6 @@
             ]
         }
     ],
-    "ChildAccountDetection": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled"
-                }
-            ]
-        }
-    ],
     "ChromeDashboard": [
         {
             "platforms": [
