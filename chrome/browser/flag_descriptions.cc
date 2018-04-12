@@ -2249,6 +2249,12 @@ const char kOfflinePagesSharingName[] = "Enables offline pages to be shared.";
 const char kOfflinePagesSharingDescription[] =
     "Enables the saved offline pages to be shared via other applications.";
 
+const char kOfflinePagesShowAlternateDinoPageName[] =
+    "Enable alternate dino page with more user capabilities.";
+const char kOfflinePagesShowAlternateDinoPageDescription[] =
+    "Enables the dino page to show more buttons and offer existing offline "
+    "content.";
+
 const char kOfflinePagesSvelteConcurrentLoadingName[] =
     "Enables concurrent background loading on svelte.";
 const char kOfflinePagesSvelteConcurrentLoadingDescription[] =

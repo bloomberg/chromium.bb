@@ -72,6 +72,9 @@ const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature{
 const base::Feature kOfflinePagesCTSuppressNotificationsFeature{
     "OfflinePagesCTSuppressNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kOfflinePagesShowAlternateDinoPageFeature{
+    "OfflinePagesShowAlternateDinoPage", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const char kPrefetchingOfflinePagesExperimentsOption[] = "exp";
 
 bool IsOfflineBookmarksEnabled() {
@@ -153,6 +156,11 @@ bool ShouldOfflinePagesInDownloadHomeOpenInCct() {
 bool IsOfflinePagesSuppressNotificationsEnabled() {
   return base::FeatureList::IsEnabled(
       kOfflinePagesCTSuppressNotificationsFeature);
+}
+
+bool ShouldShowAlternateDinoPage() {
+  return base::FeatureList::IsEnabled(
+      kOfflinePagesShowAlternateDinoPageFeature);
 }
 
 std::string GetPrefetchingOfflinePagesExperimentTag() {

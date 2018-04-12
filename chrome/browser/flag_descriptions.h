@@ -1364,6 +1364,9 @@ extern const char kOfflinePagesRenovationsDescription[];
 extern const char kOfflinePagesSharingName[];
 extern const char kOfflinePagesSharingDescription[];
 
+extern const char kOfflinePagesShowAlternateDinoPageName[];
+extern const char kOfflinePagesShowAlternateDinoPageDescription[];
+
 extern const char kOfflinePagesSvelteConcurrentLoadingName[];
 extern const char kOfflinePagesSvelteConcurrentLoadingDescription[];
 
