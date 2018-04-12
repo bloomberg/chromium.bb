@@ -81,7 +81,16 @@ PermissionsData::AccessType GetMinimumAccessType(
 bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin) {
   // Whitelist to work around exceptional cases. This is only used to elide a
   // DCHECK.
-  return origin.host() == "print" || origin.host() == "sync-confirmation";
+  //
+  // If you are adding a new host to this list, please file a corresponding bug
+  // to track its removal. See https://crbug.com/829412 for the metabug.
+  return
+      // https://crbug.com/829414
+      origin.host() == "print" ||
+      // https://crbug.com/831812
+      origin.host() == "sync-confirmation" ||
+      // https://crbug.com/831813
+      origin.host() == "inspect";
 }
 
 }  // namespace
