@@ -144,8 +144,8 @@ class NET_EXPORT URLRequestContext
   SSLConfigService* ssl_config_service() const {
     return ssl_config_service_.get();
   }
-  void set_ssl_config_service(SSLConfigService* service) {
-    ssl_config_service_ = service;
+  void set_ssl_config_service(scoped_refptr<SSLConfigService> service) {
+    ssl_config_service_ = std::move(service);
   }
 
   // Gets the HTTP Authentication Handler Factory for this context.

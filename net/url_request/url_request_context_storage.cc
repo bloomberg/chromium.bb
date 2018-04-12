@@ -86,7 +86,7 @@ void URLRequestContextStorage::set_proxy_resolution_service(
 }
 
 void URLRequestContextStorage::set_ssl_config_service(
-    SSLConfigService* ssl_config_service) {
+    scoped_refptr<SSLConfigService> ssl_config_service) {
   context_->set_ssl_config_service(ssl_config_service);
   ssl_config_service_ = ssl_config_service;
 }
