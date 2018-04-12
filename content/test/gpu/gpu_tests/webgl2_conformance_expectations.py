@@ -278,14 +278,24 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'amd', 'd3d11'], bug=828984)
     self.Flaky('deqp/functional/gles3/draw/random.html',
         ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('deqp/functional/gles3/samplerobject.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
     self.Flaky('deqp/functional/gles3/textureshadow/' +
         '2d_array_nearest_mipmap_linear_less.html',
         ['win', 'amd', 'd3d11'], bug=828984)
     self.Flaky('conformance/glsl/bugs/logic-inside-block-without-braces.html',
         ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance/glsl/functions/glsl-function-mod-float.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance/renderbuffers/' +
+        'depth-renderbuffer-initialization.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
     self.Flaky('conformance/renderbuffers/renderbuffer-initialization.html',
         ['win', 'amd', 'd3d11'], bug=828984)
     self.Flaky('conformance2/glsl3/vector-dynamic-indexing.html',
+        ['win', 'amd', 'd3d11'], bug=828984)
+    self.Flaky('conformance2/renderbuffers/' +
+        'multisampled-depth-renderbuffer-initialization.html',
         ['win', 'amd', 'd3d11'], bug=828984)
     self.Flaky('conformance2/textures/canvas_sub_rectangle/' +
         'tex-2d-rgb9_e5-rgb-half_float.html',
