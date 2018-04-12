@@ -298,22 +298,15 @@ static bool ShouldCheckScope(const Element& element,
       ->HasDeepOrShadowSelector();
 }
 
-void StyleResolver::MatchScopedRules(const Element& element,
-                                     ElementRuleCollector& collector) {
+void StyleResolver::MatchScopedRulesV0(
+    const Element& element,
+    ElementRuleCollector& collector,
+    ScopedStyleResolver* element_scope_resolver) {
   // Match rules from treeScopes in the reverse tree-of-trees order, since the
   // cascading order for normal rules is such that when comparing rules from
   // different shadow trees, the rule from the tree which comes first in the
   // tree-of-trees order wins. From other treeScopes than the element's own
   // scope, only tree-boundary-crossing rules may match.
-
-  ScopedStyleResolver* element_scope_resolver = ScopedResolverFor(element);
-
-  if (!GetDocument().MayContainV0Shadow()) {
-    MatchSlottedRules(element, collector);
-    MatchElementScopeRules(element, element_scope_resolver, collector);
-    MatchPseudoPartRules(element, collector);
-    return;
-  }
 
   bool match_element_scope_done =
       !element_scope_resolver && !element.InlineStyle();
@@ -367,7 +360,16 @@ void StyleResolver::MatchAuthorRules(const Element& element,
   }
 
   MatchHostRules(element, collector);
-  MatchScopedRules(element, collector);
+
+  ScopedStyleResolver* element_scope_resolver = ScopedResolverFor(element);
+  if (GetDocument().MayContainV0Shadow()) {
+    MatchScopedRulesV0(element, collector, element_scope_resolver);
+    return;
+  }
+
+  MatchSlottedRules(element, collector);
+  MatchElementScopeRules(element, element_scope_resolver, collector);
+  MatchPseudoPartRules(element, collector);
 }
 
 void StyleResolver::MatchAuthorRulesV0(const Element& element,

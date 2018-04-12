@@ -166,7 +166,9 @@ class CORE_EXPORT StyleResolver final
   void MatchUARules(ElementRuleCollector&);
   void MatchUserRules(ElementRuleCollector&);
   void MatchPseudoPartRules(const Element&, ElementRuleCollector&);
-  void MatchScopedRules(const Element&, ElementRuleCollector&);
+  void MatchScopedRulesV0(const Element&,
+                          ElementRuleCollector&,
+                          ScopedStyleResolver*);
   void MatchAuthorRules(const Element&, ElementRuleCollector&);
   void MatchAuthorRulesV0(const Element&, ElementRuleCollector&);
   void MatchAllRules(StyleResolverState&,
