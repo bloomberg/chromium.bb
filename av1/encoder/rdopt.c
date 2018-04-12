@@ -9069,7 +9069,8 @@ static void init_inter_mode_search_state(InterModeSearchState *search_state,
 static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
                                                     const MACROBLOCK *x,
                                                     BLOCK_SIZE bsize,
-                                                    int mode_index) {
+                                                    int mode_index, int mi_row,
+                                                    int mi_col) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
   const struct segmentation *const seg = &cm->seg;
@@ -9081,9 +9082,26 @@ static int inter_mode_search_order_independent_skip(const AV1_COMP *cpi,
 
   if (cpi->sf.mode_pruning_based_on_two_pass_partition_search &&
       !x->cb_partition_scan) {
-    if (!x->ref0_candidate_mask[ref_frame[0]] ||
-        (ref_frame[1] >= 0 && !x->ref1_candidate_mask[ref_frame[1]]))
-      return 1;
+    const int mi_width = mi_size_wide[bsize];
+    const int mi_height = mi_size_high[bsize];
+    int found = 0;
+    // Search in the stats table to see if the ref frames have been used in the
+    // first pass of partition search.
+    for (int row = mi_row; row < mi_row + mi_width && !found;
+         row += FIRST_PARTITION_PASS_SAMPLE_REGION) {
+      for (int col = mi_col; col < mi_col + mi_height && !found;
+           col += FIRST_PARTITION_PASS_SAMPLE_REGION) {
+        const int index = av1_first_partition_pass_stats_index(row, col);
+        const FIRST_PARTITION_PASS_STATS *const stats =
+            &x->first_partition_pass_stats[index];
+        if (stats->ref0_counts[ref_frame[0]] &&
+            (ref_frame[1] < 0 || stats->ref1_counts[ref_frame[1]])) {
+          found = 1;
+          break;
+        }
+      }
+    }
+    if (!found) return 1;
   }
 
   if (ref_frame[0] > INTRA_FRAME && ref_frame[1] == INTRA_FRAME) {
@@ -9257,7 +9275,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     x->skip = 0;
     set_ref_ptrs(cm, xd, ref_frame, second_ref_frame);
 
-    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index))
+    if (inter_mode_search_order_independent_skip(cpi, x, bsize, mode_index,
+                                                 mi_row, mi_col))
       continue;
 
     if (ref_frame == INTRA_FRAME) {

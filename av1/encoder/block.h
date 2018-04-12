@@ -141,6 +141,31 @@ typedef struct tx_size_rd_info_node {
   struct tx_size_rd_info_node *children[4];
 } TXB_RD_INFO_NODE;
 
+// Region size for mode decision sampling in the first pass of partition
+// search(two_pass_partition_search speed feature), in units of mi size(4).
+// Used by the mode_pruning_based_on_two_pass_partition_search speed feature.
+#define FIRST_PARTITION_PASS_SAMPLE_REGION 8
+#define FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2 3
+#define FIRST_PARTITION_PASS_STATS_TABLES                     \
+  (MAX_MIB_SIZE >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2) * \
+      (MAX_MIB_SIZE >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2)
+#define FIRST_PARTITION_PASS_STATS_STRIDE \
+  (MAX_MIB_SIZE_LOG2 - FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2)
+
+static INLINE int av1_first_partition_pass_stats_index(int mi_row, int mi_col) {
+  const int row =
+      (mi_row & MAX_MIB_MASK) >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2;
+  const int col =
+      (mi_col & MAX_MIB_MASK) >> FIRST_PARTITION_PASS_SAMPLE_REGION_LOG2;
+  return (row << FIRST_PARTITION_PASS_STATS_STRIDE) + col;
+}
+
+typedef struct {
+  uint8_t ref0_counts[REF_FRAMES];  // Counters for ref_frame[0].
+  uint8_t ref1_counts[REF_FRAMES];  // Counters for ref_frame[1].
+  int sample_counts;                // Number of samples collected.
+} FIRST_PARTITION_PASS_STATS;
+
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
   struct macroblock_plane plane[MAX_MB_PLANE];
@@ -155,9 +180,8 @@ struct macroblock {
   // cost in the first pass search.
   int cb_partition_scan;
 
-  // If 0, do not allow corresponding ref frame during RD search.
-  uint8_t ref0_candidate_mask[REF_FRAMES + 1];  // The last entry is a counter.
-  uint8_t ref1_candidate_mask[REF_FRAMES];
+  FIRST_PARTITION_PASS_STATS
+  first_partition_pass_stats[FIRST_PARTITION_PASS_STATS_TABLES];
 
   // Activate constrained coding block partition search range.
   int use_cb_search_range;

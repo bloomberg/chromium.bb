@@ -3428,6 +3428,20 @@ BEGIN_PARTITION_SEARCH:
   }
 }
 
+// Set all the counters as max.
+static void init_first_partition_pass_stats_tables(
+    FIRST_PARTITION_PASS_STATS *stats) {
+  for (int i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
+    memset(stats[i].ref0_counts, 0xff, sizeof(stats[i].ref0_counts));
+    memset(stats[i].ref1_counts, 0xff, sizeof(stats[i].ref1_counts));
+    stats[i].sample_counts = INT_MAX;
+  }
+}
+
+// Minimum number of samples to trigger the
+// mode_pruning_based_on_two_pass_partition_search feature.
+#define FIRST_PARTITION_PASS_MIN_SAMPLES 16
+
 static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, int mi_row,
                              TOKENEXTRA **tp) {
@@ -3582,17 +3596,15 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 
       reset_partition(pc_root, cm->seq_params.sb_size);
       x->use_cb_search_range = 0;
-      memset(x->ref0_candidate_mask, 1, sizeof(x->ref0_candidate_mask));
-      memset(x->ref1_candidate_mask, 1, sizeof(x->ref1_candidate_mask));
+      init_first_partition_pass_stats_tables(x->first_partition_pass_stats);
       if (cpi->sf.two_pass_partition_search &&
           mi_row + mi_size_high[cm->seq_params.sb_size] < cm->mi_rows &&
           mi_col + mi_size_wide[cm->seq_params.sb_size] < cm->mi_cols &&
           cm->frame_type != KEY_FRAME) {
         x->cb_partition_scan = 1;
-        if (sf->mode_pruning_based_on_two_pass_partition_search) {
-          av1_zero(x->ref0_candidate_mask);
-          av1_zero(x->ref1_candidate_mask);
-        }
+        // Reset the stats tables.
+        if (sf->mode_pruning_based_on_two_pass_partition_search)
+          av1_zero(x->first_partition_pass_stats);
         rd_pick_sqr_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                               cm->seq_params.sb_size, &dummy_rdc, INT64_MAX,
                               pc_root, NULL);
@@ -3627,17 +3639,21 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
         x->use_cb_search_range = 1;
 
         if (sf->mode_pruning_based_on_two_pass_partition_search) {
-          if (x->ref0_candidate_mask[REF_FRAMES] < 16) {
-            // If there are not enough samples recorded, make all available.
-            memset(x->ref0_candidate_mask, 1, sizeof(x->ref0_candidate_mask));
-            memset(x->ref1_candidate_mask, 1, sizeof(x->ref1_candidate_mask));
-          } else if (sf->selective_ref_frame < 2) {
-            // ALTREF2_FRAME and BWDREF_FRAME may be skipped during the initial
-            // partition scan, so we don't eliminate them.
-            x->ref0_candidate_mask[ALTREF2_FRAME] = 1;
-            x->ref1_candidate_mask[ALTREF2_FRAME] = 1;
-            x->ref0_candidate_mask[BWDREF_FRAME] = 1;
-            x->ref1_candidate_mask[BWDREF_FRAME] = 1;
+          for (i = 0; i < FIRST_PARTITION_PASS_STATS_TABLES; ++i) {
+            FIRST_PARTITION_PASS_STATS *const stat =
+                &x->first_partition_pass_stats[i];
+            if (stat->sample_counts < FIRST_PARTITION_PASS_MIN_SAMPLES) {
+              // If there are not enough samples collected, make all available.
+              memset(stat->ref0_counts, 0xff, sizeof(stat->ref0_counts));
+              memset(stat->ref1_counts, 0xff, sizeof(stat->ref1_counts));
+            } else if (sf->selective_ref_frame < 2) {
+              // ALTREF2_FRAME and BWDREF_FRAME may be skipped during the
+              // initial partition scan, so we don't eliminate them.
+              stat->ref0_counts[ALTREF2_FRAME] = 0xff;
+              stat->ref1_counts[ALTREF2_FRAME] = 0xff;
+              stat->ref0_counts[BWDREF_FRAME] = 0xff;
+              stat->ref1_counts[BWDREF_FRAME] = 0xff;
+            }
           }
         }
 
@@ -4705,11 +4721,23 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   if (cpi->sf.mode_pruning_based_on_two_pass_partition_search &&
       x->cb_partition_scan) {
-    // Increase the counter of data samples.
-    ++x->ref0_candidate_mask[REF_FRAMES];
-    // Record that ref_frame[0] and ref_frame[1] are picked.
-    x->ref0_candidate_mask[mbmi->ref_frame[0]] = 1;
-    if (mbmi->ref_frame[1] >= 0) x->ref1_candidate_mask[mbmi->ref_frame[1]] = 1;
+    for (int row = mi_row; row < mi_row + mi_width;
+         row += FIRST_PARTITION_PASS_SAMPLE_REGION) {
+      for (int col = mi_col; col < mi_col + mi_height;
+           col += FIRST_PARTITION_PASS_SAMPLE_REGION) {
+        const int index = av1_first_partition_pass_stats_index(row, col);
+        FIRST_PARTITION_PASS_STATS *const stats =
+            &x->first_partition_pass_stats[index];
+        // Increase the counter of data samples.
+        ++stats->sample_counts;
+        // Increase the counter for ref_frame[0] and ref_frame[1].
+        if (stats->ref0_counts[mbmi->ref_frame[0]] < 255)
+          ++stats->ref0_counts[mbmi->ref_frame[0]];
+        if (mbmi->ref_frame[1] >= 0 &&
+            stats->ref1_counts[mbmi->ref_frame[0]] < 255)
+          ++stats->ref1_counts[mbmi->ref_frame[1]];
+      }
+    }
   }
 
   if (!is_inter) {
