@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/audio/audio_input_ipc.h"
@@ -67,6 +68,8 @@ class CONTENT_EXPORT MojoAudioInputIPC
   mojo::Binding<AudioInputStreamClient> stream_client_binding_;
   mojo::Binding<RendererAudioInputStreamFactoryClient> factory_client_binding_;
   media::AudioInputIPCDelegate* delegate_ = nullptr;
+
+  base::TimeTicks stream_creation_start_time_;
 
   base::WeakPtrFactory<MojoAudioInputIPC> weak_factory_;
 
