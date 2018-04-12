@@ -621,7 +621,8 @@ void RenderWidgetHostViewMac::SetTooltipText(
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number) {
+    uint64_t sequence_number,
+    const viz::LocalSurfaceId& child_local_surface_id) {
   // TODO(cblume): This doesn't currently suppress allocation.
   // It maintains existing behavior while using the suppression style.
   // This will be addressed in a follow-up patch.

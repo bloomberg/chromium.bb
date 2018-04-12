@@ -691,7 +691,8 @@ void RenderWidgetHostViewGuest::DisableAutoResize(const gfx::Size& new_size) {
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewGuest::ResizeDueToAutoResize(
     const gfx::Size& new_size,
-    uint64_t sequence_number) {
+    uint64_t sequence_number,
+    const viz::LocalSurfaceId& local_surface_id) {
   // TODO(cblume): This doesn't currently suppress allocation.
   // It maintains existing behavior while using the suppression style.
   // This will be addressed in a follow-up patch.

@@ -57,6 +57,8 @@ WindowPortForShutdown::CreateLayerTreeFrameSink() {
 }
 
 void WindowPortForShutdown::AllocateLocalSurfaceId() {}
+void WindowPortForShutdown::UpdateLocalSurfaceIdFromEmbeddedClient(
+    const viz::LocalSurfaceId& embedded_client_local_surface_id) {}
 
 bool WindowPortForShutdown::IsLocalSurfaceIdAllocationSuppressed() const {
   return false;

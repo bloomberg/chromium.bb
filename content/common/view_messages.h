@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/memory/shared_memory.h"
+#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -306,6 +307,10 @@ IPC_STRUCT_BEGIN(ViewHostMsg_ResizeOrRepaint_ACK_Params)
   // A unique monotonically increasing sequence number used to identify this
   // ACK.
   IPC_STRUCT_MEMBER(uint64_t, sequence_number)
+
+  // The child-allocated local surface id for the parent to use.
+  IPC_STRUCT_MEMBER(base::Optional<viz::LocalSurfaceId>,
+                    child_allocated_local_surface_id)
 IPC_STRUCT_END()
 
 // Messages sent from the browser to the renderer.

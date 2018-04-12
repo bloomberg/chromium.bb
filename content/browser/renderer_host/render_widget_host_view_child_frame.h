@@ -187,7 +187,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void DisableAutoResize(const gfx::Size& new_size) override;
   viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
       const gfx::Size& new_size,
-      uint64_t sequence_number) override;
+      uint64_t sequence_number,
+      const viz::LocalSurfaceId& local_surface_id) override;
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(

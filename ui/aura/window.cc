@@ -1121,6 +1121,17 @@ const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
   return port_->GetLocalSurfaceId();
 }
 
+void Window::UpdateLocalSurfaceIdFromEmbeddedClient(
+    const base::Optional<viz::LocalSurfaceId>&
+        embedded_client_local_surface_id) {
+  if (embedded_client_local_surface_id) {
+    port_->UpdateLocalSurfaceIdFromEmbeddedClient(
+        *embedded_client_local_surface_id);
+  } else {
+    port_->AllocateLocalSurfaceId();
+  }
+}
+
 const viz::FrameSinkId& Window::GetFrameSinkId() const {
   if (IsRootWindow()) {
     DCHECK(host_);

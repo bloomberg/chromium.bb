@@ -97,7 +97,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
 
   const gfx::Size& GetRendererSize() const { return dfh_size_dip_; }
   void GetRendererScreenInfo(ScreenInfo* screen_info) const;
-  const viz::LocalSurfaceId& GetRendererLocalSurfaceId() const;
+  const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
 
   // Indicate that the recyclable compositor should be destroyed, and no future
   // compositors should be recycled.

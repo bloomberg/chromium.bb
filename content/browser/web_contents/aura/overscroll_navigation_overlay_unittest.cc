@@ -249,6 +249,8 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     // correctly in RenderWidgetHostImpl.
     ViewHostMsg_ResizeOrRepaint_ACK_Params params;
     params.view_size = gfx::Size(10, 10);
+    params.child_allocated_local_surface_id =
+        viz::LocalSurfaceId(10, 10, base::UnguessableToken::Create());
     ViewHostMsg_ResizeOrRepaint_ACK rect(test_rvh()->GetRoutingID(), params);
     RenderViewHostTester::TestOnMessageReceived(test_rvh(), rect);
 

@@ -133,11 +133,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
 }
 
 void WindowPortLocal::AllocateLocalSurfaceId() {
-  last_device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
-  last_size_ = window_->bounds().size();
-  local_surface_id_ = parent_local_surface_id_allocator_.GenerateId();
-  if (frame_sink_)
-    frame_sink_->SetLocalSurfaceId(local_surface_id_);
+  SetLocalSurfaceId(parent_local_surface_id_allocator_.GenerateId());
 }
 
 bool WindowPortLocal::IsLocalSurfaceIdAllocationSuppressed() const {
@@ -148,6 +144,12 @@ viz::ScopedSurfaceIdAllocator WindowPortLocal::GetSurfaceIdAllocator(
     base::OnceCallback<void()> allocation_task) {
   return viz::ScopedSurfaceIdAllocator(&parent_local_surface_id_allocator_,
                                        std::move(allocation_task));
+}
+
+void WindowPortLocal::UpdateLocalSurfaceIdFromEmbeddedClient(
+    const viz::LocalSurfaceId& embedded_client_local_surface_id) {
+  SetLocalSurfaceId(parent_local_surface_id_allocator_.UpdateFromChild(
+      embedded_client_local_surface_id));
 }
 
 const viz::LocalSurfaceId& WindowPortLocal::GetLocalSurfaceId() {
@@ -170,6 +172,15 @@ void WindowPortLocal::OnSurfaceChanged(const viz::SurfaceInfo& surface_info) {
 
 bool WindowPortLocal::ShouldRestackTransientChildren() {
   return true;
+}
+
+void WindowPortLocal::SetLocalSurfaceId(
+    const viz::LocalSurfaceId& local_surface_id) {
+  last_device_scale_factor_ = ui::GetScaleFactorForNativeView(window_);
+  last_size_ = window_->bounds().size();
+  local_surface_id_ = local_surface_id;
+  if (frame_sink_)
+    frame_sink_->SetLocalSurfaceId(local_surface_id_);
 }
 
 }  // namespace aura

@@ -178,7 +178,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // resize is enabled.
   virtual viz::ScopedSurfaceIdAllocator ResizeDueToAutoResize(
       const gfx::Size& new_size,
-      uint64_t sequence_number);
+      uint64_t sequence_number,
+      const viz::LocalSurfaceId& local_surface_id);
 
   virtual bool IsLocalSurfaceIdAllocationSuppressed() const;
 
