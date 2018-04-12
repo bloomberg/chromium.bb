@@ -46294,6 +46294,8 @@ Full version information for the fingerprint enum values:
   <int value="10" label="Autofill was disabled in VR"/>
   <int value="11" label="USB chooser dialog was suppressed in VR"/>
   <int value="12" label="SSL client certificate selector was suppressed in VR"/>
+  <int value="13"
+      label="Media router presentation request dialog was suppressed in VR"/>
 </enum>
 
 <enum name="VRUnsupportedMode">

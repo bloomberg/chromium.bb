@@ -23,8 +23,9 @@ class VrTabHelper : public content::WebContentsUserData<VrTabHelper> {
 
   static bool IsInVr(content::WebContents* contents);
 
-  // Used for logging.
-  static void UISuppressed(vr::UiSuppressedElement element);
+  // If suppressed, this function will log a UMA stat.
+  static bool IsUiSuppressedInVr(content::WebContents* contents,
+                                 UiSuppressedElement element);
 
  private:
   explicit VrTabHelper(content::WebContents* contents);
