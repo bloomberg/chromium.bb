@@ -430,7 +430,7 @@ namespace {
 // expire them in decreasing order of use when we've reached the maximum
 // number of cookies.
 const int kCurrentVersionNumber = 10;
-const int kCompatibleVersionNumber = 5;
+const int kCompatibleVersionNumber = 10;
 
 // Possible values for the 'priority' column.
 enum DBCookiePriority {
