@@ -44,6 +44,34 @@ class FeaturePodIconButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(FeaturePodIconButton);
 };
 
+// Buton internally used in FeaturePodButton. Should not be used directly.
+class FeaturePodLabelButton : public views::Button {
+ public:
+  explicit FeaturePodLabelButton(views::ButtonListener* listener);
+  ~FeaturePodLabelButton() override;
+
+  // Set the text of label shown below the icon. See FeaturePodButton::SetLabel.
+  void SetLabel(const base::string16& label);
+
+  // Set the text of sub-label shown below the label.
+  // See FeaturePodButton::SetSubLabel.
+  void SetSubLabel(const base::string16& sub_label);
+
+  // views::Button:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+
+ private:
+  // Owned by views hierarchy.
+  views::Label* const label_;
+  views::Label* const sub_label_;
+
+  DISALLOW_COPY_AND_ASSIGN(FeaturePodLabelButton);
+};
+
 // A button in FeaturePodsView. These buttons are main entry points of features
 // in UnifiedSystemTray. Each button has its icon, label, and sub-label placed
 // vertically. They are also togglable and the background color indicates the
@@ -93,8 +121,7 @@ class ASH_EXPORT FeaturePodButton : public views::View,
 
   // Owned by views hierarchy.
   FeaturePodIconButton* const icon_button_;
-  views::Label* const label_;
-  views::Label* sub_label_ = nullptr;
+  FeaturePodLabelButton* const label_button_;
 
   // If true, it is preferred by the FeaturePodController that the view is
   // visible. Usually, this should match visible(), but in case that the

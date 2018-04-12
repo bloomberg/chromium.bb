@@ -34,8 +34,8 @@ void ConfigureFeaturePodLabel(views::Label* label) {
 
 FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener)
     : views::ImageButton(listener) {
-  SetPreferredSize(
-      gfx::Size(kUnifiedFeaturePodIconSize, kUnifiedFeaturePodIconSize));
+  SetPreferredSize(kUnifiedFeaturePodIconSize);
+  SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
   SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
@@ -54,8 +54,7 @@ void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setColor(toggled_ ? kUnifiedMenuButtonColorActive
                           : kUnifiedMenuButtonColor);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()),
-                     kUnifiedFeaturePodIconSize / 2, flags);
+  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), rect.width() / 2, flags);
 
   views::ImageButton::PaintButtonContents(canvas);
 }
@@ -79,27 +78,75 @@ FeaturePodIconButton::CreateInkDropHighlight() const {
 
 std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
     const {
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), GetContentsBounds().CenterPoint(),
-      kUnifiedFeaturePodIconSize / 2);
+  gfx::Rect rect(GetContentsBounds());
+  return std::make_unique<views::CircleInkDropMask>(size(), rect.CenterPoint(),
+                                                    rect.width() / 2);
+}
+
+FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
+    : Button(listener), label_(new views::Label), sub_label_(new views::Label) {
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, kUnifiedFeaturePodHoverPadding));
+  SetPreferredSize(kUnifiedFeaturePodHoverSize);
+  ConfigureFeaturePodLabel(label_);
+  ConfigureFeaturePodLabel(sub_label_);
+  AddChildView(label_);
+  AddChildView(sub_label_);
+
+  TrayPopupUtils::ConfigureTrayPopupButton(this);
+}
+
+FeaturePodLabelButton::~FeaturePodLabelButton() = default;
+
+std::unique_ptr<views::InkDrop> FeaturePodLabelButton::CreateInkDrop() {
+  auto ink_drop = TrayPopupUtils::CreateInkDrop(this);
+  ink_drop->SetShowHighlightOnHover(true);
+  return ink_drop;
+}
+
+std::unique_ptr<views::InkDropRipple>
+FeaturePodLabelButton::CreateInkDropRipple() const {
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      GetInkDropCenterBasedOnLastEvent(), kUnifiedFeaturePodHoverColor);
+}
+
+std::unique_ptr<views::InkDropHighlight>
+FeaturePodLabelButton::CreateInkDropHighlight() const {
+  return TrayPopupUtils::CreateInkDropHighlight(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedFeaturePodHoverColor);
+}
+
+std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
+    const {
+  return std::make_unique<views::RoundRectInkDropMask>(
+      size(), gfx::Insets(), kUnifiedFeaturePodHoverRadius);
+}
+
+void FeaturePodLabelButton::SetLabel(const base::string16& label) {
+  label_->SetText(label);
+  Layout();
+  SchedulePaint();
+}
+
+void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
+  sub_label_->SetText(sub_label);
+  Layout();
+  SchedulePaint();
 }
 
 FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
     : controller_(controller),
       icon_button_(new FeaturePodIconButton(this)),
-      label_(new views::Label()) {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
+      label_button_(new FeaturePodLabelButton(this)) {
+  auto layout = std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical, gfx::Insets(), kUnifiedFeaturePodSpacing);
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
 
   AddChildView(icon_button_);
-
-  label_->SetBorder(
-      views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
-  label_->SetVisible(false);
-  ConfigureFeaturePodLabel(label_);
-  AddChildView(label_);
+  AddChildView(label_button_);
 }
 
 FeaturePodButton::~FeaturePodButton() = default;
@@ -110,23 +157,11 @@ void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
 }
 
 void FeaturePodButton::SetLabel(const base::string16& label) {
-  label_->SetVisible(true);
-  label_->SetText(label);
-  Layout();
-  SchedulePaint();
+  label_button_->SetLabel(label);
 }
 
 void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
-  if (!sub_label_) {
-    sub_label_ = new views::Label();
-    ConfigureFeaturePodLabel(sub_label_);
-    // Insert |sub_label_| right after |label_|.
-    AddChildViewAt(sub_label_, GetIndexOf(label_) + 1);
-  }
-
-  sub_label_->SetText(sub_label);
-  Layout();
-  SchedulePaint();
+  label_button_->SetSubLabel(sub_label);
 }
 
 void FeaturePodButton::SetToggled(bool toggled) {
@@ -134,9 +169,7 @@ void FeaturePodButton::SetToggled(bool toggled) {
 }
 
 void FeaturePodButton::SetExpanded(bool expanded) {
-  label_->SetVisible(expanded);
-  if (sub_label_)
-    sub_label_->SetVisible(expanded);
+  label_button_->SetVisible(expanded);
 }
 
 void FeaturePodButton::SetVisibleByContainer(bool visible) {
