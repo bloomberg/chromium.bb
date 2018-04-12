@@ -21,7 +21,7 @@
   function checkAlphaChange(inputColor, format) {
     setColor(inputColor, format);
     spectrum._hsv[3] = 0;
-    spectrum._innerSetColor(spectrum._hsv, undefined, undefined, ColorPicker.Spectrum._ChangeSource.Other);
+    spectrum._innerSetColor(spectrum._hsv, undefined, undefined /* colorName */, undefined, ColorPicker.Spectrum._ChangeSource.Other);
     TestRunner.addResult(spectrum.colorString());
   }
 

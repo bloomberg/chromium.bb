@@ -20,7 +20,7 @@
         var swatch = sourceFrame.textEditor._codeMirrorElement.querySelector('span[is=color-swatch]');
         swatch.shadowRoot.querySelector('.color-swatch-inner').click();
         cssPlugin._spectrum._innerSetColor(
-            Common.Color.parse('#008000').hsva(), '', Common.Color.Format.HEX,
+            Common.Color.parse('#008000').hsva(), '', undefined /* colorName */, Common.Color.Format.HEX,
             ColorPicker.Spectrum._ChangeSource.Other);
         cssPlugin._swatchPopoverHelper.hide(true);
         SourcesTestRunner.dumpSwatchPositions(sourceFrame, Sources.CSSPlugin.SwatchBookmark);
