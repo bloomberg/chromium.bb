@@ -497,6 +497,7 @@ class CORE_EXPORT Element : public ContainerNode {
   ShadowRoot& AttachShadowRootInternal(ShadowRootType,
                                        bool delegates_focus = false);
 
+  // Returns the shadow root attached to this element if it is a shadow host.
   ShadowRoot* GetShadowRoot() const;
   ShadowRoot* OpenShadowRoot() const;
   ShadowRoot* ClosedShadowRoot() const;
