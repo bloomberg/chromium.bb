@@ -1742,6 +1742,7 @@ void WallpaperController::OnWallpaperDecoded(
 }
 
 void WallpaperController::ReloadWallpaper(bool clear_cache) {
+  current_wallpaper_.reset();
   if (clear_cache)
     wallpaper_cache_map_.clear();
 
