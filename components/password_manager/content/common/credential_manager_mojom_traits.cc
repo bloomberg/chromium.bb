@@ -88,9 +88,17 @@ bool EnumTraits<password_manager::mojom::CredentialManagerError,
           password_manager::CredentialManagerError::PASSWORDSTOREUNAVAILABLE;
       return true;
     case password_manager::mojom::CredentialManagerError::NOT_ALLOWED:
-    case password_manager::mojom::CredentialManagerError::NOT_SUPPORTED:
+    case password_manager::mojom::CredentialManagerError::
+        AUTHENTICATOR_CRITERIA_UNSUPPORTED:
+    case password_manager::mojom::CredentialManagerError::ALGORITHM_UNSUPPORTED:
+    case password_manager::mojom::CredentialManagerError::
+        EMPTY_ALLOW_CREDENTIALS:
+    case password_manager::mojom::CredentialManagerError::
+        USER_VERIFICATION_UNSUPPORTED:
     case password_manager::mojom::CredentialManagerError::INVALID_DOMAIN:
-    case password_manager::mojom::CredentialManagerError::INVALID_STATE:
+    case password_manager::mojom::CredentialManagerError::CREDENTIAL_EXCLUDED:
+    case password_manager::mojom::CredentialManagerError::
+        CREDENTIAL_NOT_RECOGNIZED:
     case password_manager::mojom::CredentialManagerError::NOT_IMPLEMENTED:
     case password_manager::mojom::CredentialManagerError::NOT_FOCUSED:
     case password_manager::mojom::CredentialManagerError::UNKNOWN:

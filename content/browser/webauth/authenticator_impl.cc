@@ -462,17 +462,17 @@ void AuthenticatorImpl::MakeCredential(
       !AreOptionsSupportedByU2fAuthenticators(options)) {
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+        webauth::mojom::AuthenticatorStatus::AUTHENTICATOR_CRITERIA_UNSUPPORTED,
+        nullptr);
     return;
   }
 
-  // TODO(crbug.com/819256): Improve messages for "Not Supported" errors.
   if (!base::FeatureList::IsEnabled(features::kWebAuthCtap2) &&
       !IsAlgorithmSupportedByU2fAuthenticators(
           options->public_key_parameters)) {
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::NOT_SUPPORTED_ERROR, nullptr);
+        webauth::mojom::AuthenticatorStatus::ALGORITHM_UNSUPPORTED, nullptr);
     return;
   }
 
@@ -580,7 +580,8 @@ void AuthenticatorImpl::GetAssertion(
           webauth::mojom::UserVerificationRequirement::REQUIRED) {
     InvokeCallbackAndCleanup(
         std::move(callback),
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
+        webauth::mojom::AuthenticatorStatus::USER_VERIFICATION_UNSUPPORTED,
+        nullptr);
     return;
   }
 
@@ -601,12 +602,31 @@ void AuthenticatorImpl::GetAssertion(
     echo_appid_extension_ = true;
   }
 
-  DCHECK(get_assertion_response_callback_.is_null());
-  get_assertion_response_callback_ = std::move(callback);
-
-  // Pass along valid keys from allow_list, if any.
+  // Pass along valid keys from allow_list.
   std::vector<std::vector<uint8_t>> handles =
       FilterCredentialList(std::move(options->allow_credentials));
+
+  // There are two different descriptions of what should happen when
+  // "allowCredentials" is empty.
+  // a) WebAuthN 6.2.3 step 6[1] implies "NotAllowedError".
+  // b) CTAP step 7.2 step 2[2] says the device should error out with
+  // "CTAP2_ERR_OPTION_NOT_SUPPORTED". This also resolves to "NotAllowedError".
+  // The behavior in both cases is consistent with the current implementation.
+  // TODO(crbug.com/831712): When CTAP2 authenticators are supported, this check
+  // should be enforced by handlers in fido/device on a per-device basis.
+
+  // [1] https://w3c.github.io/webauthn/#authenticatorgetassertion
+  // [2]
+  // https://fidoalliance.org/specs/fido-v2.0-ps-20170927/fido-client-to-authenticator-protocol-v2.0-ps-20170927.html
+  if (handles.empty()) {
+    InvokeCallbackAndCleanup(
+        std::move(callback),
+        webauth::mojom::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS, nullptr);
+    return;
+  }
+
+  DCHECK(get_assertion_response_callback_.is_null());
+  get_assertion_response_callback_ = std::move(callback);
 
   timer_->Start(
       FROM_HERE, options->adjusted_timeout,
@@ -666,7 +686,7 @@ void AuthenticatorImpl::OnRegisterResponse(
       // |exclude_credentials|.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
-          webauth::mojom::AuthenticatorStatus::INVALID_STATE, nullptr);
+          webauth::mojom::AuthenticatorStatus::CREDENTIAL_EXCLUDED, nullptr);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.
@@ -759,7 +779,8 @@ void AuthenticatorImpl::OnSignResponse(
       // No authenticators contained the credential.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
-          webauth::mojom::AuthenticatorStatus::INVALID_STATE, nullptr);
+          webauth::mojom::AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+          nullptr);
       return;
     case device::FidoReturnCode::kAuthenticatorResponseInvalid:
       // The response from the authenticator was corrupted.

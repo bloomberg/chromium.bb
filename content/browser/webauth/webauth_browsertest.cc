@@ -57,16 +57,33 @@ using TestGetCallbackReceiver = ::device::test::StatusAndValueCallbackReceiver<
     AuthenticatorStatus,
     GetAssertionAuthenticatorResponsePtr>;
 
-constexpr char kNotAllowedErrorMessage[] =
-    "NotAllowedError: The operation either timed out or was not allowed. See: "
-    "https://w3c.github.io/webauthn/#sec-assertion-privacy.";
-
 constexpr char kRelyingPartySecurityErrorMessage[] =
     "SecurityError: The relying party ID 'localhost' is not a registrable "
     "domain suffix of, nor equal to 'https://www.example.com";
 
-constexpr char kNotSupportedErrorMessage[] =
-    "NotSupportedError: Parameters for this operation are not supported.";
+constexpr char kAlgorithmUnsupportedErrorMessage[] =
+    "NotSupportedError: None of the algorithms specified in "
+    "`pubKeyCredParams` are compatible with "
+    "CTAP1/U2F authenticators, and CTAP2 "
+    "authenticators are not yet supported.";
+
+constexpr char kAuthenticatorCriteriaErrorMessage[] =
+    "NotSupportedError: The specified `authenticatorSelection` "
+    "criteria cannot be fulfilled by CTAP1/U2F "
+    "authenticators, and CTAP2 authenticators "
+    "are not yet supported.";
+
+constexpr char kUserVerificationErrorMessage[] =
+    "NotSupportedError: The specified `userVerification` "
+    "requirement cannot be fulfilled by "
+    "CTAP1/U2F authenticators, and CTAP2 "
+    "authenticators are not yet supported.";
+
+constexpr char kEmptyAllowCredentialsErrorMessage[] =
+    "NotSupportedError: The `allowCredentials` list cannot be left "
+    "empty for CTAP1/U2F authenticators, and "
+    "support for CTAP2 authenticators is not yet "
+    "implemented.";
 
 // Templates to be used with base::ReplaceStringPlaceholders. Can be
 // modified to include up to 9 replacements. The default values for
@@ -121,10 +138,25 @@ constexpr char kGetPublicKeyTemplate[] =
     "  rp: 'example.com',"
     "  timeout: 60000,"
     "  userVerification: '$1',"
-    "  allowCredentials: [{ type: 'public-key',"
-    "     id: new TextEncoder().encode('allowedCredential'),"
-    "     transports: ['usb', 'nfc', 'ble']}] }"
+    "  $2}"
     "}).catch(c => window.domAutomationController.send(c.toString()));";
+
+// Default values for kGetPublicKeyTemplate.
+struct GetParameters {
+  const char* user_verification = kPreferredVerification;
+  const char* allow_credentials =
+      "allowCredentials: [{ type: 'public-key',"
+      "     id: new TextEncoder().encode('allowedCredential'),"
+      "     transports: ['usb', 'nfc', 'ble']}]";
+};
+
+std::string BuildGetCallWithParameters(const GetParameters& parameters) {
+  std::vector<std::string> substititions;
+  substititions.push_back(parameters.user_verification);
+  substititions.push_back(parameters.allow_credentials);
+  return base::ReplaceStringPlaceholders(kGetPublicKeyTemplate, substititions,
+                                         nullptr);
+}
 
 // Helper class that executes the given |closure| the very last moment before
 // the next navigation commits in a given WebContents.
@@ -500,7 +532,7 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
 };
 
 // Tests that when navigator.credentials.create() is called with user
-// verification required we get a NotAllowedError.
+// verification required we get a NotSupportedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithUserVerification) {
   CreateParameters parameters;
@@ -509,11 +541,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       shell()->web_contents()->GetMainFrame(),
       BuildCreateCallWithParameters(parameters), &result));
-  ASSERT_EQ(kNotAllowedErrorMessage, result);
+  ASSERT_EQ(kAuthenticatorCriteriaErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.create() is called with resident key
-// required, we get a NotAllowedError.
+// required, we get a NotSupportedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithResidentKeyRequired) {
   CreateParameters parameters;
@@ -523,20 +555,7 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents()->GetMainFrame(),
       BuildCreateCallWithParameters(parameters), &result));
 
-  ASSERT_EQ(kNotAllowedErrorMessage, result);
-}
-
-// Tests that when navigator.credentials.get() is called with user verification
-// required, we get a NotAllowedError.
-IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
-                       GetPublicKeyCredentialUserVerification) {
-  const std::string kScript = base::ReplaceStringPlaceholders(
-      kGetPublicKeyTemplate, {"required"}, nullptr);
-
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(), kScript, &result));
-  ASSERT_EQ(kNotAllowedErrorMessage, result);
+  ASSERT_EQ(kAuthenticatorCriteriaErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.create() is called with an invalid
@@ -565,11 +584,11 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents()->GetMainFrame(),
       BuildCreateCallWithParameters(parameters), &result));
 
-  ASSERT_EQ(kNotSupportedErrorMessage, result);
+  ASSERT_EQ(kAlgorithmUnsupportedErrorMessage, result);
 }
 
 // Tests that when navigator.credentials.create() is called with a
-// platform authenticator requested, we get a NotAllowedError.
+// platform authenticator requested, we get a NotSupportedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialPlatformAuthenticator) {
   CreateParameters parameters;
@@ -579,7 +598,33 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
       shell()->web_contents()->GetMainFrame(),
       BuildCreateCallWithParameters(parameters), &result));
 
-  ASSERT_EQ(kNotAllowedErrorMessage, result);
+  ASSERT_EQ(kAuthenticatorCriteriaErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.get() is called with user verification
+// required, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       GetPublicKeyCredentialUserVerification) {
+  GetParameters parameters;
+  parameters.user_verification = "required";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildGetCallWithParameters(parameters), &result));
+  ASSERT_EQ(kUserVerificationErrorMessage, result);
+}
+
+// Tests that when navigator.credentials.get() is called with an empty
+// allowCredentials list, we get a NotSupportedError.
+IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
+                       GetPublicKeyCredentialEmptyAllowCredentialsList) {
+  GetParameters parameters;
+  parameters.allow_credentials = "";
+  std::string result;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      shell()->web_contents()->GetMainFrame(),
+      BuildGetCallWithParameters(parameters), &result));
+  ASSERT_EQ(kEmptyAllowCredentialsErrorMessage, result);
 }
 
 // WebAuthBrowserBleDisabledTest
