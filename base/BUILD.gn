@@ -1897,6 +1897,7 @@ test("base_perftests") {
   sources = [
     "message_loop/message_loop_perftest.cc",
     "message_loop/message_pump_perftest.cc",
+    "rand_util_perftest.cc",
 
     # "test/run_all_unittests.cc",
     "json/json_perftest.cc",

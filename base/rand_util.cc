@@ -7,12 +7,64 @@
 #include <limits.h>
 #include <math.h>
 #include <stdint.h>
-
 #include <algorithm>
+#include <ctime>
 #include <limits>
+#include <random>
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_local.h"
+
+namespace {
+
+class PrngThreadLocalStorage;
+
+base::LazyInstance<
+    base::ThreadLocalUniquePointer<PrngThreadLocalStorage>>::Leaky prng_tls =
+    LAZY_INSTANCE_INITIALIZER;
+
+// PrngThreadLocalStorage stores a pointer to the thread's seeded random number
+// generator in the thread's local storage. Note that at most one generator can
+// be bound to each thread at a time.
+// Example  Usage:
+//   prng =  PrngThreadLocalStorage::GetGenerator();
+//   prng -> GetRandomInteger(0,20);
+class PrngThreadLocalStorage {
+ public:
+  PrngThreadLocalStorage() : prng_(time(nullptr)){};
+
+  ~PrngThreadLocalStorage() = default;
+
+  // Returns true if a pseudo-random number generator has been assigned to
+  // the current thread.
+  static bool IsSet() { return prng_tls.Get().Get(); }
+
+  // Returns the random generator bound to the current thread. If no such
+  // generator exist, it creates an instance and binds it to the thread.
+  static PrngThreadLocalStorage* GetGenerator() {
+    PrngThreadLocalStorage* instance = prng_tls.Get().Get();
+    if (!instance) {
+      prng_tls.Get().Set(std::make_unique<PrngThreadLocalStorage>());
+      instance = prng_tls.Get().Get();
+    }
+    return instance;
+  }
+
+  // Returns a uniformly distributed random integer in the range [start,end].
+  int GetRandomInteger(int start, int end) {
+    std::uniform_int_distribution<> distribution(start, end);
+    return distribution(prng_);
+  }
+
+ private:
+  std::mt19937 prng_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrngThreadLocalStorage);
+};
+
+}  // namespace
 
 namespace base {
 
@@ -25,11 +77,9 @@ uint64_t RandUint64() {
 int RandInt(int min, int max) {
   DCHECK_LE(min, max);
 
-  uint64_t range = static_cast<uint64_t>(max) - min + 1;
-  // |range| is at most UINT_MAX + 1, so the result of RandGenerator(range)
-  // is at most UINT_MAX.  Hence it's safe to cast it from uint64_t to int64_t.
-  int result =
-      static_cast<int>(min + static_cast<int64_t>(base::RandGenerator(range)));
+  PrngThreadLocalStorage* prng = PrngThreadLocalStorage::GetGenerator();
+  int result = prng->GetRandomInteger(min, max);
+
   DCHECK_GE(result, min);
   DCHECK_LE(result, max);
   return result;
