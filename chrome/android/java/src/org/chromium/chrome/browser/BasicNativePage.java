@@ -43,13 +43,12 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
 
         mTopMargin = 0;
         mBottomMargin = 0;
-        if (activity instanceof ChromeActivity
-                && ((ChromeActivity) activity).getBottomSheet() != null) {
-            mBottomMargin = res.getDimensionPixelSize(R.dimen.bottom_control_container_peek_height);
-        } else {
-            mTopMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height)
-                    + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
+        if (activity instanceof ChromeActivity) {
+            mBottomMargin =
+                    ((ChromeActivity) activity).getFullscreenManager().getBottomControlsHeight();
         }
+        mTopMargin = res.getDimensionPixelSize(R.dimen.tab_strip_height)
+                + res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
 
         if (host.getActiveTab() != null) {
             host.getActiveTab().addObserver(this);
