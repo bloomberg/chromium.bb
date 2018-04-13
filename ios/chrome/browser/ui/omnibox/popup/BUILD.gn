@@ -45,6 +45,8 @@ source_set("popup_internal") {
   sources = [
     "omnibox_popup_row.h",
     "omnibox_popup_row.mm",
+    "self_sizing_table_view.h",
+    "self_sizing_table_view.mm",
   ]
   deps = [
     "//base",

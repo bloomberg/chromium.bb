@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/omnibox/image_retriever.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
+#import "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #import "ios/chrome/browser/ui/omnibox/truncating_attributed_label.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -96,8 +97,9 @@ UIColor* BackgroundColorIncognito() {
 }
 
 - (void)loadView {
-  self.tableView = [[UITableView alloc] initWithFrame:CGRectZero
-                                                style:UITableViewStylePlain];
+  self.tableView =
+      [[SelfSizingTableView alloc] initWithFrame:CGRectZero
+                                           style:UITableViewStylePlain];
   self.tableView.delegate = self;
   self.tableView.dataSource = self;
   self.view = self.tableView;
