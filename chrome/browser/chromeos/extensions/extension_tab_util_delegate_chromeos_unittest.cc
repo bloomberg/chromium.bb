@@ -25,11 +25,7 @@ const char kTestUrl[] = "http://www.foo.bar/baz?key=val";
 const char kFilteredUrl[] = "http://www.foo.bar/";
 
 scoped_refptr<Extension> CreateExtension(const std::string& id) {
-  return ExtensionBuilder()
-      .SetManifest(
-          DictionaryBuilder().Set("name", "test").Set("version", "0.1").Build())
-      .SetID(id)
-      .Build();
+  return ExtensionBuilder("test").SetID(id).Build();
 }
 
 }  // namespace
