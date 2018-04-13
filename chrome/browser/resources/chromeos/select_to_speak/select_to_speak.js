@@ -298,8 +298,13 @@ SelectToSpeak.prototype = {
       // which is computed based on which window is the event handler for the
       // hit point, isn't the part of the tree that contains the actual
       // content. In such cases, use focus to get the root.
-      if (!findAllMatching(root, rect, nodes) && focusedNode)
+      // TODO(katie): Determine if this work-around needs to be ARC++ only. If
+      // so, look for classname exoshell on the root or root parent to confirm
+      // that a node is in ARC++.
+      if (!findAllMatching(root, rect, nodes) && focusedNode &&
+          focusedNode.root.role != RoleType.DESKTOP) {
         findAllMatching(focusedNode.root, rect, nodes);
+      }
       this.startSpeechQueue_(nodes);
       this.recordStartEvent_(START_SPEECH_METHOD_MOUSE);
     }.bind(this));
