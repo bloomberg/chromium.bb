@@ -115,7 +115,6 @@ void InitializeExpectedConfig(DnsConfig* config) {
   config->timeout = base::TimeDelta::FromSeconds(4);
   config->attempts = 7;
   config->rotate = true;
-  config->edns0 = false;
   config->append_to_multi_label_name = true;
   config->search.clear();
   config->search.push_back("chromium.org");

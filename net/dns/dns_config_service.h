@@ -88,8 +88,6 @@ struct NET_EXPORT_PRIVATE DnsConfig {
   int attempts;
   // Round robin entries in |nameservers| for subsequent requests.
   bool rotate;
-  // Enable EDNS0 extensions.
-  bool edns0;
 
   // Indicates system configuration uses local IPv6 connectivity, e.g.,
   // DirectAccess. This is exposed for HostResolver to skip IPv6 probes,
