@@ -656,18 +656,21 @@ class WebMediaPlayerImplTest : public testing::Test {
                            data->data_size());
     client->DidFinishLoading(0);
 
-    // This runs until we reach the have metadata state.
-    base::RunLoop loop;
-    EXPECT_CALL(client_, ReadyStateChanged())
-        .WillOnce(RunClosure(loop.QuitClosure()));
-    loop.Run();
+    // This runs until we reach the have current data state. Attempting to wait
+    // for states < kReadyStateHaveCurrentData is unreliable due to asynchronous
+    // execution of tasks on the base::test:ScopedTaskEnvironment.
+    while (wmpi_->GetReadyState() <
+           blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
+      base::RunLoop loop;
+      EXPECT_CALL(client_, ReadyStateChanged())
+          .WillOnce(RunClosure(loop.QuitClosure()));
+      loop.Run();
+    }
 
-    // Verify we made it to pipeline startup.
-    EXPECT_EQ(blink::WebMediaPlayer::kReadyStateHaveMetadata,
-              wmpi_->GetReadyState());
+    // Verify we made it through pipeline startup.
     EXPECT_TRUE(wmpi_->data_source_);
     EXPECT_TRUE(wmpi_->demuxer_);
-    EXPECT_TRUE(wmpi_->seeking_);
+    EXPECT_FALSE(wmpi_->seeking_);
   }
 
   BlinkPlatformWithTaskEnvironment platform_;
@@ -740,14 +743,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
 }
 
 // Verify that preload=metadata suspend works properly.
-// Flaky on Linux MSan and TSan. http://crbug.com/831566.
-#if defined(OS_LINUX) && \
-    (defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER))
-#define MAYBE_LoadPreloadMetadataSuspend DISABLED_LoadPreloadMetadataSuspend
-#else
-#define MAYBE_LoadPreloadMetadataSuspend LoadPreloadMetadataSuspend
-#endif
-TEST_F(WebMediaPlayerImplTest, MAYBE_LoadPreloadMetadataSuspend) {
+TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
   InitializeWebMediaPlayerImpl();
