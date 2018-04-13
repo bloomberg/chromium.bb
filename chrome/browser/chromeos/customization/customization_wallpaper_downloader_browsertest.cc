@@ -35,7 +35,7 @@ constexpr char kOEMWallpaperURL[] = "http://somedomain.com/image.png";
 constexpr char kServicesManifest[] =
     "{"
     "  \"version\": \"1.0\","
-    "  \"default_wallpaper\": \"http://somedomain.com/image.png\",\n"
+    "  \"default_wallpaper\": \"\%s\",\n"
     "  \"default_apps\": [\n"
     "    \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n"
     "    \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\"\n"
@@ -52,6 +52,10 @@ constexpr char kServicesManifest[] =
     "    }\n"
     "  }\n"
     "}";
+
+std::string ManifestForURL(const std::string& url) {
+  return base::StringPrintf(kServicesManifest, url.c_str());
+}
 
 // Expected minimal wallpaper download retry interval in milliseconds.
 constexpr int kDownloadRetryIntervalMS = 100;
@@ -100,7 +104,7 @@ bool ImageIsNearColor(gfx::ImageSkia image, SkColor expected_color) {
 
 class TestWallpaperObserver : public ash::mojom::WallpaperObserver {
  public:
-  explicit TestWallpaperObserver() : finished_(false), observer_binding_(this) {
+  TestWallpaperObserver() : finished_(false), observer_binding_(this) {
     ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
     observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
     WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
@@ -295,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
   chromeos::ServicesCustomizationDocument* customization =
       chromeos::ServicesCustomizationDocument::GetInstance();
   EXPECT_TRUE(
-      customization->LoadManifestFromString(std::string(kServicesManifest)));
+      customization->LoadManifestFromString(ManifestForURL(kOEMWallpaperURL)));
   observer.WaitForWallpaperChanged();
   observer.Reset();
 
@@ -326,7 +330,7 @@ IN_PROC_BROWSER_TEST_F(CustomizationWallpaperDownloaderBrowserTest,
   chromeos::ServicesCustomizationDocument* customization =
       chromeos::ServicesCustomizationDocument::GetInstance();
   EXPECT_TRUE(
-      customization->LoadManifestFromString(std::string(kServicesManifest)));
+      customization->LoadManifestFromString(ManifestForURL(kOEMWallpaperURL)));
   observer.WaitForWallpaperChanged();
   observer.Reset();
 
