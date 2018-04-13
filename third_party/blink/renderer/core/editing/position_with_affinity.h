@@ -65,6 +65,15 @@ using PositionWithAffinity = PositionWithAffinityTemplate<EditingStrategy>;
 using PositionInFlatTreeWithAffinity =
     PositionWithAffinityTemplate<EditingInFlatTreeStrategy>;
 
+PositionWithAffinity ToPositionInDOMTreeWithAffinity(
+    const PositionWithAffinity&);
+PositionWithAffinity ToPositionInDOMTreeWithAffinity(
+    const PositionInFlatTreeWithAffinity&);
+PositionInFlatTreeWithAffinity ToPositionInFlatTreeWithAffinity(
+    const PositionWithAffinity&);
+PositionInFlatTreeWithAffinity ToPositionInFlatTreeWithAffinity(
+    const PositionInFlatTreeWithAffinity&);
+
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> FromPositionInDOMTree(
     const PositionWithAffinity&);

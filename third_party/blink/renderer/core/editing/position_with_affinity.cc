@@ -33,6 +33,28 @@ bool PositionWithAffinityTemplate<Strategy>::operator==(
   return affinity_ == other.affinity_ && position_ == other.position_;
 }
 
+PositionWithAffinity ToPositionInDOMTreeWithAffinity(
+    const PositionWithAffinity& position) {
+  return position;
+}
+
+PositionWithAffinity ToPositionInDOMTreeWithAffinity(
+    const PositionInFlatTreeWithAffinity& position) {
+  return PositionWithAffinity(ToPositionInDOMTree(position.GetPosition()),
+                              position.Affinity());
+}
+
+PositionInFlatTreeWithAffinity ToPositionInFlatTreeWithAffinity(
+    const PositionWithAffinity& position) {
+  return PositionInFlatTreeWithAffinity(
+      ToPositionInFlatTree(position.GetPosition()), position.Affinity());
+}
+
+PositionInFlatTreeWithAffinity ToPositionInFlatTreeWithAffinity(
+    const PositionInFlatTreeWithAffinity& position) {
+  return position;
+}
+
 template class CORE_TEMPLATE_EXPORT
     PositionWithAffinityTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT

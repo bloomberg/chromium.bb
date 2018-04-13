@@ -192,8 +192,7 @@ PositionInFlatTreeWithAffinity NextWordPosition(
 PositionWithAffinity NextWordPosition(const Position& start) {
   const PositionInFlatTreeWithAffinity& next =
       NextWordPosition(ToPositionInFlatTree(start));
-  return PositionWithAffinity(ToPositionInDOMTree(next.GetPosition()),
-                              next.Affinity());
+  return ToPositionInDOMTreeWithAffinity(next);
 }
 
 // TODO(yosin): This function will be removed by replacing call sites to use
