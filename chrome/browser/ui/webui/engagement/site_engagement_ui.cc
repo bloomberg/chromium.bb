@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -37,7 +38,7 @@ class SiteEngagementDetailsProviderImpl
 
   // mojom::SiteEngagementDetailsProvider overrides:
   void GetSiteEngagementDetails(
-      const GetSiteEngagementDetailsCallback& callback) override {
+      GetSiteEngagementDetailsCallback callback) override {
     SiteEngagementService* service = SiteEngagementService::Get(profile_);
     std::vector<mojom::SiteEngagementDetails> scores = service->GetAllDetails();
 
@@ -50,7 +51,7 @@ class SiteEngagementDetailsProviderImpl
       engagement_info.push_back(std::move(origin_info));
     }
 
-    callback.Run(std::move(engagement_info));
+    std::move(callback).Run(std::move(engagement_info));
   }
 
   void SetSiteEngagementBaseScoreForUrl(const GURL& origin,

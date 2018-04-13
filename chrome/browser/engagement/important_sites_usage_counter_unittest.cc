@@ -4,6 +4,7 @@
 
 #include "chrome/browser/engagement/important_sites_usage_counter.h"
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -119,8 +120,8 @@ TEST_F(ImportantSitesUsageCounterTest, PopulateUsage) {
 
   ImportantSitesUsageCounter::GetUsage(
       important_sites, quota_manager, dom_storage_context,
-      base::Bind(&ImportantSitesUsageCounterTest::FetchCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&ImportantSitesUsageCounterTest::FetchCompleted,
+                     base::Unretained(this)));
   WaitForResult();
 
   EXPECT_EQ(important_sites.size(), domain_info().size());

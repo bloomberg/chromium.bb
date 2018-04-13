@@ -37,8 +37,8 @@ class SiteEngagementTopSitesProvider::HistoryQuery {
     for (history::MostVisitedURL& mv : urls_) {
       history_service_->QueryURL(
           mv.url, false,
-          base::Bind(&HistoryQuery::OnURLQueried,
-                     weak_ptr_factory_.GetWeakPtr(), base::Unretained(&mv)),
+          base::BindOnce(&HistoryQuery::OnURLQueried,
+                         weak_ptr_factory_.GetWeakPtr(), base::Unretained(&mv)),
           tracker);
       history_service_->QueryRedirectsFrom(
           mv.url,
