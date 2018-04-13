@@ -1,0 +1,62 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("tools_lib") {
+  sources = [
+    "filter_tool.cc",
+    "filter_tool.h",
+    "indexing_tool.cc",
+    "indexing_tool.h",
+  ]
+  deps = [
+    "../core/common",
+    "//base",
+    "//components/url_pattern_index:util",
+    "//url",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "filter_tool_unittest.cc",
+    "indexing_tool_unittest.cc",
+  ]
+
+  deps = [
+    ":tools_lib",
+    "../core/common",
+    "../core/common:test_support",
+    "//base",
+    "//base/test:test_support",
+    "//components/url_pattern_index:test_support",
+    "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
+    "//url",
+  ]
+}
+
+if (is_linux || is_mac || is_win) {
+  executable("subresource_filter_tool") {
+    sources = [
+      "filter_tool_main.cc",
+    ]
+    deps = [
+      ":tools_lib",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+    ]
+  }
+
+  executable("subresource_indexing_tool") {
+    sources = [
+      "indexing_tool_main.cc",
+    ]
+    deps = [
+      ":tools_lib",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+    ]
+  }
+}
