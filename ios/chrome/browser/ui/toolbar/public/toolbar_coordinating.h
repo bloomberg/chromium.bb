@@ -10,13 +10,9 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/side_swipe_toolbar_interacting.h"
 
-@protocol TabHistoryUIUpdater;
-
 // Defines a class coordinating the interactions with the toolbar.
 @protocol ToolbarCoordinating<NewTabPageControllerDelegate,
                               SideSwipeToolbarInteracting>
-
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 
 @end
 

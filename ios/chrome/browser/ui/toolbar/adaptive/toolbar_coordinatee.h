@@ -8,12 +8,12 @@
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 
-@protocol TabHistoryUIUpdater;
+@protocol PopupMenuUIUpdating;
 
 // Defines a class being coordinated by a ToolbarCoordinating.
 @protocol ToolbarCoordinatee<NewTabPageControllerDelegate, ToolbarCommands>
 
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
+- (id<PopupMenuUIUpdating>)popupMenuUIUpdater;
 
 - (UIViewController*)viewController;
 

@@ -52,6 +52,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 @synthesize mediator = _mediator;
 @synthesize presenter = _presenter;
 @synthesize requestStartTime = _requestStartTime;
+@synthesize UIUpdater = _UIUpdater;
 @synthesize webStateList = _webStateList;
 
 #pragma mark - ChromeCoordinator
@@ -112,6 +113,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 
 - (void)dismissPopupMenuAnimated:(BOOL)animated {
+  [self.UIUpdater updateUIForMenuDismissed];
   [self.presenter dismissAnimated:animated];
   self.presenter = nil;
   [self.mediator disconnect];
@@ -182,6 +184,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.presenter.presentedViewController = tableViewController;
   self.presenter.guideName = guideName;
   self.presenter.delegate = self;
+
+  [self.UIUpdater updateUIForMenuDisplayed:type];
 
   [self.presenter prepareForPresentation];
   [self.presenter presentAnimated:YES];

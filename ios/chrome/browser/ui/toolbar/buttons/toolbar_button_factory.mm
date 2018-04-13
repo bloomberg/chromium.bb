@@ -485,13 +485,13 @@ const CGFloat kOmniboxBackgroundAlpha = 0.05;
 // there is a conflict when the buttons are hidden as the stack view is setting
 // their width to 0. Setting the priority to UILayoutPriorityDefaultHigh doesn't
 // work as they would have a lower priority than other elements.
-- (void)configureButton:(UIView*)button width:(CGFloat)width {
+- (void)configureButton:(ToolbarButton*)button width:(CGFloat)width {
   NSLayoutConstraint* constraint =
       [button.widthAnchor constraintEqualToConstant:width];
   constraint.priority = UILayoutPriorityRequired - 1;
   constraint.active = YES;
   if (IsUIRefreshPhase1Enabled()) {
-    button.tintColor = self.toolbarConfiguration.buttonsTintColor;
+    button.configuration = self.toolbarConfiguration;
   }
 }
 

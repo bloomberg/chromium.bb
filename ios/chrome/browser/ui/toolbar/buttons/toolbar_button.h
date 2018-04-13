@@ -10,11 +10,15 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_component_options.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
+@class ToolbarConfiguration;
+
 const NSUInteger ControlStateSpotlighted = 0x00010000;
 
 // UIButton subclass used as a Toolbar component.
 @interface ToolbarButton : UIButton
 
+// Configuration object used to get colors.
+@property(nonatomic, weak) ToolbarConfiguration* configuration;
 // Bitmask used for SizeClass visibility.
 @property(nonatomic, assign) ToolbarComponentVisibility visibilityMask;
 // Returns true if the ToolbarButton should be hidden in the current SizeClass.
@@ -31,6 +35,9 @@ const NSUInteger ControlStateSpotlighted = 0x00010000;
 // Whether this button is spotlighted, having a light gray background. This
 // state should not be used in the same time as the selected state.
 @property(nonatomic, assign) BOOL spotlighted;
+// Whether this button is dimmed. When the button is dimmed, its tintColor is
+// changed to have a lower alpha.
+@property(nonatomic, assign) BOOL dimmed;
 
 // Returns a ToolbarButton using the three images parameters for their
 // respective state.

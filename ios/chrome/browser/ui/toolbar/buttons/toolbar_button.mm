@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 
 #include "base/logging.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
@@ -28,6 +29,8 @@ const CGFloat kSpotlightAlpha = 0.07;
 @synthesize hiddenInCurrentSizeClass = _hiddenInCurrentSizeClass;
 @synthesize hiddenInCurrentState = _hiddenInCurrentState;
 @synthesize spotlighted = _spotlighted;
+@synthesize dimmed = _dimmed;
+@synthesize configuration = _configuration;
 @synthesize spotlightView = _spotlightView;
 
 + (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage
@@ -48,7 +51,6 @@ const CGFloat kSpotlightAlpha = 0.07;
   [button setImage:image forState:UIControlStateNormal];
   button.titleLabel.textAlignment = NSTextAlignmentCenter;
   button.translatesAutoresizingMaskIntoConstraints = NO;
-  [button addSpotlight];
   return button;
 }
 
@@ -126,6 +128,20 @@ const CGFloat kSpotlightAlpha = 0.07;
   [self layoutIfNeeded];
 }
 
+- (void)setDimmed:(BOOL)dimmed {
+  if (dimmed == _dimmed)
+    return;
+  _dimmed = dimmed;
+  if (!self.configuration)
+    return;
+
+  if (dimmed) {
+    self.tintColor = self.configuration.buttonsTintColorDimmed;
+  } else {
+    self.tintColor = self.configuration.buttonsTintColor;
+  }
+}
+
 - (UIControlState)state {
   DCHECK(ControlStateSpotlighted & UIControlStateApplication);
   UIControlState state = [super state];
@@ -134,23 +150,34 @@ const CGFloat kSpotlightAlpha = 0.07;
   return state;
 }
 
-#pragma mark - Private
+- (void)setConfiguration:(ToolbarConfiguration*)configuration {
+  _configuration = configuration;
+  if (!configuration)
+    return;
 
-- (void)addSpotlight {
-  self.spotlightView = [[UIView alloc] init];
-  self.spotlightView.translatesAutoresizingMaskIntoConstraints = NO;
-  self.spotlightView.hidden = YES;
-  self.spotlightView.userInteractionEnabled = NO;
-  self.spotlightView.layer.cornerRadius = kSpotlightCornerRadius;
-  self.spotlightView.backgroundColor =
-      [UIColor colorWithWhite:0 alpha:kSpotlightAlpha];
-  [self addSubview:self.spotlightView];
-  AddSameCenterConstraints(self, self.spotlightView);
-  [self.spotlightView.widthAnchor constraintEqualToConstant:kSpotlightSize]
-      .active = YES;
-  [self.spotlightView.heightAnchor constraintEqualToConstant:kSpotlightSize]
-      .active = YES;
+  self.tintColor = configuration.buttonsTintColor;
 }
+
+- (UIView*)spotlightView {
+  if (!_spotlightView) {
+    _spotlightView = [[UIView alloc] init];
+    _spotlightView.translatesAutoresizingMaskIntoConstraints = NO;
+    _spotlightView.hidden = YES;
+    _spotlightView.userInteractionEnabled = NO;
+    _spotlightView.layer.cornerRadius = kSpotlightCornerRadius;
+    _spotlightView.backgroundColor =
+        [UIColor colorWithWhite:0 alpha:kSpotlightAlpha];
+    [self addSubview:_spotlightView];
+    AddSameCenterConstraints(self, _spotlightView);
+    [_spotlightView.widthAnchor constraintEqualToConstant:kSpotlightSize]
+        .active = YES;
+    [_spotlightView.heightAnchor constraintEqualToConstant:kSpotlightSize]
+        .active = YES;
+  }
+  return _spotlightView;
+}
+
+#pragma mark - Private
 
 // Checks if the button should be visible based on its hiddenInCurrentSizeClass
 // and hiddenInCurrentState properties, then updates its visibility accordingly.

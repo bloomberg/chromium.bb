@@ -169,19 +169,45 @@
        }];
 }
 
-#pragma mark - TabHistoryUIUpdater
+#pragma mark - PopupMenuUIUpdating
 
-- (void)updateUIForTabHistoryPresentationFrom:(ToolbarButtonType)buttonType {
-  if (buttonType == ToolbarButtonTypeBack) {
-    self.view.backButton.selected = YES;
-  } else {
-    self.view.forwardButton.selected = YES;
+- (void)updateUIForMenuDisplayed:(PopupMenuType)popupType {
+  ToolbarButton* selectedButton = nil;
+  switch (popupType) {
+    case PopupMenuTypeNavigationForward:
+      selectedButton = self.view.forwardButton;
+      break;
+    case PopupMenuTypeNavigationBackward:
+      selectedButton = self.view.backButton;
+      break;
+    case PopupMenuTypeSearch:
+      selectedButton = self.view.omniboxButton;
+      break;
+    case PopupMenuTypeTabGrid:
+      selectedButton = self.view.tabGridButton;
+      break;
+    case PopupMenuTypeToolsMenu:
+      selectedButton = self.view.toolsMenuButton;
+      break;
+  }
+
+  selectedButton.spotlighted = YES;
+
+  for (ToolbarButton* button in self.view.allButtons) {
+    button.dimmed = YES;
   }
 }
 
-- (void)updateUIForTabHistoryWasDismissed {
-  self.view.backButton.selected = NO;
-  self.view.forwardButton.selected = NO;
+- (void)updateUIForMenuDismissed {
+  self.view.backButton.spotlighted = NO;
+  self.view.forwardButton.spotlighted = NO;
+  self.view.omniboxButton.spotlighted = NO;
+  self.view.tabGridButton.spotlighted = NO;
+  self.view.toolsMenuButton.spotlighted = NO;
+
+  for (ToolbarButton* button in self.view.allButtons) {
+    button.dimmed = NO;
+  }
 }
 
 #pragma mark - Private

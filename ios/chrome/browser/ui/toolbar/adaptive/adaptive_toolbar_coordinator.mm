@@ -107,7 +107,7 @@
 
 #pragma mark - ToolbarCoordinatee
 
-- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
+- (id<PopupMenuUIUpdating>)popupMenuUIUpdater {
   return self.viewController;
 }
 

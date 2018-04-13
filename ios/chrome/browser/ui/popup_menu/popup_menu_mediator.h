@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
+
 namespace bookmarks {
 class BookmarkModel;
 }
@@ -17,15 +19,6 @@ class Tracker;
 @class PopupMenuTableViewController;
 class ReadingListModel;
 class WebStateList;
-
-// Type of popup menus.
-typedef NS_ENUM(NSInteger, PopupMenuType) {
-  PopupMenuTypeToolsMenu,
-  PopupMenuTypeNavigationBackward,
-  PopupMenuTypeNavigationForward,
-  PopupMenuTypeTabGrid,
-  PopupMenuTypeSearch,
-};
 
 // Mediator for the popup menu. This object is in charge of creating and
 // updating the items of the popup menu.

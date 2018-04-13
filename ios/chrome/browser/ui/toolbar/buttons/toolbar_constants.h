@@ -67,6 +67,11 @@ extern const CGFloat kBlurBackgroundAlpha;
 
 // Alpha for the tint color of the buttons.
 extern const CGFloat kToolbarButtonTintColorAlpha;
+// Alpha for the tint color of the buttons when in the highlighted state.
+extern const CGFloat kToolbarButtonTintColorAlphaHighlighted;
+extern const CGFloat kIncognitoToolbarButtonTintColorAlphaHighlighted;
+// Delta of alpha for the tint color of the buttons in the dimmed state.
+extern const CGFloat kToolbarButtonDimmedTintColorAlphaDelta;
 
 // Maximum number of tabs displayed by the button containing the tab count.
 extern const NSInteger kShowTabStripButtonMaxTabCount;
