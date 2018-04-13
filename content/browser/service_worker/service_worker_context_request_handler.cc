@@ -12,6 +12,7 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log.h"
@@ -22,31 +23,6 @@
 #include "services/network/public/cpp/resource_response_info.h"
 
 namespace content {
-
-namespace {
-
-bool ShouldBypassCacheDueToUpdateViaCache(
-    bool is_main_script,
-    blink::mojom::ServiceWorkerUpdateViaCache cache_mode) {
-  // TODO(https://crbug.com/675540): Remove the command line check and always
-  // respect cache_mode when shipping updateViaCache flag to stable.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    return false;
-  }
-  switch (cache_mode) {
-    case blink::mojom::ServiceWorkerUpdateViaCache::kImports:
-      return is_main_script;
-    case blink::mojom::ServiceWorkerUpdateViaCache::kNone:
-      return true;
-    case blink::mojom::ServiceWorkerUpdateViaCache::kAll:
-      return false;
-  }
-  NOTREACHED() << static_cast<int>(cache_mode);
-  return false;
-}
-
-}  // namespace
 
 ServiceWorkerContextRequestHandler::ServiceWorkerContextRequestHandler(
     base::WeakPtr<ServiceWorkerContextCore> context,
@@ -220,8 +196,8 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJobImpl(
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration->last_update_check();
 
-  if (ShouldBypassCacheDueToUpdateViaCache(is_main_script,
-                                           registration->update_via_cache()) ||
+  if (ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
+          is_main_script, registration->update_via_cache()) ||
       time_since_last_check > kServiceWorkerScriptMaxCacheAge ||
       version_->force_bypass_cache_for_scripts()) {
     extra_load_flags = net::LOAD_BYPASS_CACHE;

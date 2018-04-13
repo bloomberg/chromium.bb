@@ -52,7 +52,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
-      const network::ResourceRequest& resource_request,
+      const network::ResourceRequest& original_request,
       network::mojom::URLLoaderClientPtr client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
@@ -127,6 +127,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   // This is RESOURCE_TYPE_SERVICE_WORKER for the main script or
   // RESOURCE_TYPE_SCRIPT for an imported script.
   const ResourceType resource_type_;
+
+  std::unique_ptr<network::ResourceRequest> resource_request_;
 
   scoped_refptr<ServiceWorkerVersion> version_;
 

@@ -206,6 +206,27 @@ bool ServiceWorkerUtils::ExtractSinglePartHttpRange(
   return true;
 }
 
+bool ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
+    bool is_main_script,
+    blink::mojom::ServiceWorkerUpdateViaCache cache_mode) {
+  // TODO(https://crbug.com/675540): Remove the command line check and always
+  // respect cache_mode when shipping updateViaCache flag to stable.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return false;
+  }
+  switch (cache_mode) {
+    case blink::mojom::ServiceWorkerUpdateViaCache::kImports:
+      return is_main_script;
+    case blink::mojom::ServiceWorkerUpdateViaCache::kNone:
+      return true;
+    case blink::mojom::ServiceWorkerUpdateViaCache::kAll:
+      return false;
+  }
+  NOTREACHED() << static_cast<int>(cache_mode);
+  return false;
+}
+
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {
   if (!ServiceWorkerUtils::ScopeMatches(scope, url_))
     return false;
