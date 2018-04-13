@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/login_display_views.h"
+#include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
-#include "chrome/browser/chromeos/login/user_selection_screen_proxy.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
+#include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -20,25 +20,24 @@ namespace {
 constexpr char kLoginDisplay[] = "login";
 }  // namespace
 
-LoginDisplayViews::LoginDisplayViews(Delegate* delegate,
-                                     LoginDisplayHostViews* host)
+LoginDisplayMojo::LoginDisplayMojo(Delegate* delegate,
+                                   LoginDisplayHostMojo* host)
     : LoginDisplay(delegate),
       host_(host),
-      user_selection_screen_proxy_(
-          std::make_unique<UserSelectionScreenProxy>()),
+      user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)) {
-  user_selection_screen_->SetView(user_selection_screen_proxy_.get());
+  user_selection_screen_->SetView(user_board_view_mojo_.get());
 }
 
-LoginDisplayViews::~LoginDisplayViews() = default;
+LoginDisplayMojo::~LoginDisplayMojo() = default;
 
-void LoginDisplayViews::ClearAndEnablePassword() {}
+void LoginDisplayMojo::ClearAndEnablePassword() {}
 
-void LoginDisplayViews::Init(const user_manager::UserList& filtered_users,
-                             bool show_guest,
-                             bool show_users,
-                             bool show_new_user) {
+void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
+                            bool show_guest,
+                            bool show_users,
+                            bool show_new_user) {
   host_->SetUsers(filtered_users);
 
   // Load the login screen.
@@ -61,38 +60,38 @@ void LoginDisplayViews::Init(const user_manager::UserList& filtered_users,
   user_selection_screen_->SetUsersLoaded(true /*loaded*/);
 }
 
-void LoginDisplayViews::OnPreferencesChanged() {
+void LoginDisplayMojo::OnPreferencesChanged() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::SetUIEnabled(bool is_enabled) {
+void LoginDisplayMojo::SetUIEnabled(bool is_enabled) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::ShowError(int error_msg_id,
-                                  int login_attempts,
-                                  HelpAppLauncher::HelpTopic help_topic_id) {
+void LoginDisplayMojo::ShowError(int error_msg_id,
+                                 int login_attempts,
+                                 HelpAppLauncher::HelpTopic help_topic_id) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::ShowErrorScreen(LoginDisplay::SigninError error_id) {
+void LoginDisplayMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::ShowPasswordChangedDialog(bool show_password_error,
-                                                  const std::string& email) {
+void LoginDisplayMojo::ShowPasswordChangedDialog(bool show_password_error,
+                                                 const std::string& email) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::ShowSigninUI(const std::string& email) {
+void LoginDisplayMojo::ShowSigninUI(const std::string& email) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::ShowWhitelistCheckFailedError() {
+void LoginDisplayMojo::ShowWhitelistCheckFailedError() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayViews::ShowUnrecoverableCrypthomeErrorDialog() {
+void LoginDisplayMojo::ShowUnrecoverableCrypthomeErrorDialog() {
   NOTIMPLEMENTED();
 }
 

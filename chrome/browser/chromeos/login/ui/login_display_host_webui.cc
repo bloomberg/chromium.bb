@@ -42,7 +42,7 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -204,7 +204,7 @@ void ShowLoginWizardFinish(
     display_host = chromeos::LoginDisplayHost::default_host();
   } else if (ash::switches::IsUsingViewsLogin() &&
              ShouldShowSigninScreen(first_screen)) {
-    display_host = new chromeos::LoginDisplayHostViews();
+    display_host = new chromeos::LoginDisplayHostMojo();
   } else {
     display_host = new chromeos::LoginDisplayHostWebUI();
   }

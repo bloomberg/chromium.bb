@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/login/ui/gaia_dialog_delegate.h"
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -29,7 +29,7 @@ constexpr int kGaiaDialogWidth = 768;
 }  // namespace
 
 GaiaDialogDelegate::GaiaDialogDelegate(
-    base::WeakPtr<LoginDisplayHostViews> controller)
+    base::WeakPtr<LoginDisplayHostMojo> controller)
     : controller_(controller),
       size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {}
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_VIEWS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_VIEWS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_MOJO_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_MOJO_H_
 
 #include <memory>
 #include <string>
@@ -22,12 +22,18 @@ class GaiaDialogDelegate;
 
 // A LoginDisplayHost instance that sends requests to the views-based signin
 // screen.
-class LoginDisplayHostViews : public LoginDisplayHostCommon,
-                              public LoginScreenClient::Delegate,
-                              public AuthStatusConsumer {
+class LoginDisplayHostMojo : public LoginDisplayHostCommon,
+                             public LoginScreenClient::Delegate,
+                             public AuthStatusConsumer {
  public:
-  LoginDisplayHostViews();
-  ~LoginDisplayHostViews() override;
+  LoginDisplayHostMojo();
+  ~LoginDisplayHostMojo() override;
+
+  // Called when the gaia dialog is destroyed.
+  void OnDialogDestroyed(const GaiaDialogDelegate* dialog);
+
+  // Set the users in the views login screen.
+  void SetUsers(const user_manager::UserList& users);
 
   // LoginDisplayHost:
   LoginDisplay* CreateLoginDisplay(LoginDisplay::Delegate* delegate) override;
@@ -73,12 +79,6 @@ class LoginDisplayHostViews : public LoginDisplayHostCommon,
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
 
-  // Called when the gaia dialog is destroyed.
-  void OnDialogDestroyed(const GaiaDialogDelegate* dialog);
-
-  // Set the users in the views login screen.
-  void SetUsers(const user_manager::UserList& users);
-
  private:
   // Initialize the dialog widget for webui (for gaia and post login screens).
   void InitWidgetAndView();
@@ -97,11 +97,11 @@ class LoginDisplayHostViews : public LoginDisplayHostCommon,
   // TODO(crbug.com/808277): consider remove user case.
   user_manager::UserList users_;
 
-  base::WeakPtrFactory<LoginDisplayHostViews> weak_factory_;
+  base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostViews);
+  DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_VIEWS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_HOST_MOJO_H_

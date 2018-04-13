@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/user_selection_screen_proxy.h"
+#include "chrome/browser/chromeos/login/user_board_view_mojo.h"
 
 #include <utility>
 
@@ -63,18 +63,18 @@ ash::mojom::EasyUnlockIconOptionsPtr ToEasyUnlockIconOptionsPtr(
 
 }  // namespace
 
-UserSelectionScreenProxy::UserSelectionScreenProxy() = default;
+UserBoardViewMojo::UserBoardViewMojo() : weak_factory_(this) {}
 
-UserSelectionScreenProxy::~UserSelectionScreenProxy() = default;
+UserBoardViewMojo::~UserBoardViewMojo() = default;
 
-void UserSelectionScreenProxy::SetPublicSessionDisplayName(
+void UserBoardViewMojo::SetPublicSessionDisplayName(
     const AccountId& account_id,
     const std::string& display_name) {
   LoginScreenClient::Get()->login_screen()->SetPublicSessionDisplayName(
       account_id, display_name);
 }
 
-void UserSelectionScreenProxy::SetPublicSessionLocales(
+void UserBoardViewMojo::SetPublicSessionLocales(
     const AccountId& account_id,
     std::unique_ptr<base::ListValue> locales,
     const std::string& default_locale,
@@ -84,7 +84,7 @@ void UserSelectionScreenProxy::SetPublicSessionLocales(
       multiple_recommended_locales);
 }
 
-void UserSelectionScreenProxy::ShowUserPodCustomIcon(
+void UserBoardViewMojo::ShowUserPodCustomIcon(
     const AccountId& account_id,
     const proximity_auth::ScreenlockBridge::UserPodCustomIconOptions&
         icon_options) {
@@ -96,21 +96,19 @@ void UserSelectionScreenProxy::ShowUserPodCustomIcon(
       account_id, std::move(icon));
 }
 
-void UserSelectionScreenProxy::HideUserPodCustomIcon(
-    const AccountId& account_id) {
+void UserBoardViewMojo::HideUserPodCustomIcon(const AccountId& account_id) {
   LoginScreenClient::Get()->login_screen()->HideUserPodCustomIcon(account_id);
 }
 
-void UserSelectionScreenProxy::SetAuthType(
-    const AccountId& account_id,
-    proximity_auth::mojom::AuthType auth_type,
-    const base::string16& initial_value) {
+void UserBoardViewMojo::SetAuthType(const AccountId& account_id,
+                                    proximity_auth::mojom::AuthType auth_type,
+                                    const base::string16& initial_value) {
   LoginScreenClient::Get()->login_screen()->SetAuthType(account_id, auth_type,
                                                         initial_value);
 }
 
-base::WeakPtr<chromeos::UserBoardView> UserSelectionScreenProxy::GetWeakPtr() {
-  return base::WeakPtr<chromeos::UserBoardView>();
+base::WeakPtr<UserBoardView> UserBoardViewMojo::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace chromeos
