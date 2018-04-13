@@ -218,8 +218,11 @@ interface WallpaperController {
   // Returns the wallpaper image currently being shown.
   GetWallpaperImage() => (gfx.mojom.ImageSkia image);
 
-  // Runs to get wallpaper prominent colors.
+  // Returns the wallpaper prominent colors.
   GetWallpaperColors() => (array<uint32> prominent_colors);
+
+  // Returns whether the current wallpaper is blurred.
+  IsWallpaperBlurred() => (bool blurred);
 
   // Returns true if the wallpaper of the currently active user (if any) is
   // controlled by policy (excluding device policy). If there's no active user,
@@ -245,8 +248,8 @@ interface WallpaperControllerClient {
   // able to decide whatever the first wallpaper it wants to display.
   OnReadyToSetWallpaper();
 
-  // TODO(crbug.com/784495, 776464): Consider removing this after views-based
-  // login is enabled.
+  // TODO(wzang|784495): Consider removing this after views-based login is
+  // enabled.
   // Notifies the client that the animation of the first wallpaper since
   // the controller initialization has completed.
   OnFirstWallpaperAnimationFinished();
@@ -261,7 +264,11 @@ interface WallpaperObserver {
   // object and is different for two objects with the same pixels.
   OnWallpaperChanged(uint32 image_id);
 
-  // Called when the colors extracted from the current wallpaper change. Colors
+  // Invoked when the colors extracted from the current wallpaper change. Colors
   // are ordered and are referenced in wallpaper::ColorProfileType.
   OnWallpaperColorsChanged(array<uint32> prominent_colors);
+
+  // TODO(wzang|784495): Remove this after views-based login is enabled.
+  // Invoked when the blur state of the wallpaper changes.
+  OnWallpaperBlurChanged(bool blurred);
 };

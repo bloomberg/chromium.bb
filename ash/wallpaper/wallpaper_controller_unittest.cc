@@ -210,6 +210,8 @@ class TestWallpaperObserver : public mojom::WallpaperObserver {
       run_loop_->Quit();
   }
 
+  void OnWallpaperBlurChanged(bool blurred) override {}
+
   int wallpaper_colors_changed_count() const {
     return wallpaper_colors_changed_count_;
   }
@@ -226,8 +228,6 @@ class TestWallpaperObserver : public mojom::WallpaperObserver {
 class TestWallpaperControllerObserver : public WallpaperControllerObserver {
  public:
   TestWallpaperControllerObserver() = default;
-
-  void OnWallpaperDataChanged() override {}
 
   void OnWallpaperBlurChanged() override { ++wallpaper_blur_changed_count_; }
 

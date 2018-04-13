@@ -5,6 +5,7 @@
 #include "ash/wallpaper/wallpaper_view.h"
 
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -80,7 +81,7 @@ SkColor GetWallpaperDarkenColor() {
       Shell::Get()->wallpaper_controller()->GetProminentColor(
           color_utils::ColorProfile(color_utils::LumaRange::DARK,
                                     color_utils::SaturationRange::MUTED));
-  if (darken_color == WallpaperController::kInvalidColor)
+  if (darken_color == kInvalidWallpaperColor)
     darken_color = login_constants::kDefaultBaseColor;
 
   darken_color = color_utils::GetResultingPaintColor(

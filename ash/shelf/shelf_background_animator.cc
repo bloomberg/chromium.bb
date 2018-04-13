@@ -8,6 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
@@ -176,8 +177,6 @@ int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
   return GetTargetColorAlphaValues(background_type).first;
 }
 
-void ShelfBackgroundAnimator::OnWallpaperDataChanged() {}
-
 void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {
   AnimateBackground(target_background_type_, AnimationChangeType::ANIMATE);
 }
@@ -295,7 +294,7 @@ void ShelfBackgroundAnimator::GetTargetValues(
       wallpaper_controller_
           ? wallpaper_controller_->GetProminentColor(GetShelfColorProfile())
           : kShelfDefaultBaseColor;
-  if (target_color == WallpaperController::kInvalidColor) {
+  if (target_color == kInvalidWallpaperColor) {
     target_color = kShelfDefaultBaseColor;
   } else {
     int darkening_alpha = 0;

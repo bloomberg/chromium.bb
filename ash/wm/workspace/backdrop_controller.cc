@@ -195,8 +195,6 @@ void BackdropController::OnSplitViewDividerPositionChanged() {
   UpdateBackdrop();
 }
 
-void BackdropController::OnWallpaperDataChanged() {}
-
 void BackdropController::OnWallpaperPreviewStarted() {
   wm::GetActiveWindow()->SetProperty(kBackdropWindowMode,
                                      BackdropWindowMode::kDisabled);

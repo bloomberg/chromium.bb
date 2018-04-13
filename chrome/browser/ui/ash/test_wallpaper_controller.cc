@@ -163,6 +163,11 @@ void TestWallpaperController::GetWallpaperColors(
   NOTIMPLEMENTED();
 }
 
+void TestWallpaperController::IsWallpaperBlurred(
+    ash::mojom::WallpaperController::IsWallpaperBlurredCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void TestWallpaperController::IsActiveUserWallpaperControlledByPolicy(
     ash::mojom::WallpaperController::
         IsActiveUserWallpaperControlledByPolicyCallback callback) {

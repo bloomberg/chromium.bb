@@ -13,6 +13,7 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -776,7 +777,7 @@ void WindowGrid::InitShieldWidget() {
     SkColor dark_muted_color =
         Shell::Get()->wallpaper_controller()->GetProminentColor(
             color_utils::ColorProfile());
-    if (dark_muted_color != ash::WallpaperController::kInvalidColor) {
+    if (dark_muted_color != ash::kInvalidWallpaperColor) {
       shield_color = color_utils::GetResultingPaintColor(kShieldBaseColor,
                                                          dark_muted_color);
     }

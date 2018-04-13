@@ -384,6 +384,11 @@ void WallpaperControllerClient::GetWallpaperColors(
   wallpaper_controller_->GetWallpaperColors(std::move(callback));
 }
 
+void WallpaperControllerClient::IsWallpaperBlurred(
+    ash::mojom::WallpaperController::IsWallpaperBlurredCallback callback) {
+  wallpaper_controller_->IsWallpaperBlurred(std::move(callback));
+}
+
 void WallpaperControllerClient::IsActiveUserWallpaperControlledByPolicy(
     ash::mojom::WallpaperController::
         IsActiveUserWallpaperControlledByPolicyCallback callback) {

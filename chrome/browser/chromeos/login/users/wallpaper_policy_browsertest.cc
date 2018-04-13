@@ -253,6 +253,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override {}
 
+  void OnWallpaperBlurChanged(bool blurred) override {}
+
   // Runs the loop until wallpaper has changed to the expected color.
   void RunUntilWallpaperChangeToColor(const SkColor& expected_color) {
     while (expected_color != GetAverageWallpaperColor()) {

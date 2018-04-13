@@ -12,12 +12,12 @@
 
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/wallpaper_types.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/location.h"
@@ -70,6 +70,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -281,6 +282,7 @@ SigninScreenHandler::SigninScreenHandler(
       session_manager_observer_(this),
       lock_screen_apps_observer_(this),
       detachable_base_observer_(this),
+      observer_binding_(this),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
@@ -319,9 +321,10 @@ SigninScreenHandler::SigninScreenHandler(
   session_manager_observer_.Add(session_manager::SessionManager::Get());
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
-  // TODO(wzang): Make this work under mash.
-  if (GetAshConfig() != ash::Config::MASH)
-    ash::Shell::Get()->wallpaper_controller()->AddObserver(this);
+
+  ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
+  observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+  WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
   // TODO(tbarzic): This is needed for login UI - remove it when login switches
   // to views implementation (or otherwise, make it work under mash).
   if (GetAshConfig() != ash::Config::MASH)
@@ -346,10 +349,6 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
-
-  // TODO(wzang): Make this work under mash.
-  if (GetAshConfig() != ash::Config::MASH)
-    ash::Shell::Get()->wallpaper_controller()->RemoveObserver(this);
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -908,31 +907,6 @@ void SigninScreenHandler::ReloadGaia(bool force_reload) {
   gaia_screen_handler_->ReloadGaia(force_reload);
 }
 
-void SigninScreenHandler::UpdateAccountPickerColors() {
-  color_utils::ColorProfile color_profile(color_utils::LumaRange::DARK,
-                                          color_utils::SaturationRange::MUTED);
-  SkColor dark_muted_color = ash::login_constants::kDefaultBaseColor;
-  // TODO(wzang): Make this work under mash.
-  if (GetAshConfig() != ash::Config::MASH) {
-    dark_muted_color =
-        ash::Shell::Get()->wallpaper_controller()->GetProminentColor(
-            color_profile);
-  }
-  if (dark_muted_color == ash::WallpaperController::kInvalidColor)
-    dark_muted_color = ash::login_constants::kDefaultBaseColor;
-
-  dark_muted_color = SkColorSetA(dark_muted_color, 0xFF);
-  SkColor base_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(ash::login_constants::kDefaultBaseColor,
-                  ash::login_constants::kTranslucentColorDarkenAlpha),
-      dark_muted_color);
-  SkColor scroll_color =
-      SkColorSetA(base_color, ash::login_constants::kScrollTranslucentAlpha);
-  CallJSOrDefer("login.AccountPickerScreen.setOverlayColors",
-                color_utils::SkColorToRgbaString(dark_muted_color),
-                color_utils::SkColorToRgbaString(scroll_color));
-}
-
 void SigninScreenHandler::Initialize() {
   // Preload PIN keyboard if any of the users can authenticate via PIN.
   if (user_manager::UserManager::IsInitialized()) {
@@ -973,19 +947,32 @@ void SigninScreenHandler::OnCurrentScreenChanged(OobeScreen current_screen,
   }
 }
 
-void SigninScreenHandler::OnWallpaperDataChanged() {}
+void SigninScreenHandler::OnWallpaperChanged(uint32_t image_id) {}
 
-void SigninScreenHandler::OnWallpaperColorsChanged() {
-  UpdateAccountPickerColors();
+void SigninScreenHandler::OnWallpaperColorsChanged(
+    const std::vector<SkColor>& prominent_colors) {
+  // Updates the color of the scrollable container on account picker screen,
+  // based on wallpaper color extraction results.
+  SkColor dark_muted_color =
+      prominent_colors[static_cast<int>(ash::ColorProfileType::DARK_MUTED)];
+  if (dark_muted_color == ash::kInvalidWallpaperColor)
+    dark_muted_color = ash::login_constants::kDefaultBaseColor;
+
+  dark_muted_color = SkColorSetA(dark_muted_color, 0xFF);
+  SkColor base_color = color_utils::GetResultingPaintColor(
+      SkColorSetA(ash::login_constants::kDefaultBaseColor,
+                  ash::login_constants::kTranslucentColorDarkenAlpha),
+      dark_muted_color);
+  SkColor scroll_color =
+      SkColorSetA(base_color, ash::login_constants::kScrollTranslucentAlpha);
+  CallJSOrDefer("login.AccountPickerScreen.setOverlayColors",
+                color_utils::SkColorToRgbaString(dark_muted_color),
+                color_utils::SkColorToRgbaString(scroll_color));
 }
 
-void SigninScreenHandler::OnWallpaperBlurChanged() {
-  bool show_pod_background =
-      GetAshConfig() == ash::Config::MASH
-          ? false
-          : !ash::Shell::Get()->wallpaper_controller()->IsWallpaperBlurred();
+void SigninScreenHandler::OnWallpaperBlurChanged(bool blurred) {
   CallJSOrDefer("login.AccountPickerScreen.togglePodBackground",
-                show_pod_background);
+                !blurred /*show_pod_background=*/);
 }
 
 void SigninScreenHandler::ClearAndEnablePassword() {
@@ -1407,8 +1394,13 @@ void SigninScreenHandler::HandleAccountPickerReady() {
   }
   // The wallpaper may have been set before the instance is initialized, so make
   // sure the colors and blur state are updated.
-  OnWallpaperColorsChanged();
-  OnWallpaperBlurChanged();
+  WallpaperControllerClient::Get()->GetWallpaperColors(
+      base::BindOnce(&SigninScreenHandler::OnWallpaperColorsChanged,
+                     weak_factory_.GetWeakPtr()));
+  WallpaperControllerClient::Get()->IsWallpaperBlurred(
+      base::BindOnce(&SigninScreenHandler::OnWallpaperBlurChanged,
+                     weak_factory_.GetWeakPtr()));
+
   if (delegate_)
     delegate_->OnSigninScreenReady();
 }

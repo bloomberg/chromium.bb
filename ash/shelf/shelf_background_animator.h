@@ -94,7 +94,6 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
                                AnimationChangeType change_type) override;
 
   // WallpaperControllerObserver:
-  void OnWallpaperDataChanged() override;
   void OnWallpaperColorsChanged() override;
 
   // SessionObserver:
