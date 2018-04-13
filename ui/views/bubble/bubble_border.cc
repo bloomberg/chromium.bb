@@ -184,10 +184,9 @@ BubbleBorder::~BubbleBorder() {}
 // static
 gfx::Insets BubbleBorder::GetBorderAndShadowInsets(
     base::Optional<int> elevation) {
-  if (elevation.has_value()) {
-    return -gfx::ShadowValue::GetMargin(GetShadowValues(elevation)) +
-           gfx::Insets(kBorderThicknessDip);
-  }
+  // Borders with custom shadow elevations do not draw the 1px border.
+  if (elevation.has_value())
+    return -gfx::ShadowValue::GetMargin(GetShadowValues(elevation));
 
   constexpr gfx::Insets blur(kShadowBlur + kBorderThicknessDip);
   constexpr gfx::Insets offset(-kShadowVerticalOffset, 0, kShadowVerticalOffset,
@@ -218,11 +217,14 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     // Apply the border part of the inset before calculating coordinates because
     // the border should align with the anchor's border. For the purposes of
     // positioning, the border is rounded up to a dip, which may mean we have
-    // misalignment in scale factors greater than 1.
+    // misalignment in scale factors greater than 1. Borders with custom shadow
+    // elevations do not draw the 1px border.
     // TODO(estade): when it becomes possible to provide px bounds instead of
     // dip bounds, fix this.
     const gfx::Insets border_insets =
-        shadow_ == NO_ASSETS ? gfx::Insets() : gfx::Insets(kBorderThicknessDip);
+        shadow_ == NO_ASSETS || md_shadow_elevation_.has_value()
+            ? gfx::Insets()
+            : gfx::Insets(kBorderThicknessDip);
     const gfx::Insets shadow_insets = GetInsets() - border_insets;
     contents_bounds.Inset(-border_insets);
     if (arrow_ == TOP_RIGHT) {

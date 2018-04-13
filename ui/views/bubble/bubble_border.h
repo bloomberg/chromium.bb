@@ -188,11 +188,14 @@ class VIEWS_EXPORT BubbleBorder : public Border {
       void (cc::PaintCanvas::*draw)(const T&, const cc::PaintFlags&),
       gfx::Canvas* canvas,
       base::Optional<int> shadow_elevation = base::nullopt) {
-    // Provide a 1 px border outside the bounds.
-    const int kBorderStrokeThicknessPx = 1;
-    const SkScalar one_pixel =
-        SkFloatToScalar(kBorderStrokeThicknessPx / canvas->image_scale());
-    rect.outset(one_pixel, one_pixel);
+    // Borders with custom shadow elevations do not draw the 1px border.
+    if (!shadow_elevation.has_value()) {
+      // Provide a 1 px border outside the bounds.
+      const int kBorderStrokeThicknessPx = 1;
+      const SkScalar one_pixel =
+          SkFloatToScalar(kBorderStrokeThicknessPx / canvas->image_scale());
+      rect.outset(one_pixel, one_pixel);
+    }
 
     (canvas->sk_canvas()->*draw)(rect,
                                  GetBorderAndShadowFlags(shadow_elevation));
