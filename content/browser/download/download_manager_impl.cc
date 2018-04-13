@@ -104,7 +104,7 @@ StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
 }
 
 bool CanRequestURLFromRenderer(int render_process_id, GURL url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           render_process_id, url)) {
@@ -115,11 +115,12 @@ bool CanRequestURLFromRenderer(int render_process_id, GURL url) {
   return true;
 }
 
+// Creates an interrupted download and calls StartDownload. Can be called on
+// any thread.
 void CreateInterruptedDownload(
-    download::DownloadUrlParameters* params,
+    std::unique_ptr<download::DownloadUrlParameters> params,
     download::DownloadInterruptReason reason,
     base::WeakPtr<DownloadManagerImpl> download_manager) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   std::unique_ptr<download::DownloadCreateInfo> failed_created_info(
       new download::DownloadCreateInfo(
           base::Time::Now(), base::WrapUnique(new download::DownloadSaveInfo)));
@@ -189,8 +190,10 @@ void BeginDownload(std::unique_ptr<download::DownloadUrlParameters> params,
     // If the download was accepted, the DownloadResourceHandler is now
     // responsible for driving the request to completion.
     // Otherwise, create an interrupted download.
-    if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE)
-      CreateInterruptedDownload(params.get(), reason, download_manager);
+    if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE) {
+      CreateInterruptedDownload(std::move(params), reason, download_manager);
+      return;
+    }
   } else {
     downloader.reset(UrlDownloader::BeginDownload(download_manager,
                                                   std::move(url_request),
@@ -217,28 +220,17 @@ void BeginResourceDownload(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // TODO(qinmin): Check the storage permission before creating the URLLoader.
+  // This is already done for context menu download, but it is missing for
+  // download service and download resumption.
   download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader(
-      nullptr, base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+      download::ResourceDownloader::BeginDownload(
+          download_manager, std::move(params), std::move(request),
+          url_loader_factory_getter->GetURLLoaderFactory(), site_url, tab_url,
+          tab_referrer_url, download_id, false, task_runner)
+          .release(),
+      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
 
-  // Check if the renderer is permitted to request the requested URL.
-  if (params->render_process_host_id() >= 0 &&
-      !CanRequestURLFromRenderer(params->render_process_host_id(),
-                                 params->url())) {
-    CreateInterruptedDownload(
-        params.get(),
-        download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
-        download_manager);
-  } else {
-    // TODO(qinmin): Check the storage permission before creating the URLLoader.
-    // This is already done for context menu download, but it is missing for
-    // download service and download resumption.
-    downloader.reset(
-        download::ResourceDownloader::BeginDownload(
-            download_manager, std::move(params), std::move(request),
-            url_loader_factory_getter->GetURLLoaderFactory(), site_url, tab_url,
-            tab_referrer_url, download_id, false, task_runner)
-            .release());
-  }
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -930,10 +922,6 @@ download::DownloadInterruptReason DownloadManagerImpl::BeginDownloadRequest(
 
   const GURL& url = url_request->original_url();
 
-  // Check if the renderer is permitted to request the requested URL.
-  if (!CanRequestURLFromRenderer(params->render_process_host_id(), url))
-    return download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
-
   const net::URLRequestContext* request_context = url_request->context();
   if (!request_context->job_factory()->IsHandledProtocol(url.scheme())) {
     DVLOG(1) << "Download request for unsupported protocol: "
@@ -1300,6 +1288,17 @@ void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     uint32_t id,
     StoragePartitionImpl* storage_partition) {
+  // Check if the renderer is permitted to request the requested URL.
+  if (params->render_process_host_id() >= 0 &&
+      !CanRequestURLFromRenderer(params->render_process_host_id(),
+                                 params->url())) {
+    CreateInterruptedDownload(
+        std::move(params),
+        download::DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST,
+        weak_factory_.GetWeakPtr());
+    return;
+  }
+
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     std::unique_ptr<network::ResourceRequest> request =
         download::CreateResourceRequest(params.get());
