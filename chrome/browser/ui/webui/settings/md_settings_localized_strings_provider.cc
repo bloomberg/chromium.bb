@@ -65,7 +65,11 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "base/metrics/field_trial_params.h"
 #endif
+#endif  // defined(OS_WIN)
 
 #if defined(USE_NSS_CERTS)
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
@@ -900,10 +904,17 @@ void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-  // TODO(pmonette): Add the help URL when available.
-  base::string16 learn_how_text = l10n_util::GetStringFUTF16(
-      IDS_SETTINGS_INCOMPATIBLE_APPLICATIONS_SUBPAGE_LEARN_HOW,
-      base::ASCIIToUTF16("chrome://placeholder"));
+
+  // The help URL is provided via Field Trial param. If none is provided, the
+  // "Learn How" text is left empty so that no link is displayed.
+  base::string16 learn_how_text;
+  std::string help_url = GetFieldTrialParamValueByFeature(
+      features::kIncompatibleApplicationsWarning, "HelpURL");
+  if (!help_url.empty()) {
+    learn_how_text = l10n_util::GetStringFUTF16(
+        IDS_SETTINGS_INCOMPATIBLE_APPLICATIONS_SUBPAGE_LEARN_HOW,
+        base::UTF8ToUTF16(help_url));
+  }
   html_source->AddString("incompatibleApplicationsSubpageLearnHow",
                          learn_how_text);
 }
