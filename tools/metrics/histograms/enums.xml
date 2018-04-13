@@ -15091,6 +15091,8 @@ Called by update_net_error_codes.py.-->
   <int value="1238" label="NOTIFICATIONS_GETPERMISSIONLEVEL"/>
   <int value="1239" label="FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED"/>
   <int value="1240" label="FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE"/>
+  <int value="1241"
+      label="ENTERPRISEREPORTINGPRIVATE_UPLOADCHROMEDESKTOPREPORT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -15524,6 +15526,7 @@ Called by update_net_error_codes.py.-->
   <int value="207" label="kDeclarativeNetRequest"/>
   <int value="208" label="kLockWindowFullscreenPrivate"/>
   <int value="209" label="kWebrtcLoggingPrivateAudioDebug"/>
+  <int value="210" label="kEnterpriseReportingPrivate"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">

@@ -291,6 +291,15 @@
       "2C18988BCDC297196D5D6893005175DA1BC1E893"   // http://crbug.com/570127
     ]
   },
+  "enterprise.reportingPrivate": {
+    "channel": "beta",
+    "extension_types": ["extension"],
+    "platforms" : ["win", "mac", "linux"],
+    "whitelist" : [
+      "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD",  // https://crbug.com/825015
+      "08455FA7CB8734168378F731B00B354CEEE0088F"   // https://crbug.com/825015 - Test Extension
+    ]
+  },
   "experimental": {
     "channel": "stable",
     "command_line_switch": "experimental-extension-apis",

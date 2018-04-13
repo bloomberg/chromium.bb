@@ -101,6 +101,7 @@ class APIPermission {
     kEmbeddedExtensionOptions,
     kEnterprisePlatformKeys,
     kEnterprisePlatformKeysPrivate,
+    kEnterpriseReportingPrivate,
     kDeleted_ExperienceSamplingPrivate,
     kExperimental,
     kExtensionView,

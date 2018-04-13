@@ -159,6 +159,8 @@ ChromeAPIPermissions::GetAllPermissions() const {
       {APIPermission::kEnterprisePlatformKeysPrivate,
        "enterprise.platformKeysPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kEnterpriseReportingPrivate,
+       "enterprise.reportingPrivate", APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWebrtcAudioPrivate, "webrtcAudioPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWebrtcDesktopCapturePrivate,
