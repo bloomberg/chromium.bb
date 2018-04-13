@@ -1908,6 +1908,8 @@ enum WebFeature {
   kXRSupportsSession = 2416,
   kXRSessionGetInputSources = 2417,
   kCSSResizeAuto = 2418,
+  kPrefixedCursorGrab = 2419,
+  kPrefixedCursorGrabbing = 2420,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

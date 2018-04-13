@@ -18280,6 +18280,8 @@ Called by update_net_error_codes.py.-->
   <int value="2416" label="XRSupportsSession"/>
   <int value="2417" label="XRSessionGetInputSources"/>
   <int value="2418" label="CSSResizeAuto"/>
+  <int value="2419" label="PrefixedCursorGrab"/>
+  <int value="2420" label="PrefixedCursorGrabbing"/>
 </enum>
 
 <enum name="FeedbackSource">
