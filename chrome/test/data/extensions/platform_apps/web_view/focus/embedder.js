@@ -640,11 +640,8 @@ function testFocusTracksEmbedderRunNextStep() {
   window.addEventListener('message', function(e) {
     var data = JSON.parse(e.data);
     LOG('send window.message, data: ' + data);
-    if (data[0] == 'response-seenBlurAfterFocus') {
+    if (data[0] == 'response-seenBlurAfterFocus')
       chrome.test.sendMessage('TEST_STEP_PASSED');
-    } else {
-      chrome.test.sendMessage('TEST_STEP_FAILED');
-    }
   });
 }
 
