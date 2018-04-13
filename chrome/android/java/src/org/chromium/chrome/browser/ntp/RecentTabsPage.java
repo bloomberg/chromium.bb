@@ -103,11 +103,11 @@ public class RecentTabsPage
         // {@link #mInForeground} will be updated once the view is attached to the window.
 
         View recentTabsRoot = mView.findViewById(R.id.recent_tabs_root);
-        if (activity.getBottomSheet() != null) {
+        if (activity.getFullscreenManager().getBottomControlsHeight() != 0) {
             ApiCompatibilityUtils.setPaddingRelative(recentTabsRoot,
                     ApiCompatibilityUtils.getPaddingStart(recentTabsRoot), 0,
                     ApiCompatibilityUtils.getPaddingEnd(recentTabsRoot),
-                    resources.getDimensionPixelSize(R.dimen.bottom_control_container_peek_height));
+                    activity.getFullscreenManager().getBottomControlsHeight());
         }
 
         onUpdated();
