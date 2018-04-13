@@ -12,8 +12,8 @@ source_set("device_sharing") {
     "//base",
     "//components/handoff",
     "//components/prefs",
+    "//components/prefs/ios",
     "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/prefs",
     "//net",
     "//url",
   ]
