@@ -8,6 +8,7 @@
 #include "base/containers/span.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
 #include "skia/public/interfaces/bitmap.mojom.h"
+#include "skia/public/interfaces/image_info_struct_traits.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
@@ -20,11 +21,7 @@ template <>
 struct StructTraits<skia::mojom::BitmapDataView, SkBitmap> {
   static bool IsNull(const SkBitmap& b);
   static void SetToNull(SkBitmap* b);
-  static skia::mojom::ColorType color_type(const SkBitmap& b);
-  static skia::mojom::AlphaType alpha_type(const SkBitmap& b);
-  static skia::mojom::ColorProfileType profile_type(const SkBitmap& b);
-  static uint32_t width(const SkBitmap& b);
-  static uint32_t height(const SkBitmap& b);
+  static const SkImageInfo& image_info(const SkBitmap& b);
   static uint64_t row_bytes(const SkBitmap& b);
   static BitmapBuffer pixel_data(const SkBitmap& b);
   static bool Read(skia::mojom::BitmapDataView data, SkBitmap* b);

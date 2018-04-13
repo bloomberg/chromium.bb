@@ -45,9 +45,9 @@ public class FaceDetectionImpl implements FaceDetection {
 
         // FaceDetector requires an even width, so pad the image if the width is odd.
         // https://developer.android.com/reference/android/media/FaceDetector.html#FaceDetector(int, int, int)
-        final int width = bitmapData.width + (bitmapData.width % 2);
-        final int height = bitmapData.height;
-        if (width != bitmapData.width) {
+        final int width = bitmapData.imageInfo.width + (bitmapData.imageInfo.width % 2);
+        final int height = bitmapData.imageInfo.height;
+        if (width != bitmapData.imageInfo.width) {
             Bitmap paddedBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(paddedBitmap);
             canvas.drawBitmap(bitmap, 0, 0, null);

@@ -31,6 +31,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
+  void EchoImageInfo(const SkImageInfo& i,
+                     EchoImageInfoCallback callback) override {
+    std::move(callback).Run(i);
+  }
+
   void EchoBitmap(const SkBitmap& b, EchoBitmapCallback callback) override {
     std::move(callback).Run(b);
   }
@@ -52,6 +57,16 @@ static bool colorspace_srgb_gamma(SkColorSpace* cs) {
 }
 
 }  // namespace
+
+TEST_F(StructTraitsTest, ImageInfo) {
+  SkImageInfo input = SkImageInfo::Make(
+      34, 56, SkColorType::kGray_8_SkColorType,
+      SkAlphaType::kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SkImageInfo output;
+  proxy->EchoImageInfo(input, &output);
+  EXPECT_EQ(input, output);
+}
 
 TEST_F(StructTraitsTest, Bitmap) {
   SkBitmap input;

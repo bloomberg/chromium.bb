@@ -38,10 +38,10 @@ public class TestUtils {
         bitmap.copyPixelsToBuffer(buffer);
 
         org.chromium.skia.mojom.Bitmap mojoBitmap = new org.chromium.skia.mojom.Bitmap();
-        mojoBitmap.width = bitmap.getWidth();
-        mojoBitmap.height = bitmap.getHeight();
+        mojoBitmap.imageInfo.width = bitmap.getWidth();
+        mojoBitmap.imageInfo.height = bitmap.getHeight();
         mojoBitmap.pixelData = buffer.array();
-        mojoBitmap.colorType = ColorType.RGBA_8888;
+        mojoBitmap.imageInfo.colorType = ColorType.RGBA_8888;
         return mojoBitmap;
     }
 

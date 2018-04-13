@@ -5,4 +5,5 @@
 typemaps = [
   "//skia/public/interfaces/blur_image_filter_tile_mode.typemap",
   "//skia/public/interfaces/skbitmap.typemap",
+  "//skia/public/interfaces/skimageinfo.typemap",
 ]

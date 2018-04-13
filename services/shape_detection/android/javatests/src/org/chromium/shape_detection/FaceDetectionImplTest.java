@@ -103,12 +103,12 @@ public class FaceDetectionImplTest {
     @Feature({"ShapeDetection"})
     public void testDetectHandlesOddWidthWithAndroidAPI() throws Exception {
         // Pad the image so that the width is odd.
-        Bitmap paddedBitmap = Bitmap.createBitmap(MONA_LISA_BITMAP.width + 1,
-                MONA_LISA_BITMAP.height, Bitmap.Config.ARGB_8888);
+        Bitmap paddedBitmap = Bitmap.createBitmap(MONA_LISA_BITMAP.imageInfo.width + 1,
+                MONA_LISA_BITMAP.imageInfo.height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(paddedBitmap);
         canvas.drawBitmap(BitmapUtils.convertToBitmap(MONA_LISA_BITMAP), 0, 0, null);
         org.chromium.skia.mojom.Bitmap mojoBitmap = TestUtils.mojoBitmapFromBitmap(paddedBitmap);
-        Assert.assertEquals(1, mojoBitmap.width % 2);
+        Assert.assertEquals(1, mojoBitmap.imageInfo.width % 2);
 
         FaceDetectionResult[] results = detect(mojoBitmap, true, DetectionProviderType.ANDROID);
         Assert.assertEquals(1, results.length);
