@@ -2291,6 +2291,12 @@ crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/832071 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-008.html [ Failure ]
+crbug.com/626703 [ Mac10.11 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-006.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-005.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-fonts/font-variant-descriptor-01.html [ Failure ]
+crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-007.html [ Failure ]
 crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-negative.html [ Timeout ]
 crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-positive.html [ Timeout ]
 crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-zero.html [ Timeout ]
