@@ -89,9 +89,6 @@ namespace easyUnlockPrivate {
 
   // Device information that can be authenticated for Easy unlock.
   dictionary Device {
-    // The Bluetooth address of the device.
-    DOMString bluetoothAddress;
-
     // The name of the device.
     DOMString? name;
 
