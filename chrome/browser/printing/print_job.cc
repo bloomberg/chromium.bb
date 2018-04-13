@@ -363,7 +363,6 @@ void PrintJob::UpdatePrintedDocument(
   DCHECK(new_document);
 
   document_ = new_document;
-  settings_ = document_->settings();
   if (worker_)
     SyncPrintedDocumentToWorker();
 }
