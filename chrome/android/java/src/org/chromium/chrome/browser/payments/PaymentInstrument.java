@@ -143,6 +143,11 @@ public abstract class PaymentInstrument extends EditableOption {
         return true;
     }
 
+    /** @return Whether skip-UI flow with this instrument requires a user gesture. */
+    public boolean isUserGestureRequiredToSkipUi() {
+        return true;
+    }
+
     /**
      * Invoke the payment app to retrieve the instrument details.
      *
