@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/prefs/pref_observer_bridge.h"
+#import "components/prefs/ios/pref_observer_bridge.h"
 
 #include "base/bind.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -12,16 +12,14 @@
 #endif
 
 PrefObserverBridge::PrefObserverBridge(id<PrefObserverDelegate> delegate)
-    : delegate_(delegate) {
-}
+    : delegate_(delegate) {}
 
-PrefObserverBridge::~PrefObserverBridge() {
-}
+PrefObserverBridge::~PrefObserverBridge() {}
 
 void PrefObserverBridge::ObserveChangesForPreference(
     const std::string& pref_name,
     PrefChangeRegistrar* registrar) {
-  PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
+  PrefChangeRegistrar::NamedChangeCallback callback = base::BindRepeating(
       &PrefObserverBridge::OnPreferenceChanged, base::Unretained(this));
   registrar->Add(pref_name.c_str(), callback);
 }

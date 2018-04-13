@@ -10,12 +10,12 @@ source_set("prefs") {
     "ios_chrome_pref_service_factory.cc",
     "ios_chrome_pref_service_factory.h",
     "pref_observer_bridge.h",
-    "pref_observer_bridge.mm",
   ]
   deps = [
     "//base",
     "//components/content_settings/core/browser",
     "//components/prefs",
+    "//components/prefs/ios",
     "//components/proxy_config",
     "//components/search_engines",
     "//components/sync_preferences",
