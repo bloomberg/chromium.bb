@@ -120,7 +120,7 @@ void UiInputManager::HandleInput(base::TimeTicks current_time,
   auto element_local_point = reticle_model->target_local_point;
   if (input_capture_element_id_) {
     auto* captured = scene_->GetUiElementById(input_capture_element_id_);
-    if (captured) {
+    if (captured && captured->IsVisible()) {
       HitTestRequest request;
       request.ray_target = reticle_model->target_point;
       request.max_distance_to_plane = 2 * scene_->background_distance();

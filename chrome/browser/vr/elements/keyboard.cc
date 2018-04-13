@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/elements/keyboard.h"
 
+#include "chrome/browser/vr/frame_lifecycle.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 
 namespace vr {
@@ -101,7 +102,7 @@ void Keyboard::AdvanceKeyboardFrameIfNeeded() {
   // If the update phase is not dirty, the frame will be advanced in
   // OnBeginFrame. That is, we only call OnBeginFrame below when the element is
   // not visible (i.e UiElement::kDirty is true).
-  if (!delegate_ || update_phase() != UiElement::kDirty)
+  if (!delegate_ || update_phase() != kDirty)
     return;
 
   delegate_->OnBeginFrame();

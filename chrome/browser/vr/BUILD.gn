@@ -124,6 +124,8 @@ static_library("vr_common") {
     "font_fallback.h",
     "fps_meter.cc",
     "fps_meter.h",
+    "frame_lifecycle.cc",
+    "frame_lifecycle.h",
     "ganesh_surface_provider.cc",
     "ganesh_surface_provider.h",
     "keyboard_delegate.h",

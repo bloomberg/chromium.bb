@@ -242,7 +242,6 @@ void UiElement::UpdateInput(const EditedText& info) {
 }
 
 bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
-  set_update_phase(UiElement::kDirty);
   // TODO(mthiesse): This is overly cautious. We may have keyframe_models but
   // not trigger any updates, so we should refine this logic and have
   // Animation::Tick return a boolean. Similarly, the bindings update may have
@@ -258,7 +257,7 @@ bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
                 updated_bindings_this_frame_) &&
                was_visible_at_any_point;
 
-  if (!kEnableOptimizedTreeWalks || was_visible_at_any_point ||
+  if (true || !kEnableOptimizedTreeWalks || was_visible_at_any_point ||
       visibility_bindings_depend_on_child_visibility_) {
     for (auto& child : children_)
       dirty |= child->DoBeginFrame(head_pose);
@@ -301,7 +300,11 @@ void UiElement::SetVisibleImmediately(bool visible) {
 }
 
 bool UiElement::IsVisible() const {
-  return opacity() > 0.0f && computed_opacity() > 0.0f;
+  DCHECK(update_phase_ >= kUpdatedComputedOpacity ||
+         FrameLifecycle::phase() >= kUpdatedComputedOpacity);
+  // TODO(crbug.com/832216): we shouldn't need to check opacity() here.
+  return update_phase_ != kDirty && opacity() > 0.0f &&
+         computed_opacity() > 0.0f;
 }
 
 bool UiElement::IsOrWillBeLocallyVisible() const {
