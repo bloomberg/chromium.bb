@@ -170,6 +170,8 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
                 @Override
                 public void onShowContextualSearch(
                         @Nullable GSAContextDisplaySelection selectionContext) {
+                    // Contextual Search can call this method more than once per show event.
+                    if (mIsCompositedUIShowing) return;
                     mWasSheetShowing = mBottomSheet.getSheetState() == BottomSheet.SHEET_STATE_PEEK;
                     mIsCompositedUIShowing = true;
                     mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false,
