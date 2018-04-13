@@ -189,6 +189,7 @@ var MainView = (function() {
       addTab(AltSvcView);
       addTab(SpdyView);
       addTab(QuicView);
+      addTab(ReportingView);
       addTab(HttpCacheView);
       addTab(ModulesView);
       addTab(DomainSecurityPolicyView);

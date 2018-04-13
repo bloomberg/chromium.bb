@@ -37,6 +37,7 @@
 // <include src="log_grouper.js">
 // <include src="proxy_view.js">
 // <include src="quic_view.js">
+// <include src="reporting_view.js">
 // <include src="socket_pool_wrapper.js">
 // <include src="sockets_view.js">
 // <include src="alt_svc_view.js">

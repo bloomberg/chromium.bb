@@ -73,6 +73,8 @@ class NET_EXPORT ReportingService {
 
   virtual const ReportingPolicy& GetPolicy() const = 0;
 
+  virtual base::Value StatusAsValue() const;
+
  protected:
   ReportingService() {}
 
