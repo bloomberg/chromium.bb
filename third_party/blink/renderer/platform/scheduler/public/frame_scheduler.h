@@ -11,14 +11,14 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
-#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_global_scope_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 class PageScheduler;
 
-class FrameScheduler : public FrameOrWorkerGlobalScopeScheduler {
+class FrameScheduler : public FrameOrWorkerScheduler {
  public:
   virtual ~FrameScheduler() = default;
 

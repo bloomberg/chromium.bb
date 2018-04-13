@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_
 
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
-// This is the base class of FrameScheduler and WorkerGlobalScopeScheduler.
-class FrameOrWorkerGlobalScopeScheduler {
-  USING_FAST_MALLOC(FrameOrWorkerGlobalScopeScheduler);
+// This is the base class of FrameScheduler and WorkerScheduler.
+class FrameOrWorkerScheduler {
+  USING_FAST_MALLOC(FrameOrWorkerScheduler);
 
  public:
-  virtual ~FrameOrWorkerGlobalScopeScheduler() = default;
+  virtual ~FrameOrWorkerScheduler() = default;
 
   class ActiveConnectionHandle {
    public:
@@ -34,4 +34,4 @@ class FrameOrWorkerGlobalScopeScheduler {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_GLOBAL_SCOPE_SCHEDULER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_PUBLIC_FRAME_OR_WORKER_SCHEDULER_H_

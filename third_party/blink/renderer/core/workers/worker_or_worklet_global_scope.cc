@@ -176,8 +176,7 @@ void WorkerOrWorkletGlobalScope::SetModulator(Modulator* modulator) {
   modulator_ = modulator;
 }
 
-scheduler::WorkerGlobalScopeScheduler*
-WorkerOrWorkletGlobalScope::GetScheduler() {
+scheduler::WorkerScheduler* WorkerOrWorkletGlobalScope::GetScheduler() {
   DCHECK(IsContextThread());
   return GetThread()->GetScheduler();
 }
