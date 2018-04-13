@@ -159,6 +159,10 @@ class ASH_EXPORT PowerButtonController
   // button is pressed or when |power_button_menu_timer_| fires.
   void StartPowerMenuAnimation();
 
+  // Called by |pre_shutdown_timer_| to start the cancellable pre-shutdown
+  // animation.
+  void OnPreShutdownTimeout();
+
   // Updates |button_type_| and |force_clamshell_power_button_| based on the
   // current command line.
   void ProcessCommandLine();
@@ -217,6 +221,9 @@ class ASH_EXPORT PowerButtonController
 
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
+
+  // True if power menu is already shown when pressing the power button.
+  bool menu_shown_when_power_button_down_ = false;
 
   // True if the next button release event should force the display off.
   bool force_off_on_button_up_ = false;
