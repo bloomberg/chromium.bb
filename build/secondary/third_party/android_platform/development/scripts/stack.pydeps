@@ -2,6 +2,7 @@
 #   build/print_python_deps.py --root third_party/android_platform/development/scripts --output build/secondary/third_party/android_platform/development/scripts/stack.pydeps third_party/android_platform/development/scripts/stack.py
 ../../../../build/android/pylib/__init__.py
 ../../../../build/android/pylib/constants/__init__.py
+../../../../build/android/pylib/constants/host_paths.py
 ../../../../build/android/pylib/symbols/__init__.py
 ../../../../build/android/pylib/symbols/elf_symbolizer.py
 ../../../../tools/python/llvm_symbolizer.py

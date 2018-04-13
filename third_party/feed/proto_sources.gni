@@ -5,6 +5,7 @@
 feed_lib_proto_sources = [
   "src/src/main/proto/com/google/android/libraries/feed/api/proto/stream_data.proto",
   "src/src/main/proto/search/now/proto/ui/action/feed_action.proto",
+  "src/src/main/proto/search/now/proto/ui/action/feed_action_payload.proto",
   "src/src/main/proto/search/now/proto/ui/action/piet_extensions.proto",
   "src/src/main/proto/search/now/proto/ui/piet/accessibility.proto",
   "src/src/main/proto/search/now/proto/ui/piet/actions.proto",
@@ -34,5 +35,6 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/proto/wire/feed/piet_shared_state_item.proto",
   "src/src/main/proto/search/now/proto/wire/feed/request.proto",
   "src/src/main/proto/search/now/proto/wire/feed/response.proto",
+  "src/src/main/proto/search/now/proto/wire/feed/semantic_properties.proto",
   "src/src/main/proto/search/now/proto/wire/feed/version.proto",
 ]
