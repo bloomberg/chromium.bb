@@ -54,6 +54,8 @@ var BrowserBridge = (function() {
         'altSvcMappings', 'onAltSvcMappingsChanged');
     this.addNetInfoPollableDataHelper('quicInfo', 'onQuicInfoChanged');
     this.addNetInfoPollableDataHelper(
+        'reportingInfo', 'onReportingInfoChanged');
+    this.addNetInfoPollableDataHelper(
         'httpCacheInfo', 'onHttpCacheInfoChanged');
 
     // Add other PollableDataHelpers.
@@ -478,6 +480,17 @@ var BrowserBridge = (function() {
      */
     addQuicInfoObserver: function(observer, ignoreWhenUnchanged) {
       this.pollableDataHelpers_.quicInfo.addObserver(
+          observer, ignoreWhenUnchanged);
+    },
+
+    /**
+     * Adds a listener of the Reporting info. |observer| will be called back
+     * when data is received, through:
+     *
+     *   observer.onReportingInfoChanged(reportingInfo)
+     */
+    addReportingInfoObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.reportingInfo.addObserver(
           observer, ignoreWhenUnchanged);
     },
 

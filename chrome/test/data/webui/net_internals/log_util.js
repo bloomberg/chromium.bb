@@ -99,7 +99,7 @@ function GetNetLogFileContentsAndLoadLogTask(truncate) {
   NetInternalsTest.Task.call(this);
   this.setCompleteAsync(true);
   this.truncate_ = truncate;
-};
+}
 
 GetNetLogFileContentsAndLoadLogTask.prototype = {
   __proto__: NetInternalsTest.Task.prototype,
@@ -156,6 +156,7 @@ function checkViewsAfterLogLoaded() {
     sockets: true,
     http2: true,
     quic: true,
+    reporting: true,
     'alt-svc': true,
     httpCache: true,
     modules: true,
@@ -183,6 +184,7 @@ function checkViewsAfterNetLogFileLoaded() {
     sockets: false,
     http2: false,
     quic: false,
+    reporting: false,
     'alt-svc': false,
     httpCache: false,
     modules: false,

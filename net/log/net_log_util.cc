@@ -42,6 +42,10 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/reporting/reporting_service.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
 namespace net {
 
 namespace {
@@ -448,6 +452,26 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
 
     net_info_dict->Set(NetInfoSourceToString(NET_INFO_HTTP_CACHE),
                        std::move(info_dict));
+  }
+
+  if (info_sources & NET_INFO_REPORTING) {
+#if BUILDFLAG(ENABLE_REPORTING)
+    ReportingService* reporting_service = context->reporting_service();
+    if (reporting_service) {
+      net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
+                            reporting_service->StatusAsValue());
+    } else {
+      base::Value reporting_dict(base::Value::Type::DICTIONARY);
+      reporting_dict.SetKey("reportingEnabled", base::Value(false));
+      net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
+                            std::move(reporting_dict));
+    }
+#else   // BUILDFLAG(ENABLE_REPORTING)
+    base::Value reporting_dict(base::Value::Type::DICTIONARY);
+    reporting_dict.SetKey("reportingEnabled", base::Value(false));
+    net_info_dict->SetKey(NetInfoSourceToString(NET_INFO_REPORTING),
+                          std::move(reporting_dict));
+#endif  // BUILDFLAG(ENABLE_REPORTING)
   }
 
   return net_info_dict;

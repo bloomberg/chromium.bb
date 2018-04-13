@@ -30,6 +30,7 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     sockets: true,
     http2: true,
     quic: true,
+    reporting: true,
     'alt-svc': true,
     httpCache: true,
     modules: true,
