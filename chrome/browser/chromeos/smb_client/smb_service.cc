@@ -6,9 +6,9 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
+#include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -39,12 +39,13 @@ void SmbService::Mount(const file_system_provider::MountOptions& options,
                        MountResponse callback) {
   GetSmbProviderClient()->Mount(
       share_path, base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
-                                 base::Passed(&callback), options));
+                                 base::Passed(&callback), options, share_path));
 }
 
 void SmbService::OnMountResponse(
     MountResponse callback,
     const file_system_provider::MountOptions& options,
+    const base::FilePath& share_path,
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
@@ -55,7 +56,7 @@ void SmbService::OnMountResponse(
   DCHECK_GE(mount_id, 0);
 
   file_system_provider::MountOptions mount_options(options);
-  mount_options.file_system_id = base::NumberToString(mount_id);
+  mount_options.file_system_id = CreateFileSystemId(mount_id, share_path);
 
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
