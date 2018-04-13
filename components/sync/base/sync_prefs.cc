@@ -48,6 +48,8 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
+  registry->RegisterInt64Pref(prefs::kSyncShortPollIntervalSeconds, 0);
+  registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
 
   // All datatypes are on by default, but this gets set explicitly
   // when you configure sync (when turning it on), in
@@ -112,6 +114,8 @@ void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
+  pref_service_->ClearPref(prefs::kSyncShortPollIntervalSeconds);
+  pref_service_->ClearPref(prefs::kSyncLongPollIntervalSeconds);
   pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
@@ -181,6 +185,30 @@ base::Time SyncPrefs::GetLastPollTime() const {
 void SyncPrefs::SetLastPollTime(base::Time time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetInt64(prefs::kSyncLastPollTime, time.ToInternalValue());
+}
+
+base::TimeDelta SyncPrefs::GetShortPollInterval() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::TimeDelta::FromSeconds(
+      pref_service_->GetInt64(prefs::kSyncShortPollIntervalSeconds));
+}
+
+void SyncPrefs::SetShortPollInterval(base::TimeDelta interval) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetInt64(prefs::kSyncShortPollIntervalSeconds,
+                          interval.InSeconds());
+}
+
+base::TimeDelta SyncPrefs::GetLongPollInterval() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::TimeDelta::FromSeconds(
+      pref_service_->GetInt64(prefs::kSyncLongPollIntervalSeconds));
+}
+
+void SyncPrefs::SetLongPollInterval(base::TimeDelta interval) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetInt64(prefs::kSyncLongPollIntervalSeconds,
+                          interval.InSeconds());
 }
 
 bool SyncPrefs::HasKeepEverythingSynced() const {

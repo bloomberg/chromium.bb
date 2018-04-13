@@ -14,6 +14,11 @@ const char kSyncLastSyncedTime[] = "sync.last_synced_time";
 // 64-bit integer serialization of the base::Time of the last sync poll.
 const char kSyncLastPollTime[] = "sync.last_poll_time";
 
+// 64-bit integer serialization of base::TimeDelta storing poll intervals
+// received by the server (in seconds).
+const char kSyncShortPollIntervalSeconds[] = "sync.short_poll_interval";
+const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
+
 // Boolean specifying whether the user finished setting up sync at least once.
 const char kSyncFirstSetupComplete[] = "sync.has_setup_completed";
 

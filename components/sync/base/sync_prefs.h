@@ -98,6 +98,12 @@ class SyncPrefs : public SessionSyncPrefs,
   base::Time GetLastPollTime() const;
   void SetLastPollTime(base::Time time);
 
+  base::TimeDelta GetShortPollInterval() const;
+  void SetShortPollInterval(base::TimeDelta interval);
+
+  base::TimeDelta GetLongPollInterval() const;
+  void SetLongPollInterval(base::TimeDelta interval);
+
   bool HasKeepEverythingSynced() const;
   void SetKeepEverythingSynced(bool keep_everything_synced);
 

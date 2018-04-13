@@ -13,6 +13,8 @@ namespace prefs {
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncLastPollTime[];
+extern const char kSyncShortPollIntervalSeconds[];
+extern const char kSyncLongPollIntervalSeconds[];
 extern const char kSyncHasAuthError[];
 extern const char kSyncFirstSetupComplete[];
 extern const char kSyncKeepEverythingSynced[];

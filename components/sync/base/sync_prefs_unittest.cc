@@ -250,6 +250,26 @@ TEST_F(SyncPrefsTest, InvalidationVersions) {
   }
 }
 
+TEST_F(SyncPrefsTest, ShortPollInterval) {
+  SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.GetShortPollInterval().is_zero());
+
+  sync_prefs.SetShortPollInterval(base::TimeDelta::FromMinutes(30));
+
+  EXPECT_FALSE(sync_prefs.GetShortPollInterval().is_zero());
+  EXPECT_EQ(sync_prefs.GetShortPollInterval().InMinutes(), 30);
+}
+
+TEST_F(SyncPrefsTest, LongPollInterval) {
+  SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.GetLongPollInterval().is_zero());
+
+  sync_prefs.SetLongPollInterval(base::TimeDelta::FromMinutes(60));
+
+  EXPECT_FALSE(sync_prefs.GetLongPollInterval().is_zero());
+  EXPECT_EQ(sync_prefs.GetLongPollInterval().InMinutes(), 60);
+}
+
 }  // namespace
 
 }  // namespace syncer
