@@ -44,6 +44,7 @@
 
 - (void)updateForSideSwipeSnapshotOnNTP:(BOOL)onNTP {
   self.view.progressBar.hidden = YES;
+  self.view.progressBar.alpha = 0;
   self.view.blur.hidden = YES;
   self.view.backgroundColor =
       self.buttonFactory.toolbarConfiguration.backgroundColor;
@@ -52,6 +53,7 @@
 }
 
 - (void)resetAfterSideSwipeSnapshot {
+  self.view.progressBar.alpha = 1;
   self.view.blur.hidden = NO;
   self.view.backgroundColor = [UIColor clearColor];
 }
