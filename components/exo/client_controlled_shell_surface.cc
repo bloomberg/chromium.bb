@@ -6,6 +6,7 @@
 
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/custom_frame_view_ash.h"
+#include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -265,6 +266,9 @@ ClientControlledShellSurface::ClientControlledShellSurface(Surface* surface,
 }
 
 ClientControlledShellSurface::~ClientControlledShellSurface() {
+  if (wide_frame_)
+    wide_frame_->Close();
+
   WMHelper::GetInstance()->RemoveDisplayConfigurationObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
@@ -429,7 +433,8 @@ void ClientControlledShellSurface::SetCanMaximize(bool can_maximize) {
 
 void ClientControlledShellSurface::UpdateAutoHideFrame() {
   if (immersive_fullscreen_controller_) {
-    bool enabled = frame_type_ == SurfaceFrameType::AUTOHIDE;
+    bool enabled = (frame_type_ == SurfaceFrameType::AUTOHIDE &&
+                    GetWindowState()->IsMaximizedOrFullscreenOrPinned());
     immersive_fullscreen_controller_->SetEnabled(
         ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enabled);
   }
@@ -445,10 +450,8 @@ void ClientControlledShellSurface::SetFrameButtons(
   frame_visible_button_mask_ = visible_button_mask;
   frame_enabled_button_mask_ = enabled_button_mask;
 
-  if (widget_) {
-    GetFrameView()->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
-        visible_button_mask, enabled_button_mask));
-  }
+  if (widget_)
+    UpdateCaptionButtonModel();
 }
 
 void ClientControlledShellSurface::SetExtraTitle(
@@ -533,7 +536,7 @@ void ClientControlledShellSurface::OnSurfaceCommit() {
   }
 
   ShellSurfaceBase::OnSurfaceCommit();
-
+  UpdateFrame();
   UpdateBackdrop();
 
   if (!geometry_changed_callback_.is_null())
@@ -576,6 +579,16 @@ void ClientControlledShellSurface::OnSetFrame(SurfaceFrameType type) {
   ShellSurfaceBase::OnSetFrame(type);
   frame_type_ = type;
   UpdateAutoHideFrame();
+}
+
+void ClientControlledShellSurface::OnSetFrameColors(SkColor active_color,
+                                                    SkColor inactive_color) {
+  ShellSurfaceBase::OnSetFrameColors(active_color, inactive_color);
+  if (wide_frame_) {
+    aura::Window* window = wide_frame_->GetWidget()->GetNativeWindow();
+    window->SetProperty(ash::kFrameActiveColorKey, active_color);
+    window->SetProperty(ash::kFrameInactiveColorKey, inactive_color);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -881,6 +894,51 @@ gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ClientControlledShellSurface, private:
+
+void ClientControlledShellSurface::UpdateFrame() {
+  if (!widget_ || !GetFrameView()->visible())
+    return;
+  gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(widget_->GetNativeWindow())
+          .work_area();
+
+  ash::wm::WindowState* window_state = GetWindowState();
+  if (window_state->IsMaximizedOrFullscreenOrPinned() &&
+      work_area.width() != geometry().width()) {
+    if (!wide_frame_) {
+      wide_frame_ = ash::WideFrameView::Create(widget_);
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+      wide_frame_->Init(immersive_fullscreen_controller_.get());
+      wide_frame_->Show();
+      UpdateCaptionButtonModel();
+    }
+  } else {
+    if (wide_frame_) {
+      wide_frame_->Close();
+      wide_frame_ = nullptr;
+      immersive_fullscreen_controller_->SetEnabled(
+          ash::ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+      GetFrameView()->InitImmersiveFullscreenControllerForView(
+          immersive_fullscreen_controller_.get());
+      UpdateCaptionButtonModel();
+    }
+  }
+  // The autohide should be applied when the window state is in
+  // maximzied, fullscreen or pinned. Update the auto hide state
+  // inside commit.
+  UpdateAutoHideFrame();
+}
+
+void ClientControlledShellSurface::UpdateCaptionButtonModel() {
+  auto model = std::make_unique<CaptionButtonModel>(frame_visible_button_mask_,
+                                                    frame_enabled_button_mask_);
+  if (wide_frame_)
+    wide_frame_->SetCaptionButtonModel(std::move(model));
+  else
+    GetFrameView()->SetCaptionButtonModel(std::move(model));
+}
 
 void ClientControlledShellSurface::UpdateBackdrop() {
   aura::Window* window = widget_->GetNativeWindow();
