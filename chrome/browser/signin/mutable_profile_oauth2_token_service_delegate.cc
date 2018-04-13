@@ -9,7 +9,9 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -200,8 +202,13 @@ class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
  public:
   RevokeServerRefreshToken(
       MutableProfileOAuth2TokenServiceDelegate* token_service_delegate,
-      const std::string& account_id);
+      SigninClient* client,
+      const std::string& refresh_token);
   ~RevokeServerRefreshToken() override;
+
+  // Starts the network request.
+  static void Start(base::WeakPtr<RevokeServerRefreshToken> rsrt,
+                    const std::string& refresh_token);
 
  private:
   // GaiaAuthConsumer overrides:
@@ -209,6 +216,7 @@ class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
 
   MutableProfileOAuth2TokenServiceDelegate* token_service_delegate_;
   GaiaAuthFetcher fetcher_;
+  base::WeakPtrFactory<RevokeServerRefreshToken> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RevokeServerRefreshToken);
 };
@@ -216,12 +224,26 @@ class MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken
 MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
     RevokeServerRefreshToken(
         MutableProfileOAuth2TokenServiceDelegate* token_service_delegate,
+        SigninClient* client,
         const std::string& refresh_token)
     : token_service_delegate_(token_service_delegate),
       fetcher_(this,
                GaiaConstants::kChromeSource,
-               token_service_delegate_->GetRequestContext()) {
-  fetcher_.StartRevokeOAuth2Token(refresh_token);
+               token_service_delegate_->GetRequestContext()),
+      weak_ptr_factory_(this) {
+  client->DelayNetworkCall(
+      base::Bind(&MutableProfileOAuth2TokenServiceDelegate::
+                     RevokeServerRefreshToken::Start,
+                 weak_ptr_factory_.GetWeakPtr(), refresh_token));
+}
+
+// static
+void MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::Start(
+    base::WeakPtr<RevokeServerRefreshToken> rsrt,
+    const std::string& refresh_token) {
+  if (!rsrt)
+    return;
+  rsrt->fetcher_.StartRevokeOAuth2Token(refresh_token);
 }
 
 MutableProfileOAuth2TokenServiceDelegate::RevokeServerRefreshToken::
@@ -779,7 +801,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
   // Keep track or all server revoke requests.  This way they can be deleted
   // before the token service is shutdown and won't outlive the profile.
   server_revokes_.push_back(
-      std::make_unique<RevokeServerRefreshToken>(this, refresh_token));
+      std::make_unique<RevokeServerRefreshToken>(this, client_, refresh_token));
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::CancelWebTokenFetch() {

@@ -706,6 +706,41 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RevokeOnUpdate) {
   EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
 }
 
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, DelayedRevoke) {
+  client_->SetNetworkCallsDelayed(true);
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+  oauth2_service_delegate_->RevokeCredentials("account_id");
+
+  // The revoke does not start until network calls are unblocked.
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+
+  // Unblock network calls, and check that the revocation goes through.
+  client_->SetNetworkCallsDelayed(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, ShutdownDuringRevoke) {
+  // Shutdown cancels the revocation.
+  client_->SetNetworkCallsDelayed(true);
+  CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  oauth2_service_delegate_->RevokeCredentials("account_id");
+  EXPECT_EQ(1u, oauth2_service_delegate_->server_revokes_.size());
+
+  // Shutdown.
+  oauth2_service_delegate_->Shutdown();
+  EXPECT_TRUE(oauth2_service_delegate_->server_revokes_.empty());
+
+  // Unblocking network calls after shutdown does not crash.
+  client_->SetNetworkCallsDelayed(false);
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
   // Add the invalid token.
   CreateOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDisabled);
@@ -868,7 +903,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, RetryBackoff) {
   EXPECT_EQ(1, access_token_failure_count_);
   // Expect a positive backoff time.
   EXPECT_GT(oauth2_service_delegate_->backoff_entry_.GetTimeUntilRelease(),
-      TimeDelta());
+            TimeDelta());
 
   // Pretend that backoff has expired and try again.
   oauth2_service_delegate_->backoff_entry_.SetCustomReleaseTime(
