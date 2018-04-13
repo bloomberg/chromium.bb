@@ -98,6 +98,7 @@ ui::NativeTheme::ColorId GetLegacyColorId(ui::NativeTheme* native_theme,
 
     case OmniboxPart::LOCATION_BAR_SECURITY_CHIP:
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
+    case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
     case OmniboxPart::RESULTS_ICON:
     case OmniboxPart::RESULTS_TEXT_INVISIBLE:
       NOTREACHED();
@@ -255,6 +256,10 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return dark ? gfx::kGoogleGreenDark600 : gfx::kGoogleGreen600;
     case OmniboxPart::RESULTS_TEXT_URL:
       return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
+
+    case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
+      return dark ? gfx::kGoogleGrey100
+                  : SkColorSetA(gfx::kGoogleGrey900, 0x24);
 
     // TODO(tapted): Add these.
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:

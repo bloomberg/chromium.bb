@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -20,6 +21,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -29,8 +31,7 @@
 
 KeywordHintView::KeywordHintView(views::ButtonListener* listener,
                                  Profile* profile,
-                                 SkColor text_color,
-                                 SkColor background_color)
+                                 OmniboxTint tint)
     : Button(listener),
       profile_(profile),
       leading_label_(nullptr),
@@ -38,6 +39,14 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
       chip_label_(
           new views::Label(base::string16(), CONTEXT_OMNIBOX_DECORATION)),
       trailing_label_(nullptr) {
+  const bool is_newer_material =
+      ui::MaterialDesignController::IsNewerMaterialUi();
+  SkColor text_color =
+      is_newer_material
+          ? GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DEFAULT, tint)
+          : GetOmniboxColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED, tint);
+  SkColor background_color =
+      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint);
   leading_label_ = CreateLabel(text_color, background_color);
 
   constexpr int kPaddingInsideBorder = 5;
@@ -49,10 +58,16 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
   chip_label_->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(0, horizontal_padding)));
   chip_label_->SetEnabledColor(text_color);
+
   bool inverted = color_utils::IsDark(background_color);
   SkColor tab_bg_color =
       inverted ? SK_ColorWHITE : SkColorSetA(text_color, 0x13);
   SkColor tab_border_color = inverted ? SK_ColorWHITE : text_color;
+  if (is_newer_material) {
+    tab_bg_color = background_color;
+    tab_border_color =
+        GetOmniboxColor(OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE, tint);
+  }
   chip_label_->SetBackgroundColor(tab_bg_color);
 
   chip_container_->SetBorder(views::CreateEmptyBorder(
@@ -75,7 +90,20 @@ KeywordHintView::KeywordHintView(views::ButtonListener* listener,
 
 KeywordHintView::~KeywordHintView() {}
 
-void KeywordHintView::SetKeyword(const base::string16& keyword) {
+void KeywordHintView::SetKeyword(const base::string16& keyword,
+                                 bool popup_open,
+                                 OmniboxTint tint) {
+  // In the newer MD style, the KeywordHintView chip background should match the
+  // LocationBarView's background, which changes when the popup is open.
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    OmniboxPart background_part = popup_open
+                                      ? OmniboxPart::RESULTS_BACKGROUND
+                                      : OmniboxPart::LOCATION_BAR_BACKGROUND;
+    SkColor tab_bg_color = GetOmniboxColor(background_part, tint);
+    chip_label_->SetBackgroundColor(tab_bg_color);
+    chip_container_->background()->SetNativeControlColor(tab_bg_color);
+  }
+
   // When the virtual keyboard is visible, we show a modified touch UI
   // containing only the chip and no surrounding labels.
   const bool was_touch_ui = leading_label_->text().empty();
@@ -197,12 +225,13 @@ gfx::Size KeywordHintView::CalculatePreferredSize() const {
 }
 
 void KeywordHintView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (!BackgroundWith1PxBorder::IsRounded())
-    return;
-  const int chip_corner_radius = GetCornerRadius();
-  chip_label_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
-                  chip_corner_radius)));
+  if (BackgroundWith1PxBorder::IsRounded()) {
+    const int chip_corner_radius = GetCornerRadius();
+    chip_label_->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(GetInsets().top(), chip_corner_radius, GetInsets().bottom(),
+                    chip_corner_radius)));
+  }
+  views::Button::OnBoundsChanged(previous_bounds);
 }
 
 views::Label* KeywordHintView::CreateLabel(SkColor text_color,

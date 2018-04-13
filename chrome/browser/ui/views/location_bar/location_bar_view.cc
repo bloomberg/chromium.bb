@@ -194,8 +194,6 @@ void LocationBarView::Init() {
   const gfx::FontList& font_list = views::style::GetFont(
       CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
-  const SkColor background_color =
-      GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
   location_icon_view_ = new LocationIconView(font_list, this);
   location_icon_view_->set_drag_controller(this);
   AddChildView(location_icon_view_);
@@ -225,9 +223,7 @@ void LocationBarView::Init() {
   selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
   AddChildView(selected_keyword_view_);
 
-  keyword_hint_view_ = new KeywordHintView(
-      this, profile(), GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
-      background_color);
+  keyword_hint_view_ = new KeywordHintView(this, profile(), tint());
   AddChildView(keyword_hint_view_);
 
   std::vector<std::unique_ptr<ContentSettingImageModel>> models =
@@ -552,7 +548,8 @@ void LocationBarView::Layout() {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,
                                        0, item_padding, item_padding,
                                        keyword_hint_view_);
-    keyword_hint_view_->SetKeyword(keyword);
+    keyword_hint_view_->SetKeyword(keyword, GetOmniboxPopupView()->IsOpen(),
+                                   tint());
   }
 
   add_trailing_decoration(clear_all_button_);
