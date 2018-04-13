@@ -457,6 +457,40 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
 }
 
 // static
+ash::mojom::UserAvatarPtr UserSelectionScreen::BuildMojoUserAvatarForUser(
+    const user_manager::User* user) {
+  auto avatar = ash::mojom::UserAvatar::New();
+  if (!user->GetImage().isNull()) {
+    avatar->image = user->GetImage();
+  } else {
+    avatar->image = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+        IDR_LOGIN_DEFAULT_USER);
+  }
+
+  // TODO(jdufault): Unify image handling between this code and
+  // user_image_source::GetUserImageInternal.
+  auto load_image_from_resource = [&](int resource_id) {
+    auto& rb = ui::ResourceBundle::GetSharedInstance();
+    base::StringPiece avatar_data =
+        rb.GetRawDataResourceForScale(resource_id, rb.GetMaxScaleFactor());
+    avatar->bytes.assign(avatar_data.begin(), avatar_data.end());
+  };
+  if (user->has_image_bytes()) {
+    avatar->bytes.assign(
+        user->image_bytes()->front(),
+        user->image_bytes()->front() + user->image_bytes()->size());
+  } else if (user->HasDefaultImage()) {
+    int resource_id = chromeos::default_user_image::kDefaultImageResourceIDs
+        [user->image_index()];
+    load_image_from_resource(resource_id);
+  } else if (user->image_is_stub()) {
+    load_image_from_resource(IDR_LOGIN_DEFAULT_USER);
+  }
+
+  return avatar;
+}
+
+// static
 void UserSelectionScreen::FillUserMojoStruct(
     const user_manager::User* user,
     bool is_owner,
@@ -470,36 +504,7 @@ void UserSelectionScreen::FillUserMojoStruct(
   user_info->basic_user_info->display_name =
       base::UTF16ToUTF8(user->GetDisplayName());
   user_info->basic_user_info->display_email = user->display_email();
-
-  if (!user->GetImage().isNull()) {
-    user_info->basic_user_info->avatar = user->GetImage();
-  } else {
-    user_info->basic_user_info->avatar =
-        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_LOGIN_DEFAULT_USER);
-  }
-
-  // TODO(jdufault): Unify image handling between this code and
-  // user_image_source::GetUserImageInternal.
-  auto load_image_from_resource = [&](int resource_id) {
-    auto& rb = ui::ResourceBundle::GetSharedInstance();
-    base::StringPiece avatar =
-        rb.GetRawDataResourceForScale(resource_id, rb.GetMaxScaleFactor());
-    user_info->basic_user_info->avatar_bytes.assign(avatar.begin(),
-                                                    avatar.end());
-  };
-  if (user->has_image_bytes()) {
-    user_info->basic_user_info->avatar_bytes.assign(
-        user->image_bytes()->front(),
-        user->image_bytes()->front() + user->image_bytes()->size());
-  } else if (user->HasDefaultImage()) {
-    int resource_id = chromeos::default_user_image::kDefaultImageResourceIDs
-        [user->image_index()];
-    load_image_from_resource(resource_id);
-  } else if (user->image_is_stub()) {
-    load_image_from_resource(IDR_LOGIN_DEFAULT_USER);
-  }
-
+  user_info->basic_user_info->avatar = BuildMojoUserAvatarForUser(user);
   user_info->auth_type = auth_type;
   user_info->is_signed_in = user->is_logged_in();
   user_info->is_device_owner = is_owner;

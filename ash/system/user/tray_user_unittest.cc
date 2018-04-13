@@ -274,7 +274,7 @@ TEST_F(TrayUserTest, AvatarChange) {
   const gfx::ImageSkia red_icon =
       CreateImageSkiaWithColor(kTrayItemSize, kTrayItemSize, SK_ColorRED);
   mojom::UserSessionPtr user = controller()->GetUserSession(0)->Clone();
-  user->user_info->avatar = red_icon;
+  user->user_info->avatar->image = red_icon;
   controller()->UpdateUserSession(std::move(user));
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       gfx::Image(red_icon),

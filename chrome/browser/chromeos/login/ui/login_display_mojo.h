@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 
@@ -18,7 +19,8 @@ class UserSelectionScreen;
 
 // Interface used by UI-agnostic code to send messages to views-based login
 // screen.
-class LoginDisplayMojo : public LoginDisplay {
+class LoginDisplayMojo : public LoginDisplay,
+                         public user_manager::UserManager::Observer {
  public:
   LoginDisplayMojo(Delegate* delegate, LoginDisplayHostMojo* host);
   ~LoginDisplayMojo() override;
@@ -40,6 +42,9 @@ class LoginDisplayMojo : public LoginDisplay {
   void ShowSigninUI(const std::string& email) override;
   void ShowWhitelistCheckFailedError() override;
   void ShowUnrecoverableCrypthomeErrorDialog() override;
+
+  // user_manager::UserManager::Observer:
+  void OnUserImageChanged(const user_manager::User& user) override;
 
  private:
   LoginDisplayHostMojo* const host_ = nullptr;

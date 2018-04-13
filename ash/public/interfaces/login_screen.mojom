@@ -4,6 +4,7 @@
 
 module ash.mojom;
 
+import "ash/public/interfaces/user_info.mojom";
 import "ash/public/interfaces/login_user_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/password_manager/public/interfaces/sync_password_data.mojom";
@@ -67,6 +68,10 @@ interface LoginScreen {
   // |account_id|:   The account id of the user in the user pod.
   // |is_enabled|:   True if pin unlock is enabled.
   SetPinEnabledForUser(signin.mojom.AccountId account_id, bool is_enabled);
+
+  // Change the user's avatar. Some avatars may take a long time to load and the
+  // login screen may already be visible.
+  SetAvatarForUser(signin.mojom.AccountId account_id, UserAvatar avatar);
 
   // Called when focus is reported to be leaving a lock screen app window.
   // Requests focus to be handed off to the next suitable widget.

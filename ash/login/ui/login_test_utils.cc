@@ -36,6 +36,7 @@ LoginPasswordView::TestApi MakeLoginPasswordTestApi(LockContentsView* view,
 mojom::LoginUserInfoPtr CreateUser(const std::string& email) {
   auto user = mojom::LoginUserInfo::New();
   user->basic_user_info = mojom::UserInfo::New();
+  user->basic_user_info->avatar = mojom::UserAvatar::New();
   user->basic_user_info->account_id = AccountId::FromUserEmail(email);
   user->basic_user_info->display_name = base::SplitString(
       email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)[0];
@@ -48,6 +49,7 @@ mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email) {
   user->basic_user_info = mojom::UserInfo::New();
   std::vector<std::string> email_parts = base::SplitString(
       email, "@", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  user->basic_user_info->avatar = mojom::UserAvatar::New();
   user->basic_user_info->account_id = AccountId::FromUserEmail(email);
   user->basic_user_info->display_name = email_parts[0];
   user->basic_user_info->display_email = email;
