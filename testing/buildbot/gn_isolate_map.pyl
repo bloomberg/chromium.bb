@@ -887,7 +887,7 @@
   "net_perftests": {
     "label": "//net:net_perftests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "net_perftests",
     ],
@@ -1135,7 +1135,7 @@
   "media_perftests": {
     "label": "//media:media_perftests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "media_perftests",
       "--single-process-tests",
@@ -1155,7 +1155,7 @@
   "tracing_perftests": {
     "label": "//components/tracing:tracing_perftests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "tracing_perftests",
       "--test-launcher-print-test-stdio=always",
@@ -1272,7 +1272,7 @@
   "views_perftests": {
     "label": "//ui/views:views_perftests",
     "type": "script",
-    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "script": "//testing/scripts/run_performance_tests_wrapper.py",
     "args": [
       "--xvfb",
       "views_perftests",
