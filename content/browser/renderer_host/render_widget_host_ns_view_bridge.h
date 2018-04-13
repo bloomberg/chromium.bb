@@ -66,10 +66,16 @@ class RenderWidgetHostNSViewBridge {
   // Call the -[NSView setToolTipAtMousePoint] method.
   virtual void SetTooltipText(const base::string16& display_text) = 0;
 
-  // Set or clear the marked and selected range.
-  virtual void SetMarkedRange(const gfx::Range& range) = 0;
-  virtual void ClearMarkedText() = 0;
-  virtual void SetSelectedRange(const gfx::Range& range) = 0;
+  // Forward the TextInputManager::TextSelection from the renderer.
+  virtual void SetTextSelection(const base::string16& text,
+                                size_t offset,
+                                const gfx::Range& range) = 0;
+
+  // Forward the TextInputManager::CompositionRangeInfo from the renderer.
+  virtual void SetCompositionRangeInfo(const gfx::Range& range) = 0;
+
+  // Clear the marked range.
+  virtual void CancelComposition() = 0;
 
   // Indicate if the WebContext is showing a context menu.
   virtual void SetShowingContextMenu(bool showing) = 0;

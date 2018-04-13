@@ -42,9 +42,11 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetTooltipText(const base::string16& display_text) override;
-  void SetMarkedRange(const gfx::Range& range) override;
-  void ClearMarkedText() override;
-  void SetSelectedRange(const gfx::Range& range) override;
+  void SetTextSelection(const base::string16& text,
+                        size_t offset,
+                        const gfx::Range& range) override;
+  void SetCompositionRangeInfo(const gfx::Range& range) override;
+  void CancelComposition() override;
   void SetShowingContextMenu(bool showing) override;
   void DisplayCursor(const WebCursor& cursor) override;
   void ShowDictionaryOverlayForSelection() override;
@@ -202,18 +204,21 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetTooltipText(
   [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetMarkedRange(
+void RenderWidgetHostViewNSViewBridgeLocal::SetCompositionRangeInfo(
     const gfx::Range& range) {
+  [cocoa_view_ setCompositionRange:range];
   [cocoa_view_ setMarkedRange:range.ToNSRange()];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::ClearMarkedText() {
+void RenderWidgetHostViewNSViewBridgeLocal::CancelComposition() {
   [cocoa_view_ cancelComposition];
 }
 
-void RenderWidgetHostViewNSViewBridgeLocal::SetSelectedRange(
+void RenderWidgetHostViewNSViewBridgeLocal::SetTextSelection(
+    const base::string16& text,
+    size_t offset,
     const gfx::Range& range) {
-  [cocoa_view_ setSelectedRange:range.ToNSRange()];
+  [cocoa_view_ setTextSelectionText:text offset:offset range:range];
   // Updates markedRange when there is no marked text so that retrieving
   // markedRange immediately after calling setMarkdText: returns the current
   // caret position.

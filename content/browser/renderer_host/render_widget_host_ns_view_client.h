@@ -124,12 +124,6 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewSyncGetTextInputType(
       ui::TextInputType* text_input_type) = 0;
 
-  // Synchronously query the current selection. If there exists a selection then
-  // set |*has_selection| to true and return in |*selected_text| the selected
-  // text. Otherwise set |*has_selection| to false.
-  virtual void OnNSViewSyncGetSelectedText(bool* has_selection,
-                                           base::string16* selected_text) = 0;
-
   // Synchronously query the character index for |root_point| and return it in
   // |*index|. Sets it to UINT32_MAX if the request fails or is not completed.
   virtual void OnNSViewSyncGetCharacterIndexAtPoint(
