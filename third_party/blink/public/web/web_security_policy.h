@@ -78,6 +78,22 @@ class WebSecurityPolicy {
       bool allow_destination_subdomains);
   BLINK_EXPORT static void ResetOriginAccessWhitelists();
 
+  // Support for restricting the whitelists, in order to allow for broad
+  // whitelist access (e.g., "chromium.org") while protecting a subset of hosts
+  // (e.g., "secure.chromium.org"). If an origin is in both the whitelist and
+  // the blacklist, it is disallowed access.
+  BLINK_EXPORT static void AddOriginAccessBlacklistEntry(
+      const WebURL& source_origin,
+      const WebString& destination_protocol,
+      const WebString& destination_host,
+      bool disallow_destination_subdomains);
+  BLINK_EXPORT static void RemoveOriginAccessBlacklistEntry(
+      const WebURL& source_origin,
+      const WebString& destination_protocol,
+      const WebString& destination_host,
+      bool allow_destination_subdomains);
+  BLINK_EXPORT static void ResetOriginAccessBlacklists();
+
   // Support for whitelisting origins to treat them as trustworthy.
   BLINK_EXPORT static void AddOriginTrustworthyWhiteList(
       const WebSecurityOrigin&);

@@ -247,6 +247,18 @@ TEST_F(SecurityOriginTest, CanRequest) {
   }
 }
 
+TEST_F(SecurityOriginTest, CanRequestWithWhitelistedAccess) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://chromium.org");
+  const blink::KURL url("https://example.com");
+
+  EXPECT_FALSE(origin->CanRequest(url));
+  // Adding the url to the access whitelist should allow the request.
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*origin, "https", "example.com",
+                                                false);
+  EXPECT_TRUE(origin->CanRequest(url));
+}
+
 TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {
   struct TestCase {
     unsigned short port;

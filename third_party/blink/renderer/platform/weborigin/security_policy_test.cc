@@ -287,4 +287,142 @@ TEST(SecurityPolicyTest, TrustworthyWhiteList) {
   }
 }
 
+class SecurityPolicyAccessTest : public testing::Test {
+ public:
+  SecurityPolicyAccessTest() = default;
+  ~SecurityPolicyAccessTest() override = default;
+
+  void SetUp() override {
+    https_example_origin_ =
+        SecurityOrigin::CreateFromString("https://example.com");
+    https_sub_example_origin_ =
+        SecurityOrigin::CreateFromString("https://sub.example.com");
+    http_example_origin_ =
+        SecurityOrigin::CreateFromString("http://example.com");
+    https_chromium_origin_ =
+        SecurityOrigin::CreateFromString("https://chromium.org");
+    https_google_origin_ =
+        SecurityOrigin::CreateFromString("https://google.com");
+  }
+
+  void TearDown() override {
+    SecurityPolicy::ResetOriginAccessWhitelists();
+    SecurityPolicy::ResetOriginAccessBlacklists();
+  }
+
+  const SecurityOrigin* https_example_origin() const {
+    return https_example_origin_.get();
+  }
+  const SecurityOrigin* https_sub_example_origin() const {
+    return https_sub_example_origin_.get();
+  }
+  const SecurityOrigin* http_example_origin() const {
+    return http_example_origin_.get();
+  }
+  const SecurityOrigin* https_chromium_origin() const {
+    return https_chromium_origin_.get();
+  }
+  const SecurityOrigin* https_google_origin() const {
+    return https_google_origin_.get();
+  }
+
+ private:
+  scoped_refptr<const SecurityOrigin> https_example_origin_;
+  scoped_refptr<const SecurityOrigin> https_sub_example_origin_;
+  scoped_refptr<const SecurityOrigin> http_example_origin_;
+  scoped_refptr<const SecurityOrigin> https_chromium_origin_;
+  scoped_refptr<const SecurityOrigin> https_google_origin_;
+
+  DISALLOW_COPY_AND_ASSIGN(SecurityPolicyAccessTest);
+};
+
+TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListed) {
+  // By default, no access should be whitelisted.
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   http_example_origin()));
+
+  // Adding access for https://example.com should work, but should not grant
+  // access to subdomains or other schemes.
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "example.com", false);
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   http_example_origin()));
+
+  // Removing the entry should revoke access.
+  SecurityPolicy::RemoveOriginAccessWhitelistEntry(
+      *https_chromium_origin(), "https", "example.com", false);
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   http_example_origin()));
+
+  // Adding an entry that matches subdomains should grant access to any
+  // subdomains.
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "example.com", true);
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   http_example_origin()));
+
+  // Clearing the map should revoke all special access.
+  SecurityPolicy::ResetOriginAccessWhitelists();
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_sub_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   http_example_origin()));
+}
+
+TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListedWildCard) {
+  // An empty domain that matches subdomains results in matching every domain.
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "", true);
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_google_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   http_example_origin()));
+}
+
+TEST_F(SecurityPolicyAccessTest, IsAccessWhiteListedWithBlacklistedEntries) {
+  // The blacklists take priority over the whitelist.
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "example.com", true);
+  SecurityPolicy::AddOriginAccessBlacklistEntry(*https_chromium_origin(),
+                                                "https", "example.com", false);
+
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_example_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_sub_example_origin()));
+}
+
+TEST_F(SecurityPolicyAccessTest,
+       IsAccessWhiteListedWildcardWithBlacklistedEntries) {
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "", true);
+  SecurityPolicy::AddOriginAccessBlacklistEntry(*https_chromium_origin(),
+                                                "https", "google.com", false);
+
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                  https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_google_origin()));
+}
+
 }  // namespace blink

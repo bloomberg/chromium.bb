@@ -89,6 +89,30 @@ void WebSecurityPolicy::ResetOriginAccessWhitelists() {
   SecurityPolicy::ResetOriginAccessWhitelists();
 }
 
+void WebSecurityPolicy::AddOriginAccessBlacklistEntry(
+    const WebURL& source_origin,
+    const WebString& destination_protocol,
+    const WebString& destination_host,
+    bool allow_destination_subdomains) {
+  SecurityPolicy::AddOriginAccessBlacklistEntry(
+      *SecurityOrigin::Create(source_origin), destination_protocol,
+      destination_host, allow_destination_subdomains);
+}
+
+void WebSecurityPolicy::RemoveOriginAccessBlacklistEntry(
+    const WebURL& source_origin,
+    const WebString& destination_protocol,
+    const WebString& destination_host,
+    bool allow_destination_subdomains) {
+  SecurityPolicy::RemoveOriginAccessBlacklistEntry(
+      *SecurityOrigin::Create(source_origin), destination_protocol,
+      destination_host, allow_destination_subdomains);
+}
+
+void WebSecurityPolicy::ResetOriginAccessBlacklists() {
+  SecurityPolicy::ResetOriginAccessBlacklists();
+}
+
 void WebSecurityPolicy::AddOriginTrustworthyWhiteList(
     const WebSecurityOrigin& origin) {
   SecurityPolicy::AddOriginTrustworthyWhiteList(*origin.Get());
