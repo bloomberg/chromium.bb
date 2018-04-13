@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -25,6 +26,7 @@
 #include "components/toolbar/test_toolbar_model.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_edit_commands.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -73,6 +75,7 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   // OmniboxViewViews:
   void EmphasizeURLComponents() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {}
   void OnFocus() override;
 
  private:
@@ -184,7 +187,7 @@ class OmniboxViewViewsTest : public ChromeViewsTestBase {
   OmniboxViewViewsTest();
 
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
-  TestingOmniboxView* omnibox_view() const { return omnibox_view_.get(); }
+  TestingOmniboxView* omnibox_view() const { return omnibox_view_; }
   views::Textfield* omnibox_textfield() const { return omnibox_view(); }
   ui::TextEditCommand scheduled_text_edit_command() const {
     return test_api_->scheduled_text_edit_command();
@@ -211,7 +214,12 @@ class OmniboxViewViewsTest : public ChromeViewsTestBase {
   CommandUpdaterImpl command_updater_;
   TestToolbarModel toolbar_model_;
   TestingOmniboxEditController omnibox_edit_controller_;
-  std::unique_ptr<TestingOmniboxView> omnibox_view_;
+
+  std::unique_ptr<views::Widget> widget_;
+
+  // Owned by |widget_|.
+  TestingOmniboxView* omnibox_view_;
+
   std::unique_ptr<views::TextfieldTestApi> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);
@@ -237,21 +245,38 @@ void OmniboxViewViewsTest::SetAndEmphasizeText(const std::string& new_text,
 
 void OmniboxViewViewsTest::SetUp() {
   ChromeViewsTestBase::SetUp();
+
+  // We need a widget so OmniboxView can be correctly focused and unfocused.
+  widget_ = std::make_unique<views::Widget>();
+  views::Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 40);
+  widget_->Init(params);
+  widget_->Show();
+
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       &profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
-  omnibox_view_ = std::make_unique<TestingOmniboxView>(
+  omnibox_view_ = new TestingOmniboxView(
       &omnibox_edit_controller_, std::make_unique<ChromeOmniboxClient>(
                                      &omnibox_edit_controller_, &profile_));
-  test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view_.get());
+  test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view_);
   omnibox_view_->Init();
+
+  widget_->SetContentsView(omnibox_view_);
 }
 
 void OmniboxViewViewsTest::TearDown() {
-  omnibox_view_.reset();
+  // Clean ourselves up as the text input client.
+  if (omnibox_view_->GetInputMethod())
+    omnibox_view_->GetInputMethod()->DetachTextInputClient(omnibox_view_);
+
+  widget_.reset();
+
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();
 #endif
@@ -427,6 +452,8 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
 
     OmniboxViewViewsTest::SetUp();
 
+    ui::SetEventTickClockForTesting(&clock_);
+
     toolbar_model()->set_formatted_full_url(
         base::ASCIIToUTF16("https://example.com"));
     toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
@@ -434,6 +461,11 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     omnibox_view()->RevertAll();
 
     ExpectElidedUrlDisplayed();
+  }
+
+  void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
+    OmniboxViewViewsTest::TearDown();
   }
 
   bool IsSelectAll() const { return omnibox_view()->IsSelectAll(); }
@@ -458,11 +490,18 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
   }
 
+  ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
+    return ui::MouseEvent(type, point, gfx::Point(), ui::EventTimeForNow(),
+                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  }
+
   // Used to access members that are marked private in views::TextField.
   views::View* omnibox_textfield_view() { return omnibox_view(); }
+  base::SimpleTestTickClock* clock() { return &clock_; }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::SimpleTestTickClock clock_;
 };
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, StayElidedOnFocus) {
@@ -529,5 +568,33 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
 
   // Unelide on second tap (cursor placement).
   omnibox_textfield_view()->OnGestureEvent(&tap);
+  ExpectFullUrlDisplayed();
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
+  EXPECT_FALSE(omnibox_view()->IsSelectAll());
+
+  // First click should select all, but not unelide.
+  omnibox_view()->OnMousePressed(
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point()));
+  omnibox_view()->OnMouseReleased(
+      CreateMouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point()));
+
+  ExpectElidedUrlDisplayed();
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+  EXPECT_TRUE(omnibox_view()->HasFocus());
+
+  // Advance the clock 5 seconds so the second click is not interpreted as a
+  // double click.
+  clock()->Advance(base::TimeDelta::FromSeconds(10));
+
+  // Second click should unelide only on mouse release.
+  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
+  gfx::Point point_in_text = gfx::Point(20, 20);
+  omnibox_view()->OnMousePressed(
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, point_in_text));
+  ExpectElidedUrlDisplayed();
+  omnibox_view()->OnMouseReleased(
+      CreateMouseEvent(ui::ET_MOUSE_RELEASED, point_in_text));
   ExpectFullUrlDisplayed();
 }
