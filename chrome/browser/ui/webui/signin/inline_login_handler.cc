@@ -108,7 +108,9 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   if (reason != signin_metrics::Reason::REASON_REAUTHENTICATION &&
       reason != signin_metrics::Reason::REASON_UNLOCK &&
       reason != signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
-    signin_metrics::LogSigninAccessPointStarted(access_point);
+    signin_metrics::LogSigninAccessPointStarted(
+        access_point,
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
     signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
     base::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
     params.SetBoolean("isLoginPrimaryAccount", true);

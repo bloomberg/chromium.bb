@@ -301,11 +301,7 @@ enum class ReportingType { PERIODIC, ON_CHANGE };
 // Histograms
 // -----------------------------------------------------------------------------
 
-// Tracks the access point of sign in on desktop.
-void LogSigninAccessPointStarted(AccessPoint access_point);
-void LogSigninAccessPointCompleted(AccessPoint access_point);
-
-// Tracks the access point of sign in on iOS.
+// Tracks the access point of sign in.
 void LogSigninAccessPointStarted(AccessPoint access_point,
                                  PromoAction promo_action);
 void LogSigninAccessPointCompleted(AccessPoint access_point,

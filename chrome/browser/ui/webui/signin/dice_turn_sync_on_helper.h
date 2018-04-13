@@ -95,6 +95,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   // in the token service.
   DiceTurnSyncOnHelper(Profile* profile,
                        signin_metrics::AccessPoint signin_access_point,
+                       signin_metrics::PromoAction signin_promo_action,
                        signin_metrics::Reason signin_reason,
                        const std::string& account_id,
                        SigninAbortedMode signin_aborted_mode,
@@ -104,6 +105,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   DiceTurnSyncOnHelper(Profile* profile,
                        Browser* browser,
                        signin_metrics::AccessPoint signin_access_point,
+                       signin_metrics::PromoAction signin_promo_action,
                        signin_metrics::Reason signin_reason,
                        const std::string& account_id,
                        SigninAbortedMode signin_aborted_mode);
@@ -189,6 +191,7 @@ class DiceTurnSyncOnHelper : public SyncStartupTracker::Observer {
   SigninManager* signin_manager_;
   ProfileOAuth2TokenService* token_service_;
   const signin_metrics::AccessPoint signin_access_point_;
+  const signin_metrics::PromoAction signin_promo_action_;
   const signin_metrics::Reason signin_reason_;
 
   // Whether the refresh token should be deleted if the Sync flow is aborted.

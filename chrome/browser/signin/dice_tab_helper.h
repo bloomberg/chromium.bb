@@ -24,6 +24,10 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
     return signin_access_point_;
   }
 
+  signin_metrics::PromoAction signin_promo_action() {
+    return signin_promo_action_;
+  }
+
   signin_metrics::Reason signin_reason() { return signin_reason_; }
 
   // Initializes the DiceTabHelper for a new signin flow. Must be called once
@@ -42,6 +46,8 @@ class DiceTabHelper : public content::WebContentsUserData<DiceTabHelper>,
 
   signin_metrics::AccessPoint signin_access_point_ =
       signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
+  signin_metrics::PromoAction signin_promo_action_ =
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
   signin_metrics::Reason signin_reason_ =
       signin_metrics::Reason::REASON_UNKNOWN_REASON;
   bool did_finish_loading_signin_page_ = false;

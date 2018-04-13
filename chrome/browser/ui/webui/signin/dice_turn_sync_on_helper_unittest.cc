@@ -53,6 +53,8 @@ const char kEnterpriseGaiaID[] = "enterprise_gaia_id";
 
 const signin_metrics::AccessPoint kAccessPoint =
     signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_MANAGER;
+const signin_metrics::PromoAction kSigninPromoAction =
+    signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT;
 const signin_metrics::Reason kSigninReason =
     signin_metrics::Reason::REASON_REAUTHENTICATION;
 
@@ -224,8 +226,8 @@ class DiceTurnSyncOnHelperTest : public testing::Test {
   DiceTurnSyncOnHelper* CreateDiceTurnOnSyncHelper(
       DiceTurnSyncOnHelper::SigninAbortedMode mode) {
     return new DiceTurnSyncOnHelper(
-        profile(), kAccessPoint, kSigninReason, account_id_, mode,
-        std::make_unique<TestDiceTurnSyncOnHelperDelegate>(this));
+        profile(), kAccessPoint, kSigninPromoAction, kSigninReason, account_id_,
+        mode, std::make_unique<TestDiceTurnSyncOnHelperDelegate>(this));
   }
 
   void UseEnterpriseAccount() {
