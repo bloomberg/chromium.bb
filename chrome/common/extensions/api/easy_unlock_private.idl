@@ -5,126 +5,7 @@
 // <code>chrome.easyUnlockPrivate</code> API that provides hooks to Chrome to
 // be used by Easy Unlock component app.
 namespace easyUnlockPrivate {
-  // Signature algorithms supported by the crypto library methods used by
-  // Easy Unlock.
-  enum SignatureType {
-    HMAC_SHA256,
-    ECDSA_P256_SHA256
-  };
-
-  // Encryption algorithms supported by the crypto library methods used by
-  // Easy Unlock.
-  enum EncryptionType {
-    AES_256_CBC
-  };
-
-  // Type of a permit. All lower case to match permit.PermitRecord.Type.
-  enum PermitType {access, license};
-
   enum ConnectionStatus {DISCONNECTED, IN_PROGRESS, CONNECTED};
-
-  // Options that can be passed to |unwrapSecureMessage| method.
-  dictionary UnwrapSecureMessageOptions {
-    // The data associated with the message. For the message to be succesfully
-    // verified, the message should have been created with the same associated
-    // data.
-    ArrayBuffer? associatedData;
-
-    // The encryption algorithm that should be used to decrypt the message.
-    // Should not be set for a cleartext message.
-    EncryptionType? encryptType;
-
-    // The algorithm to be used to verify signature contained in the message.
-    // Defaults to |HMAC_SHA256|. |ECDSA_P256_SHA256| can currently be used
-    // only with cleartext messages.
-    SignatureType? signType;
-  };
-
-  dictionary CreateSecureMessageOptions {
-    // Data associated with the message. The data will not be sent with the
-    // message, but the message recepient will use the same data on its side
-    // to verify the message.
-    ArrayBuffer? associatedData;
-
-    // Metadata to be added to the message header.
-    ArrayBuffer? publicMetadata;
-
-    // Verification key id added to the message header. Should be set if the
-    // message is signed using |ECDSA_P256_SHA256|. Used by the message
-    // recepient to determine which key should be used to verify the message
-    // signature.
-    ArrayBuffer? verificationKeyId;
-
-    // Decryption key id added to the message header. Used by the message
-    // recepient to determine which key should be used to decrypt the message.
-    ArrayBuffer? decryptionKeyId;
-
-    // The encryption algorithm that should be used to encrypt the message.
-    // Should not be set for a cleartext message.
-    EncryptionType? encryptType;
-
-    // The algorithm to be used to sign the message.
-    // Defaults to |HMAC_SHA256|. |ECDSA_P256_SHA256| can currently be used
-    // only with cleartext messages.
-    SignatureType? signType;
-  };
-
-  // A permit record contains the credentials used to request or grant
-  // authorization of a permit.
-  dictionary PermitRecord {
-    // ID of the permit, which identifies the service/application that these
-    // permit records are used in.
-    DOMString permitId;
-
-    // An identifier for this record that should be unique among all other
-    // records of the same permit.
-    DOMString id;
-
-    // Type of the record.
-    PermitType type;
-
-    // Websafe base64 encoded payload data of the record.
-    DOMString data;
-  };
-
-  // Device information that can be authenticated for Easy unlock.
-  dictionary Device {
-    // The name of the device.
-    DOMString? name;
-
-    // The permit record of the device.
-    PermitRecord? permitRecord;
-
-    // Websafe base64 encoded persistent symmetric key.
-    DOMString? psk;
-  };
-
-  // The information about a user associated with Easy unlock service.
-  dictionary UserInfo {
-    // The user id.
-    DOMString userId;
-
-    // A stable identifier for the user and device. If a user is removed and
-    // added to the same device, this id will remain the same. However, this id
-    // will be different if another user is added to the same device or if the
-    // same user is added on another device.
-    DOMString deviceUserId;
-
-    // Whether the user is logged in. If not logged in, the app is running on
-    // the signin screen.
-    boolean loggedIn;
-
-    // Whether to require the remote device to be in very close proximity before
-    // allowing unlock (~1 feet).
-    boolean requireCloseProximity;
-
-    // Whether all data needed to use Easy unlock service has been loaded for
-    // the user.
-    boolean dataReady;
-
-    // Whether the |kEnableBluetoothLowEnergyDiscovery| switch is enabled.
-    boolean bleDiscoveryEnabled;
-  };
 
   // A range.
   dictionary Range {
@@ -140,30 +21,11 @@ namespace easyUnlockPrivate {
     long height;
   };
 
-  // Callback for crypto methods that return a single array buffer.
-  callback DataCallback = void(optional ArrayBuffer data);
-
   // An empty callback used purely for signalling success vs. failure.
   callback EmptyCallback = void();
 
   // Callback for the getStrings() method.
   callback GetStringsCallback = void(object strings);
-
-  // Callback for method that generates an encryption key pair.
-  callback KeyPairCallback = void(optional ArrayBuffer public_key,
-                                  optional ArrayBuffer private_key);
-
-  // Callback for the getPermitAccess() method.
-  callback GetPermitAccessCallback = void(optional PermitRecord permitAccess);
-
-  // Callback for the getRemoteDevices() method.
-  callback GetRemoteDevicesCallback = void(Device[] devices);
-
-  // Callback for the |getUserInfo()| method. Note that the callback argument is
-  // a list for future use (on signin screen there may be more than one user
-  // associated with the easy unlock service). Currently the method returns at
-  // most one user.
-  callback GetUserInfoCallback = void(UserInfo[] users);
 
   // Callback for the |FindSetupConnectionCallback| method.
   // |connectionId|: The identifier of the connection found. To be used in
@@ -179,79 +41,6 @@ namespace easyUnlockPrivate {
     // TODO(isherman): This is essentially copied from identity_private.idl.
     //                 Perhaps this should be extracted to a common API instead?
     static void getStrings(GetStringsCallback callback);
-
-    // Generates a ECDSA key pair for P256 curve.
-    // Public key will be in format recognized by secure wire transport protocol
-    // used by Easy Unlock app. Otherwise, the exact format for both key should
-    // should be considered obfuscated to the app. The app should not use them
-    // directly, but through this API.
-    // |callback|: Callback with the generated keys. On failure, none of the
-    //     keys will be set.
-    static void generateEcP256KeyPair(KeyPairCallback callback);
-
-    // Given a private key and a public ECDSA key from different asymetric key
-    // pairs, it generates a symetric encryption key using EC Diffie-Hellman
-    // scheme.
-    // |privateKey|: A private key generated by the app using
-    //     |generateEcP256KeyPair|.
-    // |publicKey|: A public key that should be in the same format as the
-    //     public key generated by |generateEcP256KeyPair|. Generally not the
-    //     one paired with |private_key|.
-    // |callback|: Function returning the generated secret symetric key.
-    //     On failure, the returned value will not be set.
-    static void performECDHKeyAgreement(ArrayBuffer privateKey,
-                                        ArrayBuffer publicKey,
-                                        DataCallback callback);
-
-    // Creates a secure, signed message in format used by Easy Unlock app to
-    // establish secure communication channel over unsecure connection.
-    // |payload|: The payload the create message should carry.
-    // |key|: The key used to sign the message content. If encryption algorithm
-    //     is set in |options| the same key will be used to encrypt the message.
-    // |options|: Additional (optional) parameters used to create the message.
-    // |callback|: Function returning the created message bytes. On failure,
-    //     the returned value will not be set.
-    static void createSecureMessage(
-        ArrayBuffer payload,
-        ArrayBuffer key,
-        CreateSecureMessageOptions options,
-        DataCallback callback);
-
-    // Authenticates and, if needed, decrypts a secure message. The message is
-    // in the same format as the one created by |createSecureMessage|.
-    // |secureMessage|: The message to be unwrapped.
-    // |key|: Key to be used to authenticate the message sender. If encryption
-    //     algorithm is set in |options|, the same key will be used to decrypt
-    //     the message.
-    // |options|: Additional (optional) parameters used to unwrap the message.
-    // |callback|: Function returning an array buffer containing cleartext
-    //     message header and body. They are returned in a single buffer in
-    //     format used inside the message. If the massage authentication or
-    //     decryption fails, the returned value will not be set.
-    static void unwrapSecureMessage(
-        ArrayBuffer secureMessage,
-        ArrayBuffer key,
-        UnwrapSecureMessageOptions options,
-        DataCallback callback);
-
-    // Gets the permit record for the local device.
-    static void getPermitAccess(GetPermitAccessCallback callback);
-
-    // Clears the permit record for the local device.
-    static void clearPermitAccess(optional EmptyCallback callback);
-
-    // Saves the remote device list.
-    // |devices|: The list of remote devices to be saved.
-    // |callback|: Called to indicate success or failure.
-    static void setRemoteDevices(Device[] devices,
-                                 optional EmptyCallback callback);
-
-    // Gets the remote device list.
-    static void getRemoteDevices(GetRemoteDevicesCallback callback);
-
-    // Retrieves information about the user associated with the Easy unlock
-    // service.
-    static void getUserInfo(GetUserInfoCallback callback);
 
     // Shows an error bubble with the given |message|, anchored to an edge of
     // the given |anchorRect| -- typically the right edge, but possibly a
