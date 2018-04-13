@@ -21,6 +21,7 @@
 #include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/elements/ui_element_name.h"
 #include "chrome/browser/vr/elements/ui_element_type.h"
+#include "chrome/browser/vr/frame_lifecycle.h"
 #include "chrome/browser/vr/model/camera_model.h"
 #include "chrome/browser/vr/model/reticle_model.h"
 #include "chrome/browser/vr/model/sounds.h"
@@ -105,18 +106,6 @@ class UiElement : public cc::AnimationTarget {
     kTranslateIndex = 0,
     kRotateIndex = 1,
     kScaleIndex = 2,
-  };
-
-  enum UpdatePhase {
-    kDirty = 0,
-    kUpdatedBindings,
-    kUpdatedAnimations,
-    kUpdatedComputedOpacity,
-    kUpdatedSize,
-    kUpdatedLayout,
-    kUpdatedWorldSpaceTransform,
-    kUpdatedTextures,
-    kClean = kUpdatedTextures,
   };
 
   UiElementName name() const { return name_; }
@@ -431,6 +420,7 @@ class UiElement : public cc::AnimationTarget {
   }
 
   void set_update_phase(UpdatePhase phase) { update_phase_ = phase; }
+  UpdatePhase update_phase() const { return update_phase_; }
 
   // This is true for all elements that respect the given view model matrix. If
   // this is ignored (say for head-locked elements that draw in screen space),
@@ -493,8 +483,6 @@ class UiElement : public cc::AnimationTarget {
   void set_world_space_transform_dirty() {
     world_space_transform_dirty_ = true;
   }
-
-  UpdatePhase update_phase() const { return update_phase_; }
 
   EventHandlers event_handlers_;
 

@@ -17,6 +17,7 @@
 #include "chrome/browser/vr/elements/keyboard.h"
 #include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/frame_lifecycle.h"
 #include "ui/gfx/transform.h"
 
 namespace vr {
@@ -113,8 +114,9 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
   auto& elements = GetAllElements();
 
+  FrameLifecycle::set_phase(kDirty);
   for (auto* element : elements) {
-    element->set_update_phase(UiElement::kDirty);
+    element->set_update_phase(kDirty);
     element->set_last_frame_time(current_time);
   }
 
@@ -123,6 +125,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
 
     // Propagate updates across bindings.
     root_element_->UpdateBindings();
+    FrameLifecycle::set_phase(kUpdatedBindings);
   }
 
   {
@@ -131,19 +134,23 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     // Process all animations and pre-binding work. I.e., induce any
     // time-related "dirtiness" on the scene graph.
     scene_dirty |= root_element_->DoBeginFrame(head_pose);
+    FrameLifecycle::set_phase(kUpdatedComputedOpacity);
   }
 
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
     scene_dirty |= root_element_->SizeAndLayOut();
+    FrameLifecycle::set_phase(kUpdatedLayout);
   }
 
   if (!scene_dirty) {
     // Nothing to update, so set all elements to the final update phase and
     // return early.
     for (auto* element : elements) {
-      element->set_update_phase(UiElement::kUpdatedWorldSpaceTransform);
+      if (element->update_phase() != kDirty)
+        element->set_update_phase(kUpdatedWorldSpaceTransform);
     }
+    FrameLifecycle::set_phase(kUpdatedWorldSpaceTransform);
     return false;
   }
 
@@ -156,6 +163,7 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     root_element_->UpdateWorldSpaceTransform(parent_transform_changed);
   }
 
+  FrameLifecycle::set_phase(kUpdatedWorldSpaceTransform);
   return scene_dirty;
 }
 
@@ -170,8 +178,9 @@ bool UiScene::UpdateTextures() {
   std::vector<UiElement*> elements = GetVisibleElementsMutable();
   for (auto* element : elements) {
     needs_redraw |= element->UpdateTexture();
-    element->set_update_phase(UiElement::kUpdatedTextures);
+    element->set_update_phase(kUpdatedTextures);
   }
+  FrameLifecycle::set_phase(kUpdatedTextures);
   return needs_redraw;
 }
 

@@ -87,6 +87,36 @@ TEST(UiScene, AddRemoveElements) {
   EXPECT_EQ(scene.GetUiElementById(parent_id), nullptr);
 }
 
+TEST(UiScene, IsVisibleInHiddenSubtree) {
+  UiScene scene;
+
+  // Always start with the root element.
+  EXPECT_EQ(NumElementsInSubtree(&scene.root_element()), 1u);
+
+  auto element = std::make_unique<UiElement>();
+  element->SetDrawPhase(kPhaseForeground);
+  UiElement* parent = element.get();
+  scene.AddUiElement(kRoot, std::move(element));
+
+  element = std::make_unique<UiElement>();
+  element->SetDrawPhase(kPhaseForeground);
+  UiElement* child = element.get();
+
+  parent->AddChild(std::move(element));
+
+  // Set initial computed opacity.
+  scene.OnBeginFrame(MsToTicks(1), kStartHeadPose);
+
+  parent->SetVisible(false);
+
+  scene.OnBeginFrame(MsToTicks(2), kStartHeadPose);
+
+  // On the second walk, we should skip the child.
+  scene.OnBeginFrame(MsToTicks(3), kStartHeadPose);
+
+  EXPECT_FALSE(child->IsVisible());
+}
+
 // This test creates a parent and child UI element, each with their own
 // transformations, and ensures that the child's computed total transform
 // incorporates the parent's transform as well as its own.
