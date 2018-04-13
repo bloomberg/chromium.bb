@@ -115,7 +115,6 @@ class SyncSchedulerImplTest : public testing::Test {
 
   void SetUp() override {
     test_user_share_.SetUp();
-    syncer_ = new testing::StrictMock<MockSyncer>();
     delay_ = nullptr;
     extensions_activity_ = new ExtensionsActivity();
 
@@ -141,9 +140,17 @@ class SyncSchedulerImplTest : public testing::Test {
         model_type_registry_.get(),
         true,   // enable keystore encryption
         false,  // force enable pre-commit GU avoidance
-        "fake_invalidator_client_id");
+        "fake_invalidator_client_id",
+        /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
+        /*long_poll_interval=*/base::TimeDelta::FromMinutes(120));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
+    RebuildScheduler();
+  }
+
+  void RebuildScheduler() {
+    // The old syncer is destroyed with the scheduler that owns it.
+    syncer_ = new testing::StrictMock<MockSyncer>();
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
         syncer_, false);
@@ -663,6 +670,30 @@ TEST_F(SyncSchedulerImplTest, Polling) {
                 RecordSyncShareMultiple(&times, kMinNumSamples, true)));
 
   scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
+
+  TimeTicks optimal_start = TimeTicks::Now() + poll_interval;
+  StartSyncScheduler(base::Time());
+
+  // Run again to wait for polling.
+  RunLoop();
+
+  StopSyncScheduler();
+  AnalyzePollRun(times, kMinNumSamples, optimal_start, poll_interval);
+}
+
+// Test that polling gets the intervals from the provided context.
+TEST_F(SyncSchedulerImplTest, ShouldUseInitialPollIntervalFromContext) {
+  SyncShareTimes times;
+  TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
+  context()->set_short_poll_interval(poll_interval);
+  context()->set_long_poll_interval(poll_interval);
+  RebuildScheduler();
+
+  EXPECT_CALL(*syncer(), PollSyncShare(_, _))
+      .Times(AtLeast(kMinNumSamples))
+      .WillRepeatedly(
+          DoAll(Invoke(test_util::SimulatePollSuccess),
+                RecordSyncShareMultiple(&times, kMinNumSamples, true)));
 
   TimeTicks optimal_start = TimeTicks::Now() + poll_interval;
   StartSyncScheduler(base::Time());

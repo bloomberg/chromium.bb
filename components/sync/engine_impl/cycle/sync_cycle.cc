@@ -47,7 +47,8 @@ SyncCycleSnapshot SyncCycle::TakeSnapshotWithOrigin(
       context_->notifications_enabled(), dir->GetEntriesCount(),
       status_controller_->sync_start_time(),
       status_controller_->poll_finish_time(), num_entries_by_type,
-      num_to_delete_entries_by_type, get_updates_origin);
+      num_to_delete_entries_by_type, get_updates_origin,
+      context_->short_poll_interval(), context_->long_poll_interval());
 
   return snapshot;
 }

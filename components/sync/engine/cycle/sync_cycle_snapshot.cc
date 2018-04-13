@@ -36,7 +36,9 @@ SyncCycleSnapshot::SyncCycleSnapshot(
     base::Time poll_finish_time,
     const std::vector<int>& num_entries_by_type,
     const std::vector<int>& num_to_delete_entries_by_type,
-    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin)
+    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin,
+    base::TimeDelta short_poll_interval,
+    base::TimeDelta long_poll_interval)
     : model_neutral_state_(model_neutral_state),
       download_progress_markers_(download_progress_markers),
       is_silenced_(is_silenced),
@@ -50,6 +52,8 @@ SyncCycleSnapshot::SyncCycleSnapshot(
       num_entries_by_type_(num_entries_by_type),
       num_to_delete_entries_by_type_(num_to_delete_entries_by_type),
       get_updates_origin_(get_updates_origin),
+      short_poll_interval_(short_poll_interval),
+      long_poll_interval_(long_poll_interval),
       is_initialized_(true) {}
 
 SyncCycleSnapshot::SyncCycleSnapshot(const SyncCycleSnapshot& other) = default;
@@ -160,6 +164,14 @@ const std::vector<int>& SyncCycleSnapshot::num_to_delete_entries_by_type()
 sync_pb::SyncEnums::GetUpdatesOrigin SyncCycleSnapshot::get_updates_origin()
     const {
   return get_updates_origin_;
+}
+
+base::TimeDelta SyncCycleSnapshot::short_poll_interval() const {
+  return short_poll_interval_;
+}
+
+base::TimeDelta SyncCycleSnapshot::long_poll_interval() const {
+  return long_poll_interval_;
 }
 
 }  // namespace syncer
