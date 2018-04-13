@@ -91,8 +91,6 @@ TEST(MessageAttachmentSet, MaxSize) {
 TEST(MessageAttachmentSet, WalkInOrder) {
   scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
-  // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
-  // used to retrieve borrowed descriptors. That never happens in production.
   ASSERT_TRUE(
       set->AddAttachment(new internal::PlatformFileAttachment(kFDBase)));
   ASSERT_TRUE(
@@ -103,6 +101,7 @@ TEST(MessageAttachmentSet, WalkInOrder) {
   ASSERT_EQ(GetFdAt(set.get(), 0), kFDBase);
   ASSERT_EQ(GetFdAt(set.get(), 1), kFDBase + 1);
   ASSERT_EQ(GetFdAt(set.get(), 2), kFDBase + 2);
+  ASSERT_FALSE(set->GetAttachmentAt(0));
 
   set->CommitAllDescriptors();
 }
@@ -110,8 +109,6 @@ TEST(MessageAttachmentSet, WalkInOrder) {
 TEST(MessageAttachmentSet, WalkWrongOrder) {
   scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
 
-  // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
-  // used to retrieve borrowed descriptors. That never happens in production.
   ASSERT_TRUE(
       set->AddAttachment(new internal::PlatformFileAttachment(kFDBase)));
   ASSERT_TRUE(
@@ -121,31 +118,6 @@ TEST(MessageAttachmentSet, WalkWrongOrder) {
 
   ASSERT_EQ(GetFdAt(set.get(), 0), kFDBase);
   ASSERT_FALSE(set->GetAttachmentAt(2));
-
-  set->CommitAllDescriptors();
-}
-
-TEST(MessageAttachmentSet, WalkCycle) {
-  scoped_refptr<MessageAttachmentSet> set(new MessageAttachmentSet);
-
-  // TODO(morrita): This test is wrong. TakeDescriptorAt() shouldn't be
-  // used to retrieve borrowed descriptors. That never happens in production.
-  ASSERT_TRUE(
-      set->AddAttachment(new internal::PlatformFileAttachment(kFDBase)));
-  ASSERT_TRUE(
-      set->AddAttachment(new internal::PlatformFileAttachment(kFDBase + 1)));
-  ASSERT_TRUE(
-      set->AddAttachment(new internal::PlatformFileAttachment(kFDBase + 2)));
-
-  ASSERT_EQ(GetFdAt(set.get(), 0), kFDBase);
-  ASSERT_EQ(GetFdAt(set.get(), 1), kFDBase + 1);
-  ASSERT_EQ(GetFdAt(set.get(), 2), kFDBase + 2);
-  ASSERT_EQ(GetFdAt(set.get(), 0), kFDBase);
-  ASSERT_EQ(GetFdAt(set.get(), 1), kFDBase + 1);
-  ASSERT_EQ(GetFdAt(set.get(), 2), kFDBase + 2);
-  ASSERT_EQ(GetFdAt(set.get(), 0), kFDBase);
-  ASSERT_EQ(GetFdAt(set.get(), 1), kFDBase + 1);
-  ASSERT_EQ(GetFdAt(set.get(), 2), kFDBase + 2);
 
   set->CommitAllDescriptors();
 }
