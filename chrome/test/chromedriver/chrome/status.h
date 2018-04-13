@@ -40,6 +40,7 @@ enum StatusCode {
   kForbidden = 103,
   kTabCrashed,
   kNoSuchCookie,
+  kTargetDetached,
 };
 
 // Represents a WebDriver status, which may be an error or ok.

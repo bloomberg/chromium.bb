@@ -54,9 +54,12 @@ Status GetContextIdForFrame(WebViewImpl* web_view,
   return Status(kOk);
 }
 
-WebView* GetTargetForFrame(WebViewImpl* web_view, const std::string& frame) {
-  return frame.empty() ? web_view
-                       : web_view->GetFrameTracker()->GetTargetForFrame(frame);
+WebViewImpl* GetTargetForFrame(WebViewImpl* web_view,
+                               const std::string& frame) {
+  return frame.empty()
+             ? web_view
+             : static_cast<WebViewImpl*>(
+                   web_view->GetFrameTracker()->GetTargetForFrame(frame));
 }
 
 const char* GetAsString(MouseEventType type) {
@@ -126,6 +129,9 @@ WebViewImpl::WebViewImpl(const std::string& id,
     : id_(id),
       w3c_compliant_(w3c_compliant),
       browser_info_(browser_info),
+      is_locked_(false),
+      is_detached_(false),
+      parent_(nullptr),
       client_(std::move(client)),
       dom_tracker_(new DomTracker(client_.get())),
       frame_tracker_(new FrameTracker(client_.get(), this, browser_info)),
@@ -145,17 +151,19 @@ WebViewImpl::WebViewImpl(const std::string& id,
 
 WebViewImpl::~WebViewImpl() {}
 
-WebView* WebViewImpl::CreateChild(const std::string& session_id,
-                                  const std::string& target_id) const {
+WebViewImpl* WebViewImpl::CreateChild(const std::string& session_id,
+                                      const std::string& target_id) const {
   DevToolsClientImpl* parent_client =
       static_cast<DevToolsClientImpl*>(client_.get());
   std::unique_ptr<DevToolsClient> child_client(
       std::make_unique<DevToolsClientImpl>(parent_client, session_id));
-  return new WebViewImpl(target_id, w3c_compliant_, browser_info_,
-                         std::move(child_client), nullptr,
-                         navigation_tracker_->IsNonBlocking()
-                             ? PageLoadStrategy::kNone
-                             : PageLoadStrategy::kNormal);
+  WebViewImpl* child = new WebViewImpl(target_id, w3c_compliant_, browser_info_,
+                                       std::move(child_client), nullptr,
+                                       navigation_tracker_->IsNonBlocking()
+                                           ? PageLoadStrategy::kNone
+                                           : PageLoadStrategy::kNormal);
+  child->parent_ = this;
+  return child;
 }
 
 std::string WebViewImpl::GetId() {
@@ -294,9 +302,13 @@ Status WebViewImpl::TraverseHistoryWithJavaScript(int delta) {
 Status WebViewImpl::EvaluateScript(const std::string& frame,
                                    const std::string& expression,
                                    std::unique_ptr<base::Value>* result) {
-  WebView* target = GetTargetForFrame(this, frame);
-  if (target != nullptr && target != this)
+  WebViewImpl* target = GetTargetForFrame(this, frame);
+  if (target != nullptr && target != this) {
+    if (target->IsDetached())
+      return Status(kTargetDetached);
+    WebViewImplHolder target_holder(target);
     return target->EvaluateScript(frame, expression, result);
+  }
 
   int context_id;
   Status status = GetContextIdForFrame(this, frame, &context_id);
@@ -350,9 +362,13 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
                                        const std::string& function,
                                        const base::ListValue& args,
                                        std::string* out_frame) {
-  WebView* target = GetTargetForFrame(this, frame);
-  if (target != nullptr && target != this)
+  WebViewImpl* target = GetTargetForFrame(this, frame);
+  if (target != nullptr && target != this) {
+    if (target->IsDetached())
+      return Status(kTargetDetached);
+    WebViewImplHolder target_holder(target);
     return target->GetFrameByFunction(frame, function, args, out_frame);
+  }
 
   int context_id;
   Status status = GetContextIdForFrame(this, frame, &context_id);
@@ -372,10 +388,14 @@ Status WebViewImpl::GetFrameByFunction(const std::string& frame,
 
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
                                         const std::string& frame) {
-  WebView* target = GetTargetForFrame(this, frame);
+  WebViewImpl* target = GetTargetForFrame(this, frame);
   bool needs_special_oopif_handling = browser_info_->major_version <= 65;
-  if (needs_special_oopif_handling && target != nullptr && target != this)
+  if (needs_special_oopif_handling && target != nullptr && target != this) {
+    if (target->IsDetached())
+      return Status(kTargetDetached);
+    WebViewImplHolder target_holder(target);
     return target->DispatchMouseEvents(events, frame);
+  }
 
   double page_scale_factor = 1.0;
   if (browser_info_->build_no >= 2358 && browser_info_->build_no <= 2430 &&
@@ -604,9 +624,13 @@ Status WebViewImpl::SetFileInputFiles(
     const std::string& frame,
     const base::DictionaryValue& element,
     const std::vector<base::FilePath>& files) {
-  WebView* target = GetTargetForFrame(this, frame);
-  if (target != nullptr && target != this)
+  WebViewImpl* target = GetTargetForFrame(this, frame);
+  if (target != nullptr && target != this) {
+    if (target->IsDetached())
+      return Status(kTargetDetached);
+    WebViewImplHolder target_holder(target);
     return target->SetFileInputFiles(frame, element, files);
+  }
 
   base::ListValue file_list;
   for (size_t i = 0; i < files.size(); ++i) {
@@ -867,6 +891,46 @@ bool WebViewImpl::IsOOPIF(const std::string& frame_id) {
 
 FrameTracker* WebViewImpl::GetFrameTracker() const {
   return frame_tracker_.get();
+}
+
+const WebViewImpl* WebViewImpl::GetParent() const {
+  return parent_;
+}
+
+bool WebViewImpl::Lock() {
+  bool was_locked = is_locked_;
+  is_locked_ = true;
+  return was_locked;
+}
+
+void WebViewImpl::Unlock() {
+  is_locked_ = false;
+}
+
+bool WebViewImpl::IsLocked() const {
+  return is_locked_;
+}
+
+void WebViewImpl::SetDetached() {
+  is_detached_ = true;
+  client_->SetDetached();
+}
+
+bool WebViewImpl::IsDetached() const {
+  return is_detached_;
+}
+
+WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view)
+    : web_view_(web_view), was_locked_(web_view->Lock()) {}
+
+WebViewImplHolder::~WebViewImplHolder() {
+  if (web_view_ != nullptr && !was_locked_) {
+    if (!web_view_->IsDetached())
+      web_view_->Unlock();
+    else if (web_view_->GetParent() != nullptr)
+      web_view_->GetParent()->GetFrameTracker()->DeleteTargetForFrame(
+          web_view_->GetId());
+  }
 }
 
 namespace internal {

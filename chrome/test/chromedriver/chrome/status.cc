@@ -72,6 +72,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "no such cookie";
     case kUnableToSetCookie:
       return "unable to set cookie";
+    case kTargetDetached:
+      return "target frame detached";
     default:
       return "<unknown>";
   }
