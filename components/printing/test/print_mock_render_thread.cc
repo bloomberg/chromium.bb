@@ -108,6 +108,8 @@ void PrintMockRenderThread::OnDidPreviewPage(
     const PrintHostMsg_DidPreviewPage_Params& params) {
   DCHECK_GE(params.page_number, printing::FIRST_PAGE_INDEX);
   print_preview_pages_remaining_--;
+  print_preview_pages_.emplace_back(params.page_number,
+                                    params.content.data_size);
 }
 
 void PrintMockRenderThread::OnCheckForCancel(int32_t preview_ui_id,
@@ -209,5 +211,10 @@ void PrintMockRenderThread::set_print_preview_cancel_page_number(int page) {
 
 int PrintMockRenderThread::print_preview_pages_remaining() const {
   return print_preview_pages_remaining_;
+}
+
+const std::vector<std::pair<int, uint32_t>>&
+PrintMockRenderThread::print_preview_pages() const {
+  return print_preview_pages_;
 }
 #endif  // BUILDFLAG(ENABLE_PRINTING)

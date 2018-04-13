@@ -221,11 +221,6 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
             PrintHostMsg_DidPrintDocument::ID);
     bool did_print = !!print_msg;
     ASSERT_EQ(expect_printed, did_print);
-    if (did_print) {
-      PrintHostMsg_DidPrintDocument::Param post_did_print_page_param;
-      PrintHostMsg_DidPrintDocument::Read(print_msg,
-                                          &post_did_print_page_param);
-    }
   }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -652,17 +647,11 @@ class MAYBE_PrintRenderFrameHelperPreviewTest
   void VerifyDidPreviewPage(bool expect_generated, int page_number) {
     bool msg_found = false;
     uint32_t data_size = 0;
-    size_t msg_count = render_thread_->sink().message_count();
-    for (size_t i = 0; i < msg_count; ++i) {
-      const IPC::Message* msg = render_thread_->sink().GetMessageAt(i);
-      if (msg->type() == PrintHostMsg_DidPreviewPage::ID) {
-        PrintHostMsg_DidPreviewPage::Param page_param;
-        PrintHostMsg_DidPreviewPage::Read(msg, &page_param);
-        if (std::get<0>(page_param).page_number == page_number) {
-          msg_found = true;
-          data_size = std::get<0>(page_param).content.data_size;
-          break;
-        }
+    for (const auto& preview : print_render_thread_->print_preview_pages()) {
+      if (preview.first == page_number) {
+        msg_found = true;
+        data_size = preview.second;
+        break;
       }
     }
     EXPECT_EQ(expect_generated, msg_found) << "For page " << page_number;

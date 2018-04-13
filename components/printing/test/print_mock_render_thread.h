@@ -57,6 +57,9 @@ class PrintMockRenderThread : public content::MockRenderThread {
 
   // Get the number of pages to generate for print preview.
   int print_preview_pages_remaining() const;
+
+  // Get a vector of print preview pages.
+  const std::vector<std::pair<int, uint32_t>>& print_preview_pages() const;
 #endif
 
  private:
@@ -100,6 +103,9 @@ class PrintMockRenderThread : public content::MockRenderThread {
 
   // Number of pages to generate for print preview.
   int print_preview_pages_remaining_;
+
+  // Vector of <page_number, content_data_size> that were previewed.
+  std::vector<std::pair<int, uint32_t>> print_preview_pages_;
 #endif
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

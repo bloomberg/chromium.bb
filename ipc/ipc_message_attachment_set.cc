@@ -111,14 +111,9 @@ scoped_refptr<MessageAttachment> MessageAttachmentSet::GetAttachmentAt(
   //
   // So we can either track of the use of each descriptor in a bitset, or we
   // can enforce that we walk the indexes strictly in order.
-  //
-  // There's one more wrinkle: When logging messages, we may reparse them. So
-  // we have an exception: When the consumed_descriptor_highwater_ is at the
-  // end of the array and index 0 is requested, we reset the highwater value.
-  // TODO(morrita): This is absurd. This "wringle" disallow to introduce clearer
-  // ownership model. Only client is NaclIPCAdapter. See crbug.com/415294
   if (index == 0 && consumed_descriptor_highwater_ == size()) {
-    consumed_descriptor_highwater_ = 0;
+    DLOG(WARNING) << "Attempted to double-read a message attachment, "
+                     "returning a nullptr";
   }
 
   if (index != consumed_descriptor_highwater_)
