@@ -1522,15 +1522,6 @@ gfx::Rect ShelfView::GetTouchMenuAnchorRect(const views::View* source,
                                                   : location.y());
       break;
   }
-  if (use_touchable_menu_alignment) {
-    // When showing a context menu with long press, the icon enlarges by 20%
-    // from the center point. After the context menu is shown and the long
-    // press is released the icon will scale back down and the context menu
-    // is left 5px off.
-    origin.Offset(
-        shelf_->IsHorizontalAlignment() ? kScaledIconContextMenuOffset : 0,
-        shelf_->IsHorizontalAlignment() ? 0 : kScaledIconContextMenuOffset);
-  }
   return gfx::Rect(origin,
                    for_item ? source_bounds_in_screen.size() : gfx::Size());
 }
