@@ -9,6 +9,7 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -31,23 +32,6 @@
 namespace certificate_transparency {
 
 namespace {
-
-// Used by UMA_HISTOGRAM_ENUMERATION to record query success/failures.
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
-enum QueryStatus {
-  QUERY_STATUS_SUCCESS = 0,
-  QUERY_STATUS_FAILED_UNKNOWN = 1,
-  QUERY_STATUS_FAILED_NAME_RESOLUTION = 2,
-  QUERY_STATUS_FAILED_LEAF_INDEX_MALFORMED = 3,
-  QUERY_STATUS_FAILED_INCLUSION_PROOF_MALFORMED = 4,
-  QUERY_STATUS_MAX  // Upper bound
-};
-
-void LogQueryStatus(QueryStatus result) {
-  UMA_HISTOGRAM_ENUMERATION("Net.CertificateTransparency.DnsQueryStatus",
-                            result, QUERY_STATUS_MAX);
-}
 
 void LogQueryDuration(const base::TimeDelta& duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Net.CertificateTransparency.DnsQueryDuration",
@@ -308,6 +292,10 @@ net::Error AuditProofQueryImpl::DoLoop(net::Error result) {
         break;
       case State::REQUEST_LEAF_INDEX_COMPLETE:
         result = RequestLeafIndexComplete(result);
+        if (result == net::OK) {
+          base::UmaHistogramSparse(
+              "Net.CertificateTransparency.DnsQueryLeafIndexError", net::OK);
+        }
         break;
       case State::REQUEST_AUDIT_PROOF_NODES:
         result = RequestAuditProofNodes();
@@ -324,30 +312,21 @@ net::Error AuditProofQueryImpl::DoLoop(net::Error result) {
   if (result != net::ERR_IO_PENDING) {
     // If the query is complete, log some metrics.
     LogQueryDuration(base::TimeTicks::Now() - start_time_);
-
-    switch (result) {
-      case net::OK:
-        LogQueryStatus(QUERY_STATUS_SUCCESS);
+    switch (state) {
+      case State::REQUEST_LEAF_INDEX:
+      case State::REQUEST_LEAF_INDEX_COMPLETE:
+        // An error must have occurred if the query completed in this state.
+        base::UmaHistogramSparse(
+            "Net.CertificateTransparency.DnsQueryLeafIndexError", -result);
         break;
-      case net::ERR_NAME_RESOLUTION_FAILED:
-        LogQueryStatus(QUERY_STATUS_FAILED_NAME_RESOLUTION);
+      case State::REQUEST_AUDIT_PROOF_NODES:
+      case State::REQUEST_AUDIT_PROOF_NODES_COMPLETE:
+        // The query may have completed successfully.
+        base::UmaHistogramSparse(
+            "Net.CertificateTransparency.DnsQueryAuditProofError", -result);
         break;
-      case net::ERR_DNS_MALFORMED_RESPONSE:
-        switch (state) {
-          case State::REQUEST_LEAF_INDEX_COMPLETE:
-            LogQueryStatus(QUERY_STATUS_FAILED_LEAF_INDEX_MALFORMED);
-            break;
-          case State::REQUEST_AUDIT_PROOF_NODES_COMPLETE:
-            LogQueryStatus(QUERY_STATUS_FAILED_INCLUSION_PROOF_MALFORMED);
-            break;
-          default:
-            NOTREACHED();
-            break;
-        }
-        break;
-      default:
-        // Some other error occurred.
-        LogQueryStatus(QUERY_STATUS_FAILED_UNKNOWN);
+      case State::NONE:
+        NOTREACHED();
         break;
     }
   }
