@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 
+#include "ash/display/display_prefs.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/display/display_prefs.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
@@ -30,21 +30,21 @@ void DisplayConfigurationObserver::OnDisplaysInitialized() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kFirstExecAfterBoot) &&
       save_preference_) {
-    DisplayPrefs::Get()->StoreDisplayPrefs();
+    ash::Shell::Get()->display_prefs()->StoreDisplayPrefs();
   }
 }
 
 void DisplayConfigurationObserver::OnDisplayConfigurationChanged() {
   if (save_preference_)
-    DisplayPrefs::Get()->StoreDisplayPrefs();
+    ash::Shell::Get()->display_prefs()->StoreDisplayPrefs();
 }
 
 void DisplayConfigurationObserver::OnTabletModeStarted() {
   // TODO(oshima): Tablet mode defaults to mirror mode until we figure out
   // how to handle this scenario, and we shouldn't save this state.
-  // crbug.com/733092.
+  // http://crbug.com/733092.
   save_preference_ = false;
-  // TODO(oshima): Mirroring won't work with 3 displays. crbug.com/737667.
+  // TODO(oshima): Mirroring won't work with 3 displays http://crbug.com/737667.
   display::DisplayManager* display_manager =
       ash::Shell::Get()->display_manager();
   was_in_mirror_mode_ = display_manager->IsInMirrorMode();

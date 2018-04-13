@@ -298,6 +298,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     is_multi_mirroring_enabled_ = enabled;
   }
 
+  void reset_requested_power_state_for_test() {
+    requested_power_state_ = base::nullopt;
+  }
+
  private:
   class DisplayLayoutManagerImpl;
 
