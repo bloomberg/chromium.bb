@@ -74,7 +74,7 @@ namespace internal {
 
 // Removes trailing null characters from the certificate's subject.
 // Exposed for testing.
-void NormalizeCertificateSubject(CertificateInfo* certificate_info);
+void NormalizeCertificateSubject(base::string16* subject);
 
 }  // namespace internal
 

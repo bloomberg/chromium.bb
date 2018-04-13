@@ -110,6 +110,10 @@ base::string16 GetSubjectNameInFile(const base::FilePath& filename) {
     return base::string16();
   }
 
+  // The subject name is normalized because it can contain trailing null
+  // characters.
+  internal::NormalizeCertificateSubject(&subject_name);
+
   return subject_name;
 }
 
@@ -217,10 +221,6 @@ void GetCatalogCertificateInfo(const base::FilePath& filename,
   certificate_info->type = CertificateType::CERTIFICATE_IN_CATALOG;
   certificate_info->path = catalog_path;
   certificate_info->subject = subject;
-
-  // The subject name is normalized because it can contain trailing null
-  // characters.
-  internal::NormalizeCertificateSubject(certificate_info);
 }
 
 }  // namespace
@@ -329,10 +329,10 @@ bool GetModuleImageSizeAndTimeDateStamp(const base::FilePath& path,
 
 namespace internal {
 
-void NormalizeCertificateSubject(CertificateInfo* certificate_info) {
-  size_t first_null = certificate_info->subject.find(L'\0');
+void NormalizeCertificateSubject(base::string16* subject) {
+  size_t first_null = subject->find(L'\0');
   if (first_null != base::string16::npos)
-    certificate_info->subject.resize(first_null);
+    subject->resize(first_null);
 }
 
 }  // namespace internal
