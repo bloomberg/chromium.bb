@@ -94,26 +94,48 @@ config("absl_default_cflags_cc") {
       "-Wstring-conversion",
       ###
     ]
-  }
-  if (is_linux && !is_clang) {
-    # If it is GCC...
-    cflags_cc = [
-      "-Wall",
-      "-Wextra",
-      "-Wcast-qual",
-      "-Wconversion-null",
-      "-Wmissing-declarations",
-      "-Woverlength-strings",
-      "-Wpointer-arith",
-      "-Wunused-local-typedefs",
-      "-Wunused-result",
-      "-Wvarargs",
-      "-Wvla",  # variable-length array
-      "-Wwrite-strings",
-      # Google style does not use unsigned integers, though STL containers
-      # have unsigned types.
-      "-Wno-sign-compare",
-    ]
+  } else {
+    if (is_linux) {
+      # GCC flags:
+      cflags_cc = [
+        "-Wall",
+        "-Wextra",
+        "-Wcast-qual",
+        "-Wconversion-null",
+        "-Wmissing-declarations",
+        "-Woverlength-strings",
+        "-Wpointer-arith",
+        "-Wunused-local-typedefs",
+        "-Wunused-result",
+        "-Wvarargs",
+        "-Wvla",  # variable-length array
+        "-Wwrite-strings",
+        # Google style does not use unsigned integers, though STL containers
+        # have unsigned types.
+        "-Wno-sign-compare",
+      ]
+    }
+    if (is_win) {
+      # MSVC flags:
+      cflags_cc = [
+        "/W3",
+        "/WX",
+        "/wd4005",  # macro-redefinition
+        "/wd4068",  # unknown pragma
+        # conversion from 'type1' to 'type2', possible loss of data
+        "/wd4244",
+        # conversion from 'size_t' to 'type', possible loss of data
+        "/wd4267",
+        # forcing value to bool 'true' or 'false' (performance warning)
+        "/wd4800",
+        # Don't define min and max macros (windows.h)
+        "/DNOMINMAX",
+        # Don't bloat namespace with incompatible winsock versions.
+        "/DWIN32_LEAN_AND_MEAN",
+        # Don't warn about usage of insecure C functions
+        "/D_CRT_SECURE_NO_WARNINGS",
+      ]
+    }
   }
 }
 
@@ -135,26 +157,40 @@ config("absl_test_cflags_cc") {
       "-Wno-used-but-marked-unused",
       "-Wno-zero-as-null-pointer-constant",
     ]
-  }
-  if (is_linux && !is_clang) {
-    # If is GCC...
-    cflags_cc = [
-      "-Wno-conversion-null",
-      "-Wno-missing-declarations",
-      "-Wno-sign-compare",
-      "-Wno-unused-function",
-      "-Wno-unused-parameter",
-      "-Wno-unused-private-field",
-    ]
+  } else {
+    if (is_linux) {
+      # GCC flags:
+      cflags_cc = [
+        "-Wno-conversion-null",
+        "-Wno-missing-declarations",
+        "-Wno-sign-compare",
+        "-Wno-unused-function",
+        "-Wno-unused-parameter",
+        "-Wno-unused-private-field",
+      ]
+    }
+    if (is_win) {
+      # MSVC flags:
+      cflags_cc = [
+        "/wd4018",  # signed/unsigned mismatch
+        "/wd4101",  # unreferenced local variable
+        "/wd4503",  # decorated name length exceeded, name was truncated
+      ]
+    }
   }
 }
 
 config("absl_exceptions_cflags_cc") {
-  cflags_cc = [
-    # Enable exception handling.
-    # It seems clang-cl does not support -fexception. Using the MSVC flag
-    # fixes the problem.
-    # "-fexceptions",
-    "/GX",
-  ]
+  # Enable exception handling.
+  if (is_win) {
+    cflags_cc = [
+      "/U_HAS_EXCEPTIONS",
+      "/D_HAS_EXCEPTIONS=1",
+      "/EHsc"
+    ]
+  } else {
+    cflags_cc = [
+      "-fexceptions",
+    ]
+  }
 }
