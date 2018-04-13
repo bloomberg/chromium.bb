@@ -196,15 +196,25 @@ class ChangeListLoader {
   // ================= Implementation for change list loading =================
 
   // Part of LoadFromServerIfNeeded().
-  // Starts loading the change list since |start_changestamp|, or the full
-  // resource list if |start_changestamp| is zero.
-  void LoadChangeListFromServer(int64_t start_changestamp);
+  // Starts loading the change list since |local_changestamp|, or the full
+  // resource list if |start_changestamp| is zero. If there's no changes since
+  // then, and there are no new team drives changes to apply from
+  // team_drives_change_lists, finishes early.
+  // TODO(sashab): Currently, team_drives_change_lists always contains all of
+  // the team drives. Update this so team_drives_change_lists is only filled
+  // when the TD flag is newly turned on or local data cleared. crbug.com/829154
+  void LoadChangeListFromServer(
+      std::unique_ptr<google_apis::AboutResource> about_resource,
+      int64_t local_changestamp,
+      FileError error,
+      std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists);
 
   // Part of LoadChangeListFromServer().
   // Called when the entire change list is loaded.
   void LoadChangeListFromServerAfterLoadChangeList(
       std::unique_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_update,
+      std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists,
       FileError error,
       std::vector<std::unique_ptr<ChangeList>> change_lists);
 
