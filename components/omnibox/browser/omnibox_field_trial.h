@@ -25,7 +25,6 @@ class TimeDelta;
 
 namespace omnibox {
 
-extern const base::Feature kOmniboxEntitySuggestions;
 extern const base::Feature kOmniboxRichEntitySuggestions;
 extern const base::Feature kOmniboxTailSuggestions;
 extern const char kOmniboxTabSwitchSuggestionsFlag[];
