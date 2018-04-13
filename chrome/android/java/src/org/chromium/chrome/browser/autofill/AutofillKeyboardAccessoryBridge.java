@@ -28,6 +28,7 @@ public class AutofillKeyboardAccessoryBridge
     private long mNativeAutofillKeyboardAccessory;
     private AutofillKeyboardAccessory mAccessoryView;
     private Context mContext;
+    private AutofillKeyboardSuggestions mAutofillSuggestions;
 
     private AutofillKeyboardAccessoryBridge() {
     }
@@ -86,8 +87,10 @@ public class AutofillKeyboardAccessoryBridge
         }
 
         mNativeAutofillKeyboardAccessory = nativeAutofillKeyboardAccessory;
-        mAccessoryView = new AutofillKeyboardAccessory(
-                windowAndroid, this, animationDurationMillis, shouldLimitLabelWidth);
+        mAccessoryView = new AutofillKeyboardAccessory(windowAndroid);
+        mAutofillSuggestions =
+                new AutofillKeyboardSuggestions(windowAndroid, this, shouldLimitLabelWidth);
+        mAccessoryView.setSuggestions(mAutofillSuggestions);
         mContext = windowAndroid.getActivity().get();
     }
 
@@ -114,7 +117,8 @@ public class AutofillKeyboardAccessoryBridge
      */
     @CalledByNative
     private void show(AutofillSuggestion[] suggestions, boolean isRtl) {
-        if (mAccessoryView != null) mAccessoryView.showWithSuggestions(suggestions, isRtl);
+        if (mAccessoryView != null) mAccessoryView.show();
+        if (mAutofillSuggestions != null) mAutofillSuggestions.setSuggestions(suggestions, isRtl);
     }
 
     // Helper methods for AutofillSuggestion. These are copied from AutofillPopupBridge (which
