@@ -59,7 +59,7 @@ void ArcAppResult::Open(int event_flags) {
 }
 
 std::unique_ptr<ChromeSearchResult> ArcAppResult::Duplicate() const {
-  std::unique_ptr<ArcAppResult> copy = std::make_unique<ArcAppResult>(
+  auto copy = std::make_unique<ArcAppResult>(
       profile(), app_id(), controller(),
       display_type() == ash::SearchResultDisplayType::kRecommendation);
   copy->set_title(title());
