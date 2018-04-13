@@ -47,10 +47,11 @@ function isMouseNearSideToolbar(e, window) {
 /**
  * Constructs a Toolbar Manager, responsible for co-ordinating between multiple
  * toolbar elements.
- * @constructor
+ *
  * @param {Object} window The window containing the UI.
  * @param {Object} toolbar The top toolbar element.
  * @param {Object} zoomToolbar The zoom toolbar element.
+ * @constructor
  */
 function ToolbarManager(window, toolbar, zoomToolbar) {
   this.window_ = window;
@@ -111,6 +112,7 @@ ToolbarManager.prototype = {
 
   /**
    * Whether a mousemove event is high enough velocity to reveal the toolbars.
+   *
    * @param {MouseEvent} e Event to test.
    * @return {boolean} true if the event is a high velocity mousemove, false
    * otherwise.
@@ -136,6 +138,7 @@ ToolbarManager.prototype = {
 
   /**
    * Wrapper around Date.now() to make it easily replaceable for testing.
+   *
    * @return {number}
    * @private
    */
@@ -241,6 +244,7 @@ ToolbarManager.prototype = {
   /**
    * Updates the size of toolbar dropdowns based on the positions of the rest of
    * the UI.
+   *
    * @private
    */
   resizeDropdowns_: function() {

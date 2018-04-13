@@ -11,7 +11,6 @@
  */
 class ZoomManager {
   /**
-   * Constructs a ZoomManager.
    * @param {!Viewport} viewport A Viewport for which to manage zoom.
    * @param {number} initialZoom The initial browser zoom level.
    */
@@ -25,6 +24,7 @@ class ZoomManager {
 
   /**
    * Creates the appropriate kind of zoom manager given the zoom behavior.
+   *
    * @param {BrowserApi.ZoomBehavior} zoomBehavior How to manage zoom.
    * @param {!Viewport} viewport A Viewport for which to manage zoom.
    * @param {Function} setBrowserZoomFunction A function that sets the browser
@@ -45,6 +45,7 @@ class ZoomManager {
 
   /**
    * Invoked when a browser-initiated zoom-level change occurs.
+   *
    * @param {number} newZoom the zoom level to zoom to.
    */
   onBrowserZoomChange(newZoom) {}
@@ -57,6 +58,7 @@ class ZoomManager {
   /**
    * Combines the internal pdf zoom and the browser zoom to
    * produce the total zoom level for the viewer.
+   *
    * @param {number} internalZoom the zoom level internal to the viewer.
    * @return {number} the total zoom level.
    */
@@ -67,6 +69,7 @@ class ZoomManager {
   /**
    * Given a zoom level, return the internal zoom level needed to
    * produce that zoom level.
+   *
    * @param {number} totalZoom the total zoom level.
    * @return {number} the zoom level internal to the viewer.
    */
@@ -76,6 +79,7 @@ class ZoomManager {
 
   /**
    * Returns whether two numbers are approximately equal.
+   *
    * @param {number} a The first number.
    * @param {number} b The second number.
    */
@@ -100,6 +104,7 @@ class InactiveZoomManager extends ZoomManager {}
 class ActiveZoomManager extends ZoomManager {
   /**
    * Constructs a ActiveZoomManager.
+   *
    * @param {!Viewport} viewport A Viewport for which to manage zoom.
    * @param {Function} setBrowserZoomFunction A function that sets the browser
    *     zoom to the provided value.
@@ -113,6 +118,7 @@ class ActiveZoomManager extends ZoomManager {
 
   /**
    * Invoked when a browser-initiated zoom-level change occurs.
+   *
    * @param {number} newZoom the zoom level to zoom to.
    */
   onBrowserZoomChange(newZoom) {
@@ -159,6 +165,7 @@ class ActiveZoomManager extends ZoomManager {
   /**
    * Combines the internal pdf zoom and the browser zoom to
    * produce the total zoom level for the viewer.
+   *
    * @param {number} internalZoom the zoom level internal to the viewer.
    * @return {number} the total zoom level.
    */
@@ -171,6 +178,7 @@ class ActiveZoomManager extends ZoomManager {
   /**
    * Given a zoom level, return the internal zoom level needed to
    * produce that zoom level.
+   *
    * @param {number} totalZoom the total zoom level.
    * @return {number} the zoom level internal to the viewer.
    */
@@ -188,6 +196,7 @@ class ActiveZoomManager extends ZoomManager {
 class EmbeddedZoomManager extends ZoomManager {
   /**
    * Invoked when a browser-initiated zoom-level change occurs.
+   *
    * @param {number} newZoom the new browser zoom level.
    */
   onBrowserZoomChange(newZoom) {

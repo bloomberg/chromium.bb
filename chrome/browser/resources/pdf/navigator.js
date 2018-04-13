@@ -7,6 +7,7 @@
 /**
  * Creates a new NavigatorDelegate for calling browser-specific functions to
  * do the actual navigating.
+ *
  * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
  *    not displayed in a tab.
  * @constructor
@@ -17,6 +18,7 @@ function NavigatorDelegate(tabId) {
 
 /**
  * Creates a new Navigator for navigating to links inside or outside the PDF.
+ *
  * @param {string} originalUrl The original page URL.
  * @param {Object} viewport The viewport info of the page.
  * @param {Object} paramsParser The object for URL parsing.
@@ -34,8 +36,8 @@ function Navigator(originalUrl, viewport, paramsParser, navigatorDelegate) {
 
 NavigatorDelegate.prototype = {
   /**
-   * @public
    * Called when navigation should happen in the current tab.
+   *
    * @param {string} url The url to be opened in the current tab.
    */
   navigateInCurrentTab: function(url) {
@@ -48,8 +50,8 @@ NavigatorDelegate.prototype = {
   },
 
   /**
-   * @public
    * Called when navigation should happen in the new tab.
+   *
    * @param {string} url The url to be opened in the new tab.
    * @param {boolean} active Indicates if the new tab should be the active tab.
    */
@@ -63,8 +65,8 @@ NavigatorDelegate.prototype = {
   },
 
   /**
-   * @public
    * Called when navigation should happen in the new window.
+   *
    * @param {string} url The url to be opened in the new window.
    */
   navigateInNewWindow: function(url) {
@@ -95,6 +97,7 @@ Navigator.prototype = {
   /**
    * Function to navigate to the given URL. This might involve navigating
    * within the PDF page or opening a new url (in the same tab or a new tab).
+   *
    * @param {string} url The URL to navigate to.
    * @param {number} disposition The window open disposition when
    *    navigating to the new URL.
@@ -148,10 +151,11 @@ Navigator.prototype = {
   },
 
   /**
-   * @private
    * Called when the viewport position is received.
+   *
    * @param {Object} viewportPosition Dictionary containing the viewport
    *    position.
+   * @private
    */
   onViewportReceived_: function(viewportPosition) {
     var originalUrl = this.originalUrl_;
@@ -172,10 +176,11 @@ Navigator.prototype = {
   },
 
   /**
-   * @private
    * Checks if the URL starts with a scheme and is not just a scheme.
+   *
    * @param {string} url The input URL
    * @return {boolean} Whether the url is valid.
+   * @private
    */
   isValidUrl_: function(url) {
     // Make sure |url| starts with a valid scheme.
@@ -200,11 +205,12 @@ Navigator.prototype = {
   },
 
   /**
-   * @private
    * Attempt to figure out what a URL is when there is no scheme.
+   *
    * @param {string} url The input URL
    * @return {string} The URL with a scheme or the original URL if it is not
    *     possible to determine the scheme.
+   * @private
    */
   guessUrlWithoutScheme_: function(url) {
     // If the original URL is mailto:, that does not make sense to start with,

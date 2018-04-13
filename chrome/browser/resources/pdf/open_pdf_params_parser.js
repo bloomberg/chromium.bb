@@ -12,7 +12,6 @@
  */
 window.OpenPDFParamsParser = class {
   /**
-   * Constructor.
    * @param {function(Object)} postMessageCallback
    *     Function called to fetch information for a named destination.
    */
@@ -25,11 +24,12 @@ window.OpenPDFParamsParser = class {
   }
 
   /**
-   * @private
    * Parse zoom parameter of open PDF parameters. The PDF should be opened at
    * the specified zoom level.
+   *
    * @param {string} paramValue zoom value.
    * @return {Object} Map with zoom parameters (zoom and position).
+   * @private
    */
   parseZoomParam_(paramValue) {
     const paramValueSplit = paramValue.split(',');
@@ -55,11 +55,12 @@ window.OpenPDFParamsParser = class {
   }
 
   /**
-   * @private
    * Parse view parameter of open PDF parameters. The PDF should be opened at
    * the specified fitting type mode and position.
+   *
    * @param {string} paramValue view value.
    * @return {Object} Map with view parameters (view and viewPosition).
+   * @private
    */
   parseViewParam_(paramValue) {
     const viewModeComponents = paramValue.toLowerCase().split(',');
@@ -92,9 +93,10 @@ window.OpenPDFParamsParser = class {
 
   /**
    * Parse the parameters encoded in the fragment of a URL into a dictionary.
-   * @private
+   *
    * @param {string} url to parse
    * @return {Object} Key-value pairs of URL parameters
+   * @private
    */
   parseUrlParams_(url) {
     const params = {};
@@ -126,6 +128,7 @@ window.OpenPDFParamsParser = class {
    * Parse PDF url parameters used for controlling the state of UI. These need
    * to be available when the UI is being initialized, rather than when the PDF
    * is finished loading.
+   *
    * @param {string} url that needs to be parsed.
    * @return {Object} parsed url parameters.
    */
@@ -144,6 +147,7 @@ window.OpenPDFParamsParser = class {
    * and specify actions to be performed when opening pdf files.
    * See http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/
    * pdfs/pdf_open_parameters.pdf for details.
+   *
    * @param {string} url that needs to be parsed.
    * @param {Function} callback function to be called with viewport info.
    */
@@ -180,6 +184,7 @@ window.OpenPDFParamsParser = class {
   /**
    * This is called when a named destination is received and the page number
    * corresponding to the request for which a named destination is passed.
+   *
    * @param {number} pageNumber The page corresponding to the named destination
    *    requested.
    */

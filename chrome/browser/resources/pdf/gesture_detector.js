@@ -10,7 +10,6 @@
  */
 class GestureDetector {
   /**
-   * Constructs a GestureDetector.
    * @param {!Element} element The element to monitor for touch gestures.
    */
   constructor(element) {
@@ -37,18 +36,20 @@ class GestureDetector {
     this.pinchStartEvent_ = null;
     this.lastTouchTouchesCount_ = 0;
 
-    /** @private {?TouchEvent} */
+    /** @private {TouchEvent} */
     this.lastEvent_ = null;
 
     /**
      * The scale relative to the start of the pinch when handling ctrl-wheels.
      * null when there is no ongoing pinch.
+     *
      * @private {?number}
      */
     this.accumulatedWheelScale_ = null;
     /**
      * A timeout ID from setTimeout used for sending the pinchend event when
      * handling ctrl-wheels.
+     *
      * @private {?number}
      */
     this.wheelEndTimeout_ = null;
@@ -60,6 +61,7 @@ class GestureDetector {
 
   /**
    * Add a |listener| to be notified of |type| events.
+   *
    * @param {string} type The event type to be notified for.
    * @param {!Function} listener The callback.
    */
@@ -70,7 +72,6 @@ class GestureDetector {
   }
 
   /**
-   * Returns true if the last touch start was a two finger touch.
    * @return {boolean} True if the last touch start was a two finger touch.
    */
   wasTwoFingerTouch() {
@@ -79,8 +80,9 @@ class GestureDetector {
 
   /**
    * Call the relevant listeners with the given |pinchEvent|.
-   * @private
+   *
    * @param {!Object} pinchEvent The event to notify the listeners of.
+   * @private
    */
   notify_(pinchEvent) {
     let listeners = this.listeners_.get(pinchEvent.type);
@@ -91,8 +93,9 @@ class GestureDetector {
 
   /**
    * The callback for touchstart events on the element.
-   * @private
+   *
    * @param {!TouchEvent} event Touch event on the element.
+   * @private
    */
   onTouchStart_(event) {
     this.lastTouchTouchesCount_ = event.touches.length;
@@ -106,8 +109,9 @@ class GestureDetector {
 
   /**
    * The callback for touch move, end, and cancel events on the element.
-   * @private
+   *
    * @param {!TouchEvent} event Touch event on the element.
+   * @private
    */
   onTouch_(event) {
     if (!this.pinchStartEvent_)
@@ -153,8 +157,9 @@ class GestureDetector {
 
   /**
    * The callback for wheel events on the element.
-   * @private
+   *
    * @param {!WheelEvent} event Wheel event on the element.
+   * @private
    */
   onWheel_(event) {
     // We handle ctrl-wheels to invoke our own pinch zoom. On Mac, synthetic
@@ -211,11 +216,12 @@ class GestureDetector {
   /**
    * Computes the change in scale between this touch event
    * and a previous one.
-   * @private
+   *
    * @param {!TouchEvent} event Latest touch event on the element.
    * @param {!TouchEvent} prevEvent A previous touch event on the element.
    * @return {?number} The ratio of the scale of this event and the
    *     scale of the previous one.
+   * @private
    */
   static pinchScaleRatio_(event, prevEvent) {
     let distance1 = GestureDetector.distance_(prevEvent);
@@ -225,9 +231,10 @@ class GestureDetector {
 
   /**
    * Computes the distance between fingers.
-   * @private
+   *
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
    * @return {number} Distance between touch[0] and touch[1].
+   * @private
    */
   static distance_(event) {
     let touch1 = event.touches[0];
@@ -239,9 +246,10 @@ class GestureDetector {
 
   /**
    * Computes the midpoint between fingers.
-   * @private
+   *
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
    * @return {!Object} Midpoint between touch[0] and touch[1].
+   * @private
    */
   static center_(event) {
     let touch1 = event.touches[0];

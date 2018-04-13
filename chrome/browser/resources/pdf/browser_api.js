@@ -5,7 +5,6 @@
 'use strict';
 
 /**
- * Returns a promise that will resolve to the default zoom factor.
  * @param {!Object} streamInfo The stream object pointing to the data contained
  *     in the PDF.
  * @return {Promise<number>} A promise that will resolve to the default zoom
@@ -28,6 +27,7 @@ function lookupDefaultZoom(streamInfo) {
  * Returns a promise that will resolve to the initial zoom factor
  * upon starting the plugin. This may differ from the default zoom
  * if, for example, the page is zoomed before the plugin is run.
+ *
  * @param {!Object} streamInfo The stream object pointing to the data contained
  *     in the PDF.
  * @return {Promise<number>} A promise that will resolve to the initial zoom
@@ -64,10 +64,10 @@ class BrowserApi {
   }
 
   /**
-   * Returns a promise to a BrowserApi.
    * @param {!Object} streamInfo The stream object pointing to the data
    *     contained in the PDF.
    * @param {BrowserApi.ZoomBehavior} zoomBehavior How to manage zoom.
+   * @return {Promise<BrowserApi>} A promise to a BrowserApi.
    */
   static create(streamInfo, zoomBehavior) {
     return Promise
@@ -79,8 +79,8 @@ class BrowserApi {
   }
 
   /**
-   * Returns the stream info pointing to the data contained in the PDF.
-   * @return {Object} The stream info object.
+   * @return {Object} The stream info object pointing to the data contained in
+   *     the PDF.
    */
   getStreamInfo() {
     return this.streamInfo_;
@@ -96,6 +96,7 @@ class BrowserApi {
 
   /**
    * Sets the browser zoom.
+   *
    * @param {number} zoom The zoom factor to send to the browser.
    * @return {Promise} A promise that will be resolved when the browser zoom
    *     has been updated.
@@ -109,7 +110,6 @@ class BrowserApi {
   }
 
   /**
-   * Returns the default browser zoom factor.
    * @return {number} The default browser zoom factor.
    */
   getDefaultZoom() {
@@ -117,7 +117,6 @@ class BrowserApi {
   }
 
   /**
-   * Returns the initial browser zoom factor.
    * @return {number} The initial browser zoom factor.
    */
   getInitialZoom() {
@@ -125,7 +124,6 @@ class BrowserApi {
   }
 
   /**
-   * Returns how to manage the zoom.
    * @return {BrowserApi.ZoomBehavior} How to manage zoom.
    */
   getZoomBehavior() {
@@ -134,6 +132,7 @@ class BrowserApi {
 
   /**
    * Adds an event listener to be notified when the browser zoom changes.
+   *
    * @param {!Function} listener The listener to be called with the new zoom
    *     factor.
    */
@@ -164,6 +163,7 @@ BrowserApi.ZoomBehavior = {
 
 /**
  * Creates a BrowserApi for an extension running as a mime handler.
+ *
  * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
  *     using the mimeHandlerPrivate API.
  */
@@ -199,6 +199,7 @@ function createBrowserApiForMimeHandlerView() {
 
 /**
  * Creates a BrowserApi instance for an extension not running as a mime handler.
+ *
  * @return {Promise<BrowserApi>} A promise to a BrowserApi instance constructed
  *     from the URL.
  */
@@ -228,7 +229,6 @@ function createBrowserApiForPrintPreview() {
 }
 
 /**
- * Returns a promise that will resolve to a BrowserApi instance.
  * @return {Promise<BrowserApi>} A promise to a BrowserApi instance for the
  *     current environment.
  */

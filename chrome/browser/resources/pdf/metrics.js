@@ -48,6 +48,7 @@ window.PDFMetrics = class {
 
   /**
    * Call when the zoom mode is changed to fit a FittingType.
+   *
    * @param {FittingType} fittingType the new FittingType.
    */
   onFitTo(fittingType) {}
@@ -73,6 +74,7 @@ window.PDFMetrics = class {
  * This is used in print preview mode to avoid bundling the actions in the PDF
  * viewer and the print preview in the same histogram. Also, metricsPrivate is
  * not available in print preview.
+ *
  * @implements {PDFMetrics}
  */
 window.PDFMetricsDummy = class {
@@ -100,6 +102,7 @@ window.PDFMetricsDummy = class {
 /**
  * Implementation of PDFMetrics that logs the corresponding metrics to UMA
  * through chrome.metricsPrivate.
+ *
  * @implements {PDFMetrics}
  */
 window.PDFMetricsImpl = class {
@@ -164,14 +167,15 @@ window.PDFMetricsImpl = class {
   }
 
   /**
-   * @private
    * Logs the "first" event code if it hasn't been logged by this instance yet
    * and also log the "total" event code. This distinction allows analyzing
    * both:
    * - in what percentage of documents each action was taken;
    * - how many times, on average, each action is taken on a document;
+   *
    * @param {number} firstEventCode event code for the "first" metric.
    * @return {number} totalEventCode event code for the "total"  metric.
+   * @private
    */
   logFirstAndTotal_(firstEventCode, totalEventCode) {
     this.log_(totalEventCode);
@@ -179,19 +183,21 @@ window.PDFMetricsImpl = class {
   }
 
   /**
-   * @private
    * Logs the given event code to chrome.metricsPrivate.
+   *
    * @param {number} eventCode event code to log.
+   * @private
    */
   log_(eventCode) {
     chrome.metricsPrivate.recordValue(this.actionsMetric_, eventCode);
   }
 
   /**
-   * @private
    * Logs the given event code. Subsequent calls of this method with the same
    * event code have no effect on the this PDFMetrics instance.
+   *
    * @param {number} eventCode event code to log.
+   * @private
    */
   logOnlyFirstTime_(eventCode) {
     if (!this.firstEventLogged_.has(eventCode)) {
