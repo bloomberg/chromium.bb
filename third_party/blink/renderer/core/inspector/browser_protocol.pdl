@@ -983,7 +983,7 @@ experimental domain CSS
       # Usage statistics for every employed platform font.
       array of PlatformFontUsage fonts
 
-  # Returns the current textual content and the URL for a stylesheet.
+  # Returns the current textual content for a stylesheet.
   command getStyleSheetText
     parameters
       StyleSheetId styleSheetId
