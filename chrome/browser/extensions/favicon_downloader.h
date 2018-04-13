@@ -22,7 +22,7 @@ struct FaviconURL;
 }
 
 namespace extensions {
-FORWARD_DECLARE_TEST(BookmarkAppHelperExtensionServiceTest,
+FORWARD_DECLARE_TEST(BookmarkAppHelperExtensionServiceInstallableSiteTest,
                      CreateBookmarkAppWithManifestIcons);
 }
 
@@ -55,8 +55,9 @@ class FaviconDownloader : public content::WebContentsObserver {
 
  private:
   friend class TestFaviconDownloader;
-  FRIEND_TEST_ALL_PREFIXES(extensions::BookmarkAppHelperExtensionServiceTest,
-                           CreateBookmarkAppWithManifestIcons);
+  FRIEND_TEST_ALL_PREFIXES(
+      extensions::BookmarkAppHelperExtensionServiceInstallableSiteTest,
+      CreateBookmarkAppWithManifestIcons);
 
   // Initiates a download of the image at |url| and returns the download id.
   // This is overridden in testing.
