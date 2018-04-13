@@ -317,9 +317,6 @@ void AppListItemView::OnContextMenuModelReceived(
                  views::MenuRunner::CONTEXT_MENU;
     anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
     if (source_type == ui::MENU_SOURCE_TOUCH) {
-      // When a context menu is shown by touch, the app icon is temporarily
-      // enlarged, so use the ideal bounds instead of the current bounds for the
-      // anchor rect.
       anchor_rect = apps_grid_view_->GetIdealBounds(this);
       // Anchor the menu to the same rect that is used for selection highlight.
       anchor_rect.ClampToCenteredSize(
