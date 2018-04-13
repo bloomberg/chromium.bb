@@ -9,6 +9,9 @@
 
 namespace ui {
 
+ForegroundHelper::ForegroundHelper() : window_(NULL) {}
+ForegroundHelper::~ForegroundHelper() = default;
+
 // static
 HRESULT ForegroundHelper::SetForeground(HWND window) {
   DCHECK(::IsWindow(window));

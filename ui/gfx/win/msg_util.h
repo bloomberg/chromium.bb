@@ -6,6 +6,7 @@
 #define UI_GFX_WIN_MSG_UTIL_H_
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -18,44 +19,42 @@
 // Message map macro for cracked handlers
 
 // Note about message maps with cracked handlers:
-// For ATL 3.0, a message map using cracked handlers MUST use BEGIN_MSG_MAP_EX.
-// For ATL 7.0 or higher, you can use BEGIN_MSG_MAP for CWindowImpl/CDialogImpl
-// derived classes,
-// but must use BEGIN_MSG_MAP_EX for classes that don't derive from
-// CWindowImpl/CDialogImpl.
+// For ATL 3.0, a message map using cracked handlers MUST use
+// CR_BEGIN_MSG_MAP_EX. For ATL 7.0 or higher, you can use CR_BEGIN_MSG_MAP for
+// CWindowImpl/CDialogImpl derived classes, but must use CR_BEGIN_MSG_MAP_EX for
+// classes that don't derive from CWindowImpl/CDialogImpl.
+// Classes using the CR_BEGIN_MSG_MAP_EX/CR_END_MSG_MAP set of macros must
+// also include a CR_MSG_MAP_CLASS_DECLARATIONS macro after all members in
+// the class definition since the macros add a
+// base::WeakPtrFactory which is only allowed if last in the class.
 
-#define CR_BEGIN_MSG_MAP_EX(theClass)                             \
- public:                                                          \
-  BOOL m_bMsgHandled;                                             \
-  /* "handled" management for cracked handlers */                 \
-  BOOL IsMsgHandled() const { return m_bMsgHandled; }             \
-  void SetMsgHandled(BOOL bHandled) { m_bMsgHandled = bHandled; } \
-  BOOL ProcessWindowMessage(HWND hWnd,                            \
-                            UINT uMsg,                            \
-                            WPARAM wParam,                        \
-                            LPARAM lParam,                        \
-                            LRESULT& lResult,                     \
-                            DWORD dwMsgMapID = 0) override {      \
-    BOOL bOldMsgHandled = m_bMsgHandled;                          \
-    BOOL bRet = _ProcessWindowMessage(                            \
-        hWnd, uMsg, wParam, lParam, lResult, dwMsgMapID);         \
-    m_bMsgHandled = bOldMsgHandled;                               \
-    return bRet;                                                  \
-  }                                                               \
-  BOOL _ProcessWindowMessage(HWND hWnd,                           \
-                             UINT uMsg,                           \
-                             WPARAM wParam,                       \
-                             LPARAM lParam,                       \
-                             LRESULT& lResult,                    \
-                             DWORD dwMsgMapID) {                  \
-    BOOL bHandled = TRUE;                                         \
-    hWnd;                                                         \
-    uMsg;                                                         \
-    wParam;                                                       \
-    lParam;                                                       \
-    lResult;                                                      \
-    bHandled;                                                     \
-    switch (dwMsgMapID) {                                         \
+#define CR_BEGIN_MSG_MAP_EX(theClass)                                       \
+ public:                                                                    \
+  /* "handled" management for cracked handlers */                           \
+  void SetMsgHandled(BOOL handled) { msg_handled_ = handled; }              \
+  BOOL ProcessWindowMessage(HWND hwnd, UINT msg, WPARAM w_param,            \
+                            LPARAM l_param, LRESULT& l_result,              \
+                            DWORD msg_map_id = 0) override {                \
+    auto ref(theClass::msg_handler_weak_factory_.GetWeakPtr());             \
+    BOOL old_msg_handled = msg_handled_;                                    \
+    BOOL ret = _ProcessWindowMessage(hwnd, msg, w_param, l_param, l_result, \
+                                     msg_map_id);                           \
+    if (ref.get())                                                          \
+      msg_handled_ = old_msg_handled;                                       \
+    return ret;                                                             \
+  }                                                                         \
+  BOOL _ProcessWindowMessage(HWND hWnd, UINT uMsg, WPARAM wParam,           \
+                             LPARAM lParam, LRESULT& lResult,               \
+                             DWORD dwMsgMapID) {                            \
+    auto ref(theClass::msg_handler_weak_factory_.GetWeakPtr());             \
+    BOOL bHandled = TRUE;                                                   \
+    hWnd;                                                                   \
+    uMsg;                                                                   \
+    wParam;                                                                 \
+    lParam;                                                                 \
+    lResult;                                                                \
+    bHandled;                                                               \
+    switch (dwMsgMapID) {                                                   \
       case 0:
 
 // Replacement for atlwin.h's END_MSG_MAP for removing ATL usage.
@@ -68,6 +67,13 @@
     return FALSE;                                             \
     }
 
+// This macro must be last in the class since it contains a
+// base::WeakPtrFactory which must be last in the class.
+#define CR_MSG_MAP_CLASS_DECLARATIONS(theClass) \
+ private:                                       \
+  BOOL msg_handled_{false};                     \
+  base::WeakPtrFactory<theClass> msg_handler_weak_factory_{this};
+
 #define CR_GET_X_LPARAM(lParam) ((int)(short)LOWORD(lParam))
 #define CR_GET_Y_LPARAM(lParam) ((int)(short)HIWORD(lParam))
 
@@ -79,7 +85,7 @@
   if (uMsg == WM_CREATE) {                           \
     SetMsgHandled(TRUE);                             \
     lResult = (LRESULT)func((LPCREATESTRUCT)lParam); \
-    if (IsMsgHandled())                              \
+    if (!ref.get() || msg_handled_)                  \
       return TRUE;                                   \
   }
 
@@ -88,7 +94,7 @@
   if (uMsg == WM_INITDIALOG) {                     \
     SetMsgHandled(TRUE);                           \
     lResult = (LRESULT)func((HWND)wParam, lParam); \
-    if (IsMsgHandled())                            \
+    if (!ref.get() || msg_handled_)                \
       return TRUE;                                 \
   }
 
@@ -97,18 +103,18 @@
   if (uMsg == WM_COPYDATA) {                                        \
     SetMsgHandled(TRUE);                                            \
     lResult = (LRESULT)func((HWND)wParam, (PCOPYDATASTRUCT)lParam); \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
 // void OnDestroy()
-#define CR_MSG_WM_DESTROY(func) \
-  if (uMsg == WM_DESTROY) {     \
-    SetMsgHandled(TRUE);        \
-    func();                     \
-    lResult = 0;                \
-    if (IsMsgHandled())         \
-      return TRUE;              \
+#define CR_MSG_WM_DESTROY(func)     \
+  if (uMsg == WM_DESTROY) {         \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnMove(CPoint ptPos)
@@ -117,7 +123,7 @@
     SetMsgHandled(TRUE);                                                \
     func(gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -128,7 +134,7 @@
     func((UINT)wParam,                                                 \
          gfx::Size(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                       \
-    if (IsMsgHandled())                                                \
+    if (!ref.get() || msg_handled_)                                    \
       return TRUE;                                                     \
   }
 
@@ -138,58 +144,58 @@
     SetMsgHandled(TRUE);                                            \
     func((UINT)LOWORD(wParam), (BOOL)HIWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
 // void OnSetFocus(CWindow wndOld)
-#define CR_MSG_WM_SETFOCUS(func) \
-  if (uMsg == WM_SETFOCUS) {     \
-    SetMsgHandled(TRUE);         \
-    func((HWND)wParam);          \
-    lResult = 0;                 \
-    if (IsMsgHandled())          \
-      return TRUE;               \
+#define CR_MSG_WM_SETFOCUS(func)    \
+  if (uMsg == WM_SETFOCUS) {        \
+    SetMsgHandled(TRUE);            \
+    func((HWND)wParam);             \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnKillFocus(CWindow wndFocus)
-#define CR_MSG_WM_KILLFOCUS(func) \
-  if (uMsg == WM_KILLFOCUS) {     \
-    SetMsgHandled(TRUE);          \
-    func((HWND)wParam);           \
-    lResult = 0;                  \
-    if (IsMsgHandled())           \
-      return TRUE;                \
+#define CR_MSG_WM_KILLFOCUS(func)   \
+  if (uMsg == WM_KILLFOCUS) {       \
+    SetMsgHandled(TRUE);            \
+    func((HWND)wParam);             \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnEnable(BOOL bEnable)
-#define CR_MSG_WM_ENABLE(func) \
-  if (uMsg == WM_ENABLE) {     \
-    SetMsgHandled(TRUE);       \
-    func((BOOL)wParam);        \
-    lResult = 0;               \
-    if (IsMsgHandled())        \
-      return TRUE;             \
+#define CR_MSG_WM_ENABLE(func)      \
+  if (uMsg == WM_ENABLE) {          \
+    SetMsgHandled(TRUE);            \
+    func((BOOL)wParam);             \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnPaint(CDCHandle dc)
-#define CR_MSG_WM_PAINT(func) \
-  if (uMsg == WM_PAINT) {     \
-    SetMsgHandled(TRUE);      \
-    func((HDC)wParam);        \
-    lResult = 0;              \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define CR_MSG_WM_PAINT(func)       \
+  if (uMsg == WM_PAINT) {           \
+    SetMsgHandled(TRUE);            \
+    func((HDC)wParam);              \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnClose()
-#define CR_MSG_WM_CLOSE(func) \
-  if (uMsg == WM_CLOSE) {     \
-    SetMsgHandled(TRUE);      \
-    func();                   \
-    lResult = 0;              \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define CR_MSG_WM_CLOSE(func)       \
+  if (uMsg == WM_CLOSE) {           \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // BOOL OnQueryEndSession(UINT nSource, UINT uLogOff)
@@ -197,17 +203,17 @@
   if (uMsg == WM_QUERYENDSESSION) {                      \
     SetMsgHandled(TRUE);                                 \
     lResult = (LRESULT)func((UINT)wParam, (UINT)lParam); \
-    if (IsMsgHandled())                                  \
+    if (!ref.get() || msg_handled_)                      \
       return TRUE;                                       \
   }
 
 // BOOL OnQueryOpen()
-#define CR_MSG_WM_QUERYOPEN(func) \
-  if (uMsg == WM_QUERYOPEN) {     \
-    SetMsgHandled(TRUE);          \
-    lResult = (LRESULT)func();    \
-    if (IsMsgHandled())           \
-      return TRUE;                \
+#define CR_MSG_WM_QUERYOPEN(func)   \
+  if (uMsg == WM_QUERYOPEN) {       \
+    SetMsgHandled(TRUE);            \
+    lResult = (LRESULT)func();      \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // BOOL OnEraseBkgnd(CDCHandle dc)
@@ -215,7 +221,7 @@
   if (uMsg == WM_ERASEBKGND) {            \
     SetMsgHandled(TRUE);                  \
     lResult = (LRESULT)func((HDC)wParam); \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
@@ -225,7 +231,7 @@
     SetMsgHandled(TRUE);               \
     func();                            \
     lResult = 0;                       \
-    if (IsMsgHandled())                \
+    if (!ref.get() || msg_handled_)    \
       return TRUE;                     \
   }
 
@@ -235,7 +241,7 @@
     SetMsgHandled(TRUE);              \
     func((BOOL)wParam, (UINT)lParam); \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -245,7 +251,7 @@
     SetMsgHandled(TRUE);             \
     func((BOOL)wParam, (int)lParam); \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -254,7 +260,7 @@
   if (uMsg == WM_CTLCOLOREDIT) {                        \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -263,7 +269,7 @@
   if (uMsg == WM_CTLCOLORLISTBOX) {                     \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -272,7 +278,7 @@
   if (uMsg == WM_CTLCOLORBTN) {                         \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -281,7 +287,7 @@
   if (uMsg == WM_CTLCOLORDLG) {                         \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -290,7 +296,7 @@
   if (uMsg == WM_CTLCOLORSCROLLBAR) {                   \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -299,7 +305,7 @@
   if (uMsg == WM_CTLCOLORSTATIC) {                      \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -309,7 +315,7 @@
     SetMsgHandled(TRUE);                 \
     func((UINT)wParam, (LPCTSTR)lParam); \
     lResult = 0;                         \
-    if (IsMsgHandled())                  \
+    if (!ref.get() || msg_handled_)      \
       return TRUE;                       \
   }
 
@@ -319,7 +325,7 @@
     SetMsgHandled(TRUE);              \
     func((LPCTSTR)lParam);            \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -329,58 +335,58 @@
     SetMsgHandled(TRUE);               \
     func((BOOL)wParam, (DWORD)lParam); \
     lResult = 0;                       \
-    if (IsMsgHandled())                \
+    if (!ref.get() || msg_handled_)    \
       return TRUE;                     \
   }
 
 // void OnFontChange()
-#define CR_MSG_WM_FONTCHANGE(func) \
-  if (uMsg == WM_FONTCHANGE) {     \
-    SetMsgHandled(TRUE);           \
-    func();                        \
-    lResult = 0;                   \
-    if (IsMsgHandled())            \
-      return TRUE;                 \
+#define CR_MSG_WM_FONTCHANGE(func)  \
+  if (uMsg == WM_FONTCHANGE) {      \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnTimeChange()
-#define CR_MSG_WM_TIMECHANGE(func) \
-  if (uMsg == WM_TIMECHANGE) {     \
-    SetMsgHandled(TRUE);           \
-    func();                        \
-    lResult = 0;                   \
-    if (IsMsgHandled())            \
-      return TRUE;                 \
+#define CR_MSG_WM_TIMECHANGE(func)  \
+  if (uMsg == WM_TIMECHANGE) {      \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnCancelMode()
-#define CR_MSG_WM_CANCELMODE(func) \
-  if (uMsg == WM_CANCELMODE) {     \
-    SetMsgHandled(TRUE);           \
-    func();                        \
-    lResult = 0;                   \
-    if (IsMsgHandled())            \
-      return TRUE;                 \
+#define CR_MSG_WM_CANCELMODE(func)  \
+  if (uMsg == WM_CANCELMODE) {      \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // BOOL OnSetCursor(CWindow wnd, UINT nHitTest, UINT message)
-#define CR_MSG_WM_SETCURSOR(func)                                  \
-  if (uMsg == WM_SETCURSOR) {                                      \
-    SetMsgHandled(TRUE);                                           \
-    lResult = (LRESULT)func(                                       \
-        (HWND)wParam, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam)); \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define CR_MSG_WM_SETCURSOR(func)                               \
+  if (uMsg == WM_SETCURSOR) {                                   \
+    SetMsgHandled(TRUE);                                        \
+    lResult = (LRESULT)func((HWND)wParam, (UINT)LOWORD(lParam), \
+                            (UINT)HIWORD(lParam));              \
+    if (!ref.get() || msg_handled_)                             \
+      return TRUE;                                              \
   }
 
 // int OnMouseActivate(CWindow wndTopLevel, UINT nHitTest, UINT message)
-#define CR_MSG_WM_MOUSEACTIVATE(func)                              \
-  if (uMsg == WM_MOUSEACTIVATE) {                                  \
-    SetMsgHandled(TRUE);                                           \
-    lResult = (LRESULT)func(                                       \
-        (HWND)wParam, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam)); \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define CR_MSG_WM_MOUSEACTIVATE(func)                           \
+  if (uMsg == WM_MOUSEACTIVATE) {                               \
+    SetMsgHandled(TRUE);                                        \
+    lResult = (LRESULT)func((HWND)wParam, (UINT)LOWORD(lParam), \
+                            (UINT)HIWORD(lParam));              \
+    if (!ref.get() || msg_handled_)                             \
+      return TRUE;                                              \
   }
 
 // void OnChildActivate()
@@ -389,7 +395,7 @@
     SetMsgHandled(TRUE);              \
     func();                           \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -399,7 +405,7 @@
     SetMsgHandled(TRUE);              \
     func((LPMINMAXINFO)lParam);       \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -409,7 +415,7 @@
     SetMsgHandled(TRUE);               \
     func((HDC)wParam);                 \
     lResult = 0;                       \
-    if (IsMsgHandled())                \
+    if (!ref.get() || msg_handled_)    \
       return TRUE;                     \
   }
 
@@ -419,7 +425,7 @@
     SetMsgHandled(TRUE);                      \
     func((UINT)wParam, (UINT)LOWORD(lParam)); \
     lResult = 0;                              \
-    if (IsMsgHandled())                       \
+    if (!ref.get() || msg_handled_)           \
       return TRUE;                            \
   }
 
@@ -429,7 +435,7 @@
     SetMsgHandled(TRUE);                          \
     func((UINT)wParam, (LPDRAWITEMSTRUCT)lParam); \
     lResult = TRUE;                               \
-    if (IsMsgHandled())                           \
+    if (!ref.get() || msg_handled_)               \
       return TRUE;                                \
   }
 
@@ -439,7 +445,7 @@
     SetMsgHandled(TRUE);                             \
     func((UINT)wParam, (LPMEASUREITEMSTRUCT)lParam); \
     lResult = TRUE;                                  \
-    if (IsMsgHandled())                              \
+    if (!ref.get() || msg_handled_)                  \
       return TRUE;                                   \
   }
 
@@ -449,28 +455,28 @@
     SetMsgHandled(TRUE);                            \
     func((UINT)wParam, (LPDELETEITEMSTRUCT)lParam); \
     lResult = TRUE;                                 \
-    if (IsMsgHandled())                             \
+    if (!ref.get() || msg_handled_)                 \
       return TRUE;                                  \
   }
 
 // int OnCharToItem(UINT nChar, UINT nIndex, CListBox listBox)
-#define CR_MSG_WM_CHARTOITEM(func)                                 \
-  if (uMsg == WM_CHARTOITEM) {                                     \
-    SetMsgHandled(TRUE);                                           \
-    lResult = (LRESULT)func(                                       \
-        (UINT)LOWORD(wParam), (UINT)HIWORD(wParam), (HWND)lParam); \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define CR_MSG_WM_CHARTOITEM(func)                                      \
+  if (uMsg == WM_CHARTOITEM) {                                          \
+    SetMsgHandled(TRUE);                                                \
+    lResult = (LRESULT)func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), \
+                            (HWND)lParam);                              \
+    if (!ref.get() || msg_handled_)                                     \
+      return TRUE;                                                      \
   }
 
 // int OnVKeyToItem(UINT nKey, UINT nIndex, CListBox listBox)
-#define CR_MSG_WM_VKEYTOITEM(func)                                 \
-  if (uMsg == WM_VKEYTOITEM) {                                     \
-    SetMsgHandled(TRUE);                                           \
-    lResult = (LRESULT)func(                                       \
-        (UINT)LOWORD(wParam), (UINT)HIWORD(wParam), (HWND)lParam); \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define CR_MSG_WM_VKEYTOITEM(func)                                      \
+  if (uMsg == WM_VKEYTOITEM) {                                          \
+    SetMsgHandled(TRUE);                                                \
+    lResult = (LRESULT)func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), \
+                            (HWND)lParam);                              \
+    if (!ref.get() || msg_handled_)                                     \
+      return TRUE;                                                      \
   }
 
 // HCURSOR OnQueryDragIcon()
@@ -478,7 +484,7 @@
   if (uMsg == WM_QUERYDRAGICON) {     \
     SetMsgHandled(TRUE);              \
     lResult = (LRESULT)func();        \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -487,18 +493,18 @@
   if (uMsg == WM_COMPAREITEM) {                                         \
     SetMsgHandled(TRUE);                                                \
     lResult = (LRESULT)func((UINT)wParam, (LPCOMPAREITEMSTRUCT)lParam); \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
 // void OnCompacting(UINT nCpuTime)
-#define CR_MSG_WM_COMPACTING(func) \
-  if (uMsg == WM_COMPACTING) {     \
-    SetMsgHandled(TRUE);           \
-    func((UINT)wParam);            \
-    lResult = 0;                   \
-    if (IsMsgHandled())            \
-      return TRUE;                 \
+#define CR_MSG_WM_COMPACTING(func)  \
+  if (uMsg == WM_COMPACTING) {      \
+    SetMsgHandled(TRUE);            \
+    func((UINT)wParam);             \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // BOOL OnNcCreate(LPCREATESTRUCT lpCreateStruct)
@@ -506,18 +512,18 @@
   if (uMsg == WM_NCCREATE) {                         \
     SetMsgHandled(TRUE);                             \
     lResult = (LRESULT)func((LPCREATESTRUCT)lParam); \
-    if (IsMsgHandled())                              \
+    if (!ref.get() || msg_handled_)                  \
       return TRUE;                                   \
   }
 
 // void OnNcDestroy()
-#define CR_MSG_WM_NCDESTROY(func) \
-  if (uMsg == WM_NCDESTROY) {     \
-    SetMsgHandled(TRUE);          \
-    func();                       \
-    lResult = 0;                  \
-    if (IsMsgHandled())           \
-      return TRUE;                \
+#define CR_MSG_WM_NCDESTROY(func)   \
+  if (uMsg == WM_NCDESTROY) {       \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // LRESULT OnNcCalcSize(BOOL bCalcValidRects, LPARAM lParam)
@@ -525,7 +531,7 @@
   if (uMsg == WM_NCCALCSIZE) {            \
     SetMsgHandled(TRUE);                  \
     lResult = func((BOOL)wParam, lParam); \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
@@ -535,18 +541,18 @@
     SetMsgHandled(TRUE);                                               \
     lResult = (LRESULT)func(                                           \
         gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
-    if (IsMsgHandled())                                                \
+    if (!ref.get() || msg_handled_)                                    \
       return TRUE;                                                     \
   }
 
 // void OnNcPaint(CRgn rgn)
-#define CR_MSG_WM_NCPAINT(func) \
-  if (uMsg == WM_NCPAINT) {     \
-    SetMsgHandled(TRUE);        \
-    func((HRGN)wParam);         \
-    lResult = 0;                \
-    if (IsMsgHandled())         \
-      return TRUE;              \
+#define CR_MSG_WM_NCPAINT(func)     \
+  if (uMsg == WM_NCPAINT) {         \
+    SetMsgHandled(TRUE);            \
+    func((HRGN)wParam);             \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // BOOL OnNcActivate(BOOL bActive)
@@ -554,7 +560,7 @@
   if (uMsg == WM_NCACTIVATE) {             \
     SetMsgHandled(TRUE);                   \
     lResult = (LRESULT)func((BOOL)wParam); \
-    if (IsMsgHandled())                    \
+    if (!ref.get() || msg_handled_)        \
       return TRUE;                         \
   }
 
@@ -563,7 +569,7 @@
   if (uMsg == WM_GETDLGCODE) {              \
     SetMsgHandled(TRUE);                    \
     lResult = (LRESULT)func((LPMSG)lParam); \
-    if (IsMsgHandled())                     \
+    if (!ref.get() || msg_handled_)         \
       return TRUE;                          \
   }
 
@@ -574,7 +580,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -585,7 +591,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -596,7 +602,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -607,7 +613,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -618,7 +624,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -629,7 +635,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -640,7 +646,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -651,7 +657,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -662,7 +668,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -673,7 +679,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -681,11 +687,10 @@
 #define CR_MSG_WM_KEYDOWN(func)                \
   if (uMsg == WM_KEYDOWN) {                    \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -693,11 +698,10 @@
 #define CR_MSG_WM_KEYUP(func)                  \
   if (uMsg == WM_KEYUP) {                      \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -705,11 +709,10 @@
 #define CR_MSG_WM_CHAR(func)                   \
   if (uMsg == WM_CHAR) {                       \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -717,11 +720,10 @@
 #define CR_MSG_WM_DEADCHAR(func)               \
   if (uMsg == WM_DEADCHAR) {                   \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -729,11 +731,10 @@
 #define CR_MSG_WM_SYSKEYDOWN(func)             \
   if (uMsg == WM_SYSKEYDOWN) {                 \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -741,11 +742,10 @@
 #define CR_MSG_WM_SYSKEYUP(func)               \
   if (uMsg == WM_SYSKEYUP) {                   \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -753,11 +753,10 @@
 #define CR_MSG_WM_SYSCHAR(func)                \
   if (uMsg == WM_SYSCHAR) {                    \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -765,11 +764,10 @@
 #define CR_MSG_WM_SYSDEADCHAR(func)            \
   if (uMsg == WM_SYSDEADCHAR) {                \
     SetMsgHandled(TRUE);                       \
-    func((TCHAR)wParam,                        \
-         (UINT)lParam & 0xFFFF,                \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF, \
          (UINT)((lParam & 0xFFFF0000) >> 16)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -780,7 +778,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -790,18 +788,18 @@
     SetMsgHandled(TRUE);               \
     func((UINT)wParam, (DWORD)lParam); \
     lResult = 0;                       \
-    if (IsMsgHandled())                \
+    if (!ref.get() || msg_handled_)    \
       return TRUE;                     \
   }
 
 // void OnTimer(UINT_PTR nIDEvent)
-#define CR_MSG_WM_TIMER(func) \
-  if (uMsg == WM_TIMER) {     \
-    SetMsgHandled(TRUE);      \
-    func((UINT_PTR)wParam);   \
-    lResult = 0;              \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define CR_MSG_WM_TIMER(func)       \
+  if (uMsg == WM_TIMER) {           \
+    SetMsgHandled(TRUE);            \
+    func((UINT_PTR)wParam);         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar)
@@ -810,7 +808,7 @@
     SetMsgHandled(TRUE);                                            \
     func((int)LOWORD(wParam), (short)HIWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
@@ -820,18 +818,18 @@
     SetMsgHandled(TRUE);                                            \
     func((int)LOWORD(wParam), (short)HIWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
 // void OnInitMenu(CMenu menu)
-#define CR_MSG_WM_INITMENU(func) \
-  if (uMsg == WM_INITMENU) {     \
-    SetMsgHandled(TRUE);         \
-    func((HMENU)wParam);         \
-    lResult = 0;                 \
-    if (IsMsgHandled())          \
-      return TRUE;               \
+#define CR_MSG_WM_INITMENU(func)    \
+  if (uMsg == WM_INITMENU) {        \
+    SetMsgHandled(TRUE);            \
+    func((HMENU)wParam);            \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnInitMenuPopup(CMenu menuPopup, UINT nIndex, BOOL bSysMenu)
@@ -840,7 +838,7 @@
     SetMsgHandled(TRUE);                                             \
     func((HMENU)wParam, (UINT)LOWORD(lParam), (BOOL)HIWORD(lParam)); \
     lResult = 0;                                                     \
-    if (IsMsgHandled())                                              \
+    if (!ref.get() || msg_handled_)                                  \
       return TRUE;                                                   \
   }
 
@@ -850,7 +848,7 @@
     SetMsgHandled(TRUE);                                             \
     func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), (HMENU)lParam); \
     lResult = 0;                                                     \
-    if (IsMsgHandled())                                              \
+    if (!ref.get() || msg_handled_)                                  \
       return TRUE;                                                   \
   }
 
@@ -860,7 +858,7 @@
     SetMsgHandled(TRUE);                                                  \
     lResult =                                                             \
         func((TCHAR)LOWORD(wParam), (UINT)HIWORD(wParam), (HMENU)lParam); \
-    if (IsMsgHandled())                                                   \
+    if (!ref.get() || msg_handled_)                                       \
       return TRUE;                                                        \
   }
 
@@ -869,7 +867,7 @@
   if (uMsg == WM_NOTIFY) {                        \
     SetMsgHandled(TRUE);                          \
     lResult = func((int)wParam, (LPNMHDR)lParam); \
-    if (IsMsgHandled())                           \
+    if (!ref.get() || msg_handled_)               \
       return TRUE;                                \
   }
 
@@ -879,7 +877,7 @@
     SetMsgHandled(TRUE);              \
     func((UINT)wParam, (HWND)lParam); \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -890,7 +888,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -899,10 +897,9 @@
   if (uMsg == WM_MOUSEWHEEL) {                                         \
     SetMsgHandled(TRUE);                                               \
     lResult = (LRESULT)func(                                           \
-        (UINT)LOWORD(wParam),                                          \
-        (short)HIWORD(wParam),                                         \
+        (UINT)LOWORD(wParam), (short)HIWORD(wParam),                   \
         gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
-    if (IsMsgHandled())                                                \
+    if (!ref.get() || msg_handled_)                                    \
       return TRUE;                                                     \
   }
 
@@ -913,7 +910,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -924,7 +921,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -935,7 +932,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -946,7 +943,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -957,7 +954,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -968,7 +965,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -979,7 +976,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -990,7 +987,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1001,7 +998,7 @@
     func((UINT)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1011,7 +1008,7 @@
     SetMsgHandled(TRUE);                                      \
     func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), lParam); \
     lResult = 0;                                              \
-    if (IsMsgHandled())                                       \
+    if (!ref.get() || msg_handled_)                           \
       return TRUE;                                            \
   }
 
@@ -1021,7 +1018,7 @@
     SetMsgHandled(TRUE);              \
     func((HWND)wParam, (HWND)lParam); \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -1031,7 +1028,7 @@
     SetMsgHandled(TRUE);             \
     func((UINT)wParam);              \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -1041,7 +1038,7 @@
     SetMsgHandled(TRUE);                 \
     func();                              \
     lResult = 0;                         \
-    if (IsMsgHandled())                  \
+    if (!ref.get() || msg_handled_)      \
       return TRUE;                       \
   }
 
@@ -1051,7 +1048,7 @@
     SetMsgHandled(TRUE);                 \
     func();                              \
     lResult = 0;                         \
-    if (IsMsgHandled())                  \
+    if (!ref.get() || msg_handled_)      \
       return TRUE;                       \
   }
 
@@ -1061,7 +1058,7 @@
     SetMsgHandled(TRUE);              \
     func();                           \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -1072,7 +1069,7 @@
     func((HWND)wParam, (const LPPAINTSTRUCT)::GlobalLock((HGLOBAL)lParam)); \
     ::GlobalUnlock((HGLOBAL)lParam);                                        \
     lResult = 0;                                                            \
-    if (IsMsgHandled())                                                     \
+    if (!ref.get() || msg_handled_)                                         \
       return TRUE;                                                          \
   }
 
@@ -1082,7 +1079,7 @@
     SetMsgHandled(TRUE);                                            \
     func((HWND)wParam, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam)); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
@@ -1093,7 +1090,7 @@
     func((HWND)wParam,                                                  \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1104,7 +1101,7 @@
     func((HWND)wParam, (const LPRECT)::GlobalLock((HGLOBAL)lParam)); \
     ::GlobalUnlock((HGLOBAL)lParam);                                 \
     lResult = 0;                                                     \
-    if (IsMsgHandled())                                              \
+    if (!ref.get() || msg_handled_)                                  \
       return TRUE;                                                   \
   }
 
@@ -1114,7 +1111,7 @@
     SetMsgHandled(TRUE);                 \
     func((DWORD)wParam, (LPTSTR)lParam); \
     lResult = 0;                         \
-    if (IsMsgHandled())                  \
+    if (!ref.get() || msg_handled_)      \
       return TRUE;                       \
   }
 
@@ -1124,7 +1121,7 @@
     SetMsgHandled(TRUE);              \
     func((HWND)wParam, (HWND)lParam); \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -1134,7 +1131,7 @@
     SetMsgHandled(TRUE);                                            \
     func((HWND)wParam, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam)); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
@@ -1143,7 +1140,7 @@
   if (uMsg == WM_QUERYNEWPALETTE) {     \
     SetMsgHandled(TRUE);                \
     lResult = (LRESULT)func();          \
-    if (IsMsgHandled())                 \
+    if (!ref.get() || msg_handled_)     \
       return TRUE;                      \
   }
 
@@ -1153,7 +1150,7 @@
     SetMsgHandled(TRUE);               \
     func((HWND)wParam);                \
     lResult = 0;                       \
-    if (IsMsgHandled())                \
+    if (!ref.get() || msg_handled_)    \
       return TRUE;                     \
   }
 
@@ -1163,18 +1160,18 @@
     SetMsgHandled(TRUE);                  \
     func((HWND)wParam);                   \
     lResult = 0;                          \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
 // void OnDropFiles(HDROP hDropInfo)
-#define CR_MSG_WM_DROPFILES(func) \
-  if (uMsg == WM_DROPFILES) {     \
-    SetMsgHandled(TRUE);          \
-    func((HDROP)wParam);          \
-    lResult = 0;                  \
-    if (IsMsgHandled())           \
-      return TRUE;                \
+#define CR_MSG_WM_DROPFILES(func)   \
+  if (uMsg == WM_DROPFILES) {       \
+    SetMsgHandled(TRUE);            \
+    func((HDROP)wParam);            \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnWindowPosChanging(LPWINDOWPOS lpWndPos)
@@ -1183,7 +1180,7 @@
     SetMsgHandled(TRUE);                  \
     func((LPWINDOWPOS)lParam);            \
     lResult = 0;                          \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
@@ -1193,7 +1190,7 @@
     SetMsgHandled(TRUE);                 \
     func((LPWINDOWPOS)lParam);           \
     lResult = 0;                         \
-    if (IsMsgHandled())                  \
+    if (!ref.get() || msg_handled_)      \
       return TRUE;                       \
   }
 
@@ -1203,7 +1200,7 @@
     SetMsgHandled(TRUE);             \
     func((BOOL)wParam);              \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -1213,7 +1210,7 @@
     SetMsgHandled(TRUE);              \
     func((BOOL)wParam);               \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -1223,7 +1220,7 @@
     SetMsgHandled(TRUE);                       \
     func((UINT)wParam, (LPSTYLESTRUCT)lParam); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -1233,7 +1230,7 @@
     SetMsgHandled(TRUE);                       \
     func((UINT)wParam, (LPSTYLESTRUCT)lParam); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -1243,7 +1240,7 @@
     SetMsgHandled(TRUE);                \
     func((UINT)wParam, (LPRECT)lParam); \
     lResult = TRUE;                     \
-    if (IsMsgHandled())                 \
+    if (!ref.get() || msg_handled_)     \
       return TRUE;                      \
   }
 
@@ -1253,7 +1250,7 @@
     SetMsgHandled(TRUE);                \
     func((UINT)wParam, (LPRECT)lParam); \
     lResult = TRUE;                     \
-    if (IsMsgHandled())                 \
+    if (!ref.get() || msg_handled_)     \
       return TRUE;                      \
   }
 
@@ -1263,7 +1260,7 @@
     SetMsgHandled(TRUE);               \
     func((HWND)lParam);                \
     lResult = 0;                       \
-    if (IsMsgHandled())                \
+    if (!ref.get() || msg_handled_)    \
       return TRUE;                     \
   }
 
@@ -1272,7 +1269,7 @@
   if (uMsg == WM_DEVICECHANGE) {                          \
     SetMsgHandled(TRUE);                                  \
     lResult = (LRESULT)func((UINT)wParam, (DWORD)lParam); \
-    if (IsMsgHandled())                                   \
+    if (!ref.get() || msg_handled_)                       \
       return TRUE;                                        \
   }
 
@@ -1282,7 +1279,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -1293,7 +1290,7 @@
     func((UINT)wParam,                                                 \
          gfx::Size(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                       \
-    if (IsMsgHandled())                                                \
+    if (!ref.get() || msg_handled_)                                    \
       return TRUE;                                                     \
   }
 
@@ -1303,7 +1300,7 @@
     SetMsgHandled(TRUE);              \
     func();                           \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -1313,26 +1310,26 @@
     SetMsgHandled(TRUE);             \
     func();                          \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
 // HFONT OnGetFont()
-#define CR_MSG_WM_GETFONT(func) \
-  if (uMsg == WM_GETFONT) {     \
-    SetMsgHandled(TRUE);        \
-    lResult = (LRESULT)func();  \
-    if (IsMsgHandled())         \
-      return TRUE;              \
+#define CR_MSG_WM_GETFONT(func)     \
+  if (uMsg == WM_GETFONT) {         \
+    SetMsgHandled(TRUE);            \
+    lResult = (LRESULT)func();      \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // LRESULT OnGetHotKey()
-#define CR_MSG_WM_GETHOTKEY(func) \
-  if (uMsg == WM_GETHOTKEY) {     \
-    SetMsgHandled(TRUE);          \
-    lResult = func();             \
-    if (IsMsgHandled())           \
-      return TRUE;                \
+#define CR_MSG_WM_GETHOTKEY(func)   \
+  if (uMsg == WM_GETHOTKEY) {       \
+    SetMsgHandled(TRUE);            \
+    lResult = func();               \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // HICON OnGetIcon()
@@ -1340,7 +1337,7 @@
   if (uMsg == WM_GETICON) {                \
     SetMsgHandled(TRUE);                   \
     lResult = (LRESULT)func((UINT)wParam); \
-    if (IsMsgHandled())                    \
+    if (!ref.get() || msg_handled_)        \
       return TRUE;                         \
   }
 
@@ -1349,7 +1346,7 @@
   if (uMsg == WM_GETTEXT) {                               \
     SetMsgHandled(TRUE);                                  \
     lResult = (LRESULT)func((int)wParam, (LPTSTR)lParam); \
-    if (IsMsgHandled())                                   \
+    if (!ref.get() || msg_handled_)                       \
       return TRUE;                                        \
   }
 
@@ -1358,18 +1355,18 @@
   if (uMsg == WM_GETTEXTLENGTH) {     \
     SetMsgHandled(TRUE);              \
     lResult = (LRESULT)func();        \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
 // void OnHelp(LPHELPINFO lpHelpInfo)
-#define CR_MSG_WM_HELP(func)  \
-  if (uMsg == WM_HELP) {      \
-    SetMsgHandled(TRUE);      \
-    func((LPHELPINFO)lParam); \
-    lResult = TRUE;           \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define CR_MSG_WM_HELP(func)        \
+  if (uMsg == WM_HELP) {            \
+    SetMsgHandled(TRUE);            \
+    func((LPHELPINFO)lParam);       \
+    lResult = TRUE;                 \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnHotKey(int nHotKeyID, UINT uModifiers, UINT uVirtKey)
@@ -1378,7 +1375,7 @@
     SetMsgHandled(TRUE);                                           \
     func((int)wParam, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam)); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -1388,7 +1385,7 @@
     SetMsgHandled(TRUE);                \
     func((DWORD)wParam, (HKL)lParam);   \
     lResult = TRUE;                     \
-    if (IsMsgHandled())                 \
+    if (!ref.get() || msg_handled_)     \
       return TRUE;                      \
   }
 
@@ -1398,7 +1395,7 @@
     SetMsgHandled(TRUE);                       \
     func((BOOL)wParam, (HKL)lParam);           \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -1408,7 +1405,7 @@
     SetMsgHandled(TRUE);                \
     func((BOOL)LOWORD(lParam), wParam); \
     lResult = 0;                        \
-    if (IsMsgHandled())                 \
+    if (!ref.get() || msg_handled_)     \
       return TRUE;                      \
   }
 
@@ -1418,7 +1415,7 @@
     SetMsgHandled(TRUE);                      \
     func((int)wParam, (LPMDINEXTMENU)lParam); \
     lResult = 0;                              \
-    if (IsMsgHandled())                       \
+    if (!ref.get() || msg_handled_)           \
       return TRUE;                            \
   }
 
@@ -1427,7 +1424,7 @@
   if (uMsg == WM_NOTIFYFORMAT) {                        \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HWND)wParam, (int)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1436,7 +1433,7 @@
   if (uMsg == WM_POWERBROADCAST) {                         \
     SetMsgHandled(TRUE);                                   \
     lResult = (LRESULT)func((DWORD)wParam, (DWORD)lParam); \
-    if (IsMsgHandled())                                    \
+    if (!ref.get() || msg_handled_)                        \
       return TRUE;                                         \
   }
 
@@ -1446,7 +1443,7 @@
     SetMsgHandled(TRUE);             \
     func((HDC)wParam, (UINT)lParam); \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -1456,7 +1453,7 @@
     SetMsgHandled(TRUE);             \
     func((HDC)wParam, (UINT)lParam); \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -1466,7 +1463,7 @@
     SetMsgHandled(TRUE);                       \
     func((RASCONNSTATE)wParam, (DWORD)lParam); \
     lResult = TRUE;                            \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -1476,7 +1473,7 @@
     SetMsgHandled(TRUE);                       \
     func((HFONT)wParam, (BOOL)LOWORD(lParam)); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -1486,7 +1483,7 @@
     SetMsgHandled(TRUE);                                   \
     lResult = (LRESULT)func((int)LOBYTE(LOWORD(wParam)),   \
                             (UINT)HIBYTE(LOWORD(wParam))); \
-    if (IsMsgHandled())                                    \
+    if (!ref.get() || msg_handled_)                        \
       return TRUE;                                         \
   }
 
@@ -1495,18 +1492,18 @@
   if (uMsg == WM_SETICON) {                               \
     SetMsgHandled(TRUE);                                  \
     lResult = (LRESULT)func((UINT)wParam, (HICON)lParam); \
-    if (IsMsgHandled())                                   \
+    if (!ref.get() || msg_handled_)                       \
       return TRUE;                                        \
   }
 
 // void OnSetRedraw(BOOL bRedraw)
-#define CR_MSG_WM_SETREDRAW(func) \
-  if (uMsg == WM_SETREDRAW) {     \
-    SetMsgHandled(TRUE);          \
-    func((BOOL)wParam);           \
-    lResult = 0;                  \
-    if (IsMsgHandled())           \
-      return TRUE;                \
+#define CR_MSG_WM_SETREDRAW(func)   \
+  if (uMsg == WM_SETREDRAW) {       \
+    SetMsgHandled(TRUE);            \
+    func((BOOL)wParam);             \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // int OnSetText(LPCTSTR lpstrText)
@@ -1514,7 +1511,7 @@
   if (uMsg == WM_SETTEXT) {                   \
     SetMsgHandled(TRUE);                      \
     lResult = (LRESULT)func((LPCTSTR)lParam); \
-    if (IsMsgHandled())                       \
+    if (!ref.get() || msg_handled_)           \
       return TRUE;                            \
   }
 
@@ -1524,7 +1521,7 @@
     SetMsgHandled(TRUE);            \
     func();                         \
     lResult = 0;                    \
-    if (IsMsgHandled())             \
+    if (!ref.get() || msg_handled_) \
       return TRUE;                  \
   }
 
@@ -1540,18 +1537,18 @@
     func(wParam,                                                        \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
 // void OnMouseLeave()
-#define CR_MSG_WM_MOUSELEAVE(func) \
-  if (uMsg == WM_MOUSELEAVE) {     \
-    SetMsgHandled(TRUE);           \
-    func();                        \
-    lResult = 0;                   \
-    if (IsMsgHandled())            \
-      return TRUE;                 \
+#define CR_MSG_WM_MOUSELEAVE(func)  \
+  if (uMsg == WM_MOUSELEAVE) {      \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 #endif /* _WIN32_WINNT >= 0x0400 */
@@ -1564,7 +1561,7 @@
     SetMsgHandled(TRUE);              \
     func(wParam, (HMENU)lParam);      \
     lResult = 0;                      \
-    if (IsMsgHandled())               \
+    if (!ref.get() || msg_handled_)   \
       return TRUE;                    \
   }
 
@@ -1573,7 +1570,7 @@
   if (uMsg == WM_MENUDRAG) {               \
     SetMsgHandled(TRUE);                   \
     lResult = func(wParam, (HMENU)lParam); \
-    if (IsMsgHandled())                    \
+    if (!ref.get() || msg_handled_)        \
       return TRUE;                         \
   }
 
@@ -1582,7 +1579,7 @@
   if (uMsg == WM_MENUGETOBJECT) {               \
     SetMsgHandled(TRUE);                        \
     lResult = func((PMENUGETOBJECTINFO)lParam); \
-    if (IsMsgHandled())                         \
+    if (!ref.get() || msg_handled_)             \
       return TRUE;                              \
   }
 
@@ -1592,7 +1589,7 @@
     SetMsgHandled(TRUE);                       \
     func((UINT)HIWORD(lParam), (HMENU)wParam); \
     lResult = 0;                               \
-    if (IsMsgHandled())                        \
+    if (!ref.get() || msg_handled_)            \
       return TRUE;                             \
   }
 
@@ -1602,7 +1599,7 @@
     SetMsgHandled(TRUE);            \
     func(wParam, (HMENU)lParam);    \
     lResult = 0;                    \
-    if (IsMsgHandled())             \
+    if (!ref.get() || msg_handled_) \
       return TRUE;                  \
   }
 
@@ -1611,26 +1608,24 @@
 #if (_WIN32_WINNT >= 0x0500)
 
 // BOOL OnAppCommand(CWindow wndFocus, short cmd, WORD uDevice, int dwKeys)
-#define CR_MSG_WM_APPCOMMAND(func)                         \
-  if (uMsg == WM_APPCOMMAND) {                             \
-    SetMsgHandled(TRUE);                                   \
-    lResult = (LRESULT)func((HWND)wParam,                  \
-                            GET_APPCOMMAND_LPARAM(lParam), \
-                            GET_DEVICE_LPARAM(lParam),     \
-                            GET_KEYSTATE_LPARAM(lParam));  \
-    if (IsMsgHandled())                                    \
-      return TRUE;                                         \
+#define CR_MSG_WM_APPCOMMAND(func)                                             \
+  if (uMsg == WM_APPCOMMAND) {                                                 \
+    SetMsgHandled(TRUE);                                                       \
+    lResult =                                                                  \
+        (LRESULT)func((HWND)wParam, GET_APPCOMMAND_LPARAM(lParam),             \
+                      GET_DEVICE_LPARAM(lParam), GET_KEYSTATE_LPARAM(lParam)); \
+    if (!ref.get() || msg_handled_)                                            \
+      return TRUE;                                                             \
   }
 
 // void OnNCXButtonDown(int fwButton, short nHittest, CPoint ptPos)
 #define CR_MSG_WM_NCXBUTTONDOWN(func)                                   \
   if (uMsg == WM_NCXBUTTONDOWN) {                                       \
     SetMsgHandled(TRUE);                                                \
-    func(GET_XBUTTON_WPARAM(wParam),                                    \
-         GET_NCHITTEST_WPARAM(wParam),                                  \
+    func(GET_XBUTTON_WPARAM(wParam), GET_NCHITTEST_WPARAM(wParam),      \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1638,11 +1633,10 @@
 #define CR_MSG_WM_NCXBUTTONUP(func)                                     \
   if (uMsg == WM_NCXBUTTONUP) {                                         \
     SetMsgHandled(TRUE);                                                \
-    func(GET_XBUTTON_WPARAM(wParam),                                    \
-         GET_NCHITTEST_WPARAM(wParam),                                  \
+    func(GET_XBUTTON_WPARAM(wParam), GET_NCHITTEST_WPARAM(wParam),      \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1650,11 +1644,10 @@
 #define CR_MSG_WM_NCXBUTTONDBLCLK(func)                                 \
   if (uMsg == WM_NCXBUTTONDBLCLK) {                                     \
     SetMsgHandled(TRUE);                                                \
-    func(GET_XBUTTON_WPARAM(wParam),                                    \
-         GET_NCHITTEST_WPARAM(wParam),                                  \
+    func(GET_XBUTTON_WPARAM(wParam), GET_NCHITTEST_WPARAM(wParam),      \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1662,11 +1655,10 @@
 #define CR_MSG_WM_XBUTTONDOWN(func)                                     \
   if (uMsg == WM_XBUTTONDOWN) {                                         \
     SetMsgHandled(TRUE);                                                \
-    func(GET_XBUTTON_WPARAM(wParam),                                    \
-         GET_KEYSTATE_WPARAM(wParam),                                   \
+    func(GET_XBUTTON_WPARAM(wParam), GET_KEYSTATE_WPARAM(wParam),       \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1674,11 +1666,10 @@
 #define CR_MSG_WM_XBUTTONUP(func)                                       \
   if (uMsg == WM_XBUTTONUP) {                                           \
     SetMsgHandled(TRUE);                                                \
-    func(GET_XBUTTON_WPARAM(wParam),                                    \
-         GET_KEYSTATE_WPARAM(wParam),                                   \
+    func(GET_XBUTTON_WPARAM(wParam), GET_KEYSTATE_WPARAM(wParam),       \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1686,11 +1677,10 @@
 #define CR_MSG_WM_XBUTTONDBLCLK(func)                                   \
   if (uMsg == WM_XBUTTONDBLCLK) {                                       \
     SetMsgHandled(TRUE);                                                \
-    func(GET_XBUTTON_WPARAM(wParam),                                    \
-         GET_KEYSTATE_WPARAM(wParam),                                   \
+    func(GET_XBUTTON_WPARAM(wParam), GET_KEYSTATE_WPARAM(wParam),       \
          gfx::Point(CR_GET_X_LPARAM(lParam), CR_GET_Y_LPARAM(lParam))); \
     lResult = 0;                                                        \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1700,7 +1690,7 @@
     SetMsgHandled(TRUE);                  \
     func(LOWORD(wParam), HIWORD(wParam)); \
     lResult = 0;                          \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
@@ -1710,7 +1700,7 @@
     SetMsgHandled(TRUE);                  \
     func(LOWORD(wParam), HIWORD(wParam)); \
     lResult = 0;                          \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
@@ -1719,7 +1709,7 @@
   if (uMsg == WM_QUERYUISTATE) {     \
     SetMsgHandled(TRUE);             \
     lResult = func();                \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -1733,7 +1723,7 @@
     SetMsgHandled(TRUE);                                       \
     func(GET_RAWINPUT_CODE_WPARAM(wParam), (HRAWINPUT)lParam); \
     lResult = 0;                                               \
-    if (IsMsgHandled())                                        \
+    if (!ref.get() || msg_handled_)                            \
       return TRUE;                                             \
   }
 
@@ -1741,10 +1731,9 @@
 #define CR_MSG_WM_UNICHAR(func)                            \
   if (uMsg == WM_UNICHAR) {                                \
     SetMsgHandled(TRUE);                                   \
-    func((TCHAR)wParam,                                    \
-         (UINT)lParam & 0xFFFF,                            \
+    func((TCHAR)wParam, (UINT)lParam & 0xFFFF,             \
          (UINT)((lParam & 0xFFFF0000) >> 16));             \
-    if (IsMsgHandled()) {                                  \
+    if (!ref.get() || msg_handled_) {                      \
       lResult = (wParam == UNICODE_NOCHAR) ? TRUE : FALSE; \
       return TRUE;                                         \
     }                                                      \
@@ -1756,7 +1745,7 @@
     SetMsgHandled(TRUE);             \
     func();                          \
     lResult = 0;                     \
-    if (IsMsgHandled())              \
+    if (!ref.get() || msg_handled_)  \
       return TRUE;                   \
   }
 
@@ -1770,7 +1759,7 @@
   if (uMsg == WM_FORWARDMSG) {                             \
     SetMsgHandled(TRUE);                                   \
     lResult = (LRESULT)func((LPMSG)lParam, (DWORD)wParam); \
-    if (IsMsgHandled())                                    \
+    if (!ref.get() || msg_handled_)                        \
       return TRUE;                                         \
   }
 
@@ -1778,32 +1767,32 @@
 // Dialog specific messages
 
 // LRESULT OnDMGetDefID()
-#define MSG_DM_GETDEFID(func) \
-  if (uMsg == DM_GETDEFID) {  \
-    SetMsgHandled(TRUE);      \
-    lResult = func();         \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define MSG_DM_GETDEFID(func)       \
+  if (uMsg == DM_GETDEFID) {        \
+    SetMsgHandled(TRUE);            \
+    lResult = func();               \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnDMSetDefID(UINT DefID)
-#define MSG_DM_SETDEFID(func) \
-  if (uMsg == DM_SETDEFID) {  \
-    SetMsgHandled(TRUE);      \
-    func((UINT)wParam);       \
-    lResult = TRUE;           \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define MSG_DM_SETDEFID(func)       \
+  if (uMsg == DM_SETDEFID) {        \
+    SetMsgHandled(TRUE);            \
+    func((UINT)wParam);             \
+    lResult = TRUE;                 \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnDMReposition()
-#define MSG_DM_REPOSITION(func) \
-  if (uMsg == DM_REPOSITION) {  \
-    SetMsgHandled(TRUE);        \
-    func();                     \
-    lResult = 0;                \
-    if (IsMsgHandled())         \
-      return TRUE;              \
+#define MSG_DM_REPOSITION(func)     \
+  if (uMsg == DM_REPOSITION) {      \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1815,7 +1804,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -1824,7 +1813,7 @@
   if (uMsg == OCM_NOTIFY) {                       \
     SetMsgHandled(TRUE);                          \
     lResult = func((int)wParam, (LPNMHDR)lParam); \
-    if (IsMsgHandled())                           \
+    if (!ref.get() || msg_handled_)               \
       return TRUE;                                \
   }
 
@@ -1834,7 +1823,7 @@
     SetMsgHandled(TRUE);                                      \
     func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), lParam); \
     lResult = 0;                                              \
-    if (IsMsgHandled())                                       \
+    if (!ref.get() || msg_handled_)                           \
       return TRUE;                                            \
   }
 
@@ -1844,7 +1833,7 @@
     SetMsgHandled(TRUE);                          \
     func((UINT)wParam, (LPDRAWITEMSTRUCT)lParam); \
     lResult = TRUE;                               \
-    if (IsMsgHandled())                           \
+    if (!ref.get() || msg_handled_)               \
       return TRUE;                                \
   }
 
@@ -1855,7 +1844,7 @@
     SetMsgHandled(TRUE);                             \
     func((UINT)wParam, (LPMEASUREITEMSTRUCT)lParam); \
     lResult = TRUE;                                  \
-    if (IsMsgHandled())                              \
+    if (!ref.get() || msg_handled_)                  \
       return TRUE;                                   \
   }
 
@@ -1865,7 +1854,7 @@
   if (uMsg == OCM_COMPAREITEM) {                                        \
     SetMsgHandled(TRUE);                                                \
     lResult = (LRESULT)func((UINT)wParam, (LPCOMPAREITEMSTRUCT)lParam); \
-    if (IsMsgHandled())                                                 \
+    if (!ref.get() || msg_handled_)                                     \
       return TRUE;                                                      \
   }
 
@@ -1875,28 +1864,28 @@
     SetMsgHandled(TRUE);                            \
     func((UINT)wParam, (LPDELETEITEMSTRUCT)lParam); \
     lResult = TRUE;                                 \
-    if (IsMsgHandled())                             \
+    if (!ref.get() || msg_handled_)                 \
       return TRUE;                                  \
   }
 
 // int OnReflectedVKeyToItem(UINT nKey, UINT nIndex, CListBox listBox)
-#define MSG_OCM_VKEYTOITEM(func)                                   \
-  if (uMsg == OCM_VKEYTOITEM) {                                    \
-    SetMsgHandled(TRUE);                                           \
-    lResult = (LRESULT)func(                                       \
-        (UINT)LOWORD(wParam), (UINT)HIWORD(wParam), (HWND)lParam); \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define MSG_OCM_VKEYTOITEM(func)                                        \
+  if (uMsg == OCM_VKEYTOITEM) {                                         \
+    SetMsgHandled(TRUE);                                                \
+    lResult = (LRESULT)func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), \
+                            (HWND)lParam);                              \
+    if (!ref.get() || msg_handled_)                                     \
+      return TRUE;                                                      \
   }
 
 // int OnReflectedCharToItem(UINT nChar, UINT nIndex, CListBox listBox)
-#define MSG_OCM_CHARTOITEM(func)                                   \
-  if (uMsg == OCM_CHARTOITEM) {                                    \
-    SetMsgHandled(TRUE);                                           \
-    lResult = (LRESULT)func(                                       \
-        (UINT)LOWORD(wParam), (UINT)HIWORD(wParam), (HWND)lParam); \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define MSG_OCM_CHARTOITEM(func)                                        \
+  if (uMsg == OCM_CHARTOITEM) {                                         \
+    SetMsgHandled(TRUE);                                                \
+    lResult = (LRESULT)func((UINT)LOWORD(wParam), (UINT)HIWORD(wParam), \
+                            (HWND)lParam);                              \
+    if (!ref.get() || msg_handled_)                                     \
+      return TRUE;                                                      \
   }
 
 // void OnReflectedHScroll(UINT nSBCode, UINT nPos, CScrollBar pScrollBar)
@@ -1905,7 +1894,7 @@
     SetMsgHandled(TRUE);                                            \
     func((int)LOWORD(wParam), (short)HIWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
@@ -1915,7 +1904,7 @@
     SetMsgHandled(TRUE);                                            \
     func((int)LOWORD(wParam), (short)HIWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                    \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
@@ -1924,7 +1913,7 @@
   if (uMsg == OCM_CTLCOLOREDIT) {                       \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1933,7 +1922,7 @@
   if (uMsg == OCM_CTLCOLORLISTBOX) {                    \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1942,7 +1931,7 @@
   if (uMsg == OCM_CTLCOLORBTN) {                        \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1951,7 +1940,7 @@
   if (uMsg == OCM_CTLCOLORDLG) {                        \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1960,7 +1949,7 @@
   if (uMsg == OCM_CTLCOLORSCROLLBAR) {                  \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1969,7 +1958,7 @@
   if (uMsg == OCM_CTLCOLORSTATIC) {                     \
     SetMsgHandled(TRUE);                                \
     lResult = (LRESULT)func((HDC)wParam, (HWND)lParam); \
-    if (IsMsgHandled())                                 \
+    if (!ref.get() || msg_handled_)                     \
       return TRUE;                                      \
   }
 
@@ -1977,53 +1966,53 @@
 // Edit specific messages
 
 // void OnClear()
-#define CR_MSG_WM_CLEAR(func) \
-  if (uMsg == WM_CLEAR) {     \
-    SetMsgHandled(TRUE);      \
-    func();                   \
-    lResult = 0;              \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define CR_MSG_WM_CLEAR(func)       \
+  if (uMsg == WM_CLEAR) {           \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnCopy()
-#define CR_MSG_WM_COPY(func) \
-  if (uMsg == WM_COPY) {     \
-    SetMsgHandled(TRUE);     \
-    func();                  \
-    lResult = 0;             \
-    if (IsMsgHandled())      \
-      return TRUE;           \
+#define CR_MSG_WM_COPY(func)        \
+  if (uMsg == WM_COPY) {            \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnCut()
-#define CR_MSG_WM_CUT(func) \
-  if (uMsg == WM_CUT) {     \
-    SetMsgHandled(TRUE);    \
-    func();                 \
-    lResult = 0;            \
-    if (IsMsgHandled())     \
-      return TRUE;          \
+#define CR_MSG_WM_CUT(func)         \
+  if (uMsg == WM_CUT) {             \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnPaste()
-#define CR_MSG_WM_PASTE(func) \
-  if (uMsg == WM_PASTE) {     \
-    SetMsgHandled(TRUE);      \
-    func();                   \
-    lResult = 0;              \
-    if (IsMsgHandled())       \
-      return TRUE;            \
+#define CR_MSG_WM_PASTE(func)       \
+  if (uMsg == WM_PASTE) {           \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 // void OnUndo()
-#define CR_MSG_WM_UNDO(func) \
-  if (uMsg == WM_UNDO) {     \
-    SetMsgHandled(TRUE);     \
-    func();                  \
-    lResult = 0;             \
-    if (IsMsgHandled())      \
-      return TRUE;           \
+#define CR_MSG_WM_UNDO(func)        \
+  if (uMsg == WM_UNDO) {            \
+    SetMsgHandled(TRUE);            \
+    func();                         \
+    lResult = 0;                    \
+    if (!ref.get() || msg_handled_) \
+      return TRUE;                  \
   }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2034,7 +2023,7 @@
   if (uMsg == msg) {                      \
     SetMsgHandled(TRUE);                  \
     lResult = func(uMsg, wParam, lParam); \
-    if (IsMsgHandled())                   \
+    if (!ref.get() || msg_handled_)       \
       return TRUE;                        \
   }
 
@@ -2043,7 +2032,7 @@
   if (uMsg >= msgFirst && uMsg <= msgLast) {                 \
     SetMsgHandled(TRUE);                                     \
     lResult = func(uMsg, wParam, lParam);                    \
-    if (IsMsgHandled())                                      \
+    if (!ref.get() || msg_handled_)                          \
       return TRUE;                                           \
   }
 
@@ -2056,7 +2045,7 @@
     SetMsgHandled(TRUE);                                                      \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam);            \
     lResult = 0;                                                              \
-    if (IsMsgHandled())                                                       \
+    if (!ref.get() || msg_handled_)                                           \
       return TRUE;                                                            \
   }
 
@@ -2066,7 +2055,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2076,7 +2065,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2086,7 +2075,7 @@
       id == ((LPNMHDR)lParam)->idFrom) {                    \
     SetMsgHandled(TRUE);                                    \
     lResult = func((LPNMHDR)lParam);                        \
-    if (IsMsgHandled())                                     \
+    if (!ref.get() || msg_handled_)                         \
       return TRUE;                                          \
   }
 
@@ -2095,7 +2084,7 @@
   if (uMsg == WM_NOTIFY && id == ((LPNMHDR)lParam)->idFrom) { \
     SetMsgHandled(TRUE);                                      \
     lResult = func((LPNMHDR)lParam);                          \
-    if (IsMsgHandled())                                       \
+    if (!ref.get() || msg_handled_)                           \
       return TRUE;                                            \
   }
 
@@ -2104,7 +2093,7 @@
   if (uMsg == WM_NOTIFY && cd == ((LPNMHDR)lParam)->code) { \
     SetMsgHandled(TRUE);                                    \
     lResult = func((LPNMHDR)lParam);                        \
-    if (IsMsgHandled())                                     \
+    if (!ref.get() || msg_handled_)                         \
       return TRUE;                                          \
   }
 
@@ -2115,7 +2104,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2126,7 +2115,7 @@
     SetMsgHandled(TRUE);                                              \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam);    \
     lResult = 0;                                                      \
-    if (IsMsgHandled())                                               \
+    if (!ref.get() || msg_handled_)                                   \
       return TRUE;                                                    \
   }
 
@@ -2136,7 +2125,7 @@
       ((LPNMHDR)lParam)->idFrom <= idLast) {                       \
     SetMsgHandled(TRUE);                                           \
     lResult = func((LPNMHDR)lParam);                               \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2147,7 +2136,7 @@
       ((LPNMHDR)lParam)->idFrom <= idLast) {                       \
     SetMsgHandled(TRUE);                                           \
     lResult = func((LPNMHDR)lParam);                               \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2158,7 +2147,7 @@
     SetMsgHandled(TRUE);                                                       \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam);             \
     lResult = 0;                                                               \
-    if (IsMsgHandled())                                                        \
+    if (!ref.get() || msg_handled_)                                            \
       return TRUE;                                                             \
   }
 
@@ -2169,7 +2158,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2180,7 +2169,7 @@
     SetMsgHandled(TRUE);                                           \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
     lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
+    if (!ref.get() || msg_handled_)                                \
       return TRUE;                                                 \
   }
 
@@ -2190,7 +2179,7 @@
       id == ((LPNMHDR)lParam)->idFrom) {                     \
     SetMsgHandled(TRUE);                                     \
     lResult = func((LPNMHDR)lParam);                         \
-    if (IsMsgHandled())                                      \
+    if (!ref.get() || msg_handled_)                          \
       return TRUE;                                           \
   }
 
@@ -2199,7 +2188,7 @@
   if (uMsg == OCM_NOTIFY && id == ((LPNMHDR)lParam)->idFrom) { \
     SetMsgHandled(TRUE);                                       \
     lResult = func((LPNMHDR)lParam);                           \
-    if (IsMsgHandled())                                        \
+    if (!ref.get() || msg_handled_)                            \
       return TRUE;                                             \
   }
 
@@ -2208,7 +2197,7 @@
   if (uMsg == OCM_NOTIFY && cd == ((LPNMHDR)lParam)->code) { \
     SetMsgHandled(TRUE);                                     \
     lResult = func((LPNMHDR)lParam);                         \
-    if (IsMsgHandled())                                      \
+    if (!ref.get() || msg_handled_)                          \
       return TRUE;                                           \
   }
 
@@ -2220,21 +2209,21 @@
     SetMsgHandled(TRUE);                                             \
     func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam);   \
     lResult = 0;                                                     \
-    if (IsMsgHandled())                                              \
+    if (!ref.get() || msg_handled_)                                  \
       return TRUE;                                                   \
   }
 
 // void OnReflectedCommandRangeCodeHandlerEX(UINT uNotifyCode, int nID, CWindow
 // wndCtl)
-#define CR_REFLECTED_COMMAND_RANGE_CODE_HANDLER_EX(                \
-    idFirst, idLast, code, func)                                   \
-  if (uMsg == OCM_COMMAND && code == HIWORD(wParam) &&             \
-      LOWORD(wParam) >= idFirst && LOWORD(wParam) <= idLast) {     \
-    SetMsgHandled(TRUE);                                           \
-    func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam); \
-    lResult = 0;                                                   \
-    if (IsMsgHandled())                                            \
-      return TRUE;                                                 \
+#define CR_REFLECTED_COMMAND_RANGE_CODE_HANDLER_EX(idFirst, idLast, code, \
+                                                   func)                  \
+  if (uMsg == OCM_COMMAND && code == HIWORD(wParam) &&                    \
+      LOWORD(wParam) >= idFirst && LOWORD(wParam) <= idLast) {            \
+    SetMsgHandled(TRUE);                                                  \
+    func((UINT)HIWORD(wParam), (int)LOWORD(wParam), (HWND)lParam);        \
+    lResult = 0;                                                          \
+    if (!ref.get() || msg_handled_)                                       \
+      return TRUE;                                                        \
   }
 
 // LRESULT OnReflectedNotifyRangeHandlerEX(LPNMHDR pnmh)
@@ -2243,7 +2232,7 @@
       ((LPNMHDR)lParam)->idFrom <= idLast) {                        \
     SetMsgHandled(TRUE);                                            \
     lResult = func((LPNMHDR)lParam);                                \
-    if (IsMsgHandled())                                             \
+    if (!ref.get() || msg_handled_)                                 \
       return TRUE;                                                  \
   }
 
@@ -2254,7 +2243,7 @@
       ((LPNMHDR)lParam)->idFrom <= idLast) {                                 \
     SetMsgHandled(TRUE);                                                     \
     lResult = func((LPNMHDR)lParam);                                         \
-    if (IsMsgHandled())                                                      \
+    if (!ref.get() || msg_handled_)                                          \
       return TRUE;                                                           \
   }
 
