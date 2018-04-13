@@ -46,6 +46,7 @@ UnifiedMessageCenterView::UnifiedMessageCenterView(
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   AddChildView(scroller_);
 
+  message_list_view_->set_use_fixed_height(false);
   message_list_view_->set_scroller(scroller_);
   scroller_->SetContents(message_list_view_);
 
