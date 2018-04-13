@@ -349,13 +349,14 @@ public class AccessibilityTabModelListItem extends FrameLayout implements OnClic
         if (mTab != null) {
             Bitmap bitmap = mTab.getFavicon();
             if (bitmap != null) {
+                // Don't tint favicon bitmaps.
+                ((TintedImageView) mFaviconView).setTint(null);
                 mFaviconView.setImageBitmap(bitmap);
             } else {
                 mFaviconView.setImageResource(R.drawable.ic_globe_24dp);
-            }
-
-            if (FeatureUtilities.isChromeModernDesignEnabled()) {
-                ((TintedImageView) mFaviconView).setTint(bitmap != null ? null : mDarkIconColor);
+                if (FeatureUtilities.isChromeModernDesignEnabled()) {
+                    ((TintedImageView) mFaviconView).setTint(mDarkIconColor);
+                }
             }
         }
     }
