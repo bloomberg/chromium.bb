@@ -10078,13 +10078,12 @@
 
       <ph name="PRINTER_EFFECTIVE_MODEL">effective_model</ph> must match one of the strings which represent a <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> supported printer. The string will be used to identify and install the appropriate PPD for the printer. More information can be found at https://support.google.com/chrome?p=noncloudprint.
 
-      Printer setup is completed upon the first use of a printer.  PPDs are not
-      downloaded until the printer is used.  After that time, frequently used
-      PPDs are cached.
+      Printer setup is completed upon the first use of a printer.  PPDs are not downloaded until the printer is used.  After that time, frequently used PPDs are cached.
 
-      This policy has no effect on whether users can configure printers on
-      individual devices.  It is intended to be supplementary to the
-      configuration of printers by individual users.''',
+      This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
+
+      For Active Directory managed devices this policy supports expansion of <ph name="MACHINE_NAME_VARIABLE">${machine_name[,pos[,count]]}</ph> to the Active Directory machine name or a substring of it. For example, if the machine name is <ph name="MACHINE_NAME_EXAMPLE">CHROMEBOOK</ph>, then <ph name="MACHINE_NAME_VARIABLE_EXAMPLE">${machine_name,6,4}</ph> would be replaced by the 4 characters starting after the 6th position, i.e. <ph name="MACHINE_NAME_PART_EXAMPLE">BOOK</ph>. Note that the position is zero-based.
+      ''',
     },
     {
       'name': 'NativePrintersBulkConfiguration',
@@ -10111,7 +10110,9 @@
       'tags': [],
       'desc': '''Provides configurations for enterprise printers.
 
-      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. The size of the file must not exceed 5MB and must be encoded in JSON.  The format is the same as the NativePrinters dictionary.  It is estimated that a file containing approximately 21,000 printers will encode as a 5MB file.  The cryptographic hash is used to verify the integrity of the download.
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.  The format is the same as the NativePrinters dictionary, with an additional required "id" or "guid" field per printer for whitelisting or blacklisting.
+
+      The size of the file must not exceed 5MB and must be encoded in JSON.  It is estimated that a file containing approximately 21,000 printers will encode as a 5MB file.  The cryptographic hash is used to verify the integrity of the download.
 
       The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
@@ -10183,7 +10184,7 @@
 
       This policy is only used if <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE">NativePrintersBulkAccessMode</ph>.
 
-      If this policy is used, all printers are provided to the user except for the ids listed in this policy.
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
       ''',
     },
     {
@@ -10206,7 +10207,7 @@
 
       This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE">NativePrintersBulkAccessMode</ph>.
 
-      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the entries in the file specified in <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
       ''',
     },
     {
@@ -10235,7 +10236,9 @@
       'tags': [],
       'desc': '''Provides configurations for enterprise printers bound to devices.
 
-      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices. The size of the file must not exceed 5MB and must be encoded in JSON. The format is the same as the NativePrinters dictionary.  It is estimated that a file containing approximately 21,000 printers will encode as a 5MB file.  The cryptographic hash is used to verify the integrity of the download.
+      This policy allows you to provide printer configurations to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.  The format is the same as the NativePrinters dictionary, with an additional required "id" or "guid" field per printer for whitelisting or blacklisting.
+
+      The size of the file must not exceed 5MB and must be encoded in JSON.  It is estimated that a file containing approximately 21,000 printers will encode as a 5MB file.  The cryptographic hash is used to verify the integrity of the download.
 
       The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
@@ -10245,7 +10248,8 @@
 
       This policy is additive to the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
 
-      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN">DeviceNativePrinter*</ph> policies will be ignored.''',
+      If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN">DeviceNativePrinter*</ph> policies will be ignored.
+      ''',
     },
     {
       'name': 'DeviceNativePrintersAccessMode',
@@ -10308,7 +10312,7 @@
 
       This policy is only used if <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>.
 
-      If this policy is used, all printers are provided to the user except for the ids listed in this policy.
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
       ''',
     },
     {
@@ -10332,7 +10336,7 @@
 
       This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="DEVICE_PRINTERS_ACCESS_MODE">DeviceNativePrintersAccessMode</ph>
 
-      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the entries in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY">DeviceNativePrinters</ph>.
       ''',
     },
     {

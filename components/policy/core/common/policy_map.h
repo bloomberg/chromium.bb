@@ -61,13 +61,16 @@ class POLICY_EXPORT PolicyMap {
   // Returns a weak reference to the entry currently stored for key |policy|,
   // or NULL if not found. Ownership is retained by the PolicyMap.
   const Entry* Get(const std::string& policy) const;
+  Entry* GetMutable(const std::string& policy);
 
-  // Returns a weak reference to the value currently stored for key |policy|,
-  // or NULL if not found. Ownership is retained by the PolicyMap.
+  // Returns a weak reference to the value currently stored for key
+  // |policy|, or NULL if not found. Ownership is retained by the PolicyMap.
   // This is equivalent to Get(policy)->value, when it doesn't return NULL.
   const base::Value* GetValue(const std::string& policy) const;
+  base::Value* GetMutableValue(const std::string& policy);
 
-  // Overwrites any existing information stored in the map for the key |policy|.
+  // Overwrites any existing information stored in the map for the key
+  // |policy|.
   void Set(const std::string& policy,
            PolicyLevel level,
            PolicyScope scope,

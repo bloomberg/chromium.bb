@@ -73,6 +73,10 @@ class ActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   // the policy, the store needs to be reloaded from session manager.)
   void OnPolicyFetched(bool success);
 
+  // Called right before policy is published. Expands e.g. ${machine_name} for
+  // a selected set of policies.
+  void ExpandVariables(PolicyMap* policy_map);
+
   // Whether policy fetch has ever been reported as completed by authpolicyd.
   bool fetch_ever_completed_ = false;
 
@@ -158,7 +162,8 @@ class UserActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
 // Manages device policy for Active Directory managed devices.
 class DeviceActiveDirectoryPolicyManager : public ActiveDirectoryPolicyManager {
  public:
-  DeviceActiveDirectoryPolicyManager(std::unique_ptr<CloudPolicyStore> store);
+  explicit DeviceActiveDirectoryPolicyManager(
+      std::unique_ptr<CloudPolicyStore> store);
   ~DeviceActiveDirectoryPolicyManager() override;
 
  protected:

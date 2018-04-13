@@ -11,14 +11,20 @@
 #include "chrome/browser/browser_process.h"
 #include "chromeos/dbus/auth_policy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tools/variable_expander.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 
+namespace em = enterprise_management;
+
 namespace policy {
 namespace {
+
+// List of policies where variables like ${machine_name} should be expanded.
+constexpr const char* kPoliciesToExpand[] = {key::kNativePrinters};
 
 // Fetch policy every 90 minutes which matches the Windows default:
 // https://technet.microsoft.com/en-us/library/cc940895.aspx
@@ -134,6 +140,11 @@ void ActiveDirectoryPolicyManager::PublishPolicy() {
   // configurable, then drop PolicyMap::SetSourceForAll().
   policy_map.SetSourceForAll(POLICY_SOURCE_ACTIVE_DIRECTORY);
   SetEnterpriseUsersDefaults(&policy_map);
+
+  // Expand e.g. ${machine_name} for a selected set of policies.
+  ExpandVariables(&policy_map);
+
+  // Policy is ready, send it off.
   UpdatePolicy(std::move(bundle));
 }
 
@@ -152,6 +163,29 @@ void ActiveDirectoryPolicyManager::OnPolicyFetched(bool success) {
   // thus it is guaranteed that at the next OnStoreLoaded() invocation the
   // policy is up-to-date with what was fetched.
   store_->Load();
+}
+
+void ActiveDirectoryPolicyManager::ExpandVariables(PolicyMap* policy_map) {
+  const em::PolicyData* policy = store_->policy();
+  if (!policy)
+    return;
+  if (policy->machine_name().empty()) {
+    LOG(ERROR) << "Cannot expand machine_name (empty string in policy)";
+    return;
+  }
+
+  chromeos::VariableExpander expander;
+  expander.SetVariable("machine_name", policy->machine_name());
+
+  for (const char* policy_name : kPoliciesToExpand) {
+    base::Value* value = policy_map->GetMutableValue(policy_name);
+    if (value) {
+      if (!expander.ExpandValue(value)) {
+        LOG(ERROR) << "Failed to expand at least one variable in policy "
+                   << policy_name;
+      }
+    }
+  }
 }
 
 UserActiveDirectoryPolicyManager::UserActiveDirectoryPolicyManager(
