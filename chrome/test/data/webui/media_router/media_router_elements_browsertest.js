@@ -177,8 +177,18 @@ TEST_F('MediaRouterElementsBrowserTest',
   mocha.run();
 });
 
+// Disabling on Windows Debug due to flaky timeout on Win7 Tests (dbg)(1).
+// https://crbug.com/832947
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#define MAYBE_MediaRouterContainerFilterPart1 \\');
+GEN('    DISABLED_MediaRouterContainerFilterPart1');
+GEN('#else');
+GEN('#define MAYBE_MediaRouterContainerFilterPart1 \\');
+GEN('    MediaRouterContainerFilterPart1');
+GEN('#endif');
+
 TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerFilterPart1',
+    'MAYBE_MediaRouterContainerFilterPart1',
     function() {
   media_router_container_filter.registerTestsPart1();
   mocha.run();
