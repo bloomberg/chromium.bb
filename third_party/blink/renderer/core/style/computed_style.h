@@ -933,9 +933,27 @@ class ComputedStyle : public ComputedStyleBase,
   float LetterSpacing() const;
   void SetLetterSpacing(float);
 
+  // tab-size
+  void SetTabSize(const TabSize& t) {
+    if (t.GetPixelSize(1) < 0) {
+      if (t.IsSpaces())
+        SetTabSizeInternal(0);
+      else
+        SetTabSizeInternal(0.0f);
+    } else {
+      SetTabSizeInternal(t);
+    }
+  }
+
   // word-spacing
   float WordSpacing() const;
   void SetWordSpacing(float);
+
+  // orphans
+  void SetOrphans(short o) { SetOrphansInternal(clampTo<short>(o, 1)); }
+
+  // widows
+  void SetWidows(short w) { SetWidowsInternal(clampTo<short>(w, 1)); }
 
   // SVG properties.
   const SVGComputedStyle& SvgStyle() const { return *svg_style_.Get(); }

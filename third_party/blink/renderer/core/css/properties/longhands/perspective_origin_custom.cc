@@ -35,24 +35,27 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
     const LayoutObject* layout_object,
     Node* styled_node,
     bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (layout_object) {
     LayoutRect box;
     if (layout_object->IsBox())
       box = ToLayoutBox(layout_object)->BorderBoxRect();
 
-    list->Append(*ZoomAdjustedPixelValue(
-        MinimumValueForLength(style.PerspectiveOriginX(), box.Width()), style));
-    list->Append(*ZoomAdjustedPixelValue(
-        MinimumValueForLength(style.PerspectiveOriginY(), box.Height()),
-        style));
+    return CSSValuePair::Create(
+        ZoomAdjustedPixelValue(
+            MinimumValueForLength(style.PerspectiveOriginX(), box.Width()),
+            style),
+        ZoomAdjustedPixelValue(
+            MinimumValueForLength(style.PerspectiveOriginY(), box.Height()),
+            style),
+        CSSValuePair::kKeepIdenticalValues);
   } else {
-    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.PerspectiveOriginX(), style));
-    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.PerspectiveOriginY(), style));
+    return CSSValuePair::Create(
+        ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            style.PerspectiveOriginX(), style),
+        ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            style.PerspectiveOriginY(), style),
+        CSSValuePair::kKeepIdenticalValues);
   }
-  return list;
 }
 
 }  // namespace CSSLonghand

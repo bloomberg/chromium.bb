@@ -74,6 +74,7 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyColor:
     case CSSPropertyColumnRuleColor:
     case CSSPropertyFloodColor:
+    case CSSPropertyLightingColor:
     case CSSPropertyOutlineColor:
     case CSSPropertyStopColor:
     case CSSPropertyTextDecorationColor:
@@ -84,6 +85,16 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
         return CSSKeywordValue::Create("currentcolor");
       }
       return CSSUnsupportedStyleValue::Create(property_id, value);
+    case CSSPropertyContain: {
+      if (value.IsIdentifierValue())
+        return CreateStyleValue(value);
+
+      // Only single values are supported in level 1.
+      const auto& value_list = ToCSSValueList(value);
+      if (value_list.length() == 1U)
+        return CreateStyleValue(value_list.Item(0));
+      return nullptr;
+    }
     case CSSPropertyFontVariantEastAsian:
     case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontVariantNumeric: {
@@ -111,6 +122,8 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
         return CreateStyleValue(value);
       FALLTHROUGH;
     case CSSPropertyObjectPosition:
+    case CSSPropertyPerspectiveOrigin:
+    case CSSPropertyTransformOrigin:
       return CSSPositionValue::FromCSSValue(value);
     case CSSPropertyOffsetRotate: {
       const auto& value_list = ToCSSValueList(value);
@@ -149,6 +162,27 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       // Only single values are supported in level 1.
       if (value_list.length() == 1U)
         return CreateStyleValue(value_list.Item(0));
+      return nullptr;
+    }
+    case CSSPropertyTransitionProperty:
+    case CSSPropertyTouchAction: {
+      const auto& value_list = ToCSSValueList(value);
+      // Only single values are supported in level 1.
+      if (value_list.length() == 1U)
+        return CreateStyleValue(value_list.Item(0));
+      return nullptr;
+    }
+    case CSSPropertyWillChange: {
+      // Only 'auto' is supported, which can be stored as an identifier or list.
+      if (value.IsIdentifierValue())
+        return CreateStyleValue(value);
+
+      const auto& value_list = ToCSSValueList(value);
+      if (value_list.length() == 1U && value_list.Item(0).IsIdentifierValue()) {
+        const auto& ident = ToCSSIdentifierValue(value_list.Item(0));
+        if (ident.GetValueID() == CSSValueAuto)
+          return CreateStyleValue(value_list.Item(0));
+      }
       return nullptr;
     }
     default:

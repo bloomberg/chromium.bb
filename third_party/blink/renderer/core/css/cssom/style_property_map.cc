@@ -67,6 +67,18 @@ const CSSValue* StyleValueToCSSValue(
       }
       break;
     }
+    case CSSPropertyContain: {
+      // level 1 only accepts single values, which are stored internally
+      // as a single element list.
+      const auto* value = style_value.ToCSSValue();
+      if ((value->IsIdentifierValue() && !value->IsCSSWideKeyword()) ||
+          value->IsPrimitiveValue()) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
+        return list;
+      }
+      break;
+    }
     case CSSPropertyFontVariantEastAsian:
     case CSSPropertyFontVariantLigatures:
     case CSSPropertyFontVariantNumeric: {
@@ -142,6 +154,18 @@ const CSSValue* StyleValueToCSSValue(
       if (value->IsPrimitiveValue()) {
         CSSValueList* list = CSSValueList::CreateSpaceSeparated();
         list->Append(*value);
+        return list;
+      }
+      break;
+    }
+    case CSSPropertyTransitionProperty:
+    case CSSPropertyTouchAction: {
+      // level 1 only accepts single keywords, which are stored internally
+      // as a single element list
+      const auto* value = style_value.ToCSSValue();
+      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword()) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
         return list;
       }
       break;

@@ -34,7 +34,9 @@ CSSPrimitiveValue::UnitType ToCanonicalUnitIfPossible(
   return canonical_unit;
 }
 
-bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
+bool IsValueOutOfRangeForProperty(CSSPropertyID property_id,
+                                  double value,
+                                  CSSPrimitiveValue::UnitType unit) {
   // FIXME: Avoid this CSSProperty::Get call as it can be costly.
   // The caller often has a CSSProperty already, so we can just pass it here.
   if (LengthPropertyFunctions::GetValueRange(CSSProperty::Get(property_id)) ==
@@ -44,6 +46,14 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
 
   // For non-length properties and special cases.
   switch (property_id) {
+    case CSSPropertyOrder:
+    case CSSPropertyZIndex:
+      return round(value) != value;
+    case CSSPropertyTabSize:
+      return value < 0 || (unit == CSSPrimitiveValue::UnitType::kNumber &&
+                           round(value) != value);
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
     case CSSPropertyColumnCount:
       return round(value) != value || value < 1;
     case CSSPropertyBlockSize:
@@ -54,6 +64,7 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
     case CSSPropertyFontSizeAdjust:
     case CSSPropertyFontStretch:
     case CSSPropertyInlineSize:
+    case CSSPropertyLineHeightStep:
     case CSSPropertyMaxBlockSize:
     case CSSPropertyMaxInlineSize:
     case CSSPropertyMinBlockSize:
@@ -156,7 +167,7 @@ const CSSPrimitiveValue* CSSUnitValue::ToCSSValue() const {
 
 const CSSPrimitiveValue* CSSUnitValue::ToCSSValueWithProperty(
     CSSPropertyID property_id) const {
-  if (IsValueOutOfRangeForProperty(property_id, value_)) {
+  if (IsValueOutOfRangeForProperty(property_id, value_, unit_)) {
     // Wrap out of range values with a calc.
     CSSCalcExpressionNode* node = ToCalcExpressionNode();
     node->SetIsNestedCalc();
