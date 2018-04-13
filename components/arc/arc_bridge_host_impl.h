@@ -18,6 +18,7 @@
 namespace arc {
 
 class ArcBridgeService;
+class MojoChannelBase;
 
 // Implementation of the ArcBridgeHost.
 // The lifetime of ArcBridgeHost and ArcBridgeInstance mojo channels are tied
@@ -30,9 +31,6 @@ class ArcBridgeService;
 // Note that ArcBridgeService must be alive while ArcBridgeHostImpl is alive.
 class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
  public:
-  // Interface to keep the Mojo channel InterfacePtr.
-  class MojoChannel;
-
   ArcBridgeHostImpl(ArcBridgeService* arc_bridge_service,
                     mojom::ArcBridgeInstancePtr instance);
   ~ArcBridgeHostImpl() override;
@@ -114,7 +112,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
                        mojo::InterfacePtr<InstanceType> ptr);
 
   // Called if one of the established channels is closed.
-  void OnChannelClosed(MojoChannel* channel);
+  void OnChannelClosed(MojoChannelBase* channel);
 
   THREAD_CHECKER(thread_checker_);
 
@@ -126,7 +124,7 @@ class ArcBridgeHostImpl : public mojom::ArcBridgeHost {
 
   // Put as a last member to ensure that any callback tied to the elements
   // is not invoked.
-  std::vector<std::unique_ptr<MojoChannel>> mojo_channels_;
+  std::vector<std::unique_ptr<MojoChannelBase>> mojo_channels_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeHostImpl);
 };
