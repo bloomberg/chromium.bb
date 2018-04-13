@@ -19,7 +19,6 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
-@class BrowserContainerView;
 @class BrowserViewControllerDependencyFactory;
 class GURL;
 @protocol OmniboxFocuser;
@@ -71,7 +70,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint
     dispatcher;
 
 // The top-level browser container view.
-@property(nonatomic, strong) BrowserContainerView* contentArea;
+@property(nonatomic, strong, readonly) UIView* contentArea;
 
 // Invisible button used to dismiss the keyboard.
 @property(nonatomic, strong) UIButton* typingShield;

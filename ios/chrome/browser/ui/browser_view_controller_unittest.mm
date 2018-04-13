@@ -251,7 +251,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
 TEST_F(BrowserViewControllerTest, TestTabSelected) {
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
-  EXPECT_EQ([[tab_ view] superview], static_cast<UIView*>([bvc_ contentArea]));
+  EXPECT_EQ([[tab_ view] superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
@@ -262,7 +262,7 @@ TEST_F(BrowserViewControllerTest, TestTabSelectedIsNewTab) {
   id tabMock = (id)tab_;
   [tabMock onSelector:@selector(url) callBlockExpectation:block];
   [bvc_ tabSelected:tab_ notifyToolbar:YES];
-  EXPECT_EQ([[tab_ view] superview], static_cast<UIView*>([bvc_ contentArea]));
+  EXPECT_EQ([[tab_ view] superview], [bvc_ contentArea]);
   EXPECT_TRUE(webStateImpl_->IsVisible());
 }
 
