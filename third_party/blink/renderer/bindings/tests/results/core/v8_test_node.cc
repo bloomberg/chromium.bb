@@ -265,7 +265,7 @@ static void installV8TestNodeTemplate(
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestNode::wrapperTypeInfo.interface_name, V8Node::domTemplate(isolate, world), V8TestNode::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestNode::constructorCallback);
+  interfaceTemplate->SetCallHandler(V8TestNode::constructorCallback, v8::Local<v8::Value>(), v8::SideEffectType::kHasNoSideEffect);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

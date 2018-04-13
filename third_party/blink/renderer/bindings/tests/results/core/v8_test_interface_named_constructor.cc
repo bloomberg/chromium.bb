@@ -195,7 +195,7 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::domT
   if (!result.IsEmpty())
     return result;
 
-  result = v8::FunctionTemplate::New(isolate, V8TestInterfaceNamedConstructorConstructorCallback);
+  result = v8::FunctionTemplate::New(isolate, V8TestInterfaceNamedConstructorConstructorCallback, v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0, v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasNoSideEffect);
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceNamedConstructor::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "Audio"));

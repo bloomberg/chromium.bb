@@ -431,7 +431,7 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceConstructorConstructor::domTempla
   if (!result.IsEmpty())
     return result;
 
-  result = v8::FunctionTemplate::New(isolate, V8TestInterfaceConstructorConstructorCallback);
+  result = v8::FunctionTemplate::New(isolate, V8TestInterfaceConstructorConstructorCallback, v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0, v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasNoSideEffect);
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceConstructor::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "Audio"));
@@ -492,7 +492,7 @@ static void installV8TestInterfaceConstructorTemplate(
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestInterfaceConstructor::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestInterfaceConstructor::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor::constructorCallback);
+  interfaceTemplate->SetCallHandler(V8TestInterfaceConstructor::constructorCallback, v8::Local<v8::Value>(), v8::SideEffectType::kHasNoSideEffect);
   interfaceTemplate->SetLength(0);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

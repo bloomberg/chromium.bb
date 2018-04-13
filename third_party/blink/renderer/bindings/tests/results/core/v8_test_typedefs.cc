@@ -577,7 +577,7 @@ static void installV8TestTypedefsTemplate(
     v8::Local<v8::FunctionTemplate> interfaceTemplate) {
   // Initialize the interface object's template.
   V8DOMConfiguration::InitializeDOMInterfaceTemplate(isolate, interfaceTemplate, V8TestTypedefs::wrapperTypeInfo.interface_name, v8::Local<v8::FunctionTemplate>(), V8TestTypedefs::internalFieldCount);
-  interfaceTemplate->SetCallHandler(V8TestTypedefs::constructorCallback);
+  interfaceTemplate->SetCallHandler(V8TestTypedefs::constructorCallback, v8::Local<v8::Value>(), v8::SideEffectType::kHasNoSideEffect);
   interfaceTemplate->SetLength(1);
 
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);

@@ -112,7 +112,7 @@ v8::Local<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTempla
   if (!result.IsEmpty())
     return result;
 
-  result = v8::FunctionTemplate::New(isolate, V8TestInterfaceEventTargetConstructorCallback);
+  result = v8::FunctionTemplate::New(isolate, V8TestInterfaceEventTargetConstructorCallback, v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0, v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasNoSideEffect);
   v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
   instanceTemplate->SetInternalFieldCount(V8TestInterfaceEventTarget::internalFieldCount);
   result->SetClassName(V8AtomicString(isolate, "Name"));
