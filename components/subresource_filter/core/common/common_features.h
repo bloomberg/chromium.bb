@@ -21,6 +21,10 @@ extern const base::Feature kDelayUnsafeAds;
 // DelayUnsafeAds.
 extern const char kInsecureDelayParam[];
 
+// Param which governs how much to delay non-isolated (i.e. in a same-origin
+// iframe) subresources for DelayUnsafeAds.
+extern const char kNonIsolatedDelayParam[];
+
 }  // namespace subresource_filter
 
 #endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_COMMON_FEATURES_H_
