@@ -23,6 +23,8 @@ class StubCredentialsFilter : public CredentialsFilter {
       std::vector<std::unique_ptr<autofill::PasswordForm>> results)
       const override;
   bool ShouldSave(const autofill::PasswordForm& form) const override;
+  bool ShouldSavePasswordHash(
+      const autofill::PasswordForm& form) const override;
   void ReportFormLoginSuccess(
       const PasswordFormManager& form_manager) const override;
 

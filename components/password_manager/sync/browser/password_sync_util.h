@@ -24,20 +24,19 @@ std::string GetSyncUsernameIfSyncingPasswords(
     const syncer::SyncService* sync_service,
     const SigninManagerBase* signin_manager);
 
-// If |form| doesn't match GAIA sign-on realm or enterprise-specified password
-// protection URL, returns false. Otherwise, checks if the username
-// in |form| matches sync account.
-bool IsSyncAccountCredential(const autofill::PasswordForm& form,
-                             const syncer::SyncService* sync_service,
-                             const SigninManagerBase* signin_manager,
-                             PrefService* prefs);
-
 // Returns true if |form| corresponds to the account specified by
 // GetSyncUsernameIfSyncingPasswords. Returns false if
 // GetSyncUsernameIfSyncingPasswords does not specify any account.
-bool IsGoogleSyncAccount(const autofill::PasswordForm& form,
-                         const syncer::SyncService* sync_service,
-                         const SigninManagerBase* signin_manager);
+bool IsSyncAccountCredential(const autofill::PasswordForm& form,
+                             const syncer::SyncService* sync_service,
+                             const SigninManagerBase* signin_manager);
+
+// If |form| doesn't match GAIA sign-on realm or enterprise-specified password
+// protection URL, returns false. Otherwise, checks if the username
+// in |form| matches sign-in account (no syncing passwords are required).
+bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
+                            const SigninManagerBase* signin_manager,
+                            PrefService* prefs);
 
 }  // namespace sync_util
 }  // namespace password_manager
