@@ -244,7 +244,8 @@ TEST_F('OutputE2ETest', 'Audio', function() {
            {value: new Output.NodeSpan(el.parent), start: 24, end: 35}],
           o);
 
-      el = el.nextSibling.nextSibling;
+      // TODO(dmazzoni/dtseng): Replace with a query.
+      el = el.nextSibling.nextSibling.nextSibling;
       var prevRange = range;
       range = cursors.Range.fromNode(el);
       var o = new Output()

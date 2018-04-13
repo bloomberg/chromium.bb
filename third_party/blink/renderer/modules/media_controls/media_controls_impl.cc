@@ -496,7 +496,7 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //  +-MediaControlTextTrackListItemSubtitles
 //       (-internal-media-controls-text-track-list-kind-subtitles)
 void MediaControlsImpl::InitializeControls() {
-  if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+  if (IsModern() && ShouldShowVideoControls()) {
     loading_panel_ = new MediaControlLoadingPanelElement(*this);
     ParserAppendChild(loading_panel_);
   }
@@ -524,7 +524,7 @@ void MediaControlsImpl::InitializeControls() {
 
   // If using the modern media controls, the buttons should belong to a
   // seperate button panel. This is because they are displayed in two lines.
-  if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+  if (IsModern() && ShouldShowVideoControls()) {
     media_button_panel_ = new MediaControlButtonPanelElement(*this);
     scrubbing_message_ = new MediaControlScrubbingMessageElement(*this);
   }
@@ -604,8 +604,7 @@ void MediaControlsImpl::PopulatePanel() {
     media_button_panel_->setInnerHTML(StringOrTrustedHTML::FromString(""));
 
   Element* button_panel = panel_;
-  if (IsModern() && MediaElement().IsHTMLVideoElement() &&
-      !is_acting_as_audio_controls_) {
+  if (IsModern() && ShouldShowVideoControls()) {
     MaybeParserAppendChild(panel_, scrubbing_message_);
     panel_->ParserAppendChild(overlay_play_button_);
     panel_->ParserAppendChild(media_button_panel_);
@@ -616,7 +615,7 @@ void MediaControlsImpl::PopulatePanel() {
   button_panel->ParserAppendChild(current_time_display_);
   button_panel->ParserAppendChild(duration_display_);
 
-  if (IsModern() && MediaElement().IsHTMLVideoElement()) {
+  if (IsModern() && ShouldShowVideoControls()) {
     MediaControlElementsHelper::CreateDiv(
         "-internal-media-controls-button-spacer", button_panel);
   }
@@ -676,8 +675,7 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
   StringBuilder builder;
   builder.Append(kStateCSSClasses[state]);
 
-  if (MediaElement().ShouldShowControls() &&
-      MediaElement().IsHTMLVideoElement() && !is_acting_as_audio_controls_ &&
+  if (MediaElement().ShouldShowControls() && ShouldShowVideoControls() &&
       !VideoElement().HasAvailableVideoFrame() &&
       VideoElement().PosterImageURL().IsEmpty() &&
       state <= ControlsState::kLoadingMetadata) {
@@ -701,6 +699,23 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
 
   if (loading_panel_)
     loading_panel_->UpdateDisplayState();
+
+  // If we are in the "no-source" state we should show the overflow menu on a
+  // video element.
+  if (IsModern()) {
+    if (state == kNoSource) {
+      // Check if the overflow menu has the "disabled" attribute set so we avoid
+      // unnecessarily resetting it.
+      if (ShouldShowVideoControls() &&
+          !overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
+        overflow_menu_->setAttribute(HTMLNames::disabledAttr, "");
+        UpdateOverflowMenuWanted();
+      }
+    } else if (overflow_menu_->hasAttribute(HTMLNames::disabledAttr)) {
+      overflow_menu_->removeAttribute(HTMLNames::disabledAttr);
+      UpdateOverflowMenuWanted();
+    }
+  }
 }
 
 MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
@@ -793,7 +808,7 @@ void MediaControlsImpl::Reset() {
 void MediaControlsImpl::OnControlsListUpdated() {
   BatchedControlUpdate batch(this);
 
-  if (ShouldShowDisabledControls()) {
+  if (IsModern() && ShouldShowVideoControls()) {
     fullscreen_button_->SetIsWanted(true);
     fullscreen_button_->setAttribute(HTMLNames::disabledAttr,
                                      ShouldShowFullscreenButton(MediaElement())
@@ -1150,7 +1165,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
 
   // The video controls are more than one row so we need to allocate vertical
   // room and hide the overlay play button if there is not enough room.
-  if (MediaElement().IsHTMLVideoElement() && !is_acting_as_audio_controls_) {
+  if (ShouldShowVideoControls()) {
     // Allocate vertical room for overlay play button if necessary.
     WebSize overlay_play_button_size = overlay_play_button_->GetSizeOrDefault();
     if (controls_size.height >= overlay_play_button_size.height &&
@@ -1227,6 +1242,9 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
     }
   }
 
+  // The overflow menu is always wanted if it has the "disabled" attr set.
+  overflow_wanted =
+      overflow_wanted || overflow_menu_->hasAttribute(HTMLNames::disabledAttr);
   overflow_menu_->SetDoesFit(overflow_wanted);
   overflow_menu_->SetIsWanted(overflow_wanted);
 
@@ -1450,7 +1468,7 @@ void MediaControlsImpl::OnVolumeChange() {
     volume_slider_->SetIsWanted(MediaElement().HasAudio() &&
                                 !PreferHiddenVolumeControls(GetDocument()));
   }
-  if (ShouldShowDisabledControls()) {
+  if (IsModern()) {
     mute_button_->SetIsWanted(true);
     mute_button_->setAttribute(
         HTMLNames::disabledAttr,
@@ -1495,7 +1513,13 @@ void MediaControlsImpl::OnDurationChange() {
 
   // Update the displayed current time/duration.
   duration_display_->SetCurrentValue(duration);
-  duration_display_->SetIsWanted(std::isfinite(duration));
+
+  // Show the duration display if we have a duration or if we are showing the
+  // audio controls without a source.
+  duration_display_->SetIsWanted(
+      std::isfinite(duration) ||
+      (ShouldShowAudioControls() && State() == kNoSource));
+
   // TODO(crbug.com/756698): Determine if this is still needed since the format
   // of the current time no longer depends on the duration.
   UpdateCurrentTimeDisplay();
@@ -1808,9 +1832,13 @@ void MediaControlsImpl::StopActingAsAudioControls() {
   Reset();
 }
 
-bool MediaControlsImpl::ShouldShowDisabledControls() const {
-  return IsModern() && MediaElement().IsHTMLVideoElement() &&
-         !is_acting_as_audio_controls_;
+bool MediaControlsImpl::ShouldShowAudioControls() const {
+  return IsModern() &&
+         (MediaElement().IsHTMLAudioElement() || is_acting_as_audio_controls_);
+}
+
+bool MediaControlsImpl::ShouldShowVideoControls() const {
+  return MediaElement().IsHTMLVideoElement() && !ShouldShowAudioControls();
 }
 
 void MediaControlsImpl::NetworkStateChanged() {

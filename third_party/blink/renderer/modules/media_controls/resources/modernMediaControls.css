@@ -232,6 +232,8 @@ video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-p
   background-image: -webkit-image-set(url(ic_fullscreen_exit_white.svg) 1x);
 }
 
+audio::-webkit-media-controls-mute-button:disabled,
+video::-internal-media-controls-overflow-button:disabled,
 video::-webkit-media-controls-mute-button:disabled,
 video::-webkit-media-controls-fullscreen-button:disabled {
   opacity: 0.3;
@@ -365,6 +367,7 @@ input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   margin-top: -4px;
   flex: 0 0 0;
 }
+
 video::-webkit-media-controls:not(.audio-only) input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb {
   background: #FFFFFF;
   box-shadow: unset;
@@ -639,18 +642,12 @@ video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-overf
  */
 
 .use-default-poster {
-  background: #F1F3F4;
+  background: #333;
 }
 
-.state-no-metadata input[pseudo="-webkit-media-controls-timeline" i]::-webkit-slider-thumb,
-.state-no-metadata div[pseudo="-webkit-media-controls-current-time-display" i] {
-  display: none;
-}
-
-.state-no-source input[pseudo="-webkit-media-controls-overlay-play-button" i],
-.state-no-source div[pseudo="-internal-media-controls-button-panel" i],
-video::-webkit-media-controls.state-no-source input[pseudo="-webkit-media-controls-timeline" i] {
-  visibility: hidden;
+.state-no-source input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
+  opacity: .3;
+  background-image: -webkit-image-set(url(ic_no_source.svg) 1x);
 }
 
 /**
