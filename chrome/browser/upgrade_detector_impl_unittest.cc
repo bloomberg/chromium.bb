@@ -11,10 +11,12 @@
 #include "base/macros.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/tick_clock.h"
+#include "base/values.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,7 +104,13 @@ class UpgradeDetectorImplTest : public ::testing::Test {
   UpgradeDetectorImplTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        scoped_local_state_(TestingBrowserProcess::GetGlobal()) {}
+        scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
+    // Disable the detector's check to see if autoupdates are inabled.
+    // Without this, tests put the detector into an invalid state by detecting
+    // upgrades before the detection task completes.
+    scoped_local_state_.Get()->SetUserPref(prefs::kAttemptedToEnableAutoupdate,
+                                           std::make_unique<base::Value>(true));
+  }
 
   const base::TickClock* GetMockTickClock() {
     return scoped_task_environment_.GetMockTickClock();
