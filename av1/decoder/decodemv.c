@@ -1103,31 +1103,23 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (cm->cur_frame_force_integer_mv) {
     allow_hp = MV_SUBPEL_NONE;
   }
+  (void)is_compound;
   switch (mode) {
     case NEWMV: {
-      for (int i = 0; i < 1 + is_compound; ++i) {
-        nmv_context *const nmvc = &ec_ctx->nmvc;
-        read_mv(r, &mv[i].as_mv, &ref_mv[i].as_mv, nmvc, allow_hp);
-        ret = ret && is_mv_valid(&mv[i].as_mv);
-
-        pred_mv[i].as_int = ref_mv[i].as_int;
-      }
+      nmv_context *const nmvc = &ec_ctx->nmvc;
+      read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
+      ret = ret && is_mv_valid(&mv[0].as_mv);
+      pred_mv[0].as_int = ref_mv[0].as_int;
       break;
     }
     case NEARESTMV: {
       mv[0].as_int = nearest_mv[0].as_int;
-      if (is_compound) mv[1].as_int = nearest_mv[1].as_int;
-
       pred_mv[0].as_int = nearest_mv[0].as_int;
-      if (is_compound) pred_mv[1].as_int = nearest_mv[1].as_int;
       break;
     }
     case NEARMV: {
       mv[0].as_int = near_mv[0].as_int;
-      if (is_compound) mv[1].as_int = near_mv[1].as_int;
-
       pred_mv[0].as_int = near_mv[0].as_int;
-      if (is_compound) pred_mv[1].as_int = near_mv[1].as_int;
       break;
     }
     case GLOBALMV: {
@@ -1136,15 +1128,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                cm->allow_high_precision_mv, bsize, mi_col,
                                mi_row, cm->cur_frame_force_integer_mv)
               .as_int;
-      if (is_compound)
-        mv[1].as_int =
-            gm_get_motion_vector(&cm->global_motion[ref_frame[1]],
-                                 cm->allow_high_precision_mv, bsize, mi_col,
-                                 mi_row, cm->cur_frame_force_integer_mv)
-                .as_int;
-
       pred_mv[0].as_int = mv[0].as_int;
-      if (is_compound) pred_mv[1].as_int = mv[1].as_int;
       break;
     }
     case NEW_NEWMV: {
