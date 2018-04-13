@@ -92,8 +92,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texturelodoffset.html',
         bug=794335)
 
-    self.Fail('conformance2/sync/sync-webgl-specific.html',
-        ['mac', 'win'], bug=818336)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
         ['mac', 'linux'], bug=809233)
     self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
