@@ -25,15 +25,15 @@ class MEDIA_EXPORT MediaPermission {
   MediaPermission();
   virtual ~MediaPermission();
 
-  // Checks whether |type| is permitted for |security_origion| without
-  // triggering user interaction (e.g. permission prompt). The status will be
-  // |false| if the permission has never been set.
+  // Checks whether |type| is permitted without triggering user interaction
+  // (e.g. permission prompt). The status will be |false| if the permission
+  // has never been set.
   virtual void HasPermission(
       Type type,
       const PermissionStatusCB& permission_status_cb) = 0;
 
-  // Requests |type| permission for |security_origion|. This may trigger user
-  // interaction (e.g. permission prompt) if the permission has never been set.
+  // Requests |type| permission. This may trigger user interaction
+  // (e.g. permission prompt) if the permission has never been set.
   virtual void RequestPermission(
       Type type,
       const PermissionStatusCB& permission_status_cb) = 0;

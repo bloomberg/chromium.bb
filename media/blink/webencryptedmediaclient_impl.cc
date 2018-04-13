@@ -97,7 +97,6 @@ void WebEncryptedMediaClientImpl::RequestMediaKeySystemAccess(
 
   key_system_config_selector_.SelectConfig(
       request.KeySystem(), request.SupportedConfigurations(),
-      request.GetSecurityOrigin(),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestSucceeded,
                  weak_factory_.GetWeakPtr(), request),
       base::Bind(&WebEncryptedMediaClientImpl::OnRequestNotSupported,
