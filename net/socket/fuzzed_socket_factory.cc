@@ -90,20 +90,8 @@ class FailingSSLClientSocket : public SSLClientSocket {
 
   int64_t GetTotalReceivedBytes() const override { return 0; }
 
-  void ApplySocketTag(const net::SocketTag& tag) override {}
-
-  // SSLSocket implementation:
-  int ExportKeyingMaterial(const base::StringPiece& label,
-                           bool has_context,
-                           const base::StringPiece& context,
-                           unsigned char* out,
-                           unsigned int outlen) override {
-    NOTREACHED();
-    return 0;
-  }
-
-  // SSLClientSocket implementation:
-  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
+  void GetSSLCertRequestInfo(
+      SSLCertRequestInfo* cert_request_info) const override {}
 
   ChannelIDService* GetChannelIDService() const override {
     NOTREACHED();
@@ -120,6 +108,18 @@ class FailingSSLClientSocket : public SSLClientSocket {
   crypto::ECPrivateKey* GetChannelIDKey() const override {
     NOTREACHED();
     return nullptr;
+  }
+
+  void ApplySocketTag(const net::SocketTag& tag) override {}
+
+  // SSLSocket implementation:
+  int ExportKeyingMaterial(const base::StringPiece& label,
+                           bool has_context,
+                           const base::StringPiece& context,
+                           unsigned char* out,
+                           unsigned int outlen) override {
+    NOTREACHED();
+    return 0;
   }
 
  private:

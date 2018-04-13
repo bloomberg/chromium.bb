@@ -82,14 +82,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
   static void SetSSLKeyLogFile(const base::FilePath& path);
 #endif
 
-  // SSLClientSocket implementation.
-  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-  ChannelIDService* GetChannelIDService() const override;
-  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                 TokenBindingType tb_type,
-                                 std::vector<uint8_t>* out) override;
-  crypto::ECPrivateKey* GetChannelIDKey() const override;
-
   // SSLSocket implementation.
   int ExportKeyingMaterial(const base::StringPiece& label,
                            bool has_context,
@@ -116,6 +108,14 @@ class SSLClientSocketImpl : public SSLClientSocket,
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
   int64_t GetTotalReceivedBytes() const override;
   void DumpMemoryStats(SocketMemoryStats* stats) const override;
+  void GetSSLCertRequestInfo(
+      SSLCertRequestInfo* cert_request_info) const override;
+  ChannelIDService* GetChannelIDService() const override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
+  crypto::ECPrivateKey* GetChannelIDKey() const override;
+
   void ApplySocketTag(const SocketTag& tag) override;
 
   // Dumps memory allocation stats. |pmd| is the browser process memory dump.

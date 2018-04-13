@@ -599,7 +599,6 @@ class MockClientSocket : public TransportClientSocket {
   void AddConnectionAttempts(const ConnectionAttempts& attempts) override {}
   int64_t GetTotalReceivedBytes() const override;
   void ApplySocketTag(const SocketTag& tag) override {}
-
  protected:
   ~MockClientSocket() override;
   void RunCallbackAsync(const CompletionCallback& callback, int result);
@@ -732,6 +731,13 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   bool WasAlpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
+  void GetSSLCertRequestInfo(
+      SSLCertRequestInfo* cert_request_info) const override;
+  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                 TokenBindingType tb_type,
+                                 std::vector<uint8_t>* out) override;
+  ChannelIDService* GetChannelIDService() const override;
+  crypto::ECPrivateKey* GetChannelIDKey() const override;
   void ApplySocketTag(const SocketTag& tag) override;
   const NetLogWithSource& NetLog() const override;
   void SetSubresourceSpeculation() override {}
@@ -743,18 +749,12 @@ class MockSSLClientSocket : public AsyncSocket, public SSLClientSocket {
   int SetReceiveBufferSize(int32_t size) override;
   int SetSendBufferSize(int32_t size) override;
 
-  // SSLClientSocket implementation.
-  void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
-  Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                 TokenBindingType tb_type,
-                                 std::vector<uint8_t>* out) override;
+  // SSLSocket implementation.
   int ExportKeyingMaterial(const base::StringPiece& label,
                            bool has_context,
                            const base::StringPiece& context,
                            unsigned char* out,
                            unsigned int outlen) override;
-  ChannelIDService* GetChannelIDService() const override;
-  crypto::ECPrivateKey* GetChannelIDKey() const override;
 
   // This MockSocket does not implement the manual async IO feature.
   void OnReadComplete(const MockRead& data) override;

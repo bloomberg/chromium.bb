@@ -533,9 +533,8 @@ int HttpProxyClientSocketWrapper::DoSSLConnectComplete(int result) {
     return ERR_PROXY_CONNECTION_FAILED;
   }
 
-  SSLClientSocket* ssl =
-      static_cast<SSLClientSocket*>(transport_socket_handle_->socket());
-  negotiated_protocol_ = ssl->GetNegotiatedProtocol();
+  negotiated_protocol_ =
+      transport_socket_handle_->socket()->GetNegotiatedProtocol();
   using_spdy_ = negotiated_protocol_ == kProtoHTTP2;
 
   // Reset the timer to just the length of time allowed for HttpProxy handshake

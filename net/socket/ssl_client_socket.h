@@ -24,17 +24,12 @@ namespace base {
 class FilePath;
 }
 
-namespace crypto {
-class ECPrivateKey;
-}
-
 namespace net {
 
 class CTPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class CTVerifier;
-class SSLCertRequestInfo;
 class TransportSecurityState;
 
 // This struct groups together several fields which are used by various
@@ -75,11 +70,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
  public:
   SSLClientSocket();
 
-  // Gets the SSL CertificateRequest info of the socket after Connect failed
-  // with ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
-  virtual void GetSSLCertRequestInfo(
-      SSLCertRequestInfo* cert_request_info) = 0;
-
   // Log SSL key material to |path|. Must be called before any
   // SSLClientSockets are created.
   //
@@ -96,22 +86,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // ClearSessionCache clears the SSL session cache, used to resume SSL
   // sessions.
   static void ClearSessionCache();
-
-  // Returns the ChannelIDService used by this socket, or NULL if
-  // channel ids are not supported.
-  virtual ChannelIDService* GetChannelIDService() const = 0;
-
-  // Generates the signature used in Token Binding using key |*key| and for a
-  // Token Binding of type |tb_type|, putting the signature in |*out|. Returns a
-  // net error code.
-  virtual Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                         TokenBindingType tb_type,
-                                         std::vector<uint8_t>* out) = 0;
-
-  // This method is only for debugging crbug.com/548423 and will be removed when
-  // that bug is closed. This returns the channel ID key that was used when
-  // establishing the connection (or NULL if no channel ID was used).
-  virtual crypto::ECPrivateKey* GetChannelIDKey() const = 0;
 
  protected:
   void set_signed_cert_timestamps_received(

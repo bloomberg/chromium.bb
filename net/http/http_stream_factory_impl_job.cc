@@ -67,11 +67,11 @@ namespace {
 // not supported or initialized.
 const base::Feature kLimitEarlyPreconnectsExperiment{
     "LimitEarlyPreconnects", base::FEATURE_ENABLED_BY_DEFAULT};
-void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
+void RecordChannelIDKeyMatch(StreamSocket* socket,
                              ChannelIDService* channel_id_service,
                              std::string host) {
   SSLInfo ssl_info;
-  ssl_socket->GetSSLInfo(&ssl_info);
+  socket->GetSSLInfo(&ssl_info);
   if (!ssl_info.channel_id_sent)
     return;
   std::unique_ptr<crypto::ECPrivateKey> request_key;
@@ -87,7 +87,7 @@ void RecordChannelIDKeyMatch(SSLClientSocket* ssl_socket,
   // the async request.
   if (result == ERR_IO_PENDING)
     request.Cancel();
-  crypto::ECPrivateKey* socket_key = ssl_socket->GetChannelIDKey();
+  crypto::ECPrivateKey* socket_key = socket->GetChannelIDKey();
 
   // This enum is used for an UMA histogram - do not change or re-use values.
   enum {
@@ -388,9 +388,7 @@ void HttpStreamFactoryImpl::Job::GetSSLInfo(SSLInfo* ssl_info) {
   DCHECK(using_ssl_);
   DCHECK(!establishing_tunnel_);
   DCHECK(connection_.get() && connection_->socket());
-  SSLClientSocket* ssl_socket =
-      static_cast<SSLClientSocket*>(connection_->socket());
-  ssl_socket->GetSSLInfo(ssl_info);
+  connection_->socket()->GetSSLInfo(ssl_info);
 }
 
 // static
@@ -1046,11 +1044,9 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
       was_alpn_negotiated_ = true;
       negotiated_protocol_ = kProtoQUIC;
     } else {
-      SSLClientSocket* ssl_socket =
-          static_cast<SSLClientSocket*>(connection_->socket());
-      if (ssl_socket->WasAlpnNegotiated()) {
+      if (connection_->socket()->WasAlpnNegotiated()) {
         was_alpn_negotiated_ = true;
-        negotiated_protocol_ = ssl_socket->GetNegotiatedProtocol();
+        negotiated_protocol_ = connection_->socket()->GetNegotiatedProtocol();
         net_log_.AddEvent(
             NetLogEventType::HTTP_STREAM_REQUEST_PROTO,
             base::Bind(&NetLogHttpStreamProtoCallback, negotiated_protocol_));
@@ -1197,9 +1193,8 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
 
   if (using_ssl_ && connection_->socket()) {
-    SSLClientSocket* ssl_socket =
-        static_cast<SSLClientSocket*>(connection_->socket());
-    RecordChannelIDKeyMatch(ssl_socket, session_->context().channel_id_service,
+    RecordChannelIDKeyMatch(connection_->socket(),
+                            session_->context().channel_id_service,
                             destination_.HostForURL());
   }
 

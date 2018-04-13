@@ -11,6 +11,28 @@
 
 namespace net {
 
+void StreamSocket::GetSSLCertRequestInfo(
+    SSLCertRequestInfo* cert_request_info) const {
+  NOTREACHED();
+}
+
+ChannelIDService* StreamSocket::GetChannelIDService() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+Error StreamSocket::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                             TokenBindingType tb_type,
+                                             std::vector<uint8_t>* out) {
+  NOTREACHED();
+  return ERR_NOT_IMPLEMENTED;
+}
+
+crypto::ECPrivateKey* StreamSocket::GetChannelIDKey() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 StreamSocket::UseHistory::UseHistory()
     : was_ever_connected_(false),
       was_used_to_convey_data_(false),

@@ -473,75 +473,6 @@ void SSLClientSocketImpl::SetSSLKeyLogFile(
 }
 #endif
 
-void SSLClientSocketImpl::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
-  if (!ssl_) {
-    NOTREACHED();
-    return;
-  }
-
-  cert_request_info->host_and_port = host_and_port_;
-
-  cert_request_info->cert_authorities.clear();
-  const STACK_OF(CRYPTO_BUFFER)* authorities =
-      SSL_get0_server_requested_CAs(ssl_.get());
-  for (const CRYPTO_BUFFER* ca_name : authorities) {
-    cert_request_info->cert_authorities.push_back(
-        std::string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(ca_name)),
-                    CRYPTO_BUFFER_len(ca_name)));
-  }
-
-  cert_request_info->cert_key_types.clear();
-  const uint8_t* client_cert_types;
-  size_t num_client_cert_types =
-      SSL_get0_certificate_types(ssl_.get(), &client_cert_types);
-  for (size_t i = 0; i < num_client_cert_types; i++) {
-    cert_request_info->cert_key_types.push_back(
-        static_cast<SSLClientCertType>(client_cert_types[i]));
-  }
-}
-
-ChannelIDService* SSLClientSocketImpl::GetChannelIDService() const {
-  return channel_id_service_;
-}
-
-Error SSLClientSocketImpl::GetTokenBindingSignature(crypto::ECPrivateKey* key,
-                                                    TokenBindingType tb_type,
-                                                    std::vector<uint8_t>* out) {
-  // The same key will be used across multiple requests to sign the same value,
-  // so the signature is cached.
-  std::string raw_public_key;
-  if (!key->ExportRawPublicKey(&raw_public_key))
-    return ERR_FAILED;
-  auto it = tb_signature_map_.Get(std::make_pair(tb_type, raw_public_key));
-  if (it != tb_signature_map_.end()) {
-    *out = it->second;
-    return OK;
-  }
-
-  uint8_t tb_ekm_buf[32];
-  static const char kTokenBindingExporterLabel[] = "EXPORTER-Token-Binding";
-  if (!SSL_export_keying_material(ssl_.get(), tb_ekm_buf, sizeof(tb_ekm_buf),
-                                  kTokenBindingExporterLabel,
-                                  strlen(kTokenBindingExporterLabel), nullptr,
-                                  0, false /* no context */)) {
-    return ERR_FAILED;
-  }
-
-  if (!CreateTokenBindingSignature(
-          base::StringPiece(reinterpret_cast<char*>(tb_ekm_buf),
-                            sizeof(tb_ekm_buf)),
-          tb_type, key, out))
-    return ERR_FAILED;
-
-  tb_signature_map_.Put(std::make_pair(tb_type, raw_public_key), *out);
-  return OK;
-}
-
-crypto::ECPrivateKey* SSLClientSocketImpl::GetChannelIDKey() const {
-  return channel_id_key_.get();
-}
-
 int SSLClientSocketImpl::ExportKeyingMaterial(const base::StringPiece& label,
                                               bool has_context,
                                               const base::StringPiece& context,
@@ -754,6 +685,75 @@ void SSLClientSocketImpl::DumpMemoryStats(SocketMemoryStats* stats) const {
     stats->cert_count = sk_CRYPTO_BUFFER_num(server_cert_chain);
   }
   stats->total_size = stats->buffer_size + stats->cert_size;
+}
+
+void SSLClientSocketImpl::GetSSLCertRequestInfo(
+    SSLCertRequestInfo* cert_request_info) const {
+  if (!ssl_) {
+    NOTREACHED();
+    return;
+  }
+
+  cert_request_info->host_and_port = host_and_port_;
+
+  cert_request_info->cert_authorities.clear();
+  const STACK_OF(CRYPTO_BUFFER)* authorities =
+      SSL_get0_server_requested_CAs(ssl_.get());
+  for (const CRYPTO_BUFFER* ca_name : authorities) {
+    cert_request_info->cert_authorities.push_back(
+        std::string(reinterpret_cast<const char*>(CRYPTO_BUFFER_data(ca_name)),
+                    CRYPTO_BUFFER_len(ca_name)));
+  }
+
+  cert_request_info->cert_key_types.clear();
+  const uint8_t* client_cert_types;
+  size_t num_client_cert_types =
+      SSL_get0_certificate_types(ssl_.get(), &client_cert_types);
+  for (size_t i = 0; i < num_client_cert_types; i++) {
+    cert_request_info->cert_key_types.push_back(
+        static_cast<SSLClientCertType>(client_cert_types[i]));
+  }
+}
+
+ChannelIDService* SSLClientSocketImpl::GetChannelIDService() const {
+  return channel_id_service_;
+}
+
+Error SSLClientSocketImpl::GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                                    TokenBindingType tb_type,
+                                                    std::vector<uint8_t>* out) {
+  // The same key will be used across multiple requests to sign the same value,
+  // so the signature is cached.
+  std::string raw_public_key;
+  if (!key->ExportRawPublicKey(&raw_public_key))
+    return ERR_FAILED;
+  auto it = tb_signature_map_.Get(std::make_pair(tb_type, raw_public_key));
+  if (it != tb_signature_map_.end()) {
+    *out = it->second;
+    return OK;
+  }
+
+  uint8_t tb_ekm_buf[32];
+  static const char kTokenBindingExporterLabel[] = "EXPORTER-Token-Binding";
+  if (!SSL_export_keying_material(ssl_.get(), tb_ekm_buf, sizeof(tb_ekm_buf),
+                                  kTokenBindingExporterLabel,
+                                  strlen(kTokenBindingExporterLabel), nullptr,
+                                  0, false /* no context */)) {
+    return ERR_FAILED;
+  }
+
+  if (!CreateTokenBindingSignature(
+          base::StringPiece(reinterpret_cast<char*>(tb_ekm_buf),
+                            sizeof(tb_ekm_buf)),
+          tb_type, key, out))
+    return ERR_FAILED;
+
+  tb_signature_map_.Put(std::make_pair(tb_type, raw_public_key), *out);
+  return OK;
+}
+
+crypto::ECPrivateKey* SSLClientSocketImpl::GetChannelIDKey() const {
+  return channel_id_key_.get();
 }
 
 void SSLClientSocketImpl::ApplySocketTag(const SocketTag& tag) {

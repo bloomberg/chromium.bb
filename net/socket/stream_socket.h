@@ -8,19 +8,27 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket.h"
+#include "net/ssl/token_binding.h"
+
+namespace crypto {
+class ECPrivateKey;
+}
 
 namespace net {
 
+class ChannelIDService;
 class IPEndPoint;
 class NetLogWithSource;
+class SSLCertRequestInfo;
 class SSLInfo;
 class SocketTag;
 
-class NET_EXPORT_PRIVATE StreamSocket : public Socket {
+class NET_EXPORT StreamSocket : public Socket {
  public:
   // This is used in DumpMemoryStats() to track the estimate of memory usage of
   // a socket.
@@ -115,6 +123,30 @@ class NET_EXPORT_PRIVATE StreamSocket : public Socket {
   // Gets the SSL connection information of the socket.  Returns false if
   // SSL was not used by this socket.
   virtual bool GetSSLInfo(SSLInfo* ssl_info) = 0;
+
+  // Gets the SSL CertificateRequest info of the socket after Connect failed
+  // with ERR_SSL_CLIENT_AUTH_CERT_NEEDED.  Must not be called on a socket that
+  // does not support SSL.
+  virtual void GetSSLCertRequestInfo(
+      SSLCertRequestInfo* cert_request_info) const;
+
+  // Returns the ChannelIDService used by this socket, or NULL if
+  // channel ids are not supported.  Must not be called on a socket that does
+  // not support SSL.
+  virtual ChannelIDService* GetChannelIDService() const;
+
+  // Generates the signature used in Token Binding using key |*key| and for a
+  // Token Binding of type |tb_type|, putting the signature in |*out|. Returns a
+  // net error code.  Must not be called on a socket that does not support SSL.
+  virtual Error GetTokenBindingSignature(crypto::ECPrivateKey* key,
+                                         TokenBindingType tb_type,
+                                         std::vector<uint8_t>* out);
+
+  // This method is only for debugging https://crbug.com/548423 and will be
+  // removed when that bug is closed. This returns the channel ID key that was
+  // used when establishing the connection (or NULL if no channel ID was used).
+  // Must not be called on a socket that does not support SSL.
+  virtual crypto::ECPrivateKey* GetChannelIDKey() const;
 
   // Overwrites |out| with the connection attempts made in the process of
   // connecting this socket.
