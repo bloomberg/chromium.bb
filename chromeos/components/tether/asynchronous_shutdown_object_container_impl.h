@@ -38,6 +38,7 @@ namespace tether {
 
 class BleAdvertisementDeviceQueue;
 class BleConnectionManager;
+class BleConnectionMetricsLogger;
 class BleSynchronizer;
 class NetworkConfigurationRemover;
 class TetherHostFetcher;
@@ -139,6 +140,7 @@ class AsynchronousShutdownObjectContainerImpl
   std::unique_ptr<BleScanner> ble_scanner_;
   std::unique_ptr<AdHocBleAdvertiser> ad_hoc_ble_advertiser_;
   std::unique_ptr<BleConnectionManager> ble_connection_manager_;
+  std::unique_ptr<BleConnectionMetricsLogger> ble_connection_metrics_logger_;
   std::unique_ptr<DisconnectTetheringRequestSender>
       disconnect_tethering_request_sender_;
   std::unique_ptr<NetworkConfigurationRemover> network_configuration_remover_;

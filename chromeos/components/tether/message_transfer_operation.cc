@@ -7,7 +7,6 @@
 #include <memory>
 #include <set>
 
-#include "base/metrics/histogram_macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/tether/connection_reason.h"
 #include "chromeos/components/tether/message_wrapper.h"
@@ -52,11 +51,11 @@ MessageTransferOperation::MessageTransferOperation(
       weak_ptr_factory_(this) {}
 
 MessageTransferOperation::~MessageTransferOperation() {
-  connection_manager_->RemoveObserver(this);
-
   // If initialization never occurred, devices were never registered.
   if (!initialized_)
     return;
+
+  connection_manager_->RemoveObserver(this);
 
   shutting_down_ = true;
 
@@ -115,12 +114,6 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
 
   switch (new_status) {
     case cryptauth::SecureChannel::Status::AUTHENTICATED:
-      UMA_HISTOGRAM_BOOLEAN(
-          "InstantTethering.GattConnectionAttempt.SuccessRate", true);
-      UMA_HISTOGRAM_BOOLEAN(
-          "InstantTethering.GattConnectionAttempt."
-          "EffectiveSuccessRateWithRetries",
-          true);
       StartTimerForDevice(*remote_device);
       OnDeviceAuthenticated(*remote_device);
       break;
@@ -189,11 +182,6 @@ uint32_t MessageTransferOperation::GetTimeoutSeconds() {
   return MessageTransferOperation::kDefaultTimeoutSeconds;
 }
 
-void MessageTransferOperation::SetTimerFactoryForTest(
-    std::unique_ptr<TimerFactory> timer_factory_for_test) {
-  timer_factory_ = std::move(timer_factory_for_test);
-}
-
 void MessageTransferOperation::HandleDeviceDisconnection(
     const cryptauth::RemoteDevice& remote_device,
     BleConnectionManager::StateChangeDetail status_change_detail) {
@@ -231,19 +219,12 @@ void MessageTransferOperation::HandleDeviceDisconnection(
                    << remote_device.GetTruncatedDeviceIdForLogs() << ". "
                    << "Number of GATT error: "
                    << attempts_for_device.gatt_connection_attempts;
-      UMA_HISTOGRAM_BOOLEAN(
-          "InstantTethering.GattConnectionAttempt.SuccessRate", false);
-
       if (attempts_for_device.gatt_connection_attempts >=
           kMaxGattConnectionAttemptsPerDevice) {
         PA_LOG(INFO) << "Reached retry limit for GATT connection errors for "
                      << "device with ID "
                      << remote_device.GetTruncatedDeviceIdForLogs() << ". "
                      << "Unregistering device.";
-        UMA_HISTOGRAM_BOOLEAN(
-            "InstantTethering.GattConnectionAttempt."
-            "EffectiveSuccessRateWithRetries",
-            false);
         UnregisterDevice(remote_device);
       }
       break;
@@ -305,6 +286,11 @@ cryptauth::RemoteDevice* MessageTransferOperation::GetRemoteDevice(
   }
 
   return nullptr;
+}
+
+void MessageTransferOperation::SetTimerFactoryForTest(
+    std::unique_ptr<TimerFactory> timer_factory_for_test) {
+  timer_factory_ = std::move(timer_factory_for_test);
 }
 
 }  // namespace tether

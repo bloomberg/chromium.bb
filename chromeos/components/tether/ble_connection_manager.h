@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser.h"
@@ -90,6 +89,21 @@ class BleConnectionManager : public BleScanner::Observer {
     virtual void OnMessageSent(int sequence_number) = 0;
   };
 
+  // Observes events that are relevant to metrics reporting.
+  class MetricsObserver {
+   public:
+    virtual void OnConnectionAttemptStarted(const std::string& device_id) {}
+    virtual void OnAdvertisementReceived(const std::string& device_id,
+                                         bool is_background_advertisement) {}
+    virtual void OnConnection(const std::string& device_id,
+                              bool is_background_advertisement) {}
+    virtual void OnSecureChannelCreated(const std::string& device_id,
+                                        bool is_background_advertisement) {}
+    virtual void OnDeviceDisconnected(const std::string& device_id,
+                                      StateChangeDetail state_change_detail,
+                                      bool is_background_advertisement) {}
+  };
+
   BleConnectionManager(
       cryptauth::CryptAuthService* cryptauth_service,
       scoped_refptr<device::BluetoothAdapter> adapter,
@@ -129,6 +143,9 @@ class BleConnectionManager : public BleScanner::Observer {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  void AddMetricsObserver(MetricsObserver* observer);
+  void RemoveMetricsObserver(MetricsObserver* observer);
 
   // BleScanner::Observer:
   void OnReceivedAdvertisementFromDevice(
@@ -224,8 +241,8 @@ class BleConnectionManager : public BleScanner::Observer {
       StateChangeDetail state_change_detail);
   void OnGattCharacteristicsNotAvailable(const std::string& device_id);
 
-  void SetTestDoubles(base::Clock* test_clock,
-                      std::unique_ptr<TimerFactory> test_timer_factory);
+  void SetTestTimerFactoryForTesting(
+      std::unique_ptr<TimerFactory> test_timer_factory);
 
   // Record various operation durations. These need to be separate methods
   // because internally they use a macro which maintains a static state that
@@ -241,20 +258,16 @@ class BleConnectionManager : public BleScanner::Observer {
   AdHocBleAdvertiser* ad_hoc_ble_advertisement_;
 
   std::unique_ptr<TimerFactory> timer_factory_;
-  base::Clock* clock_;
 
   bool has_registered_observer_;
   std::map<std::string, std::unique_ptr<ConnectionMetadata>>
       device_id_to_metadata_map_;
 
-  std::map<std::string, base::Time> device_id_to_started_scan_time_map_;
-  // Records when an advertisement was received, and whether or not it was a
-  // background advertisement.
-  std::map<std::string, std::pair<base::Time, bool>>
-      device_id_to_received_advertisement_time_and_is_background_map_;
-  std::map<std::string, base::Time> device_id_to_status_connected_time_map_;
+  // Records if the advertisement from a device was a background advertisement.
+  std::map<std::string, bool> device_id_to_is_background_advertisement_map_;
 
   base::ObserverList<Observer> observer_list_;
+  base::ObserverList<MetricsObserver> metrics_observer_list_;
   base::WeakPtrFactory<BleConnectionManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BleConnectionManager);
