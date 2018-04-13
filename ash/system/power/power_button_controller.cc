@@ -176,6 +176,8 @@ void PowerButtonController::OnPowerButtonEvent(
   if (lock_button_down_)
     return;
 
+  // TODO(minch): move the LEGACY logic out as a separate function
+  // OnLegacyPowerButtonEvent.
   if (button_type_ == ButtonType::LEGACY) {
     // Avoid starting the lock/shutdown sequence if the power button is pressed
     // while the screen is off (http://crbug.com/128451), unless an external
@@ -248,6 +250,14 @@ void PowerButtonController::OnPowerButtonEvent(
     power_button_menu_timer_.Stop();
     pre_shutdown_timer_.Stop();
 
+    // Cancel the menu animation if it's still ongoing when the button is
+    // released on a clamshell device.
+    if (!ShouldTurnScreenOffForTap() && IsMenuOpened() &&
+        !show_menu_animation_done_) {
+      static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
+          ->ScheduleShowHideAnimation(false);
+    }
+
     // Ignore the event if it comes too soon after the last one.
     if (timestamp - previous_up_time <= kIgnoreRepeatedButtonUpDelay)
       return;
@@ -256,14 +266,6 @@ void PowerButtonController::OnPowerButtonEvent(
         force_off_on_button_up_) {
       display_controller_->SetBacklightsForcedOff(true);
       LockScreenIfRequired();
-    }
-
-    // Cancel the menu animation if it's still ongoing when the button is
-    // released on a clamshell device.
-    if (!ShouldTurnScreenOffForTap() && IsMenuOpened() &&
-        !show_menu_animation_done_) {
-      static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
-          ->ScheduleShowHideAnimation(false);
     }
   }
 }

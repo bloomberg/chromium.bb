@@ -32,6 +32,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -610,6 +611,28 @@ TEST_F(PowerButtonControllerTest, IgnoreRepeatedPowerButtonReleases) {
   ReleasePowerButton();
   SendBrightnessChange(0, kUserCause);
   EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+}
+
+// Tests that repeated power button releases of clamshell should cancel the
+// ongoing showing menu animation.
+TEST_F(PowerButtonControllerTest,
+       ClamshellRepeatedPowerButtonReleasesCancelledAnimation) {
+  InitPowerButtonControllerMembers(PowerManagerClient::TabletMode::UNSUPPORTED);
+
+  // Enable animations so that we can make sure that they occur.
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(200));
+  PressPowerButton();
+  ReleasePowerButton();
+  // Showing menu animation should be cancelled and menu is not shown.
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+  EXPECT_FALSE(power_button_test_api_->PreShutdownTimerIsRunning());
 }
 
 // Tests that lid closed/open events stop forcing off backlights.
