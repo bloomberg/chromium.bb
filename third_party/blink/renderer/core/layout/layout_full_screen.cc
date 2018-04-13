@@ -25,12 +25,11 @@
 
 #include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 
+#include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/page/page.h"
-
-#include "third_party/blink/public/platform/web_screen_info.h"
 
 namespace blink {
 
@@ -46,6 +45,8 @@ class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
   // Must call setStyleWithWritingModeOfParent() instead.
   void SetStyle(scoped_refptr<ComputedStyle>) = delete;
 
+  bool CreatesNewFormattingContext() const { return true; }
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectLayoutFullScreenPlaceholder ||
@@ -54,6 +55,7 @@ class LayoutFullScreenPlaceholder final : public LayoutBlockFlow {
   bool AnonymousHasStylePropagationOverride() override { return true; }
 
   void WillBeDestroyed() override;
+
   LayoutFullScreen* owner_;
 };
 
