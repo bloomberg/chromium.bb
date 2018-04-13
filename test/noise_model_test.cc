@@ -4,9 +4,63 @@
 
 #include "./aom_dsp/noise_model.h"
 #include "./aom_dsp/noise_util.h"
+#include "test/acm_random.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
-extern "C" double aom_randn(double sigma);
+namespace {
+
+// Return normally distrbuted values with standard deviation of sigma.
+double randn(libaom_test::ACMRandom *random, double sigma) {
+  while (1) {
+    const double u = 2.0 * ((double)random->Rand31() /
+                            testing::internal::Random::kMaxRange) -
+                     1.0;
+    const double v = 2.0 * ((double)random->Rand31() /
+                            testing::internal::Random::kMaxRange) -
+                     1.0;
+    const double s = u * u + v * v;
+    if (s > 0 && s < 1) {
+      return sigma * (u * sqrt(-2.0 * log(s) / s));
+    }
+  }
+  return 0;
+}
+
+// Synthesizes noise using the auto-regressive filter of the given lag,
+// with the provided n coefficients sampled at the given coords.
+void noise_synth(libaom_test::ACMRandom *random, int lag, int n,
+                 const int (*coords)[2], const double *coeffs, double *data,
+                 int w, int h) {
+  const int pad_size = 3 * lag;
+  const int padded_w = w + pad_size;
+  const int padded_h = h + pad_size;
+  int x = 0, y = 0;
+  std::vector<double> padded(padded_w * padded_h);
+
+  for (y = 0; y < padded_h; ++y) {
+    for (x = 0; x < padded_w; ++x) {
+      padded[y * padded_w + x] = randn(random, 1.0);
+    }
+  }
+  for (y = lag; y < padded_h; ++y) {
+    for (x = lag; x < padded_w; ++x) {
+      double sum = 0;
+      int i = 0;
+      for (i = 0; i < n; ++i) {
+        const int dx = coords[i][0];
+        const int dy = coords[i][1];
+        sum += padded[(y + dy) * padded_w + (x + dx)] * coeffs[i];
+      }
+      padded[y * padded_w + x] += sum;
+    }
+  }
+  // Copy over the padded rows to the output
+  for (y = 0; y < h; ++y) {
+    memcpy(data + y * w, &padded[0] + y * padded_w, sizeof(*data) * w);
+  }
+}
+
+}  // namespace
 
 TEST(NoiseStrengthSolver, GetCentersTwoBins) {
   aom_noise_strength_solver_t solver;
@@ -232,8 +286,10 @@ struct BitDepthParams {
 template <typename T>
 class FlatBlockEstimatorTest : public ::testing::Test, public T {
  public:
+  virtual void SetUp() { random_.Reset(1071); }
   typedef std::vector<typename T::data_type_t> VecType;
   VecType data_;
+  libaom_test::ACMRandom random_;
 };
 
 TYPED_TEST_CASE_P(FlatBlockEstimatorTest);
@@ -314,7 +370,7 @@ TYPED_TEST_P(FlatBlockEstimatorTest, FindFlatBlocks) {
 
       // Block 1 (not flat): too high of variance is hard to validate as flat
       this->data_[y * stride + x + 1 * kBlockSize] =
-          ((uint8_t)(128 + aom_randn(5))) << shift;
+          ((uint8_t)(128 + randn(&this->random_, 5))) << shift;
 
       // Block 2 (flat): slight checkerboard added to constant
       const int check = (x % 2 + y % 2) % 2 ? -2 : 2;
@@ -326,21 +382,21 @@ TYPED_TEST_P(FlatBlockEstimatorTest, FindFlatBlocks) {
 
       // Block 4 (flat): gaussian random with standard deviation 1.
       this->data_[y * stride + x + 4 * kBlockSize] =
-          ((uint8_t)(aom_randn(1) + x + 128.0)) << shift;
+          ((uint8_t)(randn(&this->random_, 1) + x + 128.0)) << shift;
 
       // Block 5 (flat): gaussian random with standard deviation 2.
       this->data_[y * stride + x + 5 * kBlockSize] =
-          ((uint8_t)(aom_randn(2) + y + 128.0)) << shift;
+          ((uint8_t)(randn(&this->random_, 2) + y + 128.0)) << shift;
 
       // Block 6 (not flat): too high of directional gradient.
       const int strong_edge = x > kBlockSize / 2 ? 64 : 0;
       this->data_[y * stride + x + 6 * kBlockSize] =
-          ((uint8_t)(aom_randn(1) + strong_edge + 128.0)) << shift;
+          ((uint8_t)(randn(&this->random_, 1) + strong_edge + 128.0)) << shift;
 
       // Block 7 (not flat): too high gradient.
       const int big_check = ((x >> 2) % 2 + (y >> 2) % 2) % 2 ? -16 : 16;
       this->data_[y * stride + x + 7 * kBlockSize] =
-          ((uint8_t)(aom_randn(1) + big_check + 128.0)) << shift;
+          ((uint8_t)(randn(&this->random_, 1) + big_check + 128.0)) << shift;
     }
   }
 
@@ -385,10 +441,12 @@ class NoiseModelUpdateTest : public ::testing::Test, public T {
   static const int kNumBlocksX = kWidth / kBlockSize;
   static const int kNumBlocksY = kHeight / kBlockSize;
 
-  void SetUp() {
+  virtual void SetUp() {
     const aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 3,
                                               T::kBitDepth, T::kUseHighBD };
     ASSERT_TRUE(aom_noise_model_init(&model_, params));
+
+    random_.Reset(1071);
 
     data_.resize(kWidth * kHeight * 3);
     denoised_.resize(kWidth * kHeight * 3);
@@ -432,6 +490,7 @@ class NoiseModelUpdateTest : public ::testing::Test, public T {
   double *noise_ptr_[3];
   int strides_[3];
   int chroma_sub_[2];
+  libaom_test::ACMRandom random_;
 
  private:
   uint8_t *data_ptr_raw_[3];
@@ -468,7 +527,8 @@ TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForWhiteRandomNoise) {
   const int shift = this->kBitDepth - 8;
   for (int y = 0; y < kHeight; ++y) {
     for (int x = 0; x < kWidth; ++x) {
-      this->data_ptr_[0][y * kWidth + x] = int(64 + y + aom_randn(1)) << shift;
+      this->data_ptr_[0][y * kWidth + x] =
+          int(64 + y + randn(&this->random_, 1)) << shift;
       this->denoised_ptr_[0][y * kWidth + x] = (64 + y) << shift;
       // Make the chroma planes completely correlated with the Y plane
       for (int c = 1; c < 3; ++c) {
@@ -541,7 +601,8 @@ TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForScaledWhiteNoise) {
         const int avg = (y < kHeight / 2) ? 4 : 245;
         const double std = (y < kHeight / 2) ? kLowStd : kHighStd;
         this->data_ptr_[c][y * kWidth + x] =
-            ((uint8_t)std::min((int)255, (int)(2 + avg + aom_randn(std))))
+            ((uint8_t)std::min((int)255,
+                               (int)(2 + avg + randn(&this->random_, std))))
             << shift;
         this->denoised_ptr_[c][y * kWidth + x] = (2 + avg) << shift;
       }
@@ -631,8 +692,8 @@ TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
   // Add different noise onto each plane
   const int shift = this->kBitDepth - 8;
   for (int c = 0; c < 3; ++c) {
-    aom_noise_synth(model.params.lag, model.n, model.coords, kCoeffs[c],
-                    this->noise_ptr_[c], kWidth, kHeight);
+    noise_synth(&this->random_, model.params.lag, model.n, model.coords,
+                kCoeffs[c], this->noise_ptr_[c], kWidth, kHeight);
     const int x_shift = c > 0 ? this->chroma_sub_[0] : 0;
     const int y_shift = c > 0 ? this->chroma_sub_[1] : 0;
     for (int y = 0; y < (kHeight >> y_shift); ++y) {
@@ -664,9 +725,9 @@ TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
     EXPECT_LT(0.98, aom_normalized_cross_correlation(
                         model.latest_state[c].eqns.x, kCoeffs[c], kNumCoeffs));
 
-    aom_noise_synth(model.params.lag, model.n, model.coords,
-                    model.latest_state[c].eqns.x, &this->renoise_[0], kWidth,
-                    kHeight);
+    noise_synth(&this->random_, model.params.lag, model.n, model.coords,
+                model.latest_state[c].eqns.x, &this->renoise_[0], kWidth,
+                kHeight);
 
     EXPECT_TRUE(aom_noise_data_validate(&this->renoise_[0], kWidth, kHeight));
   }
@@ -695,7 +756,7 @@ TYPED_TEST_P(NoiseModelUpdateTest,
   for (int i = 0; i < kWidth * kHeight; ++i) {
     const uint8_t val = (i % kWidth) < kWidth / 2 ? 64 : 192;
     for (int c = 0; c < 3; ++c) {
-      this->noise_ptr_[c][i] = aom_randn(1);
+      this->noise_ptr_[c][i] = randn(&this->random_, 1);
       this->data_ptr_[c][i] = ((uint8_t)(this->noise_ptr_[c][i] * kStd + val))
                               << shift;
       this->denoised_ptr_[c][i] = val << shift;
@@ -735,7 +796,8 @@ TYPED_TEST_P(NoiseModelUpdateTest,
   for (int i = 0; i < kWidth * kHeight; ++i) {
     const uint8_t val = (i % kWidth) < kWidth / 2 ? 64 : 128;
     if (i % kWidth < kWidth / 2) {
-      this->data_ptr_[0][i] = ((uint8_t)(aom_randn(kStd + 0.5) + val)) << shift;
+      this->data_ptr_[0][i] =
+          ((uint8_t)(randn(&this->random_, kStd + 0.5) + val)) << shift;
     }
   }
   EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE, this->NoiseModelUpdate());
@@ -772,8 +834,8 @@ TYPED_TEST_P(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
       0.00595, -0.11938, 0.02106,  0.095956, -0.350139, 0.59305 }
   };
 
-  aom_noise_synth(model.params.lag, model.n, model.coords, kCoeffs[0],
-                  this->noise_ptr_[0], kWidth, kHeight);
+  noise_synth(&this->random_, model.params.lag, model.n, model.coords,
+              kCoeffs[0], this->noise_ptr_[0], kWidth, kHeight);
   for (int i = 0; i < kWidth * kHeight; ++i) {
     this->data_ptr_[0][i] = (uint8_t)(128 + this->noise_ptr_[0][i]);
   }
@@ -781,8 +843,8 @@ TYPED_TEST_P(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
   EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
 
   // Now try with the second set of AR coefficients
-  aom_noise_synth(model.params.lag, model.n, model.coords, kCoeffs[1],
-                  this->noise_ptr_[0], kWidth, kHeight);
+  noise_synth(&this->random_, model.params.lag, model.n, model.coords,
+              kCoeffs[1], this->noise_ptr_[0], kWidth, kHeight);
   for (int i = 0; i < kWidth * kHeight; ++i) {
     this->data_ptr_[0][i] = (uint8_t)(128 + this->noise_ptr_[0][i]);
   }

@@ -17,19 +17,6 @@
 #include "aom_dsp/noise_util.h"
 #include "aom_mem/aom_mem.h"
 
-// Return normally distrbuted values with standard deviation of sigma.
-double aom_randn(double sigma) {
-  while (1) {
-    const double u = 2.0 * ((double)rand()) / RAND_MAX - 1.0;
-    const double v = 2.0 * ((double)rand()) / RAND_MAX - 1.0;
-    const double s = u * u + v * v;
-    if (s > 0 && s < 1) {
-      return sigma * (u * sqrt(-2.0 * log(s) / s));
-    }
-  }
-  return 0;
-}
-
 double aom_normalized_cross_correlation(const double *a, const double *b,
                                         int n) {
   double c = 0;
@@ -41,38 +28,6 @@ double aom_normalized_cross_correlation(const double *a, const double *b,
     c += a[i] * b[i];
   }
   return c / (sqrt(a_len) * sqrt(b_len));
-}
-
-void aom_noise_synth(int lag, int n, const int (*coords)[2],
-                     const double *coeffs, double *data, int w, int h) {
-  const int pad_size = 3 * lag;
-  const int padded_w = w + pad_size;
-  const int padded_h = h + pad_size;
-  int x = 0, y = 0;
-  double *padded = (double *)aom_malloc(padded_w * padded_h * sizeof(*padded));
-
-  for (y = 0; y < padded_h; ++y) {
-    for (x = 0; x < padded_w; ++x) {
-      padded[y * padded_w + x] = aom_randn(1.0);
-    }
-  }
-  for (y = lag; y < padded_h; ++y) {
-    for (x = lag; x < padded_w; ++x) {
-      double sum = 0;
-      int i = 0;
-      for (i = 0; i < n; ++i) {
-        const int dx = coords[i][0];
-        const int dy = coords[i][1];
-        sum += padded[(y + dy) * padded_w + (x + dx)] * coeffs[i];
-      }
-      padded[y * padded_w + x] += sum;
-    }
-  }
-  // Copy over the padded rows to the output
-  for (y = 0; y < h; ++y) {
-    memcpy(data + y * w, padded + y * padded_w, sizeof(*data) * w);
-  }
-  aom_free(padded);
 }
 
 int aom_noise_data_validate(const double *data, int w, int h) {

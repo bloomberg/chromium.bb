@@ -20,11 +20,6 @@ extern "C" {
 double aom_normalized_cross_correlation(const double *a, const double *b,
                                         int n);
 
-// Synthesizes noise using the auto-regressive filter of the given lag,
-// with the provided n coefficients sampled at the given coords.
-void aom_noise_synth(int lag, int n, const int (*coords)[2],
-                     const double *coeffs, double *data, int w, int h);
-
 // Validates the correlated noise in the data buffer of size (w, h).
 int aom_noise_data_validate(const double *data, int w, int h);
 
