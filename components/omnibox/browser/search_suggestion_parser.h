@@ -295,8 +295,8 @@ class SearchSuggestionParser {
     // If the relevance values of the results are from the server.
     bool relevances_from_server;
 
-    // URLs of any images in Answers results.
-    SuggestionAnswer::URLs answers_image_urls;
+    // URLs of any images in results that should be prefetched into the cache.
+    SuggestionAnswer::URLs prefetch_image_urls;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);

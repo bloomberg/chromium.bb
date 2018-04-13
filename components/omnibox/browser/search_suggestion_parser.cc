@@ -480,7 +480,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   // Clear the previous results now that new results are available.
   results->suggest_results.clear();
   results->navigation_results.clear();
-  results->answers_image_urls.clear();
+  results->prefetch_image_urls.clear();
 
   base::string16 suggestion;
   std::string type;
@@ -574,7 +574,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
               answer_parsed_successfully = true;
 
               answer->set_type(answer_type);
-              answer->AddImageURLsTo(&results->answers_image_urls);
+              answer->AddImageURLsTo(&results->prefetch_image_urls);
 
               std::string contents;
               base::JSONWriter::Write(*answer_json, &contents);
