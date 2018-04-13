@@ -42,6 +42,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/features.h"
 #include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "components/certificate_transparency/tree_state_tracker.h"
@@ -551,15 +552,17 @@ void IOThread::Init() {
 
   UpdateDnsClientEnabled();
 
-  ct_tree_tracker_ =
-      std::make_unique<certificate_transparency::TreeStateTracker>(
-          globals_->ct_logs, globals_->system_request_context->host_resolver(),
-          net_log_);
-  // Register the ct_tree_tracker_ as observer for new STHs.
-  RegisterSTHObserver(ct_tree_tracker_.get());
-  // Register the ct_tree_tracker_ as observer for verified SCTs.
-  globals_->system_request_context->cert_transparency_verifier()->SetObserver(
-      ct_tree_tracker_.get());
+  if (base::FeatureList::IsEnabled(certificate_transparency::kCTLogAuditing)) {
+    ct_tree_tracker_ =
+        std::make_unique<certificate_transparency::TreeStateTracker>(
+            globals_->ct_logs,
+            globals_->system_request_context->host_resolver(), net_log_);
+    // Register the ct_tree_tracker_ as observer for new STHs.
+    RegisterSTHObserver(ct_tree_tracker_.get());
+    // Register the ct_tree_tracker_ as observer for verified SCTs.
+    globals_->system_request_context->cert_transparency_verifier()->SetObserver(
+        ct_tree_tracker_.get());
+  }
 }
 
 void IOThread::CleanUp() {
@@ -567,13 +570,16 @@ void IOThread::CleanUp() {
 
   system_url_request_context_getter_ = nullptr;
 
-  // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
-  // and unregister it from new STH notifications so it will take no actions
-  // on anything observed during CleanUp process.
-  globals()->system_request_context->cert_transparency_verifier()->SetObserver(
-      nullptr);
-  UnregisterSTHObserver(ct_tree_tracker_.get());
-  ct_tree_tracker_.reset();
+  if (ct_tree_tracker_) {
+    // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
+    // and unregister it from new STH notifications so it will take no actions
+    // on anything observed during CleanUp process.
+    globals()
+        ->system_request_context->cert_transparency_verifier()
+        ->SetObserver(nullptr);
+    UnregisterSTHObserver(ct_tree_tracker_.get());
+    ct_tree_tracker_.reset();
+  }
 
   globals_->system_request_context->proxy_resolution_service()->OnShutdown();
 
