@@ -254,6 +254,21 @@ TEST_F(RuntimeHooksDelegateTest, SendMessage) {
                          R"("string message")", other_target, false,
                          SendMessageTester::CLOSED);
 
+  // The sender could omit the ID by passing null or undefined explicitly.
+  // Regression tests for https://crbug.com/828664.
+  tester.TestSendMessage("null, {data: 'hello'}, function() {}",
+                         kStandardMessage, self_target, false,
+                         SendMessageTester::OPEN);
+  tester.TestSendMessage("null, 'test', function() {}",
+                         R"("test")", self_target, false,
+                         SendMessageTester::OPEN);
+  tester.TestSendMessage("null, 'test'",
+                         R"("test")", self_target, false,
+                         SendMessageTester::CLOSED);
+  tester.TestSendMessage("undefined, 'test', function() {}",
+                         R"("test")", self_target, false,
+                         SendMessageTester::OPEN);
+
   // Funny case. The only required argument is `message`, which can be any type.
   // This means that if an extension provides a <string, object> pair for the
   // first three arguments, it could apply to either the target id and the
