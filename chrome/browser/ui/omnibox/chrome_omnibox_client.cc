@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -269,62 +271,62 @@ void ChromeOmniboxClient::OnResultChanged(
     const AutocompleteResult& result,
     bool default_match_changed,
     const BitmapFetchedCallback& on_bitmap_fetched) {
+  BitmapFetcherService* image_service =
+      BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
+  if (!image_service) {
+    return;
+  }
+  image_service->CancelRequest(request_id_);
   const auto match = std::find_if(
       result.begin(), result.end(),
       [](const AutocompleteMatch& current) { return !!current.answer; });
   if (match != result.end()) {
-    BitmapFetcherService* image_service =
-        BitmapFetcherServiceFactory::GetForBrowserContext(profile_);
-    if (image_service) {
-      image_service->CancelRequest(request_id_);
-
-      // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
-      // create annotation and pass it to image_service, merging this annotation
-      // and the one in
-      // chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
-      net::NetworkTrafficAnnotationTag traffic_annotation =
-          net::DefineNetworkTrafficAnnotation("omnibox_result_change", R"(
-            semantics {
-              sender: "Omnibox"
-              description:
-                "Chromium provides answers in the suggestion list for "
-                "certain queries that user types in the omnibox. This request "
-                "retrieves a small image (for example, an icon illustrating "
-                "the current weather conditions) when this can add information "
-                "to an answer."
-              trigger:
-                "Change of results for the query typed by the user in the "
-                "omnibox."
-              data:
-                "The only data sent is the path to an image. No user data is "
-                "included, although some might be inferrable (e.g. whether the "
-                "weather is sunny or rainy in the user's current location) "
-                "from the name of the image in the path."
-              destination: WEBSITE
-            }
-            policy {
-              cookies_allowed: YES
-              cookies_store: "user"
-              setting:
-                "You can enable or disable this feature via 'Use a prediction "
-                "service to help complete searches and URLs typed in the "
-                "address bar.' in Chromium's settings under Advanced. The "
-                "feature is enabled by default."
-              chrome_policy {
-                SearchSuggestEnabled {
-                    policy_options {mode: MANDATORY}
-                    SearchSuggestEnabled: false
-                }
+    // TODO(jdonnelly, rhalavati): Create a helper function with Callback to
+    // create annotation and pass it to image_service, merging this annotation
+    // and the one in
+    // chrome/browser/autocomplete/chrome_autocomplete_provider_client.cc
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("omnibox_result_change", R"(
+          semantics {
+            sender: "Omnibox"
+            description:
+              "Chromium provides answers in the suggestion list for "
+              "certain queries that user types in the omnibox. This request "
+              "retrieves a small image (for example, an icon illustrating "
+              "the current weather conditions) when this can add information "
+              "to an answer."
+            trigger:
+              "Change of results for the query typed by the user in the "
+              "omnibox."
+            data:
+              "The only data sent is the path to an image. No user data is "
+              "included, although some might be inferrable (e.g. whether the "
+              "weather is sunny or rainy in the user's current location) "
+              "from the name of the image in the path."
+            destination: WEBSITE
+          }
+          policy {
+            cookies_allowed: YES
+            cookies_store: "user"
+            setting:
+              "You can enable or disable this feature via 'Use a prediction "
+              "service to help complete searches and URLs typed in the "
+              "address bar.' in Chromium's settings under Advanced. The "
+              "feature is enabled by default."
+            chrome_policy {
+              SearchSuggestEnabled {
+                  policy_options {mode: MANDATORY}
+                  SearchSuggestEnabled: false
               }
-            })");
+            }
+          })");
 
-      request_id_ = image_service->RequestImage(
-          match->answer->second_line().image_url(),
-          new AnswerImageObserver(
-              base::Bind(&ChromeOmniboxClient::OnBitmapFetched,
-                         base::Unretained(this), on_bitmap_fetched)),
-          traffic_annotation);
-    }
+    request_id_ = image_service->RequestImage(
+        match->answer->second_line().image_url(),
+        new AnswerImageObserver(
+            base::BindRepeating(&ChromeOmniboxClient::OnBitmapFetched,
+                                base::Unretained(this), on_bitmap_fetched)),
+        traffic_annotation);
   }
 }
 
@@ -414,7 +416,7 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(NULL, BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
+  RecordBookmarkLaunch(nullptr, BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
 }
 
 void ChromeOmniboxClient::DiscardNonCommittedNavigations() {
