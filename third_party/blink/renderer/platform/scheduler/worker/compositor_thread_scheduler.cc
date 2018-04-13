@@ -20,9 +20,9 @@ namespace scheduler {
 CompositorThreadScheduler::CompositorThreadScheduler(
     base::Thread* thread,
     std::unique_ptr<TaskQueueManager> task_queue_manager)
-    : NonMainThreadScheduler(
-          std::make_unique<WorkerSchedulerHelper>(std::move(task_queue_manager),
-                                                  this)),
+    : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
+          std::move(task_queue_manager),
+          this)),
       thread_(thread) {}
 
 CompositorThreadScheduler::~CompositorThreadScheduler() = default;

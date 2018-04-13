@@ -15,8 +15,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -49,9 +49,9 @@ WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
     std::unique_ptr<TaskQueueManager> task_queue_manager,
     WorkerSchedulerProxy* proxy)
-    : NonMainThreadScheduler(
-          std::make_unique<WorkerSchedulerHelper>(std::move(task_queue_manager),
-                                                  this)),
+    : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
+          std::move(task_queue_manager),
+          this)),
       idle_helper_(helper_.get(),
                    this,
                    "WorkerSchedulerIdlePeriod",

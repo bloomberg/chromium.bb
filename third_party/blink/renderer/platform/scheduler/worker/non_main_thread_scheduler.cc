@@ -13,7 +13,7 @@ namespace blink {
 namespace scheduler {
 
 NonMainThreadScheduler::NonMainThreadScheduler(
-    std::unique_ptr<WorkerSchedulerHelper> helper)
+    std::unique_ptr<NonMainThreadSchedulerHelper> helper)
     : helper_(std::move(helper)) {}
 
 NonMainThreadScheduler::~NonMainThreadScheduler() = default;

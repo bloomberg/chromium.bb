@@ -19,8 +19,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -202,7 +202,7 @@ class BaseIdleHelperTest : public testing::Test {
             message_loop ? message_loop->task_runner() : mock_task_runner_,
             &clock_);
     task_queue_manager_ = task_queue_manager.get();
-    scheduler_helper_ = std::make_unique<WorkerSchedulerHelper>(
+    scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
         std::move(task_queue_manager), nullptr);
     idle_helper_ = std::make_unique<IdleHelperForTest>(
         scheduler_helper_.get(),
@@ -306,7 +306,7 @@ class BaseIdleHelperTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<base::MessageLoop> message_loop_;
 
-  std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
+  std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
   TaskQueueManager* task_queue_manager_;  // Owned by scheduler_helper_.
   std::unique_ptr<IdleHelperForTest> idle_helper_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;

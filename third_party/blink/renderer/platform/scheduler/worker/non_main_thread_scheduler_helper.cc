@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
 
 namespace blink {
 namespace scheduler {
 
-WorkerSchedulerHelper::WorkerSchedulerHelper(
+NonMainThreadSchedulerHelper::NonMainThreadSchedulerHelper(
     std::unique_ptr<TaskQueueManager> task_queue_manager,
     NonMainThreadScheduler* non_main_thread_scheduler)
     : SchedulerHelper(std::move(task_queue_manager)),
@@ -21,28 +21,30 @@ WorkerSchedulerHelper::WorkerSchedulerHelper(
   InitDefaultQueues(default_task_queue_, control_task_queue_);
 }
 
-WorkerSchedulerHelper::~WorkerSchedulerHelper() {
+NonMainThreadSchedulerHelper::~NonMainThreadSchedulerHelper() {
   control_task_queue_->ShutdownTaskQueue();
   default_task_queue_->ShutdownTaskQueue();
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerSchedulerHelper::DefaultWorkerTaskQueue() {
+scoped_refptr<WorkerTaskQueue>
+NonMainThreadSchedulerHelper::DefaultWorkerTaskQueue() {
   return default_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WorkerSchedulerHelper::DefaultTaskQueue() {
+scoped_refptr<TaskQueue> NonMainThreadSchedulerHelper::DefaultTaskQueue() {
   return default_task_queue_;
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerSchedulerHelper::ControlWorkerTaskQueue() {
+scoped_refptr<WorkerTaskQueue>
+NonMainThreadSchedulerHelper::ControlWorkerTaskQueue() {
   return control_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WorkerSchedulerHelper::ControlTaskQueue() {
+scoped_refptr<TaskQueue> NonMainThreadSchedulerHelper::ControlTaskQueue() {
   return control_task_queue_;
 }
 
-scoped_refptr<WorkerTaskQueue> WorkerSchedulerHelper::NewTaskQueue(
+scoped_refptr<WorkerTaskQueue> NonMainThreadSchedulerHelper::NewTaskQueue(
     const TaskQueue::Spec& spec) {
   return task_queue_manager_->CreateTaskQueue<WorkerTaskQueue>(
       spec, non_main_thread_scheduler_);

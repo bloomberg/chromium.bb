@@ -11,9 +11,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test_task_time_observer.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/test/test_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -31,7 +31,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
 
-    scheduler_helper_.reset(new WorkerSchedulerHelper(
+    scheduler_helper_.reset(new NonMainThreadSchedulerHelper(
         TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
         nullptr));
 
@@ -55,7 +55,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
   base::TimeTicks initial_time_ticks_;
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
+  std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
   scoped_refptr<TaskQueue> task_queue_;
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> auto_advancing_time_domain_;
   TestTaskTimeObserver test_task_time_observer_;
