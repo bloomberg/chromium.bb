@@ -408,6 +408,7 @@ const FormatUrlType kFormatUrlOmitTrailingSlashOnBareHostname = 1 << 2;
 const FormatUrlType kFormatUrlOmitHTTPS = 1 << 3;
 const FormatUrlType kFormatUrlExperimentalElideAfterHost = 1 << 4;
 const FormatUrlType kFormatUrlOmitTrivialSubdomains = 1 << 5;
+const FormatUrlType kFormatUrlTrimAfterHost = 1 << 6;
 
 const FormatUrlType kFormatUrlOmitDefaults =
     kFormatUrlOmitUsernamePassword | kFormatUrlOmitHTTP |
@@ -484,7 +485,8 @@ base::string16 FormatUrlWithAdjustments(
   new_parsed->scheme = parsed.scheme;
 
   // Username & password.
-  if ((format_types & kFormatUrlOmitUsernamePassword) != 0) {
+  if (((format_types & kFormatUrlOmitUsernamePassword) != 0) ||
+      ((format_types & kFormatUrlTrimAfterHost) != 0)) {
     // Remove the username and password fields. We don't want to display those
     // to the user since they can be used for attacks,
     // e.g. "http://google.com:search@evil.ru/"
@@ -543,37 +545,44 @@ base::string16 FormatUrlWithAdjustments(
   }
 
   // Path & query.  Both get the same general unescape & convert treatment.
-  if ((format_types & kFormatUrlOmitTrailingSlashOnBareHostname) &&
-      CanStripTrailingSlash(url)) {
+  if ((format_types & kFormatUrlTrimAfterHost) ||
+      ((format_types & kFormatUrlExperimentalElideAfterHost) &&
+       url.IsStandard() && !url.SchemeIsFile() && !url.SchemeIsFileSystem())) {
+    // Only elide when the eliding is required and when the host is followed by
+    // more than just one forward slash.
+    bool should_elide = (format_types & kFormatUrlExperimentalElideAfterHost) &&
+                        ((parsed.path.len > 1) || parsed.query.is_valid() ||
+                         parsed.ref.is_valid());
+
+    // Either remove the path completely, or, if eliding, keep the first slash.
+    const size_t new_path_len = should_elide ? 1 : 0;
+
+    size_t trimmed_length = parsed.path.len - new_path_len;
+    // Remove query and the '?' delimeter.
+    if (parsed.query.is_valid())
+      trimmed_length += parsed.query.len + 1;
+
+    // Remove ref and the '#" delimiter.
+    if (parsed.ref.is_valid())
+      trimmed_length += parsed.ref.len + 1;
+
+    if (should_elide) {
+      // Replace everything after the host with a forward slash and ellipsis.
+      url_string.push_back('/');
+      constexpr base::char16 kEllipsisUTF16[] = {0x2026, 0};
+      url_string.append(kEllipsisUTF16);
+    }
+
+    adjustments->push_back(base::OffsetAdjuster::Adjustment(
+        parsed.path.begin + new_path_len, trimmed_length, new_path_len));
+
+  } else if ((format_types & kFormatUrlOmitTrailingSlashOnBareHostname) &&
+             CanStripTrailingSlash(url)) {
     // Omit the path, which is a single trailing slash. There's no query or ref.
     if (parsed.path.len > 0) {
       adjustments->push_back(base::OffsetAdjuster::Adjustment(
           parsed.path.begin, parsed.path.len, 0));
     }
-  } else if ((format_types & kFormatUrlExperimentalElideAfterHost) &&
-             url.IsStandard() && !url.SchemeIsFile() &&
-             !url.SchemeIsFileSystem()) {
-    // Replace everything after the host with a forward slash and ellipsis.
-    url_string.push_back('/');
-    constexpr base::char16 kEllipsisUTF16[] = {0x2026, 0};
-    url_string.append(kEllipsisUTF16);
-
-    // Compute the length of everything we're replacing. For the path, we are
-    // removing everything but the first slash.
-    size_t old_length = parsed.path.len - 1;
-
-    // We're also removing any query, plus the delimiting '?'.
-    if (parsed.query.is_valid())
-      old_length += parsed.query.len + 1;
-
-    // We're also removing any ref, plus the delimiting '#'.
-    if (parsed.ref.is_valid())
-      old_length += parsed.ref.len + 1;
-
-    // We're replacing all of these with a single character (an ellipsis). The
-    // adjustment begins after the forward slash at the beginning of the path.
-    adjustments->push_back(
-        base::OffsetAdjuster::Adjustment(parsed.path.begin + 1, old_length, 1));
   } else {
     // Append the formatted path, query, and ref.
     AppendFormattedComponent(spec, parsed.path,
