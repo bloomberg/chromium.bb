@@ -55,8 +55,8 @@ class MessagePumpLibeventTest : public testing::Test {
     ASSERT_TRUE(io_thread_.WaitUntilThreadStarted());
   }
 
-  MessageLoopForIO* io_loop() const {
-    return static_cast<MessageLoopForIO*>(io_thread_.message_loop());
+  scoped_refptr<SingleThreadTaskRunner> io_runner() const {
+    return io_thread_.task_runner();
   }
 
   void OnLibeventNotification(
@@ -84,20 +84,6 @@ class StupidWatcher : public MessagePumpLibevent::FdWatcher {
   void OnFileCanReadWithoutBlocking(int fd) override {}
   void OnFileCanWriteWithoutBlocking(int fd) override {}
 };
-
-// Test to make sure that we catch calling WatchFileDescriptor off of the
-// wrong thread.
-TEST_F(MessagePumpLibeventTest, TestWatchingFromBadThread) {
-  MessagePumpLibevent::FdWatchController watcher(FROM_HERE);
-  StupidWatcher delegate;
-
-  // Ensure that |io_thread_| has started, otherwise we're racing against
-  // creation of the thread's MessagePump.
-  WaitUntilIoThreadStarted();
-
-  ASSERT_DCHECK_DEATH(io_loop()->WatchFileDescriptor(
-      STDOUT_FILENO, false, MessagePumpForIO::WATCH_READ, &watcher, &delegate));
-}
 
 TEST_F(MessagePumpLibeventTest, QuitOutsideOfRun) {
   std::unique_ptr<MessagePumpLibevent> pump(new MessagePumpLibevent);
@@ -255,10 +241,10 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
   const char buf = 0;
   WaitableEventWatcher::EventCallback write_fd_task =
       BindOnce(&WriteFDWrapper, pipefds_[1], &buf, 1);
-  io_loop()->task_runner()->PostTask(
+  io_runner()->PostTask(
       FROM_HERE, BindOnce(IgnoreResult(&WaitableEventWatcher::StartWatching),
                           Unretained(watcher.get()), &event,
-                          std::move(write_fd_task), io_loop()->task_runner()));
+                          std::move(write_fd_task), io_runner()));
 
   // Queue |event| to signal on |loop|.
   loop.task_runner()->PostTask(
@@ -268,9 +254,8 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
   run_loop.Run();
 
   // StartWatching can move |watcher| to IO thread. Release on IO thread.
-  io_loop()->task_runner()->PostTask(
-      FROM_HERE,
-      BindOnce(&WaitableEventWatcher::StopWatching, Owned(watcher.release())));
+  io_runner()->PostTask(FROM_HERE, BindOnce(&WaitableEventWatcher::StopWatching,
+                                            Owned(watcher.release())));
 }
 
 }  // namespace

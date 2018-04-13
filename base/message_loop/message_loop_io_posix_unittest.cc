@@ -134,9 +134,9 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherOutlivesMessageLoop) {
   {
     MessageLoopForIO message_loop;
 
-    message_loop.WatchFileDescriptor(write_fd_.get(), true,
-                                     MessagePumpForIO::WATCH_WRITE, &watcher,
-                                     &handler);
+    MessageLoopForIO::current()->WatchFileDescriptor(
+        write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE, &watcher,
+        &handler);
     // Don't run the message loop, just destroy it.
   }
 
@@ -153,9 +153,9 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDoubleStop) {
     MessagePumpForIO::FdWatchController watcher(FROM_HERE);
 
     TestHandler handler;
-    message_loop.WatchFileDescriptor(write_fd_.get(), true,
-                                     MessagePumpForIO::WATCH_WRITE, &watcher,
-                                     &handler);
+    MessageLoopForIO::current()->WatchFileDescriptor(
+        write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE, &watcher,
+        &handler);
     ASSERT_TRUE(watcher.StopWatchingFileDescriptor());
     ASSERT_TRUE(watcher.StopWatchingFileDescriptor());
   }
@@ -170,9 +170,9 @@ TEST_F(MessageLoopForIoPosixTest, FileDescriptorWatcherDeleteInCallback) {
   handler.watcher_to_delete_ =
       std::make_unique<MessagePumpForIO::FdWatchController>(FROM_HERE);
 
-  message_loop.WatchFileDescriptor(write_fd_.get(), true,
-                                   MessagePumpForIO::WATCH_WRITE,
-                                   handler.watcher_to_delete_.get(), &handler);
+  MessageLoopForIO::current()->WatchFileDescriptor(
+      write_fd_.get(), true, MessagePumpForIO::WATCH_WRITE,
+      handler.watcher_to_delete_.get(), &handler);
   RunLoop().Run();
 }
 
