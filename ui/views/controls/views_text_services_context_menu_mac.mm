@@ -10,9 +10,11 @@
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/decorated_text.h"
 #import "ui/gfx/decorated_text_mac.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/view.h"
@@ -42,8 +44,11 @@ class ViewsTextServicesContextMenuMac
       menu->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     }
     if (base::FeatureList::IsEnabled(features::kEnableEmojiContextMenu)) {
-      menu->InsertItemWithStringIdAt(index++, IDS_CONTENT_CONTEXT_EMOJI,
+      menu->InsertItemWithStringIdAt(index, IDS_CONTENT_CONTEXT_EMOJI,
                                      IDS_CONTENT_CONTEXT_EMOJI);
+      menu->SetIcon(index++,
+                    ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+                        IDR_EMOJI_FAVICON));
       menu->InsertSeparatorAt(index++, ui::NORMAL_SEPARATOR);
     }
     text_services_menu_.AppendToContextMenu(menu);
