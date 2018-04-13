@@ -117,10 +117,7 @@ void MachineLevelUserCloudPolicyFetcher::OnInitializationCompleted(
   // Note that Chrome will not fetch policy again immediately here if DM server
   // returns a policy that Chrome is not able to validate.
   if (!policy_manager_->IsClientRegistered()) {
-    std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
-    std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
-    if (!dm_token.empty() && !client_id.empty())
-      SetupRegistrationAndFetchPolicy(dm_token, client_id);
+    TryToFetchPolicy();
   }
 }
 
@@ -129,6 +126,21 @@ void MachineLevelUserCloudPolicyFetcher::InitializeManager(
   policy_manager_->Connect(local_state_, system_request_context_,
                            std::move(client));
   policy_manager_->core()->service()->AddObserver(this);
+
+  // If CloudPolicyStore is already initialized then |OnInitializationCompleted|
+  // has already fired. Fetch policy if CloudPolicyClient hasn't been registered
+  // which means there is no valid policy cache.
+  if (policy_manager_->store()->is_initialized() &&
+      !policy_manager_->IsClientRegistered()) {
+    TryToFetchPolicy();
+  }
+}
+
+void MachineLevelUserCloudPolicyFetcher::TryToFetchPolicy() {
+  std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
+  if (!dm_token.empty() && !client_id.empty())
+    SetupRegistrationAndFetchPolicy(dm_token, client_id);
 }
 
 }  // namespace policy

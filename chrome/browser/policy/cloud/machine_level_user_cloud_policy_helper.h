@@ -77,6 +77,8 @@ class MachineLevelUserCloudPolicyFetcher : public CloudPolicyService::Observer {
 
  private:
   void InitializeManager(std::unique_ptr<CloudPolicyClient> client);
+  // Fetch policy if device is enrolled.
+  void TryToFetchPolicy();
 
   MachineLevelUserCloudPolicyManager* policy_manager_;
   PrefService* local_state_;
