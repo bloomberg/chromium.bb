@@ -66,9 +66,9 @@ cr.define('cr.search_highlight_utils', function() {
 
     for (let i = 0; i < wrappers.length; i++) {
       const wrapper = wrappers[i];
-      const originalNode =
-          wrapper.querySelector(`.${ORIGINAL_CONTENT_CSS_CLASS}`);
-      wrapper.parentElement.replaceChild(originalNode.firstChild, wrapper);
+      const textNode =
+          wrapper.querySelector(`.${ORIGINAL_CONTENT_CSS_CLASS}`).firstChild;
+      wrapper.parentElement.replaceChild(textNode, wrapper);
     }
   }
 

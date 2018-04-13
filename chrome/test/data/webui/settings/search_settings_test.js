@@ -151,5 +151,36 @@ cr.define('settings_test', function() {
             assertTrue(sections[2].hiddenBySearch);
           });
     });
+
+    test('highlight removed when text is changed', function() {
+      const originalText = 'FooSettingsFoo';
+
+      document.body.innerHTML = `<settings-section hidden-by-search>
+            <div id="mydiv">${originalText}</div>
+          </settings-section>`;
+
+      const section = document.querySelector('settings-section');
+      const div = document.querySelector('#mydiv');
+      assertTrue(section.hiddenBySearch);
+      return searchManager.search('settings', document.body).then(() => {
+        assertFalse(section.hiddenBySearch);
+        assertEquals(1, div.childNodes.length);
+        const highlightWrapper = div.firstChild;
+        assertTrue(
+            highlightWrapper.classList.contains('search-highlight-wrapper'));
+        const originalContent = highlightWrapper.querySelector(
+            '.search-highlight-original-content');
+        assertTrue(!!originalContent);
+        originalContent.childNodes[0].nodeValue = 'Foo';
+        return new Promise(resolve => {
+          setTimeout(() => {
+            assertFalse(section.hiddenBySearch);
+            assertEquals(1, div.childNodes.length);
+            assertEquals('Foo', div.innerHTML);
+            resolve();
+          }, 1);
+        });
+      });
+    });
   });
 });
