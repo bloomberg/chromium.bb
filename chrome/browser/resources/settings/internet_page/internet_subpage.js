@@ -447,7 +447,7 @@ Polymer({
    */
   onKnownNetworksTap_: function() {
     assert(this.deviceState.Type == CrOnc.Type.WI_FI);
-    this.fire('show-known-networks', {Type: this.deviceState.Type});
+    this.fire('show-known-networks', {type: this.deviceState.Type});
   },
 
   /**
