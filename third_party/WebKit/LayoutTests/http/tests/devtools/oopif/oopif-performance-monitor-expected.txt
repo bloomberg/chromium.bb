@@ -1,4 +1,4 @@
-Tests list of performance metrics and that memory is not double counted.
+Tests stability of performance metrics list.
 
 
 Metrics reported:
@@ -30,12 +30,4 @@ Timestamp
 UACSSResources
 V8PerContextDatas
 WorkerGlobalScopes
-
-Targets after navigate
-Main
-iframe.html
-inner-iframe.html
-inner-iframe.html
-
-metrics size is twice smaller than simple sum: true
 
