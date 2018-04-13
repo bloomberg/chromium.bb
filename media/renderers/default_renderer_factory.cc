@@ -162,8 +162,8 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     gpu_factories = get_gpu_factories_cb_.Run();
 
   std::unique_ptr<GpuMemoryBufferVideoFramePool> gmb_pool;
-  if (gpu_factories &&
-      gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
+  if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
+                           false /* for_media_stream */)) {
     gmb_pool = std::make_unique<GpuMemoryBufferVideoFramePool>(
         std::move(media_task_runner), std::move(worker_task_runner),
         gpu_factories);

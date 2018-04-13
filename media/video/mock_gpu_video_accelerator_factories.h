@@ -62,7 +62,8 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
 
-  bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
+  bool ShouldUseGpuMemoryBuffersForVideoFrames(
+      bool for_media_stream) const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   OutputFormat VideoFrameOutputFormat(size_t bit_depth) override {
     return video_frame_output_format_;

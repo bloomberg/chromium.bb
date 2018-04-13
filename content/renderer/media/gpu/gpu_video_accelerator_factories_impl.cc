@@ -56,15 +56,17 @@ GpuVideoAcceleratorFactoriesImpl::Create(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
-    bool enable_gpu_memory_buffer_video_frames,
+    bool enable_video_gpu_memory_buffers,
+    bool enable_media_stream_gpu_memory_buffers,
     bool enable_video_accelerator,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider) {
   RecordContextProviderPhaseUmaEnum(
       ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
   return base::WrapUnique(new GpuVideoAcceleratorFactoriesImpl(
       std::move(gpu_channel_host), main_thread_task_runner, task_runner,
-      context_provider, enable_gpu_memory_buffer_video_frames,
-      enable_video_accelerator, std::move(unbound_vea_provider)));
+      context_provider, enable_video_gpu_memory_buffers,
+      enable_media_stream_gpu_memory_buffers, enable_video_accelerator,
+      std::move(unbound_vea_provider)));
 }
 
 GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
@@ -72,7 +74,8 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
-    bool enable_gpu_memory_buffer_video_frames,
+    bool enable_video_gpu_memory_buffers,
+    bool enable_media_stream_gpu_memory_buffers,
     bool enable_video_accelerator,
     media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider)
     : main_thread_task_runner_(main_thread_task_runner),
@@ -80,8 +83,9 @@ GpuVideoAcceleratorFactoriesImpl::GpuVideoAcceleratorFactoriesImpl(
       gpu_channel_host_(std::move(gpu_channel_host)),
       context_provider_(context_provider),
       context_provider_lost_(false),
-      enable_gpu_memory_buffer_video_frames_(
-          enable_gpu_memory_buffer_video_frames),
+      enable_video_gpu_memory_buffers_(enable_video_gpu_memory_buffers),
+      enable_media_stream_gpu_memory_buffers_(
+          enable_media_stream_gpu_memory_buffers),
       video_accelerator_enabled_(enable_video_accelerator),
       gpu_memory_buffer_manager_(
           RenderThreadImpl::current()->GetGpuMemoryBufferManager()),
@@ -268,9 +272,10 @@ GpuVideoAcceleratorFactoriesImpl::CreateGpuMemoryBuffer(
   return gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
       size, format, usage, gpu::kNullSurfaceHandle);
 }
-bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames()
-    const {
-  return enable_gpu_memory_buffer_video_frames_;
+bool GpuVideoAcceleratorFactoriesImpl::ShouldUseGpuMemoryBuffersForVideoFrames(
+    bool for_media_stream) const {
+  return for_media_stream ? enable_media_stream_gpu_memory_buffers_
+                          : enable_video_gpu_memory_buffers_;
 }
 
 unsigned GpuVideoAcceleratorFactoriesImpl::ImageTextureTarget(

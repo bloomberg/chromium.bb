@@ -101,7 +101,9 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
       gfx::BufferFormat format,
       gfx::BufferUsage usage) = 0;
 
-  virtual bool ShouldUseGpuMemoryBuffersForVideoFrames() const = 0;
+  // |for_media_stream| specifies webrtc use case of media streams.
+  virtual bool ShouldUseGpuMemoryBuffersForVideoFrames(
+      bool for_media_stream) const = 0;
 
   // The GLContextLock must be taken when calling this.
   virtual unsigned ImageTextureTarget(gfx::BufferFormat format) = 0;
