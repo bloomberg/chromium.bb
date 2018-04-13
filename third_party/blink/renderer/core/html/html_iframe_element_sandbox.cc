@@ -10,17 +10,30 @@ namespace blink {
 
 namespace {
 
+// These are the sandbox tokens which are always supported. If a new token is
+// only available behind a runtime flag, it should be checked separately in
+// IsTokenSupported below.
 const char* const kSupportedSandboxTokens[] = {
-    "allow-downloads",      "allow-forms",
-    "allow-modals",         "allow-pointer-lock",
-    "allow-popups",         "allow-popups-to-escape-sandbox",
-    "allow-same-origin",    "allow-scripts",
-    "allow-top-navigation", "allow-top-navigation-by-user-activation"};
+    "allow-forms",
+    "allow-modals",
+    "allow-orientation-lock",
+    "allow-pointer-lock",
+    "allow-popups",
+    "allow-popups-to-escape-sandbox",
+    "allow-presentation",
+    "allow-same-origin",
+    "allow-scripts",
+    "allow-top-navigation",
+    "allow-top-navigation-by-user-activation"};
 
 bool IsTokenSupported(const AtomicString& token) {
   for (const char* supported_token : kSupportedSandboxTokens) {
     if (token == supported_token)
       return true;
+  }
+  if (token == "allow-downloads" &&
+      RuntimeEnabledFeatures::BlockingDownloadsInSandboxEnabled()) {
+    return true;
   }
   return false;
 }
