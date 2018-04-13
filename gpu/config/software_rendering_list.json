@@ -1543,7 +1543,7 @@
     },
     {
       "id": 150,
-      "description": "Macs with NVidia GPUs experience rendering issues on High Sierra",
+      "description": "Macs with NVidia GPUs experience rendering issues on High Sierra until 10.13.4",
       "cr_bugs": [773705],
       "os": {
         "type": "macosx",
@@ -1552,6 +1552,17 @@
           "value": "10.13"
         }
       },
+      "exceptions": [
+        {
+          "os": {
+            "type": "macosx",
+            "version": {
+              "op": ">=",
+              "value": "10.13.4"
+            }
+          }
+        }
+      ],
       "vendor_id": "0x10de",
       "multi_gpu_category": "any",
       "features": [
