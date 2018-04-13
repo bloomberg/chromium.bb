@@ -44,13 +44,6 @@ class View;
 
   // The last tooltip text, used to limit updates.
   base::string16 lastTooltipText_;
-
-  // Whether to draw an almost-transparent background with rounded corners so
-  // that OSX correctly blurs the background showing through.
-  BOOL drawMenuBackgroundForBlur_;
-
-  // The cached window mask. Only used for non-rectangular windows on 10.9.
-  base::scoped_nsobject<NSBezierPath> windowMask_;
 }
 
 @property(readonly, nonatomic) views::View* hostedView;
@@ -71,9 +64,6 @@ class View;
 // |locationInContent| is the position from the top left of the window's
 // contentRect (also this NSView's frame), as given by a ui::LocatedEvent.
 - (void)updateTooltipIfRequiredAt:(const gfx::Point&)locationInContent;
-
-// Update windowMask_ depending on the current view bounds.
-- (void)updateWindowMask;
 
 // Notifies the associated FocusManager whether full keyboard access is enabled
 // or not.
