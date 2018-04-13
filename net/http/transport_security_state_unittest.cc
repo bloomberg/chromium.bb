@@ -399,6 +399,23 @@ void CheckExpectStapleReport(TransportSecurityState* state,
       cert_status));
 }
 
+bool operator==(const TransportSecurityState::STSState& lhs,
+                const TransportSecurityState::STSState& rhs) {
+  return lhs.last_observed == rhs.last_observed && lhs.expiry == rhs.expiry &&
+         lhs.upgrade_mode == rhs.upgrade_mode &&
+         lhs.include_subdomains == rhs.include_subdomains &&
+         lhs.domain == rhs.domain;
+}
+
+bool operator==(const TransportSecurityState::PKPState& lhs,
+                const TransportSecurityState::PKPState& rhs) {
+  return lhs.last_observed == rhs.last_observed && lhs.expiry == rhs.expiry &&
+         lhs.spki_hashes == rhs.spki_hashes &&
+         lhs.bad_spki_hashes == rhs.bad_spki_hashes &&
+         lhs.include_subdomains == rhs.include_subdomains &&
+         lhs.domain == rhs.domain && lhs.report_uri == rhs.report_uri;
+}
+
 }  // namespace
 
 class TransportSecurityStateTest : public testing::Test {
@@ -1792,10 +1809,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultiplePrefix) {
   EXPECT_FALSE(sts_state.include_subdomains);
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
-  EXPECT_FALSE(pkp_state.include_subdomains);
-  EXPECT_EQ(GURL(), pkp_state.report_uri);
-  EXPECT_EQ(0U, pkp_state.spki_hashes.size());
-  EXPECT_EQ(0U, pkp_state.bad_spki_hashes.size());
+  EXPECT_TRUE(pkp_state == TransportSecurityState::PKPState());
   EXPECT_FALSE(GetExpectCTState(&state, "hsts.example.com", &ct_state));
   EXPECT_FALSE(GetExpectStapleState(&state, "hsts.example.com", &staple_state));
 
@@ -1805,9 +1819,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultiplePrefix) {
   staple_state = TransportSecurityState::ExpectStapleState();
   EXPECT_TRUE(
       GetStaticDomainState(&state, "hpkp.example.com", &sts_state, &pkp_state));
-  EXPECT_FALSE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_DEFAULT,
-            sts_state.upgrade_mode);
+  EXPECT_TRUE(sts_state == TransportSecurityState::STSState());
   EXPECT_TRUE(pkp_state.include_subdomains);
   EXPECT_EQ(GURL("https://report.example.com/hpkp-upload"),
             pkp_state.report_uri);
@@ -1823,13 +1835,8 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultiplePrefix) {
   staple_state = TransportSecurityState::ExpectStapleState();
   EXPECT_TRUE(GetStaticDomainState(&state, "expect-ct.example.com", &sts_state,
                                    &pkp_state));
-  EXPECT_FALSE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_DEFAULT,
-            sts_state.upgrade_mode);
-  EXPECT_FALSE(pkp_state.include_subdomains);
-  EXPECT_EQ(GURL(), pkp_state.report_uri);
-  EXPECT_EQ(0U, pkp_state.spki_hashes.size());
-  EXPECT_EQ(0U, pkp_state.bad_spki_hashes.size());
+  EXPECT_TRUE(sts_state == TransportSecurityState::STSState());
+  EXPECT_TRUE(pkp_state == TransportSecurityState::PKPState());
   EXPECT_TRUE(GetExpectCTState(&state, "expect-ct.example.com", &ct_state));
   EXPECT_EQ(GURL("https://report.example.com/ct-upload"), ct_state.report_uri);
   EXPECT_FALSE(
@@ -1841,13 +1848,8 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultiplePrefix) {
   staple_state = TransportSecurityState::ExpectStapleState();
   EXPECT_TRUE(GetStaticDomainState(&state, "expect-staple.example.com",
                                    &sts_state, &pkp_state));
-  EXPECT_FALSE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_DEFAULT,
-            sts_state.upgrade_mode);
-  EXPECT_FALSE(pkp_state.include_subdomains);
-  EXPECT_EQ(GURL(), pkp_state.report_uri);
-  EXPECT_EQ(0U, pkp_state.spki_hashes.size());
-  EXPECT_EQ(0U, pkp_state.bad_spki_hashes.size());
+  EXPECT_TRUE(sts_state == TransportSecurityState::STSState());
+  EXPECT_TRUE(pkp_state == TransportSecurityState::PKPState());
   EXPECT_FALSE(
       GetExpectCTState(&state, "expect-staple.example.com", &ct_state));
   EXPECT_TRUE(
@@ -1905,10 +1907,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   EXPECT_TRUE(sts_state.include_subdomains);
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
-  EXPECT_FALSE(pkp_state.include_subdomains);
-  EXPECT_EQ(GURL(), pkp_state.report_uri);
-  EXPECT_EQ(0U, pkp_state.spki_hashes.size());
-  EXPECT_EQ(0U, pkp_state.bad_spki_hashes.size());
+  EXPECT_TRUE(pkp_state == TransportSecurityState::PKPState());
   EXPECT_FALSE(GetExpectCTState(&state, "example.com", &ct_state));
   EXPECT_EQ(GURL(), ct_state.report_uri);
   EXPECT_TRUE(GetExpectStapleState(&state, "example.com", &staple_state));
@@ -1922,9 +1921,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   staple_state = TransportSecurityState::ExpectStapleState();
   EXPECT_TRUE(
       GetStaticDomainState(&state, "hpkp.example.com", &sts_state, &pkp_state));
-  EXPECT_FALSE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_DEFAULT,
-            sts_state.upgrade_mode);
+  EXPECT_TRUE(sts_state == TransportSecurityState::STSState());
   EXPECT_TRUE(pkp_state.include_subdomains);
   EXPECT_EQ(GURL("https://report.example.com/hpkp-upload"),
             pkp_state.report_uri);
@@ -1946,10 +1943,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   EXPECT_FALSE(sts_state.include_subdomains);
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
-  EXPECT_FALSE(pkp_state.include_subdomains);
-  EXPECT_EQ(GURL(), pkp_state.report_uri);
-  EXPECT_EQ(0U, pkp_state.spki_hashes.size());
-  EXPECT_EQ(0U, pkp_state.bad_spki_hashes.size());
+  EXPECT_TRUE(pkp_state == TransportSecurityState::PKPState());
   EXPECT_TRUE(GetExpectCTState(&state, "example.org", &ct_state));
   EXPECT_EQ(GURL("https://report.example.org/ct-upload"), ct_state.report_uri);
   EXPECT_FALSE(GetExpectStapleState(&state, "example.org", &staple_state));
@@ -1962,9 +1956,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   staple_state = TransportSecurityState::ExpectStapleState();
   EXPECT_TRUE(
       GetStaticDomainState(&state, "badssl.com", &sts_state, &pkp_state));
-  EXPECT_TRUE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_DEFAULT,
-            sts_state.upgrade_mode);
+  EXPECT_TRUE(sts_state == TransportSecurityState::STSState());
   EXPECT_TRUE(pkp_state.include_subdomains);
   EXPECT_EQ(GURL("https://report.example.com/hpkp-upload"),
             pkp_state.report_uri);
@@ -2012,7 +2004,7 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   EXPECT_TRUE(sts_state.include_subdomains);
   EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
             sts_state.upgrade_mode);
-  EXPECT_FALSE(pkp_state.include_subdomains);
+  EXPECT_TRUE(pkp_state == TransportSecurityState::PKPState());
   EXPECT_FALSE(GetExpectCTState(&state, "simple-entry.example.com", &ct_state));
   EXPECT_FALSE(
       GetExpectStapleState(&state, "simple-entry.example.com", &staple_state));
@@ -3343,6 +3335,7 @@ TEST_F(TransportSecurityStateStaticTest, IsPreloaded) {
 
 TEST_F(TransportSecurityStateStaticTest, PreloadedDomainSet) {
   TransportSecurityState state;
+  EnableStaticPins(&state);
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::PKPState pkp_state;
 

@@ -1614,13 +1614,9 @@ TransportSecurityState::CheckPublicKeyPinsImpl(
 }
 
 bool TransportSecurityState::GetStaticDomainState(const std::string& host,
-                                                  STSState* sts_state,
-                                                  PKPState* pkp_state) const {
+                                                  STSState* sts_result,
+                                                  PKPState* pkp_result) const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  sts_state->upgrade_mode = STSState::MODE_FORCE_HTTPS;
-  sts_state->include_subdomains = false;
-  pkp_state->include_subdomains = false;
 
   if (!IsBuildTimely())
     return false;
@@ -1629,38 +1625,37 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   if (!DecodeHSTSPreload(host, &result))
     return false;
 
-  sts_state->domain = host.substr(result.hostname_offset);
-  pkp_state->domain = sts_state->domain;
-  sts_state->include_subdomains = result.sts_include_subdomains;
-  sts_state->last_observed = base::GetBuildTime();
-  sts_state->upgrade_mode = STSState::MODE_DEFAULT;
   if (result.force_https) {
-    sts_state->upgrade_mode = STSState::MODE_FORCE_HTTPS;
+    sts_result->domain = host.substr(result.hostname_offset);
+    sts_result->include_subdomains = result.sts_include_subdomains;
+    sts_result->last_observed = base::GetBuildTime();
+    sts_result->upgrade_mode = STSState::MODE_FORCE_HTTPS;
   }
 
   if (enable_static_pins_ && result.has_pins) {
-    pkp_state->include_subdomains = result.pkp_include_subdomains;
-    pkp_state->last_observed = base::GetBuildTime();
-
     if (result.pinset_id >= g_hsts_source->pinsets_count)
       return false;
+
+    pkp_result->domain = host.substr(result.hostname_offset);
+    pkp_result->include_subdomains = result.pkp_include_subdomains;
+    pkp_result->last_observed = base::GetBuildTime();
+
     const TransportSecurityStateSource::Pinset* pinset =
         &g_hsts_source->pinsets[result.pinset_id];
-
     if (pinset->report_uri != kNoReportURI)
-      pkp_state->report_uri = GURL(pinset->report_uri);
+      pkp_result->report_uri = GURL(pinset->report_uri);
 
     if (pinset->accepted_pins) {
       const char* const* sha256_hash = pinset->accepted_pins;
       while (*sha256_hash) {
-        AddHash(*sha256_hash, &pkp_state->spki_hashes);
+        AddHash(*sha256_hash, &pkp_result->spki_hashes);
         sha256_hash++;
       }
     }
     if (pinset->rejected_pins) {
       const char* const* sha256_hash = pinset->rejected_pins;
       while (*sha256_hash) {
-        AddHash(*sha256_hash, &pkp_state->bad_spki_hashes);
+        AddHash(*sha256_hash, &pkp_result->bad_spki_hashes);
         sha256_hash++;
       }
     }
