@@ -92,14 +92,10 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 };
 
 // https://crbug.com/832544 Flaky
-#if defined(OS_CHROMEOS)
-#define MAYBE_Layout DISABLED_Layout
-#else
-#define MAYBE_Layout Layout
-#endif
 // Test the layout and visibility of the TopContainerView and web contents when
 // a hosted app is put into immersive fullscreen.
-IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
+IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
+                       DISABLED_Layout) {
   TabStrip* tabstrip = browser_view()->tabstrip();
   ToolbarView* toolbar = browser_view()->toolbar();
   views::WebView* contents_web_view = browser_view()->contents_web_view();
