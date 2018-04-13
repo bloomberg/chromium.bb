@@ -221,6 +221,7 @@ int64_t MockVideoDecoderForMixer<CRN, CRD, CF>::GetAvSyncDriftTolerated() {
 
 template class MockVideoDecoderForMixer<1, 1, 30>;
 template class MockVideoDecoderForMixer<1, 1, 24>;
+template class MockVideoDecoderForMixer<1, 1, 60>;
 template class MockVideoDecoderForMixer<2, 1, 60>;
 template class MockVideoDecoderForMixer<1, 2, 60>;
 template class MockVideoDecoderForMixer<14, 10, 60>;

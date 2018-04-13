@@ -242,3 +242,26 @@ test("cast_audio_backend_unittests") {
     deps += [ "fuchsia:unit_tests" ]
   }
 }
+
+test("cast_av_sync_backend_unittests") {
+  testonly = true
+  sources = [
+    "av_sync_unittest.cc",
+    "mock_audio_decoder_for_mixer.cc",
+    "mock_audio_decoder_for_mixer.h",
+    "mock_video_decoder_for_mixer.cc",
+    "mock_video_decoder_for_mixer.h",
+  ]
+
+  deps = [
+    ":for_mixer_audio",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//chromecast/base",
+    "//chromecast/media/cma/backend/video:av_sync_video",
+    "//chromecast/public/media",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

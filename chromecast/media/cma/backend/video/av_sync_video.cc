@@ -363,9 +363,9 @@ void AvSyncVideo::GatherPlaybackStatistics() {
             << " average_av_sync_difference="
             << average_av_sync_difference / 1000;
 
-  int64_t current_vpts;
-  int64_t current_apts;
-  double error;
+  int64_t current_vpts = 0;
+  int64_t current_apts = 0;
+  double error = 0.0;
   video_pts_->EstimateY(current_time, &current_vpts, &error);
   audio_pts_->EstimateY(current_time, &current_apts, &error);
 
