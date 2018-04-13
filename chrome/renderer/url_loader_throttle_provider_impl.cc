@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/prerender.mojom.h"
@@ -150,7 +152,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   }
   if (auto ad_throttle = ad_delay_factory_->MaybeCreate(
           std::make_unique<subresource_filter::AdDelayRendererMetadataProvider>(
-              request))) {
+              request, type_, render_frame_id))) {
     throttles.push_back(std::move(ad_throttle));
   }
 

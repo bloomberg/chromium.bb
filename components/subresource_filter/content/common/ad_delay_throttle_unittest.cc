@@ -5,6 +5,7 @@
 #include "components/subresource_filter/content/common/ad_delay_throttle.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -61,10 +62,10 @@ class AdDelayThrottleTest : public testing::Test {
     return loader;
   }
 
-  base::TimeDelta GetExpectedDelay() const {
+  base::TimeDelta GetExpectedDelay(const char* param) const {
     return base::TimeDelta::FromMilliseconds(
         base::GetFieldTrialParamByFeatureAsInt(
-            kDelayUnsafeAds, kInsecureDelayParam,
+            kDelayUnsafeAds, param,
             AdDelayThrottle::kDefaultDelay.InMilliseconds()));
   }
 
@@ -85,18 +86,23 @@ class AdDelayThrottleTest : public testing::Test {
 };
 
 // Metadata provider that by default, provides metadata indicating that the
-// request is an ad.
+// request is an isolated ad.
 class MockMetadataProvider : public AdDelayThrottle::MetadataProvider {
  public:
   MockMetadataProvider() {}
 
   void set_is_ad_request(bool is_ad_request) { is_ad_request_ = is_ad_request; }
+  void set_is_non_isolated(bool is_non_isolated) {
+    is_non_isolated_ = is_non_isolated;
+  }
 
   // AdDelayThrottle::MetadataProvider:
   bool IsAdRequest() override { return is_ad_request_; }
+  bool RequestIsInNonIsolatedSubframe() override { return is_non_isolated_; }
 
  private:
   bool is_ad_request_ = true;
+  bool is_non_isolated_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockMetadataProvider);
 };
@@ -147,118 +153,112 @@ TEST_F(AdDelayThrottleTest, NoAdTagging_NoDelay) {
   EXPECT_TRUE(client_->has_received_completion());
 }
 
-TEST_F(AdDelayThrottleTest, InsecureNonAd_NoDelay) {
-  AdDelayThrottle::Factory factory;
-  auto metadata = std::make_unique<MockMetadataProvider>();
-  metadata->set_is_ad_request(false);
-  auto throttle = factory.MaybeCreate(std::move(metadata));
-  EXPECT_NE(nullptr, throttle);
-  std::string url = "http://example.test/ad.js";
-  loader_factory_.AddResponse(url, "var ads = 1;");
-  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
-      CreateLoaderAndStart(GURL(url), std::move(throttle));
-  scoped_environment_.RunUntilIdle();
+TEST_F(AdDelayThrottleTest, AdDelay) {
+  enum class IsNonIsolated { kYes, kNo };
+  enum class IsAd { kYes, kNo };
+  enum class WillFinish { kYes, kNo };
+  struct TestCase {
+    const char* first_url;
+    const char* redirect_url;  // nullptr if no redirect.
+    IsNonIsolated is_non_isolated;
+    IsAd is_ad;
+    int fast_forward_ms;
+    WillFinish will_finish;
+  } kTestCases[] = {
+      // Isolated and secure -> no delay.
+      {"https://ad.test/", nullptr, IsNonIsolated::kNo, IsAd::kYes, 0,
+       WillFinish::kYes},
 
-  EXPECT_TRUE(client_->has_received_completion());
-}
+      // Isolated and insecure -> delays 50ms.
+      {"http://ad.test/", nullptr, IsNonIsolated::kNo, IsAd::kYes, 49,
+       WillFinish::kNo},
+      {"http://ad.test/", nullptr, IsNonIsolated::kNo, IsAd::kYes, 50,
+       WillFinish::kYes},
+      {"http://ad.test/", nullptr, IsNonIsolated::kNo, IsAd::kNo, 0,
+       WillFinish::kYes},
 
-TEST_F(AdDelayThrottleTest, SecureAdRequest_NoDelay) {
-  AdDelayThrottle::Factory factory;
-  auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
-  EXPECT_NE(nullptr, throttle);
-  std::string url = "https://example.test/ad.js";
-  loader_factory_.AddResponse(url, "var ads = 1;");
-  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
-      CreateLoaderAndStart(GURL(url), std::move(throttle));
-  scoped_environment_.RunUntilIdle();
+      // Non-isolated and secure -> delays 100ms.
+      {"https://ad.test/", nullptr, IsNonIsolated::kYes, IsAd::kYes, 99,
+       WillFinish::kNo},
+      {"https://ad.test/", nullptr, IsNonIsolated::kYes, IsAd::kYes, 100,
+       WillFinish::kYes},
+      {"https://ad.test/", nullptr, IsNonIsolated::kYes, IsAd::kNo, 0,
+       WillFinish::kYes},
 
-  EXPECT_TRUE(client_->has_received_completion());
-}
+      // Non-isolated and insecure -> delays 150ms.
+      {"http://ad.test/", nullptr, IsNonIsolated::kYes, IsAd::kYes, 149,
+       WillFinish::kNo},
+      {"http://ad.test/", nullptr, IsNonIsolated::kYes, IsAd::kYes, 150,
+       WillFinish::kYes},
+      {"http://ad.test/", nullptr, IsNonIsolated::kYes, IsAd::kNo, 0,
+       WillFinish::kYes},
 
-TEST_F(AdDelayThrottleTest, InsecureAdRequest_Delay) {
-  AdDelayThrottle::Factory factory;
-  auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
-  EXPECT_NE(nullptr, throttle);
-  std::string url = "http://example.test/ad.js";
-  loader_factory_.AddResponse(url, "var ads = 1;");
-  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
-      CreateLoaderAndStart(GURL(url), std::move(throttle));
-  scoped_environment_.RunUntilIdle();
+      // Isolated and insecure redirect -> delays 50ms.
+      {"https://ad.test/", "http://ad.test/", IsNonIsolated::kNo, IsAd::kYes,
+       49, WillFinish::kNo},
+      {"https://ad.test/", "http://ad.test/", IsNonIsolated::kNo, IsAd::kYes,
+       50, WillFinish::kYes},
+      {"https://ad.test/", "http://ad.test/", IsNonIsolated::kNo, IsAd::kNo, 0,
+       WillFinish::kYes},
 
-  EXPECT_FALSE(client_->has_received_completion());
-  scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_->has_received_completion());
-}
+      // Non-isolated and insecure redirect -> delays 150ms total.
+      {"https://ad.test/", "http://ad.test/", IsNonIsolated::kYes, IsAd::kYes,
+       149, WillFinish::kNo},
+      {"https://ad.test/", "http://ad.test/", IsNonIsolated::kYes, IsAd::kYes,
+       150, WillFinish::kYes},
+      {"https://ad.test/", "http://ad.test/", IsNonIsolated::kYes, IsAd::kNo, 0,
+       WillFinish::kYes},
 
-TEST_F(AdDelayThrottleTest, DelayFromFieldTrialParam) {
+      // Isolated + insecure with insecure redirect -> delays 50ms only.
+      {"http://ad.test/", "http://ad.test/", IsNonIsolated::kNo, IsAd::kYes, 49,
+       WillFinish::kNo},
+      {"http://ad.test/", "http://ad.test/", IsNonIsolated::kNo, IsAd::kYes, 50,
+       WillFinish::kYes},
+      {"http://ad.test/", "http://ad.test/", IsNonIsolated::kNo, IsAd::kNo, 0,
+       WillFinish::kYes},
+  };
+  // Initialize delays so insecure and non-isolated are not equal.
   base::test::ScopedFeatureList scoped_params;
   scoped_params.InitAndEnableFeatureWithParameters(
-      kDelayUnsafeAds, {{kInsecureDelayParam, "100"}});
-  EXPECT_EQ(base::TimeDelta::FromMilliseconds(100), GetExpectedDelay());
+      kDelayUnsafeAds,
+      {{kInsecureDelayParam, "50"}, {kNonIsolatedDelayParam, "100"}});
+  for (const auto& test : kTestCases) {
+    bool is_ad = test.is_ad == IsAd::kYes;
+    bool is_non_isolated = test.is_non_isolated == IsNonIsolated::kYes;
+    SCOPED_TRACE(testing::Message()
+                 << test.first_url << " -> "
+                 << (test.redirect_url ? test.redirect_url : "<nullptr>")
+                 << " is_ad = " << is_ad
+                 << " is_non_isolated = " << is_non_isolated
+                 << " fast_forward_ms = " << test.fast_forward_ms);
+    AdDelayThrottle::Factory factory;
+    client_ = std::make_unique<network::TestURLLoaderClient>();
+    auto provider = std::make_unique<MockMetadataProvider>();
+    provider->set_is_non_isolated(is_non_isolated);
+    provider->set_is_ad_request(is_ad);
+    auto throttle = factory.MaybeCreate(std::move(provider));
 
-  AdDelayThrottle::Factory factory;
-  auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
-  std::string url = "http://example.test/ad.js";
-  loader_factory_.AddResponse(url, "var ads = 1;");
-  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
-      CreateLoaderAndStart(GURL(url), std::move(throttle));
-  scoped_environment_.RunUntilIdle();
-
-  EXPECT_FALSE(client_->has_received_completion());
-
-  // Ensure that we are using the greater delay here by first fast forwarding
-  // just before the expected delay.
-  base::TimeDelta non_triggering_delay = base::TimeDelta::FromMilliseconds(99);
-  scoped_environment_.FastForwardBy(non_triggering_delay);
-  EXPECT_FALSE(client_->has_received_completion());
-  scoped_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_TRUE(client_->has_received_completion());
-}
-
-TEST_F(AdDelayThrottleTest, InsecureAdRequestRedirect_Delay) {
-  AdDelayThrottle::Factory factory;
-  auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
-  EXPECT_NE(nullptr, throttle);
-  const GURL url("https://example.test/ad.js");
-
-  net::RedirectInfo redirect_info;
-  redirect_info.status_code = 301;
-  redirect_info.new_url = GURL("http://example.test/ad.js");
-  network::TestURLLoaderFactory::Redirects redirects{
-      {redirect_info, network::ResourceResponseHead()}};
-  loader_factory_.AddResponse(url, network::ResourceResponseHead(),
-                              "var ads = 1;",
-                              network::URLLoaderCompletionStatus(), redirects);
-  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
-      CreateLoaderAndStart(GURL(url), std::move(throttle));
-  scoped_environment_.RunUntilIdle();
-
-  EXPECT_FALSE(client_->has_received_completion());
-  scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_->has_received_completion());
-}
-
-TEST_F(AdDelayThrottleTest, InsecureRedirectChain_DelaysOnce) {
-  AdDelayThrottle::Factory factory;
-  auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
-  EXPECT_NE(nullptr, throttle);
-  const GURL url("http://example.test/ad.js");
-
-  net::RedirectInfo redirect_info;
-  redirect_info.status_code = 301;
-  redirect_info.new_url = GURL("http://example2.test/ad.js");
-  network::TestURLLoaderFactory::Redirects redirects{
-      {redirect_info, network::ResourceResponseHead()}};
-  loader_factory_.AddResponse(url, network::ResourceResponseHead(),
-                              "var ads = 1;",
-                              network::URLLoaderCompletionStatus(), redirects);
-  std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
-      CreateLoaderAndStart(GURL(url), std::move(throttle));
-  scoped_environment_.RunUntilIdle();
-
-  EXPECT_FALSE(client_->has_received_completion());
-  scoped_environment_.FastForwardBy(GetExpectedDelay());
-  EXPECT_TRUE(client_->has_received_completion());
+    ASSERT_TRUE(test.first_url);
+    if (test.redirect_url) {
+      net::RedirectInfo redirect_info;
+      redirect_info.status_code = 301;
+      redirect_info.new_url = GURL(test.redirect_url);
+      network::TestURLLoaderFactory::Redirects redirects{
+          {redirect_info, network::ResourceResponseHead()}};
+      loader_factory_.AddResponse(
+          GURL(test.first_url), network::ResourceResponseHead(), "foo",
+          network::URLLoaderCompletionStatus(), redirects);
+    } else {
+      loader_factory_.AddResponse(test.first_url, "foo");
+    }
+    std::unique_ptr<network::mojom::URLLoaderClient> loader_client =
+        CreateLoaderAndStart(GURL(test.first_url), std::move(throttle));
+    scoped_environment_.RunUntilIdle();
+    scoped_environment_.FastForwardBy(
+        base::TimeDelta::FromMilliseconds(test.fast_forward_ms));
+    EXPECT_EQ(test.will_finish == WillFinish::kYes,
+              client_->has_received_completion());
+  }
 }
 
 TEST_F(AdDelayThrottleTest, DestroyBeforeDelay) {
@@ -274,7 +274,7 @@ TEST_F(AdDelayThrottleTest, DestroyBeforeDelay) {
   EXPECT_FALSE(client_->has_received_completion());
 
   loader_client.reset();
-  scoped_environment_.FastForwardBy(GetExpectedDelay());
+  scoped_environment_.FastForwardBy(GetExpectedDelay(kInsecureDelayParam));
 }
 
 TEST_F(AdDelayThrottleTest, AdDiscoveredAfterRedirect) {
@@ -300,7 +300,7 @@ TEST_F(AdDelayThrottleTest, AdDiscoveredAfterRedirect) {
   raw_metadata->set_is_ad_request(true);
   scoped_environment_.RunUntilIdle();
   EXPECT_FALSE(client_->has_received_completion());
-  scoped_environment_.FastForwardBy(GetExpectedDelay());
+  scoped_environment_.FastForwardBy(GetExpectedDelay(kInsecureDelayParam));
   EXPECT_TRUE(client_->has_received_completion());
 }
 
@@ -331,7 +331,7 @@ TEST_F(AdDelayThrottleTest, AdDiscoveredAfterSecureRedirect) {
   raw_metadata->set_is_ad_request(true);
   scoped_environment_.RunUntilIdle();
   EXPECT_FALSE(client_->has_received_completion());
-  scoped_environment_.FastForwardBy(GetExpectedDelay());
+  scoped_environment_.FastForwardBy(GetExpectedDelay(kInsecureDelayParam));
   EXPECT_TRUE(client_->has_received_completion());
 }
 

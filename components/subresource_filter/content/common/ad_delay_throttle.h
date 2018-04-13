@@ -17,6 +17,8 @@ class GURL;
 
 namespace subresource_filter {
 
+class DeferCondition;
+
 // This class delays ad requests satisfying certain conditions.
 // - The ad is insecure (e.g. uses http).
 // TODO(csharrison): Add delays for when the request is in a same-origin iframe.
@@ -29,8 +31,10 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
    public:
     virtual ~MetadataProvider() {}
     virtual bool IsAdRequest() = 0;
-    // TODO(csharrison): Add an interface for querying same-origin iframe
-    // status.
+
+    // Whether the request is taking place in a non-isolated (e.g. same-domain)
+    // iframe. Should default to false if the isolation status is unknown.
+    virtual bool RequestIsInNonIsolatedSubframe() = 0;
   };
 
   // Mainly used for caching values that we don't want to compute for every
@@ -44,9 +48,12 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
         std::unique_ptr<MetadataProvider> provider) const;
 
     base::TimeDelta insecure_delay() const { return insecure_delay_; }
+    base::TimeDelta non_isolated_delay() const { return non_isolated_delay_; }
+    bool delay_enabled() const { return delay_enabled_; }
 
    private:
     const base::TimeDelta insecure_delay_;
+    const base::TimeDelta non_isolated_delay_;
     const bool delay_enabled_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(Factory);
@@ -68,6 +75,41 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
     kMaxValue = kInsecureNonAd
   };
 
+  // The AdDelayThrottle has multiple possible conditions which can cause
+  // delays. These conditions will subclass DeferCondition and override
+  // IsConditionSatisfied.
+  class DeferCondition {
+   public:
+    DeferCondition(base::TimeDelta delay,
+                   AdDelayThrottle::MetadataProvider* provider);
+    virtual ~DeferCondition();
+
+    bool ShouldDefer(const GURL& url);
+
+    // The request will be deferred. Returns the amount of time to defer. Should
+    // be called at most once after ShouldDefer returns true.
+    base::TimeDelta OnReadyToDefer();
+
+    bool was_condition_ever_satisfied() const {
+      return was_condition_ever_satisfied_;
+    }
+
+    AdDelayThrottle::MetadataProvider* provider() { return provider_; }
+
+   protected:
+    virtual bool IsConditionSatisfied(const GURL& url) = 0;
+
+   private:
+    base::TimeDelta delay_;
+
+    // Must outlive this object. Will always be non-nullptr.
+    AdDelayThrottle::MetadataProvider* provider_;
+
+    bool was_condition_applied_ = false;
+    bool was_condition_ever_satisfied_ = false;
+    DISALLOW_COPY_AND_ASSIGN(DeferCondition);
+  };
+
   ~AdDelayThrottle() override;
 
  private:
@@ -84,20 +126,13 @@ class AdDelayThrottle : public content::URLLoaderThrottle {
   void Resume();
 
   AdDelayThrottle(std::unique_ptr<MetadataProvider> provider,
-                  base::TimeDelta insecure_delay,
-                  bool delay_enabled);
+                  const Factory* factory);
 
   // Will never be nullptr.
   std::unique_ptr<MetadataProvider> provider_;
 
-  // How long to delay an ad request that is insecure.
-  const base::TimeDelta insecure_delay_;
-
-  // Only defer at most once per request.
-  bool has_deferred_ = false;
-
-  // Tracks whether this request was ever insecure, across all its redirects.
-  bool was_ever_insecure_ = false;
+  // Must be destroyed before |provider_|.
+  std::vector<std::unique_ptr<DeferCondition>> defer_conditions_;
 
   // Whether to actually delay the request. If set to false, will operate in a
   // dry-run style mode that only logs metrics.
