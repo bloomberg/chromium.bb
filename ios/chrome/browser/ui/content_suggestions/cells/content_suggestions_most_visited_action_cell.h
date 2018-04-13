@@ -16,6 +16,9 @@
 // Title of the action.
 @property(nonatomic, strong, readonly, nonnull) UILabel* titleLabel;
 
+// Container view for |countLabel|.
+@property(nonatomic, strong, readonly, nonnull) UIView* countContainer;
+
 // Number shown in circle by top trailing side of cell.
 @property(nonatomic, strong, readonly, nonnull) UILabel* countLabel;
 
