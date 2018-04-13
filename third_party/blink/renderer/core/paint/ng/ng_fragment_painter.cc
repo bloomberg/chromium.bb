@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
@@ -50,61 +52,21 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
   PaintOutlineRects(paint_info, outline_rects, style);
 }
 
-void NGFragmentPainter::CollectDescendantOutlines(
-    const LayoutPoint& paint_offset,
-    HashMap<const LayoutObject*, NGPaintFragment*>* anchor_fragment_map,
-    HashMap<const LayoutObject*, Vector<LayoutRect>>* outline_rect_map) {
-  /*
-TODO(atotic): Optimize.
-We should not traverse all children for every paint, because
-in most cases there are no descendants with outlines.
-Possible solution is to only call this function if there are
-children with outlines.
-*/
-  // Collect and group outline rects.
-  for (auto& paint_descendant :
-       NGPaintFragmentTraversal::DescendantsOf(paint_fragment_)) {
-    if (!paint_descendant.fragment->PhysicalFragment().IsBox() ||
-        paint_descendant.fragment->PhysicalFragment().IsAtomicInline())
-      continue;
-
-    const ComputedStyle& descendant_style = paint_descendant.fragment->Style();
-    if (!descendant_style.HasOutline() ||
-        descendant_style.Visibility() != EVisibility::kVisible)
-      continue;
-    if (descendant_style.OutlineStyleIsAuto() &&
-        !LayoutTheme::GetTheme().ShouldDrawDefaultFocusRing(
-            paint_descendant.fragment->GetNode(), descendant_style))
-      continue;
-
-    const LayoutObject* layout_object =
-        paint_descendant.fragment->GetLayoutObject();
-    Vector<LayoutRect>* outline_rects;
-    auto iter = outline_rect_map->find(layout_object);
-    if (iter == outline_rect_map->end()) {
-      anchor_fragment_map->insert(layout_object, paint_descendant.fragment);
-      outline_rects =
-          &outline_rect_map->insert(layout_object, Vector<LayoutRect>())
-               .stored_value->value;
-    } else {
-      outline_rects = &iter->value;
-    }
-    paint_descendant.fragment->AddSelfOutlineRect(
-        outline_rects,
-        paint_offset + paint_descendant.container_offset.ToLayoutPoint());
-  }
-}
-
 void NGFragmentPainter::PaintDescendantOutlines(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   DCHECK(ShouldPaintDescendantOutlines(paint_info.phase));
 
-  HashMap<const LayoutObject*, NGPaintFragment*> anchor_fragment_map;
-  HashMap<const LayoutObject*, Vector<LayoutRect>> outline_rect_map;
+  NGOutlineUtils::FragmentMap anchor_fragment_map;
+  NGOutlineUtils::OutlineRectMap outline_rect_map;
 
-  CollectDescendantOutlines(paint_offset, &anchor_fragment_map,
-                            &outline_rect_map);
+  DCHECK(paint_fragment_.PhysicalFragment().IsBox());
+  if (!paint_fragment_.GetLayoutObject()->OutlineMayBeAffectedByDescendants())
+    return;
+  NGOutlineUtils::CollectDescendantOutlines(
+      ToNGPhysicalBoxFragment(paint_fragment_.PhysicalFragment()),
+      NGPhysicalOffset(paint_offset.X(), paint_offset.Y()),
+      &anchor_fragment_map, &outline_rect_map);
 
   // Paint all outlines.
   if (anchor_fragment_map.size() == 0)
@@ -117,7 +79,7 @@ void NGFragmentPainter::PaintDescendantOutlines(
   DrawingRecorder recorder(paint_info.context, paint_fragment_,
                            PaintPhase::kDescendantOutlinesOnly);
   for (auto& anchor_iter : anchor_fragment_map) {
-    NGPaintFragment* fragment = anchor_iter.value;
+    const NGPhysicalFragment* fragment = anchor_iter.value;
     Vector<LayoutRect>* outline_rects =
         &outline_rect_map.find(anchor_iter.key)->value;
     PaintOutlineRects(paint_info, *outline_rects, fragment->Style());

@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ComputedStyle;
 class FloatRect;
 class LayoutRect;
 
@@ -40,6 +41,9 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
   // logical/physical distinctions.
   explicit NGPhysicalOffsetRect(const LayoutRect&);
   LayoutRect ToLayoutRect() const;
+  LayoutRect ToLayoutFlippedRect(const ComputedStyle&,
+                                 const NGPhysicalSize&) const;
+
   FloatRect ToFloatRect() const;
 
   String ToString() const;

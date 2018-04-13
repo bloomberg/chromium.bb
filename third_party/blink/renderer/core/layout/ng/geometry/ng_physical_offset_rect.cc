@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
 
+#include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -41,6 +42,15 @@ NGPhysicalOffsetRect::NGPhysicalOffsetRect(const LayoutRect& source)
 
 LayoutRect NGPhysicalOffsetRect::ToLayoutRect() const {
   return {offset.left, offset.top, size.width, size.height};
+}
+
+LayoutRect NGPhysicalOffsetRect::ToLayoutFlippedRect(
+    const ComputedStyle& style,
+    const NGPhysicalSize& container_size) const {
+  if (!style.IsFlippedBlocksWritingMode())
+    return {offset.left, offset.top, size.width, size.height};
+  return {container_size.width - offset.left - size.width, offset.top,
+          size.width, size.height};
 }
 
 FloatRect NGPhysicalOffsetRect::ToFloatRect() const {
