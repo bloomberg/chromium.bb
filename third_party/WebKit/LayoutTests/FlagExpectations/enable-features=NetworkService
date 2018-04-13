@@ -87,3 +87,5 @@ crbug.com/829721 fast/dom/HTMLAnchorElement/anchor-download.html [ Crash ]
 crbug.com/829721 fast/dom/HTMLAnchorElement/anchor-nodownload-set.html [ Crash ]
 crbug.com/829721 fast/dom/HTMLAreaElement/area-download.html [ Crash ]
 crbug.com/829721 http/tests/security/anchor-download-allow-blob.html [ Crash ]
+
+crbug.com/812464 inspector-protocol/network/interception-file-url.js [ Pass Crash ]
