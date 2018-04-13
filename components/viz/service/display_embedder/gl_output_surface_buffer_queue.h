@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display_embedder/gl_output_surface.h"
+#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
@@ -34,7 +34,7 @@ class SyntheticBeginFrameSource;
 class GLOutputSurfaceBufferQueue : public GLOutputSurface {
  public:
   GLOutputSurfaceBufferQueue(
-      scoped_refptr<InProcessContextProvider> context_provider,
+      scoped_refptr<VizProcessContextProvider> context_provider,
       gpu::SurfaceHandle surface_handle,
       SyntheticBeginFrameSource* synthetic_begin_frame_source,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,

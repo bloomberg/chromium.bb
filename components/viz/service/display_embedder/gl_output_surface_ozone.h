@@ -11,12 +11,13 @@ namespace viz {
 
 class GLOutputSurfaceOzone : public GLOutputSurfaceBufferQueue {
  public:
-  GLOutputSurfaceOzone(scoped_refptr<InProcessContextProvider> context_provider,
-                       gpu::SurfaceHandle surface_handle,
-                       SyntheticBeginFrameSource* synthetic_begin_frame_source,
-                       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                       uint32_t target,
-                       uint32_t internal_format);
+  GLOutputSurfaceOzone(
+      scoped_refptr<VizProcessContextProvider> context_provider,
+      gpu::SurfaceHandle surface_handle,
+      SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      uint32_t target,
+      uint32_t internal_format);
   ~GLOutputSurfaceOzone() override;
 
  private:

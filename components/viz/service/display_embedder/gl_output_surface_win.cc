@@ -9,7 +9,7 @@
 namespace viz {
 
 GLOutputSurfaceWin::GLOutputSurfaceWin(
-    scoped_refptr<InProcessContextProvider> context_provider,
+    scoped_refptr<VizProcessContextProvider> context_provider,
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     bool use_overlays)
     : GLOutputSurface(context_provider, synthetic_begin_frame_source) {

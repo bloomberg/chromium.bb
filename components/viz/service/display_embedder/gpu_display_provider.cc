@@ -11,7 +11,6 @@
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
-#include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display_embedder/external_begin_frame_controller_impl.h"
@@ -19,6 +18,7 @@
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/display_embedder/software_output_surface.h"
+#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -109,12 +109,12 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle), task_runner_);
   } else {
-    scoped_refptr<InProcessContextProvider> context_provider;
+    scoped_refptr<VizProcessContextProvider> context_provider;
 
     // Retry creating and binding |context_provider| on transient failures.
     gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
     while (context_result != gpu::ContextResult::kSuccess) {
-      context_provider = base::MakeRefCounted<InProcessContextProvider>(
+      context_provider = base::MakeRefCounted<VizProcessContextProvider>(
           gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
           image_factory_, gpu_channel_manager_delegate_,
           gpu::SharedMemoryLimits(), nullptr /* shared_context */);
