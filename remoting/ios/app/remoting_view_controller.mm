@@ -345,11 +345,12 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
 - (void)refreshContent {
   if (_hostListService->state() == HostListService::State::FETCHING) {
-    // We don't need to show the fetching view when host list is being fetched
-    // while the previous host list is already on screen. Refresh control will
-    // handle the user-triggered refresh, and we don't need to show anything if
+    // We don't need to show the fetching view when either the host list or the
+    // setup view is already shown. Refresh control will handle the
+    // user-triggered refresh, and we don't need to show anything if
     // that's a background refresh (e.g. user just closed the session).
-    if (self.contentViewController != _collectionViewController) {
+    if (self.contentViewController != _collectionViewController &&
+        self.contentViewController != _setupViewController) {
       self.contentViewController = _fetchingViewController;
     }
     return;
