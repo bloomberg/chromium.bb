@@ -69,9 +69,6 @@ void av1_copy_frame_mvs(const AV1_COMMON *const cm, MB_MODE_INFO *mi,
           mv->mv[ref_idx].as_int = mi->mv[idx].as_int;
         }
       }
-      // (TODO:yunqing) The following 2 lines won't be used and can be removed.
-      mv->pred_mv[0].as_int = mi->pred_mv[0].as_int;
-      mv->pred_mv[1].as_int = mi->pred_mv[1].as_int;
       mv++;
     }
     frame_mvs += frame_mvs_stride;

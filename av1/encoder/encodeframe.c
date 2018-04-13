@@ -347,8 +347,7 @@ static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
   x->skip = 0;
 }
 
-static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
-                                 int8_t rf_type) {
+static void set_ref_and_pred_mvs(MACROBLOCK *const x, int8_t rf_type) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
 
@@ -364,14 +363,10 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
     if (compound_ref0_mode(mbmi->mode) == NEWMV) {
       int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].this_mv;
       mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0] = this_mv;
-      mbmi->pred_mv[0] = this_mv;
-      mi_pred_mv[0] = this_mv;
     }
     if (compound_ref1_mode(mbmi->mode) == NEWMV) {
       int_mv this_mv = curr_ref_mv_stack[ref_mv_idx].comp_mv;
       mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0] = this_mv;
-      mbmi->pred_mv[1] = this_mv;
-      mi_pred_mv[1] = this_mv;
     }
   } else {
     if (mbmi->mode == NEWMV) {
@@ -380,8 +375,6 @@ static void set_ref_and_pred_mvs(MACROBLOCK *const x, int_mv *const mi_pred_mv,
         int_mv this_mv = (i == 0) ? curr_ref_mv_stack[ref_mv_idx].this_mv
                                   : curr_ref_mv_stack[ref_mv_idx].comp_mv;
         mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0] = this_mv;
-        mbmi->pred_mv[i] = this_mv;
-        mi_pred_mv[i] = this_mv;
       }
     }
   }
@@ -417,7 +410,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 
   rf_type = av1_ref_frame_type(mi_addr->ref_frame);
   if (x->mbmi_ext->ref_mv_count[rf_type] > 1) {
-    set_ref_and_pred_mvs(x, mi->pred_mv, rf_type);
+    set_ref_and_pred_mvs(x, rf_type);
   }
 
   memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);

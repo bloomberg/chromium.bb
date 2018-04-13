@@ -10221,13 +10221,6 @@ PALETTE_EXIT:
     }
   }
 
-  for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
-    if (mbmi->mode != NEWMV)
-      mbmi->pred_mv[i].as_int = mbmi->mv[i].as_int;
-    else
-      mbmi->pred_mv[i].as_int = mbmi_ext->ref_mvs[mbmi->ref_frame[i]][0].as_int;
-  }
-
   for (i = 0; i < REFERENCE_MODES; ++i) {
     if (search_state.best_pred_rd[i] == INT64_MAX)
       search_state.best_pred_diff[i] = INT_MIN;
@@ -10305,7 +10298,6 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   x->skip = 1;
 
   mbmi->ref_mv_idx = 0;
-  mbmi->pred_mv[0].as_int = 0;
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);

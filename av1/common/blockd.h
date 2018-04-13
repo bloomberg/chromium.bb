@@ -258,7 +258,6 @@ typedef struct MB_MODE_INFO {
   MOTION_MODE motion_mode;
   int overlappable_neighbors[2];
   int_mv mv[2];
-  int_mv pred_mv[2];
   uint8_t ref_mv_idx;
   PARTITION_TYPE partition;
   /* deringing gain *per-superblock* */

@@ -1099,7 +1099,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   MB_MODE_INFO *mbmi = xd->mi[0];
   BLOCK_SIZE bsize = mbmi->sb_type;
-  int_mv *pred_mv = mbmi->pred_mv;
   if (cm->cur_frame_force_integer_mv) {
     allow_hp = MV_SUBPEL_NONE;
   }
@@ -1109,17 +1108,14 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
       nmv_context *const nmvc = &ec_ctx->nmvc;
       read_mv(r, &mv[0].as_mv, &ref_mv[0].as_mv, nmvc, allow_hp);
       ret = ret && is_mv_valid(&mv[0].as_mv);
-      pred_mv[0].as_int = ref_mv[0].as_int;
       break;
     }
     case NEARESTMV: {
       mv[0].as_int = nearest_mv[0].as_int;
-      pred_mv[0].as_int = nearest_mv[0].as_int;
       break;
     }
     case NEARMV: {
       mv[0].as_int = near_mv[0].as_int;
-      pred_mv[0].as_int = near_mv[0].as_int;
       break;
     }
     case GLOBALMV: {
@@ -1128,7 +1124,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                                cm->allow_high_precision_mv, bsize, mi_col,
                                mi_row, cm->cur_frame_force_integer_mv)
               .as_int;
-      pred_mv[0].as_int = mv[0].as_int;
       break;
     }
     case NEW_NEWMV: {
