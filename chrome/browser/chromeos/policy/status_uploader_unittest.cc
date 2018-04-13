@@ -42,6 +42,9 @@ namespace em = enterprise_management;
 
 namespace {
 
+constexpr base::TimeDelta kDefaultStatusUploadDelay =
+    base::TimeDelta::FromHours(1);
+
 class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
   explicit MockDeviceStatusCollector(PrefService* local_state)
@@ -176,7 +179,8 @@ class StatusUploaderTest : public testing::Test {
 
 TEST_F(StatusUploaderTest, BasicTest) {
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
   // On startup, first update should happen in 1 minute.
   EXPECT_EQ(base::TimeDelta::FromMinutes(1),
@@ -184,31 +188,30 @@ TEST_F(StatusUploaderTest, BasicTest) {
 }
 
 TEST_F(StatusUploaderTest, DifferentFrequencyAtStart) {
-  const int new_delay = StatusUploader::kDefaultUploadDelayMs * 2;
-  settings_helper_.SetInteger(chromeos::kReportUploadFrequency, new_delay);
-  const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
-      new_delay);
+  const base::TimeDelta new_delay = kDefaultStatusUploadDelay * 2;
+  settings_helper_.SetInteger(chromeos::kReportUploadFrequency,
+                              new_delay.InMilliseconds());
   EXPECT_FALSE(task_runner_->HasPendingTask());
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
   ASSERT_EQ(1U, task_runner_->NumPendingTasks());
   // On startup, first update should happen in 1 minute.
   EXPECT_EQ(base::TimeDelta::FromMinutes(1),
             task_runner_->NextPendingTaskDelay());
 
   // Second update should use the delay specified in settings.
-  RunPendingUploadTaskAndCheckNext(uploader, expected_delay,
+  RunPendingUploadTaskAndCheckNext(uploader, new_delay,
                                    true /* upload_success */);
 }
 
 TEST_F(StatusUploaderTest, ResetTimerAfterStatusCollection) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
-  const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
-      StatusUploader::kDefaultUploadDelayMs);
-  RunPendingUploadTaskAndCheckNext(uploader, expected_delay,
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
+  RunPendingUploadTaskAndCheckNext(uploader, kDefaultStatusUploadDelay,
                                    true /* upload_success */);
 
   // Handle this response also, and ensure new task is queued.
-  RunPendingUploadTaskAndCheckNext(uploader, expected_delay,
+  RunPendingUploadTaskAndCheckNext(uploader, kDefaultStatusUploadDelay,
                                    true /* upload_success */);
 
   // Now that the previous request was satisfied, a task to do the next
@@ -217,7 +220,8 @@ TEST_F(StatusUploaderTest, ResetTimerAfterStatusCollection) {
 }
 
 TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
 
   // Running the queued task should pass a callback into
   // GetDeviceAndSessionStatusAsync. We'll grab this callback and send nullptrs
@@ -239,18 +243,15 @@ TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
   // Check the delay of the queued upload
-  const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
-      StatusUploader::kDefaultUploadDelayMs);
-  CheckPendingTaskDelay(uploader, expected_delay);
+  CheckPendingTaskDelay(uploader, kDefaultStatusUploadDelay);
 }
 
 TEST_F(StatusUploaderTest, ResetTimerAfterUploadError) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
 
-  const base::TimeDelta expected_delay =
-      base::TimeDelta::FromMilliseconds(StatusUploader::kDefaultUploadDelayMs);
   // Simulate upload error
-  RunPendingUploadTaskAndCheckNext(uploader, expected_delay,
+  RunPendingUploadTaskAndCheckNext(uploader, kDefaultStatusUploadDelay,
                                    false /* upload_success */);
 
   // Now that the previous request was satisfied, a task to do the next
@@ -259,7 +260,8 @@ TEST_F(StatusUploaderTest, ResetTimerAfterUploadError) {
 }
 
 TEST_F(StatusUploaderTest, ResetTimerAfterUnregisteredClient) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
 
   client_.SetDMToken("");
   EXPECT_FALSE(client_.is_registered());
@@ -282,25 +284,24 @@ TEST_F(StatusUploaderTest, ResetTimerAfterUnregisteredClient) {
   // A task to try again should be queued.
   ASSERT_EQ(1U, task_runner_->NumPendingTasks());
 
-  const base::TimeDelta expected_delay =
-      base::TimeDelta::FromMilliseconds(StatusUploader::kDefaultUploadDelayMs);
-  CheckPendingTaskDelay(uploader, expected_delay);
+  CheckPendingTaskDelay(uploader, kDefaultStatusUploadDelay);
 }
 
 TEST_F(StatusUploaderTest, ChangeFrequency) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
   // Change the frequency. The new frequency should be reflected in the timing
   // used for the next callback.
-  const int new_delay = StatusUploader::kDefaultUploadDelayMs * 2;
-  settings_helper_.SetInteger(chromeos::kReportUploadFrequency, new_delay);
-  const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
-      new_delay);
-  RunPendingUploadTaskAndCheckNext(uploader, expected_delay,
+  const base::TimeDelta new_delay = kDefaultStatusUploadDelay * 2;
+  settings_helper_.SetInteger(chromeos::kReportUploadFrequency,
+                              new_delay.InMilliseconds());
+  RunPendingUploadTaskAndCheckNext(uploader, new_delay,
                                    true /* upload_success */);
 }
 
 TEST_F(StatusUploaderTest, NoUploadAfterUserInput) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
   // Should allow data upload before there is user input.
   EXPECT_TRUE(uploader.IsSessionDataUploadAllowed());
 
@@ -313,7 +314,8 @@ TEST_F(StatusUploaderTest, NoUploadAfterUserInput) {
 }
 
 TEST_F(StatusUploaderTest, NoUploadAfterVideoCapture) {
-  StatusUploader uploader(&client_, std::move(collector_), task_runner_);
+  StatusUploader uploader(&client_, std::move(collector_), task_runner_,
+                          kDefaultStatusUploadDelay);
   // Should allow data upload before there is video capture.
   EXPECT_TRUE(uploader.IsSessionDataUploadAllowed());
 

@@ -36,18 +36,15 @@ const int kMinUploadScheduleDelayMs = 60 * 1000;  // 60 seconds
 
 namespace policy {
 
-const int64_t StatusUploader::kDefaultUploadDelayMs =
-    3 * 60 * 60 * 1000;  // 3 hours
-
 StatusUploader::StatusUploader(
     CloudPolicyClient* client,
     std::unique_ptr<DeviceStatusCollector> collector,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    base::TimeDelta default_upload_frequency)
     : client_(client),
       collector_(std::move(collector)),
       task_runner_(task_runner),
-      upload_frequency_(
-          base::TimeDelta::FromMilliseconds(kDefaultUploadDelayMs)),
+      upload_frequency_(default_upload_frequency),
       has_captured_media_(false),
       weak_factory_(this) {
   // StatusUploader is currently only created for registered clients, and
