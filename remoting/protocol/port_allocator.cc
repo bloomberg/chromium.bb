@@ -74,6 +74,7 @@ PortAllocator::PortAllocator(
   set_flags(flags);
   SetPortRange(network_settings.port_range.min_port,
                network_settings.port_range.max_port);
+  Initialize();
 }
 
 PortAllocator::~PortAllocator() = default;
