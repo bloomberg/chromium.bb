@@ -28,6 +28,20 @@ class TetherHostResponseRecorder;
 // notifies observers when the RemoteDevice sends a response.
 class ConnectTetheringOperation : public MessageTransferOperation {
  public:
+  // Includes all error codes of ConnectTetheringResponse_ResponseCode, but
+  // includes extra values, |NO_RESPONSE| and |INVALID_HOTSPOT_CREDENTIALS|.
+  enum HostResponseErrorCode {
+    PROVISIONING_FAILED = 0,
+    TETHERING_TIMEOUT = 1,
+    TETHERING_UNSUPPORTED = 2,
+    NO_CELL_DATA = 3,
+    ENABLING_HOTSPOT_FAILED = 4,
+    ENABLING_HOTSPOT_TIMEOUT = 5,
+    UNKNOWN_ERROR = 6,
+    NO_RESPONSE = 7,
+    INVALID_HOTSPOT_CREDENTIALS = 8
+  };
+
   class Factory {
    public:
     static std::unique_ptr<ConnectTetheringOperation> NewInstance(
@@ -59,7 +73,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
         const std::string& password) = 0;
     virtual void OnConnectTetheringFailure(
         const cryptauth::RemoteDevice& remote_device,
-        ConnectTetheringResponse_ResponseCode error_code) = 0;
+        HostResponseErrorCode error_code) = 0;
   };
 
   ~ConnectTetheringOperation() override;
@@ -87,13 +101,15 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   void NotifyConnectTetheringRequestSent();
   void NotifyObserversOfSuccessfulResponse(const std::string& ssid,
                                            const std::string& password);
-  void NotifyObserversOfConnectionFailure(
-      ConnectTetheringResponse_ResponseCode error_code);
+  void NotifyObserversOfConnectionFailure(HostResponseErrorCode error_code);
 
  private:
   friend class ConnectTetheringOperationTest;
   FRIEND_TEST_ALL_PREFIXES(ConnectTetheringOperationTest,
                            TestOperation_SetupRequired);
+
+  HostResponseErrorCode ConnectTetheringResponseCodeToHostResponseErrorCode(
+      ConnectTetheringResponse_ResponseCode error_code);
 
   void SetClockForTest(base::Clock* clock_for_test);
 
@@ -112,7 +128,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   // OnOperationFinished().
   std::string ssid_to_return_;
   std::string password_to_return_;
-  ConnectTetheringResponse_ResponseCode error_code_to_return_;
+  HostResponseErrorCode error_code_to_return_;
   base::Time connect_tethering_request_start_time_;
 
   base::ObserverList<Observer> observer_list_;

@@ -82,7 +82,8 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
     NotifyObserversOfSuccessfulResponse(ssid, password);
   }
 
-  void SendFailedResponse(ConnectTetheringResponse_ResponseCode error_code) {
+  void SendFailedResponse(
+      ConnectTetheringOperation::HostResponseErrorCode error_code) {
     NotifyObserversOfConnectionFailure(error_code);
   }
 
@@ -254,7 +255,7 @@ class TetherConnectorImplTest : public NetworkStateTest {
   }
 
   void VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode response_code,
+      ConnectTetheringOperation::HostResponseErrorCode response_code,
       bool setup_required,
       HostConnectionMetricsLogger::ConnectionToHostResult expected_event_type) {
     EXPECT_CALL(*mock_host_connection_metrics_logger_,
@@ -400,8 +401,7 @@ TEST_F(TetherConnectorImplTest, TestCancelWhileOperationActive) {
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_SetupNotRequired) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
+      ConnectTetheringOperation::HostResponseErrorCode::UNKNOWN_ERROR,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR);
@@ -410,8 +410,7 @@ TEST_F(TetherConnectorImplTest,
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_SetupRequired) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
+      ConnectTetheringOperation::HostResponseErrorCode::UNKNOWN_ERROR,
       true /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR);
@@ -420,8 +419,7 @@ TEST_F(TetherConnectorImplTest,
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_ProvisioningFailed) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_PROVISIONING_FAILED,
+      ConnectTetheringOperation::HostResponseErrorCode::PROVISIONING_FAILED,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_PROVISIONING_FAILED);
@@ -430,8 +428,7 @@ TEST_F(TetherConnectorImplTest,
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_TetheringTimeout_SetupNotRequired) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_TETHERING_TIMEOUT,
+      ConnectTetheringOperation::HostResponseErrorCode::TETHERING_TIMEOUT,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED);
@@ -440,8 +437,7 @@ TEST_F(TetherConnectorImplTest,
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_TetheringTimeout_SetupRequired) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_TETHERING_TIMEOUT,
+      ConnectTetheringOperation::HostResponseErrorCode::TETHERING_TIMEOUT,
       true /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED);
@@ -450,8 +446,7 @@ TEST_F(TetherConnectorImplTest,
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_TetheringUnsupported) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_TETHERING_UNSUPPORTED,
+      ConnectTetheringOperation::HostResponseErrorCode::TETHERING_UNSUPPORTED,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED);
@@ -459,8 +454,7 @@ TEST_F(TetherConnectorImplTest,
 
 TEST_F(TetherConnectorImplTest, TestConnectTetheringOperationFails_NoCellData) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_NO_CELL_DATA,
+      ConnectTetheringOperation::HostResponseErrorCode::NO_CELL_DATA,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_NO_CELL_DATA);
@@ -469,8 +463,7 @@ TEST_F(TetherConnectorImplTest, TestConnectTetheringOperationFails_NoCellData) {
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_EnableHotspotFailed) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_ENABLING_HOTSPOT_FAILED,
+      ConnectTetheringOperation::HostResponseErrorCode::ENABLING_HOTSPOT_FAILED,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED);
@@ -479,11 +472,29 @@ TEST_F(TetherConnectorImplTest,
 TEST_F(TetherConnectorImplTest,
        TestConnectTetheringOperationFails_EnableHotspotTimeout) {
   VerifyConnectTetheringOperationFails(
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_ENABLING_HOTSPOT_TIMEOUT,
+      ConnectTetheringOperation::HostResponseErrorCode::
+          ENABLING_HOTSPOT_TIMEOUT,
       false /* setup_required */,
       HostConnectionMetricsLogger::ConnectionToHostResult::
           CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT);
+}
+
+TEST_F(TetherConnectorImplTest, TestConnectTetheringOperationFails_NoResponse) {
+  VerifyConnectTetheringOperationFails(
+      ConnectTetheringOperation::HostResponseErrorCode::NO_RESPONSE,
+      false /* setup_required */,
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_NO_RESPONSE);
+}
+
+TEST_F(TetherConnectorImplTest,
+       TestConnectTetheringOperationFails_InvalidHotspotCredentials) {
+  VerifyConnectTetheringOperationFails(
+      ConnectTetheringOperation::HostResponseErrorCode::
+          INVALID_HOTSPOT_CREDENTIALS,
+      false /* setup_required */,
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS);
 }
 
 TEST_F(TetherConnectorImplTest,

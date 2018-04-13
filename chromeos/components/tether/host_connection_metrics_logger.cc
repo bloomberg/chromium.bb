@@ -95,6 +95,15 @@ void HostConnectionMetricsLogger::RecordConnectionToHostResult(
       RecordConnectionResultFailure(
           ConnectionToHostResult_FailureEventType::ENABLING_HOTSPOT_TIMEOUT);
       break;
+    case ConnectionToHostResult::CONNECTION_RESULT_FAILURE_NO_RESPONSE:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::NO_RESPONSE);
+      break;
+    case ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS:
+      RecordConnectionResultFailure(
+          ConnectionToHostResult_FailureEventType::INVALID_HOTSPOT_CREDENTIALS);
+      break;
     default:
       NOTREACHED();
   };

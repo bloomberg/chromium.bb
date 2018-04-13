@@ -40,7 +40,9 @@ class HostConnectionMetricsLogger
     CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED,
     CONNECTION_RESULT_FAILURE_NO_CELL_DATA,
     CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED,
-    CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT
+    CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT,
+    CONNECTION_RESULT_FAILURE_NO_RESPONSE,
+    CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS
   };
 
   // Record the result of an attempted host connection.
@@ -105,6 +107,11 @@ class HostConnectionMetricsLogger
                            RecordConnectToHostDuration);
   FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
                            RecordConnectToHostDuration_Background);
+  FRIEND_TEST_ALL_PREFIXES(HostConnectionMetricsLoggerTest,
+                           RecordConnectionResultFailureNoResponse);
+  FRIEND_TEST_ALL_PREFIXES(
+      HostConnectionMetricsLoggerTest,
+      RecordConnectionResultFailureInvalidHotspotCredentials);
 
   // An Instant Tethering connection can fail for several different reasons.
   // Though traditionally success and each failure case would be logged to a
@@ -140,6 +147,8 @@ class HostConnectionMetricsLogger
     NO_CELL_DATA = 4,
     ENABLING_HOTSPOT_FAILED = 5,
     ENABLING_HOTSPOT_TIMEOUT = 6,
+    NO_RESPONSE = 7,
+    INVALID_HOTSPOT_CREDENTIALS = 8,
     FAILURE_MAX
   };
 

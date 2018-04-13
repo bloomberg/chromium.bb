@@ -464,6 +464,41 @@ TEST_F(HostConnectionMetricsLoggerTest,
   VerifyConnectToHostDuration(true /* is_background_advertisement */);
 }
 
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailureNoResponse) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_NO_RESPONSE,
+      test_devices_[0].GetDeviceId());
+
+  VerifyFailure(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_FailureEventType::NO_RESPONSE);
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailureInvalidHotspotCredentials) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS,
+      test_devices_[0].GetDeviceId());
+
+  VerifyFailure(
+      HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
+          INVALID_HOTSPOT_CREDENTIALS);
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
+}
+
 }  // namespace tether
 
 }  // namespace chromeos
