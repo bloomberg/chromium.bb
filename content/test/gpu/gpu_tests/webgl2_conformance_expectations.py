@@ -870,8 +870,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                ['linux'], bug=627525)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
         ['linux'], bug=483282)
-    self.Fail('conformance2/textures/image_bitmap_from_image/' +
-              'tex-3d-r16f-red-float.html', ['linux'], bug=679695)
 
     # Linux Multi-vendor failures.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
