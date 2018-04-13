@@ -322,28 +322,25 @@ void ChromotingSession::Core::OnConnectionState(
     protocol::ErrorCode error) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  // This code assumes no intermediate connection state between CONNECTED and
-  // CLOSED/FAILED.
-  session_state_ = state;
-
-  if (session_state_ == protocol::ConnectionToHost::CONNECTED) {
+  if (state == protocol::ConnectionToHost::CONNECTED) {
     perf_stats_logging_timer_.Start(
         FROM_HERE, kPerfStatsInterval,
         base::BindRepeating(&Core::LogPerfStats, GetWeakPtr()));
+
+    if (!device_name_for_pairing_.empty()) {
+      protocol::PairingRequest request;
+      request.set_client_name(device_name_for_pairing_);
+      client_->host_stub()->RequestPairing(request);
+    }
   } else if (perf_stats_logging_timer_.IsRunning()) {
     perf_stats_logging_timer_.Stop();
   }
 
   session_context_->logger->LogSessionStateChange(
-      ClientTelemetryLogger::TranslateState(state),
+      ClientTelemetryLogger::TranslateState(state, session_state_),
       ClientTelemetryLogger::TranslateError(error));
 
-  if (!device_name_for_pairing_.empty() &&
-      state == protocol::ConnectionToHost::CONNECTED) {
-    protocol::PairingRequest request;
-    request.set_client_name(device_name_for_pairing_);
-    client_->host_stub()->RequestPairing(request);
-  }
+  session_state_ = state;
 
   ui_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&ChromotingSession::Delegate::OnConnectionState,

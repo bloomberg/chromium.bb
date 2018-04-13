@@ -136,8 +136,9 @@ void ClientTelemetryLogger::SetSessionIdGenerationTimeForTest(
 
 // static
 ChromotingEvent::SessionState ClientTelemetryLogger::TranslateState(
-    protocol::ConnectionToHost::State state) {
-  switch (state) {
+    protocol::ConnectionToHost::State current_state,
+    protocol::ConnectionToHost::State previous_state) {
+  switch (current_state) {
     case protocol::ConnectionToHost::State::INITIALIZING:
       return ChromotingEvent::SessionState::INITIALIZING;
     case protocol::ConnectionToHost::State::CONNECTING:
@@ -147,7 +148,9 @@ ChromotingEvent::SessionState ClientTelemetryLogger::TranslateState(
     case protocol::ConnectionToHost::State::CONNECTED:
       return ChromotingEvent::SessionState::CONNECTED;
     case protocol::ConnectionToHost::State::FAILED:
-      return ChromotingEvent::SessionState::CONNECTION_FAILED;
+      return previous_state == protocol::ConnectionToHost::State::CONNECTED
+                 ? ChromotingEvent::SessionState::CONNECTION_DROPPED
+                 : ChromotingEvent::SessionState::CONNECTION_FAILED;
     case protocol::ConnectionToHost::State::CLOSED:
       return ChromotingEvent::SessionState::CLOSED;
     default:

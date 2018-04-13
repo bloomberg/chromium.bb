@@ -57,7 +57,8 @@ class ClientTelemetryLogger {
   base::WeakPtr<ClientTelemetryLogger> GetWeakPtr();
 
   static ChromotingEvent::SessionState TranslateState(
-      protocol::ConnectionToHost::State state);
+      protocol::ConnectionToHost::State current_state,
+      protocol::ConnectionToHost::State previous_state);
 
   static ChromotingEvent::ConnectionError TranslateError(
       protocol::ErrorCode state);
