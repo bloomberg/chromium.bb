@@ -163,6 +163,10 @@ class VrController : public PlatformController {
   bool pinch_started_;
   bool zoom_in_progress_ = false;
   bool touch_position_changed_ = false;
+  // TODO(https://crbug.com/824194): Remove this and associated logic once the
+  // GVR-side bug is fixed and we don't need to keep track of click states
+  // ourselves.
+  bool previous_button_states_[GVR_CONTROLLER_BUTTON_COUNT];
 
   // Handedness from user prefs.
   gvr::ControllerHandedness handedness_;

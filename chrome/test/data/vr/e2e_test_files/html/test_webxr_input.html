@@ -24,8 +24,10 @@ that Daydream controller input is registered when using Daydream View.
       function onSelectStart() {
         // selectstart should always be fired first, so check that
         t.step( () => {
-          assert_true(selectStartCount == selectEndCount);
-          assert_true(selectStartCount == selectCount);
+          assert_true(selectStartCount == selectEndCount,
+                      'selectstart fired before selectend');
+          assert_true(selectStartCount == selectCount,
+                      'selectstart fired before select');
         });
         selectStartCount++;
       }
@@ -33,8 +35,10 @@ that Daydream controller input is registered when using Daydream View.
       function onSelectEnd() {
         // selectend should always be fired between selectstart and select
         t.step( () => {
-          assert_true(selectEndCount + 1 == selectStartCount);
-          assert_true(selectEndCount == selectCount);
+          assert_true(selectEndCount + 1 == selectStartCount,
+                      'selectend fired after selectstart');
+          assert_true(selectEndCount == selectCount,
+                      'selectend fired before select');
         });
         selectEndCount++;
       }
@@ -43,12 +47,16 @@ that Daydream controller input is registered when using Daydream View.
         // select should always be fired last
         selectCount++;
         t.step( () => {
-          assert_true(selectCount == selectStartCount);
-          assert_true(selectCount == selectEndCount);
+          assert_true(selectCount == selectStartCount,
+                      'select fired after selectstart');
+          assert_true(selectCount == selectEndCount,
+                      'select fired after selectend');
         });
         currentIteration++;
         if (currentIteration == iterations) {
           t.done();
+        } else {
+          finishJavaScriptStep();
         }
       }
 

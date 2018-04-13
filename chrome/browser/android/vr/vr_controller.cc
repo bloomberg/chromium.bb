@@ -75,7 +75,8 @@ gvr::ControllerButton PlatformToGvrButton(PlatformController::ButtonType type) {
 
 }  // namespace
 
-VrController::VrController(gvr_context* gvr_context) {
+VrController::VrController(gvr_context* gvr_context)
+    : previous_button_states_{0} {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   CHECK(gvr_context != nullptr) << "invalid gvr_context";
   controller_api_ = std::make_unique<gvr::ControllerApi>();
@@ -153,12 +154,10 @@ device::mojom::XRInputSourceStatePtr VrController::GetInputSourceState() {
   state->source_id = 1;
 
   // Set the primary button state.
-  state->primary_input_pressed =
-      controller_state_->GetButtonState(GVR_CONTROLLER_BUTTON_CLICK);
+  state->primary_input_pressed = ButtonState(GVR_CONTROLLER_BUTTON_CLICK);
 
-  if (ButtonUpHappened(GVR_CONTROLLER_BUTTON_CLICK)) {
+  if (ButtonUpHappened(GVR_CONTROLLER_BUTTON_CLICK))
     state->primary_input_clicked = true;
-  }
 
   state->description = device::mojom::XRInputSourceDescription::New();
 
@@ -294,11 +293,17 @@ bool VrController::TouchUpHappened() {
 }
 
 bool VrController::ButtonDownHappened(gvr::ControllerButton button) {
-  return controller_state_->GetButtonDown(button);
+  // Workaround for GVR sometimes not reporting GetButtonDown when it should.
+  bool detected_down =
+      !previous_button_states_[static_cast<int>(button)] && ButtonState(button);
+  return controller_state_->GetButtonDown(button) || detected_down;
 }
 
 bool VrController::ButtonUpHappened(gvr::ControllerButton button) {
-  return controller_state_->GetButtonUp(button);
+  // Workaround for GVR sometimes not reporting GetButtonUp when it should.
+  bool detected_up =
+      previous_button_states_[static_cast<int>(button)] && !ButtonState(button);
+  return controller_state_->GetButtonUp(button) || detected_up;
 }
 
 bool VrController::ButtonState(gvr::ControllerButton button) const {
@@ -314,6 +319,10 @@ void VrController::UpdateState(const gvr::Mat4f& head_direction) {
                                  head_direction);
   const int32_t old_status = controller_state_->GetApiStatus();
   const int32_t old_connection_state = controller_state_->GetConnectionState();
+  for (int button = 0; button < GVR_CONTROLLER_BUTTON_COUNT; ++button) {
+    previous_button_states_[button] =
+        ButtonState(static_cast<gvr_controller_button>(button));
+  }
   // Read current controller state.
   controller_state_->Update(*controller_api_);
   // Print new API status and connection state, if they changed.

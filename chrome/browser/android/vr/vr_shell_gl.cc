@@ -2134,6 +2134,9 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     device::GvrDelegate::GetGvrPoseWithNeckModel(
         gvr_api_.get(), &render_info_primary_.head_pose);
     UpdateController(render_info_primary_, frame_time);
+    if (report_webxr_input_) {
+      input_states_.push_back(controller_->GetInputSourceState());
+    }
     ui_controller_update_time_.AddSample(base::TimeTicks::Now() -
                                          controller_start);
   } else {
@@ -2325,14 +2328,13 @@ void VrShellGl::SendVSync() {
 
   if (report_webxr_input_) {
     TRACE_EVENT0("gpu", "VrShellGl::XRInput");
-    std::vector<device::mojom::XRInputSourceStatePtr> input_states;
-
-    device::mojom::XRInputSourceStatePtr input_state =
-        cardboard_ ? GetGazeInputSourceState()
-                   : controller_->GetInputSourceState();
-
-    input_states.push_back(std::move(input_state));
-    pose->input_state = std::move(input_states);
+    if (cardboard_) {
+      std::vector<device::mojom::XRInputSourceStatePtr> input_states;
+      input_states.push_back(GetGazeInputSourceState());
+      pose->input_state = std::move(input_states);
+    } else {
+      pose->input_state = std::move(input_states_);
+    }
   }
 
   WebXrFrame* frame = webxr_->GetAnimatingFrame();
