@@ -1105,6 +1105,13 @@ views::View* ProfileChooserView::CreateDiceSigninView() {
       promotext_top_spacing, kMenuEdgeMargin, 0, kMenuEdgeMargin));
   view->AddChildView(promo);
 
+  // Log sign-in impressions user metrics.
+  signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
+  signin_metrics::RecordSigninImpressionWithAccountUserActionForAccessPoint(
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      show_personalized_promo);
+
   if (!show_personalized_promo) {
     // Create a sign-in button without account information.
     dice_signin_button_view_ = new DiceSigninButtonView(this);
