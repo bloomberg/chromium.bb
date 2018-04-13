@@ -104,6 +104,14 @@ void PointerEvent::ReceivedTarget() {
   MouseEvent::ReceivedTarget();
 }
 
+Node* PointerEvent::toElement() const {
+  return nullptr;
+}
+
+Node* PointerEvent::fromElement() const {
+  return nullptr;
+}
+
 HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() {
   if (coalesced_events_targets_dirty_) {
     for (auto coalesced_event : coalesced_events_)
