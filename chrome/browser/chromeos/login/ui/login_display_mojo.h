@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_VIEWS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_VIEWS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_
 
 #include <memory>
 
@@ -12,16 +12,16 @@
 
 namespace chromeos {
 
-class LoginDisplayHostViews;
+class LoginDisplayHostMojo;
+class UserBoardViewMojo;
 class UserSelectionScreen;
-class UserSelectionScreenProxy;
 
 // Interface used by UI-agnostic code to send messages to views-based login
 // screen.
-class LoginDisplayViews : public LoginDisplay {
+class LoginDisplayMojo : public LoginDisplay {
  public:
-  LoginDisplayViews(Delegate* delegate, LoginDisplayHostViews* host);
-  ~LoginDisplayViews() override;
+  LoginDisplayMojo(Delegate* delegate, LoginDisplayHostMojo* host);
+  ~LoginDisplayMojo() override;
 
   // LoginDisplay:
   void ClearAndEnablePassword() override;
@@ -42,13 +42,13 @@ class LoginDisplayViews : public LoginDisplay {
   void ShowUnrecoverableCrypthomeErrorDialog() override;
 
  private:
-  LoginDisplayHostViews* const host_ = nullptr;
-  std::unique_ptr<UserSelectionScreenProxy> user_selection_screen_proxy_;
+  LoginDisplayHostMojo* const host_ = nullptr;
+  std::unique_ptr<UserBoardViewMojo> user_board_view_mojo_;
   std::unique_ptr<UserSelectionScreen> user_selection_screen_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoginDisplayViews);
+  DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_VIEWS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_

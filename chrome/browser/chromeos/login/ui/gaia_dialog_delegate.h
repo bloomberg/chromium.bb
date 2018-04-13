@@ -23,7 +23,7 @@ class Widget;
 
 namespace chromeos {
 
-class LoginDisplayHostViews;
+class LoginDisplayHostMojo;
 class OobeUI;
 
 // This class manages the behavior of the gaia signin dialog.
@@ -35,7 +35,7 @@ class OobeUI;
 //   clientView---->Widget's view hierarchy
 class GaiaDialogDelegate : public ui::WebDialogDelegate {
  public:
-  explicit GaiaDialogDelegate(base::WeakPtr<LoginDisplayHostViews> controller);
+  explicit GaiaDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~GaiaDialogDelegate() override;
 
   // Show the dialog widget.
@@ -74,7 +74,7 @@ class GaiaDialogDelegate : public ui::WebDialogDelegate {
   std::vector<ui::Accelerator> GetAccelerators() override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
-  base::WeakPtr<LoginDisplayHostViews> controller_;
+  base::WeakPtr<LoginDisplayHostMojo> controller_;
 
   // This is owned by the underlying native widget.
   // Before its deletion, onDialogClosed will get called and delete this object.

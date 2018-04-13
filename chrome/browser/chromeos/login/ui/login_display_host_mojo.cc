@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/ui/login_display_host_views.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
 
 #include <string>
 #include <utility>
@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/ui/gaia_dialog_delegate.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
-#include "chrome/browser/chromeos/login/ui/login_display_views.h"
+#include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/login/auth/user_context.h"
@@ -20,50 +20,61 @@
 
 namespace chromeos {
 
-LoginDisplayHostViews::LoginDisplayHostViews() : weak_factory_(this) {
+LoginDisplayHostMojo::LoginDisplayHostMojo() : weak_factory_(this) {
   // Preload the WebUI for post-login screens.
   InitWidgetAndView();
 }
 
-LoginDisplayHostViews::~LoginDisplayHostViews() {
+LoginDisplayHostMojo::~LoginDisplayHostMojo() {
   LoginScreenClient::Get()->SetDelegate(nullptr);
   if (dialog_)
     dialog_->Close();
 }
 
-LoginDisplay* LoginDisplayHostViews::CreateLoginDisplay(
-    LoginDisplay::Delegate* delegate) {
-  return new LoginDisplayViews(delegate, this);
+void LoginDisplayHostMojo::OnDialogDestroyed(const GaiaDialogDelegate* dialog) {
+  if (dialog == dialog_) {
+    dialog_ = nullptr;
+    wizard_controller_.reset();
+  }
 }
 
-gfx::NativeWindow LoginDisplayHostViews::GetNativeWindow() const {
+void LoginDisplayHostMojo::SetUsers(const user_manager::UserList& users) {
+  users_ = users;
+}
+
+LoginDisplay* LoginDisplayHostMojo::CreateLoginDisplay(
+    LoginDisplay::Delegate* delegate) {
+  return new LoginDisplayMojo(delegate, this);
+}
+
+gfx::NativeWindow LoginDisplayHostMojo::GetNativeWindow() const {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-OobeUI* LoginDisplayHostViews::GetOobeUI() const {
+OobeUI* LoginDisplayHostMojo::GetOobeUI() const {
   if (!dialog_)
     return nullptr;
   return dialog_->GetOobeUI();
 }
 
-WebUILoginView* LoginDisplayHostViews::GetWebUILoginView() const {
+WebUILoginView* LoginDisplayHostMojo::GetWebUILoginView() const {
   NOTREACHED();
   return nullptr;
 }
 
-void LoginDisplayHostViews::OnFinalize() {
+void LoginDisplayHostMojo::OnFinalize() {
   if (dialog_)
     dialog_->Close();
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void LoginDisplayHostViews::SetStatusAreaVisible(bool visible) {
+void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::StartWizard(OobeScreen first_screen) {
+void LoginDisplayHostMojo::StartWizard(OobeScreen first_screen) {
   DCHECK(GetOobeUI());
 
   // Dtor of the old WizardController should be called before ctor of the
@@ -76,20 +87,20 @@ void LoginDisplayHostViews::StartWizard(OobeScreen first_screen) {
   dialog_->Show(false /*closable_by_esc*/);
 }
 
-WizardController* LoginDisplayHostViews::GetWizardController() {
+WizardController* LoginDisplayHostMojo::GetWizardController() {
   NOTIMPLEMENTED();
   return nullptr;
 }
 
-void LoginDisplayHostViews::OnStartUserAdding() {
+void LoginDisplayHostMojo::OnStartUserAdding() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::CancelUserAdding() {
+void LoginDisplayHostMojo::CancelUserAdding() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::OnStartSignInScreen(
+void LoginDisplayHostMojo::OnStartSignInScreen(
     const LoginScreenContext& context) {
   // This function may be called early in startup flow, before LoginScreenClient
   // has been initialized. Wait until LoginScreenClient is initialized as it is
@@ -97,7 +108,7 @@ void LoginDisplayHostViews::OnStartSignInScreen(
   if (!LoginScreenClient::HasInstance()) {
     // TODO(jdufault): Add a timeout here / make sure we do not post infinitely.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&LoginDisplayHostViews::OnStartSignInScreen,
+        FROM_HERE, base::BindOnce(&LoginDisplayHostMojo::OnStartSignInScreen,
                                   weak_factory_.GetWeakPtr(), context));
     return;
   }
@@ -113,32 +124,32 @@ void LoginDisplayHostViews::OnStartSignInScreen(
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 }
 
-void LoginDisplayHostViews::OnPreferencesChanged() {
+void LoginDisplayHostMojo::OnPreferencesChanged() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::OnStartAppLaunch() {
+void LoginDisplayHostMojo::OnStartAppLaunch() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::OnStartArcKiosk() {
+void LoginDisplayHostMojo::OnStartArcKiosk() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::OnBrowserCreated() {
+void LoginDisplayHostMojo::OnBrowserCreated() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::StartVoiceInteractionOobe() {
+void LoginDisplayHostMojo::StartVoiceInteractionOobe() {
   NOTIMPLEMENTED();
 }
 
-bool LoginDisplayHostViews::IsVoiceInteractionOobe() {
+bool LoginDisplayHostMojo::IsVoiceInteractionOobe() {
   NOTIMPLEMENTED();
   return false;
 }
 
-void LoginDisplayHostViews::UpdateGaiaDialogVisibility(bool visible) {
+void LoginDisplayHostMojo::UpdateGaiaDialogVisibility(bool visible) {
   DCHECK(dialog_);
   if (visible) {
     dialog_->Show(true /*closable_by_esc*/);
@@ -155,16 +166,16 @@ void LoginDisplayHostViews::UpdateGaiaDialogVisibility(bool visible) {
   dialog_->Hide();
 }
 
-void LoginDisplayHostViews::UpdateGaiaDialogSize(int width, int height) {
+void LoginDisplayHostMojo::UpdateGaiaDialogSize(int width, int height) {
   if (dialog_)
     dialog_->SetSize(width, height);
 }
 
-const user_manager::UserList LoginDisplayHostViews::GetUsers() {
+const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
   return users_;
 }
 
-void LoginDisplayHostViews::HandleAuthenticateUser(
+void LoginDisplayHostMojo::HandleAuthenticateUser(
     const AccountId& account_id,
     const std::string& hashed_password,
     const password_manager::SyncPasswordData& sync_password_data,
@@ -186,39 +197,39 @@ void LoginDisplayHostViews::HandleAuthenticateUser(
   existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
 }
 
-void LoginDisplayHostViews::HandleAttemptUnlock(const AccountId& account_id) {
+void LoginDisplayHostMojo::HandleAttemptUnlock(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::HandleHardlockPod(const AccountId& account_id) {
+void LoginDisplayHostMojo::HandleHardlockPod(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::HandleRecordClickOnLockIcon(
+void LoginDisplayHostMojo::HandleRecordClickOnLockIcon(
     const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::HandleOnFocusPod(const AccountId& account_id) {
+void LoginDisplayHostMojo::HandleOnFocusPod(const AccountId& account_id) {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayHostViews::HandleOnNoPodFocused() {
+void LoginDisplayHostMojo::HandleOnNoPodFocused() {
   NOTIMPLEMENTED();
 }
 
-bool LoginDisplayHostViews::HandleFocusLockScreenApps(bool reverse) {
+bool LoginDisplayHostMojo::HandleFocusLockScreenApps(bool reverse) {
   NOTIMPLEMENTED();
   return false;
 }
 
-void LoginDisplayHostViews::HandleLoginAsGuest() {
+void LoginDisplayHostMojo::HandleLoginAsGuest() {
   existing_user_controller_->Login(UserContext(user_manager::USER_TYPE_GUEST,
                                                user_manager::GuestAccountId()),
                                    chromeos::SigninSpecifics());
 }
 
-void LoginDisplayHostViews::HandleLaunchPublicSession(
+void LoginDisplayHostMojo::HandleLaunchPublicSession(
     const AccountId& account_id,
     const std::string& locale,
     const std::string& input_method) {
@@ -228,29 +239,17 @@ void LoginDisplayHostViews::HandleLaunchPublicSession(
   existing_user_controller_->Login(context, chromeos::SigninSpecifics());
 }
 
-void LoginDisplayHostViews::OnAuthFailure(const AuthFailure& error) {
+void LoginDisplayHostMojo::OnAuthFailure(const AuthFailure& error) {
   if (on_authenticated_)
     std::move(on_authenticated_).Run(false);
 }
 
-void LoginDisplayHostViews::OnAuthSuccess(const UserContext& user_context) {
+void LoginDisplayHostMojo::OnAuthSuccess(const UserContext& user_context) {
   if (on_authenticated_)
     std::move(on_authenticated_).Run(true);
 }
 
-void LoginDisplayHostViews::OnDialogDestroyed(
-    const GaiaDialogDelegate* dialog) {
-  if (dialog == dialog_) {
-    dialog_ = nullptr;
-    wizard_controller_.reset();
-  }
-}
-
-void LoginDisplayHostViews::SetUsers(const user_manager::UserList& users) {
-  users_ = users;
-}
-
-void LoginDisplayHostViews::InitWidgetAndView() {
+void LoginDisplayHostMojo::InitWidgetAndView() {
   if (dialog_)
     return;
 

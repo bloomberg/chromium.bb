@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_SELECTION_SCREEN_PROXY_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_USER_SELECTION_SCREEN_PROXY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USER_BOARD_VIEW_MOJO_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_USER_BOARD_VIEW_MOJO_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -11,12 +11,11 @@
 
 namespace chromeos {
 
-// This class is a proxy layer which handles calls from UserSelectionScreen and
-// send them to ash.
-class UserSelectionScreenProxy : public chromeos::UserBoardView {
+// UserBoardView implementation that forwards calls to ash via mojo.
+class UserBoardViewMojo : public UserBoardView {
  public:
-  UserSelectionScreenProxy();
-  ~UserSelectionScreenProxy() override;
+  UserBoardViewMojo();
+  ~UserBoardViewMojo() override;
 
   // UserBoardView:
   void SetPublicSessionDisplayName(const AccountId& account_id,
@@ -35,14 +34,16 @@ class UserSelectionScreenProxy : public chromeos::UserBoardView {
   void SetAuthType(const AccountId& account_id,
                    proximity_auth::mojom::AuthType auth_type,
                    const base::string16& initial_value) override;
-  void Bind(chromeos::UserSelectionScreen* screen) override{};
+  void Bind(UserSelectionScreen* screen) override{};
   void Unbind() override{};
   base::WeakPtr<UserBoardView> GetWeakPtr() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(UserSelectionScreenProxy);
+  base::WeakPtrFactory<UserBoardViewMojo> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserBoardViewMojo);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_SELECTION_SCREEN_PROXY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USER_BOARD_VIEW_MOJO_H_

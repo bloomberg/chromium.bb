@@ -35,14 +35,16 @@ class WizardController;
 //                                   /       |
 //                LoginDisplayHostCommon   MockLoginDisplayHost
 //                      /      |
-//   LoginDisplayHostViews   LoginDisplayHostWebUI
+//   LoginDisplayHostMojo    LoginDisplayHostWebUI
 //
 //
 // - LoginDisplayHost defines the generic interface.
 // - LoginDisplayHostCommon is UI-agnostic code shared between the views and
 //   webui hosts.
 // - MockLoginDisplayHost is for tests.
-// - LoginDisplayHostViews is for the login screen, which is written in views.
+// - LoginDisplayHostMojo is for the login screen which is a mojo controller
+//   (ie, ash/public/interfaces/login_screen.mojom,
+//    ash/login/login_screen_controller.h).
 // - LoginDisplayHostWebUI is for OOBE, which is written in HTML/JS/CSS.
 class LoginDisplayHost {
  public:

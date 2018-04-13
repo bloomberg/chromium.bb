@@ -26,7 +26,7 @@ class DemoAppLauncher;
 
 // LoginDisplayHostCommon contains code which is not specific to a particular UI
 // implementation - the goal is to reduce code duplication between
-// LoginDisplayHostViews and LoginDisplayHostWebUI.
+// LoginDisplayHostMojo and LoginDisplayHostWebUI.
 class LoginDisplayHostCommon : public LoginDisplayHost,
                                public content::NotificationObserver {
  public:
