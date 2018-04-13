@@ -101,6 +101,7 @@ cr.define('settings', function() {
           // TODO(dpapad): highlight <select> controls with a search bubble
           // instead.
           if (node.parentNode.nodeName != 'OPTION') {
+            request.addTextObserver(node);
             cr.search_highlight_utils.highlight(
                 node, textContent.split(request.regExp));
           }
@@ -396,6 +397,33 @@ cr.define('settings', function() {
       this.queue_.onEmpty(() => {
         this.resolver.resolve(this);
       });
+
+      /** @private {!Set<!MutationObserver>} */
+      this.textObservers_ = new Set();
+    }
+
+    removeAllTextObservers() {
+      this.textObservers_.forEach(observer => {
+        observer.disconnect();
+      });
+      this.textObservers_.clear();
+    }
+
+    /** @param {!Node} textNode */
+    addTextObserver(textNode) {
+      const originalParentNode = /** @type {!Node} */ (textNode.parentNode);
+      const observer = new MutationObserver(mutations => {
+        const oldValue = mutations[0].oldValue.trim();
+        const newValue = textNode.nodeValue.trim();
+        if (oldValue != newValue) {
+          observer.disconnect();
+          this.textObservers_.delete(observer);
+          cr.search_highlight_utils.findAndRemoveHighlights(originalParentNode);
+        }
+      });
+      observer.observe(
+          textNode, {characterData: true, characterDataOldValue: true});
+      this.textObservers_.add(observer);
     }
 
     /**
@@ -465,6 +493,9 @@ cr.define('settings', function() {
       /** @private {!Set<!settings.SearchRequest>} */
       this.activeRequests_ = new Set();
 
+      /** @private {!Set<!settings.SearchRequest>} */
+      this.completedRequests_ = new Set();
+
       /** @private {?string} */
       this.lastSearchedText_ = null;
     }
@@ -475,10 +506,15 @@ cr.define('settings', function() {
       // submitted.
       if (text != this.lastSearchedText_) {
         this.activeRequests_.forEach(function(request) {
+          request.removeAllTextObservers();
           request.canceled = true;
           request.resolver.resolve(request);
         });
         this.activeRequests_.clear();
+        this.completedRequests_.forEach(request => {
+          request.removeAllTextObservers();
+        });
+        this.completedRequests_.clear();
       }
 
       this.lastSearchedText_ = text;
@@ -486,8 +522,8 @@ cr.define('settings', function() {
       this.activeRequests_.add(request);
       request.start();
       return request.resolver.promise.then(() => {
-        // Stop tracking requests that finished.
         this.activeRequests_.delete(request);
+        this.completedRequests_.add(request);
         return request;
       });
     }
