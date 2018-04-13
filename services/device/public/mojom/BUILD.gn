@@ -68,6 +68,11 @@ mojom("generic_sensor") {
 
   visibility_blink =
       [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
+
+  # Generic Sensor Mojom interfaces are exposed publicly to layout tests which
+  # use prepackaged redistributable JS bindings. It is therefore not desirable
+  # to scramble these messages.
+  scramble_message_ids = false
 }
 
 mojom("constants") {

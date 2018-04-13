@@ -216,6 +216,9 @@ void LayoutTestMessageFilter::OnSetPermission(
     type = PermissionType::CLIPBOARD_WRITE;
   } else if (name == "payment-handler") {
     type = PermissionType::PAYMENT_HANDLER;
+  } else if (name == "accelerometer" || name == "gyroscope" ||
+             name == "magnetometer" || name == "ambient-light-sensor") {
+    type = PermissionType::SENSORS;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;
