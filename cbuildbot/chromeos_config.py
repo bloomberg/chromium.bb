@@ -3888,10 +3888,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
 
-      'soraka-release': {
-          'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
-      },
-
       'nautilus-release': {
           'sign_types': ['recovery', 'accessory_rwsig', 'factory'],
       },
