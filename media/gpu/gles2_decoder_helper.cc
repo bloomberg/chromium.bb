@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -21,15 +20,7 @@ namespace media {
 class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
  public:
   explicit GLES2DecoderHelperImpl(gpu::DecoderContext* decoder)
-      : decoder_(decoder) {
-    DCHECK(decoder_);
-    gpu::gles2::ContextGroup* group = decoder_->GetContextGroup();
-    texture_manager_ = group->texture_manager();
-    mailbox_manager_ = group->mailbox_manager();
-    // TODO(sandersd): Support GLES2DecoderPassthroughImpl.
-    DCHECK(texture_manager_);
-    DCHECK(mailbox_manager_);
-  }
+      : decoder_(decoder) {}
 
   bool MakeContextCurrent() override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -44,6 +35,10 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
                                                       GLenum type) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(decoder_->GetGLContext()->IsCurrent(nullptr));
+    gpu::gles2::ContextGroup* group = decoder_->GetContextGroup();
+    gpu::gles2::TextureManager* texture_manager = group->texture_manager();
+    // TODO(sandersd): Support GLES2DecoderPassthroughImpl.
+    DCHECK(texture_manager);
 
     // We can't use texture_manager->CreateTexture(), since it requires a unique
     // |client_id|. Instead we create the texture directly, and create our own
@@ -53,39 +48,38 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
     glBindTexture(target, texture_id);
 
     scoped_refptr<gpu::gles2::TextureRef> texture_ref =
-        gpu::gles2::TextureRef::Create(texture_manager_, 0, texture_id);
-    texture_manager_->SetTarget(texture_ref.get(), target);
-    texture_manager_->SetLevelInfo(texture_ref.get(),  // ref
-                                   target,             // target
-                                   0,                  // level
-                                   internal_format,    // internal_format
-                                   width,              // width
-                                   height,             // height
-                                   1,                  // depth
-                                   0,                  // border
-                                   format,             // format
-                                   type,               // type
-                                   gfx::Rect());       // cleared_rect
+        gpu::gles2::TextureRef::Create(texture_manager, 0, texture_id);
+    texture_manager->SetTarget(texture_ref.get(), target);
+    texture_manager->SetLevelInfo(texture_ref.get(),  // ref
+                                  target,             // target
+                                  0,                  // level
+                                  internal_format,    // internal_format
+                                  width,              // width
+                                  height,             // height
+                                  1,                  // depth
+                                  0,                  // border
+                                  format,             // format
+                                  type,               // type
+                                  gfx::Rect());       // cleared_rect
 
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_MAG_FILTER,
-                                    GL_LINEAR);
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_MIN_FILTER,
-                                    GL_LINEAR);
+    texture_manager->SetParameteri(__func__, decoder_->GetErrorState(),
+                                   texture_ref.get(), GL_TEXTURE_MAG_FILTER,
+                                   GL_LINEAR);
+    texture_manager->SetParameteri(__func__, decoder_->GetErrorState(),
+                                   texture_ref.get(), GL_TEXTURE_MIN_FILTER,
+                                   GL_LINEAR);
 
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_WRAP_S,
-                                    GL_CLAMP_TO_EDGE);
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_WRAP_T,
-                                    GL_CLAMP_TO_EDGE);
+    texture_manager->SetParameteri(__func__, decoder_->GetErrorState(),
+                                   texture_ref.get(), GL_TEXTURE_WRAP_S,
+                                   GL_CLAMP_TO_EDGE);
+    texture_manager->SetParameteri(__func__, decoder_->GetErrorState(),
+                                   texture_ref.get(), GL_TEXTURE_WRAP_T,
+                                   GL_CLAMP_TO_EDGE);
 
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_BASE_LEVEL,
-                                    0);
-    texture_manager_->SetParameteri(__func__, decoder_->GetErrorState(),
-                                    texture_ref.get(), GL_TEXTURE_MAX_LEVEL, 0);
+    texture_manager->SetParameteri(__func__, decoder_->GetErrorState(),
+                                   texture_ref.get(), GL_TEXTURE_BASE_LEVEL, 0);
+    texture_manager->SetParameteri(__func__, decoder_->GetErrorState(),
+                                   texture_ref.get(), GL_TEXTURE_MAX_LEVEL, 0);
 
     // TODO(sandersd): Do we always want to allocate for GL_TEXTURE_2D?
     if (target == GL_TEXTURE_2D) {
@@ -104,23 +98,17 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
     return texture_ref;
   }
 
-  void SetCleared(gpu::gles2::TextureRef* texture_ref) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    texture_manager_->SetLevelCleared(
-        texture_ref, texture_ref->texture()->target(), 0, true);
-  }
-
   gpu::Mailbox CreateMailbox(gpu::gles2::TextureRef* texture_ref) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    gpu::gles2::ContextGroup* group = decoder_->GetContextGroup();
+    gpu::MailboxManager* mailbox_manager = group->mailbox_manager();
     gpu::Mailbox mailbox = gpu::Mailbox::Generate();
-    mailbox_manager_->ProduceTexture(mailbox, texture_ref->texture());
+    mailbox_manager->ProduceTexture(mailbox, texture_ref->texture());
     return mailbox;
   }
 
  private:
   gpu::DecoderContext* decoder_;
-  gpu::gles2::TextureManager* texture_manager_;
-  gpu::MailboxManager* mailbox_manager_;
   THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderHelperImpl);
@@ -129,6 +117,8 @@ class GLES2DecoderHelperImpl : public GLES2DecoderHelper {
 // static
 std::unique_ptr<GLES2DecoderHelper> GLES2DecoderHelper::Create(
     gpu::DecoderContext* decoder) {
+  if (!decoder)
+    return nullptr;
   return std::make_unique<GLES2DecoderHelperImpl>(decoder);
 }
 
