@@ -231,13 +231,12 @@ SkColor GetOmniboxColor(OmniboxPart part,
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
     case OmniboxPart::RESULTS_BACKGROUND:
-      // The spec calls for transparent black (or white) overlays for hover (6%)
-      // and select (8%), which can overlap (for 14%). Pre-blend these with the
+      // The spec calls for transparent black (or white) overlays for hover (8%)
+      // and select (6%), which can overlap (for 14%). Pre-blend these with the
       // background for the best text AA result.
       return color_utils::BlendTowardOppositeLuma(
           dark ? gfx::kGoogleGrey800 : SK_ColorWHITE,
           NormalHoveredSelectedOrBoth<SkAlpha>(state, 0x00, 0x0F, 0x14, 0x24));
-
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
