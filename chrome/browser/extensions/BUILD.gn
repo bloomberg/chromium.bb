@@ -247,6 +247,8 @@ static_library("extensions") {
     "api/language_settings_private/language_settings_private_delegate_factory.h",
     "api/management/chrome_management_api_delegate.cc",
     "api/management/chrome_management_api_delegate.h",
+    "api/media_galleries/blob_data_source_factory.cc",
+    "api/media_galleries/blob_data_source_factory.h",
     "api/media_galleries/media_galleries_api.cc",
     "api/media_galleries/media_galleries_api.h",
     "api/messaging/chrome_messaging_delegate.cc",

@@ -42,11 +42,11 @@ class IPCDataSource : public media::DataSource {
   void SetBitrate(int bitrate) override;
 
  private:
-  // Blob data read helpers: must be run on the utility thread.
-  void ReadBlob(uint8_t* destination,
-                const ReadCB& callback,
-                int64_t position,
-                int size);
+  // Media data read helpers: must be run on the utility thread.
+  void ReadMediaData(uint8_t* destination,
+                     const ReadCB& callback,
+                     int64_t position,
+                     int size);
   void ReadDone(uint8_t* destination,
                 const ReadCB& callback,
                 const std::vector<uint8_t>& data);

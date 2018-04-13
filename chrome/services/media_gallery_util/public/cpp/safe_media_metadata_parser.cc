@@ -8,47 +8,17 @@
 
 #include "base/callback.h"
 #include "chrome/services/media_gallery_util/public/mojom/constants.mojom.h"
-#include "content/public/browser/browser_context.h"
-#include "extensions/browser/blob_reader.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-class SafeMediaMetadataParser::MediaDataSourceImpl
-    : public chrome::mojom::MediaDataSource {
- public:
-  MediaDataSourceImpl(SafeMediaMetadataParser* owner,
-                      chrome::mojom::MediaDataSourcePtr* interface)
-      : binding_(this, mojo::MakeRequest(interface)),
-        safe_media_metadata_parser_(owner) {}
-
-  ~MediaDataSourceImpl() override = default;
-
- private:
-  void ReadBlob(int64_t position,
-                int64_t length,
-                ReadBlobCallback callback) override {
-    safe_media_metadata_parser_->StartBlobRequest(std::move(callback), position,
-                                                  length);
-  }
-
-  mojo::Binding<chrome::mojom::MediaDataSource> binding_;
-  // |safe_media_metadata_parser_| owns |this|.
-  SafeMediaMetadataParser* const safe_media_metadata_parser_;
-
-  DISALLOW_COPY_AND_ASSIGN(MediaDataSourceImpl);
-};
-
 SafeMediaMetadataParser::SafeMediaMetadataParser(
-    content::BrowserContext* browser_context,
-    const std::string& blob_uuid,
-    int64_t blob_size,
+    int64_t size,
     const std::string& mime_type,
-    bool get_attached_images)
-    : browser_context_(browser_context),
-      blob_uuid_(blob_uuid),
-      blob_size_(blob_size),
+    bool get_attached_images,
+    std::unique_ptr<MediaDataSourceFactory> media_source_factory)
+    : size_(size),
       mime_type_(mime_type),
       get_attached_images_(get_attached_images),
+      media_source_factory_(std::move(media_source_factory)),
       weak_factory_(this) {}
 
 SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
@@ -65,9 +35,11 @@ void SafeMediaMetadataParser::Start(service_manager::Connector* connector,
 
 void SafeMediaMetadataParser::OnMediaParserCreated() {
   chrome::mojom::MediaDataSourcePtr source;
-  media_data_source_ = std::make_unique<MediaDataSourceImpl>(this, &source);
+  media_data_source_ = media_source_factory_->CreateMediaDataSource(
+      &source, base::BindRepeating(&SafeMediaMetadataParser::OnMediaDataReady,
+                                   weak_factory_.GetWeakPtr()));
   media_parser()->ParseMediaMetadata(
-      mime_type_, blob_size_, get_attached_images_, std::move(source),
+      mime_type_, size_, get_attached_images_, std::move(source),
       base::BindOnce(&SafeMediaMetadataParser::ParseMediaMetadataDone,
                      base::Unretained(this)));
 }
@@ -96,22 +68,9 @@ void SafeMediaMetadataParser::ParseMediaMetadataDone(
                            std::move(attached_images_copy));
 }
 
-void SafeMediaMetadataParser::StartBlobRequest(
-    chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-    int64_t position,
-    int64_t length) {
-  BlobReader* reader = new BlobReader(  // BlobReader is self-deleting.
-      browser_context_, blob_uuid_,
-      base::Bind(&SafeMediaMetadataParser::BlobReaderDone,
-                 weak_factory_.GetWeakPtr(), base::Passed(&callback)));
-  reader->SetByteRange(position, length);
-  reader->Start();
-}
-
-void SafeMediaMetadataParser::BlobReaderDone(
-    chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-    std::unique_ptr<std::string> data,
-    int64_t /* blob_total_size */) {
+void SafeMediaMetadataParser::OnMediaDataReady(
+    chrome::mojom::MediaDataSource::ReadCallback callback,
+    std::unique_ptr<std::string> data) {
   if (media_parser())
     std::move(callback).Run(std::vector<uint8_t>(data->begin(), data->end()));
 }

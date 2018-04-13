@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/media_galleries/blob_data_source_factory.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -674,9 +675,11 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
       metadata_type == MediaGalleries::GET_METADATA_TYPE_ALL ||
       metadata_type == MediaGalleries::GET_METADATA_TYPE_NONE;
 
+  auto media_data_source_factory =
+      std::make_unique<BlobDataSourceFactory>(GetProfile(), blob_uuid);
   auto parser = std::make_unique<SafeMediaMetadataParser>(
-      GetProfile(), blob_uuid, total_blob_length, mime_type,
-      get_attached_images);
+      total_blob_length, mime_type, get_attached_images,
+      std::move(media_data_source_factory));
   SafeMediaMetadataParser* parser_ptr = parser.get();
   parser_ptr->Start(
       content::ServiceManagerConnection::GetForProcess()->GetConnector(),
