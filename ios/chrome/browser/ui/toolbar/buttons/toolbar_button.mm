@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 
+#include "base/logging.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
@@ -11,11 +12,23 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kSpotlightSize = 38;
+const CGFloat kSpotlightCornerRadius = 7;
+const CGFloat kSpotlightAlpha = 0.07;
+}  // namespace
+
+@interface ToolbarButton ()
+@property(nonatomic, strong) UIView* spotlightView;
+@end
+
 @implementation ToolbarButton
 @synthesize visibilityMask = _visibilityMask;
 @synthesize guideName = _guideName;
 @synthesize hiddenInCurrentSizeClass = _hiddenInCurrentSizeClass;
 @synthesize hiddenInCurrentState = _hiddenInCurrentState;
+@synthesize spotlighted = _spotlighted;
+@synthesize spotlightView = _spotlightView;
 
 + (instancetype)toolbarButtonWithImageForNormalState:(UIImage*)normalImage
                             imageForHighlightedState:(UIImage*)highlightedImage
@@ -35,6 +48,7 @@
   [button setImage:image forState:UIControlStateNormal];
   button.titleLabel.textAlignment = NSTextAlignmentCenter;
   button.translatesAutoresizingMaskIntoConstraints = NO;
+  [button addSpotlight];
   return button;
 }
 
@@ -102,7 +116,41 @@
   [self setHiddenForCurrentStateAndSizeClass];
 }
 
+- (void)setSpotlighted:(BOOL)spotlighted {
+  if (spotlighted == _spotlighted)
+    return;
+
+  _spotlighted = spotlighted;
+  self.spotlightView.hidden = !spotlighted;
+  [self setNeedsLayout];
+  [self layoutIfNeeded];
+}
+
+- (UIControlState)state {
+  DCHECK(ControlStateSpotlighted & UIControlStateApplication);
+  UIControlState state = [super state];
+  if (self.spotlighted)
+    state |= ControlStateSpotlighted;
+  return state;
+}
+
 #pragma mark - Private
+
+- (void)addSpotlight {
+  self.spotlightView = [[UIView alloc] init];
+  self.spotlightView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.spotlightView.hidden = YES;
+  self.spotlightView.userInteractionEnabled = NO;
+  self.spotlightView.layer.cornerRadius = kSpotlightCornerRadius;
+  self.spotlightView.backgroundColor =
+      [UIColor colorWithWhite:0 alpha:kSpotlightAlpha];
+  [self addSubview:self.spotlightView];
+  AddSameCenterConstraints(self, self.spotlightView);
+  [self.spotlightView.widthAnchor constraintEqualToConstant:kSpotlightSize]
+      .active = YES;
+  [self.spotlightView.heightAnchor constraintEqualToConstant:kSpotlightSize]
+      .active = YES;
+}
 
 // Checks if the button should be visible based on its hiddenInCurrentSizeClass
 // and hiddenInCurrentState properties, then updates its visibility accordingly.

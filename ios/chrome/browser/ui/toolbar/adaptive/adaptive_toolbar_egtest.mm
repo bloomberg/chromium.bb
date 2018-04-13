@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/secondary_toolbar_view.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -105,6 +106,21 @@ id<GREYMatcher> VisibleInSecondaryToolbar() {
   return grey_allOf(
       grey_ancestor(grey_kindOfClass([SecondaryToolbarView class])),
       grey_sufficientlyVisible(), nil);
+}
+
+// Returns a matcher for a UIControl object being spotlighted.
+id<GREYMatcher> Spotlighted() {
+  MatchesBlock matches = ^BOOL(UIControl* control) {
+    return control.state & ControlStateSpotlighted;
+  };
+  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+    [description appendText:@"is spotlighted"];
+  };
+  return grey_allOf(
+      grey_kindOfClass([UIControl class]),
+      [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
+                                           descriptionBlock:describe],
+      nil);
 }
 
 bool AddInfobar() {
@@ -303,7 +319,7 @@ void FocusOmnibox() {
 
 @implementation AdaptiveToolbarTestCase
 
-// Tests that bookmarks button is selected for the bookmarked pages.
+// Tests that bookmarks button is spotlighted for the bookmarked pages.
 - (void)testBookmarkButton {
   if (!IsIPadIdiom()) {
     // If this test is run on an iPhone, rotate it to have the unsplit toolbar.
@@ -321,26 +337,28 @@ void FocusOmnibox() {
       base::BindRepeating(&StandardResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
-  // Navigate to a page and check the bookmark button is not selected.
+  // Navigate to a page and check the bookmark button is not spotlighted.
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:grey_not(grey_selected())];
+      assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
+                                   grey_not(Spotlighted()), nil)];
 
   // Bookmark the page.
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:grey_selected()];
+      assertWithMatcher:Spotlighted()];
 
   // Navigate to a different page and check the button is not selected.
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL2)];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:grey_not(grey_selected())];
+      assertWithMatcher:grey_allOf(grey_kindOfClass([UIControl class]),
+                                   grey_not(Spotlighted()), nil)];
 
   // Navigate back to the bookmarked page and check the button.
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
   [[EarlGrey selectElementWithMatcher:BookmarkButton()]
-      assertWithMatcher:grey_selected()];
+      assertWithMatcher:Spotlighted()];
 
   // Clean the bookmarks
   GREYAssert(chrome_test_util::ClearBookmarks(),
@@ -464,7 +482,7 @@ void FocusOmnibox() {
       base::BindRepeating(&TallPageResponse));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 
-  // Navigate to a page and check the bookmark button is not selected.
+  // Navigate to a page.
   [ChromeEarlGrey loadURL:self.testServer->GetURL(kPageURL)];
 
   GREYAssert(AddInfobar(), @"Failed to add infobar.");
