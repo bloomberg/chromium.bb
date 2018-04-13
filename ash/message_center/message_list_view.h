@@ -68,6 +68,9 @@ class ASH_EXPORT MessageListView : public views::View,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  void set_use_fixed_height(bool use_fixed_height) {
+    use_fixed_height_ = use_fixed_height;
+  }
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
  protected:
@@ -128,6 +131,7 @@ class ASH_EXPORT MessageListView : public views::View,
   int fixed_height_;
   bool has_deferred_task_;
   bool clear_all_started_;
+  bool use_fixed_height_;
   std::set<views::View*> adding_views_;
   std::set<views::View*> deleting_views_;
   std::set<views::View*> deleted_when_done_;

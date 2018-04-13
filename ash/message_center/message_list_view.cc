@@ -47,6 +47,7 @@ MessageListView::MessageListView()
       fixed_height_(0),
       has_deferred_task_(false),
       clear_all_started_(false),
+      use_fixed_height_(true),
       animator_(this),
       weak_ptr_factory_(this) {
   auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical,
@@ -207,7 +208,7 @@ gfx::Size MessageListView::CalculatePreferredSize() const {
 }
 
 int MessageListView::GetHeightForWidth(int width) const {
-  if (fixed_height_ > 0)
+  if (use_fixed_height_ && fixed_height_ > 0)
     return fixed_height_;
 
   width -= GetInsets().width();
