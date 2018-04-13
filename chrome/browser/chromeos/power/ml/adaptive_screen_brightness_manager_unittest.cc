@@ -39,6 +39,7 @@ namespace chromeos {
 namespace power {
 namespace ml {
 
+namespace {
 struct LogActivityInfo {
   ScreenBrightnessEvent screen_brightness_event;
   ukm::SourceId tab_id;
@@ -63,9 +64,8 @@ class TestingAdaptiveScreenBrightnessUkmLogger
   void LogActivity(const ScreenBrightnessEvent& screen_brightness_event,
                    ukm::SourceId tab_id,
                    bool has_form_entry) override {
-    LogActivityInfo info =
-        LogActivityInfo{screen_brightness_event, tab_id, has_form_entry};
-    log_activity_info_.push_back(info);
+    log_activity_info_.push_back(
+        LogActivityInfo{screen_brightness_event, tab_id, has_form_entry});
   }
 
  private:
@@ -73,6 +73,8 @@ class TestingAdaptiveScreenBrightnessUkmLogger
 
   DISALLOW_COPY_AND_ASSIGN(TestingAdaptiveScreenBrightnessUkmLogger);
 };
+
+}  // namespace
 
 class AdaptiveScreenBrightnessManagerTest
     : public ChromeRenderViewHostTestHarness {
@@ -561,7 +563,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, SingleBrowser) {
   EXPECT_EQ(source_id2, info[0].tab_id);
   EXPECT_EQ(false, info[0].has_form_entry);
 
-  // Tabs are required to be closed.
+  // Browser DCHECKS that all tabs have been closed at destruction.
   tab_strip_model->CloseAllTabs();
 }
 
@@ -599,7 +601,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, MultipleBrowsersWithActive) {
   EXPECT_EQ(source_id2, info[0].tab_id);
   EXPECT_EQ(false, info[0].has_form_entry);
 
-  // Tabs are required to be closed.
+  // Browser DCHECKS that all tabs have been closed at destruction.
   tab_strip_model1->CloseAllTabs();
   tab_strip_model2->CloseAllTabs();
   tab_strip_model3->CloseAllTabs();
@@ -640,7 +642,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, MultipleBrowsersNoneActive) {
   EXPECT_EQ(source_id2, info[0].tab_id);
   EXPECT_EQ(false, info[0].has_form_entry);
 
-  // Tabs are required to be closed.
+  // Browser DCHECKS that all tabs have been closed at destruction.
   tab_strip_model1->CloseAllTabs();
   tab_strip_model2->CloseAllTabs();
   tab_strip_model3->CloseAllTabs();
@@ -681,7 +683,7 @@ TEST_F(AdaptiveScreenBrightnessManagerTest, BrowsersWithIncognito) {
   EXPECT_EQ(source_id2, info[0].tab_id);
   EXPECT_EQ(false, info[0].has_form_entry);
 
-  // Tabs are required to be closed.
+  // Browser DCHECKS that all tabs have been closed at destruction.
   tab_strip_model1->CloseAllTabs();
   tab_strip_model2->CloseAllTabs();
   tab_strip_model3->CloseAllTabs();
