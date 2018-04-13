@@ -1,5 +1,6 @@
 importScripts("../../resources/testharness.js");
 importScripts("file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js");
+importScripts("file:///gen/skia/public/interfaces/image_info.mojom.js");
 importScripts("file:///gen/skia/public/interfaces/bitmap.mojom.js");
 importScripts("file:///gen/ui/gfx/geometry/mojo/geometry.mojom.js");
 importScripts("file:///gen/services/shape_detection/public/mojom/barcodedetection.mojom.js");

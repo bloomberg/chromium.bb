@@ -4,12 +4,16 @@
 
 module skia.mojom;
 
+import "skia/public/interfaces/image_info.mojom";
 import "skia/public/interfaces/bitmap.mojom";
 import "skia/public/interfaces/blur_image_filter_tile_mode.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.
 interface TraitsTestService {
+  [Sync]
+  EchoImageInfo(ImageInfo i) => (ImageInfo pass);
+
   [Sync]
   EchoBitmap(Bitmap b) => (Bitmap pass);
 
