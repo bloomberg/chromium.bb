@@ -57,13 +57,12 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
   DCHECK(!worker_);
   DCHECK(!is_job_pending_);
   DCHECK(!is_canceling_);
-  DCHECK(!document_.get());
+  DCHECK(!document_);
   worker_ = job->DetachWorker(this);
   settings_ = job->settings();
 
-  PrintedDocument* new_doc =
-      new PrintedDocument(settings_, name, job->cookie());
-
+  auto new_doc =
+      base::MakeRefCounted<PrintedDocument>(settings_, name, job->cookie());
   new_doc->set_page_count(page_count);
   UpdatePrintedDocument(new_doc);
 
@@ -124,10 +123,9 @@ const PrintSettings& PrintJob::settings() const {
 }
 
 int PrintJob::cookie() const {
-  // Always use an invalid cookie in this case.
-  if (!document_.get())
-    return 0;
-  return document_->cookie();
+  // Use an invalid cookie if |document_| does not exist.
+  // TODO(thestig): Check if this is even reachable.
+  return document_ ? document_->cookie() : 0;
 }
 
 void PrintJob::StartPrinting() {
@@ -147,8 +145,8 @@ void PrintJob::StartPrinting() {
   is_job_pending_ = true;
 
   // Tell everyone!
-  scoped_refptr<JobEventDetails> details(
-      new JobEventDetails(JobEventDetails::NEW_DOC, 0, document_.get()));
+  auto details = base::MakeRefCounted<JobEventDetails>(JobEventDetails::NEW_DOC,
+                                                       0, document_.get());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_EVENT,
       content::Source<PrintJob>(this),
@@ -173,13 +171,14 @@ void PrintJob::Stop() {
   } else {
     // Flush the cached document.
     is_job_pending_ = false;
-    UpdatePrintedDocument(nullptr);
+    ClearPrintedDocument();
   }
 }
 
 void PrintJob::Cancel() {
   if (is_canceling_)
     return;
+
   is_canceling_ = true;
 
   DCHECK(RunsTasksInCurrentSequence());
@@ -189,8 +188,8 @@ void PrintJob::Cancel() {
     worker_->Cancel();
   }
   // Make sure a Cancel() is broadcast.
-  scoped_refptr<JobEventDetails> details(
-      new JobEventDetails(JobEventDetails::FAILED, 0, nullptr));
+  auto details = base::MakeRefCounted<JobEventDetails>(JobEventDetails::FAILED,
+                                                       0, nullptr);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_EVENT,
       content::Source<PrintJob>(this),
@@ -302,7 +301,7 @@ void PrintJob::OnPdfPageConverted(int page_number,
                                   float scale_factor,
                                   std::unique_ptr<MetafilePlayer> metafile) {
   DCHECK(pdf_conversion_state_);
-  if (!document_.get() || !metafile || page_number < 0 ||
+  if (!document_ || !metafile || page_number < 0 ||
       static_cast<size_t>(page_number) >= pdf_page_mapping_.size()) {
     // Be sure to live long enough.
     scoped_refptr<PrintJob> handle(this);
@@ -359,25 +358,34 @@ void PrintJob::StartPdfToPostScriptConversion(
 }
 #endif  // defined(OS_WIN)
 
-void PrintJob::UpdatePrintedDocument(PrintedDocument* new_document) {
-  if (document_.get() == new_document)
-    return;
+void PrintJob::UpdatePrintedDocument(
+    scoped_refptr<PrintedDocument> new_document) {
+  DCHECK(new_document);
 
   document_ = new_document;
+  settings_ = document_->settings();
+  if (worker_)
+    SyncPrintedDocumentToWorker();
+}
 
-  if (document_.get())
-    settings_ = document_->settings();
+void PrintJob::ClearPrintedDocument() {
+  if (!document_)
+    return;
 
-  if (worker_) {
-    DCHECK(!is_job_pending_);
-    // Sync the document with the worker.
-    worker_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HoldRefCallback, base::WrapRefCounted(this),
-                       base::BindOnce(&PrintJobWorker::OnDocumentChanged,
-                                      base::Unretained(worker_.get()),
-                                      base::RetainedRef(document_))));
-  }
+  document_ = nullptr;
+  if (worker_)
+    SyncPrintedDocumentToWorker();
+}
+
+void PrintJob::SyncPrintedDocumentToWorker() {
+  DCHECK(worker_);
+  DCHECK(!is_job_pending_);
+  worker_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HoldRefCallback, base::WrapRefCounted(this),
+                     base::BindOnce(&PrintJobWorker::OnDocumentChanged,
+                                    base::Unretained(worker_.get()),
+                                    base::RetainedRef(document_))));
 }
 
 void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
@@ -429,8 +437,8 @@ void PrintJob::OnDocumentDone() {
   // Stop the worker thread.
   Stop();
 
-  scoped_refptr<JobEventDetails> details(
-      new JobEventDetails(JobEventDetails::JOB_DONE, 0, document_.get()));
+  auto details = base::MakeRefCounted<JobEventDetails>(
+      JobEventDetails::JOB_DONE, 0, document_.get());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PRINT_JOB_EVENT,
       content::Source<PrintJob>(this),
@@ -476,7 +484,7 @@ void PrintJob::ControlledWorkerShutdown() {
 
   is_job_pending_ = false;
   registrar_.RemoveAll();
-  UpdatePrintedDocument(nullptr);
+  ClearPrintedDocument();
 }
 
 void PrintJob::HoldUntilStopIsCalled() {
