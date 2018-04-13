@@ -170,7 +170,6 @@ source_set("base") {
 source_set("throw_delegate") {
   configs += [
     "//third_party/abseil-cpp:absl_default_cflags_cc",
-    "//third_party/abseil-cpp:absl_exceptions_cflags_cc",
   ]
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
   sources = [
@@ -215,7 +214,6 @@ source_set("exception_safety_testing") {
   testonly = true
   configs += [
     "//third_party/abseil-cpp:absl_test_cflags_cc",
-    "//third_party/abseil-cpp:absl_exceptions_cflags_cc",
   ]
 
   public_configs = [ "//third_party/abseil-cpp:absl_include_config" ]
