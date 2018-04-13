@@ -53,8 +53,10 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   explicit CdmService(std::unique_ptr<Client> client);
   ~CdmService() final;
 
-  void DisableDelayedServiceReleaseForTesting() {
-    is_delayed_service_release_enabled = false;
+  // By default CdmService release is delayed. Overrides the delay with |delay|.
+  // If |delay| is 0, delayed service release will be disabled.
+  void SetServiceReleaseDelayForTesting(base::TimeDelta delay) {
+    service_release_delay_ = delay;
   }
 
   size_t BoundCdmFactorySizeForTesting() const {
@@ -92,7 +94,7 @@ class MEDIA_MOJO_EXPORT CdmService : public service_manager::Service,
   DeferredDestroyStrongBindingSet<mojom::CdmFactory> cdm_factory_bindings_;
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<mojom::CdmService> bindings_;
-  bool is_delayed_service_release_enabled = true;
+  base::TimeDelta service_release_delay_;
 };
 
 }  // namespace media

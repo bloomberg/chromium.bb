@@ -22,44 +22,49 @@ namespace media {
 
 namespace {
 
+using service_manager::ServiceContextRef;
+
 constexpr base::TimeDelta kServiceContextRefReleaseDelay =
     base::TimeDelta::FromSeconds(5);
 
-void DeleteServiceContextRef(service_manager::ServiceContextRef* ref) {
+void DeleteServiceContextRef(ServiceContextRef* ref) {
   delete ref;
 }
 
 // Starting a new process and loading the library CDM could be expensive. This
-// class helps delay the release of service_manager::ServiceContextRef by
+// class helps delay the release of ServiceContextRef by
 // |kServiceContextRefReleaseDelay|, which will ultimately delay CdmService
 // destruction by the same delay as well. This helps reduce the chance of
 // destroying the CdmService and immediately creates it (in another process) in
 // cases like navigation, which could cause long service connection delays.
-class DelayedReleaseServiceContextRef
-    : public service_manager::ServiceContextRef {
+class DelayedReleaseServiceContextRef : public ServiceContextRef {
  public:
-  explicit DelayedReleaseServiceContextRef(
-      std::unique_ptr<service_manager::ServiceContextRef> ref)
+  DelayedReleaseServiceContextRef(std::unique_ptr<ServiceContextRef> ref,
+                                  base::TimeDelta delay)
       : ref_(std::move(ref)),
-        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
+        delay_(delay),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+    DCHECK_GT(delay_, base::TimeDelta());
+  }
 
   ~DelayedReleaseServiceContextRef() override {
     service_manager::ServiceContextRef* ref_ptr = ref_.release();
     if (!task_runner_->PostNonNestableDelayedTask(
             FROM_HERE, base::BindOnce(&DeleteServiceContextRef, ref_ptr),
-            kServiceContextRefReleaseDelay)) {
+            delay_)) {
       DeleteServiceContextRef(ref_ptr);
     }
   }
 
-  // service_manager::ServiceContextRef implementation.
+  // ServiceContextRef implementation.
   std::unique_ptr<ServiceContextRef> Clone() override {
     NOTIMPLEMENTED();
     return nullptr;
   }
 
  private:
-  std::unique_ptr<service_manager::ServiceContextRef> ref_;
+  std::unique_ptr<ServiceContextRef> ref_;
+  base::TimeDelta delay_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedReleaseServiceContextRef);
@@ -85,10 +90,9 @@ class DelayedReleaseServiceContextRef
 //     details.
 class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
  public:
-  CdmFactoryImpl(
-      CdmService::Client* client,
-      service_manager::mojom::InterfaceProviderPtr interfaces,
-      std::unique_ptr<service_manager::ServiceContextRef> service_context_ref)
+  CdmFactoryImpl(CdmService::Client* client,
+                 service_manager::mojom::InterfaceProviderPtr interfaces,
+                 std::unique_ptr<ServiceContextRef> service_context_ref)
       : client_(client),
         interfaces_(std::move(interfaces)),
         service_context_ref_(std::move(service_context_ref)) {
@@ -147,7 +151,7 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
   CdmService::Client* client_;
   service_manager::mojom::InterfaceProviderPtr interfaces_;
   mojo::StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
-  std::unique_ptr<service_manager::ServiceContextRef> service_context_ref_;
+  std::unique_ptr<ServiceContextRef> service_context_ref_;
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   base::OnceClosure destroy_cb_;
 
@@ -157,7 +161,8 @@ class CdmFactoryImpl : public DeferredDestroy<mojom::CdmFactory> {
 }  // namespace
 
 CdmService::CdmService(std::unique_ptr<Client> client)
-    : client_(std::move(client)) {
+    : client_(std::move(client)),
+      service_release_delay_(kServiceContextRefReleaseDelay) {
   DVLOG(1) << __func__;
   DCHECK(client_);
   registry_.AddInterface<mojom::CdmService>(
@@ -260,10 +265,10 @@ void CdmService::CreateCdmFactory(
   if (!client_)
     return;
 
-  std::unique_ptr<service_manager::ServiceContextRef> service_context_ref =
-      is_delayed_service_release_enabled
+  std::unique_ptr<ServiceContextRef> service_context_ref =
+      service_release_delay_ > base::TimeDelta()
           ? std::make_unique<DelayedReleaseServiceContextRef>(
-                ref_factory_->CreateRef())
+                ref_factory_->CreateRef(), service_release_delay_)
           : ref_factory_->CreateRef();
 
   cdm_factory_bindings_.AddBinding(
