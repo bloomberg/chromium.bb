@@ -79,6 +79,8 @@ InlineBoxPosition NextLinePositionOf(
   const LayoutText& layout_text =
       ToLayoutTextOrDie(*position.AnchorNode()->GetLayoutObject());
   InlineTextBox* const last = layout_text.LastTextBox();
+  if (!last)
+    return InlineBoxPosition();
   const RootInlineBox& root = last->Root();
   const RootInlineBox* const next_root = root.NextRootBox();
   if (!next_root)
