@@ -40,6 +40,14 @@ class SyncPrefObserver {
   virtual ~SyncPrefObserver();
 };
 
+// Use this for the unique machine tag used for session sync.
+class SessionSyncPrefs {
+ public:
+  virtual ~SessionSyncPrefs();
+  virtual std::string GetSyncSessionsGUID() const = 0;
+  virtual void SetSyncSessionsGUID(const std::string& guid) = 0;
+};
+
 // SyncPrefs is a helper class that manages getting, setting, and
 // persisting global sync preferences.  It is not thread-safe, and
 // lives on the UI thread.
@@ -53,7 +61,8 @@ class SyncPrefObserver {
 //   sync_setup_wizard.cc
 //   sync_setup_wizard_unittest.cc
 //   two_client_preferences_sync_test.cc
-class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs> {
+class SyncPrefs : public SessionSyncPrefs,
+                  public base::SupportsWeakPtr<SyncPrefs> {
  public:
   // |pref_service| may not be null.
   // Does not take ownership of |pref_service|.
@@ -62,7 +71,7 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs> {
   // For testing.
   SyncPrefs();
 
-  virtual ~SyncPrefs();
+  ~SyncPrefs() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
@@ -118,8 +127,8 @@ class SyncPrefs : public base::SupportsWeakPtr<SyncPrefs> {
   void SetKeystoreEncryptionBootstrapToken(const std::string& token);
 
   // Use this for the unique machine tag used for session sync.
-  std::string GetSyncSessionsGUID() const;
-  void SetSyncSessionsGUID(const std::string& guid);
+  std::string GetSyncSessionsGUID() const override;
+  void SetSyncSessionsGUID(const std::string& guid) override;
 
   // Maps |type| to its corresponding preference name.
   static const char* GetPrefNameForDataType(ModelType type);
