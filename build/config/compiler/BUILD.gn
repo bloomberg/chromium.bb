@@ -1569,7 +1569,10 @@ config("no_rtti") {
 # 2. Remove the thin_archive config, so that the .a file actually contains all
 #    .o files, instead of just references to .o files in the build directoy
 config("thin_archive") {
-  if ((is_posix && !is_nacl) || is_fuchsia) {
+  # Mac and iOS use the mac-specific "libtool" command, not ar, which doesn't
+  # have a "thin archive" mode (it does accept -T, but it means truncating
+  # archive names to 16 characters, which is not what we want).
+  if ((is_posix && !is_nacl && !is_mac && !is_ios) || is_fuchsia) {
     # TODO(thomasanderson): Enable on ChromeOS builds once
     # https://crbug.com/829956 is fixed.
     if (default_toolchain != "//build/toolchain/cros:target") {
