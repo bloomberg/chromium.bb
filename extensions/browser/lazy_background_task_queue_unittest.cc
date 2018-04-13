@@ -102,7 +102,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionsTest {
                     .Set("manifest_version", 2)
                     .Set("background", DictionaryBuilder()
                                            .Set("page", "background.html")
-                                           .SetBoolean("persistent", false)
+                                           .Set("persistent", false)
                                            .Build())
                     .Build())
             .SetID("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
