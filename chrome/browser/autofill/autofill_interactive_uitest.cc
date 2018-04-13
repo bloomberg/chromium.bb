@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <tuple>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -37,6 +39,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -231,23 +234,34 @@ content::RenderFrameHost* RenderFrameHostForName(
     content::WebContents* web_contents,
     const std::string& name) {
   return content::FrameMatchingPredicate(
-      web_contents, base::Bind(&content::FrameMatchesName, name));
+      web_contents, base::BindRepeating(&content::FrameMatchesName, name));
 }
 
 }  // namespace
 
-// AutofillInteractiveTest ----------------------------------------------------
+// AutofillInteractiveTestBase ------------------------------------------------
 
-class AutofillInteractiveTest : public InProcessBrowserTest {
+// Test fixtures derive from this class and will indicate if feature
+// kAutofillExpandedPopupViews is enabled. This class hierarchy allows test
+// fixtures to have distinct list of test parameters.
+//
+// TODO(crbug.com/832707): Parametrize this class to ensure that all tests in
+//                         this run with all possible valid combinations of
+//                         features and field trials.
+class AutofillInteractiveTestBase : public InProcessBrowserTest {
  protected:
-  AutofillInteractiveTest() :
-      key_press_event_sink_(
-          base::Bind(&AutofillInteractiveTest::HandleKeyPressEvent,
-                     base::Unretained(this))) {}
-  ~AutofillInteractiveTest() override {}
+  explicit AutofillInteractiveTestBase(bool popup_views_enabled)
+      : key_press_event_sink_(base::BindRepeating(
+            &AutofillInteractiveTestBase::HandleKeyPressEvent,
+            base::Unretained(this))),
+        popup_views_enabled_(popup_views_enabled) {}
+  ~AutofillInteractiveTestBase() override = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
+    scoped_feature_list_.InitWithFeatureState(kAutofillExpandedPopupViews,
+                                              popup_views_enabled_);
+
     // Don't want Keychain coming up on Mac.
     test::DisableSystemServices(browser()->profile()->GetPrefs());
 
@@ -580,7 +594,24 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   // with it.
   content::RenderWidgetHost::KeyPressEventCallback key_press_event_sink_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutofillInteractiveTest);
+  // Indicates if AutofillExpandedPopupViews is enabled.
+  bool popup_views_enabled_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillInteractiveTestBase);
+};
+
+// AutofillInteractiveTest ----------------------------------------------------
+
+// Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+class AutofillInteractiveTest : public AutofillInteractiveTestBase,
+                                public ::testing::WithParamInterface<bool> {
+ protected:
+  AutofillInteractiveTest() : AutofillInteractiveTestBase(GetParam()) {}
+  ~AutofillInteractiveTest() override = default;
 };
 
 // Test that basic form fill is working.
@@ -590,7 +621,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 #else
 #define MAYBE_BasicFormFill BasicFormFill
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_BasicFormFill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_BasicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -608,7 +639,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_BasicFormFill) {
 #define MAYBE_AutofillViaDownArrow AutofillViaDownArrow
 #endif
 // Test that form filling can be initiated by pressing the down arrow.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
   CreateTestProfile();
 
   // Load the test page.
@@ -639,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaDownArrow) {
 #else
 #define MAYBE_AutofillSelectViaTab AutofillSelectViaTab
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
@@ -670,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillSelectViaTab) {
 #else
 #define MAYBE_AutofillViaClick AutofillViaClick
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -695,27 +726,33 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillViaClick) {
   ExpectFilledTestForm();
 }
 
-// Test fixture that enables/disables AutofillSingleClick per a bool param,
-class AutofillSingleClickTest : public AutofillInteractiveTest,
-                                public testing::WithParamInterface<bool> {
+// Test params:
+//  - bool popup_views_enabled_: whether feature AutofillExpandedPopupViews
+//        is enabled.
+//  - bool single_click_enabled_: whether AutofillSingleClick is enabled.
+class AutofillSingleClickTest
+    : public AutofillInteractiveTestBase,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  protected:
+  AutofillSingleClickTest()
+      : AutofillInteractiveTestBase(std::get<0>(GetParam())),
+        single_click_enabled_(std::get<1>(GetParam())) {}
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    AutofillInteractiveTest::SetUpCommandLine(command_line);
-    const bool single_click_enabled = GetParam();
-    const char* group = single_click_enabled ? "Enabled" : "Disabled";
+    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
+    const char* group = single_click_enabled_ ? "Enabled" : "Disabled";
     command_line->AppendSwitchASCII(
         ::switches::kForceFieldTrials,
         base::StringPrintf("AutofillSingleClick/%s", group));
   }
+
+  bool single_click_enabled_;
 };
 
 // Depending on whether or not AutofillSingleClick is enabled, makes sure that
 // the first click does or does not activate the autofill popup on the initial
 // click within a fillable field.
 IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
-  // Get the test parameters.
-  const bool single_click_enabled = GetParam();
-
   // Make sure autofill data exists.
   CreateTestProfile();
 
@@ -725,7 +762,7 @@ IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
 
   // If AutofillSingleClick is NOT enabled, then the first time we click on the
   // first name field, nothing should happen.
-  if (!single_click_enabled) {
+  if (!single_click_enabled_) {
     // Click the first name field while it's out of focus, then twiddle our
     // thumbs a bit. If the autofill popup shows, it will hit the CHECKs in
     // AutofillManagerTestDelegateImpl while we're waiting.
@@ -749,13 +786,13 @@ IN_PROC_BROWSER_TEST_P(AutofillSingleClickTest, Click) {
   ExpectFilledTestForm();
 }
 
-INSTANTIATE_TEST_CASE_P(AutofillInteractiveTest,
+INSTANTIATE_TEST_CASE_P(All,
                         AutofillSingleClickTest,
-                        testing::Bool());
+                        testing::Combine(testing::Bool(), testing::Bool()));
 
 // Makes sure that clicking outside the focused field doesn't activate
 // the popup.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   CreateTestProfile();
 
   // Load the test page.
@@ -785,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
 #else
 #define MAYBE_OnDeleteValueAfterAutofill OnDeleteValueAfterAutofill
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_OnDeleteValueAfterAutofill) {
   CreateTestProfile();
 
@@ -827,7 +864,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #else
 #define MAYBE_OnSelectOptionFromDatalist OnSelectOptionFromDatalist
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_OnSelectOptionFromDatalist) {
   // Load the test page.
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
@@ -861,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #else
 #define MAYBE_OnInputAfterAutofill OnInputAfterAutofill
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
   CreateTestProfile();
 
   const char kOnInputScript[] =
@@ -940,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnInputAfterAutofill) {
 #else
 #define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
   CreateTestProfile();
 
   const char kOnChangeScript[] =
@@ -1018,7 +1055,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
 #else
 #define MAYBE_InputFiresBeforeChange InputFiresBeforeChange
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
   CreateTestProfile();
 
   const char kInputFiresBeforeChangeScript[] =
@@ -1105,7 +1142,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_InputFiresBeforeChange) {
 #else
 #define MAYBE_AutofillFormsDistinguishedById AutofillFormsDistinguishedById
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_AutofillFormsDistinguishedById) {
   CreateTestProfile();
 
@@ -1138,7 +1175,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #else
 #define MAYBE_AutofillFormWithRepeatedField AutofillFormWithRepeatedField
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_AutofillFormWithRepeatedField) {
   CreateTestProfile();
 
@@ -1192,7 +1229,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   AutofillFormWithNonAutofillableField
 #endif
 // Test that we properly autofill forms with non-autofillable fields.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_AutofillFormWithNonAutofillableField) {
   CreateTestProfile();
 
@@ -1242,7 +1279,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #define MAYBE_DynamicFormFill DynamicFormFill
 #endif
 // Test that we can Autofill dynamically generated forms.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1336,7 +1373,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_DynamicFormFill) {
 #define MAYBE_AutofillAfterReload AutofillAfterReload
 #endif
 // Test that form filling works after reloading the current page.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1360,7 +1397,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterReload) {
 #else
 #define MAYBE_AutofillEvents AutofillEvents
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillEvents) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillEvents) {
   CreateTestProfile();
 
   // Load the test page.
@@ -1463,7 +1500,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillEvents) {
 #else
 #define MAYBE_AutofillAfterTranslate AutofillAfterTranslate
 #endif  // ADDRESS_SANITIZER
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
   ASSERT_TRUE(TranslateService::IsTranslateBubbleEnabled());
 
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
@@ -1551,7 +1588,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
 #else
 #define MAYBE_ComparePhoneNumbers ComparePhoneNumbers
 #endif  // defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
   AutofillProfile profile;
   profile.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Bob"));
   profile.SetRawInfo(NAME_LAST, ASCIIToUTF16("Smith"));
@@ -1606,7 +1643,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_ComparePhoneNumbers) {
 #else
 #define MAYBE_NoAutofillForReadOnlyFields NoAutofillForReadOnlyFields
 #endif  // defined(OFFICIAL_BUILD) || defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_NoAutofillForReadOnlyFields) {
   std::string addr_line1("1234 H St.");
 
@@ -1642,7 +1679,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #else
 #define MAYBE_FormFillableOnReset FormFillableOnReset
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_FormFillableOnReset) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_FormFillableOnReset) {
   CreateTestProfile();
 
   GURL url =
@@ -1675,7 +1712,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_FormFillableOnReset) {
 #define MAYBE_DistinguishMiddleInitialWithinName \
   DistinguishMiddleInitialWithinName
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_DistinguishMiddleInitialWithinName) {
   CreateTestProfile();
 
@@ -1697,7 +1734,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #define MAYBE_MultipleEmailFilledByOneUserGesture \
   MultipleEmailFilledByOneUserGesture
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_MultipleEmailFilledByOneUserGesture) {
   std::string email("bsmith@gmail.com");
 
@@ -1722,7 +1759,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 // that consists of thousands of profiles, the form does not hang after being
 // submitted.
 // Flakily times out: http://crbug.com/281527
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        DISABLED_FormFillLatencyAfterSubmit) {
   std::vector<std::string> cities;
   cities.push_back("San Jose");
@@ -1791,7 +1828,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 #else
 #define MAYBE_DisableAutocompleteWhileFilling DisableAutocompleteWhileFilling
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest,
                        MAYBE_DisableAutocompleteWhileFilling) {
   CreateTestProfile();
 
@@ -1817,7 +1854,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
 }
 
 // Test that dynamic forms don't get filled when the feature is disabled.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, DynamicChangingFormFill) {
   // Explicitly disable the filling of dynamic forms.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
@@ -1849,7 +1886,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DynamicChangingFormFill) {
 
 // Test that we can Autofill forms where some fields name change during the
 // fill.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FieldsChangeName) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, FieldsChangeName) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
@@ -1875,13 +1912,24 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, FieldsChangeName) {
 }
 
 // An extension of the test fixture for tests with site isolation.
-class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
+//
+// Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+class AutofillInteractiveIsolationTest
+    : public AutofillInteractiveTestBase,
+      public ::testing::WithParamInterface<bool> {
  protected:
+  AutofillInteractiveIsolationTest()
+      : AutofillInteractiveTestBase(GetParam()) {}
+  ~AutofillInteractiveIsolationTest() override = default;
+
   void SendKeyToPopupAndWait(ui::DomKey key,
                              content::RenderWidgetHost* widget) {
     ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
     ui::DomCode code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
-    AutofillInteractiveTest::SendKeyToPopupAndWait(key, code, key_code, widget);
+    AutofillInteractiveTestBase::SendKeyToPopupAndWait(key, code, key_code,
+                                                       widget);
   }
 
   bool IsPopupShown() {
@@ -1895,13 +1943,13 @@ class AutofillInteractiveIsolationTest : public AutofillInteractiveTest {
 
  private:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    AutofillInteractiveTest::SetUpCommandLine(command_line);
+    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
     // Append --site-per-process flag.
     content::IsolateAllSitesForTesting(command_line);
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
   CreateTestProfile();
 
   // Main frame is on a.com, iframe is on b.com.
@@ -1951,7 +1999,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest, SimpleCrossSiteFill) {
 #else
 #define MAYBE_CrossSitePaymentForms CrossSitePaymentForms
 #endif
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
   // Main frame is on a.com, iframe is on b.com.
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/cross_origin_iframe.html");
@@ -1982,7 +2030,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_CrossSitePaymentForms) {
   SendKeyToPageAndWait(ui::DomKey::ARROW_DOWN);
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
+INSTANTIATE_TEST_CASE_P(All, AutofillInteractiveTest, ::testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(AutofillInteractiveIsolationTest,
                        DeletingFrameUnderSuggestion) {
   CreateTestProfile();
 
@@ -2025,10 +2075,19 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
   EXPECT_FALSE(IsPopupShown());
 }
 
-class DynamicFormInteractiveTest : public AutofillInteractiveTest {
+INSTANTIATE_TEST_CASE_P(All,
+                        AutofillInteractiveIsolationTest,
+                        ::testing::Bool());
+
+// Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+class DynamicFormInteractiveTest : public AutofillInteractiveTestBase,
+                                   public ::testing::WithParamInterface<bool> {
  protected:
   DynamicFormInteractiveTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+      : AutofillInteractiveTestBase(GetParam()),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     // Setup that the test expects a re-fill to happen.
     test_delegate()->SetIsExpectingDynamicRefill(true);
   }
@@ -2045,11 +2104,11 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTest {
     https_server_.ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_.InitializeAndListen());
     https_server_.StartAcceptingConnections();
-    AutofillInteractiveTest::SetUp();
+    AutofillInteractiveTestBase::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    AutofillInteractiveTest::SetUpCommandLine(command_line);
+    AutofillInteractiveTestBase::SetUpCommandLine(command_line);
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "a.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
@@ -2071,7 +2130,7 @@ class DynamicFormInteractiveTest : public AutofillInteractiveTest {
 #else
 #define MAYBE_DynamicChangingFormFill DynamicChangingFormFill
 #endif
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        MAYBE_DynamicChangingFormFill) {
   CreateTestProfile();
 
@@ -2097,7 +2156,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
   ExpectFieldValue("phone_form1", "15125551234");
 }
 
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        TwoDynamicChangingFormsFill) {
   // Setup that the test expects a re-fill to happen.
   test_delegate()->SetIsExpectingDynamicRefill(true);
@@ -2144,7 +2203,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change a second time do not get filled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_SecondChange) {
   CreateTestProfile();
 
@@ -2171,7 +2230,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_AfterDelay) {
   CreateTestProfile();
 
@@ -2198,7 +2257,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
   CreateTestProfile();
 
@@ -2231,7 +2290,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 }
 
 // Test that credit card fields are never re-filled.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_NotForCreditCard) {
   // Add a credit card.
   CreditCard card;
@@ -2267,7 +2326,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_SelectUpdated) {
   CreateTestProfile();
 
@@ -2295,7 +2354,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
+IN_PROC_BROWSER_TEST_P(DynamicFormInteractiveTest,
                        DynamicChangingFormFill_DoubleSelectUpdated) {
   CreateTestProfile();
 
@@ -2320,5 +2379,7 @@ IN_PROC_BROWSER_TEST_F(DynamicFormInteractiveTest,
   ExpectFieldValue("email", "red.swingline@initech.com");
   ExpectFieldValue("phone", "15125551234");
 }
+
+INSTANTIATE_TEST_CASE_P(All, DynamicFormInteractiveTest, ::testing::Bool());
 
 }  // namespace autofill
