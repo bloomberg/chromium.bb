@@ -96,6 +96,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
     : TaskQueue(std::move(impl), spec),
       queue_type_(params.queue_type),
       queue_class_(QueueClassForQueueType(params.queue_type)),
+      fixed_priority_(params.fixed_priority),
       can_be_blocked_(params.can_be_blocked),
       can_be_throttled_(params.can_be_throttled),
       can_be_paused_(params.can_be_paused),

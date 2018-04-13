@@ -211,13 +211,15 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
     std::unique_ptr<TaskQueueManager> task_queue_manager,
     base::Optional<base::Time> initial_virtual_time)
     : helper_(std::move(task_queue_manager), this),
-      idle_helper_(
-          &helper_,
-          this,
-          "MainThreadSchedulerIdlePeriod",
-          base::TimeDelta(),
-          helper_.NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
-              MainThreadTaskQueue::QueueType::kIdle))),
+      idle_helper_(&helper_,
+                   this,
+                   "MainThreadSchedulerIdlePeriod",
+                   base::TimeDelta(),
+                   helper_.NewTaskQueue(
+                       MainThreadTaskQueue::QueueCreationParams(
+                           MainThreadTaskQueue::QueueType::kIdle)
+                           .SetFixedPriority(
+                               TaskQueue::QueuePriority::kBestEffortPriority))),
       idle_canceled_delayed_task_sweeper_(&helper_,
                                           idle_helper_.IdleTaskRunner()),
       render_widget_scheduler_signals_(this),
@@ -230,8 +232,11 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
           MainThreadTaskQueue::QueueCreationParams(
               MainThreadTaskQueue::QueueType::kInput)
               .SetShouldMonitorQuiescence(true)
-              .SetUsedForImportantTasks(
-                  IsUnconditionalHighPriorityInputEnabled()))),
+              .SetFixedPriority(
+                  IsUnconditionalHighPriorityInputEnabled()
+                      ? base::make_optional(
+                            TaskQueue::QueuePriority::kHighestPriority)
+                      : base::nullopt))),
       compositor_task_queue_enabled_voter_(
           compositor_task_queue_->CreateQueueEnabledVoter()),
       input_task_queue_enabled_voter_(
@@ -2186,6 +2191,10 @@ bool MainThreadSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
 
 TaskQueue::QueuePriority MainThreadSchedulerImpl::TaskQueuePolicy::GetPriority(
     MainThreadTaskQueue* task_queue) const {
+  base::Optional<TaskQueue::QueuePriority> fixed_priority =
+      task_queue->FixedPriority();
+  if (fixed_priority)
+    return fixed_priority.value();
   return task_queue->UsedForImportantTasks() ? TaskQueue::kHighestPriority
                                              : priority;
 }
