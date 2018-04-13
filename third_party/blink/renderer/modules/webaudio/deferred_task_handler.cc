@@ -328,14 +328,7 @@ void DeferredTaskHandler::DeleteHandlersOnMainThread() {
   DCHECK(IsMainThread());
   GraphAutoLocker locker(*this);
   deletable_orphan_handlers_.clear();
-  // Tail processing nodes have finished processing their tails so we need to
-  // disable their outputs to indicate to downstream nodes that they're done.
-  // This has to be done in the main thread because DisableOutputs() can causing
-  // summing juctions to go away, which must be done on the main thread.
-  for (auto& handler : finished_tail_processing_handlers_) {
-    handler->DisableOutputs();
-  }
-  finished_tail_processing_handlers_.clear();
+  DisableOutputsForTailProcessing();
 }
 
 void DeferredTaskHandler::ClearHandlersToBeDeleted() {
@@ -352,21 +345,44 @@ void DeferredTaskHandler::SetAudioThreadToCurrentThread() {
   ReleaseStore(&audio_thread_, thread);
 }
 
+void DeferredTaskHandler::DisableOutputsForTailProcessing() {
+  DCHECK(IsMainThread());
+  // Tail processing nodes have finished processing their tails so we need to
+  // disable their outputs to indicate to downstream nodes that they're done.
+  // This has to be done in the main thread because DisableOutputs() can cause
+  // summing juctions to go away, which must be done on the main thread.
+  for (auto& handler : finished_tail_processing_handlers_) {
+    handler->DisableOutputs();
+  }
+  finished_tail_processing_handlers_.clear();
+}
+
 void DeferredTaskHandler::FinishTailProcessing() {
   DCHECK(IsMainThread());
   // DisableOutputs must run with the graph lock.
   GraphAutoLocker locker(*this);
 
-  while (tail_processing_handlers_.size() > 0) {
-    // |DisableOutputs()| can modify |tail_processing_handlers_|, so
-    // swap it out before processing it.  And keep running this until
-    // nothing gets added to |tail_processing_handlers_|.
-    Vector<scoped_refptr<AudioHandler>> handlers;
+  // TODO(crbug.com/832200): Simplify this!
 
-    handlers.swap(tail_processing_handlers_);
-    for (auto& handler : handlers)
-      handler->DisableOutputs();
-  }
+  // |DisableOutputs()| can cause new handlers to start tail processing, which
+  // in turn can cause hte handler to want to disable outputs.  For the former
+  // case, the handler is added to |tail_processing_handlers_|.  In the latter
+  // case, the handler is added to |finished_tail_processing_handlers_|.  So, we
+  // need to loop around until these vectors are completely empty.
+  do {
+    while (tail_processing_handlers_.size() > 0) {
+      // |DisableOutputs()| can modify |tail_processing_handlers_|, so
+      // swap it out before processing it.  And keep running this until
+      // nothing gets added to |tail_processing_handlers_|.
+      Vector<scoped_refptr<AudioHandler>> handlers_to_be_disabled;
+
+      handlers_to_be_disabled.swap(tail_processing_handlers_);
+      for (auto& handler : handlers_to_be_disabled)
+        handler->DisableOutputs();
+    }
+    DisableOutputsForTailProcessing();
+  } while (tail_processing_handlers_.size() > 0 ||
+           finished_tail_processing_handlers_.size() > 0);
 }
 
 }  // namespace blink
