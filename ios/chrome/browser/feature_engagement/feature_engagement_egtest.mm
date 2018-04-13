@@ -13,7 +13,9 @@
 #include "components/feature_engagement/test/test_tracker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_egtest_util.h"
+#include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -21,6 +23,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/wait_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -42,7 +45,11 @@ const int kMinChromeOpensRequiredForNewTabTip = 3;
 
 // Matcher for the Reading List Text Badge.
 id<GREYMatcher> ReadingListTextBadge() {
-  return grey_accessibilityID(@"kReadingListTextBadgeAccessibilityIdentifier");
+  return grey_allOf(
+      grey_accessibilityID(@"kToolsMenuTextBadgeAccessibilityIdentifier"),
+      grey_ancestor(grey_allOf(grey_accessibilityID(kToolsMenuReadingListId),
+                               grey_sufficientlyVisible(), nil)),
+      nil);
 }
 
 // Matcher for the New Tab Tip Bubble.
@@ -153,15 +160,28 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
   [ChromeEarlGreyUI openToolsMenu];
 
-  [[EarlGrey selectElementWithMatcher:ReadingListTextBadge()]
-      assertWithMatcher:grey_sufficientlyVisible()];
+  [[[EarlGrey selectElementWithMatcher:ReadingListTextBadge()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
+      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
+      assertWithMatcher:grey_notNil()];
 
   // Close tools menu by tapping reload.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
+  [[[EarlGrey selectElementWithMatcher:chrome_test_util::ReloadButton()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionUp, 150)
+      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
       performAction:grey_tap()];
 
   // Reopen tools menu to verify that the badge does not appear again.
   [ChromeEarlGreyUI openToolsMenu];
+  // Make sure the ReadingList entry is visible.
+  [[[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kToolsMenuReadingListId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 150)
+      onElementWithMatcher:grey_accessibilityID(kPopupMenuToolsMenuTableViewId)]
+      assertWithMatcher:grey_notNil()];
+
   [[EarlGrey selectElementWithMatcher:ReadingListTextBadge()]
       assertWithMatcher:grey_notVisible()];
 }
@@ -215,6 +235,11 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
 
 // Verifies that the New Tab Tip appears when all conditions are met.
 - (void)testNewTabTipPromoShouldShow {
+  if (IsUIRefreshPhase1Enabled()) {
+    // TODO(crbug.com/832661): Re-enable those tests.
+    EARL_GREY_TEST_SKIPPED(@"Not yet implemented.");
+  }
+
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);
@@ -244,6 +269,11 @@ void EnableNewTabTipTriggering(base::test::ScopedFeatureList& feature_list) {
 // Verifies that the New Tab Tip does not appear if all conditions are met,
 // but the NTP is open.
 - (void)testNewTabTipPromoDoesNotAppearOnNTP {
+  if (IsUIRefreshPhase1Enabled()) {
+    // TODO(crbug.com/832661): Re-enable those tests.
+    EARL_GREY_TEST_SKIPPED(@"Not yet implemented.");
+  }
+
   base::test::ScopedFeatureList scoped_feature_list;
 
   EnableNewTabTipTriggering(scoped_feature_list);
