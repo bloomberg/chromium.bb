@@ -245,6 +245,11 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // from a capture endpoint buffer.
   Microsoft::WRL::ComPtr<IAudioCaptureClient> audio_capture_client_;
 
+  // The IAudioClock interface is used to get the current timestamp, as the
+  // timestamp from IAudioCaptureClient::GetBuffer can be unreliable with some
+  // devices.
+  Microsoft::WRL::ComPtr<IAudioClock> audio_clock_;
+
   // The ISimpleAudioVolume interface enables a client to control the
   // master volume level of an audio session.
   // The volume-level is a value in the range 0.0 to 1.0.
