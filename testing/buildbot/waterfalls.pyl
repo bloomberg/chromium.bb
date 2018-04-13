@@ -1629,6 +1629,11 @@
           'pdf_fuzzers',
         ],
       },
+      'mac-jumbo-rel': {
+        'additional_compile_targets': [
+          'all'
+        ]
+      },
       'Mac10.10 Tests': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -2063,6 +2068,11 @@
         'test_suites': {
           'scripts': 'check_network_annotations_script',
         },
+      },
+      'win64-jumbo-rel': {
+        'additional_compile_targets': [
+          'all'
+        ]
       },
       'WinMSVC64': {
         'additional_compile_targets': [

@@ -3046,5 +3046,10 @@
       "browser_tests",
       "unit_tests"
     ]
+  },
+  "win64-jumbo-rel": {
+    "additional_compile_targets": [
+      "all"
+    ]
   }
 }
