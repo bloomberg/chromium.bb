@@ -50,6 +50,9 @@ class MEDIA_GPU_EXPORT GLES2DecoderHelper {
       GLenum format,
       GLenum type) = 0;
 
+  // Sets the cleared flag on level 0 of the texture.
+  virtual void SetCleared(gpu::gles2::TextureRef* texture_ref) = 0;
+
   // Creates a mailbox for a texture.
   virtual gpu::Mailbox CreateMailbox(gpu::gles2::TextureRef* texture_ref) = 0;
 };
