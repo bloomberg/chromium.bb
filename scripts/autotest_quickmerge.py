@@ -286,6 +286,9 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 
   command += ['--exclude=*']
 
+  # Some tests use symlinks. Follow these.
+  command += ['-L']
+
   command += [source_path, sysroot_autotest_path]
 
   return cros_build_lib.SudoRunCommand(command, redirect_stdout=True)
