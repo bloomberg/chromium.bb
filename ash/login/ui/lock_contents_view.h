@@ -109,6 +109,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // LoginScreenController::Observer:
+  void SetAvatarForUser(const AccountId& account_id,
+                        const mojom::UserAvatarPtr& avatar) override;
   void OnFocusLeavingLockScreenApps(bool reverse) override;
 
   // LoginDataDispatcher::Observer:

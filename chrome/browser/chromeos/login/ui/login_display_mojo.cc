@@ -28,9 +28,12 @@ LoginDisplayMojo::LoginDisplayMojo(Delegate* delegate,
       user_selection_screen_(
           std::make_unique<ChromeUserSelectionScreen>(kLoginDisplay)) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
+  user_manager::UserManager::Get()->AddObserver(this);
 }
 
-LoginDisplayMojo::~LoginDisplayMojo() = default;
+LoginDisplayMojo::~LoginDisplayMojo() {
+  user_manager::UserManager::Get()->RemoveObserver(this);
+}
 
 void LoginDisplayMojo::ClearAndEnablePassword() {}
 
@@ -93,6 +96,12 @@ void LoginDisplayMojo::ShowWhitelistCheckFailedError() {
 
 void LoginDisplayMojo::ShowUnrecoverableCrypthomeErrorDialog() {
   NOTIMPLEMENTED();
+}
+
+void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {
+  LoginScreenClient::Get()->login_screen()->SetAvatarForUser(
+      user.GetAccountId(),
+      UserSelectionScreen::BuildMojoUserAvatarForUser(&user));
 }
 
 }  // namespace chromeos

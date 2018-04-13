@@ -114,6 +114,11 @@ class UserSelectionScreen
   // Determines if user auth status requires online sign in.
   static bool ShouldForceOnlineSignIn(const user_manager::User* user);
 
+  // Builds a |UserAvatarPtr| instance which contains the current image for
+  // |user|.
+  static ash::mojom::UserAvatarPtr BuildMojoUserAvatarForUser(
+      const user_manager::User* user);
+
   // Fills |user_info| with information about |user|.
   // TODO: Public sesssions exist in login screen, but not lock screen.
   // We will need public session locales in the future when we change login

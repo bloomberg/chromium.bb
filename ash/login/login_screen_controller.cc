@@ -312,6 +312,12 @@ void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
     DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
 }
 
+void LoginScreenController::SetAvatarForUser(const AccountId& account_id,
+                                             mojom::UserAvatarPtr avatar) {
+  for (auto& observer : observers_)
+    observer.SetAvatarForUser(account_id, avatar);
+}
+
 void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
   for (auto& observer : observers_)
     observer.OnFocusLeavingLockScreenApps(reverse);

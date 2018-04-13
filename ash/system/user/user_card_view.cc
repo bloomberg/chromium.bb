@@ -68,7 +68,7 @@ views::View* CreateUserAvatarView(int user_index) {
         gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
     image_view->SetImage(icon, icon.size());
   } else {
-    image_view->SetImage(user_session->user_info->avatar,
+    image_view->SetImage(user_session->user_info->avatar->image,
                          gfx::Size(kTrayItemSize, kTrayItemSize));
   }
 

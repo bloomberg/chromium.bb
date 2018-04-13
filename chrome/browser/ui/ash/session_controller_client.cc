@@ -50,9 +50,9 @@
 using session_manager::Session;
 using session_manager::SessionManager;
 using session_manager::SessionState;
-using user_manager::UserManager;
 using user_manager::User;
 using user_manager::UserList;
+using user_manager::UserManager;
 
 namespace {
 
@@ -95,9 +95,10 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   if (profile)
     session->user_info->is_new_profile = profile->IsNewProfile();
 
-  session->user_info->avatar = user.GetImage();
-  if (session->user_info->avatar.isNull()) {
-    session->user_info->avatar =
+  session->user_info->avatar = ash::mojom::UserAvatar::New();
+  session->user_info->avatar->image = user.GetImage();
+  if (session->user_info->avatar->image.isNull()) {
+    session->user_info->avatar->image =
         *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_LOGIN_DEFAULT_USER);
   }
