@@ -12,16 +12,46 @@
   </outputs>
   <release seq="1">
     <structures>
+      <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_NAVIGATION_BEHAVIOR_HTML"
+                 file="button_navigation_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_NAVIGATION_BEHAVIOR_JS"
+                 file="button_navigation_behavior.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML"
+                 file="multidevice_setup_dialog.html"
+                 flattenhtml="true"
+                 allowexternalscript="true"
+                 type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_HTML"
                  file="multidevice_setup.html"
                  type="chrome_html" />
       <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_JS"
                  file="multidevice_setup.js"
                  type="chrome_html" />
-      <structure name="IDR_MULTIDEVICE_SETUP_MULTIDEVICE_SETUP_DIALOG_HTML"
-                 file="multidevice_setup_dialog.html"
-                 flattenhtml="true"
-                 allowexternalscript="true"
+      <structure name="IDR_MULTIDEVICE_SETUP_SETTING_UP_PAGE_HTML"
+                 file="setting_up_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_SETTING_UP_PAGE_JS"
+                 file="setting_up_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_HTML"
+                 file="setup_failed_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_SETUP_FAILED_PAGE_JS"
+                 file="setup_failed_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_HTML"
+                 file="setup_succeeded_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_JS"
+                 file="setup_succeeded_page.js"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_START_SETUP_PAGE_HTML"
+                 file="start_setup_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_MULTIDEVICE_SETUP_START_SETUP_PAGE_JS"
+                 file="start_setup_page.js"
                  type="chrome_html" />
     </structures>
   </release>
