@@ -41,9 +41,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    # TODO(ccameron) fix these on Mac Retina
-    self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
-
     # TODO(vmiura) check / generate reference images for Android devices
     self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
@@ -65,9 +62,6 @@ class PixelExpectations(GpuTestExpectations):
         ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
     self.Fail('Pixel_CanvasUnacceleratedLowLatency2D',
         ['mac', 'linux', 'win', 'android', 'chromeos'], bug=788439)
-
-    # Rebaseline Pixel_CSS3DBlueBox
-    self.Fail('Pixel_CSS3DBlueBox', bug=796558)
 
     # Flaky for unknown reasons only on macOS. Not planning to investigate
     # further.

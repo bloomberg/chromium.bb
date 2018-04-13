@@ -3,16 +3,13 @@
 # found in the LICENSE file.
 import collections
 import itertools
-import os
 import unittest
 
 from telemetry.testing import fakes
 
 from gpu_tests import fake_win_amd_gpu_info
-from gpu_tests import path_util
 from gpu_tests import test_expectations
 from gpu_tests import webgl_conformance_expectations
-from gpu_tests import webgl_conformance_integration_test
 from gpu_tests import webgl2_conformance_expectations
 
 class FakeWindowsPlatform(fakes.FakePlatform):
@@ -54,31 +51,21 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
     browser.platform = FakeWindowsPlatform()
     browser.returned_system_info = fakes.FakeSystemInfo(
       gpu_dict=fake_win_amd_gpu_info.FAKE_GPU_INFO)
-    expectations = webgl_conformance_expectations.\
-                   WebGLConformanceExpectations(
-                     os.path.join(
-                       path_util.GetChromiumSrcDir(),
-                       'third_party', 'webgl', 'src', 'sdk', 'tests'))
+    exps = webgl_conformance_expectations.WebGLConformanceExpectations()
     test_info = WebGLTestInfo(
       'conformance/glsl/constructors/glsl-construct-vec-mat-index.html')
-    expectation = expectations.GetExpectationForTest(
+    expectation = exps.GetExpectationForTest(
       browser, test_info.url, test_info.name)
     # TODO(kbr): change this expectation back to "flaky". crbug.com/534697
     self.assertEquals(expectation, 'fail')
 
   def testWebGLExpectationsHaveNoCollisions(self):
-    conformance = webgl_conformance_expectations.\
-      WebGLConformanceExpectations(
-        webgl_conformance_integration_test.conformance_path)
-
-    self.checkConformanceHasNoCollisions(conformance)
+    exps = webgl_conformance_expectations.WebGLConformanceExpectations()
+    self.checkConformanceHasNoCollisions(exps)
 
   def testWebGL2ExpectationsHaveNoCollisions(self):
-    conformance = webgl2_conformance_expectations.\
-      WebGL2ConformanceExpectations(
-        webgl_conformance_integration_test.conformance_path)
-
-    self.checkConformanceHasNoCollisions(conformance)
+    exps = webgl2_conformance_expectations.WebGL2ConformanceExpectations()
+    self.checkConformanceHasNoCollisions(exps)
 
   def checkConformanceHasNoCollisions(self, conformance):
     # Checks that no two expectations for the same page can match the
