@@ -35,6 +35,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor_extra/shadow.h"
+#include "ui/display/display.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_targeter.h"
 #include "ui/events/test/event_generator.h"
@@ -1096,6 +1098,58 @@ TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
   shell_surface->SetRestored();
   surface->Commit();
   EXPECT_FALSE(shell_surface->wide_frame_for_test());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, MultiDisplay) {
+  display::test::DisplayManagerTestApi test_api(
+      ash::Shell::Get()->display_manager());
+  test_api.UpdateDisplay("100x100,100+0-100x100");
+
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
+  {
+    std::unique_ptr<Surface> surface(new Surface);
+    auto shell_surface =
+        exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+    gfx::Rect geometry(16, 16, 32, 32);
+    shell_surface->SetGeometry(geometry);
+    surface->Attach(buffer.get());
+    surface->Commit();
+    EXPECT_EQ(geometry.size().ToString(), shell_surface->GetWidget()
+                                              ->GetWindowBoundsInScreen()
+                                              .size()
+                                              .ToString());
+
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            shell_surface->host_window());
+    EXPECT_EQ(gfx::Point(0, 0).ToString(),
+              display.bounds().origin().ToString());
+  }
+
+  {
+    std::unique_ptr<Surface> surface(new Surface);
+    auto shell_surface =
+        exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+    gfx::Rect geometry(116, 16, 32, 32);
+    shell_surface->SetGeometry(geometry);
+    surface->Attach(buffer.get());
+    surface->Commit();
+    EXPECT_EQ(geometry.size().ToString(), shell_surface->GetWidget()
+                                              ->GetWindowBoundsInScreen()
+                                              .size()
+                                              .ToString());
+
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            shell_surface->host_window());
+    EXPECT_EQ(gfx::Point(100, 0).ToString(),
+              display.bounds().origin().ToString());
+  }
 }
 
 }  // namespace exo

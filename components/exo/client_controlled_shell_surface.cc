@@ -504,8 +504,13 @@ void ClientControlledShellSurface::OnDragFinished(bool canceled,
 // SurfaceDelegate overrides:
 
 void ClientControlledShellSurface::OnSurfaceCommit() {
-  if (!widget_)
+  if (!widget_) {
+    // Modify the |origin_| to the |pending_geometry_| to place the window
+    // on the intended display. See b/77472684 for the details.
+    if (!pending_geometry_.IsEmpty())
+      origin_ = pending_geometry_.origin();
     CreateShellSurfaceWidget(ash::ToWindowShowState(pending_window_state_));
+  }
 
   ash::wm::WindowState* window_state = GetWindowState();
   if (window_state->GetStateType() != pending_window_state_) {
