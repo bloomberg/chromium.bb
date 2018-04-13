@@ -276,11 +276,13 @@ void RequestInit::SetUpBody(ExecutionContext* context,
     content_type_ =
         AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
     body_ = new FormDataBytesConsumer(context, std::move(form_data));
-  } else if (v8_body->IsString()) {
+  } else {
+    String string = NativeValueTraits<IDLUSVString>::NativeValue(
+        isolate, v8_body, exception_state);
+    if (exception_state.HadException())
+      return;
     content_type_ = "text/plain;charset=UTF-8";
-    body_ =
-        new FormDataBytesConsumer(NativeValueTraits<IDLUSVString>::NativeValue(
-            isolate, v8_body, exception_state));
+    body_ = new FormDataBytesConsumer(string);
   }
 }
 
