@@ -1587,6 +1587,7 @@ public class ContextualSearchManagerTest {
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @DisabledTest
     public void testContextualSearchDismissedOnForegroundTabCrash()
             throws InterruptedException, TimeoutException {
         clickWordNode("states");
