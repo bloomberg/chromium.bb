@@ -93,6 +93,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
 
   // Device identification.
   const std::string& name() const { return name_; }
+  const std::string& phys() const { return phys_; }
   uint16_t vendor_id() const { return vendor_id_; }
   uint16_t product_id() const { return product_id_; }
 
@@ -176,6 +177,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   std::string name_;
   uint16_t vendor_id_;
   uint16_t product_id_;
+
+  // Device evdev physical property containing the output for EVIOCGPHYS that is
+  // (supposed to be) stable between reboots and hotplugs.
+  std::string phys_;
 
   // Whether this is an internal or external device.
   InputDeviceType device_type_ = InputDeviceType::INPUT_DEVICE_UNKNOWN;

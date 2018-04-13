@@ -28,10 +28,29 @@ namespace test {
 class TouchDeviceManagerTestApi;
 }  // namespace test
 
-// A unique identifier to identify |ui::TouchscreenDevices|. These identifiers
-// are persistent across system restarts.
+// A unique identifier to identify |ui::TouchscreenDevices|. The primary id
+// reflected by |id_| is persistent across system restarts and hotplugs. The
+// secondary id represented by |secondary_id_|, reflects the physical port
+// information. This is consistent and safe as long as the device is connected
+// to the same port along the same path.
 class DISPLAY_MANAGER_EXPORT TouchDeviceIdentifier {
  public:
+  // A comparator that does not differentiate between duplicate instances of
+  // the same kind of touch devices, i.e. devices with the same primary id.
+  // Use this when you are working with different kinds of devices and do not
+  // care about multiple instances of the same kind of device.
+  // For example; if you want to store all the calibration information for
+  // touch devices and display, you do not care about what port the touch device
+  // is connected via. All touch devices of the same kind will have the same
+  // calibration data for a given display irrespective of the port they are
+  // connected to.
+  struct WeakComp {
+    bool operator()(const TouchDeviceIdentifier& lhs,
+                    const TouchDeviceIdentifier& rhs) const {
+      return lhs.id() < rhs.id();
+    }
+  };
+
   // Returns a touch device identifier used as a default or a fallback option.
   static const TouchDeviceIdentifier& GetFallbackTouchDeviceIdentifier();
 
@@ -39,6 +58,7 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceIdentifier {
       const ui::TouchscreenDevice& touch_device);
 
   explicit TouchDeviceIdentifier(uint32_t identifier);
+  TouchDeviceIdentifier(uint32_t identifier, uint32_t secondary_id);
   TouchDeviceIdentifier(const TouchDeviceIdentifier& other);
   ~TouchDeviceIdentifier() = default;
 
@@ -49,12 +69,20 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceIdentifier {
   bool operator!=(const TouchDeviceIdentifier& other) const;
 
   std::string ToString() const;
+  std::string SecondaryIdToString() const;
+
+  uint32_t id() const { return id_; }
 
  private:
   static uint32_t GenerateIdentifier(std::string name,
                                      uint16_t vendor_id,
                                      uint16_t product_id);
   uint32_t id_;
+
+  // Used in case there are multiple devices with the same ID. The secondary id
+  // is generated based on EVIOCGPHYS which is stable across reboot and hotplug.
+  // This is not safe across different ports on the device.
+  uint32_t secondary_id_;
 };
 
 // A struct that represents all the data required for touch calibration for the
@@ -100,8 +128,11 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
   };
 
   using AssociationInfoMap = std::map<int64_t, TouchAssociationInfo>;
-  using TouchAssociationMap =
-      std::map<TouchDeviceIdentifier, AssociationInfoMap>;
+  using TouchAssociationMap = std::map<TouchDeviceIdentifier,
+                                       AssociationInfoMap,
+                                       TouchDeviceIdentifier::WeakComp>;
+  using ActiveTouchAssociationMap = std::map<TouchDeviceIdentifier, int64_t>;
+  using PortAssociationMap = ActiveTouchAssociationMap;
 
   TouchDeviceManager();
   ~TouchDeviceManager();
@@ -158,12 +189,18 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
   std::vector<TouchDeviceIdentifier> GetAssociatedTouchDevicesForDisplay(
       int64_t display_id) const;
 
-  // Registers the touch associations retrieved from the persistent store. This
-  // function is used to initialize the TouchDeviceManager on system start up.
-  void RegisterTouchAssociations(const TouchAssociationMap& touch_associations);
+  // Registers the touch associations and port associations retrieved from the
+  // persistent store. This function is used to initialize the
+  // TouchDeviceManager on system start up.
+  void RegisterTouchAssociations(const TouchAssociationMap& touch_associations,
+                                 const PortAssociationMap& port_associations);
 
   const TouchAssociationMap& touch_associations() const {
     return touch_associations_;
+  }
+
+  const PortAssociationMap& port_associations() const {
+    return port_associations_;
   }
 
  private:
@@ -171,6 +208,10 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
 
   void AssociateInternalDevices(std::vector<ManagedDisplayInfo*>* displays,
                                 std::vector<ui::TouchscreenDevice>* devices);
+
+  void AssociateDevicesWithCollision(
+      std::vector<ManagedDisplayInfo*>* displays,
+      std::vector<ui::TouchscreenDevice>* devices);
 
   void AssociateFromHistoricalData(std::vector<ManagedDisplayInfo*>* displays,
                                    std::vector<ui::TouchscreenDevice>* devices);
@@ -197,10 +238,17 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManager {
   // association information for this system.
   TouchAssociationMap touch_associations_;
 
-  // A mapping of touch devices identified by their TouchDeviceIdentifier and
-  // display ids they are currently associated with. This map only contains
-  // items (displays and touch devices) that are currently active.
-  std::map<TouchDeviceIdentifier, int64_t> active_touch_associations_;
+  // A mapping of Touch device and the port it is connected via, to the display.
+  // This is used when some touch devices cannot be distinguished from one
+  // another except based on the port they are connected via. We use the
+  // EVIOCGPHYS information of the touch device to get the port information.
+  PortAssociationMap port_associations_;
+
+  // A mapping between touch devices(identified by their TouchDeviceIdentifier)
+  //  and display ids of the display that they are currently associated with.
+  // This map only contains items (displays and touch devices) that are
+  // currently active.
+  ActiveTouchAssociationMap active_touch_associations_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchDeviceManager);
 };

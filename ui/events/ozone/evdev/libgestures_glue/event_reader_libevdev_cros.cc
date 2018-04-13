@@ -38,6 +38,7 @@ EventReaderLibevdevCros::EventReaderLibevdevCros(
                           id,
                           devinfo.device_type(),
                           devinfo.name(),
+                          devinfo.phys(),
                           devinfo.vendor_id(),
                           devinfo.product_id()),
       has_keyboard_(devinfo.HasKeyboard()),

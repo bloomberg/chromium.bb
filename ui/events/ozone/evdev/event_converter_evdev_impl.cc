@@ -41,6 +41,7 @@ EventConverterEvdevImpl::EventConverterEvdevImpl(
                           id,
                           devinfo.device_type(),
                           devinfo.name(),
+                          devinfo.phys(),
                           devinfo.vendor_id(),
                           devinfo.product_id()),
       input_device_fd_(std::move(fd)),

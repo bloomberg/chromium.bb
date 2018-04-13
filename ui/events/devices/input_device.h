@@ -30,6 +30,7 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
   InputDevice(int id,
               InputDeviceType type,
               const std::string& name,
+              const std::string& phys,
               const base::FilePath& sys_path,
               uint16_t vendor,
               uint16_t product);
@@ -44,6 +45,12 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
 
   // Name of the device.
   std::string name;
+
+  // The physical location(port) associated with the input device. This is
+  // (supposed to be) stable between reboots and hotplugs. However this may not
+  // always be set and will change when the device is connected via a different
+  // port.
+  std::string phys;
 
   // If the device is enabled, and whether events should be dispatched to UI.
   bool enabled = true;

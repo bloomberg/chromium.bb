@@ -5,7 +5,9 @@
 #include "ui/display/manager/chromeos/touch_device_manager.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
+#include <tuple>
 
 #include "base/files/file_util.h"
 #include "base/hash.h"
@@ -24,6 +26,7 @@ using ManagedDisplayInfoList = std::vector<ManagedDisplayInfo*>;
 using DeviceList = std::vector<ui::TouchscreenDevice>;
 
 constexpr char kFallbackTouchDeviceName[] = "fallback_touch_device_name";
+constexpr char kFallbackTouchDevicePhys[] = "fallback_touch_device_phys";
 
 // Returns true if |path| is likely a USB device.
 bool IsDeviceConnectedViaUsb(const base::FilePath& path) {
@@ -145,6 +148,23 @@ ManagedDisplayInfo* GetBestMatchForDevice(
   return display_info;
 }
 
+// Returns a set of TouchDeviceIdentifiers (sans their port information) that
+// are associated with more than 1 touch device from the list |devices|.
+std::set<TouchDeviceIdentifier, TouchDeviceIdentifier::WeakComp>
+GetCollisionSet(const DeviceList& devices) {
+  std::set<TouchDeviceIdentifier, TouchDeviceIdentifier::WeakComp>
+      collision_set;
+  std::set<TouchDeviceIdentifier, TouchDeviceIdentifier::WeakComp> ids;
+  for (const ui::TouchscreenDevice& device : devices) {
+    TouchDeviceIdentifier id = TouchDeviceIdentifier::FromDevice(device);
+    if (ids.find(id) != ids.end())
+      collision_set.insert(id);
+    else
+      ids.insert(id);
+  }
+  return collision_set;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,7 +174,8 @@ ManagedDisplayInfo* GetBestMatchForDevice(
 const TouchDeviceIdentifier&
 TouchDeviceIdentifier::GetFallbackTouchDeviceIdentifier() {
   static const TouchDeviceIdentifier kFallTouchDeviceIdentifier(
-      GenerateIdentifier(kFallbackTouchDeviceName, 0, 0));
+      GenerateIdentifier(kFallbackTouchDeviceName, 0, 0),
+      base::PersistentHash(kFallbackTouchDevicePhys));
   return kFallTouchDeviceIdentifier;
 }
 
@@ -170,28 +191,36 @@ uint32_t TouchDeviceIdentifier::GenerateIdentifier(std::string name,
 // static
 TouchDeviceIdentifier TouchDeviceIdentifier::FromDevice(
     const ui::TouchscreenDevice& touch_device) {
-  return TouchDeviceIdentifier(GenerateIdentifier(
-      touch_device.name, touch_device.vendor_id, touch_device.product_id));
+  return TouchDeviceIdentifier(
+      GenerateIdentifier(touch_device.name, touch_device.vendor_id,
+                         touch_device.product_id),
+      base::PersistentHash(touch_device.phys));
 }
 
 TouchDeviceIdentifier::TouchDeviceIdentifier(uint32_t identifier)
-    : id_(identifier) {}
+    : id_(identifier),
+      secondary_id_(base::PersistentHash(kFallbackTouchDevicePhys)) {}
+
+TouchDeviceIdentifier::TouchDeviceIdentifier(uint32_t identifier,
+                                             uint32_t secondary_id)
+    : id_(identifier), secondary_id_(secondary_id) {}
 
 TouchDeviceIdentifier::TouchDeviceIdentifier(const TouchDeviceIdentifier& other)
-    : id_(other.id_) {}
+    : id_(other.id_), secondary_id_(other.secondary_id_) {}
 
 TouchDeviceIdentifier& TouchDeviceIdentifier::operator=(
     TouchDeviceIdentifier other) {
   id_ = other.id_;
+  secondary_id_ = other.secondary_id_;
   return *this;
 }
 
 bool TouchDeviceIdentifier::operator<(const TouchDeviceIdentifier& rhs) const {
-  return id_ < rhs.id_;
+  return std::tie(id_, secondary_id_) < std::tie(rhs.id_, rhs.secondary_id_);
 }
 
 bool TouchDeviceIdentifier::operator==(const TouchDeviceIdentifier& rhs) const {
-  return id_ == rhs.id_;
+  return id_ == rhs.id_ && secondary_id_ == rhs.secondary_id_;
 }
 
 bool TouchDeviceIdentifier::operator!=(const TouchDeviceIdentifier& rhs) const {
@@ -200,6 +229,10 @@ bool TouchDeviceIdentifier::operator!=(const TouchDeviceIdentifier& rhs) const {
 
 std::string TouchDeviceIdentifier::ToString() const {
   return base::UintToString(id_);
+}
+
+std::string TouchDeviceIdentifier::SecondaryIdToString() const {
+  return base::UintToString(secondary_id_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,6 +288,7 @@ TouchDeviceManager::~TouchDeviceManager() {}
 void TouchDeviceManager::AssociateTouchscreens(
     std::vector<ManagedDisplayInfo>* all_displays,
     const std::vector<ui::TouchscreenDevice>& all_devices) {
+  active_touch_associations_.clear();
   // |displays| and |devices| contain pointers directly to the values stored
   // inside of |all_displays| and |all_devices|. When a display or input device
   // has been associated, it is removed from the |displays| or |devices| list.
@@ -286,6 +320,7 @@ void TouchDeviceManager::AssociateTouchscreens(
   }
 
   AssociateInternalDevices(&displays, &devices);
+  AssociateDevicesWithCollision(&displays, &devices);
   AssociateFromHistoricalData(&displays, &devices);
   AssociateUdlDevices(&displays, &devices);
   AssociateSameSizeDevices(&displays, &devices);
@@ -338,6 +373,54 @@ void TouchDeviceManager::AssociateInternalDevices(
   if (!matched && internal_display) {
     VLOG(2) << "=> No device found to match with internal display "
             << internal_display->name();
+  }
+}
+
+void TouchDeviceManager::AssociateDevicesWithCollision(
+    ManagedDisplayInfoList* displays,
+    DeviceList* devices) {
+  if (!devices->size() || !displays->size())
+    return;
+
+  // Get a list of touch devices that have the same primary ids but connected
+  // via different interfaces.
+  std::set<TouchDeviceIdentifier, TouchDeviceIdentifier::WeakComp>
+      collision_set = GetCollisionSet(*devices);
+  if (collision_set.empty())
+    return;
+
+  VLOG(2) << "Trying to match " << devices->size() << " devices "
+          << "and " << displays->size() << " displays where there is/are "
+          << collision_set.size() << " collisions with the touch device ids";
+
+  for (auto device_it = devices->begin(); device_it != devices->end();) {
+    const auto identifier = TouchDeviceIdentifier::FromDevice(*device_it);
+    // If this device is not the one that has a collision or if this device is
+    // the one that has collision but we have no past port mapping information
+    // associated with it, then we skip.
+    if (!base::ContainsKey(collision_set, identifier) ||
+        !base::ContainsKey(port_associations_, identifier)) {
+      device_it++;
+      continue;
+    }
+
+    int64_t display_id = port_associations_.at(identifier);
+
+    // Find the display associated with |display_id| from |displays|.
+    ManagedDisplayInfoList::iterator display_it =
+        std::find_if(displays->begin(), displays->end(),
+                     [&display_id](ManagedDisplayInfo* info) {
+                       return info->id() == display_id;
+                     });
+
+    if (display_it != displays->end()) {
+      VLOG(2) << "=> Matched device " << (*device_it).name << " to display "
+              << (*display_it)->name();
+      Associate(*display_it, *device_it);
+      device_it = devices->erase(device_it);
+    } else {
+      device_it++;
+    }
   }
 }
 
@@ -531,6 +614,11 @@ void TouchDeviceManager::AddTouchCalibrationData(
     info.calibration_data = data;
     touch_associations_.at(identifier).emplace(display_id, info);
   }
+
+  // Store the port association information, i.e. the touch device identified by
+  // |identifier| when connected to port |identifier.secondary_id()| was
+  // associated with display identified by |display_id|.
+  port_associations_[identifier] = display_id;
 }
 
 void TouchDeviceManager::ClearTouchCalibrationData(
@@ -612,13 +700,16 @@ TouchDeviceManager::GetAssociatedTouchDevicesForDisplay(
 }
 
 void TouchDeviceManager::RegisterTouchAssociations(
-    const TouchAssociationMap& touch_associations) {
+    const TouchAssociationMap& touch_associations,
+    const PortAssociationMap& port_associations) {
   touch_associations_ = touch_associations;
+  port_associations_ = port_associations;
 }
 
 std::ostream& operator<<(std::ostream& os,
                          const TouchDeviceIdentifier& identifier) {
-  return os << identifier.ToString();
+  return os << identifier.ToString() << " [" << identifier.SecondaryIdToString()
+            << "]";
 }
 
 bool HasExternalTouchscreenDevice() {
