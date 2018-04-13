@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -57,6 +58,10 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
      */
     @VisibleForTesting
     protected void init() {
+        // Assert that we don't need to check for the search engine promo to avoid needing to check
+        // every time the default search engine is updated.
+        assert !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
+
         mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED, this);
         ProfileSyncService.get().addSyncStateChangedListener(this);
@@ -75,8 +80,7 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
 
     /** @return Whether the user settings for contextual suggestions should be shown. */
     public static boolean shouldShowSettings() {
-        return TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
-                && !AccessibilityUtil.isAccessibilityEnabled()
+        return isDSEConditionMet() && !AccessibilityUtil.isAccessibilityEnabled()
                 && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
     }
 
@@ -87,10 +91,8 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         boolean isUploadToGoogleActive =
                 service.getUploadToGoogleState(ModelType.HISTORY_DELETE_DIRECTIVES)
                 == UploadState.ACTIVE;
-        boolean isGoogleDSE = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
         boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
-
-        return isUploadToGoogleActive && isGoogleDSE && !isAccessibilityEnabled
+        return isUploadToGoogleActive && isDSEConditionMet() && !isAccessibilityEnabled
                 && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
     }
 
@@ -146,5 +148,12 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
         }
 
         if (mEnabled != previousState) mObserver.onEnabledStateChanged(mEnabled);
+    }
+
+    private static boolean isDSEConditionMet() {
+        boolean hasCompletedSearchEnginePromo =
+                LocaleManager.getInstance().hasCompletedSearchEnginePromo();
+        boolean isGoogleDSE = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        return !hasCompletedSearchEnginePromo || isGoogleDSE;
     }
 }
