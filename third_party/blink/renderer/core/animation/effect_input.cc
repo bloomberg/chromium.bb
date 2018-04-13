@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_string_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_keyframe.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_base_property_indexed_keyframe.h"
@@ -54,8 +53,6 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/wtf/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -221,103 +218,72 @@ struct KeyframeOutput {
   Vector<std::pair<String, String>> property_value_pairs;
 };
 
-void AddPropertyValuePairsForKeyframe(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> keyframe_obj,
-    Element* element,
-    const Document& document,
-    Vector<std::pair<String, String>>& property_value_pairs,
-    ExceptionState& exception_state) {
-  Vector<String> keyframe_properties =
-      GetOwnPropertyNames(isolate, keyframe_obj, exception_state);
-  if (exception_state.HadException())
-    return;
-
-  // By spec, we must sort the properties in "ascending order by the Unicode
-  // codepoints that define each property name."
-  std::sort(keyframe_properties.begin(), keyframe_properties.end(),
-            WTF::CodePointCompareLessThan);
-
-  v8::TryCatch try_catch(isolate);
-  for (const auto& property : keyframe_properties) {
-    if (property == "offset" || property == "composite" ||
-        property == "easing") {
-      continue;
-    }
-
-    // By spec, we are not allowed to access any non-animatable property.
-    if (!IsAnimatableKeyframeAttribute(property, element, document))
-      continue;
-
-    // By spec, we are only allowed to access a given (property, value) pair
-    // once. This is observable by the web client, so we take care to adhere
-    // to that.
-    v8::Local<v8::Value> v8_value;
-    if (!keyframe_obj
-             ->Get(isolate->GetCurrentContext(), V8String(isolate, property))
-             .ToLocal(&v8_value)) {
-      exception_state.RethrowV8Exception(try_catch.Exception());
-      return;
-    }
-
-    if (v8_value->IsArray()) {
-      // Since allow-lists is false, array values should be ignored.
-      continue;
-    }
-
-    String string_value = NativeValueTraits<IDLString>::NativeValue(
-        isolate, v8_value, exception_state);
-    if (exception_state.HadException())
-      return;
-    property_value_pairs.push_back(std::make_pair(property, string_value));
-  }
-}
-
 StringKeyframeVector ConvertArrayForm(Element* element,
                                       Document& document,
-                                      const v8::Local<v8::Object>& iterator_obj,
+                                      DictionaryIterator iterator,
                                       ScriptState* script_state,
                                       ExceptionState& exception_state) {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  ScriptIterator iterator(iterator_obj, isolate);
-
   // This loop captures step 5 of the procedure to process a keyframes argument,
   // in the case where the argument is iterable.
   Vector<KeyframeOutput> processed_keyframes;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
+  v8::Isolate* isolate = script_state->GetIsolate();
   while (iterator.Next(execution_context, exception_state)) {
-    if (exception_state.HadException())
-      return {};
+    KeyframeOutput keyframe_output;
 
-    // The value should already be non-empty, as guaranteed by the call to Next
-    // and the exception_state check above.
-    v8::Local<v8::Value> keyframe = iterator.GetValue().ToLocalChecked();
-
-    if (!keyframe->IsObject() && !keyframe->IsNullOrUndefined()) {
-      exception_state.ThrowTypeError(
-          "Keyframes must be objects, or null or undefined");
+    Dictionary keyframe_dictionary;
+    if (!iterator.ValueAsDictionary(keyframe_dictionary, exception_state)) {
+      exception_state.ThrowTypeError("Keyframes must be objects.");
       return {};
     }
 
-    KeyframeOutput keyframe_output;
-    keyframe_output.base_keyframe =
-        NativeValueTraits<BaseKeyframe>::NativeValue(isolate, keyframe,
-                                                     exception_state);
+    // Extract the offset, easing, and composite as per step 1 of the 'procedure
+    // to process a keyframe-like object'.
+    V8BaseKeyframe::ToImpl(keyframe_dictionary.GetIsolate(),
+                           keyframe_dictionary.V8Value(),
+                           keyframe_output.base_keyframe, exception_state);
     if (exception_state.HadException())
       return {};
 
-    if (!keyframe->IsNullOrUndefined()) {
-      AddPropertyValuePairsForKeyframe(
-          isolate, v8::Local<v8::Object>::Cast(keyframe), element, document,
-          keyframe_output.property_value_pairs, exception_state);
+    const Vector<String>& keyframe_properties =
+        keyframe_dictionary.GetPropertyNames(exception_state);
+    if (exception_state.HadException())
+      return {};
+
+    for (const auto& property : keyframe_properties) {
+      if (property == "offset" || property == "composite" ||
+          property == "easing") {
+        continue;
+      }
+
+      // By spec, we are not allowed to access any non-animatable property.
+      if (!IsAnimatableKeyframeAttribute(property, element, document))
+        continue;
+
+      // By spec, we are only allowed to access a given (property, value) pair
+      // once. This is observable by the web client, so we take care to adhere
+      // to that.
+      v8::Local<v8::Value> v8_value;
+      if (!keyframe_dictionary.Get(property, v8_value)) {
+        // TODO(crbug.com/666661): Propagate exceptions from Dictionary::Get.
+        return {};
+      }
+
+      if (v8_value->IsArray()) {
+        exception_state.ThrowTypeError(
+            "Lists of values not permitted in array-form list of keyframes");
+        return {};
+      }
+
+      String string_value = NativeValueTraits<IDLString>::NativeValue(
+          isolate, v8_value, exception_state);
       if (exception_state.HadException())
         return {};
+      keyframe_output.property_value_pairs.push_back(
+          std::make_pair(property, string_value));
     }
-
     processed_keyframes.push_back(keyframe_output);
   }
-  // If the very first call to next() throws the above loop will never be
-  // entered, so we have to catch that here.
   if (exception_state.HadException())
     return {};
 
@@ -399,22 +365,20 @@ StringKeyframeVector ConvertArrayForm(Element* element,
 // Extracts the values for a given property in the input keyframes. As per the
 // spec property values for the object-notation form have type (DOMString or
 // sequence<DOMString>).
-bool GetPropertyIndexedKeyframeValues(const v8::Local<v8::Object>& keyframe,
-                                      const String& property,
-                                      ScriptState* script_state,
-                                      ExceptionState& exception_state,
-                                      Vector<String>& result) {
+static bool GetPropertyIndexedKeyframeValues(
+    const Dictionary& keyframe_dictionary,
+    const String& property,
+    ScriptState* script_state,
+    ExceptionState& exception_state,
+    Vector<String>& result) {
   DCHECK(result.IsEmpty());
 
   // By spec, we are only allowed to access a given (property, value) pair once.
   // This is observable by the web client, so we take care to adhere to that.
   v8::Local<v8::Value> v8_value;
-  v8::TryCatch try_catch(script_state->GetIsolate());
-  v8::Local<v8::Context> context = script_state->GetContext();
-  v8::Isolate* isolate = script_state->GetIsolate();
-  if (!keyframe->Get(context, V8String(isolate, property)).ToLocal(&v8_value)) {
-    exception_state.RethrowV8Exception(try_catch.Exception());
-    return {};
+  if (!keyframe_dictionary.Get(property, v8_value)) {
+    // TODO(crbug.com/666661): Get() should rethrow internal exceptions.
+    return false;
   }
 
   StringOrStringSequence string_or_string_sequence;
@@ -438,7 +402,7 @@ bool GetPropertyIndexedKeyframeValues(const v8::Local<v8::Object>& keyframe,
 // See https://drafts.csswg.org/web-animations/#processing-a-keyframes-argument
 StringKeyframeVector ConvertObjectForm(Element* element,
                                        Document& document,
-                                       const v8::Local<v8::Object>& keyframe,
+                                       const Dictionary& dictionary,
                                        ScriptState* script_state,
                                        ExceptionState& exception_state) {
   // We implement much of this procedure out of order from the way the spec is
@@ -447,9 +411,10 @@ StringKeyframeVector ConvertObjectForm(Element* element,
 
   // Extract the offset, easing, and composite as per step 1 of the 'procedure
   // to process a keyframe-like object'.
-  BasePropertyIndexedKeyframe property_indexed_keyframe =
-      NativeValueTraits<BasePropertyIndexedKeyframe>::NativeValue(
-          script_state->GetIsolate(), keyframe, exception_state);
+  BasePropertyIndexedKeyframe property_indexed_keyframe;
+  V8BasePropertyIndexedKeyframe::ToImpl(
+      dictionary.GetIsolate(), dictionary.V8Value(), property_indexed_keyframe,
+      exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -477,8 +442,8 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // implements both steps 2-7 of the 'procedure to process a keyframe-like
   // object' and step 5.2 of the 'procedure to process a keyframes argument'.
 
-  Vector<String> keyframe_properties = GetOwnPropertyNames(
-      script_state->GetIsolate(), keyframe, exception_state);
+  const Vector<String>& keyframe_properties =
+      dictionary.GetPropertyNames(exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -492,11 +457,6 @@ StringKeyframeVector ConvertObjectForm(Element* element,
   // single keyframe, which simplifies the parsing logic.
   HashMap<double, scoped_refptr<StringKeyframe>> keyframes;
 
-  // By spec, we must sort the properties in "ascending order by the Unicode
-  // codepoints that define each property name."
-  std::sort(keyframe_properties.begin(), keyframe_properties.end(),
-            WTF::CodePointCompareLessThan);
-
   for (const auto& property : keyframe_properties) {
     if (property == "offset" || property == "composite" ||
         property == "easing") {
@@ -508,7 +468,7 @@ StringKeyframeVector ConvertObjectForm(Element* element,
       continue;
 
     Vector<String> values;
-    if (!GetPropertyIndexedKeyframeValues(keyframe, property, script_state,
+    if (!GetPropertyIndexedKeyframeValues(dictionary, property, script_state,
                                           exception_state, values)) {
       return {};
     }
@@ -693,15 +653,11 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
     ScriptState* script_state,
     ExceptionState& exception_state) {
   // Per the spec, a null keyframes object maps to a valid but empty sequence.
-  v8::Local<v8::Value> keyframes_value = keyframes.V8Value();
-  if (keyframes_value->IsNullOrUndefined())
+  if (keyframes.IsNull())
     return {};
-  v8::Local<v8::Object> keyframes_obj = keyframes_value.As<v8::Object>();
 
-  // 3. Let method be the result of GetMethod(object, @@iterator).
   v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Function> iterator_method =
-      GetEsIteratorMethod(isolate, keyframes_obj, exception_state);
+  Dictionary dictionary(isolate, keyframes.V8Value(), exception_state);
   if (exception_state.HadException())
     return {};
 
@@ -711,14 +667,12 @@ StringKeyframeVector EffectInput::ParseKeyframesArgument(
                            : *ToDocument(ExecutionContext::From(script_state));
 
   StringKeyframeVector parsed_keyframes;
-  if (iterator_method.IsEmpty()) {
-    parsed_keyframes = ConvertObjectForm(element, document, keyframes_obj,
+  DictionaryIterator iterator =
+      dictionary.GetIterator(ExecutionContext::From(script_state));
+  if (iterator.IsNull()) {
+    parsed_keyframes = ConvertObjectForm(element, document, dictionary,
                                          script_state, exception_state);
   } else {
-    v8::Local<v8::Object> iterator = GetEsIteratorWithMethod(
-        isolate, iterator_method, keyframes_obj, exception_state);
-    if (exception_state.HadException())
-      return {};
     parsed_keyframes = ConvertArrayForm(element, document, iterator,
                                         script_state, exception_state);
   }

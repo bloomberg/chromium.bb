@@ -73,6 +73,23 @@ bool Dictionary::HasProperty(const StringView& key,
   return has_key;
 }
 
+DictionaryIterator Dictionary::GetIterator(
+    ExecutionContext* execution_context) const {
+  v8::Local<v8::Value> iterator_getter;
+  if (!GetInternal(v8::Symbol::GetIterator(isolate_), iterator_getter) ||
+      !iterator_getter->IsFunction())
+    return nullptr;
+  v8::Local<v8::Value> iterator;
+  if (!V8ScriptRunner::CallFunction(
+           v8::Local<v8::Function>::Cast(iterator_getter), execution_context,
+           dictionary_object_, 0, nullptr, isolate_)
+           .ToLocal(&iterator))
+    return nullptr;
+  if (!iterator->IsObject())
+    return nullptr;
+  return DictionaryIterator(v8::Local<v8::Object>::Cast(iterator), isolate_);
+}
+
 bool Dictionary::Get(const StringView& key, Dictionary& value) const {
   v8::Local<v8::Value> v8_value;
   if (!Get(key, v8_value))
@@ -90,8 +107,8 @@ bool Dictionary::Get(const StringView& key, Dictionary& value) const {
   return true;
 }
 
-bool Dictionary::Get(v8::Local<v8::Value> key,
-                     v8::Local<v8::Value>& result) const {
+bool Dictionary::GetInternal(const v8::Local<v8::Value>& key,
+                             v8::Local<v8::Value>& result) const {
   if (dictionary_object_.IsEmpty())
     return false;
 

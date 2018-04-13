@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+// http://crbug.com/644237
+test(function() {
+  // Use Element.animate() that takes a dictionary.
+
+  let element = document.createElement('span');
+
+  let keyFrames = {};
+  Object.defineProperty(keyFrames, 'color', {
+    enumerable: true,
+    get: function() {
+      throw "This exception should be swallowed.";
+    }
+  });
+
+  element.animate(keyFrames);
+}, "Dictionary member's [[Get]] may throw.");
+
+done();
+</script>

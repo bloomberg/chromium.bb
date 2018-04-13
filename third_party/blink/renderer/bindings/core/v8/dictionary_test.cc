@@ -114,34 +114,6 @@ TEST_F(V8DictionaryTest, Get_ExceptionOnAccess) {
   ASSERT_FALSE(r.has_value());
 }
 
-// TODO(bashi,yukishiino): Should rethrow the exception.
-// http://crbug.com/666661
-TEST_F(V8DictionaryTest, Get_ExceptionOnAccess2) {
-  V8TestingScope scope;
-  Dictionary dictionary = CreateDictionary(scope.GetScriptState(),
-                                           "({get foo() { throw Error(2); }})");
-
-  v8::Local<v8::Value> value;
-  v8::TryCatch try_catch(scope.GetIsolate());
-  ASSERT_FALSE(dictionary.Get("foo", value));
-  ASSERT_FALSE(try_catch.HasCaught());
-}
-
-// TODO(bashi,yukishiino): Should rethrow the exception.
-// http://crbug.com/666661
-TEST_F(V8DictionaryTest, Get_InvalidInnerDictionary) {
-  V8TestingScope scope;
-  Dictionary dictionary =
-      CreateDictionary(scope.GetScriptState(), "({foo: 4})");
-
-  v8::TryCatch try_catch(scope.GetIsolate());
-  Dictionary inner_dictionary;
-  ASSERT_TRUE(dictionary.Get("foo", inner_dictionary));
-  ASSERT_FALSE(try_catch.HasCaught());
-
-  EXPECT_TRUE(inner_dictionary.IsUndefinedOrNull());
-}
-
 TEST_F(V8DictionaryTest, Get_TypeConversion) {
   V8TestingScope scope;
   Dictionary dictionary = CreateDictionary(
