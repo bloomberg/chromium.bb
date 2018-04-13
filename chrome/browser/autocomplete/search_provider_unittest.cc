@@ -3578,6 +3578,8 @@ TEST_F(SearchProviderTest, AnswersCache) {
       /*answer=*/nullptr,
       /*suggest_query_params=*/std::string(),
       /*deletion_url=*/std::string(),
+      /*image_dominant_color=*/std::string(),
+      /*image_url=*/std::string(),
       /*from_keyword_provider=*/false,
       /*relevance=*/1200,
       /*relevance_from_server=*/false,
