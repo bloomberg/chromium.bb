@@ -129,7 +129,7 @@
 }
 
 - (void)setPageBookmarked:(BOOL)bookmarked {
-  self.view.bookmarkButton.selected = bookmarked;
+  self.view.bookmarkButton.spotlighted = bookmarked;
 }
 
 - (void)setVoiceSearchEnabled:(BOOL)enabled {

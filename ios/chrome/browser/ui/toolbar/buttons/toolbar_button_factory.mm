@@ -346,7 +346,7 @@ const CGFloat kOmniboxBackgroundAlpha = 0.05;
     bookmarkButton = [ToolbarButton
         toolbarButtonWithImage:[UIImage imageNamed:@"toolbar_bookmark"]];
     [bookmarkButton setImage:[UIImage imageNamed:@"toolbar_bookmark_active"]
-                    forState:UIControlStateHighlighted];
+                    forState:ControlStateSpotlighted];
     [self configureButton:bookmarkButton width:kAdaptiveToolbarButtonWidth];
   } else {
     bookmarkButton = [ToolbarButton

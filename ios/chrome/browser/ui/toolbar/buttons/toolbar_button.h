@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_component_options.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
+const NSUInteger ControlStateSpotlighted = 0x00010000;
+
 // UIButton subclass used as a Toolbar component.
 @interface ToolbarButton : UIButton
 
@@ -26,6 +28,9 @@
 // rotations. Any view constrained to them is expected to be dismissed on such
 // events.
 @property(nonatomic, strong) GuideName* guideName;
+// Whether this button is spotlighted, having a light gray background. This
+// state should not be used in the same time as the selected state.
+@property(nonatomic, assign) BOOL spotlighted;
 
 // Returns a ToolbarButton using the three images parameters for their
 // respective state.
