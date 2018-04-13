@@ -509,20 +509,20 @@ def get_waterfall_config():
       {
        'gpu': '10de:1cb3',
        'os': 'Ubuntu-14.04',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
-           'build27-a9', 'build28-a9', 'build29-a9',
-           'build30-a9', 'build31-a9',
+           'build67-a7', 'build68-a7', 'build69-a7',
+           'build70-a7', 'build71-a7',
           ],
        'perf_tests': [
          # crbug.com/698831
          # ('cc_perftests', 'build150-m1'),
-         ('load_library_perf_tests', 'build29-a9'),
-         ('net_perftests', 'build29-a9'),
-         ('tracing_perftests', 'build29-a9'),
-         ('media_perftests', 'build30-a9')
+         ('load_library_perf_tests', 'build69-a7'),
+         ('net_perftests', 'build69-a7'),
+         ('tracing_perftests', 'build69-a7'),
+         ('media_perftests', 'build70-a7')
          # crbug.com/811766
-         # ('views_perftests', 'build31-a9')
+         # ('views_perftests', 'build71-a7')
        ]
       }
     ])
