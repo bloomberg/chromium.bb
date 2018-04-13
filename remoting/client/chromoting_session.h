@@ -103,10 +103,6 @@ class ChromotingSession : public ClientInputInjector {
   // up.
   void Disconnect();
 
-  // Similar to Disconnect(), except that this method allows you to specify the
-  // reason to disconnect, which will be reported to telemetry.
-  void DisconnectForReason(protocol::ErrorCode error);
-
   // Gets the current feedback data and returns it to the callback on the
   // UI thread. If the session is never connected, then an empty feedback
   // will be returned, otherwise feedback for current session (either still

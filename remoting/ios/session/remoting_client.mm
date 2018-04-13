@@ -69,6 +69,8 @@ static void ResolveFeedbackDataCallback(
   remoting::KeyboardInterpreter _keyboardInterpreter;
   std::unique_ptr<remoting::RendererProxy> _renderer;
   std::unique_ptr<remoting::AudioPlayerIos> _audioPlayer;
+
+  // _session is valid only when the session is connected.
   std::unique_ptr<remoting::ChromotingSession> _session;
 }
 @end
@@ -243,7 +245,9 @@ static void ResolveFeedbackDataCallback(
       _sessionDetails.error = SessionErrorIncompatibleProtocol;
       break;
     case remoting::protocol::ErrorCode::AUTHENTICATION_FAILED:
-      _sessionDetails.error = SessionErrorAuthenticationFailed;
+      if (_sessionDetails.error != SessionErrorThirdPartyAuthNotSupported) {
+        _sessionDetails.error = SessionErrorAuthenticationFailed;
+      }
       break;
     case remoting::protocol::ErrorCode::INVALID_ACCOUNT:
       _sessionDetails.error = SessionErrorInvalidAccount;
@@ -325,13 +329,7 @@ fetchSecretWithPairingSupported:(BOOL)pairingSupported
   // Not supported for iOS yet.
   _sessionDetails.state = SessionFailed;
   _sessionDetails.error = SessionErrorThirdPartyAuthNotSupported;
-  _session->DisconnectForReason(
-      remoting::protocol::ErrorCode::AUTHENTICATION_FAILED);
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kHostSessionStatusChanged
-                    object:self
-                  userInfo:[NSDictionary dictionaryWithObject:_sessionDetails
-                                                       forKey:kSessionDetails]];
+  tokenFetchedCallback.Run("", "");
 }
 
 - (void)setCapabilities:(NSString*)capabilities {
@@ -346,12 +344,16 @@ fetchSecretWithPairingSupported:(BOOL)pairingSupported
 }
 
 - (void)setHostResolution:(CGSize)dipsResolution scale:(int)scale {
-  _session->SendClientResolution(dipsResolution.width, dipsResolution.height,
-                                 scale);
+  if (_session) {
+    _session->SendClientResolution(dipsResolution.width, dipsResolution.height,
+                                   scale);
+  }
 }
 
 - (void)setVideoChannelEnabled:(BOOL)enabled {
-  _session->EnableVideoChannel(enabled);
+  if (_session) {
+    _session->EnableVideoChannel(enabled);
+  }
 }
 
 - (void)createFeedbackDataWithCallback:
