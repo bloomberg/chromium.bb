@@ -18,7 +18,7 @@ namespace base {
 
 // Implementation of dispatcher for Fuchsia's async library. It's necessary to
 // run Fuchsia's library on chromium threads.
-class AsyncDispatcher : public async_t {
+class BASE_EXPORT AsyncDispatcher : public async_t {
  public:
   AsyncDispatcher();
   ~AsyncDispatcher();
