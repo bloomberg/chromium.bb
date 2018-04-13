@@ -16,22 +16,23 @@
 #include "ui/base/l10n/l10n_util.h"
 
 static const CGFloat kSetupTitleInset = 22.f;
-static const CGFloat kBottomPadding = 6.f;
+static const CGFloat kYPadding = 28.f;
 
 @implementation HostSetupHeaderView
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  if (self = [super initWithFrame:frame]) {
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
     [self commonInit];
   }
   return self;
 }
 
 - (void)commonInit {
-  self.backgroundColor = RemotingTheme.setupListBackgroundColor;
   NSString* titleText = l10n_util::GetNSString(IDS_HOST_SETUP_TITLE);
   self.isAccessibilityElement = YES;
   self.accessibilityLabel = titleText;
+  self.backgroundColor = RemotingTheme.setupListBackgroundColor;
 
   UILabel* titleLabel = [[UILabel alloc] init];
   titleLabel.text = titleText;
@@ -39,12 +40,14 @@ static const CGFloat kBottomPadding = 6.f;
   titleLabel.numberOfLines = 1;
   titleLabel.adjustsFontSizeToFitWidth = YES;
   titleLabel.textColor = RemotingTheme.setupListTextColor;
-  [self addSubview:titleLabel];
+  [self.contentView addSubview:titleLabel];
   titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
   UILayoutGuide* safeAreaLayoutGuide =
-      remoting::SafeAreaLayoutGuideForView(self);
+      remoting::SafeAreaLayoutGuideForView(self.contentView);
   [NSLayoutConstraint activateConstraints:@[
+    [titleLabel.topAnchor constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor
+                                         constant:kYPadding],
     [titleLabel.leadingAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
                        constant:kSetupTitleInset],
@@ -53,7 +56,7 @@ static const CGFloat kBottomPadding = 6.f;
                        constant:-kSetupTitleInset],
     [titleLabel.bottomAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor
-                       constant:-kBottomPadding],
+                       constant:-kYPadding],
   ]];
 }
 

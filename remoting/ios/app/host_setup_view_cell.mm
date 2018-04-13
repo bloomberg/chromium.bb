@@ -14,7 +14,8 @@
 
 static const CGFloat kNumberIconPadding = 16.f;
 static const CGFloat kNumberIconSize = 45.f;
-static const CGFloat kCellPadding = 22.f;
+static const CGFloat kCellXPadding = 22.f;
+static const CGFloat kCellYPadding = 28.f;
 
 @interface HostSetupViewCell () {
   UIView* _numberContainerView;
@@ -25,8 +26,9 @@ static const CGFloat kCellPadding = 22.f;
 
 @implementation HostSetupViewCell
 
-- (instancetype)initWithFrame:(CGRect)frame {
-  if (self = [super initWithFrame:frame]) {
+- (instancetype)initWithStyle:(UITableViewCellStyle)style
+              reuseIdentifier:(NSString*)reuseIdentifier {
+  if (self = [super initWithStyle:style reuseIdentifier:reuseIdentifier]) {
     [self commonInit];
   }
   return self;
@@ -64,9 +66,9 @@ static const CGFloat kCellPadding = 22.f;
   NSArray* constraints = @[
     [_numberContainerView.leadingAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor
-                       constant:kCellPadding],
+                       constant:kCellXPadding],
     [_numberContainerView.centerYAnchor
-        constraintEqualToAnchor:safeAreaLayoutGuide.centerYAnchor],
+        constraintEqualToAnchor:_contentLabel.centerYAnchor],
     [_numberContainerView.widthAnchor
         constraintEqualToConstant:kNumberIconSize],
     [_numberContainerView.heightAnchor
@@ -82,9 +84,14 @@ static const CGFloat kCellPadding = 22.f;
                        constant:kNumberIconPadding],
     [_contentLabel.trailingAnchor
         constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor
-                       constant:-kCellPadding],
-    [_contentLabel.centerYAnchor
-        constraintEqualToAnchor:safeAreaLayoutGuide.centerYAnchor],
+                       constant:-kCellXPadding],
+    [_contentLabel.topAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor],
+    [_contentLabel.bottomAnchor
+        constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor
+                       constant:-kCellYPadding],
+    [_contentLabel.heightAnchor
+        constraintGreaterThanOrEqualToAnchor:_numberContainerView.heightAnchor],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
 }

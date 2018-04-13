@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 // The view that shows the title for setting up the host.
-@interface HostSetupHeaderView : UICollectionReusableView
+@interface HostSetupHeaderView : UITableViewCell
 @end
 
 #endif  // REMOTING_IOS_APP_HOST_SETUP_HEADER_VIEW_H_

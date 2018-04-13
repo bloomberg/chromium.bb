@@ -7,11 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
-
 // This controller shows instruction for setting up the host a host when the
 // user has no host in the host list.
-@interface HostSetupViewController : MDCCollectionViewController
+@interface HostSetupViewController : UITableViewController
 
 @property(weak, nonatomic) id<UIScrollViewDelegate> scrollViewDelegate;
 
