@@ -125,7 +125,7 @@ public abstract class ChildProcessService extends Service {
         }
 
         @Override
-        public void crashIntentionallyForTesting() {
+        public void forceKill() {
             assert mServiceBound;
             Process.killProcess(Process.myPid());
         }

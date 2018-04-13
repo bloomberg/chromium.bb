@@ -322,4 +322,29 @@ public class ChildProcessConnectionTest {
         mConnectionPidCallback.call(34 /* pid */);
         verify(mConnectionCallback, times(1)).onConnected(connection);
     }
+
+    @Test
+    public void testKill() throws RemoteException {
+        ChildProcessConnection connection = createDefaultTestConnection();
+        assertNotNull(mFirstServiceConnection);
+        connection.start(false /* useStrongBinding */, null /* serviceCallback */);
+        mFirstServiceConnection.notifyServiceConnected(mChildProcessServiceBinder);
+        connection.setupConnection(
+                null /* connectionBundle */, null /* callback */, mConnectionCallback);
+        verify(mConnectionCallback, never()).onConnected(any());
+        ShadowLooper.runUiThreadTasks();
+        assertNotNull(mConnectionPidCallback);
+        mConnectionPidCallback.call(34 /* pid */);
+        verify(mConnectionCallback, times(1)).onConnected(connection);
+
+        // Add strong binding so that connection is oom protected.
+        connection.addStrongBinding();
+        Assert.assertFalse(connection.isWaivedBoundOnlyOrWasWhenDied());
+
+        // Kill and verify state.
+        connection.kill();
+        verify(mIChildProcessService).forceKill();
+        Assert.assertFalse(connection.isWaivedBoundOnlyOrWasWhenDied());
+        Assert.assertTrue(connection.isKilledByUs());
+    }
 }
