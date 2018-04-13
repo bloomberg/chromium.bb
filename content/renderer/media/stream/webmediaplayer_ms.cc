@@ -17,7 +17,6 @@
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer.h"
 #include "content/child/child_process.h"
-#include "content/public/common/content_features.h"
 #include "content/public/renderer/media_stream_audio_renderer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/public/renderer/media_stream_video_renderer.h"
@@ -76,10 +75,8 @@ class WebMediaPlayerMS::FrameDeliverer {
         weak_factory_(this) {
     io_thread_checker_.DetachFromThread();
 
-    if (gpu_factories &&
-        gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames() &&
-        base::FeatureList::IsEnabled(
-            features::kWebRtcUseGpuMemoryBufferVideoFrames)) {
+    if (gpu_factories && gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames(
+                             true /* for_media_stream */)) {
       gpu_memory_buffer_pool_.reset(new media::GpuMemoryBufferVideoFramePool(
           media_task_runner, worker_task_runner, gpu_factories));
     }

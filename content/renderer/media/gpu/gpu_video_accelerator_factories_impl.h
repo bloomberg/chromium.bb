@@ -59,7 +59,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
-      bool enable_gpu_memory_buffer_video_frames,
+      bool enable_video_gpu_memory_buffers,
+      bool enable_media_stream_gpu_memory_buffers,
       bool enable_video_accelerator,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
@@ -88,7 +89,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
       gfx::BufferFormat format,
       gfx::BufferUsage usage) override;
 
-  bool ShouldUseGpuMemoryBuffersForVideoFrames() const override;
+  bool ShouldUseGpuMemoryBuffersForVideoFrames(
+      bool for_media_stream) const override;
   unsigned ImageTextureTarget(gfx::BufferFormat format) override;
   OutputFormat VideoFrameOutputFormat(size_t bit_depth) override;
 
@@ -118,7 +120,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
           main_thread_task_runner,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
-      bool enable_gpu_memory_buffer_video_frames,
+      bool enable_gpu_memory_buffer_video_frames_for_video,
+      bool enable_gpu_memory_buffer_video_frames_for_media_stream,
       bool enable_video_accelerator,
       media::mojom::VideoEncodeAcceleratorProviderPtrInfo unbound_vea_provider);
 
@@ -142,7 +145,8 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   base::UnguessableToken channel_token_;
 
   // Whether gpu memory buffers should be used to hold video frames data.
-  const bool enable_gpu_memory_buffer_video_frames_;
+  const bool enable_video_gpu_memory_buffers_;
+  const bool enable_media_stream_gpu_memory_buffers_;
   // Whether video acceleration encoding/decoding should be enabled.
   const bool video_accelerator_enabled_;
 
