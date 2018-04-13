@@ -18,18 +18,14 @@
 #include "chrome/services/media_gallery_util/public/cpp/media_parser_provider.h"
 #include "chrome/services/media_gallery_util/public/mojom/media_parser.mojom.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace service_manager {
 class Connector;
 }
 
-// Parses the media metadata of a Blob safely in a utility process. This class
-// expects the MIME type of the Blob to be already known. It creates a utility
-// process to do further MIME-type-specific metadata extraction from the Blob
-// data.
+// Parses the media metadata safely in a utility process. This class expects the
+// MIME type and the size of media data to be already known. It creates a
+// utility process to do further MIME-type-specific metadata extraction from the
+// media data.
 class SafeMediaMetadataParser : public MediaParserProvider {
  public:
   typedef base::OnceCallback<void(
@@ -38,11 +34,26 @@ class SafeMediaMetadataParser : public MediaParserProvider {
       std::unique_ptr<std::vector<metadata::AttachedImage>> attached_images)>
       DoneCallback;
 
-  SafeMediaMetadataParser(content::BrowserContext* browser_context,
-                          const std::string& blob_uuid,
-                          int64_t blob_size,
-                          const std::string& mime_type,
-                          bool get_attached_images);
+  // Factory to create media data source instance. The underlying implementation
+  // may read from different kinds of storage.
+  class MediaDataSourceFactory {
+   public:
+    typedef base::RepeatingCallback<void(
+        chrome::mojom::MediaDataSource::ReadCallback callback,
+        std::unique_ptr<std::string> data)>
+        MediaDataCallback;
+
+    virtual std::unique_ptr<chrome::mojom::MediaDataSource>
+    CreateMediaDataSource(chrome::mojom::MediaDataSourcePtr* request,
+                          MediaDataCallback media_data_callback) = 0;
+    virtual ~MediaDataSourceFactory() {}
+  };
+
+  SafeMediaMetadataParser(
+      int64_t size,
+      const std::string& mime_type,
+      bool get_attached_images,
+      std::unique_ptr<MediaDataSourceFactory> media_source_factory);
   ~SafeMediaMetadataParser() override;
 
   // Should be called on the thread |connector| is associated with. |callback|
@@ -50,8 +61,6 @@ class SafeMediaMetadataParser : public MediaParserProvider {
   void Start(service_manager::Connector* connector, DoneCallback callback);
 
  private:
-  class MediaDataSourceImpl;
-
   // MediaParserProvider implementation:
   void OnMediaParserCreated() override;
   void OnConnectionError() override;
@@ -62,27 +71,19 @@ class SafeMediaMetadataParser : public MediaParserProvider {
       std::unique_ptr<base::DictionaryValue> metadata_dictionary,
       const std::vector<metadata::AttachedImage>& attached_images);
 
-  // Starts to read the blob data and sends the data back to the utility
-  // process.
-  void StartBlobRequest(
-      chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-      int64_t position,
-      int64_t length);
+  // Invoked when the media data has been read, which will be sent back to
+  // utility process soon. |data| might be partial content of the media data.
+  void OnMediaDataReady(chrome::mojom::MediaDataSource::ReadCallback callback,
+                        std::unique_ptr<std::string> data);
 
-  // Invoked when the full blob content has been read.
-  void BlobReaderDone(chrome::mojom::MediaDataSource::ReadBlobCallback callback,
-                      std::unique_ptr<std::string> data,
-                      int64_t /* blob_total_size */);
-
-  content::BrowserContext* const browser_context_;
-  const std::string blob_uuid_;
-  const int64_t blob_size_;
+  const int64_t size_;
   const std::string mime_type_;
   bool get_attached_images_;
 
   DoneCallback callback_;
 
-  std::unique_ptr<MediaDataSourceImpl> media_data_source_;
+  std::unique_ptr<chrome::mojom::MediaDataSource> media_data_source_;
+  std::unique_ptr<MediaDataSourceFactory> media_source_factory_;
 
   base::WeakPtrFactory<SafeMediaMetadataParser> weak_factory_;
 

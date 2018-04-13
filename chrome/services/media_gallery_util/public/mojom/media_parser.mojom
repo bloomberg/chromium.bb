@@ -9,7 +9,7 @@ import "mojo/public/mojom/base/file.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
 interface MediaParser {
-  // Extracts metadata from a |mime_type| blob of data of |total_size| and
+  // Extracts metadata from media data with |mime_type|, |total_size| and
   // available from |media_data_source|. If there are images referred to in the
   // metadata, and |get_attached_images| is true, return the images in
   // |attached_images|.
@@ -47,9 +47,9 @@ interface MediaParserFactory {
 };
 
 interface MediaDataSource {
-  // ParseMediaMetadata interface used to read blob data for parsing from the
+  // ParseMediaMetadata interface used to read data for parsing from the
   // calling process.
-  ReadBlob(int64 position, int64 length) => (array<uint8> data);
+  Read(int64 position, int64 length) => (array<uint8> data);
 };
 
 struct AttachedImage {
