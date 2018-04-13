@@ -102,7 +102,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Chooses between the current and new password value which one to save. This
   // is whichever is non-empty, with the preference being given to the new one.
-  static base::string16 PasswordToSave(const autofill::PasswordForm& form);
+  static autofill::ValueElementPair PasswordToSave(
+      const autofill::PasswordForm& form);
 
   // Compares basic data of |observed_form_| with |form| and returns how much
   // they match. The return value is a MatchResultMask bitmask.
@@ -162,13 +163,12 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Updates the username value. Called when user edits the username and clicks
   // the save button. Updates the username and modifies internal state
-  // accordingly. This function should be called after ProvisionallySave().
+  // accordingly.
   void UpdateUsername(const base::string16& new_username);
 
   // Updates the password value. Called when user selects a password from the
   // password selection dropdown and clicks the save button. Updates the
-  // password and modifies internal state accordingly. This function should be
-  // called after ProvisionallySave().
+  // password and modifies internal state accordingly.
   void UpdatePasswordValue(const base::string16& new_password);
 
   // Call these if/when we know the form submission worked or failed.

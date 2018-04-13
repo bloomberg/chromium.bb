@@ -277,10 +277,10 @@ PasswordFormManager::~PasswordFormManager() {
 }
 
 // static
-base::string16 PasswordFormManager::PasswordToSave(const PasswordForm& form) {
+ValueElementPair PasswordFormManager::PasswordToSave(const PasswordForm& form) {
   if (form.new_password_element.empty() || form.new_password_value.empty())
-    return form.password_value;
-  return form.new_password_value;
+    return {form.password_value, form.password_element};
+  return {form.new_password_value, form.new_password_element};
 }
 
 // TODO(crbug.com/700420): Refactor this function, to make comparison more
@@ -489,7 +489,7 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
   // |username_value| and |username_element| of the submitted form. When the
   // user has to override the username, Chrome will send a username vote.
   if (!submitted_form_->username_value.empty()) {
-    credential.other_possible_usernames.push_back(autofill::ValueElementPair(
+    credential.other_possible_usernames.push_back(ValueElementPair(
         submitted_form_->username_value, submitted_form_->username_element));
   }
 
@@ -498,7 +498,34 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
 
 void PasswordFormManager::UpdatePasswordValue(
     const base::string16& new_password) {
-  pending_credentials_.password_value = new_password;
+  DCHECK(!new_password.empty());
+
+  PasswordForm credential(*submitted_form_);
+  // Select whether to update |password_value| or |new_password_value|.
+  base::string16* password_value_ptr;
+  base::string16* password_element_ptr;
+  if (credential.new_password_value.empty()) {
+    DCHECK(!credential.password_value.empty());
+    password_value_ptr = &credential.password_value;
+    password_element_ptr = &credential.password_element;
+  } else {
+    password_value_ptr = &credential.new_password_value;
+    password_element_ptr = &credential.new_password_element;
+  }
+
+  *password_value_ptr = new_password;
+  // If |new_password| is not found among the known password fields, store an
+  // empty field name.
+  password_element_ptr->clear();
+  for (const ValueElementPair& pair : credential.all_possible_passwords) {
+    DCHECK(!pair.second.empty());
+    if (pair.first == new_password) {
+      *password_element_ptr = pair.second;
+      break;
+    }
+  }
+
+  ProvisionallySave(credential, IGNORE_OTHER_POSSIBLE_USERNAMES);
 }
 
 void PasswordFormManager::PresaveGeneratedPassword(
@@ -1008,7 +1035,7 @@ void PasswordFormManager::AddFormClassifierVote(
 
 void PasswordFormManager::CreatePendingCredentials() {
   DCHECK(submitted_form_);
-  base::string16 password_to_save(PasswordToSave(*submitted_form_));
+  ValueElementPair password_to_save(PasswordToSave(*submitted_form_));
 
   // Look for the actually submitted credentials in the list of previously saved
   // credentials that were available to autofilling.
@@ -1020,7 +1047,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     // The user signed in with a login we autofilled.
     pending_credentials_ = *saved_form;
     password_overridden_ =
-        pending_credentials_.password_value != password_to_save;
+        pending_credentials_.password_value != password_to_save.first;
     if (IsPendingCredentialsPublicSuffixMatch()) {
       // If the autofilled credentials were a PSL match or credentials stored
       // from Android apps, store a copy with the current origin and signon
@@ -1147,6 +1174,7 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   if (!IsValidAndroidFacetURI(pending_credentials_.signon_realm)) {
     pending_credentials_.action = submitted_form_->action;
+    pending_credentials_.password_element = password_to_save.second;
     // If the user selected credentials we autofilled from a PasswordForm
     // that contained no action URL (IE6/7 imported passwords, for example),
     // bless it with the action URL from the observed form. See b/1107719.
@@ -1154,7 +1182,7 @@ void PasswordFormManager::CreatePendingCredentials() {
       pending_credentials_.action = observed_form_.action;
   }
 
-  pending_credentials_.password_value = password_to_save;
+  pending_credentials_.password_value = password_to_save.first;
   pending_credentials_.preferred = submitted_form_->preferred;
   pending_credentials_.form_has_autofilled_value =
       submitted_form_->form_has_autofilled_value;
@@ -1333,15 +1361,9 @@ void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
 
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials_.password_value.clear();
+  pending_credentials_.password_element.clear();
   pending_credentials_.new_password_value.clear();
-
-  // If this was a sign-up or change password form, the names of the elements
-  // are likely different than those on a login form, so do not bother saving
-  // them. We will fill them with meaningful values during update when the user
-  // goes onto a real login form for the first time.
-  if (!submitted_form_->new_password_element.empty()) {
-    pending_credentials_.password_element.clear();
-  }
+  pending_credentials_.new_password_element.clear();
 }
 
 void PasswordFormManager::OnNopeUpdateClicked() {
@@ -1546,18 +1568,23 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
     // the other usernames experiment). Updating related credentials would be
     // complicated, so we skip that, given it influences no users.
     update_related_credentials = false;
-  } else if (observed_form_.new_password_element.empty() &&
-             pending_credentials_.federation_origin.unique() &&
+  } else if (pending_credentials_.federation_origin.unique() &&
              !IsValidAndroidFacetURI(pending_credentials_.signon_realm) &&
              (pending_credentials_.password_element.empty() ||
               pending_credentials_.username_element.empty() ||
               pending_credentials_.submit_element.empty())) {
-    // If |observed_form_| is a sign-in form and some of the element names are
-    // empty, it is likely the first time a credential saved on a
-    // sign-up/change password form is used.  Given that |password_element| and
-    // |username_element| are part of Sync and PasswordStore primary key, the
-    // old primary key must be used if the new names shal be saved.
+    // Given that |password_element| and |username_element| are part of Sync and
+    // PasswordStore primary key, the old primary key must be used in order to
+    // match and update the existing entry.
     old_primary_key = pending_credentials_;
+    old_primary_key->username_element =
+        best_matches()
+            .at(pending_credentials_.username_value)
+            ->username_element;
+    old_primary_key->password_element =
+        best_matches()
+            .at(pending_credentials_.username_value)
+            ->password_element;
     pending_credentials_.password_element = observed_form_.password_element;
     pending_credentials_.username_element = observed_form_.username_element;
     pending_credentials_.submit_element = observed_form_.submit_element;
