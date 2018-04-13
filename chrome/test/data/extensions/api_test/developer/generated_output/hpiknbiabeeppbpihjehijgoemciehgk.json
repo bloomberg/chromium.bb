@@ -12,7 +12,7 @@
    },
    "fileAccess": {
       "isActive": true,
-      "isEnabled": false
+      "isEnabled": true
    },
    "homePage": {
       "specified": false,
