@@ -15,7 +15,6 @@
 -ExtensionApiTest.XHRFileURLs
 -ExtensionApiTestWithSwitch.ExtensionDebugger
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
--LocalNTPVoiceJavascriptTest.TextTests
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.SuccessfulLoad
@@ -82,12 +81,6 @@
 -WebViewTests/WebViewTest.ClearSessionCookies/0
 -WebViewTests/WebViewTest.ClearSessionCookies/1
 
-# http://crbug.com/721400 support WebSockets.
--WebSocketBrowserTest.WebSocketAppliesHSTS
--WebSocketBrowserTest.WebSocketBasicAuthInHTTPSURL
--WebSocketBrowserTest.WebSocketBasicAuthInHTTPURL
--WebSocketBrowserTest.ReuseMainPageBasicAuthCredentialsForWebSocket
-
 # Accessing cookies after they were set in onload handler is flaky:
 # https://crbug.com/820969.
 -ContentSettingsTest.BasicCookies
@@ -138,10 +131,6 @@
 
 # crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
 -ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
-
-# crbug.com/778846 DCHECK() failed at URLDataManagerBackend::CheckURLIsValid().
-# Note: these may flake pass, but don't enable them.
--CrSettingsPeoplePageTest.All
 
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
@@ -199,7 +188,6 @@
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/0
 -MimeHandlerViewTests/MimeHandlerViewTest.SingleRequest/1
 -PrerenderBrowserTestWithExtensions.StreamsTest
--SaveType/SavePageOriginalVsSavedComparisonTest.ObjectElementsViaFile/0
 -StreamsPrivateApiTest.Abort
 -StreamsPrivateApiTest.FileURL
 -StreamsPrivateApiTest.Headers
@@ -327,11 +315,7 @@
 
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
--SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked
-
-# Fails because data: URL is not downloaded but navigated to.
--BrowserActionApiTest.BrowserActionPopupDownload
 
 # Flaky in linux tests.
 # https://crbug.com/820995
