@@ -39,12 +39,20 @@
       "content_unittests",
       "frame_analyzer",
       "jingle_unittests",
-      "remoting_unittests"
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
-      "all"
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "frame_analyzer",
+      "jingle_unittests",
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   },
   "Mac Builder": {
@@ -64,8 +72,10 @@
       "capture_unittests",
       "content_browsertests",
       "content_unittests",
+      "frame_analyzer",
       "jingle_unittests",
-      "remoting_unittests"
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   },
   "Win Builder": {
@@ -76,12 +86,20 @@
       "content_unittests",
       "frame_analyzer",
       "jingle_unittests",
-      "remoting_unittests"
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   },
   "Win Builder (dbg)": {
     "additional_compile_targets": [
-      "all"
+      "browser_tests",
+      "capture_unittests",
+      "content_browsertests",
+      "content_unittests",
+      "frame_analyzer",
+      "jingle_unittests",
+      "remoting_unittests",
+      "remoting/webapp:webapp"
     ]
   }
 }
