@@ -140,7 +140,8 @@ class CC_ANIMATION_EXPORT KeyframeModel {
   base::TimeDelta TrimTimeToCurrentIteration(
       base::TimeTicks monotonic_time) const;
 
-  base::TimeTicks ConvertFromActiveTime(base::TimeDelta active_time) const;
+  base::TimeTicks ConvertLocalTimeToMonotonicTime(
+      base::TimeDelta local_time) const;
 
   std::unique_ptr<KeyframeModel> CloneAndInitialize(
       RunState initial_run_state) const;

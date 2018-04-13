@@ -68,9 +68,10 @@ bool WorkletAnimation::NeedsUpdate(base::TimeTicks monotonic_time,
 
 base::TimeTicks WorkletAnimation::GetTimeForKeyframeModel(
     const KeyframeModel& keyframe_model) const {
-  // Animation local time is equivalent to animation active time. So we have to
-  // convert it from active time to monotonic time.
-  return keyframe_model.ConvertFromActiveTime(local_time_);
+  // The local time set by the script has to be converted to monotonic time;
+  // largely this means it is offset from the start time and includes any time
+  // the animation spent paused.
+  return keyframe_model.ConvertLocalTimeToMonotonicTime(local_time_);
 }
 
 void WorkletAnimation::PushPropertiesTo(Animation* animation_impl) {
