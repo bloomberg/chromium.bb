@@ -70,6 +70,7 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
   WindowSelector* window_selector() { return window_selector_.get(); }
 
  private:
+  class OverviewBlurController;
   friend class WindowSelectorTest;
 
   // Dispatched when window selection begins.
@@ -85,6 +86,10 @@ class ASH_EXPORT WindowSelectorController : public WindowSelectorDelegate {
 
   // If we are in middle of ending overview mode.
   bool is_shutting_down_ = false;
+
+  // Handles blurring of the wallpaper when entering or exiting overview mode.
+  // Animates the blurring if necessary.
+  std::unique_ptr<OverviewBlurController> overview_blur_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
 };
