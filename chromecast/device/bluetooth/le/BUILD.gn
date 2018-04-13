@@ -41,6 +41,7 @@ cast_source_set("le") {
     "//chromecast/device/bluetooth:util",
     "//chromecast/device/bluetooth/shlib",
     "//chromecast/public",
+    "//third_party/re2",
   ]
 }
 
