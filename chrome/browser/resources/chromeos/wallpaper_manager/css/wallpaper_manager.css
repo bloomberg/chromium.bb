@@ -394,9 +394,8 @@ body.v2 {
 .v2 .dialog-container {
   background-color: #fff;
   border-radius: 4px;
-  height: 512px;
   position: absolute;
-  width: 768px;
+  width: 100%;
 }
 
 .v2 #dialog-header {
@@ -406,11 +405,10 @@ body.v2 {
 
 .v2 .dialog-body {
   display: flex;
-  height: 476px;
+  height: 100%;
 }
 
 .v2 .dialog-topbar {
-  -webkit-margin-end: 32px;
   display: block;
   height: 100%;
   overflow: visible;
@@ -433,8 +431,9 @@ body.v2 {
 
 .v2 #categories-list > li {
   border-top: unset;
-  height: 36px;
+  height: 32px;
   margin-bottom: 8px;
+  margin-top: 8px;
 }
 
 .v2 #categories-list > li > div {
@@ -447,7 +446,7 @@ body.v2 {
 
 .v2 #categories-list > li[selected] {
   background-color: rgb(232, 240, 254);
-  border-radius: 0 32px 32px 0;
+  border-radius: 0 20px 20px 0;
 }
 
 .v2 #categories-list > li[selected] > div {
@@ -495,10 +494,25 @@ body.v2 {
 }
 
 .v2 #window-close-button {
-  background-color: rgba(128, 134, 139, 0.3);
-  border-radius: 4px;
-  left: 734px;
-  top: -40px;
+  display: none;
+}
+
+.v2 #minimize-button {
+  background-image: url(../images/ui/button_minimize.png);
+  display: block;
+  height: 24px;
+  position: absolute;
+  right: 38px;
+  width: 24px;
+}
+
+.v2 #close-button {
+  background-image: url(../images/ui/button_close.png);
+  display: block;
+  height: 24px;
+  position: absolute;
+  right: 8px;
+  width: 24px;
 }
 
 .v2 .image-picker .check,
@@ -510,8 +524,7 @@ body.v2 {
   background-color: #fff;
   border-radius: 0 0 48px 48px;
   display: flex;
-  height: 33px;
-  padding-top: 15px;
+  height: 48px;
   position: absolute;
   top: 0;
   visibility: hidden;  /* Need this for correct positioning. */
@@ -533,38 +546,98 @@ body.v2 {
   display: flex;
 }
 
-.v2 .top-header-contents #image-title {
+.v2 .top-header-contents > div:not(.divider) {
+  padding-top: 15px;
+}
+
+.v2 .top-header-contents #cancel-preview-wallpaper {
+  -webkit-margin-start: 32px;
   -webkit-padding-start: 32px;
+  background-image: url(../images/ui/left_arrow.svg);
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  margin-top: 14px;
+}
+
+.v2 .top-header-contents #image-title {
+  -webkit-padding-end: 8px;
+  -webkit-padding-start: 8px;
   color: rgb(32, 33, 36);
   max-width: 360px;
   overflow: hidden;
 }
 
+.v2 .top-header-contents .divider {
+  border-left: 1px solid rgb(232, 234, 237);
+  height: 34px;
+  margin-top: 8px;
+}
+
 .v2 .top-header-contents #collection-name {
-  -webkit-padding-start: 24px;
+  -webkit-padding-start: 8px;
   color: rgb(128, 134, 139);
+}
+
+.v2.custom-wallpaper .top-header-contents #collection-name {
+  color: rgb(32, 33, 36);
 }
 
 .v2 .top-header-contents .more-options {
   display: flex;
   position: absolute;
-  right: 0;
+  /* TODO(wzang): Change this to be RTL-friendly. */
+  right: 32px;
 }
 
 .v2 .top-header-contents .more-options > div {
-  -webkit-padding-end: 32px;
+  -webkit-padding-end: 16px;
+  -webkit-padding-start: 16px;
   color: rgb(66, 133, 244);
   display: none;
 }
 
-.v2 .top-header-contents.online .online-option,
-.v2 .top-header-contents.custom .custom-option {
+.v2 .top-header-contents .more-options > div.disabled {
+  color: rgb(128, 134, 139);
+  pointer-events: none;
+}
+
+.v2 .top-header-contents .icon {
+  -webkit-padding-end: 8px;
+  background-repeat: no-repeat;
+  width: 16px;
+}
+
+.v2 .top-header-contents .center-button .icon,
+.v2 #current-wallpaper-more-options #center .icon {
+  background-image: url(../images/ui/center_layout.svg);
+}
+
+.v2 .top-header-contents .center-button.disabled .icon {
+  background-image: url(../images/ui/center_layout_disabled.svg);
+}
+
+.v2 .top-header-contents .center-cropped-button .icon,
+.v2 #current-wallpaper-more-options #center-cropped .icon {
+  background-image: url(../images/ui/center_cropped_layout.svg);
+}
+
+.v2 .top-header-contents .center-cropped-button.disabled .icon {
+  background-image: url(../images/ui/center_cropped_layout_disabled.svg);
+}
+
+.v2 .top-header-contents #confirm-preview-wallpaper {
+  -webkit-padding-start: 96px;
+}
+
+.v2.preview-mode.custom-wallpaper .more-options .custom-option,
+.v2.preview-mode:not(.custom-wallpaper) .more-options :not(.custom-option) {
   display: flex;
 }
 
 .v2.wallpaper-set-successfully .dialog-container,
 .v2.preview-mode .dialog-container,
-.v2.preview-mode .more-options :not(.preview-option) {
+.v2.custom-wallpaper .top-header-contents #image-title,
+.v2.custom-wallpaper .top-header-contents .divider {
   display: none;
 }
 
@@ -572,11 +645,25 @@ body.v2 {
   display: flex;
 }
 
-.v2.no-images #no-images-message {
+.v2 #no-images-message {
   display: block;
-  left: 180px;
   position: absolute;
-  top: 220px;
+  visibility: hidden;  /* Need this for correct positioning. */
+}
+
+.v2.no-images #no-images-message {
+  visibility: visible;
+}
+
+.v2.no-images #no-images-message .icon {
+  background-image: url(../images/ui/no_images_illustration.png);
+  background-repeat: no-repeat;
+  height: 96px;
+  width: 96px;
+}
+
+.v2.no-images #no-images-message .text {
+   padding-top: 15px;
 }
 
 .v2 .slide-show {
@@ -593,14 +680,14 @@ body.v2 {
 
 .v2 .daily-refresh-slider {
   background-color: rgba(128, 134, 139, 0.4);
-  border-radius: 30%;
-  height: 10px;
+  border-radius: 6px;
+  height: 12px;
   left: 116px;
   pointer-events: auto;
   position: absolute;
   top: 15px;
   transition: 400ms;
-  width: 28px;
+  width: 30px;
 }
 
 .v2 .daily-refresh-slider::before {
@@ -610,7 +697,7 @@ body.v2 {
   height: 16px;
   left: -2px;
   position: absolute;
-  top: -3px;
+  top: -2px;
   transition: 400ms;
   width: 16px;
 }
@@ -631,18 +718,19 @@ body.v2 {
   font-weight: 500;
   left: 18px;
   position: absolute;
-  top: 12px;
+  top: 13px;
 }
 
 .v2 #current-wallpaper-info-bar {
   background-color: #fff;
+  border-radius: 4px;
   bottom: 0;
+  box-shadow: 0 0 60px;
   display: flex;
   flex-direction: row;
   font-family: 'Roboto';
   font-weight: 500;
   height: 128px;
-  left: 32px;
   opacity: 0;
   position: absolute;
   transition: opacity 800ms;
@@ -682,22 +770,51 @@ body.v2 {
   width: 320px;
 }
 
-.v2 #current-wallpaper-explore {
-  -webkit-margin-start: 96px;
+.v2 #current-wallpaper-more-options {
+  -webkit-margin-end: 32px;
   color: rgb(66, 133, 244);
-  font-size: 14px;
-  padding-top: 45px;
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+
+.v2 #current-wallpaper-more-options > div {
+  border: 1px solid;
+  border-radius: 32px;
+  display: flex;
+  padding: 8px 4px;
+}
+
+.v2 #current-wallpaper-more-options a {
+  color: rgb(66, 133, 244);
   text-decoration: none;
 }
 
-.v2 #current-wallpaper-explore a {
-  text-decoration: none;
+.v2 #current-wallpaper-more-options .text {
+  -webkit-margin-end: 16px;
+  padding-top: 1px;
 }
 
-.v2.wallpaper-set-successfully #set-successfully-message {
+.v2 #current-wallpaper-more-options .icon {
+  -webkit-margin-start: 16px;
+  -webkit-padding-end: 8px;
+  background-repeat: no-repeat;
+  height: 16px;
+  width: 16px;
+}
+
+.v2 #current-wallpaper-more-options #refresh .icon {
+  background-image: url(../images/ui/current_wallpaper_refresh.svg);
+}
+
+.v2 #current-wallpaper-more-options #explore .icon {
+  background-image: url(../images/ui/current_wallpaper_explore.svg);
+}
+
+.v2 #set-successfully-message {
   background-color: #000;
   border-radius: 18px;
-  bottom: 5px;
+  bottom: 12px;
   color: #fff;
   display: block;
   padding: 8px 28px;
