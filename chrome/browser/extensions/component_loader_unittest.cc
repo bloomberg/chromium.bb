@@ -91,9 +91,6 @@ class ComponentLoaderTest : public testing::Test {
   }
 
   void SetUp() override {
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    allow_legacy_extensions_ = Extension::allow_legacy_extensions_for_testing();
-
     extension_path_ =
         GetBasePath().AppendASCII("good")
                      .AppendASCII("Extensions")
@@ -119,7 +116,6 @@ class ComponentLoaderTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   TestingPrefServiceSimple local_state_;
   ComponentLoader component_loader_;
-  Extension::ScopedAllowLegacyExtensions allow_legacy_extensions_;
 
   // The root directory of the text extension.
   base::FilePath extension_path_;

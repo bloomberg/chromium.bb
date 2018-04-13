@@ -62,7 +62,6 @@ scoped_refptr<extensions::Extension> CreateFakeExtension(
   base::DictionaryValue manifest;
   std::string error;
   manifest.SetKey(extensions::manifest_keys::kVersion, base::Value("1.0.0.0"));
-  manifest.SetKey(extensions::manifest_keys::kManifestVersion, base::Value(2));
   manifest.SetKey(extensions::manifest_keys::kName, base::Value("unused"));
 
   std::unique_ptr<base::ListValue> permissions_list(new base::ListValue());
