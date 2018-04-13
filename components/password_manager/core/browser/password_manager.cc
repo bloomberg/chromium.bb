@@ -376,8 +376,8 @@ void PasswordManager::ProvisionallySavePassword(
     return;
   }
 
-  // No password to save? Then don't.
-  if (PasswordFormManager::PasswordToSave(form).empty()) {
+  // No password value to save? Then don't.
+  if (PasswordFormManager::PasswordToSave(form).first.empty()) {
     client_->GetMetricsRecorder().RecordProvisionalSaveFailure(
         PasswordManagerMetricsRecorder::EMPTY_PASSWORD, main_frame_url_,
         form.origin, logger.get());

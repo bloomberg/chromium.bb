@@ -147,7 +147,10 @@ MATCHER_P4(CheckUploadedAutofillTypesAndSignature,
   }
 
   bool found_generation_vote = false;
+  size_t fields_matched_type_count = 0;
   for (const auto& field : arg) {
+    fields_matched_type_count +=
+        expected_types.find(field->name) == expected_types.end() ? 0 : 1;
     if (field->possible_types().size() > 1) {
       ADD_FAILURE() << field->name << " field has several possible types";
       return false;
@@ -185,6 +188,8 @@ MATCHER_P4(CheckUploadedAutofillTypesAndSignature,
     }
   }
   EXPECT_EQ(expect_generation_vote, found_generation_vote);
+  EXPECT_EQ(expected_types.size(), fields_matched_type_count)
+      << "Some types were expected but not found in the vote";
   return true;
 }
 
@@ -414,6 +419,9 @@ class PasswordFormManagerTest : public testing::Test {
     saved_match_.password_value = ASCIIToUTF16("test1");
     saved_match_.other_possible_usernames.push_back(ValueElementPair(
         ASCIIToUTF16("test2@gmail.com"), ASCIIToUTF16("full_name")));
+    saved_match_.all_possible_passwords = {
+        {ASCIIToUTF16("password"), base::string16()},
+        {ASCIIToUTF16("password"), ASCIIToUTF16("Passwd")}};
 
     autofill::FormFieldData field;
     field.label = ASCIIToUTF16("Full name");
@@ -1147,13 +1155,13 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
             form_manager.pending_credentials().username_value);
 
   // By this point, the PasswordFormManager should have promoted the new
-  // password value to be the current password, and should have wiped the
-  // password element name: it is likely going to be different on a login
-  // form, so it is not worth remembering them.
+  // password value to be the current password.
   EXPECT_EQ(credentials.new_password_value,
             form_manager.pending_credentials().password_value);
-  EXPECT_TRUE(form_manager.pending_credentials().password_element.empty());
+  EXPECT_EQ(credentials.new_password_element,
+            form_manager.pending_credentials().password_element);
   EXPECT_TRUE(form_manager.pending_credentials().new_password_value.empty());
+  EXPECT_TRUE(form_manager.pending_credentials().new_password_element.empty());
 }
 
 TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
@@ -1193,15 +1201,6 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   // save the password from this field, instead of the current password field.
   observed_form()->new_password_element = ASCIIToUTF16("NewPasswd");
 
-  // Given that |observed_form| was most likely a change password form, it
-  // should not serve as a source for updating meta-information stored with the
-  // old credentials, such as element names, as they are likely going to be
-  // different between change password and login forms. To test this in depth,
-  // forcibly wipe |submit_element|, which should normally trigger updating
-  // this field from |observed_form| during updating as a special case. We will
-  // verify in the end that this did not happen.
-  saved_match()->submit_element.clear();
-
   FakeFormFetcher fetcher;
   fetcher.Fetch();
   PasswordFormManager form_manager(password_manager(), client(),
@@ -1239,10 +1238,10 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
 
   form_manager.Save();
 
-  // No meta-information should be updated, only the password.
+  // The password should be updated.
   EXPECT_EQ(credentials.new_password_value, new_credentials.password_value);
   EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
-  EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);
+  EXPECT_EQ(credentials.new_password_element, new_credentials.password_element);
   EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
 }
 
@@ -2138,7 +2137,7 @@ TEST_F(PasswordFormManagerTest, PreferredMatchIsUpToDate) {
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoElements) {
   PasswordForm form;
-  EXPECT_TRUE(PasswordFormManager::PasswordToSave(form).empty());
+  EXPECT_TRUE(PasswordFormManager::PasswordToSave(form).first.empty());
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoNewElement) {
@@ -2146,7 +2145,7 @@ TEST_F(PasswordFormManagerTest, PasswordToSave_NoNewElement) {
   form.password_element = base::ASCIIToUTF16("pwd");
   base::string16 kValue = base::ASCIIToUTF16("val");
   form.password_value = kValue;
-  EXPECT_EQ(kValue, PasswordFormManager::PasswordToSave(form));
+  EXPECT_EQ(kValue, PasswordFormManager::PasswordToSave(form).first);
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NoOldElement) {
@@ -2154,7 +2153,7 @@ TEST_F(PasswordFormManagerTest, PasswordToSave_NoOldElement) {
   form.new_password_element = base::ASCIIToUTF16("new_pwd");
   base::string16 kNewValue = base::ASCIIToUTF16("new_val");
   form.new_password_value = kNewValue;
-  EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form));
+  EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form).first);
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_BothButNoNewValue) {
@@ -2163,7 +2162,7 @@ TEST_F(PasswordFormManagerTest, PasswordToSave_BothButNoNewValue) {
   form.new_password_element = base::ASCIIToUTF16("new_pwd");
   base::string16 kValue = base::ASCIIToUTF16("val");
   form.password_value = kValue;
-  EXPECT_EQ(kValue, PasswordFormManager::PasswordToSave(form));
+  EXPECT_EQ(kValue, PasswordFormManager::PasswordToSave(form).first);
 }
 
 TEST_F(PasswordFormManagerTest, PasswordToSave_NewValue) {
@@ -2173,7 +2172,7 @@ TEST_F(PasswordFormManagerTest, PasswordToSave_NewValue) {
   form.password_value = base::ASCIIToUTF16("val");
   base::string16 kNewValue = base::ASCIIToUTF16("new_val");
   form.new_password_value = kNewValue;
-  EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form));
+  EXPECT_EQ(kNewValue, PasswordFormManager::PasswordToSave(form).first);
 }
 
 TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
@@ -2210,15 +2209,6 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   field.name = ASCIIToUTF16("NewPasswd");
   field.form_control_type = "password";
   observed_form()->form_data.fields.push_back(field);
-
-  // Given that |observed_form| was most likely a change password form, it
-  // should not serve as a source for updating meta-information stored with the
-  // old credentials, such as element names, as they are likely going to be
-  // different between change password and login forms. To test this in depth,
-  // forcibly wipe |submit_element|, which should normally trigger updating
-  // this field from |observed_form| during updating as a special case. We will
-  // verify in the end that this did not happen.
-  saved_match()->submit_element.clear();
 
   FakeFormFetcher fetcher;
   fetcher.Fetch();
@@ -2258,7 +2248,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
 
   form_manager.Update(*saved_match());
 
-  // No meta-information should be updated, only the password.
+  // The password is updated.
   EXPECT_EQ(credentials.new_password_value, new_credentials.password_value);
   EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
   EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);
@@ -2275,15 +2265,6 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
   field.name = ASCIIToUTF16("NewPasswd");
   field.form_control_type = "password";
   observed_form()->form_data.fields.push_back(field);
-
-  // Given that |observed_form| was most likely a change password form, it
-  // should not serve as a source for updating meta-information stored with the
-  // old credentials, such as element names, as they are likely going to be
-  // different between change password and login forms. To test this in depth,
-  // forcibly wipe |submit_element|, which should normally trigger updating this
-  // field from |observed_form| during updating as a special case. We
-  // will verify in the end that this did not happen.
-  saved_match()->submit_element.clear();
 
   FakeFormFetcher fetcher;
   fetcher.Fetch();
@@ -2325,12 +2306,13 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
 
   form_manager.Update(form_manager.pending_credentials());
 
-  // No other information than password value should be updated. In particular
-  // not the username.
+  // The password should be updated, but the username should not.
   EXPECT_EQ(saved_match()->username_value, new_credentials.username_value);
   EXPECT_EQ(credentials.new_password_value, new_credentials.password_value);
   EXPECT_EQ(saved_match()->username_element, new_credentials.username_element);
-  EXPECT_EQ(saved_match()->password_element, new_credentials.password_element);
+  EXPECT_EQ(credentials.new_password_element, new_credentials.password_element);
+  EXPECT_EQ(base::string16(), new_credentials.new_password_value);
+  EXPECT_EQ(base::string16(), new_credentials.new_password_element);
   EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
 }
 
@@ -2627,32 +2609,95 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_PslMatch) {
   EXPECT_EQ(ASCIIToUTF16("some_pass"), saved_result.password_value);
 }
 
-// Test that when user selects a password, the pending credentials is updated
-// accordingly.
+// Test that when user selects a password in the bubble, the pending credentials
+// are updated accordingly.
 TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
-  fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  for (bool has_password : {true, false}) {
+    for (bool has_new_password : {true, false}) {
+      if (!has_password && !has_new_password)
+        continue;
+      SCOPED_TRACE(testing::Message() << "has_password=" << has_password);
+      SCOPED_TRACE(testing::Message()
+                   << "has_new_password=" << has_new_password);
 
-  // User enters credential in the form.
-  PasswordForm credential(*observed_form());
-  credential.username_value = ASCIIToUTF16("username");
-  credential.password_value = ASCIIToUTF16("password");
-  form_manager()->ProvisionallySave(
-      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-  // User selects another password in a prompt.
-  form_manager()->UpdatePasswordValue(ASCIIToUTF16("newpassword"));
-  EXPECT_EQ(form_manager()->pending_credentials().username_value,
-            ASCIIToUTF16("username"));
-  EXPECT_EQ(form_manager()->pending_credentials().password_value,
-            ASCIIToUTF16("newpassword"));
-  EXPECT_TRUE(form_manager()->IsNewLogin());
+      PasswordForm observed(*observed_form());
+      // Observe two password fields, between which we must select.
+      autofill::FormFieldData field;
+      field.name = ASCIIToUTF16("correct_password_element");
+      field.form_control_type = "password";
+      observed.form_data.fields.push_back(field);
+      field.name = ASCIIToUTF16("other_password_element");
+      field.form_control_type = "password";
+      observed.form_data.fields.push_back(field);
 
-  // User clicks save, selected password is saved.
-  PasswordForm saved_result;
-  EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, IsEmpty()))
-      .WillOnce(SaveArg<0>(&saved_result));
-  form_manager()->Save();
-  EXPECT_EQ(ASCIIToUTF16("username"), saved_result.username_value);
-  EXPECT_EQ(ASCIIToUTF16("newpassword"), saved_result.password_value);
+      PasswordFormManager form_manager(
+          password_manager(), client(), client()->driver(), observed,
+          std::make_unique<NiceMock<MockFormSaver>>(), fake_form_fetcher());
+      form_manager.Init(nullptr);
+      fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(),
+                                           0u);
+
+      // User enters credential in the form. We autodetect the wrong password
+      // field.
+      PasswordForm credential(observed);
+      if (has_password) {
+        credential.password_value = ASCIIToUTF16("not-a-password");
+        credential.password_element = ASCIIToUTF16("other_password_element");
+      }
+      if (has_new_password) {
+        credential.new_password_value = ASCIIToUTF16("not-a-password");
+        credential.new_password_element =
+            ASCIIToUTF16("other_password_element");
+      }
+      credential.all_possible_passwords = {
+          {ASCIIToUTF16("p4ssword"), ASCIIToUTF16("correct_password_element")},
+          {ASCIIToUTF16("not-a-password"),
+           ASCIIToUTF16("other_password_element")}};
+      form_manager.ProvisionallySave(
+          credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+      // Pending credentials have the wrong values.
+      EXPECT_EQ(form_manager.pending_credentials().password_value,
+                ASCIIToUTF16("not-a-password"));
+      EXPECT_EQ(form_manager.pending_credentials().password_element,
+                ASCIIToUTF16("other_password_element"));
+      // User selects another password in a prompt.
+      form_manager.UpdatePasswordValue(ASCIIToUTF16("p4ssword"));
+      // Pending credentials are also corrected.
+      EXPECT_EQ(form_manager.pending_credentials().password_value,
+                ASCIIToUTF16("p4ssword"));
+      EXPECT_EQ(form_manager.pending_credentials().password_element,
+                ASCIIToUTF16("correct_password_element"));
+      EXPECT_TRUE(form_manager.IsNewLogin());
+
+      // User clicks save, selected password is saved.
+      PasswordForm saved_result;
+      EXPECT_CALL(MockFormSaver::Get(&form_manager), Save(_, IsEmpty()))
+          .WillOnce(SaveArg<0>(&saved_result));
+      // Expect a password edited vote.
+      FieldTypeMap expected_types;
+      expected_types[ASCIIToUTF16("correct_password_element")] =
+          autofill::PASSWORD;
+      expected_types[ASCIIToUTF16("other_password_element")] =
+          autofill::UNKNOWN_TYPE;
+      EXPECT_CALL(
+          *client()->mock_driver()->mock_autofill_download_manager(),
+          StartUploadRequest(
+              CheckUploadedAutofillTypesAndSignature(
+                  autofill::FormStructure(observed.form_data)
+                      .FormSignatureAsStr(),
+                  expected_types, false /* expect_generation_vote */,
+                  autofill::AutofillUploadContents::Field::NO_INFORMATION),
+              _, Contains(autofill::PASSWORD), _, _));
+      form_manager.Save();
+
+      EXPECT_EQ(ASCIIToUTF16("p4ssword"), saved_result.password_value);
+      EXPECT_EQ(ASCIIToUTF16("correct_password_element"),
+                saved_result.password_element);
+      EXPECT_EQ(base::string16(), saved_result.new_password_value);
+      EXPECT_EQ(base::string16(), saved_result.new_password_element);
+    }
+  }
 }
 
 // Test that if WipeStoreCopyIfOutdated is called before password store

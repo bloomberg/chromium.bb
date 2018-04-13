@@ -292,8 +292,7 @@ MATCHER_P(FormMatches, form, "") {
 TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
   // Test that when a form only contains a "new password" field, the form gets
   // saved and in password store, the new password value is saved as a current
-  // password value, without specifying the password field name (so that
-  // credentials from sign-up forms can be filled in login forms).
+  // password value.
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeFormWithOnlyNewPasswordField());
   observed.push_back(form);
@@ -325,6 +324,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithOnlyNewPasswordField) {
   // to the password store as the current password.
   PasswordForm expected_form(form);
   expected_form.password_value.swap(expected_form.new_password_value);
+  expected_form.password_element.swap(expected_form.new_password_element);
   EXPECT_THAT(saved_form, FormMatches(expected_form));
 }
 
@@ -1119,7 +1119,8 @@ TEST_F(PasswordManagerTest, DoNotSaveWithEmptyNewPasswordAndNonemptyPassword) {
   ASSERT_TRUE(form_manager_to_save);
   EXPECT_EQ(form.password_value,
             PasswordFormManager::PasswordToSave(
-                form_manager_to_save->pending_credentials()));
+                form_manager_to_save->pending_credentials())
+                .first);
 }
 
 TEST_F(PasswordManagerTest, FormSubmitWithOnlyPasswordField) {
@@ -1279,11 +1280,9 @@ TEST_F(PasswordManagerTest, SavingSignupForms_NoHTMLMatch) {
   // PasswordManager observed two forms, and should have associate the saved one
   // with the observed form with a matching action.
   EXPECT_EQ(form.action, form_to_save.action);
-  // Password values are always saved as the current password value, but the
-  // current password field name should be empty if the value comes from the new
-  // password field.
+  // Password values are always saved as the current password value.
   EXPECT_EQ(submitted_form.new_password_value, form_to_save.password_value);
-  EXPECT_TRUE(form_to_save.password_element.empty());
+  EXPECT_EQ(submitted_form.new_password_element, form_to_save.password_element);
 }
 
 TEST_F(PasswordManagerTest, SavingSignupForms_NoActionMatch) {
@@ -1776,7 +1775,8 @@ TEST_F(PasswordManagerTest, ForceSavingPasswords) {
   ASSERT_TRUE(form_manager_to_save);
   EXPECT_EQ(form.password_value,
             PasswordFormManager::PasswordToSave(
-                form_manager_to_save->pending_credentials()));
+                form_manager_to_save->pending_credentials())
+                .first);
 }
 
 // Forcing Chrome to save an empty passwords should fail without a crash.
