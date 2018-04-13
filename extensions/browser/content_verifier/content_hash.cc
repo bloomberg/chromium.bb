@@ -46,8 +46,7 @@ std::unique_ptr<VerifiedContents> GetVerifiedContents(
     bool delete_invalid_file) {
   base::AssertBlockingAllowed();
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
-  auto verified_contents = std::make_unique<VerifiedContents>(
-      key.verifier_key.data, key.verifier_key.size);
+  auto verified_contents = std::make_unique<VerifiedContents>(key.verifier_key);
   base::FilePath verified_contents_path =
       file_util::GetVerifiedContentsPath(key.extension_root);
   if (!verified_contents->InitFrom(verified_contents_path)) {
@@ -65,11 +64,13 @@ std::unique_ptr<VerifiedContents> GetVerifiedContents(
 ContentHash::ExtensionKey::ExtensionKey(const ExtensionId& extension_id,
                                         const base::FilePath& extension_root,
                                         const base::Version& extension_version,
-                                        const ContentVerifierKey& verifier_key)
+                                        ContentVerifierKey verifier_key)
     : extension_id(extension_id),
       extension_root(extension_root),
       extension_version(extension_version),
       verifier_key(verifier_key) {}
+
+ContentHash::ExtensionKey::~ExtensionKey() = default;
 
 ContentHash::ExtensionKey::ExtensionKey(
     const ContentHash::ExtensionKey& other) = default;

@@ -27,10 +27,8 @@ SignatureVerifier::SignatureVerifier() = default;
 SignatureVerifier::~SignatureVerifier() = default;
 
 bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
-                                   const uint8_t* signature,
-                                   size_t signature_len,
-                                   const uint8_t* public_key_info,
-                                   size_t public_key_info_len) {
+                                   base::span<const uint8_t> signature,
+                                   base::span<const uint8_t> public_key_info) {
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
   int pkey_type = EVP_PKEY_NONE;
@@ -57,10 +55,10 @@ bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
     return false;
 
   verify_context_.reset(new VerifyContext);
-  signature_.assign(signature, signature + signature_len);
+  signature_.assign(signature.data(), signature.data() + signature.size());
 
   CBS cbs;
-  CBS_init(&cbs, public_key_info, public_key_info_len);
+  CBS_init(&cbs, public_key_info.data(), public_key_info.size());
   bssl::UniquePtr<EVP_PKEY> public_key(EVP_parse_public_key(&cbs));
   if (!public_key || CBS_len(&cbs) != 0 ||
       EVP_PKEY_id(public_key.get()) != pkey_type) {
@@ -85,12 +83,11 @@ bool SignatureVerifier::VerifyInit(SignatureAlgorithm signature_algorithm,
   return true;
 }
 
-void SignatureVerifier::VerifyUpdate(const uint8_t* data_part,
-                                     size_t data_part_len) {
+void SignatureVerifier::VerifyUpdate(base::span<const uint8_t> data_part) {
   DCHECK(verify_context_);
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  int rv = EVP_DigestVerifyUpdate(verify_context_->ctx.get(), data_part,
-                                  data_part_len);
+  int rv = EVP_DigestVerifyUpdate(verify_context_->ctx.get(), data_part.data(),
+                                  data_part.size());
   DCHECK_EQ(rv, 1);
 }
 

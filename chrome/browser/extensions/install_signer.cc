@@ -259,16 +259,12 @@ bool InstallSigner::VerifySignature(const InstallSignature& signature) {
     return false;
 
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(
-          crypto::SignatureVerifier::RSA_PKCS1_SHA1,
-          reinterpret_cast<const uint8_t*>(signature.signature.data()),
-          signature.signature.size(),
-          reinterpret_cast<const uint8_t*>(public_key.data()),
-          public_key.size()))
+  if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                           base::as_bytes<const char>(signature.signature),
+                           base::as_bytes<const char>(public_key)))
     return false;
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(signed_data.data()),
-                        signed_data.size());
+  verifier.VerifyUpdate(base::as_bytes<const char>(signed_data));
   return verifier.VerifyFinal();
 }
 

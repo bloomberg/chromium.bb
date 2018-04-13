@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "build/build_config.h"
 #include "crypto/crypto_export.h"
 
@@ -46,13 +47,11 @@ class CRYPTO_EXPORT SignatureVerifier {
   //       algorithm            AlgorithmIdentifier,
   //       subjectPublicKey     BIT STRING  }
   bool VerifyInit(SignatureAlgorithm signature_algorithm,
-                  const uint8_t* signature,
-                  size_t signature_len,
-                  const uint8_t* public_key_info,
-                  size_t public_key_info_len);
+                  base::span<const uint8_t> signature,
+                  base::span<const uint8_t> public_key_info);
 
   // Feeds a piece of the data to the signature verifier.
-  void VerifyUpdate(const uint8_t* data_part, size_t data_part_len);
+  void VerifyUpdate(base::span<const uint8_t> data_part);
 
   // Concludes a signature verification operation.  Returns true if the
   // signature is valid.  Returns false if the signature is invalid or an
