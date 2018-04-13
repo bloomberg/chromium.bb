@@ -1177,6 +1177,46 @@ TEST(UrlFormatterTest, FormatUrl) {
       {"omit trivial subdomains but leave registry and domain alone - co.uk",
        "http://m.co.uk/", kFormatUrlOmitTrivialSubdomains,
        net::UnescapeRule::NORMAL, L"http://m.co.uk/", 7},
+
+      // -------- trim after host --------
+      {"omit the trailing slash when ommitting the path", "http://google.com/",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit the simple file path when ommitting the path",
+       "http://google.com/foo",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit the file and folder path when ommitting the path",
+       "http://google.com/ab/cd",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with query only",
+       "http://google.com/?foo=bar",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with ref only", "http://google.com/#foobar",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with path and query only",
+       "http://google.com/foo?a=b",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with path and ref only",
+       "http://google.com/foo#c",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with query and ref only",
+       "http://google.com/?a=b#c",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with path, query and ref",
+       "http://google.com/foo?a=b#c",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
+      {"omit everything after host with repeated delimiters (sanity check)",
+       "http://google.com////???####",
+       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+       net::UnescapeRule::NORMAL, L"google.com", 0},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
@@ -1552,6 +1592,28 @@ TEST(UrlFormatterTest, FormatUrlWithOffsets) {
       "http://foo.com//??###",
       kFormatUrlOmitDefaults | kFormatUrlExperimentalElideAfterHost,
       net::UnescapeRule::NORMAL, elide_after_host_offsets);
+
+  const size_t trim_after_host_offsets[] = {
+      0, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0,     1,     2,     3, 4,
+      5, 6,     7,     kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 9};
+  CheckAdjustedOffsets("http://foo.com/abcdefg",
+                       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+                       net::UnescapeRule::NORMAL, trim_after_host_offsets);
+  CheckAdjustedOffsets("http://foo.com/abc/def",
+                       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+                       net::UnescapeRule::NORMAL, trim_after_host_offsets);
+  CheckAdjustedOffsets("http://foo.com/abc?a=b",
+                       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+                       net::UnescapeRule::NORMAL, trim_after_host_offsets);
+  CheckAdjustedOffsets("http://foo.com/abc#def",
+                       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+                       net::UnescapeRule::NORMAL, trim_after_host_offsets);
+  CheckAdjustedOffsets("http://foo.com/a?a=b#f",
+                       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+                       net::UnescapeRule::NORMAL, trim_after_host_offsets);
+  CheckAdjustedOffsets("http://foo.com//??###",
+                       kFormatUrlOmitDefaults | kFormatUrlTrimAfterHost,
+                       net::UnescapeRule::NORMAL, trim_after_host_offsets);
 
   const size_t omit_https_offsets[] = {
       0, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, kNpos, 0,  1,  2, 3,

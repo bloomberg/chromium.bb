@@ -62,6 +62,10 @@ extern const FormatUrlType kFormatUrlExperimentalElideAfterHost;
 // kFormatUrlOmitDefaults.
 extern const FormatUrlType kFormatUrlOmitTrivialSubdomains;
 
+// Omits everything after the host: the path, query, ref, username and password
+// are all omitted.
+extern const FormatUrlType kFormatUrlTrimAfterHost;
+
 // Convenience for omitting all unecessary types. Does not include HTTPS scheme
 // removal, or experimental flags.
 extern const FormatUrlType kFormatUrlOmitDefaults;
