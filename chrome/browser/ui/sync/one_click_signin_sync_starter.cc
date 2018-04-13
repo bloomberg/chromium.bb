@@ -485,7 +485,9 @@ void OneClickSigninSyncStarter::SigninFailed(
 }
 
 void OneClickSigninSyncStarter::SigninSuccess() {
-  signin_metrics::LogSigninAccessPointCompleted(signin_access_point_);
+  signin_metrics::LogSigninAccessPointCompleted(
+      signin_access_point_,
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   signin_metrics::LogSigninReason(signin_reason_);
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 }

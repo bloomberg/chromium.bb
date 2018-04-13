@@ -49,6 +49,7 @@ AccountInfo GetAccountInfo(Profile* profile, const std::string& account_id) {
 DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
     Profile* profile,
     signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::PromoAction signin_promo_action,
     signin_metrics::Reason signin_reason,
     const std::string& account_id,
     SigninAbortedMode signin_aborted_mode,
@@ -58,6 +59,7 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
       signin_manager_(SigninManagerFactory::GetForProfile(profile)),
       token_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
       signin_access_point_(signin_access_point),
+      signin_promo_action_(signin_promo_action),
       signin_reason_(signin_reason),
       signin_aborted_mode_(signin_aborted_mode),
       account_info_(GetAccountInfo(profile, account_id)),
@@ -109,12 +111,14 @@ DiceTurnSyncOnHelper::DiceTurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
     signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::PromoAction signin_promo_action,
     signin_metrics::Reason signin_reason,
     const std::string& account_id,
     SigninAbortedMode signin_aborted_mode)
     : DiceTurnSyncOnHelper(
           profile,
           signin_access_point,
+          signin_promo_action,
           signin_reason,
           account_id,
           signin_aborted_mode,
@@ -315,7 +319,8 @@ DiceTurnSyncOnHelper::GetProfileSyncService() {
 void DiceTurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
   // Signin.
   signin_manager_->OnExternalSigninCompleted(account_info_.email);
-  signin_metrics::LogSigninAccessPointCompleted(signin_access_point_);
+  signin_metrics::LogSigninAccessPointCompleted(signin_access_point_,
+                                                signin_promo_action_);
   signin_metrics::LogSigninReason(signin_reason_);
   base::RecordAction(base::UserMetricsAction("Signin_Signin_Succeed"));
 

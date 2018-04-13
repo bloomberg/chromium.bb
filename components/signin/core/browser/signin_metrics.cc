@@ -60,16 +60,6 @@ DifferentPrimaryAccounts ComparePrimaryAccounts(bool primary_accounts_same,
   return COOKIE_AND_TOKEN_PRIMARIES_DIFFERENT;
 }
 
-void LogSigninAccessPointStarted(AccessPoint access_point) {
-  LogSigninAccessPointStarted(access_point,
-                              PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
-}
-
-void LogSigninAccessPointCompleted(AccessPoint access_point) {
-  LogSigninAccessPointCompleted(access_point,
-                                PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
-}
-
 void LogSigninAccessPointStarted(AccessPoint access_point,
                                  PromoAction promo_action) {
   UMA_HISTOGRAM_ENUMERATION("Signin.SigninStartedAccessPoint",

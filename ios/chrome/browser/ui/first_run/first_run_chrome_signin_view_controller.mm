@@ -91,7 +91,8 @@ NSString* const kSignInSkipButtonAccessibilityIdentifier =
     _hasRecordedSigninStarted = YES;
     base::RecordAction(base::UserMetricsAction("Signin_Signin_FromStartPage"));
     signin_metrics::LogSigninAccessPointStarted(
-        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE);
+        signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO);
   }
 
   // Save the version number to prevent showing the SSO Recall promo on the next

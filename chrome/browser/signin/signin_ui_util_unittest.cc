@@ -91,6 +91,8 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     Browser* browser = nullptr;
     signin_metrics::AccessPoint signin_access_point =
         signin_metrics::AccessPoint::ACCESS_POINT_MAX;
+    signin_metrics::PromoAction signin_promo_action =
+        signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
     signin_metrics::Reason signin_reason = signin_metrics::Reason::REASON_MAX;
     std::string account_id;
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode =
@@ -101,6 +103,7 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
       Profile* profile,
       Browser* browser,
       signin_metrics::AccessPoint signin_access_point,
+      signin_metrics::PromoAction signin_promo_action,
       signin_metrics::Reason signin_reason,
       const std::string& account_id,
       DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
@@ -109,6 +112,8 @@ class DiceSigninUiUtilTest : public BrowserWithTestWindowTest {
     create_dice_turn_sync_on_helper_params_.browser = browser;
     create_dice_turn_sync_on_helper_params_.signin_access_point =
         signin_access_point;
+    create_dice_turn_sync_on_helper_params_.signin_promo_action =
+        signin_promo_action;
     create_dice_turn_sync_on_helper_params_.signin_reason = signin_reason;
     create_dice_turn_sync_on_helper_params_.account_id = account_id;
     create_dice_turn_sync_on_helper_params_.signin_aborted_mode =
@@ -231,12 +236,12 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
 
     EnableSync(GetAccountTrackerService()->GetAccountInfo(account_id),
                is_default_promo_account);
-    ASSERT_TRUE(create_dice_turn_sync_on_helper_called_);
-    ExpectOneSigninStartedHistograms(
-        histogram_tester,
+    signin_metrics::PromoAction expected_promo_action =
         is_default_promo_account
             ? signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT
-            : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT);
+            : signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
+    ASSERT_TRUE(create_dice_turn_sync_on_helper_called_);
+    ExpectOneSigninStartedHistograms(histogram_tester, expected_promo_action);
 
     EXPECT_EQ(1, user_action_tester.GetActionCount(
                      "Signin_Signin_FromBookmarkBubble"));
@@ -248,7 +253,9 @@ TEST_F(DiceSigninUiUtilTest, EnableSyncWithExistingAccount) {
     EXPECT_EQ(account_id, create_dice_turn_sync_on_helper_params_.account_id);
     EXPECT_EQ(signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE,
               create_dice_turn_sync_on_helper_params_.signin_access_point);
-    EXPECT_EQ(signin_metrics::Reason::REASON_UNKNOWN_REASON,
+    EXPECT_EQ(expected_promo_action,
+              create_dice_turn_sync_on_helper_params_.signin_promo_action);
+    EXPECT_EQ(signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
               create_dice_turn_sync_on_helper_params_.signin_reason);
     EXPECT_EQ(DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT,
               create_dice_turn_sync_on_helper_params_.signin_aborted_mode);

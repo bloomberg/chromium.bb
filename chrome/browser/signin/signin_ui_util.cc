@@ -48,13 +48,15 @@ void CreateDiceTurnSyncOnHelper(
     Profile* profile,
     Browser* browser,
     signin_metrics::AccessPoint signin_access_point,
+    signin_metrics::PromoAction signin_promo_action,
     signin_metrics::Reason signin_reason,
     const std::string& account_id,
     DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode) {
   // DiceTurnSyncOnHelper is suicidal (it will delete itself once it finishes
   // enabling sync).
-  new DiceTurnSyncOnHelper(profile, browser, signin_access_point, signin_reason,
-                           account_id, signin_aborted_mode);
+  new DiceTurnSyncOnHelper(profile, browser, signin_access_point,
+                           signin_promo_action, signin_reason, account_id,
+                           signin_aborted_mode);
 }
 }  // namespace
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -133,6 +135,7 @@ void EnableSyncFromPromo(
         void(Profile* profile,
              Browser* browser,
              signin_metrics::AccessPoint signin_access_point,
+             signin_metrics::PromoAction signin_promo_action,
              signin_metrics::Reason signin_reason,
              const std::string& account_id,
              DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
@@ -191,8 +194,9 @@ void EnableSyncFromPromo(
   signin_metrics::LogSigninAccessPointStarted(access_point, promo_action);
   signin_metrics::RecordSigninUserActionForAccessPoint(access_point);
   std::move(create_dice_turn_sync_on_helper_callback)
-      .Run(profile, browser, access_point,
-           signin_metrics::Reason::REASON_UNKNOWN_REASON, account.account_id,
+      .Run(profile, browser, access_point, promo_action,
+           signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+           account.account_id,
            DiceTurnSyncOnHelper::SigninAbortedMode::KEEP_ACCOUNT);
 #else
   NOTREACHED();

@@ -26,6 +26,7 @@ void DiceTabHelper::InitializeSigninFlow(
     signin_metrics::PromoAction promo_action) {
   signin_access_point_ = access_point;
   signin_reason_ = reason;
+  signin_promo_action_ = promo_action;
   did_finish_loading_signin_page_ = false;
 
   if (signin_reason_ == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {

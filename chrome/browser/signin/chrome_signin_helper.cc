@@ -263,6 +263,7 @@ void ProcessMirrorHeaderUIThread(
 // Creates a DiceTurnOnSyncHelper.
 void CreateDiceTurnOnSyncHelper(Profile* profile,
                                 signin_metrics::AccessPoint access_point,
+                                signin_metrics::PromoAction promo_action,
                                 signin_metrics::Reason reason,
                                 content::WebContents* web_contents,
                                 const std::string& account_id) {
@@ -273,7 +274,7 @@ void CreateDiceTurnOnSyncHelper(Profile* profile,
   // DiceTurnSyncOnHelper is suicidal (it will kill itself once it finishes
   // enabling sync).
   new DiceTurnSyncOnHelper(
-      profile, browser, access_point, reason, account_id,
+      profile, browser, access_point, promo_action, reason, account_id,
       DiceTurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
 }
 
@@ -307,12 +308,16 @@ void ProcessDiceHeaderUIThread(
 
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN;
+  signin_metrics::PromoAction promo_action =
+      signin_metrics::PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO;
   signin_metrics::Reason reason = signin_metrics::Reason::REASON_UNKNOWN_REASON;
+
   bool is_sync_signin_tab = false;
   DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents);
   if (signin::IsDicePrepareMigrationEnabled() && tab_helper) {
     is_sync_signin_tab = true;
     access_point = tab_helper->signin_access_point();
+    promo_action = tab_helper->signin_promo_action();
     reason = tab_helper->signin_reason();
   }
 
@@ -324,7 +329,7 @@ void ProcessDiceHeaderUIThread(
           web_contents, profile->GetPrefs(),
           SigninManagerFactory::GetForProfile(profile), is_sync_signin_tab,
           base::BindOnce(&CreateDiceTurnOnSyncHelper, base::Unretained(profile),
-                         access_point, reason),
+                         access_point, promo_action, reason),
           base::BindOnce(&ShowDiceSigninError, base::Unretained(profile))));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
