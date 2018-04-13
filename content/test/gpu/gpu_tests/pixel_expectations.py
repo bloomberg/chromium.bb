@@ -90,8 +90,9 @@ class PixelExpectations(GpuTestExpectations):
     # Failing on Mac Intel HighSierra
     self.Fail('Pixel_Video_MP4',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
-    self.Fail('Pixel_Video_VP9',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
+    # TODO(hubbe): put this back after rebaseline below
+    # self.Fail('Pixel_Video_VP9',
+    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
 
@@ -107,6 +108,8 @@ class PixelExpectations(GpuTestExpectations):
               ['linux', 'mac', 'win'], bug=744658)
 
     # TODO(hubbe): Temporary supressions for rebaseline
+    # TODO(hubbe): uncomment (or remove) above Pixel_Video_VP9
+    # suppression after rebaseline
     self.Fail('Pixel_Video_VP9', bug=754986)
     self.Fail('Pixel_DirectComposition_Video_VP9', bug=754986)
 
