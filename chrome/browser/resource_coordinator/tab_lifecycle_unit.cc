@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/process/process_metrics.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -127,8 +128,16 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
 
 int TabLifecycleUnitSource::TabLifecycleUnit::
     GetEstimatedMemoryFreedOnDiscardKB() const {
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<base::ProcessMetrics> process_metrics(
+      base::ProcessMetrics::CreateProcessMetrics(GetProcessHandle()));
+  base::ProcessMetrics::TotalsSummary summary =
+      process_metrics->GetTotalsSummary();
+  return summary.private_clean_kb + summary.private_dirty_kb + summary.swap_kb;
+#else
   // TODO(fdoray): Implement this. https://crbug.com/775644
   return 0;
+#endif
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanPurge() const {
