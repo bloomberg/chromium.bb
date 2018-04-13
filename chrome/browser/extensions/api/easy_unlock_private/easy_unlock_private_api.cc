@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/proximity_auth/bluetooth_low_energy_setup_connection_finder.h"
-#include "chromeos/components/proximity_auth/bluetooth_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_client.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
