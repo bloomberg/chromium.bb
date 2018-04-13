@@ -3914,7 +3914,7 @@
         { "kind" : "IdRef",         "name" : "'Target'" },
         { "kind" : "Decoration" }
       ],
-      "extensions" : [ "SPV_GOOGLE_decorate_string" ],
+      "extensions" : [ "SPV_GOOGLE_decorate_string", "SPV_GOOGLE_hlsl_functionality1" ],
       "version" : "None"
     },
     {
@@ -3925,7 +3925,7 @@
         { "kind" : "LiteralInteger", "name" : "'Member'" },
         { "kind" : "Decoration" }
       ],
-      "extensions" : [ "SPV_GOOGLE_decorate_string" ],
+      "extensions" : [ "SPV_GOOGLE_decorate_string", "SPV_GOOGLE_hlsl_functionality1" ],
       "version" : "None"
     },
     {
