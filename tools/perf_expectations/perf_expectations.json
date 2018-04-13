@@ -4,6 +4,6 @@
  "linux-release/sizes/chrome-si/initializers": {"reva": 480969, "revb": 480969, "type": "absolute", "better": "lower", "improve": 9, "regress": 9, "tolerance": 0, "sha1": "b639bbc4"},
  "linux-release/sizes/nacl_helper-si/initializers": {"reva": 480969, "revb": 480969, "type": "absolute", "better": "lower", "improve": 7, "regress": 9, "sha1": "3394be7f"},
  "linux-release/sizes/nacl_helper_bootstrap-si/initializers": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 0, "regress": 0, "sha1": "dd908f29"},
- "mac-release/sizes/chrome-si/initializers": {"reva": 281731, "revb": 281731, "type": "absolute", "better": "lower", "improve": 0, "regress": 0, "tolerance": 0, "sha1": "01759b7f"},
+ "mac-release/sizes/chrome-si/initializers": {"reva": 281731, "revb": 281731, "type": "absolute", "better": "lower", "improve": 0, "regress": 2, "tolerance": 0, "sha1": "01759b7f"},
  "load": true
 }
