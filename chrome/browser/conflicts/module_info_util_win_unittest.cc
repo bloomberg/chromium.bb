@@ -171,14 +171,12 @@ TEST(ModuleInfoUtilTest, InvalidNTHeader) {
 }
 
 TEST(ModuleInfoUtilTest, NormalizeCertificateSubject) {
-  CertificateInfo test_case;
-  test_case.subject = base::string16(L"signer\0", 7);
-  EXPECT_EQ(7u, test_case.subject.length());
+  base::string16 test_case = base::string16(L"signer\0", 7);
+  EXPECT_EQ(7u, test_case.length());
 
-  CertificateInfo expected;
-  expected.subject = L"signer";
+  base::string16 expected = L"signer";
 
   internal::NormalizeCertificateSubject(&test_case);
 
-  EXPECT_EQ(test_case.subject, expected.subject);
+  EXPECT_EQ(test_case, expected);
 }
