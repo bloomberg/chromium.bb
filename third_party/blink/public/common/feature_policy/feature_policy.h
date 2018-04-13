@@ -91,6 +91,7 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration();
   ParsedFeaturePolicyDeclaration(mojom::FeaturePolicyFeature feature,
                                  bool matches_all_origins,
+                                 bool matches_opaque_src,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ParsedFeaturePolicyDeclaration& operator=(
@@ -99,6 +100,12 @@ struct BLINK_COMMON_EXPORT ParsedFeaturePolicyDeclaration {
 
   mojom::FeaturePolicyFeature feature;
   bool matches_all_origins;
+  // This flag is set true for a declared policy on an <iframe sandbox>
+  // container, for a feature which is supposed to be allowed in the sandboxed
+  // document. Usually, the 'src' keyword in a declaration will cause the origin
+  // of the iframe to be present in |origins|, but for sandboxed iframes, this
+  // flag is set instead.
+  bool matches_opaque_src;
   std::vector<url::Origin> origins;
 };
 
@@ -207,6 +214,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // Returns the list of features which can be controlled by Feature Policy.
   static const FeatureList& GetDefaultFeatureList();
 
+  // The origin of the document with which this policy is associated.
   url::Origin origin_;
 
   // Map of feature names to declared allowlists. Any feature which is missing

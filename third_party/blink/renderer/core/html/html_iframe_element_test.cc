@@ -261,8 +261,8 @@ TEST_F(HTMLIFrameElementTest, SandboxAttributeContainerPolicy) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
             container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
-  EXPECT_EQ(1UL, container_policy[0].origins.size());
-  EXPECT_TRUE(container_policy[0].origins[0].unique());
+  EXPECT_TRUE(container_policy[0].matches_opaque_src);
+  EXPECT_EQ(0UL, container_policy[0].origins.size());
 }
 
 // Test that the allow attribute on a sandboxed frame with the allow-same-origin
@@ -288,6 +288,7 @@ TEST_F(HTMLIFrameElementTest, SameOriginSandboxAttributeContainerPolicy) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,
             container_policy[0].feature);
   EXPECT_FALSE(container_policy[0].matches_all_origins);
+  EXPECT_FALSE(container_policy[0].matches_opaque_src);
   EXPECT_EQ(1UL, container_policy[0].origins.size());
   EXPECT_FALSE(container_policy[0].origins[0].unique());
   EXPECT_EQ("http://example.net", container_policy[0].origins[0].Serialize());
