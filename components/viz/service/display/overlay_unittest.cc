@@ -1883,6 +1883,37 @@ TEST_F(UnderlayCastTest, RoundContentBounds) {
   EXPECT_EQ(kOverlayRect, content_bounds_[0]);
 }
 
+TEST_F(UnderlayCastTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  gfx::Rect output_rect = pass->output_rect;
+  CreateOpaqueQuadAt(resource_provider_.get(),
+                     pass->shared_quad_state_list.back(), pass.get(),
+                     output_rect, SK_ColorWHITE);
+
+  CreateCandidateQuadAt(
+      resource_provider_.get(), child_resource_provider_.get(),
+      pass->shared_quad_state_list.back(), pass.get(), kOverlayRect);
+
+  cc::OverlayCandidateList candidate_list;
+  cc::OverlayCandidate candidate;
+  candidate.use_output_surface_for_resource = true;
+  candidate.is_opaque = true;
+  candidate_list.push_back(candidate);
+
+  OverlayProcessor::FilterOperationsMap render_pass_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_background_filters, &candidate_list,
+      nullptr, nullptr, &damage_rect_, &content_bounds_);
+
+  ASSERT_EQ(false, candidate_list[0].is_opaque);
+  EXPECT_EQ(1U, content_bounds_.size());
+  EXPECT_EQ(output_rect, content_bounds_[0]);
+}
+
 cc::OverlayCandidateList BackbufferOverlayList(
     const RenderPass* root_render_pass) {
   cc::OverlayCandidateList list;
