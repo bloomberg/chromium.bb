@@ -1394,7 +1394,7 @@ void CompositedLayerMapping::UpdateAncestorClippingLayerGeometry(
   // (see kIgnoreOverflowClipAndScroll), so we need to add it in
   // now. Scroll offset is excluded so that we do not need to invalidate
   // the clip rect cache on scroll.
-  if (clip_inheritance_ancestor_->ScrollsOverflow()) {
+  if (clip_inheritance_ancestor_->GetScrollableArea()) {
     clip_rect.Move(LayoutSize(
         -clip_inheritance_ancestor_->GetScrollableArea()->GetScrollOffset()));
   }
