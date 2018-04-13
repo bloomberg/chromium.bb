@@ -383,8 +383,8 @@ TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
   unsigned int post_error_resilient_frame_list[] = { 9, 10, 11, 12, 13, 14 };
   SetNoMFMVFrames(num_post_error_resilient_frames,
                   post_error_resilient_frame_list);
-  SetPrimaryRefNoneFrames(num_post_error_resilient_frames,
-                          post_error_resilient_frame_list);
+  // SetPrimaryRefNoneFrames(num_post_error_resilient_frames,
+  //                         post_error_resilient_frame_list);
 
   // Set a few frames before the E frame that are lost (not decoded)
   unsigned int num_error_frames = 5;
