@@ -6,17 +6,29 @@ import("//build/config/chromecast_build.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
-cast_shared_library("libcast_media_1.0_avsync") {
+cast_source_set("av_sync_video") {
   sources = [
     "av_sync_video.cc",
+    "av_sync_video.h",
+  ]
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/media/cma/backend:for_mixer_audio",
+    "//chromecast/public",
+    "//chromecast/public/media",
+  ]
+}
+
+cast_shared_library("libcast_media_1.0_avsync") {
+  sources = [
     "cast_media_shlib.cc",
   ]
 
   deps = [
+    ":av_sync_video",
     "//chromecast/base:base",
     "//chromecast/media/cma/backend:for_mixer_audio",
-    "//chromecast/media/cma/backend/alsa:cma_backend_support",
-    "//chromecast/public",
     "//chromecast/public/media",
     "//media",
   ]
