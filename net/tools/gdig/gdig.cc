@@ -87,8 +87,6 @@ std::string DnsConfigToString(const DnsConfig& dns_config) {
   base::StringAppendF(&output, "options attempts:%d\n", dns_config.attempts);
   if (dns_config.rotate)
     output.append("options rotate\n");
-  if (dns_config.edns0)
-    output.append("options edns0\n");
   return output;
 }
 

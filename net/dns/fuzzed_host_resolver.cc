@@ -214,9 +214,6 @@ void FuzzedHostResolver::SetDnsClientEnabled(bool enabled) {
 
   config.rotate = data_provider_->ConsumeBool();
 
-  // Doesn't currently seem to do anything.
-  config.edns0 = false;
-
   config.use_local_ipv6 = data_provider_->ConsumeBool();
 
   std::unique_ptr<DnsClient> dns_client = DnsClient::CreateClientForTesting(

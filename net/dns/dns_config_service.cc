@@ -24,7 +24,6 @@ DnsConfig::DnsConfig()
       timeout(base::TimeDelta::FromMilliseconds(kDnsDefaultTimeoutMs)),
       attempts(2),
       rotate(false),
-      edns0(false),
       use_local_ipv6(false) {}
 
 DnsConfig::DnsConfig(const DnsConfig& other) = default;
@@ -44,7 +43,6 @@ bool DnsConfig::EqualsIgnoreHosts(const DnsConfig& d) const {
          (timeout == d.timeout) &&
          (attempts == d.attempts) &&
          (rotate == d.rotate) &&
-         (edns0 == d.edns0) &&
          (use_local_ipv6 == d.use_local_ipv6);
 }
 
@@ -57,7 +55,6 @@ void DnsConfig::CopyIgnoreHosts(const DnsConfig& d) {
   timeout = d.timeout;
   attempts = d.attempts;
   rotate = d.rotate;
-  edns0 = d.edns0;
   use_local_ipv6 = d.use_local_ipv6;
 }
 
@@ -80,7 +77,6 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
   dict->SetDouble("timeout", timeout.InSecondsF());
   dict->SetInteger("attempts", attempts);
   dict->SetBoolean("rotate", rotate);
-  dict->SetBoolean("edns0", edns0);
   dict->SetBoolean("use_local_ipv6", use_local_ipv6);
   dict->SetInteger("num_hosts", hosts.size());
   list = std::make_unique<base::ListValue>();
