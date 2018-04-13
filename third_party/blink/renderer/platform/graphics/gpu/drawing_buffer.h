@@ -239,6 +239,11 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Restore all state that may have been dirtied by any call.
   void RestoreAllState();
 
+  // Run the previous release callback if it exists. If the release_callback is
+  // not null, assign it to the previous_image_release_callback_.
+  void SwapPreviousFrameCallback(
+      std::unique_ptr<viz::SingleReleaseCallback> release_callback);
+
   // This class helps implement correct semantics for BlitFramebuffer
   // when the DrawingBuffer is using a CHROMIUM image for its backing
   // store and RGB emulation is in use (basically, macOS only).
@@ -578,6 +583,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // DisallowChromiumImage in the case of OffscreenCanvas.
   ChromiumImageUsage chromium_image_usage_;
   bool ShouldUseChromiumImage();
+
+  // A release callback that is run when the previouis image passed to
+  // OffscreenCanvas::Commit() is no longer needed.
+  std::unique_ptr<viz::SingleReleaseCallback> previous_image_release_callback_;
 };
 
 }  // namespace blink
