@@ -90,7 +90,7 @@ scoped_refptr<extensions::Extension> CreateTestNoteTakingApp(
   ListBuilder action_handlers;
   action_handlers.Append(DictionaryBuilder()
                              .Set("action", "new_note")
-                             .Set("enabled_on_lock_screen", true)
+                             .SetBoolean("enabled_on_lock_screen", true)
                              .Build());
   DictionaryBuilder background;
   background.Set("scripts", ListBuilder().Append("background.js").Build());

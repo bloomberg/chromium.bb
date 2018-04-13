@@ -1428,7 +1428,7 @@ TEST_F(ToolbarActionsModelUnitTest, AddUserScriptExtension) {
       extensions::ExtensionBuilder("a")
           .SetLocation(extensions::Manifest::INTERNAL)
           .MergeManifest(extensions::DictionaryBuilder()
-                             .Set("converted_from_user_script", true)
+                             .SetBoolean("converted_from_user_script", true)
                              .Build())
           .Build();
 

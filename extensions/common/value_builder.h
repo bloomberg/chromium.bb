@@ -57,13 +57,20 @@ class DictionaryBuilder {
   // parameters.
   DictionaryBuilder& Set(const std::string& path, int in_value);
   DictionaryBuilder& Set(const std::string& path, double in_value);
-  DictionaryBuilder& Set(const std::string& path, bool in_value);
   DictionaryBuilder& Set(const std::string& path, const char* in_value);
   DictionaryBuilder& Set(const std::string& path, const std::string& in_value);
   DictionaryBuilder& Set(const std::string& path,
                          const base::string16& in_value);
   DictionaryBuilder& Set(const std::string& path,
                          std::unique_ptr<base::Value> in_value);
+
+  // WARNING: This is not defined (intentional). Linking will fail. Use
+  // SetBoolean for now.
+  // TODO(lazyboy): Define this and remove SetBoolean().
+  DictionaryBuilder& Set(const std::string& path, bool in_value) = delete;
+  // Named differently because overload resolution is too eager to
+  // convert implicitly to bool.
+  DictionaryBuilder& SetBoolean(const std::string& path, bool in_value);
 
  private:
   std::unique_ptr<base::DictionaryValue> dict_;
@@ -80,11 +87,18 @@ class ListBuilder {
 
   ListBuilder& Append(int in_value);
   ListBuilder& Append(double in_value);
-  ListBuilder& Append(bool in_value);
   ListBuilder& Append(const char* in_value);
   ListBuilder& Append(const std::string& in_value);
   ListBuilder& Append(const base::string16& in_value);
   ListBuilder& Append(std::unique_ptr<base::Value> in_value);
+
+  // WARNING: This is not defined (intentional). Linking will fail. Use
+  // AppendBoolean for now.
+  // TODO(lazyboy): Define this and remove AppendBoolean().
+  ListBuilder& Append(bool in_value) = delete;
+  // Named differently because overload resolution is too eager to
+  // convert implicitly to bool.
+  ListBuilder& AppendBoolean(bool in_value);
 
  private:
   std::unique_ptr<base::ListValue> list_;
