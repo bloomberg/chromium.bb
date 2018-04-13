@@ -69,6 +69,19 @@ class SmbService : public KeyedService,
 
   SmbProviderClient* GetSmbProviderClient() const;
 
+  // Attempts to restore any previously mounted shares remembered by the File
+  // System Provider.
+  void RestoreMounts();
+
+  // Attempts to remount a share with the information in |file_system_info|.
+  void Remount(const ProvidedFileSystemInfo& file_system_info);
+
+  // Handles the response from attempting to remount the file system. If
+  // remounting fails, this logs and removes the file_system from the volume
+  // manager.
+  void OnRemountResponse(const std::string& file_system_id,
+                         smbprovider::ErrorType error);
+
   const ProviderId provider_id_;
   Profile* profile_;
 

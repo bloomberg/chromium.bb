@@ -22,9 +22,11 @@ namespace smb_client {
 
 SmbService::SmbService(Profile* profile)
     : provider_id_(ProviderId::CreateFromNativeId("smb")), profile_(profile) {
-  if (base::FeatureList::IsEnabled(features::kNativeSmb))
+  if (base::FeatureList::IsEnabled(features::kNativeSmb)) {
     GetProviderService()->RegisterProvider(std::make_unique<SmbProvider>(
         base::BindRepeating(&SmbService::Unmount, base::Unretained(this))));
+    RestoreMounts();
+  }
 }
 
 SmbService::~SmbService() {}
@@ -77,6 +79,35 @@ Service* SmbService::GetProviderService() const {
 
 SmbProviderClient* SmbService::GetSmbProviderClient() const {
   return chromeos::DBusThreadManager::Get()->GetSmbProviderClient();
+}
+
+void SmbService::RestoreMounts() {
+  const std::vector<ProvidedFileSystemInfo> file_systems =
+      GetProviderService()->GetProvidedFileSystemInfoList(provider_id_);
+
+  for (const auto& file_system : file_systems) {
+    Remount(file_system);
+  }
+}
+
+void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
+  const base::FilePath share_path =
+      GetSharePathFromFileSystemId(file_system_info.file_system_id());
+  const int32_t mount_id =
+      GetMountIdFromFileSystemId(file_system_info.file_system_id());
+  GetSmbProviderClient()->Remount(
+      share_path, mount_id,
+      base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
+                     file_system_info.file_system_id()));
+}
+
+void SmbService::OnRemountResponse(const std::string& file_system_id,
+                                   smbprovider::ErrorType error) {
+  if (error != smbprovider::ERROR_OK) {
+    LOG(ERROR) << "SmbService: failed to restore filesystem: "
+               << file_system_id;
+    Unmount(file_system_id, file_system_provider::Service::UNMOUNT_REASON_USER);
+  }
 }
 
 }  // namespace smb_client
