@@ -33,9 +33,14 @@ namespace certificate_transparency {
 
 namespace {
 
-void LogQueryDuration(const base::TimeDelta& duration) {
+void LogQueryDuration(net::Error error, const base::TimeDelta& duration) {
   UMA_HISTOGRAM_MEDIUM_TIMES("Net.CertificateTransparency.DnsQueryDuration",
                              duration);
+
+  if (error == net::OK) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "Net.CertificateTransparency.DnsQueryDuration.Success", duration);
+  }
 }
 
 // Returns an EDNS option that disables the client subnet extension, as
@@ -311,7 +316,7 @@ net::Error AuditProofQueryImpl::DoLoop(net::Error result) {
 
   if (result != net::ERR_IO_PENDING) {
     // If the query is complete, log some metrics.
-    LogQueryDuration(base::TimeTicks::Now() - start_time_);
+    LogQueryDuration(result, base::TimeTicks::Now() - start_time_);
     switch (state) {
       case State::REQUEST_LEAF_INDEX:
       case State::REQUEST_LEAF_INDEX_COMPLETE:
