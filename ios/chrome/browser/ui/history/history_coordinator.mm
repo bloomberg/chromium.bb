@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/history/history_table_container_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
+#import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -31,11 +32,16 @@
 // ViewController being managed by this Coordinator.
 @property(nonatomic, strong)
     HistoryTableContainerViewController* historyContainerViewController;
+
+// The transitioning delegate used by the history view controller.
+@property(nonatomic, strong)
+    HistoryTransitioningDelegate* historyTransitioningDelegate;
 @end
 
 @implementation HistoryCoordinator
 @synthesize dispatcher = _dispatcher;
 @synthesize historyContainerViewController = _historyContainerViewController;
+@synthesize historyTransitioningDelegate = _historyTransitioningDelegate;
 @synthesize loader = _loader;
 
 - (void)start {
@@ -75,7 +81,13 @@
   FormSheetNavigationController* navController =
       [[FormSheetNavigationController alloc]
           initWithRootViewController:self.historyContainerViewController];
-  [navController setModalPresentationStyle:UIModalPresentationFormSheet];
+  self.historyTransitioningDelegate =
+      [[HistoryTransitioningDelegate alloc] init];
+  [navController.navigationBar setBackgroundImage:[UIImage new]
+                                    forBarMetrics:UIBarMetricsDefault];
+  navController.navigationBar.translucent = NO;
+  navController.transitioningDelegate = self.historyTransitioningDelegate;
+  [navController setModalPresentationStyle:UIModalPresentationCustom];
   [self.baseViewController presentViewController:navController
                                         animated:YES
                                       completion:nil];
