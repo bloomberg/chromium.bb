@@ -34,9 +34,7 @@ class TestEngineComponentsFactory : public EngineComponentsFactory {
       const std::vector<SyncEngineEventListener*>& listeners,
       DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
-      const std::string& invalidator_client_id,
-      base::TimeDelta short_poll_interval,
-      base::TimeDelta long_poll_interval) override;
+      const std::string& invalidator_client_id) override;
 
   std::unique_ptr<syncable::DirectoryBackingStore> BuildDirectoryBackingStore(
       StorageOption storage,

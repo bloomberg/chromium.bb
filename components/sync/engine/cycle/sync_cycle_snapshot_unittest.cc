@@ -41,14 +41,13 @@ TEST_F(SyncCycleSnapshotTest, SyncCycleSnapshotToValue) {
   const int kNumHierarchyConflicts = 1055;
   const int kNumServerConflicts = 1057;
 
-  SyncCycleSnapshot snapshot(
-      model_neutral, download_progress_markers, kIsSilenced,
-      kNumEncryptionConflicts, kNumHierarchyConflicts, kNumServerConflicts,
-      false, 0, base::Time::Now(), base::Time::Now(),
-      std::vector<int>(MODEL_TYPE_COUNT, 0),
-      std::vector<int>(MODEL_TYPE_COUNT, 0), sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-      /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-      /*long_poll_interval=*/base::TimeDelta::FromMinutes(180));
+  SyncCycleSnapshot snapshot(model_neutral, download_progress_markers,
+                             kIsSilenced, kNumEncryptionConflicts,
+                             kNumHierarchyConflicts, kNumServerConflicts, false,
+                             0, base::Time::Now(), base::Time::Now(),
+                             std::vector<int>(MODEL_TYPE_COUNT, 0),
+                             std::vector<int>(MODEL_TYPE_COUNT, 0),
+                             sync_pb::SyncEnums::UNKNOWN_ORIGIN);
   std::unique_ptr<base::DictionaryValue> value(snapshot.ToValue());
   EXPECT_EQ(16u, value->size());
   ExpectDictIntegerValue(model_neutral.num_successful_commits, *value,

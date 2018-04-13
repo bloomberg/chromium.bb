@@ -288,9 +288,7 @@ class SyncerTest : public testing::Test,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,   // enable keystore encryption
         false,  // force enable pre-commit GU avoidance experiment
-        "fake_invalidator_client_id",
-        /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-        /*long_poll_interval=*/base::TimeDelta::FromMinutes(180));
+        "fake_invalidator_client_id");
     syncer_ = new Syncer(&cancelation_signal_);
     scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(),

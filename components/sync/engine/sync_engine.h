@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/time/time.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
@@ -76,10 +75,6 @@ class SyncEngine : public ModelTypeConfigurer {
     base::Closure report_unrecoverable_error_function;
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
     std::map<ModelType, int64_t> invalidation_versions;
-
-    // Define the polling intervals. Must not be zero.
-    base::TimeDelta short_poll_interval;
-    base::TimeDelta long_poll_interval;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);

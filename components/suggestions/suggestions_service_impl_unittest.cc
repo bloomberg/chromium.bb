@@ -8,7 +8,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -183,9 +182,7 @@ class SuggestionsServiceTest : public testing::Test {
             2, 7, false, 0, base::Time::Now(), base::Time::Now(),
             std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
             std::vector<int>(syncer::MODEL_TYPE_COUNT, 0),
-            sync_pb::SyncEnums::UNKNOWN_ORIGIN,
-            /*short_poll_interval=*/base::TimeDelta::FromMinutes(30),
-            /*long_poll_interval=*/base::TimeDelta::FromMinutes(180))));
+            sync_pb::SyncEnums::UNKNOWN_ORIGIN)));
     // These objects are owned by the SuggestionsService, but we keep the
     // pointers around for testing.
     test_suggestions_store_ = new TestSuggestionsStore();

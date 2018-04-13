@@ -328,8 +328,6 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
       params.report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
   args.saved_nigori_state = std::move(params.saved_nigori_state);
-  args.short_poll_interval = params.short_poll_interval;
-  args.long_poll_interval = params.long_poll_interval;
   sync_manager_->Init(&args);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "SyncDirectory", base::ThreadTaskRunnerHandle::Get());
