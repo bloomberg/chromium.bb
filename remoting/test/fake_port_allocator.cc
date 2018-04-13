@@ -54,6 +54,7 @@ FakePortAllocator::FakePortAllocator(
             cricket::PORTALLOCATOR_ENABLE_IPV6 |
             cricket::PORTALLOCATOR_DISABLE_STUN |
             cricket::PORTALLOCATOR_DISABLE_RELAY);
+  Initialize();
 }
 
 FakePortAllocator::~FakePortAllocator() = default;
