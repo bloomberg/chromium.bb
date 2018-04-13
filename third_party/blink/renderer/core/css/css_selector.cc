@@ -1082,7 +1082,6 @@ bool CSSSelector::NeedsUpdatedDistribution() const {
   return ForAnyInTagHistory(
       [](const CSSSelector& selector) -> bool {
         return selector.RelationIsAffectedByPseudoContent() ||
-               selector.GetPseudoType() == CSSSelector::kPseudoSlotted ||
                selector.GetPseudoType() == CSSSelector::kPseudoHostContext;
       },
       *this);
