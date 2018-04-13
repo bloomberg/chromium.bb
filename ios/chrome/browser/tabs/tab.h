@@ -27,7 +27,6 @@ class GURL;
 @class FormSuggestionController;
 @protocol TabDialogDelegate;
 @class Tab;
-@protocol TabHeadersDelegate;
 @class TabModel;
 
 namespace ios {
@@ -90,7 +89,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 @property(nonatomic, readonly) BOOL canGoBack;
 @property(nonatomic, readonly) BOOL canGoForward;
-@property(nonatomic, weak) id<TabHeadersDelegate> tabHeadersDelegate;
 
 @property(nonatomic, readonly)
     OverscrollActionsController* overscrollActionsController;

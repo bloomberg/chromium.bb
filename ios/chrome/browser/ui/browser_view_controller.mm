@@ -106,7 +106,6 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
-#import "ios/chrome/browser/tabs/tab_headers_delegate.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
@@ -439,7 +438,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                     SigninPresenter,
                                     SnapshotGeneratorDelegate,
                                     TabDialogDelegate,
-                                    TabHeadersDelegate,
                                     TabHistoryPresentation,
                                     TabModelObserver,
                                     TabStripPresentation,
@@ -3014,7 +3012,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = self;
   }
-  tab.tabHeadersDelegate = self;
   // Install the proper CRWWebController delegates.
   tab.webController.nativeProvider = self;
   tab.webController.swipeRecognizerProvider = self.sideSwipeController;
@@ -3077,7 +3074,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
   if (!IsIPadIdiom()) {
     tab.overscrollActionsControllerDelegate = nil;
   }
-  tab.tabHeadersDelegate = nil;
   tab.webController.nativeProvider = nil;
   tab.webController.swipeRecognizerProvider = nil;
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
@@ -3911,6 +3907,29 @@ bubblePresenterForFeature:(const base::Feature&)feature
                                        baseViewController:self];
   [downloadController start];
   return downloadController;
+}
+
+- (CGFloat)nativeContentHeaderHeightForWebState:(web::WebState*)webState {
+  Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
+                               ? IsRegularXRegularSizeClass(self)
+                               : IsIPadIdiom();
+  if (IsUIRefreshPhase1Enabled() && tab &&
+      tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
+      !isRegularXRegular) {
+    // Also subtract the top safe area so the view will appear as full screen.
+    // TODO(crbug.com/826369) Remove this once NTP is out of native content.
+    if (@available(iOS 11, *)) {
+      return -self.view.safeAreaInsets.top;
+    } else {
+      return -self.topLayoutGuide.length;
+    }
+  }
+  return [self headerHeightForTab:tab];
+}
+
+- (CGFloat)nativeContentFooterHeightForWebState:(web::WebState*)webState {
+  return self.secondaryToolbarHeightConstraint.constant;
 }
 
 #pragma mark - DialogPresenterDelegate methods
@@ -5370,6 +5389,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
   return [self hasControllerForURL:url];
 }
 
+- (CGFloat)
+nativeContentHeaderHeightForPreloadController:(PreloadController*)controller
+                                     webState:(web::WebState*)webState {
+  return [self nativeContentHeaderHeightForWebState:webState];
+}
+
 #pragma mark - NetExportTabHelperDelegate
 
 - (void)netExportTabHelper:(NetExportTabHelper*)tabHelper
@@ -5516,30 +5541,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                             completion:(void (^)(void))completion {
   DCHECK_EQ(controller, self.presentedViewController);
   [self dismissViewControllerAnimated:YES completion:completion];
-}
-
-#pragma mark - TabHeadersDelegate
-
-- (CGFloat)tabHeaderHeightForTab:(Tab*)tab {
-  BOOL isRegularXRegular = IsUIRefreshPhase1Enabled()
-                               ? IsRegularXRegularSizeClass(self)
-                               : IsIPadIdiom();
-  if (IsUIRefreshPhase1Enabled() && tab &&
-      tab.webState->GetVisibleURL() == kChromeUINewTabURL &&
-      !isRegularXRegular) {
-    // Also subtract the top safe area so the view will appear as full screen.
-    // TODO(crbug.com/826369) Remove this once NTP is out of native content.
-    if (@available(iOS 11, *)) {
-      return -self.view.safeAreaInsets.top;
-    } else {
-      return -self.topLayoutGuide.length;
-    }
-  }
-  return [self headerHeightForTab:tab];
-}
-
-- (CGFloat)tabFooterHeightForTab:(Tab*)tab {
-  return self.secondaryToolbarHeightConstraint.constant;
 }
 
 #pragma mark - TabHistoryPresentation
