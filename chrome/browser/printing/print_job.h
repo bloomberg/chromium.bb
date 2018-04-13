@@ -132,12 +132,19 @@ class PrintJob : public PrintJobWorkerOwner,
 
   // Updates |document_| to a new instance. Protected so that tests can access
   // it.
-  void UpdatePrintedDocument(PrintedDocument* new_document);
+  void UpdatePrintedDocument(scoped_refptr<PrintedDocument> new_document);
 
  private:
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(PrintJobTest, PageRangeMapping);
 #endif
+
+  // Clears reference to |document_|.
+  void ClearPrintedDocument();
+
+  // Helper method for UpdatePrintedDocument() and ClearPrintedDocument() to
+  // sync |document_| updates with |worker_|.
+  void SyncPrintedDocumentToWorker();
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
