@@ -122,7 +122,13 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, OnBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
+                           FirstMouseClickFocusesOnly);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
                            CaretPlacementByMouse);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
+                           MouseDoubleClick);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
+                           MouseTripleClick);
   friend class OmniboxViewViewsTest;
   friend class OmniboxViewViewsSteadyStateElisionsTest;
 

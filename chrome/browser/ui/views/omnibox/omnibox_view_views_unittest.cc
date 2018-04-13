@@ -446,12 +446,16 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
 
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  protected:
+  const gfx::Point kPointInText = gfx::Point(20, 20);
+
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         omnibox::kUIExperimentHideSteadyStateUrlSchemeAndSubdomains);
 
     OmniboxViewViewsTest::SetUp();
 
+    // Advance 5 seconds from epoch so the time is not considered null.
+    clock_.Advance(base::TimeDelta::FromSeconds(5));
     ui::SetEventTickClockForTesting(&clock_);
 
     toolbar_model()->set_formatted_full_url(
@@ -493,6 +497,14 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
   ui::MouseEvent CreateMouseEvent(ui::EventType type, const gfx::Point& point) {
     return ui::MouseEvent(type, point, gfx::Point(), ui::EventTimeForNow(),
                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  }
+
+  // Sends a mouse down and mouse up event.
+  void SendMouseClick(const gfx::Point& point) {
+    omnibox_view()->OnMousePressed(
+        CreateMouseEvent(ui::ET_MOUSE_PRESSED, point));
+    omnibox_view()->OnMouseReleased(
+        CreateMouseEvent(ui::ET_MOUSE_RELEASED, point));
   }
 
   // Used to access members that are marked private in views::TextField.
@@ -571,30 +583,59 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
   ExpectFullUrlDisplayed();
 }
 
-TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, FirstMouseClickFocusesOnly) {
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
 
-  // First click should select all, but not unelide.
-  omnibox_view()->OnMousePressed(
-      CreateMouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point()));
-  omnibox_view()->OnMouseReleased(
-      CreateMouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point()));
+  SendMouseClick(gfx::Point());
 
   ExpectElidedUrlDisplayed();
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
   EXPECT_TRUE(omnibox_view()->HasFocus());
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
+  SendMouseClick(kPointInText);
 
   // Advance the clock 5 seconds so the second click is not interpreted as a
   // double click.
   clock()->Advance(base::TimeDelta::FromSeconds(10));
 
   // Second click should unelide only on mouse release.
-  EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox_view()->model()->focus_state());
-  gfx::Point point_in_text = gfx::Point(20, 20);
   omnibox_view()->OnMousePressed(
-      CreateMouseEvent(ui::ET_MOUSE_PRESSED, point_in_text));
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, kPointInText));
   ExpectElidedUrlDisplayed();
   omnibox_view()->OnMouseReleased(
-      CreateMouseEvent(ui::ET_MOUSE_RELEASED, point_in_text));
+      CreateMouseEvent(ui::ET_MOUSE_RELEASED, kPointInText));
   ExpectFullUrlDisplayed();
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
+  SendMouseClick(kPointInText);
+
+  // Second click without advancing the clock should be a double-click, which
+  // should do a single word selection and unelide the text on mousedown.
+  omnibox_view()->OnMousePressed(
+      CreateMouseEvent(ui::ET_MOUSE_PRESSED, kPointInText));
+  ExpectFullUrlDisplayed();
+
+  // Verify that the proper portion of the full URL is selected.
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(8U, start);
+  EXPECT_EQ(15U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
+  SendMouseClick(kPointInText);
+  SendMouseClick(kPointInText);
+  SendMouseClick(kPointInText);
+
+  ExpectFullUrlDisplayed();
+
+  // Verify that the whole full URL is selected.
+  EXPECT_TRUE(omnibox_view()->IsSelectAll());
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(19U, end);
 }
