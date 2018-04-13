@@ -143,6 +143,10 @@ ListIdentifier GetUrlSubresourceFilterId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, SUBRESOURCE_FILTER);
 }
 
+ListIdentifier GetUrlSuspiciousSiteId() {
+  return ListIdentifier(GetCurrentPlatformType(), URL, SUSPICIOUS);
+}
+
 ListIdentifier GetUrlUwsId() {
   return ListIdentifier(GetCurrentPlatformType(), URL, UNWANTED_SOFTWARE);
 }
