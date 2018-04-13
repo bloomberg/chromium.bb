@@ -105,6 +105,14 @@ class VerifyTestExpectations(unittest.TestCase):
       StubBrowser('mac', 'sierra', 0x10de, '', 0x0fe9, '', ogl41, False),
       # macOS Sierra, AMD Mac Pro, validating cmd decoder
       StubBrowser('mac', 'sierra', 0x1002, '', 0x679e, '', ogl41, False),
+      # macOS High Sierra, Intel GPU, validating cmd decoder
+      StubBrowser('mac', 'highsierra', 0x8086, '', 0x0a2e, '', ogl41, False),
+      # macOS High Sierra, AMD Retina MacBook Pro, validating cmd decoder
+      StubBrowser('mac', 'highsierra', 0x1002, '', 0x6821, '', ogl41, False),
+      # macOS High Sierra, NVIDIA Retina MacBook Pro, validating cmd decoder
+      StubBrowser('mac', 'highsierra', 0x10de, '', 0x0fe9, '', ogl41, False),
+      # macOS High Sierra, AMD Mac Pro, validating cmd decoder
+      StubBrowser('mac', 'highsierra', 0x1002, '', 0x679e, '', ogl41, False),
       # Linux, NVIDIA Quadro P400, validating cmd decoder
       StubBrowser('linux', 'trusty', 0x10de, '', 0x1cb3, '', ogl45, False),
       # Linux, Intel HD 630, validating cmd decoder
