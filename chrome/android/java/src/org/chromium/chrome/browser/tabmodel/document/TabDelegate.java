@@ -91,7 +91,8 @@ public class TabDelegate extends TabCreator {
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, activity, targetActivity);
         IntentHandler.addTrustedIntentExtras(intent);
         MultiWindowUtils.onMultiInstanceModeStarted();
-        activity.startActivity(intent);
+        activity.startActivity(
+                intent, MultiWindowUtils.getOpenInOtherWindowActivityOptions(activity));
     }
 
     @Override
