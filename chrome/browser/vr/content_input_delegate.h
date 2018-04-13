@@ -106,6 +106,8 @@ class ContentInputDelegate {
     OnWebInputTextChanged(text);
   }
 
+  void ClearTextInputState();
+
  private:
   void UpdateGesture(const gfx::PointF& normalized_content_hit_point,
                      blink::WebGestureEvent& gesture);

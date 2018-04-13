@@ -168,6 +168,35 @@ TEST_F(ContentElementSceneTest, WebInputFocus) {
   scene_->CallPerFrameCallbacks();
 }
 
+// Verify that we clear the model for the web input field when it loses focus to
+// prevent updating the keyboard with the old state when it gains focus again.
+TEST_F(ContentElementSceneTest, ClearWebInputInfoModel) {
+  auto* content =
+      static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
+  // Initial state.
+  TextInputInfo info(base::ASCIIToUTF16("asdfg"));
+  model_->web_input_text_field_info.current = info;
+  EXPECT_TRUE(OnBeginFrame());
+
+  // Initial state gets pushed when the content element is focused.
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(info))
+      .InSequence(in_sequence_);
+  content->OnFocusChanged(true);
+  EXPECT_TRUE(OnBeginFrame());
+
+  // Unfocus the content element.
+  content->OnFocusChanged(false);
+  EXPECT_TRUE(OnBeginFrame());
+
+  // A cleared state gets pushed when the content element is focused. This is
+  // needed because the user may have clicked another text field in the content,
+  // so we shouldn't be pushing the stale state.
+  EXPECT_CALL(*text_input_delegate_, UpdateInput(TextInputInfo()))
+      .InSequence(in_sequence_);
+  content->OnFocusChanged(true);
+  EXPECT_TRUE(OnBeginFrame());
+}
+
 class ContentElementInputEditingTest : public UiTest {
  public:
   void SetUp() override {
@@ -268,6 +297,32 @@ TEST_F(ContentElementInputEditingTest, IndicesUpdated) {
   EXPECT_EQ(edits.size(), 1u);
   EXPECT_EQ(edits[0], TextEditAction(TextEditActionType::COMMIT_TEXT,
                                      base::UTF8ToUTF16("q"), 1));
+}
+
+// This test verifies that we request the text state when the indices are
+// updated the second time the indices are changed. That is
+// OnWebInputIndicesChanged is called as a side effect of requesting the text
+// state, and we should ignore that call, but any call after that should still
+// request the text state, because for example, it may be for a different text
+// field.
+TEST_F(ContentElementInputEditingTest, PendingRequestStateCleared) {
+  content_delegate_->OnWebInputIndicesChanged(
+      2, 2, -1, -1, base::BindOnce([](const TextInputInfo& info) {}));
+  EXPECT_TRUE(input_forwarder_->text_state_requested());
+
+  input_forwarder_->Reset();
+  content_delegate_->OnWebInputIndicesChanged(
+      2, 2, -1, -1, base::BindOnce([](const TextInputInfo& info) {}));
+  // We don't request the curent text state becasuse OnWebInputIndicesChanged
+  // gets called as a side-effect of requesting the state above.
+  EXPECT_FALSE(input_forwarder_->text_state_requested());
+
+  input_forwarder_->Reset();
+  content_delegate_->OnWebInputIndicesChanged(
+      2, 2, -1, -1, base::BindOnce([](const TextInputInfo& info) {}));
+  // We should request the current text state this time because the call to
+  // OnWebInputIndicesChanged this time can be for a different reason.
+  EXPECT_TRUE(input_forwarder_->text_state_requested());
 }
 
 }  // namespace vr
