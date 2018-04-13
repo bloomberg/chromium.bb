@@ -116,9 +116,11 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
       parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_a_));
+
   // Simple policy with *.
   parsed_policy =
       ParseFeaturePolicy("geolocation *", origin_a_.get(), origin_b_.get(),
@@ -127,6 +129,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
   EXPECT_EQ(0UL, parsed_policy[0].origins.size());
 
   // Complicated policy.
@@ -139,9 +142,11 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
   EXPECT_EQ(0UL, parsed_policy[0].origins.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
   EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[1].matches_opaque_src);
   EXPECT_EQ(2UL, parsed_policy[1].origins.size());
   EXPECT_TRUE(
       parsed_policy[1].origins[0].IsSameOriginWith(expected_url_origin_b_));
@@ -149,6 +154,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       parsed_policy[1].origins[1].IsSameOriginWith(expected_url_origin_c_));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
   EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[2].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[2].origins.size());
   EXPECT_TRUE(
       parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
@@ -163,9 +169,11 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
   EXPECT_EQ(0UL, parsed_policy[0].origins.size());
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
   EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[1].matches_opaque_src);
   EXPECT_EQ(2UL, parsed_policy[1].origins.size());
   EXPECT_TRUE(
       parsed_policy[1].origins[0].IsSameOriginWith(expected_url_origin_b_));
@@ -173,6 +181,7 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       parsed_policy[1].origins[1].IsSameOriginWith(expected_url_origin_c_));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
   EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[2].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[2].origins.size());
   EXPECT_TRUE(
       parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
@@ -189,16 +198,19 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
       parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_a_));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
   EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[1].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[1].origins.size());
   EXPECT_TRUE(
       parsed_policy[1].origins[0].IsSameOriginWith(expected_url_origin_a_));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
   EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[2].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[2].origins.size());
   EXPECT_TRUE(
       parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
@@ -211,19 +223,100 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[0].origins.size());
   EXPECT_TRUE(
       parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_a_));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
   EXPECT_FALSE(parsed_policy[1].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[1].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[1].origins.size());
   EXPECT_TRUE(
       parsed_policy[1].origins[0].IsSameOriginWith(expected_url_origin_a_));
   EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
   EXPECT_FALSE(parsed_policy[2].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[2].matches_opaque_src);
   EXPECT_EQ(1UL, parsed_policy[2].origins.size());
   EXPECT_TRUE(
       parsed_policy[2].origins[0].IsSameOriginWith(expected_url_origin_a_));
+}
+
+TEST_F(FeaturePolicyTest, PolicyParsedCorrectlyForOpaqueOrigins) {
+  Vector<String> messages;
+
+  scoped_refptr<SecurityOrigin> opaque_origin = SecurityOrigin::CreateUnique();
+
+  // Empty policy.
+  ParsedFeaturePolicy parsed_policy =
+      ParseFeaturePolicy("", origin_a_.get(), opaque_origin.get(), &messages,
+                         test_feature_name_map);
+  EXPECT_EQ(0UL, parsed_policy.size());
+
+  // Simple policy.
+  parsed_policy =
+      ParseFeaturePolicy("geolocation", origin_a_.get(), opaque_origin.get(),
+                         &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_TRUE(parsed_policy[0].matches_opaque_src);
+  EXPECT_EQ(0UL, parsed_policy[0].origins.size());
+
+  // Simple policy with 'src'.
+  parsed_policy =
+      ParseFeaturePolicy("geolocation 'src'", origin_a_.get(),
+                         opaque_origin.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_TRUE(parsed_policy[0].matches_opaque_src);
+  EXPECT_EQ(0UL, parsed_policy[0].origins.size());
+
+  // Simple policy with *.
+  parsed_policy =
+      ParseFeaturePolicy("geolocation *", origin_a_.get(), opaque_origin.get(),
+                         &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
+  EXPECT_TRUE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
+  EXPECT_EQ(0UL, parsed_policy[0].origins.size());
+
+  // Policy with explicit origins
+  parsed_policy = ParseFeaturePolicy(
+      "geolocation https://example.net https://example.org", origin_a_.get(),
+      opaque_origin.get(), &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_FALSE(parsed_policy[0].matches_opaque_src);
+  EXPECT_EQ(2UL, parsed_policy[0].origins.size());
+  EXPECT_TRUE(
+      parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_b_));
+  EXPECT_TRUE(
+      parsed_policy[0].origins[1].IsSameOriginWith(expected_url_origin_c_));
+
+  // Policy with multiple origins, including 'src'.
+  parsed_policy = ParseFeaturePolicy("geolocation https://example.net 'src'",
+                                     origin_a_.get(), opaque_origin.get(),
+                                     &messages, test_feature_name_map);
+  EXPECT_EQ(1UL, parsed_policy.size());
+
+  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+            parsed_policy[0].feature);
+  EXPECT_FALSE(parsed_policy[0].matches_all_origins);
+  EXPECT_TRUE(parsed_policy[0].matches_opaque_src);
+  EXPECT_EQ(1UL, parsed_policy[0].origins.size());
+  EXPECT_TRUE(
+      parsed_policy[0].origins[0].IsSameOriginWith(expected_url_origin_b_));
 }
 
 }  // namespace blink

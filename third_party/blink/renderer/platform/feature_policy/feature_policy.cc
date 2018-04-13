@@ -158,12 +158,19 @@ ParsedFeaturePolicy ParseFeaturePolicy(
       std::vector<url::Origin> origins;
       // If a policy entry has no (optional) values (e,g,
       // allow="feature_name1; feature_name2 value"), enable the feature for:
-      //     a. if header policy (i.e., src_origin does not exist), self_origin;
-      //     or
-      //     b. if allow attribute (i.e., src_origin exists), src_origin.
+      //     a. |self_origin|, if we are parsing a header policy (i.e.,
+      //       |src_origin| is null);
+      //     b. |src_origin|, if we are parsing an allow attribute (i.e.,
+      //       |src_origin| is not null), |src_origin| is not opaque; or
+      //     c. the opaque origin of the frame, if |src_origin| is opaque.
       if (tokens.size() == 1) {
-        origins.push_back(src_origin ? src_origin->ToUrlOrigin()
-                                     : self_origin->ToUrlOrigin());
+        if (!src_origin) {
+          origins.push_back(self_origin->ToUrlOrigin());
+        } else if (!src_origin->IsUnique()) {
+          origins.push_back(src_origin->ToUrlOrigin());
+        } else {
+          whitelist.matches_opaque_src = true;
+        }
       }
 
       for (size_t i = 1; i < tokens.size(); i++) {
@@ -174,10 +181,19 @@ ParsedFeaturePolicy ParseFeaturePolicy(
         if (EqualIgnoringASCIICase(tokens[i], "'self'")) {
           origins.push_back(self_origin->ToUrlOrigin());
         } else if (src_origin && EqualIgnoringASCIICase(tokens[i], "'src'")) {
-          // Only iframe allow attribute can define src origin.
-          // When parsing feature policy header, src is disallowed and
-          // src_origin = nullptr.
-          origins.push_back(src_origin->ToUrlOrigin());
+          // Only the iframe allow attribute can define |src_origin|.
+          // When parsing feature policy header, 'src' is disallowed and
+          // |src_origin| = nullptr.
+          // If the iframe will have an opaque origin (for example, if it is
+          // sandboxed, or has a data: URL), then 'src' needs to refer to the
+          // opaque origin of the frame, which is not known yet. In this case,
+          // the |matches_opaque_src| flag on the declaration is set, rather
+          // than adding an origin to the allowlist.
+          if (src_origin->IsUnique()) {
+            whitelist.matches_opaque_src = true;
+          } else {
+            origins.push_back(src_origin->ToUrlOrigin());
+          }
         } else if (EqualIgnoringASCIICase(tokens[i], "'none'")) {
           continue;
         } else if (tokens[i] == "*") {

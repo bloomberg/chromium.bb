@@ -26,14 +26,16 @@ std::unique_ptr<FeaturePolicy::Allowlist> AllowlistFromDeclaration(
 }  // namespace
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
-    : matches_all_origins(false) {}
+    : matches_all_origins(false), matches_opaque_src(false) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
     mojom::FeaturePolicyFeature feature,
     bool matches_all_origins,
+    bool matches_opaque_src,
     std::vector<url::Origin> origins)
     : feature(feature),
       matches_all_origins(matches_all_origins),
+      matches_opaque_src(matches_opaque_src),
       origins(origins) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
@@ -226,11 +228,21 @@ void FeaturePolicy::AddContainerPolicy(
     mojom::FeaturePolicyFeature feature = parsed_declaration.feature;
     if (feature == mojom::FeaturePolicyFeature::kNotFound)
       continue;
-    if (AllowlistFromDeclaration(parsed_declaration)->Contains(origin_) &&
-        parent_policy->IsFeatureEnabled(feature)) {
-      inherited_policies_[feature] = true;
-    } else {
-      inherited_policies_[feature] = false;
+    // If the parent frame does not enable the feature, then the child frame
+    // must not.
+    inherited_policies_[feature] = false;
+    if (parent_policy->IsFeatureEnabled(feature)) {
+      if (parsed_declaration.matches_opaque_src && origin_.unique()) {
+        // If the child frame has an opaque origin, and the declared container
+        // policy indicates that the feature should be enabled, enable it for
+        // the child frame.
+        inherited_policies_[feature] = true;
+      } else if (AllowlistFromDeclaration(parsed_declaration)
+                     ->Contains(origin_)) {
+        // Otherwise, enbable the feature if the declared container policy
+        // includes the origin of the child frame.
+        inherited_policies_[feature] = true;
+      }
     }
   }
 }
