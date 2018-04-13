@@ -47,7 +47,7 @@ struct BASE_EXPORT Feature {
 // DCHECKs have been built-in, and are configurable at run-time to be fatal, or
 // not, via a DcheckIsFatal feature. We define the Feature here since it is
 // checked in FeatureList::SetInstance(). See https://crbug.com/596231.
-extern const Feature kDCheckIsFatalFeature;
+extern BASE_EXPORT const Feature kDCheckIsFatalFeature;
 #endif  // DCHECK_IS_CONFIGURABLE
 
 // The FeatureList class is used to determine whether a given feature is on or
