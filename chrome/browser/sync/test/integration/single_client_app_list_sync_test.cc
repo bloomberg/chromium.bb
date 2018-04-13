@@ -14,12 +14,11 @@
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {
-
-const size_t kNumDefaultApps = 2;
 
 bool AllProfilesHaveSameAppList() {
   return SyncAppListHelper::GetInstance()->AllProfilesHaveSameAppList();
@@ -124,6 +123,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientAppListSyncTest, AppListSomeApps) {
 
   app_list::AppListSyncableService* service =
       app_list::AppListSyncableServiceFactory::GetForProfile(verifier());
+
+  // Default apps: chrome + web store + internal apps.
+  const size_t kNumDefaultApps =
+      2u + app_list::GetNumberOfInternalAppsShowInLauncherForTest(
+               /*apps_name=*/nullptr);
   ASSERT_EQ(kNumApps + kNumDefaultApps, service->GetNumSyncItemsForTest());
 
   ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());

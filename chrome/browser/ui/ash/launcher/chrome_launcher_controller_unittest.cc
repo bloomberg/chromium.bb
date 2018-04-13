@@ -439,7 +439,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     app_service_ =
         app_list::AppListSyncableServiceFactory::GetForProfile(profile());
-    StartAppSyncService(syncer::SyncDataList());
+    StartAppSyncService(app_service_->GetAllSyncData(syncer::APP_LIST));
 
     std::string error;
     extension_chrome_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
