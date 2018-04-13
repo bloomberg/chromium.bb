@@ -447,11 +447,6 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
   TRACE_EVENT1("audio", "WASAPIAudioInputStream::Run_0", "sample rate",
                input_format_.nSamplesPerSec);
 
-  Microsoft::WRL::ComPtr<IAudioClock> audio_clock;
-  audio_client_->GetService(IID_PPV_ARGS(&audio_clock));
-  if (!audio_clock)
-    LOG(WARNING) << "IAudioClock unavailable, capture times may be inaccurate.";
-
   // Pull data from the capture endpoint buffer until it's empty or an error
   // occurs.
   while (true) {
@@ -492,12 +487,14 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
 
     // TODO(dalecurtis, olka, grunell): Is this ever false? If it is, should we
     // handle |flags & AUDCLNT_BUFFERFLAGS_TIMESTAMP_ERROR|?
-    if (audio_clock) {
+    if (audio_clock_) {
       // The reported timestamp from GetBuffer is not as reliable as the clock
       // from the client.  We've seen timestamps reported for USB audio devices,
       // be off by several days.  Furthermore we've seen them jump back in time
       // every 2 seconds or so.
-      audio_clock->GetPosition(&device_position, &capture_time_100ns);
+      // TODO(grunell): Using the audio clock as capture time for the currently
+      // processed buffer seems incorrect. http://crbug.com/825744.
+      audio_clock_->GetPosition(&device_position, &capture_time_100ns);
     }
 
     base::TimeTicks capture_time;
@@ -931,6 +928,10 @@ HRESULT WASAPIAudioInputStream::InitializeAudioEngine() {
   hr = audio_client_->GetService(IID_PPV_ARGS(&simple_audio_volume_));
   if (FAILED(hr))
     open_result_ = OPEN_RESULT_NO_AUDIO_VOLUME;
+
+  audio_client_->GetService(IID_PPV_ARGS(&audio_clock_));
+  if (!audio_clock_)
+    LOG(WARNING) << "IAudioClock unavailable, capture times may be inaccurate.";
 
   return hr;
 }
