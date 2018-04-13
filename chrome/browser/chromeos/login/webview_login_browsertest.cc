@@ -227,12 +227,13 @@ class WebviewLoginTest : public OobeBaseTest {
 
 // Basic signin with username and password.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
   ExpectIdentifierPage();
 
   SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ClickNext();
+  WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -247,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
 
 // Fails: http://crbug.com/512648.
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Start with identifer page.
   ExpectIdentifierPage();
@@ -255,14 +256,17 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   // Move to password page.
   SetSignFormField("identifier", OobeBaseTest::kFakeUserEmail);
   ClickNext();
+  WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   // Click back to identifier page.
   JS().Evaluate("$('gaia-navigation').$.backButton.click();");
+  WaitForGaiaPageBackButtonUpdate();
   ExpectIdentifierPage();
 
   // Click next to password page, user id is remembered.
   ClickNext();
+  WaitForGaiaPageBackButtonUpdate();
   ExpectPasswordPage();
 
   content::WindowedNotificationObserver session_start_waiter(
@@ -308,7 +312,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, EmailPrefill) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
-  WaitForGaiaPageLoad();
+  WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Start with identifer page.
   ExpectIdentifierPage();
@@ -336,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
   // Press the back button at a sign-in screen without pre-existing users to
   // start a new sign-in attempt.
   JS().Evaluate("$('signin-back-button').fire('tap')");
-  WaitForGaiaPageReload();
+  WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
   ExpectIdentifierPage();
@@ -973,7 +977,7 @@ IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
   // This will re-load gaia, rotating the StoragePartition. The new
   // StoragePartition must also have the proxy auth details.
   JS().Evaluate("$('signin-back-button').fire('tap')");
-  WaitForGaiaPageReload();
+  WaitForGaiaPageBackButtonUpdate();
   // Expect that we got back to the identifier page, as there are no known users
   // so the sign-in screen will not display user pods.
   ExpectIdentifierPage();

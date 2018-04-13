@@ -41,6 +41,11 @@ class RemoteDOMWindow final : public DOMWindow {
   // already RemoteDOMWindow.
   bool IsLocalDOMWindow() const override { return false; }
   bool IsRemoteDOMWindow() const override { return true; }
+
+  void ForwardPostMessage(MessageEvent*,
+                          scoped_refptr<const SecurityOrigin> target,
+                          Document* source,
+                          bool has_user_gesture);
 };
 
 DEFINE_TYPE_CASTS(RemoteDOMWindow,
