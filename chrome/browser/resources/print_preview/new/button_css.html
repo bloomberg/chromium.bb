@@ -21,6 +21,15 @@
         background-image: linear-gradient(#e7e7e7, #e7e7e7 38%, #d7d7d7);
         @apply --print-preview-active;
       }
+
+      button.default:not(:focus):not(:disabled) {
+        border-color: #808080;
+      }
+
+      button.default {
+        font-kerning: none;
+        font-weight: bold;
+      }
     </style>
   </template>
 </dom-module>
