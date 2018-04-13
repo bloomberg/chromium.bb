@@ -164,7 +164,9 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
                                                   host_scanner_.get(),
                                                   session_manager)),
       host_connection_metrics_logger_(
-          std::make_unique<HostConnectionMetricsLogger>()),
+          std::make_unique<HostConnectionMetricsLogger>(
+              asychronous_container->ble_connection_manager(),
+              active_host_.get())),
       tether_connector_(std::make_unique<TetherConnectorImpl>(
           network_state_handler_,
           wifi_hotspot_connector_.get(),
@@ -177,8 +179,7 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
           notification_presenter,
           host_connection_metrics_logger_.get(),
           asychronous_container->disconnect_tethering_request_sender(),
-          asychronous_container->wifi_hotspot_disconnector(),
-          base::DefaultClock::GetInstance())),
+          asychronous_container->wifi_hotspot_disconnector())),
       tether_disconnector_(std::make_unique<TetherDisconnectorImpl>(
           active_host_.get(),
           asychronous_container->wifi_hotspot_disconnector(),

@@ -65,6 +65,8 @@ class FakeBleConnectionManager : public BleConnectionManager {
       const std::string& device_id,
       cryptauth::SecureChannel::Status* status) const override;
 
+  using BleConnectionManager::NotifyAdvertisementReceived;
+
  private:
   struct StatusAndRegisteredConnectionReasons {
     StatusAndRegisteredConnectionReasons();
