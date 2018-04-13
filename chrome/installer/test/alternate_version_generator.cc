@@ -24,6 +24,7 @@
 #include "chrome/installer/test/alternate_version_generator.h"
 
 #include <windows.h>
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -48,6 +49,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
@@ -315,17 +317,17 @@ void VisitResource(const upgrade_test::EntryPath& path,
 // Updates version strings found in an image's .rdata (read-only data) section.
 // This handles uses of CHROME_VERSION_STRING (e.g., chrome::kChromeVersion).
 // Version numbers found even as substrings of larger strings are updated.
-bool UpdateVersionInData(const base::win::PEImage& image,
+bool UpdateVersionInData(base::win::PEImage* image,
                          VisitResourceContext* context) {
   DCHECK_EQ(context->current_version_str.size(),
             context->new_version_str.size());
   IMAGE_SECTION_HEADER* rdata_header =
-      image.GetImageSectionHeaderByName(".rdata");
+      image->GetImageSectionHeaderByName(".rdata");
   if (!rdata_header)
     return true;  // Nothing to update.
 
   size_t size = rdata_header->SizeOfRawData;
-  uint8_t* data = reinterpret_cast<uint8_t*>(image.module()) +
+  uint8_t* data = reinterpret_cast<uint8_t*>(image->module()) +
                   rdata_header->PointerToRawData;
 
   // Replace all wide string occurrences of |current_version| with
@@ -360,7 +362,6 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
     return false;
   }
 
-  bool result = false;
   uint32_t flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
                    base::File::FLAG_WRITE | base::File::FLAG_EXCLUSIVE_READ |
                    base::File::FLAG_EXCLUSIVE_WRITE;
@@ -376,26 +377,37 @@ bool UpdateVersionIfMatch(const base::FilePath& image_file,
     file.Initialize(image_file, flags);
   }
 
-  if (file.IsValid()) {
-    base::MemoryMappedFile image_mapping;
-    if (image_mapping.Initialize(std::move(file),
-                                 base::MemoryMappedFile::READ_WRITE)) {
-      base::win::PEImageAsData image(
-          reinterpret_cast<HMODULE>(image_mapping.data()));
-      // PEImage class does not support other-architecture images.
-      if (image.GetNTHeaders()->OptionalHeader.Magic ==
-          IMAGE_NT_OPTIONAL_HDR_MAGIC) {
-        result = upgrade_test::EnumResources(
-            image, &VisitResource, reinterpret_cast<uintptr_t>(context));
-        result = result && UpdateVersionInData(image, context);
-      } else {
-        result = true;
-      }
-    }
-  } else {
+  if (!file.IsValid()) {
     PLOG(DFATAL) << "Failed to open \"" << image_file.value() << "\"";
+    return false;
   }
-  return result;
+
+  // Map the file into memory for modification (give the mapping its own handle
+  // to the file so that its last-modified time can be updated below).
+  base::MemoryMappedFile image_mapping;
+  if (!image_mapping.Initialize(file.Duplicate(),
+                                base::MemoryMappedFile::READ_WRITE)) {
+    return false;
+  }
+
+  base::win::PEImageAsData image(
+      reinterpret_cast<HMODULE>(image_mapping.data()));
+  // PEImage class does not support other-architecture images. Skip over such
+  // files.
+  if (image.GetNTHeaders()->OptionalHeader.Magic !=
+      IMAGE_NT_OPTIONAL_HDR_MAGIC) {
+    return true;
+  }
+
+  // Explicitly update the last-modified time of the file if modifications are
+  // successfully made. This is required to convince the Windows loader that the
+  // modified file is distinct from the original. Windows does not necessarily
+  // update the last-modified time of a file that is written to via a read-write
+  // mapping.
+  return upgrade_test::EnumResources(image, &VisitResource,
+                                     reinterpret_cast<uintptr_t>(context)) &&
+         UpdateVersionInData(&image, context) &&
+         file.SetTimes(base::Time(), base::Time::Now());
 }
 
 bool UpdateManifestVersion(const base::FilePath& manifest,
