@@ -100,8 +100,11 @@ ScreenTrayItem::ScreenTrayItem(SystemTray* system_tray, UmaType uma_type)
 ScreenTrayItem::~ScreenTrayItem() = default;
 
 void ScreenTrayItem::SetIsStarted(bool is_started) {
+  // If |is_started| is false then that means the screen share has already
+  // stopped; however, we still have to run the stop callbacks because we do not
+  // know which screen share session ended.
   if (!is_started)
-    stop_callback_.Reset();
+    Stop();
   is_started_ = is_started;
 }
 
@@ -113,7 +116,7 @@ void ScreenTrayItem::Update() {
 }
 
 void ScreenTrayItem::Start(base::OnceClosure stop_callback) {
-  stop_callback_ = std::move(stop_callback);
+  stop_callbacks_.emplace_back(std::move(stop_callback));
   is_started_ = true;
 
   if (tray_view_)
@@ -127,10 +130,11 @@ void ScreenTrayItem::Stop() {
   is_started_ = false;
   Update();
 
-  if (stop_callback_.is_null())
-    return;
-
-  std::move(stop_callback_).Run();
+  for (base::OnceClosure& callback : stop_callbacks_) {
+    if (callback)
+      std::move(callback).Run();
+  }
+  stop_callbacks_.clear();
 }
 
 views::View* ScreenTrayItem::CreateTrayView(LoginStatus status) {

@@ -38,12 +38,13 @@ void ClickViewCenter(views::View* view) {
 
 class ScreenTrayItemTest : public AshTestBase {
  public:
-  ScreenTrayItemTest() : tray_item_(NULL), stop_callback_hit_count_(0) {}
+  ScreenTrayItemTest() {}
   ~ScreenTrayItemTest() override = default;
 
   ScreenTrayItem* tray_item() { return tray_item_; }
   void set_tray_item(ScreenTrayItem* tray_item) { tray_item_ = tray_item; }
 
+  void reset_stop_callback_hit_count() { stop_callback_hit_count_ = 0; }
   int stop_callback_hit_count() const { return stop_callback_hit_count_; }
 
   void StartSession() {
@@ -56,8 +57,8 @@ class ScreenTrayItemTest : public AshTestBase {
   void StopCallback() { stop_callback_hit_count_++; }
 
  private:
-  ScreenTrayItem* tray_item_;
-  int stop_callback_hit_count_;
+  ScreenTrayItem* tray_item_ = nullptr;
+  int stop_callback_hit_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenTrayItemTest);
 };
@@ -119,48 +120,58 @@ TEST_F(ScreenShareTest, StartAndStop) {
   TestStartAndStop(this);
 }
 
-void TestNotificationStartAndStop(ScreenTrayItemTest* test,
-                                  const base::Closure& start_function,
-                                  const base::Closure& stop_function) {
+void TestNotificationStartAndStop(
+    ScreenTrayItemTest* test,
+    const std::vector<base::RepeatingClosure>& start_functions,
+    const base::RepeatingClosure& stop_function) {
+  test->reset_stop_callback_hit_count();
   ScreenTrayItem* tray_item = test->tray_item();
   EXPECT_FALSE(tray_item->is_started());
 
-  start_function.Run();
-  EXPECT_TRUE(tray_item->is_started());
+  for (const auto& start : start_functions) {
+    start.Run();
+    EXPECT_TRUE(tray_item->is_started());
+  }
 
-  // The stop callback shouldn't be called because we stopped
-  // through the notification system.
+  // The stop callback is called even if the notification fires. There is a
+  // non-test ScreenTrayItem which is also called which is why the stop callback
+  // hit count is 2x the expected value.
   stop_function.Run();
   EXPECT_FALSE(tray_item->is_started());
-  EXPECT_EQ(0, test->stop_callback_hit_count());
+  EXPECT_EQ(static_cast<int>(start_functions.size()) * 2,
+            test->stop_callback_hit_count());
 }
 
 TEST_F(ScreenCaptureTest, NotificationStartAndStop) {
-  base::Closure start_function = base::Bind(
+  base::RepeatingClosure start_function = base::BindRepeating(
       &SystemTrayNotifier::NotifyScreenCaptureStart,
       base::Unretained(Shell::Get()->system_tray_notifier()),
       base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)),
       base::UTF8ToUTF16(kTestScreenCaptureAppName));
 
-  base::Closure stop_function =
-      base::Bind(&SystemTrayNotifier::NotifyScreenCaptureStop,
-                 base::Unretained(Shell::Get()->system_tray_notifier()));
+  base::RepeatingClosure stop_function = base::BindRepeating(
+      &SystemTrayNotifier::NotifyScreenCaptureStop,
+      base::Unretained(Shell::Get()->system_tray_notifier()));
 
-  TestNotificationStartAndStop(this, start_function, stop_function);
+  TestNotificationStartAndStop(this, {start_function}, stop_function);
+  TestNotificationStartAndStop(this, {start_function, start_function},
+                               stop_function);
 }
 
 TEST_F(ScreenShareTest, NotificationStartAndStop) {
-  base::Closure start_func = base::Bind(
+  base::RepeatingClosure start_function = base::BindRepeating(
       &SystemTrayNotifier::NotifyScreenShareStart,
       base::Unretained(Shell::Get()->system_tray_notifier()),
       base::Bind(&ScreenTrayItemTest::StopCallback, base::Unretained(this)),
       base::UTF8ToUTF16(kTestScreenShareHelperName));
 
-  base::Closure stop_func =
-      base::Bind(&SystemTrayNotifier::NotifyScreenShareStop,
-                 base::Unretained(Shell::Get()->system_tray_notifier()));
+  base::RepeatingClosure stop_function = base::BindRepeating(
+      &SystemTrayNotifier::NotifyScreenShareStop,
+      base::Unretained(Shell::Get()->system_tray_notifier()));
 
-  TestNotificationStartAndStop(this, start_func, stop_func);
+  TestNotificationStartAndStop(this, {start_function}, stop_function);
+  TestNotificationStartAndStop(this, {start_function, start_function},
+                               stop_function);
 }
 
 void TestSystemTrayInteraction(ScreenTrayItemTest* test) {
