@@ -50,6 +50,7 @@ source_set("popup_menu_ui") {
     "popup_menu_presenter.mm",
     "popup_menu_table_view_controller.h",
     "popup_menu_table_view_controller.mm",
+    "popup_menu_table_view_controller_commands.h",
     "popup_menu_view.h",
     "popup_menu_view.mm",
     "popup_menu_view_controller.h",

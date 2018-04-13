@@ -142,18 +142,23 @@ const CGFloat kDamping = 0.85;
   [self.popupViewController willMoveToParentViewController:nil];
   [NSLayoutConstraint deactivateConstraints:self.presentedConstraints];
   [NSLayoutConstraint activateConstraints:self.initialConstraints];
-  [self animate:^{
-    self.popupViewController.contentContainer.alpha = 0;
-    [self.baseViewController.view layoutIfNeeded];
-    self.popupViewController.contentContainer.transform =
-        CGAffineTransformMakeScale(0.1, 0.1);
+  auto completion = ^(BOOL finished) {
+    [self.popupViewController.view removeFromSuperview];
+    [self.popupViewController removeFromParentViewController];
+    self.popupViewController = nil;
+    [self.delegate containedPresenterDidDismiss:self];
+  };
+  if (animated) {
+    [self animate:^{
+      self.popupViewController.contentContainer.alpha = 0;
+      [self.baseViewController.view layoutIfNeeded];
+      self.popupViewController.contentContainer.transform =
+          CGAffineTransformMakeScale(0.1, 0.1);
+    }
+        withCompletion:completion];
+  } else {
+    completion(YES);
   }
-      withCompletion:^(BOOL finished) {
-        [self.popupViewController.view removeFromSuperview];
-        [self.popupViewController removeFromParentViewController];
-        self.popupViewController = nil;
-        [self.delegate containedPresenterDidDismiss:self];
-      }];
 }
 
 #pragma mark - Private

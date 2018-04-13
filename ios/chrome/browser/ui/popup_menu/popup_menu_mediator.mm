@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller_commands.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notification_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_notifier.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
@@ -63,7 +64,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 @interface PopupMenuMediator ()<BookmarkModelBridgeObserver,
                                 CRWWebStateObserver,
-                                PopupMenuTableViewControllerCommand,
+                                PopupMenuTableViewControllerCommands,
                                 ReadingListMenuNotificationDelegate,
                                 WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
@@ -378,7 +379,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   return _items;
 }
 
-#pragma mark - PopupMenuTableViewControllerCommand
+#pragma mark - PopupMenuTableViewControllerCommands
 
 - (void)readPageLater {
   if (!self.webState)
