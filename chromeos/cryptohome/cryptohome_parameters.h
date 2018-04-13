@@ -13,6 +13,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/login/auth/challenge_response_key.h"
 
 class AccountId;
 
@@ -57,7 +58,14 @@ class CHROMEOS_EXPORT Identification {
 // associated with this key.
 struct CHROMEOS_EXPORT KeyDefinition {
   enum Type {
-    TYPE_PASSWORD = 0
+    // Password-based key. The password's text or its hashed/transformed
+    // representation is stored in |secret|. The |challenge_response_keys| field
+    // should be empty.
+    TYPE_PASSWORD = 0,
+    // The challenge-response type of key. Information about the keys to be
+    // challenged is stored in |challenge_response_keys|, while |secret| should
+    // be empty.
+    TYPE_CHALLENGE_RESPONSE = 1,
   };
 
   struct AuthorizationData {
@@ -122,6 +130,12 @@ struct CHROMEOS_EXPORT KeyDefinition {
   static KeyDefinition CreateForPassword(const std::string& secret,
                                          const std::string& label,
                                          int privileges);
+  // Creates an instance with the TYPE_CHALLENGE_RESPONSE type.
+  static KeyDefinition CreateForChallengeResponse(
+      const std::vector<chromeos::ChallengeResponseKey>&
+          challenge_response_keys,
+      const std::string& label,
+      int privileges);
 
   KeyDefinition();
   KeyDefinition(const KeyDefinition& other);
@@ -135,6 +149,7 @@ struct CHROMEOS_EXPORT KeyDefinition {
   int privileges = 0;
   int revision = 0;
   std::string secret;
+  std::vector<chromeos::ChallengeResponseKey> challenge_response_keys;
 
   std::vector<AuthorizationData> authorization_data;
   std::vector<ProviderData> provider_data;

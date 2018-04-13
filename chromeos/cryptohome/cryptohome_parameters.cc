@@ -11,6 +11,8 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
 
+using chromeos::ChallengeResponseKey;
+
 namespace cryptohome {
 namespace {
 
@@ -184,6 +186,18 @@ KeyDefinition KeyDefinition::CreateForPassword(
   return key_def;
 }
 
+KeyDefinition KeyDefinition::CreateForChallengeResponse(
+    const std::vector<ChallengeResponseKey>& challenge_response_keys,
+    const std::string& label,
+    int /*AuthKeyPrivileges*/ privileges) {
+  KeyDefinition key_def;
+  key_def.type = TYPE_CHALLENGE_RESPONSE;
+  key_def.label = label;
+  key_def.privileges = privileges;
+  key_def.challenge_response_keys = challenge_response_keys;
+  return key_def;
+}
+
 KeyDefinition::KeyDefinition() = default;
 
 KeyDefinition::KeyDefinition(const KeyDefinition& other) = default;
@@ -191,10 +205,9 @@ KeyDefinition::KeyDefinition(const KeyDefinition& other) = default;
 KeyDefinition::~KeyDefinition() = default;
 
 bool KeyDefinition::operator==(const KeyDefinition& other) const {
-  if (type != other.type ||
-      label != other.label ||
-      privileges != other.privileges ||
-      revision != other.revision ||
+  if (type != other.type || label != other.label ||
+      privileges != other.privileges || revision != other.revision ||
+      challenge_response_keys != other.challenge_response_keys ||
       authorization_data.size() != other.authorization_data.size() ||
       provider_data.size() != other.provider_data.size()) {
     return false;
