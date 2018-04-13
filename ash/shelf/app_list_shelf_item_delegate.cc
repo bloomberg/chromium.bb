@@ -8,8 +8,15 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 
 namespace ash {
 
@@ -22,9 +29,35 @@ void AppListShelfItemDelegate::ItemSelected(std::unique_ptr<ui::Event> event,
                                             int64_t display_id,
                                             ShelfLaunchSource source,
                                             ItemSelectedCallback callback) {
-  Shell::Get()->app_list_controller()->ToggleAppList(
-      display_id, app_list::kShelfButton, event->time_stamp());
-  std::move(callback).Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
+  if (!Shell::Get()
+           ->app_list_controller()
+           ->IsHomeLauncherEnabledInTabletMode()) {
+    Shell::Get()->app_list_controller()->ToggleAppList(
+        display_id, app_list::kShelfButton, event->time_stamp());
+    std::move(callback).Run(SHELF_ACTION_APP_LIST_SHOWN, base::nullopt);
+    return;
+  }
+
+  // End overview mode.
+  if (Shell::Get()->window_selector_controller()->IsSelecting())
+    Shell::Get()->window_selector_controller()->ToggleOverview();
+
+  // End split view mode.
+  if (Shell::Get()->split_view_controller()->IsSplitViewModeActive())
+    Shell::Get()->split_view_controller()->EndSplitView();
+
+  // Minimize all windows that aren't the app list.
+  aura::Window* app_list_container =
+      Shell::Get()->GetPrimaryRootWindow()->GetChildById(
+          kShellWindowId_AppListTabletModeContainer);
+  aura::Window::Windows windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+  for (auto* window : windows) {
+    if (!app_list_container->Contains(window) &&
+        !wm::GetWindowState(window)->IsMinimized()) {
+      wm::GetWindowState(window)->Minimize();
+    }
+  }
 }
 
 void AppListShelfItemDelegate::ExecuteCommand(bool from_context_menu,

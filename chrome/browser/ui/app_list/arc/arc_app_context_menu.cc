@@ -102,7 +102,8 @@ void ArcAppContextMenu::ShowPackageInfo() {
   }
   if (arc::ShowPackageInfo(app_info->package_name,
                            arc::mojom::ShowPackageInfoPage::MAIN,
-                           controller()->GetAppListDisplayId())) {
+                           controller()->GetAppListDisplayId()) &&
+      !controller()->IsHomeLauncherEnabledInTabletMode()) {
     controller()->DismissView();
   }
 }

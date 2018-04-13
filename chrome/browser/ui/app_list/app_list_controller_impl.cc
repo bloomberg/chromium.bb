@@ -110,7 +110,8 @@ void AppListControllerDelegateImpl::ActivateApp(
   ChromeLauncherController::instance()->ActivateApp(
       extension->id(), AppListSourceToLaunchSource(source), event_flags);
 
-  DismissView();
+  if (!IsHomeLauncherEnabledInTabletMode())
+    DismissView();
 }
 
 void AppListControllerDelegateImpl::LaunchApp(
@@ -122,7 +123,9 @@ void AppListControllerDelegateImpl::LaunchApp(
   ChromeLauncherController::instance()->LaunchApp(
       ash::ShelfID(extension->id()), AppListSourceToLaunchSource(source),
       event_flags, display_id);
-  DismissView();
+
+  if (!IsHomeLauncherEnabledInTabletMode())
+    DismissView();
 }
 
 ash::ShelfLaunchSource

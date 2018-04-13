@@ -125,7 +125,7 @@ void BackdropController::UpdateBackdrop() {
   AppListControllerImpl* app_list_controller =
       Shell::Get()->app_list_controller();
   // Only hide the backdrop of the display that launcher is opened at.
-  if (app_list_controller->IsVisible() &&
+  if (app_list_controller && app_list_controller->IsVisible() &&
       container_->GetRootWindow() == app_list_controller->presenter()
                                          ->GetView()
                                          ->GetWidget()

@@ -157,7 +157,13 @@ class AppListControllerDelegate {
   // Called when a search is started using the app list search box.
   void OnSearchStarted();
 
+  // Returns true if the home launcher is enabled in tablet mode.
+  bool IsHomeLauncherEnabledInTabletMode() const;
+
  private:
+  // Whether the home launcher feature flag is enabled.
+  const bool is_home_launcher_enabled_;
+
   base::WeakPtrFactory<AppListControllerDelegate> weak_ptr_factory_;
 };
 
