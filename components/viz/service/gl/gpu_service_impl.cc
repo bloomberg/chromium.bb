@@ -452,6 +452,11 @@ void GpuServiceImpl::GetGpuSupportedRuntimeVersion() {
   DCHECK(command_line->HasSwitch("disable-gpu-sandbox") || in_host_process());
 
   gpu::RecordGpuSupportedRuntimeVersionHistograms(&gpu_info_);
+  if (!in_host_process()) {
+    // The unsandboxed GPU process fulfilled its duty. Rest
+    // in peace.
+    base::RunLoop().QuitCurrentWhenIdleDeprecated();
+  }
 #endif
 }
 
