@@ -55,6 +55,7 @@ class SmbService : public KeyedService,
   // callback.
   void OnMountResponse(MountResponse callback,
                        const file_system_provider::MountOptions& options,
+                       const base::FilePath& share_path,
                        smbprovider::ErrorType error,
                        int32_t mount_id);
 

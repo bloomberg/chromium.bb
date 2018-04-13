@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/posix/eintr_wrapper.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
@@ -142,11 +142,7 @@ base::File::Error SmbFileSystem::TranslateError(smbprovider::ErrorType error) {
 }
 
 int32_t SmbFileSystem::GetMountId() const {
-  int32_t mount_id;
-  bool result =
-      base::StringToInt(file_system_info_.file_system_id(), &mount_id);
-  DCHECK(result);
-  return mount_id;
+  return GetMountIdFromFileSystemId(file_system_info_.file_system_id());
 }
 
 SmbProviderClient* SmbFileSystem::GetSmbProviderClient() const {
