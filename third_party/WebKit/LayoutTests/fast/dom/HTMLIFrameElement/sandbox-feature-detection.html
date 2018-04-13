@@ -18,9 +18,11 @@
         assert_false(iframe.sandbox.supports("allow-formssss"));
         assert_true(iframe.sandbox.supports("allow-forms"));
         assert_true(iframe.sandbox.supports("allow-modals"));
+        assert_true(iframe.sandbox.supports("allow-orientation-lock"));
         assert_true(iframe.sandbox.supports("allow-pointer-lock"));
         assert_true(iframe.sandbox.supports("allow-popups"));
         assert_true(iframe.sandbox.supports("allow-popups-to-escape-sandbox"));
+        assert_true(iframe.sandbox.supports("allow-presentation"));
         assert_true(iframe.sandbox.supports("allow-same-origin"));
         assert_true(iframe.sandbox.supports("allow-scripts"));
         assert_true(iframe.sandbox.supports("allow-top-navigation"));
