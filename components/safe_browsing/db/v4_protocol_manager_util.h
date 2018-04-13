@@ -196,6 +196,7 @@ ListIdentifier GetUrlMalBinId();
 ListIdentifier GetUrlMalwareId();
 ListIdentifier GetUrlSocEngId();
 ListIdentifier GetUrlSubresourceFilterId();
+ListIdentifier GetUrlSuspiciousSiteId();
 ListIdentifier GetUrlUwsId();
 
 // Returns the basename of the store file, without the ".store" extension.
