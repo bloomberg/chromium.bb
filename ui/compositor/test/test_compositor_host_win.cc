@@ -59,6 +59,8 @@ class TestCompositorHostWin : public TestCompositorHost,
 
   std::unique_ptr<ui::Compositor> compositor_;
 
+  CR_MSG_MAP_CLASS_DECLARATIONS(TestCompositorHostWin)
+
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostWin);
 };
 

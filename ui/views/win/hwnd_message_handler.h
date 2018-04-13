@@ -27,6 +27,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/sequential_id_generator.h"
+#include "ui/gfx/win/msg_util.h"
 #include "ui/gfx/win/window_impl.h"
 #include "ui/views/views_export.h"
 #include "ui/views/win/pen_event_processor.h"
@@ -64,54 +65,6 @@ const int WM_NCUAHDRAWFRAME = 0xAF;
 // WM_WINDOWPOSCHANGING. It's used to inform the client if a
 // WM_WINDOWPOSCHANGED won't be received.
 const int WM_WINDOWSIZINGFINISHED = WM_USER;
-
-// IsMsgHandled() and BEGIN_SAFE_MSG_MAP_EX are a modified version of
-// BEGIN_MSG_MAP_EX. The main difference is it uses a WeakPtrFactory member
-// (|weak_factory|) that is used in _ProcessWindowMessage() and changing
-// IsMsgHandled() from a member function to a define that checks if the weak
-// factory is still valid in addition to the member. Together these allow for
-// |this| to be deleted during dispatch.
-#define IsMsgHandled() !ref.get() || msg_handled_
-
-#define BEGIN_SAFE_MSG_MAP_EX(weak_factory) \
- private: \
-  BOOL msg_handled_; \
-\
- public: \
-  /* "handled" management for cracked handlers */ \
-  void SetMsgHandled(BOOL handled) { \
-    msg_handled_ = handled; \
-  } \
-  BOOL ProcessWindowMessage(HWND hwnd, \
-                            UINT msg, \
-                            WPARAM w_param, \
-                            LPARAM l_param, \
-                            LRESULT& l_result, \
-                            DWORD msg_map_id = 0) override { \
-    base::WeakPtr<HWNDMessageHandler> ref(weak_factory.GetWeakPtr()); \
-    BOOL old_msg_handled = msg_handled_; \
-    BOOL ret = _ProcessWindowMessage(hwnd, msg, w_param, l_param, l_result, \
-                                     msg_map_id); \
-    if (ref.get()) \
-      msg_handled_ = old_msg_handled; \
-    return ret; \
-  } \
-  BOOL _ProcessWindowMessage(HWND hWnd, \
-                             UINT uMsg, \
-                             WPARAM wParam, \
-                             LPARAM lParam, \
-                             LRESULT& lResult, \
-                             DWORD dwMsgMapID) { \
-    base::WeakPtr<HWNDMessageHandler> ref(weak_factory.GetWeakPtr()); \
-    BOOL bHandled = TRUE; \
-    hWnd; \
-    uMsg; \
-    wParam; \
-    lParam; \
-    lResult; \
-    bHandled; \
-    switch(dwMsgMapID) { \
-      case 0:
 
 // An object that handles messages for a HWND that implements the views
 // "Custom Frame" look. The purpose of this class is to isolate the windows-
@@ -360,11 +313,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Message Handlers ----------------------------------------------------------
 
-  BEGIN_SAFE_MSG_MAP_EX(weak_factory_)
+  CR_BEGIN_MSG_MAP_EX(HWNDMessageHandler)
     // Range handlers must go first!
     CR_MESSAGE_RANGE_HANDLER_EX(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
-    CR_MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE,
-                                WM_NCXBUTTONDBLCLK,
+    CR_MESSAGE_RANGE_HANDLER_EX(WM_NCMOUSEMOVE, WM_NCXBUTTONDBLCLK,
                                 OnMouseRange)
 
     // CustomFrameWindow hacks
@@ -771,14 +723,14 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   static base::LazyInstance<FullscreenWindowMonitorMap>::DestructorAtExit
       fullscreen_monitor_map_;
 
-  // The WeakPtrFactories below must occur last in the class definition so they
-  // get destroyed last.
+  // The WeakPtrFactories below (one inside the
+  // CR_MSG_MAP_CLASS_DECLARATIONS macro and autohide_factory_) must
+  // occur last in the class definition so they get destroyed last.
+
+  CR_MSG_MAP_CLASS_DECLARATIONS(HWNDMessageHandler)
 
   // The factory used to lookup appbar autohide edges.
   base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;
-
-  // The factory used with BEGIN_SAFE_MSG_MAP_EX.
-  base::WeakPtrFactory<HWNDMessageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
