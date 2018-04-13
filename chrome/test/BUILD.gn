@@ -2339,6 +2339,7 @@ test("unit_tests") {
     "../browser/geolocation/geolocation_permission_context_unittest.cc",
     "../browser/global_keyboard_shortcuts_mac_unittest.mm",
     "../browser/google/google_update_settings_unittest.cc",
+    "../browser/google/google_url_tracker_factory_unittest.cc",
     "../browser/history/android/android_cache_database_unittest.cc",
     "../browser/history/android/android_history_provider_service_unittest.cc",
     "../browser/history/android/android_provider_backend_unittest.cc",

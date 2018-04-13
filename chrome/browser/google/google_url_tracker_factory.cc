@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "chrome/browser/google/chrome_google_url_tracker_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +26,32 @@ GoogleURLTrackerFactory* GoogleURLTrackerFactory::GetInstance() {
   return base::Singleton<GoogleURLTrackerFactory>::get();
 }
 
+namespace {
+
+std::unique_ptr<KeyedService> BuildGoogleURLTracker(
+    content::BrowserContext* context) {
+  // Delete this now-unused pref.
+  // At some point in the future, this code can be removed entirely.
+  static_cast<Profile*>(context)->GetOriginalProfile()->GetPrefs()->ClearPref(
+      prefs::kLastPromptedGoogleURL);
+
+  auto client = std::make_unique<ChromeGoogleURLTrackerClient>(
+      Profile::FromBrowserContext(context));
+  return std::make_unique<GoogleURLTracker>(
+      std::move(client),
+      base::FeatureList::IsEnabled(GoogleURLTracker::kNoSearchDomainCheck)
+          ? GoogleURLTracker::ALWAYS_DOT_COM_MODE
+          : GoogleURLTracker::NORMAL_MODE);
+}
+
+}  // namespace
+
+// static
+BrowserContextKeyedServiceFactory::TestingFactoryFunction
+GoogleURLTrackerFactory::GetDefaultFactory() {
+  return &BuildGoogleURLTracker;
+}
+
 GoogleURLTrackerFactory::GoogleURLTrackerFactory()
     : BrowserContextKeyedServiceFactory(
         "GoogleURLTracker",
@@ -36,14 +63,7 @@ GoogleURLTrackerFactory::~GoogleURLTrackerFactory() {
 
 KeyedService* GoogleURLTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  // Delete this now-unused pref.
-  // At some point in the future, this code can be removed entirely.
-  static_cast<Profile*>(context)->GetOriginalProfile()->GetPrefs()->ClearPref(
-      prefs::kLastPromptedGoogleURL);
-
-  std::unique_ptr<GoogleURLTrackerClient> client(
-      new ChromeGoogleURLTrackerClient(Profile::FromBrowserContext(context)));
-  return new GoogleURLTracker(std::move(client), GoogleURLTracker::NORMAL_MODE);
+  return BuildGoogleURLTracker(context).release();
 }
 
 void GoogleURLTrackerFactory::RegisterProfilePrefs(
