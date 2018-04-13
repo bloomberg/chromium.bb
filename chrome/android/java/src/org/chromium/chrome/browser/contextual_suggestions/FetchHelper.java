@@ -74,11 +74,13 @@ class FetchHelper {
          * Sets the baseline from which the fetch delay is calculated (conceptually starting the
          * timer).
          * @param fetchTimeBaselineMillis The new value to set the baseline fetch time to.
+         * @return Whether the fetch time baseline was set.
          */
-        void setFetchTimeBaselineMillis(long fetchTimeBaselineMillis) {
-            if (!isTrackingPage()) return;
-            if (isFetchTimeBaselineSet()) return;
+        boolean setFetchTimeBaselineMillis(long fetchTimeBaselineMillis) {
+            if (!isTrackingPage()) return false;
+            if (isFetchTimeBaselineSet()) return false;
             mFetchTimeBaselineMillis = fetchTimeBaselineMillis;
+            return true;
         }
 
         /** @return The time at which fetch time baseline was established. */
@@ -141,10 +143,17 @@ class FetchHelper {
             @Override
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 assert !tab.isIncognito();
-                getTabFetchReadinessState(tab).setFetchTimeBaselineMillis(
-                        SystemClock.uptimeMillis());
-                if (tab == mCurrentTab) {
-                    maybeStartFetch();
+                if (getTabFetchReadinessState(tab).setFetchTimeBaselineMillis(
+                            SystemClock.uptimeMillis())) {
+                    maybeStartFetch(tab);
+                }
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab) {
+                assert !tab.isIncognito();
+                if (maybeSetFetchReadinessBaseline(tab)) {
+                    maybeStartFetch(tab);
                 }
             }
         };
@@ -153,12 +162,8 @@ class FetchHelper {
             @Override
             public void didAddTab(Tab tab, TabLaunchType type) {
                 startObservingTab(tab);
-
-                // This attempts to handle re-parented tabs, that may be already after the first
-                // paint event.
-                if (isObservingTab(tab) && !tab.isLoading()) {
-                    getTabFetchReadinessState(tab).setFetchTimeBaselineMillis(
-                            SystemClock.uptimeMillis());
+                if (maybeSetFetchReadinessBaseline(tab)) {
+                    maybeStartFetch(tab);
                 }
             }
 
@@ -177,7 +182,7 @@ class FetchHelper {
                 // before this class.
                 startObservingTab(tab);
                 mCurrentTab = tab;
-                maybeStartFetch();
+                maybeStartFetch(tab);
             }
 
             @Override
@@ -190,7 +195,11 @@ class FetchHelper {
             }
         };
 
-        startObservingTab(mTabModelSelector.getCurrentTab());
+        mTabModelObserver.didSelectTab(
+                mTabModelSelector.getCurrentTab(), TabSelectionType.FROM_USER, 0);
+        if (maybeSetFetchReadinessBaseline(mCurrentTab)) {
+            maybeStartFetch(mCurrentTab);
+        }
     }
 
     void destroy() {
@@ -205,8 +214,24 @@ class FetchHelper {
         mTabModelObserver.destroy();
     }
 
-    private void maybeStartFetch() {
-        assert !mCurrentTab.isIncognito();
+    /**
+     * In case the tab is no longer loading the page, it would set the fetch readiness baselines
+     * time.
+     * @param tab Tab to be checked.
+     * @return Whether the baseline time was set.
+     */
+    private boolean maybeSetFetchReadinessBaseline(final Tab tab) {
+        if (isObservingTab(tab) && !tab.isLoading()) {
+            return getTabFetchReadinessState(tab).setFetchTimeBaselineMillis(
+                    SystemClock.uptimeMillis());
+        }
+        return false;
+    }
+
+    private void maybeStartFetch(Tab tab) {
+        if (tab == null || tab != mCurrentTab) return;
+
+        assert !tab.isIncognito();
 
         TabFetchReadinessState tabFetchReadinessState = getTabFetchReadinessState(mCurrentTab);
 
