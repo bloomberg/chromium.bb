@@ -66,6 +66,7 @@ class LockManager final : public ScriptWrappable,
   // terminated.
   void AddPendingRequest(LockRequestImpl*);
   void RemovePendingRequest(LockRequestImpl*);
+  bool IsPendingRequest(LockRequestImpl*);
 
   HeapHashSet<TraceWrapperMember<LockRequestImpl>> pending_requests_;
   HeapHashSet<Member<Lock>> held_locks_;
