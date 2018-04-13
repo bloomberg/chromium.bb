@@ -491,6 +491,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool cardboard_trigger_clicked_ = false;
 
   std::unique_ptr<VrController> controller_;
+  std::vector<device::mojom::XRInputSourceStatePtr> input_states_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
