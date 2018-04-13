@@ -301,6 +301,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Vector2d pending_origin_offset_accumulator_;
   int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_ = HTCAPTION;
+  gfx::Rect geometry_;
+  gfx::Rect pending_geometry_;
   base::Optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;
   std::unique_ptr<ash::WindowResizer> resizer_;
@@ -354,8 +356,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   bool pending_show_widget_ = false;
   std::string application_id_;
   std::string startup_id_;
-  gfx::Rect geometry_;
-  gfx::Rect pending_geometry_;
   base::RepeatingClosure close_callback_;
   base::OnceClosure surface_destroyed_callback_;
   ScopedConfigure* scoped_configure_ = nullptr;
