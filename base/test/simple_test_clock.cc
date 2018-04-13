@@ -10,7 +10,7 @@ SimpleTestClock::SimpleTestClock() = default;
 
 SimpleTestClock::~SimpleTestClock() = default;
 
-Time SimpleTestClock::Now() {
+Time SimpleTestClock::Now() const {
   AutoLock lock(lock_);
   return now_;
 }

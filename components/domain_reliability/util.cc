@@ -241,7 +241,9 @@ MockableTime::MockableTime() {}
 ActualTime::ActualTime() {}
 ActualTime::~ActualTime() {}
 
-base::Time ActualTime::Now() { return base::Time::Now(); }
+base::Time ActualTime::Now() const {
+  return base::Time::Now();
+}
 base::TimeTicks ActualTime::NowTicks() const {
   return base::TimeTicks::Now();
 }

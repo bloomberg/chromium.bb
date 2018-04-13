@@ -75,7 +75,7 @@ class MockTime : public MockableTime {
   ~MockTime() override;
 
   // MockableTime implementation:
-  base::Time Now() override;
+  base::Time Now() const override;
   base::TimeTicks NowTicks() const override;
   std::unique_ptr<MockableTime::Timer> CreateTimer() override;
 
