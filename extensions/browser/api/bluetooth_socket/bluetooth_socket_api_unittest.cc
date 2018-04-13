@@ -41,7 +41,7 @@ TEST_F(BluetoothSocketApiUnittest, CreateThenClose) {
                   .Set("name", "bluetooth app")
                   .Set("version", "1.0")
                   .Set("bluetooth",
-                       DictionaryBuilder().Set("socket", true).Build())
+                       DictionaryBuilder().SetBoolean("socket", true).Build())
                   .Set("app",
                        DictionaryBuilder()
                            .Set("background",

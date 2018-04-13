@@ -299,7 +299,9 @@ void DeveloperPrivateApiUnitTest::UpdateProfileConfigurationDevMode(
       new api::DeveloperPrivateUpdateProfileConfigurationFunction());
   std::unique_ptr<base::ListValue> args =
       ListBuilder()
-          .Append(DictionaryBuilder().Set("inDeveloperMode", dev_mode).Build())
+          .Append(DictionaryBuilder()
+                      .SetBoolean("inDeveloperMode", dev_mode)
+                      .Build())
           .Build();
   EXPECT_TRUE(RunFunction(function, *args)) << function->GetError();
 }

@@ -319,7 +319,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
   {
     // Test that event pages are reported correctly.
     DictionaryBuilder background;
-    background.Set("persistent", false)
+    background.SetBoolean("persistent", false)
         .Set("scripts", extensions::ListBuilder().Append("script.js").Build());
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("event_page")
@@ -337,7 +337,7 @@ TEST_F(ExtensionMetricsProviderInstallsTest, TestProtoConstruction) {
   {
     // Test that persistent background pages are reported correctly.
     DictionaryBuilder background;
-    background.Set("persistent", true)
+    background.SetBoolean("persistent", true)
         .Set("scripts", extensions::ListBuilder().Append("script.js").Build());
     scoped_refptr<const Extension> extension =
         ExtensionBuilder("persisent_background")

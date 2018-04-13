@@ -260,7 +260,7 @@ class LockScreenProfileCreatorImplTest : public testing::Test {
         ListBuilder()
             .Append(DictionaryBuilder()
                         .Set("action", "new_note")
-                        .Set("enabled_on_lock_screen", true)
+                        .SetBoolean("enabled_on_lock_screen", true)
                         .Build())
             .Build();
 

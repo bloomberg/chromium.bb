@@ -595,7 +595,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
           .Set("name", "USB Printer")
           .Set("extensionName", "Provider 1")
           .Set("extensionId", extension_1->id())
-          .Set("provisional", true)
+          .SetBoolean("provisional", true)
           .Build());
   std::unique_ptr<base::DictionaryValue> extension_2_entry(
       DictionaryBuilder()
@@ -605,7 +605,7 @@ TEST_F(ExtensionPrinterHandlerTest, GetUsbPrinters) {
           .Set("name", "USB Printer")
           .Set("extensionName", "Provider 2")
           .Set("extensionId", extension_2->id())
-          .Set("provisional", true)
+          .SetBoolean("provisional", true)
           .Build());
   EXPECT_TRUE(printers->Find(*extension_1_entry) != printers->end());
   EXPECT_TRUE(printers->Find(*extension_2_entry) != printers->end());
