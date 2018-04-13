@@ -24,7 +24,7 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 }
 
 namespace {
-const int kBorderThickness = 1;
+const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 }  // namespace
 
