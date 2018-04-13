@@ -956,10 +956,7 @@ PageInfoBubbleView::CreateSecurityDescriptionForPasswordReuse() const {
       new PageInfoUI::SecurityDescription());
   security_description->summary_style = SecuritySummaryColor::RED;
   security_description->summary =
-      safe_browsing::PasswordProtectionService::ShouldShowSofterWarning()
-          ? l10n_util::GetStringUTF16(
-                IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER)
-          : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
+      l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
   security_description->details =
       safe_browsing::ChromePasswordProtectionService::
           GetPasswordProtectionService(profile_)

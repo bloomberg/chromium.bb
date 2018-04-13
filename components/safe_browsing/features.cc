@@ -47,7 +47,7 @@ const base::Feature kGaiaPasswordReuseReporting{
 
 const base::Feature kGoogleBrandedPhishingWarning{
     "PasswordProtectionGoogleBrandedPhishingWarning",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -84,7 +84,7 @@ constexpr struct {
     {&kDispatchSafetyNetCheckOffThread, false},
     {&kEnterprisePasswordProtectionV1, true},
     {&kGaiaPasswordReuseReporting, true},
-    {&kGoogleBrandedPhishingWarning, true},
+    {&kGoogleBrandedPhishingWarning, false},
     {&kInspectDownloadedRarFiles, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

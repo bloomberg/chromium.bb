@@ -203,9 +203,6 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
                             WarningUIType ui_type,
                             WarningAction action) = 0;
 
-  // If we want to show softer warnings based on Finch parameters.
-  static bool ShouldShowSofterWarning();
-
   virtual void UpdateSecurityState(safe_browsing::SBThreatType threat_type,
                                    content::WebContents* web_contents) = 0;
 

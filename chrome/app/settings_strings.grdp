@@ -3944,9 +3944,6 @@
 
   <!-- Password protection -->
   <message name="IDS_SETTINGS_CHANGE_PASSWORD_TITLE" desc="Title of the reset password warning.">
-    A site may have stolen your password
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_PASSWORD_TITLE_SOFTER" desc="Title of the reset password warning.">
     Your password may be compromised
   </message>
   <message name="IDS_SETTINGS_CHANGE_PASSWORD_DETAIL" desc="Detailed description of the reset password warning.">
