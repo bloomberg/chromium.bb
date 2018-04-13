@@ -1405,4 +1405,27 @@ TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_HasSiblings) {
   EXPECT_FALSE(t3->NeedsStyleInvalidation());
 }
 
+TEST_F(StyleEngineTest, MediaQueriesChangeDefaultFontSize) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      body { color: red }
+      @media (max-width: 40em) {
+        body { color: green }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetSettings()->SetDefaultFontSize(40);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
 }  // namespace blink

@@ -1154,6 +1154,10 @@ void StyleEngine::InitialStyleChanged() {
   if (viewport_resolver_)
     viewport_resolver_->InitialStyleChanged();
 
+  // Media queries may rely on the initial font size relative lengths which may
+  // have changed.
+  MediaQueryAffectingValueChanged();
+
   GetDocument().SetNeedsStyleRecalc(
       kSubtreeStyleChange,
       StyleChangeReasonForTracing::Create(StyleChangeReason::kSettings));
