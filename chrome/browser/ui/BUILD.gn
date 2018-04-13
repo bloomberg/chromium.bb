@@ -2266,6 +2266,8 @@ split_static_library("ui") {
       sources += [
         "views/profiles/avatar_button.cc",
         "views/profiles/avatar_button.h",
+        "views/profiles/avatar_toolbar_button.cc",
+        "views/profiles/avatar_toolbar_button.h",
         "views/profiles/user_manager_view.cc",
         "views/profiles/user_manager_view.h",
       ]

@@ -202,26 +202,8 @@ void ToolbarView::Init() {
 
 // ChromeOS never shows a profile icon in the browser window.
 #if !defined(OS_CHROMEOS)
-  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
-    avatar_ = new ToolbarButton(browser_->profile(), this, nullptr);
-    avatar_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
-                                         ui::EF_MIDDLE_MOUSE_BUTTON);
-    avatar_->set_tag(IDC_SHOW_AVATAR_MENU);
-    if (browser_->profile()->IsOffTheRecord()) {
-      avatar_->SetTooltipText(
-          l10n_util::GetStringUTF16(IDS_INCOGNITO_AVATAR_BUTTON_TOOLTIP));
-      avatar_->SetEnabled(false);
-    } else {
-      // TODO(pbos): Incorporate GetAvatarButtonTextForProfile. See
-      // AvatarButton.
-      avatar_->SetTooltipText(
-          l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
-      avatar_->SetAccessibleName(
-          l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
-    }
-    avatar_->set_id(VIEW_ID_AVATAR_BUTTON);
-    avatar_->Init();
-  }
+  if (ui::MaterialDesignController::IsNewerMaterialUi())
+    avatar_ = new AvatarToolbarButton(browser_->profile(), this);
 #endif  // !defined(OS_CHROMEOS)
 
   app_menu_button_ = new BrowserAppMenuButton(this);
@@ -767,8 +749,6 @@ void ToolbarView::LoadImages() {
 
   const bool is_touch =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-  // TODO(pbos): Move these constants to LayoutProvider or LayoutConstants.
-  const int icon_size = is_touch ? 24 : 16;
 
   const gfx::VectorIcon& back_image =
       is_touch ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
@@ -789,13 +769,11 @@ void ToolbarView::LoadImages() {
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
-  if (avatar_) {
-    // TODO(pbos): Account for incognito by either changing the icon and
-    // effectively disabling the menu or by not showing it at all in incognito.
-    avatar_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size, normal_color));
-  }
+#if !defined(OS_CHROMEOS)
+  if (avatar_)
+    avatar_->UpdateIcon();
+#endif  // !defined(OS_CHROMEOS)
+
   app_menu_button_->UpdateIcon(false);
 
   const SkColor ink_drop_color = color_utils::BlendTowardOppositeLuma(
