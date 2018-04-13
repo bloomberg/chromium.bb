@@ -158,7 +158,9 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
       /*answer_type=*/base::string16(),
       /*answer=*/nullptr,
       /*suggest_query_params=*/std::string(),
-      /*deletion_url=*/std::string(), from_keyword_provider,
+      /*deletion_url=*/std::string(),
+      /*image_dominant_color=*/std::string(),
+      /*image_url=*/std::string(), from_keyword_provider,
       /*relevance=*/0,
       /*relevance_from_server=*/false,
       /*should_prefetch=*/false,
@@ -247,6 +249,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   if (!template_url)
     return match;
   match.keyword = template_url->keyword();
+  match.image_dominant_color = suggestion.image_dominant_color();
+  match.image_url = suggestion.image_url();
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
   match.answer_contents = suggestion.answer_contents();

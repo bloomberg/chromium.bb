@@ -110,6 +110,8 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
         "google:suggestdetail": [{
           }, {
             "a": "American author",
+            "dc": "#424242",
+            "i": "http://example.com/a.png",
             "q": "gs_ssp=abc",
             "t": "Christopher Doe"
           }],
@@ -135,6 +137,9 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
     const auto& suggestion_result = results.suggest_results[0];
     ASSERT_EQ(base::ASCIIToUTF16("christmas"), suggestion_result.suggestion());
     ASSERT_EQ(base::ASCIIToUTF16(""), suggestion_result.annotation());
+    // This entry has no image.
+    ASSERT_EQ("", suggestion_result.image_dominant_color());
+    ASSERT_EQ("", suggestion_result.image_url());
   }
   {
     const auto& suggestion_result = results.suggest_results[1];
@@ -142,5 +147,7 @@ TEST(SearchSuggestionParserTest, ParseSuggestResults) {
               suggestion_result.suggestion());
     ASSERT_EQ(base::ASCIIToUTF16("American author"),
               suggestion_result.annotation());
+    ASSERT_EQ("#424242", suggestion_result.image_dominant_color());
+    ASSERT_EQ("http://example.com/a.png", suggestion_result.image_url());
   }
 }

@@ -391,6 +391,11 @@ struct AutocompleteMatch {
   // duplicates.
   GURL stripped_destination_url;
 
+  // Optional image information. Used for entity suggestions. The dominant color
+  // can be used to paint the image placeholder while fetching the image.
+  std::string image_dominant_color;
+  std::string image_url;
+
   // The main text displayed in the address bar dropdown.
   base::string16 contents;
   ACMatchClassifications contents_class;

@@ -132,6 +132,8 @@ class SearchSuggestionParser {
                   std::unique_ptr<SuggestionAnswer> answer,
                   const std::string& suggest_query_params,
                   const std::string& deletion_url,
+                  const std::string& image_dominant_color,
+                  const std::string& image_url,
                   bool from_keyword_provider,
                   int relevance,
                   bool relevance_from_server,
@@ -154,6 +156,11 @@ class SearchSuggestionParser {
     const base::string16& answer_contents() const { return answer_contents_; }
     const base::string16& answer_type() const { return answer_type_; }
     const SuggestionAnswer* answer() const { return answer_.get(); }
+
+    const std::string& image_dominant_color() const {
+      return image_dominant_color_;
+    }
+    const std::string& image_url() const { return image_url_; }
 
     bool should_prefetch() const { return should_prefetch_; }
 
@@ -196,6 +203,12 @@ class SearchSuggestionParser {
 
     // Optional short answer to the input that produced this suggestion.
     std::unique_ptr<SuggestionAnswer> answer_;
+
+    // Optional image information. Used for entity suggestions. The dominant
+    // color can be used to paint the image placeholder while fetching the
+    // image.
+    std::string image_dominant_color_;
+    std::string image_url_;
 
     // Should this result be prefetched?
     bool should_prefetch_;

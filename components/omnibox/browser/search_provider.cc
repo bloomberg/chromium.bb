@@ -1004,6 +1004,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         /*annotation=*/base::string16(), answer_contents, answer_type,
         std::move(answer), /*suggest_query_params=*/std::string(),
         /*deletion_url=*/std::string(),
+        /*image_dominant_color=*/std::string(),
+        /*image_url=*/std::string(),
         /*from_keyword_provider=*/false, verbatim_relevance,
         relevance_from_server, /*should_prefetch=*/false,
         /*input_text=*/trimmed_verbatim);
@@ -1037,6 +1039,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
             /*answer=*/nullptr,
             /*suggest_query_params=*/std::string(),
             /*deletion_url=*/std::string(),
+            /*image_dominant_color=*/std::string(),
+            /*image_url=*/std::string(),
             /*from_keyword_provider=*/true, keyword_verbatim_relevance,
             keyword_relevance_from_server,
             /*should_prefetch=*/false,
@@ -1232,7 +1236,9 @@ SearchProvider::ScoreHistoryResultsHelper(const HistoryResults& results,
         /*answer_type=*/base::string16(),
         /*answer=*/nullptr,
         /*suggest_query_params=*/std::string(),
-        /*deletion_url=*/std::string(), is_keyword, relevance,
+        /*deletion_url=*/std::string(),
+        /*image_dominant_color=*/std::string(),
+        /*image_url=*/std::string(), is_keyword, relevance,
         /*relevance_from_server=*/false,
         /*should_prefetch=*/false, /*input_text=*/trimmed_input);
     // History results are synchronous; they are received on the last keystroke.

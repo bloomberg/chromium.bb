@@ -122,6 +122,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       allowed_to_be_default_match(match.allowed_to_be_default_match),
       destination_url(match.destination_url),
       stripped_destination_url(match.stripped_destination_url),
+      image_dominant_color(match.image_dominant_color),
+      image_url(match.image_url),
       contents(match.contents),
       contents_class(match.contents_class),
       description(match.description),
@@ -163,6 +165,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   allowed_to_be_default_match = match.allowed_to_be_default_match;
   destination_url = match.destination_url;
   stripped_destination_url = match.stripped_destination_url;
+  image_dominant_color = match.image_dominant_color;
+  image_url = match.image_url;
   contents = match.contents;
   contents_class = match.contents_class;
   description = match.description;
@@ -737,6 +741,8 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(inline_autocompletion);
   res += base::trace_event::EstimateMemoryUsage(destination_url);
   res += base::trace_event::EstimateMemoryUsage(stripped_destination_url);
+  res += base::trace_event::EstimateMemoryUsage(image_dominant_color);
+  res += base::trace_event::EstimateMemoryUsage(image_url);
   res += base::trace_event::EstimateMemoryUsage(contents);
   res += base::trace_event::EstimateMemoryUsage(contents_class);
   res += base::trace_event::EstimateMemoryUsage(description);
