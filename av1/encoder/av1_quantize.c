@@ -49,12 +49,11 @@ static void quantize_fp_helper_c(
 
   if (!skip_block && qm_ptr == NULL && iqm_ptr == NULL) {
     const int rounding0 = ROUND_POWER_OF_TWO(round_ptr[0], log_scale);
-    const int32_t thresh0 = (int32_t)(dequant_ptr[0]) >> (1 + log_scale);
     {  // rc == 0
       const int coeff = coeff_ptr[0];
       const int coeff_sign = (coeff >> 31);
       int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      if (abs_coeff >= thresh0) {
+      if ((abs_coeff << (1 + log_scale)) >= (int32_t)(dequant_ptr[0])) {
         abs_coeff = clamp64(abs_coeff + rounding0, INT16_MIN, INT16_MAX);
         const int tmp32 = (int)((abs_coeff * quant_ptr[0]) >> (16 - log_scale));
         if (tmp32) {
@@ -65,14 +64,13 @@ static void quantize_fp_helper_c(
         }
       }
     }
-
     const int rounding1 = ROUND_POWER_OF_TWO(round_ptr[1], log_scale);
-    const int32_t thresh1 = (int32_t)(dequant_ptr[1]) >> (1 + log_scale);
+    const int32_t thresh1 = (int32_t)(dequant_ptr[1]);
     for (i = 1; i < n_coeffs; i++) {
       const int coeff = coeff_ptr[i];
       const int coeff_sign = (coeff >> 31);
       int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-      if (abs_coeff >= thresh1) {
+      if ((abs_coeff << (1 + log_scale)) >= thresh1) {
         abs_coeff = clamp64(abs_coeff + rounding1, INT16_MIN, INT16_MAX);
         const int tmp32 = (int)((abs_coeff * quant_ptr[1]) >> (16 - log_scale));
         if (tmp32) {
@@ -162,8 +160,6 @@ static void highbd_quantize_fp_helper_c(
         }
       }
     } else {
-      const int shifted_dequant_arr[2] = { dequant_ptr[0] >> (1 + log_scale),
-                                           dequant_ptr[1] >> (1 + log_scale) };
       const int log_scaled_round_arr[2] = {
         ROUND_POWER_OF_TWO(round_ptr[0], log_scale),
         ROUND_POWER_OF_TWO(round_ptr[1], log_scale),
@@ -173,10 +169,9 @@ static void highbd_quantize_fp_helper_c(
         const int coeff = coeff_ptr[rc];
         const int rc01 = (rc != 0);
         const int coeff_sign = (coeff >> 31);
-        const int shifted_dequant = shifted_dequant_arr[rc01];
         const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
         const int log_scaled_round = log_scaled_round_arr[rc01];
-        if (abs_coeff >= shifted_dequant) {
+        if ((abs_coeff << (1 + log_scale)) >= dequant_ptr[rc01]) {
           const int quant = quant_ptr[rc01];
           const int dequant = dequant_ptr[rc01];
           const int64_t tmp = (int64_t)abs_coeff + log_scaled_round;
