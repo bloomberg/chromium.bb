@@ -152,8 +152,8 @@ bool KeyframeModel::InEffect(base::TimeTicks monotonic_time) const {
          (fill_mode_ == FillMode::BOTH || fill_mode_ == FillMode::BACKWARDS);
 }
 
-base::TimeTicks KeyframeModel::ConvertFromActiveTime(
-    base::TimeDelta active_time) const {
+base::TimeTicks KeyframeModel::ConvertLocalTimeToMonotonicTime(
+    base::TimeDelta local_time) const {
   // When waiting on receiving a start time, then our global clock is 'stuck' at
   // the initial state.
   if ((run_state_ == STARTING && !has_set_start_time()) ||
@@ -162,9 +162,9 @@ base::TimeTicks KeyframeModel::ConvertFromActiveTime(
 
   // If we're paused, time is 'stuck' at the pause time.
   if (run_state_ == PAUSED)
-    return pause_time_ - time_offset_;
+    return pause_time_;
 
-  return active_time - time_offset_ + start_time_ + total_paused_time_;
+  return local_time + start_time_ + total_paused_time_;
 }
 
 base::TimeDelta KeyframeModel::ConvertToActiveTime(
