@@ -105,8 +105,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   }
   const String& region() const { return region_; }
 
-  Node* toElement() const;
-  Node* fromElement() const;
+  virtual Node* toElement() const;
+  virtual Node* fromElement() const;
 
   virtual DataTransfer* getDataTransfer() const { return nullptr; }
 
