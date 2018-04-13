@@ -118,6 +118,10 @@ if (is_chromeos) {
   schema_sources += [ "input_ime.json" ]
 }
 
+if (!is_chromeos) {
+  schema_sources += [ "enterprise_reporting_private.idl" ]
+}
+
 if (enable_print_preview && !is_chromeos) {
   schema_sources += [ "cloud_print_private.json" ]
 }

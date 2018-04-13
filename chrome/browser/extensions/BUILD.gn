@@ -1005,6 +1005,8 @@ static_library("extensions") {
     }
   } else {
     sources += [
+      "api/enterprise_reporting_private/enterprise_reporting_private_api.cc",
+      "api/enterprise_reporting_private/enterprise_reporting_private_api.h",
       "api/image_writer_private/operation_nonchromeos.cc",
       "api/image_writer_private/removable_storage_provider_linux.cc",
       "api/messaging/native_message_process_host.cc",

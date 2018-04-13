@@ -382,6 +382,10 @@
     "dependencies": ["permission:enterprise.platformKeysPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "enterprise.reportingPrivate": {
+    "dependencies": ["permission:enterprise.reportingPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "experimental.devtools.audits": {
     "nocompile": true,
     "dependencies": ["permission:experimental", "manifest:devtools_page"],
