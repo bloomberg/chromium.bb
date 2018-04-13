@@ -122,6 +122,7 @@ class CORE_EXPORT StyleEngine final
                                  StyleSheetList* new_sheets);
   void MediaQueriesChangedInScope(TreeScope&);
   void WatchedSelectorsChanged();
+  void InitialStyleChanged();
   void InitialViewportChanged();
   void ViewportRulesChanged();
   void HtmlImportAddedOrRemoved();

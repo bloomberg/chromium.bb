@@ -132,7 +132,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   static void PlatformColorsChanged();
 
-  void SetNeedsRecalcStyleInAllFrames();
+  void InitialStyleChanged();
   void UpdateAcceleratedCompositingSettings();
 
   ViewportDescription GetViewportDescription() const;

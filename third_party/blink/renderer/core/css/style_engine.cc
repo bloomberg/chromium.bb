@@ -1150,6 +1150,15 @@ bool StyleEngine::HasRulesForId(const AtomicString& id) const {
   return global_rule_set_->GetRuleFeatureSet().HasSelectorForId(id);
 }
 
+void StyleEngine::InitialStyleChanged() {
+  if (viewport_resolver_)
+    viewport_resolver_->InitialStyleChanged();
+
+  GetDocument().SetNeedsStyleRecalc(
+      kSubtreeStyleChange,
+      StyleChangeReasonForTracing::Create(StyleChangeReason::kSettings));
+}
+
 void StyleEngine::InitialViewportChanged() {
   if (viewport_resolver_)
     viewport_resolver_->InitialViewportChanged();
