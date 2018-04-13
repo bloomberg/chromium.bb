@@ -73,7 +73,7 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
 
   // views::WidgetDelegate:
   bool CanResize() const override { return true; }
-  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_NONE; }
   base::string16 GetWindowTitle() const override {
     // While the window title is not shown on the window itself, it is used to
     // identify the window on the system tray.
