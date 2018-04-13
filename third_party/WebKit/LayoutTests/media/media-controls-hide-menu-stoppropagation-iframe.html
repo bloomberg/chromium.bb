@@ -26,12 +26,14 @@ async_test(function(t) {
       // Clicking on the overflow menu button should make the overflow list visible
       var coords = elementCoordinates(overflowMenu);
       clickAtCoordinates(coords[0], coords[1]);
-      assert_not_equals(getComputedStyle(overflowList).display, "none");
+      setTimeout(function() {
+        assert_not_equals(getComputedStyle(overflowList).display, "none");
 
-      // Click anywhere outside the overflow menu should close overflow list.
-      var coords = coordinatesOutsideElement(overflowList);
-      clickAtCoordinates(coords[0], coords[1]);
-      assert_equals(getComputedStyle(overflowList).display, "none");
+        // Click anywhere outside the overflow menu should close overflow list.
+        var coords = coordinatesOutsideElement(overflowList);
+        clickAtCoordinates(coords[0], coords[1]);
+        assert_equals(getComputedStyle(overflowList).display, "none");
+      });
     }));
   });
   document.body.appendChild(iframe);

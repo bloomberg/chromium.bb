@@ -19,4 +19,6 @@ include_rules = [
 
   "+device/geolocation/android/java",
   "+device/geolocation/android/javatests",
+
+  "+media/base/android",
 ]

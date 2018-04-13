@@ -1,6 +1,7 @@
 <html>
 <head>
     <script src=media-file.js></script>
+    <script src=media-controls.js></script>
     <script>
     var video;
 
@@ -37,6 +38,7 @@
     function test()
     {
         video = document.getElementsByTagName('video')[0];
+        enableTestMode(video);
         video.addEventListener("canplaythrough", canplaythrough);
 
         video.src = "content/counting.ogv";

@@ -4,9 +4,14 @@
             audio { background-color: blue; }
         </style>
         <script src=media-file.js></script>
+        <script src=media-controls.js></script>
         <script>
             function test()
             {
+                var audios = document.querySelectorAll("audio");
+                audios.forEach(audio => {
+                  enableTestMode(audio);
+                });
                 setSrcByTagName("audio", "content/test.oga");
 
                 if (window.testRunner) {

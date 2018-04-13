@@ -21,6 +21,7 @@
         z-index: 3;
     }
 </style>
+<script src="../../media/media-controls.js"></script>
 </head>
 <script>
 function runTest() {
@@ -29,6 +30,7 @@ function runTest() {
         testRunner.waitUntilDone(true);
     }
     var video = document.querySelector('video');
+    enableTestMode(video);
     video.onerror = endTest;
     video.src = "bogus.ogv";
 }

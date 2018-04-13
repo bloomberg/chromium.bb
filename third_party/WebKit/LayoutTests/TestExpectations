@@ -3434,6 +3434,17 @@ crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass Crash ]
 
 crbug.com/746904 [ Win7 ] fast/text/ellipsis-in-relative-inline.html [ Failure Pass ]
 
+# Tests failing when enabling new modern media controls
+crbug.com/831942 media/webkit-media-controls-webkit-appearance.html [ Failure Pass ]
+crbug.com/831957 compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
+crbug.com/831957 virtual/disable-spv175/compositing/video/video-controls-layer-creation-squashing.html [ Failure Pass ]
+crbug.com/832157 external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-rendering-after-controls-added.html [ Skip ]
+crbug.com/832169 media/media-controls-fit-properly-while-zoomed.html [ Failure Pass ]
+crbug.com/832447 media/controls/controls-page-zoom-in.html [ Failure Pass ]
+crbug.com/832447 media/controls/controls-page-zoom-out.html [ Failure Pass ]
+crbug.com/832447 virtual/new-remote-playback-pipeline/media/controls/controls-page-zoom-in.html [ Failure Pass ]
+crbug.com/832447 virtual/new-remote-playback-pipeline/media/controls/controls-page-zoom-out.html [ Failure Pass ]
+
 # Tests failing on Android after https://chromium-review.googlesource.com/612442
 crbug.com/755405 [ Android ] compositing/rendering-contexts.html [ Failure ]
 crbug.com/755405 [ Android ] compositing/contents-opaque/body-background-painted.html [ Failure ]

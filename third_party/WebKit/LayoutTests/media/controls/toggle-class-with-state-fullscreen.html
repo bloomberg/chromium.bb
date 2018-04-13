@@ -17,7 +17,7 @@ async_test(t => {
     fullscreenButton(video).click();
   });
 
-  video.onplay = t.step_func(_ => {
+  video.onplaying = t.step_func(_ => {
     checkButtonNotHasClass(fullscreenButton(video), 'fullscreen');
     clickAtCoordinates(1, 1);
   });

@@ -880,7 +880,9 @@ video::-internal-media-controls-scrubbing-message {
 video::-webkit-media-controls.test-mode div[pseudo="-internal-media-controls-loading-panel" i] {
   display: none !important;
 }
-/* Prevent the overlay play butotn transition. */
+/* Prevent transitions. */
+audio::-webkit-media-controls.test-mode *,
+video::-webkit-media-controls.test-mode *,
 video::-webkit-media-controls.test-mode input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
   transition: none !important;
 }

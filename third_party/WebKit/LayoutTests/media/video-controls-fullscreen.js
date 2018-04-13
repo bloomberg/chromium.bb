@@ -15,10 +15,10 @@ function fullscreen_test()
         // load event fires when both video elements are ready
         window.addEventListener("load", t.step_func(function()
         {
-            assert_true(hasFullscreenButton(v1),
-                        "fullscreen button shown when there is a video track");
-            assert_false(hasFullscreenButton(v2),
-                         "fullscreen button not shown when there is no video track");
+            assert_true(hasEnabledFullscreenButton(v1),
+                        "fullscreen button enabled when there is a video track");
+            assert_false(hasEnabledFullscreenButton(v2),
+                         "fullscreen button not enabled when there is no video track");
 
             // click the fullscreen button
             var coords = mediaControlsButtonCoordinates(v1, "fullscreen-button");
@@ -46,8 +46,8 @@ function fullscreen_iframe_test()
 
         v.addEventListener("loadeddata", t.step_func_done(function()
         {
-            assert_equals(hasFullscreenButton(v), iframe.allowFullscreen,
-                          "fullscreen button shown if and only if fullscreen is allowed");
+            assert_equals(hasEnabledFullscreenButton(v), iframe.allowFullscreen,
+                          "fullscreen button enabled if and only if fullscreen is allowed");
         }));
     });
 }
@@ -63,8 +63,8 @@ function fullscreen_not_supported_test()
 
         v.addEventListener("loadeddata", t.step_func_done(function()
         {
-            assert_false(hasFullscreenButton(v),
-                         "fullscreen button not show when fullscreen is not supported");
+            assert_false(hasEnabledFullscreenButton(v),
+                         "fullscreen button not enabled when fullscreen is not supported");
         }));
     });
 }

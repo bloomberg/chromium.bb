@@ -2,8 +2,8 @@
 // Minimum width is 48px.
 var NARROW_VIDEO_WIDTH = 40;
 var NORMAL_VIDEO_WIDTH = 200;
-// Minimum height is 116px.
-var NARROW_VIDEO_HEIGHT = 90;
+// Minimum height is 56px.
+var NARROW_VIDEO_HEIGHT = 50;
 var NORMAL_VIDEO_HEIGHT = 200;
 
 function assertOverlayPlayButtonVisible(videoElement) {

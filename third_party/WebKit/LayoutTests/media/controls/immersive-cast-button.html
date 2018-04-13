@@ -19,7 +19,7 @@ async_test(t => {
   internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
 
   video.addEventListener('canplaythrough', t.step_func_done(e => {
-    assert_equals(castButton(video).style.display, 'none');
+    assert_false(isCastButtonEnabled(video));
     assert_not_equals(mediaControlsButton(video, 'panel').style.display, 'none');
   }));
 });

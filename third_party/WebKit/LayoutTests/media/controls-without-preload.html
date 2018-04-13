@@ -1,6 +1,7 @@
 <html>
     <head>
         <script src=media-file.js></script>
+        <script src="media-controls.js"></script>
         <script>
             if (window.testRunner)
                 testRunner.waitUntilDone();
@@ -11,6 +12,7 @@
             {
                 setSrcByTagName("video", "content/test.ogv");
                 video = document.getElementsByTagName('video')[0];
+                enableTestMode(video);
                 video.load();
                 video.play();
                 video.addEventListener("canplaythrough", canPlayThrough);

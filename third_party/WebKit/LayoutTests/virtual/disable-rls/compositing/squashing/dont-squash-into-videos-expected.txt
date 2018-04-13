@@ -17,11 +17,6 @@
       "bounds": [100, 100]
     },
     {
-      "name": "LayoutFlexibleBox (relative positioned) DIV",
-      "bounds": [100, 58],
-      "drawsContent": false
-    },
-    {
       "name": "LayoutBlockFlow (positioned) DIV",
       "position": [50, 50],
       "bounds": [200, 200],

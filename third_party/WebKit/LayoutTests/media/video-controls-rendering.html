@@ -1,5 +1,6 @@
 <script src="media-file.js"></script>
 <script src="video-paint-test.js"></script>
+<script src="media-controls.js"></script>
 <body>
 <p>Test controls placement. </p>
 <div>
@@ -14,6 +15,10 @@
 <script>
 if (window.internals)
     window.internals.settings.setMockScrollbarsEnabled(true);
+const videos = document.getElementsByTagName('video');
+for (var i = 0; i < videos.length; ++i) {
+  enableTestMode(videos[i]);
+}
 init();
 setSrcByTagName('video', 'content/test.ogv');
 </script>
