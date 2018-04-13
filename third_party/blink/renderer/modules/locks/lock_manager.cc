@@ -92,6 +92,10 @@ class LockManager::LockRequestImpl final
   void Cancel() { binding_.Close(); }
 
   void Abort(const String& reason) override {
+    // Abort signal after acquisition should be ignored.
+    if (!manager_->IsPendingRequest(this))
+      return;
+
     manager_->RemovePendingRequest(this);
     binding_.Close();
 
@@ -321,6 +325,10 @@ void LockManager::AddPendingRequest(LockRequestImpl* request) {
 
 void LockManager::RemovePendingRequest(LockRequestImpl* request) {
   pending_requests_.erase(request);
+}
+
+bool LockManager::IsPendingRequest(LockRequestImpl* request) {
+  return pending_requests_.Contains(request);
 }
 
 void LockManager::Trace(blink::Visitor* visitor) {

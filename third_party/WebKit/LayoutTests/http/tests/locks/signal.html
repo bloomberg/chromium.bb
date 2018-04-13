@@ -8,6 +8,12 @@
 <script>
 'use strict';
 
+function makePromiseAndResolveFunc() {
+  let resolve;
+  const promise = new Promise(r => { resolve = r; });
+  return [promise, resolve];
+}
+
 promise_test(async t => {
   const res = uniqueName(t);
 
@@ -138,16 +144,67 @@ promise_test(async t => {
 
   const controller = new AbortController();
 
-  let got_lock = false;
-  await navigator.locks.request(res, async lock => {
-    got_lock = true;
-    // Now that we have the lock, aborting the request should be ignored,
-    // and the request() call should not reject.
-    controller.abort();
-  });
+  // Make a promise that resolves when the lock is acquired.
+  const [acquired_promise, acquired_func] = makePromiseAndResolveFunc();
 
-  assert_true(got_lock, 'Lock request should have succeeded');
+  // Request the lock.
+  let release_func;
+  const released_promise = navigator.locks.request(
+    res, {signal: controller.signal}, lock => {
+      acquired_func();
+
+      // Hold lock until release_func is called.
+      const [waiting_promise, waiting_func] = makePromiseAndResolveFunc();
+      release_func = waiting_func;
+      return waiting_promise;
+    });
+
+  // Wait for the lock to be acquired.
+  await acquired_promise;
+
+  // Signal an abort.
+  controller.abort();
+
+  // Release the lock.
+  release_func('resolved ok');
+
+  assert_equals(await released_promise, 'resolved ok',
+                'Lock released promise should not reject');
 
 }, 'Abort signaled after lock granted');
+
+promise_test(async t => {
+  const res = uniqueName(t);
+
+  const controller = new AbortController();
+
+  // Make a promise that resolves when the lock is acquired.
+  const [acquired_promise, acquired_func] = makePromiseAndResolveFunc();
+
+  // Request the lock.
+  let release_func;
+  const released_promise = navigator.locks.request(
+    res, {signal: controller.signal}, lock => {
+      acquired_func();
+
+      // Hold lock until release_func is called.
+      const [waiting_promise, waiting_func] = makePromiseAndResolveFunc();
+      release_func = waiting_func;
+      return waiting_promise;
+    });
+
+  // Wait for the lock to be acquired.
+  await acquired_promise;
+
+  // Release the lock.
+  release_func('resolved ok');
+
+  // Signal an abort.
+  controller.abort();
+
+  assert_equals(await released_promise, 'resolved ok',
+                'Lock released promise should not reject');
+
+}, 'Abort signaled after lock released');
 
 </script>
