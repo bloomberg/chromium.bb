@@ -10,6 +10,7 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,43 +23,6 @@
 namespace em = enterprise_management;
 
 namespace extensions {
-namespace {
-
-const char kMachineName[] = "machineName";
-const char kOSInfo[] = "osInfo";
-const char kOSUser[] = "osUser";
-
-bool UpdateJSONEncodedStringEntry(const base::Value& dict_value,
-                                  const char key[],
-                                  std::string* entry) {
-  if (const base::Value* value = dict_value.FindKey(key)) {
-    if (!value->is_dict() && !value->is_list())
-      return false;
-    base::JSONWriter::Write(*value, entry);
-  }
-  return true;
-}
-
-// Transfer the input from Json file to protobuf. Return nullptr if the input
-// is not valid.
-std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
-GenerateChromeDesktopReportRequest(const base::DictionaryValue& report) {
-  std::unique_ptr<em::ChromeDesktopReportRequest> request =
-      std::make_unique<em::ChromeDesktopReportRequest>();
-
-  if (!UpdateJSONEncodedStringEntry(report, kMachineName,
-                                    request->mutable_machine_name()) ||
-      !UpdateJSONEncodedStringEntry(report, kOSInfo,
-                                    request->mutable_os_info()) ||
-      !UpdateJSONEncodedStringEntry(report, kOSUser,
-                                    request->mutable_os_user())) {
-    return nullptr;
-  }
-  return request;
-}
-
-}  // namespace
-
 namespace enterprise_reporting {
 
 const char kInvalidInputErrorMessage[] = "The report is not valid.";
@@ -96,7 +60,9 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::Run() {
                  Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   std::unique_ptr<em::ChromeDesktopReportRequest> request =
-      GenerateChromeDesktopReportRequest(params->report.additional_properties);
+      GenerateChromeDesktopReportRequest(
+          params->report.additional_properties,
+          Profile::FromBrowserContext(browser_context()));
   if (!request) {
     return RespondNow(Error(enterprise_reporting::kInvalidInputErrorMessage));
   }
