@@ -5328,12 +5328,13 @@ void RenderFrameImpl::DidChangeManifest() {
     observer.DidChangeManifest();
 }
 
-void RenderFrameImpl::EnterFullscreen() {
-  Send(new FrameHostMsg_ToggleFullscreen(routing_id_, true));
+void RenderFrameImpl::EnterFullscreen(
+    const blink::WebFullscreenOptions& options) {
+  Send(new FrameHostMsg_EnterFullscreen(routing_id_, options));
 }
 
 void RenderFrameImpl::ExitFullscreen() {
-  Send(new FrameHostMsg_ToggleFullscreen(routing_id_, false));
+  Send(new FrameHostMsg_ExitFullscreen(routing_id_));
 }
 
 void RenderFrameImpl::SuddenTerminationDisablerChanged(

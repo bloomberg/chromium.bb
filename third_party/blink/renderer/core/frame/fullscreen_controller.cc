@@ -33,6 +33,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -40,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -133,7 +135,8 @@ void FullscreenController::DidExitFullscreen() {
   }
 }
 
-void FullscreenController::EnterFullscreen(LocalFrame& frame) {
+void FullscreenController::EnterFullscreen(LocalFrame& frame,
+                                           const FullscreenOptions& options) {
   // If already fullscreen or exiting fullscreen, synchronously call
   // |DidEnterFullscreen()|. When exiting, the coming |DidExitFullscreen()| call
   // will again notify all frames.
@@ -169,7 +172,11 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame) {
 
   DCHECK(state_ == State::kInitial ||
          state_ == State::kNeedsScrollAndScaleRestore);
-  GetWebFrameClient(frame).EnterFullscreen();
+  blink::WebFullscreenOptions blink_options;
+  // Only clone options if the feature is enabled.
+  if (RuntimeEnabledFeatures::FullscreenOptionsEnabled())
+    blink_options.prefers_navigation_bar = options.prefersNavigationBar();
+  GetWebFrameClient(frame).EnterFullscreen(blink_options);
 
   state_ = State::kEnteringFullscreen;
 }

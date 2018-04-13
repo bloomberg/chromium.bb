@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -330,7 +331,7 @@ void WebRemoteFrameImpl::WillEnterFullscreen() {
   // future, this should plumb in information about which request type
   // (prefixed or unprefixed) to use for firing fullscreen events.
   Fullscreen::RequestFullscreen(
-      *owner_element,
+      *owner_element, FullscreenOptions(),
       Fullscreen::RequestType::kPrefixedForCrossProcessDescendant);
 }
 

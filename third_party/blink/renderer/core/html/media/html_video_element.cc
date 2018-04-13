@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
@@ -394,8 +395,10 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
 }
 
 void HTMLVideoElement::webkitEnterFullscreen() {
-  if (!IsFullscreen())
-    Fullscreen::RequestFullscreen(*this, Fullscreen::RequestType::kPrefixed);
+  if (!IsFullscreen()) {
+    Fullscreen::RequestFullscreen(*this, FullscreenOptions(),
+                                  Fullscreen::RequestType::kPrefixed);
+  }
 }
 
 void HTMLVideoElement::webkitExitFullscreen() {

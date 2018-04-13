@@ -41,6 +41,7 @@
 namespace blink {
 
 class Element;
+class FullscreenOptions;
 class LocalFrame;
 class WebViewImpl;
 
@@ -53,7 +54,7 @@ class CORE_EXPORT FullscreenController {
 
   // Called by Fullscreen (via ChromeClient) to request entering or exiting
   // fullscreen.
-  void EnterFullscreen(LocalFrame&);
+  void EnterFullscreen(LocalFrame&, const FullscreenOptions&);
   void ExitFullscreen(LocalFrame&);
 
   // Called by content::RenderWidget (via WebWidget) to notify that we've

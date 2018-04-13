@@ -98,6 +98,7 @@ class ListValue;
 
 namespace blink {
 struct FramePolicy;
+struct WebFullscreenOptions;
 struct WebScrollIntoViewParams;
 }
 
@@ -842,7 +843,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnAccessibilitySnapshotResponse(
       int callback_id,
       const AXContentTreeUpdate& snapshot);
-  void OnToggleFullscreen(bool enter_fullscreen);
+  void OnEnterFullscreen(const blink::WebFullscreenOptions& options);
+  void OnExitFullscreen();
   void OnSuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type);

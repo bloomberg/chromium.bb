@@ -43,6 +43,7 @@
 namespace blink {
 
 class ComputedStyle;
+class FullscreenOptions;
 class LayoutFullScreen;
 
 // The Fullscreen class implements most of the Fullscreen API Standard,
@@ -79,7 +80,9 @@ class CORE_EXPORT Fullscreen final
   };
 
   static void RequestFullscreen(Element&);
-  static void RequestFullscreen(Element&, RequestType);
+  static void RequestFullscreen(Element&,
+                                const FullscreenOptions&,
+                                RequestType);
 
   static void FullyExitFullscreen(Document&);
   static void ExitFullscreen(Document&);

@@ -515,6 +515,10 @@
       status: "experimental",
     },
     {
+      name: "FullscreenOptions",
+      status: "test",
+    },
+    {
       name: "FullscreenUnprefixed",
       settable_from_internals: true,
       status: "experimental",

@@ -62,6 +62,7 @@ class Element;
 class FileChooser;
 class FloatPoint;
 class Frame;
+class FullscreenOptions;
 class GraphicsLayer;
 class HTMLFormControlElement;
 class HTMLInputElement;
@@ -250,7 +251,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}
 
-  virtual void EnterFullscreen(LocalFrame&) {}
+  virtual void EnterFullscreen(LocalFrame&, const FullscreenOptions&) {}
   virtual void ExitFullscreen(LocalFrame&) {}
   virtual void FullscreenElementChanged(Element* old_element,
                                         Element* new_element) {}

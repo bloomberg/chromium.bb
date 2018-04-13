@@ -66,6 +66,7 @@
 #include "third_party/blink/public/web/web_find_options.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
+#include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/gfx/geometry/rect.h"
@@ -152,6 +153,10 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
   IPC_STRUCT_TRAITS_MEMBER(match_case)
   IPC_STRUCT_TRAITS_MEMBER(find_next)
   IPC_STRUCT_TRAITS_MEMBER(force)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFullscreenOptions)
+  IPC_STRUCT_TRAITS_MEMBER(prefers_navigation_bar)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebScrollIntoViewParams::Alignment)
@@ -1622,7 +1627,11 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
 
 // Puts the browser into "tab fullscreen" mode for the sending renderer.
 // See the comment in chrome/browser/ui/browser.h for more details.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_ToggleFullscreen, bool /* enter_fullscreen */)
+IPC_MESSAGE_ROUTED1(FrameHostMsg_EnterFullscreen, blink::WebFullscreenOptions)
+
+// Exits the browser from "tab fullscreen" mode for the sending renderer.
+// See the comment in chrome/browser/ui/browser.h for more details.
+IPC_MESSAGE_ROUTED0(FrameHostMsg_ExitFullscreen)
 
 // Sent when a new sudden termination disabler condition is either introduced or
 // removed.

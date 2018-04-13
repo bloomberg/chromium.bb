@@ -158,7 +158,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                          LocalFrame*) override;
 
-  void EnterFullscreen(LocalFrame&) override;
+  void EnterFullscreen(LocalFrame&, const FullscreenOptions&) override;
   void ExitFullscreen(LocalFrame&) override;
   void FullscreenElementChanged(Element* old_element,
                                 Element* new_element) override;
