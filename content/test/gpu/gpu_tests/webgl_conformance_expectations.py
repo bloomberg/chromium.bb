@@ -4,14 +4,15 @@
 import os
 
 from gpu_tests.gpu_test_expectations import GpuTestExpectations
+from gpu_tests import webgl_test_util
 
 # See the GpuTestExpectations class for documentation.
 
 class WebGLConformanceExpectations(GpuTestExpectations):
-  def __init__(self, conformance_path, url_prefixes=None, is_asan=False):
-    self.conformance_path = conformance_path
+  def __init__(self, is_asan=False):
+    self.conformance_path = webgl_test_util.conformance_path
     super(WebGLConformanceExpectations, self).__init__(
-      url_prefixes=url_prefixes, is_asan=is_asan)
+      url_prefixes=webgl_test_util.url_prefixes_to_trim, is_asan=is_asan)
 
   def Fail(self, pattern, condition=None, bug=None):
     self.CheckPatternIsValid(pattern)

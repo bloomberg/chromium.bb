@@ -174,16 +174,22 @@ class TestExpectations(object):
   def _BuildExpectationsCache(self, browser):
     # Turn off name matching while building the cache.
     self._skip_matching_names = True
+    expectations_with_collisions = []
     for e in self._expectations:
       if self._ExpectationAppliesToTest(e, browser, None, None):
         if self._HasWildcardCharacters(e.pattern):
           self._expectations_with_wildcards.append(e)
         else:
           if e.pattern in self._expectations_by_pattern:
-            print "WARNING: Non-wildcard pattern collision for", e.pattern
+            # This is a fatal error. Report it after building the cache.
+            expectations_with_collisions.append(e.pattern)
           self._expectations_by_pattern[e.pattern] = e
     self._built_expectation_cache = True
     self._skip_matching_names = False
+    if expectations_with_collisions:
+      raise Exception('FATAL ERROR: the following tests had colliding ' +
+                      'expectations in the test expectations: ' +
+                      ' '.join(expectations_with_collisions))
 
   def _GetNormalizedURL(self, url, browser):
     # Telemetry uses backslashes in its file:// URLs on Windows,
