@@ -931,6 +931,8 @@ action("repackage_extracted_native_jars") {
   ]
 
   jar_excluded_patterns = [
+    # Excludes Android support libraries crbug.com/832770.
+    "android/*",
     "*/library_loader/*.class",
     "*/multidex/*.class",
     "*/process_launcher/*.class",
