@@ -237,7 +237,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     // work.
     virtual void ScheduleDelayedWork(base::OnceClosure task) = 0;
 
-    virtual bool UseVirtualizedGLContexts() = 0;
+    virtual bool ForceVirtualizedGLContexts() = 0;
     virtual SyncPointManager* sync_point_manager() = 0;
     virtual bool BlockThreadOnWaitSyncToken() const = 0;
 
@@ -280,20 +280,20 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     SurfaceHandle window;
     const ContextCreationAttribs& attribs;
     Capabilities* capabilities;  // Ouptut.
-    InProcessCommandBuffer* context_group;
+    InProcessCommandBuffer* share_command_buffer;
     ImageFactory* image_factory;
 
     InitializeOnGpuThreadParams(bool is_offscreen,
                                 SurfaceHandle window,
                                 const ContextCreationAttribs& attribs,
                                 Capabilities* capabilities,
-                                InProcessCommandBuffer* share_group,
+                                InProcessCommandBuffer* share_command_buffer,
                                 ImageFactory* image_factory)
         : is_offscreen(is_offscreen),
           window(window),
           attribs(attribs),
           capabilities(capabilities),
-          context_group(share_group),
+          share_command_buffer(share_command_buffer),
           image_factory(image_factory) {}
   };
 

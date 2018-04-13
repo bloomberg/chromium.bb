@@ -49,7 +49,7 @@ class DeferredGpuCommandService
 
   void ScheduleTask(base::OnceClosure task) override;
   void ScheduleDelayedWork(base::OnceClosure task) override;
-  bool UseVirtualizedGLContexts() override;
+  bool ForceVirtualizedGLContexts() override;
   gpu::SyncPointManager* sync_point_manager() override;
 
   void RunTasks();
