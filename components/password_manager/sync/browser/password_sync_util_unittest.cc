@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_reuse_defines.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -70,7 +71,7 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
   }
 }
 
-TEST_F(PasswordSyncUtilTest, IsGoogleSyncAccount) {
+TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
   const struct {
     PasswordForm form;
     std::string fake_sync_username;
@@ -91,12 +92,12 @@ TEST_F(PasswordSyncUtilTest, IsGoogleSyncAccount) {
     SetSyncingPasswords(true);
     FakeSigninAs(kTestCases[i].fake_sync_username);
     EXPECT_EQ(kTestCases[i].expected_result,
-              IsGoogleSyncAccount(kTestCases[i].form, sync_service(),
-                                  signin_manager()));
+              IsSyncAccountCredential(kTestCases[i].form, sync_service(),
+                                      signin_manager()));
   }
 }
 
-#if !defined(OS_IOS)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 class PasswordSyncUtilEnterpriseTest : public SyncUsernameTestBase {
  public:
   void SetUp() override {
@@ -113,8 +114,7 @@ class PasswordSyncUtilEnterpriseTest : public SyncUsernameTestBase {
   base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(PasswordSyncUtilEnterpriseTest,
-       IsSyncAccountCredentialForEnterpriseSSO) {
+TEST_F(PasswordSyncUtilEnterpriseTest, ShouldSavePasswordHash) {
   prefs_.SetString(prefs::kPasswordProtectionChangePasswordURL,
                    "https://pwchange.mydomain.com/");
   base::ListValue login_url;
@@ -155,16 +155,18 @@ TEST_F(PasswordSyncUtilEnterpriseTest,
        "sync_user@mydomain.com", false},
   };
 
-  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    SCOPED_TRACE(testing::Message() << "i=" << i);
-    SetSyncingPasswords(true);
-    FakeSigninAs(kTestCases[i].fake_sync_username);
-    EXPECT_EQ(kTestCases[i].expected_result,
-              IsSyncAccountCredential(kTestCases[i].form, sync_service(),
-                                      signin_manager(), &prefs_));
+  for (bool syncing_passwords : {false, true}) {
+    for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+      SCOPED_TRACE(testing::Message() << "i=" << i);
+      SetSyncingPasswords(syncing_passwords);
+      FakeSigninAs(kTestCases[i].fake_sync_username);
+      EXPECT_EQ(kTestCases[i].expected_result,
+                ShouldSavePasswordHash(kTestCases[i].form, signin_manager(),
+                                       &prefs_));
+    }
   }
 }
-#endif  // !OS_IOS
+#endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
 }  // namespace sync_util
 }  // namespace password_manager

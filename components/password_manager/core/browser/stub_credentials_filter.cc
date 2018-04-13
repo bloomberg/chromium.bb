@@ -22,6 +22,11 @@ bool StubCredentialsFilter::ShouldSave(
   return true;
 }
 
+bool StubCredentialsFilter::ShouldSavePasswordHash(
+    const autofill::PasswordForm& form) const {
+  return false;
+}
+
 void StubCredentialsFilter::ReportFormLoginSuccess(
     const PasswordFormManager& form_manager) const {}
 

@@ -243,8 +243,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
   }
   if (password_manager::sync_util::IsSyncAccountCredential(
           *password_list_[index], sync_service,
-          SigninManagerFactory::GetForProfile(password_view_->GetProfile()),
-          password_view_->GetProfile()->GetPrefs())) {
+          SigninManagerFactory::GetForProfile(password_view_->GetProfile()))) {
     base::RecordAction(
         base::UserMetricsAction("PasswordManager_SyncCredentialShown"));
   }
