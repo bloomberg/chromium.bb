@@ -1761,7 +1761,8 @@ public class ChromeTabbedActivity
         MultiWindowUtils.setOpenInOtherWindowIntentExtras(intent, this, targetActivity);
         MultiWindowUtils.onMultiInstanceModeStarted();
 
-        tab.detachAndStartReparenting(intent, null, null);
+        tab.detachAndStartReparenting(
+                intent, MultiWindowUtils.getOpenInOtherWindowActivityOptions(this), null);
     }
 
     @Override
