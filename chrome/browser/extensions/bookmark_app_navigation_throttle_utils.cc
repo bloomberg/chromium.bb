@@ -8,7 +8,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "content/public/browser/browser_context.h"
@@ -113,6 +115,20 @@ void OpenNewForegroundTab(content::NavigationHandle* navigation_handle) {
       navigation_handle->WasStartedFromContextMenu();
 
   source->OpenURL(url_params);
+}
+
+void ReparentIntoPopup(content::WebContents* source, bool has_user_gesture) {
+  Browser* source_browser = chrome::FindBrowserWithWebContents(source);
+
+  Browser::CreateParams browser_params(
+      Browser::TYPE_POPUP, source_browser->profile(), has_user_gesture);
+  browser_params.initial_bounds = source_browser->override_bounds();
+  Browser* popup_browser = new Browser(browser_params);
+  TabStripModel* source_tabstrip = source_browser->tab_strip_model();
+  popup_browser->tab_strip_model()->AppendWebContents(
+      source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
+      true /* foreground */);
+  popup_browser->window()->Show();
 }
 
 }  // namespace extensions

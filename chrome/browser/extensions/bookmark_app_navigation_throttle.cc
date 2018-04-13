@@ -113,6 +113,16 @@ BookmarkAppNavigationThrottle::OpenForegroundTabIfOutOfScope(bool is_redirect) {
     return content::NavigationThrottle::PROCEED;
   }
 
+  if (source->GetController().IsInitialNavigation()) {
+    DVLOG(1) << "In-app initial navigation to out-of-scope URL. "
+             << "Opening in popup.";
+    RecordBookmarkAppNavigationThrottleResult(
+        BookmarkAppNavigationThrottleResult::
+            kReparentIntoPopupProceedOutOfScopeInitialNavigation);
+    ReparentIntoPopup(source, navigation_handle()->HasUserGesture());
+    return content::NavigationThrottle::PROCEED;
+  }
+
   DVLOG(1) << "Open in new tab.";
   RecordBookmarkAppNavigationThrottleResult(
       BookmarkAppNavigationThrottleResult::kDeferOpenNewTabInAppOutOfScope);

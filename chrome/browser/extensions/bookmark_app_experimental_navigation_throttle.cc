@@ -397,6 +397,17 @@ BookmarkAppExperimentalNavigationThrottle::ProcessNavigation(bool is_redirect) {
     // TODO(crbug.com/774895): Stop bouncing back to the browser once the
     // experience for out-of-scope navigations improves.
     DVLOG(1) << "Open in new tab.";
+
+    if (source->GetController().IsInitialNavigation()) {
+      DVLOG(1) << "In-app initial navigation to out-of-scope URL. "
+               << "Opening in popup.";
+      RecordBookmarkAppNavigationThrottleResult(
+          BookmarkAppNavigationThrottleResult::
+              kReparentIntoPopupProceedOutOfScopeInitialNavigation);
+      ReparentIntoPopup(source, navigation_handle()->HasUserGesture());
+      return content::NavigationThrottle::PROCEED;
+    }
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(

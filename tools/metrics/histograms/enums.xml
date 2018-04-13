@@ -3327,6 +3327,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="22" label="From app or tab to new popup window."/>
   <int value="23"
       label="Switching to an existing tab. Triggered from the omnibox."/>
+  <int value="24" label="From out-of-scope app window to popup."/>
 </enum>
 
 <enum name="BookmarkLaunchLocation">
