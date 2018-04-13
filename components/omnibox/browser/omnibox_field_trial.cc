@@ -32,11 +32,6 @@ using metrics::OmniboxEventProto;
 
 namespace omnibox {
 
-// Feature used to enable the transmission of entity suggestions from GWS
-// to this client.
-const base::Feature kOmniboxEntitySuggestions{
-    "OmniboxEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable entity suggestion images and enhanced presentation
 // showing more context and descriptive text about the entity.
 const base::Feature kOmniboxRichEntitySuggestions{
