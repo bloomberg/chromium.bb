@@ -57,6 +57,7 @@ class CORE_EXPORT NGPhysicalBoxFragment final
  private:
   Vector<NGBaseline> baselines_;
   NGPixelSnappedPhysicalBoxStrut padding_;
+  NGPhysicalOffsetRect descendant_outlines_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalBoxFragment,

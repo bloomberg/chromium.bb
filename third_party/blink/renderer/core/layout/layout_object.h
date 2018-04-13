@@ -1962,6 +1962,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return bitfields_.ContainsInlineWithOutlineAndContinuation();
   }
 
+  void SetOutlineMayBeAffectedByDescendants(bool b) {
+    bitfields_.SetOutlineMayBeAffectedByDescendants(b);
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2135,9 +2139,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetContainsInlineWithOutlineAndContinuation(b);
   }
 
-  void SetOutlineMayBeAffectedByDescendants(bool b) {
-    bitfields_.SetOutlineMayBeAffectedByDescendants(b);
-  }
   void SetPreviousOutlineMayBeAffectedByDescendants(bool b) {
     bitfields_.SetPreviousOutlineMayBeAffectedByDescendants(b);
   }

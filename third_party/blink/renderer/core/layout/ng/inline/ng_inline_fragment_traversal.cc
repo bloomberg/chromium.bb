@@ -24,6 +24,9 @@ void CollectInlineFragments(const NGPhysicalContainerFragment& container,
                             NGPhysicalOffset offset_to_container_box,
                             Filter& filter,
                             Vector<Result, inline_capacity>* results) {
+  DCHECK(container.IsInline() || container.IsLineBox() ||
+         (container.IsBlockFlow() &&
+          ToNGPhysicalBoxFragment(container).ChildrenInline()));
   for (const auto& child : container.Children()) {
     NGPhysicalOffset child_offset = child->Offset() + offset_to_container_box;
 

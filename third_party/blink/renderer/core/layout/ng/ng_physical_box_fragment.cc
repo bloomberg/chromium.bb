@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 
 namespace blink {
 
@@ -36,6 +37,21 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   DCHECK(baselines.IsEmpty());  // Ensure move semantics is used.
   is_old_layout_root_ = is_old_layout_root;
   border_edge_ = border_edges;
+
+  // Compute visual contribution from descendant outlines.
+  NGOutlineUtils::FragmentMap anchor_fragment_map;
+  NGOutlineUtils::OutlineRectMap outline_rect_map;
+  NGOutlineUtils::CollectDescendantOutlines(
+      *this, NGPhysicalOffset(), &anchor_fragment_map, &outline_rect_map);
+  for (auto& anchor_iter : anchor_fragment_map) {
+    const NGPhysicalFragment* fragment = anchor_iter.value;
+    Vector<LayoutRect>* outline_rects =
+        &outline_rect_map.find(anchor_iter.key)->value;
+    descendant_outlines_.Unite(NGOutlineUtils::ComputeEnclosingOutline(
+        fragment->Style(), *outline_rects));
+  }
+  GetLayoutObject()->SetOutlineMayBeAffectedByDescendants(
+      !descendant_outlines_.IsEmpty());
 }
 
 const NGBaseline* NGPhysicalBoxFragment::Baseline(
@@ -75,32 +91,27 @@ bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfVisualRect() const {
   const ComputedStyle& style = Style();
-  if (!style.HasVisualOverflowingEffect())
-    return {{}, Size()};
-
-  LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object);
-  if (layout_object->IsBox()) {
-    LayoutRect visual_rect({}, Size().ToLayoutSize());
-    visual_rect.Expand(style.BoxDecorationOutsets());
-
-    if (style.HasOutline()) {
-      Vector<LayoutRect> outline_rects;
-      // The result rects are in coordinates of this object's border box.
-      AddSelfOutlineRects(&outline_rects, LayoutPoint());
-      LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
-      rect.Inflate(style.OutlineOutsetExtent());
-      visual_rect.Unite(rect);
-    }
-
-    return NGPhysicalOffsetRect(visual_rect);
-  }
-
-  // TODO(kojii): Implement for inline boxes.
-  DCHECK(layout_object->IsLayoutInline());
   LayoutRect visual_rect({}, Size().ToLayoutSize());
-  visual_rect.Expand(style.BoxDecorationOutsets());
 
+  DCHECK(GetLayoutObject());
+  if (style.HasVisualOverflowingEffect()) {
+    if (GetLayoutObject()->IsBox()) {
+      visual_rect.Expand(style.BoxDecorationOutsets());
+      if (style.HasOutline()) {
+        Vector<LayoutRect> outline_rects;
+        // The result rects are in coordinates of this object's border box.
+        AddSelfOutlineRects(&outline_rects, LayoutPoint());
+        LayoutRect rect = UnionRectEvenIfEmpty(outline_rects);
+        rect.Inflate(style.OutlineOutsetExtent());
+        visual_rect.Unite(rect);
+      }
+    } else {
+      // TODO(kojii): Implement for inline boxes.
+      DCHECK(GetLayoutObject()->IsLayoutInline());
+      visual_rect.Expand(style.BoxDecorationOutsets());
+    }
+  }
+  visual_rect.Unite(descendant_outlines_.ToLayoutRect());
   return NGPhysicalOffsetRect(visual_rect);
 }
 
