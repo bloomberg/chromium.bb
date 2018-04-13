@@ -27,6 +27,7 @@ const CGFloat kArrowDownMargin = 12.;
 const CGFloat kHorizontalAvatarMargin = 16.;
 const CGFloat kVerticalMargin = 12.;
 // Colors
+const int kHeaderBackgroundColor = 0xf1f3f4;
 const CGFloat kTitleTextColorAlpha = .87;
 const CGFloat kSubtitleTextColorAlpha = .54;
 
@@ -58,10 +59,7 @@ const CGFloat kSubtitleTextColorAlpha = .54;
   self = [super initWithFrame:frame];
   if (self) {
     self.layer.cornerRadius = kIdentityPickerViewRadius;
-    self.backgroundColor = [UIColor colorWithRed:241. / 255.
-                                           green:243. / 255.
-                                            blue:244. / 255.
-                                           alpha:1.];
+    self.backgroundColor = UIColorFromRGB(kHeaderBackgroundColor);
     // Adding view elements inside.
     // Ink view.
     _inkView = [[MDCInkView alloc] initWithFrame:CGRectZero];
