@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
+#include "third_party/re2/src/re2/re2.h"
 
 namespace chromecast {
 namespace bluetooth {
@@ -35,6 +36,13 @@ bool ScanFilter::Matches(const LeScanResult& scan_result) const {
     }
 
     if (!base::ContainsValue(*all_uuids, *service_uuid)) {
+      return false;
+    }
+  }
+
+  if (!name && regex_name) {
+    base::Optional<std::string> scan_name = scan_result.Name();
+    if (!scan_name || !RE2::PartialMatch(*scan_name, *regex_name)) {
       return false;
     }
   }
