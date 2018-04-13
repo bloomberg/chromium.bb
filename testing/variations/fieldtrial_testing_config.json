@@ -8,9 +8,9 @@
             ],
             "experiments": [
                 {
-                    "name": "DicePrepareMigration",
+                    "name": "DiceFixAuthErrors",
                     "params": {
-                        "method": "dice_prepare_migration_new_endpoint"
+                        "method": "dice_fix_auth_errors"
                     },
                     "enable_features": [
                         "AccountConsistency"
