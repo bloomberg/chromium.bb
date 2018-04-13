@@ -46,7 +46,9 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
   const std::string& password() { return password_; }
   bool has_received_failure() { return has_received_failure_; }
   bool has_sent_request() { return has_sent_request_; }
-  ConnectTetheringResponse_ResponseCode error_code() { return error_code_; }
+  ConnectTetheringOperation::HostResponseErrorCode error_code() {
+    return error_code_;
+  }
 
   // ConnectTetheringOperation::Observer:
   void OnConnectTetheringRequestSent(
@@ -65,7 +67,7 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
 
   void OnConnectTetheringFailure(
       const cryptauth::RemoteDevice& remote_device,
-      ConnectTetheringResponse_ResponseCode error_code) override {
+      ConnectTetheringOperation::HostResponseErrorCode error_code) override {
     has_received_failure_ = true;
     remote_device_ = remote_device;
     error_code_ = error_code;
@@ -77,7 +79,7 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
   std::string password_;
   bool has_received_failure_ = false;
   bool has_sent_request_ = false;
-  ConnectTetheringResponse_ResponseCode error_code_;
+  ConnectTetheringOperation::HostResponseErrorCode error_code_;
 };
 
 std::string CreateConnectTetheringRequestString() {
@@ -154,6 +156,7 @@ class ConnectTetheringOperationTest : public testing::Test {
 
   void SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode response_code,
+      ConnectTetheringOperation::HostResponseErrorCode expected_error_code,
       bool use_proto_without_ssid_and_password) {
     test_clock_.Advance(kConnectTetheringResponseTime);
 
@@ -184,7 +187,7 @@ class ConnectTetheringOperationTest : public testing::Test {
       EXPECT_EQ(std::string(kTestPassword), test_observer_->password());
     } else {
       EXPECT_TRUE(test_observer_->has_received_failure());
-      EXPECT_EQ(expected_response_code, test_observer_->error_code());
+      EXPECT_EQ(expected_error_code, test_observer_->error_code());
     }
 
     histogram_tester_.ExpectTimeBucketCount(
@@ -228,6 +231,8 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessButInvalidResponse) {
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_SUCCESS,
+      ConnectTetheringOperation::HostResponseErrorCode::
+          INVALID_HOTSPOT_CREDENTIALS,
       true /* use_proto_without_ssid_and_password */);
 }
 
@@ -239,6 +244,7 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessWithValidResponse) {
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_SUCCESS,
+      ConnectTetheringOperation::HostResponseErrorCode::UNKNOWN_ERROR,
       false /* use_proto_without_ssid_and_password */);
 }
 
@@ -251,6 +257,7 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_UnknownError) {
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
+      ConnectTetheringOperation::HostResponseErrorCode::UNKNOWN_ERROR,
       false /* use_proto_without_ssid_and_password */);
 }
 
@@ -263,6 +270,7 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_ProvisioningFailed) {
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
           ConnectTetheringResponse_ResponseCode_PROVISIONING_FAILED,
+      ConnectTetheringOperation::HostResponseErrorCode::PROVISIONING_FAILED,
       false /* use_proto_without_ssid_and_password */);
 }
 
@@ -278,8 +286,7 @@ TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
 
   // The maximum number of connection failures has occurred.
   EXPECT_TRUE(test_observer_->has_received_failure());
-  EXPECT_EQ(ConnectTetheringResponse_ResponseCode::
-                ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
+  EXPECT_EQ(ConnectTetheringOperation::HostResponseErrorCode::NO_RESPONSE,
             test_observer_->error_code());
 
   histogram_tester_.ExpectTotalCount(

@@ -202,7 +202,7 @@ void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
 
 void TetherConnectorImpl::OnConnectTetheringFailure(
     const cryptauth::RemoteDevice& remote_device,
-    ConnectTetheringResponse_ResponseCode error_code) {
+    ConnectTetheringOperation::HostResponseErrorCode error_code) {
   std::string device_id_copy = remote_device.GetDeviceId();
   if (device_id_pending_connection_ != device_id_copy) {
     // If the failure was part of a previous attempt for a different device,
@@ -366,17 +366,15 @@ void TetherConnectorImpl::OnWifiConnection(
 HostConnectionMetricsLogger::ConnectionToHostResult
 TetherConnectorImpl::GetConnectionToHostResultFromErrorCode(
     const std::string& device_id,
-    ConnectTetheringResponse_ResponseCode error_code) {
+    ConnectTetheringOperation::HostResponseErrorCode error_code) {
   if (error_code ==
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_PROVISIONING_FAILED) {
+      ConnectTetheringOperation::HostResponseErrorCode::PROVISIONING_FAILED) {
     return HostConnectionMetricsLogger::ConnectionToHostResult::
         CONNECTION_RESULT_PROVISIONING_FAILED;
   }
 
   if (error_code ==
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_TETHERING_TIMEOUT) {
+      ConnectTetheringOperation::HostResponseErrorCode::TETHERING_TIMEOUT) {
     const std::string tether_network_guid =
         device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
             device_id);
@@ -390,34 +388,43 @@ TetherConnectorImpl::GetConnectionToHostResultFromErrorCode(
   }
 
   if (error_code ==
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_TETHERING_UNSUPPORTED) {
+      ConnectTetheringOperation::HostResponseErrorCode::TETHERING_UNSUPPORTED) {
     return HostConnectionMetricsLogger::ConnectionToHostResult::
         CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED;
   }
 
-  if (error_code == ConnectTetheringResponse_ResponseCode::
-                        ConnectTetheringResponse_ResponseCode_NO_CELL_DATA) {
+  if (error_code ==
+      ConnectTetheringOperation::HostResponseErrorCode::NO_CELL_DATA) {
     return HostConnectionMetricsLogger::ConnectionToHostResult::
         CONNECTION_RESULT_FAILURE_NO_CELL_DATA;
   }
 
-  if (error_code ==
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_ENABLING_HOTSPOT_FAILED) {
+  if (error_code == ConnectTetheringOperation::HostResponseErrorCode::
+                        ENABLING_HOTSPOT_FAILED) {
     return HostConnectionMetricsLogger::ConnectionToHostResult::
         CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED;
   }
 
-  if (error_code ==
-      ConnectTetheringResponse_ResponseCode::
-          ConnectTetheringResponse_ResponseCode_ENABLING_HOTSPOT_TIMEOUT) {
+  if (error_code == ConnectTetheringOperation::HostResponseErrorCode::
+                        ENABLING_HOTSPOT_TIMEOUT) {
     return HostConnectionMetricsLogger::ConnectionToHostResult::
         CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT;
   }
 
+  if (error_code ==
+      ConnectTetheringOperation::HostResponseErrorCode::UNKNOWN_ERROR) {
+    return HostConnectionMetricsLogger::ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR;
+  }
+
+  if (error_code == ConnectTetheringOperation::HostResponseErrorCode::
+                        INVALID_HOTSPOT_CREDENTIALS) {
+    return HostConnectionMetricsLogger::ConnectionToHostResult::
+        CONNECTION_RESULT_FAILURE_INVALID_HOTSPOT_CREDENTIALS;
+  }
+
   return HostConnectionMetricsLogger::ConnectionToHostResult::
-      CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR;
+      CONNECTION_RESULT_FAILURE_NO_RESPONSE;
 }
 
 }  // namespace tether

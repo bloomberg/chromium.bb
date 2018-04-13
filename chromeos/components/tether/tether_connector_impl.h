@@ -69,7 +69,7 @@ class TetherConnectorImpl : public TetherConnector,
       const std::string& password) override;
   void OnConnectTetheringFailure(
       const cryptauth::RemoteDevice& remote_device,
-      ConnectTetheringResponse_ResponseCode error_code) override;
+      ConnectTetheringOperation::HostResponseErrorCode error_code) override;
 
  private:
   friend class TetherConnectorImplTest;
@@ -88,7 +88,7 @@ class TetherConnectorImpl : public TetherConnector,
   HostConnectionMetricsLogger::ConnectionToHostResult
   GetConnectionToHostResultFromErrorCode(
       const std::string& device_id,
-      ConnectTetheringResponse_ResponseCode error_code);
+      ConnectTetheringOperation::HostResponseErrorCode error_code);
 
   NetworkConnectionHandler* network_connection_handler_;
   NetworkStateHandler* network_state_handler_;
