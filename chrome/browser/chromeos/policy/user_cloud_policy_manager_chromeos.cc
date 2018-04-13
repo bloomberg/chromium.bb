@@ -30,8 +30,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
@@ -456,9 +454,10 @@ void UserCloudPolicyManagerChromeOS::SetPolicyRequired(bool policy_required) {
     base::CommandLine::StringVector flags;
     flags.assign(command_line.argv().begin() + 1, command_line.argv().end());
     DCHECK_EQ(1u, flags.size());
-    chromeos::DBusThreadManager::Get()
-        ->GetSessionManagerClient()
-        ->SetFlagsForUser(cryptohome::Identification(account_id_), flags);
+    chromeos::UserSessionManager::GetInstance()->SetSwitchesForUser(
+        account_id_,
+        chromeos::UserSessionManager::CommandLineSwitchesType::kSessionControl,
+        flags);
   }
 }
 

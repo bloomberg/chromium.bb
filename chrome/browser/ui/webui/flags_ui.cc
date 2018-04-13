@@ -46,10 +46,8 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
-#include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #endif
 
@@ -231,13 +229,13 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   // argv[0] is the program name |base::CommandLine::NO_PROGRAM|.
   flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
   VLOG(1) << "Restarting to apply per-session flags...";
-  chromeos::DBusThreadManager::Get()
-      ->GetSessionManagerClient()
-      ->SetFlagsForUser(
-          cryptohome::Identification(user_manager::UserManager::Get()
-                                         ->GetActiveUser()
-                                         ->GetAccountId()),
-          flags);
+  AccountId account_id =
+      user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
+  chromeos::UserSessionManager::GetInstance()->SetSwitchesForUser(
+      account_id,
+      chromeos::UserSessionManager::CommandLineSwitchesType::
+          kPolicyAndFlagsAndKioskControl,
+      flags);
 #endif
   chrome::AttemptRestart();
 }
