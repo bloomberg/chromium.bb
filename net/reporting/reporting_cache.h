@@ -76,6 +76,10 @@ class NET_EXPORT ReportingCache {
   virtual void GetReports(
       std::vector<const ReportingReport*>* reports_out) const = 0;
 
+  // Gets all reports in the cache, including pending and doomed reports, as a
+  // base::Value.
+  virtual base::Value GetReportsAsValue() const = 0;
+
   // Gets all reports in the cache that aren't pending. The returned pointers
   // are valid as long as either no calls to |RemoveReports| have happened or
   // the reports' |pending| flag has been set to true using |SetReportsPending|.
@@ -138,6 +142,10 @@ class NET_EXPORT ReportingCache {
   // (Clears any existing data in |*clients_out|.)
   virtual void GetClients(
       std::vector<const ReportingClient*>* clients_out) const = 0;
+
+  // Gets information about all of the clients in the cache, encoded as a
+  // base::Value.
+  virtual base::Value GetClientsAsValue() const = 0;
 
   // Gets all of the clients configured for a particular origin in a particular
   // group. The returned pointers are only guaranteed to be valid if no calls
