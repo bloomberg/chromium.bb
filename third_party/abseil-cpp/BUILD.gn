@@ -151,6 +151,10 @@ config("absl_test_cflags_cc") {
 
 config("absl_exceptions_cflags_cc") {
   cflags_cc = [
-    "-fexceptions",
+    # Enable exception handling.
+    # It seems clang-cl does not support -fexception. Using the MSVC flag
+    # fixes the problem.
+    # "-fexceptions",
+    "/GX",
   ]
 }
