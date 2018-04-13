@@ -2928,7 +2928,10 @@ class TestGitCl(TestCase):
     cl._codereview_impl.SubmitIssue = lambda wait_for_merge: None
     out = StringIO.StringIO()
     self.mock(sys, 'stdout', out)
-    self.assertEqual(0, cl.CMDLand(force=True, bypass_hooks=True, verbose=True))
+    self.assertEqual(0, cl.CMDLand(force=True,
+                                   bypass_hooks=True,
+                                   verbose=True,
+                                   parallel=False))
     self.assertRegexpMatches(out.getvalue(), 'Issue.*123 has been submitted')
     self.assertRegexpMatches(out.getvalue(), 'Landed as: .*deadbeef')
 

@@ -2716,7 +2716,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       raise
     return data
 
-  def CMDLand(self, force, bypass_hooks, verbose):
+  def CMDLand(self, force, bypass_hooks, verbose, parallel):
     if git_common.is_dirty_git_tree('land'):
       return 1
     detail = self._GetChangeDetail(['CURRENT_REVISION', 'LABELS'])
@@ -2749,7 +2749,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           committing=True,
           may_prompt=not force,
           verbose=verbose,
-          change=self.GetChange(self.GetCommonAncestorWithUpstream(), None))
+          change=self.GetChange(self.GetCommonAncestorWithUpstream(), None),
+          parallel=parallel)
       if not hook_results.should_continue():
         return 1
 
@@ -5151,7 +5152,7 @@ def CMDland(parser, args):
                  '  If you would rather have `git cl land` upload '
                  'automatically for you, see http://crbug.com/642759')
   return cl._codereview_impl.CMDLand(options.force, options.bypass_hooks,
-                                     options.verbose)
+                                     options.verbose, options.parallel)
 
 
 def PushToGitWithAutoRebase(remote, branch, original_description,
