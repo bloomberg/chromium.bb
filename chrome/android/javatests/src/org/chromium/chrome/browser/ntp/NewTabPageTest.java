@@ -632,8 +632,9 @@ public class NewTabPageTest {
         RecyclerView recyclerView = ntp.getNewTabPageView().getRecyclerView();
         NewTabPageAdapter adapter = (NewTabPageAdapter) recyclerView.getAdapter();
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
-        View view = recyclerView.findViewHolderForAdapterPosition(
-                adapter.getFirstHeaderPosition()).itemView;
+        View view = ThreadUtils.runOnUiThreadBlocking(
+                () -> recyclerView.findViewHolderForAdapterPosition(
+                        adapter.getFirstHeaderPosition()).itemView);
 
         // Check header is expanded.
         mRenderTestRule.render(view, "expandable_header_expanded");
