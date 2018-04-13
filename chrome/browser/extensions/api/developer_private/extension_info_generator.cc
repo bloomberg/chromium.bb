@@ -402,7 +402,8 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   // File access.
   ManagementPolicy* management_policy = extension_system_->management_policy();
   info->file_access.is_enabled =
-      extension.wants_file_access() &&
+      (extension.wants_file_access() ||
+       Manifest::ShouldAlwaysAllowFileAccess(extension.location())) &&
       management_policy->UserMayModifySettings(&extension, nullptr);
   info->file_access.is_active =
       util::AllowFileAccess(extension.id(), browser_context_);
