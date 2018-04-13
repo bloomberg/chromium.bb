@@ -91,6 +91,12 @@ var AllCategoryIndex = 0;
 var OnlineCategoriesOffset = 1;
 
 /**
+ * The following values should be kept in sync with the style sheet.
+ */
+var GRID_IMAGE_WIDTH_CSS = 160;
+var GRID_IMAGE_PADDING_CSS = 8;
+
+/**
  * Returns a translated string.
  *
  * Wrapper function to make dealing with translated strings more concise.
@@ -118,6 +124,21 @@ function getBaseName(file_path) {
 function getSelectedLayout() {
   var setWallpaperLayout = $('set-wallpaper-layout');
   return setWallpaperLayout.options[setWallpaperLayout.selectedIndex].value;
+}
+
+/**
+ * Helper function to center the element.
+ * @param {Object} element The element to be centered.
+ * @param {number} totalWidth The total width. An empty value disables centering
+ *     horizontally.
+ * @param {number} totalHeight The total height. An empty value disables
+ *     centering vertically.
+ */
+function centerElement(element, totalWidth, totalHeight) {
+  if (totalWidth)
+    element.style.left = (totalWidth - element.offsetWidth) / 2 + 'px';
+  if (totalHeight)
+    element.style.top = (totalHeight - element.offsetHeight) / 2 + 'px';
 }
 
 /**
@@ -271,18 +292,17 @@ WallpaperManager.prototype.getCollectionsInfo_ = function() {
  * @private
  */
 WallpaperManager.prototype.showCollection_ = function(index) {
-  // Clear the 'no images' message if there's any.
-  this.document_.body.classList.remove('no-images');
   var collectionId = this.collectionsInfo_[index]['collectionId'];
   if (!(collectionId in this.imagesInfoMap_)) {
     console.error('Attempt to display images with an unknown collection id.');
+    this.toggleNoImagesVisibility_(true);
     return;
   }
   if (this.imagesInfoMap_[collectionId].length == 0) {
-    // Show a 'no images' message to user.
-    this.document_.body.classList.add('no-images');
+    this.toggleNoImagesVisibility_(true);
     return;
   }
+  this.toggleNoImagesVisibility_(false);
   this.wallpaperGrid_.dataModel = this.imagesInfoMap_[collectionId];
 };
 
@@ -294,22 +314,39 @@ WallpaperManager.prototype.showCollection_ = function(index) {
 WallpaperManager.prototype.placeWallpaperPicker_ = function() {
   if (!this.useNewWallpaperPicker_)
     return;
+
   var totalWidth = this.document_.body.offsetWidth;
+  centerElement($('set-successfully-message'), totalWidth, null);
+  centerElement($('top-header'), totalWidth, null);
+  centerElement($('current-wallpaper-info-bar'), totalWidth, null);
+
+  centerElement(
+      $('no-images-message'), $('no-images-message').parentNode.offsetWidth,
+      $('no-images-message').parentNode.offsetHeight);
+  var icon = $('no-images-message').querySelector('.icon');
+  var text = $('no-images-message').querySelector('.text');
+  // Adjust the relative position of the "no images" icon and text.
+  if (text.offsetWidth > icon.offsetWidth) {
+    icon.style.WebkitMarginStart =
+        (text.offsetWidth - icon.offsetWidth) / 2 + 'px';
+  } else {
+    text.style.WebkitMarginStart =
+        (icon.offsetWidth - text.offsetWidth) / 2 + 'px';
+  }
+
+  // Position the entire image grid.
   var totalHeight = this.document_.body.offsetHeight;
-  $('top-header').style.left =
-      (totalWidth - $('top-header').offsetWidth) / 2 + 'px';
-
-  var setSuccessfullyMessage = $('set-successfully-message');
-  setSuccessfullyMessage.style.left =
-      (totalWidth - setSuccessfullyMessage.offsetWidth) / 2 + 'px';
-  setSuccessfullyMessage.style.top =
-      (totalWidth - setSuccessfullyMessage.offsetHeight) / 2 + 'px';
-
-  var dialogContainer = this.document_.querySelector('.dialog-container');
-  dialogContainer.style.left =
-      (totalWidth - dialogContainer.offsetWidth) / 2 + 'px';
-  dialogContainer.style.top =
-      (totalHeight - dialogContainer.offsetHeight) / 2 + 'px';
+  var collectionTitleWidth =
+      this.document_.querySelector('.dialog-topbar').offsetWidth;
+  var totalPadding = collectionTitleWidth +
+      (chrome.app.window.current().isFullscreen() && totalWidth > totalHeight ?
+           88 :
+           48);
+  var columnWidth = GRID_IMAGE_WIDTH_CSS + GRID_IMAGE_PADDING_CSS;
+  var columnCount = Math.floor((totalWidth - totalPadding) / columnWidth);
+  var imageGridTotalWidth = columnCount * columnWidth;
+  this.document_.querySelector('.dialog-main').style.WebkitMarginStart =
+      (totalWidth - imageGridTotalWidth - totalPadding) + 'px';
 };
 
 /**
@@ -395,9 +432,18 @@ WallpaperManager.prototype.toggleSurpriseMe = function() {
  * do not depend on the download should be initialized here.
  */
 WallpaperManager.prototype.preDownloadDomInit_ = function() {
-  $('window-close-button').addEventListener('click', function() {
-    window.close();
-  });
+  if (this.useNewWallpaperPicker_) {
+    $('minimize-button').addEventListener('click', function() {
+      chrome.app.window.current().minimize();
+    });
+    $('close-button').addEventListener('click', function() {
+      window.close();
+    });
+  } else {
+    $('window-close-button').addEventListener('click', function() {
+      window.close();
+    });
+  }
   this.document_.defaultView.addEventListener(
       'resize', this.onResize_.bind(this));
   this.document_.defaultView.addEventListener(
@@ -418,6 +464,13 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
  */
 WallpaperManager.prototype.postDownloadDomInit_ = function() {
   i18nTemplate.process(this.document_, loadTimeData);
+  // TODO(crbug.com/811619): Replace with i18n strings.
+  if (this.useNewWallpaperPicker_) {
+    $('currently-set-message').textContent = 'Currently set';
+    $('confirm-preview-wallpaper').textContent = 'Set Wallpaper';
+    $('set-successfully-message').textContent = 'Wallpaper set successfully';
+  }
+
   this.initCategoriesList_();
   this.initThumbnailsGrid_();
   this.presetCategory_();
@@ -426,15 +479,6 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
       .addEventListener('change', this.onFileSelectorChanged_.bind(this));
   $('set-wallpaper-layout')
       .addEventListener('change', this.onWallpaperLayoutChanged_.bind(this));
-
-  // On the new wallpaper picker, clicking the refresh button will force
-  // fetching the online wallpapers from scratch.
-  $('refresh').addEventListener('click', this.getCollectionsInfo_.bind(this));
-  $('center').addEventListener(
-      'click', this.setCustomWallpaperLayout_.bind(this, 'CENTER'));
-  $('center-cropped')
-      .addEventListener(
-          'click', this.setCustomWallpaperLayout_.bind(this, 'CENTER_CROPPED'));
 
   // Always prefer the value from local filesystem to avoid the time window
   // of setting the third party app name and the third party wallpaper.
@@ -528,6 +572,8 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
     });
   }
 
+  if (this.useNewWallpaperPicker_)
+    this.decorateCurrentWallpaperInfoBar_();
   this.onResize_();
   this.initContextMenuAndCommand_();
   WallpaperUtil.testSendMessage('launched');
@@ -610,7 +656,6 @@ WallpaperManager.prototype.presetCategory_ = function() {
     // TODO(crbug.com/812725): Implement preset category for the new picker. For
     // now, autoselect the first category.
     this.categoriesList_.selectionModel.selectedIndex = 0;
-    this.decorateCurrentWallpaperInfoBar_();
     return;
   }
 
@@ -664,8 +709,6 @@ WallpaperManager.prototype.presetCategory_ = function() {
  * @private
  */
 WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
-  // TODO(crbug.com/811619): Replace with i18n strings.
-  $('currently-set-message').textContent = 'Currently set';
   var image = $('current-wallpaper-image');
   var currentWallpaperInfo;
   Object.values(this.imagesInfoMap_).forEach(imagesInfo => {
@@ -674,39 +717,96 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
         currentWallpaperInfo = imagesInfo.item(i);
     }
   });
-  if (currentWallpaperInfo) {
-    WallpaperUtil.displayThumbnail(
-        image, currentWallpaperInfo.baseURL,
-        Constants.WallpaperSourceEnum.Online);
+
+  // Initialize the "more options" buttons.
+  var foundImageInList = !!currentWallpaperInfo;
+  var surpriseMeEnabled =
+      !this.document_.body.hasAttribute('surprise-me-disabled');
+  var visibleItemList = [];
+  $('refresh').hidden = !surpriseMeEnabled;
+  if (!$('refresh').hidden) {
+    visibleItemList.push($('refresh'));
+    // TODO(wzang): Add event listener to this button.
+  }
+  $('explore').hidden = !foundImageInList;
+  if (!$('explore').hidden) {
+    visibleItemList.push($('explore'));
+    $('current-wallpaper-explore-link').href =
+        currentWallpaperInfo.authorWebsite;
+  }
+  $('center').hidden = foundImageInList || surpriseMeEnabled;
+  if (!$('center').hidden) {
+    visibleItemList.push($('center'));
+    $('center').addEventListener(
+        'click', this.setCustomWallpaperLayout_.bind(this, 'CENTER'));
+  }
+  $('center-cropped').hidden = foundImageInList || surpriseMeEnabled;
+  if (!$('center-cropped').hidden) {
+    visibleItemList.push($('center-cropped'));
+    $('center-cropped')
+        .addEventListener(
+            'click',
+            this.setCustomWallpaperLayout_.bind(this, 'CENTER_CROPPED'));
+  }
+
+  if (visibleItemList.length == 1) {
+    visibleItemList[0].style.marginTop =
+        ($('current-wallpaper-info-bar').offsetHeight -
+         visibleItemList[0].offsetHeight) /
+            2 +
+        'px';
+  } else {
+    // There are at most two visible elements.
+    var topMargin =
+        ($('current-wallpaper-info-bar').offsetHeight -
+         visibleItemList[0].offsetHeight - visibleItemList[1].offsetHeight) *
+        0.4;
+    visibleItemList[0].style.marginTop = topMargin + 'px';
+    visibleItemList[1].style.marginTop = topMargin / 2 + 'px';
+
+    // Make sure that all the texts are centered.
+    for (var item of visibleItemList) {
+      var totalPadding = $('current-wallpaper-more-options').offsetWidth -
+          (item.querySelector('.icon').offsetWidth +
+           item.querySelector('.text').offsetWidth);
+      item.querySelector('.icon').style.WebkitMarginStart =
+          totalPadding / 2 + 'px';
+    }
+  }
+
+  $('current-wallpaper-more-options')
+      .classList.toggle('custom-wallpaper', !foundImageInList);
+  if (foundImageInList) {
+    // Initialize the image title and description.
     $('current-wallpaper-title').textContent =
         currentWallpaperInfo.displayText[0];
+    $('current-wallpaper-description').innerHTML = '';
     for (var i = 1; i < currentWallpaperInfo.displayText.length; ++i) {
       $('current-wallpaper-description')
           .appendChild(
               document.createTextNode(currentWallpaperInfo.displayText[i]));
     }
-    $('current-wallpaper-explore-link').href =
-        currentWallpaperInfo.authorWebsite;
-    return;
+    WallpaperUtil.displayThumbnail(
+        image, currentWallpaperInfo.baseURL,
+        Constants.WallpaperSourceEnum.Online);
+  } else {
+    // Show a placeholder as the image title if the current wallpaper is not
+    // found in the list.
+    $('current-wallpaper-title').textContent = str('customCategoryLabel');
+    var onSuccess = fileEntry => {
+      image.src = fileEntry.toURL();
+    };
+    var onError = e => {
+      console.error('Can not get thumbnail data for the current wallpaper.');
+      // TODO(crbug.com/824453): Decide the right UI when this error happens.
+    };
+    wallpaperDirectories.getDirectory(
+        Constants.WallpaperDirNameEnum.THUMBNAIL, dirEntry => {
+          dirEntry.getFile(
+              getBaseName(this.currentWallpaper_), {create: false}, onSuccess,
+              onError);
+        }, onError);
   }
-
-  // Show a placeholder as the image title if the current wallpaper is not found
-  // in the list.
-  $('current-wallpaper-title').textContent = str('customCategoryLabel');
-  $('current-wallpaper-explore').hidden = true;
-  var onSuccess = fileEntry => {
-    image.src = fileEntry.toURL();
-  };
-  var onError = e => {
-    console.error('Can not get thumbnail data for the current wallpaper.');
-    // TODO(crbug.com/824453): Decide the right UI when this error happens.
-  };
-  wallpaperDirectories.getDirectory(
-      Constants.WallpaperDirNameEnum.THUMBNAIL, dirEntry => {
-        dirEntry.getFile(
-            getBaseName(this.currentWallpaper_), {create: false}, onSuccess,
-            onError);
-      }, onError);
 };
 
 /**
@@ -852,16 +952,44 @@ WallpaperManager.prototype.setCustomWallpaperSelectedOnNewPicker_ = function(
           return;
         }
 
-        chrome.wallpaperPrivate.setCustomWallpaper(
-            imageData, selectedItem.layout, true /*generateThumbnail=*/,
-            selectedItem.baseURL, true /*previewMode=*/, optThumbnailData => {
-              if (chrome.runtime.lastError) {
-                onPreviewCustomWallpaperFailure();
-              } else {
-                this.onPreviewModeStarted_(
-                    successCallback.bind(null, imageData, optThumbnailData));
-              }
-            });
+        var decorateLayoutButton = layout => {
+          if (layout != 'CENTER' && layout != 'CENTER_CROPPED') {
+            console.error('Wallpaper layout ' + layout + ' is not supported.');
+            return;
+          }
+
+          var previewCallback = optThumbnailData => {
+            if (chrome.runtime.lastError) {
+              onPreviewCustomWallpaperFailure();
+            } else {
+              this.onPreviewModeStarted_(
+                  Constants.WallpaperSourceEnum.Custom,
+                  successCallback.bind(null, imageData, optThumbnailData));
+            }
+          };
+
+          var layoutButton = this.document_.querySelector(
+              layout == 'CENTER' ? '.center-button' : '.center-cropped-button');
+          var newLayoutButton = layoutButton.cloneNode(true);
+          layoutButton.parentNode.replaceChild(newLayoutButton, layoutButton);
+          newLayoutButton.addEventListener('click', () => {
+            chrome.wallpaperPrivate.setCustomWallpaper(
+                imageData, layout, true /*generateThumbnail=*/,
+                selectedItem.baseURL, true /*previewMode=*/,
+                optThumbnailData => {
+                  this.document_.querySelector('.center-button')
+                      .classList.toggle('disabled', layout == 'CENTER');
+                  this.document_.querySelector('.center-cropped-button')
+                      .classList.toggle('disabled', layout == 'CENTER_CROPPED');
+                  previewCallback(optThumbnailData);
+                });
+          });
+        };
+
+        decorateLayoutButton('CENTER');
+        decorateLayoutButton('CENTER_CROPPED');
+        // The default layout is CENTER_CROPPED.
+        this.document_.querySelector('.center-cropped-button').click();
       });
 };
 
@@ -929,8 +1057,10 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
       wallpaperUrl, selectedItem.layout, previewMode, exists => {
         var successCallback = () => {
           if (previewMode) {
-            this.onPreviewModeStarted_(this.onWallpaperChanged_.bind(
-                this, selectedItem, wallpaperUrl));
+            this.onPreviewModeStarted_(
+                Constants.WallpaperSourceEnum.Online,
+                this.onWallpaperChanged_.bind(
+                    this, selectedItem, wallpaperUrl));
           } else {
             this.onWallpaperChanged_(selectedItem, wallpaperUrl);
           }
@@ -975,16 +1105,21 @@ WallpaperManager.prototype.setSelectedOnlineWallpaper_ = function(
 
 /**
  * Handles the UI changes when the preview mode is started.
+ * @param {string} source The source of the wallpaper corresponding to
+ *     |WallpaperSourceEnum|.
  * @param {function} confirmPreviewWallpaperCallback The callback after preview
  *     wallpaper is set.
  * @private
  */
 WallpaperManager.prototype.onPreviewModeStarted_ = function(
-    confirmPreviewWallpaperCallback) {
+    source, confirmPreviewWallpaperCallback) {
+  if (this.document_.body.classList.contains('preview-mode'))
+    return;
+
   this.document_.body.classList.add('preview-mode');
-  // TODO(crbug.com/811619): Replace with i18n strings.
-  $('confirm-preview-wallpaper').textContent = 'Set Wallpaper';
-  $('cancel-preview-wallpaper').textContent = 'Cancel';
+  this.document_.body.classList.toggle(
+      'custom-wallpaper', source == Constants.WallpaperSourceEnum.Custom);
+  chrome.app.window.current().fullscreen();
 
   var onConfirmClicked = () => {
     chrome.wallpaperPrivate.confirmPreviewWallpaper(() => {
@@ -1002,6 +1137,8 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
       // Deselect the image.
       this.wallpaperGrid_.selectedItem = null;
       this.document_.body.classList.remove('preview-mode');
+      // Exit full screen.
+      chrome.app.window.current().restore();
     });
   };
   $('cancel-preview-wallpaper').addEventListener('click', onCancelClicked);
@@ -1032,13 +1169,13 @@ WallpaperManager.prototype.removeOldestWallpaper_ = function() {
  * @private
  */
 WallpaperManager.prototype.showSuccessMessageAndQuit_ = function() {
-  // TODO(crbug.com/811619): Replace with i18n strings.
-  $('set-successfully-message').textContent = 'Wallpaper set successfully';
   this.document_.body.classList.add('wallpaper-set-successfully');
+  // Success message must be shown in full screen mode.
+  chrome.app.window.current().fullscreen();
   // Close the window after showing the success message.
   window.setTimeout(() => {
     window.close();
-  }, 2000);
+  }, 800);
 };
 
 /*
@@ -1110,12 +1247,6 @@ WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
     if (selectedItem.displayText)
       $('image-title').textContent = selectedItem.displayText[0];
     $('collection-name').textContent = selectedItem.collectionName;
-    var topHeaderContents =
-        this.document_.querySelector('.top-header-contents');
-    topHeaderContents.classList.toggle(
-        'online', selectedItem.source === Constants.WallpaperSourceEnum.Online);
-    topHeaderContents.classList.toggle(
-        'custom', selectedItem.source === Constants.WallpaperSourceEnum.Custom);
     return;
   }
 
@@ -1390,10 +1521,14 @@ WallpaperManager.prototype.onSurpriseMeStateChanged_ = function(enabled) {
   else
     this.document_.body.setAttribute('surprise-me-disabled', '');
 
-  // The wallpaper grid on the new picker contains UI elements that should
-  // not be disabled.
-  if (!this.useNewWallpaperPicker_)
+  if (this.useNewWallpaperPicker_) {
+    // The surprise me state affects the UI of the current wallpaper info bar.
+    this.decorateCurrentWallpaperInfoBar_();
+  } else {
+    // On the old wallpaper picker, the wallpaper grid should be disabled when
+    // surprise me is enabled.
     $('wallpaper-grid').disabled = enabled;
+  }
 };
 
 /**
@@ -1415,8 +1550,7 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
     if (this.useNewWallpaperPicker_) {
       chrome.wallpaperPrivate.getLocalImagePaths(localImagePaths => {
         // Show a 'no images' message to user if there's no local image.
-        this.document_.body.classList.toggle(
-            'no-images', localImagePaths.length == 0);
+        this.toggleNoImagesVisibility_(localImagePaths.length == 0);
         var wallpapersDataModel = new cr.ui.ArrayDataModel([]);
         for (var imagePath of localImagePaths) {
           var wallpaperInfo = {
@@ -1566,6 +1700,18 @@ WallpaperManager.prototype.onCategoriesChange_ = function() {
       this.wallpaperGrid_.activeItem = selectedItem;
     }
   }
+};
+
+/**
+ * Toggles the visibility of the "no images" message.
+ * @param {boolean} visible Whether the message should be visible.
+ * @private
+ */
+WallpaperManager.prototype.toggleNoImagesVisibility_ = function(visible) {
+  if (visible == this.document_.body.classList.contains('no-images'))
+    return;
+  this.document_.body.classList.toggle('no-images', visible);
+  this.placeWallpaperPicker_();
 };
 
 })();
