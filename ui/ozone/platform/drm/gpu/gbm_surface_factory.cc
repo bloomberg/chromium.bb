@@ -144,12 +144,6 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-#if !defined(OS_CHROMEOS)
-  // Support for memory mapping accelerated buffers requires some
-  // CrOS-specific patches (using dma-buf mmap API).
-  DCHECK(gfx::BufferUsage::SCANOUT == usage);
-#endif
-
   scoped_refptr<GbmBuffer> buffer =
       drm_thread_proxy_->CreateBuffer(widget, size, format, usage);
   if (!buffer.get())
