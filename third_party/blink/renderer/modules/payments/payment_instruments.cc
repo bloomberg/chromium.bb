@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/location.h"
+#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/manifest/manifest.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_feature.mojom-blink.h"
@@ -17,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -74,6 +77,21 @@ bool rejectError(ScriptPromiseResolver* resolver,
   return false;
 }
 
+bool AllowedToUsePaymentFeatures(ScriptState* script_state) {
+  return ExecutionContext::From(script_state)
+      ->GetSecurityContext()
+      .GetFeaturePolicy()
+      ->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment);
+}
+
+ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
+  return ScriptPromise::RejectWithDOMException(
+      script_state, DOMException::Create(
+                        kSecurityError,
+                        "Must be in a top-level browsing context or an iframe "
+                        "needs to specify allow=\"payment\" explicitly"));
+}
+
 }  // namespace
 
 PaymentInstruments::PaymentInstruments(
@@ -83,6 +101,9 @@ PaymentInstruments::PaymentInstruments(
 ScriptPromise PaymentInstruments::deleteInstrument(
     ScriptState* script_state,
     const String& instrument_key) {
+  if (!AllowedToUsePaymentFeatures(script_state))
+    return RejectNotAllowedToUsePaymentFeatures(script_state);
+
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -101,6 +122,9 @@ ScriptPromise PaymentInstruments::deleteInstrument(
 
 ScriptPromise PaymentInstruments::get(ScriptState* script_state,
                                       const String& instrument_key) {
+  if (!AllowedToUsePaymentFeatures(script_state))
+    return RejectNotAllowedToUsePaymentFeatures(script_state);
+
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -118,6 +142,9 @@ ScriptPromise PaymentInstruments::get(ScriptState* script_state,
 }
 
 ScriptPromise PaymentInstruments::keys(ScriptState* script_state) {
+  if (!AllowedToUsePaymentFeatures(script_state))
+    return RejectNotAllowedToUsePaymentFeatures(script_state);
+
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -135,6 +162,9 @@ ScriptPromise PaymentInstruments::keys(ScriptState* script_state) {
 
 ScriptPromise PaymentInstruments::has(ScriptState* script_state,
                                       const String& instrument_key) {
+  if (!AllowedToUsePaymentFeatures(script_state))
+    return RejectNotAllowedToUsePaymentFeatures(script_state);
+
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -155,6 +185,9 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
                                       const String& instrument_key,
                                       const PaymentInstrument& details,
                                       ExceptionState& exception_state) {
+  if (!AllowedToUsePaymentFeatures(script_state))
+    return RejectNotAllowedToUsePaymentFeatures(script_state);
+
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
@@ -179,6 +212,9 @@ ScriptPromise PaymentInstruments::set(ScriptState* script_state,
 }
 
 ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
+  if (!AllowedToUsePaymentFeatures(script_state))
+    return RejectNotAllowedToUsePaymentFeatures(script_state);
+
   if (!manager_.is_bound()) {
     return ScriptPromise::RejectWithDOMException(
         script_state,
