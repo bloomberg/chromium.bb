@@ -118,15 +118,13 @@ class UnescapeRule {
 // a hex digit, and converting to the character with the numerical value of
 // those digits. Thus "i%20=%203%3b" unescapes to "i = 3;".
 //
-// Watch out: this doesn't necessarily result in the correct final result,
-// because the encoding may be unknown. For example, the input might be ASCII,
-// which, after unescaping, is supposed to be interpreted as UTF-8, and then
-// converted into full UTF-16 chars. This function won't tell you if any
-// conversions need to take place, it only unescapes.
+// This method does not ensure that the output is a valid string using any
+// character encoding. However, unless SPOOFING_AND_CONTROL_CHARS is set, it
+// does leave escaped certain byte sequences that would be dangerous to display
+// to the user, because if interpreted as UTF-8, they could be used to mislead
+// the user.
 NET_EXPORT std::string UnescapeURLComponent(base::StringPiece escaped_text,
                                             UnescapeRule::Type rules);
-NET_EXPORT base::string16 UnescapeURLComponent(base::StringPiece16 escaped_text,
-                                               UnescapeRule::Type rules);
 
 // Unescapes the given substring as a URL, and then tries to interpret the
 // result as being encoded as UTF-8. If the result is convertable into UTF-8, it
