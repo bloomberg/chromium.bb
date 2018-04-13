@@ -67,6 +67,8 @@ by a child template that "extends" this file.
       android:orientation attribute.
     -->
     <uses-feature android:name="android.hardware.screen.landscape" android:required="false"/>
+    <!-- Indicates that head tracking should be done in 6DoF, if available -->
+    <uses-feature android:name="android.hardware.vr.headtracking" android:version="1" android:required="false"/>
     {% endif %}
 
     <permission android:name="{{ manifest_package }}.permission.CHILD_SERVICE" android:protectionLevel="signature" />
