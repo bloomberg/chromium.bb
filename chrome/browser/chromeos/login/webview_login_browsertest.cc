@@ -307,7 +307,13 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, EmailPrefill) {
   EXPECT_EQ(fake_gaia_->prefilled_email(), "user@example.com");
 }
 
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, StoragePartitionHandling) {
+// Flaky on ChromeOS.  https://crbug.com/832608
+#if defined(OS_CHROMEOS)
+#define MAYBE_StoragePartitionHandling DISABLED_StoragePartitionHandling
+#else
+#define MAYBE_StoragePartitionHandling StoragePartitionHandling
+#endif
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, MAYBE_StoragePartitionHandling) {
   WaitForGaiaPageLoad();
 
   // Start with identifer page.
@@ -938,7 +944,13 @@ class WebviewProxyAuthLoginTest : public WebviewLoginTest {
   DISALLOW_COPY_AND_ASSIGN(WebviewProxyAuthLoginTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, ProxyAuthTransfer) {
+// Flaky on ChromeOS.  https://crbug.com/832608
+#if defined(OS_CHROMEOS)
+#define MAYBE_ProxyAuthTransfer DISABLED_ProxyAuthTransfer
+#else
+#define MAYBE_ProxyAuthTransfer ProxyAuthTransfer
+#endif
+IN_PROC_BROWSER_TEST_F(WebviewProxyAuthLoginTest, MAYBE_ProxyAuthTransfer) {
   WaitForSigninScreen();
 
   LoginHandler* login_handler = WaitForAuthRequested();
