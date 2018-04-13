@@ -7,8 +7,8 @@
 
 #include <memory>
 
-#include "components/viz/common/gpu/in_process_context_provider.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 #include "ui/latency/latency_tracker.h"
 
 namespace viz {
@@ -20,7 +20,7 @@ class SyntheticBeginFrameSource;
 class GLOutputSurface : public OutputSurface,
                         public OutputSurface::LatencyInfoCache::Client {
  public:
-  GLOutputSurface(scoped_refptr<InProcessContextProvider> context_provider,
+  GLOutputSurface(scoped_refptr<VizProcessContextProvider> context_provider,
                   SyntheticBeginFrameSource* synthetic_begin_frame_source);
   ~GLOutputSurface() override;
 

@@ -105,6 +105,8 @@ viz_component("service") {
     "display_embedder/shared_bitmap_allocation_notifier_impl.h",
     "display_embedder/software_output_surface.cc",
     "display_embedder/software_output_surface.h",
+    "display_embedder/viz_process_context_provider.cc",
+    "display_embedder/viz_process_context_provider.h",
     "frame_sinks/compositor_frame_sink_impl.cc",
     "frame_sinks/compositor_frame_sink_impl.h",
     "frame_sinks/compositor_frame_sink_support.cc",
@@ -168,12 +170,15 @@ viz_component("service") {
     "//cc/paint",
     "//components/crash/core/common:crash_key",
     "//components/viz/common",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/client:raster",
     "//gpu/ipc:gl_in_process_context",
 
     # Note that dependency on //gpu/ipc/client is for GpuMemoryBufferImpl. This
     # dependency should not be in public_deps.
     "//gpu/ipc/client",
     "//gpu/ipc/service",
+    "//gpu/skia_bindings:skia_bindings",
     "//gpu/vulkan:buildflags",
     "//media",
     "//media/capture:capture_lib",

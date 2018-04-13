@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/viz/common/gpu/in_process_context_provider.h"
+#include "components/viz/service/display_embedder/viz_process_context_provider.h"
 
 #include <stdint.h>
 
@@ -47,14 +47,14 @@ gpu::ContextCreationAttribs CreateAttributes() {
 
 }  // namespace
 
-InProcessContextProvider::InProcessContextProvider(
+VizProcessContextProvider::VizProcessContextProvider(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
     gpu::SurfaceHandle surface_handle,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     const gpu::SharedMemoryLimits& limits,
-    InProcessContextProvider* shared_context)
+    VizProcessContextProvider* shared_context)
     : attributes_(CreateAttributes()),
       context_(gpu::GLInProcessContext::CreateWithoutInit()),
       context_result_(context_->Initialize(
@@ -73,29 +73,29 @@ InProcessContextProvider::InProcessContextProvider(
           context_->GetImplementation(),
           base::ThreadTaskRunnerHandle::Get())) {}
 
-InProcessContextProvider::~InProcessContextProvider() = default;
+VizProcessContextProvider::~VizProcessContextProvider() = default;
 
-void InProcessContextProvider::AddRef() const {
-  base::RefCountedThreadSafe<InProcessContextProvider>::AddRef();
+void VizProcessContextProvider::AddRef() const {
+  base::RefCountedThreadSafe<VizProcessContextProvider>::AddRef();
 }
 
-void InProcessContextProvider::Release() const {
-  base::RefCountedThreadSafe<InProcessContextProvider>::Release();
+void VizProcessContextProvider::Release() const {
+  base::RefCountedThreadSafe<VizProcessContextProvider>::Release();
 }
 
-gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
+gpu::ContextResult VizProcessContextProvider::BindToCurrentThread() {
   return context_result_;
 }
 
-gpu::gles2::GLES2Interface* InProcessContextProvider::ContextGL() {
+gpu::gles2::GLES2Interface* VizProcessContextProvider::ContextGL() {
   return context_->GetImplementation();
 }
 
-gpu::ContextSupport* InProcessContextProvider::ContextSupport() {
+gpu::ContextSupport* VizProcessContextProvider::ContextSupport() {
   return context_->GetImplementation();
 }
 
-class GrContext* InProcessContextProvider::GrContext() {
+class GrContext* VizProcessContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
@@ -111,27 +111,29 @@ class GrContext* InProcessContextProvider::GrContext() {
   return gr_context_->get();
 }
 
-ContextCacheController* InProcessContextProvider::CacheController() {
+ContextCacheController* VizProcessContextProvider::CacheController() {
   return cache_controller_.get();
 }
 
-base::Lock* InProcessContextProvider::GetLock() {
+base::Lock* VizProcessContextProvider::GetLock() {
   return &context_lock_;
 }
 
-const gpu::Capabilities& InProcessContextProvider::ContextCapabilities() const {
+const gpu::Capabilities& VizProcessContextProvider::ContextCapabilities()
+    const {
   return context_->GetCapabilities();
 }
 
-const gpu::GpuFeatureInfo& InProcessContextProvider::GetGpuFeatureInfo() const {
+const gpu::GpuFeatureInfo& VizProcessContextProvider::GetGpuFeatureInfo()
+    const {
   return context_->GetGpuFeatureInfo();
 }
 
-void InProcessContextProvider::AddObserver(ContextLostObserver* obs) {}
+void VizProcessContextProvider::AddObserver(ContextLostObserver* obs) {}
 
-void InProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {}
+void VizProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {}
 
-uint32_t InProcessContextProvider::GetCopyTextureInternalFormat() {
+uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
   if (attributes_.alpha_size > 0)
     return GL_RGBA;
   DCHECK_NE(attributes_.red_size, 0);
@@ -140,19 +142,19 @@ uint32_t InProcessContextProvider::GetCopyTextureInternalFormat() {
   return GL_RGB;
 }
 
-void InProcessContextProvider::SetSwapBuffersCompletionCallback(
+void VizProcessContextProvider::SetSwapBuffersCompletionCallback(
     const gpu::InProcessCommandBuffer::SwapBuffersCompletionCallback&
         callback) {
   context_->SetSwapBuffersCompletionCallback(callback);
 }
 
-void InProcessContextProvider::SetUpdateVSyncParametersCallback(
+void VizProcessContextProvider::SetUpdateVSyncParametersCallback(
     const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&
         callback) {
   context_->SetUpdateVSyncParametersCallback(callback);
 }
 
-void InProcessContextProvider::SetPresentationCallback(
+void VizProcessContextProvider::SetPresentationCallback(
     const gpu::InProcessCommandBuffer::PresentationCallback& callback) {
   context_->SetPresentationCallback(callback);
 }

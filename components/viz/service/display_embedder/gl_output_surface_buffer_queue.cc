@@ -18,7 +18,7 @@
 namespace viz {
 
 GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
-    scoped_refptr<InProcessContextProvider> context_provider,
+    scoped_refptr<VizProcessContextProvider> context_provider,
     gpu::SurfaceHandle surface_handle,
     SyntheticBeginFrameSource* synthetic_begin_frame_source,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,

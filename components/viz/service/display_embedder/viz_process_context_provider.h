@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_VIZ_COMMON_GPU_IN_PROCESS_CONTEXT_PROVIDER_H_
-#define COMPONENTS_VIZ_COMMON_GPU_IN_PROCESS_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_VIZ_PROCESS_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_VIZ_PROCESS_CONTEXT_PROVIDER_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "base/synchronization/lock.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/viz_common_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -34,22 +34,20 @@ class GrContextForGLES2Interface;
 
 namespace viz {
 
-// A ContextProvider used in the viz process to setup command buffers between
-// the compositor and gpu thread.
-// TODO(kylechar): Rename VizProcessContextProvider and move to
-// components/viz/service.
-class VIZ_COMMON_EXPORT InProcessContextProvider
-    : public base::RefCountedThreadSafe<InProcessContextProvider>,
+// A ContextProvider used in the viz process to setup an InProcessCommandBuffer
+// for the display compositor.
+class VIZ_SERVICE_EXPORT VizProcessContextProvider
+    : public base::RefCountedThreadSafe<VizProcessContextProvider>,
       public ContextProvider {
  public:
-  InProcessContextProvider(
+  VizProcessContextProvider(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
       gpu::SurfaceHandle surface_handle,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
       const gpu::SharedMemoryLimits& limits,
-      InProcessContextProvider* shared_context);
+      VizProcessContextProvider* shared_context);
 
   // ContextProvider implementation.
   void AddRef() const override;
@@ -79,8 +77,8 @@ class VIZ_COMMON_EXPORT InProcessContextProvider
       const gpu::InProcessCommandBuffer::PresentationCallback& callback);
 
  protected:
-  friend class base::RefCountedThreadSafe<InProcessContextProvider>;
-  ~InProcessContextProvider() override;
+  friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
+  ~VizProcessContextProvider() override;
 
  private:
   const gpu::ContextCreationAttribs attributes_;
@@ -94,4 +92,4 @@ class VIZ_COMMON_EXPORT InProcessContextProvider
 
 }  // namespace viz
 
-#endif  // COMPONENTS_VIZ_COMMON_GPU_IN_PROCESS_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_VIZ_PROCESS_CONTEXT_PROVIDER_H_
