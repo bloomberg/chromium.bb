@@ -3845,6 +3845,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kIncreaseInputAudioBufferSize)},
 #endif  // OS_WIN
 
+    {"enable-lazy-frame-loading",
+     flag_descriptions::kEnableLazyFrameLoadingName,
+     flag_descriptions::kEnableLazyFrameLoadingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kLazyFrameLoading)}
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
