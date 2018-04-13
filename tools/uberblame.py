@@ -27,6 +27,7 @@ class TokenContext(object):
     commit: A Commit object that corresponds to the commit that added
       this token.
   """
+
   def __init__(self, row, column, token, commit=None):
     self.row = row
     self.column = column
@@ -45,6 +46,7 @@ class Commit(object):
     message: The commit message.
     diff: The commit diff.
   """
+
   def __init__(self, hash, author_name, author_email, author_date, message,
                diff):
     self.hash = hash
@@ -55,14 +57,18 @@ class Commit(object):
     self.diff = diff
 
 
-def tokenize_data(data):
+def tokenize_data(data, tokenize_by_char, tokenize_whitespace):
   """Tokenizes |data|.
 
   Args:
     data: String to tokenize.
+    tokenize_by_char: If true, individual characters are treated as tokens.
+      Otherwise, tokens are either symbols or strings of both alphanumeric
+      characters and underscores.
+    tokenize_whitespace: Treat non-newline whitespace characters as tokens.
 
   Returns:
-    A list of TokenContexts.
+    A list of lists of TokenContexts.  Each list represents a line.
   """
   contexts = []
   in_identifier = False
@@ -73,7 +79,7 @@ def tokenize_data(data):
   line_contexts = []
 
   for c in data + '\n':
-    if c.isalnum() or c == '_':
+    if not tokenize_by_char and (c.isalnum() or c == '_'):
       if in_identifier:
         identifier += c
       else:
@@ -82,10 +88,9 @@ def tokenize_data(data):
         identifier = c
     else:
       if in_identifier:
-        line_contexts.append(
-            TokenContext(row, identifier_start, identifier))
+        line_contexts.append(TokenContext(row, identifier_start, identifier))
       in_identifier = False
-      if not c.isspace():
+      if not c.isspace() or (tokenize_whitespace and c != '\n'):
         line_contexts.append(TokenContext(row, column, c))
 
     if c == '\n':
@@ -249,8 +254,7 @@ def parse_chunks_from_diff(diff):
   for line in diff:
     if line.startswith('@@'):
       if in_chunk:
-        yield (current_start, current_end,
-               chunk_previous, previous_start)
+        yield (current_start, current_end, chunk_previous, previous_start)
       parts = line.split(' ')
       previous = parts[1].lstrip('-')
       previous_start, _ = parse_chunk_header_file_range(previous)
@@ -261,8 +265,7 @@ def parse_chunks_from_diff(diff):
     elif in_chunk and line.startswith('-'):
       chunk_previous.append(line[1:])
   if current_start != None:
-    yield (current_start, current_end,
-           chunk_previous, previous_start)
+    yield (current_start, current_end, chunk_previous, previous_start)
 
 
 def should_skip_commit(commit):
@@ -345,20 +348,22 @@ def generate_commits(git_log_stdout):
     yield Commit(hash, author_name, author_email, author_date, message, diff)
 
 
-def uberblame_aux(file_name, git_log_stdout, data):
+def uberblame_aux(file_name, git_log_stdout, data, tokenization_method):
   """Computes the uberblame of file |file_name|.
 
   Args:
     file_name: File to uberblame.
     git_log_stdout: A file object that represents the git log output.
     data: A string containing the data of file |file_name|.
+    tokenization_method: A function that takes a string and returns a list of
+      TokenContexts.
 
   Returns:
     A tuple (data, blame).
       data: File contents.
       blame: A list of TokenContexts.
   """
-  blame = tokenize_data(data)
+  blame = tokenization_method(data)
 
   blamed_tokens = 0
   total_tokens = len(blame)
@@ -373,18 +378,16 @@ def uberblame_aux(file_name, git_log_stdout, data):
          removed_lines_start) in parse_chunks_from_diff(commit.diff):
       added_lines_start += offset
       added_lines_end += offset
-      previous_contexts = [token_lines
-                           for line_previous in removed_lines
-                           for token_lines in tokenize_data(line_previous)]
-      previous_tokens = [
-          [context.token for context in contexts]
-          for contexts in previous_contexts
+      previous_contexts = [
+          token_lines
+          for line_previous in removed_lines
+          for token_lines in tokenization_method(line_previous)
       ]
+      previous_tokens = [[context.token for context in contexts]
+                         for contexts in previous_contexts]
       current_contexts = blame[added_lines_start:added_lines_end]
-      current_tokens = [
-          [context.token for context in contexts]
-          for contexts in current_contexts
-      ]
+      current_tokens = [[context.token for context in contexts]
+                        for contexts in current_contexts]
       added_token_positions, changed_token_positions = (
           compute_changed_token_positions(previous_tokens, current_tokens))
       for r, c in added_token_positions:
@@ -403,12 +406,14 @@ def uberblame_aux(file_name, git_log_stdout, data):
   return uber_blame
 
 
-def uberblame(file_name, revision):
+def uberblame(file_name, revision, tokenization_method):
   """Computes the uberblame of file |file_name|.
 
   Args:
     file_name: File to uberblame.
     revision: The revision to start the uberblame at.
+    tokenization_method: A function that takes a string and returns a list of
+      TokenContexts.
 
   Returns:
     A tuple (data, blame).
@@ -416,27 +421,16 @@ def uberblame(file_name, revision):
       blame: A list of TokenContexts.
   """
   cmd_git_log = [
-      'git',
-      'log',
-      '--minimal',
-      '--no-prefix',
-      '--follow',
-      '-m',
-      '--first-parent',
-      '-p',
-      '-U0',
-      '-z',
-      '--format=%x00%H%x00%an%x00%ae%x00%ad%x00%B',
-      revision,
-      '--',
-      file_name
+      'git', 'log', '--minimal', '--no-prefix', '--follow', '-m',
+      '--first-parent', '-p', '-U0', '-z',
+      '--format=%x00%H%x00%an%x00%ae%x00%ad%x00%B', revision, '--', file_name
   ]
-  git_log = subprocess.Popen(cmd_git_log,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+  git_log = subprocess.Popen(
+      cmd_git_log, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   data = subprocess.check_output(
       ['git', 'show', '%s:%s' % (revision, file_name)])
-  data, blame = uberblame_aux(file_name, git_log.stdout, data)
+  data, blame = uberblame_aux(file_name, git_log.stdout, data,
+                              tokenization_method)
 
   _, stderr = git_log.communicate()
   if git_log.returncode != 0:
@@ -445,19 +439,26 @@ def uberblame(file_name, revision):
 
 
 def generate_pastel_color():
-  (h, l, s) = (random.uniform(0, 1),
-               random.uniform(0.8, 0.9),
-               random.uniform(0.5, 1))
+  """Generates a random color from a nice looking pastel palette.
+
+  Returns:
+    The color, formatted as hex string.  For example, white is "#FFFFFF".
+  """
+  (h, l, s) = (random.uniform(0, 1), random.uniform(0.8, 0.9), random.uniform(
+      0.5, 1))
   (r, g, b) = colorsys.hls_to_rgb(h, l, s)
-  return "#%0.2X%0.2X%0.2X" % (int(r*255), int(g*255), int(b*255))
+  return "#%0.2X%0.2X%0.2X" % (int(r * 255), int(g * 255), int(b * 255))
 
 
-def visualize_uberblame(data, blame):
-  """Creates and displays a web page to visualize |blame|.
+def create_visualization(data, blame):
+  """Creates a web page to visualize |blame|.
 
   Args:
     data: The data file as returned by uberblame().
     blame: A list of TokenContexts as returned by uberblame().
+
+  Returns;
+    The html for the generated page, as a string.
   """
   # Use the same seed for the color generator on each run so that
   # loading the same blame of the same file twice will result in the
@@ -543,25 +544,23 @@ def visualize_uberblame(data, blame):
         token_context = blame[blame_index]
         if (row == token_context.row and
             column == token_context.column + len(token_context.token)):
-          if (blame_index + 1 == len(blame) or
-              blame[blame_index].commit.hash !=
+          if (blame_index + 1 == len(blame) or blame[blame_index].commit.hash !=
               blame[blame_index + 1].commit.hash):
             lines.append('</span>')
           blame_index += 1
       if blame_index < len(blame):
         token_context = blame[blame_index]
         if row == token_context.row and column == token_context.column:
-          if (blame_index == 0 or
-              blame[blame_index - 1].commit.hash !=
+          if (blame_index == 0 or blame[blame_index - 1].commit.hash !=
               blame[blame_index].commit.hash):
             hash = token_context.commit.hash
             commits[hash] = token_context.commit
             if hash not in commit_colors:
               commit_colors[hash] = generate_pastel_color()
             color = commit_colors[hash]
-            lines.append(
-                ('<span style="background-color: %s" ' +
-                 'onclick="display_commit(&quot;%s&quot;)">') % (color, hash))
+            lines.append(('<span style="background-color: %s" ' +
+                          'onclick="display_commit(&quot;%s&quot;)">') % (color,
+                                                                          hash))
       lines.append(cgi.escape(c))
       column += 1
     row += 1
@@ -582,11 +581,9 @@ def visualize_uberblame(data, blame):
         author_name=commit.author_name,
         author_email=commit.author_email,
         author_date=commit.author_date,
-        message=commit.message,
-    )
+        message=commit.message)
     commit_display = cgi.escape(commit_display, quote=True)
-    commit_display = re.sub(
-        links, '<a href=\\"\\1\\">\\1</a>', commit_display)
+    commit_display = re.sub(links, '<a href=\\"\\1\\">\\1</a>', commit_display)
     commit_display = commit_display.replace('\n', '\\n')
     commit_data.append('"%s": "%s",' % (hash, commit_display))
   commit_data.append('}')
@@ -625,19 +622,38 @@ def show_visualization(html):
     os.close(saved_stderr)
 
 
-def main():
+def main(argv):
   parser = argparse.ArgumentParser(
-      description='Show what revision last modified each token of a file')
-  parser.add_argument('revision', default='HEAD', nargs='?',
-                      help='Show only commits starting from a revision.')
-  parser.add_argument('file', help='The file to uberblame.')
-  args = parser.parse_args()
+      description='Show what revision last modified each token of a file.')
+  parser.add_argument(
+      'revision',
+      default='HEAD',
+      nargs='?',
+      help='show only commits starting from a revision')
+  parser.add_argument('file', help='the file to uberblame')
+  parser.add_argument(
+      '--skip-visualization',
+      action='store_true',
+      help='do not display the blame visualization in a web browser')
+  parser.add_argument(
+      '--tokenize-by-char',
+      action='store_true',
+      help='treat individual characters as tokens')
+  parser.add_argument(
+      '--tokenize-whitespace',
+      action='store_true',
+      help='also blame non-newline whitespace characters')
+  args = parser.parse_args(argv)
 
-  data, blame = uberblame(args.file, args.revision)
-  html = visualize_uberblame(data, blame)
-  show_visualization(html)
+  def tokenization_method(data):
+    return tokenize_data(data, args.tokenize_by_char, args.tokenize_whitespace)
+
+  data, blame = uberblame(args.file, args.revision, tokenization_method)
+  html = create_visualization(data, blame)
+  if not args.skip_visualization:
+    show_visualization(html)
   return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
