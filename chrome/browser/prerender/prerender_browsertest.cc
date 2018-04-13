@@ -3287,7 +3287,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, ResourcePriorityOverlappingSwap) {
   EXPECT_GT(priority, net::IDLE);
 }
 
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintTimingSimple) {
+// Flaky on chromium.linux/Linux Tests (dbg). https://crbug.com/832597
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       DISABLED_FirstContentfulPaintTimingSimple) {
   GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
   base::SimpleTestTickClock clock;
   OverridePrerenderManagerTimeTicks(&clock);
@@ -3538,8 +3540,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FirstContentfulPaintHidden) {
       "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Hidden", 1654, 1);
 }
 
+// Flaky on chromium.linux/Linux Tests (dbg). https://crbug.com/832597
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       FirstContentfulPaintHiddenNoCommit) {
+                       DISABLED_FirstContentfulPaintHiddenNoCommit) {
   GetPrerenderManager()->DisablePageLoadMetricsObserverForTesting();
   base::SimpleTestTickClock clock;
   OverridePrerenderManagerTimeTicks(&clock);
