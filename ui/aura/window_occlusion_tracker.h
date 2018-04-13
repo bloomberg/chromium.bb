@@ -198,9 +198,13 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // Root Windows of Windows in |tracked_windows_|.
   base::flat_map<Window*, RootWindowState> root_windows_;
 
+  // Number of times that occlusion has been recomputed in this process. We keep
+  // track of this for tests.
+  int num_times_occlusion_recomputed_ = 0;
+
   // Number of times that the current call to MaybeComputeOcclusion() has
   // recomputed occlusion states. Always 0 when not in MaybeComputeOcclusion().
-  int num_times_occlusion_recomputed_ = 0;
+  int num_times_occlusion_recomputed_in_current_step_ = 0;
 
   // Set to true when occlusion is recomputed too many times before it becomes
   // stable. Reset in

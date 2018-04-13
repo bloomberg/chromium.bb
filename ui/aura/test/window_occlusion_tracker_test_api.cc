@@ -12,6 +12,10 @@ namespace test {
 WindowOcclusionTrackerTestApi::WindowOcclusionTrackerTestApi() = default;
 WindowOcclusionTrackerTestApi::~WindowOcclusionTrackerTestApi() = default;
 
+int WindowOcclusionTrackerTestApi::GetNumTimesOcclusionRecomputed() const {
+  return WindowOcclusionTracker::GetInstance()->num_times_occlusion_recomputed_;
+}
+
 bool WindowOcclusionTrackerTestApi::WasOcclusionRecomputedTooManyTimes() {
   const bool local_was_occlusion_recomputed_too_many_times =
       WindowOcclusionTracker::GetInstance()

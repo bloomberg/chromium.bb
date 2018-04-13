@@ -16,6 +16,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
@@ -588,6 +589,11 @@ const ui::Layer* DesktopNativeWidgetAura::GetLayer() const {
 }
 
 void DesktopNativeWidgetAura::ReorderNativeViews() {
+  // Reordering native views causes multiple changes to the window tree.
+  // Instantiate a ScopedPauseOcclusionTracking to recompute occlusion once at
+  // the end of this scope rather than after each individual change.
+  // https://crbug.com/829918
+  aura::WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion;
   window_reorderer_->ReorderChildWindows();
 }
 
