@@ -35,9 +35,6 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
  public:
   LayoutTextControlSingleLine(HTMLInputElement*);
   ~LayoutTextControlSingleLine() override;
-  // FIXME: Move createInnerEditorStyle() to TextControlInnerEditorElement.
-  scoped_refptr<ComputedStyle> CreateInnerEditorStyle(
-      const ComputedStyle& start_style) const final;
 
   void CapsLockStateMayHaveChanged();
 
@@ -77,12 +74,10 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
   LayoutUnit ComputeControlLogicalHeight(
       LayoutUnit line_height,
       LayoutUnit non_content_height) const override;
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
   void AddOverflowFromChildren() final;
 
   bool AllowsOverflowClip() const override { return false; }
 
-  bool TextShouldBeTruncated() const;
   HTMLElement* InnerSpinButtonElement() const;
 
   bool should_draw_caps_lock_indicator_;

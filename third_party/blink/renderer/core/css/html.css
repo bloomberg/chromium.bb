@@ -510,6 +510,7 @@ textarea {
 }
 
 input::-webkit-input-placeholder {
+    text-overflow: inherit;
     line-height: initial;
     white-space: pre;
     word-wrap: normal;
@@ -518,7 +519,7 @@ input::-webkit-input-placeholder {
 }
 
 input::-internal-input-suggested {
-    text-overflow: ellipsis;
+    text-overflow: inherit;
     white-space: nowrap;
     overflow: hidden;
 }

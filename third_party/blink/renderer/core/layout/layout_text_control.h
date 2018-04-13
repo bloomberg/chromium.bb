@@ -30,15 +30,13 @@
 namespace blink {
 
 class TextControlElement;
+class TextControlInnerEditorElement;
 
 class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
  public:
   ~LayoutTextControl() override;
 
   TextControlElement* GetTextControlElement() const;
-  virtual scoped_refptr<ComputedStyle> CreateInnerEditorStyle(
-      const ComputedStyle& start_style) const = 0;
-
   const char* GetName() const override { return "LayoutTextControl"; }
 
  protected:
@@ -46,10 +44,9 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
 
   // This convenience function should not be made public because
   // innerEditorElement may outlive the layout tree.
-  HTMLElement* InnerEditorElement() const;
+  TextControlInnerEditorElement* InnerEditorElement() const;
 
   int ScrollbarThickness() const;
-  void AdjustInnerEditorStyle(ComputedStyle& text_block_style) const;
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 

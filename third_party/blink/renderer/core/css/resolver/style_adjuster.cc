@@ -667,6 +667,24 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   }
 
+  if (element && style.TextOverflow() == ETextOverflow::kEllipsis) {
+    const AtomicString& pseudo_id = element->ShadowPseudoId();
+    if (pseudo_id == "-webkit-input-placeholder" ||
+        pseudo_id == "-internal-input-suggested") {
+      TextControlElement* text_control =
+          ToTextControl(element->OwnerShadowHost());
+      DCHECK(text_control);
+      // TODO(futhark@chromium.org): We force clipping text overflow for focused
+      // input elements since we don't want to render ellipsis during editing.
+      // We should do this as a general solution which also includes
+      // contenteditable elements being edited. The computed style should not
+      // change, but LayoutBlockFlow::ShouldTruncateOverflowingText() should
+      // instead return false when text is being edited inside that block.
+      // https://crbug.com/814954
+      style.SetTextOverflow(text_control->ValueForTextOverflow());
+    }
+  }
+
   if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout() &&
       element) {
     const Document& document = element->GetDocument();
