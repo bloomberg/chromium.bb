@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/tools/indexing_tool.h"
+#include "components/subresource_filter/tools/indexing_tool.h"
 
 #include <memory>
 #include <string>

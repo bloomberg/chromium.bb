@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TOOLS_FILTER_TOOL_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TOOLS_FILTER_TOOL_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_TOOLS_FILTER_TOOL_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_TOOLS_FILTER_TOOL_H_
 
 #include <istream>
 #include <ostream>
@@ -79,4 +79,4 @@ class FilterTool {
 
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TOOLS_FILTER_TOOL_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_TOOLS_FILTER_TOOL_H_

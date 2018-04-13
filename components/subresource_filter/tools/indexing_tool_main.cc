@@ -6,7 +6,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "components/subresource_filter/core/common/tools/indexing_tool.h"
+#include "components/subresource_filter/tools/indexing_tool.h"
 
 const char kHelpMsg[] = R"(
   subresource_indexing_tool <unindexed_ruleset_file> <output_file>

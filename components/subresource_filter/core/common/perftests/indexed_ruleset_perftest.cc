@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
-#include "components/subresource_filter/core/common/tools/filter_tool.h"
-#include "components/subresource_filter/core/common/tools/indexing_tool.h"
+#include "components/subresource_filter/tools/filter_tool.h"
+#include "components/subresource_filter/tools/indexing_tool.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 

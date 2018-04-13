@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
-#include "components/subresource_filter/core/common/tools/filter_tool.h"
+#include "components/subresource_filter/tools/filter_tool.h"
 
 namespace {
 

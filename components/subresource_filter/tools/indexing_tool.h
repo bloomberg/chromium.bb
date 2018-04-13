@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TOOLS_INDEXING_TOOL_H_
-#define COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TOOLS_INDEXING_TOOL_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_TOOLS_INDEXING_TOOL_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_TOOLS_INDEXING_TOOL_H_
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -18,4 +18,4 @@ bool IndexAndWriteRuleset(const base::FilePath& unindexed_path,
 
 }  // namespace subresource_filter
 
-#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_COMMON_TOOLS_INDEXING_TOOL_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_TOOLS_INDEXING_TOOL_H_

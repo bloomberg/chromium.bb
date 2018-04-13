@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/subresource_filter/core/common/tools/filter_tool.h"
+#include "components/subresource_filter/tools/filter_tool.h"
 
 #include <algorithm>
 #include <memory>
