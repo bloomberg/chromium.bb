@@ -4,10 +4,12 @@
 
 #include "net/reporting/reporting_cache.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "net/reporting/reporting_client.h"
@@ -72,7 +74,51 @@ class ReportingCacheTest : public ReportingTestBase {
                        ReportingClient::kDefaultWeight);
   }
 
+  // Adds a new report to the cache, and returns it.
+  const ReportingReport* AddAndReturnReport(
+      const GURL& url,
+      const std::string& group,
+      const std::string& type,
+      std::unique_ptr<const base::Value> body,
+      int depth,
+      base::TimeTicks queued,
+      int attempts) {
+    const base::Value* body_unowned = body.get();
+
+    // The public API will only give us the (unordered) full list of reports in
+    // the cache.  So we need to grab the list before we add, and the list after
+    // we add, and return the one element that's different.  This is only used
+    // in test cases, so I've optimized for readability over execution speed.
+    std::vector<const ReportingReport*> before;
+    cache()->GetReports(&before);
+    cache()->AddReport(url, group, type, std::move(body), depth, queued,
+                       attempts);
+    std::vector<const ReportingReport*> after;
+    cache()->GetReports(&after);
+
+    for (const ReportingReport* report : after) {
+      // If report isn't in before, we've found the new instance.
+      if (std::find(before.begin(), before.end(), report) == before.end()) {
+        // Sanity check the result before we return it.
+        EXPECT_EQ(url, report->url);
+        EXPECT_EQ(group, report->group);
+        EXPECT_EQ(type, report->type);
+        EXPECT_EQ(*body_unowned, *report->body);
+        EXPECT_EQ(depth, report->depth);
+        EXPECT_EQ(queued, report->queued);
+        EXPECT_EQ(attempts, report->attempts);
+        return report;
+      }
+    }
+
+    // This can actually happen!  If the newly created report isn't in the after
+    // vector, that means that we had to evict a report, and the new report was
+    // the only one eligible for eviction!
+    return nullptr;
+  }
+
   const GURL kUrl1_ = GURL("https://origin1/path");
+  const GURL kUrl2_ = GURL("https://origin2/path");
   const url::Origin kOrigin1_ = url::Origin::Create(GURL("https://origin1/"));
   const url::Origin kOrigin2_ = url::Origin::Create(GURL("https://origin2/"));
   const GURL kEndpoint1_ = GURL("https://endpoint1/");
@@ -206,6 +252,73 @@ TEST_F(ReportingCacheTest, RemoveAllPendingReports) {
   EXPECT_EQ(0u, cache()->GetFullReportCountForTesting());
 }
 
+TEST_F(ReportingCacheTest, GetReportsAsValue) {
+  // We need a reproducible expiry timestamp for this test case.
+  const base::TimeTicks now = base::TimeTicks();
+  const ReportingReport* report1 = AddAndReturnReport(
+      kUrl1_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
+      now + base::TimeDelta::FromSeconds(200), 0);
+  const ReportingReport* report2 = AddAndReturnReport(
+      kUrl1_, kGroup2, kType_, std::make_unique<base::DictionaryValue>(), 0,
+      now + base::TimeDelta::FromSeconds(100), 1);
+  cache()->AddReport(kUrl2_, kGroup1_, kType_,
+                     std::make_unique<base::DictionaryValue>(), 2,
+                     now + base::TimeDelta::FromSeconds(200), 0);
+  cache()->AddReport(kUrl1_, kGroup1_, kType_,
+                     std::make_unique<base::DictionaryValue>(), 0,
+                     now + base::TimeDelta::FromSeconds(300), 0);
+  // Mark report1 as pending as report2 as doomed
+  cache()->SetReportsPending({report1, report2});
+  cache()->RemoveReports({report2}, ReportingReport::Outcome::UNKNOWN);
+
+  base::Value actual = cache()->GetReportsAsValue();
+  std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
+      [
+        {
+          "url": "https://origin1/path",
+          "group": "group2",
+          "type": "default",
+          "status": "doomed",
+          "body": {},
+          "attempts": 1,
+          "depth": 0,
+          "queued": "100000",
+        },
+        {
+          "url": "https://origin1/path",
+          "group": "group1",
+          "type": "default",
+          "status": "pending",
+          "body": {},
+          "attempts": 0,
+          "depth": 0,
+          "queued": "200000",
+        },
+        {
+          "url": "https://origin2/path",
+          "group": "group1",
+          "type": "default",
+          "status": "queued",
+          "body": {},
+          "attempts": 0,
+          "depth": 2,
+          "queued": "200000",
+        },
+        {
+          "url": "https://origin1/path",
+          "group": "group1",
+          "type": "default",
+          "status": "queued",
+          "body": {},
+          "attempts": 0,
+          "depth": 0,
+          "queued": "300000",
+        },
+      ]
+      )json");
+  EXPECT_EQ(*expected, actual);
+}
+
 TEST_F(ReportingCacheTest, Endpoints) {
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, kExpires1_);
   EXPECT_EQ(1, observer()->cache_update_count());
@@ -289,6 +402,62 @@ TEST_F(ReportingCacheTest, RemoveClientsForEndpoint) {
 
   cache()->GetClientsForOriginAndGroup(kOrigin2_, kGroup1_, &clients);
   EXPECT_TRUE(clients.empty());
+}
+
+TEST_F(ReportingCacheTest, GetClientsAsValue) {
+  // We need a reproducible expiry timestamp for this test case.
+  const base::TimeTicks expires =
+      base::TimeTicks() + base::TimeDelta::FromDays(7);
+  SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, expires);
+  SetClient(kOrigin2_, kEndpoint2_, false, kGroup1_, expires);
+
+  // Add some reports so that we can test the upload counts.
+  const ReportingReport* report1a = AddAndReturnReport(
+      kUrl1_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
+      expires, 0);
+  const ReportingReport* report1b = AddAndReturnReport(
+      kUrl1_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
+      expires, 1);
+  const ReportingReport* report2 = AddAndReturnReport(
+      kUrl2_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
+      expires, 1);
+  cache()->IncrementEndpointDeliveries(kEndpoint1_, {report1a, report1b}, true);
+  cache()->IncrementEndpointDeliveries(kEndpoint2_, {report2}, false);
+
+  base::Value actual = cache()->GetClientsAsValue();
+  std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
+      [
+        {
+          "origin": "https://origin1",
+          "groups": [
+            {
+              "name": "group1",
+              "expires": "604800000",
+              "endpoints": [
+                {"url": "https://endpoint1/", "priority": 0, "weight": 1,
+                 "successful": {"uploads": 1, "reports": 2},
+                 "failed": {"uploads": 0, "reports": 0}},
+              ],
+            },
+          ],
+        },
+        {
+          "origin": "https://origin2",
+          "groups": [
+            {
+              "name": "group1",
+              "expires": "604800000",
+              "endpoints": [
+                {"url": "https://endpoint2/", "priority": 0, "weight": 1,
+                 "successful": {"uploads": 0, "reports": 0},
+                 "failed": {"uploads": 1, "reports": 1}},
+              ],
+            },
+          ],
+        },
+      ]
+      )json");
+  EXPECT_EQ(*expected, actual);
 }
 
 TEST_F(ReportingCacheTest, RemoveAllClients) {

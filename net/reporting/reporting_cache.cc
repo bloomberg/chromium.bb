@@ -4,6 +4,7 @@
 
 #include "net/reporting/reporting_cache.h"
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <string>
@@ -15,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "net/log/net_log.h"
 #include "net/reporting/reporting_client.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_report.h"
@@ -104,6 +106,49 @@ class ReportingCacheImpl : public ReportingCache {
       if (!base::ContainsKey(doomed_reports_, it.first))
         reports_out->push_back(it.second.get());
     }
+  }
+
+  base::Value GetReportsAsValue() const override {
+    // Sort the queued reports by origin and timestamp.
+    std::vector<const ReportingReport*> sorted_reports;
+    sorted_reports.reserve(reports_.size());
+    for (const auto& it : reports_) {
+      sorted_reports.push_back(it.second.get());
+    }
+    std::sort(
+        sorted_reports.begin(), sorted_reports.end(),
+        [](const ReportingReport* report1, const ReportingReport* report2) {
+          if (report1->queued < report2->queued)
+            return true;
+          else if (report1->queued > report2->queued)
+            return false;
+          else
+            return report1->url < report2->url;
+        });
+
+    std::vector<base::Value> report_list;
+    for (const ReportingReport* report : sorted_reports) {
+      base::Value report_dict(base::Value::Type::DICTIONARY);
+      report_dict.SetKey("url", base::Value(report->url.spec()));
+      report_dict.SetKey("group", base::Value(report->group));
+      report_dict.SetKey("type", base::Value(report->type));
+      report_dict.SetKey("depth", base::Value(report->depth));
+      report_dict.SetKey(
+          "queued", base::Value(NetLog::TickCountToString(report->queued)));
+      report_dict.SetKey("attempts", base::Value(report->attempts));
+      if (report->body) {
+        report_dict.SetKey("body", report->body->Clone());
+      }
+      if (base::ContainsKey(doomed_reports_, report)) {
+        report_dict.SetKey("status", base::Value("doomed"));
+      } else if (base::ContainsKey(pending_reports_, report)) {
+        report_dict.SetKey("status", base::Value("pending"));
+      } else {
+        report_dict.SetKey("status", base::Value("queued"));
+      }
+      report_list.push_back(std::move(report_dict));
+    }
+    return base::Value(std::move(report_list));
   }
 
   void GetNonpendingReports(
@@ -261,6 +306,70 @@ class ReportingCacheImpl : public ReportingCache {
     for (const auto& it : clients_)
       for (const auto& endpoint_and_client : it.second)
         clients_out->push_back(endpoint_and_client.second.get());
+  }
+
+  base::Value GetClientsAsValue() const override {
+    std::map<const url::Origin,
+             std::map<const std::string, std::vector<const ReportingClient*>>>
+        clients_by_origin_and_group;
+    for (const auto& it : clients_) {
+      const url::Origin& origin = it.first;
+      for (const auto& endpoint_and_client : it.second) {
+        const ReportingClient* client = endpoint_and_client.second.get();
+        clients_by_origin_and_group[origin][client->group].push_back(client);
+      }
+    }
+
+    std::vector<base::Value> origin_list;
+    for (const auto& it : clients_by_origin_and_group) {
+      const url::Origin& origin = it.first;
+      base::Value origin_dict(base::Value::Type::DICTIONARY);
+      origin_dict.SetKey("origin", base::Value(origin.Serialize()));
+      std::vector<base::Value> group_list;
+      for (const auto& group_and_clients : it.second) {
+        const std::string& group = group_and_clients.first;
+        const std::vector<const ReportingClient*>& clients =
+            group_and_clients.second;
+        base::Value group_dict(base::Value::Type::DICTIONARY);
+        group_dict.SetKey("name", base::Value(group));
+        std::vector<base::Value> endpoint_list;
+        for (const ReportingClient* client : clients) {
+          base::Value endpoint_dict(base::Value::Type::DICTIONARY);
+          // Reporting defines the group as a whole to have an expiration time,
+          // not the individual endpoints within the group.
+          group_dict.SetKey(
+              "expires",
+              base::Value(NetLog::TickCountToString(client->expires)));
+          endpoint_dict.SetKey("url", base::Value(client->endpoint.spec()));
+          endpoint_dict.SetKey("priority", base::Value(client->priority));
+          endpoint_dict.SetKey("weight", base::Value(client->weight));
+          auto metadata_it = client_metadata_.find(client);
+          if (metadata_it != client_metadata_.end()) {
+            const ClientStatistics& stats = metadata_it->second.stats;
+            base::Value successful_dict(base::Value::Type::DICTIONARY);
+            successful_dict.SetKey("uploads",
+                                   base::Value(stats.successful_uploads));
+            successful_dict.SetKey("reports",
+                                   base::Value(stats.successful_reports));
+            endpoint_dict.SetKey("successful", std::move(successful_dict));
+            base::Value failed_dict(base::Value::Type::DICTIONARY);
+            failed_dict.SetKey("uploads",
+                               base::Value(stats.attempted_uploads -
+                                           stats.successful_uploads));
+            failed_dict.SetKey("reports",
+                               base::Value(stats.attempted_reports -
+                                           stats.successful_reports));
+            endpoint_dict.SetKey("failed", std::move(failed_dict));
+          }
+          endpoint_list.push_back(std::move(endpoint_dict));
+        }
+        group_dict.SetKey("endpoints", base::Value(std::move(endpoint_list)));
+        group_list.push_back(std::move(group_dict));
+      }
+      origin_dict.SetKey("groups", base::Value(std::move(group_list)));
+      origin_list.push_back(std::move(origin_dict));
+    }
+    return base::Value(std::move(origin_list));
   }
 
   void GetClientsForOriginAndGroup(
