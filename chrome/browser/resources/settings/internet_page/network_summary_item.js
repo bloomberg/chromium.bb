@@ -294,7 +294,7 @@ Polymer({
       }
     } else if (this.shouldShowSubpage_(
                    this.deviceState, this.networkStateList)) {
-      this.fire('show-networks', this.deviceState);
+      this.fire('show-networks', {type: this.deviceState.Type});
     } else if (this.activeNetworkState.GUID) {
       this.fire('show-detail', this.activeNetworkState);
     } else if (this.networkStateList.length > 0) {

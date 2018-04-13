@@ -315,7 +315,7 @@ Polymer({
    * @private
    */
   onShowNetworks_: function(event) {
-    this.showNetworksSubpage_(event.detail.Type);
+    this.showNetworksSubpage_(event.detail.type);
   },
 
   /**
@@ -361,9 +361,9 @@ Polymer({
    * @private
    */
   onShowKnownNetworks_: function(event) {
-    this.detailType_ = event.detail.Type;
+    this.detailType_ = event.detail.type;
     const params = new URLSearchParams;
-    params.append('type', event.detail.Type);
+    params.append('type', event.detail.type);
     this.knownNetworksType_ = event.detail.type;
     settings.navigateTo(settings.routes.KNOWN_NETWORKS, params);
   },
