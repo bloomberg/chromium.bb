@@ -14,6 +14,7 @@ import android.support.v4.util.ObjectsCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,17 +59,18 @@ public class AccountPickerDialogFragment extends DialogFragment {
     private class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
         class ViewHolder extends RecyclerView.ViewHolder {
             private final @Nullable ImageView mAccountImage;
-            private final @Nullable TextView mAccountName;
-            private final @Nullable TextView mAccountEmail;
+            private final @Nullable TextView mAccountTextPrimary;
+            private final @Nullable TextView mAccountTextSecondary;
             private final @Nullable ImageView mSelectionMark;
 
             /** Used for displaying profile data for existing account. */
-            ViewHolder(View view, @Nullable ImageView accountImage, @Nullable TextView accountName,
-                    @Nullable TextView accountEmail, @Nullable ImageView selectionMark) {
+            ViewHolder(View view, @Nullable ImageView accountImage,
+                    @Nullable TextView accountTextPrimary, @Nullable TextView accountTextSecondary,
+                    @Nullable ImageView selectionMark) {
                 super(view);
                 mAccountImage = accountImage;
-                mAccountName = accountName;
-                mAccountEmail = accountEmail;
+                mAccountTextPrimary = accountTextPrimary;
+                mAccountTextSecondary = accountTextSecondary;
                 mSelectionMark = selectionMark;
             }
 
@@ -79,8 +81,18 @@ public class AccountPickerDialogFragment extends DialogFragment {
 
             void onBind(DisplayableProfileData profileData, boolean isSelected) {
                 mAccountImage.setImageDrawable(profileData.getImage());
-                mAccountName.setText(profileData.getFullNameOrEmail());
-                mAccountEmail.setText(profileData.getAccountName());
+
+                String fullName = profileData.getFullName();
+                if (!TextUtils.isEmpty(fullName)) {
+                    mAccountTextPrimary.setText(fullName);
+                    mAccountTextSecondary.setText(profileData.getAccountName());
+                    mAccountTextSecondary.setVisibility(View.VISIBLE);
+                } else {
+                    // Full name is not available, show the email in the primary TextView.
+                    mAccountTextPrimary.setText(profileData.getAccountName());
+                    mAccountTextSecondary.setVisibility(View.GONE);
+                }
+
                 mSelectionMark.setVisibility(isSelected ? View.VISIBLE : View.GONE);
             }
         }
@@ -103,10 +115,12 @@ public class AccountPickerDialogFragment extends DialogFragment {
             }
             View view = inflater.inflate(R.layout.account_picker_row, viewGroup, false);
             ImageView accountImage = (ImageView) view.findViewById(R.id.account_image);
-            TextView accountName = (TextView) view.findViewById(R.id.account_name);
-            TextView accountEmail = (TextView) view.findViewById(R.id.account_email);
+            TextView accountTextPrimary = (TextView) view.findViewById(R.id.account_text_primary);
+            TextView accountTextSecondary =
+                    (TextView) view.findViewById(R.id.account_text_secondary);
             ImageView selectionMark = (ImageView) view.findViewById(R.id.account_selection_mark);
-            return new ViewHolder(view, accountImage, accountName, accountEmail, selectionMark);
+            return new ViewHolder(
+                    view, accountImage, accountTextPrimary, accountTextSecondary, selectionMark);
         }
 
         @Override
