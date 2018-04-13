@@ -10,10 +10,8 @@
 
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
-#import "remoting/ios/app/host_setup_footer_view.h"
 #import "remoting/ios/app/host_setup_header_view.h"
 #import "remoting/ios/app/host_setup_view_cell.h"
-#import "remoting/ios/app/remoting_theme.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/sys_string_conversions.h"
@@ -23,10 +21,12 @@
 // TODO(yuweih): Change to google.com/remotedesktop when ready.
 static NSString* const kInstallationLink = @"chrome.google.com/remotedesktop";
 
-static NSString* const kReusableIdentifierItem = @"remotingSetupStepVCItem";
+static NSString* const kHostSetupViewCellIdentifierItem =
+    @"HostSetupViewCellIdentifier";
+static NSString* const kHeaderViewIdentifierItem =
+    @"HostSetupHeaderViewIdentifier";
 
-static const CGFloat kHeaderHeight = 60.f;
-static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
+static const CGFloat kEstimatedRowHeight = 88.f;
 
 @interface HostSetupViewController () {
   NSArray<NSString*>* _setupSteps;
@@ -37,94 +37,56 @@ static const CGFloat kFooterHeight = 25.f;  // 80.0f for HostSetupFooterView
 
 @synthesize scrollViewDelegate = _scrollViewDelegate;
 
-- (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout {
-  self = [super initWithCollectionViewLayout:layout];
-  if (self) {
-    self.collectionView.backgroundColor = UIColor.clearColor;
-    [self.collectionView registerClass:[HostSetupViewCell class]
-            forCellWithReuseIdentifier:kReusableIdentifierItem];
-
-    [self.collectionView registerClass:[HostSetupHeaderView class]
-            forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
-                   withReuseIdentifier:UICollectionElementKindSectionHeader];
-
-    // TODO(yuweih): Use HostSetupFooterView once we have the email instructions
-    // feature.
-    [self.collectionView registerClass:[UICollectionReusableView class]
-            forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
-                   withReuseIdentifier:UICollectionElementKindSectionFooter];
-
-    _setupSteps = @[
-      base::SysUTF8ToNSString(l10n_util::GetStringFUTF8(
-          IDS_HOST_SETUP_STEP_1, base::SysNSStringToUTF16(kInstallationLink))),
-      base::SysUTF8ToNSString(l10n_util::GetStringUTF8(IDS_HOST_SETUP_STEP_2)),
-      base::SysUTF8ToNSString(l10n_util::GetStringUTF8(IDS_HOST_SETUP_STEP_3))
-    ];
-  }
-  return self;
-}
-
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
-  self.styler.cellLayoutType = MDCCollectionViewCellLayoutTypeList;
-  self.styler.shouldHideSeparators = YES;
+
+  self.tableView.allowsSelection = NO;
+  self.tableView.backgroundColor = UIColor.clearColor;
+  self.tableView.estimatedRowHeight = kEstimatedRowHeight;
+  self.tableView.rowHeight = UITableViewAutomaticDimension;
+  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+
+  // Implement the header as a cell instead of a section header so that it
+  // doesn't float on the top.
+  [self.tableView registerClass:[HostSetupHeaderView class]
+         forCellReuseIdentifier:kHeaderViewIdentifierItem];
+
+  [self.tableView registerClass:[HostSetupViewCell class]
+         forCellReuseIdentifier:kHostSetupViewCellIdentifierItem];
+
+  _setupSteps = @[
+    base::SysUTF8ToNSString(l10n_util::GetStringFUTF8(
+        IDS_HOST_SETUP_STEP_1, base::SysNSStringToUTF16(kInstallationLink))),
+    base::SysUTF8ToNSString(l10n_util::GetStringUTF8(IDS_HOST_SETUP_STEP_2)),
+    base::SysUTF8ToNSString(l10n_util::GetStringUTF8(IDS_HOST_SETUP_STEP_3))
+  ];
 }
 
-#pragma mark - UICollectionViewDataSource
+#pragma mark - UITableViewDataSource
 
-- (NSInteger)collectionView:(UICollectionView*)collectionView
-     numberOfItemsInSection:(NSInteger)section {
-  return _setupSteps.count;
+- (NSInteger)tableView:(UITableView*)tableView
+    numberOfRowsInSection:(NSInteger)section {
+  // Number of steps + header.
+  return _setupSteps.count + 1;
 }
 
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  HostSetupViewCell* cell = [collectionView
-      dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
-                                forIndexPath:indexPath];
-  NSString* contentText = _setupSteps[indexPath.item];
-  [cell setContentText:contentText number:indexPath.item + 1];
-  return cell;
-}
-
-- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
-          viewForSupplementaryElementOfKind:(NSString*)kind
-                                atIndexPath:(NSIndexPath*)indexPath {
-  UICollectionReusableView* view =
-      [collectionView dequeueReusableSupplementaryViewOfKind:kind
-                                         withReuseIdentifier:kind
-                                                forIndexPath:indexPath];
-  if (kind == UICollectionElementKindSectionFooter) {
-    // TODO(yuweih): No longer necessary once we use HostSetupFooterView.
-    view.backgroundColor = RemotingTheme.setupListBackgroundColor;
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  if (indexPath.item == 0) {
+    // Header.
+    return
+        [tableView dequeueReusableCellWithIdentifier:kHeaderViewIdentifierItem
+                                        forIndexPath:indexPath];
   }
-  return view;
-}
-
-#pragma mark - MDCCollectionViewStylingDelegate
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  return MDCCellDefaultThreeLineHeight;
-}
-
-#pragma mark - UICollectionViewDelegateFlowLayout
-
-- (CGSize)collectionView:(UICollectionView*)collectionView
-                             layout:
-                                 (UICollectionViewLayout*)collectionViewLayout
-    referenceSizeForHeaderInSection:(NSInteger)section {
-  return CGSizeMake(collectionView.bounds.size.width, kHeaderHeight);
-}
-
-- (CGSize)collectionView:(UICollectionView*)collectionView
-                             layout:
-                                 (UICollectionViewLayout*)collectionViewLayout
-    referenceSizeForFooterInSection:(NSInteger)section {
-  return CGSizeMake(collectionView.bounds.size.width, kFooterHeight);
+  HostSetupViewCell* cell = [tableView
+      dequeueReusableCellWithIdentifier:kHostSetupViewCellIdentifierItem
+                           forIndexPath:indexPath];
+  NSInteger stepIndex = indexPath.item - 1;
+  NSString* contentText = _setupSteps[stepIndex];
+  [cell setContentText:contentText number:stepIndex + 1];
+  return cell;
 }
 
 #pragma mark - UIScrollViewDelegate

@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 // The collection cell for each step when setting up the host.
-@interface HostSetupViewCell : UICollectionViewCell
+@interface HostSetupViewCell : UITableViewCell
 
 - (void)setContentText:(NSString*)text number:(NSInteger)number;
 

@@ -173,7 +173,7 @@ using remoting::HostListService;
           createForScrollView:_collectionViewController.collectionView
                   actionBlock:refreshAction],
       [[RefreshControlProvider instance]
-          createForScrollView:_setupViewController.collectionView
+          createForScrollView:_setupViewController.tableView
                   actionBlock:refreshAction],
     ];
   }
@@ -371,16 +371,16 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
 
   [self stopAllRefreshControls];
 
-  UICollectionViewController* contentViewController;
   if (_hostListService->hosts().size() > 0) {
     [_collectionViewController.collectionView reloadData];
-    contentViewController = _collectionViewController;
+    self.headerViewController.headerView.trackingScrollView =
+        _collectionViewController.collectionView;
+    self.contentViewController = _collectionViewController;
   } else {
-    contentViewController = _setupViewController;
+    self.headerViewController.headerView.trackingScrollView =
+        _setupViewController.tableView;
+    self.contentViewController = _setupViewController;
   }
-  self.headerViewController.headerView.trackingScrollView =
-      contentViewController.collectionView;
-  self.contentViewController = contentViewController;
   self.contentViewController.view.frame = self.view.bounds;
 }
 
