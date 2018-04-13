@@ -49,6 +49,10 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
       context.Count(WebFeature::kPrefixedCursorZoomIn);
     else if (id == CSSValueWebkitZoomOut)
       context.Count(WebFeature::kPrefixedCursorZoomOut);
+    else if (id == CSSValueWebkitGrab)
+      context.Count(WebFeature::kPrefixedCursorGrab);
+    else if (id == CSSValueWebkitGrabbing)
+      context.Count(WebFeature::kPrefixedCursorGrabbing);
   }
   CSSValue* cursor_type = nullptr;
   if (id == CSSValueHand) {
