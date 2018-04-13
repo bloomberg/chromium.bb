@@ -313,13 +313,12 @@ void Page::PlatformColorsChanged() {
     }
 }
 
-void Page::SetNeedsRecalcStyleInAllFrames() {
+void Page::InitialStyleChanged() {
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalFrame())
-      ToLocalFrame(frame)->GetDocument()->SetNeedsStyleRecalc(
-          kSubtreeStyleChange,
-          StyleChangeReasonForTracing::Create(StyleChangeReason::kSettings));
+    if (!frame->IsLocalFrame())
+      continue;
+    ToLocalFrame(frame)->GetDocument()->GetStyleEngine().InitialStyleChanged();
   }
 }
 
@@ -527,7 +526,7 @@ int Page::SubframeCount() const {
 void Page::SettingsChanged(SettingsDelegate::ChangeType change_type) {
   switch (change_type) {
     case SettingsDelegate::kStyleChange:
-      SetNeedsRecalcStyleInAllFrames();
+      InitialStyleChanged();
       break;
     case SettingsDelegate::kViewportDescriptionChange:
       if (MainFrame() && MainFrame()->IsLocalFrame()) {
