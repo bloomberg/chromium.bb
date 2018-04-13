@@ -101,18 +101,15 @@ const char kUrlUnescape[128] = {
 // Attempts to unescape the sequence at |index| within |escaped_text|.  If
 // successful, sets |value| to the unescaped value.  Returns whether
 // unescaping succeeded.
-template <typename STR>
-bool UnescapeUnsignedCharAtIndex(STR escaped_text,
+bool UnescapeUnsignedCharAtIndex(base::StringPiece escaped_text,
                                  size_t index,
                                  unsigned char* value) {
   if ((index + 2) >= escaped_text.size())
     return false;
   if (escaped_text[index] != '%')
     return false;
-  const typename STR::value_type most_sig_digit(
-      static_cast<typename STR::value_type>(escaped_text[index + 1]));
-  const typename STR::value_type least_sig_digit(
-      static_cast<typename STR::value_type>(escaped_text[index + 2]));
+  char most_sig_digit(escaped_text[index + 1]);
+  char least_sig_digit(escaped_text[index + 2]);
   if (base::IsHexDigit(most_sig_digit) && base::IsHexDigit(least_sig_digit)) {
     *value = base::HexDigitToInt(most_sig_digit) * 16 +
              base::HexDigitToInt(least_sig_digit);
@@ -123,8 +120,7 @@ bool UnescapeUnsignedCharAtIndex(STR escaped_text,
 
 // Returns true if there is an Arabic Language Mark at |index|. |first_byte|
 // is the byte at |index|.
-template <typename STR>
-bool HasArabicLanguageMarkAtIndex(STR escaped_text,
+bool HasArabicLanguageMarkAtIndex(base::StringPiece escaped_text,
                                   unsigned char first_byte,
                                   size_t index) {
   if (first_byte != 0xD8)
@@ -137,8 +133,7 @@ bool HasArabicLanguageMarkAtIndex(STR escaped_text,
 
 // Returns true if there is a BiDi control char at |index|. |first_byte| is the
 // byte at |index|.
-template <typename STR>
-bool HasThreeByteBidiControlCharAtIndex(STR escaped_text,
+bool HasThreeByteBidiControlCharAtIndex(base::StringPiece escaped_text,
                                         unsigned char first_byte,
                                         size_t index) {
   if (first_byte != 0xE2)
@@ -161,8 +156,7 @@ bool HasThreeByteBidiControlCharAtIndex(STR escaped_text,
 
 // Returns true if there is a four-byte banned char at |index|. |first_byte| is
 // the byte at |index|.
-template <typename STR>
-bool HasFourByteBannedCharAtIndex(STR escaped_text,
+bool HasFourByteBannedCharAtIndex(base::StringPiece escaped_text,
                                   unsigned char first_byte,
                                   size_t index) {
   // The following characters are blacklisted for spoofability concerns.
@@ -196,9 +190,8 @@ bool HasFourByteBannedCharAtIndex(STR escaped_text,
 // the alterations done to the string that are not one-character-to-one-
 // character.  The resulting |adjustments| will always be sorted by increasing
 // offset.
-template <typename STR>
-STR UnescapeURLWithAdjustmentsImpl(
-    base::BasicStringPiece<STR> escaped_text,
+std::string UnescapeURLWithAdjustmentsImpl(
+    base::StringPiece escaped_text,
     UnescapeRule::Type rules,
     base::OffsetAdjuster::Adjustments* adjustments) {
   if (adjustments)
@@ -210,7 +203,7 @@ STR UnescapeURLWithAdjustmentsImpl(
   // The output of the unescaping is always smaller than the input, so we can
   // reserve the input size to make sure we have enough buffer and don't have
   // to allocate in the loop below.
-  STR result;
+  std::string result;
   result.reserve(escaped_text.length());
 
   // Locations of adjusted text.
@@ -433,11 +426,6 @@ base::string16 EscapeForHTML(base::StringPiece16 input) {
 
 std::string UnescapeURLComponent(base::StringPiece escaped_text,
                                  UnescapeRule::Type rules) {
-  return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, NULL);
-}
-
-base::string16 UnescapeURLComponent(base::StringPiece16 escaped_text,
-                                    UnescapeRule::Type rules) {
   return UnescapeURLWithAdjustmentsImpl(escaped_text, rules, NULL);
 }
 

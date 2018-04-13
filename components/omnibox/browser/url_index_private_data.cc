@@ -190,10 +190,13 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     // the final filtering we need whitespace separated substrings possibly
     // containing escaped characters.
     base::string16 lower_raw_string(base::i18n::ToLower(search_string));
-    base::string16 lower_unescaped_string = net::UnescapeURLComponent(
-        lower_raw_string,
-        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+    // Have to convert to UTF-8 and back, because UnescapeURLComponent doesn't
+    // support unescaping UTF-8 characters and converting them to UTF-16.
+    base::string16 lower_unescaped_string =
+        base::UTF8ToUTF16(net::UnescapeURLComponent(
+            base::UTF16ToUTF8(lower_raw_string),
+            net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+                net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
 
     // Extract individual 'words' (as opposed to 'terms'; see comment in
     // HistoryIdsToScoredMatches()) from the search string. When the user types
