@@ -20,6 +20,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
+from chromite.lib import build_summary
 from chromite.lib import cidb
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -562,7 +563,7 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
         timeout_seconds=23456,
         buildbucket_id='200')
 
-    self._Prepare()
+    self._Prepare(extra_config={'chroot_use_image': False})
 
   def ConstructStage(self):
     return build_stages.CleanUpStage(self._run)
@@ -686,3 +687,68 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     search_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
                                    'SearchAllBuilds')
     search_mock.assert_not_called()
+
+  def testChrootReuseImageMismatch(self):
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanReuseChroot(chroot_path))
+
+  def testChrootReusePreviousFailed(self):
+    self.PatchObject(
+        build_stages.CleanUpStage,
+        '_GetPreviousBuildStatus',
+        return_value=build_summary.BuildSummary(
+            build_number=314,
+            status=constants.BUILDER_STATUS_FAILED))
+
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanReuseChroot(chroot_path))
+
+  def testChrootReusePreviousMasterMissing(self):
+    self.PatchObject(
+        build_stages.CleanUpStage,
+        '_GetPreviousBuildStatus',
+        return_value=build_summary.BuildSummary(
+            build_number=314,
+            master_build_id=2178,
+            status=constants.BUILDER_STATUS_PASSED))
+
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanReuseChroot(chroot_path))
+
+  def testChrootReusePreviousMasterFailed(self):
+    master_id = self.fake_db.InsertBuild(
+        'test_builder', waterfall.WATERFALL_TRYBOT, 123, 'test_config',
+        'test_hostname', status=constants.BUILDER_STATUS_FAILED,
+        buildbucket_id='2178')
+    self.PatchObject(
+        build_stages.CleanUpStage,
+        '_GetPreviousBuildStatus',
+        return_value=build_summary.BuildSummary(
+            build_number=314,
+            master_build_id=master_id,
+            status=constants.BUILDER_STATUS_PASSED))
+
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    stage = self.ConstructStage()
+    self.assertFalse(stage.CanReuseChroot(chroot_path))
+
+  def testChrootReuseAllPassed(self):
+    master_id = self.fake_db.InsertBuild(
+        'test_builder', waterfall.WATERFALL_TRYBOT, 123, 'test_config',
+        'test_hostname', status=constants.BUILDER_STATUS_PASSED,
+        buildbucket_id='2178')
+    self.PatchObject(
+        build_stages.CleanUpStage,
+        '_GetPreviousBuildStatus',
+        return_value=build_summary.BuildSummary(
+            build_number=314,
+            master_build_id=master_id,
+            status=constants.BUILDER_STATUS_PASSED))
+
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    stage = self.ConstructStage()
+    self.assertTrue(stage.CanReuseChroot(chroot_path))
