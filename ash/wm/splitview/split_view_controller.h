@@ -92,12 +92,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // primary orientation.
   bool IsCurrentScreenOrientationPrimary() const;
 
-  // Snaps window to left/right. |window_item_bounds| is the bounds of the
-  // overview window item in overview. It's empty if the snapped window doesn't
-  // come from overview grid.
-  void SnapWindow(aura::Window* window,
-                  SnapPosition snap_position,
-                  const gfx::Rect& window_item_bounds = gfx::Rect());
+  // Snaps window to left/right. It will try to remove |window| from the
+  // overview window grid first before snapping it if |window| is currently
+  // showing in the overview window grid.
+  void SnapWindow(aura::Window* window, SnapPosition snap_position);
 
   // Swaps the left and right windows. This will do nothing if one of the
   // windows is not snapped.
@@ -298,6 +296,11 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
 
   // Set |transform| for |window| and its transient descendants.
   void SetTransform(aura::Window* window, const gfx::Transform& transform);
+
+  // Removes the window item that contains |window| from the overview window
+  // grid if |window| is currently showing in overview window grid. It should be
+  // called before trying to snap the window.
+  void RemoveWindowFromOverviewIfApplicable(aura::Window* window);
 
   // Starts/Ends overview mode if the overview mode is inactive/active.
   void StartOverview();

@@ -196,10 +196,13 @@ bool SplitViewController::IsCurrentScreenOrientationPrimary() const {
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
-                                     SnapPosition snap_position,
-                                     const gfx::Rect& window_item_bounds) {
+                                     SnapPosition snap_position) {
   DCHECK(window && CanSnap(window));
   DCHECK_NE(snap_position, NONE);
+
+  // Before trying to snap |window|, try to remove it from the overview window
+  // grid if applicable.
+  RemoveWindowFromOverviewIfApplicable(window);
 
   if (state_ == NO_SNAP) {
     // Add observers when the split view mode starts.
@@ -229,9 +232,6 @@ void SplitViewController::SnapWindow(aura::Window* window,
     left_window_ = (window == left_window_) ? nullptr : left_window_;
   }
   StartObserving(window);
-
-  if (!window_item_bounds.IsEmpty())
-    overview_window_item_bounds_map_[window] = window_item_bounds;
 
   // Update the divider position and window bounds before snapping a new window.
   // Since the minimum size of |window| maybe larger than currently bounds in
@@ -564,28 +564,9 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // If the to-be-snapped window comes from the overview grid, get its overview
-  // window item bounds before trying to snap it.
-  gfx::Rect window_item_bounds;
-  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
-    WindowSelector* window_selector =
-        Shell::Get()->window_selector_controller()->window_selector();
-    WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
-        GetDefaultSnappedWindow()->GetRootWindow());
-    if (current_grid) {
-      WindowSelectorItem* item =
-          current_grid->GetWindowSelectorItemContaining(gained_active);
-      if (item) {
-        window_item_bounds = item->target_bounds();
-        window_selector->RemoveWindowSelectorItem(item);
-      }
-    }
-  }
-
   // Snap the window on the non-default side of the screen if split view mode
   // is active.
-  SnapWindow(gained_active, (default_snap_position_ == LEFT) ? RIGHT : LEFT,
-             window_item_bounds);
+  SnapWindow(gained_active, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
 }
 
 void SplitViewController::OnOverviewModeStarting() {
@@ -624,10 +605,7 @@ void SplitViewController::OnOverviewModeEnding() {
     for (const auto& window_selector_item : windows) {
       aura::Window* window = window_selector_item->GetWindow();
       if (CanSnap(window) && window != GetDefaultSnappedWindow()) {
-        const gfx::Rect item_bounds = window_selector_item->target_bounds();
-        window_selector->RemoveWindowSelectorItem(window_selector_item.get());
-        SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT,
-                   item_bounds);
+        SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT);
         return;
       }
     }
@@ -1256,6 +1234,33 @@ void SplitViewController::SetTransform(aura::Window* window,
   DCHECK(window);
   for (auto* window_iter : wm::GetTransientTreeIterator(window))
     window_iter->SetTransform(transform);
+}
+
+void SplitViewController::RemoveWindowFromOverviewIfApplicable(
+    aura::Window* window) {
+  if (!Shell::Get()->window_selector_controller()->IsSelecting())
+    return;
+
+  WindowSelector* window_selector =
+      Shell::Get()->window_selector_controller()->window_selector();
+  WindowGrid* current_grid =
+      window_selector->GetGridWithRootWindow(window->GetRootWindow());
+  if (!current_grid)
+    return;
+
+  WindowSelectorItem* item =
+      current_grid->GetWindowSelectorItemContaining(window);
+  if (!item)
+    return;
+
+  // Before removing |window| from overview grid, remember its current bounds
+  // in the overview grid.
+  overview_window_item_bounds_map_[window] = item->target_bounds();
+
+  // Remove it from the grid. The transform will be reset later after the
+  // window is snapped.
+  item->RestoreWindow(/*reset_transform=*/false);
+  window_selector->RemoveWindowSelectorItem(item);
 }
 
 void SplitViewController::StartOverview() {
