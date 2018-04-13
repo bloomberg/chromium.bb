@@ -794,8 +794,11 @@ v8::Local<v8::FunctionTemplate> V8DOMConfiguration::DomClassTemplate(
   if (!interface_template.IsEmpty())
     return interface_template;
 
+  // We assume all constructors have no JS-observable side effect.
   interface_template = v8::FunctionTemplate::New(
-      isolate, V8ObjectConstructor::IsValidConstructorMode);
+      isolate, V8ObjectConstructor::IsValidConstructorMode,
+      v8::Local<v8::Value>(), v8::Local<v8::Signature>(), 0,
+      v8::ConstructorBehavior::kAllow, v8::SideEffectType::kHasNoSideEffect);
   configure_dom_class_template(isolate, world, interface_template);
   data->SetInterfaceTemplate(world, wrapper_type_info, interface_template);
   return interface_template;
