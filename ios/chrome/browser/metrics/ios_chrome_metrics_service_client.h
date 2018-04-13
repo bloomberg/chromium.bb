@@ -76,6 +76,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   base::TimeDelta GetStandardUploadInterval() override;
   void OnRendererProcessCrash() override;
   bool IsHistorySyncEnabledOnAllProfiles() override;
+  bool AreNotificationListenersEnabledOnAllProfiles() override;
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
@@ -108,10 +109,12 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
   // user is performing work. This is useful to allow some features to sleep,
   // until the machine becomes active, such as precluding UMA uploads unless
   // there was recent activity.
-  void RegisterForNotifications();
+  // Returns true if registration was successful.
+  bool RegisterForNotifications();
 
   // Register to observe events on a browser state's services.
-  void RegisterForBrowserStateEvents(ios::ChromeBrowserState* browser_state);
+  // Returns true if registration was successful.
+  bool RegisterForBrowserStateEvents(ios::ChromeBrowserState* browser_state);
 
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);
@@ -129,6 +132,9 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
 
   // The UkmService that |this| is a client of.
   std::unique_ptr<ukm::UkmService> ukm_service_;
+
+  // Whether we registered all notification listeners successfully.
+  bool notification_listeners_active_;
 
   // The IOSChromeStabilityMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.

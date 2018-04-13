@@ -89,6 +89,9 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   bool IsUMACellularUploadLogicEnabled() override;
   bool IsHistorySyncEnabledOnAllProfiles() override;
   bool IsExtensionSyncEnabledOnAllProfiles() override;
+  bool AreNotificationListenersEnabledOnAllProfiles() override;
+  static void SetNotificationListenerSetupFailedForTesting(
+      bool simulate_failure);
 
   // ukm::HistoryDeleteObserver:
   void OnHistoryDeleted() override;
@@ -143,10 +146,12 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // user is performing work. This is useful to allow some features to sleep,
   // until the machine becomes active, such as precluding UMA uploads unless
   // there was recent activity.
-  void RegisterForNotifications();
+  // Returns true if registration was successful for all profiles.
+  bool RegisterForNotifications();
 
   // Call to listen for events on the selected profile's services.
-  void RegisterForProfileEvents(Profile* profile);
+  // Returns true if we registered for all notifications we wanted successfully.
+  bool RegisterForProfileEvents(Profile* profile);
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -184,6 +189,9 @@ class ChromeMetricsServiceClient : public metrics::MetricsServiceClient,
   // chrome::NOTIFICATION_BROWSER_OPENED instead.
   std::unique_ptr<TabModelListObserver> incognito_observer_;
 #endif  // defined(OS_ANDROID)
+
+  // Whether we registered all notification listeners successfully.
+  bool notification_listeners_active_;
 
   // A queue of tasks for initial metrics gathering. These may be asynchronous
   // or synchronous.
