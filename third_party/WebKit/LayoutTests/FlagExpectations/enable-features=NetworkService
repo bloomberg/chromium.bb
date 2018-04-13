@@ -16,7 +16,6 @@ crbug.com/807271 external/wpt/service-workers/service-worker/fetch-canvas-tainti
 Bug(none) external/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Pass Failure Crash ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Timeout ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
-Bug(none) external/wpt/service-workers/service-worker/registration-updateviacache.https.html [ Failure Timeout ]
 Bug(none) http/tests/appcache/top-frame-3.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/top-frame-4.html [ Pass Timeout ]
 Bug(none) http/tests/appcache/local-content.html [ Pass Timeout ]
@@ -65,7 +64,6 @@ Bug(none) http/tests/security/mime-type-execute-as-html-01.html [ Failure ]
 Bug(none) http/tests/security/mime-type-execute-as-html-04.html [ Failure ]
 Bug(none) http/tests/security/mixedContent/filesystem-url-in-iframe.html [ Failure Timeout ]
 Bug(none) http/tests/security/offscreen-canvas-worker-read-blocked-by-setting.html [ Crash Pass Timeout ]
-Bug(none) http/tests/serviceworker/chromium.update-served-from-cache.html [ Failure ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
 
 # Plugin throttle is not implemented.

@@ -71,6 +71,10 @@ class ServiceWorkerUtils {
                                          bool* has_range_out,
                                          uint64_t* offset_out,
                                          uint64_t* size_out);
+
+  static bool ShouldBypassCacheDueToUpdateViaCache(
+      bool is_main_script,
+      blink::mojom::ServiceWorkerUpdateViaCache cache_mode);
 };
 
 class CONTENT_EXPORT LongestScopeMatcher {
