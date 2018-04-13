@@ -116,13 +116,12 @@ TEST_F(ExtensionHooksDelegateTest, SendRequestDisabled) {
   // TODO(devlin): Add a SetBackgroundPage() to ExtensionBuilder?
   scoped_refptr<Extension> extension =
       ExtensionBuilder("foo")
-          .MergeManifest(
-              DictionaryBuilder()
-                  .Set("background", DictionaryBuilder()
-                                         .SetBoolean("persistent", false)
-                                         .Set("page", "page.html")
-                                         .Build())
-                  .Build())
+          .MergeManifest(DictionaryBuilder()
+                             .Set("background", DictionaryBuilder()
+                                                    .Set("persistent", false)
+                                                    .Set("page", "page.html")
+                                                    .Build())
+                             .Build())
           .SetLocation(Manifest::UNPACKED)
           .Build();
   RegisterExtension(extension);

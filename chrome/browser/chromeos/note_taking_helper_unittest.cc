@@ -405,7 +405,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
             .Append(extensions::DictionaryBuilder()
                         .Set("action", app_runtime::ToString(
                                            app_runtime::ACTION_TYPE_NEW_NOTE))
-                        .SetBoolean("enabled_on_lock_screen", true)
+                        .Set("enabled_on_lock_screen", true)
                         .Build())
             .Build();
 

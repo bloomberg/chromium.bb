@@ -28,11 +28,6 @@ std::string DictionaryBuilder::ToJSON() const {
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          const char* in_value) {
-  return Set(path, std::string(in_value));
-}
-
-DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           int in_value) {
   dict_->SetWithoutPathExpansion(path, std::make_unique<base::Value>(in_value));
   return *this;
@@ -42,6 +37,17 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           double in_value) {
   dict_->SetWithoutPathExpansion(path, std::make_unique<base::Value>(in_value));
   return *this;
+}
+
+DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
+                                          bool in_value) {
+  dict_->SetWithoutPathExpansion(path, std::make_unique<base::Value>(in_value));
+  return *this;
+}
+
+DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
+                                          const char* in_value) {
+  return Set(path, std::string(in_value));
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
@@ -63,12 +69,6 @@ DictionaryBuilder& DictionaryBuilder::Set(
   return *this;
 }
 
-DictionaryBuilder& DictionaryBuilder::SetBoolean(
-    const std::string& path, bool in_value) {
-  dict_->SetWithoutPathExpansion(path, std::make_unique<base::Value>(in_value));
-  return *this;
-}
-
 // ListBuilder
 
 ListBuilder::ListBuilder() : list_(new base::ListValue) {}
@@ -83,6 +83,11 @@ ListBuilder& ListBuilder::Append(int in_value) {
 
 ListBuilder& ListBuilder::Append(double in_value) {
   list_->AppendDouble(in_value);
+  return *this;
+}
+
+ListBuilder& ListBuilder::Append(bool in_value) {
+  list_->AppendBoolean(in_value);
   return *this;
 }
 
@@ -102,11 +107,6 @@ ListBuilder& ListBuilder::Append(const base::string16& in_value) {
 
 ListBuilder& ListBuilder::Append(std::unique_ptr<base::Value> in_value) {
   list_->Append(std::move(in_value));
-  return *this;
-}
-
-ListBuilder& ListBuilder::AppendBoolean(bool in_value) {
-  list_->AppendBoolean(in_value);
   return *this;
 }
 

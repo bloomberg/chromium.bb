@@ -82,7 +82,7 @@ scoped_refptr<Extension> CreateExtension(const std::string& extension_id,
                   .Set("manifest_version", 2)
                   .Set("background", DictionaryBuilder()
                                          .Set("page", "background.html")
-                                         .SetBoolean("persistent", persistent)
+                                         .Set("persistent", persistent)
                                          .Build())
                   .Build())
           .SetID(extension_id)
