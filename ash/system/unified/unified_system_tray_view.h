@@ -63,6 +63,7 @@ class UnifiedSystemTrayView : public views::View {
 
   // views::View:
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
   // Unowned.
