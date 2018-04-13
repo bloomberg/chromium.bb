@@ -36,6 +36,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/caption_buttons/caption_button_types.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -2258,6 +2259,36 @@ void remote_surface_set_extra_title(wl_client* client,
       base::string16(base::UTF8ToUTF16(extra_title)));
 }
 
+ash::OrientationLockType OrientationLock(uint32_t orientation_lock) {
+  switch (orientation_lock) {
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_NONE:
+      return ash::OrientationLockType::kAny;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_CURRENT:
+      return ash::OrientationLockType::kCurrent;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_PORTRAIT:
+      return ash::OrientationLockType::kPortrait;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_LANDSCAPE:
+      return ash::OrientationLockType::kLandscape;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_PORTRAIT_PRIMARY:
+      return ash::OrientationLockType::kPortraitPrimary;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_PORTRAIT_SECONDARY:
+      return ash::OrientationLockType::kPortraitSecondary;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_LANDSCAPE_PRIMARY:
+      return ash::OrientationLockType::kLandscapePrimary;
+    case ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_LANDSCAPE_SECONDARY:
+      return ash::OrientationLockType::kLandscapeSecondary;
+  }
+  VLOG(2) << "Unexpected value of orientation_lock: " << orientation_lock;
+  return ash::OrientationLockType::kAny;
+}
+
+void remote_surface_set_orientation_lock(wl_client* client,
+                                         wl_resource* resource,
+                                         uint32_t orientation_lock) {
+  GetUserDataAs<ClientControlledShellSurface>(resource)->SetOrientationLock(
+      OrientationLock(orientation_lock));
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -2297,7 +2328,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_start_resize,
     remote_surface_set_frame,
     remote_surface_set_frame_buttons,
-    remote_surface_set_extra_title};
+    remote_surface_set_extra_title,
+    remote_surface_set_orientation_lock};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:
@@ -2724,7 +2756,7 @@ const struct zcr_remote_shell_v1_interface remote_shell_implementation = {
     remote_shell_destroy, remote_shell_get_remote_surface,
     remote_shell_get_notification_surface};
 
-const uint32_t remote_shell_version = 13;
+const uint32_t remote_shell_version = 14;
 
 void bind_remote_shell(wl_client* client,
                        void* data,

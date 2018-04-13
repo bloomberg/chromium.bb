@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="13">
+  <interface name="zcr_remote_shell_v1" version="14">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -183,7 +183,7 @@
     </event>
   </interface>
 
-  <interface name="zcr_remote_surface_v1" version="13">
+  <interface name="zcr_remote_surface_v1" version="14">
     <description summary="A desktop window">
       An interface that may be implemented by a wl_surface, for
       implementations that provide a desktop-style user interface
@@ -859,6 +859,30 @@
       </description>
       <arg name="extra_title" type="string"/>
     </request>
+
+    <!-- Version 14 additions -->
+
+    <enum name="orientation_lock">
+      <description summary="orientation lock request for remote surfaces">
+	Defines orientation request when a remote surface is in foreground.
+      </description>
+      <entry name="none" value="1" summary="no orientation lock"/>
+      <entry name="portrait" value="2" summary="primary or secondary portrait"/>
+      <entry name="landscape" value="3" summary="primary or secondary landscape"/>
+      <entry name="current" value="4" summary="keep current orientation"/>
+      <entry name="portrait_primary" value="5" summary="primary portrait"/>
+      <entry name="landscape_primary" value="6" summary="primary landscape"/>
+      <entry name="portrait_secondary" value="7" summary="secondary portrait"/>
+      <entry name="landscape_secondary" value="8" summary="secondary landscape"/>
+    </enum>
+
+    <request name="set_orientation_lock" since="14">
+      <description summary="set orientation lock for a remote surface">
+	Request a specific orientation behavior when this surface is in foreground.
+      </description>
+      <arg name="orientation_lock" type="uint" summary="the orientation lock"/>
+    </request>
+
   </interface>
 
   <interface name="zcr_notification_surface_v1" version="1">

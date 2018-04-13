@@ -4,6 +4,7 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/custom_frame_view_ash.h"
@@ -63,6 +64,11 @@ bool IsWidgetPinned(views::Widget* widget) {
 
 int GetShadowElevation(aura::Window* window) {
   return window->GetProperty(wm::kShadowElevationKey);
+}
+
+void EnableTabletMode(bool enable) {
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      enable);
 }
 
 }  // namespace
@@ -1150,6 +1156,39 @@ TEST_F(ClientControlledShellSurfaceTest, MultiDisplay) {
     EXPECT_EQ(gfx::Point(100, 0).ToString(),
               display.bounds().origin().ToString());
   }
+}
+
+// Set orientation lock to a window.
+TEST_F(ClientControlledShellSurfaceTest, SetOrientationLock) {
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  EnableTabletMode(true);
+  ash::ScreenOrientationController* controller =
+      ash::Shell::Get()->screen_orientation_controller();
+
+  gfx::Size buffer_size(256, 256);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+  surface->Attach(buffer.get());
+  shell_surface->SetMaximized();
+  surface->Commit();
+
+  shell_surface->SetOrientationLock(
+      ash::OrientationLockType::kLandscapePrimary);
+  EXPECT_TRUE(controller->rotation_locked());
+  display::Display display(display::Screen::GetScreen()->GetPrimaryDisplay());
+  gfx::Size displaySize = display.size();
+  EXPECT_GT(displaySize.width(), displaySize.height());
+
+  shell_surface->SetOrientationLock(ash::OrientationLockType::kAny);
+  EXPECT_FALSE(controller->rotation_locked());
+
+  EnableTabletMode(false);
 }
 
 }  // namespace exo

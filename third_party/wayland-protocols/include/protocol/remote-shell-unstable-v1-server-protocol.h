@@ -604,6 +604,50 @@ enum zcr_remote_surface_v1_frame_button_type {
 };
 #endif /* ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_ENUM */
 
+#ifndef ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_ENUM
+#define ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_ENUM
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ * orientation lock request for remote surfaces
+ *
+ * Defines orientation request when a remote surface is in foreground.
+ */
+enum zcr_remote_surface_v1_orientation_lock {
+	/**
+	 * no orientation lock
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_NONE = 1,
+	/**
+	 * primary or secondary portrait
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_PORTRAIT = 2,
+	/**
+	 * primary or secondary landscape
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_LANDSCAPE = 3,
+	/**
+	 * keep current orientation
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_CURRENT = 4,
+	/**
+	 * primary portrait
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_PORTRAIT_PRIMARY = 5,
+	/**
+	 * primary landscape
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_LANDSCAPE_PRIMARY = 6,
+	/**
+	 * secondary portrait
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_PORTRAIT_SECONDARY = 7,
+	/**
+	 * secondary landscape
+	 */
+	ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_LANDSCAPE_SECONDARY = 8,
+};
+#endif /* ZCR_REMOTE_SURFACE_V1_ORIENTATION_LOCK_ENUM */
+
 /**
  * @ingroup iface_zcr_remote_surface_v1
  * @struct zcr_remote_surface_v1_interface
@@ -1133,6 +1177,17 @@ struct zcr_remote_surface_v1_interface {
 	void (*set_extra_title)(struct wl_client *client,
 				struct wl_resource *resource,
 				const char *extra_title);
+	/**
+	 * set orientation lock for a remote surface
+	 *
+	 * Request a specific orientation behavior when this surface is
+	 * in foreground.
+	 * @param orientation_lock the orientation lock
+	 * @since 14
+	 */
+	void (*set_orientation_lock)(struct wl_client *client,
+				     struct wl_resource *resource,
+				     uint32_t orientation_lock);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE 0
@@ -1328,6 +1383,10 @@ struct zcr_remote_surface_v1_interface {
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_SET_EXTRA_TITLE_SINCE_VERSION 13
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_ORIENTATION_LOCK_SINCE_VERSION 14
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
