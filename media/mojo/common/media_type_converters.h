@@ -14,7 +14,6 @@
 
 namespace media {
 class AudioBuffer;
-class AudioDecoderConfig;
 class DecoderBuffer;
 class DecryptConfig;
 struct CdmKeyInformation;
@@ -46,19 +45,6 @@ struct TypeConverter<scoped_refptr<media::DecoderBuffer>,
                      media::mojom::DecoderBufferPtr> {
   static scoped_refptr<media::DecoderBuffer> Convert(
       const media::mojom::DecoderBufferPtr& input);
-};
-
-template <>
-struct TypeConverter<media::mojom::AudioDecoderConfigPtr,
-                     media::AudioDecoderConfig> {
-  static media::mojom::AudioDecoderConfigPtr Convert(
-      const media::AudioDecoderConfig& input);
-};
-template <>
-struct TypeConverter<media::AudioDecoderConfig,
-                     media::mojom::AudioDecoderConfigPtr> {
-  static media::AudioDecoderConfig Convert(
-      const media::mojom::AudioDecoderConfigPtr& input);
 };
 
 template <>

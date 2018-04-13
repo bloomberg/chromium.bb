@@ -10,29 +10,13 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
-#include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "media/base/encryption_pattern.h"
-#include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace mojo {
-
-template <>
-struct TypeConverter<media::mojom::EncryptionPatternPtr,
-                     media::EncryptionPattern> {
-  static media::mojom::EncryptionPatternPtr Convert(
-      const media::EncryptionPattern& input);
-};
-template <>
-struct TypeConverter<media::EncryptionPattern,
-                     media::mojom::EncryptionPatternPtr> {
-  static media::EncryptionPattern Convert(
-      const media::mojom::EncryptionPatternPtr& input);
-};
 
 // static
 media::mojom::DecryptConfigPtr
@@ -126,35 +110,6 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
   // own DataPipe.  See http://crbug.com/432960
 
   return buffer;
-}
-
-// static
-media::mojom::AudioDecoderConfigPtr
-TypeConverter<media::mojom::AudioDecoderConfigPtr, media::AudioDecoderConfig>::
-    Convert(const media::AudioDecoderConfig& input) {
-  media::mojom::AudioDecoderConfigPtr config(
-      media::mojom::AudioDecoderConfig::New());
-  config->codec = input.codec();
-  config->sample_format = input.sample_format();
-  config->channel_layout = input.channel_layout();
-  config->samples_per_second = input.samples_per_second();
-  config->extra_data = input.extra_data();
-  config->seek_preroll = input.seek_preroll();
-  config->codec_delay = input.codec_delay();
-  config->encryption_scheme = input.encryption_scheme();
-  return config;
-}
-
-// static
-media::AudioDecoderConfig
-TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
-    Convert(const media::mojom::AudioDecoderConfigPtr& input) {
-  media::AudioDecoderConfig config;
-  config.Initialize(input->codec, input->sample_format, input->channel_layout,
-                    input->samples_per_second, input->extra_data,
-                    input->encryption_scheme, input->seek_preroll,
-                    input->codec_delay);
-  return config;
 }
 
 // static
