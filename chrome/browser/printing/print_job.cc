@@ -51,18 +51,18 @@ PrintJob::~PrintJob() {
   DCHECK(RunsTasksInCurrentSequence());
 }
 
-void PrintJob::Initialize(PrintJobWorkerOwner* job,
+void PrintJob::Initialize(PrinterQuery* query,
                           const base::string16& name,
                           int page_count) {
   DCHECK(!worker_);
   DCHECK(!is_job_pending_);
   DCHECK(!is_canceling_);
   DCHECK(!document_);
-  worker_ = job->DetachWorker(this);
-  settings_ = job->settings();
+  worker_ = query->DetachWorker(this);
+  settings_ = query->settings();
 
   auto new_doc =
-      base::MakeRefCounted<PrintedDocument>(settings_, name, job->cookie());
+      base::MakeRefCounted<PrintedDocument>(settings_, name, query->cookie());
   new_doc->set_page_count(page_count);
   UpdatePrintedDocument(new_doc);
 
@@ -120,12 +120,6 @@ std::unique_ptr<PrintJobWorker> PrintJob::DetachWorker(
 
 const PrintSettings& PrintJob::settings() const {
   return settings_;
-}
-
-int PrintJob::cookie() const {
-  // Use an invalid cookie if |document_| does not exist.
-  // TODO(thestig): Check if this is even reachable.
-  return document_ ? document_->cookie() : 0;
 }
 
 void PrintJob::StartPrinting() {

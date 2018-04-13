@@ -71,9 +71,9 @@ class TestPrintViewManager : public PrintViewManagerBase {
 
  protected:
   // Override to create a TestPrintJob instead of a real one.
-  bool CreateNewPrintJob(PrintJobWorkerOwner* job) override {
+  bool CreateNewPrintJob(PrinterQuery* query) override {
     print_job_ = base::MakeRefCounted<TestPrintJob>();
-    print_job_->Initialize(job, RenderSourceName(), number_pages_);
+    print_job_->Initialize(query, RenderSourceName(), number_pages_);
     return true;
   }
 

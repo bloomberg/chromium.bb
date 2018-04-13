@@ -11,10 +11,11 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/printing/print_job.h"
-#include "chrome/browser/printing/print_job_worker_owner.h"
 #include "printing/print_settings.h"
 
 namespace printing {
+
+class PrinterQuery;
 
 class TestPrintJob : public PrintJob {
  public:
@@ -36,7 +37,7 @@ class TestPrintJob : public PrintJob {
                const content::NotificationDetails& details) override {}
 
   // All remaining functions are PrintJob implementation.
-  void Initialize(PrintJobWorkerOwner* job,
+  void Initialize(PrinterQuery* query,
                   const base::string16& name,
                   int page_count) override;
 

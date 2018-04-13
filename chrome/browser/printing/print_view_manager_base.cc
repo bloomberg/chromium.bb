@@ -116,7 +116,7 @@ PrintViewManagerBase::PrintViewManagerBase(content::WebContents* web_contents)
       inside_inner_message_loop_(false),
       queue_(g_browser_process->print_job_manager()->queue()),
       weak_ptr_factory_(this) {
-  DCHECK(queue_.get());
+  DCHECK(queue_);
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   printing_enabled_.Init(
@@ -417,11 +417,11 @@ void PrintViewManagerBase::RenderFrameDeleted(
   PrintManager::PrintingRenderFrameDeleted();
   ReleasePrinterQuery();
 
-  if (!print_job_.get())
+  if (!print_job_)
     return;
 
   scoped_refptr<PrintedDocument> document(print_job_->document());
-  if (document.get()) {
+  if (document) {
     // If IsComplete() returns false, the document isn't completely rendered.
     // Since our renderer is gone, there's nothing to do, cancel it. Otherwise,
     // the print job may finish without problem.
@@ -523,7 +523,7 @@ void PrintViewManagerBase::OnNotifyPrintJobEvent(
 }
 
 bool PrintViewManagerBase::RenderAllMissingPagesNow() {
-  if (!print_job_.get() || !print_job_->is_job_pending())
+  if (!print_job_ || !print_job_->is_job_pending())
     return false;
 
   // Is the document already complete?
@@ -571,8 +571,9 @@ void PrintViewManagerBase::ShouldQuitFromInnerMessageLoop() {
   }
 }
 
-bool PrintViewManagerBase::CreateNewPrintJob(PrintJobWorkerOwner* job) {
+bool PrintViewManagerBase::CreateNewPrintJob(PrinterQuery* query) {
   DCHECK(!inside_inner_message_loop_);
+  DCHECK(query);
 
   // Disconnect the current |print_job_|.
   DisconnectFromCurrentPrintJob();
@@ -583,13 +584,9 @@ bool PrintViewManagerBase::CreateNewPrintJob(PrintJobWorkerOwner* job) {
     return false;
   }
 
-  DCHECK(!print_job_.get());
-  DCHECK(job);
-  if (!job)
-    return false;
-
+  DCHECK(!print_job_);
   print_job_ = base::MakeRefCounted<PrintJob>();
-  print_job_->Initialize(job, RenderSourceName(), number_pages_);
+  print_job_->Initialize(query, RenderSourceName(), number_pages_);
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  content::Source<PrintJob>(print_job_.get()));
   printing_succeeded_ = false;
@@ -602,8 +599,7 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
   bool result = RenderAllMissingPagesNow();
 
   // Verify that assertion.
-  if (print_job_.get() &&
-      print_job_->document() &&
+  if (print_job_ && print_job_->document() &&
       !print_job_->document()->IsComplete()) {
     DCHECK(!result);
     // That failed.
@@ -615,7 +611,7 @@ void PrintViewManagerBase::DisconnectFromCurrentPrintJob() {
 }
 
 void PrintViewManagerBase::TerminatePrintJob(bool cancel) {
-  if (!print_job_.get())
+  if (!print_job_)
     return;
 
   if (cancel) {
@@ -638,7 +634,7 @@ void PrintViewManagerBase::ReleasePrintJob() {
   content::RenderFrameHost* rfh = printing_rfh_;
   printing_rfh_ = nullptr;
 
-  if (!print_job_.get())
+  if (!print_job_)
     return;
 
   if (rfh) {
@@ -692,7 +688,7 @@ bool PrintViewManagerBase::RunInnerMessageLoop() {
 }
 
 bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
-  if (print_job_.get())
+  if (print_job_)
     return true;
 
   if (!cookie) {
@@ -704,7 +700,7 @@ bool PrintViewManagerBase::OpportunisticallyCreatePrintJob(int cookie) {
   // The job was initiated by a script. Time to get the corresponding worker
   // thread.
   scoped_refptr<PrinterQuery> queued_query = queue_->PopPrinterQuery(cookie);
-  if (!queued_query.get()) {
+  if (!queued_query) {
     NOTREACHED();
     return false;
   }
@@ -748,7 +744,7 @@ void PrintViewManagerBase::ReleasePrinterQuery() {
 
   scoped_refptr<PrinterQuery> printer_query;
   printer_query = queue_->PopPrinterQuery(cookie);
-  if (!printer_query.get())
+  if (!printer_query)
     return;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

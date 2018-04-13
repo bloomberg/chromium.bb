@@ -22,11 +22,11 @@ PrintQueriesQueue::~PrintQueriesQueue() {
   queued_queries_.clear();
 }
 
-void PrintQueriesQueue::QueuePrinterQuery(PrinterQuery* job) {
+void PrintQueriesQueue::QueuePrinterQuery(PrinterQuery* query) {
   base::AutoLock lock(lock_);
-  DCHECK(job);
-  queued_queries_.push_back(base::WrapRefCounted(job));
-  DCHECK(job->is_valid());
+  DCHECK(query);
+  queued_queries_.push_back(base::WrapRefCounted(query));
+  DCHECK(query->is_valid());
 }
 
 scoped_refptr<PrinterQuery> PrintQueriesQueue::PopPrinterQuery(

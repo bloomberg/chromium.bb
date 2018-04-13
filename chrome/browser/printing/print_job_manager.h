@@ -29,7 +29,7 @@ class PrintQueriesQueue : public base::RefCountedThreadSafe<PrintQueriesQueue> {
   // Queues a semi-initialized worker thread. Can be called from any thread.
   // Current use case is queuing from the I/O thread.
   // TODO(maruel):  Have them vanish after a timeout (~5 minutes?)
-  void QueuePrinterQuery(PrinterQuery* job);
+  void QueuePrinterQuery(PrinterQuery* query);
 
   // Pops a queued PrintJobWorkerOwner object that was previously queued or
   // create new one. Can be called from any thread.
