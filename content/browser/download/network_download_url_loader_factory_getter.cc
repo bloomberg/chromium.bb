@@ -6,18 +6,13 @@
 
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/common/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
 NetworkDownloadURLLoaderFactoryGetter::NetworkDownloadURLLoaderFactoryGetter(
-    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-    network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info,
-    network::mojom::URLLoaderFactoryRequest proxy_factory_request)
-    : url_loader_factory_getter_(url_loader_factory_getter),
-      proxy_factory_ptr_info_(std::move(proxy_factory_ptr_info)),
-      proxy_factory_request_(std::move(proxy_factory_request)) {}
+    scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
+    : url_loader_factory_getter_(url_loader_factory_getter) {}
 
 NetworkDownloadURLLoaderFactoryGetter::
     ~NetworkDownloadURLLoaderFactoryGetter() = default;
@@ -26,17 +21,7 @@ scoped_refptr<network::SharedURLLoaderFactory>
 NetworkDownloadURLLoaderFactoryGetter::GetURLLoaderFactory() {
   DCHECK(download::GetIOTaskRunner());
   DCHECK(download::GetIOTaskRunner()->BelongsToCurrentThread());
-  if (lazy_factory_)
-    return lazy_factory_;
-  if (proxy_factory_request_.is_pending()) {
-    url_loader_factory_getter_->CloneNetworkFactory(
-        std::move(proxy_factory_request_));
-    lazy_factory_ = base::MakeRefCounted<WrapperSharedURLLoaderFactory>(
-        std::move(proxy_factory_ptr_info_));
-  } else {
-    lazy_factory_ = url_loader_factory_getter_->GetNetworkFactory();
-  }
-  return lazy_factory_;
+  return url_loader_factory_getter_->GetNetworkFactory();
 }
 
 }  // namespace content
