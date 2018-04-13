@@ -778,10 +778,6 @@ bool ChromeClientImpl::HasOpenedPopup() const {
 
 PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
-  // TODO(crbug.com/779126): add support for the menu in immersive mode.
-  if (frame.GetDocument()->GetSettings()->GetImmersiveModeEnabled())
-    return nullptr;
-
   NotifyPopupOpeningObservers();
   if (WebViewImpl::UseExternalPopupMenus())
     return new ExternalPopupMenu(frame, select, *web_view_);

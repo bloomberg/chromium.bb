@@ -182,11 +182,6 @@ class PagePopupSuppressionTest : public testing::Test {
                                                       params);
   }
 
-  bool CanOpenPopupMenu() {
-    LocalFrame* frame = main_frame_->GetFrame();
-    return !!chrome_client_impl_->OpenPopupMenu(*frame, *select_);
-  }
-
   Settings* GetSettings() {
     LocalFrame* frame = main_frame_->GetFrame();
     return frame->GetDocument()->GetSettings();
@@ -240,19 +235,6 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 
   settings->SetImmersiveModeEnabled(false);
   EXPECT_TRUE(CanOpenDateTimeChooser());
-}
-
-TEST_F(PagePopupSuppressionTest, SuppressPopupMenu) {
-  // By default, the popup should be shown.
-  EXPECT_TRUE(CanOpenPopupMenu());
-
-  Settings* settings = GetSettings();
-  settings->SetImmersiveModeEnabled(true);
-
-  EXPECT_FALSE(CanOpenPopupMenu());
-
-  settings->SetImmersiveModeEnabled(false);
-  EXPECT_TRUE(CanOpenPopupMenu());
 }
 
 }  // namespace blink
