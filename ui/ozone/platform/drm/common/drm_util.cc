@@ -392,7 +392,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   const gfx::Size maximum_cursor_size = GetMaximumCursorSize(fd);
 
   std::string display_name;
-  int64_t display_id = -1;
+  int64_t display_id = display_index;
   int64_t product_code = display::DisplaySnapshot::kInvalidProductCode;
   int32_t year_of_manufacture = display::kInvalidYearOfManufacture;
   bool has_overscan = false;
