@@ -194,6 +194,7 @@ void ContentInputDelegate::OnWebInputIndicesChanged(
       i.selection_end == selection_end &&
       i.composition_start == composition_start &&
       i.composition_end == composition_end) {
+    pending_text_input_info_ = TextInputInfo();
     return;
   }
 
@@ -205,6 +206,11 @@ void ContentInputDelegate::OnWebInputIndicesChanged(
   update_state_callbacks_.emplace(std::move(callback));
   content_->RequestWebInputText(base::BindOnce(
       &ContentInputDelegate::OnWebInputTextChanged, base::Unretained(this)));
+}
+
+void ContentInputDelegate::ClearTextInputState() {
+  pending_text_input_info_ = TextInputInfo();
+  last_keyboard_edit_ = EditedText();
 }
 
 void ContentInputDelegate::OnWebInputTextChanged(const base::string16& text) {

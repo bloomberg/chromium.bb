@@ -682,6 +682,10 @@ std::unique_ptr<UiElement> CreateHostedUi(
       kNone, kPhaseForeground, content_input_delegate, base::DoNothing());
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
                      kContentHeight * kHostedUiHeightRatio);
+  // The hosted UI doesn't steal focus so that clikcing on an autofill
+  // suggestion doesn't hide the keyboard. We will probably need to change this
+  // when we support the keyboard on native UI elements.
+  hosted_ui->set_focusable(false);
   hosted_ui->SetVisible(false);
   hosted_ui->set_opacity_when_visible(1.0);
   hosted_ui->set_requires_layout(false);
@@ -1189,14 +1193,16 @@ void UiSceneCreator::CreateContentQuad() {
                           base::Unretained(browser_)));
   EventHandlers event_handlers;
   event_handlers.focus_change = base::BindRepeating(
-      [](Model* model, ContentElement* e, bool focused) {
-        if (focused) {
-          e->UpdateInput(model->web_input_text_field_info);
-        } else {
-          e->UpdateInput(EditedText());
+      [](Model* model, ContentElement* e, ContentInputDelegate* delegate,
+         bool focused) {
+        if (!focused) {
+          model->web_input_text_field_info = EditedText();
+          delegate->ClearTextInputState();
         }
+        e->UpdateInput(model->web_input_text_field_info);
       },
-      model_, base::Unretained(main_content.get()));
+      model_, base::Unretained(main_content.get()),
+      base::Unretained(content_input_delegate_));
   main_content->set_event_handlers(event_handlers);
   main_content->SetName(kContentQuad);
   main_content->set_hit_testable(true);
