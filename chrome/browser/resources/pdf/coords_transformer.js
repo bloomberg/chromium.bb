@@ -42,6 +42,7 @@ window.PDFCoordsTransformer = class {
 
   /**
    * Send a 'transformPagePoint' message to the plugin.
+   *
    * @param {function(Object, Object):void} callback Function to call when the
    *     response is received.
    * @param {Object} params User parameters to be used in |callback|.
@@ -59,6 +60,7 @@ window.PDFCoordsTransformer = class {
 
   /**
    * Call when 'transformPagePointReply' is received from the plugin.
+   *
    * @param {Object} message The message received from the plugin.
    */
   onReplyReceived(message) {

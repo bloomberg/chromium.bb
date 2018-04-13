@@ -6,6 +6,7 @@
 
 /**
  * Global PDFViewer object, accessible for testing.
+ *
  * @type Object
  */
 var viewer;
@@ -15,12 +16,14 @@ var viewer;
 /**
  * Stores any pending messages received which should be passed to the
  * PDFViewer when it is created.
+ *
  * @type Array
  */
 var pendingMessages = [];
 
 /**
  * Handles events that are received prior to the PDFViewer being created.
+ *
  * @param {Object} message A message event received.
  */
 function handleScriptingMessage(message) {
@@ -29,6 +32,7 @@ function handleScriptingMessage(message) {
 
 /**
  * Initialize the global PDFViewer and pass any outstanding messages to it.
+ *
  * @param {Object} browserApi An object providing an API to the browser.
  */
 function initViewer(browserApi) {

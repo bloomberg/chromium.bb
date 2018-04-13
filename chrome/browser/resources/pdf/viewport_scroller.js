@@ -5,15 +5,17 @@
 'use strict';
 
 /**
- * @private
  * The period of time in milliseconds to wait between updating the viewport
  * position by the scroll velocity.
+ *
+ * @private
  */
 ViewportScroller.DRAG_TIMER_INTERVAL_MS_ = 100;
 
 /**
- * @private
  * The maximum drag scroll distance per DRAG_TIMER_INTERVAL in pixels.
+ *
+ * @private
  */
 ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_ = 100;
 
@@ -21,6 +23,7 @@ ViewportScroller.MAX_DRAG_SCROLL_DISTANCE_ = 100;
  * Creates a new ViewportScroller.
  * A ViewportScroller scrolls the page in response to drag selection with the
  * mouse.
+ *
  * @param {Object} viewport The viewport info of the page.
  * @param {Object} plugin The PDF plugin element.
  * @param {Object} window The window containing the viewer.
@@ -38,9 +41,10 @@ function ViewportScroller(viewport, plugin, window) {
 
 ViewportScroller.prototype = {
   /**
-   * @private
    * Start scrolling the page by |scrollVelocity_| every
    * |DRAG_TIMER_INTERVAL_MS_|.
+   *
+   * @private
    */
   startDragScrollTimer_: function() {
     if (this.timerId_ === null) {
@@ -52,8 +56,9 @@ ViewportScroller.prototype = {
   },
 
   /**
-   * @private
    * Stops the drag scroll timer if it is active.
+   *
+   * @private
    */
   stopDragScrollTimer_: function() {
     if (this.timerId_ !== null) {
@@ -64,8 +69,9 @@ ViewportScroller.prototype = {
   },
 
   /**
-   * @private
    * Scrolls the viewport by the current scroll velocity.
+   *
+   * @private
    */
   dragScrollPage_: function() {
     var position = this.viewport_.position;
@@ -79,11 +85,12 @@ ViewportScroller.prototype = {
   },
 
   /**
-   * @private
    * Calculate the velocity to scroll while dragging using the distance of the
    * cursor outside the viewport.
+   *
    * @param {Object} event The mousemove event.
    * @return {Object} Object with x and y direction scroll velocity.
+   * @private
    */
   calculateVelocity_: function(event) {
     var x =
@@ -102,10 +109,11 @@ ViewportScroller.prototype = {
   },
 
   /**
-   * @private
    * Handles mousemove events. It updates the scroll velocity and starts and
    * stops timer based on scroll velocity.
+   *
    * @param {Object} event The mousemove event.
+   * @private
    */
   onMousemove_: function(event) {
     this.scrollVelocity_ = this.calculateVelocity_(event);
@@ -118,6 +126,7 @@ ViewportScroller.prototype = {
   /**
    * Sets whether to scroll the viewport when the mouse is outside the
    * viewport.
+   *
    * @param {boolean} isSelecting Represents selection status.
    */
   setEnableScrolling: function(isSelecting) {
