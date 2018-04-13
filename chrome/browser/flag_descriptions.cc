@@ -418,6 +418,11 @@ const char kEnableHttpFormWarningDescription[] =
     "Attaches a warning UI to any password or credit card fields detected when "
     "the top-level page is not HTTPS";
 
+const char kEnableLazyFrameLoadingName[] = "Enable lazy frame loading";
+const char kEnableLazyFrameLoadingDescription[] =
+    "Defers the loading of certain cross-origin frames until the page is "
+    "scrolled down near them.";
+
 const char kEnableMacMaterialDesignDownloadShelfName[] =
     "Enable Material Design download shelf";
 

@@ -27034,6 +27034,7 @@ from previous Chrome versions.
   <int value="388996324" label="CustomContextMenu:disabled"/>
   <int value="393704200" label="account-consistency"/>
   <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
+  <int value="400272381" label="LazyFrameLoading:disabled"/>
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
@@ -27459,6 +27460,7 @@ from previous Chrome versions.
   <int value="1371907429" label="enable-wallet-card-import"/>
   <int value="1372680885" label="enable-mtp-write-support"/>
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
+  <int value="1375165388" label="LazyFrameLoading:enabled"/>
   <int value="1376437124" label="show-cert-link"/>
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
