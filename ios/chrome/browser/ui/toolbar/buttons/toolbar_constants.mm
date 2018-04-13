@@ -51,6 +51,9 @@ const CGFloat kBlurBackgroundGrayscaleComponent = 0.98;
 const CGFloat kBlurBackgroundAlpha = 0.5;
 
 const CGFloat kToolbarButtonTintColorAlpha = 0.5;
+const CGFloat kToolbarButtonTintColorAlphaHighlighted = 0.10;
+const CGFloat kIncognitoToolbarButtonTintColorAlphaHighlighted = 0.21;
+const CGFloat kToolbarButtonDimmedTintColorAlphaDelta = 0.3;
 
 const NSInteger kShowTabStripButtonMaxTabCount = 99;
 

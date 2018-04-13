@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_tints.h"
+#import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -64,6 +65,7 @@ const CGFloat kStrokeEndAtApogee = 1;
 
 @interface ToolbarToolsMenuButton ()<CAAnimationDelegate> {
   // The style of the toolbar the button is in.
+  // TODO(crbug.com/800266): Remove this ivar.
   ToolbarControllerStyle style_;
   // Whether the tools menu is visible.
   BOOL toolsMenuVisible_;
@@ -92,20 +94,28 @@ const CGFloat kStrokeEndAtApogee = 1;
     style_ = style;
     pathLayers_ = [[NSMutableArray alloc] initWithCapacity:kNumberOfDots];
 
-    [self setTintColor:toolbar::NormalButtonTint(style_)
-              forState:UIControlStateNormal];
-    [self setTintColor:toolbar::HighlighButtonTint(style_)
-              forState:UIControlStateHighlighted];
+    if (!IsUIRefreshPhase1Enabled()) {
+      [self setTintColor:toolbar::NormalButtonTint(style_)
+                forState:UIControlStateNormal];
+      [self setTintColor:toolbar::HighlighButtonTint(style_)
+                forState:UIControlStateHighlighted];
+    }
   }
   return self;
 }
 
 - (void)setToolsMenuIsVisible:(BOOL)toolsMenuVisible {
+  if (IsUIRefreshPhase1Enabled())
+    return;
+
   toolsMenuVisible_ = toolsMenuVisible;
   [self updateTintOfButton];
 }
 
 - (void)setReadingListContainsUnseenItems:(BOOL)readingListContainsUnseenItems {
+  if (IsUIRefreshPhase1Enabled())
+    return;
+
   readingListContainsUnseenItems_ = readingListContainsUnseenItems;
   [self updateTintOfButton];
 }
@@ -153,16 +163,34 @@ const CGFloat kStrokeEndAtApogee = 1;
 // Makes the button's tint color reflect its current state.
 - (void)updateTint {
   UIColor* newTint = nil;
-  switch (self.state) {
-    case UIControlStateNormal:
-      newTint = self.normalStateTint;
-      break;
-    case UIControlStateHighlighted:
-      newTint = self.highlightedStateTint;
-      break;
-    default:
-      newTint = self.normalStateTint;
-      break;
+  if (IsUIRefreshPhase1Enabled()) {
+    if (self.dimmed) {
+      newTint = self.configuration.buttonsTintColorDimmed;
+    } else {
+      switch (self.state) {
+        case UIControlStateNormal:
+          newTint = self.configuration.buttonsTintColor;
+          break;
+        case UIControlStateHighlighted:
+          newTint = self.configuration.buttonsTintColorHighlighted;
+          break;
+        default:
+          newTint = self.configuration.buttonsTintColor;
+          break;
+      }
+    }
+  } else {
+    switch (self.state) {
+      case UIControlStateNormal:
+        newTint = self.normalStateTint;
+        break;
+      case UIControlStateHighlighted:
+        newTint = self.highlightedStateTint;
+        break;
+      default:
+        newTint = self.normalStateTint;
+        break;
+    }
   }
   self.tintColor = newTint;
 }

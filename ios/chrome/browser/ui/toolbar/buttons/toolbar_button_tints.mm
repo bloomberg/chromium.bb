@@ -19,21 +19,13 @@ const int kLightModeNormalColor = 0x5A5A5A;
 const int kIncognitoModeNormalColor = 0xFFFFFF;
 const int kDarkModeNormalColor = 0xFFFFFF;
 const int kPressedColor = 0x4285F4;
-const CGFloat kPressedAlphaLight = 0.10;
-const CGFloat kPressedAlphaDark = 0.21;
 
 UIColor* NormalButtonTint(ToolbarControllerStyle style) {
   switch (style) {
     case ToolbarControllerStyleLightMode:
-      if (IsUIRefreshPhase1Enabled())
-        return [UIColor colorWithWhite:0 alpha:kToolbarButtonTintColorAlpha];
-      else
-        return UIColorFromRGB(kLightModeNormalColor);
+      return UIColorFromRGB(kLightModeNormalColor);
     case ToolbarControllerStyleIncognitoMode:
-      if (IsUIRefreshPhase1Enabled())
-        return [UIColor whiteColor];
-      else
-        return UIColorFromRGB(kIncognitoModeNormalColor);
+      return UIColorFromRGB(kIncognitoModeNormalColor);
     case ToolbarControllerStyleDarkMode:
       return UIColorFromRGB(kDarkModeNormalColor);
     case ToolbarControllerStyleMaxStyles:
@@ -43,17 +35,7 @@ UIColor* NormalButtonTint(ToolbarControllerStyle style) {
 }
 
 UIColor* HighlighButtonTint(ToolbarControllerStyle style) {
-  if (!IsUIRefreshPhase1Enabled())
-    return UIColorFromRGB(kPressedColor);
-
-  if (style == ToolbarControllerStyleLightMode) {
-    return [UIColor colorWithWhite:0 alpha:kPressedAlphaLight];
-  } else if (style == ToolbarControllerStyleIncognitoMode ||
-             style == ToolbarControllerStyleDarkMode) {
-    return [UIColor colorWithWhite:1 alpha:kPressedAlphaDark];
-  }
-  NOTREACHED();
-  return nil;
+  return UIColorFromRGB(kPressedColor);
 }
 
 }  // namespace toolbar

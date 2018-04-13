@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_presentation_state_provider.h"
 
 @class CommandDispatcher;
+@protocol TabHistoryUIUpdater;
 @protocol ToolbarCoordinatorDelegate;
 @protocol ToolsMenuConfigurationProvider;
 @protocol UrlLoader;
@@ -44,6 +45,8 @@ initWithToolsMenuConfigurationProvider:
 // URL loader for the toolbar.
 // TODO(crbug.com/799446): Remove this.
 @property(nonatomic, weak) id<UrlLoader> URLLoader;
+
+- (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 
 // Start this coordinator.
 - (void)start;

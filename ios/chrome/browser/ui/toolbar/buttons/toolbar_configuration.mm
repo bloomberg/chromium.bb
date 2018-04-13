@@ -102,6 +102,37 @@
   }
 }
 
+- (UIColor*)buttonsTintColorHighlighted {
+  DCHECK(IsUIRefreshPhase1Enabled());
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor colorWithWhite:0
+                               alpha:kToolbarButtonTintColorAlphaHighlighted];
+      break;
+    case INCOGNITO:
+      return [UIColor
+          colorWithWhite:1
+                   alpha:kIncognitoToolbarButtonTintColorAlphaHighlighted];
+      break;
+  }
+}
+
+- (UIColor*)buttonsTintColorDimmed {
+  DCHECK(IsUIRefreshPhase1Enabled());
+  switch (self.style) {
+    case NORMAL:
+      return [UIColor colorWithWhite:0
+                               alpha:kToolbarButtonTintColorAlpha -
+                                     kToolbarButtonDimmedTintColorAlphaDelta];
+      break;
+    case INCOGNITO:
+      return
+          [UIColor colorWithWhite:1
+                            alpha:1 - kToolbarButtonDimmedTintColorAlphaDelta];
+      break;
+  }
+}
+
 - (UIColor*)buttonTitleNormalColor {
   switch (self.style) {
     case NORMAL:

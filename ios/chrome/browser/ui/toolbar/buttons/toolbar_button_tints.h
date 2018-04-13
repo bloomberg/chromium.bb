@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 
+// TODO(crbug.com/800266): Remove this file.
 namespace toolbar {
 
 // Returns the tint color for a toolbar button in the normal state.

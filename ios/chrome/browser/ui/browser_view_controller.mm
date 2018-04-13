@@ -581,6 +581,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Coordinator for displaying snackbars.
   SnackbarCoordinator* _snackbarCoordinator;
 
+  ToolbarCoordinatorAdaptor* _toolbarCoordinatorAdaptor;
+
   // Coordinator for the toolbar.
   ToolbarCoordinator* _toolbarCoordinator;
 
@@ -1500,8 +1502,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.dispatcher dismissPopupMenuAnimated:NO];
   } else {
     [self.dispatcher dismissToolsMenu];
-  }
-  if (!base::FeatureList::IsEnabled(kNewToolsMenu)) {
     [_tabHistoryCoordinator dismissHistoryPopup];
   }
   [_contextMenuCoordinator stop];
@@ -2044,11 +2044,11 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     bottomToolbarCoordinator.dispatcher = self.dispatcher;
     [bottomToolbarCoordinator start];
 
-    ToolbarCoordinatorAdaptor* adaptor =
+    _toolbarCoordinatorAdaptor =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
-    self.toolbarInterface = adaptor;
-    [adaptor addToolbarCoordinator:topToolbarCoordinator];
-    [adaptor addToolbarCoordinator:bottomToolbarCoordinator];
+    self.toolbarInterface = _toolbarCoordinatorAdaptor;
+    [_toolbarCoordinatorAdaptor addToolbarCoordinator:topToolbarCoordinator];
+    [_toolbarCoordinatorAdaptor addToolbarCoordinator:bottomToolbarCoordinator];
   } else {
     _toolbarCoordinator = [[ToolbarCoordinator alloc]
         initWithToolsMenuConfigurationProvider:self
@@ -2247,9 +2247,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                       browserState:self.browserState];
     self.popupMenuCoordinator.dispatcher = _dispatcher;
     self.popupMenuCoordinator.webStateList = [_model webStateList];
+    self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
     [self.popupMenuCoordinator start];
-  }
-  if (!base::FeatureList::IsEnabled(kNewToolsMenu)) {
+  } else {
     _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
         initWithBaseViewController:self
                       browserState:_browserState];
@@ -2257,7 +2257,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _tabHistoryCoordinator.tabModel = _model;
     _tabHistoryCoordinator.presentationProvider = self;
     _tabHistoryCoordinator.tabHistoryUIUpdater =
-        [self.toolbarInterface tabHistoryUIUpdater];
+        [_toolbarCoordinator tabHistoryUIUpdater];
   }
 
   _sadTabCoordinator = [[SadTabLegacyCoordinator alloc] init];
@@ -2479,8 +2479,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     [self.dispatcher dismissPopupMenuAnimated:NO];
   } else {
     [self.dispatcher dismissToolsMenu];
-  }
-  if (!base::FeatureList::IsEnabled(kNewToolsMenu)) {
     [_tabHistoryCoordinator dismissHistoryPopup];
   }
   [self.tabTipBubblePresenter dismissAnimated:NO];

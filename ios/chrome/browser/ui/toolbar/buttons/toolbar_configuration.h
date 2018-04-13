@@ -40,6 +40,13 @@
 // Tint color of the buttons.
 @property(nonatomic, readonly) UIColor* buttonsTintColor;
 
+// Tint color of the buttons in the highlighted state. This is only to be used
+// if the button has a custom style.
+@property(nonatomic, readonly) UIColor* buttonsTintColorHighlighted;
+
+// Tint color of the buttons in the dimmed state.
+@property(nonatomic, readonly) UIColor* buttonsTintColorDimmed;
+
 // Color of the title of the buttons for the normal state.
 // TODO(crbug.com/800266): Remove this property.
 @property(nonatomic, readonly) UIColor* buttonTitleNormalColor;
