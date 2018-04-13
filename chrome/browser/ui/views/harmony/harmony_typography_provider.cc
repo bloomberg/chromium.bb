@@ -203,7 +203,8 @@ SkColor HarmonyTypographyProvider::GetColor(const views::View& view,
       return gfx::kGoogleGreen700;
   }
 
-  return SkColorSetRGB(0x21, 0x21, 0x21);  // Primary for everything else.
+  // Use GoogleGrey900 as primary color for everything else.
+  return gfx::kGoogleGrey900;
 }
 
 int HarmonyTypographyProvider::GetLineHeight(int context, int style) const {
