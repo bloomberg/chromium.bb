@@ -28879,6 +28879,12 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Non-Secure"/>
 </enum>
 
+<enum name="MatchResult">
+  <int value="0" label="Valid match"/>
+  <int value="1" label="Invalid match"/>
+  <int value="2" label="Index Out of Bounds"/>
+</enum>
+
 <enum name="MayLaunchUrlType">
   <int value="0" label="No MayLaunchUrl() call."/>
   <int value="1" label="Low confidence."/>

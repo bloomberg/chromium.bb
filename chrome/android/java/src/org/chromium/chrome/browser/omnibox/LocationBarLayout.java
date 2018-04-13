@@ -383,8 +383,7 @@ public class LocationBarLayout
 
             String suggestionMatchUrl = updateSuggestionUrlIfNeeded(suggestionMatch,
                         suggestionMatchPosition, skipOutOfBoundsCheck);
-            loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestionMatch.getTransition(),
-                    suggestionMatchPosition, suggestionMatch.getType());
+            loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestionMatchPosition, suggestionMatch);
         }
     }
 
@@ -1640,8 +1639,7 @@ public class LocationBarLayout
                 }
                 String suggestionMatchUrl = updateSuggestionUrlIfNeeded(
                         suggestion, position, false);
-                loadUrlFromOmniboxMatch(suggestionMatchUrl, suggestion.getTransition(), position,
-                        suggestion.getType());
+                loadUrlFromOmniboxMatch(suggestionMatchUrl, position, suggestion);
                 hideSuggestions();
                 UiUtils.hideKeyboard(mUrlBar);
             }
@@ -1667,8 +1665,10 @@ public class LocationBarLayout
             }
 
             @Override
-            public void onDeleteSuggestion(int position) {
-                if (mAutocomplete != null) mAutocomplete.deleteSuggestion(position);
+            public void onDeleteSuggestion(OmniboxSuggestion suggestion, int position) {
+                if (mAutocomplete != null) {
+                    mAutocomplete.deleteSuggestion(position, suggestion.hashCode());
+                }
             }
 
             @Override
@@ -1800,7 +1800,7 @@ public class LocationBarLayout
             long elapsedTimeSinceInputChange = mNewOmniboxEditSessionTimestamp > 0
                     ? (SystemClock.elapsedRealtime() - mNewOmniboxEditSessionTimestamp) : -1;
             updatedUrl = mAutocomplete.updateMatchDestinationUrlWithQueryFormulationTime(
-                    verifiedIndex, elapsedTimeSinceInputChange);
+                    verifiedIndex, suggestion.hashCode(), elapsedTimeSinceInputChange);
         }
 
         return updatedUrl == null ? suggestion.getUrl() : updatedUrl;
@@ -2207,10 +2207,13 @@ public class LocationBarLayout
         return urlChanged;
     }
 
-    private void loadUrlFromOmniboxMatch(String url, int transition, int matchPosition, int type) {
+    private void loadUrlFromOmniboxMatch(
+            String url, int matchPosition, OmniboxSuggestion suggestion) {
         // loadUrl modifies AutocompleteController's state clearing the native
         // AutocompleteResults needed by onSuggestionsSelected. Therefore,
         // loadUrl should should be invoked last.
+        int transition = suggestion.getTransition();
+        int type = suggestion.getType();
         String currentPageUrl = mToolbarDataProvider.getCurrentUrl();
         WebContents webContents =
                 mToolbarDataProvider.hasTab() ? getCurrentTab().getWebContents() : null;
@@ -2220,10 +2223,9 @@ public class LocationBarLayout
                 && (mDeferredOnSelection != null)
                 && !mDeferredOnSelection.shouldLog();
         if (!shouldSkipNativeLog) {
-            mAutocomplete.onSuggestionSelected(matchPosition, type, currentPageUrl,
-                    mUrlFocusedFromFakebox, elapsedTimeSinceModified,
-                    mUrlBar.getAutocompleteLength(),
-                    webContents);
+            mAutocomplete.onSuggestionSelected(matchPosition, suggestion.hashCode(), type,
+                    currentPageUrl, mUrlFocusedFromFakebox, elapsedTimeSinceModified,
+                    mUrlBar.getAutocompleteLength(), webContents);
         }
         if (((transition & PageTransition.CORE_MASK) == PageTransition.TYPED)
                 && TextUtils.equals(url, mToolbarDataProvider.getCurrentUrl())) {

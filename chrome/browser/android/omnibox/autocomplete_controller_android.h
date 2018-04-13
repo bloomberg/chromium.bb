@@ -64,6 +64,7 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint selected_index,
+      jint hash_code,
       const base::android::JavaParamRef<jstring>& j_current_url,
       jboolean focused_from_fakebox,
       jlong elapsed_time_since_first_modified,
@@ -71,12 +72,14 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const base::android::JavaParamRef<jobject>& j_web_contents);
   void DeleteSuggestion(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        int selected_index);
+                        jint selected_index,
+                        jint hash_code);
   base::android::ScopedJavaLocalRef<jstring>
   UpdateMatchDestinationURLWithQueryFormulationTime(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint selected_index,
+      jint hash_code,
       jlong elapsed_time_since_input_change);
 
   // KeyedService:
@@ -134,6 +137,8 @@ class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,
       const base::android::JavaRef<jstring>& j_text,
       bool prevent_inline_autocomplete,
       bool focused_from_fakebox);
+
+  bool IsValidMatch(JNIEnv* env, jint selected_index, jint hash_code);
 
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
 
