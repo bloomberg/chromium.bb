@@ -60,7 +60,6 @@ PortAllocator::PortAllocator(
   // may end up removing mobile networks when no WiFi is available. We may want
   // to add this flag only if there is WiFi interface.
   int flags = cricket::PORTALLOCATOR_DISABLE_TCP |
-              cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
               cricket::PORTALLOCATOR_ENABLE_IPV6 |
               cricket::PORTALLOCATOR_ENABLE_IPV6_ON_WIFI;
 

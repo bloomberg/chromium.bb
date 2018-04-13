@@ -51,7 +51,6 @@ FakePortAllocator::FakePortAllocator(
     : BasicPortAllocator(network_manager, socket_factory),
       transport_context_(transport_context) {
   set_flags(cricket::PORTALLOCATOR_DISABLE_TCP |
-            cricket::PORTALLOCATOR_ENABLE_SHARED_UFRAG |
             cricket::PORTALLOCATOR_ENABLE_IPV6 |
             cricket::PORTALLOCATOR_DISABLE_STUN |
             cricket::PORTALLOCATOR_DISABLE_RELAY);
