@@ -47,6 +47,8 @@ class WorkerFetchContext final : public BaseFetchContext {
   void CountUsage(WebFeature) const override;
   void CountDeprecation(WebFeature) const override;
   bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const override;
+  std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
+      override;
   bool ShouldBlockFetchByMixedContentCheck(
       WebURLRequest::RequestContext,
       network::mojom::RequestContextFrameType,

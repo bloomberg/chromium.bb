@@ -49,6 +49,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/input/input_target_client_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
@@ -1318,6 +1319,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   blink::WebComputedAXTree* GetOrCreateWebComputedAXTree() override;
 
+  std::unique_ptr<blink::WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() override;
+
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit();
 
@@ -1700,6 +1704,9 @@ class CONTENT_EXPORT RenderFrameImpl
   uint32_t num_certificate_warning_messages_ = 0;
   // The origins for which a legacy certificate warning has been printed.
   std::set<url::Origin> certificate_warning_origins_;
+
+  std::unique_ptr<WebSocketHandshakeThrottleProvider>
+      websocket_handshake_throttle_provider_;
 
   base::WeakPtrFactory<RenderFrameImpl> weak_factory_;
 

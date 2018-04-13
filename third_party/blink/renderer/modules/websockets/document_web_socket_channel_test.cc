@@ -13,7 +13,6 @@
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -111,10 +110,8 @@ class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
   MockWebSocketHandshakeThrottle() = default;
   ~MockWebSocketHandshakeThrottle() override { Destructor(); }
 
-  MOCK_METHOD3(ThrottleHandshake,
-               void(const WebURL&,
-                    WebLocalFrame*,
-                    WebCallbacks<void, const WebString&>*));
+  MOCK_METHOD2(ThrottleHandshake,
+               void(const WebURL&, WebCallbacks<void, const WebString&>*));
 
   // This method is used to allow us to require that the destructor is called at
   // a particular time.
@@ -821,7 +818,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
   // non-null throttle.
   void NormalHandshakeExpectations() {
     EXPECT_CALL(*Handle(), Connect(_, _, _, _, _));
-    EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _, _));
+    EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _));
   }
 
   static KURL url() { return KURL("ws://localhost/"); }
@@ -830,7 +827,7 @@ class DocumentWebSocketChannelHandshakeThrottleTest
 TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
   EXPECT_CALL(*Handle(), Connect(_, _, _, _, _));
   EXPECT_CALL(*handshake_throttle_,
-              ThrottleHandshake(WebURL(url()), _, GetWebCallbacks()));
+              ThrottleHandshake(WebURL(url()), GetWebCallbacks()));
   EXPECT_CALL(*handshake_throttle_, Destructor());
   Channel()->Connect(url(), "");
 }

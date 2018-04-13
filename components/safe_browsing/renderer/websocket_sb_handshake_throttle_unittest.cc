@@ -106,7 +106,7 @@ class WebSocketSBHandshakeThrottleTest : public ::testing::Test {
   WebSocketSBHandshakeThrottleTest() : mojo_binding_(&safe_browsing_) {
     mojo_binding_.Bind(mojo::MakeRequest(&safe_browsing_ptr_));
     throttle_ = std::make_unique<WebSocketSBHandshakeThrottle>(
-        safe_browsing_ptr_.get());
+        safe_browsing_ptr_.get(), MSG_ROUTING_NONE);
   }
 
   base::test::ScopedTaskEnvironment message_loop_;
@@ -120,10 +120,8 @@ class WebSocketSBHandshakeThrottleTest : public ::testing::Test {
 TEST_F(WebSocketSBHandshakeThrottleTest, Construction) {}
 
 TEST_F(WebSocketSBHandshakeThrottleTest, CheckArguments) {
-  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  throttle_->ThrottleHandshake(GURL(kTestUrl), &fake_callbacks_);
   safe_browsing_.RunUntilCalled();
-  // TODO(ricea): Find a way to create a WebLocalFrame in a unit test so that
-  // the code that looks up the render_frame_id can be tested.
   EXPECT_EQ(MSG_ROUTING_NONE, safe_browsing_.render_frame_id_);
   EXPECT_EQ(GURL(kTestUrl), safe_browsing_.url_);
   EXPECT_EQ("GET", safe_browsing_.method_);
@@ -136,7 +134,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, CheckArguments) {
 }
 
 TEST_F(WebSocketSBHandshakeThrottleTest, Safe) {
-  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  throttle_->ThrottleHandshake(GURL(kTestUrl), &fake_callbacks_);
   safe_browsing_.RunUntilCalled();
   std::move(safe_browsing_.callback_).Run(nullptr, true, false);
   fake_callbacks_.RunUntilCalled();
@@ -144,7 +142,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, Safe) {
 }
 
 TEST_F(WebSocketSBHandshakeThrottleTest, Unsafe) {
-  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  throttle_->ThrottleHandshake(GURL(kTestUrl), &fake_callbacks_);
   safe_browsing_.RunUntilCalled();
   std::move(safe_browsing_.callback_).Run(nullptr, false, false);
   fake_callbacks_.RunUntilCalled();
@@ -156,7 +154,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, Unsafe) {
 }
 
 TEST_F(WebSocketSBHandshakeThrottleTest, SlowCheckNotifier) {
-  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  throttle_->ThrottleHandshake(GURL(kTestUrl), &fake_callbacks_);
   safe_browsing_.RunUntilCalled();
 
   mojom::UrlCheckNotifierPtr slow_check_notifier;
@@ -172,7 +170,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, SlowCheckNotifier) {
 
 TEST_F(WebSocketSBHandshakeThrottleTest, MojoServiceNotThere) {
   mojo_binding_.Close();
-  throttle_->ThrottleHandshake(GURL(kTestUrl), nullptr, &fake_callbacks_);
+  throttle_->ThrottleHandshake(GURL(kTestUrl), &fake_callbacks_);
   fake_callbacks_.RunUntilCalled();
   EXPECT_EQ(FakeWebCallbacks::RESULT_SUCCESS, fake_callbacks_.result_);
 }

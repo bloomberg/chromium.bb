@@ -3585,7 +3585,10 @@ RenderFrameImpl::CreateWorkerFetchContext() {
           std::move(container_host_ptr_info), GetLoaderFactoryBundle()->Clone(),
           std::move(direct_network_loader_factory_info),
           GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-              URLLoaderThrottleProviderType::kWorker));
+              URLLoaderThrottleProviderType::kWorker),
+          GetContentClient()
+              ->renderer()
+              ->CreateWebSocketHandshakeThrottleProvider());
 
   worker_fetch_context->set_parent_frame_id(routing_id_);
   worker_fetch_context->set_site_for_cookies(
@@ -7557,6 +7560,30 @@ blink::WebComputedAXTree* RenderFrameImpl::GetOrCreateWebComputedAXTree() {
   if (!computed_ax_tree_)
     computed_ax_tree_ = std::make_unique<AomContentAxTree>(this);
   return computed_ax_tree_.get();
+}
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+RenderFrameImpl::CreateWebSocketHandshakeThrottle() {
+  WebLocalFrame* web_local_frame = GetWebFrame();
+  if (!web_local_frame)
+    return nullptr;
+  auto* render_frame = content::RenderFrame::FromWebFrame(web_local_frame);
+  if (!render_frame)
+    return nullptr;
+  int render_frame_id = render_frame->GetRoutingID();
+
+  // Lazily create the provider.
+  if (!websocket_handshake_throttle_provider_) {
+    websocket_handshake_throttle_provider_ =
+        GetContentClient()
+            ->renderer()
+            ->CreateWebSocketHandshakeThrottleProvider();
+    if (!websocket_handshake_throttle_provider_)
+      return nullptr;
+  }
+
+  return websocket_handshake_throttle_provider_->CreateThrottle(
+      render_frame_id);
 }
 
 }  // namespace content

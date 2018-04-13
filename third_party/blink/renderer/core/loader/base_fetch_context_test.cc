@@ -32,6 +32,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -61,6 +62,10 @@ class MockBaseFetchContext final : public BaseFetchContext {
   void CountDeprecation(WebFeature) const override {}
   bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const override {
     return false;
+  }
+  std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
+      override {
+    return nullptr;
   }
   bool ShouldBlockFetchByMixedContentCheck(
       WebURLRequest::RequestContext,

@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
+#include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/decode_capabilities.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -47,7 +48,6 @@ class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebPlugin;
 class WebPrescientNetworking;
-class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebThemeEngine;
@@ -182,8 +182,15 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows the embedder to provide a WebSocketHandshakeThrottle. If it returns
   // NULL then none will be used.
+  // TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+  // default (https://crbug.com/825740).
   virtual std::unique_ptr<blink::WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle();
+
+  // Allows the embedder to provide a WebSocketHandshakeThrottleProvider. If it
+  // returns NULL then none will be used.
+  virtual std::unique_ptr<WebSocketHandshakeThrottleProvider>
+  CreateWebSocketHandshakeThrottleProvider();
 
   // Allows the embedder to override the WebSpeechSynthesizer used.
   // If it returns NULL the content layer will provide an engine.

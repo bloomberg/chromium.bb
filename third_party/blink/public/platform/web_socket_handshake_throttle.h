@@ -20,7 +20,6 @@
 namespace blink {
 
 class WebURL;
-class WebLocalFrame;
 class WebString;
 
 // Embedders can implement this class to delay WebSocket connections.
@@ -37,7 +36,6 @@ class WebSocketHandshakeThrottle {
   // callbacks. Callbacks must not be called after this object has been
   // destroyed.
   virtual void ThrottleHandshake(const WebURL&,
-                                 WebLocalFrame*,
                                  WebCallbacks<void, const WebString&>*) = 0;
 };
 

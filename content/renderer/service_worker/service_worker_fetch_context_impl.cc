@@ -8,6 +8,7 @@
 #include "content/common/wrapper_shared_url_loader_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
+#include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -21,11 +22,15 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
     int service_worker_provider_id,
-    std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
+    std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
+    std::unique_ptr<WebSocketHandshakeThrottleProvider>
+        websocket_handshake_throttle_provider)
     : worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       service_worker_provider_id_(service_worker_provider_id),
-      throttle_provider_(std::move(throttle_provider)) {}
+      throttle_provider_(std::move(throttle_provider)),
+      websocket_handshake_throttle_provider_(
+          std::move(websocket_handshake_throttle_provider)) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
@@ -85,6 +90,14 @@ blink::WebURL ServiceWorkerFetchContextImpl::SiteForCookies() const {
   // the service worker's origin's host's registrable domain.
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-07#section-2.1.2
   return worker_script_url_;
+}
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+ServiceWorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
+  if (!websocket_handshake_throttle_provider_)
+    return nullptr;
+  return websocket_handshake_throttle_provider_->CreateThrottle(
+      MSG_ROUTING_NONE);
 }
 
 }  // namespace content

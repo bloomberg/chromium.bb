@@ -83,6 +83,11 @@ ContentRendererClient::CreateWebSocketHandshakeThrottle() {
   return nullptr;
 }
 
+std::unique_ptr<WebSocketHandshakeThrottleProvider>
+ContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
+  return nullptr;
+}
+
 std::unique_ptr<blink::WebSpeechSynthesizer>
 ContentRendererClient::OverrideSpeechSynthesizer(
     blink::WebSpeechSynthesizerClient* client) {

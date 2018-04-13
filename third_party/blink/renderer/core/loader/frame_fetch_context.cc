@@ -41,6 +41,10 @@
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
+#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_frame_client.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -1100,6 +1104,20 @@ bool FrameFetchContext::ShouldBlockWebSocketByMixedContentCheck(
     return false;
   }
   return !MixedContentChecker::IsWebSocketAllowed(GetFrame(), url);
+}
+
+std::unique_ptr<WebSocketHandshakeThrottle>
+FrameFetchContext::CreateWebSocketHandshakeThrottle() {
+  if (IsDetached()) {
+    // TODO(yhirano): Implement the detached case.
+    return nullptr;
+  }
+  if (!GetFrame())
+    return nullptr;
+  return WebFrame::FromFrame(GetFrame())
+      ->ToWebLocalFrame()
+      ->Client()
+      ->CreateWebSocketHandshakeThrottle();
 }
 
 bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(

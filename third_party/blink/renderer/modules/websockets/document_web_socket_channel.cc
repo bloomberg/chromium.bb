@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
@@ -174,7 +173,7 @@ DocumentWebSocketChannel* DocumentWebSocketChannel::Create(
   return new DocumentWebSocketChannel(
       loading_context, client, std::move(location),
       std::make_unique<WebSocketHandleImpl>(),
-      Platform::Current()->CreateWebSocketHandshakeThrottle());
+      loading_context->GetFetchContext()->CreateWebSocketHandshakeThrottle());
 }
 
 DocumentWebSocketChannel::DocumentWebSocketChannel(
@@ -253,18 +252,8 @@ bool DocumentWebSocketChannel::Connect(
                        ->GetTaskRunner(TaskType::kNetworking)
                        .get());
 
-  // TODO(nhiroki): Remove dependencies on LocalFrame.
-  // (https://crbug.com/825740)
-  LocalFrame* frame = nullptr;
-  if (GetExecutionContext()->IsDocument())
-    frame = ToDocument(GetExecutionContext())->GetFrame();
-  if (handshake_throttle_ && frame && frame->GetPage()) {
-    // TODO(ricea): We may need to do something special here for SharedWorkers
-    // and ServiceWorkers
-    // TODO(ricea): Figure out who owns this WebFrame object and how long it can
-    // be expected to live.
-    WebLocalFrame* web_frame = WebLocalFrameImpl::FromFrame(frame);
-    handshake_throttle_->ThrottleHandshake(url, web_frame, this);
+  if (handshake_throttle_) {
+    handshake_throttle_->ThrottleHandshake(url, this);
   } else {
     // Treat no throttle as success.
     throttle_passed_ = true;

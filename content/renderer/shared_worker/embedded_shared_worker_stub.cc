@@ -343,7 +343,10 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
       url_loader_factory_bundle->Clone(),
       direct_network_loader_factory->Clone(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kWorker));
+          URLLoaderThrottleProviderType::kWorker),
+      GetContentClient()
+          ->renderer()
+          ->CreateWebSocketHandshakeThrottleProvider());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.

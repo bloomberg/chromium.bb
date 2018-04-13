@@ -22,6 +22,7 @@ class ConsoleMessage;
 class KURL;
 class SecurityOrigin;
 class SubresourceFilter;
+class WebSocketHandshakeThrottle;
 
 // A core-level implementaiton of FetchContext that does not depend on
 // Frame. This class provides basic default implementation for some methods.
@@ -54,6 +55,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual void CountUsage(WebFeature) const = 0;
   virtual void CountDeprecation(WebFeature) const = 0;
   virtual bool ShouldBlockWebSocketByMixedContentCheck(const KURL&) const = 0;
+  virtual std::unique_ptr<WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() = 0;
 
   void AddWarningConsoleMessage(const String&, LogSource) const override;
   void AddErrorConsoleMessage(const String&, LogSource) const override;

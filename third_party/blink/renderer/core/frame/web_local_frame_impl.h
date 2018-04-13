@@ -246,6 +246,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const override;
 
+  WebFrameClient* Client() const override { return client_; }
+
   // WebLocalFrame methods:
   WebLocalFrameImpl* CreateLocalChild(WebTreeScopeType,
                                       WebFrameClient*,
@@ -401,7 +403,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Otherwise, disallow scrolling.
   void SetCanHaveScrollbars(bool) override;
 
-  WebFrameClient* Client() const { return client_; }
   void SetClient(WebFrameClient* client) { client_ = client; }
 
   WebFrameWidgetBase* FrameWidgetImpl() { return frame_widget_; }

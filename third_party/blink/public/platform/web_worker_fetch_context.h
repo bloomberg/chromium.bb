@@ -10,6 +10,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
+#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 #include "third_party/blink/public/platform/web_url.h"
 
 namespace base {
@@ -91,6 +92,12 @@ class WebWorkerFetchContext {
   // This method should only be called once.
   virtual std::unique_ptr<WebDocumentSubresourceFilter>
   TakeSubresourceFilter() {
+    return nullptr;
+  }
+
+  // Creates a WebSocketHandshakeThrottle on the worker thread.
+  virtual std::unique_ptr<blink::WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() {
     return nullptr;
   }
 };

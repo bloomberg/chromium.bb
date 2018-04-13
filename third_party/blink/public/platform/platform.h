@@ -645,6 +645,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // If this method returns non-null the returned object will be used to
   // determine if/when a new WebSocket connection can be exposed to Javascript.
+  // TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+  // default (https://crbug.com/825740).
   virtual std::unique_ptr<WebSocketHandshakeThrottle>
   CreateWebSocketHandshakeThrottle();
 

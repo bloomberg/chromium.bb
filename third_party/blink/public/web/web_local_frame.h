@@ -129,6 +129,8 @@ class WebLocalFrame : public WebFrame {
   // the given element is not a frame, iframe or if the frame is empty.
   BLINK_EXPORT static WebLocalFrame* FromFrameOwnerElement(const WebElement&);
 
+  virtual WebFrameClient* Client() const = 0;
+
   // Initialization ---------------------------------------------------------
 
   virtual void SetAutofillClient(WebAutofillClient*) = 0;

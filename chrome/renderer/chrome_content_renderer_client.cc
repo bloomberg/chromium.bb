@@ -61,6 +61,7 @@
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/tts_dispatcher.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
+#include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
 #include "chrome/renderer/worker_content_settings_client.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -1391,11 +1392,20 @@ void ChromeContentRendererClient::InitSpellCheck() {
 }
 #endif
 
+// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+// default (https://crbug.com/825740).
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottle() {
   InitSafeBrowsingIfNecessary();
+  // This is called only for Shared Worker and Service Worker that don't have a
+  // real frame, so we specify MSG_ROUTING_NONE here.
   return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
-      safe_browsing_.get());
+      safe_browsing_.get(), MSG_ROUTING_NONE);
+}
+
+std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
+  return std::make_unique<WebSocketHandshakeThrottleProviderImpl>();
 }
 
 std::unique_ptr<blink::WebSpeechSynthesizer>
@@ -1678,6 +1688,8 @@ ChromeContentRendererClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::GetTaskSchedulerInitParamsForRenderer();
 }
 
+// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+// default (https://crbug.com/825740).
 void ChromeContentRendererClient::InitSafeBrowsingIfNecessary() {
   if (safe_browsing_)
     return;

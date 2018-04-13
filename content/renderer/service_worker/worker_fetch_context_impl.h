@@ -27,6 +27,7 @@ namespace content {
 class ResourceDispatcher;
 class ThreadSafeSender;
 class URLLoaderThrottleProvider;
+class WebSocketHandshakeThrottleProvider;
 
 // This class is used while fetching resource requests on workers (dedicated
 // worker and shared worker). This class is created on the main thread and
@@ -50,7 +51,9 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
           url_loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           direct_network_factory_info,
-      std::unique_ptr<URLLoaderThrottleProvider> throttle_provider);
+      std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
+      std::unique_ptr<WebSocketHandshakeThrottleProvider>
+          websocket_handshake_throttle_provider);
   ~WorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
@@ -74,6 +77,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
       std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>) override;
   std::unique_ptr<blink::WebDocumentSubresourceFilter> TakeSubresourceFilter()
       override;
+  std::unique_ptr<blink::WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() override;
 
   // mojom::ServiceWorkerWorkerClient implementation:
   void SetControllerServiceWorker(int64_t controller_version_id) override;
@@ -161,6 +166,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   base::WeakPtr<URLLoaderFactoryImpl> url_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
+  std::unique_ptr<WebSocketHandshakeThrottleProvider>
+      websocket_handshake_throttle_provider_;
 };
 
 }  // namespace content
