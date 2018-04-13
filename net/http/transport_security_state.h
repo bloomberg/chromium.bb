@@ -485,16 +485,16 @@ class NET_EXPORT TransportSecurityState {
   // the Delegate (if any).
   bool DeleteDynamicDataForHost(const std::string& host);
 
-  // Returns true and updates |*sts_result| and |*pkp_result| iff there is a
+  // Returns true and updates |*sts_result| and/or |*pkp_result| if there is a
   // static (built-in) state for |host|. If multiple entries match |host|,
   // the most specific match determines the return value.
   bool GetStaticDomainState(const std::string& host,
                             STSState* sts_result,
                             PKPState* pkp_result) const;
 
-  // Returns true and updates |*result| iff |host| has HSTS/HPKP/Expect-CT
-  // (respectively) state. If multiple entries match |host|, the most specific
-  // match determines the return value.
+  // Returns true and updates |*result| iff |host| has dynamic
+  // HSTS/HPKP/Expect-CT (respectively) state. If multiple entries match |host|,
+  // the most specific match determines the return value.
   //
   // Note that these methods are not const because they opportunistically remove
   // entries that have expired.
