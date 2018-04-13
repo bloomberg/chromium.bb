@@ -21,7 +21,6 @@ namespace blink {
 
 struct WebMediaKeySystemConfiguration;
 struct WebMediaKeySystemMediaCapability;
-class WebSecurityOrigin;
 class WebString;
 
 }  // namespace blink
@@ -43,7 +42,6 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
       const blink::WebString& key_system,
       const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
           candidate_configurations,
-      const blink::WebSecurityOrigin& security_origin,
       base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
                           const CdmConfig&)> succeeded_cb,
       base::Closure not_supported_cb);

@@ -20,7 +20,6 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_media_key_system_configuration.h"
-#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "url/gurl.h"
@@ -155,7 +154,6 @@ struct KeySystemConfigSelector::SelectionRequest {
   std::string key_system;
   blink::WebVector<blink::WebMediaKeySystemConfiguration>
       candidate_configurations;
-  blink::WebSecurityOrigin security_origin;
   base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
                       const CdmConfig&)> succeeded_cb;
   base::Closure not_supported_cb;
@@ -849,7 +847,6 @@ void KeySystemConfigSelector::SelectConfig(
     const blink::WebString& key_system,
     const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
         candidate_configurations,
-    const blink::WebSecurityOrigin& security_origin,
     base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
                         const CdmConfig&)> succeeded_cb,
     base::Closure not_supported_cb) {
@@ -897,7 +894,6 @@ void KeySystemConfigSelector::SelectConfig(
   std::unique_ptr<SelectionRequest> request(new SelectionRequest());
   request->key_system = key_system_ascii;
   request->candidate_configurations = candidate_configurations;
-  request->security_origin = security_origin;
   request->succeeded_cb = succeeded_cb;
   request->not_supported_cb = not_supported_cb;
   SelectConfigInternal(std::move(request));
@@ -936,16 +932,11 @@ void KeySystemConfigSelector::SelectConfigInternal(
                    << "permission was denied.";
           continue;
         }
-        {
-          // Note: the GURL must not be constructed inline because
-          // base::Passed(&request) sets |request| to null.
-          GURL security_origin(url::Origin(request->security_origin).GetURL());
-          DVLOG(3) << "Request permission.";
-          media_permission_->RequestPermission(
-              MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
-              base::Bind(&KeySystemConfigSelector::OnPermissionResult,
-                         weak_factory_.GetWeakPtr(), base::Passed(&request)));
-        }
+        DVLOG(3) << "Request permission.";
+        media_permission_->RequestPermission(
+            MediaPermission::PROTECTED_MEDIA_IDENTIFIER,
+            base::Bind(&KeySystemConfigSelector::OnPermissionResult,
+                       weak_factory_.GetWeakPtr(), base::Passed(&request)));
         return;
       case CONFIGURATION_SUPPORTED:
         cdm_config.allow_distinctive_identifier =
