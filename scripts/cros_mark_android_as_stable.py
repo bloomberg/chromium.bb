@@ -22,9 +22,14 @@ emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
 from __future__ import print_function
 
 import filecmp
+import hashlib
 import glob
 import os
 import re
+import shutil
+import tempfile
+import subprocess
+import base64
 
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -219,6 +224,82 @@ def _GetArcBasename(build, basename):
   return basename
 
 
+def PackSdkTools(build_branch, build_id, targets, arc_bucket_url):
+  """Creates static SDK tools pack from ARC++ specific bucket.
+
+  Ebuild needs archives to process binaries natively. This collects static SDK
+  tools and packs them to tbz2 archive which can referenced from Android
+  container ebuild file. Pack is placed into the same bucket where SDK tools
+  exist. If pack already exists and up to date then copying is skipped.
+  Otherwise fresh pack is copied.
+
+  Args:
+    build_branch: branch of Android builds
+    build_id: A string. The Android build id number to check.
+    targets: Dict from build key to (targe build suffix, artifact file pattern)
+        pair.
+    arc_bucket_url: URL of the target ARC build gs bucket
+  """
+
+  if not 'SDK_TOOLS' in targets:
+    return
+
+  gs_context = gs.GSContext()
+  target, pattern = targets['SDK_TOOLS']
+  build_dir = '%s-%s' % (build_branch, target)
+  arc_dir = os.path.join(arc_bucket_url, build_dir, build_id)
+
+  sdk_tools_dir = tempfile.mkdtemp()
+
+  try:
+    sdk_tools_bin_dir = os.path.join(sdk_tools_dir, 'bin')
+    os.mkdir(sdk_tools_bin_dir)
+
+    for tool in gs_context.List(arc_dir):
+      if re.search(pattern, tool.url):
+        local_tool_path = os.path.join(sdk_tools_bin_dir,
+                                       os.path.basename(tool.url))
+        gs_context.Copy(tool.url, local_tool_path, version=0)
+        file_time = int(gs_context.Stat(tool.url).creation_time.strftime('%s'))
+        os.utime(local_tool_path, (file_time, file_time))
+
+    # Fix ./ times to make tar file stable.
+    os.utime(sdk_tools_bin_dir, (0, 0))
+
+    sdk_tools_file_name = 'sdk_tools_%s.tbz2' % build_id
+    sdk_tools_local_path = os.path.join(sdk_tools_dir, sdk_tools_file_name)
+    sdk_tools_target_path = os.path.join(arc_dir, sdk_tools_file_name)
+    subprocess.call(['tar', '--group=root:0', '--owner=root:0',
+                     '--create', '--bzip2', '--sort=name',
+                     '--file=%s' % sdk_tools_local_path,
+                     '--directory=%s' % sdk_tools_bin_dir, '.'])
+
+    if gs_context.Exists(sdk_tools_target_path):
+      # Calculate local md5
+      md5 = hashlib.md5()
+      with open(sdk_tools_local_path, 'rb') as f:
+        while True:
+          buf = f.read(4096)
+          if not buf:
+            break
+          md5.update(buf)
+      md5_local = md5.digest()
+      # Get target md5
+      md5_target = base64.decodestring(
+          gs_context.Stat(sdk_tools_target_path).hash_md5)
+      if md5_local == md5_target:
+        logging.info('SDK tools pack %s is up to date', sdk_tools_target_path)
+        return
+      logging.warning('SDK tools pack %s invalid, removing',
+                      sdk_tools_target_path)
+      gs_context.Remove(sdk_tools_target_path)
+
+    logging.info('Creating SDK tools pack %s', sdk_tools_target_path)
+    gs_context.Copy(sdk_tools_local_path, sdk_tools_target_path, version=0)
+  finally:
+    shutil.rmtree(sdk_tools_dir)
+
+
 def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
                     targets, arc_bucket_url, acls):
   """Copies from source Android bucket to ARC++ specific bucket.
@@ -309,6 +390,8 @@ def MirrorArtifacts(android_bucket_url, android_build_branch, arc_bucket_url,
 
   CopyToArcBucket(android_bucket_url, android_build_branch, version, subpaths,
                   targets, arc_bucket_url, acls)
+  PackSdkTools(android_build_branch, version, targets, arc_bucket_url)
+
   return version
 
 
