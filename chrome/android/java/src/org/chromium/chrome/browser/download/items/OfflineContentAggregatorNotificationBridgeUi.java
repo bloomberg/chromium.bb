@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadNotifier;
 import org.chromium.chrome.browser.download.DownloadServiceDelegate;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
@@ -147,6 +148,8 @@ public class OfflineContentAggregatorNotificationBridgeUi
     }
 
     private void pushItemToUi(OfflineItem item, OfflineItemVisuals visuals) {
+        if (!shouldShowNotification(item)) return;
+
         DownloadInfo info = DownloadInfo.fromOfflineItem(item, visuals);
         switch (item.state) {
             case OfflineItemState.IN_PROGRESS:
@@ -219,5 +222,11 @@ public class OfflineContentAggregatorNotificationBridgeUi
             default:
                 return false;
         }
+    }
+
+    private boolean shouldShowNotification(OfflineItem item) {
+        // Temporarily return immediately to prevent unnecessary notifications for offline pages
+        // until https://crbug.com/831083 and https://crbug.com/832282 are fixed.
+        return !item.isTransient && !LegacyHelpers.isLegacyOfflinePage(item.id);
     }
 }
