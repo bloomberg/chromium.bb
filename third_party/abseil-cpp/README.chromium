@@ -20,11 +20,24 @@ How to update Abseil:
 
 4. Generate BUILD.gn files launching bazel_to_gn.py from //third_party/abseil-cpp.
 
-5. Rename RunningOnValgrind to AbslRunningOnValgrind:
-   find . -type f -exec sed -i "s/RunningOnValgrind/AbslRunningOnValgrind/g" {} \;
-
-6. Rename ValgrindSlowdown to AbslValgrindSlowdown:
-   find . -type f -exec sed -i "s/ValgrindSlowdown/AbslValgrindSlowdown/g" {} \;
+5. Rename functions in absl/base/dynamic_annotations.{h,cc}
+   find . -type f -exec sed -i "s/ValgrindSlowdown(/AbslValgrindSlowdown(/g" {} \;
+   find . -type f -exec sed -i "s/RunningOnValgrind(/AbslRunningOnValgrind(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateBenignRace(/AbslAnnotateBenignRace(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateBenignRaceSized(/AbslAnnotateBenignRaceSized(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateEnableRaceDetection(/AbslAnnotateEnableRaceDetection(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateIgnoreReadsBegin(/AbslAnnotateIgnoreReadsBegin(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateIgnoreReadsEnd(/AbslAnnotateIgnoreReadsEnd(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateIgnoreWritesBegin(/AbslAnnotateIgnoreWritesBegin(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateIgnoreWritesEnd(/AbslAnnotateIgnoreWritesEnd(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateRWLockAcquired(/AbslAnnotateRWLockAcquired(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateRWLockCreate(/AbslAnnotateRWLockCreate(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateRWLockDestroy(/AbslAnnotateRWLockDestroy(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateRWLockReleased(/AbslAnnotateRWLockReleased(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateThreadName(/AbslAnnotateThreadName(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateRWLockCreateStatic(/AbslAnnotateRWLockCreateStatic(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateMemoryIsInitialized(/AbslAnnotateMemoryIsInitialized(/g" {} \;
+   find . -type f -exec sed -i "s/AnnotateMemoryIsUninitialized(/AbslAnnotateMemoryIsUninitialized(/g" {} \;
 
 Local Modifications:
 
@@ -33,7 +46,8 @@ Local Modifications:
 
 * All the BUILD.bazel files has been translated to BUILD.gn files.
 
-* RunningOnValgrind and ValgrindSlowdown have been renamed to avoid ODR violations.
+* Functions in absl/base/dynamic_annotations.{h,cc} have been renamed to avoid
+  ODR violations.
 
 
 
