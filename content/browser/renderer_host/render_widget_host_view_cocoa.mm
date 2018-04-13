@@ -123,7 +123,6 @@ void ExtractUnderlines(NSAttributedString* string,
 @end
 
 @implementation RenderWidgetHostViewCocoa
-@synthesize selectedRange = selectedRange_;
 @synthesize markedRange = markedRange_;
 
 - (id)initWithClient:(std::unique_ptr<RenderWidgetHostNSViewClient>)client {
@@ -186,6 +185,29 @@ void ExtractUnderlines(NSAttributedString* string,
   gfxViewBoundsInWindow.set_y(NSHeight([enclosingWindow frame]) -
                               NSMaxY(viewBoundsInWindow));
   client_->OnNSViewBoundsInWindowChanged(gfxViewBoundsInWindow, true);
+}
+
+- (void)setTextSelectionText:(base::string16)text
+                      offset:(size_t)offset
+                       range:(gfx::Range)range {
+  textSelectionText_ = text;
+  textSelectionOffset_ = offset;
+  textSelectionRange_ = range;
+}
+
+- (base::string16)selectedText {
+  gfx::Range textRange(textSelectionOffset_,
+                       textSelectionOffset_ + textSelectionText_.size());
+  gfx::Range intersectionRange = textRange.Intersect(textSelectionRange_);
+  if (intersectionRange.is_empty())
+    return base::string16();
+  return textSelectionText_.substr(
+      intersectionRange.start() - textSelectionOffset_,
+      intersectionRange.length());
+}
+
+- (void)setCompositionRange:(gfx::Range)range {
+  compositionRange_ = range;
 }
 
 - (void)sendWindowFrameInScreenToClient {
@@ -1418,9 +1440,7 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (NSRange)selectedRange {
-  if (selectedRange_.location == NSNotFound)
-    return NSMakeRange(NSNotFound, 0);
-  return selectedRange_;
+  return textSelectionRange_.ToNSRange();
 }
 
 - (NSRange)markedRange {
@@ -1448,52 +1468,37 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (range.length >= std::numeric_limits<NSUInteger>::max() - range.location)
     return nil;
 
-  const gfx::Range requested_range(range);
-  if (requested_range.is_reversed())
+  const gfx::Range requestedRange(range);
+  if (requestedRange.is_reversed())
     return nil;
 
-  gfx::Range expected_range;
-  const base::string16* expected_text;
-  const content::TextInputManager::CompositionRangeInfo* compositionInfo =
-      renderWidgetHostView_->GetCompositionRangeInfo();
-  const content::TextInputManager::TextSelection* selection =
-      renderWidgetHostView_->GetTextSelection();
-  if (!selection)
-    return nil;
+  gfx::Range expectedRange;
+  const base::string16* expectedText;
 
-  if (compositionInfo && !compositionInfo->range.is_empty()) {
+  if (!compositionRange_.is_empty()) {
     // This method might get called after TextInputState.type is reset to none,
     // in which case there will be no composition range information
-    // (https://crbug.com/698672).
-    expected_text = &markedText_;
-    expected_range = compositionInfo->range;
+    // https://crbug.com/698672
+    expectedText = &markedText_;
+    expectedRange = compositionRange_.Intersect(
+        gfx::Range(compositionRange_.start(),
+                   compositionRange_.start() + expectedText->length()));
   } else {
-    expected_text = &selection->text();
-    size_t offset = selection->offset();
-    expected_range = gfx::Range(offset, offset + expected_text->size());
+    expectedText = &textSelectionText_;
+    size_t offset = textSelectionOffset_;
+    expectedRange = gfx::Range(offset, offset + expectedText->size());
   }
 
-  gfx::Range actual_range = expected_range.Intersect(requested_range);
-  if (!actual_range.IsValid())
+  gfx::Range gfxActualRange = expectedRange.Intersect(requestedRange);
+  if (!gfxActualRange.IsValid())
     return nil;
-
-  // Gets the raw bytes to avoid unnecessary string copies for generating
-  // NSString.
-  const base::char16* bytes =
-      &(*expected_text)[actual_range.start() - expected_range.start()];
-  // Avoid integer overflow.
-  base::CheckedNumeric<size_t> requested_len = actual_range.length();
-  requested_len *= sizeof(base::char16);
-  NSUInteger bytes_len =
-      base::strict_cast<NSUInteger, size_t>(requested_len.ValueOrDefault(0));
-  base::scoped_nsobject<NSString> ns_string([[NSString alloc]
-      initWithBytes:bytes
-             length:bytes_len
-           encoding:NSUTF16LittleEndianStringEncoding]);
   if (actualRange)
-    *actualRange = actual_range.ToNSRange();
+    *actualRange = gfxActualRange.ToNSRange();
 
-  return [[[NSAttributedString alloc] initWithString:ns_string] autorelease];
+  base::string16 string = expectedText->substr(
+      gfxActualRange.start() - expectedRange.start(), gfxActualRange.length());
+  return [[[NSAttributedString alloc]
+      initWithString:base::SysUTF16ToNSString(string)] autorelease];
 }
 
 - (NSInteger)conversationIdentifier {
@@ -1749,14 +1754,11 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
                      returnType:(NSString*)returnType {
   ui::TextInputType textInputType = ui::TEXT_INPUT_TYPE_NONE;
   client_->OnNSViewSyncGetTextInputType(&textInputType);
-  bool hasSelection = false;
-  base::string16 selectedText;
-  client_->OnNSViewSyncGetSelectedText(&hasSelection, &selectedText);
 
   id requestor = nil;
   BOOL sendTypeIsString = [sendType isEqual:NSStringPboardType];
   BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
-  BOOL hasText = hasSelection && !selectedText.empty();
+  BOOL hasText = !textSelectionRange_.is_empty();
   BOOL takesText = textInputType != ui::TEXT_INPUT_TYPE_NONE;
 
   if (sendTypeIsString && hasText && !returnType) {
@@ -1799,16 +1801,12 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 @implementation RenderWidgetHostViewCocoa (NSServicesRequests)
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard types:(NSArray*)types {
-  bool hasSelection = false;
-  base::string16 selectedText;
-  client_->OnNSViewSyncGetSelectedText(&hasSelection, &selectedText);
-  if (!hasSelection || selectedText.empty() ||
+  if (textSelectionRange_.is_empty() ||
       ![types containsObject:NSStringPboardType]) {
     return NO;
   }
 
-  base::scoped_nsobject<NSString> text([[NSString alloc]
-      initWithUTF8String:base::UTF16ToUTF8(selectedText).c_str()]);
+  NSString* text = base::SysUTF16ToNSString([self selectedText]);
   NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
   [pboard declareTypes:toDeclare owner:nil];
   return [pboard setString:text forType:NSStringPboardType];

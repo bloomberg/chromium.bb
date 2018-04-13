@@ -510,7 +510,7 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
 void RenderWidgetHostViewMac::OnImeCancelComposition(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
-  ns_view_bridge_->ClearMarkedText();
+  ns_view_bridge_->CancelComposition();
 }
 
 void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
@@ -522,7 +522,7 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     return;
   // The RangeChanged message is only sent with valid values. The current
   // caret position (start == end) will be sent if there is no IME range.
-  ns_view_bridge_->SetMarkedRange(info->range);
+  ns_view_bridge_->SetCompositionRangeInfo(info->range);
 }
 
 void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
@@ -566,8 +566,8 @@ void RenderWidgetHostViewMac::OnTextSelectionChanged(
   const TextInputManager::TextSelection* selection = GetTextSelection();
   if (!selection)
     return;
-
-  ns_view_bridge_->SetSelectedRange(selection->range());
+  ns_view_bridge_->SetTextSelection(selection->text(), selection->offset(),
+                                    selection->range());
 }
 
 void RenderWidgetHostViewMac::OnRenderFrameMetadataChanged() {
@@ -923,7 +923,7 @@ bool RenderWidgetHostViewMac::ShouldContinueToPauseForFrame() {
 void RenderWidgetHostViewMac::FocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_screen) {
-  ns_view_bridge_->ClearMarkedText();
+  ns_view_bridge_->CancelComposition();
 
   // If the Mac Zoom feature is enabled, update it with the bounds of the
   // current focused node so that it can ensure that it's scrolled into view.
@@ -1555,18 +1555,6 @@ void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayAtPoint(
 void RenderWidgetHostViewMac::OnNSViewSyncGetTextInputType(
     ui::TextInputType* text_input_type) {
   *text_input_type = GetTextInputType();
-}
-
-void RenderWidgetHostViewMac::OnNSViewSyncGetSelectedText(
-    bool* has_selection,
-    base::string16* selected_text) {
-  const TextInputManager::TextSelection* selection = GetTextSelection();
-  if (selection) {
-    *has_selection = true;
-    *selected_text = selection->selected_text();
-  } else {
-    *has_selection = false;
-  }
 }
 
 void RenderWidgetHostViewMac::OnNSViewSyncGetCharacterIndexAtPoint(
