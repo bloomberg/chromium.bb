@@ -27,10 +27,6 @@ METRICS_EXPORT SourceId AssignNewSourceId();
 METRICS_EXPORT SourceId ConvertToSourceId(int64_t other_id,
                                           SourceIdType id_type);
 
-// Convert source ids from another process.
-METRICS_EXPORT SourceId ConvertSourceIdFromInstance(int64_t instance_id,
-                                                    int64_t source_id);
-
 // Get the SourceIdType of the SourceId.
 METRICS_EXPORT SourceIdType GetSourceIdType(SourceId source_id);
 
