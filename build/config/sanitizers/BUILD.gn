@@ -345,11 +345,6 @@ config("cfi_flags") {
     if (!defined(cfi_blacklist_path)) {
       cfi_blacklist_path =
           rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
-      if (is_android) {
-        cflags +=
-            [ "-fsanitize-blacklist=" +
-              rebase_path("//tools/cfi/blacklist_android.txt", root_build_dir) ]
-      }
     }
     cflags += [
       "-fsanitize=cfi-vcall",
