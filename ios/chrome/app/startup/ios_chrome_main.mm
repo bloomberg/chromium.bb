@@ -13,7 +13,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
-#include "components/task_scheduler_util/common/variations_util.h"
+#include "components/task_scheduler_util/variations_util.h"
 #include "ios/web/public/app/web_main_runner.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

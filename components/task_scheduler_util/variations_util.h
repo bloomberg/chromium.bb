@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TASK_SCHEDULER_UTIL_COMMON_VARIATIONS_UTIL_H_
-#define COMPONENTS_TASK_SCHEDULER_UTIL_COMMON_VARIATIONS_UTIL_H_
+#ifndef COMPONENTS_TASK_SCHEDULER_UTIL_VARIATIONS_UTIL_H_
+#define COMPONENTS_TASK_SCHEDULER_UTIL_VARIATIONS_UTIL_H_
 
 #include <memory>
 
@@ -33,4 +33,4 @@ GetTaskSchedulerInitParamsForRenderer();
 
 }  // namespace task_scheduler_util
 
-#endif  // COMPONENTS_TASK_SCHEDULER_UTIL_COMMON_VARIATIONS_UTIL_H_
+#endif  // COMPONENTS_TASK_SCHEDULER_UTIL_VARIATIONS_UTIL_H_

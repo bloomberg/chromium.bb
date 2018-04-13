@@ -147,7 +147,7 @@ test("components_unittests") {
     "//components/sync_bookmarks:unit_tests",
     "//components/sync_preferences:unit_tests",
     "//components/sync_sessions:unit_tests",
-    "//components/task_scheduler_util/common:unit_tests",
+    "//components/task_scheduler_util:unit_tests",
     "//components/test:run_all_unittests",
     "//components/translate/core/browser:unit_tests",
     "//components/translate/core/common:unit_tests",
