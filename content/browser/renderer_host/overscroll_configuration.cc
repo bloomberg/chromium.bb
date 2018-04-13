@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 
 namespace {
@@ -24,6 +25,9 @@ const float kThresholdCompleteTouchscreen = 0.25f;
 
 const float kThresholdStartTouchpad = 60.f;
 const float kThresholdStartTouchscreen = 50.f;
+
+bool g_is_touchpad_overscroll_history_navigation_enabled_initialized = false;
+bool g_touchpad_overscroll_history_navigation_enabled = false;
 
 float GetStartThresholdMultiplier() {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
@@ -125,6 +129,23 @@ void OverscrollConfig::SetPullToRefreshMode(PullToRefreshMode mode) {
 void OverscrollConfig::ResetPullToRefreshMode() {
   g_is_ptr_mode_initialized = false;
   g_ptr_mode = OverscrollConfig::PullToRefreshMode::kDisabled;
+}
+
+// static
+bool OverscrollConfig::TouchpadOverscrollHistoryNavigationEnabled() {
+  if (!g_is_touchpad_overscroll_history_navigation_enabled_initialized) {
+    g_is_touchpad_overscroll_history_navigation_enabled_initialized = true;
+    g_touchpad_overscroll_history_navigation_enabled =
+        base::FeatureList::IsEnabled(
+            features::kTouchpadOverscrollHistoryNavigation);
+  }
+
+  return g_touchpad_overscroll_history_navigation_enabled;
+}
+
+// static
+void OverscrollConfig::ResetTouchpadOverscrollHistoryNavigationEnabled() {
+  g_is_touchpad_overscroll_history_navigation_enabled_initialized = false;
 }
 
 }  // namespace content

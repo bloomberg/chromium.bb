@@ -458,6 +458,14 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
            fabs(overscroll_delta_y_) > fabs(overscroll_delta_x_) * kMinRatio)
     new_mode = overscroll_delta_y_ > 0.f ? OVERSCROLL_SOUTH : OVERSCROLL_NORTH;
 
+  // The horizontal overscroll is used for history navigation. Enable it for
+  // touchpad only if TouchpadOverscrollHistoryNavigation is enabled.
+  if ((new_mode == OVERSCROLL_EAST || new_mode == OVERSCROLL_WEST) &&
+      is_touchpad &&
+      !OverscrollConfig::TouchpadOverscrollHistoryNavigationEnabled()) {
+    new_mode = OVERSCROLL_NONE;
+  }
+
   // The vertical overscroll is used for pull-to-refresh. Enable it only if
   // pull-to-refresh is enabled.
   if (new_mode == OVERSCROLL_SOUTH || new_mode == OVERSCROLL_NORTH) {

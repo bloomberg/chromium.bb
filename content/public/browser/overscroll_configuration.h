@@ -60,9 +60,12 @@ class CONTENT_EXPORT OverscrollConfig {
 
   static float GetThreshold(Threshold threshold);
 
+  static bool TouchpadOverscrollHistoryNavigationEnabled();
+
  private:
   friend class ScopedHistoryNavigationMode;
   friend class ScopedPullToRefreshMode;
+  friend class OverscrollControllerTest;
 
   // Helper functions used by |ScopedHistoryNavigationMode| to set and reset
   // mode in tests.
@@ -73,6 +76,10 @@ class CONTENT_EXPORT OverscrollConfig {
   // tests.
   static void SetPullToRefreshMode(PullToRefreshMode mode);
   static void ResetPullToRefreshMode();
+
+  // Helper functions to reset TouchpadOverscrollHistoryNavigationEnabled in
+  // tests.
+  static void ResetTouchpadOverscrollHistoryNavigationEnabled();
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(OverscrollConfig);
 };
