@@ -12,6 +12,7 @@
 #include "ash/public/cpp/immersive/immersive_gesture_handler.h"
 #include "ash/public/cpp/immersive/immersive_handler_factory.h"
 #include "base/metrics/histogram_macros.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
@@ -326,6 +327,11 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
   }
 }
 
+bool ImmersiveFullscreenController::IsTargetForWidget(
+    views::Widget* target) const {
+  return target == widget_ || target == top_container_->GetWidget();
+}
+
 void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
     const ui::MouseEvent& event,
     const gfx::Point& location_in_screen,
@@ -337,9 +343,8 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
   // activation. This allows the timer to be started when |widget_| is inactive
   // but prevents starting the timer if the mouse is over a portion of the top
   // edge obscured by an unrelated widget.
-  if (!top_edge_hover_timer_.IsRunning() && target != widget_) {
+  if (!top_edge_hover_timer_.IsRunning() && !IsTargetForWidget(target))
     return;
-  }
 
   // Mouse hover should not initiate revealing the top-of-window views while a
   // window has mouse capture.
