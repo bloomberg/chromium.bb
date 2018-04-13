@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/browser/media_controller.h"
+#include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
 
 namespace media_router {
 
@@ -63,7 +64,7 @@ class MediaRouterBase : public MediaRouter {
       content::PresentationConnectionState state);
   void NotifyPresentationConnectionClose(
       const MediaRoute::Id& route_id,
-      content::PresentationConnectionCloseReason reason,
+      blink::mojom::PresentationConnectionCloseReason reason,
       const std::string& message);
 
   // Returns true when there is at least one MediaRoute that can be returned by

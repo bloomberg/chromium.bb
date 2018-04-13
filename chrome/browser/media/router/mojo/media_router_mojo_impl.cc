@@ -50,6 +50,27 @@ void RunRouteRequestCallbacks(
     std::move(callback).Run(*result);
 }
 
+// TODO(crbug.com/831416): Delete temporary code once we can use
+// presentation.mojom types here.
+blink::mojom::PresentationConnectionCloseReason
+PresentationConnectionCloseReasonToBlink(
+    media_router::mojom::MediaRouter::PresentationConnectionCloseReason
+        reason) {
+  switch (reason) {
+    case media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
+        CONNECTION_ERROR:
+      return blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
+    case media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
+        CLOSED:
+      return blink::mojom::PresentationConnectionCloseReason::CLOSED;
+    case media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
+        WENT_AWAY:
+      return blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
+  }
+  NOTREACHED() << "Unknown PresentationConnectionCloseReason " << reason;
+  return blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR;
+}
+
 }  // namespace
 
 using SinkAvailability = mojom::MediaRouter::SinkAvailability;
@@ -817,9 +838,10 @@ void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
 
 void MediaRouterMojoImpl::OnPresentationConnectionClosed(
     const std::string& route_id,
-    content::PresentationConnectionCloseReason reason,
+    media_router::mojom::MediaRouter::PresentationConnectionCloseReason reason,
     const std::string& message) {
-  NotifyPresentationConnectionClose(route_id, reason, message);
+  NotifyPresentationConnectionClose(
+      route_id, PresentationConnectionCloseReasonToBlink(reason), message);
 }
 
 void MediaRouterMojoImpl::OnTerminateRouteResult(

@@ -86,7 +86,7 @@ TEST_F(MediaRouterBaseTest, NotifyCallbacks) {
   content::PresentationConnectionStateChangeInfo change_info_closed(
       content::PRESENTATION_CONNECTION_STATE_CLOSED);
   change_info_closed.close_reason =
-      content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+      blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
   change_info_closed.message = "Test message";
 
   EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_connected)));

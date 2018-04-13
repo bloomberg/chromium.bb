@@ -118,7 +118,7 @@ void MediaRouterBase::NotifyPresentationConnectionStateChange(
 
 void MediaRouterBase::NotifyPresentationConnectionClose(
     const MediaRoute::Id& route_id,
-    content::PresentationConnectionCloseReason reason,
+    blink::mojom::PresentationConnectionCloseReason reason,
     const std::string& message) {
   auto it = presentation_connection_state_callbacks_.find(route_id);
   if (it == presentation_connection_state_callbacks_.end())

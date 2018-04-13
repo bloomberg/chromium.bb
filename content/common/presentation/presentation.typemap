@@ -13,7 +13,6 @@ deps = [
   "//url",
 ]
 type_mappings = [
-  "blink.mojom.PresentationConnectionCloseReason=content::PresentationConnectionCloseReason",
   "blink.mojom.PresentationConnectionMessage=content::PresentationConnectionMessage[move_only]",
   "blink.mojom.PresentationConnectionState=content::PresentationConnectionState",
   "blink.mojom.PresentationError=content::PresentationError",
