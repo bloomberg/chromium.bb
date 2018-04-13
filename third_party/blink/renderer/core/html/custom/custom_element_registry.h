@@ -64,6 +64,7 @@ class CORE_EXPORT CustomElementRegistry final : public ScriptWrappable {
   ScriptPromise whenDefined(ScriptState*,
                             const AtomicString& name,
                             ExceptionState&);
+  void upgrade(Node* root);
 
   void Entangle(V0CustomElementRegistrationContext*);
 
