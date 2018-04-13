@@ -11,6 +11,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -30,18 +31,10 @@ const char kWhitelistedId[] = "cbkkbcmdlboombapidmoeolnmdacpkch";
 const char kBogusId[] = "bogus";
 
 scoped_refptr<Extension> CreateExtension(const std::string& id) {
-  std::string error;
-  base::DictionaryValue manifest;
-  manifest.SetString(manifest_keys::kName, "test");
-  manifest.SetString(manifest_keys::kVersion, "0.1");
-  scoped_refptr<Extension> extension = Extension::Create(
-      base::FilePath(),
-      Manifest::INTERNAL,
-      manifest,
-      Extension::NO_FLAGS,
-      id,
-      &error);
-  return extension;
+  return ExtensionBuilder("test")
+      .SetLocation(Manifest::INTERNAL)
+      .SetID(id)
+      .Build();
 }
 
 std::unique_ptr<const PermissionSet> CreatePermissions(

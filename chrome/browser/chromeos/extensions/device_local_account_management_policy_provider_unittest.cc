@@ -31,6 +31,7 @@ scoped_refptr<const extensions::Extension> CreateExtensionFromValues(
     int flags) {
   values->SetString(extensions::manifest_keys::kName, "test");
   values->SetString(extensions::manifest_keys::kVersion, "0.1");
+  values->SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   std::string error;
   return extensions::Extension::Create(base::FilePath(),
                                        location,

@@ -26,6 +26,8 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
   ExtensionSettingsUIBrowserTest();
   ~ExtensionSettingsUIBrowserTest() override;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
  protected:
   void InstallGoodExtension();
 
