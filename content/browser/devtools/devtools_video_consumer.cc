@@ -149,9 +149,8 @@ void DevToolsVideoConsumer::OnFrameCaptured(
   // Setting |frame|'s visible rect equal to |content_rect| so that only the
   // portion of the frame that contain content are used.
   frame = media::VideoFrame::WrapExternalData(
-      info->pixel_format, info->coded_size, info->visible_rect,
-      info->visible_rect.size(), static_cast<uint8_t*>(mapping.get()),
-      buffer_size, info->timestamp);
+      info->pixel_format, info->coded_size, content_rect, content_rect.size(),
+      static_cast<uint8_t*>(mapping.get()), buffer_size, info->timestamp);
   if (!frame)
     return;
   frame->AddDestructionObserver(base::BindOnce(

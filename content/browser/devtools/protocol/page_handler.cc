@@ -22,6 +22,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_helper.h"
@@ -103,6 +105,77 @@ std::string EncodeSkBitmap(const SkBitmap& image,
   return EncodeImage(gfx::Image::CreateFrom1xBitmap(image), format, quality);
 }
 
+std::unique_ptr<Page::ScreencastFrameMetadata> BuildScreencastFrameMetadata(
+    const gfx::Size& surface_size,
+    float device_scale_factor,
+    float page_scale_factor,
+    const gfx::Vector2dF& root_scroll_offset,
+    float top_controls_height,
+    float top_controls_shown_ratio) {
+  if (surface_size.IsEmpty() || device_scale_factor == 0)
+    return nullptr;
+
+  const gfx::SizeF content_size_dip =
+      gfx::ScaleSize(gfx::SizeF(surface_size), 1 / device_scale_factor);
+  float top_offset_dip = top_controls_height * top_controls_shown_ratio;
+  if (IsUseZoomForDSFEnabled())
+    top_offset_dip /= device_scale_factor;
+  std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
+      Page::ScreencastFrameMetadata::Create()
+          .SetPageScaleFactor(page_scale_factor)
+          .SetOffsetTop(top_offset_dip)
+          .SetDeviceWidth(content_size_dip.width())
+          .SetDeviceHeight(content_size_dip.height())
+          .SetScrollOffsetX(root_scroll_offset.x())
+          .SetScrollOffsetY(root_scroll_offset.y())
+          .SetTimestamp(base::Time::Now().ToDoubleT())
+          .Build();
+  return page_metadata;
+}
+
+// Determines the snapshot size that best-fits the Surface's content to the
+// remote's requested image size.
+gfx::Size DetermineSnapshotSize(const gfx::Size& surface_size,
+                                int screencast_max_width,
+                                int screencast_max_height) {
+  if (surface_size.IsEmpty())
+    return gfx::Size();  // Nothing to copy (and avoid divide-by-zero below).
+
+  double scale = 1;
+  if (screencast_max_width > 0) {
+    scale = std::min(scale, static_cast<double>(screencast_max_width) /
+                                surface_size.width());
+  }
+  if (screencast_max_height > 0) {
+    scale = std::min(scale, static_cast<double>(screencast_max_height) /
+                                surface_size.height());
+  }
+  return gfx::ToRoundedSize(gfx::ScaleSize(gfx::SizeF(surface_size), scale));
+}
+
+#if !defined(OS_ANDROID)
+void GetMetadataFromFrame(const media::VideoFrame& frame,
+                          double* device_scale_factor,
+                          double* page_scale_factor,
+                          gfx::Vector2dF* root_scroll_offset) {
+  // Get metadata from |frame| and ensure that no metadata is missing.
+  bool success = true;
+  double root_scroll_offset_x, root_scroll_offset_y;
+  success &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::DEVICE_SCALE_FACTOR, device_scale_factor);
+  success &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::PAGE_SCALE_FACTOR, page_scale_factor);
+  success &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_X, &root_scroll_offset_x);
+  success &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &root_scroll_offset_y);
+  DCHECK(success);
+
+  root_scroll_offset->set_x(root_scroll_offset_x);
+  root_scroll_offset->set_y(root_scroll_offset_y);
+}
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace
 
 PageHandler::PageHandler(EmulationHandler* emulation_handler)
@@ -118,9 +191,20 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
       session_id_(0),
       frame_counter_(0),
       frames_in_flight_(0),
+#if !defined(OS_ANDROID)
+      video_consumer_(nullptr),
+      last_surface_size_(gfx::Size()),
+#endif  // !defined(OS_ANDROID)
       host_(nullptr),
       emulation_handler_(emulation_handler),
       weak_factory_(this) {
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
+    video_consumer_ = std::make_unique<DevToolsVideoConsumer>(
+        base::BindRepeating(&PageHandler::OnFrameFromVideoConsumer,
+                            weak_factory_.GetWeakPtr()));
+  }
+#endif  // !defined(OS_ANDROID)
   DCHECK(emulation_handler_);
 }
 
@@ -172,6 +256,13 @@ void PageHandler::SetRenderer(int process_host_id,
         content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
         content::Source<RenderWidgetHost>(widget_host));
   }
+
+#if !defined(OS_ANDROID)
+  if (video_consumer_ && frame_host) {
+    video_consumer_->SetFrameSinkId(
+        frame_host->GetRenderWidgetHost()->GetFrameSinkId());
+  }
+#endif  // !defined(OS_ANDROID)
 }
 
 void PageHandler::Wire(UberDispatcher* dispatcher) {
@@ -276,6 +367,11 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
+
+#if !defined(OS_ANDROID)
+  if (video_consumer_)
+    video_consumer_->StopCapture();
+#endif  // !defined(OS_ANDROID)
 
   if (!pending_dialog_.is_null()) {
     WebContentsImpl* web_contents = GetWebContents();
@@ -664,22 +760,47 @@ Response PageHandler::StartScreencast(Maybe<std::string> format,
   frame_counter_ = 0;
   frames_in_flight_ = 0;
   capture_every_nth_frame_ = every_nth_frame.fromMaybe(1);
-
   bool visible = !widget_host->is_hidden();
   NotifyScreencastVisibility(visible);
-  if (visible) {
-    if (has_compositor_frame_metadata_) {
-      InnerSwapCompositorFrame();
-    } else {
-      widget_host->Send(new ViewMsg_ForceRedraw(widget_host->GetRoutingID(),
-                                                ui::LatencyInfo()));
+
+#if !defined(OS_ANDROID)
+  if (video_consumer_) {
+    gfx::Size surface_size = gfx::Size();
+    RenderWidgetHostViewBase* const view =
+        static_cast<RenderWidgetHostViewBase*>(host_->GetView());
+    if (view) {
+      surface_size = view->GetCompositorViewportPixelSize();
+      last_surface_size_ = surface_size;
     }
+
+    gfx::Size snapshot_size = DetermineSnapshotSize(
+        surface_size, screencast_max_width_, screencast_max_height_);
+    if (!snapshot_size.IsEmpty())
+      video_consumer_->SetMinAndMaxFrameSize(snapshot_size, snapshot_size);
+
+    video_consumer_->StartCapture();
+    return Response::FallThrough();
+  }
+#endif  // !defined(OS_ANDROID)
+
+  if (!visible)
+    return Response::FallThrough();
+
+  if (has_compositor_frame_metadata_) {
+    InnerSwapCompositorFrame();
+  } else {
+    widget_host->Send(new ViewMsg_ForceRedraw(widget_host->GetRoutingID(),
+                                              ui::LatencyInfo()));
   }
   return Response::FallThrough();
 }
 
 Response PageHandler::StopScreencast() {
   screencast_enabled_ = false;
+#if !defined(OS_ANDROID)
+  if (video_consumer_)
+    video_consumer_->StopCapture();
+#endif  // !defined(OS_ANDROID)
   return Response::FallThrough();
 }
 
@@ -816,45 +937,24 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (!view || !view->IsSurfaceAvailableForCopy())
     return;
 
-  // Determine the snapshot size that best-fits the Surface's content to the
-  // remote's requested image size.
-  const gfx::Size& surface_size = view->GetCompositorViewportPixelSize();
+  const gfx::Size surface_size = view->GetCompositorViewportPixelSize();
   if (surface_size.IsEmpty())
-    return;  // Nothing to copy (and avoid divide-by-zero below).
-  double scale = 1;
-  if (screencast_max_width_ > 0) {
-    scale = std::min(scale, static_cast<double>(screencast_max_width_) /
-                                surface_size.width());
-  }
-  if (screencast_max_height_ > 0) {
-    scale = std::min(scale, static_cast<double>(screencast_max_height_) /
-                                surface_size.height());
-  }
-  const gfx::Size snapshot_size =
-      gfx::ToRoundedSize(gfx::ScaleSize(gfx::SizeF(surface_size), scale));
+    return;
+
+  const gfx::Size snapshot_size = DetermineSnapshotSize(
+      surface_size, screencast_max_width_, screencast_max_height_);
   if (snapshot_size.IsEmpty())
     return;
 
-  // Build the ScreencastFrameMetadata associated with this capture attempt.
-  const auto& metadata = last_compositor_frame_metadata_;
-  if (metadata.device_scale_factor == 0)
-    return;
-  const gfx::SizeF content_size_dip = gfx::ScaleSize(
-      gfx::SizeF(surface_size), 1 / metadata.device_scale_factor);
-  float top_offset_dip =
-      metadata.top_controls_height * metadata.top_controls_shown_ratio;
-  if (IsUseZoomForDSFEnabled())
-    top_offset_dip /= metadata.device_scale_factor;
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
-      Page::ScreencastFrameMetadata::Create()
-          .SetPageScaleFactor(metadata.page_scale_factor)
-          .SetOffsetTop(top_offset_dip)
-          .SetDeviceWidth(content_size_dip.width())
-          .SetDeviceHeight(content_size_dip.height())
-          .SetScrollOffsetX(metadata.root_scroll_offset.x())
-          .SetScrollOffsetY(metadata.root_scroll_offset.y())
-          .SetTimestamp(base::Time::Now().ToDoubleT())
-          .Build();
+      BuildScreencastFrameMetadata(
+          surface_size, last_compositor_frame_metadata_.device_scale_factor,
+          last_compositor_frame_metadata_.page_scale_factor,
+          last_compositor_frame_metadata_.root_scroll_offset,
+          last_compositor_frame_metadata_.top_controls_height,
+          last_compositor_frame_metadata_.top_controls_shown_ratio);
+  if (!page_metadata)
+    return;
 
   // Request a copy of the surface as a scaled SkBitmap.
   view->CopyFromSurface(
@@ -863,6 +963,51 @@ void PageHandler::InnerSwapCompositorFrame() {
                      weak_factory_.GetWeakPtr(), std::move(page_metadata)));
   frames_in_flight_++;
 }
+
+#if !defined(OS_ANDROID)
+void PageHandler::OnFrameFromVideoConsumer(
+    scoped_refptr<media::VideoFrame> frame) {
+  if (!host_)
+    return;
+
+  RenderWidgetHostViewBase* const view =
+      static_cast<RenderWidgetHostViewBase*>(host_->GetView());
+  if (!view)
+    return;
+
+  const gfx::Size surface_size = view->GetCompositorViewportPixelSize();
+  if (surface_size.IsEmpty())
+    return;
+
+  // If window has been resized, set the new dimensions.
+  if (surface_size != last_surface_size_) {
+    last_surface_size_ = surface_size;
+    gfx::Size snapshot_size = DetermineSnapshotSize(
+        surface_size, screencast_max_width_, screencast_max_height_);
+    if (!snapshot_size.IsEmpty())
+      video_consumer_->SetMinAndMaxFrameSize(snapshot_size, snapshot_size);
+    return;
+  }
+
+  double device_scale_factor, page_scale_factor;
+  gfx::Vector2dF root_scroll_offset;
+  GetMetadataFromFrame(*frame, &device_scale_factor, &page_scale_factor,
+                       &root_scroll_offset);
+  // Top controls are only present on Android. Hence use default values of 0.f.
+  // TODO(dgozman): fix this when viz capture is available on Android.
+  const float kTopControlsHeight = 0.f;
+  const float kTopControlsShownRatio = 0.f;
+  std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
+      BuildScreencastFrameMetadata(surface_size, device_scale_factor,
+                                   page_scale_factor, root_scroll_offset,
+                                   kTopControlsHeight, kTopControlsShownRatio);
+  if (!page_metadata)
+    return;
+
+  ScreencastFrameCaptured(std::move(page_metadata),
+                          DevToolsVideoConsumer::GetSkBitmapFromFrame(frame));
+}
+#endif  // !defined(OS_ANDROID)
 
 void PageHandler::ScreencastFrameCaptured(
     std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata,
