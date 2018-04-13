@@ -70,63 +70,63 @@ public class SigninView extends LinearLayout {
         mAcceptButtonEndPadding = findViewById(R.id.positive_button_end_padding);
     }
 
-    public SigninScrollView getScrollView() {
+    SigninScrollView getScrollView() {
         return mScrollView;
     }
 
-    public ImageView getHeaderImage() {
+    ImageView getHeaderImage() {
         return mHeaderImage;
     }
 
-    public TextView getTitleView() {
+    TextView getTitleView() {
         return mTitle;
     }
 
-    public View getAccountPickerView() {
+    View getAccountPickerView() {
         return mAccountPicker;
     }
 
-    public ImageView getAccountImageView() {
+    ImageView getAccountImageView() {
         return mAccountImage;
     }
 
-    public TextView getAccountNameView() {
+    TextView getAccountNameView() {
         return mAccountName;
     }
 
-    public TextView getAccountEmailView() {
+    TextView getAccountEmailView() {
         return mAccountEmail;
     }
 
-    public TextView getSyncDescriptionView() {
+    TextView getSyncDescriptionView() {
         return mSyncDescription;
     }
 
-    public TextView getPersonalizationDescriptionView() {
+    TextView getPersonalizationDescriptionView() {
         return mPersonalizationDescription;
     }
 
-    public TextView getGoogleServicesDescriptionView() {
+    TextView getGoogleServicesDescriptionView() {
         return mGoogleServicesDescription;
     }
 
-    public TextView getDetailsDescriptionView() {
+    TextView getDetailsDescriptionView() {
         return mDetailsDescription;
     }
 
-    public ButtonCompat getAcceptButton() {
+    ButtonCompat getAcceptButton() {
         return mAcceptButton;
     }
 
-    public Button getRefuseButton() {
+    Button getRefuseButton() {
         return mRefuseButton;
     }
 
-    public Button getMoreButton() {
+    Button getMoreButton() {
         return mMoreButton;
     }
 
-    public View getAcceptButtonEndPadding() {
+    View getAcceptButtonEndPadding() {
         return mAcceptButtonEndPadding;
     }
 
