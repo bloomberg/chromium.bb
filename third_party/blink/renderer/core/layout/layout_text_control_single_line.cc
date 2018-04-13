@@ -200,16 +200,6 @@ bool LayoutTextControlSingleLine::NodeAtPoint(
   return true;
 }
 
-void LayoutTextControlSingleLine::StyleDidChange(
-    StyleDifference diff,
-    const ComputedStyle* old_style) {
-  LayoutTextControl::StyleDidChange(diff, old_style);
-  if (HTMLElement* placeholder = InputElement()->PlaceholderElement())
-    placeholder->SetInlineStyleProperty(
-        CSSPropertyTextOverflow,
-        TextShouldBeTruncated() ? CSSValueEllipsis : CSSValueClip);
-}
-
 void LayoutTextControlSingleLine::CapsLockStateMayHaveChanged() {
   if (!GetNode())
     return;
@@ -302,66 +292,6 @@ LayoutUnit LayoutTextControlSingleLine::ComputeControlLogicalHeight(
     LayoutUnit line_height,
     LayoutUnit non_content_height) const {
   return line_height + non_content_height;
-}
-
-scoped_refptr<ComputedStyle>
-LayoutTextControlSingleLine::CreateInnerEditorStyle(
-    const ComputedStyle& start_style) const {
-  scoped_refptr<ComputedStyle> text_block_style = ComputedStyle::Create();
-  text_block_style->InheritFrom(start_style);
-  AdjustInnerEditorStyle(*text_block_style);
-
-  text_block_style->SetWhiteSpace(EWhiteSpace::kPre);
-  text_block_style->SetOverflowWrap(EOverflowWrap::kNormal);
-  text_block_style->SetTextOverflow(TextShouldBeTruncated()
-                                        ? ETextOverflow::kEllipsis
-                                        : ETextOverflow::kClip);
-
-  int computed_line_height =
-      LineHeight(true, kHorizontalLine, kPositionOfInteriorLineBoxes).ToInt();
-  // Do not allow line-height to be smaller than our default.
-  if (text_block_style->FontSize() >= computed_line_height) {
-    text_block_style->SetLineHeight(
-        ComputedStyleInitialValues::InitialLineHeight());
-  }
-
-  // We'd like to remove line-height if it's unnecessary because
-  // overflow:scroll clips editing text by line-height.
-  Length logical_height = start_style.LogicalHeight();
-  // Here, we remove line-height if the INPUT fixed height is taller than the
-  // line-height.  It's not the precise condition because logicalHeight
-  // includes border and padding if box-sizing:border-box, and there are cases
-  // in which we don't want to remove line-height with percent or calculated
-  // length.
-  // TODO(tkent): This should be done during layout.
-  if (logical_height.IsPercentOrCalc() ||
-      (logical_height.IsFixed() &&
-       logical_height.GetFloatValue() > computed_line_height)) {
-    text_block_style->SetLineHeight(
-        ComputedStyleInitialValues::InitialLineHeight());
-  }
-
-  text_block_style->SetDisplay(EDisplay::kBlock);
-  text_block_style->SetUnique();
-
-  if (InputElement()->ShouldRevealPassword())
-    text_block_style->SetTextSecurity(ETextSecurity::kNone);
-
-  text_block_style->SetOverflowX(EOverflow::kScroll);
-  // overflow-y:visible doesn't work because overflow-x:scroll makes a layer.
-  text_block_style->SetOverflowY(EOverflow::kScroll);
-  scoped_refptr<ComputedStyle> no_scrollbar_style = ComputedStyle::Create();
-  no_scrollbar_style->SetStyleType(kPseudoIdScrollbar);
-  no_scrollbar_style->SetDisplay(EDisplay::kNone);
-  text_block_style->AddCachedPseudoStyle(no_scrollbar_style);
-  text_block_style->SetHasPseudoStyle(kPseudoIdScrollbar);
-
-  return text_block_style;
-}
-
-bool LayoutTextControlSingleLine::TextShouldBeTruncated() const {
-  return GetDocument().FocusedElement() != GetNode() &&
-         StyleRef().TextOverflow() == ETextOverflow::kEllipsis;
 }
 
 void LayoutTextControlSingleLine::Autoscroll(const IntPoint& position) {

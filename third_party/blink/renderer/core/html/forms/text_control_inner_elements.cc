@@ -142,18 +142,77 @@ LayoutObject* TextControlInnerEditorElement::CreateLayoutObject(
 
 scoped_refptr<ComputedStyle>
 TextControlInnerEditorElement::CustomStyleForLayoutObject() {
-  LayoutObject* parent_layout_object = OwnerShadowHost()->GetLayoutObject();
-  if (!parent_layout_object || !parent_layout_object->IsTextControl())
-    return OriginalStyleForLayoutObject();
-  LayoutTextControl* text_control = ToLayoutTextControl(parent_layout_object);
-  scoped_refptr<ComputedStyle> inner_editor_style =
-      text_control->CreateInnerEditorStyle(text_control->StyleRef());
+  scoped_refptr<ComputedStyle> inner_editor_style = CreateInnerEditorStyle();
   // Using StyleAdjuster::adjustComputedStyle updates unwanted style. We'd like
   // to apply only editing-related and alignment-related.
   StyleAdjuster::AdjustStyleForEditing(*inner_editor_style);
   if (!is_visible_)
     inner_editor_style->SetOpacity(0);
   return inner_editor_style;
+}
+
+scoped_refptr<ComputedStyle>
+TextControlInnerEditorElement::CreateInnerEditorStyle() const {
+  Element* host = OwnerShadowHost();
+  DCHECK(host);
+  const ComputedStyle& start_style = host->ComputedStyleRef();
+  scoped_refptr<ComputedStyle> text_block_style = ComputedStyle::Create();
+  text_block_style->InheritFrom(start_style);
+  // The inner block, if present, always has its direction set to LTR,
+  // so we need to inherit the direction and unicode-bidi style from the
+  // element.
+  text_block_style->SetDirection(start_style.Direction());
+  text_block_style->SetUnicodeBidi(start_style.GetUnicodeBidi());
+  text_block_style->SetUserSelect(EUserSelect::kText);
+  text_block_style->SetUserModify(
+      ToHTMLFormControlElement(host)->IsDisabledOrReadOnly()
+          ? EUserModify::kReadOnly
+          : EUserModify::kReadWritePlaintextOnly);
+  text_block_style->SetDisplay(EDisplay::kBlock);
+  text_block_style->SetUnique();
+
+  if (!IsHTMLTextAreaElement(host)) {
+    text_block_style->SetWhiteSpace(EWhiteSpace::kPre);
+    text_block_style->SetOverflowWrap(EOverflowWrap::kNormal);
+    text_block_style->SetTextOverflow(
+        ToTextControl(host)->ValueForTextOverflow());
+    int computed_line_height = start_style.ComputedLineHeight();
+    // Do not allow line-height to be smaller than our default.
+    if (text_block_style->FontSize() >= computed_line_height) {
+      text_block_style->SetLineHeight(
+          ComputedStyleInitialValues::InitialLineHeight());
+    }
+
+    // We'd like to remove line-height if it's unnecessary because
+    // overflow:scroll clips editing text by line-height.
+    Length logical_height = start_style.LogicalHeight();
+    // Here, we remove line-height if the INPUT fixed height is taller than the
+    // line-height.  It's not the precise condition because logicalHeight
+    // includes border and padding if box-sizing:border-box, and there are cases
+    // in which we don't want to remove line-height with percent or calculated
+    // length.
+    // TODO(tkent): This should be done during layout.
+    if (logical_height.IsPercentOrCalc() ||
+        (logical_height.IsFixed() &&
+         logical_height.GetFloatValue() > computed_line_height)) {
+      text_block_style->SetLineHeight(
+          ComputedStyleInitialValues::InitialLineHeight());
+    }
+
+    if (ToHTMLInputElement(host)->ShouldRevealPassword())
+      text_block_style->SetTextSecurity(ETextSecurity::kNone);
+
+    text_block_style->SetOverflowX(EOverflow::kScroll);
+    // overflow-y:visible doesn't work because overflow-x:scroll makes a layer.
+    text_block_style->SetOverflowY(EOverflow::kScroll);
+    scoped_refptr<ComputedStyle> no_scrollbar_style = ComputedStyle::Create();
+    no_scrollbar_style->SetStyleType(kPseudoIdScrollbar);
+    no_scrollbar_style->SetDisplay(EDisplay::kNone);
+    text_block_style->AddCachedPseudoStyle(no_scrollbar_style);
+    text_block_style->SetHasPseudoStyle(kPseudoIdScrollbar);
+  }
+
+  return text_block_style;
 }
 
 // ----------------------------

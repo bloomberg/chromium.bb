@@ -21,7 +21,7 @@ Input before setting suggested values:
 |     <div>
 |       id="placeholder"
 |       pseudo="-webkit-input-placeholder"
-|       style="display: block !important; text-overflow: clip;"
+|       style="display: block !important;"
 |       shadow:pseudoId="-webkit-input-placeholder"
 |       "initial placeholder"
 |     <div>
@@ -104,7 +104,7 @@ Input after setting suggestedValue:
 |     <div>
 |       id="placeholder"
 |       pseudo="-internal-input-suggested"
-|       style="display: block !important; text-overflow: clip;"
+|       style="display: block !important;"
 |       shadow:pseudoId="-internal-input-suggested"
 |       "suggested value"
 |     <div>
@@ -197,7 +197,7 @@ After resetting suggestedValue value:
 |     <div>
 |       id="placeholder"
 |       pseudo="-webkit-input-placeholder"
-|       style="display: block !important; text-overflow: clip;"
+|       style="display: block !important;"
 |       shadow:pseudoId="-webkit-input-placeholder"
 |       "initial placeholder"
 |     <div>

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -953,13 +954,11 @@ void TextControlElement::SetSuggestedValue(const String& value) {
   if (!suggested_value_.IsEmpty() && !InnerEditorValue().IsEmpty()) {
     // If there is an inner editor value, hide it so the suggested value can be
     // shown to the user.
-    static_cast<TextControlInnerEditorElement*>(InnerEditorElement())
-        ->SetVisibility(false);
+    InnerEditorElement()->SetVisibility(false);
   } else if (suggested_value_.IsEmpty() && InnerEditorElement()) {
     // If there is no suggested value and there is an InnerEditorElement, reset
     // its visibility.
-    static_cast<TextControlInnerEditorElement*>(InnerEditorElement())
-        ->SetVisibility(true);
+    InnerEditorElement()->SetVisibility(true);
   }
 
   UpdatePlaceholderText();
@@ -1001,6 +1000,12 @@ void TextControlElement::CloneNonAttributePropertiesFrom(
       static_cast<const TextControlElement&>(source);
   last_change_was_user_edit_ = source_element.last_change_was_user_edit_;
   HTMLFormControlElement::CloneNonAttributePropertiesFrom(source, flag);
+}
+
+ETextOverflow TextControlElement::ValueForTextOverflow() const {
+  if (GetDocument().FocusedElement() == this)
+    return ETextOverflow::kClip;
+  return ComputedStyleRef().TextOverflow();
 }
 
 }  // namespace blink
