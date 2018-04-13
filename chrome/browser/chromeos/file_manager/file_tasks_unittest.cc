@@ -998,7 +998,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Generic) {
               extensions::DictionaryBuilder()
                   .Set("text",
                        extensions::DictionaryBuilder()
-                           .SetBoolean("include_directories", true)
+                           .Set("include_directories", true)
                            .Set("extensions",
                                 extensions::ListBuilder().Append("txt").Build())
                            .Build())
@@ -1153,7 +1153,7 @@ TEST_F(FileManagerFileTasksComplexTest, FindFileHandlerTask_Verbs) {
                            .Build())
                   .Set("any_with_directories",
                        extensions::DictionaryBuilder()
-                           .SetBoolean("include_directories", true)
+                           .Set("include_directories", true)
                            .Set("types",
                                 extensions::ListBuilder().Append("*").Build())
                            .Set("verb", "pack_with")

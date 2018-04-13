@@ -63,9 +63,9 @@ scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
   }
 
   if (kiosk_enabled_)
-    manifest_builder.SetBoolean("kiosk_enabled", kiosk_enabled_);
+    manifest_builder.Set("kiosk_enabled", kiosk_enabled_);
 
-  manifest_builder.SetBoolean("offline_enabled", offline_enabled_);
+  manifest_builder.Set("offline_enabled", offline_enabled_);
 
   if (!secondary_extensions_.empty()) {
     ListBuilder secondary_extension_list_builder;
@@ -73,7 +73,7 @@ scoped_refptr<const extensions::Extension> TestKioskExtensionBuilder::Build()
       DictionaryBuilder secondary_extension_builder;
       secondary_extension_builder.Set("id", secondary_extension.id);
       if (secondary_extension.enabled_on_launch.has_value()) {
-        secondary_extension_builder.SetBoolean(
+        secondary_extension_builder.Set(
             "enabled_on_launch", secondary_extension.enabled_on_launch.value());
       }
       secondary_extension_list_builder.Append(
