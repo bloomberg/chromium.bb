@@ -850,15 +850,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   BOOL otrBVCIsCurrent = (self.currentBVC == self.otrBVC);
   TabSwitcherMode mode = GetTabSwitcherMode();
 
-  // If the stack view is in use,and the current BVC is the otr BVC, then the
+  // If the stack view is in use, and the current BVC is the otr BVC, then the
   // user should be in the tab switcher (the stack view).
   DCHECK(mode != TabSwitcherMode::STACK ||
          (!otrBVCIsCurrent || _tabSwitcherIsActive));
 
-  // Always clear the OTR tab model for the tablet switcher.
+  // Always clear the OTR tab model for the tablet and grid switchers.
   // Notify the _tabSwitcher that its otrBVC will be destroyed.
-  if (mode == TabSwitcherMode::TABLET_SWITCHER || _tabSwitcherIsActive)
+  if (mode == TabSwitcherMode::TABLET_SWITCHER ||
+      mode == TabSwitcherMode::GRID || _tabSwitcherIsActive) {
     [_tabSwitcher setOtrTabModel:nil];
+  }
 
   [_browserViewWrangler deleteIncognitoTabModelState];
 
@@ -866,10 +868,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [self activateBVCAndMakeCurrentBVCPrimary];
   }
 
-  // Always set the new otr tab model for the tablet switcher.
+  // Always set the new otr tab model for the tablet or grid switcher.
   // Notify the _tabSwitcher with the new otrBVC.
-  if (mode == TabSwitcherMode::TABLET_SWITCHER || _tabSwitcherIsActive)
+  if (mode == TabSwitcherMode::TABLET_SWITCHER ||
+      mode == TabSwitcherMode::GRID || _tabSwitcherIsActive) {
     [_tabSwitcher setOtrTabModel:self.otrTabModel];
+  }
 }
 
 - (void)activateBVCAndMakeCurrentBVCPrimary {
@@ -1265,6 +1269,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Lazy init of mainCoordinator.
   [self.mainCoordinator start];
+  if (GetTabSwitcherMode() == TabSwitcherMode::GRID) {
+    TabGridCoordinator* tabGridCoordinator =
+        base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
+    _tabSwitcher = tabGridCoordinator.tabSwitcher;
+    // Call -restoreInternalState so that the grid shows the correct panel.
+    [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
+                                           otrTabModel:self.otrTabModel
+                                        activeTabModel:self.currentTabModel];
+  }
 
   // Decide if the First Run UI needs to run.
   BOOL firstRun = (FirstRun::IsChromeFirstRun() ||
@@ -2536,18 +2549,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Creates and returns a tab switcher object according to the tab switcher stye.
 - (id<TabSwitcher>)newTabSwitcher {
   switch (GetTabSwitcherMode()) {
-    case TabSwitcherMode::GRID: {
-      DCHECK(_mainCoordinator)
-          << " Main coordinator not created when tab switcher needed.";
-      TabGridCoordinator* tabGridCoordinator =
-          base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
-      // Call -restoreInternalState so that the grid shows the correct panel.
-      [tabGridCoordinator.tabSwitcher
-          restoreInternalStateWithMainTabModel:self.mainTabModel
-                                   otrTabModel:self.otrTabModel
-                                activeTabModel:self.currentTabModel];
-      return tabGridCoordinator.tabSwitcher;
-    }
+    case TabSwitcherMode::GRID:
+      NOTREACHED() << "When the tab grid is enabled, the tab switcher should"
+                   << " have been assigned during app startup.";
+      return nil;
     case TabSwitcherMode::TABLET_SWITCHER:
       return [[TabSwitcherController alloc]
                 initWithBrowserState:_mainBrowserState

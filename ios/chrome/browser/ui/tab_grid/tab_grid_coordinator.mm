@@ -81,8 +81,11 @@
 }
 
 - (void)setRegularTabModel:(TabModel*)regularTabModel {
-  self.regularTabsMediator.tabModel = regularTabModel;
-  _regularTabModel = regularTabModel;
+  if (self.regularTabsMediator) {
+    self.regularTabsMediator.tabModel = regularTabModel;
+  } else {
+    _regularTabModel = regularTabModel;
+  }
 }
 
 - (TabModel*)incognitoTabModel {
@@ -93,8 +96,11 @@
 }
 
 - (void)setIncognitoTabModel:(TabModel*)incognitoTabModel {
-  self.incognitoTabsMediator.tabModel = incognitoTabModel;
-  _incognitoTabModel = incognitoTabModel;
+  if (self.incognitoTabsMediator) {
+    self.incognitoTabsMediator.tabModel = incognitoTabModel;
+  } else {
+    _incognitoTabModel = incognitoTabModel;
+  }
 }
 
 #pragma mark - MainCoordinator properties
@@ -133,6 +139,10 @@
   mainViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
   mainViewController.regularTabsImageDataSource = self.regularTabsMediator;
   mainViewController.incognitoTabsImageDataSource = self.incognitoTabsMediator;
+  // Once the mediators are set up, stop keeping pointers to the tab models used
+  // to initialize them.
+  _regularTabModel = nil;
+  _incognitoTabModel = nil;
 }
 
 - (void)stop {
