@@ -55,6 +55,7 @@ class ArcWallpaperService : public KeyedService,
   void OnWallpaperChanged(uint32_t image_id) override;
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override;
+  void OnWallpaperBlurChanged(bool blurred) override;
 
   class DecodeRequestSender {
    public:

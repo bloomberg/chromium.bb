@@ -99,6 +99,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void OnWallpaperChanged(uint32_t image_id) override;
   void OnWallpaperColorsChanged(
       const std::vector<SkColor>& prominent_colors) override;
+  void OnWallpaperBlurChanged(bool blurred) override;
 
   // Overridden from content::NotificationObserver:
   void Observe(int type,

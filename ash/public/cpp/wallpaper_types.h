@@ -6,8 +6,13 @@
 #define ASH_PUBLIC_CPP_WALLPAPER_TYPES_H_
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
+
+// The value assigned to the wallpaper color calculation result if calculation
+// fails or is disabled (e.g. from command line, lock/login screens).
+constexpr SkColor kInvalidWallpaperColor = SK_ColorTRANSPARENT;
 
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,

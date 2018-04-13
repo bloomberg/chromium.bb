@@ -154,6 +154,8 @@ void AppListViewDelegate::OnWallpaperColorsChanged(
     observer.OnWallpaperColorsChanged();
 }
 
+void AppListViewDelegate::OnWallpaperBlurChanged(bool blurred) {}
+
 AppListModelUpdater* AppListViewDelegate::GetModelUpdater() {
   return model_updater_;
 }

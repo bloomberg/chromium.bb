@@ -72,6 +72,8 @@ class WallpaperControllerClient : public ash::mojom::WallpaperControllerClient,
       ash::mojom::WallpaperController::GetWallpaperImageCallback callback);
   void GetWallpaperColors(
       ash::mojom::WallpaperController::GetWallpaperColorsCallback callback);
+  void IsWallpaperBlurred(
+      ash::mojom::WallpaperController::IsWallpaperBlurredCallback callback);
   void IsActiveUserWallpaperControlledByPolicy(
       ash::mojom::WallpaperController::
           IsActiveUserWallpaperControlledByPolicyCallback callback);

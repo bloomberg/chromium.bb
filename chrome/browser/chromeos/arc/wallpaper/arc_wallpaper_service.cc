@@ -200,6 +200,8 @@ void ArcWallpaperService::OnWallpaperChanged(uint32_t image_id) {
 void ArcWallpaperService::OnWallpaperColorsChanged(
     const std::vector<SkColor>& prominent_colors) {}
 
+void ArcWallpaperService::OnWallpaperBlurChanged(bool blurred) {}
+
 void ArcWallpaperService::OnWallpaperDecoded(const gfx::ImageSkia& image,
                                              int32_t android_id) {
   const AccountId account_id =

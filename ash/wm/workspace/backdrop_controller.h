@@ -81,7 +81,6 @@ class BackdropController : public ShellObserver,
   void OnSplitViewDividerPositionChanged() override;
 
   // WallpaperControllerObserver:
-  void OnWallpaperDataChanged() override;
   void OnWallpaperPreviewStarted() override;
 
  private:

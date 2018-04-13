@@ -321,8 +321,6 @@ bool IsActiveUser(const AccountId& account_id) {
 
 }  // namespace
 
-const SkColor WallpaperController::kInvalidColor = SK_ColorTRANSPARENT;
-
 const char WallpaperController::kSmallWallpaperSubDir[] = "small";
 const char WallpaperController::kLargeWallpaperSubDir[] = "large";
 const char WallpaperController::kOriginalWallpaperSubDir[] = "original";
@@ -348,7 +346,7 @@ WallpaperController::WallpaperController()
       scoped_session_observer_(this),
       weak_factory_(this) {
   prominent_colors_ =
-      std::vector<SkColor>(color_profiles_.size(), kInvalidColor);
+      std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
@@ -713,15 +711,13 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
   current_wallpaper_->AddObserver(this);
   current_wallpaper_->StartResize();
 
-  for (auto& observer : observers_)
-    observer.OnWallpaperDataChanged();
   mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
     observer->OnWallpaperChanged(current_wallpaper_->original_image_id());
   });
 
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
-  wallpaper_count_for_testing_++;
+  ++wallpaper_count_for_testing_;
 }
 
 bool WallpaperController::IsPolicyControlled(const AccountId& account_id,
@@ -1373,6 +1369,11 @@ void WallpaperController::GetWallpaperColors(
   std::move(callback).Run(prominent_colors_);
 }
 
+void WallpaperController::IsWallpaperBlurred(
+    IsWallpaperBlurredCallback callback) {
+  std::move(callback).Run(is_wallpaper_blurred_);
+}
+
 void WallpaperController::IsActiveUserWallpaperControlledByPolicy(
     IsActiveUserWallpaperControlledByPolicyCallback callback) {
   std::move(callback).Run(IsActiveUserWallpaperControlledByPolicyImpl());
@@ -1421,7 +1422,7 @@ void WallpaperController::ShowDefaultWallpaperForTesting() {
 
 void WallpaperController::CreateEmptyWallpaperForTesting() {
   SetProminentColors(
-      std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
+      std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor));
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
@@ -1790,7 +1791,7 @@ void WallpaperController::CalculateWallpaperColors() {
   // an invalid color if a previous calculation during active session failed.
   if (!ShouldCalculateColors()) {
     SetProminentColors(
-        std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
+        std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor));
     return;
   }
 
@@ -1799,7 +1800,7 @@ void WallpaperController::CalculateWallpaperColors() {
   color_calculator_->AddObserver(this);
   if (!color_calculator_->StartCalculation()) {
     SetProminentColors(
-        std::vector<SkColor>(color_profiles_.size(), kInvalidColor));
+        std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor));
   }
 }
 

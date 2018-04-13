@@ -73,10 +73,6 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
     WALLPAPER_RESOLUTION_SMALL
   };
 
-  // The value assigned if extraction fails or the feature is disabled (e.g.
-  // command line, lock/login screens).
-  static const SkColor kInvalidColor;
-
   // Directory names of custom wallpapers.
   static const char kSmallWallpaperSubDir[];
   static const char kLargeWallpaperSubDir[];
@@ -353,6 +349,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   void AddObserver(mojom::WallpaperObserverAssociatedPtrInfo observer) override;
   void GetWallpaperImage(GetWallpaperImageCallback callback) override;
   void GetWallpaperColors(GetWallpaperColorsCallback callback) override;
+  void IsWallpaperBlurred(IsWallpaperBlurredCallback callback) override;
   void IsActiveUserWallpaperControlledByPolicy(
       IsActiveUserWallpaperControlledByPolicyCallback callback) override;
   void GetActiveUserWallpaperLocation(
@@ -564,7 +561,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   std::unique_ptr<WallpaperWindowStateManager> window_state_manager_;
 
   // The prominent colors extracted from the current wallpaper.
-  // kInvalidColor is used by default or if extracting colors fails.
+  // kInvalidWallpaperColor is used by default or if extracting colors fails.
   std::vector<SkColor> prominent_colors_;
 
   // Caches the color profiles that need to do wallpaper color extracting.

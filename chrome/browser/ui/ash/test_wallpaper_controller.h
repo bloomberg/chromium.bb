@@ -94,6 +94,9 @@ class TestWallpaperController : ash::mojom::WallpaperController {
   void GetWallpaperColors(
       ash::mojom::WallpaperController::GetWallpaperColorsCallback callback)
       override;
+  void IsWallpaperBlurred(
+      ash::mojom::WallpaperController::IsWallpaperBlurredCallback callback)
+      override;
   void IsActiveUserWallpaperControlledByPolicy(
       ash::mojom::WallpaperController::
           IsActiveUserWallpaperControlledByPolicyCallback callback) override;
