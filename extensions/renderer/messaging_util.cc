@@ -270,18 +270,21 @@ void MassageSendMessageArguments(
       // Argument must be the message.
       message = arguments[0];
       break;
-    case 2:
-      // Assume the meaning is (id, message) if id would be a string, or if
-      // the options argument isn't expected.
-      // Otherwise the meaning is (message, options).
-      if (!allow_options_argument || arguments[0]->IsString()) {
+    case 2: {
+      // Assume the first argument is the ID if we don't expect options, or if
+      // the argument could match the ID parameter.
+      // ID could be either a string, or null/undefined (since it's optional).
+      bool could_match_id =
+          arguments[0]->IsString() || arguments[0]->IsNullOrUndefined();
+      if (!allow_options_argument || could_match_id) {
         target_id = arguments[0];
         message = arguments[1];
-      } else {
+      } else {  // Otherwise, the meaning is (message, options).
         message = arguments[0];
         options = arguments[1];
       }
       break;
+    }
     case 3:
       DCHECK(allow_options_argument);
       // The meaning in this case is unambiguous.
