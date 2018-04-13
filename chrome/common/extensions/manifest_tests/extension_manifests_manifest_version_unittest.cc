@@ -33,8 +33,8 @@ TEST_F(ChromeManifestTest, ManifestVersionError) {
       {"require_modern_with_default", true, manifest1.get(), true},
       {"require_modern_with_v1", true, manifest2.get(), true},
       {"require_modern_with_v2", true, manifest3.get(), false},
-      {"dont_require_modern_with_default", false, manifest1.get(), false},
-      {"dont_require_modern_with_v1", false, manifest2.get(), false},
+      {"dont_require_modern_with_default", false, manifest1.get(), true},
+      {"dont_require_modern_with_v1", false, manifest2.get(), true},
       {"dont_require_modern_with_v2", false, manifest3.get(), false},
   };
 
