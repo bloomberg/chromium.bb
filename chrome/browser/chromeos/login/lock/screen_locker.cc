@@ -226,6 +226,11 @@ void ScreenLocker::Init() {
         [](ViewsScreenLocker* screen_locker, bool did_show) {
           CHECK(did_show);
           screen_locker->OnLockScreenReady();
+
+          content::NotificationService::current()->Notify(
+              chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+              content::NotificationService::AllSources(),
+              content::NotificationService::NoDetails());
         },
         views_screen_locker_.get()));
 
