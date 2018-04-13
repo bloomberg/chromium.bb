@@ -91,6 +91,12 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshHostedAppBrowserTest);
 };
 
+// https://crbug.com/832544 Flaky
+#if defined(OS_CHROMEOS)
+#define MAYBE_Layout DISABLED_Layout
+#else
+#define MAYBE_Layout Layout
+#endif
 // Test the layout and visibility of the TopContainerView and web contents when
 // a hosted app is put into immersive fullscreen.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest, Layout) {
