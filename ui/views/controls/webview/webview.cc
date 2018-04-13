@@ -364,7 +364,6 @@ void WebView::UpdateCrashedOverlayView() {
           base::TERMINATION_STATUS_STILL_RUNNING &&
       crashed_overlay_view_) {
     SetFocusBehavior(FocusBehavior::NEVER);
-    holder_->SetVisible(false);
     crashed_overlay_view_->SetVisible(true);
     return;
   }
@@ -374,7 +373,6 @@ void WebView::UpdateCrashedOverlayView() {
 
   if (crashed_overlay_view_)
     crashed_overlay_view_->SetVisible(false);
-  holder_->SetVisible(true);
 }
 
 void WebView::NotifyAccessibilityWebContentsChanged() {
