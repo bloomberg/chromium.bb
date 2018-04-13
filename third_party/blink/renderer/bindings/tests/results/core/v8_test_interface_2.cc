@@ -707,10 +707,10 @@ void V8TestInterface2::installV8TestInterface2Template(
   static_assert(1 == TestInterface2::kConstValue1, "the value of TestInterface2_kConstValue1 does not match with implementation");
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterface2Accessors, WTF_ARRAY_LENGTH(V8TestInterface2Accessors));
+      signature, V8TestInterface2Accessors, arraysize(V8TestInterface2Accessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
+      signature, V8TestInterface2Methods, arraysize(V8TestInterface2Methods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
@@ -763,7 +763,7 @@ void V8TestInterface2::InstallRuntimeEnabledFeaturesOnTemplate(
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
-        constant_configurations, WTF_ARRAY_LENGTH(constant_configurations));
+        constant_configurations, arraysize(constant_configurations));
   }
 
   // Custom signature

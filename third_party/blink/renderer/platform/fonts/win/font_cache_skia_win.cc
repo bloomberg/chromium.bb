@@ -213,10 +213,10 @@ scoped_refptr<SimpleFontData> FontCache::PlatformFallbackFontForCharacter(
   int num_fonts = 0;
   if (script == USCRIPT_HAN) {
     pan_uni_fonts = kCjkFonts;
-    num_fonts = WTF_ARRAY_LENGTH(kCjkFonts);
+    num_fonts = arraysize(kCjkFonts);
   } else {
     pan_uni_fonts = kCommonFonts;
-    num_fonts = WTF_ARRAY_LENGTH(kCommonFonts);
+    num_fonts = arraysize(kCommonFonts);
   }
   // Font returned from getFallbackFamily may not cover |character|
   // because it's based on script to font mapping. This problem is
@@ -292,7 +292,7 @@ static bool TypefacesHasWeightSuffix(const AtomicString& family,
       {L" ultrabold", 10, FontSelectionValue(800)},
       {L" black", 6, FontSelectionValue(900)},
       {L" heavy", 6, FontSelectionValue(900)}};
-  size_t num_variants = WTF_ARRAY_LENGTH(kVariantForSuffix);
+  size_t num_variants = arraysize(kVariantForSuffix);
   for (size_t i = 0; i < num_variants; i++) {
     const FamilyWeightSuffix& entry = kVariantForSuffix[i];
     if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {
@@ -329,7 +329,7 @@ static bool TypefacesHasStretchSuffix(const AtomicString& family,
       {L" expanded", 9, ExpandedWidthValue()},
       {L" extraexpanded", 14, ExtraExpandedWidthValue()},
       {L" ultraexpanded", 14, UltraExpandedWidthValue()}};
-  size_t num_variants = WTF_ARRAY_LENGTH(kVariantForSuffix);
+  size_t num_variants = arraysize(kVariantForSuffix);
   for (size_t i = 0; i < num_variants; i++) {
     const FamilyStretchSuffix& entry = kVariantForSuffix[i];
     if (family.EndsWith(entry.suffix, kTextCaseUnicodeInsensitive)) {

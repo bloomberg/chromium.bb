@@ -590,13 +590,13 @@ static void installV8TestTypedefsTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallLazyDataAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestTypedefsLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestTypedefsLazyDataAttributes));
+      V8TestTypedefsLazyDataAttributes, arraysize(V8TestTypedefsLazyDataAttributes));
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestTypedefsAccessors, WTF_ARRAY_LENGTH(V8TestTypedefsAccessors));
+      signature, V8TestTypedefsAccessors, arraysize(V8TestTypedefsAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods));
+      signature, V8TestTypedefsMethods, arraysize(V8TestTypedefsMethods));
 
   // Custom signature
 

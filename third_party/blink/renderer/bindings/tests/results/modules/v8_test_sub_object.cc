@@ -166,7 +166,7 @@ static void installV8TestSubObjectTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestSubObjectAccessors, WTF_ARRAY_LENGTH(V8TestSubObjectAccessors));
+      signature, V8TestSubObjectAccessors, arraysize(V8TestSubObjectAccessors));
 
   // Custom signature
 

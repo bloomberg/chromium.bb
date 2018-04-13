@@ -501,7 +501,7 @@ CSSPropertyID SVGElement::CssPropertyIdForSVGAttributeName(
         &word_spacingAttr,
         &writing_modeAttr,
     };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(attr_names); i++) {
+    for (size_t i = 0; i < arraysize(attr_names); i++) {
       CSSPropertyID property_id = cssPropertyID(attr_names[i]->LocalName());
       DCHECK_GT(property_id, 0);
       property_name_to_id_map->Set(attr_names[i]->LocalName().Impl(),
@@ -791,7 +791,7 @@ AnimatedPropertyType SVGElement::AnimatedPropertyTypeForCSSAttribute(
         {visibilityAttr, kAnimatedString},
         {word_spacingAttr, kAnimatedLength},
     };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(attr_to_types); i++)
+    for (size_t i = 0; i < arraysize(attr_to_types); i++)
       css_property_map.Set(attr_to_types[i].attr, attr_to_types[i].prop_type);
   }
   return css_property_map.at(attribute_name);

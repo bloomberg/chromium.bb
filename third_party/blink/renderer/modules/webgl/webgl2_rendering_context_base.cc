@@ -148,7 +148,7 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
   supported_internal_formats_storage_.insert(
       kSupportedInternalFormatsStorage,
       kSupportedInternalFormatsStorage +
-          WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
+          arraysize(kSupportedInternalFormatsStorage));
 }
 
 void WebGL2RenderingContextBase::DestroyContext() {

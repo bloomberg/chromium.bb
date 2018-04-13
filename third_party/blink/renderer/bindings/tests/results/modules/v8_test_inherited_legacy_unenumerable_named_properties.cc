@@ -203,7 +203,7 @@ static void installV8TestInheritedLegacyUnenumerableNamedPropertiesTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInheritedLegacyUnenumerableNamedPropertiesAccessors, WTF_ARRAY_LENGTH(V8TestInheritedLegacyUnenumerableNamedPropertiesAccessors));
+      signature, V8TestInheritedLegacyUnenumerableNamedPropertiesAccessors, arraysize(V8TestInheritedLegacyUnenumerableNamedPropertiesAccessors));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(

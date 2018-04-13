@@ -267,10 +267,10 @@ static void installV8TestIntegerIndexedPrimaryGlobalTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestIntegerIndexedPrimaryGlobalAccessors, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalAccessors));
+      signature, V8TestIntegerIndexedPrimaryGlobalAccessors, arraysize(V8TestIntegerIndexedPrimaryGlobalAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestIntegerIndexedPrimaryGlobalMethods, WTF_ARRAY_LENGTH(V8TestIntegerIndexedPrimaryGlobalMethods));
+      signature, V8TestIntegerIndexedPrimaryGlobalMethods, arraysize(V8TestIntegerIndexedPrimaryGlobalMethods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(

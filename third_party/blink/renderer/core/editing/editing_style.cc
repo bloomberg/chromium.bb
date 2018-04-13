@@ -98,7 +98,7 @@ static const Vector<const CSSProperty*>& AllEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
+        kStaticEditingProperties, arraysize(kStaticEditingProperties),
         properties);
     for (size_t index = 0; index < properties.size(); index++) {
       if (properties[index]->IDEquals(CSSPropertyTextDecoration)) {
@@ -114,7 +114,7 @@ static const Vector<const CSSProperty*>& InheritableEditingProperties() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
   if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kStaticEditingProperties, WTF_ARRAY_LENGTH(kStaticEditingProperties),
+        kStaticEditingProperties, arraysize(kStaticEditingProperties),
         properties);
     for (size_t index = 0; index < properties.size();) {
       if (!properties[index]->IsInherited()) {
@@ -704,10 +704,10 @@ static const CSSPropertyID kStaticBlockProperties[] = {
 
 static Vector<const CSSProperty*>& BlockPropertiesVector() {
   DEFINE_STATIC_LOCAL(Vector<const CSSProperty*>, properties, ());
-  if (properties.IsEmpty())
+  if (properties.IsEmpty()) {
     CSSProperty::FilterEnabledCSSPropertiesIntoVector(
-        kStaticBlockProperties, WTF_ARRAY_LENGTH(kStaticBlockProperties),
-        properties);
+        kStaticBlockProperties, arraysize(kStaticBlockProperties), properties);
+  }
   return properties;
 }
 
@@ -829,9 +829,10 @@ EditingTriState EditingStyle::TriStateOfStyle(
       &GetCSSPropertyFontWeight(),
       &GetCSSPropertyColor(),
   };
-  if (should_ignore_text_only_properties == kIgnoreTextOnlyProperties)
+  if (should_ignore_text_only_properties == kIgnoreTextOnlyProperties) {
     difference->RemovePropertiesInSet(kTextOnlyProperties,
-                                      WTF_ARRAY_LENGTH(kTextOnlyProperties));
+                                      arraysize(kTextOnlyProperties));
+  }
 
   if (difference->IsEmpty())
     return EditingTriState::kTrue;

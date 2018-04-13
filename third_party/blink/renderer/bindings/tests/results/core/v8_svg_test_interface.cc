@@ -128,7 +128,7 @@ static void installV8SVGTestInterfaceTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8SVGTestInterfaceAccessors, WTF_ARRAY_LENGTH(V8SVGTestInterfaceAccessors));
+      signature, V8SVGTestInterfaceAccessors, arraysize(V8SVGTestInterfaceAccessors));
 
   // Custom signature
 

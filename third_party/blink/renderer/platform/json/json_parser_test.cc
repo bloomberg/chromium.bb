@@ -447,14 +447,14 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeString, root->GetType());
   EXPECT_TRUE(root->AsString(&str_val));
   UChar tmp2[] = {0x20ac, 0x33, 0x2c, 0x31, 0x34};
-  EXPECT_EQ(String(tmp2, WTF_ARRAY_LENGTH(tmp2)), str_val);
+  EXPECT_EQ(String(tmp2, arraysize(tmp2)), str_val);
 
   root = ParseJSON("\"\\ud83d\\udca9\\ud83d\\udc6c\"");
   ASSERT_TRUE(root.get());
   EXPECT_EQ(JSONValue::kTypeString, root->GetType());
   EXPECT_TRUE(root->AsString(&str_val));
   UChar tmp3[] = {0xd83d, 0xdca9, 0xd83d, 0xdc6c};
-  EXPECT_EQ(String(tmp3, WTF_ARRAY_LENGTH(tmp3)), str_val);
+  EXPECT_EQ(String(tmp3, arraysize(tmp3)), str_val);
 
   // Test literal root objects.
   root = ParseJSON("null");
@@ -481,7 +481,7 @@ TEST(JSONParserTest, InvalidSanity) {
       "/* test *", "{\"foo\"", "{\"foo\":", "  [", "\"\\u123g\"", "{\n\"eh:\n}",
       "////",      "*/**/",    "/**/",      "/*/", "//**/",       "\"\\"};
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kInvalidJson); ++i) {
+  for (size_t i = 0; i < arraysize(kInvalidJson); ++i) {
     std::unique_ptr<JSONValue> result = ParseJSON(kInvalidJson[i]);
     EXPECT_FALSE(result.get());
   }

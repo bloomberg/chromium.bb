@@ -23,7 +23,7 @@ TEST(FetchHeaderListTest, Append) {
       std::make_pair("ConTenT-TyPe", "application/xml"),
       std::make_pair("ConTenT-TyPe", "foo"), std::make_pair("X-Foo", "bar"),
   };
-  EXPECT_EQ(WTF_ARRAY_LENGTH(expectedHeaders), headerList->size());
+  EXPECT_EQ(arraysize(expectedHeaders), headerList->size());
   size_t i = 0;
   for (const auto& header : headerList->List()) {
     EXPECT_EQ(expectedHeaders[i].first, header.first);
@@ -46,7 +46,7 @@ TEST(FetchHeaderListTest, Set) {
       std::make_pair("some-header", "some value"),
       std::make_pair("X-Foo", "bar"),
   };
-  EXPECT_EQ(WTF_ARRAY_LENGTH(expectedHeaders), headerList->size());
+  EXPECT_EQ(arraysize(expectedHeaders), headerList->size());
   size_t i = 0;
   for (const auto& header : headerList->List()) {
     EXPECT_EQ(expectedHeaders[i].first, header.first);
@@ -68,7 +68,7 @@ TEST(FetchHeaderListTest, Erase) {
   const std::pair<String, String> expectedHeaders[] = {
       std::make_pair("X-Foo", "bar"),
   };
-  EXPECT_EQ(WTF_ARRAY_LENGTH(expectedHeaders), headerList->size());
+  EXPECT_EQ(arraysize(expectedHeaders), headerList->size());
   size_t i = 0;
   for (const auto& header : headerList->List()) {
     EXPECT_EQ(expectedHeaders[i].first, header.first);
@@ -150,7 +150,7 @@ TEST(FetchHeaderListTest, SortAndCombine) {
       std::make_pair("x-foo", "bar")};
   const Vector<FetchHeaderList::Header> sortedAndCombined =
       headerList->SortAndCombine();
-  EXPECT_EQ(WTF_ARRAY_LENGTH(expectedHeaders), sortedAndCombined.size());
+  EXPECT_EQ(arraysize(expectedHeaders), sortedAndCombined.size());
   size_t i = 0;
   for (const auto& headerPair : headerList->SortAndCombine()) {
     EXPECT_EQ(expectedHeaders[i].first, headerPair.first);

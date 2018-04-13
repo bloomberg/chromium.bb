@@ -294,7 +294,7 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
       "EnumModulesValue1",
       "EnumModulesValue2",
   };
-  if (!IsValidEnum(arg, validArgValues, WTF_ARRAY_LENGTH(validArgValues), "TestEnumModules", exceptionState)) {
+  if (!IsValidEnum(arg, validArgValues, arraysize(validArgValues), "TestEnumModules", exceptionState)) {
     return;
   }
 
@@ -467,10 +467,10 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
-      V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+      V8TestInterfaceConstants, arraysize(V8TestInterfaceConstants));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+      signature, V8TestInterfaceMethods, arraysize(V8TestInterfaceMethods));
 
   // Custom signature
 

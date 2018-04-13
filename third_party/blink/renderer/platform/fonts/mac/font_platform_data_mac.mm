@@ -57,16 +57,15 @@ static CTFontDescriptorRef CascadeToLastResortFontDescriptor() {
       kAdoptCF, CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0));
   const void* descriptors[] = {last_resort.Get()};
   RetainPtr<CFArrayRef> values_array(
-      kAdoptCF,
-      CFArrayCreate(kCFAllocatorDefault, descriptors,
-                    WTF_ARRAY_LENGTH(descriptors), &kCFTypeArrayCallBacks));
+      kAdoptCF, CFArrayCreate(kCFAllocatorDefault, descriptors,
+                              arraysize(descriptors), &kCFTypeArrayCallBacks));
 
   const void* keys[] = {kCTFontCascadeListAttribute};
   const void* values[] = {values_array.Get()};
   RetainPtr<CFDictionaryRef> attributes(
       kAdoptCF,
-      CFDictionaryCreate(kCFAllocatorDefault, keys, values,
-                         WTF_ARRAY_LENGTH(keys), &kCFTypeDictionaryKeyCallBacks,
+      CFDictionaryCreate(kCFAllocatorDefault, keys, values, arraysize(keys),
+                         &kCFTypeDictionaryKeyCallBacks,
                          &kCFTypeDictionaryValueCallBacks));
 
   descriptor = CTFontDescriptorCreateWithAttributes(attributes.Get());

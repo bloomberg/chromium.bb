@@ -127,8 +127,7 @@ static HashSet<StringImpl*>* CreateHtmlCaseInsensitiveAttributesSet() {
       &targetAttr,         &textAttr,       &typeAttr,     &valignAttr,
       &valuetypeAttr,      &vlinkAttr};
 
-  attr_set->ReserveCapacityForSize(
-      WTF_ARRAY_LENGTH(case_insensitive_attributes));
+  attr_set->ReserveCapacityForSize(arraysize(case_insensitive_attributes));
   for (const QualifiedName* attr : case_insensitive_attributes)
     attr_set->insert(attr->LocalName().Impl());
 

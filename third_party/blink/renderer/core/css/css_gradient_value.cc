@@ -1213,7 +1213,7 @@ FloatSize RadiusToCorner(const FloatPoint& point,
 
   unsigned corner_index = 0;
   float distance = (point - corners[corner_index]).DiagonalLength();
-  for (unsigned i = 1; i < WTF_ARRAY_LENGTH(corners); ++i) {
+  for (unsigned i = 1; i < arraysize(corners); ++i) {
     float new_distance = (point - corners[i]).DiagonalLength();
     if (compare(new_distance, distance)) {
       corner_index = i;

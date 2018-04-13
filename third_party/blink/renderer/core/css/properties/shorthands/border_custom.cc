@@ -81,7 +81,7 @@ const CSSValue* Border::CSSValueFromComputedStyleInternal(
   static const CSSProperty* kProperties[3] = {&GetCSSPropertyBorderRight(),
                                               &GetCSSPropertyBorderBottom(),
                                               &GetCSSPropertyBorderLeft()};
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kProperties); ++i) {
+  for (size_t i = 0; i < arraysize(kProperties); ++i) {
     const CSSValue* value_for_side = kProperties[i]->CSSValueFromComputedStyle(
         style, layout_object, styled_node, allow_visited_style);
     if (!DataEquivalent(value, value_for_side)) {

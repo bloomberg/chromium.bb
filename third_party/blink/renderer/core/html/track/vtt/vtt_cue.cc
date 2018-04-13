@@ -57,15 +57,14 @@ namespace blink {
 
 static const CSSValueID kDisplayWritingModeMap[] = {
     CSSValueHorizontalTb, CSSValueVerticalRl, CSSValueVerticalLr};
-static_assert(WTF_ARRAY_LENGTH(kDisplayWritingModeMap) ==
+static_assert(arraysize(kDisplayWritingModeMap) ==
                   VTTCue::kNumberOfWritingDirections,
               "displayWritingModeMap should have the same number of elements "
               "as VTTCue::NumberOfWritingDirections");
 
 static const CSSValueID kDisplayAlignmentMap[] = {
     CSSValueStart, CSSValueCenter, CSSValueEnd, CSSValueLeft, CSSValueRight};
-static_assert(WTF_ARRAY_LENGTH(kDisplayAlignmentMap) ==
-                  VTTCue::kNumberOfAlignments,
+static_assert(arraysize(kDisplayAlignmentMap) == VTTCue::kNumberOfAlignments,
               "displayAlignmentMap should have the same number of elements as "
               "VTTCue::NumberOfAlignments");
 

@@ -284,7 +284,7 @@ TEST(HTTPParsersTest, ParseMultipartHeadersResult) {
       {"Foo: bar\r\nBaz:\n", false, 0},
       {"\r\n", true, 2},
   };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     ResourceResponse response;
     size_t end = 0;
     bool result = ParseMultipartHeadersFromBody(

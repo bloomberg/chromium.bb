@@ -86,7 +86,7 @@ const AlgorithmNameMapping kAlgorithmNameMappings[] = {
 // Reminder to update the table mapping names to IDs whenever adding a new
 // algorithm ID.
 static_assert(kWebCryptoAlgorithmIdLast + 1 ==
-                  WTF_ARRAY_LENGTH(kAlgorithmNameMappings),
+                  arraysize(kAlgorithmNameMappings),
               "algorithmNameMappings needs to be updated");
 
 #if DCHECK_IS_ON()
@@ -176,7 +176,7 @@ bool LookupAlgorithmIdByName(const String& algorithm_name,
                              WebCryptoAlgorithmId& id) {
   const AlgorithmNameMapping* begin = kAlgorithmNameMappings;
   const AlgorithmNameMapping* end =
-      kAlgorithmNameMappings + WTF_ARRAY_LENGTH(kAlgorithmNameMappings);
+      kAlgorithmNameMappings + arraysize(kAlgorithmNameMappings);
 
 #if DCHECK_IS_ON()
   DCHECK(VerifyAlgorithmNameMappings(begin, end));
@@ -770,8 +770,7 @@ const CurveNameMapping kCurveNameMappings[] = {
     {"P-521", kWebCryptoNamedCurveP521}};
 
 // Reminder to update curveNameMappings when adding a new curve.
-static_assert(kWebCryptoNamedCurveLast + 1 ==
-                  WTF_ARRAY_LENGTH(kCurveNameMappings),
+static_assert(kWebCryptoNamedCurveLast + 1 == arraysize(kCurveNameMappings),
               "curveNameMappings needs to be updated");
 
 bool ParseNamedCurve(const Dictionary& raw,
@@ -785,7 +784,7 @@ bool ParseNamedCurve(const Dictionary& raw,
     return false;
   }
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kCurveNameMappings); ++i) {
+  for (size_t i = 0; i < arraysize(kCurveNameMappings); ++i) {
     if (kCurveNameMappings[i].name == named_curve_string) {
       named_curve = kCurveNameMappings[i].value;
       return true;

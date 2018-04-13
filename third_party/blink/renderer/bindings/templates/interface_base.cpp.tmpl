@@ -491,22 +491,22 @@ static void install{{v8_class}}Template(
   {% if data_attributes %}
   V8DOMConfiguration::InstallAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
+      {{'%sAttributes' % v8_class}}, {{'arraysize(%sAttributes)' % v8_class}});
   {% endif %}
   {% if lazy_data_attributes %}
   V8DOMConfiguration::InstallLazyDataAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      {{'%sLazyDataAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sLazyDataAttributes)' % v8_class}});
+      {{'%sLazyDataAttributes' % v8_class}}, {{'arraysize(%sLazyDataAttributes)' % v8_class}});
   {% endif %}
   {% if accessors %}
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
+      signature, {{'%sAccessors' % v8_class}}, {{'arraysize(%sAccessors)' % v8_class}});
   {% endif %}
   {% if methods | has_method_configuration(is_partial) %}
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
+      signature, {{'%sMethods' % v8_class}}, {{'arraysize(%sMethods)' % v8_class}});
   {% endif %}
 
   {% if has_access_check_callbacks and not is_partial %}
@@ -707,7 +707,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interface_template, prototype_template,
-      constant_configurations, WTF_ARRAY_LENGTH(constant_configurations));
+      constant_configurations, arraysize(constant_configurations));
   {% endfilter %}
   {% endfor %}
 
@@ -720,7 +720,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   };
   V8DOMConfiguration::InstallAttributes(
       isolate, world, instance_template, prototype_template,
-      attribute_configurations, WTF_ARRAY_LENGTH(attribute_configurations));
+      attribute_configurations, arraysize(attribute_configurations));
   {% endfilter %}
   {% endfor %}
 
@@ -734,7 +734,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesOnTemplate(
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,
       signature, accessor_configurations,
-      WTF_ARRAY_LENGTH(accessor_configurations));
+      arraysize(accessor_configurations));
   {% endfilter %}
   {% endfor %}
 
@@ -833,7 +833,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
       {% endfor %}
   };
   V8DOMConfiguration::InstallAttributes(isolate, world, instance, prototype,
-      attribute_configurations, WTF_ARRAY_LENGTH(attribute_configurations));
+      attribute_configurations, arraysize(attribute_configurations));
   {% endfilter %}
   {% endfor %}
 
@@ -846,7 +846,7 @@ void {{v8_class_or_partial}}::InstallRuntimeEnabledFeaturesImpl(
   };
   V8DOMConfiguration::InstallAccessors(isolate, world, instance, prototype,
       interface, signature, accessor_configurations,
-      WTF_ARRAY_LENGTH(accessor_configurations));
+      arraysize(accessor_configurations));
   {% endfilter %}
   {% endfor %}
 

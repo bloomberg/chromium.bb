@@ -428,12 +428,12 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
   const NameToPseudoStruct* pseudo_type_map_end;
   if (has_arguments) {
     pseudo_type_map = kPseudoTypeWithArgumentsMap;
-    pseudo_type_map_end = kPseudoTypeWithArgumentsMap +
-                          WTF_ARRAY_LENGTH(kPseudoTypeWithArgumentsMap);
+    pseudo_type_map_end =
+        kPseudoTypeWithArgumentsMap + arraysize(kPseudoTypeWithArgumentsMap);
   } else {
     pseudo_type_map = kPseudoTypeWithoutArgumentsMap;
     pseudo_type_map_end = kPseudoTypeWithoutArgumentsMap +
-                          WTF_ARRAY_LENGTH(kPseudoTypeWithoutArgumentsMap);
+                          arraysize(kPseudoTypeWithoutArgumentsMap);
   }
   NameToPseudoStruct dummy_key = {nullptr, CSSSelector::kPseudoUnknown};
   const NameToPseudoStruct* match =

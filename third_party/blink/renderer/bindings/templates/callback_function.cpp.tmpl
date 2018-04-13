@@ -78,7 +78,7 @@ v8::Maybe<{{return_cpp_type}}> {{cpp_class}}::Invoke({{argument_declarations | j
                                    ExceptionState::kExecutionContext,
                                    "{{callback_function_name}}",
                                    "invoke");
-    if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, WTF_ARRAY_LENGTH({{valid_enum_variables}}), "{{argument.enum_type}}", exception_state)) {
+    if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, arraysize({{valid_enum_variables}}), "{{argument.enum_type}}", exception_state)) {
       NOTREACHED();
       return v8::Nothing<{{return_cpp_type}}>();
     }

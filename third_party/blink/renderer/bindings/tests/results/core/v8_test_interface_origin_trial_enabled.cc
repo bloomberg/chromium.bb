@@ -315,15 +315,15 @@ static void installV8TestInterfaceOriginTrialEnabledTemplate(
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
-      V8TestInterfaceOriginTrialEnabledConstants, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledConstants));
+      V8TestInterfaceOriginTrialEnabledConstants, arraysize(V8TestInterfaceOriginTrialEnabledConstants));
   static_assert(0 == TestInterfaceOriginTrialEnabled::kUnsignedLong, "the value of TestInterfaceOriginTrialEnabled_kUnsignedLong does not match with implementation");
   static_assert(1 == TestInterfaceOriginTrialEnabled::kConstJavascript, "the value of TestInterfaceOriginTrialEnabled_kConstJavascript does not match with implementation");
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceOriginTrialEnabledAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledAccessors));
+      signature, V8TestInterfaceOriginTrialEnabledAccessors, arraysize(V8TestInterfaceOriginTrialEnabledAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceOriginTrialEnabledMethods, WTF_ARRAY_LENGTH(V8TestInterfaceOriginTrialEnabledMethods));
+      signature, V8TestInterfaceOriginTrialEnabledMethods, arraysize(V8TestInterfaceOriginTrialEnabledMethods));
 
   // Custom signature
 
@@ -353,7 +353,7 @@ void V8TestInterfaceOriginTrialEnabled::InstallRuntimeEnabledFeaturesOnTemplate(
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
+        arraysize(accessor_configurations));
   }
 
   // Custom signature

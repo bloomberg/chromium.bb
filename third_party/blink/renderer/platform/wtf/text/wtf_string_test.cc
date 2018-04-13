@@ -494,7 +494,7 @@ TEST(StringTest, StringPrinter) {
                                          0x30C8};  // "Test" in Japanese.
   EXPECT_EQ(CString("\"\\u30C6\\u30B9\\u30C8\""),
             ToCStringThroughPrinter(
-                String(kUnicodeSample, WTF_ARRAY_LENGTH(kUnicodeSample))));
+                String(kUnicodeSample, arraysize(kUnicodeSample))));
 }
 
 }  // namespace WTF

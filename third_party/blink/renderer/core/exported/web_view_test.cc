@@ -1737,7 +1737,7 @@ TEST_P(
   Element* current_focus = nullptr;
   Element* next_focus = nullptr;
   int next_previous_flags;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+  for (size_t i = 0; i < arraysize(focused_elements); ++i) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -1757,7 +1757,7 @@ TEST_P(
   EXPECT_EQ(current_focus, document->FocusedElement());
 
   // Backward Navigation in form1 with PREVIOUS
-  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+  for (size_t i = arraysize(focused_elements); i-- > 0;) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -1956,7 +1956,7 @@ TEST_P(
   Element* current_focus = nullptr;
   Element* next_focus = nullptr;
   int next_previous_flags;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+  for (size_t i = 0; i < arraysize(focused_elements); ++i) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -1976,7 +1976,7 @@ TEST_P(
   EXPECT_EQ(current_focus, document->FocusedElement());
 
   // Backward Navigation in form1 with PREVIOUS
-  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+  for (size_t i = arraysize(focused_elements); i-- > 0;) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -2057,7 +2057,7 @@ TEST_P(WebViewTest, MoveFocusToNextFocusableElementInFormWithTabIndexElements) {
   Element* current_focus = nullptr;
   Element* next_focus = nullptr;
   int next_previous_flags;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+  for (size_t i = 0; i < arraysize(focused_elements); ++i) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -2078,7 +2078,7 @@ TEST_P(WebViewTest, MoveFocusToNextFocusableElementInFormWithTabIndexElements) {
 
   // Backward Navigation in form with PREVIOUS which has tabindex attribute
   // which differs visual order.
-  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+  for (size_t i = arraysize(focused_elements); i-- > 0;) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -2147,7 +2147,7 @@ TEST_P(WebViewTest,
   Element* current_focus = nullptr;
   Element* next_focus = nullptr;
   int next_previous_flags;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(focused_elements); ++i) {
+  for (size_t i = 0; i < arraysize(focused_elements); ++i) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =
@@ -2168,7 +2168,7 @@ TEST_P(WebViewTest,
 
   // Backward Navigation in form with PREVIOUS which has has
   // disabled/enabled elements which will gets skipped during navigation.
-  for (size_t i = WTF_ARRAY_LENGTH(focused_elements); i-- > 0;) {
+  for (size_t i = arraysize(focused_elements); i-- > 0;) {
     current_focus = document->getElementById(focused_elements[i].element_id);
     EXPECT_EQ(current_focus, document->FocusedElement());
     next_previous_flags =

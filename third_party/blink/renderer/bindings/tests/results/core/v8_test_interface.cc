@@ -260,7 +260,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+  if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "TestEnum", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                dummyExceptionState.Message()));
@@ -304,7 +304,7 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+  if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "TestEnum", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                dummyExceptionState.Message()));
@@ -1239,7 +1239,7 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
       "foo",
       "bar",
   };
-  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "PartialEnumType", dummyExceptionState)) {
+  if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "PartialEnumType", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                dummyExceptionState.Message()));
@@ -1597,7 +1597,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(testEnumArg, validTestEnumArgValues, WTF_ARRAY_LENGTH(validTestEnumArgValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(testEnumArg, validTestEnumArgValues, arraysize(validTestEnumArgValues), "TestEnum", exceptionState)) {
     return;
   }
 
@@ -3730,16 +3730,16 @@ void V8TestInterface::installV8TestInterfaceTemplate(
   };
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
-      V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+      V8TestInterfaceConstants, arraysize(V8TestInterfaceConstants));
   V8DOMConfiguration::InstallLazyDataAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestInterfaceLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceLazyDataAttributes));
+      V8TestInterfaceLazyDataAttributes, arraysize(V8TestInterfaceLazyDataAttributes));
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
+      signature, V8TestInterfaceAccessors, arraysize(V8TestInterfaceAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+      signature, V8TestInterfaceMethods, arraysize(V8TestInterfaceMethods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
@@ -3795,7 +3795,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
     };
     V8DOMConfiguration::InstallConstants(
         isolate, interface_template, prototype_template,
-        constant_configurations, WTF_ARRAY_LENGTH(constant_configurations));
+        constant_configurations, arraysize(constant_configurations));
   }
 
   if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
@@ -3807,7 +3807,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
+        arraysize(accessor_configurations));
   }
   if (RuntimeEnabledFeatures::Implements2FeatureNameEnabled()) {
     static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -3817,7 +3817,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
+        arraysize(accessor_configurations));
   }
   if (RuntimeEnabledFeatures::ImplementsFeatureNameEnabled()) {
     static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -3826,7 +3826,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
+        arraysize(accessor_configurations));
   }
   if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
     static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -3838,7 +3838,7 @@ void V8TestInterface::InstallRuntimeEnabledFeaturesOnTemplate(
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
+        arraysize(accessor_configurations));
   }
 
   // Custom signature
@@ -3939,7 +3939,7 @@ void V8TestInterface::InstallConditionalFeatures(
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instanceObject, prototypeObject, interfaceObject,
           signature, accessor_configurations,
-          WTF_ARRAY_LENGTH(accessor_configurations));
+          arraysize(accessor_configurations));
       if (RuntimeEnabledFeatures::PartialFeatureNameEnabled()) {
         static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
             { "partialSecureContextLongAttribute", V8TestInterface::partialSecureContextLongAttributeAttributeGetterCallback, V8TestInterface::partialSecureContextLongAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -3947,7 +3947,7 @@ void V8TestInterface::InstallConditionalFeatures(
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instanceObject, prototypeObject, interfaceObject,
             signature, accessor_configurations,
-            WTF_ARRAY_LENGTH(accessor_configurations));
+            arraysize(accessor_configurations));
       }
       if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
         static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -3957,7 +3957,7 @@ void V8TestInterface::InstallConditionalFeatures(
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instanceObject, prototypeObject, interfaceObject,
             signature, accessor_configurations,
-            WTF_ARRAY_LENGTH(accessor_configurations));
+            arraysize(accessor_configurations));
       }
     }
     if (isSecureContext || !RuntimeEnabledFeatures::SecureContextnessFeatureEnabled()) {
@@ -3967,7 +3967,7 @@ void V8TestInterface::InstallConditionalFeatures(
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instanceObject, prototypeObject, interfaceObject,
           signature, accessor_configurations,
-          WTF_ARRAY_LENGTH(accessor_configurations));
+          arraysize(accessor_configurations));
     }
     if (executionContext && (executionContext->IsDocument())) {
       static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
@@ -3976,7 +3976,7 @@ void V8TestInterface::InstallConditionalFeatures(
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instanceObject, prototypeObject, interfaceObject,
           signature, accessor_configurations,
-          WTF_ARRAY_LENGTH(accessor_configurations));
+          arraysize(accessor_configurations));
       if (isSecureContext) {
         static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
             { "partialSecureContextWindowExposedAttribute", V8TestInterface::partialSecureContextWindowExposedAttributeAttributeGetterCallback, V8TestInterface::partialSecureContextWindowExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -3985,7 +3985,7 @@ void V8TestInterface::InstallConditionalFeatures(
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instanceObject, prototypeObject, interfaceObject,
             signature, accessor_configurations,
-            WTF_ARRAY_LENGTH(accessor_configurations));
+            arraysize(accessor_configurations));
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
           static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
               { "partialSecureContextWindowExposedRuntimeEnabledAttribute", V8TestInterface::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -3994,7 +3994,7 @@ void V8TestInterface::InstallConditionalFeatures(
           V8DOMConfiguration::InstallAccessors(
               isolate, world, instanceObject, prototypeObject, interfaceObject,
               signature, accessor_configurations,
-              WTF_ARRAY_LENGTH(accessor_configurations));
+              arraysize(accessor_configurations));
         }
       }
     }
@@ -4005,7 +4005,7 @@ void V8TestInterface::InstallConditionalFeatures(
       V8DOMConfiguration::InstallAccessors(
           isolate, world, instanceObject, prototypeObject, interfaceObject,
           signature, accessor_configurations,
-          WTF_ARRAY_LENGTH(accessor_configurations));
+          arraysize(accessor_configurations));
       if (isSecureContext) {
         static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
             { "partialSecureContextWorkerExposedAttribute", V8TestInterface::partialSecureContextWorkerExposedAttributeAttributeGetterCallback, V8TestInterface::partialSecureContextWorkerExposedAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -4014,7 +4014,7 @@ void V8TestInterface::InstallConditionalFeatures(
         V8DOMConfiguration::InstallAccessors(
             isolate, world, instanceObject, prototypeObject, interfaceObject,
             signature, accessor_configurations,
-            WTF_ARRAY_LENGTH(accessor_configurations));
+            arraysize(accessor_configurations));
         if (RuntimeEnabledFeatures::SecureFeatureEnabled()) {
           static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
               { "partialSecureContextWorkerExposedRuntimeEnabledAttribute", V8TestInterface::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback, V8TestInterface::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback, V8PrivateProperty::kNoCachedAccessor, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
@@ -4023,7 +4023,7 @@ void V8TestInterface::InstallConditionalFeatures(
           V8DOMConfiguration::InstallAccessors(
               isolate, world, instanceObject, prototypeObject, interfaceObject,
               signature, accessor_configurations,
-              WTF_ARRAY_LENGTH(accessor_configurations));
+              arraysize(accessor_configurations));
         }
       }
     }

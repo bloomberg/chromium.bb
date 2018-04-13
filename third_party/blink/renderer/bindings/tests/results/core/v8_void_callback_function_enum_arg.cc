@@ -85,7 +85,7 @@ v8::Maybe<void> V8VoidCallbackFunctionEnumArg::Invoke(ScriptWrappable* callback_
                                    ExceptionState::kExecutionContext,
                                    "VoidCallbackFunctionEnumArg",
                                    "invoke");
-    if (!IsValidEnum(arg, valid_arg_values, WTF_ARRAY_LENGTH(valid_arg_values), "TestEnum", exception_state)) {
+    if (!IsValidEnum(arg, valid_arg_values, arraysize(valid_arg_values), "TestEnum", exception_state)) {
       NOTREACHED();
       return v8::Nothing<void>();
     }

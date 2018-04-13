@@ -77,7 +77,7 @@ class NotificationDataTest : public testing::Test {
 
 TEST_F(NotificationDataTest, ReflectProperties) {
   Vector<unsigned> vibration_pattern;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibration); ++i)
+  for (size_t i = 0; i < arraysize(kNotificationVibration); ++i)
     vibration_pattern.push_back(kNotificationVibration[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
@@ -153,7 +153,7 @@ TEST_F(NotificationDataTest, ReflectProperties) {
 
 TEST_F(NotificationDataTest, SilentNotificationWithVibration) {
   Vector<unsigned> vibration_pattern;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibration); ++i)
+  for (size_t i = 0; i < arraysize(kNotificationVibration); ++i)
     vibration_pattern.push_back(kNotificationVibration[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
@@ -236,8 +236,7 @@ TEST_F(NotificationDataTest, InvalidIconUrls) {
 
 TEST_F(NotificationDataTest, VibrationNormalization) {
   Vector<unsigned> unnormalized_pattern;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibrationUnnormalized);
-       ++i)
+  for (size_t i = 0; i < arraysize(kNotificationVibrationUnnormalized); ++i)
     unnormalized_pattern.push_back(kNotificationVibrationUnnormalized[i]);
 
   UnsignedLongOrUnsignedLongSequence vibration_sequence;
@@ -252,8 +251,7 @@ TEST_F(NotificationDataTest, VibrationNormalization) {
   EXPECT_FALSE(exception_state.HadException());
 
   Vector<int> normalized_pattern;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNotificationVibrationNormalized);
-       ++i)
+  for (size_t i = 0; i < arraysize(kNotificationVibrationNormalized); ++i)
     normalized_pattern.push_back(kNotificationVibrationNormalized[i]);
 
   ASSERT_EQ(normalized_pattern.size(), notification_data.vibrate.size());

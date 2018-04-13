@@ -60,8 +60,8 @@ TEST(WebVectorTest, IsEmpty) {
 TEST(WebVectorTest, Swap) {
   const int kFirstData[] = {1, 2, 3, 4, 5};
   const int kSecondData[] = {6, 5, 8};
-  const size_t kFirstDataLength = WTF_ARRAY_LENGTH(kFirstData);
-  const size_t kSecondDataLength = WTF_ARRAY_LENGTH(kSecondData);
+  const size_t kFirstDataLength = arraysize(kFirstData);
+  const size_t kSecondDataLength = arraysize(kSecondData);
 
   WebVector<int> first(kFirstData, kFirstDataLength);
   WebVector<int> second(kSecondData, kSecondDataLength);
@@ -136,9 +136,9 @@ TEST(WebVectorTest, EmplaceBackArgumentForwarding) {
   WebVector<WebString> vector;
   vector.reserve(1);
   WebUChar buffer[] = {'H', 'e', 'l', 'l', 'o', ' ', 'b', 'l', 'i', 'n', 'k'};
-  vector.emplace_back(buffer, WTF_ARRAY_LENGTH(buffer));
+  vector.emplace_back(buffer, arraysize(buffer));
   ASSERT_EQ(1U, vector.size());
-  EXPECT_EQ(WebString(buffer, WTF_ARRAY_LENGTH(buffer)), vector[0]);
+  EXPECT_EQ(WebString(buffer, arraysize(buffer)), vector[0]);
 }
 
 TEST(WebVectorTest, EmplaceBackElementPlacement) {

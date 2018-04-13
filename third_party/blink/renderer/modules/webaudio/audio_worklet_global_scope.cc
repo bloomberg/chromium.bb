@@ -162,11 +162,9 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
   // the global scope to perform the construction properly.
   v8::Local<v8::Value> result;
   bool did_construct =
-      V8ScriptRunner::CallAsConstructor(isolate,
-                                        definition->ConstructorLocal(isolate),
-                                        ExecutionContext::From(script_state),
-                                        WTF_ARRAY_LENGTH(argv),
-                                        argv)
+      V8ScriptRunner::CallAsConstructor(
+          isolate, definition->ConstructorLocal(isolate),
+          ExecutionContext::From(script_state), arraysize(argv), argv)
           .ToLocal(&result);
   processor_creation_params_.reset();
 
@@ -318,8 +316,8 @@ bool AudioWorkletGlobalScope::Process(
   v8::Local<v8::Value> local_result;
   if (!V8ScriptRunner::CallFunction(definition->ProcessLocal(isolate),
                                     ExecutionContext::From(script_state),
-                                    processor_handle, WTF_ARRAY_LENGTH(argv),
-                                    argv, isolate)
+                                    processor_handle, arraysize(argv), argv,
+                                    isolate)
            .ToLocal(&local_result) ||
       block.HasCaught()) {
     // process() method call method call failed for some reason or an exception
