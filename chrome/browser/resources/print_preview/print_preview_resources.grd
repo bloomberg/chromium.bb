@@ -307,6 +307,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_DESTINATION_LIST_ITEM_JS"
                  file="new/destination_list_item.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PROVISIONAL_DESTINATION_RESOLVER_HTML"
+                 file="new/provisional_destination_resolver.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_PROVISIONAL_DESTINATION_RESOLVER_JS"
+                 file="new/provisional_destination_resolver.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_PRINT_PREVIEW_SEARCH_BOX_HTML"
                  file="new/print_preview_search_box.html"
                  type="chrome_html"

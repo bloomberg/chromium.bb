@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
+<link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
@@ -12,6 +13,7 @@
 <link rel="import" href="destination_list.html">
 <link rel="import" href="print_preview_search_box.html">
 <link rel="import" href="print_preview_shared_css.html">
+<link rel="import" href="provisional_destination_resolver.html">
 <link rel="import" href="search_dialog_css.html">
 <link rel="import" href="select_css.html">
 <link rel="import" href="throbber_css.html">
@@ -134,6 +136,9 @@
             title="$i18n{printDestinationsTitle}"
             on-destination-selected="onDestinationSelected_">
         </print-preview-destination-list>
+        <print-preview-provisional-destination-resolver id="provisionalResolver"
+            destination-store="[[destinationStore]]">
+        </print-preview-provisional-destination-resolver>
       </div>
       <div slot="button-container">
         <button class="cancel-button" on-click="onCancelButtonClick_">

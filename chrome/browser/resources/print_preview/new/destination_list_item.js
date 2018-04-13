@@ -24,7 +24,8 @@ Polymer({
 
   observers: [
     'onDestinationPropertiesChange_(' +
-        'destination.displayName, destination.isOfflineOrInvalid)',
+        'destination.displayName, destination.isOfflineOrInvalid, ' +
+        'destination.isExtension)',
   ],
 
   /** @private {boolean} */
@@ -34,6 +35,14 @@ Polymer({
   onDestinationPropertiesChange_: function() {
     this.title = this.destination.displayName;
     this.stale_ = this.destination.isOfflineOrInvalid;
+    if (this.destination.isExtension) {
+      const icon = this.$$('.extension-icon');
+      icon.style.backgroundImage = '-webkit-image-set(' +
+          'url(chrome://extension-icon/' + this.destination.extensionId +
+          '/24/1) 1x,' +
+          'url(chrome://extension-icon/' + this.destination.extensionId +
+          '/48/1) 2x)';
+    }
   },
 
   /** @private */

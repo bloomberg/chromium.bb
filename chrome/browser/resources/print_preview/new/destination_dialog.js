@@ -173,13 +173,36 @@ Polymer({
   },
 
   /**
-   * @param {!CustomEvent} e Event containing the selected destination.
+   * @param {!CustomEvent} e Event containing the selected destination list item
+   *     element.
    * @private
    */
   onDestinationSelected_: function(e) {
-    this.destinationStore.selectDestination(
-        /** @type {!print_preview.Destination} */ (e.detail));
-    this.$.dialog.close();
+    const lastFocusedElement =
+        /** @type {!PrintPreviewDestinationListItemElement} */ (e.detail);
+    const destination = lastFocusedElement.destination;
+
+    if (!destination.isProvisional) {
+      this.destinationStore.selectDestination(destination);
+      this.$.dialog.close();
+      return;
+    }
+
+    this.$.provisionalResolver.resolveDestination(destination)
+        .then((resolvedDestination) => {
+          this.destinationStore.selectDestination(resolvedDestination);
+          this.$.dialog.close();
+        })
+        .catch(function() {
+          console.error(
+              'Failed to resolve provisional destination: ' + destination.id);
+        })
+        .then(() => {
+          if (this.$.dialog.open && !!lastFocusedElement &&
+              !lastFocusedElement.hidden) {
+            lastFocusedElement.focus();
+          }
+        });
   },
 
   show: function() {

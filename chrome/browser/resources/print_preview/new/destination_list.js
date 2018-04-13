@@ -129,10 +129,7 @@ Polymer({
    * @private
    */
   onDestinationSelected_: function(e) {
-    this.fire(
-        'destination-selected',
-        /** @type {PrintPreviewDestinationListItemElement} */
-        (e.target).destination);
+    this.fire('destination-selected', e.target);
   },
 });
 })();

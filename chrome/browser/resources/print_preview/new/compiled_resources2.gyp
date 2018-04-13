@@ -235,6 +235,7 @@
       'target_name': 'destination_dialog',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:event_tracker',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '../data/compiled_resources2.gyp:destination',
         '../data/compiled_resources2.gyp:destination_store',
@@ -243,6 +244,7 @@
         '../data/compiled_resources2.gyp:user_info',
         'destination_list',
         'print_preview_search_box',
+        'provisional_destination_resolver',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -292,6 +294,17 @@
       'target_name': 'print_preview_search_box',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_search_field/compiled_resources2.gyp:cr_search_field_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'provisional_destination_resolver',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '../data/compiled_resources2.gyp:destination',
+        '../data/compiled_resources2.gyp:destination_store',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
