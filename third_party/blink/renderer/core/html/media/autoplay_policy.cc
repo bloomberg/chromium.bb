@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/autoplay.mojom-blink.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -101,8 +102,7 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
 
     if (RuntimeEnabledFeatures::
             MediaEngagementBypassAutoplayPoliciesEnabled() &&
-        frame->IsMainFrame() && frame->GetPage() &&
-        frame->GetPage()->HasHighMediaEngagement()) {
+        frame->IsMainFrame() && DocumentHasHighMediaEngagement(document)) {
       return true;
     }
 
@@ -113,6 +113,14 @@ bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   }
 
   return false;
+}
+
+// static
+bool AutoplayPolicy::DocumentHasHighMediaEngagement(const Document& document) {
+  if (!document.GetPage())
+    return false;
+  return document.GetPage()->AutoplayFlags() &
+         mojom::blink::kAutoplayFlagHighMediaEngagement;
 }
 
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)

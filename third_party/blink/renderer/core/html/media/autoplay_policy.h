@@ -43,6 +43,9 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // the main frame, if it has a high MEI.
   CORE_EXPORT static bool IsDocumentAllowedToPlay(const Document&);
 
+  // Returns true if the given |document| has high media engagement.
+  static bool DocumentHasHighMediaEngagement(const Document&);
+
   explicit AutoplayPolicy(HTMLMediaElement*);
 
   void VideoWillBeDrawnToCanvas() const;

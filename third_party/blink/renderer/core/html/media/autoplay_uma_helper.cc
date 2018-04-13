@@ -222,9 +222,9 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
         kAutoplayAttemptUkmUserGestureRequiredMetric,
         element_->GetAutoplayPolicy().IsGestureNeededForPlayback());
     builder->AddMetric(kAutoplayAttemptUkmMutedMetric, element_->muted());
-    builder->AddMetric(
-        kAutoplayAttemptUkmHighMediaEngagementMetric,
-        element_->GetDocument().GetPage()->HasHighMediaEngagement());
+    builder->AddMetric(kAutoplayAttemptUkmHighMediaEngagementMetric,
+                       AutoplayPolicy::DocumentHasHighMediaEngagement(
+                           element_->GetDocument()));
     builder->AddMetric(kAutoplayAttemptUkmUserGestureStatusMetric,
                        GetUserGestureStatusForUkmMetric(frame));
   }

@@ -1321,7 +1321,7 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       pepper_last_mouse_event_target_(nullptr),
 #endif
       engagement_binding_(this),
-      media_engagement_binding_(this),
+      autoplay_configuration_binding_(this),
       frame_binding_(this),
       host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
@@ -1857,10 +1857,10 @@ void RenderFrameImpl::BindFullscreen(
                            GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
-void RenderFrameImpl::BindMediaEngagement(
-    blink::mojom::MediaEngagementClientAssociatedRequest request) {
-  media_engagement_binding_.Bind(std::move(request),
-                                 GetTaskRunner(blink::TaskType::kInternalIPC));
+void RenderFrameImpl::BindAutoplayConfiguration(
+    blink::mojom::AutoplayConfigurationClientAssociatedRequest request) {
+  autoplay_configuration_binding_.Bind(
+      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrame(
@@ -3045,10 +3045,18 @@ void RenderFrameImpl::RequestFullscreenVideoElement() {
   }
 }
 
-// blink::mojom::MediaEngagementClient implementation --------------------------
+// blink::mojom::AutoplayConfigurationClient implementation
+// --------------------------
 
-void RenderFrameImpl::SetHasHighMediaEngagement(const url::Origin& origin) {
-  high_media_engagement_origin_ = origin;
+void RenderFrameImpl::AddAutoplayFlags(const url::Origin& origin,
+                                       const int32_t flags) {
+  // If the origin is the same as the previously stored flags then we should
+  // merge the two sets of flags together.
+  if (autoplay_flags_.first == origin) {
+    autoplay_flags_.second |= flags;
+  } else {
+    autoplay_flags_ = std::make_pair(origin, flags);
+  }
 }
 
 // mojom::Frame implementation -------------------------------------------------
@@ -5753,14 +5761,13 @@ void RenderFrameImpl::UpdateStateForCommit(
     engagement_level_.first = url::Origin();
   }
 
-  // Set the correct high media engagement bit on the frame, and wipe the cached
-  // origin so this will not be reused accidentally.
-  if (url::Origin(frame_->GetSecurityOrigin()) ==
-      high_media_engagement_origin_) {
-    render_view_->webview()->SetHasHighMediaEngagement(true);
-    high_media_engagement_origin_ = url::Origin();
+  // Set the correct autoplay flags on the webview and wipe the cached origin so
+  // this will not be used incorrectly.
+  if (url::Origin(frame_->GetSecurityOrigin()) == autoplay_flags_.first) {
+    render_view_->webview()->AddAutoplayFlags(autoplay_flags_.second);
+    autoplay_flags_.first = url::Origin();
   } else {
-    render_view_->webview()->SetHasHighMediaEngagement(false);
+    render_view_->webview()->AddAutoplayFlags(blink::mojom::kAutoplayFlagNone);
   }
 }
 
@@ -7230,7 +7237,7 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
       base::Bind(&RenderFrameImpl::BindEngagement, weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
-      &RenderFrameImpl::BindMediaEngagement, weak_factory_.GetWeakPtr()));
+      &RenderFrameImpl::BindAutoplayConfiguration, weak_factory_.GetWeakPtr()));
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::Bind(
       &RenderFrameImpl::BindFrameBindingsControl, weak_factory_.GetWeakPtr()));

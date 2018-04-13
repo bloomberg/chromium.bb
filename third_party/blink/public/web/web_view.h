@@ -439,10 +439,12 @@ class WebView : protected WebWidget {
   // context's ability to deal with that failure gracefully can be tested.
   virtual void ForceNextDrawingBufferCreationToFail() = 0;
 
-  // Media engagement -------------------------------------------------------
+  // Autoplay configuration -----------------------------------------------
 
-  // Sets the high media engagement bit for this webview's page.
-  virtual void SetHasHighMediaEngagement(bool has_high_media_engagement) = 0;
+  // Sets the autoplay flags for this webview's page.
+  // The valid flags are defined in
+  // third_party/blink/public/platform/autoplay.mojom
+  virtual void AddAutoplayFlags(int32_t flags) = 0;
 
   // Suspend and resume ---------------------------------------------------
 

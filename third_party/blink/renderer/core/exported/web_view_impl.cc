@@ -3835,8 +3835,8 @@ void WebViewImpl::FreezePage() {
   Scheduler()->SetPageFrozen(true);
 }
 
-void WebViewImpl::SetHasHighMediaEngagement(bool value) {
-  page_->SetHasHighMediaEngagement(value);
+void WebViewImpl::AddAutoplayFlags(int32_t value) {
+  page_->AddAutoplayFlags(value);
 }
 
 }  // namespace blink

@@ -71,7 +71,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
-#include "third_party/blink/public/platform/media_engagement.mojom.h"
+#include "third_party/blink/public/platform/autoplay.mojom.h"
 #include "third_party/blink/public/platform/modules/manifest/manifest_manager.mojom.h"
 #include "third_party/blink/public/platform/site_engagement.mojom.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
@@ -185,7 +185,7 @@ struct ScreenInfo;
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       blink::mojom::EngagementClient,
-      blink::mojom::MediaEngagementClient,
+      blink::mojom::AutoplayConfigurationClient,
       mojom::Frame,
       mojom::FrameNavigationControl,
       mojom::FullscreenVideoElementHandler,
@@ -506,8 +506,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetEngagementLevel(const url::Origin& origin,
                           blink::mojom::EngagementLevel level) override;
 
-  // blink::mojom::MediaEngagementClient implementation:
-  void SetHasHighMediaEngagement(const url::Origin& origin) override;
+  // blink::mojom::AutoplayConfigurationClient implementation:
+  void AddAutoplayFlags(const url::Origin& origin,
+                        const int32_t flags) override;
 
   // mojom::Frame implementation:
   void GetInterfaceProvider(
@@ -776,9 +777,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void BindFullscreen(
       mojom::FullscreenVideoElementHandlerAssociatedRequest request);
 
-  // Binds to the media engagement service in the browser.
-  void BindMediaEngagement(
-      blink::mojom::MediaEngagementClientAssociatedRequest request);
+  // Binds to the autoplay configuration service in the browser.
+  void BindAutoplayConfiguration(
+      blink::mojom::AutoplayConfigurationClientAssociatedRequest request);
 
   // Binds to the FrameHost in the browser.
   void BindFrame(const service_manager::BindSourceInfo& browser_info,
@@ -1587,11 +1588,13 @@ class CONTENT_EXPORT RenderFrameImpl
 
   HostZoomLevels host_zoom_levels_;
   EngagementOriginAndLevel engagement_level_;
-  url::Origin high_media_engagement_origin_;
+
+  using AutoplayOriginAndFlags = std::pair<url::Origin, int32_t>;
+  AutoplayOriginAndFlags autoplay_flags_;
 
   mojo::AssociatedBinding<blink::mojom::EngagementClient> engagement_binding_;
-  mojo::AssociatedBinding<blink::mojom::MediaEngagementClient>
-      media_engagement_binding_;
+  mojo::AssociatedBinding<blink::mojom::AutoplayConfigurationClient>
+      autoplay_configuration_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>
