@@ -179,18 +179,3 @@ config("absl_test_cflags_cc") {
     }
   }
 }
-
-config("absl_exceptions_cflags_cc") {
-  # Enable exception handling.
-  if (is_win) {
-    cflags_cc = [
-      "/U_HAS_EXCEPTIONS",
-      "/D_HAS_EXCEPTIONS=1",
-      "/EHsc"
-    ]
-  } else {
-    cflags_cc = [
-      "-fexceptions",
-    ]
-  }
-}
