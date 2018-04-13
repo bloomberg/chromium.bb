@@ -1971,7 +1971,9 @@ TEST_F(NGColumnLayoutAlgorithmTest, MinMax) {
   ASSERT_TRUE(layout_object);
   ASSERT_TRUE(layout_object->IsBox());
   NGBlockNode node = NGBlockNode(ToLayoutBox(layout_object));
-  ComputedStyle* style = layout_object->MutableStyle();
+  scoped_refptr<ComputedStyle> style =
+      ComputedStyle::Clone(layout_object->StyleRef());
+  layout_object->SetStyle(style);
   scoped_refptr<NGConstraintSpace> space =
       ConstructBlockLayoutTestConstraintSpace(
           WritingMode::kHorizontalTb, TextDirection::kLtr,
