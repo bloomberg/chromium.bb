@@ -42,4 +42,7 @@ per-file feature_list*=isherman@chromium.org
 # For TCMalloc tests:
 per-file security_unittest.cc=jln@chromium.org
 
+# For Value:
+per-file values*=jdoerrie@chromium.org
+
 # COMPONENT: Internals>Core
