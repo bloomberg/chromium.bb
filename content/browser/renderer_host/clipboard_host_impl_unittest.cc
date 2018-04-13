@@ -103,15 +103,4 @@ TEST_F(ClipboardHostImplTest, ImageSizeOverflows32BitRowBytes) {
             clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE));
 }
 
-TEST_F(ClipboardHostImplTest, InvalidSharedMemoryHandle) {
-  mojo::ScopedSharedBufferHandle shared_memory;
-  CallWriteImage(gfx::Size(5, 5), std::move(shared_memory), 0);
-  uint64_t sequence_number =
-      clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE);
-  CallCommitWrite();
-
-  EXPECT_EQ(sequence_number,
-            clipboard()->GetSequenceNumber(ui::CLIPBOARD_TYPE_COPY_PASTE));
-}
-
 }  // namespace content

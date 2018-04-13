@@ -94,7 +94,10 @@ class ScopedHandleBase {
   }
 
   const HandleType& get() const { return handle_; }
-  const HandleType* operator->() const { return &handle_; }
+  const HandleType* operator->() const {
+    DCHECK(handle_.is_valid());
+    return &handle_;
+  }
 
   template <typename PassedHandleType>
   static ScopedHandleBase<HandleType> From(
