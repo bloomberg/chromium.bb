@@ -808,6 +808,9 @@ HttpHandler::PrepareStandardResponse(
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
+    case kTargetDetached:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+      break;
 
     // TODO(kereliuk): evaluate the usage of these as they relate to the spec
     case kElementNotVisible:

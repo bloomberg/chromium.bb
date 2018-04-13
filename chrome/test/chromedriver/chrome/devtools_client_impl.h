@@ -113,6 +113,7 @@ class DevToolsClientImpl : public DevToolsClient {
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
+  void SetDetached() override;
 
  private:
   enum ResponseState {
@@ -159,6 +160,7 @@ class DevToolsClientImpl : public DevToolsClient {
   const std::string session_id_;
   std::map<std::string, DevToolsClientImpl*> children_;
   bool crashed_;
+  bool detached_;
   const std::string id_;
   FrontendCloserFunc frontend_closer_func_;
   ParserFunc parser_func_;

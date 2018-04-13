@@ -52,6 +52,10 @@ WebView* FrameTracker::GetTargetForFrame(const std::string& frame_id) {
   return nullptr;
 }
 
+void FrameTracker::DeleteTargetForFrame(const std::string& frame_id) {
+  frame_to_target_map_.erase(frame_id);
+}
+
 Status FrameTracker::OnConnected(DevToolsClient* client) {
   frame_to_context_map_.clear();
   frame_to_target_map_.clear();
@@ -161,9 +165,10 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
       if (!params.GetString("sessionId", &session_id))
         return Status(kUnknownError,
                       "missing session ID in Target.attachedToTarget event");
-      std::unique_ptr<WebView> child(
+      std::unique_ptr<WebViewImpl> child(
           static_cast<WebViewImpl*>(web_view_)->CreateChild(session_id,
                                                             target_id));
+      WebViewImplHolder child_holder(child.get());
       frame_to_target_map_[target_id] = std::move(child);
       frame_to_target_map_[target_id]->ConnectIfNecessary();
     }
@@ -173,7 +178,12 @@ Status FrameTracker::OnEvent(DevToolsClient* client,
       // Some types of Target.detachedFromTarget events do not have targetId.
       // We are not interested in those types of targets.
       return Status(kOk);
-    frame_to_target_map_.erase(target_id);
+    WebViewImpl* target =
+        static_cast<WebViewImpl*>(frame_to_target_map_[target_id].get());
+    if (target->IsLocked())
+      target->SetDetached();
+    else
+      frame_to_target_map_.erase(target_id);
   }
   return Status(kOk);
 }

@@ -43,8 +43,8 @@ class WebViewImpl : public WebView {
               const DeviceMetrics* device_metrics,
               std::string page_load_strategy);
   ~WebViewImpl() override;
-  WebView* CreateChild(const std::string& session_id,
-                       const std::string& target_id) const;
+  WebViewImpl* CreateChild(const std::string& session_id,
+                           const std::string& target_id) const;
 
   // Overridden from WebView:
   std::string GetId() override;
@@ -131,6 +131,12 @@ class WebViewImpl : public WebView {
   Status DeleteScreenOrientation() override;
   bool IsOOPIF(const std::string& frame_id) override;
   FrameTracker* GetFrameTracker() const override;
+  const WebViewImpl* GetParent() const;
+  bool Lock();
+  void Unlock();
+  bool IsLocked() const;
+  void SetDetached();
+  bool IsDetached() const;
 
  private:
   Status TraverseHistoryWithJavaScript(int delta);
@@ -150,6 +156,10 @@ class WebViewImpl : public WebView {
   std::string id_;
   bool w3c_compliant_;
   const BrowserInfo* browser_info_;
+  // Data for WebViewImplHolder to support delayed destruction of WebViewImpl.
+  bool is_locked_;
+  bool is_detached_;
+  const WebViewImpl* parent_;
   // Many trackers hold pointers to DevToolsClient, so client_ must be declared
   // before the trackers, to ensured trackers are destructed before client_.
   std::unique_ptr<DevToolsClient> client_;
@@ -164,6 +174,20 @@ class WebViewImpl : public WebView {
       network_conditions_override_manager_;
   std::unique_ptr<HeapSnapshotTaker> heap_snapshot_taker_;
   std::unique_ptr<DebuggerTracker> debugger_;
+};
+
+// Responsible for locking a WebViewImpl and its associated data structure to
+// prevent them from being freed which they are still in use.
+class WebViewImplHolder {
+ public:
+  explicit WebViewImplHolder(WebViewImpl* web_view);
+  ~WebViewImplHolder();
+
+ private:
+  WebViewImpl* web_view_;
+  bool was_locked_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewImplHolder);
 };
 
 namespace internal {

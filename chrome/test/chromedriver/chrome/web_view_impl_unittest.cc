@@ -76,6 +76,7 @@ class FakeDevToolsClient : public DevToolsClient {
     return Status(kOk);
   }
   Status HandleReceivedEvents() override { return Status(kOk); }
+  void SetDetached() override {}
 
  private:
   const std::string id_;

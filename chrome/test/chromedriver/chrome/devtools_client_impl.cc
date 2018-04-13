@@ -90,6 +90,7 @@ DevToolsClientImpl::DevToolsClientImpl(const SyncWebSocketFactory& factory,
       url_(url),
       parent_(nullptr),
       crashed_(false),
+      detached_(false),
       id_(id),
       frontend_closer_func_(base::Bind(&FakeCloseFrontends)),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
@@ -106,6 +107,7 @@ DevToolsClientImpl::DevToolsClientImpl(
       url_(url),
       parent_(nullptr),
       crashed_(false),
+      detached_(false),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(base::Bind(&internal::ParseInspectorMessage)),
@@ -118,6 +120,7 @@ DevToolsClientImpl::DevToolsClientImpl(DevToolsClientImpl* parent,
     : parent_(parent),
       session_id_(session_id),
       crashed_(false),
+      detached_(false),
       id_(session_id),
       frontend_closer_func_(base::BindRepeating(&FakeCloseFrontends)),
       parser_func_(base::BindRepeating(&internal::ParseInspectorMessage)),
@@ -137,6 +140,7 @@ DevToolsClientImpl::DevToolsClientImpl(
       url_(url),
       parent_(nullptr),
       crashed_(false),
+      detached_(false),
       id_(id),
       frontend_closer_func_(frontend_closer_func),
       parser_func_(parser_func),
@@ -271,6 +275,10 @@ Status DevToolsClientImpl::HandleEventsUntil(
   }
 }
 
+void DevToolsClientImpl::SetDetached() {
+  detached_ = true;
+}
+
 DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
     : state(kWaiting), method(method) {}
 
@@ -367,6 +375,9 @@ Status DevToolsClientImpl::ProcessNextMessage(
 
   if (crashed_)
     return Status(kTabCrashed);
+
+  if (detached_)
+    return Status(kTargetDetached);
 
   if (parent_ != nullptr)
     return parent_->ProcessNextMessage(-1, timeout);

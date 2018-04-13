@@ -73,6 +73,9 @@ class DevToolsClient {
 
   // Handles events that have been received but not yet handled.
   virtual Status HandleReceivedEvents() = 0;
+
+  // Indicate that we've been detached from the DevTools target.
+  virtual void SetDetached() = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_DEVTOOLS_CLIENT_H_

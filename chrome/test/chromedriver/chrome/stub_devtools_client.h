@@ -54,6 +54,7 @@ class StubDevToolsClient : public DevToolsClient {
   Status HandleEventsUntil(const ConditionalFunc& conditional_func,
                            const Timeout& timeout) override;
   Status HandleReceivedEvents() override;
+  void SetDetached() override;
 
  protected:
   const std::string id_;
