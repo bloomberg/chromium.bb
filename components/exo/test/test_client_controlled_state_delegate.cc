@@ -68,8 +68,8 @@ void TestClientControlledStateDelegate::HandleBoundsRequest(
       shell_surface->SetSnappedToLeft();
     else
       shell_surface->SetSnappedToRight();
+    shell_surface->OnSurfaceCommit();
   }
-  shell_surface->OnSurfaceCommit();
 }
 
 // static

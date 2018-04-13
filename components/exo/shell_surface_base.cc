@@ -752,7 +752,6 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
       shadow_bounds_ = gfx::Rect();
       break;
   }
-  frame_type_ = frame_type;
   if (!widget_)
     return;
   CustomFrameView* frame_view =

@@ -8,6 +8,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/header_view.h"
+#include "ash/frame/wide_frame_view.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/window_pin_type.mojom.h"
 #include "ash/shell.h"
@@ -1064,6 +1065,37 @@ TEST_F(ClientControlledShellSurfaceTest, SetExtraTitle) {
   shell_surface->SetExtraTitle(base::string16(base::ASCIIToUTF16("")));
   EXPECT_EQ(base::string16(base::ASCIIToUTF16("title")),
             shell_surface->GetWindowTitle());
+}
+
+TEST_F(ClientControlledShellSurfaceTest, WideFrame) {
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  std::unique_ptr<Buffer> desktop_buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(64, 64))));
+  surface->Attach(desktop_buffer.get());
+  shell_surface->SetGeometry(gfx::Rect(0, 0, 64, 64));
+  shell_surface->SetMaximized();
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+
+  auto* wide_frame = shell_surface->wide_frame_for_test();
+  ASSERT_TRUE(wide_frame);
+  EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
+
+  // Set AutoHide mode.
+  surface->SetFrame(SurfaceFrameType::AUTOHIDE);
+  EXPECT_TRUE(wide_frame->header_view()->in_immersive_mode());
+
+  // Exit AutoHide mode.
+  surface->SetFrame(SurfaceFrameType::NORMAL);
+  EXPECT_FALSE(wide_frame->header_view()->in_immersive_mode());
+
+  // Unmaximize it and the frame should be normal.
+  shell_surface->SetRestored();
+  surface->Commit();
+  EXPECT_FALSE(shell_surface->wide_frame_for_test());
 }
 
 }  // namespace exo

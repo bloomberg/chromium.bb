@@ -20,6 +20,7 @@
 namespace ash {
 class CustomFrameViewAsh;
 class ImmersiveFullscreenController;
+class WideFrameView;
 
 namespace mojom {
 enum class WindowPinType;
@@ -174,6 +175,7 @@ class ClientControlledShellSurface
   void OnSurfaceCommit() override;
   bool IsInputEnabled(Surface* surface) const override;
   void OnSetFrame(SurfaceFrameType type) override;
+  void OnSetFrameColors(SkColor active_color, SkColor inactive_color) override;
 
   // Overridden from views::WidgetDelegate:
   bool CanMaximize() const override;
@@ -214,6 +216,8 @@ class ClientControlledShellSurface
   static void SetClientControlledStateDelegateFactoryForTest(
       const DelegateFactoryCallback& callback);
 
+  ash::WideFrameView* wide_frame_for_test() { return wide_frame_; }
+
  private:
   class ScopedSetBoundsLocally;
   class ScopedLockedToRoot;
@@ -230,6 +234,13 @@ class ClientControlledShellSurface
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   gfx::Rect GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
+
+  // Update frame status. This may create (or destroy) a wide frame
+  // that spans the full work area width if the surface didn't cover
+  // the work area.
+  void UpdateFrame();
+
+  void UpdateCaptionButtonModel();
 
   void UpdateBackdrop();
 
@@ -277,6 +288,8 @@ class ClientControlledShellSurface
 
   std::unique_ptr<ash::ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
+
+  ash::WideFrameView* wide_frame_ = nullptr;
 
   std::unique_ptr<ui::CompositorLock> orientation_compositor_lock_;
 
