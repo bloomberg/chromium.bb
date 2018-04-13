@@ -32229,97 +32229,6 @@
       }
     ]
   },
-  "Mac 10.12 Laptop Low End": {
-    "isolated_scripts": [
-      {
-        "args": [
-          "--non-telemetry=true",
-          "--migrated-test=true"
-        ],
-        "isolate_name": "load_library_perf_tests",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "load_library_perf_tests",
-        "override_compile_targets": [
-          "load_library_perf_tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 1,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build41-a7\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      },
-      {
-        "args": [
-          "-v",
-          "--browser=release",
-          "--upload-results"
-        ],
-        "isolate_name": "performance_test_suite",
-        "merge": {
-          "args": [
-            "--service-account-file",
-            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "performance_test_suite",
-        "override_compile_targets": [
-          "performance_test_suite"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1626",
-              "os": "Mac-10.12",
-              "pool": "chrome.tests.perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 36000,
-          "ignore_task_failure": false,
-          "io_timeout": 1800,
-          "shards": 26,
-          "upload_test_results": true
-        },
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build41-a7\"}, {\"id\": \"build42-a7\"}, {\"id\": \"build43-a7\"}, {\"id\": \"build44-a7\"}, {\"id\": \"build45-a7\"}, {\"id\": \"build46-a7\"}, {\"id\": \"build47-a7\"}, {\"id\": \"build48-a7\"}, {\"id\": \"build49-a7\"}, {\"id\": \"build50-a7\"}, {\"id\": \"build51-a7\"}, {\"id\": \"build52-a7\"}, {\"id\": \"build53-a7\"}, {\"id\": \"build54-a7\"}, {\"id\": \"build55-a7\"}, {\"id\": \"build56-a7\"}, {\"id\": \"build57-a7\"}, {\"id\": \"build58-a7\"}, {\"id\": \"build59-a7\"}, {\"id\": \"build60-a7\"}, {\"id\": \"build61-a7\"}, {\"id\": \"build62-a7\"}, {\"id\": \"build63-a7\"}, {\"id\": \"build64-a7\"}, {\"id\": \"build65-a7\"}, {\"id\": \"build66-a7\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/perf_device_trigger.py"
-        }
-      }
-    ]
-  },
   "Mac 10.12 Perf": {
     "isolated_scripts": [
       {
@@ -75893,6 +75802,97 @@
   "Win x64 Builder": {
     "additional_compile_targets": [
       "chromedriver"
+    ]
+  },
+  "mac-10_12_laptop_low_end-perf": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--non-telemetry=true",
+          "--migrated-test=true"
+        ],
+        "isolate_name": "load_library_perf_tests",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "load_library_perf_tests",
+        "override_compile_targets": [
+          "load_library_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1626",
+              "os": "Mac-10.12",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"id\": \"build41-a7\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "-v",
+          "--browser=release",
+          "--upload-results"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1626",
+              "os": "Mac-10.12",
+              "pool": "chrome.tests.perf"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 26,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"id\": \"build41-a7\"}, {\"id\": \"build42-a7\"}, {\"id\": \"build43-a7\"}, {\"id\": \"build44-a7\"}, {\"id\": \"build45-a7\"}, {\"id\": \"build46-a7\"}, {\"id\": \"build47-a7\"}, {\"id\": \"build48-a7\"}, {\"id\": \"build49-a7\"}, {\"id\": \"build50-a7\"}, {\"id\": \"build51-a7\"}, {\"id\": \"build52-a7\"}, {\"id\": \"build53-a7\"}, {\"id\": \"build54-a7\"}, {\"id\": \"build55-a7\"}, {\"id\": \"build56-a7\"}, {\"id\": \"build57-a7\"}, {\"id\": \"build58-a7\"}, {\"id\": \"build59-a7\"}, {\"id\": \"build60-a7\"}, {\"id\": \"build61-a7\"}, {\"id\": \"build62-a7\"}, {\"id\": \"build63-a7\"}, {\"id\": \"build64-a7\"}, {\"id\": \"build65-a7\"}, {\"id\": \"build66-a7\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
     ]
   }
 }

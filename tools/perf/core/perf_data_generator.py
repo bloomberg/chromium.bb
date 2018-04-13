@@ -1141,7 +1141,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
 
 NEW_PERF_RECIPE_MIGRATED_TESTERS = {
   'testers' : {
-    'Mac 10.12 Laptop Low End': {
+    'mac-10_12_laptop_low_end-perf': {
       'tests': [
         {
           'isolate': 'performance_test_suite',
