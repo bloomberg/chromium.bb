@@ -711,7 +711,7 @@ class SuggestionView extends ViewGroup {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     RecordUserAction.record("MobileOmniboxDeleteRequested");
-                                    mSuggestionDelegate.onDeleteSuggestion(mPosition);
+                                    mSuggestionDelegate.onDeleteSuggestion(mSuggestion, mPosition);
                                 }
                             };
                     b.setPositiveButton(android.R.string.ok, okListener);

@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -68,6 +69,14 @@ using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
 
 namespace {
+
+// Used for histograms, append only.
+enum class MatchValidationResult {
+  VALID_MATCH = 0,
+  WRONG_MATCH = 1,
+  BAD_RESULT_SIZE = 2,
+  COUNT = 3
+};
 
 /**
  * A prefetcher class responsible for triggering zero suggest prefetch.
@@ -230,11 +239,15 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint selected_index,
+    jint hash_code,
     const JavaParamRef<jstring>& j_current_url,
     jboolean focused_from_fakebox,
     jlong elapsed_time_since_first_modified,
     jint completed_length,
     const JavaParamRef<jobject>& j_web_contents) {
+  if (!IsValidMatch(env, selected_index, hash_code))
+    return;
+
   base::string16 url = ConvertJavaStringToUTF16(env, j_current_url);
   const GURL current_url = GURL(url);
   OmniboxEventProto::PageClassification current_page_classification =
@@ -276,7 +289,11 @@ void AutocompleteControllerAndroid::OnSuggestionSelected(
 void AutocompleteControllerAndroid::DeleteSuggestion(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    int selected_index) {
+    jint selected_index,
+    jint hash_code) {
+  if (!IsValidMatch(env, selected_index, hash_code))
+    return;
+
   const AutocompleteResult& result = autocomplete_controller_->result();
   const AutocompleteMatch& match = result.match_at(selected_index);
   if (match.SupportsDeletion())
@@ -288,10 +305,9 @@ ScopedJavaLocalRef<jstring> AutocompleteControllerAndroid::
         JNIEnv* env,
         const JavaParamRef<jobject>& obj,
         jint selected_index,
+        jint hash_code,
         jlong elapsed_time_since_input_change) {
-  // In rare cases, we navigate to cached matches and the underlying result
-  // has already been cleared, in that case ignore the URL update.
-  if (autocomplete_controller_->result().empty())
+  if (!IsValidMatch(env, selected_index, hash_code))
     return ScopedJavaLocalRef<jstring>();
 
   AutocompleteMatch match(
@@ -568,6 +584,30 @@ AutocompleteControllerAndroid::GetTopSynchronousResult(
     return ScopedJavaLocalRef<jobject>();
 
   return BuildOmniboxSuggestion(env, *result.begin());
+}
+
+bool AutocompleteControllerAndroid::IsValidMatch(JNIEnv* env,
+                                                 jint selected_index,
+                                                 jint hash_code) {
+  const AutocompleteResult& result = autocomplete_controller_->result();
+  if (base::checked_cast<size_t>(selected_index) >= result.size()) {
+    UMA_HISTOGRAM_ENUMERATION("Android.Omnibox.InvalidMatch",
+                              MatchValidationResult::BAD_RESULT_SIZE,
+                              MatchValidationResult::COUNT);
+    return false;
+  }
+
+  // TODO(mariakhomenko): After we get results from the histogram, if invalid
+  // match count is very low, we can consider skipping the expensive
+  // verification step and removing this code.
+  bool equal = Java_AutocompleteController_isEquivalentOmniboxSuggestion(
+      env, BuildOmniboxSuggestion(env, result.match_at(selected_index)),
+      hash_code);
+  UMA_HISTOGRAM_ENUMERATION("Android.Omnibox.InvalidMatch",
+                            equal ? MatchValidationResult::VALID_MATCH
+                                  : MatchValidationResult::WRONG_MATCH,
+                            MatchValidationResult::COUNT);
+  return equal;
 }
 
 static jlong JNI_AutocompleteController_Init(
