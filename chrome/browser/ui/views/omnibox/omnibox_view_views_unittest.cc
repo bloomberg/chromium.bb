@@ -252,7 +252,7 @@ void OmniboxViewViewsTest::SetUp() {
   views::Widget::InitParams params =
       CreateParams(views::Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 40);
+  params.bounds = gfx::Rect(0, 0, 400, 40);
   widget_->Init(params);
   widget_->Show();
 
@@ -687,4 +687,36 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(10U, start);
   EXPECT_EQ(12U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
+  // Expect that after a double-click after the third character of the elided
+  // text, the text is unelided, and https://|example|.com is selected.
+  SendMouseClick(4 * kCharacterWidth);
+  omnibox_view()->OnMousePressed(CreateMouseEvent(
+      ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
+  ExpectFullUrlDisplayed();
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(8U, start);
+  EXPECT_EQ(15U, end);
+
+  // Expect that dragging to the fourth character of the full URL (between the
+  // the 'p' and the 's' of https), will word-select the scheme and domain, so
+  // the new selection will be |https://example|.com. The expected selection is
+  // backwards, since we are dragging the mouse from the domain to the scheme.
+  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+      ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
+  ExpectFullUrlDisplayed();
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(15U, start);
+  EXPECT_EQ(0U, end);
+
+  // Expect the selection to stay the same after mouse-release.
+  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+      ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
+  ExpectFullUrlDisplayed();
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(15U, start);
+  EXPECT_EQ(0U, end);
 }

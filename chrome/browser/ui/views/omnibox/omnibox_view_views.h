@@ -131,6 +131,8 @@ class OmniboxViewViews : public OmniboxView,
                            MouseTripleClick);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
                            MouseClickDrag);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsSteadyStateElisionsTest,
+                           MouseDoubleClickDrag);
   friend class OmniboxViewViewsTest;
   friend class OmniboxViewViewsSteadyStateElisionsTest;
 
