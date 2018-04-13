@@ -152,6 +152,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
     private boolean mPositionToLeft;
     private boolean mVerticalOverlapAnchor;
     private boolean mHorizontalOverlapAnchor;
+    private boolean mUpdateOrientationOnChange;
 
     /**
      * Constructs an {@link AnchoredPopupWindow} instance.
@@ -273,6 +274,14 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
     }
 
     /**
+     * If set to true, orientation will be updated everytime that the {@link OnRectChanged} is
+     * called.
+     */
+    public void setUpdateOrientationOnChange(boolean updateOrientationOnChange) {
+        mUpdateOrientationOnChange = updateOrientationOnChange;
+    }
+
+    /**
      * Changes the focusability of the popup. See {@link PopupWindow#setFocusable(boolean)}.
      * @param focusable True if the popup is focusable, false otherwise.
      */
@@ -343,7 +352,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
         // Determine the size of the text popup.
         boolean currentPositionBelow = mPositionBelow;
         boolean currentPositionToLeft = mPositionToLeft;
-        boolean preferCurrentOrientation = mPopupWindow.isShowing();
+        boolean preferCurrentOrientation = mPopupWindow.isShowing() && !mUpdateOrientationOnChange;
 
         mPopupWindow.getBackground().getPadding(mCachedPaddingRect);
         int paddingX = mCachedPaddingRect.left + mCachedPaddingRect.right;
