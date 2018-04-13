@@ -1034,6 +1034,13 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _passKitCoordinator =
         [[PassKitCoordinator alloc] initWithBaseViewController:self];
 
+    // DownloadManagerCoordinator must be created before
+    // DownloadManagerTabHelper.
+    _downloadManagerCoordinator =
+        [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
+    _downloadManagerCoordinator.presenter =
+        [[VerticalAnimationContainer alloc] init];
+
     _appLauncherCoordinator =
         [[AppLauncherCoordinator alloc] initWithBaseViewController:self];
 
@@ -2235,11 +2242,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [self.primaryToolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
 
-  _downloadManagerCoordinator =
-      [[DownloadManagerCoordinator alloc] initWithBaseViewController:self];
+  // DownloadManagerCoordinator is already created.
+  DCHECK(_downloadManagerCoordinator);
   _downloadManagerCoordinator.webStateList = [_model webStateList];
-  _downloadManagerCoordinator.presenter =
-      [[VerticalAnimationContainer alloc] init];
 
   if (IsUIRefreshPhase1Enabled()) {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
@@ -3029,6 +3034,9 @@ bubblePresenterForFeature:(const base::Feature&)feature
   AppLauncherTabHelper::CreateForWebState(
       tab.webState, [[ExternalAppsLaunchPolicyDecider alloc] init],
       _appLauncherCoordinator);
+
+  // DownloadManagerTabHelper cannot function without delegate.
+  DCHECK(_downloadManagerCoordinator);
   DownloadManagerTabHelper::CreateForWebState(tab.webState,
                                               _downloadManagerCoordinator);
 
