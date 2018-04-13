@@ -906,6 +906,7 @@ static int main_loop(int argc, const char **argv_) {
             img_shifted =
                 aom_img_alloc(NULL, shifted_fmt, img->d_w, img->d_h, 16);
             img_shifted->bit_depth = output_bit_depth;
+            img_shifted->monochrome = img->monochrome;
           }
           if (output_bit_depth > img->bit_depth) {
             aom_img_upshift(img_shifted, img,
