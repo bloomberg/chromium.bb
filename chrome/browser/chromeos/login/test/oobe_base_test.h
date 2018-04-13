@@ -91,7 +91,10 @@ class OobeBaseTest : public ExtensionApiTest {
   LoginDisplayWebUI* GetLoginDisplay();
 
   void WaitForGaiaPageLoad();
+  void WaitForGaiaPageLoadAndPropertyUpdate();
   void WaitForGaiaPageReload();
+  void WaitForGaiaPageBackButtonUpdate();
+  void WaitForGaiaPageEvent(const std::string& event);
   void WaitForSigninScreen();
   void ExecuteJsInSigninFrame(const std::string& js);
   void SetSignFormField(const std::string& field_id,
