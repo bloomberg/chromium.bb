@@ -218,6 +218,13 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   // Power button menu should keep opened if showing animation has finished.
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  // Tapping power button when menu is already shown should not turn screen off.
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that tapping power button of a device that has tablet mode switch.
@@ -240,6 +247,7 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
 
   // Showing power menu animation should start until power menu timer is
   // timeout.
+  AdvanceClockToAvoidIgnoring();
   PressPowerButton();
   power_button_test_api_->SetShowMenuAnimationDone(false);
   EXPECT_TRUE(power_button_test_api_->TriggerPowerButtonMenuTimeout());
@@ -250,8 +258,23 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   // release the power button.
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
 
+  // Tapping power button when menu is already shown should still turn screen
+  // off and dismiss the menu.
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  EXPECT_TRUE(power_button_test_api_->PreShutdownTimerIsRunning());
+  ReleasePowerButton();
+  EXPECT_FALSE(power_button_test_api_->PreShutdownTimerIsRunning());
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+
+  // Should turn screen on if screen is off.
+  AdvanceClockToAvoidIgnoring();
+  TappingPowerButtonWhenScreenIsIdleOff();
+
   // Should not turn screen off if clamshell-like power button behavior is
   // requested.
+  AdvanceClockToAvoidIgnoring();
   ForceClamshellPowerButton();
   SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
   AdvanceClockToAvoidIgnoring();
@@ -292,6 +315,17 @@ TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
   EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
   ReleasePowerButton();
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+
+  // Tapping power button again in laptop mode when menu is opened should not
+  // turn the screen off.
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  EXPECT_TRUE(power_button_test_api_->PreShutdownTimerIsRunning());
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
 }
 
 // Tests that release power button after menu is opened but before trigger
@@ -839,11 +873,37 @@ TEST_F(PowerButtonControllerTest, MenuItemsToLoginStatus) {
   EXPECT_TRUE(power_button_test_api_->MenuHasSignOutItem());
 }
 
-// Repeat long press should redisplay the menu.
-TEST_F(PowerButtonControllerTest, PressButtonWhenMenuIsOpened) {
+// Tests long-pressing the power button when the menu is open.
+TEST_F(PowerButtonControllerTest, LongPressButtonWhenMenuIsOpened) {
   OpenPowerButtonMenu();
   AdvanceClockToAvoidIgnoring();
-  OpenPowerButtonMenu();
+
+  // Long pressing the power button when menu is opened should not dismiss the
+  // menu but trigger the pre-shutdown animation instead. Menu should stay
+  // opened if releasing the button can cancel the animation.
+  PressPowerButton();
+  EXPECT_FALSE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  ReleasePowerButton();
+  EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+
+  // Change focus to 'sign out'
+  PressKey(ui::VKEY_TAB);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->sign_out_item_for_test()
+                  ->HasFocus());
+
+  // Long press when menu is opened with focus on 'sign out' item will change
+  // the focus to 'power off' after starting the pre-shutdown animation.
+  PressPowerButton();
+  ASSERT_TRUE(power_button_test_api_->TriggerPreShutdownTimeout());
+  EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->power_off_item_for_test()
+                  ->HasFocus());
+  ReleasePowerButton();
 }
 
 // Tests that switches between laptop mode and tablet mode should dismiss the

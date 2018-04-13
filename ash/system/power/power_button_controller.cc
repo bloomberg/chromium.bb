@@ -167,6 +167,14 @@ PowerButtonController::~PowerButtonController() {
       this);
 }
 
+void PowerButtonController::OnPreShutdownTimeout() {
+  lock_state_controller_->StartShutdownAnimation(ShutdownReason::POWER_BUTTON);
+  DCHECK(menu_widget_);
+  static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
+      ->power_button_menu_view()
+      ->FocusPowerOffButton();
+}
+
 void PowerButtonController::OnPowerButtonEvent(
     bool down,
     const base::TimeTicks& timestamp) {
@@ -203,7 +211,7 @@ void PowerButtonController::OnPowerButtonEvent(
   }
 
   if (down) {
-    show_menu_animation_done_ = false;
+    force_off_on_button_up_ = false;
     if (ShouldTurnScreenOffForTap()) {
       force_off_on_button_up_ = true;
 
@@ -226,7 +234,14 @@ void PowerButtonController::OnPowerButtonEvent(
     }
 
     screen_off_when_power_button_down_ = !display_controller_->IsScreenOn();
+    menu_shown_when_power_button_down_ = show_menu_animation_done_;
     display_controller_->SetBacklightsForcedOff(false);
+
+    if (menu_shown_when_power_button_down_) {
+      pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
+                                &PowerButtonController::OnPreShutdownTimeout);
+      return;
+    }
 
     if (!ShouldTurnScreenOffForTap()) {
       StartPowerMenuAnimation();
@@ -247,6 +262,7 @@ void PowerButtonController::OnPowerButtonEvent(
     last_button_up_time_ = timestamp;
 
     const bool menu_timer_was_running = power_button_menu_timer_.IsRunning();
+    const bool pre_shutdown_timer_was_running = pre_shutdown_timer_.IsRunning();
     power_button_menu_timer_.Stop();
     pre_shutdown_timer_.Stop();
 
@@ -262,8 +278,11 @@ void PowerButtonController::OnPowerButtonEvent(
     if (timestamp - previous_up_time <= kIgnoreRepeatedButtonUpDelay)
       return;
 
-    if (menu_timer_was_running && !screen_off_when_power_button_down_ &&
-        force_off_on_button_up_) {
+    if (screen_off_when_power_button_down_ || !force_off_on_button_up_)
+      return;
+
+    if (menu_timer_was_running || (menu_shown_when_power_button_down_ &&
+                                   pre_shutdown_timer_was_running)) {
       display_controller_->SetBacklightsForcedOff(true);
       LockScreenIfRequired();
     }
@@ -307,6 +326,7 @@ void PowerButtonController::DismissMenu() {
   if (IsMenuOpened())
     menu_widget_->Hide();
 
+  show_menu_animation_done_ = false;
   active_window_widget_controller_.reset();
 }
 
@@ -493,13 +513,8 @@ void PowerButtonController::SetShowMenuAnimationDone() {
       ->power_button_menu_view()
       ->FocusPowerOffButton();
 
-  pre_shutdown_timer_.Start(
-      FROM_HERE, kStartShutdownAnimationTimeout,
-      base::BindRepeating(
-          [](LockStateController* controller) {
-            controller->StartShutdownAnimation(ShutdownReason::POWER_BUTTON);
-          },
-          lock_state_controller_));
+  pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
+                            &PowerButtonController::OnPreShutdownTimeout);
 }
 
 void PowerButtonController::ParsePowerButtonPositionSwitch() {
