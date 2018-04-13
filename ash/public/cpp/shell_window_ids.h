@@ -57,6 +57,9 @@ enum ShellWindowId {
   // The container for the app list.
   kShellWindowId_AppListContainer,
 
+  // The container for the app list in tablet mode.
+  kShellWindowId_AppListTabletModeContainer,
+
   // The container for the shelf.
   kShellWindowId_ShelfContainer,
 
@@ -152,6 +155,7 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_DefaultContainer,
     kShellWindowId_AlwaysOnTopContainer,
     kShellWindowId_AppListContainer,
+    kShellWindowId_AppListTabletModeContainer,
     kShellWindowId_ShelfContainer,
     kShellWindowId_ShelfBubbleContainer,
     kShellWindowId_PanelContainer,

@@ -232,6 +232,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
     return assistant_interaction_model_;
   }
 
+  // Returns true if the home launcher is enabled in tablet mode.
+  bool IsHomeLauncherEnabledInTabletMode() const;
+
  private:
   // A widget observer that is responsible for keeping the AppListView state up
   // to date on closing.
@@ -398,6 +401,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
+
+  // Whether the home launcher feature is enabled.
+  const bool is_home_launcher_enabled_;
 
   // Observes the completion of scroll animation.
   std::unique_ptr<ui::ImplicitAnimationObserver> scroll_animation_observer_;

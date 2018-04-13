@@ -17,7 +17,9 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/scoped_observer.h"
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -40,8 +42,10 @@ namespace ash {
 // state.
 class ASH_EXPORT AppListControllerImpl
     : public mojom::AppListController,
+      public SessionObserver,
       public app_list::AppListModelObserver,
       public ash::ShellObserver,
+      public TabletModeObserver,
       public keyboard::KeyboardControllerObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
@@ -104,6 +108,9 @@ class ASH_EXPORT AppListControllerImpl
   void OnAppListItemWillBeDeleted(app_list::AppListItem* item) override;
   void OnAppListItemUpdated(app_list::AppListItem* item) override;
 
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+
   // Methods used in ash:
   bool GetTargetVisibility() const;
   bool IsVisible() const;
@@ -142,14 +149,23 @@ class ASH_EXPORT AppListControllerImpl
 
   void FlushForTesting();
 
-  // ash::ShellObserver
+  // ShellObserver:
   void OnVirtualKeyboardStateChanged(bool activated,
                                      aura::Window* root_window) override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnding() override;
 
-  // KeyboardControllerObserver
+  // TabletModeObserver:
+  void OnTabletModeStarted() override;
+  void OnTabletModeEnded() override;
+
+  // KeyboardControllerObserver:
   void OnKeyboardAvailabilityChanged(const bool is_available) override;
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
+
+  // Returns true if the home launcher is enabled in tablet mode.
+  bool IsHomeLauncherEnabledInTabletMode() const;
 
  private:
   syncer::StringOrdinal GetOemFolderPos();
@@ -157,15 +173,18 @@ class ASH_EXPORT AppListControllerImpl
       AppListItemMetadataPtr metadata);
   app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
 
+  mojom::AppListClientPtr client_;
+
   AppListViewDelegateMash view_delegate_;
-  app_list::AppListPresenterImpl presenter_;
   app_list::AppListModel model_;
   app_list::SearchModel search_model_;
 
+  // |presenter_| should be put below |client_| and |model_| to prevent a crash
+  // in destruction.
+  app_list::AppListPresenterImpl presenter_;
+
   // Bindings for the AppListController interface.
   mojo::BindingSet<mojom::AppListController> bindings_;
-
-  mojom::AppListClientPtr client_;
 
   // Token to view map for classic/mus ash (i.e. non-mash).
   std::unique_ptr<app_list::AnswerCardContentsRegistry>
@@ -177,6 +196,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
+
+  // Whether the home launcher feature is enabled.
+  const bool is_home_launcher_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };

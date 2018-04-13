@@ -749,6 +749,10 @@ Shell::~Shell() {
   // Depends on |tablet_mode_controller_|.
   shelf_controller_->Shutdown();
 
+  // Destroy |app_list_controller_| early than |tablet_mode_controller_| since
+  // the former may use the latter before destruction.
+  app_list_controller_.reset();
+
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_.reset();
@@ -836,8 +840,6 @@ Shell::~Shell() {
   // destruction of its owned RootWindowControllers relies on the value.
   ScreenAsh::CreateScreenForShutdown();
   display_configuration_controller_.reset();
-
-  app_list_controller_.reset();
 
   // These members access Shell in their destructors.
   wallpaper_controller_.reset();
@@ -1040,8 +1042,11 @@ void Shell::Init(ui::ContextFactory* context_factory,
   system_tray_model_ = std::make_unique<SystemTrayModel>();
 
   accelerator_controller_ = shell_port_->CreateAcceleratorController();
-  app_list_controller_ = std::make_unique<AppListControllerImpl>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
+
+  // |app_list_controller_| is put after |tablet_mode_controller_| as the former
+  // uses the latter in constructor.
+  app_list_controller_ = std::make_unique<AppListControllerImpl>();
   shelf_controller_ = std::make_unique<ShelfController>();
 
   ash_assistant_controller_ = chromeos::switches::IsAssistantEnabled()

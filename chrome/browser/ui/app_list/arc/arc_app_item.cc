@@ -56,8 +56,9 @@ void ArcAppItem::Activate(int event_flags) {
   }
 
   // Manually close app_list view because focus is not changed on ARC app start,
-  // and current view remains active.
-  GetController()->DismissView();
+  // and current view remains active. Do not close app list for home launcher.
+  if (!GetController()->IsHomeLauncherEnabledInTabletMode())
+    GetController()->DismissView();
 }
 
 void ArcAppItem::ExecuteLaunchCommand(int event_flags) {

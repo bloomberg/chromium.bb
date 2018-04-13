@@ -14,11 +14,14 @@
 #include "ash/app_list/presenter/app_list_presenter_delegate_factory.h"
 #include "ash/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ash/public/cpp/config.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "extensions/common/constants.h"
 #include "ui/app_list/answer_card_contents_registry.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -59,7 +62,8 @@ AppListControllerImpl::AppListControllerImpl()
           std::make_unique<AppListPresenterDelegateFactory>(
               std::make_unique<ViewDelegateFactoryImpl>(&view_delegate_)),
           this),
-      keyboard_observer_(this) {
+      keyboard_observer_(this),
+      is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()) {
   model_.AddObserver(this);
 
   // Create only for non-mash. Mash uses window tree embed API to get a
@@ -69,11 +73,22 @@ AppListControllerImpl::AppListControllerImpl()
         std::make_unique<app_list::AnswerCardContentsRegistry>();
   }
 
-  ash::Shell::Get()->AddShellObserver(this);
+  SessionController* session_controller = Shell::Get()->session_controller();
+  session_controller->AddObserver(this);
+
+  // In case of crash-and-restart case where session state starts with ACTIVE
+  // and does not change to trigger OnSessionStateChanged(), notify the current
+  // session state here to ensure that the app list is shown.
+  OnSessionStateChanged(session_controller->GetSessionState());
+
+  Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
-  ash::Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
 }
 
@@ -300,6 +315,19 @@ void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
     client_->OnFolderCreated(item->CloneMetadata());
 }
 
+void AppListControllerImpl::OnSessionStateChanged(
+    session_manager::SessionState state) {
+  if (!IsHomeLauncherEnabledInTabletMode() ||
+      !display::Display::HasInternalDisplay() ||
+      state != session_manager::SessionState::ACTIVE) {
+    return;
+  }
+
+  // Show the app list after signing in in tablet mode.
+  Show(display::Display::InternalDisplayId(),
+       app_list::AppListShowSource::kTabletMode, base::TimeTicks());
+}
+
 void AppListControllerImpl::OnAppListItemWillBeDeleted(
     app_list::AppListItem* item) {
   if (item->is_folder())
@@ -377,12 +405,65 @@ void AppListControllerImpl::OnVirtualKeyboardStateChanged(
     keyboard_observer_.Remove(keyboard_controller);
 }
 
+void AppListControllerImpl::OnOverviewModeStarting() {
+  if (!IsHomeLauncherEnabledInTabletMode()) {
+    presenter_.Dismiss(base::TimeTicks());
+    return;
+  }
+  // In tablet mode, set the app list invisible if the overview mode starts
+  // instead of dismissing it. The app list will be visible when the overview
+  // mode ends, so only changing visibity is less expensive.
+  if (presenter_.GetWindow())
+    presenter_.GetWindow()->Hide();
+}
+
+void AppListControllerImpl::OnOverviewModeEnding() {
+  if (!IsHomeLauncherEnabledInTabletMode())
+    return;
+  // In tablet mode, set the app list visible if the overview mode ends.
+  if (presenter_.GetWindow())
+    presenter_.GetWindow()->Show();
+}
+
+void AppListControllerImpl::OnTabletModeStarted() {
+  if (IsVisible()) {
+    presenter_.GetView()->OnTabletModeChanged(true);
+    return;
+  }
+
+  if (!is_home_launcher_enabled_ || !display::Display::HasInternalDisplay() ||
+      (Shell::Get()->session_controller() &&
+       Shell::Get()->session_controller()->login_status() !=
+           LoginStatus::USER)) {
+    return;
+  }
+  // Show the app list if the tablet mode starts.
+  Show(display::Display::InternalDisplayId(), app_list::kTabletMode,
+       base::TimeTicks());
+}
+
+void AppListControllerImpl::OnTabletModeEnded() {
+  if (IsVisible())
+    presenter_.GetView()->OnTabletModeChanged(false);
+
+  if (!is_home_launcher_enabled_)
+    return;
+  // Dismiss the app list if the tablet mode ends.
+  DismissAppList();
+}
+
 void AppListControllerImpl::OnKeyboardAvailabilityChanged(
     const bool is_available) {
   onscreen_keyboard_shown_ = is_available;
   app_list::AppListView* app_list_view = presenter_.GetView();
   if (app_list_view)
     app_list_view->OnScreenKeyboardShown(is_available);
+}
+
+bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
+  return is_home_launcher_enabled_ && Shell::Get()
+                                          ->tablet_mode_controller()
+                                          ->IsTabletModeWindowManagerEnabled();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -9,8 +9,6 @@
 
 #include "ash/app_list/presenter/app_list_presenter_delegate.h"
 #include "ash/ash_export.h"
-#include "ash/shell_observer.h"
-#include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "ui/events/event_handler.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
@@ -34,9 +32,7 @@ namespace ash {
 // update its layout as necessary.
 class ASH_EXPORT AppListPresenterDelegate
     : public app_list::AppListPresenterDelegate,
-      public ui::EventHandler,
-      public ShellObserver,
-      public TabletModeObserver {
+      public ui::EventHandler {
  public:
   AppListPresenterDelegate(
       app_list::AppListPresenterImpl* presenter,
@@ -61,13 +57,6 @@ class ASH_EXPORT AppListPresenterDelegate
   // ui::EventHandler overrides:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-
-  // ShellObserver overrides:
-  void OnOverviewModeStarting() override;
-
-  // TabletModeObserver:
-  void OnTabletModeStarted() override;
-  void OnTabletModeEnded() override;
 
   // Whether the app list is visible (or in the process of being shown).
   bool is_visible_ = false;
