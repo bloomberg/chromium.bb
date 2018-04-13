@@ -7,8 +7,11 @@
 #include <memory>
 
 #include "base/containers/queue.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/public/browser/overscroll_configuration.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/scoped_overscroll_modes.h"
 #include "content/test/test_overscroll_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +25,9 @@ class OverscrollControllerTest : public ::testing::Test {
   ~OverscrollControllerTest() override {}
 
   void SetUp() override {
+    OverscrollConfig::ResetTouchpadOverscrollHistoryNavigationEnabled();
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kTouchpadOverscrollHistoryNavigation);
     delegate_ = std::make_unique<TestOverscrollDelegate>(gfx::Size(400, 300));
     controller_ = std::make_unique<OverscrollController>();
     controller_->set_delegate(delegate_.get());
@@ -106,6 +112,8 @@ class OverscrollControllerTest : public ::testing::Test {
   // controller which is not yet ACKed. Will be null if no event is processed or
   // the last event is ACKed.
   std::unique_ptr<blink::WebInputEvent> current_event_;
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OverscrollControllerTest);
 };
@@ -318,6 +326,23 @@ TEST_F(OverscrollControllerTest, PullToRefreshEnabledTouchscreen) {
   EXPECT_FALSE(SimulateGestureEvent(blink::WebInputEvent::kGestureScrollEnd,
                                     blink::kWebGestureDeviceTouchscreen));
   SimulateAck(false);
+  EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
+  EXPECT_EQ(OverscrollSource::NONE, controller_source());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, delegate()->completed_mode());
+}
+
+// Ensure disabling kTouchpadOverscrollHistoryNavigation will prevent overscroll
+// from touchpad.
+TEST_F(OverscrollControllerTest, DisableTouchpadOverscrollHistoryNavigation) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kTouchpadOverscrollHistoryNavigation);
+  ASSERT_FALSE(OverscrollConfig::TouchpadOverscrollHistoryNavigationEnabled());
+  EXPECT_FALSE(SimulateGestureScrollUpdate(
+      200, 0, blink::kWebGestureDeviceTouchpad, false));
+  SimulateAck(false);
+
   EXPECT_EQ(OVERSCROLL_NONE, controller_mode());
   EXPECT_EQ(OverscrollSource::NONE, controller_source());
   EXPECT_EQ(OVERSCROLL_NONE, delegate()->current_mode());

@@ -900,6 +900,9 @@ class RenderWidgetHostViewAuraOverscrollTest
 
   void SetUpOverscrollEnvironmentImpl(int debounce_interval_in_ms) {
     SetFeatureList();
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kTouchpadOverscrollHistoryNavigation);
+
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         debounce_interval_in_ms);
 
@@ -1237,6 +1240,8 @@ class RenderWidgetHostViewAuraOverscrollTest
   bool wheel_scroll_latching_enabled_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraOverscrollTest);
 };
 
