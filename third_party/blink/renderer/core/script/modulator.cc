@@ -83,16 +83,16 @@ void Modulator::ClearModulator(ScriptState* script_state) {
 KURL Modulator::ResolveModuleSpecifier(const String& module_request,
                                        const KURL& base_url,
                                        String* failure_reason) {
-  // Step 1. Apply the URL parser to specifier. If the result is not failure,
-  // return the result. [spec text]
+  // <spec step="1">Apply the URL parser to specifier. If the result is not
+  // failure, return the result.</spec>
   KURL url(NullURL(), module_request);
   if (url.IsValid())
     return url;
 
-  // Step 2. If specifier does not start with the character U+002F SOLIDUS (/),
-  // the two-character sequence U+002E FULL STOP, U+002F SOLIDUS (./), or the
-  // three-character sequence U+002E FULL STOP, U+002E FULL STOP, U+002F SOLIDUS
-  // (../), return failure. [spec text]
+  // <spec step="2">If specifier does not start with the character U+002F
+  // SOLIDUS (/), the two-character sequence U+002E FULL STOP, U+002F SOLIDUS
+  // (./), or the three-character sequence U+002E FULL STOP, U+002E FULL STOP,
+  // U+002F SOLIDUS (../), return failure.</spec>
   //
   // (../), return failure and abort these steps." [spec text]
   if (!module_request.StartsWith("/") && !module_request.StartsWith("./") &&
@@ -105,8 +105,8 @@ KURL Modulator::ResolveModuleSpecifier(const String& module_request,
     return KURL();
   }
 
-  // Step 3. Return the result of applying the URL parser to specifier with
-  // script's base URL as the base URL. [spec text]
+  // <spec step="3">Return the result of applying the URL parser to specifier
+  // with script's base URL as the base URL.</spec>
   DCHECK(base_url.IsValid());
   KURL absolute_url(base_url, module_request);
   if (absolute_url.IsValid())

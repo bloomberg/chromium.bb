@@ -107,9 +107,10 @@ void XMLParserScriptRunner::ProcessScriptElement(
     script_loader->ExecuteScriptBlock(script_loader->TakePendingScript(),
                                       document.Url());
   } else if (script_loader->WillBeParserExecuted()) {
-    // [Prepare] Step 25.B. ... The element is the pending parsing-blocking
-    // script of the Document of the parser that created the element. (There can
-    // only be one such script per Document at a time.) ... [spec text]
+    // <spec label="Prepare" step="25.B">... The element is the pending
+    // parsing-blocking script of the Document of the parser that created the
+    // element. (There can only be one such script per Document at a time.)
+    // ...</spec>
     parser_blocking_script_ = script_loader->TakePendingScript();
     parser_blocking_script_->MarkParserBlockingLoadStartTime();
 

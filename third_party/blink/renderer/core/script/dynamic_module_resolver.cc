@@ -196,12 +196,13 @@ void DynamicModuleResolver::ResolveDynamically(
 
   // Step 2.3. "Let options be the descendant script fetch options for
   // referencing script's fetch options." [spec text]
-  // https://html.spec.whatwg.org/multipage/webappapis.html#descendant-script-fetch-options
   //
-  // Spec: For any given script fetch options options, the descendant script
-  // fetch options are a new script fetch options whose items all have the same
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/webappapis.html#descendant-script-fetch-options">
+  // For any given script fetch options options, the descendant script fetch
+  // options are a new script fetch options whose items all have the same
   // values, except for the integrity metadata, which is instead the empty
-  // string. [spec text]
+  // string.</spec>
   ScriptFetchOptions options(referrer_info.Nonce(), IntegrityMetadataSet(),
                              String(), referrer_info.ParserState(),
                              referrer_info.CredentialsMode());

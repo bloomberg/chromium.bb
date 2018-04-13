@@ -175,38 +175,34 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   // https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model
   // "A script element has several associated pieces of state.":
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#already-started
-  //
-  // Spec: ... Initially, script elements must have this flag unset ... [spec
-  // text]
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/scripting.html#already-started">
+  // ... Initially, script elements must have this flag unset ...</spec>
   bool already_started_ = false;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
-  //
-  // Spec: ... Initially, script elements must have this flag unset. ... [spec
-  // text]
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted">
+  // ... Initially, script elements must have this flag unset. ...</spec>
   bool parser_inserted_ = false;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#non-blocking
-  //
-  // Spec: ... Initially, script elements must have this flag set. ... [spec
-  // text]
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/scripting.html#non-blocking">
+  // ... Initially, script elements must have this flag set. ...</spec>
   bool non_blocking_ = true;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#ready-to-be-parser-executed
-  //
-  // Spec: ... Initially, script elements must have this flag unset ... [spec
-  // text]
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/scripting.html#ready-to-be-parser-executed">
+  // ... Initially, script elements must have this flag unset ...</spec>
   bool ready_to_be_parser_executed_ = false;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#concept-script-type
-  //
-  // Spec: ... It is determined when the script is prepared, ... [spec text]
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-type">
+  // ... It is determined when the script is prepared, ...</spec>
   ScriptType script_type_ = ScriptType::kClassic;
 
-  // https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external
-  //
-  // Spec: ... It is determined when the script is prepared, ... [spec text]
+  // <spec
+  // href="https://html.spec.whatwg.org/multipage/scripting.html#concept-script-external">
+  // ... It is determined when the script is prepared, ...</spec>
   bool is_external_script_ = false;
 
   bool have_fired_load_;
