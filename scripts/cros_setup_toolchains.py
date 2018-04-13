@@ -67,6 +67,8 @@ HOST_PACKAGES = (
 # the cross-compilers to be installed first (because they need them to actually
 # build), so we have to delay their installation.
 HOST_POST_CROSS_PACKAGES = (
+    'dev-lang/rust',
+    'dev-util/cargo',
     'virtual/target-sdk-post-cross',
 )
 
