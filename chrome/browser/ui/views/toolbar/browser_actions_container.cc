@@ -245,17 +245,15 @@ void BrowserActionsContainer::ResizeAndAnimate(gfx::Tween::Type tween_type,
 }
 
 int BrowserActionsContainer::GetWidth(GetWidthTime get_width_time) const {
+  // This call originates from ToolbarActionsBar which wants to know how much
+  // space is / will be used for action icons (excluding the separator).
   const int width_without_separator =
       (get_width_time == GET_WIDTH_AFTER_ANIMATION && animation_target_size_ > 0
            ? animation_target_size_
            : width()) -
       GetSeparatorAreaWidth();
-  // This clamps to the toolbar actions bar "internal" min/max widths which does
-  // not include the separator area. These minimum / maximum widths are separate
-  // from BrowserActionsContainers' bounds.
-  return base::ClampToRange(width_without_separator,
-                            toolbar_actions_bar_->GetMinimumWidth(),
-                            toolbar_actions_bar_->GetMaximumWidth());
+
+  return std::max(0, width_without_separator);
 }
 
 bool BrowserActionsContainer::IsAnimating() const {
