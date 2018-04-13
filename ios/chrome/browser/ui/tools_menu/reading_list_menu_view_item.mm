@@ -18,8 +18,8 @@
 #endif
 
 // Accessibility identifier for the text badge on the reading list cell.
-NSString* const kReadingListTextBadgeAccessibilityIdentifier =
-    @"kReadingListTextBadgeAccessibilityIdentifier";
+NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
+    @"kToolsMenuTextBadgeAccessibilityIdentifier";
 
 namespace {
 // ID for cell reuse
@@ -81,7 +81,7 @@ const NSTimeInterval kTextBadgeAnimationDuration = ios::material::kDuration3;
   self.textBadge = [[TextBadgeView alloc] initWithText:uppercaseText];
   self.textBadge.hidden = YES;
   self.textBadge.accessibilityIdentifier =
-      kReadingListTextBadgeAccessibilityIdentifier;
+      kToolsMenuTextBadgeAccessibilityIdentifier;
   self.textBadge.accessibilityLabel = text;
   [self.contentView addSubview:self.textBadge];
 

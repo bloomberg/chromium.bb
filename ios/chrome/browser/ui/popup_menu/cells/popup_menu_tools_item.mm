@@ -27,6 +27,8 @@ const CGFloat kMargin = 15;
 const CGFloat kTopMargin = 8;
 const CGFloat kTopMarginBadge = 14;
 const CGFloat kMaxHeight = 100;
+NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
+    @"kToolsMenuTextBadgeAccessibilityIdentifier";
 }  // namespace
 
 @implementation PopupMenuToolsItem
@@ -124,6 +126,8 @@ const CGFloat kMaxHeight = 100;
 
     _textBadgeView = [[TextBadgeView alloc] initWithText:nil];
     _textBadgeView.translatesAutoresizingMaskIntoConstraints = NO;
+    _textBadgeView.accessibilityIdentifier =
+        kToolsMenuTextBadgeAccessibilityIdentifier;
     _textBadgeView.hidden = YES;
 
     [self.contentView addSubview:_titleLabel];
