@@ -1436,7 +1436,7 @@
     }
   },
   "Linux Perf": {
-    "build27-a9": {
+    "build67-a7": {
       "benchmarks": [
         "blink_perf.dom",
         "blink_perf.paint",
@@ -1452,7 +1452,7 @@
         "thread_times.key_silk_cases"
       ]
     },
-    "build28-a9": {
+    "build68-a7": {
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.canvas",
@@ -1478,7 +1478,7 @@
         "webrtc"
       ]
     },
-    "build29-a9": {
+    "build69-a7": {
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.layout",
@@ -1505,7 +1505,7 @@
 	"rendering.desktop"
       ]
     },
-    "build30-a9": {
+    "build70-a7": {
       "benchmarks": [
         "blink_perf.parser",
         "blink_perf.svg",
@@ -1522,7 +1522,7 @@
         "v8.runtime_stats.top_25"
       ]
     },
-    "build31-a9": {
+    "build71-a7": {
       "benchmarks": [
         "battor.steady_state",
         "blink_perf.css",

@@ -28227,9 +28227,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28259,9 +28259,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28289,9 +28289,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28321,9 +28321,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28351,9 +28351,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28383,9 +28383,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28413,9 +28413,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28445,9 +28445,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28475,9 +28475,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28507,9 +28507,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28537,9 +28537,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28569,9 +28569,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28599,9 +28599,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28631,9 +28631,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28661,9 +28661,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28693,9 +28693,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28723,9 +28723,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28755,9 +28755,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28785,9 +28785,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28817,9 +28817,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28847,9 +28847,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28879,9 +28879,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28909,9 +28909,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28941,9 +28941,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -28971,9 +28971,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29003,9 +29003,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29033,9 +29033,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29065,9 +29065,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29095,9 +29095,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29127,9 +29127,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29157,9 +29157,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29189,9 +29189,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29219,9 +29219,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29251,9 +29251,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29281,9 +29281,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29313,9 +29313,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29334,9 +29334,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29364,9 +29364,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29394,9 +29394,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29426,9 +29426,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29447,9 +29447,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29477,9 +29477,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29509,9 +29509,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29539,9 +29539,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29571,9 +29571,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29601,9 +29601,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29633,9 +29633,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29654,9 +29654,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29684,9 +29684,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29716,9 +29716,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29746,9 +29746,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29778,9 +29778,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29808,9 +29808,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29838,9 +29838,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29870,9 +29870,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29900,9 +29900,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29932,9 +29932,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29962,9 +29962,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -29994,9 +29994,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30024,9 +30024,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30056,9 +30056,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30086,9 +30086,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30118,9 +30118,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30148,9 +30148,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30180,9 +30180,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30210,9 +30210,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30242,9 +30242,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30272,9 +30272,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30304,9 +30304,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30334,9 +30334,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30366,9 +30366,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30396,9 +30396,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30428,9 +30428,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30458,9 +30458,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30490,9 +30490,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30520,9 +30520,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30552,9 +30552,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30582,9 +30582,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30614,9 +30614,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30644,9 +30644,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30676,9 +30676,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30706,9 +30706,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30738,9 +30738,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30768,9 +30768,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30800,9 +30800,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30830,9 +30830,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30862,9 +30862,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30892,9 +30892,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30924,9 +30924,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30954,9 +30954,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -30986,9 +30986,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31016,9 +31016,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31048,9 +31048,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31078,9 +31078,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31110,9 +31110,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31140,9 +31140,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31172,9 +31172,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31202,9 +31202,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31234,9 +31234,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31264,9 +31264,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31294,9 +31294,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31326,9 +31326,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31358,9 +31358,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31388,9 +31388,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31418,9 +31418,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31450,9 +31450,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31482,9 +31482,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31512,9 +31512,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31544,9 +31544,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build31-a9",
+              "id": "build71-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31574,9 +31574,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31606,9 +31606,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build27-a9",
+              "id": "build67-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31636,9 +31636,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31668,9 +31668,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31698,9 +31698,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31730,9 +31730,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31760,9 +31760,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31792,9 +31792,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31822,9 +31822,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31854,9 +31854,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31884,9 +31884,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31916,9 +31916,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31937,9 +31937,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31967,9 +31967,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -31997,9 +31997,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32029,9 +32029,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32061,9 +32061,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32091,9 +32091,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build30-a9",
+              "id": "build70-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32121,9 +32121,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32153,9 +32153,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build29-a9",
+              "id": "build69-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32183,9 +32183,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
@@ -32215,9 +32215,9 @@
           "dimension_sets": [
             {
               "gpu": "10de:1cb3",
-              "id": "build28-a9",
+              "id": "build68-a7",
               "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 36000,
