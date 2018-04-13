@@ -116,12 +116,10 @@ class MockVideoDecoder : public VideoDecoder {
     if (!buffer->end_of_stream()) {
       gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
       mailbox_holders[0].mailbox.name[0] = 1;
-      scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
+      output_cb_.Run(VideoFrame::WrapNativeTextures(
           PIXEL_FORMAT_ARGB, mailbox_holders, GetReleaseMailboxCB(),
           config_.coded_size(), config_.visible_rect(), config_.natural_size(),
-          buffer->timestamp());
-      frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
-      output_cb_.Run(frame);
+          buffer->timestamp()));
     }
     // |decode_cb| must not be called from the same stack.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
