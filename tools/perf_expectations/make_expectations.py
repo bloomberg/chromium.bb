@@ -188,6 +188,8 @@ def Main(args):
       OutputMessage('checksum matches, skipping')
       continue
     elif options.checksum:
+      OutputMessage('checksum mismatch, original = %s, computed = %s' %
+                    (original_checksum, computed_checksum))
       found_checksum_mismatch = True
       continue
 
