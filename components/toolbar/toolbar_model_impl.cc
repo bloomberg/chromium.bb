@@ -63,6 +63,9 @@ base::string16 ToolbarModelImpl::GetFormattedFullURL() const {
 
 base::string16 ToolbarModelImpl::GetURLForDisplay() const {
   url_formatter::FormatUrlTypes format_types =
+#if defined(OS_IOS)
+      url_formatter::kFormatUrlTrimAfterHost |
+#endif
       url_formatter::kFormatUrlOmitDefaults |
       url_formatter::kFormatUrlOmitHTTPS |
       url_formatter::kFormatUrlOmitTrivialSubdomains;
