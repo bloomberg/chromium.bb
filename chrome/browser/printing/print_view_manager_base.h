@@ -35,7 +35,6 @@ namespace printing {
 
 class JobEventDetails;
 class PrintJob;
-class PrintJobWorkerOwner;
 class PrintQueriesQueue;
 class PrintedDocument;
 class PrinterQuery;
@@ -94,7 +93,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // currently a print job, safely disconnect from it. Returns false if it is
   // impossible to safely disconnect from the current print job or it is
   // impossible to create a new print job.
-  virtual bool CreateNewPrintJob(PrintJobWorkerOwner* job);
+  virtual bool CreateNewPrintJob(PrinterQuery* query);
 
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
@@ -129,12 +128,12 @@ class PrintViewManagerBase : public content::NotificationObserver,
       const scoped_refptr<base::RefCountedMemory>& print_data,
       int page_count,
       PrinterHandler::PrintCallback callback,
-      scoped_refptr<printing::PrinterQuery> printer_query);
+      scoped_refptr<PrinterQuery> printer_query);
 
   void StartLocalPrintJob(
       const scoped_refptr<base::RefCountedMemory>& print_data,
       int page_count,
-      scoped_refptr<printing::PrinterQuery> printer_query,
+      scoped_refptr<PrinterQuery> printer_query,
       PrinterHandler::PrintCallback callback);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -211,7 +210,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Whether printing is enabled.
   BooleanPrefMember printing_enabled_;
 
-  scoped_refptr<printing::PrintQueriesQueue> queue_;
+  scoped_refptr<PrintQueriesQueue> queue_;
 
   base::WeakPtrFactory<PrintViewManagerBase> weak_ptr_factory_;
 

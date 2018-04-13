@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/child_process_host.h"
@@ -32,17 +33,24 @@ class TestPrintJobWorker : public PrintJobWorker {
   friend class TestOwner;
 };
 
-class TestOwner : public PrintJobWorkerOwner {
+class TestOwner : public PrinterQuery {
  public:
-  TestOwner() {}
+  TestOwner()
+      : PrinterQuery(content::ChildProcessHost::kInvalidUniqueID,
+                     content::ChildProcessHost::kInvalidUniqueID) {}
 
   void GetSettingsDone(const PrintSettings& new_settings,
                        PrintingContext::Result result) override {
-    EXPECT_FALSE(true);
+    FAIL();
   }
 
   std::unique_ptr<PrintJobWorker> DetachWorker(
       PrintJobWorkerOwner* new_owner) override {
+    {
+      // Do an actual detach to keep the parent class happy.
+      auto real_worker = PrinterQuery::DetachWorker(new_owner);
+    }
+
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
     auto worker = std::make_unique<TestPrintJobWorker>(new_owner);
@@ -53,8 +61,6 @@ class TestOwner : public PrintJobWorkerOwner {
   }
 
   const PrintSettings& settings() const override { return settings_; }
-
-  int cookie() const override { return 42; }
 
  private:
   ~TestOwner() override {}

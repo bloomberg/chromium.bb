@@ -49,9 +49,10 @@ class PrintJob : public PrintJobWorkerOwner,
   // post-constructor initialization must be done with Initialize().
   PrintJob();
 
-  // Grabs the ownership of the PrintJobWorker from another job, which is
-  // usually a PrinterQuery. Set the expected page count of the print job.
-  virtual void Initialize(PrintJobWorkerOwner* job,
+  // Grabs the ownership of the PrintJobWorker from a PrinterQuery along with
+  // the print settings. Sets the expected page count of the print job based on
+  // the settings.
+  virtual void Initialize(PrinterQuery* query,
                           const base::string16& name,
                           int page_count);
 
@@ -75,7 +76,6 @@ class PrintJob : public PrintJobWorkerOwner,
   std::unique_ptr<PrintJobWorker> DetachWorker(
       PrintJobWorkerOwner* new_owner) override;
   const PrintSettings& settings() const override;
-  int cookie() const override;
 
   // Starts the actual printing. Signals the worker that it should begin to
   // spool as soon as data is available.

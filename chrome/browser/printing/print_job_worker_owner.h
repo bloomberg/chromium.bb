@@ -39,9 +39,6 @@ class PrintJobWorkerOwner
   // Access the current settings.
   virtual const PrintSettings& settings() const = 0;
 
-  // Cookie uniquely identifying the PrintedDocument and/or loaded settings.
-  virtual int cookie() const = 0;
-
   // Returns true if tasks posted to this TaskRunner are sequenced
   // with this call.
   bool RunsTasksInCurrentSequence() const;

@@ -37,7 +37,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
   std::unique_ptr<PrintJobWorker> DetachWorker(
       PrintJobWorkerOwner* new_owner) override;
   const PrintSettings& settings() const override;
-  int cookie() const override;
 
   // Initializes the printing context. It is fine to call this function multiple
   // times to reinitialize the settings. |web_contents_observer| can be queried
@@ -67,12 +66,16 @@ class PrinterQuery : public PrintJobWorkerOwner {
   // Returns true if a GetSettings() call is pending completion.
   bool is_callback_pending() const;
 
+  int cookie() const;
   PrintingContext::Result last_status() const { return last_status_; }
 
   // Returns if a worker thread is still associated to this instance.
   bool is_valid() const;
 
  protected:
+  // Refcounted class.
+  ~PrinterQuery() override;
+
   // For unit tests to manually set the print callback.
   void set_callback(base::OnceClosure callback);
 
@@ -80,9 +83,6 @@ class PrinterQuery : public PrintJobWorkerOwner {
   // are blocking and enters a message loop without your consent. There is one
   // worker thread per print job.
   std::unique_ptr<PrintJobWorker> worker_;
-
-  // Refcounted class.
-  ~PrinterQuery() override;
 
  private:
   // Lazy create the worker thread. There is one worker thread per print job.
