@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/time/time.h"
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
@@ -100,7 +101,9 @@ class EngineComponentsFactory {
       const std::vector<SyncEngineEventListener*>& listeners,
       DebugInfoGetter* debug_info_getter,
       ModelTypeRegistry* model_type_registry,
-      const std::string& invalidator_client_id) = 0;
+      const std::string& invalidator_client_id,
+      base::TimeDelta short_poll_interval,
+      base::TimeDelta long_poll_interval) = 0;
 
   virtual std::unique_ptr<syncable::DirectoryBackingStore>
   BuildDirectoryBackingStore(StorageOption storage,
