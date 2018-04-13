@@ -8,7 +8,15 @@
 #include "ash/resources/grit/ash_resources.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_util.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/app_list/app_list_constants.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
 
@@ -18,11 +26,13 @@ const std::vector<InternalApp>& GetInternalAppList() {
         IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER,
         IDR_KEYBOARD_SHORTCUT_VIEWER_LOGO_192,
         /*recommendable=*/false,
+        /*show_in_launcher=*/false,
         IDS_LAUNCHER_SEARCHABLE_KEYBOARD_SHORTCUT_VIEWER},
 
        {kInternalAppIdSettings, IDS_INTERNAL_APP_SETTINGS,
         IDR_SETTINGS_LOGO_192,
         /*recommendable=*/true,
+        /*show_in_launcher=*/true,
         /*searchable_string_resource_id=*/0}});
   return *internal_app_list;
 }
@@ -33,6 +43,42 @@ int GetIconResourceIdByAppId(const std::string& app_id) {
       return app.icon_resource_id;
   }
   return 0;
+}
+
+void OpenInternalApp(const std::string& app_id, Profile* profile) {
+  if (app_id == kInternalAppIdKeyboardShortcutViewer) {
+    keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
+  } else if (app_id == kInternalAppIdSettings) {
+    chrome::ShowSettingsSubPageForProfile(profile, std::string());
+  }
+}
+
+gfx::ImageSkia GetIconForResourceId(int resource_id) {
+  if (resource_id == 0)
+    return gfx::ImageSkia();
+
+  gfx::ImageSkia* source =
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      *source, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(kTileIconSize, kTileIconSize));
+}
+
+size_t GetNumberOfInternalAppsShowInLauncherForTest(std::string* apps_name) {
+  size_t num_of_internal_apps_show_in_launcher = 0u;
+  std::vector<std::string> internal_apps_name;
+  for (const auto& app : GetInternalAppList()) {
+    if (app.show_in_launcher) {
+      ++num_of_internal_apps_show_in_launcher;
+      if (apps_name) {
+        internal_apps_name.emplace_back(
+            l10n_util::GetStringUTF8(app.name_string_resource_id));
+      }
+    }
+  }
+  if (apps_name)
+    *apps_name = base::JoinString(internal_apps_name, ",");
+  return num_of_internal_apps_show_in_launcher;
 }
 
 }  // namespace app_list

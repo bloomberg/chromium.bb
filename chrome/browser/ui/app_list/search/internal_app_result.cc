@@ -9,29 +9,11 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/search_util.h"
-#include "chrome/browser/ui/ash/ksv/keyboard_shortcut_viewer_util.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
 namespace app_list {
-
-namespace {
-
-gfx::ImageSkia GetIconForInternalAppId(const std::string& app_id) {
-  const int resource_id = GetIconResourceIdByAppId(app_id);
-  if (resource_id == 0)
-    return gfx::ImageSkia();
-
-  gfx::ImageSkia* source =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  return gfx::ImageSkiaOperations::CreateResizedImage(
-      *source, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(kTileIconSize, kTileIconSize));
-}
-
-}  // namespace
 
 InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
@@ -41,7 +23,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
   set_id(app_id);
   set_result_type(ResultType::kInternalApp);
 
-  gfx::ImageSkia icon = GetIconForInternalAppId(app_id);
+  gfx::ImageSkia icon = GetIconForResourceId(GetIconResourceIdByAppId(app_id));
   if (!icon.isNull())
     SetIcon(icon);
 }
@@ -57,11 +39,7 @@ void InternalAppResult::Open(int event_flags) {
   if (display_type() != DisplayType::kRecommendation)
     RecordHistogram(APP_SEARCH_RESULT);
 
-  if (id() == kInternalAppIdKeyboardShortcutViewer) {
-    keyboard_shortcut_viewer_util::ShowKeyboardShortcutViewer();
-  } else if (id() == kInternalAppIdSettings) {
-    chrome::ShowSettingsSubPageForProfile(profile(), std::string());
-  }
+  OpenInternalApp(id(), profile());
 }
 
 std::unique_ptr<ChromeSearchResult> InternalAppResult::Duplicate() const {
