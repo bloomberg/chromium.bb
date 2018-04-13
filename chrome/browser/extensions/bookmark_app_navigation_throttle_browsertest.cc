@@ -226,6 +226,18 @@ void ExecuteContextMenuLinkCommandAndWait(content::WebContents* web_contents,
   observer->WaitForNavigationFinished();
 }
 
+void OpenPopupAndWait(content::WebContents* web_contents,
+                      const GURL& target_url) {
+  auto observer = GetTestNavigationObserver(target_url);
+  const std::string script = base::StringPrintf(
+      "(() => {"
+      "  window.openedWindow = window.open('%s', '_blank', 'toolbar=no');"
+      "})();",
+      target_url.spec().c_str());
+  ASSERT_TRUE(content::ExecuteScript(web_contents, script));
+  observer->WaitForNavigationFinished();
+}
+
 // Calls window.open() with |target_url| on the main frame of |web_contents|.
 // Returns once the new window has navigated to |target_url|.
 void WindowOpenAndWait(content::WebContents* web_contents,
@@ -759,6 +771,7 @@ class BookmarkAppNavigationThrottleBaseBrowserTest
     Browser* new_app_browser = chrome::FindLastActive();
     EXPECT_NE(new_app_browser, browser());
     EXPECT_NE(new_app_browser, app_browser);
+    EXPECT_TRUE(new_app_browser->is_app());
 
     EXPECT_EQ(num_tabs_browser, browser()->tab_strip_model()->count());
     EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
@@ -1791,6 +1804,78 @@ IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
                                   kOpenInChromeProceedOutOfScopeLaunch,
                               1}});
   }
+}
+
+// Tests that popups to out-of-scope URLs are opened in regular popup windows
+// and not in app windows.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
+                       OutOfScopePopup) {
+  InstallTestBookmarkApp();
+  Browser* app_browser = OpenTestBookmarkApp();
+
+  base::HistogramTester scoped_histogram;
+
+  size_t num_browsers = chrome::GetBrowserCount(profile());
+  int num_tabs_browser = browser()->tab_strip_model()->count();
+  int num_tabs_app_browser = app_browser->tab_strip_model()->count();
+
+  content::WebContents* app_web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+
+  content::WebContents* initial_tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL initial_app_url = app_web_contents->GetLastCommittedURL();
+  GURL initial_tab_url = initial_tab->GetLastCommittedURL();
+
+  // Open a popup to an out-of-scope URL.
+  const GURL out_of_scope_url =
+      https_server().GetURL(kAppUrlHost, kOutOfScopeUrlPath);
+  OpenPopupAndWait(app_web_contents, out_of_scope_url);
+
+  EXPECT_EQ(++num_browsers, chrome::GetBrowserCount(profile()));
+
+  Browser* new_popup_browser = chrome::FindLastActive();
+  EXPECT_NE(new_popup_browser, browser());
+  EXPECT_NE(new_popup_browser, app_browser);
+  EXPECT_TRUE(new_popup_browser->is_type_popup());
+  EXPECT_FALSE(new_popup_browser->is_app());
+
+  EXPECT_EQ(num_tabs_browser, browser()->tab_strip_model()->count());
+  EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
+
+  EXPECT_EQ(initial_app_url, app_web_contents->GetLastCommittedURL());
+
+  content::WebContents* new_popup_web_contents =
+      new_popup_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(out_of_scope_url, new_popup_web_contents->GetLastCommittedURL());
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{BookmarkAppNavigationThrottleResult::
+            kReparentIntoPopupProceedOutOfScopeInitialNavigation,
+        1}});
+}
+
+// Tests that popups to in-scope URLs are opened in App windows.
+IN_PROC_BROWSER_TEST_P(BookmarkAppNavigationThrottleCommonBrowserTest,
+                       InScopePopup) {
+  InstallTestBookmarkApp();
+  Browser* app_browser = OpenTestBookmarkApp();
+
+  base::HistogramTester scoped_histogram;
+
+  // Open a popup to an out-of-scope URL.
+  const GURL in_scope_url = https_server().GetURL(kAppUrlHost, kInScopeUrlPath);
+  TestAppActionOpensAppWindowWithOpener(
+      app_browser, in_scope_url,
+      base::Bind(&OpenPopupAndWait,
+                 app_browser->tab_strip_model()->GetActiveWebContents(),
+                 in_scope_url));
+
+  ExpectNavigationResultHistogramEquals(
+      scoped_histogram,
+      {{BookmarkAppNavigationThrottleResult::kProceedInAppSameScope, 1}});
 }
 
 INSTANTIATE_TEST_CASE_P(

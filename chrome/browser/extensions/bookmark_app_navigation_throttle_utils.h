@@ -44,6 +44,7 @@ enum class BookmarkAppNavigationThrottleResult {
   kProceedDispositionNewBackgroundTab,
   kProceedDispositionNewPopup,
   kProceedDispositionSwitchToTab,
+  kReparentIntoPopupProceedOutOfScopeInitialNavigation,
   // Add BookmarkAppNavigationThrottle and
   // BookmarkAppExperimentalNavigationThrottle results immediately above this
   // line. Also update the enum list in tools/metrics/enums.xml accordingly.
@@ -68,6 +69,8 @@ scoped_refptr<const Extension> GetAppForMainFrameURL(
     content::WebContents* source);
 
 void OpenNewForegroundTab(content::NavigationHandle* navigation_handle);
+
+void ReparentIntoPopup(content::WebContents* source, bool has_user_gesture);
 
 }  // namespace extensions
 
