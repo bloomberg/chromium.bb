@@ -46,6 +46,12 @@ class SyncedSessionTracker {
 
   // **** Synced session/tab query methods. ****
 
+  // Returns vector with all sessions we're tracking. SyncedSession ownership
+  // remains within the SyncedSessionTracker. Lookup parameter is used to decide
+  // which tabs should be included.
+  std::vector<const SyncedSession*> LookupAllSessions(
+      SessionLookup lookup) const;
+
   // Returns all foreign sessions we're tracking (skips the local session
   // object). SyncedSession ownership remains within the SyncedSessionTracker.
   // Lookup parameter is used to decide which foreign tabs should be include.
@@ -55,6 +61,10 @@ class SyncedSessionTracker {
   // Returns the tab node ids (see GetTab) for all the tabs* associated with the
   // session having tag |session_tag|.
   std::set<int> LookupTabNodeIds(const std::string& session_tag) const;
+
+  // Returns tabs that are unmapped for session with tag |session_tag|.
+  std::vector<const sessions::SessionTab*> LookupUnmappedTabs(
+      const std::string& session_tag) const;
 
   // Attempts to look up the session windows associatd with the session given
   // by |session_tag|. Ownership of SessionWindows stays within the
@@ -167,6 +177,10 @@ class SyncedSessionTracker {
   // free tab nodes to be deleted.
   void CleanupLocalTabs(std::set<int>* deleted_node_ids);
 
+  // Returns the tab node ID for |tab_id| if an existing tab node was found, or
+  // kInvalidTabNodeID otherwise.
+  int LookupTabNodeFromLocalTabId(SessionID tab_id) const;
+
   // Fills |tab_node_id| with a tab node for |tab_id|. Returns true if an
   // existing tab node was found, false if there was none and one had to be
   // created.
@@ -174,7 +188,11 @@ class SyncedSessionTracker {
 
   // Returns whether |tab_node_id| refers to a valid tab node that is associated
   // with a tab.
-  bool IsLocalTabNodeAssociated(int tab_node_id);
+  bool IsLocalTabNodeAssociated(int tab_node_id) const;
+
+  // Returns the local tab ID associated to |tab_node_id| or
+  // SessionID::InvalidValue() if not associated.
+  SessionID LookupLocalTabIdFromTabNodeId(int tab_node_id) const;
 
   // Reassociates the tab denoted by |tab_node_id| with a new tab id, preserving
   // any previous SessionTab object the node was associated with. This is useful
@@ -253,6 +271,10 @@ class SyncedSessionTracker {
   TrackedSession* LookupTrackedSession(const std::string& session_tag);
   // Creates tracked session if it wasn't known previously. Never returns null.
   TrackedSession* GetTrackedSession(const std::string& session_tag);
+
+  std::vector<const SyncedSession*> LookupSessions(
+      SessionLookup lookup,
+      bool exclude_local_session) const;
 
   // Implementation of CleanupForeignSession/CleanupLocalTabs.
   void CleanupSessionImpl(const std::string& session_tag);

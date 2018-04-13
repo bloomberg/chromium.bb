@@ -20,12 +20,15 @@ using EntityMetadataMap = std::map<std::string, sync_pb::EntityMetadata>;
 class MetadataBatch {
  public:
   MetadataBatch();
-  virtual ~MetadataBatch();
+  ~MetadataBatch();
+
+  // Read-only access to the entire metadata map.
+  const EntityMetadataMap& GetAllMetadata() const;
 
   // Allows the caller to take ownership of the entire metadata map. This is
   // done because the caller will probably swap out all the EntityMetadata
   // protos from the map for performance reasons.
-  EntityMetadataMap&& TakeAllMetadata();
+  EntityMetadataMap TakeAllMetadata();
 
   // Add |metadata| for |storage_key| to the batch.
   void AddMetadata(const std::string& storage_key,

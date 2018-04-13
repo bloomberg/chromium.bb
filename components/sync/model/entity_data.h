@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_MODEL_ENTITY_DATA_H_
 #define COMPONENTS_SYNC_MODEL_ENTITY_DATA_H_
 
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <string>
@@ -36,7 +37,10 @@ using EntityDataList = std::vector<EntityDataPtr>;
 struct EntityData {
  public:
   EntityData();
+  EntityData(EntityData&&);
   ~EntityData();
+
+  EntityData& operator=(EntityData&&);
 
   // Typically this is a server assigned sync ID, although for a local change
   // that represents a new entity this field might be either empty or contain
@@ -96,16 +100,15 @@ struct EntityData {
   size_t EstimateMemoryUsage() const;
 
  private:
-  friend struct EntityDataTraits;
-  // Used to transfer the data without copying.
-  void Swap(EntityData* other);
-
   // Allow copy ctor so that UpdateId and UpdateSpecifics can make a copy of
   // this EntityData.
   EntityData(const EntityData& src);
 
   DISALLOW_ASSIGN(EntityData);
 };
+
+// gMock printer helper.
+void PrintTo(const EntityData& entity_data, std::ostream* os);
 
 }  // namespace syncer
 

@@ -28,6 +28,12 @@ class ModelTypeStoreTestUtil {
   static void MoveStoreToCallback(std::unique_ptr<ModelTypeStore> store,
                                   ModelType type,
                                   ModelTypeStore::InitCallback callback);
+
+  // Returns a callback that constructs a store that forwards all calls to
+  // |target|. |*target| must outlive the returned factory as well any store
+  // created by the factory.
+  static RepeatingModelTypeStoreFactory FactoryForForwardingStore(
+      ModelTypeStore* target);
 };
 
 }  // namespace syncer

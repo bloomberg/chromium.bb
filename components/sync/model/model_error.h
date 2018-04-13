@@ -39,6 +39,8 @@ class ModelError {
 // Typedef for a simple error handler callback.
 using ModelErrorHandler = base::RepeatingCallback<void(const ModelError&)>;
 
+using OnceModelErrorHandler = base::OnceCallback<void(const ModelError&)>;
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_MODEL_MODEL_ERROR_H_

@@ -168,6 +168,44 @@ TEST_F(SyncedSessionTrackerTest, PutTabInWindow) {
   // Should clean up memory on its own.
 }
 
+TEST_F(SyncedSessionTrackerTest, LookupAllSessions) {
+  EXPECT_THAT(
+      GetTracker()->LookupAllSessions(SyncedSessionTracker::PRESENTABLE),
+      IsEmpty());
+
+  GetTracker()->InitLocalSession(kTag, kSessionName, kDeviceType);
+  GetTracker()->PutWindowInSession(kTag, kWindow1);
+  GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
+
+  EXPECT_THAT(GetTracker()->LookupAllSessions(SyncedSessionTracker::RAW),
+              ElementsAre(HasSessionTag(kTag)));
+  EXPECT_THAT(
+      GetTracker()->LookupAllSessions(SyncedSessionTracker::PRESENTABLE),
+      IsEmpty());
+
+  sessions::SessionTab* tab = GetTracker()->GetTab(kTag, kTab1);
+  ASSERT_TRUE(tab);
+  tab->navigations.push_back(
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(kValidUrl,
+                                                                      kTitle));
+  EXPECT_THAT(
+      GetTracker()->LookupAllSessions(SyncedSessionTracker::PRESENTABLE),
+      ElementsAre(HasSessionTag(kTag)));
+
+  GetTracker()->GetSession(kTag2);
+  GetTracker()->PutWindowInSession(kTag2, kWindow1);
+  GetTracker()->PutTabInWindow(kTag2, kWindow1, kTab2);
+
+  sessions::SessionTab* tab2 = GetTracker()->GetTab(kTag2, kTab2);
+  ASSERT_TRUE(tab2);
+  tab2->navigations.push_back(
+      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(kValidUrl,
+                                                                      kTitle));
+  EXPECT_THAT(
+      GetTracker()->LookupAllSessions(SyncedSessionTracker::PRESENTABLE),
+      ElementsAre(HasSessionTag(kTag), HasSessionTag(kTag2)));
+}
+
 TEST_F(SyncedSessionTrackerTest, LookupAllForeignSessions) {
   const char kInvalidUrl[] = "invalid.url";
   ON_CALL(*GetSyncSessionsClient(), ShouldSyncURL(GURL(kInvalidUrl)))
@@ -345,6 +383,20 @@ TEST_F(SyncedSessionTrackerTest, LookupTabNodeIds) {
 
   EXPECT_FALSE(GetTracker()->DeleteForeignSession(kTag2));
   EXPECT_THAT(GetTracker()->LookupTabNodeIds(kTag2), IsEmpty());
+}
+
+TEST_F(SyncedSessionTrackerTest, LookupUnmappedTabs) {
+  EXPECT_THAT(GetTracker()->LookupUnmappedTabs(kTag), IsEmpty());
+
+  sessions::SessionTab* tab = GetTracker()->GetTab(kTag, kTab1);
+  ASSERT_THAT(tab, NotNull());
+
+  EXPECT_THAT(GetTracker()->LookupUnmappedTabs(kTag), ElementsAre(tab));
+  EXPECT_THAT(GetTracker()->LookupUnmappedTabs(kTag2), IsEmpty());
+
+  GetTracker()->PutWindowInSession(kTag, kWindow1);
+  GetTracker()->PutTabInWindow(kTag, kWindow1, kTab1);
+  EXPECT_THAT(GetTracker()->LookupUnmappedTabs(kTag), IsEmpty());
 }
 
 TEST_F(SyncedSessionTrackerTest, SessionTracking) {
