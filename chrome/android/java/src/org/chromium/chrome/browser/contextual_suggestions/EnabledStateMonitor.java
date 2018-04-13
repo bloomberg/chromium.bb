@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -19,22 +22,30 @@ import org.chromium.components.sync.UploadState;
  * A monitor that is responsible for detecting changes to conditions required for contextual
  * suggestions to be enabled. Alerts its {@link Observer} when state changes.
  */
-public class EnabledStateMonitor
-        implements SyncStateChangedListener, SignInStateObserver, TemplateUrlServiceObserver {
+public class EnabledStateMonitor implements SyncStateChangedListener, SignInStateObserver,
+                                            TemplateUrlServiceObserver,
+                                            PrefChangeRegistrar.PrefObserver {
     /** An observer to be notified of enabled state changes. **/
-    interface Observer {
+    public interface Observer {
         void onEnabledStateChanged(boolean enabled);
+        void onSettingsStateChanged(boolean enabled);
     }
 
     @VisibleForTesting
     protected Observer mObserver;
+    private PrefChangeRegistrar mPrefChangeRegistrar;
+
+    /** Whether contextual suggestions are enabled. */
     private boolean mEnabled;
+
+    /** Whether the user settings for contextual suggestions are enabled. */
+    private boolean mSettingsEnabled;
 
     /**
      * Construct a new {@link EnabledStateMonitor}.
      * @param observer The {@link Observer} to be notified of changes to enabled state.
      */
-    EnabledStateMonitor(Observer observer) {
+    public EnabledStateMonitor(Observer observer) {
         mObserver = observer;
         init();
     }
@@ -46,6 +57,8 @@ public class EnabledStateMonitor
      */
     @VisibleForTesting
     protected void init() {
+        mPrefChangeRegistrar = new PrefChangeRegistrar();
+        mPrefChangeRegistrar.addObserver(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED, this);
         ProfileSyncService.get().addSyncStateChangedListener(this);
         SigninManager.get().addSignInStateObserver(this);
         TemplateUrlService.getInstance().addObserver(this);
@@ -53,10 +66,38 @@ public class EnabledStateMonitor
     }
 
     /** Destroys the EnabledStateMonitor. */
-    void destroy() {
+    public void destroy() {
+        mPrefChangeRegistrar.destroy();
         ProfileSyncService.get().removeSyncStateChangedListener(this);
         SigninManager.get().removeSignInStateObserver(this);
         TemplateUrlService.getInstance().removeObserver(this);
+    }
+
+    /** @return Whether the user settings for contextual suggestions should be shown. */
+    public static boolean shouldShowSettings() {
+        return TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
+                && !AccessibilityUtil.isAccessibilityEnabled()
+                && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
+    }
+
+    /** @return Whether the settings state is currently enabled. */
+    public static boolean getSettingsEnabled() {
+        ProfileSyncService service = ProfileSyncService.get();
+
+        boolean isUploadToGoogleActive =
+                service.getUploadToGoogleState(ModelType.HISTORY_DELETE_DIRECTIVES)
+                == UploadState.ACTIVE;
+        boolean isGoogleDSE = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
+        boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
+
+        return isUploadToGoogleActive && isGoogleDSE && !isAccessibilityEnabled
+                && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
+    }
+
+    /** @return Whether the state is currently enabled. */
+    public static boolean getEnabledState() {
+        return getSettingsEnabled()
+                && PrefServiceBridge.getInstance().getBoolean(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED);
     }
 
     /** Called when accessibility mode changes. */
@@ -84,25 +125,25 @@ public class EnabledStateMonitor
         updateEnabledState();
     }
 
+    @Override
+    public void onPreferenceChange() {
+        updateEnabledState();
+    }
+
     /**
      * Updates whether contextual suggestions are enabled. Notifies the observer if the
      * enabled state has changed.
      */
     private void updateEnabledState() {
+        boolean previousSettingsState = mSettingsEnabled;
         boolean previousState = mEnabled;
 
-        ProfileSyncService service = ProfileSyncService.get();
+        mSettingsEnabled = getSettingsEnabled();
+        mEnabled = getEnabledState();
 
-        boolean isUploadToGoogleActive =
-                service.getUploadToGoogleState(ModelType.HISTORY_DELETE_DIRECTIVES)
-                == UploadState.ACTIVE;
-        boolean isGoogleDSE = TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
-        boolean isAccessibilityEnabled = AccessibilityUtil.isAccessibilityEnabled();
-
-        mEnabled = isUploadToGoogleActive && isGoogleDSE && !isAccessibilityEnabled
-                && !ContextualSuggestionsBridge.isEnterprisePolicyManaged();
-
-        // TODO(twellington): Add run-time check for opt-out state.
+        if (mSettingsEnabled != previousSettingsState) {
+            mObserver.onSettingsStateChanged(mSettingsEnabled);
+        }
 
         if (mEnabled != previousState) mObserver.onEnabledStateChanged(mEnabled);
     }

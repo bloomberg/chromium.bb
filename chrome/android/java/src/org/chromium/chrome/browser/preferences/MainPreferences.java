@@ -17,12 +17,15 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +39,7 @@ public class MainPreferences extends PreferenceFragment
     public static final String PREF_AUTOFILL_SETTINGS = "autofill_settings";
     public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
+    public static final String PREF_CONTEXTUAL_SUGGESTIONS = "contextual_suggestions";
     public static final String PREF_HOMEPAGE = "homepage";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
@@ -172,6 +176,15 @@ public class MainPreferences extends PreferenceFragment
             setOnOffSummary(homepagePref, HomepageManager.getInstance().getPrefHomepageEnabled());
         } else {
             removePreferenceIfPresent(PREF_HOMEPAGE);
+        }
+
+        boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(getActivity());
+        if (FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet)
+                && EnabledStateMonitor.shouldShowSettings()) {
+            Preference contextualSuggesitons = addPreferenceIfAbsent(PREF_CONTEXTUAL_SUGGESTIONS);
+            setOnOffSummary(contextualSuggesitons, EnabledStateMonitor.getEnabledState());
+        } else {
+            removePreferenceIfPresent(PREF_CONTEXTUAL_SUGGESTIONS);
         }
 
         ChromeBasePreference dataReduction =
