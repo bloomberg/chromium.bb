@@ -7,18 +7,37 @@
 #include <memory>
 
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
+#include "chromeos/components/tether/fake_active_host.h"
+#include "chromeos/components/tether/fake_ble_connection_manager.h"
+#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
 namespace tether {
 
+namespace {
+constexpr base::TimeDelta kConnectToHostTime = base::TimeDelta::FromSeconds(13);
+const char kTetherNetworkGuid[] = "tetherNetworkGuid";
+const char kWifiNetworkGuid[] = "wifiNetworkGuid";
+}  // namespace
+
 class HostConnectionMetricsLoggerTest : public testing::Test {
  protected:
-  HostConnectionMetricsLoggerTest() = default;
+  HostConnectionMetricsLoggerTest()
+      : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
 
   void SetUp() override {
-    metrics_logger_ = std::make_unique<HostConnectionMetricsLogger>();
+    fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
+    fake_active_host_ = std::make_unique<FakeActiveHost>();
+
+    metrics_logger_ = std::make_unique<HostConnectionMetricsLogger>(
+        fake_ble_connection_manager_.get(), fake_active_host_.get());
+
+    test_clock_.SetNow(base::Time::UnixEpoch());
+    metrics_logger_->SetClockForTesting(&test_clock_);
   }
 
   void VerifyProvisioningFailure(
@@ -31,9 +50,16 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
 
   void VerifySuccess(
       HostConnectionMetricsLogger::ConnectionToHostResult_SuccessEventType
-          event_type) {
-    histogram_tester_.ExpectUniqueSample(
-        "InstantTethering.ConnectionToHostResult.SuccessRate", event_type, 1);
+          event_type,
+      bool is_background_advertisement) {
+    if (is_background_advertisement) {
+      histogram_tester_.ExpectUniqueSample(
+          "InstantTethering.ConnectionToHostResult.SuccessRate.Background",
+          event_type, 1);
+    } else {
+      histogram_tester_.ExpectUniqueSample(
+          "InstantTethering.ConnectionToHostResult.SuccessRate", event_type, 1);
+    }
   }
 
   void VerifyFailure(
@@ -59,9 +85,45 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
         event_type, 1);
   }
 
+  void VerifyConnectToHostDuration(bool is_background_advertisement) {
+    std::string device_id = test_devices_[0].GetDeviceId();
+
+    SetActiveHostToConnectingAndReceiveAdvertisement(
+        device_id, is_background_advertisement);
+
+    test_clock_.Advance(kConnectToHostTime);
+
+    fake_active_host_->SetActiveHostConnected(device_id, kTetherNetworkGuid,
+                                              kWifiNetworkGuid);
+
+    if (is_background_advertisement) {
+      histogram_tester_.ExpectTimeBucketCount(
+          "InstantTethering.Performance.ConnectToHostDuration.Background",
+          kConnectToHostTime, 1);
+    } else {
+      histogram_tester_.ExpectTimeBucketCount(
+          "InstantTethering.Performance.ConnectToHostDuration",
+          kConnectToHostTime, 1);
+    }
+  }
+
+  void SetActiveHostToConnectingAndReceiveAdvertisement(
+      const std::string& device_id,
+      bool is_background_advertisement) {
+    fake_ble_connection_manager_->NotifyAdvertisementReceived(
+        device_id, is_background_advertisement);
+
+    fake_active_host_->SetActiveHostConnecting(device_id, kTetherNetworkGuid);
+  }
+
+  const std::vector<cryptauth::RemoteDevice> test_devices_;
+
+  std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
+  std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<HostConnectionMetricsLogger> metrics_logger_;
 
   base::HistogramTester histogram_tester_;
+  base::SimpleTestClock test_clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostConnectionMetricsLoggerTest);
@@ -69,9 +131,13 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultProvisioningFailure) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_PROVISIONING_FAILED);
+          CONNECTION_RESULT_PROVISIONING_FAILED,
+      test_devices_[0].GetDeviceId());
 
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
@@ -80,27 +146,115 @@ TEST_F(HostConnectionMetricsLoggerTest,
 }
 
 TEST_F(HostConnectionMetricsLoggerTest, RecordConnectionResultSuccess) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_SUCCESS);
+          CONNECTION_RESULT_SUCCESS,
+      test_devices_[0].GetDeviceId());
 
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::SUCCESS);
+                    ConnectionToHostResult_SuccessEventType::SUCCESS,
+                false /* is_background_advertisement */);
+  VerifyProvisioningFailure(
+      HostConnectionMetricsLogger::
+          ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultSuccess_Background) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), true /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_SUCCESS,
+      test_devices_[0].GetDeviceId());
+
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::SUCCESS,
+                true /* is_background_advertisement */);
+  VerifyProvisioningFailure(
+      HostConnectionMetricsLogger::
+          ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultSuccess_Background_DifferentDevice) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), true /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_SUCCESS,
+      test_devices_[1].GetDeviceId());
+
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::SUCCESS,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest, RecordConnectionResultFailure) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR);
+          CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure(HostConnectionMetricsLogger::
                     ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR);
 
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
+  VerifyProvisioningFailure(
+      HostConnectionMetricsLogger::
+          ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailure_Background) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), true /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR,
+      test_devices_[0].GetDeviceId());
+
+  VerifyFailure(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR);
+
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                true /* is_background_advertisement */);
+  VerifyProvisioningFailure(
+      HostConnectionMetricsLogger::
+          ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectionResultFailure_Background_DifferentDevice) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), true /* is_background_advertisement */);
+
+  metrics_logger_->RecordConnectionToHostResult(
+      HostConnectionMetricsLogger::ConnectionToHostResult::
+          CONNECTION_RESULT_FAILURE_UNKNOWN_ERROR,
+      test_devices_[1].GetDeviceId());
+
+  VerifyFailure(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_FailureEventType::UNKNOWN_ERROR);
+
+  VerifySuccess(HostConnectionMetricsLogger::
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -108,9 +262,13 @@ TEST_F(HostConnectionMetricsLoggerTest, RecordConnectionResultFailure) {
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureClientConnection_Timeout) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_TIMEOUT);
+          CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_TIMEOUT,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure_ClientConnection(
       HostConnectionMetricsLogger::
@@ -119,7 +277,8 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           CLIENT_CONNECTION_ERROR);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -127,9 +286,13 @@ TEST_F(HostConnectionMetricsLoggerTest,
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureClientConnection_CanceledByUser) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_USER);
+          CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_CANCELED_BY_USER,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure_ClientConnection(
       HostConnectionMetricsLogger::
@@ -139,7 +302,8 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           CLIENT_CONNECTION_ERROR);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -147,9 +311,13 @@ TEST_F(HostConnectionMetricsLoggerTest,
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureClientConnection_InternalError) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_INTERNAL_ERROR);
+          CONNECTION_RESULT_FAILURE_CLIENT_CONNECTION_INTERNAL_ERROR,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure_ClientConnection(
       HostConnectionMetricsLogger::
@@ -159,7 +327,8 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           CLIENT_CONNECTION_ERROR);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -167,9 +336,13 @@ TEST_F(HostConnectionMetricsLoggerTest,
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureTetheringTimeout_SetupRequired) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED);
+          CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_REQUIRED,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure_TetheringTimeout(
       HostConnectionMetricsLogger::
@@ -179,7 +352,8 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           TETHERING_TIMED_OUT);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -187,9 +361,13 @@ TEST_F(HostConnectionMetricsLoggerTest,
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureTetheringTimeout_SetupNotRequired) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED);
+          CONNECTION_RESULT_FAILURE_TETHERING_TIMED_OUT_FIRST_TIME_SETUP_WAS_NOT_REQUIRED,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure_TetheringTimeout(
       HostConnectionMetricsLogger::
@@ -199,7 +377,8 @@ TEST_F(HostConnectionMetricsLoggerTest,
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           TETHERING_TIMED_OUT);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
   VerifyProvisioningFailure(
       HostConnectionMetricsLogger::
           ConnectionToHostResult_ProvisioningFailureEventType::OTHER);
@@ -207,53 +386,82 @@ TEST_F(HostConnectionMetricsLoggerTest,
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureTetheringUnsupported) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED);
+          CONNECTION_RESULT_FAILURE_TETHERING_UNSUPPORTED,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure(
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           TETHERING_UNSUPPORTED);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureNoCellData) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_NO_CELL_DATA);
+          CONNECTION_RESULT_FAILURE_NO_CELL_DATA,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure(HostConnectionMetricsLogger::
                     ConnectionToHostResult_FailureEventType::NO_CELL_DATA);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureEnablingHotspotFailed) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED);
+          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_FAILED,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure(
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           ENABLING_HOTSPOT_FAILED);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
 }
 
 TEST_F(HostConnectionMetricsLoggerTest,
        RecordConnectionResultFailureEnablingHotspotTimeout) {
+  SetActiveHostToConnectingAndReceiveAdvertisement(
+      test_devices_[0].GetDeviceId(), false /* is_background_advertisement */);
+
   metrics_logger_->RecordConnectionToHostResult(
       HostConnectionMetricsLogger::ConnectionToHostResult::
-          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT);
+          CONNECTION_RESULT_FAILURE_ENABLING_HOTSPOT_TIMEOUT,
+      test_devices_[0].GetDeviceId());
 
   VerifyFailure(
       HostConnectionMetricsLogger::ConnectionToHostResult_FailureEventType::
           ENABLING_HOTSPOT_TIMEOUT);
   VerifySuccess(HostConnectionMetricsLogger::
-                    ConnectionToHostResult_SuccessEventType::FAILURE);
+                    ConnectionToHostResult_SuccessEventType::FAILURE,
+                false /* is_background_advertisement */);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest, RecordConnectToHostDuration) {
+  VerifyConnectToHostDuration(false /* is_background_advertisement */);
+}
+
+TEST_F(HostConnectionMetricsLoggerTest,
+       RecordConnectToHostDuration_Background) {
+  VerifyConnectToHostDuration(true /* is_background_advertisement */);
 }
 
 }  // namespace tether

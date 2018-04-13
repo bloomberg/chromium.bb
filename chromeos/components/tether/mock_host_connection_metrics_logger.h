@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_COMPONENTS_TETHER_MOCK_HOST_CONNECTION_METRICS_LOGGER_H_
 #define CHROMEOS_COMPONENTS_TETHER_MOCK_HOST_CONNECTION_METRICS_LOGGER_H_
 
+#include <string>
+
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -12,13 +14,18 @@ namespace chromeos {
 
 namespace tether {
 
+class ActiveHost;
+class BleConnectionManager;
+
 class MockHostConnectionMetricsLogger : public HostConnectionMetricsLogger {
  public:
-  MockHostConnectionMetricsLogger();
+  MockHostConnectionMetricsLogger(BleConnectionManager* connection_manager,
+                                  ActiveHost* active_host);
   ~MockHostConnectionMetricsLogger() override;
 
-  MOCK_METHOD1(RecordConnectionToHostResult,
-               void(HostConnectionMetricsLogger::ConnectionToHostResult));
+  MOCK_METHOD2(RecordConnectionToHostResult,
+               void(HostConnectionMetricsLogger::ConnectionToHostResult,
+                    const std::string&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockHostConnectionMetricsLogger);

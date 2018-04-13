@@ -378,8 +378,7 @@ void BleConnectionManager::OnReceivedAdvertisementFromDevice(
 
   device_id_to_is_background_advertisement_map_[device_id] =
       is_background_advertisement;
-  for (auto& observer : metrics_observer_list_)
-    observer.OnAdvertisementReceived(device_id, is_background_advertisement);
+  NotifyAdvertisementReceived(device_id, is_background_advertisement);
 
   // Stop trying to connect to that device, since it has been found.
   StopConnectionAttemptAndMoveToEndOfQueue(device_id);
@@ -582,6 +581,13 @@ void BleConnectionManager::OnGattCharacteristicsNotAvailable(
                   << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
                   << "\".";
   ad_hoc_ble_advertisement_->RequestGattServicesForDevice(device_id);
+}
+
+void BleConnectionManager::NotifyAdvertisementReceived(
+    const std::string& device_id,
+    bool is_background_advertisement) {
+  for (auto& observer : metrics_observer_list_)
+    observer.OnAdvertisementReceived(device_id, is_background_advertisement);
 }
 
 void BleConnectionManager::NotifyMessageReceived(std::string device_id,
