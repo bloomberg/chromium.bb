@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
@@ -55,8 +56,8 @@ void ImportantSitesUsageCounter::RunAndDestroySelfWhenFinished() {
 void ImportantSitesUsageCounter::GetQuotaUsageOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   quota_manager_->GetUsageInfo(
-      base::Bind(&ImportantSitesUsageCounter::ReceiveQuotaUsageOnIOThread,
-                 base::Unretained(this)));
+      base::BindOnce(&ImportantSitesUsageCounter::ReceiveQuotaUsageOnIOThread,
+                     base::Unretained(this)));
 }
 
 void ImportantSitesUsageCounter::ReceiveQuotaUsageOnIOThread(
