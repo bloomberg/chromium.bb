@@ -194,7 +194,9 @@ fix_experiment_configs()
 # Test compiler support.
 aom_get_inline("INLINE")
 
-aom_check_source_compiles("pthread_check" "#include <pthread.h>" HAVE_PTHREAD_H)
+# Don't just check for pthread.h, but use the result of the full pthreads
+# including a linking check in FindThreads above.
+set(HAVE_PTHREAD_H ${CMAKE_USE_PTHREADS_INIT})
 aom_check_source_compiles("unistd_check" "#include <unistd.h>" HAVE_UNISTD_H)
 
 if (NOT MSVC)
