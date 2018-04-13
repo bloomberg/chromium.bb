@@ -49,9 +49,8 @@ static const char* const kBlendOperatorNames[] = {
     "darken",     "lighten",    "color-dodge", "color-burn",
     "hard-light", "soft-light", "difference",  "exclusion",
     "hue",        "saturation", "color",       "luminosity"};
-const int kNumCompositeOperatorNames =
-    WTF_ARRAY_LENGTH(kCompositeOperatorNames);
-const int kNumBlendOperatorNames = WTF_ARRAY_LENGTH(kBlendOperatorNames);
+const int kNumCompositeOperatorNames = arraysize(kCompositeOperatorNames);
+const int kNumBlendOperatorNames = arraysize(kBlendOperatorNames);
 
 bool ParseCompositeAndBlendOperator(const String& s,
                                     CompositeOperator& op,

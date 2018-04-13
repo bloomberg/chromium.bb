@@ -426,10 +426,10 @@ static void installV8TestInterfaceGarbageCollectedTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceGarbageCollectedAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceGarbageCollectedAccessors));
+      signature, V8TestInterfaceGarbageCollectedAccessors, arraysize(V8TestInterfaceGarbageCollectedAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceGarbageCollectedMethods, WTF_ARRAY_LENGTH(V8TestInterfaceGarbageCollectedMethods));
+      signature, V8TestInterfaceGarbageCollectedMethods, arraysize(V8TestInterfaceGarbageCollectedMethods));
 
   // Iterator (@@iterator)
   static const V8DOMConfiguration::SymbolKeyedMethodConfiguration

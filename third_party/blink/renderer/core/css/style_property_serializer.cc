@@ -975,7 +975,7 @@ String StylePropertySerializer::BorderPropertyValue() const {
   const StylePropertyShorthand properties[3] = {
       borderWidthShorthand(), borderStyleShorthand(), borderColorShorthand()};
   StringBuilder result;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
+  for (size_t i = 0; i < arraysize(properties); ++i) {
     String value = GetCommonValue(properties[i]);
     if (value.IsNull())
       return String();

@@ -396,9 +396,9 @@ class JsToCppTest : public testing::Test {
         ToV8(MojoHandle::Create(
                  mojo::ScopedHandle::From(js_side_request.PassMessagePipe())),
              global_proxy, scope.GetIsolate())};
-    V8ScriptRunner::CallFunction(
-        start_fn.As<v8::Function>(), scope.GetExecutionContext(), global_proxy,
-        WTF_ARRAY_LENGTH(args), args, scope.GetIsolate());
+    V8ScriptRunner::CallFunction(start_fn.As<v8::Function>(),
+                                 scope.GetExecutionContext(), global_proxy,
+                                 arraysize(args), args, scope.GetIsolate());
     test::EnterRunLoop();
   }
 };

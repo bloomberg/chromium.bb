@@ -232,7 +232,7 @@ std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
     std::unique_ptr<JSONObject> path_point_item = JSONObject::Create();
     path_point_item->SetString("verb", verb_params.name);
     DCHECK_LE(verb_params.point_count + verb_params.point_offset,
-              WTF_ARRAY_LENGTH(points));
+              arraysize(points));
     path_point_item->SetArray(
         "points", ArrayForSkPoints(verb_params.point_count,
                                    points + verb_params.point_offset));

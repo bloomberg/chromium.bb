@@ -106,7 +106,7 @@ TEST(BidiResolver, ParagraphDirectionSurrogates) {
       // Test broken surrogate: trail appearing before
       // lead. (U+10858 units reversed)
       {{0xDC58, 0xD802}, 2, TextDirection::kLtr, false}};
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kTestData); ++i)
+  for (size_t i = 0; i < arraysize(kTestData); ++i)
     TestDirectionality(kTestData[i]);
 }
 

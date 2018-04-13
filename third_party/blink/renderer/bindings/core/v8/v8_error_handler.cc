@@ -82,8 +82,8 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
   try_catch.SetVerbose(true);
 
   v8::MaybeLocal<v8::Value> result = V8ScriptRunner::CallFunction(
-      call_function, execution_context, this_value,
-      WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
+      call_function, execution_context, this_value, arraysize(parameters),
+      parameters, GetIsolate());
   v8::Local<v8::Value> return_value;
   if (!result.ToLocal(&return_value))
     return v8::Null(GetIsolate());

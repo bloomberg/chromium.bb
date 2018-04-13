@@ -289,17 +289,6 @@ inline To SafeCast(From value) {
                 "Unsigned to signed conversion not allowed for types with " \
                 "identical size (could overflow).");
 
-// Macro that returns a compile time constant with the length of an array, but
-// gives an error if passed a non-array.
-template <typename T, size_t Size>
-char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
-// GCC needs some help to deduce a 0 length array.
-#if defined(COMPILER_GCC)
-template <typename T>
-char (&ArrayLengthHelperFunction(T (&)[0]))[0];
-#endif
-#define WTF_ARRAY_LENGTH(array) sizeof(::WTF::ArrayLengthHelperFunction(array))
-
 }  // namespace WTF
 
 using WTF::SafeCast;

@@ -445,8 +445,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         if (!ReadDouble(&d))
           return nullptr;
       }
-      return DOMMatrix::CreateForSerialization(values,
-                                               WTF_ARRAY_LENGTH(values));
+      return DOMMatrix::CreateForSerialization(values, arraysize(values));
     }
     case kDOMMatrix2DReadOnlyTag: {
       double values[6];
@@ -454,8 +453,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         if (!ReadDouble(&d))
           return nullptr;
       }
-      return DOMMatrixReadOnly::CreateForSerialization(
-          values, WTF_ARRAY_LENGTH(values));
+      return DOMMatrixReadOnly::CreateForSerialization(values,
+                                                       arraysize(values));
     }
     case kDOMMatrixTag: {
       double values[16];
@@ -463,8 +462,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         if (!ReadDouble(&d))
           return nullptr;
       }
-      return DOMMatrix::CreateForSerialization(values,
-                                               WTF_ARRAY_LENGTH(values));
+      return DOMMatrix::CreateForSerialization(values, arraysize(values));
     }
     case kDOMMatrixReadOnlyTag: {
       double values[16];
@@ -472,8 +470,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
         if (!ReadDouble(&d))
           return nullptr;
       }
-      return DOMMatrixReadOnly::CreateForSerialization(
-          values, WTF_ARRAY_LENGTH(values));
+      return DOMMatrixReadOnly::CreateForSerialization(values,
+                                                       arraysize(values));
     }
     case kMessagePortTag: {
       uint32_t index = 0;

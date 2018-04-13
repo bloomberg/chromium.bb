@@ -55,7 +55,7 @@ constexpr char kQuickBrownFoxFormData[] =
     "Quick brown fox\r\n"
     "--boundary--\r\n";
 constexpr size_t kQuickBrownFoxFormDataLength =
-    WTF_ARRAY_LENGTH(kQuickBrownFoxFormData) - 1u;
+    arraysize(kQuickBrownFoxFormData) - 1u;
 
 TEST(FetchDataLoaderTest, LoadAsBlob) {
   Checkpoint checkpoint;

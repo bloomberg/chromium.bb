@@ -655,7 +655,7 @@ BoxBorderPainter::BoxBorderPainter(const ComputedStyle& style,
 }
 
 void BoxBorderPainter::ComputeBorderProperties() {
-  for (unsigned i = 0; i < WTF_ARRAY_LENGTH(edges_); ++i) {
+  for (unsigned i = 0; i < arraysize(edges_); ++i) {
     const BorderEdge& edge = edges_[i];
 
     if (!edge.ShouldRender()) {

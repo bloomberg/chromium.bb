@@ -491,7 +491,7 @@ SQLTransactionBackend::StateFunction SQLTransactionBackend::StateFunctionFor(
       &SQLTransactionBackend::SendToFrontendState,
   };
 
-  DCHECK(WTF_ARRAY_LENGTH(kStateFunctions) ==
+  DCHECK(arraysize(kStateFunctions) ==
          static_cast<int>(SQLTransactionState::kNumberOfStates));
   DCHECK_LT(state, SQLTransactionState::kNumberOfStates);
 

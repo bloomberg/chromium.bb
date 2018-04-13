@@ -48,7 +48,7 @@ TEST(MultipartResponseTest, SkippableLength) {
       {"\rLine", 0, 0},       {"Line\r\nLine", 4, 2}, {"Line\nLine", 4, 1},
       {"Line\n\nLine", 4, 1}, {"Line\rLine", 4, 0},   {"Line\r\rLine", 4, 0},
   };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(line_tests); ++i) {
+  for (size_t i = 0; i < arraysize(line_tests); ++i) {
     Vector<char> input;
     input.Append(line_tests[i].input, strlen(line_tests[i].input));
     EXPECT_EQ(line_tests[i].expected,
@@ -68,7 +68,7 @@ TEST(MultipartResponseTest, FindBoundary) {
       {"foo", "bound", kNotFound}, {"bound", "--boundbound", 0},
   };
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(boundary_tests); ++i) {
+  for (size_t i = 0; i < arraysize(boundary_tests); ++i) {
     Vector<char> boundary, data;
     boundary.Append(boundary_tests[i].boundary,
                     strlen(boundary_tests[i].boundary));

@@ -16,9 +16,8 @@ const StylePropertyShorthand& CSSProperty::BorderDirections() {
   static const CSSProperty* kProperties[4] = {
       &GetCSSPropertyBorderTop(), &GetCSSPropertyBorderRight(),
       &GetCSSPropertyBorderBottom(), &GetCSSPropertyBorderLeft()};
-  DEFINE_STATIC_LOCAL(
-      StylePropertyShorthand, border_directions,
-      (CSSPropertyBorder, kProperties, WTF_ARRAY_LENGTH(kProperties)));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, border_directions,
+                      (CSSPropertyBorder, kProperties, arraysize(kProperties)));
   return border_directions;
 }
 

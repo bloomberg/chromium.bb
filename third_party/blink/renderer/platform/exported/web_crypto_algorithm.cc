@@ -343,7 +343,7 @@ WebCryptoAlgorithm WebCryptoAlgorithm::AdoptParamsAndCreate(
 const WebCryptoAlgorithmInfo* WebCryptoAlgorithm::LookupAlgorithmInfo(
     WebCryptoAlgorithmId id) {
   const unsigned id_int = id;
-  if (id_int >= WTF_ARRAY_LENGTH(kAlgorithmIdToInfo))
+  if (id_int >= arraysize(kAlgorithmIdToInfo))
     return nullptr;
   return &kAlgorithmIdToInfo[id];
 }

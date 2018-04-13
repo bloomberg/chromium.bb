@@ -173,12 +173,12 @@ TEST(BufferedLineReaderTest, BufferSizes) {
   const char* lines[] = {"aaaaaaaaaaaaaaaa", "bbbbbbbbbb", "ccccccccccccc", "",
                          "dddddd",           "",           "eeeeeeeeee"};
   const NewlineType kBreaks[] = {kLf, kLf, kLf, kLf, kLf, kLf, kLf};
-  const size_t num_test_lines = WTF_ARRAY_LENGTH(lines);
-  static_assert(num_test_lines == WTF_ARRAY_LENGTH(kBreaks),
+  const size_t num_test_lines = arraysize(lines);
+  static_assert(num_test_lines == arraysize(kBreaks),
                 "number of test lines and breaks should be the same");
   String data = MakeTestData(lines, kBreaks, num_test_lines);
 
-  for (size_t k = 0; k < WTF_ARRAY_LENGTH(kBlockSizes); ++k) {
+  for (size_t k = 0; k < arraysize(kBlockSizes); ++k) {
     size_t line_count = 0;
     BufferedLineReader reader;
     size_t block_size = kBlockSizes[k];
@@ -200,12 +200,12 @@ TEST(BufferedLineReaderTest, BufferSizesMixedEndings) {
       "aaaaaaaaaaaaaaaa", "bbbbbbbbbb", "ccccccccccccc",      "",
       "dddddd",           "eeeeeeeeee", "fffffffffffffffffff"};
   const NewlineType kBreaks[] = {kCr, kLf, kCrLf, kCr, kLf, kCrLf, kLf};
-  const size_t num_test_lines = WTF_ARRAY_LENGTH(lines);
-  static_assert(num_test_lines == WTF_ARRAY_LENGTH(kBreaks),
+  const size_t num_test_lines = arraysize(lines);
+  static_assert(num_test_lines == arraysize(kBreaks),
                 "number of test lines and breaks should be the same");
   String data = MakeTestData(lines, kBreaks, num_test_lines);
 
-  for (size_t k = 0; k < WTF_ARRAY_LENGTH(kBlockSizes); ++k) {
+  for (size_t k = 0; k < arraysize(kBlockSizes); ++k) {
     size_t line_count = 0;
     BufferedLineReader reader;
     size_t block_size = kBlockSizes[k];

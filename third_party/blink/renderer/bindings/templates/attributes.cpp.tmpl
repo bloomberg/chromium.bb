@@ -405,7 +405,7 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
   // Returns undefined without setting the value if the value is invalid.
   DummyExceptionStateForTesting dummyExceptionState;
   {{declare_enum_validation_variable(attribute.enum_values) | trim | indent(2)}}
-  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{attribute.enum_type}}", dummyExceptionState)) {
+  if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "{{attribute.enum_type}}", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                dummyExceptionState.Message()));
@@ -601,7 +601,7 @@ static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[]
 V8DOMConfiguration::InstallAccessors(
     isolate, world, instanceObject, prototypeObject, interfaceObject,
     signature, accessor_configurations,
-    WTF_ARRAY_LENGTH(accessor_configurations));
+    arraysize(accessor_configurations));
 {% endfilter %}{# runtime_enabled #}
 {% endfor %}{# secure_context_attribute_list grouped by runtime_enabled #}
 {% endfilter %}{# secure_context #}
@@ -626,7 +626,7 @@ static const V8DOMConfiguration::AttributeConfiguration attribute_configurations
 };
 V8DOMConfiguration::InstallAttributes(
     isolate, world, instanceObject, prototypeObject,
-    attribute_configurations, WTF_ARRAY_LENGTH(attribute_configurations));
+    attribute_configurations, arraysize(attribute_configurations));
 {% endfilter %}{# runtime_enabled #}
 {% endfor %}{# secure_context_attribute_list grouped by runtime_enabled #}
 {% endfilter %}{# secure_context #}

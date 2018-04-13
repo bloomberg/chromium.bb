@@ -56,7 +56,7 @@ static void create{{namespace}}FunctionMap() {
     { {{namespace}}Names::{{tag|symbol}}Tag, {{namespace}}{{tag|symbol}}Constructor },
   {% endfor %}
   };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)
+  for (size_t i = 0; i < arraysize(data); i++)
     g_{{namespace}}_constructors->Set(data[i].tag.LocalName(), data[i].func);
 }
 

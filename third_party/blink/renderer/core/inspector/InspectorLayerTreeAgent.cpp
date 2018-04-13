@@ -203,7 +203,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     TransformationMatrix::FloatMatrix4 flattened_matrix;
     transform.ToColumnMajorFloatArray(flattened_matrix);
     std::unique_ptr<Array<double>> transform_array = Array<double>::create();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattened_matrix); ++i)
+    for (size_t i = 0; i < arraysize(flattened_matrix); ++i)
       transform_array->addItem(flattened_matrix[i]);
     layer_object->setTransform(std::move(transform_array));
     const FloatPoint3D& transform_origin = graphics_layer->TransformOrigin();

@@ -49,7 +49,7 @@ void TestEnumOrDouble::SetTestEnum(const String& value) {
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(value, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(value, validValues, arraysize(validValues), "TestEnum", exceptionState)) {
     NOTREACHED();
     return;
   }
@@ -95,7 +95,7 @@ void V8TestEnumOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Val
         "EnumValue2",
         "EnumValue3",
     };
-    if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "TestEnum", exceptionState))
       return;
     impl.SetTestEnum(cppValue);
     return;

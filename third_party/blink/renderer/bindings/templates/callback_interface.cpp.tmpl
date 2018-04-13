@@ -102,7 +102,7 @@ v8::Maybe<{{method.cpp_type}}> {{v8_class}}::{{method.name}}({{method.argument_d
                                    ExceptionState::kExecutionContext,
                                    "{{cpp_class}}",
                                    "{{method.name}}");
-    if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, WTF_ARRAY_LENGTH({{valid_enum_variables}}), "{{argument.enum_type}}", exception_state)) {
+    if (!IsValidEnum({{argument.name}}, {{valid_enum_variables}}, arraysize({{valid_enum_variables}}), "{{argument.enum_type}}", exception_state)) {
       NOTREACHED();
       return v8::Nothing<{{method.cpp_type}}>();
     }

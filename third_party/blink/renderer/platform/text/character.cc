@@ -61,9 +61,9 @@ static icu::UnicodeSet* createUnicodeSet(const UChar32* characters,
   return unicodeSet;
 }
 
-#define CREATE_UNICODE_SET(name)                                             \
-  createUnicodeSet(name##Array, WTF_ARRAY_LENGTH(name##Array), name##Ranges, \
-                   WTF_ARRAY_LENGTH(name##Ranges))
+#define CREATE_UNICODE_SET(name)                                      \
+  createUnicodeSet(name##Array, arraysize(name##Array), name##Ranges, \
+                   arraysize(name##Ranges))
 
 #define RETURN_HAS_PROPERTY(c, name)            \
   static icu::UnicodeSet* unicodeSet = nullptr; \

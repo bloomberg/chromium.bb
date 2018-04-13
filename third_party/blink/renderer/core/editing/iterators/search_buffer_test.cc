@@ -71,7 +71,7 @@ TEST_F(SearchBufferTest, FindPlainTextInvalidTarget) {
 
   static const UChar* invalid_u_strings[] = {kInvalid1, kInvalid2, kInvalid3};
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalid_u_strings); ++i) {
+  for (size_t i = 0; i < arraysize(invalid_u_strings); ++i) {
     String invalid_target(invalid_u_strings[i]);
     EphemeralRange found_range =
         FindPlainText(EphemeralRange(range), invalid_target, 0);

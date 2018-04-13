@@ -224,7 +224,7 @@ void V8V0CustomElementLifecycleCallbacks::AttributeChanged(
   exception_catcher.SetVerbose(true);
   V8ScriptRunner::CallFunction(callback,
                                ExecutionContext::From(script_state_.get()),
-                               receiver, WTF_ARRAY_LENGTH(argv), argv, isolate);
+                               receiver, arraysize(argv), argv, isolate);
 }
 
 void V8V0CustomElementLifecycleCallbacks::Call(

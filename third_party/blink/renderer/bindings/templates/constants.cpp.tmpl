@@ -32,7 +32,7 @@ static constexpr V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants
 };
 V8DOMConfiguration::InstallConstants(
     isolate, interfaceTemplate, prototypeTemplate,
-    {{v8_class}}Constants, WTF_ARRAY_LENGTH({{v8_class}}Constants));
+    {{v8_class}}Constants, arraysize({{v8_class}}Constants));
 {% endif %}
 {# Constants with [DeprecateAs] or [MeasureAs] #}
 {% for constant in constants | has_special_getter %}

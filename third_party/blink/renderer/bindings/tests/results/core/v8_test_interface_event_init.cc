@@ -22,7 +22,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestInterfaceEventInitKeys(v8::Isol
     "stringMember",
   };
   return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
+      kKeys, kKeys, arraysize(kKeys));
 }
 
 void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestInterfaceEventInit& impl, ExceptionState& exceptionState) {

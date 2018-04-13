@@ -48,11 +48,11 @@ TEST(FontDescriptionTest, TestHashCollision) {
 
   FontDescription source;
   WTF::Vector<unsigned> hashes;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(weights); i++) {
+  for (size_t i = 0; i < arraysize(weights); i++) {
     source.SetWeight(weights[i]);
-    for (size_t j = 0; j < WTF_ARRAY_LENGTH(stretches); j++) {
+    for (size_t j = 0; j < arraysize(stretches); j++) {
       source.SetStretch(stretches[j]);
-      for (size_t k = 0; k < WTF_ARRAY_LENGTH(slopes); k++) {
+      for (size_t k = 0; k < arraysize(slopes); k++) {
         source.SetStyle(slopes[k]);
         unsigned hash = source.StyleHashWithoutFamilyList();
         ASSERT_FALSE(hashes.Contains(hash));

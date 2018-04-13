@@ -286,10 +286,10 @@ static void installV8TestCallbackFunctionsTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestCallbackFunctionsAccessors, WTF_ARRAY_LENGTH(V8TestCallbackFunctionsAccessors));
+      signature, V8TestCallbackFunctionsAccessors, arraysize(V8TestCallbackFunctionsAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestCallbackFunctionsMethods, WTF_ARRAY_LENGTH(V8TestCallbackFunctionsMethods));
+      signature, V8TestCallbackFunctionsMethods, arraysize(V8TestCallbackFunctionsMethods));
 
   // Custom signature
 

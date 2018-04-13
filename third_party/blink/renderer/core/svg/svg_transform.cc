@@ -201,7 +201,7 @@ String SVGTransform::ValueAsString() const {
       arguments[argument_count++] = angle_;
       break;
   }
-  DCHECK_LE(argument_count, WTF_ARRAY_LENGTH(arguments));
+  DCHECK_LE(argument_count, arraysize(arguments));
 
   StringBuilder builder;
   builder.Append(TransformTypePrefixForParsing(transform_type_));

@@ -51,7 +51,7 @@ class SecurityOriginTest : public testing::Test {};
 TEST_F(SecurityOriginTest, ValidPortsCreateNonUniqueOrigins) {
   uint16_t ports[] = {0, 80, 443, 5000, kMaxAllowedPort};
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(ports); ++i) {
+  for (size_t i = 0; i < arraysize(ports); ++i) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::Create("http", "example.com", ports[i]);
     EXPECT_FALSE(origin->IsUnique())
@@ -148,7 +148,7 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
       {false, "filesystem:ftp://evil:99/foo"},
   };
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(inputs); ++i) {
+  for (size_t i = 0; i < arraysize(inputs); ++i) {
     SCOPED_TRACE(inputs[i].url);
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(inputs[i].url);
@@ -218,7 +218,7 @@ TEST_F(SecurityOriginTest, CanAccess) {
       {false, "https://foobar.com", "https://bazbar.com"},
   };
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_refptr<const SecurityOrigin> origin1 =
         SecurityOrigin::CreateFromString(tests[i].origin1);
     scoped_refptr<const SecurityOrigin> origin2 =
@@ -239,7 +239,7 @@ TEST_F(SecurityOriginTest, CanRequest) {
       {false, "https://foobar.com", "https://bazbar.com"},
   };
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
+  for (size_t i = 0; i < arraysize(tests); ++i) {
     scoped_refptr<const SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(tests[i].origin);
     blink::KURL url(tests[i].url);

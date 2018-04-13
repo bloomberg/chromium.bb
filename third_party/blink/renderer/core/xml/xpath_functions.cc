@@ -742,7 +742,7 @@ static void CreateFunctionMap() {
   };
 
   g_function_map = new HashMap<String, FunctionRec>;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(functions); ++i)
+  for (size_t i = 0; i < arraysize(functions); ++i)
     g_function_map->Set(functions[i].name, functions[i].function);
 }
 

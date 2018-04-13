@@ -1039,9 +1039,9 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     disabled_extensions_.insert(entry);
   }
 
-#define ADD_VALUES_TO_SET(set, values)                    \
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(values); ++i) { \
-    set.insert(values[i]);                                \
+#define ADD_VALUES_TO_SET(set, values)             \
+  for (size_t i = 0; i < arraysize(values); ++i) { \
+    set.insert(values[i]);                         \
   }
 
   ADD_VALUES_TO_SET(supported_internal_formats_, kSupportedFormatsES2);

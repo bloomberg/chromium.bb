@@ -1523,7 +1523,7 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+  if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "TestEnum", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                dummyExceptionState.Message()));
@@ -1567,7 +1567,7 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+  if (!IsValidEnum(cppValue, validValues, arraysize(validValues), "TestEnum", dummyExceptionState)) {
     ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
         ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
                                dummyExceptionState.Message()));
@@ -5654,7 +5654,7 @@ static void voidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(testEnumTypeArg, validTestEnumTypeArgValues, WTF_ARRAY_LENGTH(validTestEnumTypeArgValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(testEnumTypeArg, validTestEnumTypeArgValues, arraysize(validTestEnumTypeArgValues), "TestEnum", exceptionState)) {
     return;
   }
 
@@ -5682,7 +5682,7 @@ static void voidMethodTestMultipleEnumArgMethod(const v8::FunctionCallbackInfo<v
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(testEnumTypeArg, validTestEnumTypeArgValues, WTF_ARRAY_LENGTH(validTestEnumTypeArgValues), "TestEnum", exceptionState)) {
+  if (!IsValidEnum(testEnumTypeArg, validTestEnumTypeArgValues, arraysize(validTestEnumTypeArgValues), "TestEnum", exceptionState)) {
     return;
   }
 
@@ -5695,7 +5695,7 @@ static void voidMethodTestMultipleEnumArgMethod(const v8::FunctionCallbackInfo<v
       "EnumValue2",
       "EnumValue3",
   };
-  if (!IsValidEnum(testEnumTypeArg2, validTestEnumTypeArg2Values, WTF_ARRAY_LENGTH(validTestEnumTypeArg2Values), "TestEnum2", exceptionState)) {
+  if (!IsValidEnum(testEnumTypeArg2, validTestEnumTypeArg2Values, arraysize(validTestEnumTypeArg2Values), "TestEnum2", exceptionState)) {
     return;
   }
 
@@ -13615,16 +13615,16 @@ static void installV8TestObjectTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestObjectAttributes, WTF_ARRAY_LENGTH(V8TestObjectAttributes));
+      V8TestObjectAttributes, arraysize(V8TestObjectAttributes));
   V8DOMConfiguration::InstallLazyDataAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestObjectLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestObjectLazyDataAttributes));
+      V8TestObjectLazyDataAttributes, arraysize(V8TestObjectLazyDataAttributes));
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestObjectAccessors, WTF_ARRAY_LENGTH(V8TestObjectAccessors));
+      signature, V8TestObjectAccessors, arraysize(V8TestObjectAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods));
+      signature, V8TestObjectMethods, arraysize(V8TestObjectMethods));
 
   // Indexed properties
   v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(
@@ -13688,7 +13688,7 @@ void V8TestObject::InstallRuntimeEnabledFeaturesOnTemplate(
     V8DOMConfiguration::InstallAccessors(
         isolate, world, instance_template, prototype_template, interface_template,
         signature, accessor_configurations,
-        WTF_ARRAY_LENGTH(accessor_configurations));
+        arraysize(accessor_configurations));
   }
 
   // Custom signature

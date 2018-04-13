@@ -42,7 +42,7 @@ static void InitCustomSchemeHandlerWhitelist() {
       "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
       "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
   };
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kSchemes); ++i)
+  for (size_t i = 0; i < arraysize(kSchemes); ++i)
     g_scheme_whitelist->insert(kSchemes[i]);
 }
 
@@ -63,7 +63,7 @@ static bool VerifyCustomHandlerURL(const Document& document,
   // It is also a SyntaxError if the custom handler URL, as created by removing
   // the "%s" token and prepending the base url, does not resolve.
   String new_url = url;
-  new_url.Remove(index, WTF_ARRAY_LENGTH(kToken) - 1);
+  new_url.Remove(index, arraysize(kToken) - 1);
   KURL kurl = document.CompleteURL(new_url);
 
   if (kurl.IsEmpty() || !kurl.IsValid()) {

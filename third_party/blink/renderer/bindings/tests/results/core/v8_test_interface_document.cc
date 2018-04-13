@@ -133,7 +133,7 @@ static void installV8TestInterfaceDocumentTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceDocumentAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceDocumentAccessors));
+      signature, V8TestInterfaceDocumentAccessors, arraysize(V8TestInterfaceDocumentAccessors));
 
   // Custom signature
 

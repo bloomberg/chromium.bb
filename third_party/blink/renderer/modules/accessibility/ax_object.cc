@@ -285,7 +285,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {kVideoRole, "Video"},
     {kWebAreaRole, "WebArea"}};
 
-static_assert(WTF_ARRAY_LENGTH(kInternalRoles) == kNumRoles,
+static_assert(arraysize(kInternalRoles) == kNumRoles,
               "Not all internal roles have an entry in internalRoles array");
 
 // Roles which we need to map in the other direction
@@ -302,7 +302,7 @@ const RoleEntry kReverseRoles[] = {{"button", kToggleButtonRole},
 static ARIARoleMap* CreateARIARoleMap() {
   ARIARoleMap* role_map = new ARIARoleMap;
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kRoles); ++i)
+  for (size_t i = 0; i < arraysize(kRoles); ++i)
     role_map->Set(String(kRoles[i].aria_role), kRoles[i].webcore_role);
 
   // Grids "ignore" their non-row children during computation of children.
@@ -316,12 +316,12 @@ static Vector<AtomicString>* CreateRoleNameVector() {
   for (int i = 0; i < kNumRoles; i++)
     (*role_name_vector)[i] = g_null_atom;
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kRoles); ++i) {
+  for (size_t i = 0; i < arraysize(kRoles); ++i) {
     (*role_name_vector)[kRoles[i].webcore_role] =
         AtomicString(kRoles[i].aria_role);
   }
 
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kReverseRoles); ++i) {
+  for (size_t i = 0; i < arraysize(kReverseRoles); ++i) {
     (*role_name_vector)[kReverseRoles[i].webcore_role] =
         AtomicString(kReverseRoles[i].aria_role);
   }
@@ -332,7 +332,7 @@ static Vector<AtomicString>* CreateRoleNameVector() {
 static Vector<AtomicString>* CreateInternalRoleNameVector() {
   Vector<AtomicString>* internal_role_name_vector =
       new Vector<AtomicString>(kNumRoles);
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kInternalRoles); i++) {
+  for (size_t i = 0; i < arraysize(kInternalRoles); i++) {
     (*internal_role_name_vector)[kInternalRoles[i].webcore_role] =
         AtomicString(kInternalRoles[i].internal_role_name);
   }

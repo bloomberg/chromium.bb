@@ -480,7 +480,7 @@ TEST_P(ShapeParameterTest, ZeroWidthSpace) {
                     0x0648,
                     kZeroWidthSpaceCharacter,
                     kZeroWidthSpaceCharacter};
-  const unsigned length = WTF_ARRAY_LENGTH(string);
+  const unsigned length = arraysize(string);
   HarfBuzzShaper shaper(string, length);
   scoped_refptr<ShapeResult> result = ShapeWithParameter(&shaper);
   EXPECT_EQ(0u, result->StartIndexForResult());

@@ -200,7 +200,7 @@ const AttributeNameMap& GetSupportedAttributes() {
         &SVGNames::yChannelSelectorAttr,
         &SVGNames::zAttr,
     };
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(attributes); i++) {
+    for (size_t i = 0; i < arraysize(attributes); i++) {
       DCHECK(!SVGElement::IsAnimatableCSSProperty(*attributes[i]));
       supported_attributes.Set(*attributes[i], attributes[i]);
     }

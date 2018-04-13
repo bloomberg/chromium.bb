@@ -96,7 +96,7 @@ static const v8::Eternal<v8::Name>* eternalV8TestDictionaryKeys(v8::Isolate* iso
     "usvStringOrNullMember",
   };
   return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
+      kKeys, kKeys, arraysize(kKeys));
 }
 
 void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestDictionary& impl, ExceptionState& exceptionState) {
@@ -395,7 +395,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         "EnumValue2",
         "EnumValue3",
     };
-    if (!IsValidEnum(enumMemberCppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(enumMemberCppValue, validValues, arraysize(validValues), "TestEnum", exceptionState))
       return;
     impl.setEnumMember(enumMemberCppValue);
   }
@@ -418,7 +418,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         "EnumValue2",
         "EnumValue3",
     };
-    if (!IsValidEnum(enumOrNullMemberCppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(enumOrNullMemberCppValue, validValues, arraysize(validValues), "TestEnum", exceptionState))
       return;
     impl.setEnumOrNullMember(enumOrNullMemberCppValue);
   }
@@ -440,7 +440,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
         "EnumValue2",
         "EnumValue3",
     };
-    if (!IsValidEnum(enumSequenceMemberCppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", exceptionState))
+    if (!IsValidEnum(enumSequenceMemberCppValue, validValues, arraysize(validValues), "TestEnum", exceptionState))
       return;
     impl.setEnumSequenceMember(enumSequenceMemberCppValue);
   }

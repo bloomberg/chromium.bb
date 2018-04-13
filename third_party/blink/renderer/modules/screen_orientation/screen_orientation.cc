@@ -59,7 +59,7 @@ static ScreenOrientationInfo* OrientationsMap(unsigned& length) {
       {portrait, kWebScreenOrientationLockPortrait},
       {landscape, kWebScreenOrientationLockLandscape},
       {natural, kWebScreenOrientationLockNatural}};
-  length = WTF_ARRAY_LENGTH(orientation_map);
+  length = arraysize(orientation_map);
 
   return orientation_map;
 }

@@ -18,7 +18,7 @@ static const v8::Eternal<v8::Name>* eternal{{v8_class}}Keys(v8::Isolate* isolate
     {% endfor %}
   };
   return V8PerIsolateData::From(isolate)->FindOrCreateEternalNameCache(
-      kKeys, kKeys, WTF_ARRAY_LENGTH(kKeys));
+      kKeys, kKeys, arraysize(kKeys));
 }
 {% endif %}
 
@@ -92,7 +92,7 @@ void {{v8_class}}::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {% endif %}
     {% if member.enum_values %}
     {{declare_enum_validation_variable(member.enum_values) | trim | indent}}
-    if (!IsValidEnum({{member.name}}CppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.enum_type}}", exceptionState))
+    if (!IsValidEnum({{member.name}}CppValue, validValues, arraysize(validValues), "{{member.enum_type}}", exceptionState))
       return;
     {% elif member.is_object %}
     if (!{{member.name}}CppValue.IsObject()) {

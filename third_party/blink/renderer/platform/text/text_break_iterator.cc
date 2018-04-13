@@ -204,11 +204,11 @@ static const unsigned char kBreakAllLineBreakClassTable[][BA_LB_COUNT / 8 + 1] =
 #undef DI
 #undef AL
 
-static_assert(WTF_ARRAY_LENGTH(kAsciiLineBreakTable) ==
+static_assert(arraysize(kAsciiLineBreakTable) ==
                   kAsciiLineBreakTableLastChar - kAsciiLineBreakTableFirstChar +
                       1,
               "asciiLineBreakTable should be consistent");
-static_assert(WTF_ARRAY_LENGTH(kBreakAllLineBreakClassTable) == BA_LB_COUNT,
+static_assert(arraysize(kBreakAllLineBreakClassTable) == BA_LB_COUNT,
               "breakAllLineBreakClassTable should be consistent");
 
 static inline bool ShouldBreakAfter(UChar last_ch, UChar ch, UChar next_ch) {

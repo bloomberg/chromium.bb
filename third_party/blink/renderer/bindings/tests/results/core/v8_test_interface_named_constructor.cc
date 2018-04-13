@@ -250,7 +250,7 @@ static void installV8TestInterfaceNamedConstructorTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallLazyDataAttributes(
       isolate, world, instanceTemplate, prototypeTemplate,
-      V8TestInterfaceNamedConstructorLazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceNamedConstructorLazyDataAttributes));
+      V8TestInterfaceNamedConstructorLazyDataAttributes, arraysize(V8TestInterfaceNamedConstructorLazyDataAttributes));
 
   // Custom signature
 

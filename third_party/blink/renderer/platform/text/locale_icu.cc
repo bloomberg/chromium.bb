@@ -145,7 +145,7 @@ UDateFormat* LocaleICU::OpenDateFormat(UDateFormatStyle time_style,
   const UChar kGmtTimezone[3] = {'G', 'M', 'T'};
   UErrorCode status = U_ZERO_ERROR;
   return udat_open(time_style, date_style, locale_.data(), kGmtTimezone,
-                   WTF_ARRAY_LENGTH(kGmtTimezone), nullptr, -1, &status);
+                   arraysize(kGmtTimezone), nullptr, -1, &status);
 }
 
 // We cannot use udat_*Symbols API to get standalone month names to use in
@@ -259,8 +259,8 @@ void LocaleICU::InitializeCalendar() {
 
 static std::unique_ptr<Vector<String>> CreateFallbackMonthLabels() {
   std::unique_ptr<Vector<String>> labels = std::make_unique<Vector<String>>();
-  labels->ReserveCapacity(WTF_ARRAY_LENGTH(WTF::kMonthFullName));
-  for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::kMonthFullName); ++i)
+  labels->ReserveCapacity(arraysize(WTF::kMonthFullName));
+  for (unsigned i = 0; i < arraysize(WTF::kMonthFullName); ++i)
     labels->push_back(WTF::kMonthFullName[i]);
   return labels;
 }
@@ -416,8 +416,8 @@ const Vector<String>& LocaleICU::ShortMonthLabels() {
       return short_month_labels_;
     }
   }
-  short_month_labels_.ReserveCapacity(WTF_ARRAY_LENGTH(WTF::kMonthName));
-  for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::kMonthName); ++i)
+  short_month_labels_.ReserveCapacity(arraysize(WTF::kMonthName));
+  for (unsigned i = 0; i < arraysize(WTF::kMonthName); ++i)
     short_month_labels_.push_back(WTF::kMonthName[i]);
   return short_month_labels_;
 }

@@ -95,7 +95,7 @@ void V8TestInterface2Partial::installV8TestInterface2Template(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
+      signature, V8TestInterface2Methods, arraysize(V8TestInterface2Methods));
 
   // Custom signature
 

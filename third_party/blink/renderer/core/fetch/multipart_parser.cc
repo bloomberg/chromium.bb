@@ -17,10 +17,10 @@ namespace {
 
 constexpr char kCloseDelimiterSuffix[] = "--\r\n";
 constexpr size_t kCloseDelimiterSuffixSize =
-    WTF_ARRAY_LENGTH(kCloseDelimiterSuffix) - 1u;
+    arraysize(kCloseDelimiterSuffix) - 1u;
 constexpr size_t kDashBoundaryOffset = 2u;  // The length of "\r\n".
 constexpr char kDelimiterSuffix[] = "\r\n";
-constexpr size_t kDelimiterSuffixSize = WTF_ARRAY_LENGTH(kDelimiterSuffix) - 1u;
+constexpr size_t kDelimiterSuffixSize = arraysize(kDelimiterSuffix) - 1u;
 
 }  // namespace
 

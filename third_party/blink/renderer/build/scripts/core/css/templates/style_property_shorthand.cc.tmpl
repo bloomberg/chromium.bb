@@ -41,7 +41,7 @@ const StylePropertyShorthand& {{property.lower_camel_name}}Shorthand() {
   static StylePropertyShorthand {{property.lower_camel_name}}Longhands(
     {{property.property_id}},
     {{property.lower_camel_name}}Properties,
-    WTF_ARRAY_LENGTH({{property.lower_camel_name}}Properties));
+    arraysize({{property.lower_camel_name}}Properties));
   return {{property.lower_camel_name}}Longhands;
 }
 {% endfor %}
@@ -53,7 +53,7 @@ const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
     &GetCSSPropertyOffsetDistance(),
     &GetCSSPropertyOffsetRotate(),
   };
-  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyOffset, offsetProperties, WTF_ARRAY_LENGTH(offsetProperties)));
+  DEFINE_STATIC_LOCAL(StylePropertyShorthand, offsetLonghands, (CSSPropertyOffset, offsetProperties, arraysize(offsetProperties)));
   return offsetLonghands;
 }
 

@@ -204,11 +204,10 @@ static_assert(kSvgTransformSkewx == 5,
               "index of kSvgTransformSkewx has changed");
 static_assert(kSvgTransformSkewy == 6,
               "index of kSvgTransformSkewy has changed");
-static_assert(WTF_ARRAY_LENGTH(kRequiredValuesForType) - 1 ==
-                  kSvgTransformSkewy,
+static_assert(arraysize(kRequiredValuesForType) - 1 == kSvgTransformSkewy,
               "the number of transform types have changed");
-static_assert(WTF_ARRAY_LENGTH(kRequiredValuesForType) ==
-                  WTF_ARRAY_LENGTH(kOptionalValuesForType),
+static_assert(arraysize(kRequiredValuesForType) ==
+                  arraysize(kOptionalValuesForType),
               "the arrays should have the same number of elements");
 
 const unsigned kMaxTransformArguments = 6;

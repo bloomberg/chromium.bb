@@ -149,7 +149,7 @@ static bool ParseJsonWebKey(const Dictionary& dict,
 
   const char* const kPropertyNames[] = {"d",  "n",  "e", "p",   "q", "dp",
                                         "dq", "qi", "k", "crv", "x", "y"};
-  for (unsigned i = 0; i < WTF_ARRAY_LENGTH(kPropertyNames); ++i)
+  for (unsigned i = 0; i < arraysize(kPropertyNames); ++i)
     CopyStringProperty(kPropertyNames[i], dict, json_object.get());
 
   String json = json_object->ToJSONString();

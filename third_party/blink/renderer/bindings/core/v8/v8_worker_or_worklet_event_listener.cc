@@ -82,7 +82,7 @@ v8::Local<v8::Value> V8WorkerOrWorkletEventListener::CallListenerFunction(
   v8::Local<v8::Value> parameters[1] = {js_event};
   v8::MaybeLocal<v8::Value> maybe_result = V8ScriptRunner::CallFunction(
       handler_function, ToExecutionContext(script_state->GetContext()),
-      receiver, WTF_ARRAY_LENGTH(parameters), parameters, GetIsolate());
+      receiver, arraysize(parameters), parameters, GetIsolate());
 
   v8::Local<v8::Value> result;
   if (!maybe_result.ToLocal(&result))

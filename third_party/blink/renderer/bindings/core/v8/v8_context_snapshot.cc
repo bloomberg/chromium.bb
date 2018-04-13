@@ -83,8 +83,7 @@ SnapshotInterface g_snapshot_interfaces[] = {
     {&V8Document::wrapperTypeInfo,
      V8Document::InstallRuntimeEnabledFeaturesOnTemplate},
 };
-constexpr size_t kSnapshotInterfaceSize =
-    WTF_ARRAY_LENGTH(g_snapshot_interfaces);
+constexpr size_t kSnapshotInterfaceSize = arraysize(g_snapshot_interfaces);
 
 enum class InternalFieldType : uint8_t {
   kNone,
@@ -457,8 +456,8 @@ void V8ContextSnapshot::TakeSnapshotForWorld(v8::SnapshotCreator* creator,
     int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
     void* values[] = {nullptr, const_cast<WrapperTypeInfo*>(
                                    &V8HTMLDocument::wrapperTypeInfo)};
-    document_wrapper->SetAlignedPointerInInternalFields(
-        WTF_ARRAY_LENGTH(indices), indices, values);
+    document_wrapper->SetAlignedPointerInInternalFields(arraysize(indices),
+                                                        indices, values);
 
     // Set the cached accessor for window.document.
     CHECK(V8PrivateProperty::GetWindowDocumentCachedAccessor(isolate).Set(

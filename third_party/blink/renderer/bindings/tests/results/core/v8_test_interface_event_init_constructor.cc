@@ -164,7 +164,7 @@ static void installV8TestInterfaceEventInitConstructorTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceEventInitConstructorAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceEventInitConstructorAccessors));
+      signature, V8TestInterfaceEventInitConstructorAccessors, arraysize(V8TestInterfaceEventInitConstructorAccessors));
 
   // Custom signature
 

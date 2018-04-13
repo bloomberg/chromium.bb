@@ -176,7 +176,7 @@ void FrameContentAsPlainText(size_t max_chars,
 
   // The separator between frames when the frames are converted to plain text.
   const LChar kFrameSeparator[] = {'\n', '\n'};
-  const size_t frame_separator_length = WTF_ARRAY_LENGTH(kFrameSeparator);
+  const size_t frame_separator_length = arraysize(kFrameSeparator);
 
   // Recursively walk the children.
   const FrameTree& frame_tree = frame->Tree();

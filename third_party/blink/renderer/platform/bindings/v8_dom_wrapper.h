@@ -90,7 +90,7 @@ inline void V8DOMWrapper::SetNativeInfo(
   int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
   void* values[] = {script_wrappable,
                     const_cast<WrapperTypeInfo*>(wrapper_type_info)};
-  wrapper->SetAlignedPointerInInternalFields(WTF_ARRAY_LENGTH(indices), indices,
+  wrapper->SetAlignedPointerInInternalFields(arraysize(indices), indices,
                                              values);
   auto* per_isolate_data = V8PerIsolateData::From(isolate);
   // We notify ScriptWrappableVisitor about the new wrapper association,
@@ -106,7 +106,7 @@ inline void V8DOMWrapper::ClearNativeInfo(v8::Isolate* isolate,
                                           v8::Local<v8::Object> wrapper) {
   int indices[] = {kV8DOMWrapperObjectIndex, kV8DOMWrapperTypeIndex};
   void* values[] = {nullptr, nullptr};
-  wrapper->SetAlignedPointerInInternalFields(WTF_ARRAY_LENGTH(indices), indices,
+  wrapper->SetAlignedPointerInInternalFields(arraysize(indices), indices,
                                              values);
 }
 

@@ -77,7 +77,7 @@ void init() {
   size_t tag_i = 0;
   {% endif %}
   size_t attr_i = 0;
-  for (size_t i = 0; i < WTF_ARRAY_LENGTH(kNames); i++) {
+  for (size_t i = 0; i < arraysize(kNames); i++) {
     StringImpl* stringImpl = StringImpl::CreateStatic(kNames[i].name, kNames[i].length, kNames[i].hash);
     {% if tags %}
     if (kNames[i].isTag) {

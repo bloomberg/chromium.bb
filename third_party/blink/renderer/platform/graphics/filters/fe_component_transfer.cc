@@ -161,7 +161,7 @@ void FEComponentTransfer::GetValues(unsigned char r_values[256],
 
   for (unsigned channel = 0; channel < 4; channel++) {
     SECURITY_DCHECK(static_cast<size_t>(transfer_function[channel].type) <
-                    WTF_ARRAY_LENGTH(call_effect));
+                    arraysize(call_effect));
     (*call_effect[transfer_function[channel].type])(tables[channel],
                                                     transfer_function[channel]);
   }

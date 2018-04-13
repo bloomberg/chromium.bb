@@ -439,10 +439,10 @@ static void installV8TestInterfaceNodeTemplate(
   // Register IDL constants, attributes and operations.
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceNodeAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceNodeAccessors));
+      signature, V8TestInterfaceNodeAccessors, arraysize(V8TestInterfaceNodeAccessors));
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
-      signature, V8TestInterfaceNodeMethods, WTF_ARRAY_LENGTH(V8TestInterfaceNodeMethods));
+      signature, V8TestInterfaceNodeMethods, arraysize(V8TestInterfaceNodeMethods));
 
   // Custom signature
 

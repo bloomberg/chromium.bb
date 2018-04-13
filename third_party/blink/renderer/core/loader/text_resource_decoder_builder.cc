@@ -78,7 +78,7 @@ static const WTF::TextEncoding GetEncodingFromDomain(const KURL& url) {
   url.Host().Split(".", tokens);
   if (!tokens.IsEmpty()) {
     auto tld = tokens.back();
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kEncodings); i++) {
+    for (size_t i = 0; i < arraysize(kEncodings); i++) {
       if (tld == kEncodings[i].domain)
         return WTF::TextEncoding(kEncodings[i].encoding);
     }

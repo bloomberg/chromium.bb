@@ -40,7 +40,7 @@ class IntegerToStringConverter {
                 "IntegerType must be a type of integer.");
 
   explicit IntegerToStringConverter(IntegerType input) {
-    LChar* end = buffer_ + WTF_ARRAY_LENGTH(buffer_);
+    LChar* end = buffer_ + arraysize(buffer_);
     begin_ = end;
 
     // We need to switch to the unsigned type when negating the value since

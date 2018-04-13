@@ -147,33 +147,33 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
   const String& GetString() const { return string_; }
 
   UChar LastCharacter() const {
-    static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
+    static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     return prior_context_[1];
   }
 
   UChar SecondToLastCharacter() const {
-    static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
+    static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     return prior_context_[0];
   }
 
   void SetPriorContext(UChar last, UChar second_to_last) {
-    static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
+    static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     prior_context_[0] = second_to_last;
     prior_context_[1] = last;
   }
 
   void UpdatePriorContext(UChar last) {
-    static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
+    static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     prior_context_[0] = prior_context_[1];
     prior_context_[1] = last;
   }
 
   void ResetPriorContext() {
-    static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
+    static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     prior_context_[0] = 0;
     prior_context_[1] = 0;
@@ -181,7 +181,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
 
   unsigned PriorContextLength() const {
     unsigned prior_context_length = 0;
-    static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
+    static_assert(arraysize(prior_context_) == 2,
                   "TextBreakIterator has unexpected prior context length");
     if (prior_context_[1]) {
       ++prior_context_length;

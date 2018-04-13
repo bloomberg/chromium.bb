@@ -168,7 +168,7 @@ void LayoutTextCombine::UpdateFont() {
     // Need to try compressed glyphs.
     static const FontWidthVariant kWidthVariants[] = {kHalfWidth, kThirdWidth,
                                                       kQuarterWidth};
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(kWidthVariants); ++i) {
+    for (size_t i = 0; i < arraysize(kWidthVariants); ++i) {
       description.SetWidthVariant(kWidthVariants[i]);
       Font compressed_font = Font(description);
       compressed_font.Update(font_selector);
