@@ -21,13 +21,6 @@ const CGFloat kCountBorderWidth = 24;
 
 }  // namespace
 
-@interface ContentSuggestionsMostVisitedActionCell ()
-
-// Container view for |countLabel|.
-@property(nonatomic, strong, readonly, nonnull) UIView* countContainer;
-
-@end
-
 @implementation ContentSuggestionsMostVisitedActionCell : MDCCollectionViewCell
 
 @synthesize countContainer = _countContainer;

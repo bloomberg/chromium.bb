@@ -38,8 +38,12 @@
   cell.titleLabel.text = self.title;
   cell.accessibilityLabel = self.title;
   cell.iconView.image = [self imageForAction:_action];
-  if (self.count != 0)
+  if (self.count != 0) {
     cell.countLabel.text = [@(self.count) stringValue];
+    cell.countContainer.hidden = NO;
+  } else {
+    cell.countContainer.hidden = YES;
+  }
 }
 
 #pragma mark - ContentSuggestionsItem
