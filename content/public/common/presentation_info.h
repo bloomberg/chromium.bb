@@ -19,14 +19,6 @@ enum PresentationConnectionState {
   PRESENTATION_CONNECTION_STATE_TERMINATED
 };
 
-// TODO(imcheng): Use WENT_AWAY for 1-UA mode when it is implemented
-// (crbug.com/513859).
-enum PresentationConnectionCloseReason {
-  PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR,
-  PRESENTATION_CONNECTION_CLOSE_REASON_CLOSED,
-  PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY
-};
-
 // Represents a presentation that has been established via either
 // browser actions or Presentation API.
 struct CONTENT_EXPORT PresentationInfo {

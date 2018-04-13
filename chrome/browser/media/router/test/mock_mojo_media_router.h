@@ -44,10 +44,12 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
   MOCK_METHOD2(OnPresentationConnectionStateChanged,
                void(const std::string& route_id,
                     content::PresentationConnectionState state));
-  MOCK_METHOD3(OnPresentationConnectionClosed,
-               void(const std::string& route_id,
-                    content::PresentationConnectionCloseReason reason,
-                    const std::string& message));
+  MOCK_METHOD3(
+      OnPresentationConnectionClosed,
+      void(const std::string& route_id,
+           media_router::mojom::MediaRouter::PresentationConnectionCloseReason
+               reason,
+           const std::string& message));
   MOCK_METHOD2(OnRouteMessagesReceived,
                void(const std::string& route_id,
                     const std::vector<content::PresentationConnectionMessage>&

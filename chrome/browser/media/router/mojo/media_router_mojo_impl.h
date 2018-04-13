@@ -345,7 +345,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       content::PresentationConnectionState state) override;
   void OnPresentationConnectionClosed(
       const std::string& route_id,
-      content::PresentationConnectionCloseReason reason,
+      media_router::mojom::MediaRouter::PresentationConnectionCloseReason
+          reason,
       const std::string& message) override;
   void OnRouteMessagesReceived(
       const std::string& route_id,

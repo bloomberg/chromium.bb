@@ -241,7 +241,7 @@ class MockPresentationController : public blink::mojom::PresentationController {
                     PresentationConnectionState new_state));
   MOCK_METHOD3(OnConnectionClosed,
                void(const PresentationInfo& connection,
-                    PresentationConnectionCloseReason reason,
+                    blink::mojom::PresentationConnectionCloseReason reason,
                     const std::string& message));
   // PresentationConnectionMessage is move-only.
   void OnConnectionMessagesReceived(
@@ -483,13 +483,15 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionClose) {
   PresentationInfo presentation_connection(presentation_url1_, kPresentationId);
   PresentationConnectionStateChangeInfo closed_info(
       PRESENTATION_CONNECTION_STATE_CLOSED);
-  closed_info.close_reason = PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+  closed_info.close_reason =
+      blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
   closed_info.message = "Foo";
 
-  EXPECT_CALL(mock_controller_,
-              OnConnectionClosed(InfoEquals(presentation_connection),
-                                 PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY,
-                                 "Foo"));
+  EXPECT_CALL(
+      mock_controller_,
+      OnConnectionClosed(
+          InfoEquals(presentation_connection),
+          blink::mojom::PresentationConnectionCloseReason::WENT_AWAY, "Foo"));
   state_changed_cb.Run(closed_info);
   base::RunLoop().RunUntilIdle();
 }

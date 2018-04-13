@@ -71,7 +71,7 @@ TEST_F(MediaRouterAndroidTest, DetachRoute) {
   content::PresentationConnectionStateChangeInfo change_info_closed(
       content::PRESENTATION_CONNECTION_STATE_CLOSED);
   change_info_closed.close_reason =
-      content::PRESENTATION_CONNECTION_CLOSE_REASON_CLOSED;
+      blink::mojom::PresentationConnectionCloseReason::CLOSED;
   change_info_closed.message = "Remove route";
   EXPECT_CALL(callback, Run(StateChangeInfoEquals(change_info_closed)));
 

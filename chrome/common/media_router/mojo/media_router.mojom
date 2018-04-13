@@ -466,7 +466,7 @@ interface MediaRouter {
     AVAILABLE
   };
 
-  // Keep in sync with content/public/common/presentation_info.h.
+  // TODO(crbug.com/831416): Remove and use presentation.mojom type instead.
   enum PresentationConnectionState {
     CONNECTING,
     CONNECTED,
@@ -474,7 +474,7 @@ interface MediaRouter {
     TERMINATED
   };
 
-  // Keep in sync with content/public/common/presentation_info.h.
+  // TODO(crbug.com/831416): Remove and use presentation.mojom type instead.
   enum PresentationConnectionCloseReason {
     CONNECTION_ERROR,
     CLOSED,

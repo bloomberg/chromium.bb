@@ -34,7 +34,6 @@ type_mappings = [
   "media_router.mojom.Issue.Severity=media_router::IssueInfo::Severity",
   "media_router.mojom.MediaRoute=media_router::MediaRoute",
   "media_router.mojom.MediaRouteProvider.Id=media_router::MediaRouteProviderId",
-  "media_router.mojom.MediaRouter.PresentationConnectionCloseReason=content::PresentationConnectionCloseReason",
   "media_router.mojom.MediaRouter.PresentationConnectionState=content::PresentationConnectionState",
   "media_router.mojom.MediaSink=media_router::MediaSinkInternal",
   "media_router.mojom.RouteMessage=content::PresentationConnectionMessage",

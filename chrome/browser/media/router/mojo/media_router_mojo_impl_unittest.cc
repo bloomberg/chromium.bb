@@ -942,13 +942,15 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
     content::PresentationConnectionStateChangeInfo closed_info(
         content::PRESENTATION_CONNECTION_STATE_CLOSED);
     closed_info.close_reason =
-        content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY;
+        blink::mojom::PresentationConnectionCloseReason::WENT_AWAY;
     closed_info.message = "Foo";
 
     EXPECT_CALL(callback, Run(StateChangeInfoEquals(closed_info)))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     router()->OnPresentationConnectionClosed(
-        route_id, content::PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY,
+        route_id,
+        media_router::mojom::MediaRouter::PresentationConnectionCloseReason::
+            WENT_AWAY,
         "Foo");
     run_loop.Run();
     EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));

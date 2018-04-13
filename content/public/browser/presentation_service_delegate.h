@@ -33,13 +33,15 @@ struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
       PresentationConnectionState state)
       : state(state),
-        close_reason(PRESENTATION_CONNECTION_CLOSE_REASON_CONNECTION_ERROR) {}
+        close_reason(
+            blink::mojom::PresentationConnectionCloseReason::CONNECTION_ERROR) {
+  }
   ~PresentationConnectionStateChangeInfo() = default;
 
   PresentationConnectionState state;
 
   // |close_reason| and |messsage| are only used for state change to CLOSED.
-  PresentationConnectionCloseReason close_reason;
+  blink::mojom::PresentationConnectionCloseReason close_reason;
   std::string message;
 };
 
