@@ -42,7 +42,7 @@ class LegacyMockClock : public Clock {
       : task_runner_(std::move(task_runner)) {}
 
   // Clock:
-  Time Now() override { return task_runner_->Now(); }
+  Time Now() const override { return task_runner_->Now(); }
 
  private:
   scoped_refptr<const TestMockTimeTaskRunner> task_runner_;
@@ -417,7 +417,7 @@ TimeTicks TestMockTimeTaskRunner::MockClock::NowTicks() const {
   return task_runner_->NowTicks();
 }
 
-Time TestMockTimeTaskRunner::MockClock::Now() {
+Time TestMockTimeTaskRunner::MockClock::Now() const {
   return task_runner_->Now();
 }
 

@@ -121,7 +121,9 @@ MockTime::MockTime()
 
 MockTime::~MockTime() {}
 
-base::Time MockTime::Now() { return now_; }
+base::Time MockTime::Now() const {
+  return now_;
+}
 base::TimeTicks MockTime::NowTicks() const {
   return now_ticks_;
 }

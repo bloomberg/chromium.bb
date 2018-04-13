@@ -21,7 +21,7 @@ class SimpleTestClock : public Clock {
   SimpleTestClock();
   ~SimpleTestClock() override;
 
-  Time Now() override;
+  Time Now() const override;
 
   // Advances the clock by |delta|.
   void Advance(TimeDelta delta);
@@ -31,7 +31,7 @@ class SimpleTestClock : public Clock {
 
  private:
   // Protects |now_|.
-  Lock lock_;
+  mutable Lock lock_;
 
   Time now_;
 };

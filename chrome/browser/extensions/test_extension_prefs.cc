@@ -52,13 +52,13 @@ class TestExtensionPrefs::IncrementalClock : public base::Clock {
 
   ~IncrementalClock() override {}
 
-  base::Time Now() override {
+  base::Time Now() const override {
     current_time_ += base::TimeDelta::FromSeconds(10);
     return current_time_;
   }
 
  private:
-  base::Time current_time_;
+  mutable base::Time current_time_;
 
   DISALLOW_COPY_AND_ASSIGN(IncrementalClock);
 };

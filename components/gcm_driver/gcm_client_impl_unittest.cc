@@ -181,14 +181,14 @@ class AutoAdvancingTestClock : public base::Clock {
   explicit AutoAdvancingTestClock(base::TimeDelta auto_increment_time_delta);
   ~AutoAdvancingTestClock() override;
 
-  base::Time Now() override;
+  base::Time Now() const override;
   void Advance(TimeDelta delta);
   int call_count() const { return call_count_; }
 
  private:
-  int call_count_;
+  mutable int call_count_;
   base::TimeDelta auto_increment_time_delta_;
-  base::Time now_;
+  mutable base::Time now_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoAdvancingTestClock);
 };
@@ -201,7 +201,7 @@ AutoAdvancingTestClock::AutoAdvancingTestClock(
 AutoAdvancingTestClock::~AutoAdvancingTestClock() {
 }
 
-base::Time AutoAdvancingTestClock::Now() {
+base::Time AutoAdvancingTestClock::Now() const {
   call_count_++;
   now_ += auto_increment_time_delta_;
   return now_;

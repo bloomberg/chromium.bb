@@ -366,7 +366,7 @@ class MockClock : public base::Clock {
   MockClock() = default;
   virtual ~MockClock() = default;
 
-  MOCK_METHOD0(Now, base::Time());
+  MOCK_CONST_METHOD0(Now, base::Time());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClock);

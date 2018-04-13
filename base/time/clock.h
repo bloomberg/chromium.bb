@@ -32,7 +32,7 @@ class BASE_EXPORT Clock {
   // Now() must be safe to call from any thread.  The caller cannot
   // make any ordering assumptions about the returned Time.  For
   // example, the system clock may change to an earlier time.
-  virtual Time Now() = 0;
+  virtual Time Now() const = 0;
 };
 
 }  // namespace base
