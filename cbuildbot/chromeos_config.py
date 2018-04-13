@@ -543,7 +543,6 @@ _x86_internal_release_boards = frozenset([
     'betty',
     'betty-arc64',
     'betty-arcnext',
-    'bettyvirgl',
     'buddy',
     'candy',
     'caroline',
@@ -738,7 +737,6 @@ _vmtest_boards = frozenset([
     'betty',         # amd64 Chrome OS VM board with 32 bit arm/x86 ARC++ ABI.
     'betty-arc64',   # Chrome OS VM board with 64 bit x86_64 ARC++ ABI.
     'betty-arcnext', # Like betty but with the next version of ARC++.
-    'bettyvirgl',    # Virtualized GL version. Needs special hardware to run.
     'newbie',        # AOSP variant of betty.
     'novato',        # Like betty but with GMSCore but not the Play Store
     'novato-arc64',  # 64 bit x86_64 ARC++ ABI
@@ -2553,7 +2551,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'betty-arcnext',
-      'bettyvirgl',
       'eve-campfire', # contact:yueherngl@
       'nami',
       'octopus',
