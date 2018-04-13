@@ -11,6 +11,7 @@
 #include <deque>
 #include <forward_list>
 #include <functional>
+#include <initializer_list>
 #include <iterator>
 #include <list>
 #include <map>
@@ -39,6 +40,69 @@ void IterateAndEraseIf(Container& container, Predicate pred) {
 }
 
 }  // namespace internal
+
+// C++14 implementation of C++17's std::size():
+// http://en.cppreference.com/w/cpp/iterator/size
+template <typename Container>
+constexpr auto size(const Container& c) -> decltype(c.size()) {
+  return c.size();
+}
+
+template <typename T, size_t N>
+constexpr size_t size(const T (&array)[N]) noexcept {
+  return N;
+}
+
+// C++14 implementation of C++17's std::empty():
+// http://en.cppreference.com/w/cpp/iterator/empty
+template <typename Container>
+constexpr auto empty(const Container& c) -> decltype(c.empty()) {
+  return c.empty();
+}
+
+template <typename T, size_t N>
+constexpr bool empty(const T (&array)[N]) noexcept {
+  return false;
+}
+
+template <typename T>
+constexpr bool empty(std::initializer_list<T> il) noexcept {
+  return il.size() == 0;
+}
+
+// C++14 implementation of C++17's std::data():
+// http://en.cppreference.com/w/cpp/iterator/data
+template <typename Container>
+constexpr auto data(Container& c) -> decltype(c.data()) {
+  return c.data();
+}
+
+// std::basic_string::data() had no mutable overload prior to C++17 [1].
+// Hence this overload is provided.
+// Note: str[0] is safe even for empty strings, as they are guaranteed to be
+// null-terminated [2].
+//
+// [1] http://en.cppreference.com/w/cpp/string/basic_string/data
+// [2] http://en.cppreference.com/w/cpp/string/basic_string/operator_at
+template <typename CharT, typename Traits, typename Allocator>
+CharT* data(std::basic_string<CharT, Traits, Allocator>& str) {
+  return std::addressof(str[0]);
+}
+
+template <typename Container>
+constexpr auto data(const Container& c) -> decltype(c.data()) {
+  return c.data();
+}
+
+template <typename T, size_t N>
+constexpr T* data(T (&array)[N]) noexcept {
+  return array;
+}
+
+template <typename T>
+constexpr const T* data(std::initializer_list<T> il) noexcept {
+  return il.begin();
+}
 
 // Clears internal memory of an STL object.
 // STL clear()/reserve(0) does not always free internal memory allocated
@@ -72,6 +136,8 @@ STLCount(const Container& container, const T& val) {
 // (http://www.open-std.org/JTC1/SC22/WG21/docs/lwg-active.html#530)
 // proposes this as the method. According to Matt Austern, this should
 // already work on all current implementations.
+//
+// DEPRECATED(https://crbug.com/831499), use base::data(std::string&) instead.
 inline char* string_as_array(std::string* str) {
   // DO NOT USE const_cast<char*>(str->data())
   return str->empty() ? NULL : &*str->begin();
