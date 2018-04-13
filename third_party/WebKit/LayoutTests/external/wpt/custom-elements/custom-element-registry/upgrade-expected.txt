@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Upgrading an element directly (example from the spec) customElements.upgrade is not a function
-FAIL Two elements as children of the upgraded node customElements.upgrade is not a function
-FAIL Two elements as descendants of the upgraded node customElements.upgrade is not a function
-FAIL Two elements as shadow-including descendants (and not descendants) of the upgraded node customElements.upgrade is not a function
-FAIL Elements inside a template contents DocumentFragment node customElements.upgrade is not a function
-Harness: the test ran to completion.
-

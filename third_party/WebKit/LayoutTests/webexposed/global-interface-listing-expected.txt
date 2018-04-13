@@ -1135,6 +1135,7 @@ interface CustomElementRegistry
     method constructor
     method define
     method get
+    method upgrade
     method whenDefined
 interface CustomEvent : Event
     attribute @@toStringTag

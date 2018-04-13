@@ -5456,6 +5456,8 @@ PASS CustomElementRegistry interface: operation get(DOMString)
 PASS Unscopable handled correctly for get(DOMString) on CustomElementRegistry
 PASS CustomElementRegistry interface: operation whenDefined(DOMString)
 PASS Unscopable handled correctly for whenDefined(DOMString) on CustomElementRegistry
+PASS CustomElementRegistry interface: operation upgrade(Node)
+PASS Unscopable handled correctly for upgrade(Node) on CustomElementRegistry
 PASS DataTransfer interface: existence and properties of interface object
 PASS DataTransfer interface object length
 PASS DataTransfer interface object name

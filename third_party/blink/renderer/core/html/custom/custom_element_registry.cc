@@ -11,7 +11,9 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_definition_options.h"
+#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
@@ -29,6 +31,25 @@
 #include <limits>
 
 namespace blink {
+
+namespace {
+
+void CollectUpgradeCandidateInNode(Node& root,
+                                   HeapVector<Member<Element>>& candidates) {
+  if (root.IsElementNode()) {
+    Element& root_element = ToElement(root);
+    if (root_element.GetCustomElementState() == CustomElementState::kUndefined)
+      candidates.push_back(root_element);
+    if (auto* shadow_root = root_element.GetShadowRoot()) {
+      if (shadow_root->GetType() != ShadowRootType::kUserAgent)
+        CollectUpgradeCandidateInNode(*shadow_root, candidates);
+    }
+  }
+  for (auto& element : Traversal<HTMLElement>::ChildrenOf(root))
+    CollectUpgradeCandidateInNode(element, candidates);
+}
+
+}  // anonymous namespace
 
 // Returns true if |name| is invalid.
 static bool ThrowIfInvalidName(const AtomicString& name,
@@ -335,6 +356,21 @@ void CustomElementRegistry::CollectCandidates(
     return;
 
   sorter.Sorted(elements, document);
+}
+
+// https://html.spec.whatwg.org/multipage/custom-elements.html#dom-customelementregistry-upgrade
+void CustomElementRegistry::upgrade(Node* root) {
+  DCHECK(root);
+
+  // 1. Let candidates be a list of all of root's shadow-including
+  // inclusive descendant elements, in tree order.
+  HeapVector<Member<Element>> candidates;
+  CollectUpgradeCandidateInNode(*root, candidates);
+
+  // 2. For each candidate of candidates, try to upgrade candidate.
+  for (auto& candidate : candidates) {
+    CustomElement::TryToUpgrade(candidate);
+  }
 }
 
 }  // namespace blink
