@@ -23,7 +23,7 @@ namespace vr {
 
 namespace {
 
-constexpr bool kEnableOptimizedTreeWalks = true;
+constexpr bool kEnableOptimizedTreeWalks = false;
 constexpr float kHitTestResolutionInMeter = 0.000001f;
 
 int AllocateId() {
@@ -257,7 +257,7 @@ bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
                 updated_bindings_this_frame_) &&
                was_visible_at_any_point;
 
-  if (true || !kEnableOptimizedTreeWalks || was_visible_at_any_point ||
+  if (!kEnableOptimizedTreeWalks || was_visible_at_any_point ||
       visibility_bindings_depend_on_child_visibility_) {
     for (auto& child : children_)
       dirty |= child->DoBeginFrame(head_pose);
