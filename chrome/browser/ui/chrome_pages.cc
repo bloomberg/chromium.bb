@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/md_bookmarks/md_bookmarks_ui.h"
@@ -37,7 +38,6 @@
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
@@ -410,7 +410,7 @@ void ShowBrowserSignin(Browser* browser,
   browser = displayer->browser();
 
 #if defined(OS_CHROMEOS)
-  // ChromeOS doesn't have the avatar bubble.
+  // ChromeOS always loads the chrome://chrome-signin in a tab.
   const bool show_full_tab_chrome_signin_page = true;
 #else
   // When Desktop Identity Consistency (aka DICE) is not enabled, Chrome uses
@@ -438,9 +438,12 @@ void ShowBrowserSignin(Browser* browser,
             false));
     DCHECK_GT(browser->tab_strip_model()->count(), 0);
   } else {
-    browser->window()->ShowAvatarBubbleFromAvatarButton(
-        BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
-        signin::ManageAccountsParams(), access_point, false);
+#if defined(OS_CHROMEOS)
+    NOTREACHED();
+#else
+    browser->signin_view_controller()->ShowSignin(
+        profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN, browser, access_point);
+#endif
   }
 }
 
