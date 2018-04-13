@@ -4286,7 +4286,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (!allowNavigation && navigationResponse.isForMainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
-  } else {
+  } else if (responseURL.SchemeIsHTTPOrHTTPS()) {
     std::string contentDisposition;
     if (HTTPHeaders) {
       HTTPHeaders->GetNormalizedHeader("content-disposition",
