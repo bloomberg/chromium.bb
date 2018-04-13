@@ -33,6 +33,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/render_text_test_api.h"
 #include "ui/views/controls/textfield/textfield_test_api.h"
 
 #if defined(OS_CHROMEOS)
@@ -446,7 +447,7 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
 
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  protected:
-  const gfx::Point kPointInText = gfx::Point(20, 20);
+  const int kCharacterWidth = 10;
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
@@ -461,6 +462,11 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     toolbar_model()->set_formatted_full_url(
         base::ASCIIToUTF16("https://example.com"));
     toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
+
+    gfx::test::RenderTextTestApi render_text_test_api(
+        omnibox_view()->GetRenderText());
+    render_text_test_api.SetGlyphWidth(kCharacterWidth);
+
     omnibox_view()->model()->ResetDisplayUrls();
     omnibox_view()->RevertAll();
 
@@ -499,8 +505,16 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
                           ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
   }
 
-  // Sends a mouse down and mouse up event.
-  void SendMouseClick(const gfx::Point& point) {
+  // Gets a point at |x_offset| from the beginning of the RenderText.
+  gfx::Point GetPointInTextAtXOffset(int x_offset) {
+    gfx::Rect bounds = omnibox_view()->GetRenderText()->display_rect();
+    return gfx::Point(bounds.x() + x_offset, bounds.y() + bounds.height() / 2);
+  }
+
+  // Sends a mouse down and mouse up event at |x_offset| pixels from the
+  // beginning of the RenderText.
+  void SendMouseClick(int x_offset) {
+    gfx::Point point = GetPointInTextAtXOffset(x_offset);
     omnibox_view()->OnMousePressed(
         CreateMouseEvent(ui::ET_MOUSE_PRESSED, point));
     omnibox_view()->OnMouseReleased(
@@ -586,7 +600,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, FirstMouseClickFocusesOnly) {
   EXPECT_FALSE(omnibox_view()->IsSelectAll());
 
-  SendMouseClick(gfx::Point());
+  SendMouseClick(0);
 
   ExpectElidedUrlDisplayed();
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
@@ -594,31 +608,40 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, FirstMouseClickFocusesOnly) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
-  SendMouseClick(kPointInText);
+  SendMouseClick(0);
 
   // Advance the clock 5 seconds so the second click is not interpreted as a
   // double click.
   clock()->Advance(base::TimeDelta::FromSeconds(10));
 
   // Second click should unelide only on mouse release.
-  omnibox_view()->OnMousePressed(
-      CreateMouseEvent(ui::ET_MOUSE_PRESSED, kPointInText));
+  omnibox_view()->OnMousePressed(CreateMouseEvent(
+      ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   ExpectElidedUrlDisplayed();
-  omnibox_view()->OnMouseReleased(
-      CreateMouseEvent(ui::ET_MOUSE_RELEASED, kPointInText));
+  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+      ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
+
+  // Verify the cursor position is https://ex|ample.com. It should be between
+  // 'x' and 'a', because the click was after the second character of the
+  // unelided text "example.com".
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(10U, start);
+  EXPECT_EQ(10U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
-  SendMouseClick(kPointInText);
+  SendMouseClick(4 * kCharacterWidth);
 
   // Second click without advancing the clock should be a double-click, which
   // should do a single word selection and unelide the text on mousedown.
-  omnibox_view()->OnMousePressed(
-      CreateMouseEvent(ui::ET_MOUSE_PRESSED, kPointInText));
+  omnibox_view()->OnMousePressed(CreateMouseEvent(
+      ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   ExpectFullUrlDisplayed();
 
-  // Verify that the proper portion of the full URL is selected.
+  // Verify that the selection is https://|example|.com, since the double-click
+  // after the fourth character of the unelided text "example.com".
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(8U, start);
@@ -626,9 +649,9 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
-  SendMouseClick(kPointInText);
-  SendMouseClick(kPointInText);
-  SendMouseClick(kPointInText);
+  SendMouseClick(4 * kCharacterWidth);
+  SendMouseClick(4 * kCharacterWidth);
+  SendMouseClick(4 * kCharacterWidth);
 
   ExpectFullUrlDisplayed();
 
@@ -638,4 +661,30 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(0U, start);
   EXPECT_EQ(19U, end);
+}
+
+TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
+  omnibox_view()->OnMousePressed(CreateMouseEvent(
+      ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
+  ExpectElidedUrlDisplayed();
+
+  // Expect that during the drag, the URL is still elided.
+  omnibox_view()->OnMouseDragged(CreateMouseEvent(
+      ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
+  ExpectElidedUrlDisplayed();
+
+  // Expect that ex|am|ple.com is the drag selected portion.
+  size_t start, end;
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(2U, start);
+  EXPECT_EQ(4U, end);
+
+  omnibox_view()->OnMouseReleased(CreateMouseEvent(
+      ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
+  ExpectFullUrlDisplayed();
+
+  // Expect that https://ex|am|ple.com is the drag selected portion.
+  omnibox_view()->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(10U, start);
+  EXPECT_EQ(12U, end);
 }
