@@ -42,30 +42,30 @@
 extern "C" {
 #endif
 
-void AnnotateRWLockCreate(const char *, int,
-                          const volatile void *){}
-void AnnotateRWLockDestroy(const char *, int,
-                           const volatile void *){}
-void AnnotateRWLockAcquired(const char *, int,
-                            const volatile void *, long){}
-void AnnotateRWLockReleased(const char *, int,
-                            const volatile void *, long){}
-void AnnotateBenignRace(const char *, int,
-                        const volatile void *,
-                        const char *){}
-void AnnotateBenignRaceSized(const char *, int,
-                             const volatile void *,
-                             size_t,
-                             const char *) {}
-void AnnotateThreadName(const char *, int,
-                        const char *){}
-void AnnotateIgnoreReadsBegin(const char *, int){}
-void AnnotateIgnoreReadsEnd(const char *, int){}
-void AnnotateIgnoreWritesBegin(const char *, int){}
-void AnnotateIgnoreWritesEnd(const char *, int){}
-void AnnotateEnableRaceDetection(const char *, int, int){}
-void AnnotateMemoryIsInitialized(const char *, int,
-                                 const volatile void *mem, size_t size) {
+void AbslAnnotateRWLockCreate(const char *, int,
+                              const volatile void *){}
+void AbslAnnotateRWLockDestroy(const char *, int,
+                               const volatile void *){}
+void AbslAnnotateRWLockAcquired(const char *, int,
+                                const volatile void *, long){}
+void AbslAnnotateRWLockReleased(const char *, int,
+                                const volatile void *, long){}
+void AbslAnnotateBenignRace(const char *, int,
+                            const volatile void *,
+                            const char *){}
+void AbslAnnotateBenignRaceSized(const char *, int,
+                                 const volatile void *,
+                                 size_t,
+                                 const char *) {}
+void AbslAnnotateThreadName(const char *, int,
+                            const char *){}
+void AbslAnnotateIgnoreReadsBegin(const char *, int){}
+void AbslAnnotateIgnoreReadsEnd(const char *, int){}
+void AbslAnnotateIgnoreWritesBegin(const char *, int){}
+void AbslAnnotateIgnoreWritesEnd(const char *, int){}
+void AbslAnnotateEnableRaceDetection(const char *, int, int){}
+void AbslAnnotateMemoryIsInitialized(const char *, int,
+                                     const volatile void *mem, size_t size) {
 #if __has_feature(memory_sanitizer)
   __msan_unpoison(mem, size);
 #else
@@ -74,8 +74,8 @@ void AnnotateMemoryIsInitialized(const char *, int,
 #endif
 }
 
-void AnnotateMemoryIsUninitialized(const char *, int,
-                                   const volatile void *mem, size_t size) {
+void AbslAnnotateMemoryIsUninitialized(const char *, int,
+                                       const volatile void *mem, size_t size) {
 #if __has_feature(memory_sanitizer)
   __msan_allocated_memory(mem, size);
 #else
