@@ -7,7 +7,7 @@ const controlsFadeOutDurationMs = 300;
 // The timeout for the hide-after-no-mouse-movement behavior. Defined (and
 // should mirror) the value 'timeWithoutMouseMovementBeforeHidingMediaControls'
 // in MediaControls.cpp.
-const controlsMouseMovementTimeoutMs = 3000;
+const controlsMouseMovementTimeoutMs = 2500;
 
 function isControlVisible(control) {
     var style = getComputedStyle(control);
@@ -97,6 +97,18 @@ function fullscreenOverflowItem(video) {
 
 function muteOverflowItem(video) {
   return overflowItem(video, '-webkit-media-controls-mute-button');
+}
+
+function captionsOverflowItem(video) {
+  return overflowItem(video, '-webkit-media-controls-toggle-closed-captions-button');
+}
+
+function castOverflowItem(video) {
+  return overflowItem(video, '-internal-media-controls-cast-button');
+}
+
+function downloadsOverflowItem(video) {
+  return overflowItem(video, '-internal-media-controls-download-button');
 }
 
 function mediaControlsElement(first, id)
@@ -190,6 +202,28 @@ function textTrackDisplayElement(parentElement)
     return mediaControlsElement(containerElement.firstChild, "-webkit-media-text-track-display");
 }
 
+function isCastButtonEnabled(video) {
+  var button = castOverflowItem(video);
+  return !button.disabled && button.style.display != "none";
+}
+
+function isClosedCaptionsButtonEnabled(video) {
+  var button = captionsOverflowItem(video);
+  return !button.disabled && button.style.display != "none";
+}
+
+function isDownloadsButtonEnabled(video) {
+  var button = downloadsOverflowItem(video);
+  return !button.disabled && button.style.display != "none";
+}
+
+function isFullscreenButtonEnabled(video) {
+  var button = fullscreenButton(video);
+  var overflowButton = fullscreenOverflowItem(video);
+  return (!button.disabled && button.style.display != "none") ||
+      (!overflowButton.disabled && overflowButton.style.display != "none");
+}
+
 function isClosedCaptionsButtonVisible(currentMediaElement)
 {
     var captionsButtonElement = mediaControlsButton(currentMediaElement, "toggle-closed-captions-button");
@@ -243,34 +277,51 @@ function clickAtCoordinates(x, y)
     eventSender.mouseUp();
 }
 
-function textTrackListItemAtIndex(video, index)
-{
+function openOverflowAndClickButton(video, button, callback) {
+  singleTapOnControl(overflowButton(video), function () {
+    singleTapOnControl(button, callback);
+  });
+}
+
+function clickDownloadButton(video, callback) {
+  openOverflowAndClickButton(video, downloadsOverflowItem(video), callback);
+}
+
+function textTrackListItemAtIndex(video, index) {
     var trackListItems = textTrackMenu(video).childNodes;
     for (var i = 0; i < trackListItems.length; i++) {
         var trackListItem = trackListItems[i];
-        if (trackListItem.firstChild.getAttribute("data-track-index") == index)
+        var innerCheckbox = textTrackListItemInnerCheckbox(trackListItem);
+        if (innerCheckbox && innerCheckbox.getAttribute("data-track-index") == index)
             return trackListItem;
     }
 }
 
-function clickCaptionButton(video)
-{
-    var captionsButtonCoordinates =
-            mediaControlsButtonCoordinates(video, "toggle-closed-captions-button");
-    clickAtCoordinates(captionsButtonCoordinates[0], captionsButtonCoordinates[1]);
+function textTrackListItemInnerCheckbox(trackListItem) {
+  const children = trackListItem.children;
+  for (var i = 0; i < children.length; i++) {
+    const child = children[i];
+    if (internals.shadowPseudoId(child) == "-internal-media-controls-text-track-list-item-input")
+      return child;
+  }
+  return null;
 }
 
-function clickTextTrackAtIndex(video, index)
-{
-    clickCaptionButton(video);
-    var trackListItemElement = textTrackListItemAtIndex(video, index);
-    var trackListItemCoordinates = elementCoordinates(trackListItemElement);
-    clickAtCoordinates(trackListItemCoordinates[0], trackListItemCoordinates[1]);
+function clickCaptionButton(video, callback) {
+  openOverflowAndClickButton(video, captionsOverflowItem(video), callback);
 }
 
-function turnClosedCaptionsOff(video)
+function clickTextTrackAtIndex(video, index, callback) {
+    clickCaptionButton(video, function () {
+      var track = textTrackListItemAtIndex(video, index);
+      track.scrollIntoView();
+      singleTapOnControl(track, callback);
+    });
+}
+
+function turnClosedCaptionsOff(video, callback)
 {
-    clickTextTrackAtIndex(video, -1);
+    clickTextTrackAtIndex(video, -1, callback);
 }
 
 function checkCaptionsVisible(video, captions)
@@ -301,10 +352,9 @@ function runAfterHideMediaControlsTimerFired(func, mediaElement)
     setTimeout(func, hideTimeoutMs);
 }
 
-function hasFullscreenButton(element)
-{
-    var size = mediaControlsButtonDimensions(element, "fullscreen-button");
-    return size[0] > 0 && size[1] > 0;
+function hasEnabledFullscreenButton(element) {
+  var button = fullscreenButton(element);
+  return !button.disabled && button.style.display != "none";
 }
 
 function isControlsPanelVisible(element)

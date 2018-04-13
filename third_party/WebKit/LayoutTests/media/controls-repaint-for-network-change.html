@@ -8,6 +8,7 @@
 </style>
 <script src="../resources/run-after-layout-and-paint.js"></script>
 <script src=media-file.js></script>
+<script src=media-controls.js></script>
 
 <audio controls></audio>
 <audio controls></audio>
@@ -18,6 +19,9 @@
 testRunner.waitUntilDone();
 
 var audios = document.querySelectorAll("audio");
+audios.forEach(audio => {
+  enableTestMode(audio);
+});
 
 runAfterLayoutAndPaint(function() {
     // These will cause the play buttons to become enabled, and should

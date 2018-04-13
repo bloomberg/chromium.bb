@@ -76,18 +76,9 @@ Case: Displaying movie
       "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-ready state-stopped'",
       "position": [8, 8],
       "bounds": [352, 288]
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
-      "position": [8, 8],
-      "bounds": [352, 246]
     }
   ]
 }

@@ -366,7 +366,7 @@ const base::Feature kOverflowIconsForMediaControls{
 
 // Enables the new redesigned media controls.
 const base::Feature kUseModernMediaControls{"UseModernMediaControls",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables Media Engagement Index recording. This data will be used to determine
 // when to bypass autoplay policies. This is recorded on all platforms.

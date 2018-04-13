@@ -466,18 +466,9 @@
       "drawsContent": false
     },
     {
-      "name": "Squashing Containment Layer",
-      "drawsContent": false
-    },
-    {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-ready state-stopped'",
       "position": [15, 859],
       "bounds": [150, 60]
-    },
-    {
-      "name": "Squashing Layer (first squashed layer: LayoutFlexibleBox (relative positioned) DIV)",
-      "position": [15, 859],
-      "bounds": [150, 18]
     }
   ],
   "objectPaintInvalidations": [

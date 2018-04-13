@@ -9,6 +9,7 @@
     <script src="../media/media-controls.js"></script>
     <script>
         var video = document.getElementById('video');
+        enableTestMode(video);
         var timeline;
 
         waitForEvent(document, 'webkitfullscreenchange', function() {
@@ -16,7 +17,7 @@
                 timeline = mediaControlsElement(internals.shadowRoot(video).firstChild, '-webkit-media-controls-timeline');
                 var box = internals.boundingBox(timeline);
 
-                eventSender.mouseMoveTo(box.left + 5, box.top + 5);
+                eventSender.mouseMoveTo(box.left + 50, box.top + 5);
 
                 waitForEvent(timeline, 'mousedown');
                 eventSender.mouseDown();

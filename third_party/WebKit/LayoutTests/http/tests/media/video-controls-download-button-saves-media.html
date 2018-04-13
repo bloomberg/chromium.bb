@@ -17,13 +17,10 @@ async_test(function(t) {
   // Set up video
   var video = document.querySelector("video");
   video.src = "resources/test.ogv";
-  var controlID = "-internal-media-controls-download-button";
-  var downloadButton = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);
 
   video.onloadeddata = t.step_func(function() {
-      // Click on the download button
-      var coords = elementCoordinates(downloadButton);
-      clickAtCoordinates(coords[0], coords[1]);
+    // Click on the download button
+    clickDownloadButton(video);
   });
 });
 </script>

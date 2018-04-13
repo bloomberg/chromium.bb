@@ -3,6 +3,7 @@
 <head>
   <script src="../media-file.js"></script>
   <script src="../video-paint-test.js"></script>
+  <script src="../media-controls.js"></script>
 </head>
 <body>
   <p>Test controls rendering with cast button.</p>
@@ -20,6 +21,9 @@
         window.internals.settings.setMockScrollbarsEnabled(true);
 
     var videos = document.getElementsByTagName('video');
+    for (var i = 0; i < videos.length; ++i) {
+      enableTestMode(videos[i]);
+    }
     waitForMultipleEvents("canplaythrough", videos.length, function() {
         for (var i = 0; i < videos.length; ++i) {
             videos[i].play();

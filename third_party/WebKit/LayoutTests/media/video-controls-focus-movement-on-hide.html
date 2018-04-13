@@ -11,7 +11,7 @@ async_test(function(t) {
     video.oncanplay = t.step_func(function() {
         assert_equals(document.activeElement, document.body);
 
-        var playButton = mediaControlsButton(video, "play-button");
+        var playButton = mediaControlsButton(video, "overlay-play-button");
         playButton.focus();
         playButton.click();
 

@@ -22,13 +22,9 @@ async_test(function(t) {
             });
 
             // Find the play button and click the middle of its bounding box.
-            var playCoords = mediaControlsButtonCoordinates(video, "play-button");
-            // Apply the page zoom value to the coordinates because
-            // getBoundingClientRect() used in mediaControlsButtonCoordinates() doesn't do it.
-            var clickX = playCoords[0] * 1.5;
-            var clickY = playCoords[1] * 1.5;
+            var playCoords = mediaControlsButtonCoordinates(video, "overlay-play-button");
 
-            eventSender.mouseMoveTo(clickX, clickY);
+            eventSender.mouseMoveTo(playCoords[0], playCoords[1]);
             eventSender.mouseDown();
             eventSender.mouseUp();
         }, 50);

@@ -36,7 +36,7 @@ async_test(function(t) {
       // Items should be visible
       assert_not_equals(getComputedStyle(child).display, "none");
       // Buttons should be visible
-      assert_equals(getComputedStyle(innerButton).display, "flex");
+      assert_not_equals(getComputedStyle(innerButton).display, "none");
     }
   });
 });

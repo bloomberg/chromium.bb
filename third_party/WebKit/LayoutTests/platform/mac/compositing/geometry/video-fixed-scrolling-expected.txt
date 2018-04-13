@@ -12,9 +12,8 @@ layer at (8,38) size 400x300
   LayoutVideo {VIDEO} at (0,80) size 400x300
 layer at (8,38) size 400x300
   LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 400x300
-    LayoutBlockFlow {DIV} at (0,268) size 400x32
-layer at (8,38) size 400x258
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 400x258
+    LayoutBlockFlow {DIV} at (200,0) size 0x0
+    LayoutFlexibleBox {DIV} at (0,0) size 400x300
 layer at (0,0) size 500x60
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 500x60 [bgcolor=#0000FFCC]
 scrolled to 0,50

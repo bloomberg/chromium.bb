@@ -3,6 +3,7 @@
     <head>
         <script src="media-file.js"></script>
         <script src="video-paint-test.js"></script>
+        <script src="media-controls.js"></script>
         <style>
             video:nth-of-type(1) {
                 font: bold italic 30px monospace;
@@ -15,4 +16,10 @@
         <video controls></video>
         <video controls></video>
     </body>
+    <script>
+      const videos = document.getElementsByTagName('video');
+      for (var i = 0; i < videos.length; ++i) {
+        enableTestMode(videos[i]);
+      }
+    </script>
 </html>

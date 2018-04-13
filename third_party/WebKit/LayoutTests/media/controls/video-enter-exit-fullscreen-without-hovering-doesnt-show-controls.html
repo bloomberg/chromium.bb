@@ -19,7 +19,7 @@ async_test(function(t) {
     var panel = mediaControlsButton(video, "panel");
 
     // Move mouse to the play button and start playing the video.
-    clickAtCoordinates(...mediaControlsButtonCoordinates(video, "play-button"));
+    clickAtCoordinates(...mediaControlsButtonCoordinates(video, "overlay-play-button"));
 
     assert_equals(getComputedStyle(panel).opacity, "1",
                   "Inline controls should initially show since controls " +

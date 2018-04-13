@@ -23,11 +23,9 @@ layer at (12,465) size 489x369 backgroundClip at (0,0) size 785x600 clip at (0,0
   LayoutVideo {VIDEO} at (4,0) size 489x369 [border: (4.50px solid #FF0000)]
 layer at (17,47) size 480x360
   LayoutFlexibleBox (relative positioned) {DIV} at (4.50,4.50) size 480x360
-    LayoutBlockFlow {DIV} at (0,312) size 480x48
-layer at (17,47) size 480x297
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 480x297
+    LayoutBlockFlow {DIV} at (240,0) size 0x0
+    LayoutFlexibleBox {DIV} at (0,0) size 480x360
 layer at (17,470) size 480x360 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
   LayoutFlexibleBox (relative positioned) {DIV} at (4.50,4.50) size 480x360
-    LayoutBlockFlow {DIV} at (0,312) size 480x48
-layer at (17,470) size 480x297 backgroundClip at (17,470) size 480x130 clip at (17,470) size 480x130
-  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 480x297
+    LayoutBlockFlow {DIV} at (240,0) size 0x0
+    LayoutFlexibleBox {DIV} at (0,0) size 480x360
