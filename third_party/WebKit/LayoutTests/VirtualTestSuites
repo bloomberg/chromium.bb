@@ -625,16 +625,6 @@
     "args": ["--sampling-heap-profiler"]
   },
   {
-    "prefix": "navigation-mojo-response",
-    "base": "http/tests/serviceworker",
-    "args": ["--enable-features=NavigationMojoResponse"]
-  },
-  {
-    "prefix": "navigation-mojo-response",
-    "base": "external/wpt/service-workers/service-worker",
-    "args": ["--enable-features=NavigationMojoResponse"]
-  },
-  {
     "prefix": "htxg",
     "base": "http/tests/loading/htxg",
     "args": ["--enable-features=SignedHTTPExchange"]

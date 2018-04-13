@@ -2026,25 +2026,6 @@
             ]
         }
     ],
-    "NavigationMojoResponse": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "NavigationMojoResponse",
-                    "enable_features": [
-                        "NavigationMojoResponse"
-                    ]
-                }
-            ]
-        }
-    ],
     "NetAdaptiveProxyConnectionTimeout": [
         {
             "platforms": [
