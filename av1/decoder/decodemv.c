@@ -1406,7 +1406,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
-  if (mbmi->sb_type >= BLOCK_8X8 && !mbmi->skip_mode && !has_second_ref(mbmi))
+  if (is_motion_variation_allowed_bsize(mbmi->sb_type) && !mbmi->skip_mode &&
+      !has_second_ref(mbmi))
     mbmi->num_proj_ref[0] = findSamples(cm, xd, mi_row, mi_col, pts, pts_inref);
   av1_count_overlappable_neighbors(cm, xd, mi_row, mi_col);
 
