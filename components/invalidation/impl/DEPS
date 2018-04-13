@@ -16,7 +16,11 @@ include_rules = [
   "+net/base/backoff_entry.h",
   "+net/base/ip_endpoint.h",
   "+net/base/network_change_notifier.h",
+  "+net/http/http_request_headers.h",
   "+net/http/http_status_code.h",
   "+net/traffic_annotation",
   "+net/url_request",
+
+  "+services/network/public",
+  "+services/network/test",
 ]

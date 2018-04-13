@@ -27,8 +27,12 @@ static_library("impl") {
     "invalidator_storage.h",
     "mock_ack_handler.cc",
     "mock_ack_handler.h",
+    "per_user_topic_registration_request.cc",
+    "per_user_topic_registration_request.h",
     "profile_invalidation_provider.cc",
     "profile_invalidation_provider.h",
+    "status.cc",
+    "status.h",
     "unacked_invalidation_set.cc",
     "unacked_invalidation_set.h",
   ]
@@ -48,6 +52,8 @@ static_library("impl") {
     "//google_apis",
     "//jingle:notifier",
     "//net:net",
+    "//services/network/public/cpp",
+    "//services/network/public/mojom",
 
     # TODO(sync): Remove this (http://crbug.com/133352);
     "//third_party/protobuf:protobuf_lite",
@@ -96,16 +102,34 @@ static_library("impl") {
   }
 }
 
+source_set("json_unsafe_parser") {
+  testonly = !is_ios
+
+  sources = [
+    "json_unsafe_parser.cc",
+    "json_unsafe_parser.h",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
     "invalidation_logger_unittest.cc",
+    "per_user_topic_registration_request_unittest.cc",
   ]
   deps = [
     ":impl",
+    ":json_unsafe_parser",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//components/prefs",
+    "//net:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
