@@ -463,6 +463,21 @@ void ClientControlledShellSurface::SetExtraTitle(
     widget_->UpdateWindowTitle();
 }
 
+void ClientControlledShellSurface::SetOrientationLock(
+    ash::OrientationLockType orientation_lock) {
+  TRACE_EVENT1("exo", "ClientControlledShellSurface::SetOrientationLock",
+               "orientation_lock", static_cast<int>(orientation_lock));
+
+  if (!widget_) {
+    initial_orientation_lock_ = orientation_lock;
+    return;
+  }
+
+  ash::Shell* shell = ash::Shell::Get();
+  shell->screen_orientation_controller()->LockOrientationForWindow(
+      widget_->GetNativeWindow(), orientation_lock);
+}
+
 void ClientControlledShellSurface::OnBoundsChangeEvent(
     ash::mojom::WindowStateType current_state,
     ash::mojom::WindowStateType requested_state,
@@ -828,6 +843,8 @@ void ClientControlledShellSurface::InitializeWindowState(
   frame_view->SetCaptionButtonModel(std::make_unique<CaptionButtonModel>(
       frame_visible_button_mask_, frame_enabled_button_mask_));
   UpdateAutoHideFrame();
+  if (initial_orientation_lock_ != ash::OrientationLockType::kAny)
+    SetOrientationLock(initial_orientation_lock_);
 }
 
 float ClientControlledShellSurface::GetScale() const {
