@@ -45,9 +45,6 @@ def _GetProjectPath(path):
 
 def _GetPylintrc(path):
   """Locate the pylintrc file that applies to |path|."""
-  if not path.endswith('.py'):
-    return
-
   path = os.path.realpath(path)
   project_path = _GetProjectPath(path)
   parent = os.path.dirname(path)
