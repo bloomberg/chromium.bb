@@ -110,12 +110,12 @@
   // If there's only one cell, the animation has two parts:
   //   (A) Fading in the selected cell highlight indicator.
   //   (B) Zooming the selected cell into position.
-  // These parts are timed like this:
+  // These parts are timed over |duration| like this:
   //
-  //                                 |*|----[A]----{100%}
+  //           |#|----------[A]--------------------{100%}
   //  {0%}------------------[B]--------------------{100%}
   //
-  //  (|*| is <staggeredDuration>%).
+  //  (|#| is |duration| - |staggeredDuration|).
   // Animation B will call the completion handler in this case.
 
   // If there's more than once cell, the animation has three parts:
@@ -124,11 +124,11 @@
   //   (C) Zooming the unselected cells into position.
   // The timing is as follows:
   //
-  //                                 |*|----[A]----{100%}
+  //           |#|----------[A]--------------------{100%}
   //  {0%}------------------[B]------|*|
   //           |#|----------[C]--------------------{100%}
-  //  (|*| is <staggeredDuration>%).
-  //  (|#| is 1-<staggeredDuration>%).
+  //  (|*| is |staggeredDuration|).
+  //  (|#| is |duration| - |staggeredDuration|).
   // Animation C will call the completion handler in this case.
 
   // TODO(crbug.com/820410): Tune the timing, relative pacing, and curves of
@@ -136,10 +136,10 @@
 
   UICollectionViewCell* selectedCell = self.layout.selectedItem.cell;
 
-  // Run animation (A) starting at |staggeredDuration|.
-  [UIView animateWithDuration:duration - staggeredDuration
-                        delay:staggeredDuration
-                      options:UIViewAnimationOptionCurveEaseIn
+  // Run animation (A) starting at |1 - staggeredDuration|.
+  [UIView animateWithDuration:staggeredDuration
+                        delay:duration - staggeredDuration
+                      options:UIViewAnimationOptionCurveEaseOut
                    animations:^{
                      selectedCell.selected = YES;
                    }
@@ -193,12 +193,12 @@
   // If there's only one cell, the animation has two parts:
   //   (A) Fading out the selected cell highlight indicator.
   //   (B) Zooming the selected cell out into position.
-  // These parts are timed like this:
+  // These parts are timed over |duration| like this:
   //
-  //  {0%}----[A]----|#|
+  //  {0%}-----------[A]-------------|*|
   //  {0%}------------------[B]--------------------{100%}
   //
-  //  (|#| is 1-<staggeredDuration>%).
+  //  (|#| is |duration| - |staggeredDuration|).
   // Animation B will call the completion handler in this case.
 
   // If there's more than once cell, the animation has three parts:
@@ -207,11 +207,11 @@
   //   (C) Zooming the unselected cells into position.
   // The timing is as follows:
   //
-  //  {0%}----[A]----|#|
+  //  {0%}-----------[A]-------------|*|
   //  {0%}---------- [C]-------------|*|
   //                 |#|-------------[B]-----------{100%}
-  //  (|*| is <staggeredDuration>%).
-  //  (|#| is 1-<staggeredDuration>%).
+  //  (|*| is |staggeredDuration|)
+  //  (|#| is |duration| - |staggeredDuration|).
   // Animation C will call the completion handler in this case.
 
   // TODO(crbug.com/820410): Tune the timing, relative pacing, and curves of
@@ -219,9 +219,9 @@
 
   UICollectionViewCell* selectedCell = self.layout.selectedItem.cell;
 
-  // Run animation (A) for |duration - staggeredDuration|.
-  [UIView animateWithDuration:0
-                        delay:duration - staggeredDuration
+  // Run animation (A) for |staggeredDuration|.
+  [UIView animateWithDuration:staggeredDuration
+                        delay:0
                       options:UIViewAnimationOptionCurveEaseOut
                    animations:^{
                      selectedCell.selected = NO;
