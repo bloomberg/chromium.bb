@@ -710,9 +710,17 @@ public class VrShellImpl
             mActivity.getToolbarManager().setProgressBarEnabled(true);
         }
 
-        ChromeFullscreenManager manager = mActivity.getFullscreenManager();
-        manager.getBrowserVisibilityDelegate().showControlsTransient();
-
+        // Since VSync was paused, control heights may not have been propagated. If we request to
+        // show the controls before the old values have propagated we'll end up with the old values
+        // (ie. the controls hidden). The values will have propagated with the next frame received
+        // from the compositor, so we can tell the controls to show at that point.
+        if (mActivity.getCompositorViewHolder() != null
+                && mActivity.getCompositorViewHolder().getCompositorView() != null) {
+            mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
+                ChromeFullscreenManager manager = mActivity.getFullscreenManager();
+                manager.getBrowserVisibilityDelegate().showControlsTransient();
+            });
+        }
 
         FrameLayout decor = (FrameLayout) mActivity.getWindow().getDecorView();
         decor.removeView(mUiView);
