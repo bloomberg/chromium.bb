@@ -212,6 +212,7 @@ class CORE_EXPORT HTMLMediaElement
   void setMuted(bool);
   virtual bool SupportsPictureInPicture() const { return false; }
   void enterPictureInPicture();
+  void exitPictureInPicture();
 
   void TogglePlayState();
 

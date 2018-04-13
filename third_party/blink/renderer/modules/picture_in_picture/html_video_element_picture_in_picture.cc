@@ -69,7 +69,8 @@ ScriptPromise HTMLVideoElementPictureInPicture::requestPictureInPicture(
         DOMException::Create(kNotAllowedError, kUserGestureRequired));
   }
 
-  // TODO(crbug.com/806249): Call element.enterPictureInPicture().
+  // TODO(crbug.com/806249): Returns callback in promise.
+  element.enterPictureInPicture();
 
   // TODO(crbug.com/806249): Don't use fake width and height.
   PictureInPictureWindow* window = controller.CreatePictureInPictureWindow(
@@ -114,7 +115,7 @@ void HTMLVideoElementPictureInPicture::SetBooleanAttribute(
   PictureInPictureControllerImpl& controller =
       PictureInPictureControllerImpl::From(document);
   if (controller.PictureInPictureElement(scope) == &element) {
-    // TODO(crbug.com/806249): Call element.exitPictureInPicture().
+    element.exitPictureInPicture();
 
     controller.OnClosePictureInPictureWindow();
 
