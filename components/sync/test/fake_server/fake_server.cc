@@ -106,13 +106,7 @@ void FakeServer::HandleCommand(const string& request,
     base::ThreadRestrictions::SetIOAllowed(true);
     loopback_server_->HandleCommand(request, &server_status,
                                     &response_code_large, response);
-
     *response_code = static_cast<int>(response_code_large);
-    DCHECK(response_proto.ParseFromString(*response));
-    if (response_proto.error_code() == sync_pb::SyncEnums::SUCCESS) {
-      *response_proto.mutable_client_command() = client_command_;
-    }
-    *response = response_proto.SerializeAsString();
     completion_closure.Run();
     return;
   }
@@ -188,12 +182,6 @@ void FakeServer::SetAuthenticated() {
 void FakeServer::SetUnauthenticated() {
   DCHECK(thread_checker_.CalledOnValidThread());
   authenticated_ = false;
-}
-
-void FakeServer::SetClientCommand(
-    const sync_pb::ClientCommand& client_command) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  client_command_ = client_command;
 }
 
 bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {

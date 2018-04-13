@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "components/sync/engine_impl/cycle/debug_info_getter.h"
 #include "components/sync/engine_impl/model_type_registry.h"
 #include "components/sync/engine_impl/sync_engine_event_listener.h"
@@ -48,9 +47,7 @@ class SyncCycleContext {
                    ModelTypeRegistry* model_type_registry,
                    bool keystore_encryption_enabled,
                    bool client_enabled_pre_commit_update_avoidance,
-                   const std::string& invalidator_client_id,
-                   base::TimeDelta short_poll_interval,
-                   base::TimeDelta long_poll_interval);
+                   const std::string& invalidator_client_id);
 
   ~SyncCycleContext();
 
@@ -119,18 +116,6 @@ class SyncCycleContext {
 
   void set_cookie_jar_empty(bool empty_jar) { cookie_jar_empty_ = empty_jar; }
 
-  base::TimeDelta short_poll_interval() const { return short_poll_interval_; }
-  void set_short_poll_interval(base::TimeDelta interval) {
-    DCHECK(!interval.is_zero());
-    short_poll_interval_ = interval;
-  }
-
-  base::TimeDelta long_poll_interval() const { return long_poll_interval_; }
-  void set_long_poll_interval(base::TimeDelta interval) {
-    DCHECK(!interval.is_zero());
-    long_poll_interval_ = interval;
-  }
-
  private:
   base::ObserverList<SyncEngineEventListener> listeners_;
 
@@ -187,9 +172,6 @@ class SyncCycleContext {
 
   // If there's a cookie jar mismatch, whether the cookie jar was empty or not.
   bool cookie_jar_empty_;
-
-  base::TimeDelta short_poll_interval_;
-  base::TimeDelta long_poll_interval_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncCycleContext);
 };

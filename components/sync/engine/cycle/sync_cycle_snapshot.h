@@ -42,9 +42,7 @@ class SyncCycleSnapshot {
                     base::Time poll_finish_time,
                     const std::vector<int>& num_entries_by_type,
                     const std::vector<int>& num_to_delete_entries_by_type,
-                    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin,
-                    base::TimeDelta short_poll_interval,
-                    base::TimeDelta long_poll_interval);
+                    sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin);
   SyncCycleSnapshot(const SyncCycleSnapshot& other);
   ~SyncCycleSnapshot();
 
@@ -65,8 +63,6 @@ class SyncCycleSnapshot {
   const std::vector<int>& num_entries_by_type() const;
   const std::vector<int>& num_to_delete_entries_by_type() const;
   sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin() const;
-  base::TimeDelta short_poll_interval() const;
-  base::TimeDelta long_poll_interval() const;
 
   // Set iff this snapshot was not built using the default constructor.
   bool is_initialized() const;
@@ -87,9 +83,6 @@ class SyncCycleSnapshot {
   std::vector<int> num_to_delete_entries_by_type_;
 
   sync_pb::SyncEnums::GetUpdatesOrigin get_updates_origin_;
-
-  base::TimeDelta short_poll_interval_;
-  base::TimeDelta long_poll_interval_;
 
   bool is_initialized_;
 };

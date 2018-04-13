@@ -267,10 +267,6 @@ class SyncManager {
 
     // Optional nigori state to be restored.
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
-
-    // Define the polling intervals. Must not be zero.
-    base::TimeDelta short_poll_interval;
-    base::TimeDelta long_poll_interval;
   };
 
   SyncManager();
