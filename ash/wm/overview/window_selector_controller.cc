@@ -376,17 +376,8 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     return;
   }
 
-  // Snap the window selector item and remove it from the grid.
-  // The transform will be reset later after the window is snapped.
-  item_to_snap->RestoreWindow(/*reset_transform=*/false);
-  aura::Window* window = item_to_snap->GetWindow();
-  const gfx::Rect item_bounds = item_to_snap->target_bounds();
-  window_selector_->RemoveWindowSelectorItem(item_to_snap);
-  split_view_controller->SnapWindow(window, SplitViewController::LEFT,
-                                    item_bounds);
-  window_selector_->SetBoundsForWindowGridsInScreen(
-      split_view_controller->GetSnappedWindowBoundsInScreen(
-          window, SplitViewController::RIGHT));
+  split_view_controller->SnapWindow(item_to_snap->GetWindow(),
+                                    SplitViewController::LEFT);
   base::RecordAction(
       base::UserMetricsAction("Tablet_LongPressOverviewButtonEnterSplitView"));
 }

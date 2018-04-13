@@ -303,14 +303,8 @@ void OverviewWindowDragController::SnapWindow(
     SplitViewController::SnapPosition snap_position) {
   DCHECK_NE(snap_position, SplitViewController::NONE);
 
-  // The transform will be reset later after the window is snapped.
-  item_->RestoreWindow(/*reset_transform=*/false);
-
-  // |item_| will be deleted after RemoveWindowSelectorItem().
-  aura::Window* window = item_->GetWindow();
-  const gfx::Rect item_bounds = item_->target_bounds();
-  window_selector_->RemoveWindowSelectorItem(item_);
-  split_view_controller_->SnapWindow(window, snap_position, item_bounds);
+  // |item_| will be deleted after SplitViewController::SnapWindow().
+  split_view_controller_->SnapWindow(item_->GetWindow(), snap_position);
   item_ = nullptr;
 }
 
