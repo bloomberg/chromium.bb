@@ -663,8 +663,11 @@ class WebMediaPlayerImplTest : public testing::Test {
            blink::WebMediaPlayer::kReadyStateHaveCurrentData) {
       base::RunLoop loop;
       EXPECT_CALL(client_, ReadyStateChanged())
-          .WillOnce(RunClosure(loop.QuitClosure()));
+          .WillRepeatedly(RunClosure(loop.QuitClosure()));
       loop.Run();
+
+      // Clear the mock so it doesn't have a stale QuitClosure.
+      testing::Mock::VerifyAndClearExpectations(&client_);
     }
 
     // Verify we made it through pipeline startup.
@@ -743,8 +746,7 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
 }
 
 // Verify that preload=metadata suspend works properly.
-// Crashes frequently on Linux TSan and MSan. https://crbug.com/831566
-TEST_F(WebMediaPlayerImplTest, DISABLED_LoadPreloadMetadataSuspend) {
+TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
   InitializeWebMediaPlayerImpl();
