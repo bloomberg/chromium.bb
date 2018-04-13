@@ -4,6 +4,7 @@
 
 #include "components/services/leveldb/public/cpp/util.h"
 
+#include "base/containers/span.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
@@ -88,6 +89,16 @@ std::string Uint8VectorToStdString(const std::vector<uint8_t>& input) {
 std::vector<uint8_t> StdStringToUint8Vector(const std::string& input) {
   const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
   return std::vector<uint8_t>(data, data + input.size());
+}
+
+base::StringPiece Uint8VectorToStringPiece(const std::vector<uint8_t>& input) {
+  return base::StringPiece(reinterpret_cast<const char*>(input.data()),
+                           input.size());
+}
+
+std::vector<uint8_t> StringPieceToUint8Vector(base::StringPiece input) {
+  base::span<const uint8_t> data = base::as_bytes(base::make_span(input));
+  return std::vector<uint8_t>(data.begin(), data.end());
 }
 
 }  // namespace leveldb

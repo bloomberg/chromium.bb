@@ -39,6 +39,10 @@ std::string Uint8VectorToStdString(const std::vector<uint8_t>& input);
 
 std::vector<uint8_t> StdStringToUint8Vector(const std::string& input);
 
+base::StringPiece Uint8VectorToStringPiece(const std::vector<uint8_t>& input);
+
+std::vector<uint8_t> StringPieceToUint8Vector(base::StringPiece input);
+
 }  // namespace leveldb
 
 #endif  // COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_UTIL_H_

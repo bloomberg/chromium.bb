@@ -1271,6 +1271,7 @@ test("content_unittests") {
     "../browser/dom_storage/dom_storage_database_unittest.cc",
     "../browser/dom_storage/local_storage_context_mojo_unittest.cc",
     "../browser/dom_storage/session_storage_database_unittest.cc",
+    "../browser/dom_storage/session_storage_metadata_unittest.cc",
     "../browser/download/download_manager_impl_unittest.cc",
     "../browser/download/download_request_core_unittest.cc",
     "../browser/download/save_package_unittest.cc",
