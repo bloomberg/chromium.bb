@@ -169,14 +169,13 @@ bool VerifySignature(
   // TODO(crbug.com/803774): This is missing the digitalSignature key usage bit
   // check.
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(
-          crypto::SignatureVerifier::RSA_PSS_SHA256, sig.data(), sig.size(),
-          reinterpret_cast<const uint8_t*>(spki.data()), spki.size())) {
+  if (!verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256, sig,
+                           base::as_bytes<const char>(spki))) {
     signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
         "VerifySignature", error_message_callback, "VerifyInit failed.");
     return false;
   }
-  verifier.VerifyUpdate(msg.data(), msg.size());
+  verifier.VerifyUpdate(msg);
   if (!verifier.VerifyFinal()) {
     signed_exchange_utils::RunErrorMessageCallbackAndEndTraceEvent(
         "VerifySignature", error_message_callback, "VerifyFinal failed.");

@@ -62,7 +62,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     ExtensionKey(const ExtensionId& extension_id,
                  const base::FilePath& extension_root,
                  const base::Version& extension_version,
-                 const ContentVerifierKey& verifier_key);
+                 ContentVerifierKey verifier_key);
+    ~ExtensionKey();
 
     ExtensionKey(const ExtensionKey& other);
     ExtensionKey& operator=(const ExtensionKey& other);

@@ -44,11 +44,9 @@ TEST(ECSignatureCreatorTest, BasicTest) {
   ASSERT_TRUE(key_original->ExportPublicKey(&public_key_info));
 
   crypto::SignatureVerifier verifier;
-  ASSERT_TRUE(verifier.VerifyInit(
-      crypto::SignatureVerifier::ECDSA_SHA256, &signature[0], signature.size(),
-      &public_key_info.front(), public_key_info.size()));
+  ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256,
+                                  signature, public_key_info));
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(data.c_str()),
-                        data.size());
+  verifier.VerifyUpdate(base::as_bytes<const char>(data));
   ASSERT_TRUE(verifier.VerifyFinal());
 }

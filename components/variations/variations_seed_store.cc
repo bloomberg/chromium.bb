@@ -62,14 +62,11 @@ VerifySignatureResult VerifySeedSignature(
 
   crypto::SignatureVerifier verifier;
   if (!verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256,
-                           reinterpret_cast<const uint8_t*>(signature.data()),
-                           signature.size(), kPublicKey,
-                           arraysize(kPublicKey))) {
+                           base::as_bytes<const char>(signature), kPublicKey)) {
     return VerifySignatureResult::INVALID_SIGNATURE;
   }
 
-  verifier.VerifyUpdate(reinterpret_cast<const uint8_t*>(seed_bytes.data()),
-                        seed_bytes.size());
+  verifier.VerifyUpdate(base::as_bytes<const char>(seed_bytes));
   if (!verifier.VerifyFinal())
     return VerifySignatureResult::INVALID_SEED;
 

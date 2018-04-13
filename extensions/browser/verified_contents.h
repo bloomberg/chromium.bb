@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/version.h"
@@ -24,7 +25,7 @@ namespace extensions {
 class VerifiedContents {
  public:
   // Note: the public_key must remain valid for the lifetime of this object.
-  VerifiedContents(const uint8_t* public_key, size_t public_key_size);
+  explicit VerifiedContents(base::span<const uint8_t> public_key);
   ~VerifiedContents();
 
   // Returns true if we successfully parsed the verified_contents.json file at
@@ -58,8 +59,7 @@ class VerifiedContents {
                        const std::string& signature_bytes);
 
   // The public key we should use for signature verification.
-  const uint8_t* public_key_;
-  const size_t public_key_size_;
+  base::span<const uint8_t> public_key_;
 
   // Indicates whether the signature was successfully validated or not.
   bool valid_signature_;

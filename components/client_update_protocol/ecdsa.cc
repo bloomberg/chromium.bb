@@ -170,9 +170,8 @@ bool Ecdsa::ValidateResponse(const base::StringPiece& response_body,
 
   // Initialize the signature verifier.
   crypto::SignatureVerifier verifier;
-  if (!verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256,
-                           &signature.front(), signature.size(),
-                           &public_key_.front(), public_key_.size())) {
+  if (!verifier.VerifyInit(crypto::SignatureVerifier::ECDSA_SHA256, signature,
+                           public_key_)) {
     DVLOG(1) << "Couldn't init SignatureVerifier.";
     return false;
   }
@@ -182,8 +181,7 @@ bool Ecdsa::ValidateResponse(const base::StringPiece& response_body,
   // * The buffer that the server signed does not match the buffer that the
   //   client assembled -- implying that either request body or response body
   //   was modified, or a different nonce value was used.
-  verifier.VerifyUpdate(&signed_message_hash.front(),
-                        signed_message_hash.size());
+  verifier.VerifyUpdate(signed_message_hash);
   return verifier.VerifyFinal();
 }
 

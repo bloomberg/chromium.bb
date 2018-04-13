@@ -5,19 +5,11 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFIER_CONTENT_VERIFIER_KEY_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFIER_CONTENT_VERIFIER_KEY_H_
 
-#include <stdint.h>
+#include "base/containers/span.h"
 
 namespace extensions {
 
-// A pointer to the bytes of a public key, and the number of bytes for content
-// verification.
-struct ContentVerifierKey {
-  const uint8_t* data;
-  size_t size;
-
-  ContentVerifierKey(const uint8_t* data, size_t size)
-      : data(data), size(size) {}
-};
+using ContentVerifierKey = base::span<const uint8_t>;
 
 }  // namespace extensions
 

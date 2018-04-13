@@ -188,75 +188,55 @@ TEST(SignatureVerifierTest, BasicTest) {
   // We use the signature verifier to perform four signature verification
   // tests.
   crypto::SignatureVerifier verifier;
-  bool ok;
 
   // Test  1: feed all of the data to the verifier at once (a single
   // VerifyUpdate call).
-  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
-                           sizeof(signature), public_key_info,
-                           sizeof(public_key_info));
-  EXPECT_TRUE(ok);
-  verifier.VerifyUpdate(tbs_certificate, sizeof(tbs_certificate));
-  ok = verifier.VerifyFinal();
-  EXPECT_TRUE(ok);
+  EXPECT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                                  signature, public_key_info));
+  verifier.VerifyUpdate(tbs_certificate);
+  EXPECT_TRUE(verifier.VerifyFinal());
 
   // Test 2: feed the data to the verifier in three parts (three VerifyUpdate
   // calls).
-  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
-                           sizeof(signature), public_key_info,
-                           sizeof(public_key_info));
-  EXPECT_TRUE(ok);
-  verifier.VerifyUpdate(tbs_certificate, 256);
-  verifier.VerifyUpdate(tbs_certificate + 256, 256);
-  verifier.VerifyUpdate(tbs_certificate + 512, sizeof(tbs_certificate) - 512);
-  ok = verifier.VerifyFinal();
-  EXPECT_TRUE(ok);
+  EXPECT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                                  signature, public_key_info));
+  verifier.VerifyUpdate(base::make_span(tbs_certificate, 256));
+  verifier.VerifyUpdate(base::make_span(tbs_certificate + 256, 256));
+  verifier.VerifyUpdate(
+      base::make_span(tbs_certificate + 512, sizeof(tbs_certificate) - 512));
+  EXPECT_TRUE(verifier.VerifyFinal());
 
   // Test 3: verify the signature with incorrect data.
   uint8_t bad_tbs_certificate[sizeof(tbs_certificate)];
   memcpy(bad_tbs_certificate, tbs_certificate, sizeof(tbs_certificate));
   bad_tbs_certificate[10] += 1;  // Corrupt one byte of the data.
-  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
-                           sizeof(signature), public_key_info,
-                           sizeof(public_key_info));
-  EXPECT_TRUE(ok);
-  verifier.VerifyUpdate(bad_tbs_certificate, sizeof(bad_tbs_certificate));
-  ok = verifier.VerifyFinal();
-  EXPECT_FALSE(ok);
+  EXPECT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                                  signature, public_key_info));
+  verifier.VerifyUpdate(bad_tbs_certificate);
+  EXPECT_FALSE(verifier.VerifyFinal());
 
   // Test 4: verify a bad signature.
   uint8_t bad_signature[sizeof(signature)];
   memcpy(bad_signature, signature, sizeof(signature));
   bad_signature[10] += 1;  // Corrupt one byte of the signature.
-  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
-                           bad_signature, sizeof(bad_signature),
-                           public_key_info, sizeof(public_key_info));
-
-  // A crypto library (e.g., NSS) may detect that the signature is corrupted
-  // and cause VerifyInit to return false, so it is fine for 'ok' to be false.
-  if (ok) {
-    verifier.VerifyUpdate(tbs_certificate, sizeof(tbs_certificate));
-    ok = verifier.VerifyFinal();
-    EXPECT_FALSE(ok);
-  }
+  EXPECT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                                  bad_signature, public_key_info));
+  verifier.VerifyUpdate(tbs_certificate);
+  EXPECT_FALSE(verifier.VerifyFinal());
 
   // Test 5: import an invalid key.
   uint8_t bad_public_key_info[sizeof(public_key_info)];
   memcpy(bad_public_key_info, public_key_info, sizeof(public_key_info));
   bad_public_key_info[0] += 1;  // Corrupt part of the SPKI syntax.
-  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
-                           sizeof(signature), bad_public_key_info,
-                           sizeof(bad_public_key_info));
-  EXPECT_FALSE(ok);
+  EXPECT_FALSE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                                   signature, bad_public_key_info));
 
   // Test 6: import a key with extra data.
   uint8_t long_public_key_info[sizeof(public_key_info) + 5];
   memset(long_public_key_info, 0, sizeof(long_public_key_info));
   memcpy(long_public_key_info, public_key_info, sizeof(public_key_info));
-  ok = verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1, signature,
-                           sizeof(signature), long_public_key_info,
-                           sizeof(long_public_key_info));
-  EXPECT_FALSE(ok);
+  EXPECT_FALSE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PKCS1_SHA1,
+                                   signature, long_public_key_info));
 }
 
 // The following RSA-PSS tests were generated via the following OpenSSL
@@ -394,35 +374,30 @@ TEST(SignatureVerifierTest, VerifyRSAPSS) {
   // Verify the test vector.
   crypto::SignatureVerifier verifier;
   ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256,
-                                  kPSSSignatureGood, sizeof(kPSSSignatureGood),
-                                  kPSSPublicKey, sizeof(kPSSPublicKey)));
-  verifier.VerifyUpdate(kPSSMessage, sizeof(kPSSMessage));
+                                  kPSSSignatureGood, kPSSPublicKey));
+  verifier.VerifyUpdate(kPSSMessage);
   EXPECT_TRUE(verifier.VerifyFinal());
 
   // Verify the test vector byte-by-byte.
   ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256,
-                                  kPSSSignatureGood, sizeof(kPSSSignatureGood),
-                                  kPSSPublicKey, sizeof(kPSSPublicKey)));
+                                  kPSSSignatureGood, kPSSPublicKey));
   for (uint8_t b : kPSSMessage) {
-    verifier.VerifyUpdate(&b, 1);
+    verifier.VerifyUpdate(base::make_span(&b, 1));
   }
   EXPECT_TRUE(verifier.VerifyFinal());
 
   // The bad salt length does not verify.
   ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256,
-                                  kPSSSignatureBadSaltLength,
-                                  sizeof(kPSSSignatureBadSaltLength),
-                                  kPSSPublicKey, sizeof(kPSSPublicKey)));
-  verifier.VerifyUpdate(kPSSMessage, sizeof(kPSSMessage));
+                                  kPSSSignatureBadSaltLength, kPSSPublicKey));
+  verifier.VerifyUpdate(kPSSMessage);
   EXPECT_FALSE(verifier.VerifyFinal());
 
   // Corrupt the message.
   std::vector<uint8_t> message(std::begin(kPSSMessage), std::end(kPSSMessage));
   message[0] ^= 1;
   ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256,
-                                  kPSSSignatureGood, sizeof(kPSSSignatureGood),
-                                  kPSSPublicKey, sizeof(kPSSPublicKey)));
-  verifier.VerifyUpdate(message.data(), message.size());
+                                  kPSSSignatureGood, kPSSPublicKey));
+  verifier.VerifyUpdate(message);
   EXPECT_FALSE(verifier.VerifyFinal());
 
   // Corrupt the signature.
@@ -430,8 +405,7 @@ TEST(SignatureVerifierTest, VerifyRSAPSS) {
                                  std::end(kPSSSignatureGood));
   signature[0] ^= 1;
   ASSERT_TRUE(verifier.VerifyInit(crypto::SignatureVerifier::RSA_PSS_SHA256,
-                                  signature.data(), signature.size(),
-                                  kPSSPublicKey, sizeof(kPSSPublicKey)));
-  verifier.VerifyUpdate(kPSSMessage, sizeof(kPSSMessage));
+                                  signature, kPSSPublicKey));
+  verifier.VerifyUpdate(kPSSMessage);
   EXPECT_FALSE(verifier.VerifyFinal());
 }
