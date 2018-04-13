@@ -96,5 +96,27 @@ TEST_F(LongTaskDetectorTest, DoesNotGetNotifiedOfShortTasks) {
 
   SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
   EXPECT_EQ(long_task_observer->last_long_task_end, DummyTaskEndTime());
+  LongTaskDetector::Instance().UnregisterObserver(long_task_observer);
 }
+
+TEST_F(LongTaskDetectorTest, RegisterSameObserverTwice) {
+  TestLongTaskObserver* long_task_observer = new TestLongTaskObserver();
+  LongTaskDetector::Instance().RegisterObserver(long_task_observer);
+  LongTaskDetector::Instance().RegisterObserver(long_task_observer);
+
+  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  TimeTicks long_task_end_when_registered = DummyTaskEndTime();
+  EXPECT_EQ(long_task_observer->last_long_task_start, DummyTaskStartTime());
+  EXPECT_EQ(long_task_observer->last_long_task_end,
+            long_task_end_when_registered);
+
+  LongTaskDetector::Instance().UnregisterObserver(long_task_observer);
+  // Should only need to unregister once even after we called RegisterObserver
+  // twice.
+  SimulateTask(LongTaskDetector::kLongTaskThresholdSeconds + 0.01);
+  ASSERT_FALSE(long_task_end_when_registered == DummyTaskEndTime());
+  EXPECT_EQ(long_task_observer->last_long_task_end,
+            long_task_end_when_registered);
+}
+
 }  // namespace blink
