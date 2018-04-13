@@ -165,4 +165,12 @@ void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
+void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
+  // Size change is always caused by SetExpandedAmount except for
+  // |message_center_view_|. So we only have to call PreferredSizeChanged()
+  // here when the child is |message_center_view_|.
+  if (child == message_center_view_)
+    PreferredSizeChanged();
+}
+
 }  // namespace ash
