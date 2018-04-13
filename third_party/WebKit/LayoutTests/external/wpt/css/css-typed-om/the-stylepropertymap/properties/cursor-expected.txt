@@ -1,0 +1,52 @@
+This is a testharness.js-based test.
+PASS Can set 'cursor' to CSS-wide keywords
+PASS Can set 'cursor' to var() references
+PASS Can set 'cursor' to the 'auto' keyword
+PASS Can set 'cursor' to the 'default' keyword
+PASS Can set 'cursor' to the 'none' keyword
+PASS Can set 'cursor' to the 'context-menu' keyword
+PASS Can set 'cursor' to the 'help' keyword
+PASS Can set 'cursor' to the 'pointer' keyword
+PASS Can set 'cursor' to the 'progress' keyword
+PASS Can set 'cursor' to the 'wait' keyword
+PASS Can set 'cursor' to the 'cell' keyword
+PASS Can set 'cursor' to the 'crosshair' keyword
+PASS Can set 'cursor' to the 'text' keyword
+PASS Can set 'cursor' to the 'vertical-text' keyword
+PASS Can set 'cursor' to the 'alias' keyword
+PASS Can set 'cursor' to the 'copy' keyword
+PASS Can set 'cursor' to the 'move' keyword
+PASS Can set 'cursor' to the 'no-drop' keyword
+PASS Can set 'cursor' to the 'not-allowed' keyword
+FAIL Can set 'cursor' to the 'grab' keyword Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+FAIL Can set 'cursor' to the 'grabbing' keyword Failed to execute 'set' on 'StylePropertyMap': Invalid type for property
+PASS Can set 'cursor' to the 'e-resize' keyword
+PASS Can set 'cursor' to the 'n-resize' keyword
+PASS Can set 'cursor' to the 'ne-resize' keyword
+PASS Can set 'cursor' to the 'nw-resize' keyword
+PASS Can set 'cursor' to the 's-resize' keyword
+PASS Can set 'cursor' to the 'se-resize' keyword
+PASS Can set 'cursor' to the 'sw-resize' keyword
+PASS Can set 'cursor' to the 'w-resize' keyword
+PASS Can set 'cursor' to the 'ew-resize' keyword
+PASS Can set 'cursor' to the 'ns-resize' keyword
+PASS Can set 'cursor' to the 'nesw-resize' keyword
+PASS Can set 'cursor' to the 'nwse-resize' keyword
+PASS Can set 'cursor' to the 'col-resize' keyword
+PASS Can set 'cursor' to the 'row-resize' keyword
+PASS Can set 'cursor' to the 'all-scroll' keyword
+PASS Can set 'cursor' to the 'zoom-in' keyword
+PASS Can set 'cursor' to the 'zoom-out' keyword
+PASS Setting 'cursor' to a length throws TypeError
+PASS Setting 'cursor' to a percent throws TypeError
+PASS Setting 'cursor' to a time throws TypeError
+PASS Setting 'cursor' to an angle throws TypeError
+PASS Setting 'cursor' to a flexible length throws TypeError
+PASS Setting 'cursor' to a number throws TypeError
+PASS Setting 'cursor' to a position throws TypeError
+PASS Setting 'cursor' to a URL throws TypeError
+PASS Setting 'cursor' to a transform throws TypeError
+PASS 'cursor' does not supported 'url(hand.cur), pointer'
+PASS 'cursor' does not supported 'url(cursor1.png) 4 12, auto'
+Harness: the test ran to completion.
+

@@ -402,6 +402,9 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
+      separator: ","
     },
     {
       name: "animation-play-state",
@@ -442,6 +445,8 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
       priority: "Animation",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "transition-timing-function",
@@ -519,7 +524,7 @@
       converter: "ConvertFontSize",
       priority: "High",
       keywords: ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large", "larger", "smaller"],
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
       name: "font-size-adjust",
@@ -789,6 +794,8 @@
       type_name: "StyleFilterData",
       computed_style_custom_functions: ["initial", "getter","setter"],
       converter: "ConvertFilterOperations",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "backface-visibility",
@@ -1179,6 +1186,8 @@
       default_value: "nullptr",
       type_name: "ShadowList",
       converter: "ConvertShadowList",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "box-sizing",
@@ -1334,6 +1343,7 @@
       keywords: ["balance", "auto"],
       default_value: "balance",
       getter: "GetColumnFill",
+      typedom_types: ["Keyword"]
     },
     {
       name: "contain",
@@ -1345,6 +1355,8 @@
       name_for_methods: "Contain",
       type_name: "unsigned",
       converter: "ConvertFlags<Containment>",
+      keywords: ["none", "strict", "content", "size", "layout", "style", "paint"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "content",
@@ -1363,11 +1375,15 @@
       name: "counter-increment",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "counter-reset",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "cursor",
@@ -1385,6 +1401,7 @@
       ],
       default_value: "auto",
       custom_apply_functions_all: true,
+      typedom_types: ["Keyword"]
     },
     {
       name: "cx",
@@ -1482,6 +1499,8 @@
       type_name: "StyleFilterData",
       computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertFilterOperations",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "flex-basis",
@@ -1794,6 +1813,8 @@
       interpolable: true,
       svg: true,
       converter: "ConvertColor",
+      keywords: ["currentcolor"],
+      typedom_types: ["Keyword"],
     },
     {
       name: "line-height",
@@ -1819,6 +1840,7 @@
       default_value: "0",
       type_name: "uint8_t",
       converter: "ConvertComputedLength<uint8_t>",
+      typedom_types: ["Length"],
     },
     {
       name: "list-style-image",
@@ -2136,6 +2158,7 @@
       default_value: "0",
       type_name: "int",
       computed_style_custom_functions: ["setter"],
+      typedom_types: ["Number"]
     },
     {
       name: "orphans",
@@ -2144,8 +2167,10 @@
       inherited: true,
       field_group: "*",
       field_template: "primitive",
+      computed_style_custom_functions: ["setter"],
       default_value: "2",
       type_name: "short",
+      typedom_types: ["Number"]
     },
     {
       name: "outline-color",
@@ -2171,6 +2196,7 @@
       type_name: "int",
       computed_style_custom_functions: ["getter"],
       converter: "ConvertComputedLength<int>",
+      typedom_types: ["Length"],
     },
     {
       name: "outline-style",
@@ -2197,6 +2223,8 @@
       type_name: "LayoutUnit",
       computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertLineWidth<unsigned short>",
+      keywords: ["thin", "medium", "thick"],
+      typedom_types: ["Keyword", "Length"],
     },
     {
       name: "overflow-anchor",
@@ -2252,6 +2280,7 @@
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
       type_name: "EOverscrollBehavior",
+      typedom_types: ["Keyword"]
     },
     {
       name: "overscroll-behavior-y",
@@ -2261,6 +2290,7 @@
       keywords: ["auto", "contain", "none"],
       default_value: "auto",
       type_name: "EOverscrollBehavior",
+      typedom_types: ["Keyword"]
     },
     {
       name: "padding-bottom",
@@ -2324,6 +2354,8 @@
       default_value: "0.0",
       type_name: "float",
       converter: "ConvertPerspective",
+      keywords: ["none"],
+      typedom_types: ["Keyword", "Length"]
     },
     {
       name: "perspective-origin",
@@ -2336,6 +2368,7 @@
       default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
       type_name: "LengthPoint",
       converter: "ConvertPosition",
+      typedom_types: ["Position"]
     },
     {
       name: "pointer-events",
@@ -2373,6 +2406,8 @@
       default_value: "nullptr",
       type_name: "QuotesData",
       converter: "ConvertQuotes",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "resize",
@@ -2410,7 +2445,7 @@
       interpolable: true,
       svg: true,
       keywords: ["auto"],
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -2419,7 +2454,7 @@
       interpolable: true,
       svg: true,
       keywords: ["auto"],
-      typedom_types: ["Length", "Percentage"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthOrAuto",
     },
     {
@@ -2668,6 +2703,7 @@
       default_value: "0.0",
       type_name: "float",
       computed_style_custom_functions: ["setter"],
+      typedom_types: ["Number"]
     },
     {
       name: "shape-margin",
@@ -2677,6 +2713,8 @@
       field_template: "<length>",
       default_value: "Length(0, kFixed)",
       converter: "ConvertLength",
+      keywords: ["none"],
+      typedom_types: ["Length", "Percentage"]
     },
     {
       name: "shape-outside",
@@ -2834,6 +2872,8 @@
       getter: "GetTabSize",
       type_name: "TabSize",
       converter: "ConvertLengthOrTabSpaces",
+      computed_style_custom_functions: ["setter"],
+      typedom_types: ["Number", "Length"]
     },
     {
       name: "text-align",
@@ -3031,6 +3071,8 @@
       default_value: "TouchAction::kTouchActionAuto",
       type_name: "TouchAction",
       converter: "ConvertFlags<blink::TouchAction>",
+      keywords: ["auto", "none", "pan-x", "pan-left", "pan-right", "pan-y", "pan-up", "pan-down", "pinch-zoom", "manipulation"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "transform",
@@ -3054,6 +3096,7 @@
       field_template: "keyword",
       keywords: ["fill-box", "view-box"],
       default_value: "view-box",
+      typedom_types: ["Keyword"]
     },
     {
       name: "transform-origin",
@@ -3753,8 +3796,10 @@
       inherited: true,
       field_group: "*",
       field_template: "primitive",
+      computed_style_custom_functions: ["setter"],
       default_value: "2",
       type_name: "short",
+      typedom_types: ["Number"]
     },
     {
       name: "width",
@@ -3773,6 +3818,8 @@
       name: "will-change",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       custom_apply_functions_all: true,
+      keywords: ["auto"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "word-break",
@@ -3816,6 +3863,7 @@
       computed_style_custom_functions: ["setter"],
       custom_apply_functions_all: true,
       keywords: ["auto"],
+      typedom_types: ["Keyword", "Number"]
     },
 
     // CSS logical props
