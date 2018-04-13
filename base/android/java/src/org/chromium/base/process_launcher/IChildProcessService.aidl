@@ -18,6 +18,6 @@ interface IChildProcessService {
   oneway void setupConnection(in Bundle args, ICallbackInt pidCallback,
           in List<IBinder>  clientInterfaces);
 
-  // Asks the child service to crash so that we can test the termination logic.
-  oneway void crashIntentionallyForTesting();
+  // Forcefully kills the child process.
+  oneway void forceKill();
 }

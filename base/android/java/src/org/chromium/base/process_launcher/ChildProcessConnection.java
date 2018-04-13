@@ -215,10 +215,13 @@ public class ChildProcessConnection {
 
     // Indicates whether the connection only has the waived binding (if the connection is unbound,
     // it contains the state at time of unbinding).
-    private boolean mWaivedBoundOnly;
+    private volatile boolean mWaivedBoundOnly;
 
     // Set to true once unbind() was called.
     private boolean mUnbound;
+
+    // Indicate |kill()| was called to intentionally kill this process.
+    private volatile boolean mKilledByUs;
 
     public ChildProcessConnection(Context context, ComponentName serviceName, boolean bindToCaller,
             boolean bindAsExternalService, Bundle serviceBundle) {
@@ -377,6 +380,19 @@ public class ChildProcessConnection {
     public void stop() {
         assert isRunningOnLauncherThread();
         unbind();
+        notifyChildProcessDied();
+    }
+
+    public void kill() {
+        assert isRunningOnLauncherThread();
+        IChildProcessService service = mService;
+        unbind();
+        try {
+            if (service != null) service.forceKill();
+        } catch (RemoteException e) {
+            // Intentionally ignore since we are killing it anyway.
+        }
+        mKilledByUs = true;
         notifyChildProcessDied();
     }
 
@@ -606,6 +622,16 @@ public class ChildProcessConnection {
         return mWaivedBoundOnly;
     }
 
+    /**
+     * @return true if the connection is intentionally killed by calling kill().
+     */
+    public boolean isKilledByUs() {
+        // WARNING: this method can be called from a thread other than the launcher thread.
+        // Note that it returns the current waived bound only state and is racy. This not really
+        // preventable without changing the caller's API, short of blocking.
+        return mKilledByUs;
+    }
+
     // Should be called every time the mInitialBinding or mStrongBinding are bound/unbound.
     private void updateWaivedBoundOnlyState() {
         if (!mUnbound) {
@@ -629,7 +655,7 @@ public class ChildProcessConnection {
 
     @VisibleForTesting
     public void crashServiceForTesting() throws RemoteException {
-        mService.crashIntentionallyForTesting();
+        mService.forceKill();
     }
 
     @VisibleForTesting
