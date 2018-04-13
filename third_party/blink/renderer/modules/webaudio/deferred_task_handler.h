@@ -118,6 +118,10 @@ class MODULES_EXPORT DeferredTaskHandler final
   // context is done.
   void FinishTailProcessing();
 
+  // For handlers that have finished processing their tail and require disabling
+  // the ouputs of the handler, we do that here.
+  void DisableOutputsForTailProcessing();
+
   //
   // Thread Safety and Graph Locking:
   //
