@@ -87,6 +87,8 @@ component("gpu") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
+    "command_buffer_helper.cc",
+    "command_buffer_helper.h",
     "fake_jpeg_decode_accelerator.cc",
     "fake_jpeg_decode_accelerator.h",
     "fake_video_decode_accelerator.cc",
@@ -111,6 +113,7 @@ component("gpu") {
     "//base",
     "//gpu",
     "//media",
+    "//third_party/mesa:mesa_headers",
     "//ui/gfx/geometry",
   ]
   deps = [
@@ -498,7 +501,6 @@ if (use_vaapi) {
       "//base/test:test_support",
       "//media:test_support",
       "//media/gpu",
-      "//media/gpu/ipc/service",
       "//testing/gtest",
       "//third_party:jpeg",
       "//third_party/libyuv",
@@ -529,7 +531,6 @@ if (use_v4l2_codec || use_vaapi) {
       "//base",
       "//media:test_support",
       "//media/gpu",
-      "//media/gpu/ipc/service",
       "//media/mojo/services",
       "//testing/gtest",
       "//third_party/libyuv",
@@ -554,12 +555,30 @@ if (use_v4l2_codec || use_vaapi) {
   }
 }
 
+static_library("test_support") {
+  visibility = [ "//media:test_support" ]
+  testonly = true
+  sources = [
+    "fake_command_buffer_helper.cc",
+    "fake_command_buffer_helper.h",
+  ]
+  configs += [ "//media:media_config" ]
+  deps = [
+    ":gpu",
+  ]
+  public_deps = [
+    "//base",
+    "//media",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   deps = [
     "//base",
     "//media:test_support",
     "//media/gpu",
+    "//media/gpu/ipc/service:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
