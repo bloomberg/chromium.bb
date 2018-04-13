@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DOWNLOAD_NETWORK_DOWNLOAD_URL_LOADER_FACTORY_GETTER_H_
 
 #include "components/download/public/common/download_url_loader_factory_getter.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace content {
 
@@ -16,10 +15,8 @@ class URLLoaderFactoryGetter;
 class NetworkDownloadURLLoaderFactoryGetter
     : public download::DownloadURLLoaderFactoryGetter {
  public:
-  NetworkDownloadURLLoaderFactoryGetter(
-      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
-      network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info,
-      network::mojom::URLLoaderFactoryRequest proxy_factory_request);
+  explicit NetworkDownloadURLLoaderFactoryGetter(
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
 
   // download::DownloadURLLoaderFactoryGetter implementation.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
@@ -29,9 +26,6 @@ class NetworkDownloadURLLoaderFactoryGetter
 
  private:
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
-  scoped_refptr<network::SharedURLLoaderFactory> lazy_factory_;
-  network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info_;
-  network::mojom::URLLoaderFactoryRequest proxy_factory_request_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDownloadURLLoaderFactoryGetter);
 };
