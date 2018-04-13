@@ -12,9 +12,8 @@
 
 namespace metrics {
 
-UkmRecorderInterface::UkmRecorderInterface(ukm::UkmRecorder* ukm_recorder,
-                                           int64_t instance_id)
-    : ukm_recorder_(ukm_recorder), instance_id_(instance_id) {}
+UkmRecorderInterface::UkmRecorderInterface(ukm::UkmRecorder* ukm_recorder)
+    : ukm_recorder_(ukm_recorder) {}
 
 UkmRecorderInterface::~UkmRecorderInterface() = default;
 
@@ -22,22 +21,17 @@ UkmRecorderInterface::~UkmRecorderInterface() = default;
 void UkmRecorderInterface::Create(
     ukm::UkmRecorder* ukm_recorder,
     ukm::mojom::UkmRecorderInterfaceRequest request) {
-  static base::AtomicSequenceNumber seq;
-  mojo::MakeStrongBinding(
-      std::make_unique<UkmRecorderInterface>(ukm_recorder, seq.GetNext() + 1),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<UkmRecorderInterface>(ukm_recorder),
+                          std::move(request));
 }
 
 void UkmRecorderInterface::AddEntry(ukm::mojom::UkmEntryPtr ukm_entry) {
-  ukm_entry->source_id =
-      ukm::ConvertSourceIdFromInstance(instance_id_, ukm_entry->source_id);
   ukm_recorder_->AddEntry(std::move(ukm_entry));
 }
 
 void UkmRecorderInterface::UpdateSourceURL(int64_t source_id,
                                            const std::string& url) {
-  ukm_recorder_->UpdateSourceURL(
-      ukm::ConvertSourceIdFromInstance(instance_id_, source_id), GURL(url));
+  ukm_recorder_->UpdateSourceURL(source_id, GURL(url));
 }
 
 }  // namespace metrics
