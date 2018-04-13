@@ -11,13 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "components/strings/grit/components_strings.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/shell_dialogs/select_file_policy.h"
 
 namespace {
 
@@ -28,9 +24,6 @@ const base::FilePath::CharType kPolicyToolDefaultSessionName[] =
     FILE_PATH_LITERAL("policy");
 
 const base::FilePath::CharType kPolicyToolSessionExtension[] =
-    FILE_PATH_LITERAL("json");
-
-const base::FilePath::CharType kPolicyToolLinuxExtension[] =
     FILE_PATH_LITERAL("json");
 
 // Returns the current list of all sessions sorted by last access time in
@@ -96,10 +89,6 @@ void PolicyToolUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "deleteSession",
       base::BindRepeating(&PolicyToolUIHandler::HandleDeleteSession,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "exportLinux",
-      base::BindRepeating(&PolicyToolUIHandler::HandleExportLinux,
                           base::Unretained(this)));
 }
 
@@ -387,73 +376,4 @@ void PolicyToolUIHandler::HandleDeleteSession(const base::ListValue* args) {
                      /*recursive=*/false),
       base::BindOnce(&PolicyToolUIHandler::OnSessionDeleted,
                      callback_weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PolicyToolUIHandler::HandleExportLinux(const base::ListValue* args) {
-  DCHECK_EQ(1U, args->GetSize());
-
-  base::JSONWriter::Write(args->GetList()[0], &session_dict_for_exporting_);
-  ExportSessionToFile(kPolicyToolLinuxExtension);
-}
-
-void DoWriteSessionPolicyToFile(const base::FilePath& path,
-                                const std::string& data) {
-  // TODO(rodmartin): Handle when WriteFile fail.
-  base::WriteFile(path, data.c_str(), data.size());
-}
-
-void PolicyToolUIHandler::WriteSessionPolicyToFile(
-    const base::FilePath& path) const {
-  const std::string data = session_dict_for_exporting_;
-  base::PostTaskWithTraits(
-      FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BACKGROUND,
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&DoWriteSessionPolicyToFile, path, data));
-}
-
-void PolicyToolUIHandler::FileSelected(const base::FilePath& path,
-                                       int index,
-                                       void* params) {
-  DCHECK(export_policies_select_file_dialog_);
-  WriteSessionPolicyToFile(path);
-  session_dict_for_exporting_.clear();
-  export_policies_select_file_dialog_ = nullptr;
-}
-
-void PolicyToolUIHandler::FileSelectionCanceled(void* params) {
-  DCHECK(export_policies_select_file_dialog_);
-  session_dict_for_exporting_.clear();
-  export_policies_select_file_dialog_ = nullptr;
-}
-
-void PolicyToolUIHandler::ExportSessionToFile(
-    const base::FilePath::StringType& file_extension) {
-  // If the "select file" dialog window is already opened, we don't want to open
-  // it again.
-  if (export_policies_select_file_dialog_)
-    return;
-
-  content::WebContents* webcontents = web_ui()->GetWebContents();
-
-  // Building initial path based on download preferences.
-  base::FilePath initial_dir =
-      DownloadPrefs::FromBrowserContext(webcontents->GetBrowserContext())
-          ->DownloadPath();
-  base::FilePath initial_path =
-      initial_dir.Append(kPolicyToolDefaultSessionName)
-          .AddExtension(file_extension);
-
-  // TODO(rodmartin): Put an error message when the user is not allowed
-  // to open select file dialogs.
-  export_policies_select_file_dialog_ = ui::SelectFileDialog::Create(
-      this, std::make_unique<ChromeSelectFilePolicy>(webcontents));
-  ui::SelectFileDialog::FileTypeInfo file_type_info;
-  file_type_info.extensions = {{file_extension}};
-  gfx::NativeWindow owning_window = webcontents->GetTopLevelNativeWindow();
-  export_policies_select_file_dialog_->SelectFile(
-      ui::SelectFileDialog::SELECT_SAVEAS_FILE, /*title=*/base::string16(),
-      initial_path, &file_type_info, /*file_type_index=*/0,
-      /*default_extension=*/base::FilePath::StringType(), owning_window,
-      /*params=*/nullptr);
 }

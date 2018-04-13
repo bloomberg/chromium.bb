@@ -169,10 +169,6 @@ policy.Page.prototype.initialize = function() {
     }
   };
 
-  $('export-policies-linux').onclick = (event) => {
-    chrome.send('exportLinux', [policy.Page.getInstance().getDictionary()]);
-  };
-
   // Notify the browser that the page has loaded, causing it to send the
   // list of all known policies and the values from the default session.
   chrome.send('initialized');
