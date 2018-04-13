@@ -530,9 +530,6 @@ default_compiler_configs = [
   "//build/config/compiler:default_optimization",
   "//build/config/compiler:default_stack_frames",
   "//build/config/compiler:default_symbols",
-
-  # TODO(crbug.com/795158): Remove once libwidevinecdmadapter.so is fixed.
-  "//build/config/compiler:default_fatal_linker_warnings",
   "//build/config/compiler:no_exceptions",
   "//build/config/compiler:no_rtti",
   "//build/config/compiler:runtime_library",
