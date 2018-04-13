@@ -129,6 +129,11 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // If we are in middle of ending overview mode.
   bool IsShuttingDown() const;
 
+  // Checks if the grid associated with a given |root_window| needs to have the
+  // wallpaper animated. Returns false if one of the grids windows covers the
+  // the entire workspace, true otherwise.
+  bool ShouldAnimateWallpaper(aura::Window* root_window);
+
   WindowSelectorDelegate* delegate() { return delegate_; }
 
   bool restoring_minimized_windows() const {

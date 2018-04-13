@@ -651,6 +651,35 @@ bool WindowSelector::IsShuttingDown() const {
   return Shell::Get()->window_selector_controller()->is_shutting_down();
 }
 
+bool WindowSelector::ShouldAnimateWallpaper(aura::Window* root_window) {
+  // Find the grid associated with |root_window|.
+  WindowGrid* grid = nullptr;
+  for (const auto& window_grid : grid_list_) {
+    if (window_grid->root_window() == root_window) {
+      grid = window_grid.get();
+      break;
+    }
+  }
+
+  if (!grid)
+    return false;
+
+  // It is possible we leave overview mode to enter split view mode with both
+  // windows snapped. Do not animate the wallpaper in this case.
+  if (Shell::Get()->split_view_controller()->state() ==
+      SplitViewController::BOTH_SNAPPED) {
+    return false;
+  }
+
+  // If one of the windows covers the workspace, we do not need to animate.
+  for (const auto& selector_item : grid->window_list()) {
+    if (CanCoverAvailableWorkspace(selector_item->GetWindow()))
+      return false;
+  }
+
+  return true;
+}
+
 bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   // Do not do anything with the events if none of the window grids have windows

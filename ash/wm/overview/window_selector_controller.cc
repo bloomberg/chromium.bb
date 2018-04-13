@@ -7,8 +7,11 @@
 #include <vector>
 
 #include "ash/public/cpp/window_properties.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/window_grid.h"
@@ -21,11 +24,18 @@
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
 
 namespace {
+
+// Amount of blur to apply on the wallpaper when we enter or exit overview mode.
+constexpr double kWallpaperBlurSigma = 10.f;
+constexpr double kWallpaperClearBlurSigma = 0.f;
+constexpr int kBlurSlideDurationMs = 250;
 
 // Returns true if |window| should be hidden when entering overview.
 bool ShouldHideWindowInOverview(const aura::Window* window) {
@@ -55,11 +65,137 @@ bool ShouldExcludeWindowFromOverview(const aura::Window* window) {
   return false;
 }
 
+bool IsBlurEnabled() {
+  return IsNewOverviewUi() &&
+         Shell::Get()->wallpaper_controller()->IsBlurEnabled();
+}
+
 }  // namespace
 
-WindowSelectorController::WindowSelectorController() = default;
+// Class that handles of blurring wallpaper upon entering and exiting overview
+// mode. Blurs the wallpaper automatically if the wallpaper is not visible
+// prior to entering overview mode (covered by a window), otherwise animates
+// the blur.
+class WindowSelectorController::OverviewBlurController
+    : public gfx::AnimationDelegate,
+      public aura::WindowObserver {
+ public:
+  OverviewBlurController() : animation_(this) {
+    animation_.SetSlideDuration(kBlurSlideDurationMs);
+  }
+
+  ~OverviewBlurController() override {
+    animation_.Stop();
+    for (aura::Window* root : roots_to_animate_)
+      root->RemoveObserver(this);
+  }
+
+  void Blur() {
+    state_ = WallpaperAnimationState::kAddingBlur;
+    OnBlurChange();
+  }
+
+  void Unblur() {
+    state_ = WallpaperAnimationState::kRemovingBlur;
+    OnBlurChange();
+  }
+
+ private:
+  enum class WallpaperAnimationState {
+    kAddingBlur,
+    kRemovingBlur,
+    kNormal,
+  };
+
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override {
+    if (state_ == WallpaperAnimationState::kNormal)
+      return;
+
+    double value = state_ == WallpaperAnimationState::kAddingBlur
+                       ? kWallpaperBlurSigma
+                       : kWallpaperClearBlurSigma;
+    for (aura::Window* root : roots_to_animate_)
+      ApplyBlur(root, value);
+    state_ = WallpaperAnimationState::kNormal;
+  }
+
+  void AnimationProgressed(const gfx::Animation* animation) override {
+    double value = animation_.CurrentValueBetween(kWallpaperClearBlurSigma,
+                                                  kWallpaperBlurSigma);
+    for (aura::Window* root : roots_to_animate_)
+      ApplyBlur(root, value);
+  }
+
+  void AnimationCanceled(const gfx::Animation* animation) override {
+    for (aura::Window* root : roots_to_animate_)
+      ApplyBlur(root, kWallpaperClearBlurSigma);
+    state_ = WallpaperAnimationState::kNormal;
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    window->RemoveObserver(this);
+    auto it =
+        std::find(roots_to_animate_.begin(), roots_to_animate_.end(), window);
+    if (it != roots_to_animate_.end())
+      roots_to_animate_.erase(it);
+  }
+
+  void ApplyBlur(aura::Window* root, float blur_sigma) {
+    RootWindowController::ForWindow(root)
+        ->wallpaper_widget_controller()
+        ->SetWallpaperBlur(static_cast<float>(blur_sigma));
+  }
+
+  // Called when the wallpaper is to be changed. Checks to see which root
+  // windows should have their wallpaper blurs animated and fills
+  // |roots_to_animate_| accordingly. Applys blur or unblur immediately if
+  // the wallpaper does not need blur animation.
+  void OnBlurChange() {
+    bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
+    double value = should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
+    for (aura::Window* root : roots_to_animate_)
+      root->RemoveObserver(this);
+    roots_to_animate_.clear();
+
+    WindowSelector* window_selector =
+        Shell::Get()->window_selector_controller()->window_selector();
+    DCHECK(window_selector);
+    for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
+      if (!window_selector->ShouldAnimateWallpaper(root)) {
+        ApplyBlur(root, value);
+      } else {
+        root->AddObserver(this);
+        roots_to_animate_.push_back(root);
+      }
+    }
+
+    // Run the animation if one of the roots needs to be aniamted.
+    if (roots_to_animate_.empty()) {
+      state_ = WallpaperAnimationState::kNormal;
+    } else if (should_blur) {
+      animation_.Show();
+    } else {
+      animation_.Hide();
+    }
+  }
+
+  WallpaperAnimationState state_ = WallpaperAnimationState::kNormal;
+  gfx::SlideAnimation animation_;
+  // Vector which contains the root windows, if any, whose wallpaper should have
+  // blur animated after Blur or Unblur is called.
+  std::vector<aura::Window*> roots_to_animate_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverviewBlurController);
+};
+
+WindowSelectorController::WindowSelectorController()
+    : overview_blur_controller_(std::make_unique<OverviewBlurController>()) {}
 
 WindowSelectorController::~WindowSelectorController() {
+  overview_blur_controller_.reset();
+
   // Destroy widgets that may be still animating if shell shuts down soon after
   // exiting overview mode.
   for (std::unique_ptr<DelayedAnimationObserver>& animation_observer :
@@ -117,6 +253,8 @@ bool WindowSelectorController::ToggleOverview() {
     window_selector_.reset(new WindowSelector(this));
     Shell::Get()->NotifyOverviewModeStarting();
     window_selector_->Init(windows, hide_windows);
+    if (IsBlurEnabled())
+      overview_blur_controller_->Blur();
     OnSelectionStarted();
   }
   return true;
@@ -269,6 +407,9 @@ WindowSelectorController::GetWindowsListInOverviewGridsForTesting() {
 void WindowSelectorController::OnSelectionEnded() {
   if (is_shutting_down_)
     return;
+
+  if (IsBlurEnabled())
+    overview_blur_controller_->Unblur();
   is_shutting_down_ = true;
   Shell::Get()->NotifyOverviewModeEnding();
   window_selector_->Shutdown();
