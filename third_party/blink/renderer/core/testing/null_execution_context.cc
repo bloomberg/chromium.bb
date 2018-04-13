@@ -46,7 +46,7 @@ void NullExecutionContext::SetUpSecurityContext() {
   SecurityContext::SetContentSecurityPolicy(policy);
 }
 
-FrameOrWorkerGlobalScopeScheduler* NullExecutionContext::GetScheduler() {
+FrameOrWorkerScheduler* NullExecutionContext::GetScheduler() {
   return nullptr;
 }
 

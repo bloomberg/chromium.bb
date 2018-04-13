@@ -44,7 +44,7 @@
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_context.h"
 #include "third_party/blink/renderer/core/workers/worker_thread_lifecycle_observer.h"
-#include "third_party/blink/renderer/platform/scheduler/child/worker_global_scope_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 #include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -203,7 +203,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
     return nullptr;
   }
 
-  scheduler::WorkerGlobalScopeScheduler* GetScheduler();
+  scheduler::WorkerScheduler* GetScheduler();
 
   // Returns a task runner bound to the per-global-scope scheduler's task queue.
   // You don't have to care about the lifetime of the associated global scope
@@ -211,7 +211,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   // are discarded and PostTask on the returned task runner just fails. This
   // function can be called on both the main thread and the worker thread.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
-    return global_scope_scheduler_->GetTaskRunner(type);
+    return worker_scheduler_->GetTaskRunner(type);
   }
 
   void ChildThreadStartedOnWorkerThread(WorkerThread*);
@@ -323,8 +323,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   // Tasks managed by this scheduler are canceled when the global scope is
   // closed.
-  std::unique_ptr<scheduler::WorkerGlobalScopeScheduler>
-      global_scope_scheduler_;
+  std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
 
   // This lock protects shared states between the main thread and the worker
   // thread. See thread-safety annotations (e.g., GUARDED_BY) in this header

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/child/worker_global_scope_scheduler.h"
+#include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 
 #include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
@@ -10,31 +10,31 @@
 namespace blink {
 namespace scheduler {
 
-WorkerGlobalScopeScheduler::WorkerGlobalScopeScheduler(
+WorkerScheduler::WorkerScheduler(
     NonMainThreadScheduler* non_main_thread_scheduler) {
   task_queue_ = non_main_thread_scheduler->CreateTaskRunner();
 }
 
-WorkerGlobalScopeScheduler::~WorkerGlobalScopeScheduler() {
+WorkerScheduler::~WorkerScheduler() {
 #if DCHECK_IS_ON()
   DCHECK(is_disposed_);
 #endif
 }
 
-std::unique_ptr<FrameOrWorkerGlobalScopeScheduler::ActiveConnectionHandle>
-WorkerGlobalScopeScheduler::OnActiveConnectionCreated() {
+std::unique_ptr<FrameOrWorkerScheduler::ActiveConnectionHandle>
+WorkerScheduler::OnActiveConnectionCreated() {
   return nullptr;
 }
 
-void WorkerGlobalScopeScheduler::Dispose() {
+void WorkerScheduler::Dispose() {
   task_queue_->ShutdownTaskQueue();
 #if DCHECK_IS_ON()
   is_disposed_ = true;
 #endif
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WorkerGlobalScopeScheduler::GetTaskRunner(TaskType type) const {
+scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
+    TaskType type) const {
   switch (type) {
     case TaskType::kDeprecatedNone:
     case TaskType::kDOMManipulation:

@@ -56,7 +56,7 @@ class DOMTimerCoordinator;
 class ErrorEvent;
 class EventQueue;
 class EventTarget;
-class FrameOrWorkerGlobalScopeScheduler;
+class FrameOrWorkerScheduler;
 class InterfaceInvalidator;
 class LocalDOMWindow;
 class PausableObject;
@@ -206,7 +206,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return nullptr;
   }
 
-  virtual FrameOrWorkerGlobalScopeScheduler* GetScheduler() = 0;
+  virtual FrameOrWorkerScheduler* GetScheduler() = 0;
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       TaskType) = 0;
 
