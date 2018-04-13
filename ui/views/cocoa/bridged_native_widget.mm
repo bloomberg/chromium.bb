@@ -723,14 +723,6 @@ void BridgedNativeWidget::OnSizeChanged() {
     if ([window_ inLiveResize])
       MaybeWaitForFrame(new_size);
   }
-
-  // 10.9 is unable to generate a window shadow from the composited CALayer, so
-  // use Quartz.
-  // We don't update the window mask during a live resize, instead it is done
-  // after the resize is completed in viewDidEndLiveResize: in
-  // BridgedContentView.
-  if (base::mac::IsOS10_9() && ![window_ inLiveResize])
-    [bridged_view_ updateWindowMask];
 }
 
 void BridgedNativeWidget::OnPositionChanged() {

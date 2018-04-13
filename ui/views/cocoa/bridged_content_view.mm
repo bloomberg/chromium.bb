@@ -48,17 +48,6 @@ namespace {
 NSString* const kFullKeyboardAccessChangedNotification =
     @"com.apple.KeyboardUIModeDidChange";
 
-// Returns true if all four corners of |rect| are contained inside |path|.
-bool IsRectInsidePath(NSRect rect, NSBezierPath* path) {
-  return [path containsPoint:rect.origin] &&
-         [path containsPoint:NSMakePoint(rect.origin.x + rect.size.width,
-                                         rect.origin.y)] &&
-         [path containsPoint:NSMakePoint(rect.origin.x,
-                                         rect.origin.y + rect.size.height)] &&
-         [path containsPoint:NSMakePoint(rect.origin.x + rect.size.width,
-                                         rect.origin.y + rect.size.height)];
-}
-
 // Convert a |point| in |source_window|'s AppKit coordinate system (origin at
 // the bottom left of the window) to |target_window|'s content rect, with the
 // origin at the top left of the content area.
@@ -369,30 +358,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   }
 }
 
-- (void)updateWindowMask {
-  DCHECK(![self inLiveResize]);
-  DCHECK(base::mac::IsOS10_9());
-  DCHECK(hostedView_);
-
-  views::Widget* widget = hostedView_->GetWidget();
-  if (!widget->non_client_view())
-    return;
-
-  const NSRect frameRect = [self bounds];
-  gfx::Path mask;
-  widget->non_client_view()->GetWindowMask(gfx::Size(frameRect.size), &mask);
-  if (mask.isEmpty())
-    return;
-
-  windowMask_.reset([gfx::CreateNSBezierPathFromSkPath(mask) retain]);
-
-  // Convert to AppKit coordinate system.
-  NSAffineTransform* flipTransform = [NSAffineTransform transform];
-  [flipTransform translateXBy:0.0 yBy:frameRect.size.height];
-  [flipTransform scaleXBy:1.0 yBy:-1.0];
-  [windowMask_ transformUsingAffineTransform:flipTransform];
-}
-
 - (void)updateFullKeyboardAccess {
   if (!hostedView_)
     return;
@@ -673,67 +638,6 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     return;
 
   hostedView_->SetSize(gfx::Size(newSize.width, newSize.height));
-}
-
-- (void)viewDidEndLiveResize {
-  [super viewDidEndLiveResize];
-
-  // We prevent updating the window mask and clipping the border around the
-  // view, during a live resize. Hence update the window mask and redraw the
-  // view after resize has completed.
-  if (base::mac::IsOS10_9()) {
-    [self updateWindowMask];
-    [self setNeedsDisplay:YES];
-  }
-}
-
-- (void)drawRect:(NSRect)dirtyRect {
-  // Note that BridgedNativeWidget uses -[NSWindow setAutodisplay:NO] to
-  // suppress calls to this when the window is known to be hidden.
-  if (!hostedView_)
-    return;
-
-  if (drawMenuBackgroundForBlur_) {
-    const CGFloat radius = views::MenuConfig::instance().corner_radius;
-    [skia::SkColorToSRGBNSColor(0x01000000) set];
-    [[NSBezierPath bezierPathWithRoundedRect:[self bounds]
-                                     xRadius:radius
-                                     yRadius:radius] fill];
-  }
-
-  // On OS versions earlier than Yosemite, to generate a drop shadow, we set an
-  // opaque background. This causes windows with non rectangular shapes to have
-  // square corners. To get around this, fill the path outside the window
-  // boundary with clearColor and tell Cococa to regenerate drop shadow. See
-  // crbug.com/543671.
-  if (windowMask_ && ![self inLiveResize] &&
-      !IsRectInsidePath(dirtyRect, windowMask_)) {
-    DCHECK(base::mac::IsOS10_9());
-    gfx::ScopedNSGraphicsContextSaveGState state;
-
-    // The outer rectangular path corresponding to the window.
-    NSBezierPath* outerPath = [NSBezierPath bezierPathWithRect:[self bounds]];
-
-    [outerPath appendBezierPath:windowMask_];
-    [outerPath setWindingRule:NSEvenOddWindingRule];
-    [[NSGraphicsContext currentContext]
-        setCompositingOperation:NSCompositeCopy];
-    [[NSColor clearColor] set];
-
-    // Fill the region between windowMask_ and its outer rectangular path
-    // with clear color. This causes the window to have the shape described
-    // by windowMask_.
-    [outerPath fill];
-    // Regerate drop shadow around the window boundary.
-    [[self window] invalidateShadow];
-  }
-
-  // If there's a layer, painting occurs in BridgedNativeWidget::OnPaintLayer().
-  if (hostedView_->GetWidget()->GetLayer())
-    return;
-
-  // TODO(tapted): Add a NOTREACHED() here.  At the moment, low-level
-  // BridgedNativeWidget unit tests may not have a ui::Layer.
 }
 
 - (BOOL)isOpaque {
