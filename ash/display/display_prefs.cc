@@ -50,6 +50,9 @@ constexpr char kTouchAssociationTimestamp[] = "touch_association_timestamp";
 constexpr char kTouchAssociationCalibrationData[] =
     "touch_association_calibration_data";
 
+constexpr char kTouchDeviceIdentifier[] = "touch_device_identifer";
+constexpr char kPortAssociationDisplayId[] = "port_association_display_id";
+
 constexpr char kMirroringSourceId[] = "mirroring_source_id";
 constexpr char kMirroringDestinationIds[] = "mirroring_destination_ids";
 
@@ -351,8 +354,45 @@ void LoadDisplayTouchAssociations(PrefService* local_state) {
       touch_associations.at(fallback_identifier).emplace(id, info);
     }
   }
+
+  // Retrieve port association information.
+  properties = local_state->GetDictionary(prefs::kDisplayTouchPortAssociations);
+
+  display::TouchDeviceManager::PortAssociationMap port_associations;
+  for (const auto& item : properties->DictItems()) {
+    // Retrieve the secondary id that identifies the port.
+    uint32_t secondary_id_raw;
+    if (!base::StringToUint(item.first, &secondary_id_raw))
+      continue;
+
+    if (!item.second.is_dict())
+      continue;
+
+    // Retrieve the touch device identifier that identifies the touch device.
+    auto* value = item.second.FindKey(kTouchDeviceIdentifier);
+    if (!value->is_string())
+      continue;
+    uint32_t identifier_raw;
+    if (!base::StringToUint(value->GetString(), &identifier_raw))
+      continue;
+
+    // Retrieve the display that the touch device identified by |identifier_raw|
+    // was associated with.
+    value = item.second.FindKey(kPortAssociationDisplayId);
+    if (!value->is_string())
+      continue;
+    int64_t display_id;
+    if (!base::StringToInt64(value->GetString(), &display_id))
+      continue;
+
+    port_associations.emplace(
+        std::piecewise_construct,
+        std::forward_as_tuple(identifier_raw, secondary_id_raw),
+        std::forward_as_tuple(display_id));
+  }
+
   GetDisplayManager()->touch_device_manager()->RegisterTouchAssociations(
-      touch_associations);
+      touch_associations, port_associations);
 }
 
 // Loads mirror info for each external display, the info will later be used to
@@ -637,6 +677,29 @@ void StoreDisplayTouchAssociations(PrefService* local_state) {
     pref_data->SetKey(association.first.ToString(),
                       association_info_map_value.Clone());
   }
+
+  // Store the port mappings. What display a touch device connected to a
+  // particular port is associated with.
+  DictionaryPrefUpdate update_port(local_state,
+                                   prefs::kDisplayTouchPortAssociations);
+  pref_data = update_port.Get();
+  const display::TouchDeviceManager::PortAssociationMap& port_associations =
+      touch_device_manager->port_associations();
+
+  // For each port identified by the secondary id of TouchDeviceIdentifier,
+  // we store the touch device and the display associated with it.
+  for (const auto& association : port_associations) {
+    std::unique_ptr<base::DictionaryValue> association_info_value(
+        new base::DictionaryValue());
+    association_info_value->SetKey(kTouchDeviceIdentifier,
+                                   base::Value(association.first.ToString()));
+    association_info_value->SetKey(
+        kPortAssociationDisplayId,
+        base::Value(base::Int64ToString(association.second)));
+
+    pref_data->SetKey(association.first.SecondaryIdToString(),
+                      association_info_value->Clone());
+  }
 }
 
 // Stores mirror info for each external display.
@@ -690,6 +753,7 @@ void DisplayPrefs::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kDisplayPowerState, kDisplayPowerAllOn);
   registry->RegisterDictionaryPref(prefs::kDisplayRotationLock);
   registry->RegisterDictionaryPref(prefs::kDisplayTouchAssociations);
+  registry->RegisterDictionaryPref(prefs::kDisplayTouchPortAssociations);
   registry->RegisterListPref(prefs::kExternalDisplayMirrorInfo);
   registry->RegisterDictionaryPref(prefs::kDisplayMixedMirrorModeParams);
 }

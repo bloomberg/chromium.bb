@@ -85,6 +85,9 @@ const char kDisplayProperties[] = "settings.display.properties";
 const char kDisplayRotationLock[] = "settings.display.rotation_lock";
 // A dictionary pref that stores the touch associations for the device.
 const char kDisplayTouchAssociations[] = "settings.display.touch_associations";
+// A dictionary pref that stores the port mapping for touch devices.
+const char kDisplayTouchPortAssociations[] =
+    "settings.display.port_associations";
 // A list pref that stores the mirror info for each external display.
 const char kExternalDisplayMirrorInfo[] =
     "settings.display.external_display_mirror_info";

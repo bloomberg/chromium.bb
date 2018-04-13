@@ -24,12 +24,14 @@ InputDevice::InputDevice(int id, InputDeviceType type, const std::string& name)
 InputDevice::InputDevice(int id,
                          InputDeviceType type,
                          const std::string& name,
+                         const std::string& phys,
                          const base::FilePath& sys_path,
                          uint16_t vendor,
                          uint16_t product)
     : id(id),
       type(type),
       name(name),
+      phys(phys),
       sys_path(sys_path),
       vendor_id(vendor),
       product_id(product) {}

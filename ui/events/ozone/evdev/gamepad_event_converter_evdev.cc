@@ -99,6 +99,7 @@ GamepadEventConverterEvdev::GamepadEventConverterEvdev(
                           id,
                           devinfo.device_type(),
                           devinfo.name(),
+                          devinfo.phys(),
                           devinfo.vendor_id(),
                           devinfo.product_id()),
       will_send_frame_(false),

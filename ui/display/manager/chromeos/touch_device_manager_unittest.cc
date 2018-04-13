@@ -405,7 +405,8 @@ class TouchAssociationFromPrefTest : public TouchAssociationTest {
     touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
                       [displays_[0].id()] = CreateTouchAssociationInfo(3);
 
-    touch_device_manager_->RegisterTouchAssociations(touch_associations);
+    touch_device_manager_->RegisterTouchAssociations(
+        touch_associations, TouchDeviceManager::PortAssociationMap());
   }
 
   void TearDown() override {
@@ -578,6 +579,266 @@ TEST_F(TouchAssociationFromPrefTest, InternalDisplayIsNotMatched) {
 
   EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 1u);
   EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+}
+
+class TouchAssociationWithDuplicateDeviceTest : public TouchAssociationTest {
+ public:
+  TouchAssociationWithDuplicateDeviceTest() {}
+  ~TouchAssociationWithDuplicateDeviceTest() override {}
+
+  void SetUp() override {
+    TouchAssociationTest::SetUp();
+    TouchDeviceManager::TouchAssociationMap touch_associations;
+    TouchDeviceManager::PortAssociationMap port_associations;
+
+    // Create different ports.
+    const std::vector<std::string> ports = {"port 0", "port 1", "port 2",
+                                            "port 3", "port 4"};
+
+    std::string device_name_1 = "device 1";
+    std::string device_name_2 = "device 2";
+
+    // Create a device with name |device_name_1| connected to |ports[0]|.
+    devices_.push_back(CreateTouchscreenDevice(
+        1, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1920, 1080)));
+    devices_.back().name = device_name_1;
+    devices_.back().phys = ports[0];
+
+    int vendor_id = devices_.back().vendor_id;
+    int product_id = devices_.back().product_id;
+
+    devices_.push_back(CreateTouchscreenDevice(
+        2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1920, 1080)));
+
+    // Create another device with the same name but different port. Ensure that
+    // the touch device idnetifier is the same by setting the same vendor id,
+    // product id and name.
+    devices_.back().name = device_name_1;
+    devices_.back().phys = ports[1];
+    devices_.back().vendor_id = vendor_id;
+    devices_.back().product_id = product_id;
+
+    devices_.push_back(CreateTouchscreenDevice(
+        3, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(1920, 1080)));
+    devices_.back().name = device_name_1;
+    devices_.back().phys = ports[2];
+    devices_.back().vendor_id = vendor_id;
+    devices_.back().product_id = product_id;
+
+    devices_.push_back(CreateTouchscreenDevice(
+        4, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, gfx::Size(800, 600)));
+
+    devices_.push_back(CreateTouchscreenDevice(
+        5, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(4096, 4096)));
+    devices_.back().name = device_name_2;
+    devices_.back().phys = ports[3];
+
+    vendor_id = devices_.back().vendor_id;
+    product_id = devices_.back().product_id;
+
+    devices_.push_back(CreateTouchscreenDevice(
+        6, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, gfx::Size(4096, 4096)));
+    devices_.back().name = device_name_2;
+    devices_.back().phys = ports[4];
+    devices_.back().vendor_id = vendor_id;
+    devices_.back().product_id = product_id;
+
+    // Create priority list for Device Id = 1
+    //   - Display Index 0
+    //   - Display Index 2
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[0])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[0])]
+                      [displays_[0].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[0])]
+                      [displays_[2].id()] = CreateTouchAssociationInfo(2);
+
+    // Create priority list for Device Id = 2
+    //   - Display Index 3
+    //   - Display Index 1
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[1])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[1])]
+                      [displays_[3].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[1])]
+                      [displays_[1].id()] = CreateTouchAssociationInfo(2);
+
+    // Craete priority list for Device Id = 3
+    //   - Display Index 2
+    //   - Display Index 3
+    //   - Display Index 0
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
+                      [displays_[2].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
+                      [displays_[3].id()] = CreateTouchAssociationInfo(2);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[2])]
+                      [displays_[0].id()] = CreateTouchAssociationInfo(3);
+
+    // Craete priority list for Device Id = 5
+    //   - Display Index 3
+    //   - Display Index 2
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[4])] =
+        TouchDeviceManager::AssociationInfoMap();
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[4])]
+                      [displays_[3].id()] = CreateTouchAssociationInfo(1);
+    touch_associations[TouchDeviceIdentifier::FromDevice(devices_[4])]
+                      [displays_[2].id()] = CreateTouchAssociationInfo(2);
+
+    // Map ports:
+    //   - { Touch Device 1, ports[0] } -> Display Index 2
+    //   - { Touch Device 2, ports[1] } -> Display Index 3
+    //   - { Touch Device 3, ports[2] } -> Display Index 2
+    //   - { Touch Device 5, ports[4] } -> Display Index 0
+    port_associations[TouchDeviceIdentifier::FromDevice(devices_[0])] =
+        displays_[2].id();
+    port_associations[TouchDeviceIdentifier::FromDevice(devices_[1])] =
+        displays_[3].id();
+    port_associations[TouchDeviceIdentifier::FromDevice(devices_[2])] =
+        displays_[2].id();
+    port_associations[TouchDeviceIdentifier::FromDevice(devices_[4])] =
+        displays_[0].id();
+
+    touch_device_manager_->RegisterTouchAssociations(touch_associations,
+                                                     port_associations);
+  }
+
+  void TearDown() override {
+    TouchAssociationTest::TearDown();
+    devices_.clear();
+  }
+
+ protected:
+  std::vector<ui::TouchscreenDevice> devices_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TouchAssociationWithDuplicateDeviceTest);
+};
+
+TEST_F(TouchAssociationWithDuplicateDeviceTest, CorrectMapping) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[4]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[0]));
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[2]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 2u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[5]));
+}
+
+TEST_F(TouchAssociationWithDuplicateDeviceTest, NoDuplicateIds) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  std::vector<ui::TouchscreenDevice> devices;
+  devices.push_back(devices_[1]);
+  devices.push_back(devices_[3]);
+  devices.push_back(devices_[4]);
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 0u);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[1]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[4]));
+}
+
+TEST_F(TouchAssociationWithDuplicateDeviceTest, CorrectMappingWithSomeMissing) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+  DisplayInfoList displays;
+  displays.push_back(displays_[0]);
+  displays.push_back(displays_[1]);
+  displays.push_back(displays_[3]);
+
+  touch_device_manager()->AssociateTouchscreens(&displays, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[4]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 4u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[0]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[2]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[5]));
+}
+
+TEST_F(TouchAssociationWithDuplicateDeviceTest, UpdatePortBeforeAssociation) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  // Reassociate display at index 3 to touch device at index 2. This will
+  // bring the display to the top of the priority list and map the port the
+  // device is connected to, to display 3.
+  touch_device_manager()->AddTouchCalibrationData(
+      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
+      TouchCalibrationData());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[4]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 3u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[2]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[5]));
+}
+
+TEST_F(TouchAssociationWithDuplicateDeviceTest, ChangeAssociation) {
+  test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                displays_[1].id());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  // Reassociate display at index 3 to touch device at index 2. This will
+  // bring the display to the top of the priority list and map the port the
+  // device is connected to, to display 3.
+  touch_device_manager()->AddTouchCalibrationData(
+      TouchDeviceIdentifier::FromDevice(devices_[2]), displays_[3].id(),
+      TouchCalibrationData());
+
+  touch_device_manager()->AssociateTouchscreens(&displays_, devices_);
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[0]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[0], devices_[4]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[1]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[1], devices_[3]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[2]), 1u);
+  EXPECT_TRUE(AreAssociated(displays_[2], devices_[0]));
+
+  EXPECT_EQ(GetTouchDeviceCount(displays_[3]), 3u);
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[1]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[2]));
+  EXPECT_TRUE(AreAssociated(displays_[3], devices_[5]));
 }
 
 }  // namespace display

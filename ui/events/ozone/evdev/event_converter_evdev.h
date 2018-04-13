@@ -31,6 +31,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
                       int id,
                       InputDeviceType type,
                       const std::string& name,
+                      const std::string& phys,
                       uint16_t vendor_id,
                       uint16_t product_id);
   ~EventConverterEvdev() override;

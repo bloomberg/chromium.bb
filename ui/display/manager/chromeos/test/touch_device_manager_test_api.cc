@@ -45,7 +45,8 @@ bool TouchDeviceManagerTestApi::AreAssociated(
 
 void TouchDeviceManagerTestApi::ResetTouchDeviceManager() {
   touch_device_manager_->RegisterTouchAssociations(
-      TouchDeviceManager::TouchAssociationMap());
+      TouchDeviceManager::TouchAssociationMap(),
+      TouchDeviceManager::PortAssociationMap());
 }
 
 }  // namespace test

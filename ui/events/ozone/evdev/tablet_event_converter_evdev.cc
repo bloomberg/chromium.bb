@@ -42,6 +42,7 @@ TabletEventConverterEvdev::TabletEventConverterEvdev(
                           id,
                           info.device_type(),
                           info.name(),
+                          info.phys(),
                           info.vendor_id(),
                           info.product_id()),
       input_device_fd_(std::move(fd)),

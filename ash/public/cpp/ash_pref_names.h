@@ -38,6 +38,7 @@ ASH_PUBLIC_EXPORT extern const char kDisplayPowerState[];
 ASH_PUBLIC_EXPORT extern const char kDisplayProperties[];
 ASH_PUBLIC_EXPORT extern const char kDisplayRotationLock[];
 ASH_PUBLIC_EXPORT extern const char kDisplayTouchAssociations[];
+ASH_PUBLIC_EXPORT extern const char kDisplayTouchPortAssociations[];
 ASH_PUBLIC_EXPORT extern const char kExternalDisplayMirrorInfo[];
 ASH_PUBLIC_EXPORT extern const char kSecondaryDisplays[];
 
