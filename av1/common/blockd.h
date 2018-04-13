@@ -364,13 +364,9 @@ PREDICTION_MODE av1_above_block_mode(const MB_MODE_INFO *above_mi);
 static INLINE int is_global_mv_block(const MB_MODE_INFO *const mbmi,
                                      TransformationType type) {
   const PREDICTION_MODE mode = mbmi->mode;
-#if GLOBAL_SUB8X8_USED
-  const int block_size_allowed = 1;
-#else
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int block_size_allowed =
       AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
-#endif  // GLOBAL_SUB8X8_USED
   return (mode == GLOBALMV || mode == GLOBAL_GLOBALMV) && type > TRANSLATION &&
          block_size_allowed;
 }
@@ -1129,10 +1125,8 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   // First check if all modes are GLOBALMV
   if (mbmi->mode != GLOBALMV && mbmi->mode != GLOBAL_GLOBALMV) return 0;
 
-#if !GLOBAL_SUB8X8_USED
   if (AOMMIN(mi_size_wide[mbmi->sb_type], mi_size_high[mbmi->sb_type]) < 8)
     return 0;
-#endif
 
   // Now check if all global motion is non translational
   for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {

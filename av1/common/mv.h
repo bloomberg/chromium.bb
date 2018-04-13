@@ -164,9 +164,6 @@ static const WarpedMotionParams default_warp_params = {
 #define GM_ALPHA_MIN -GM_ALPHA_MAX
 #define GM_ROW3HOMO_MIN -GM_ROW3HOMO_MAX
 
-// Use global motion parameters for sub8x8 blocks
-#define GLOBAL_SUB8X8_USED 0
-
 static INLINE int block_center_x(int mi_col, BLOCK_SIZE bs) {
   const int bw = block_size_wide[bs];
   return mi_col * MI_SIZE + bw / 2 - 1;
