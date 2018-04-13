@@ -19,7 +19,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -176,8 +175,6 @@ class ExtensionServiceTestBase : public testing::Test {
 
   // The associated ExtensionRegistry, for convenience.
   extensions::ExtensionRegistry* registry_;
-
-  Extension::ScopedAllowLegacyExtensions allow_legacy_extensions_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

@@ -736,13 +736,6 @@ class PolicyTest : public InProcessBrowserTest {
     }
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    command_line->AppendSwitch(
-        extensions::switches::kAllowLegacyExtensionManifests);
-  }
-
   void SetScreenshotPolicy(bool enabled) {
     PolicyMap policies;
     policies.Set(key::kDisableScreenshots, POLICY_LEVEL_MANDATORY,

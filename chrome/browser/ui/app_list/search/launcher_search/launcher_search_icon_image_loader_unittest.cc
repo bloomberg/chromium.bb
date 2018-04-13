@@ -114,7 +114,6 @@ scoped_refptr<extensions::Extension> CreateTestExtension(
   base::DictionaryValue manifest;
   std::string error;
   manifest.SetKey(extensions::manifest_keys::kVersion, base::Value("1"));
-  manifest.SetKey(extensions::manifest_keys::kManifestVersion, base::Value(2));
   manifest.SetKey(extensions::manifest_keys::kName,
                   base::Value("TestExtension"));
   return extensions::Extension::Create(

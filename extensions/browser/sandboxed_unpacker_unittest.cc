@@ -124,9 +124,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
       : ExtensionsTest(options) {}
 
   void SetUp() override {
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    allow_legacy_extensions_ = Extension::allow_legacy_extensions_for_testing();
-
     ExtensionsTest::SetUp();
     ASSERT_TRUE(extensions_dir_.CreateUniqueTempDir());
     in_process_utility_thread_helper_.reset(
@@ -167,7 +164,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     base::RunLoop().RunUntilIdle();
     ExtensionsTest::TearDown();
     in_process_utility_thread_helper_.reset();
-    allow_legacy_extensions_.reset();
   }
 
   base::FilePath GetCrxFullPath(const std::string& crx_name) {
@@ -243,7 +239,6 @@ class SandboxedUnpackerTest : public ExtensionsTest {
   std::unique_ptr<service_manager::TestConnectorFactory>
       test_connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
-  Extension::ScopedAllowLegacyExtensions allow_legacy_extensions_;
 };
 
 TEST_F(SandboxedUnpackerTest, EmptyDefaultLocale) {

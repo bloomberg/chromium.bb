@@ -112,7 +112,6 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
-#include "extensions/common/switches.h"
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -451,14 +450,6 @@ class DownloadTest : public InProcessBrowserTest {
   };
 
   DownloadTest() {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    command_line->AppendSwitch(
-        extensions::switches::kAllowLegacyExtensionManifests);
-  }
 
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(

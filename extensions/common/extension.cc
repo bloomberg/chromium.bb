@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
@@ -64,8 +63,6 @@ const char kKeyInfoEndMarker[] = "KEY-----";
 const char kPublic[] = "PUBLIC";
 const char kPrivate[] = "PRIVATE";
 
-bool g_allow_legacy_extensions = false;
-
 bool ContainsReservedCharacters(const base::FilePath& path) {
   // We should disallow backslash '\\' as file path separator even on Windows,
   // because the backslash is not regarded as file path separator on Linux/Mac.
@@ -75,41 +72,6 @@ bool ContainsReservedCharacters(const base::FilePath& path) {
   if (path.value().find('\\') != path.value().npos)
     return true;
   return !net::IsSafePortableRelativePath(path);
-}
-
-// Returns true if the given |manifest_version| is supported for the specified
-// |type| of extension.
-bool IsManifestSupported(int manifest_version,
-                         Manifest::Type type,
-                         int creation_flags) {
-  // Modern is always safe.
-  if (manifest_version >= kModernManifestVersion)
-    return true;
-
-  // Allow an exception for extensions if a special commandline flag is present.
-  // Note: This allows the extension to load, but it may effectively be treated
-  // as a higher manifest version. For instance, all extension v1-specific
-  // handling has been removed, which means they will effectively be treated as
-  // v2s.
-  bool allow_legacy_extensions =
-      g_allow_legacy_extensions ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowLegacyExtensionManifests);
-  if (type == Manifest::TYPE_EXTENSION && allow_legacy_extensions)
-    return true;
-
-  if ((creation_flags & Extension::REQUIRE_MODERN_MANIFEST_VERSION) != 0)
-    return false;
-
-  static constexpr int kMinimumExtensionManifestVersion = 2;
-  if (type == Manifest::TYPE_EXTENSION)
-    return manifest_version >= kMinimumExtensionManifestVersion;
-
-  static constexpr int kMinimumPlatformAppManifestVersion = 2;
-  if (type == Manifest::TYPE_PLATFORM_APP)
-    return manifest_version >= kMinimumPlatformAppManifestVersion;
-
-  return true;
 }
 
 }  // namespace
@@ -476,14 +438,6 @@ void Extension::AddWebExtentPattern(const URLPattern& pattern) {
   extent_.AddPattern(pattern);
 }
 
-Extension::ScopedAllowLegacyExtensions
-Extension::allow_legacy_extensions_for_testing() {
-  DCHECK(!g_allow_legacy_extensions)
-      << "Multiple ScopedAllowLegacyExtensions objects are not allowed.";
-  return std::make_unique<base::AutoReset<bool>>(&g_allow_legacy_extensions,
-                                                 true);
-}
-
 // static
 bool Extension::InitExtensionID(extensions::Manifest* manifest,
                                 const base::FilePath& path,
@@ -547,14 +501,6 @@ bool Extension::InitFromValue(int flags, base::string16* error) {
 
   creation_flags_ = flags;
 
-  // Check for |converted_from_user_script| first, since it affects the type
-  // returned by GetType(). This is needed to determine if the manifest version
-  // is valid.
-  if (manifest_->HasKey(keys::kConvertedFromUserScript)) {
-    manifest_->GetBoolean(keys::kConvertedFromUserScript,
-                          &converted_from_user_script_);
-  }
-
   // Important to load manifest version first because many other features
   // depend on its value.
   if (!LoadManifestVersion(error))
@@ -577,6 +523,11 @@ bool Extension::InitFromValue(int flags, base::string16* error) {
   permissions_parser_.reset(new PermissionsParser());
   if (!permissions_parser_->Parse(this, error))
     return false;
+
+  if (manifest_->HasKey(keys::kConvertedFromUserScript)) {
+    manifest_->GetBoolean(keys::kConvertedFromUserScript,
+                          &converted_from_user_script_);
+  }
 
   if (!LoadSharedFeatures(error))
     return false;
@@ -755,10 +706,11 @@ bool Extension::LoadManifestVersion(base::string16* error) {
   }
 
   manifest_version_ = manifest_->GetManifestVersion();
-  if (!IsManifestSupported(manifest_version_, GetType(), creation_flags_)) {
-    std::string json;
-    base::JSONWriter::Write(*manifest_->value(), &json);
-    LOG(WARNING) << "Failed to load extension.  Manifest JSON: " << json;
+  if (manifest_version_ < kModernManifestVersion &&
+      ((creation_flags_ & REQUIRE_MODERN_MANIFEST_VERSION &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAllowLegacyExtensionManifests)) ||
+       GetType() == Manifest::TYPE_PLATFORM_APP)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidManifestVersionOld,
         base::IntToString(kModernManifestVersion),

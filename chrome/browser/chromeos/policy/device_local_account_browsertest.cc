@@ -130,7 +130,6 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/switches.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -444,10 +443,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
                                     test_server_.GetServiceURL().spec());
-
-    // TODO(devlin): Remove this. See https://crbug.com/816679.
-    command_line->AppendSwitch(
-        extensions::switches::kAllowLegacyExtensionManifests);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
