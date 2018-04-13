@@ -87,12 +87,16 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
         std::make_unique<CdmService>(std::move(mock_cdm_service_client));
     cdm_service_ = cdm_service.get();
 
-    // Delayed service release involves a posted delayed task which will not
-    // block *.RunUntilIdle() and hence cause a memory leak in the test.
-    cdm_service_->DisableDelayedServiceReleaseForTesting();
+    cdm_service_->SetServiceReleaseDelayForTesting(service_release_delay_);
 
     service_context_ = std::make_unique<service_manager::ServiceContext>(
         std::move(cdm_service), std::move(request));
+    service_context_->SetQuitClosure(base::BindRepeating(
+        &ServiceTestClient::DestroyService, base::Unretained(this)));
+  }
+
+  void SetServiceReleaseDelay(base::TimeDelta delay) {
+    service_release_delay_ = delay;
   }
 
   void DestroyService() { service_context_.reset(); }
@@ -107,6 +111,11 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   void Create(service_manager::mojom::ServiceFactoryRequest request) {
     service_factory_bindings_.AddBinding(this, std::move(request));
   }
+
+  // Delayed service release involves a posted delayed task which will not
+  // block *.RunUntilIdle() and hence cause a memory leak in the test. So by
+  // default use a zero value delay to disable the delay.
+  base::TimeDelta service_release_delay_;
 
   service_manager::BinderRegistry registry_;
   mojo::BindingSet<service_manager::mojom::ServiceFactory>
@@ -123,15 +132,15 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
   CdmServiceTest() : ServiceTest("cdm_service_unittest") {}
   ~CdmServiceTest() override {}
 
+  MOCK_METHOD0(CdmServiceConnectionClosed, void());
   MOCK_METHOD0(CdmFactoryConnectionClosed, void());
   MOCK_METHOD0(CdmConnectionClosed, void());
 
-  // service_manager::test::ServiceTest:
-  void SetUp() override {
-    ServiceTest::SetUp();
-
+  void Initialize() {
     connector()->BindInterface(media::mojom::kCdmServiceName,
                                &cdm_service_ptr_);
+    cdm_service_ptr_.set_connection_error_handler(base::BindRepeating(
+        &CdmServiceTest::CdmServiceConnectionClosed, base::Unretained(this)));
 
     service_manager::mojom::InterfaceProviderPtr interfaces;
     auto provider = std::make_unique<MediaInterfaceProvider>(
@@ -144,6 +153,11 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
     ASSERT_TRUE(cdm_factory_ptr_);
     cdm_factory_ptr_.set_connection_error_handler(base::BindRepeating(
         &CdmServiceTest::CdmFactoryConnectionClosed, base::Unretained(this)));
+  }
+
+  void InitializeWithServiceReleaseDelay(base::TimeDelta delay) {
+    service_test_client_->SetServiceReleaseDelay(delay);
+    Initialize();
   }
 
   // MOCK_METHOD* doesn't support move-only types. Work around this by having
@@ -169,6 +183,7 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
     run_loop.Run();
   }
 
+  // service_manager::test::ServiceTest implementation.
   std::unique_ptr<service_manager::Service> CreateService() override {
     auto service_test_client = std::make_unique<ServiceTestClient>(this);
     service_test_client_ = service_test_client.get();
@@ -185,13 +200,14 @@ class CdmServiceTest : public service_manager::test::ServiceTest {
 };
 
 TEST_F(CdmServiceTest, LoadCdm) {
-  base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
+  Initialize();
 
   // Even with a dummy path where the CDM cannot be loaded, EnsureSandboxed()
   // should still be called to ensure the process is sandboxed.
   EXPECT_CALL(*service_test_client_->mock_cdm_service_client(),
               EnsureSandboxed());
 
+  base::FilePath cdm_path(FILE_PATH_LITERAL("dummy path"));
 #if defined(OS_MACOSX)
   // Token provider will not be used since the path is a dummy path.
   cdm_service_ptr_->LoadCdm(cdm_path, nullptr);
@@ -203,22 +219,26 @@ TEST_F(CdmServiceTest, LoadCdm) {
 }
 
 TEST_F(CdmServiceTest, InitializeCdm_Success) {
+  Initialize();
   InitializeCdm(kClearKeyKeySystem, true);
 }
 
 TEST_F(CdmServiceTest, InitializeCdm_InvalidKeySystem) {
+  Initialize();
   InitializeCdm(kInvalidKeySystem, false);
 }
 
 TEST_F(CdmServiceTest, DestroyAndRecreateCdm) {
+  Initialize();
   InitializeCdm(kClearKeyKeySystem, true);
   cdm_ptr_.reset();
   InitializeCdm(kClearKeyKeySystem, true);
 }
 
 // CdmFactory connection error will NOT destroy CDMs. Instead, it will only be
-// destroyed after |cdm_| is reset.
+// destroyed after |cdm_ptr_| is reset.
 TEST_F(CdmServiceTest, DestroyCdmFactory) {
+  Initialize();
   auto* service = service_test_client_->cdm_service();
 
   InitializeCdm(kClearKeyKeySystem, true);
@@ -236,13 +256,39 @@ TEST_F(CdmServiceTest, DestroyCdmFactory) {
   EXPECT_EQ(service->UnboundCdmFactorySizeForTesting(), 0u);
 }
 
+// Same as DestroyCdmFactory test, but do not disable delayed service release.
+// TODO(xhwang): Use ScopedTaskEnvironment::MainThreadType::MOCK_TIME and
+// ScopedTaskEnvironment::FastForwardBy() so we don't have to really wait for
+// the delay in the test. But currently FastForwardBy() doesn't support delayed
+// task yet.
+TEST_F(CdmServiceTest, DestroyCdmFactory_DelayedServiceRelease) {
+  constexpr base::TimeDelta kServiceContextRefReleaseDelay =
+      base::TimeDelta::FromSeconds(1);
+  InitializeWithServiceReleaseDelay(kServiceContextRefReleaseDelay);
+
+  InitializeCdm(kClearKeyKeySystem, true);
+  cdm_factory_ptr_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  base::RunLoop run_loop;
+  auto start_time = base::Time::Now();
+  cdm_ptr_.reset();
+  EXPECT_CALL(*this, CdmServiceConnectionClosed())
+      .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
+  run_loop.Run();
+  auto time_passed = base::Time::Now() - start_time;
+  EXPECT_GE(time_passed, kServiceContextRefReleaseDelay);
+}
+
 // Destroy service will destroy the CdmFactory and all CDMs.
 TEST_F(CdmServiceTest, DestroyCdmService) {
+  Initialize();
   InitializeCdm(kClearKeyKeySystem, true);
 
   base::RunLoop run_loop;
   // Ideally we should not care about order, and should only quit the loop when
   // both connections are closed.
+  EXPECT_CALL(*this, CdmServiceConnectionClosed());
   EXPECT_CALL(*this, CdmFactoryConnectionClosed());
   EXPECT_CALL(*this, CdmConnectionClosed())
       .WillOnce(Invoke(&run_loop, &base::RunLoop::Quit));
