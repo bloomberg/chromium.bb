@@ -70,7 +70,7 @@ IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
       stability_metrics_provider_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  RegisterForNotifications();
+  notification_listeners_active_ = RegisterForNotifications();
 }
 
 IOSChromeMetricsServiceClient::~IOSChromeMetricsServiceClient() {
@@ -250,7 +250,7 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
   collect_final_metrics_done_callback_.Run();
 }
 
-void IOSChromeMetricsServiceClient::RegisterForNotifications() {
+bool IOSChromeMetricsServiceClient::RegisterForNotifications() {
   tab_parented_subscription_ =
       TabParentingGlobalObserver::GetInstance()->RegisterCallback(
           base::Bind(&IOSChromeMetricsServiceClient::OnTabParented,
@@ -264,12 +264,16 @@ void IOSChromeMetricsServiceClient::RegisterForNotifications() {
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
+  bool all_profiles_succeeded = true;
   for (ios::ChromeBrowserState* browser_state : loaded_browser_states) {
-    RegisterForBrowserStateEvents(browser_state);
+    if (!RegisterForBrowserStateEvents(browser_state)) {
+      all_profiles_succeeded = false;
+    }
   }
+  return all_profiles_succeeded;
 }
 
-void IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
+bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
     ios::ChromeBrowserState* browser_state) {
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -279,6 +283,7 @@ void IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
       IOSChromeProfileSyncServiceFactory::GetInstance()->GetForBrowserState(
           browser_state);
   ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync));
+  return (history_service != nullptr && sync != nullptr);
 }
 
 void IOSChromeMetricsServiceClient::OnTabParented(web::WebState* web_state) {
@@ -323,4 +328,9 @@ void IOSChromeMetricsServiceClient::OnIncognitoWebStateRemoved() {
 
 bool IOSChromeMetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
   return SyncDisableObserver::IsHistorySyncEnabledOnAllProfiles();
+}
+
+bool IOSChromeMetricsServiceClient::
+    AreNotificationListenersEnabledOnAllProfiles() {
+  return notification_listeners_active_;
 }

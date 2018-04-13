@@ -119,11 +119,14 @@ class MetricsServiceClient {
   // Returns whether cellular logic is enabled for metrics reporting.
   virtual bool IsUMACellularUploadLogicEnabled();
 
-  // Returns if history sync is enabled on all active profiles.
+  // Returns whether history sync is enabled on all active profiles.
   virtual bool IsHistorySyncEnabledOnAllProfiles();
 
   // Returns if extensions sync is enabled on all active profiles.
   virtual bool IsExtensionSyncEnabledOnAllProfiles();
+
+  // Returns whether UKM notification listeners were attached to all profiles.
+  virtual bool AreNotificationListenersEnabledOnAllProfiles();
 
   // Sets the callback to run MetricsServiceManager::UpdateRunningServices.
   void SetUpdateRunningServicesCallback(const base::Closure& callback);

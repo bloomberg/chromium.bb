@@ -418,9 +418,10 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordCommandLineMetrics();
-  RegisterForNotifications();
+  notification_listeners_active_ = RegisterForNotifications();
 #if defined(OS_ANDROID)
   incognito_observer_ = std::make_unique<AndroidIncognitoObserver>(this);
+  notification_listeners_active_ &= (incognito_observer_ != nullptr);
 #endif
 }
 
@@ -850,7 +851,7 @@ void ChromeMetricsServiceClient::RecordCommandLineMetrics() {
                            switch_count - common_commands);
 }
 
-void ChromeMetricsServiceClient::RegisterForNotifications() {
+bool ChromeMetricsServiceClient::RegisterForNotifications() {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSED,
@@ -878,13 +879,18 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
+
+  bool all_profiles_succeeded = true;
   for (Profile* profile :
        g_browser_process->profile_manager()->GetLoadedProfiles()) {
-    RegisterForProfileEvents(profile);
+    if (!RegisterForProfileEvents(profile)) {
+      all_profiles_succeeded = false;
+    }
   }
+  return all_profiles_succeeded;
 }
 
-void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
+bool ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   // Register chrome://ukm handler
   content::URLDataSource::Add(
       profile, new ukm::debug::DebugPage(base::Bind(
@@ -894,7 +900,8 @@ void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   // deletion.
   if (chromeos::ProfileHelper::IsSigninProfile(profile) ||
       chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
-    return;
+    // No listeners, but still a success case.
+    return true;
   }
 #endif
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
@@ -908,11 +915,19 @@ void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
+  if (!history_service) {
+    return false;
+  }
+
   ObserveServiceForDeletions(history_service);
+
   browser_sync::ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  if (sync)
-    ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync));
+  if (!sync) {
+    return false;
+  }
+  ObserveServiceForSyncDisables(static_cast<syncer::SyncService*>(sync));
+  return true;
 }
 
 void ChromeMetricsServiceClient::Observe(
@@ -937,9 +952,15 @@ void ChromeMetricsServiceClient::Observe(
       metrics_service_->OnApplicationNotIdle();
       break;
 
-    case chrome::NOTIFICATION_PROFILE_ADDED:
-      RegisterForProfileEvents(content::Source<Profile>(source).ptr());
+    case chrome::NOTIFICATION_PROFILE_ADDED: {
+      bool success =
+          RegisterForProfileEvents(content::Source<Profile>(source).ptr());
+      if (!success && notification_listeners_active_) {
+        notification_listeners_active_ = false;
+        UpdateRunningServices();
+      }
       break;
+    }
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
       // May have closed last incognito window.
       UpdateRunningServices();
@@ -1034,4 +1055,18 @@ bool ChromeMetricsServiceClient::IsHistorySyncEnabledOnAllProfiles() {
 
 bool ChromeMetricsServiceClient::IsExtensionSyncEnabledOnAllProfiles() {
   return SyncDisableObserver::IsExtensionSyncEnabledOnAllProfiles();
+}
+
+bool g_notification_listeners_failed = false;
+void ChromeMetricsServiceClient::SetNotificationListenerSetupFailedForTesting(
+    bool simulate_failure) {
+  g_notification_listeners_failed = simulate_failure;
+}
+
+bool ChromeMetricsServiceClient::
+    AreNotificationListenersEnabledOnAllProfiles() {
+  // For testing
+  if (g_notification_listeners_failed)
+    return false;
+  return notification_listeners_active_;
 }

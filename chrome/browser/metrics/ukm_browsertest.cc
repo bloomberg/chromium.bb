@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/testing/metrics_reporting_pref_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -713,6 +714,23 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {
       browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(browser2);
   CloseBrowserSynchronously(browser1);
+}
+
+// Make sure that if history/sync services weren't available when we tried to
+// attach listeners, UKM is not enabled.
+IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ServiceListenerInitFailedCheck) {
+  MetricsConsentOverride metrics_consent(true);
+  ChromeMetricsServiceClient::SetNotificationListenerSetupFailedForTesting(
+      true);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+
+  Browser* sync_browser = CreateBrowser(profile);
+  EXPECT_FALSE(ukm_enabled());
+  harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+  CloseBrowserSynchronously(sync_browser);
 }
 
 // Make sure that UKM is not affected by MetricsReporting Feature (sampling).
