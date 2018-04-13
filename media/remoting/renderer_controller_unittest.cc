@@ -221,8 +221,6 @@ TEST_F(RendererControllerTest, NotStartForShortContent) {
   ExpectInLocalRendering();
 }
 
-#if !defined(OS_ANDROID)
-
 TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   InitializeControllerAndBecomeDominant(DefaultMetadata(VideoCodec::kCodecVP8),
                                         GetDefaultSinkMetadata(false));
@@ -389,8 +387,6 @@ TEST_F(RendererControllerTest, PacingTooSlowly) {
   RunUntilIdle();
   ExpectInDelayedStart();  // Try start remoting again.
 }
-
-#endif  // OS_ANDROID
 
 TEST_F(RendererControllerTest, StartFailed) {
   controller_ = FakeRemoterFactory::CreateController(true);

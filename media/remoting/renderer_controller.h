@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "media/base/media_observer.h"
 #include "media/media_buildflags.h"
@@ -146,6 +147,12 @@ class RendererController final : public mojom::RemotingSource,
 
   // Callback from RpcBroker when sending message to remote sink.
   void SendMessageToSink(std::unique_ptr<std::vector<uint8_t>> message);
+
+#if defined(OS_ANDROID)
+  bool IsAudioRemotePlaybackSupported() const;
+  bool IsVideoRemotePlaybackSupported() const;
+  bool IsRemotePlaybackSupported() const;
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING_RPC)
   // Handles dispatching of incoming and outgoing RPC messages.

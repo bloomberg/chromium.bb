@@ -6,13 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
-#include "build/buildflag.h"
-#include "media/media_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -319,15 +315,17 @@ void RendererController::UpdateRemotePlaybackAvailabilityMonitoringState() {
 #if defined(OS_ANDROID)
   // TODO(tguilbert): Detect the presence of HLS based on demuxing results,
   // rather than the URL string. See crbug.com/663503.
-  bool is_hls = MediaCodecUtil::IsHLSURL(url_after_redirects_);
+  const bool is_media_supported =
+      MediaCodecUtil::IsHLSURL(url_after_redirects_) ||
+      IsRemotePlaybackSupported();
 #else
-  bool is_hls = false;
+  const bool is_media_supported = IsAudioOrVideoSupported();
 #endif
   // TODO(avayvod): add a check for CORS.
   bool is_source_supported = url_after_redirects_.has_scheme() &&
                              (url_after_redirects_.SchemeIs("http") ||
                               url_after_redirects_.SchemeIs("https")) &&
-                             (is_hls || IsAudioOrVideoSupported());
+                             is_media_supported;
 
   client_->UpdateRemotePlaybackCompatibility(is_source_supported);
 }
@@ -431,13 +429,9 @@ bool RendererController::CanBeRemoting() const {
 }
 
 bool RendererController::IsAudioOrVideoSupported() const {
-  if ((!has_audio() && !has_video()) ||
-      (has_video() && !IsVideoCodecSupported()) ||
-      (has_audio() && !IsAudioCodecSupported())) {
-    return false;
-  }
-
-  return true;
+  return ((has_audio() || has_video()) &&
+          (!has_video() || IsVideoCodecSupported()) &&
+          (!has_audio() || IsAudioCodecSupported()));
 }
 
 void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
@@ -554,24 +548,16 @@ void RendererController::SetClient(MediaObserverClient* client) {
 
 bool RendererController::HasVideoCapability(
     mojom::RemotingSinkVideoCapability capability) const {
-#if defined(OS_ANDROID)
-  return true;
-#else
   return std::find(std::begin(sink_metadata_.video_capabilities),
                    std::end(sink_metadata_.video_capabilities),
                    capability) != std::end(sink_metadata_.video_capabilities);
-#endif
 }
 
 bool RendererController::HasAudioCapability(
     mojom::RemotingSinkAudioCapability capability) const {
-#if defined(OS_ANDROID)
-  return true;
-#else
   return std::find(std::begin(sink_metadata_.audio_capabilities),
                    std::end(sink_metadata_.audio_capabilities),
                    capability) != std::end(sink_metadata_.audio_capabilities);
-#endif
 }
 
 bool RendererController::HasFeatureCapability(
@@ -586,6 +572,64 @@ void RendererController::SendMessageToSink(
   DCHECK(thread_checker_.CalledOnValidThread());
   remoter_->SendMessageToSink(*message);
 }
+
+#if defined(OS_ANDROID)
+
+bool RendererController::IsAudioRemotePlaybackSupported() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(has_audio());
+
+  if (pipeline_metadata_.audio_decoder_config.is_encrypted())
+    return false;
+
+  switch (pipeline_metadata_.audio_decoder_config.codec()) {
+    case AudioCodec::kCodecAAC:
+    case AudioCodec::kCodecOpus:
+    case AudioCodec::kCodecMP3:
+    case AudioCodec::kCodecPCM:
+    case AudioCodec::kCodecVorbis:
+    case AudioCodec::kCodecFLAC:
+    case AudioCodec::kCodecAMR_NB:
+    case AudioCodec::kCodecAMR_WB:
+    case AudioCodec::kCodecPCM_MULAW:
+    case AudioCodec::kCodecGSM_MS:
+    case AudioCodec::kCodecPCM_S16BE:
+    case AudioCodec::kCodecPCM_S24BE:
+    case AudioCodec::kCodecEAC3:
+    case AudioCodec::kCodecPCM_ALAW:
+    case AudioCodec::kCodecALAC:
+    case AudioCodec::kCodecAC3:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool RendererController::IsVideoRemotePlaybackSupported() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(has_video());
+
+  if (pipeline_metadata_.video_decoder_config.is_encrypted())
+    return false;
+
+  switch (pipeline_metadata_.video_decoder_config.codec()) {
+    case VideoCodec::kCodecH264:
+    case VideoCodec::kCodecVP8:
+    case VideoCodec::kCodecVP9:
+    case VideoCodec::kCodecHEVC:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool RendererController::IsRemotePlaybackSupported() const {
+  return ((has_audio() || has_video()) &&
+          (!has_video() || IsVideoRemotePlaybackSupported()) &&
+          (!has_audio() || IsAudioRemotePlaybackSupported()));
+}
+
+#endif  // defined(OS_ANDROID)
 
 }  // namespace remoting
 }  // namespace media

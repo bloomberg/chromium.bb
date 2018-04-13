@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "media/base/overlay_info.h"
 #include "media/media_buildflags.h"
@@ -41,7 +42,11 @@ std::unique_ptr<Renderer> CourierRendererFactory::CreateRenderer(
 }
 
 bool CourierRendererFactory::IsRemotingActive() {
+#if defined(OS_ANDROID)
+  return false;  // Media Remoting is not supported on Android for now.
+#else
   return controller_ && controller_->remote_rendering_started();
+#endif
 }
 
 }  // namespace remoting
