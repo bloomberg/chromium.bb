@@ -28,6 +28,7 @@
 #include "ash/display/cursor_window_controller.h"
 #include "ash/display/display_color_manager.h"
 #include "ash/display/display_configuration_controller.h"
+#include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_error_observer.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/display_shutdown_observer.h"
@@ -707,6 +708,8 @@ Shell::~Shell() {
   user_metrics_recorder_->OnShellShuttingDown();
 
   shell_delegate_->PreShutdown();
+
+  display_configuration_observer_.reset();
   display_prefs_.reset();
 
   // Remove the focus from any window. This will prevent overhead and side
@@ -985,12 +988,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
         base::WrapUnique(native_cursor_manager_));
   }
 
-  // Construct DisplayPrefs here so that display_prefs()->StoreDisplayPrefs()
-  // can safely be called. DisplayPrefs will be loaded once |local_state_|
-  // is available and store requests will be queued in the meanwhile.
-  display_prefs_ = std::make_unique<DisplayPrefs>();
-
-  // TODO(stevenjb): Move DisplayConfigurationObserver to Ash also.
   shell_delegate_->PreInit();
 
   InitializeDisplayManager();
@@ -1250,6 +1247,11 @@ void Shell::Init(ui::ContextFactory* context_factory,
 }
 
 void Shell::InitializeDisplayManager() {
+  // Construct DisplayPrefs here so that display_prefs()->StoreDisplayPrefs()
+  // can safely be called. DisplayPrefs will be loaded once |local_state_|
+  // is available and store requests will be queued in the meanwhile.
+  display_prefs_ = std::make_unique<DisplayPrefs>();
+
   const Config config = shell_port_->GetAshConfig();
   bool display_initialized = display_manager_->InitFromCommandLine();
 
@@ -1263,6 +1265,9 @@ void Shell::InitializeDisplayManager() {
           display_manager_.get(), window_tree_host_manager_.get());
   display_configurator_->Init(shell_port_->CreateNativeDisplayDelegate(),
                               false);
+  display_configuration_observer_ =
+      std::make_unique<DisplayConfigurationObserver>();
+
   persistent_window_controller_ =
       std::make_unique<PersistentWindowController>();
 

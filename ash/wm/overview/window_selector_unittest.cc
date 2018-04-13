@@ -3024,7 +3024,10 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
 
   void SetUp() override {
     WindowSelectorTest::SetUp();
+    // Ensure calls to EnableTabletModeWindowManager complete.
+    base::RunLoop().RunUntilIdle();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    base::RunLoop().RunUntilIdle();
   }
 
   SplitViewController* split_view_controller() {
@@ -3645,6 +3648,11 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsVisibility) {
 TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsWidgetReparenting) {
   // Add two displays and one window on each display.
   UpdateDisplay("600x600,600x600");
+  // DisplayConfigurationObserver enables mirror mode when tablet mode is
+  // enabled. Disable mirror mode to test multiple displays.
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  base::RunLoop().RunUntilIdle();
+
   auto root_windows = Shell::Get()->GetAllRootWindows();
   ASSERT_EQ(2u, root_windows.size());
 

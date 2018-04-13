@@ -142,6 +142,8 @@ TEST_F(TrayRotationLockTest, CreateSecondaryTrayView) {
 
   SetUpForStatusAreaWidget(
       StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(tray_view());
   EXPECT_FALSE(tray_view()->visible());
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   EXPECT_FALSE(tray_view()->visible());

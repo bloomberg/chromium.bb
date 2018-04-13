@@ -1618,14 +1618,15 @@ TEST_F(DisplayInfoProviderChromeosTouchviewTest, GetTabletMode) {
   EXPECT_FALSE(result[1].has_accelerometer_support);
   EXPECT_FALSE(result[1].is_tablet_mode);
 
+  // Entering tablet mode will cause DisplayConfigurationObserver to set
+  // forced mirror mode. https://crbug.com/733092.
   EnableTabletMode(true);
+  EXPECT_TRUE(display_manager()->IsInMirrorMode());
   result = GetAllDisplaysInfo();
-  ASSERT_EQ(2u, result.size());
+  ASSERT_EQ(1u, result.size());
   EXPECT_TRUE(result[0].has_accelerometer_support);
   ASSERT_TRUE(result[0].is_tablet_mode);
   EXPECT_TRUE(*result[0].is_tablet_mode);
-  EXPECT_FALSE(result[1].has_accelerometer_support);
-  EXPECT_FALSE(result[1].is_tablet_mode);
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, SetMIXEDMode) {
