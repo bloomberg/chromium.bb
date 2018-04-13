@@ -340,6 +340,18 @@ be describing additional metrics about the same event.
       the event period.
     </summary>
   </metric>
+  <metric name="IntersectionObservation.Average">
+    <summary>
+      The average time taken to compute IntersectionObserver observations in
+      microseconds in the event period.
+    </summary>
+  </metric>
+  <metric name="IntersectionObservation.WorstCase">
+    <summary>
+      The longest single time taken by to compute IntersectionObserver
+      observations in microseconds in the event period.
+    </summary>
+  </metric>
   <metric name="Paint.Average">
     <summary>
       The average time taken by the paint phase in microseconds in the event

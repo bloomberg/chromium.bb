@@ -158,6 +158,7 @@ constexpr int kLetterPortraitPageHeight = 792;
 // EnsureUkmTimeAggregator().
 enum class UkmMetricNames {
   kCompositing,
+  kIntersectionObservation,
   kPaint,
   kPrePaint,
   kStyleAndLayout,
@@ -166,6 +167,18 @@ enum class UkmMetricNames {
 
 }  // namespace
 
+// Defines an UMA and a UKM, recorded in microseconds equal to the duration of
+// the current lexical scope after declaration of the macro. Example usage:
+//
+// void LocalFrameView::DoExpensiveThing() {
+//   SCOPED_UMA_AND_UKM_TIMER(UmaName, kUkmEnumName);
+//   // Do computation of expensive thing
+//
+// }
+//
+// |uma_name| should be the full name of an UMA defined
+// in histograms.xml. |ukm_enum| should be an entry in UkmMetricNames
+// (which in turn come from ukm.xml).
 #define SCOPED_UMA_AND_UKM_TIMER(uma_name, ukm_enum)                    \
   DEFINE_STATIC_LOCAL_IMPL(CustomCountHistogram, scoped_uma_counter,    \
                            (uma_name, 0, 10000000, 50), false);         \
@@ -3316,7 +3329,12 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
     });
   }
 
-  UpdateViewportIntersectionsForSubtree(target_state);
+  {
+    SCOPED_UMA_AND_UKM_TIMER("Blink.IntersectionObservation.UpdateTime",
+                             UkmMetricNames::kIntersectionObservation);
+    UpdateViewportIntersectionsForSubtree(target_state);
+  }
+
   return Lifecycle().GetState() == target_state;
 }
 
@@ -5881,7 +5899,8 @@ UkmTimeAggregator& LocalFrameView::EnsureUkmTimeAggregator() {
         frame_->GetDocument()->UkmRecorder(),
         // Note that changing the order or values of the following vector
         // requires changing the UkmMetricNames enum.
-        {"Paint", "PrePaint", "Compositing", "StyleAndLayout"},
+        {"Compositing", "IntersectionObservation", "Paint", "PrePaint",
+         "StyleAndLayout"},
         TimeDelta::FromSeconds(1)));
   }
   return *ukm_time_aggregator_;
