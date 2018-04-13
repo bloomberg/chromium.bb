@@ -13,6 +13,7 @@
 #include "ui/views/controls/button/button.h"
 
 class Profile;
+enum class OmniboxTint;
 
 namespace views {
 class Label;
@@ -31,11 +32,12 @@ class KeywordHintView : public views::Button {
  public:
   KeywordHintView(views::ButtonListener* listener,
                   Profile* profile,
-                  SkColor text_color,
-                  SkColor background_color);
+                  OmniboxTint tint);
   ~KeywordHintView() override;
 
-  void SetKeyword(const base::string16& keyword);
+  void SetKeyword(const base::string16& keyword,
+                  bool popup_open,
+                  OmniboxTint tint);
 
   // views::View:
   gfx::Insets GetInsets() const override;
