@@ -229,6 +229,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=828572)
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['win', 'nvidia', 'opengl'], bug=830046)
+    self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
+        ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
 
     self.Flaky('deqp/functional/gles3/transformfeedback/*',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=822733)
