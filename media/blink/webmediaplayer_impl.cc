@@ -2906,6 +2906,10 @@ bool WebMediaPlayerImpl::ShouldDisableVideoWhenHidden() const {
 bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+  // Don't optimize Picture-in-Picture players.
+  if (client_->IsInPictureInPictureMode())
+    return false;
+
 #if defined(OS_ANDROID)  // WMPI_CAST
   // Don't optimize players being Cast.
   if (IsRemote())

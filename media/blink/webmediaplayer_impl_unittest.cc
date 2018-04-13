@@ -1362,7 +1362,7 @@ TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
 class WebMediaPlayerImplBackgroundBehaviorTest
     : public WebMediaPlayerImplTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, int, int, bool, bool, bool>> {
+          std::tuple<bool, bool, int, int, bool, bool, bool, bool>> {
  public:
   // Indices of the tuple parameters.
   static const int kIsMediaSuspendEnabled = 0;
@@ -1372,6 +1372,7 @@ class WebMediaPlayerImplBackgroundBehaviorTest
   static const int kIsResumeBackgroundVideoEnabled = 4;
   static const int kIsMediaSource = 5;
   static const int kIsBackgroundPauseEnabled = 6;
+  static const int kIsPictureInPictureEnabled = 7;
 
   void SetUp() override {
     WebMediaPlayerImplTest::SetUp();
@@ -1414,6 +1415,12 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     SetVideoKeyframeDistanceAverage(
         base::TimeDelta::FromSeconds(GetAverageKeyframeDistanceSec()));
     SetDuration(base::TimeDelta::FromSeconds(GetDurationSec()));
+
+    if (IsPictureInPictureOn()) {
+      EXPECT_CALL(client_, IsInPictureInPictureMode())
+          .WillRepeatedly(Return(true));
+    }
+
     BackgroundPlayer();
   }
 
@@ -1437,6 +1444,10 @@ class WebMediaPlayerImplBackgroundBehaviorTest
 
   bool IsBackgroundPauseOn() {
     return std::get<kIsBackgroundPauseEnabled>(GetParam());
+  }
+
+  bool IsPictureInPictureOn() {
+    return std::get<kIsPictureInPictureEnabled>(GetParam());
   }
 
   int GetDurationSec() const { return std::get<kDurationSec>(GetParam()); }
@@ -1492,12 +1503,14 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, VideoOnly) {
   // Never disable video track for a video only stream.
   EXPECT_FALSE(ShouldDisableVideoWhenHidden());
 
-  // Video only is always optimized.
-  EXPECT_TRUE(IsBackgroundOptimizationCandidate());
+  // There's no optimization criteria for video only in Picture-in-Picture.
+  bool matches_requirements = !IsPictureInPictureOn();
+  EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
 
   // Video is always paused when suspension is on and only if matches the
   // optimization criteria if the optimization is on.
-  bool should_pause = IsMediaSuspendOn() || IsBackgroundPauseOn();
+  bool should_pause =
+      IsMediaSuspendOn() || (IsBackgroundPauseOn() && matches_requirements);
   EXPECT_EQ(should_pause, ShouldPauseVideoWhenHidden());
 }
 
@@ -1506,8 +1519,9 @@ TEST_P(WebMediaPlayerImplBackgroundBehaviorTest, AudioVideo) {
 
   // Optimization requirements are the same for all platforms.
   bool matches_requirements =
-      (GetDurationSec() < GetMaxKeyframeDistanceSec()) ||
-      (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec());
+      !IsPictureInPictureOn() &&
+      ((GetDurationSec() < GetMaxKeyframeDistanceSec()) ||
+       (GetAverageKeyframeDistanceSec() < GetMaxKeyframeDistanceSec()));
 
   EXPECT_EQ(matches_requirements, IsBackgroundOptimizationCandidate());
   EXPECT_EQ(IsBackgroundOptimizationOn() && matches_requirements,
@@ -1545,6 +1559,7 @@ INSTANTIATE_TEST_CASE_P(BackgroundBehaviorTestInstances,
                                            ::testing::Bool(),
                                            ::testing::Values(5, 300),
                                            ::testing::Values(5, 100),
+                                           ::testing::Bool(),
                                            ::testing::Bool(),
                                            ::testing::Bool(),
                                            ::testing::Bool()));
