@@ -71,6 +71,10 @@ const char kUMAInitialFetchOAuth2Error[] =
 const char kUMAInitialFetchOAuth2NetworkError[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError";
 
+// Default frequency for uploading non-enterprise status reports.
+constexpr base::TimeDelta kDeviceStatusUploadFrequency =
+    base::TimeDelta::FromMinutes(10);
+
 }  // namespace
 
 UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
@@ -219,7 +223,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
             DeviceStatusCollector::CPUTempFetcher(),
             DeviceStatusCollector::AndroidStatusFetcher(),
             false /* is_enterprise_device */),
-        task_runner_));
+        task_runner_, kDeviceStatusUploadFrequency));
   }
 }
 

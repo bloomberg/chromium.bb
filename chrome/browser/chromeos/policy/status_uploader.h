@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_STATUS_UPLOADER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_STATUS_UPLOADER_H_
 
-#include <stdint.h>
-
 #include <memory>
 
 #include "base/cancelable_callback.h"
@@ -32,15 +30,13 @@ class DeviceStatusCollector;
 // passed DeviceStatusCollector.
 class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
  public:
-  // Refresh constants.
-  static const int64_t kDefaultUploadDelayMs;
-
   // Constructor. |client| must be registered and must stay
   // valid and registered through the lifetime of this StatusUploader
   // object.
   StatusUploader(CloudPolicyClient* client,
                  std::unique_ptr<DeviceStatusCollector> collector,
-                 const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+                 const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+                 base::TimeDelta default_upload_frequency);
 
   ~StatusUploader() override;
 
