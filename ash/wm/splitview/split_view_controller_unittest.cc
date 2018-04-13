@@ -1414,4 +1414,17 @@ TEST_F(SplitViewControllerTest,
   EXPECT_NE(nullptr, w2_state->drag_details());
 }
 
+// Test that when a snapped window's resizablity property change from resizable
+// to unresizable, the split view mode is ended.
+TEST_F(SplitViewControllerTest, ResizabilityChangeTest) {
+  const gfx::Rect bounds(0, 0, 200, 300);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+
+  window1->SetProperty(aura::client::kResizeBehaviorKey,
+                       ui::mojom::kResizeBehaviorNone);
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
 }  // namespace ash

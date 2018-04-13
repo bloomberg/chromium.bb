@@ -34,6 +34,7 @@
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/sys_info.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/class_property.h"
@@ -503,6 +504,19 @@ void SplitViewController::OnWindowDestroying(aura::Window* window) {
   if (iter != overview_window_item_bounds_map_.end())
     overview_window_item_bounds_map_.erase(iter);
   OnSnappedWindowMinimizedOrDestroyed(window);
+}
+
+void SplitViewController::OnWindowPropertyChanged(aura::Window* window,
+                                                  const void* key,
+                                                  intptr_t old) {
+  // If the window's resizibility property changes (must from resizable ->
+  // unresizable), end the split view mode and also end overview mode if
+  // overview mode is active at the moment.
+  if (key == aura::client::kResizeBehaviorKey && !CanSnap(window)) {
+    EndSplitView();
+    EndOverview();
+    ShowAppCannotSnapToast();
+  }
 }
 
 void SplitViewController::OnPostWindowStateTypeChange(
