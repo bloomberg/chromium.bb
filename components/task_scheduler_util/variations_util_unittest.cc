@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/task_scheduler_util/common/variations_util.h"
+#include "components/task_scheduler_util/variations_util.h"
 
 #include <map>
 #include <string>

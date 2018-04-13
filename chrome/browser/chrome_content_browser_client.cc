@@ -186,7 +186,7 @@
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
-#include "components/task_scheduler_util/common/variations_util.h"
+#include "components/task_scheduler_util/variations_util.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/variations/variations_associated_data.h"
