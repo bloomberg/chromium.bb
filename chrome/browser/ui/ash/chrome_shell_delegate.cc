@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 #include "chrome/browser/chromeos/ash_config.h"
-#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -156,17 +155,12 @@ void ChromeShellDelegate::PreInit() {
 
   // Object owns itself and deletes itself in OnWindowTreeHostManagerShutdown().
   // Setup is done in OnShellInitialized() so this needs to be constructed after
-  // Shell is constructed but before OnShellInitialized() is called.
+  // Shell is constructed but before OnShellInitialized() is called. Depends on
+  // CroSettings. TODO(stevenjb): Move to src/ash.
   new policy::DisplayRotationDefaultHandler();
-
-  // Set the observer now so that we can save the initial state
-  // in Shell::Init.
-  display_configuration_observer_.reset(
-      new chromeos::DisplayConfigurationObserver());
 }
 
 void ChromeShellDelegate::PreShutdown() {
-  display_configuration_observer_.reset();
 }
 
 void ChromeShellDelegate::OpenUrlFromArc(const GURL& url) {

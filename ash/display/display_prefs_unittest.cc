@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_util.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -27,7 +28,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_type.h"
@@ -124,7 +124,7 @@ class DisplayPrefsTest : public AshTestBase {
     AshTestBase::SetUp();
     DisplayPrefs::RegisterLocalStatePrefs(local_state_.registry());
     display_prefs()->set_local_state_for_test(&local_state_);
-    observer_ = std::make_unique<chromeos::DisplayConfigurationObserver>();
+    observer_ = std::make_unique<DisplayConfigurationObserver>();
     observer_->OnDisplaysInitialized();
   }
 
@@ -639,7 +639,7 @@ TEST_F(DisplayPrefsTest, PreventStore) {
 
   // Revert the change.
   shell->resolution_notification_controller()->RevertResolutionChange(false);
-  RunAllPendingInMessageLoop();
+  base::RunLoop().RunUntilIdle();
 
   // The specified resolution will be stored by SetDisplayMode.
   ash::Shell::Get()->display_manager()->SetDisplayMode(

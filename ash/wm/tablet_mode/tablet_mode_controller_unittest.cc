@@ -511,6 +511,7 @@ TEST_F(TabletModeControllerTest, DisplayDisconnectionDuringOverview) {
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->ToggleOverview());
 
   UpdateDisplay("800x600");
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(Shell::Get()->window_selector_controller()->IsSelecting());
   EXPECT_EQ(w1->GetRootWindow(), w2->GetRootWindow());
 }
@@ -524,14 +525,18 @@ TEST_F(TabletModeControllerTest, NoTabletModeWithDisabledInternalDisplay) {
           .SetFirstDisplayAsInternalDisplay();
   ASSERT_FALSE(IsTabletModeStarted());
 
+  // Set up a mode with the internal display deactivated before switching to
+  // tablet mode (which will enable mirror mode with only one display).
+  std::vector<display::ManagedDisplayInfo> secondary_only;
+  secondary_only.push_back(display_manager()->GetDisplayInfo(
+      display_manager()->GetDisplayAt(1).id()));
+
+  // Opening the lid to 270 degrees should start tablet mode.
   OpenLidToAngle(270.0f);
   EXPECT_TRUE(IsTabletModeStarted());
   EXPECT_TRUE(AreEventsBlocked());
 
-  // Deactivate internal display to simulate Docked Mode.
-  std::vector<display::ManagedDisplayInfo> secondary_only;
-  secondary_only.push_back(display_manager()->GetDisplayInfo(
-      display_manager()->GetDisplayAt(1).id()));
+  // Deactivate the internal display to simulate Docked Mode.
   display_manager()->OnNativeDisplaysChanged(secondary_only);
   ASSERT_FALSE(display_manager()->IsActiveDisplayId(internal_display_id));
   EXPECT_FALSE(IsTabletModeStarted());
