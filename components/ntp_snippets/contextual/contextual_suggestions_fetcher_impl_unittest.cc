@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
@@ -26,6 +27,7 @@
 namespace ntp_snippets {
 
 using contextual_suggestions::ClusterBuilder;
+using contextual_suggestions::ContextualSuggestionsEvent;
 using contextual_suggestions::ExploreContext;
 using contextual_suggestions::GetPivotsQuery;
 using contextual_suggestions::GetPivotsRequest;
@@ -55,6 +57,13 @@ class MockClustersCallback {
   bool has_run = false;
   std::string response_peek_text;
   std::vector<Cluster> response_clusters;
+};
+
+class MockMetricsCallback {
+ public:
+  void Report(ContextualSuggestionsEvent event) { events.push_back(event); }
+
+  std::vector<ContextualSuggestionsEvent> events;
 };
 
 // TODO(pnoland): de-dupe this and the identical class in
@@ -218,11 +227,19 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
                                                  status);
   }
 
-  void SendAndAwaitResponse(const GURL& context_url,
-                            MockClustersCallback* callback) {
+  void SendAndAwaitResponse(
+      const GURL& context_url,
+      MockClustersCallback* callback,
+      MockMetricsCallback* mock_metrics_callback = nullptr) {
+    ReportFetchMetricsCallback metrics_callback =
+        mock_metrics_callback
+            ? base::BindRepeating(&MockMetricsCallback::Report,
+                                  base::Unretained(mock_metrics_callback))
+            : base::DoNothing();
     fetcher().FetchContextualSuggestionsClusters(
-        context_url, base::BindOnce(&MockClustersCallback::Done,
-                                    base::Unretained(callback)));
+        context_url,
+        base::BindOnce(&MockClustersCallback::Done, base::Unretained(callback)),
+        metrics_callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -242,12 +259,18 @@ class ContextualSuggestionsFetcherTest : public testing::Test {
 
 TEST_F(ContextualSuggestionsFetcherTest, SingleSuggestionResponse) {
   MockClustersCallback callback;
+  MockMetricsCallback metrics_callback;
   SetFakeResponse(SerializedResponseProto("Peek Text", DefaultClusters()));
 
-  SendAndAwaitResponse(GURL("http://www.article.com"), &callback);
+  SendAndAwaitResponse(GURL("http://www.article.com"), &callback,
+                       &metrics_callback);
 
   EXPECT_TRUE(callback.has_run);
   ExpectResponsesMatch(std::move(callback), "Peek Text", DefaultClusters());
+  EXPECT_EQ(metrics_callback.events,
+            std::vector<ContextualSuggestionsEvent>(
+                {contextual_suggestions::FETCH_REQUESTED,
+                 contextual_suggestions::FETCH_COMPLETED}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest,
@@ -366,26 +389,55 @@ TEST_F(ContextualSuggestionsFetcherTest, RequestHeaderSetCorrectly) {
 
 TEST_F(ContextualSuggestionsFetcherTest, ProtocolError) {
   MockClustersCallback callback;
+  MockMetricsCallback metrics_callback;
   base::HistogramTester histogram_tester;
 
   SetFakeResponse("", net::HTTP_NOT_FOUND);
-  SendAndAwaitResponse(GURL("http://www.article.com"), &callback);
+  SendAndAwaitResponse(GURL("http://www.article.com"), &callback,
+                       &metrics_callback);
 
   EXPECT_TRUE(callback.has_run);
   EXPECT_EQ(callback.response_clusters.size(), 0u);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("ContextualSuggestions.FetchResponseCode"),
       ElementsAre(base::Bucket(/*min=*/net::HTTP_NOT_FOUND, /*count=*/1)));
+  EXPECT_EQ(metrics_callback.events,
+            std::vector<ContextualSuggestionsEvent>(
+                {contextual_suggestions::FETCH_REQUESTED,
+                 contextual_suggestions::FETCH_ERROR}));
+}
+
+TEST_F(ContextualSuggestionsFetcherTest, ServerUnavailable) {
+  MockClustersCallback callback;
+  MockMetricsCallback metrics_callback;
+  base::HistogramTester histogram_tester;
+
+  SetFakeResponse("", net::HTTP_SERVICE_UNAVAILABLE);
+  SendAndAwaitResponse(GURL("http://www.article.com"), &callback,
+                       &metrics_callback);
+
+  EXPECT_TRUE(callback.has_run);
+  EXPECT_EQ(callback.response_clusters.size(), 0u);
+  EXPECT_THAT(
+      histogram_tester.GetAllSamples("ContextualSuggestions.FetchResponseCode"),
+      ElementsAre(base::Bucket(/*min=*/net::HTTP_SERVICE_UNAVAILABLE,
+                               /*count=*/1)));
+  EXPECT_EQ(metrics_callback.events,
+            std::vector<ContextualSuggestionsEvent>(
+                {contextual_suggestions::FETCH_REQUESTED,
+                 contextual_suggestions::FETCH_SERVER_BUSY}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, NetworkError) {
   MockClustersCallback callback;
+  MockMetricsCallback metrics_callback;
   base::HistogramTester histogram_tester;
 
   SetFakeResponse(
       "", net::HTTP_OK,
       network::URLLoaderCompletionStatus(net::ERR_CERT_COMMON_NAME_INVALID));
-  SendAndAwaitResponse(GURL("http://www.article.com"), &callback);
+  SendAndAwaitResponse(GURL("http://www.article.com"), &callback,
+                       &metrics_callback);
 
   EXPECT_TRUE(callback.has_run);
   EXPECT_EQ(callback.response_clusters.size(), 0u);
@@ -393,15 +445,27 @@ TEST_F(ContextualSuggestionsFetcherTest, NetworkError) {
       histogram_tester.GetAllSamples("ContextualSuggestions.FetchErrorCode"),
       ElementsAre(base::Bucket(
           /*min=*/net::ERR_CERT_COMMON_NAME_INVALID, /*count=*/1)));
+
+  EXPECT_EQ(metrics_callback.events,
+            std::vector<ContextualSuggestionsEvent>(
+                {contextual_suggestions::FETCH_REQUESTED,
+                 contextual_suggestions::FETCH_ERROR}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, EmptyResponse) {
-  SetFakeResponse(SerializedResponseProto("", Cluster()));
   MockClustersCallback callback;
-  SendAndAwaitResponse(GURL("http://www.article.com/"), &callback);
+  MockMetricsCallback metrics_callback;
+  SetFakeResponse(SerializedResponseProto("", Cluster()));
+  SendAndAwaitResponse(GURL("http://www.article.com/"), &callback,
+                       &metrics_callback);
 
   EXPECT_TRUE(callback.has_run);
   EXPECT_EQ(callback.response_clusters.size(), 0u);
+
+  EXPECT_EQ(metrics_callback.events,
+            std::vector<ContextualSuggestionsEvent>(
+                {contextual_suggestions::FETCH_REQUESTED,
+                 contextual_suggestions::FETCH_EMPTY}));
 }
 
 TEST_F(ContextualSuggestionsFetcherTest, ResponseWithUnsetFields) {

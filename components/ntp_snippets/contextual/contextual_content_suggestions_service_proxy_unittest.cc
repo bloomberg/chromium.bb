@@ -34,8 +34,10 @@ class FakeContextualContentSuggestionsService
   FakeContextualContentSuggestionsService();
   ~FakeContextualContentSuggestionsService() override;
 
-  void FetchContextualSuggestionClusters(const GURL& url,
-                                         ClustersCallback callback) override {
+  void FetchContextualSuggestionClusters(
+      const GURL& url,
+      ClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback) override {
     clusters_callback_ = std::move(callback);
   }
 

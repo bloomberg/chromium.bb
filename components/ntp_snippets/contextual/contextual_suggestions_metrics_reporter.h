@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -153,6 +154,9 @@ class ContextualSuggestionsMetricsReporter {
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsMetricsReporter);
 };
+
+using ReportFetchMetricsCallback = base::RepeatingCallback<void(
+    contextual_suggestions::ContextualSuggestionsEvent event)>;
 
 }  // namespace contextual_suggestions
 

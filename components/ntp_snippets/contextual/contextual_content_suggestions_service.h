@@ -28,6 +28,7 @@ namespace ntp_snippets {
 
 using contextual_suggestions::Cluster;
 using contextual_suggestions::FetchClustersCallback;
+using contextual_suggestions::ReportFetchMetricsCallback;
 
 class CachedImageFetcher;
 class RemoteSuggestionsDatabase;
@@ -50,7 +51,8 @@ class ContextualContentSuggestionsService : public KeyedService {
   // Asynchronously fetches contextual suggestions for the given URL.
   virtual void FetchContextualSuggestionClusters(
       const GURL& url,
-      FetchClustersCallback callback);
+      FetchClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback);
 
   // Fetches an image pointed to by |url| and internally caches it using
   // |suggestion_id|. Asynchronous if cache or network is queried.

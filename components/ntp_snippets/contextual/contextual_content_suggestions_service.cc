@@ -43,9 +43,10 @@ ContextualContentSuggestionsService::~ContextualContentSuggestionsService() =
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionClusters(
     const GURL& url,
-    FetchClustersCallback callback) {
+    FetchClustersCallback callback,
+    ReportFetchMetricsCallback metrics_callback) {
   contextual_suggestions_fetcher_->FetchContextualSuggestionsClusters(
-      url, std::move(callback));
+      url, std::move(callback), std::move(metrics_callback));
 }
 
 void ContextualContentSuggestionsService::FetchContextualSuggestionImage(
@@ -80,6 +81,5 @@ ContextualContentSuggestionsService::CreateProxy() {
       contextual_suggestions::ContextualContentSuggestionsServiceProxy>(
       this, metrics_reporter_provider_->CreateMetricsReporter());
 }
-
 
 }  // namespace ntp_snippets

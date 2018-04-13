@@ -129,13 +129,15 @@ const std::string ContextualSuggestionsFetch::GetFetchEndpoint() {
 
 void ContextualSuggestionsFetch::Start(
     FetchClustersCallback callback,
+    ReportFetchMetricsCallback metrics_callback,
     const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory) {
   request_completed_callback_ = std::move(callback);
+  metrics_callback.Run(FETCH_REQUESTED);
   url_loader_ = MakeURLLoader();
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       loader_factory.get(),
       base::BindOnce(&ContextualSuggestionsFetch::OnURLLoaderComplete,
-                     base::Unretained(this)));
+                     base::Unretained(this), std::move(metrics_callback)));
 }
 
 std::unique_ptr<network::SimpleURLLoader>
@@ -204,16 +206,15 @@ net::HttpRequestHeaders ContextualSuggestionsFetch::MakeHeaders() const {
 }
 
 void ContextualSuggestionsFetch::OnURLLoaderComplete(
+    ReportFetchMetricsCallback metrics_callback,
     std::unique_ptr<std::string> result) {
   std::vector<Cluster> clusters;
   std::string peek_text;
 
-  base::UmaHistogramSparse("ContextualSuggestions.FetchErrorCode",
-                           url_loader_->NetError());
-
+  int32_t response_code = 0;
+  int32_t error_code = url_loader_->NetError();
   if (result) {
-    int32_t response_code =
-        url_loader_->ResponseInfo()->headers->response_code();
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
 
     if (response_code == net::HTTP_OK) {
       // The response comes in the format (length, bytes) where length is a
@@ -234,12 +235,39 @@ void ContextualSuggestionsFetch::OnURLLoaderComplete(
 
     UMA_HISTOGRAM_COUNTS_1M("ContextualSuggestions.FetchResponseSizeKB",
                             static_cast<int>(result->length() / 1024));
+  }
 
+  ReportFetchMetrics(error_code, response_code, clusters.size(),
+                     std::move(metrics_callback));
+
+  std::move(request_completed_callback_).Run(peek_text, std::move(clusters));
+}
+
+void ContextualSuggestionsFetch::ReportFetchMetrics(
+    int32_t error_code,
+    int32_t response_code,
+    size_t clusters_size,
+    ReportFetchMetricsCallback metrics_callback) {
+  ContextualSuggestionsEvent event;
+  if (error_code != net::OK) {
+    event = FETCH_ERROR;
+  } else if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
+    event = FETCH_SERVER_BUSY;
+  } else if (response_code != net::HTTP_OK) {
+    event = FETCH_ERROR;
+  } else if (clusters_size == 0) {
+    event = FETCH_EMPTY;
+  } else {
+    event = FETCH_COMPLETED;
+  }
+
+  base::UmaHistogramSparse("ContextualSuggestions.FetchErrorCode", error_code);
+  if (response_code > 0) {
     base::UmaHistogramSparse("ContextualSuggestions.FetchResponseCode",
                              response_code);
   }
 
-  std::move(request_completed_callback_).Run(peek_text, std::move(clusters));
+  std::move(metrics_callback).Run(event);
 }
 
 }  // namespace contextual_suggestions

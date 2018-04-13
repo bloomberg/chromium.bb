@@ -35,7 +35,8 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
   // ContextualSuggestionsFetcher implementation.
   void FetchContextualSuggestionsClusters(
       const GURL& url,
-      FetchClustersCallback callback) override;
+      FetchClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback) override;
 
  private:
   void FetchFinished(ContextualSuggestionsFetch* fetch,
