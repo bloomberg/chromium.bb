@@ -22,8 +22,7 @@ LongTaskDetector::LongTaskDetector() = default;
 void LongTaskDetector::RegisterObserver(LongTaskObserver* observer) {
   DCHECK(IsMainThread());
   DCHECK(observer);
-  observers_.insert(observer);
-  if (observers_.size() == 1) {
+  if (observers_.insert(observer).is_new_entry && observers_.size() == 1) {
     // Number of observers just became non-zero.
     Platform::Current()->CurrentThread()->AddTaskTimeObserver(this);
   }
