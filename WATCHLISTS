@@ -8,9 +8,6 @@
 {
 
   'WATCHLIST_DEFINITIONS': {
-    'git_cl.py': {
-      'filepath': 'git_cl.py',
-    },
     'this_file': {
       'filepath': '^WATCHLISTS$',
     },
@@ -21,9 +18,6 @@
 
   'WATCHLISTS': {
     'this_file': [],
-    'git_cl.py': [
-      'tandrii+omg_git_cl@chromium.org',
-    ],
     'depot_tools': [
       'iannucci+depot_tools@chromium.org',
     ],
