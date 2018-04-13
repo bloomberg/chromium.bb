@@ -266,6 +266,16 @@ config("compiler") {
         cflags += [ "-fstack-protector" ]
       }
     }
+
+    # Linker warnings.
+    if (fatal_linker_warnings && !(is_chromeos && current_cpu == "arm") &&
+        !(is_android && use_order_profiling) && !is_mac && !is_ios &&
+        current_os != "aix") {
+      # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
+      # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
+      # crbug.com/485542
+      ldflags += [ "-Wl,--fatal-warnings" ]
+    }
   } else {
     cflags += [
       # Assume UTF-8 by default to avoid code page dependencies.
@@ -2202,21 +2212,5 @@ if (is_ios || is_mac) {
     common_flags = [ "-fobjc-arc" ]
     cflags_objc = common_flags
     cflags_objcc = common_flags
-  }
-}
-
-# Default linker warnings.
-config("default_fatal_linker_warnings") {
-  ldflags = []
-
-  # Linker warnings.
-  if (!is_win && fatal_linker_warnings &&
-      !(is_chromeos && current_cpu == "arm") &&
-      !(is_android && use_order_profiling) && !is_mac && !is_ios &&
-      current_os != "aix") {
-    # TODO(jochen): Enable this on chromeos on arm. http://crbug.com/356580
-    # TODO(lizeb,pasko): Fix link errors when linking with order_profiling=1
-    # crbug.com/485542
-    ldflags += [ "-Wl,--fatal-warnings" ]
   }
 }
