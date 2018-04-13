@@ -653,11 +653,20 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
         drop_indicator_x, drop_indicator_y, kDropIndicatorWidth, row_height));
 
     // Color of the drop indicator.
+    // Always get the theme provider of the browser widget, since if this view
+    // is shown within the menu widget, GetThemeProvider() would return the
+    // ui::DefaultThemeProvider which doesn't return the correct colors.
+    // https://crbug.com/831510.
+    const ui::ThemeProvider* theme_provider =
+        BrowserView::GetBrowserViewForBrowser(browser_)
+            ->frame()
+            ->GetThemeProvider();
+
     // TODO(afakhry): This operation is done in several places, try to find a
     // centeral location for it. Part of themes work for
     // https://crbug.com/820495.
     const SkColor drop_indicator_color = color_utils::BlendTowardOppositeLuma(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR),
+        theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR),
         SK_AlphaOPAQUE);
     canvas->FillRect(indicator_bounds, drop_indicator_color);
   }
