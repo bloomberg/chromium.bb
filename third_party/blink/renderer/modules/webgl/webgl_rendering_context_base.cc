@@ -739,10 +739,11 @@ ScriptPromise WebGLRenderingContextBase::commit(
                           exception_state);
   }
 
-  // TODO(crbug.com/809227): passing in nullptr for the release_callback, so the
-  // texture won't be recycled.  This could potentially impact performance as
-  // creating framebuffers can be expensive.
-  scoped_refptr<StaticBitmapImage> image = GetStaticBitmapImage(nullptr);
+  std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
+  scoped_refptr<StaticBitmapImage> image =
+      GetStaticBitmapImage(&image_release_callback);
+  GetDrawingBuffer()->SwapPreviousFrameCallback(
+      std::move(image_release_callback));
 
   return Host()->Commit(
       std::move(image), SkIRect::MakeWH(width, height),
