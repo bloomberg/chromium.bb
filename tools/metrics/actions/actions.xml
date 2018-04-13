@@ -13339,6 +13339,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="OfflinePages.ReloadButtonClickedViewingUntrustedPage">
+  <owner>romax@chromium.org</owner>
+  <description>
+    Recorded when &quot;Reload&quot; button is clicked in the snackbar that is
+    shown when an untrusted offline page is loaded.
+  </description>
+</action>
+
 <action name="OfflinePages.ReloadButtonNotClicked">
   <owner>jianli@chromium.org</owner>
   <description>
@@ -13382,6 +13390,25 @@ should be able to be added at any place in this file.
     Recorded when the user navigates away without clicking &quot;Free Up
     Space&quot; button is clicked in the storage space promotion section of
     &quot;Saved Offline&quot; page.
+  </description>
+</action>
+
+<action name="OfflinePages.Sharing.SharePageFromDownloadHome">
+  <owner>romax@chromium.org</owner>
+  <description>
+    Recorded when the user shares offline pages from Download Home. Each page
+    will be counted once if there are multiple items being shared in a batch.
+    This will not increment if the sharing process fails at the page publishing
+    step.
+  </description>
+</action>
+
+<action name="OfflinePages.Sharing.SharePageFromOverflowMenu">
+  <owner>romax@chromium.org</owner>
+  <description>
+    Recorded when the user shares an offline page loaded in the current tab
+    through the &quot;Share...&quot; button in the overflow menu. This will not
+    increment if the sharing process fails at the page publishing step.
   </description>
 </action>
 

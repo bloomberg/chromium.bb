@@ -347,6 +347,7 @@ public class DownloadUtils {
                         if (newFilePath != null) {
                             file = new File(newFilePath);
                         }
+                        RecordUserAction.record("OfflinePages.Sharing.SharePageFromDownloadHome");
                     }
                 } else {
                     // Share the URL, instead of the file, when the offline page sharing is
