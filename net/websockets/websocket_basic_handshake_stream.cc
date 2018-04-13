@@ -340,10 +340,8 @@ Error WebSocketBasicHandshakeStream::GetTokenBindingSignature(
     std::vector<uint8_t>* out) {
   DCHECK(url_.SchemeIsCryptographic());
 
-  // Encrypted WebSocket must use an SSL socket.
-  StreamSocket* socket = state_.connection()->socket();
-  SSLClientSocket* ssl_socket = static_cast<SSLClientSocket*>(socket);
-  return ssl_socket->GetTokenBindingSignature(key, tb_type, out);
+  return state_.connection()->socket()->GetTokenBindingSignature(key, tb_type,
+                                                                 out);
 }
 
 void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {

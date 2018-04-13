@@ -75,7 +75,7 @@ class MockSSLClientSocket : public net::SSLClientSocket {
                    const StringPiece&,
                    unsigned char*,
                    unsigned int));
-  MOCK_METHOD1(GetSSLCertRequestInfo, void(net::SSLCertRequestInfo*));
+  MOCK_CONST_METHOD1(GetSSLCertRequestInfo, void(net::SSLCertRequestInfo*));
   MOCK_CONST_METHOD0(GetUnverifiedServerCertificateChain,
                      scoped_refptr<net::X509Certificate>());
   MOCK_CONST_METHOD0(GetChannelIDService, net::ChannelIDService*());

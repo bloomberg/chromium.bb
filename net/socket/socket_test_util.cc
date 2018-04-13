@@ -1261,7 +1261,7 @@ int MockSSLClientSocket::SetSendBufferSize(int32_t size) {
 }
 
 void MockSSLClientSocket::GetSSLCertRequestInfo(
-    SSLCertRequestInfo* cert_request_info) {
+    SSLCertRequestInfo* cert_request_info) const {
   DCHECK(cert_request_info);
   if (data_->cert_request_info) {
     cert_request_info->host_and_port =

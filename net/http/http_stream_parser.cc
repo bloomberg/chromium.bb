@@ -167,7 +167,7 @@ class HttpStreamParser::SeekableIOBuffer : public IOBuffer {
 
   // Returns the capacity of the buffer. The capacity is the size used when
   // the object is created.
-  int capacity() const { return capacity_; };
+  int capacity() const { return capacity_; }
 
  private:
   ~SeekableIOBuffer() override {
@@ -1124,18 +1124,14 @@ bool HttpStreamParser::CanReuseConnection() const {
 
 void HttpStreamParser::GetSSLInfo(SSLInfo* ssl_info) {
   if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
-    SSLClientSocket* ssl_socket =
-        static_cast<SSLClientSocket*>(connection_->socket());
-    ssl_socket->GetSSLInfo(ssl_info);
+    connection_->socket()->GetSSLInfo(ssl_info);
   }
 }
 
 void HttpStreamParser::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) {
   if (request_->url.SchemeIsCryptographic() && connection_->socket()) {
-    SSLClientSocket* ssl_socket =
-        static_cast<SSLClientSocket*>(connection_->socket());
-    ssl_socket->GetSSLCertRequestInfo(cert_request_info);
+    connection_->socket()->GetSSLCertRequestInfo(cert_request_info);
   }
 }
 
@@ -1146,9 +1142,7 @@ Error HttpStreamParser::GetTokenBindingSignature(crypto::ECPrivateKey* key,
     NOTREACHED();
     return ERR_FAILED;
   }
-  SSLClientSocket* ssl_socket =
-      static_cast<SSLClientSocket*>(connection_->socket());
-  return ssl_socket->GetTokenBindingSignature(key, tb_type, out);
+  return connection_->socket()->GetTokenBindingSignature(key, tb_type, out);
 }
 
 int HttpStreamParser::EncodeChunk(const base::StringPiece& payload,
