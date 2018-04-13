@@ -119,7 +119,7 @@ class ChromotingSession::Core : public ClientUserInterface,
   void SendClientMessage(const std::string& type, const std::string& data);
 
   // Logs the disconnect event and invalidates weak pointers.
-  void DisconnectForReason(protocol::ErrorCode error);
+  void Disconnect();
 
   // ClientUserInterface implementation.
   void OnConnectionState(protocol::ConnectionToHost::State state,
@@ -207,7 +207,7 @@ ChromotingSession::Core::~Core() {
 
   // Make sure we log a close event if the session has not been disconnected
   // yet.
-  DisconnectForReason(protocol::ErrorCode::OK);
+  Disconnect();
 }
 
 void ChromotingSession::Core::RequestPairing(const std::string& device_name) {
@@ -296,7 +296,7 @@ void ChromotingSession::Core::SendClientMessage(const std::string& type,
   client_->host_stub()->DeliverClientMessage(extension_message);
 }
 
-void ChromotingSession::Core::DisconnectForReason(protocol::ErrorCode error) {
+void ChromotingSession::Core::Disconnect() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
   // Do not log session state change if the connection is already closed.
@@ -304,18 +304,14 @@ void ChromotingSession::Core::DisconnectForReason(protocol::ErrorCode error) {
       session_state_ != protocol::ConnectionToHost::FAILED &&
       session_state_ != protocol::ConnectionToHost::CLOSED) {
     ChromotingEvent::SessionState session_state_to_log;
-    if (error != protocol::ErrorCode::OK) {
-      session_state_to_log = ChromotingEvent::SessionState::CONNECTION_FAILED;
-    } else if (session_state_ == protocol::ConnectionToHost::CONNECTED) {
+    if (session_state_ == protocol::ConnectionToHost::CONNECTED) {
       session_state_to_log = ChromotingEvent::SessionState::CLOSED;
     } else {
       session_state_to_log = ChromotingEvent::SessionState::CONNECTION_CANCELED;
     }
     session_context_->logger->LogSessionStateChange(
-        session_state_to_log, ClientTelemetryLogger::TranslateError(error));
-    session_state_ = (error == protocol::ErrorCode::OK)
-                         ? protocol::ConnectionToHost::CLOSED
-                         : protocol::ConnectionToHost::FAILED;
+        session_state_to_log, ChromotingEvent::ConnectionError::NONE);
+    session_state_ = protocol::ConnectionToHost::CLOSED;
     // Prevent all pending and future calls from ChromotingSession.
     weak_factory_.InvalidateWeakPtrs();
   }
@@ -628,11 +624,7 @@ void ChromotingSession::Connect() {
 }
 
 void ChromotingSession::Disconnect() {
-  DisconnectForReason(protocol::ErrorCode::OK);
-}
-
-void ChromotingSession::DisconnectForReason(protocol::ErrorCode error) {
-  RunCoreTaskOnNetworkThread(FROM_HERE, &Core::DisconnectForReason, error);
+  RunCoreTaskOnNetworkThread(FROM_HERE, &Core::Disconnect);
 }
 
 void ChromotingSession::GetFeedbackData(
