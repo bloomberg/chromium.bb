@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/ukm/ukm_source.h"
+#include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/metrics_proto/ukm/entry.pb.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
@@ -147,6 +148,19 @@ void AppendWhitelistedUrls(
       urls->insert(kv.second->url().GetOrigin().spec());
     }
   }
+}
+
+bool HasUnknownMetrics(const ukm::builders::DecodeMap& decode_map,
+                       const mojom::UkmEntry& entry) {
+  const auto it = decode_map.find(entry.event_hash);
+  if (it == decode_map.end())
+    return true;
+  const auto& metric_map = it->second.metric_map;
+  for (const auto& metric : entry.metrics) {
+    if (metric_map.count(metric->metric_hash) == 0)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -371,6 +385,8 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
 void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  DCHECK(!HasUnknownMetrics(decode_map_, *entry));
+
   if (!recording_enabled_) {
     RecordDroppedEntry(DroppedDataReason::RECORDING_DISABLED);
     return;
@@ -461,6 +477,7 @@ void UkmRecorderImpl::StoreWhitelistedEntries() {
                         base::SPLIT_WANT_NONEMPTY);
   for (const auto& entry_string : entries)
     whitelisted_entry_hashes_.insert(base::HashMetricName(entry_string));
+  decode_map_ = ::ukm::builders::CreateDecodeMap();
 }
 
 }  // namespace ukm

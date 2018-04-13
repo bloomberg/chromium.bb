@@ -21,9 +21,12 @@ file_template="""
 namespace ukm {{
 namespace builders {{
 
-{event_code}
-
-typedef std::map<uint64_t, const char*> DecodeMap;
+typedef std::map<uint64_t, const char*> MetricDecodeMap;
+struct EntryDecoder {{
+  const char* name;
+  const MetricDecodeMap metric_map;
+}};
+typedef std::map<uint64_t, EntryDecoder> DecodeMap;
 DecodeMap CreateDecodeMap();
 
 }}  // namespace builders
@@ -46,7 +49,7 @@ file_template="""
 namespace ukm {{
 namespace builders {{
 
-std::map<uint64_t, const char*> CreateDecodeMap() {{
+std::map<uint64_t, EntryDecoder> CreateDecodeMap() {{
   return {{
     {event_code}
   }};
@@ -56,8 +59,15 @@ std::map<uint64_t, const char*> CreateDecodeMap() {{
 }}  // namespace ukm
 """,
 event_template="""
-    {{{event.name}::kEntryNameHash, {event.name}::kEntryName}},
-    {metric_code}
+    {{
+      UINT64_C({event.hash}),
+      {{
+        {event.name}::kEntryName,
+        {{
+          {metric_code}
+        }}
+      }}
+    }},
 """,
 metric_template="""
     {{{event.name}::k{metric.name}NameHash, {event.name}::k{metric.name}Name}},

@@ -26,16 +26,19 @@ namespace {
 
 // Predictor config for testing.
 const char kTestModelName[] = "test_model";
-const char kTestLoggingName[] = "TestLoggingName";
+// This name needs to be an entry in ukm.xml
+const char kTestLoggingName[] = "ContextualSearch";
 const char kTestUmaPrefixName[] = "Test.Ranker";
 const char kTestUrlParamName[] = "ranker-model-url";
 const char kTestDefaultModelUrl[] = "https://foo.bar/model.bin";
 
-const char kBoolFeature[] = "bool_feature";
-const char kIntFeature[] = "int_feature";
-const char kFloatFeature[] = "float_feature";
-const char kStringFeature[] = "string_feature";
-const char kStringListFeature[] = "string_list_feature";
+// The whitelisted features must be metrics of kTestLoggingName in ukm.xml,
+// though the types do not need to match.
+const char kBoolFeature[] = "DidOptIn";
+const char kIntFeature[] = "DurationAfterScrollMs";
+const char kFloatFeature[] = "FontSize";
+const char kStringFeature[] = "IsEntity";
+const char kStringListFeature[] = "IsEntityEligible";
 const char kFeatureNotWhitelisted[] = "not_whitelisted";
 
 const char kTestNavigationUrl[] = "https://foo.com";

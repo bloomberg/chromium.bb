@@ -22,10 +22,11 @@ struct SourceData {
   std::vector<mojom::UkmEntry*> entries;
 };
 
-std::string GetName(ukm::builders::DecodeMap& decode_map, uint64_t hash) {
-  if (decode_map.count(hash))
-    return decode_map[hash];
-  return base::StringPrintf("Unknown %" PRIu64, hash);
+std::string GetName(const ukm::builders::EntryDecoder& decoder, uint64_t hash) {
+  const auto it = decoder.metric_map.find(hash);
+  if (it == decoder.metric_map.end())
+    return base::StringPrintf("Unknown %" PRIu64, hash);
+  return it->second;
 }
 
 }  // namespace
@@ -59,7 +60,7 @@ std::string UkmDebugDataExtractor::GetHTMLData(UkmService* ukm_service) {
     output.append(
         base::StringPrintf("<p>SessionId:%d</p>", ukm_service->session_id_));
 
-    auto decode_map = ::ukm::builders::CreateDecodeMap();
+    const auto& decode_map = ukm_service->decode_map_;
     std::map<SourceId, SourceData> source_data;
     for (const auto& kv : ukm_service->sources_) {
       source_data[kv.first].source = kv.second.get();
@@ -79,13 +80,17 @@ std::string UkmDebugDataExtractor::GetHTMLData(UkmService* ukm_service) {
         output.append(base::StringPrintf("<h3>Id:%" PRId64 "</h3>", kv.first));
       }
       for (auto* entry : kv.second.entries) {
-        output.append(
-            base::StringPrintf("<h4>Entry:%s</h4>",
-                               GetName(decode_map, entry->event_hash).c_str()));
+        const auto it = decode_map.find(entry->event_hash);
+        if (it == decode_map.end()) {
+          output.append(base::StringPrintf(
+              "<h4>Entry: Unknown %" PRIu64 "</h4>", entry->event_hash));
+          continue;
+        }
+        output.append(base::StringPrintf("<h4>Entry:%s</h4>", it->second.name));
         for (const auto& metric : entry->metrics) {
           output.append(base::StringPrintf(
               "<h5>Metric:%s Value:%" PRId64 "</h5>",
-              GetName(decode_map, metric->metric_hash).c_str(), metric->value));
+              GetName(it->second, metric->metric_hash).c_str(), metric->value));
         }
       }
     }
