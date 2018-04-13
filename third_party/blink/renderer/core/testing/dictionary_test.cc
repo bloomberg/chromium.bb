@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/testing/dictionary_test.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/testing/internal_dictionary.h"
@@ -13,26 +12,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
-namespace {
-ScriptIterator GetIterator(const Dictionary& iterable,
-                           ExecutionContext* execution_context) {
-  v8::Local<v8::Value> iterator_getter;
-  v8::Isolate* isolate = iterable.GetIsolate();
-  if (!iterable.Get(v8::Symbol::GetIterator(isolate), iterator_getter) ||
-      !iterator_getter->IsFunction()) {
-    return nullptr;
-  }
-  v8::Local<v8::Value> iterator;
-  if (!V8ScriptRunner::CallFunction(
-           v8::Local<v8::Function>::Cast(iterator_getter), execution_context,
-           iterable.V8Value(), 0, nullptr, isolate)
-           .ToLocal(&iterator))
-    return nullptr;
-  if (!iterator->IsObject())
-    return nullptr;
-  return ScriptIterator(v8::Local<v8::Object>::Cast(iterator), isolate);
-}
-}  // namespace
 
 DictionaryTest::DictionaryTest() : required_boolean_member_(false) {}
 
@@ -204,7 +183,7 @@ String DictionaryTest::stringFromIterable(
     ExceptionState& exception_state) const {
   StringBuilder result;
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  ScriptIterator iterator = GetIterator(iterable, execution_context);
+  DictionaryIterator iterator = iterable.GetIterator(execution_context);
   if (iterator.IsNull())
     return g_empty_string;
 

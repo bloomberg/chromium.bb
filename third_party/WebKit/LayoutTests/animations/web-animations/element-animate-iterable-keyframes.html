@@ -137,6 +137,18 @@ test(() => {
 test(() => {
   assert_throws({name: 'TypeError'}, () => {
     assertAnimationEffect({
+      keyframes: createIterable([
+        {done: false, value: {left: ['100px', '200px']}},
+        {done: true},
+      ]),
+      expect: [],
+    });
+  });
+}, 'Custom iterator with value list in keyframe should throw.');
+
+test(() => {
+  assert_throws({name: 'TypeError'}, () => {
+    assertAnimationEffect({
       keyframes: {
         left: createIterable([
           {done: false, value: {toString: null}},

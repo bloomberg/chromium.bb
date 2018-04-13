@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/dictionary_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -35,6 +36,8 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+
+class ExecutionContext;
 
 // Dictionary class provides ways to retrieve property values as C++ objects
 // from a V8 object. Instances of this class must not outlive V8's handle scope
@@ -70,7 +73,7 @@ class CORE_EXPORT Dictionary final {
   }
 
   bool Get(const StringView& key, v8::Local<v8::Value>& value) const {
-    return isolate_ && Get(V8String(isolate_, key), value);
+    return isolate_ && GetInternal(V8String(isolate_, key), value);
   }
   bool Get(const StringView& key,
            v8::Local<v8::Value>& value,
@@ -109,8 +112,6 @@ class CORE_EXPORT Dictionary final {
     return value;
   }
 
-  bool Get(v8::Local<v8::Value> key, v8::Local<v8::Value>& result) const;
-
   HashMap<String, String> GetOwnPropertiesAsStringHashMap(
       ExceptionState&) const;
   Vector<String> GetPropertyNames(ExceptionState&) const;
@@ -123,7 +124,11 @@ class CORE_EXPORT Dictionary final {
     return isolate_->GetCurrentContext();
   }
 
+  DictionaryIterator GetIterator(ExecutionContext*) const;
+
  private:
+  bool GetInternal(const v8::Local<v8::Value>& key,
+                   v8::Local<v8::Value>& result) const;
   bool GetInternal(const v8::Local<v8::Value>& key,
                    v8::Local<v8::Value>& result,
                    ExceptionState&) const;

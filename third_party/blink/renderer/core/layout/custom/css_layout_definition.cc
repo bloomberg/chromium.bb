@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
 
 #include <memory>
+#include "third_party/blink/renderer/bindings/core/v8/dictionary_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_fragment_result_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_layout_fragment_request.h"
@@ -121,7 +121,7 @@ bool CSSLayoutDefinition::Instance::Layout(
   v8::Local<v8::Object> generator =
       v8::Local<v8::Object>::Cast(generator_value);
 
-  ScriptIterator iterator(generator, isolate);
+  DictionaryIterator iterator(generator, isolate);
   v8::Local<v8::Value> next_value;
 
   // We run the generator until it's exhausted.
