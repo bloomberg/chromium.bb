@@ -172,7 +172,9 @@ void DeferredGpuCommandService::PerformAllIdleWork() {
   }
 }
 
-bool DeferredGpuCommandService::UseVirtualizedGLContexts() { return true; }
+bool DeferredGpuCommandService::ForceVirtualizedGLContexts() {
+  return true;
+}
 
 gpu::SyncPointManager* DeferredGpuCommandService::sync_point_manager() {
   return sync_point_manager_.get();
