@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/ui/login_display_mojo.h"
 
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
@@ -13,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/user_manager/known_user.h"
+#include "content/public/browser/notification_service.h"
 
 namespace chromeos {
 
@@ -55,6 +57,11 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
         ->EmitLoginPromptVisible();
+
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+        content::NotificationService::AllSources(),
+        content::NotificationService::NoDetails());
   }));
 
   user_selection_screen_->Init(filtered_users);
