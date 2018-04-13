@@ -48,6 +48,8 @@ class ExtensionGarbageCollectorChromeOSUnitTest
   const base::FilePath& cache_dir() { return cache_dir_.GetPath(); }
 
   void SetUp() override {
+    ExtensionServiceTestBase::SetUp();
+
 #if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService::GetInstance()->Init();
 #endif
