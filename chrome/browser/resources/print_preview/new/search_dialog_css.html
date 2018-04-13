@@ -13,6 +13,8 @@
            background-color: rgba(255, 255, 255, 0.75) for the inner dialog's
            backdrop. See context at crbug.com/827397 */
         --cr-dialog-close-image: {
+          -webkit-margin-end: 7px;
+          margin-top: 10px;
           background-image: url(chrome://theme/IDR_CLOSE_DIALOG);
         };
         --cr-dialog-close-image-active: {
@@ -25,7 +27,7 @@
           box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
             0 2px 6px rgba(0, 0, 0, 0.15);
         };
-        --cr-icon-ripple-size: 0;
+        --cr-icon-ripple-size: 14px;
         --cr-icon-size: 14px;
         --cr-dialog-body: {
           box-sizing: border-box;
@@ -33,6 +35,9 @@
         };
         --cr-dialog-wrapper: {
           max-height: calc(100vh - 40px);
+        };
+        --cr-dialog-close-ripple: {
+          display: none;
         };
       }
 
