@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -24,16 +25,23 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Tests related to displaying contextual suggestions in a bottom sheet.
@@ -129,13 +137,160 @@ public class ContextualSuggestionsTest {
                 mBottomSheet.getSheetState());
         assertNull("RecyclerView should still be empty.", recyclerView.getAdapter());
 
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+        openSheet();
 
         assertEquals("RecyclerView should have content.",
                 (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
                 recyclerView.getAdapter().getItemCount());
     }
 
-    // TODO(twellington): Add more tests!
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testCloseFromPeek() {
+        forceShowSuggestions();
+        simulateClickOnCloseButton();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testCloseFromOpen() {
+        forceShowSuggestions();
+        openSheet();
+        simulateClickOnCloseButton();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testTriggerMultipleTimes() {
+        forceShowSuggestions();
+        openSheet();
+        simulateClickOnCloseButton();
+        forceShowSuggestions();
+        openSheet();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testOpenSuggestion() {
+        forceShowSuggestions();
+        openSheet();
+
+        SnippetArticleViewHolder holder = getFirstSuggestionViewHolder();
+        String expectedUrl = holder.getUrl();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            holder.itemView.performClick();
+            mBottomSheet.endAnimations();
+        });
+
+        assertEquals("Tab URL should match snippet URL", expectedUrl,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
+        assertFalse("Sheet should be closed.", mBottomSheet.isSheetOpen());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testOpenArticleInNewTab() throws InterruptedException, ExecutionException {
+        forceShowSuggestions();
+        openSheet();
+
+        SnippetArticleViewHolder holder = getFirstSuggestionViewHolder();
+        String expectedUrl = holder.getUrl();
+
+        ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule, holder.itemView,
+                ContextMenuManager.ID_OPEN_IN_NEW_TAB, false, expectedUrl);
+
+        assertEquals("Sheet should still be opened.", BottomSheet.SHEET_STATE_FULL,
+                mBottomSheet.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testOpenSuggestionInNewTabIncognito()
+            throws InterruptedException, ExecutionException {
+        forceShowSuggestions();
+        openSheet();
+
+        SnippetArticleViewHolder holder = getFirstSuggestionViewHolder();
+        String expectedUrl = holder.getUrl();
+
+        ChromeTabUtils.invokeContextMenuAndOpenInANewTab(mActivityTestRule, holder.itemView,
+                ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true, expectedUrl);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
+
+        assertFalse("Sheet should be closed.", mBottomSheet.isSheetOpen());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    public void testEnterTabSwitcher() throws InterruptedException, ExecutionException {
+        forceShowSuggestions();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getLayoutManager().showOverview(false);
+            mBottomSheet.endAnimations();
+        });
+
+        assertEquals("Sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+                mBottomSheet.getSheetState());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getLayoutManager().hideOverview(false);
+            mBottomSheet.endAnimations();
+        });
+
+        assertEquals("Sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
+                mBottomSheet.getSheetState());
+    }
+
+    private void forceShowSuggestions() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.requestSuggestions("http://www.testurl.com");
+            mMediator.showContentInSheetForTesting();
+            mBottomSheet.endAnimations();
+
+            assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
+                    mBottomSheet.getSheetState());
+            assertTrue("Bottom sheet should contain suggestions content",
+                    mBottomSheet.getCurrentSheetContent()
+                                    instanceof ContextualSuggestionsBottomSheetContent);
+        });
+    }
+
+    private void simulateClickOnCloseButton() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBottomSheet.getCurrentSheetContent()
+                    .getToolbarView()
+                    .findViewById(R.id.close_button)
+                    .performClick();
+            mBottomSheet.endAnimations();
+        });
+
+        assertEquals("Sheet should be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
+                mBottomSheet.getSheetState());
+        assertNull("Bottom sheet contents should be null.", mBottomSheet.getCurrentSheetContent());
+    }
+
+    private void openSheet() {
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_FULL, false));
+    }
+
+    private SnippetArticleViewHolder getFirstSuggestionViewHolder() {
+        ContextualSuggestionsBottomSheetContent content =
+                (ContextualSuggestionsBottomSheetContent) mBottomSheet.getCurrentSheetContent();
+        RecyclerView recyclerView = (RecyclerView) content.getContentView();
+
+        RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
+
+        return (SnippetArticleViewHolder) recyclerView.findViewHolderForAdapterPosition(2);
+    }
 }
