@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "components/ntp_snippets/contextual/cluster.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
@@ -36,12 +37,18 @@ class ContextualSuggestionsFetch {
   // URLLoader, and calling |callback| when finished.
   void Start(
       FetchClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback,
       const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory);
 
  private:
   std::unique_ptr<network::SimpleURLLoader> MakeURLLoader() const;
   net::HttpRequestHeaders MakeHeaders() const;
-  void OnURLLoaderComplete(std::unique_ptr<std::string> result);
+  void OnURLLoaderComplete(ReportFetchMetricsCallback metrics_callback,
+                           std::unique_ptr<std::string> result);
+  void ReportFetchMetrics(int32_t error_code,
+                          int32_t response_code,
+                          size_t clusters_size,
+                          ReportFetchMetricsCallback metrics_callback);
 
   // The url for which we're fetching suggestions.
   const GURL url_;

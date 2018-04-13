@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -30,6 +31,7 @@
 #include "ui/gfx/image/image_unittest_util.h"
 
 using contextual_suggestions::ClusterBuilder;
+using contextual_suggestions::ReportFetchMetricsCallback;
 using testing::_;
 using testing::AllOf;
 using testing::ElementsAre;
@@ -61,7 +63,8 @@ class FakeContextualSuggestionsFetcher : public ContextualSuggestionsFetcher {
  public:
   void FetchContextualSuggestionsClusters(
       const GURL& url,
-      FetchClustersCallback callback) override {
+      FetchClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback) override {
     std::move(callback).Run("peek text", std::move(fake_suggestions_));
     fake_suggestions_.clear();
   }
@@ -157,8 +160,10 @@ TEST_F(ContextualContentSuggestionsServiceTest,
 
   fetcher()->SetFakeResponse(std::move(clusters));
   source()->FetchContextualSuggestionClusters(
-      context_url, base::BindOnce(&MockClustersCallback::Done,
-                                  base::Unretained(&mock_callback)));
+      context_url,
+      base::BindOnce(&MockClustersCallback::Done,
+                     base::Unretained(&mock_callback)),
+      base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(mock_callback.has_run);

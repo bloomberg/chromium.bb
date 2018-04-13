@@ -40,9 +40,13 @@ void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestions(
     const GURL& url,
     ClustersCallback callback) {
   service_->FetchContextualSuggestionClusters(
-      url, base::BindOnce(
-               &ContextualContentSuggestionsServiceProxy::CacheSuggestions,
-               weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      url,
+      base::BindOnce(
+          &ContextualContentSuggestionsServiceProxy::CacheSuggestions,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      base::BindRepeating(
+          &ContextualContentSuggestionsServiceProxy::ReportEvent,
+          weak_ptr_factory_.GetWeakPtr(), last_ukm_source_id_));
 }
 
 void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestionImage(

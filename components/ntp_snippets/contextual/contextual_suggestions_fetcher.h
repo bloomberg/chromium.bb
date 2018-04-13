@@ -7,8 +7,10 @@
 
 #include "components/ntp_snippets/contextual/cluster.h"
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
+#include "components/ntp_snippets/contextual/contextual_suggestions_metrics_reporter.h"
 
 using contextual_suggestions::FetchClustersCallback;
+using contextual_suggestions::ReportFetchMetricsCallback;
 
 namespace ntp_snippets {
 
@@ -22,7 +24,8 @@ class ContextualSuggestionsFetcher {
   // complete.
   virtual void FetchContextualSuggestionsClusters(
       const GURL& url,
-      FetchClustersCallback callback) = 0;
+      FetchClustersCallback callback,
+      ReportFetchMetricsCallback metrics_callback) = 0;
 };
 
 }  // namespace ntp_snippets

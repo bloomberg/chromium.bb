@@ -18,7 +18,8 @@ ContextualSuggestionsFetcherImpl::~ContextualSuggestionsFetcherImpl() = default;
 
 void ContextualSuggestionsFetcherImpl::FetchContextualSuggestionsClusters(
     const GURL& url,
-    FetchClustersCallback callback) {
+    FetchClustersCallback callback,
+    ReportFetchMetricsCallback metrics_callback) {
   auto fetch =
       std::make_unique<ContextualSuggestionsFetch>(url, bcp_language_code_);
   ContextualSuggestionsFetch* fetch_unowned = fetch.get();
@@ -27,7 +28,8 @@ void ContextualSuggestionsFetcherImpl::FetchContextualSuggestionsClusters(
   FetchClustersCallback internal_callback = base::BindOnce(
       &ContextualSuggestionsFetcherImpl::FetchFinished, base::Unretained(this),
       fetch_unowned, std::move(callback));
-  fetch_unowned->Start(std::move(internal_callback), loader_factory_);
+  fetch_unowned->Start(std::move(internal_callback),
+                       std::move(metrics_callback), loader_factory_);
 }
 
 void ContextualSuggestionsFetcherImpl::FetchFinished(
