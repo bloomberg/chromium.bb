@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_footer_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller_commands.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -166,6 +167,9 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
       [self.dispatcher
           showReportAnIssueFromViewController:self.baseViewController];
+      // Dismisses the popup menu without animation to allow the snapshot to be
+      // taken without the menu presented.
+      [self.dispatcher dismissPopupMenuAnimated:NO];
       break;
     case PopupMenuActionHelp:
       base::RecordAction(UserMetricsAction("MobileMenuHelp"));
@@ -206,7 +210,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   }
 
   // Close the tools menu.
-  [self.dispatcher dismissPopupMenu];
+  [self.dispatcher dismissPopupMenuAnimated:YES];
 }
 
 @end

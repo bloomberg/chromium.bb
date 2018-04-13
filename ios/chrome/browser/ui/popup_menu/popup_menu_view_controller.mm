@@ -78,7 +78,7 @@ const CGFloat kBackgroundGreyScale = 0.98;
 // Handler receiving the touch event on the background scrim.
 - (void)touchOnScrim:(UITapGestureRecognizer*)recognizer {
   if (recognizer.state == UIGestureRecognizerStateEnded) {
-    [self.commandHandler dismissPopupMenu];
+    [self.commandHandler dismissPopupMenuAnimated:YES];
   }
 }
 

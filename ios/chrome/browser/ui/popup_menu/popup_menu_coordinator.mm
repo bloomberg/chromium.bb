@@ -111,8 +111,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   [self presentPopupOfType:PopupMenuTypeSearch fromNamedGuide:nil];
 }
 
-- (void)dismissPopupMenu {
-  [self.presenter dismissAnimated:YES];
+- (void)dismissPopupMenuAnimated:(BOOL)animated {
+  [self.presenter dismissAnimated:animated];
   self.presenter = nil;
   [self.mediator disconnect];
   self.mediator = nil;
@@ -139,7 +139,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 #pragma mark - Notification callback
 
 - (void)applicationDidEnterBackground:(NSNotification*)note {
-  [self dismissPopupMenu];
+  [self dismissPopupMenuAnimated:NO];
 }
 
 #pragma mark - Private

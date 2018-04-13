@@ -27,7 +27,7 @@ typedef NS_ENUM(NSInteger, PopupMenuCommandType) {
 // Shows the popup for the search button.
 - (void)searchButtonPopup;
 // Dismisses the currently presented popup.
-- (void)dismissPopupMenu;
+- (void)dismissPopupMenuAnimated:(BOOL)animated;
 
 @end
 

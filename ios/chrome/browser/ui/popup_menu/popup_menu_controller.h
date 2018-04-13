@@ -21,6 +21,7 @@
 - (void)dismissPopupMenu:(PopupMenuController*)controller;
 @end
 
+// TODO(crbug.com/800266): Remove this class.
 // The base view controller for popup menus within the top toolbar like the
 // Tools menu.
 @interface PopupMenuController : NSObject

@@ -14,6 +14,7 @@
 - (void)dismissPopupMenu;
 @end
 
+// TODO(crbug.com/800266): Remove this class.
 @interface PopupMenuView : UIView
 @property(nonatomic, weak) id<PopupMenuViewDelegate> delegate;
 @end

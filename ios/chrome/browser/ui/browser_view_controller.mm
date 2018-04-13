@@ -1497,7 +1497,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_printController dismissAnimated:YES];
   _printController = nil;
   if (IsUIRefreshPhase1Enabled()) {
-    [self.dispatcher dismissPopupMenu];
+    [self.dispatcher dismissPopupMenuAnimated:NO];
   } else {
     [self.dispatcher dismissToolsMenu];
   }
@@ -2476,7 +2476,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 - (void)dismissPopups {
   [self.dispatcher hidePageInfo];
   if (IsUIRefreshPhase1Enabled()) {
-    [self.dispatcher dismissPopupMenu];
+    [self.dispatcher dismissPopupMenuAnimated:NO];
   } else {
     [self.dispatcher dismissToolsMenu];
   }
