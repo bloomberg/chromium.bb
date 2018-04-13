@@ -68,7 +68,6 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--configuration-name', configuration_name,
       '--results-file', json_to_upload,
       '--results-url', RESULTS_URL,
-      '--git-revision', build_properties['git_revision'],
       '--got-revision-cp', build_properties['got_revision_cp'],
       '--got-v8-revision', build_properties['got_v8_revision'],
       '--got-webrtc-revision', build_properties['got_webrtc_revision'],
@@ -76,6 +75,9 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
       '--output-json-file', output_json_file,
       '--perf-dashboard-machine-group', _GetMachineGroup(build_properties)
   ]
+  if build_properties.get('git_revision'):
+    args.append('--git-revision')
+    args.append(build_properties['git_revision'])
   if _is_histogram(json_to_upload):
     args.append('--send-as-histograms')
 
