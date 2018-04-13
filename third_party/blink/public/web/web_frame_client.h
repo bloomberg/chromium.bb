@@ -117,6 +117,7 @@ class WebURLResponse;
 class WebUserMediaClient;
 struct WebConsoleMessage;
 struct WebContextMenuData;
+struct WebFullscreenOptions;
 struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
@@ -775,7 +776,7 @@ class BLINK_EXPORT WebFrameClient {
   // After calling enterFullscreen or exitFullscreen,
   // WebWidget::didEnterFullscreen or WebWidget::didExitFullscreen
   // respectively will be called once the fullscreen mode has changed.
-  virtual void EnterFullscreen() {}
+  virtual void EnterFullscreen(const blink::WebFullscreenOptions& options) {}
   virtual void ExitFullscreen() {}
 
   // Sudden termination --------------------------------------------------

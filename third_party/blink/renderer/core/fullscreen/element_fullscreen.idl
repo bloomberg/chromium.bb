@@ -7,16 +7,20 @@
 [
     ImplementedAs=ElementFullscreen
 ] partial interface Element {
-    [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen();
+    // TODO(dtapuska): If RuntimeEnabled=FullscreenUnprefixed is shipped before RuntimeEnabled=FullscreenOptions
+    // we need to split the optional FullscreenOptions out controlled by RuntimeEnabled=FullscreenOptions
+    [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen(optional FullscreenOptions options);
 
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
 
     // Mozilla version
     [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen, ImplementedAs=webkitRequestFullscreen] void webkitRequestFullScreen();
+    [RuntimeEnabled=FullscreenOptions, LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen, ImplementedAs=webkitRequestFullscreen] void webkitRequestFullScreen(FullscreenOptions options);
 
     // W3C version
     [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullscreen] void webkitRequestFullscreen();
+    [RuntimeEnabled=FullscreenOptions, LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullscreen] void webkitRequestFullscreen(FullscreenOptions options);
 
     attribute EventHandler onwebkitfullscreenchange;
     attribute EventHandler onwebkitfullscreenerror;

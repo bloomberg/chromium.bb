@@ -389,7 +389,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
     return fake_page_scale_animation_use_anchor_;
   }
 
-  void EnterFullscreen(LocalFrame&);
+  void EnterFullscreen(LocalFrame&, const FullscreenOptions&);
   void ExitFullscreen(LocalFrame&);
   void FullscreenElementChanged(Element* old_element, Element* new_element);
 

@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/layout/layout_full_screen.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -22,7 +23,7 @@ namespace {
 
 class FullscreenMockChromeClient : public EmptyChromeClient {
  public:
-  MOCK_METHOD1(EnterFullscreen, void(LocalFrame&));
+  MOCK_METHOD2(EnterFullscreen, void(LocalFrame&, const FullscreenOptions&));
   MOCK_METHOD1(ExitFullscreen, void(LocalFrame&));
 };
 
@@ -98,7 +99,7 @@ TEST_F(HTMLVideoElementPersistentTest, nothingIsFullscreen) {
 TEST_F(HTMLVideoElementPersistentTest, videoIsFullscreen) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -125,7 +126,7 @@ TEST_F(HTMLVideoElementPersistentTest, videoIsFullscreen) {
 TEST_F(HTMLVideoElementPersistentTest, divIsFullscreen) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -159,7 +160,7 @@ TEST_F(HTMLVideoElementPersistentTest, divIsFullscreen) {
 TEST_F(HTMLVideoElementPersistentTest, exitFullscreenBeforePersistence) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(1);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -189,7 +190,7 @@ TEST_F(HTMLVideoElementPersistentTest, exitFullscreenBeforePersistence) {
 TEST_F(HTMLVideoElementPersistentTest, internalPseudoClassOnlyUAStyleSheet) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
   DummyExceptionStateForTesting exception_state;
@@ -238,7 +239,7 @@ TEST_F(HTMLVideoElementPersistentTest, internalPseudoClassOnlyUAStyleSheet) {
 TEST_F(HTMLVideoElementPersistentTest, removeContainerWhilePersisting) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(1);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -260,7 +261,7 @@ TEST_F(HTMLVideoElementPersistentTest, removeContainerWhilePersisting) {
 TEST_F(HTMLVideoElementPersistentTest, removeVideoWhilePersisting) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -286,7 +287,7 @@ TEST_F(HTMLVideoElementPersistentTest, removeVideoWithLayerWhilePersisting) {
   DivElement()->AppendChild(span);
   span->AppendChild(VideoElement());
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
@@ -308,7 +309,7 @@ TEST_F(HTMLVideoElementPersistentTest, removeVideoWithLayerWhilePersisting) {
 TEST_F(HTMLVideoElementPersistentTest, containsPersistentVideoScopedToFS) {
   EXPECT_EQ(FullscreenElement(), nullptr);
 
-  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_)).Times(1);
+  EXPECT_CALL(GetMockChromeClient(), EnterFullscreen(_, _)).Times(1);
   EXPECT_CALL(GetMockChromeClient(), ExitFullscreen(_)).Times(0);
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =

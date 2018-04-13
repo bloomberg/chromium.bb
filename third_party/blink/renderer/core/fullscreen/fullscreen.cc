@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -425,10 +426,12 @@ void Fullscreen::ContextDestroyed(ExecutionContext*) {
 void Fullscreen::RequestFullscreen(Element& pending) {
   // TODO(foolip): Make RequestType::Unprefixed the default when the unprefixed
   // API is enabled. https://crbug.com/383813
-  RequestFullscreen(pending, RequestType::kPrefixed);
+  RequestFullscreen(pending, FullscreenOptions(), RequestType::kPrefixed);
 }
 
-void Fullscreen::RequestFullscreen(Element& pending, RequestType request_type) {
+void Fullscreen::RequestFullscreen(Element& pending,
+                                   const FullscreenOptions& options,
+                                   RequestType request_type) {
   RequestFullscreenScope scope;
 
   // 1. Let |pending| be the context object.
@@ -485,7 +488,7 @@ void Fullscreen::RequestFullscreen(Element& pending, RequestType request_type) {
     From(document).pending_requests_.push_back(
         std::make_pair(&pending, request_type));
     LocalFrame& frame = *document.GetFrame();
-    frame.GetChromeClient().EnterFullscreen(frame);
+    frame.GetChromeClient().EnterFullscreen(frame, options);
   } else {
     // Note: Although we are past the "in parallel" point, it's OK to continue
     // synchronously because when |error| is true, |ContinueRequestFullscreen()|

@@ -739,7 +739,7 @@ class CONTENT_EXPORT RenderFrameImpl
                                            const blink::WebNode& end_node,
                                            int end_offset) override;
   void DidChangeManifest() override;
-  void EnterFullscreen() override;
+  void EnterFullscreen(const blink::WebFullscreenOptions& options) override;
   void ExitFullscreen() override;
   void SuddenTerminationDisablerChanged(
       bool present,
