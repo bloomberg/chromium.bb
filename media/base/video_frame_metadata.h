@@ -122,6 +122,16 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // Whether this frame was decoded in a power efficient way.
     POWER_EFFICIENT,
 
+    // CompositorFrameMetadata variables associated with this frame. Used for
+    // remote debugging.
+    // Use Get/SetDouble() for these keys.
+    // TODO(crbug.com/832220): Use a customized dictionary value instead of
+    // using these keys directly.
+    DEVICE_SCALE_FACTOR,
+    PAGE_SCALE_FACTOR,
+    ROOT_SCROLL_OFFSET_X,
+    ROOT_SCROLL_OFFSET_Y,
+
     NUM_KEYS
   };
 

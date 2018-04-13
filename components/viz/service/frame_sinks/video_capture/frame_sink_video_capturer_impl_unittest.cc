@@ -39,6 +39,29 @@ using testing::Return;
 namespace viz {
 namespace {
 
+// Returns true if |frame|'s device scale factor, page scale factor and root
+// scroll offset are equal to the expected values.
+bool CompareVarsInCompositorFrameMetadata(
+    const VideoFrame& frame,
+    float device_scale_factor,
+    float page_scale_factor,
+    const gfx::Vector2dF& root_scroll_offset) {
+  double dsf, psf, rso_x, rso_y;
+  bool valid = true;
+
+  valid &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::DEVICE_SCALE_FACTOR, &dsf);
+  valid &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::PAGE_SCALE_FACTOR, &psf);
+  valid &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_X, &rso_x);
+  valid &= frame.metadata()->GetDouble(
+      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &rso_y);
+
+  return valid && dsf == device_scale_factor && psf == page_scale_factor &&
+         gfx::Vector2dF(rso_x, rso_y) == root_scroll_offset;
+}
+
 // Dummy frame sink ID.
 constexpr FrameSinkId kFrameSinkId = FrameSinkId(1, 1);
 
@@ -335,9 +358,21 @@ class FrameSinkVideoCapturerTest : public testing::Test {
     task_runner_->FastForwardBy(GetNextVsync() - task_runner_->NowTicks());
   }
 
-  void NotifyFrameDamaged() {
+  void NotifyFrameDamaged(
+      float device_scale_factor =
+          FrameSinkVideoCapturerImpl::kDefaultDeviceScaleFactor,
+      float page_scale_factor =
+          FrameSinkVideoCapturerImpl::kDefaultPageScaleFactor,
+      gfx::Vector2dF root_scroll_offset =
+          FrameSinkVideoCapturerImpl::kDefaultRootScrollOffset) {
+    CompositorFrameMetadata metadata;
+
+    metadata.device_scale_factor = device_scale_factor;
+    metadata.page_scale_factor = page_scale_factor;
+    metadata.root_scroll_offset = root_scroll_offset;
+
     capturer_.OnFrameDamaged(kSourceSize, gfx::Rect(kSourceSize),
-                             GetNextVsync());
+                             GetNextVsync(), metadata);
   }
 
   void NotifyTargetWentAway() {
@@ -363,7 +398,7 @@ class FrameSinkVideoCapturerTest : public testing::Test {
 };
 
 // Tests that the capturer attaches to a frame sink immediately, in the case
-// where the frame sink was already known by the manger.
+// where the frame sink was already known by the manager.
 TEST_F(FrameSinkVideoCapturerTest, ResolvesTargetImmediately) {
   EXPECT_CALL(frame_sink_manager_, FindCapturableFrameSink(kFrameSinkId))
       .WillRepeatedly(Return(&frame_sink_));
@@ -854,6 +889,69 @@ TEST_F(FrameSinkVideoCapturerTest, EventuallySendsARefreshFrame) {
   ASSERT_EQ(num_frames + 1, consumer.num_frames_received());
   EXPECT_FALSE(IsRefreshRetryTimerRunning());
 
+  StopCapture();
+}
+
+// Tests that CompositorFrameMetadata variables (|device_scale_factor|,
+// |page_scale_factor| and |root_scroll_offset|) are sent along with each frame,
+// and refreshes cause variables of the cached CompositorFrameMetadata
+// (|last_frame_metadata|) to be used.
+TEST_F(FrameSinkVideoCapturerTest, CompositorFrameMetadataReachesConsumer) {
+  EXPECT_CALL(frame_sink_manager_, FindCapturableFrameSink(kFrameSinkId))
+      .WillRepeatedly(Return(&frame_sink_));
+  capturer_.ChangeTarget(kFrameSinkId);
+
+  MockConsumer consumer;
+  // Initial refresh frame for starting capture, plus later refresh.
+  const int num_refresh_frames = 2;
+  const int num_update_frames = 1;
+  EXPECT_CALL(consumer, OnFrameCapturedMock(_, _, _))
+      .Times(num_refresh_frames + num_update_frames);
+  EXPECT_CALL(consumer, OnTargetLost(_)).Times(0);
+  EXPECT_CALL(consumer, OnStopped()).Times(1);
+  StartCapture(&consumer);
+
+  // With the start, an immediate refresh occurred. Simulate a copy result.
+  // Expect to see the refresh frame delivered to the consumer, along with
+  // default metadata values.
+  int cur_frame_index = 0, expected_frames_count = 1;
+  frame_sink_.SendCopyOutputResult(cur_frame_index);
+  EXPECT_EQ(expected_frames_count, consumer.num_frames_received());
+  EXPECT_TRUE(CompareVarsInCompositorFrameMetadata(
+      *(consumer.TakeFrame(cur_frame_index)),
+      FrameSinkVideoCapturerImpl::kDefaultDeviceScaleFactor,
+      FrameSinkVideoCapturerImpl::kDefaultPageScaleFactor,
+      FrameSinkVideoCapturerImpl::kDefaultRootScrollOffset));
+  consumer.SendDoneNotification(cur_frame_index);
+
+  // The metadata used to signal a frame damage and verify that it reaches the
+  // consumer.
+  const float kNewDeviceScaleFactor = 3.5;
+  const float kNewPageScaleFactor = 1.5;
+  const gfx::Vector2dF kNewRootScrollOffset = gfx::Vector2dF(100, 200);
+
+  // Notify frame damage with new metadata, and expect that the refresh frame
+  // is delivered to the consumer with this new metadata.
+  AdvanceClockToNextVsync();
+  NotifyFrameDamaged(kNewDeviceScaleFactor, kNewPageScaleFactor,
+                     kNewRootScrollOffset);
+  frame_sink_.SendCopyOutputResult(++cur_frame_index);
+  EXPECT_EQ(++expected_frames_count, consumer.num_frames_received());
+  EXPECT_TRUE(CompareVarsInCompositorFrameMetadata(
+      *(consumer.TakeFrame(cur_frame_index)), kNewDeviceScaleFactor,
+      kNewPageScaleFactor, kNewRootScrollOffset));
+  consumer.SendDoneNotification(cur_frame_index);
+
+  // Request a refresh frame. Because the refresh request was made just after
+  // the last frame capture, the refresh retry timer should be started.
+  // Expect that the refresh frame is delivered to the consumer with the same
+  // metadata from the previous frame.
+  capturer_.RequestRefreshFrame();
+  AdvanceClockForRefreshTimer();
+  EXPECT_EQ(++expected_frames_count, consumer.num_frames_received());
+  EXPECT_TRUE(CompareVarsInCompositorFrameMetadata(
+      *(consumer.TakeFrame(++cur_frame_index)), kNewDeviceScaleFactor,
+      kNewPageScaleFactor, kNewRootScrollOffset));
   StopCapture();
 }
 

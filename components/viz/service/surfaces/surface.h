@@ -72,7 +72,7 @@ class VIZ_SERVICE_EXPORT Surface final : public SurfaceDeadlineClient {
  public:
   using AggregatedDamageCallback =
       base::RepeatingCallback<void(const LocalSurfaceId& local_surface_id,
-                                   const gfx::Size& frame_size_in_pixels,
+                                   const CompositorFrame& frame,
                                    const gfx::Rect& damage_rect,
                                    base::TimeTicks expected_display_time)>;
   using PresentedCallback =

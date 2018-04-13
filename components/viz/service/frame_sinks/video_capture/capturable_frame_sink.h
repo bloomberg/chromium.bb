@@ -35,9 +35,11 @@ class CapturableFrameSink {
     // |damage_rect| being the region within that has changed (never empty).
     // |expected_display_time| indicates when the content change was expected to
     // appear on the Display.
-    virtual void OnFrameDamaged(const gfx::Size& frame_size,
-                                const gfx::Rect& damage_rect,
-                                base::TimeTicks expected_display_time) = 0;
+    virtual void OnFrameDamaged(
+        const gfx::Size& frame_size,
+        const gfx::Rect& damage_rect,
+        base::TimeTicks expected_display_time,
+        const CompositorFrameMetadata& frame_metadata) = 0;
   };
 
   virtual ~CapturableFrameSink() = default;
