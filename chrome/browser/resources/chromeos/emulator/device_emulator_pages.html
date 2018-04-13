@@ -52,10 +52,6 @@
         z-index: 2;
       }
 
-      dialog[is='cr-drawer'] {
-        z-index: 2;
-      }
-
       #container {
         align-items: center;
         background-color: lightgray;
@@ -75,7 +71,7 @@
         role="banner"
         show-menu>
     </cr-toolbar>
-    <dialog id="drawer" is="cr-drawer" heading="Device Emulator">
+    <cr-drawer id="drawer" heading="Device Emulator">
       <div class="drawer-content">
         <paper-listbox class="layout vertical" selected="{{selectedPage}}">
           <paper-icon-item>
@@ -97,7 +93,7 @@
           </paper-icon-item>
         </paper-listbox>
       </div>
-    </dialog>
+    </cr-drawer>
     <div id="container" class="no-outline">
       <neon-animated-pages  selected="[[selectedPage]]"
           entry-animation="fade-in-animation"
