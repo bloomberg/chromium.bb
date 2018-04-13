@@ -120,15 +120,18 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     }
   }
 
+  // Provide a relevance score for each match.
   for (size_t i = 0; i < matches_.size(); ++i)
     matches_[i].relevance = kRelevance + matches_.size() - (i + 1);
+
+  // If allowing completions is okay and there's a match that's considered
+  // appropriate to be the default match, mark it as such and give it a high
+  // enough score to beat url-what-you-typed.
+  size_t default_match_index;
   if (!HistoryProvider::PreventInlineAutocomplete(input) &&
-      (matches_.size() == 1) && !matches_[0].inline_autocompletion.empty()) {
-    // If there's only one possible completion of the user's input and
-    // allowing completions is okay, give the match a high enough score to
-    // allow it to beat url-what-you-typed and be inlined.
-    matches_[0].relevance = 1250;
-    matches_[0].allowed_to_be_default_match = true;
+      HasMatchThatShouldBeDefault(&default_match_index)) {
+    matches_[default_match_index].relevance = 1250;
+    matches_[default_match_index].allowed_to_be_default_match = true;
   }
 }
 
@@ -145,4 +148,35 @@ void BuiltinProvider::AddMatch(const base::string16& match_string,
   match.contents = match_string;
   match.contents_class = styles;
   matches_.push_back(match);
+}
+
+bool BuiltinProvider::HasMatchThatShouldBeDefault(size_t* index) const {
+  if (matches_.size() == 0)
+    return false;
+
+  // If there's only one possible completion of the user's input and it's not
+  // empty, it should be allowed to be the default match.
+  if (matches_.size() == 1) {
+    *index = 0;
+    return !matches_[0].inline_autocompletion.empty();
+  }
+
+  // If there's a non-empty completion that is a prefix of all of the others,
+  // it should be allowed to be the default match.
+  size_t shortest = 0;
+  for (size_t i = 1; i < matches_.size(); ++i) {
+    if (matches_[i].contents.length() < matches_[shortest].contents.length())
+      shortest = i;
+  }
+  if (matches_[shortest].inline_autocompletion.empty())
+    return false;
+
+  for (size_t i = 0; i < matches_.size(); ++i) {
+    if (!base::StartsWith(matches_[i].contents, matches_[shortest].contents,
+                          base::CompareCase::INSENSITIVE_ASCII)) {
+      return false;
+    }
+  }
+  *index = shortest;
+  return true;
 }

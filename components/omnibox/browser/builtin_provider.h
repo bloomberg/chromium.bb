@@ -35,6 +35,11 @@ class BuiltinProvider : public AutocompleteProvider {
                 const base::string16& inline_completion,
                 const ACMatchClassifications& styles);
 
+  // Returns true if |matches_| contains a match that should be allowed to be
+  // the default match. If true, the index of that match in |matches_| is
+  // returned in |index|.
+  bool HasMatchThatShouldBeDefault(size_t* index) const;
+
   AutocompleteProviderClient* client_;
   Builtins builtins_;
 
