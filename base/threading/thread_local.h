@@ -50,6 +50,8 @@
 #ifndef BASE_THREADING_THREAD_LOCAL_H_
 #define BASE_THREADING_THREAD_LOCAL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/threading/thread_local_storage.h"
 
@@ -61,9 +63,7 @@ class ThreadLocalPointer {
   ThreadLocalPointer() = default;
   ~ThreadLocalPointer() = default;
 
-  Type* Get() {
-    return static_cast<Type*>(slot_.Get());
-  }
+  Type* Get() { return static_cast<Type*>(slot_.Get()); }
 
   void Set(Type* ptr) {
     slot_.Set(const_cast<void*>(static_cast<const void*>(ptr)));
@@ -75,18 +75,38 @@ class ThreadLocalPointer {
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalPointer<Type>);
 };
 
+template <typename Type>
+class ThreadLocalUniquePointer {
+ public:
+  ThreadLocalUniquePointer()
+      : slot_(ThreadLocalUniquePointer::ThreadLocalUniquePointerDestructor) {}
+
+  ~ThreadLocalUniquePointer() = default;
+
+  Type* Get() { return static_cast<Type*>(slot_.Get()); }
+
+  void Set(std::unique_ptr<Type> ptr) {
+    slot_.Set(const_cast<void*>(static_cast<const void*>(ptr.release())));
+  }
+
+ private:
+  static void ThreadLocalUniquePointerDestructor(void* value) {
+    std::unique_ptr<Type> to_be_deleted(static_cast<Type*>(value));
+  }
+
+  ThreadLocalStorage::Slot slot_;
+
+  DISALLOW_COPY_AND_ASSIGN(ThreadLocalUniquePointer<Type>);
+};
+
 class ThreadLocalBoolean {
  public:
   ThreadLocalBoolean() = default;
   ~ThreadLocalBoolean() = default;
 
-  bool Get() {
-    return tlp_.Get() != nullptr;
-  }
+  bool Get() { return tlp_.Get() != nullptr; }
 
-  void Set(bool val) {
-    tlp_.Set(val ? this : nullptr);
-  }
+  void Set(bool val) { tlp_.Set(val ? this : nullptr); }
 
  private:
   ThreadLocalPointer<void> tlp_;
