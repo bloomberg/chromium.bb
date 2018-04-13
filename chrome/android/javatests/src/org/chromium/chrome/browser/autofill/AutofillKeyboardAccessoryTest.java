@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.autofill;
 
+import static org.chromium.ui.base.LocalizationUtils.setRtlForTesting;
+
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -80,15 +82,15 @@ public class AutofillKeyboardAccessoryTest {
                 + "<input type=\"submit\" />"
                 + "</form></body></html>"));
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
-                "Johnononononononononononononononononononononononononononononononononon "
-                        + "Smiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiith",
-                "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "", "US",
-                "(415) 888-9999", "john@acme.inc", "en"));
+                "Johnathan Smithonian-Jackson", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco",
+                "", "94102", "", "US", "(415) 888-9999", "john@acme.inc", "en"));
         new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
-                "Janenenenenenenenenenenenenenenenenenenenenenenenenenenenenenenenenene "
-                        + "Doooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooe",
-                "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "", "94102", "", "US",
-                "(415) 999-0000", "jane@acme.inc", "en"));
+                "Jane Erika Donovanova", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "", "US", "(415) 999-0000", "jane@acme.inc", "en"));
+        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://www.example.com",
+                "Marcus McSpartangregor", "Acme Inc", "1 Main\nApt A", "CA", "San Francisco", "",
+                "94102", "", "US", "(415) 999-0000", "marc@acme.inc", "en"));
+        setRtlForTesting(isRtl);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mViewCoreRef.set(mActivityTestRule.getActivity().getCurrentContentViewCore());
             mWebContentsRef.set(mViewCoreRef.get().getWebContents());
@@ -157,8 +159,7 @@ public class AutofillKeyboardAccessoryTest {
                         mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> ((HorizontalScrollView) mKeyboardAccessoryRef.get()).scrollTo(2000, 0));
+        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(2000, 0));
         CriteriaHelper.pollUiThread(
                 new Criteria("First suggestion should be off the screen after manual scroll.") {
                     @Override
@@ -206,13 +207,12 @@ public class AutofillKeyboardAccessoryTest {
                         mActivityTestRule.getActivity(), mContainerRef.get());
             }
         });
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> ((HorizontalScrollView) mKeyboardAccessoryRef.get()).scrollTo(0, 0));
+        ThreadUtils.runOnUiThreadBlocking(() -> getSuggestionsComponent().scrollTo(-1000, 0));
         CriteriaHelper.pollUiThread(
                 new Criteria("Last suggestion should be on the screen after manual scroll.") {
                     @Override
                     public boolean isSatisfied() {
-                        View suggestion = getSuggestionAt(2);
+                        View suggestion = getSuggestionAt(3);
                         if (suggestion != null) {
                             int[] location = new int[2];
                             suggestion.getLocationOnScreen(location);
@@ -222,12 +222,17 @@ public class AutofillKeyboardAccessoryTest {
                         }
                     }
                 });
+        // Simulates two clicks. Keyboard delay can often drops the first and doesn't set it again.
+        // TODO(fhorschig): Remove safety net as soon as Accessory is decoupled from suggestions.
         DOMUtils.clickNode(mViewCoreRef.get(), "ln");
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        DOMUtils.clickNode(mViewCoreRef.get(), "ln");
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         CriteriaHelper.pollUiThread(
                 new Criteria("Last suggestion should be off the screen after switching fields.") {
                     @Override
                     public boolean isSatisfied() {
-                        View suggestion = getSuggestionAt(2);
+                        View suggestion = getSuggestionAt(3);
                         if (suggestion != null) {
                             int[] location = new int[2];
                             suggestion.getLocationOnScreen(location);
@@ -271,20 +276,29 @@ public class AutofillKeyboardAccessoryTest {
             }
         });
         Assert.assertTrue("Keyboard accessory should be hidden.",
-                ThreadUtils
-                        .runOnUiThreadBlocking(
-                                () -> mKeyboardAccessoryRef.get().getVisibility() == View.GONE)
-                        .booleanValue());
+                ThreadUtils.runOnUiThreadBlocking(
+                        () -> mKeyboardAccessoryRef.get().getVisibility() == View.GONE));
+    }
+
+    private AutofillKeyboardSuggestions getSuggestionsComponent() {
+        // The view hierarchy:
+        //   Keyboard accessory.
+        //    \--> A list of accessory components.
+        //        \--> A scroll view.
+        //            \--> A list of suggestions.
+        //                \--> A suggestion that can be clicked.
+        ViewGroup keyboardAccessory = mKeyboardAccessoryRef.get();
+        if (keyboardAccessory == null) return null; // It might still be loading, so don't assert!
+        ViewGroup componentsList = (ViewGroup) mKeyboardAccessoryRef.get().getChildAt(0);
+        if (componentsList == null) return null; // It might still be loading, so don't assert!
+        ViewGroup scrollview = (ViewGroup) componentsList.getChildAt(0);
+        if (scrollview == null) return null; // It might still be loading, so don't assert!
+        return (AutofillKeyboardSuggestions) scrollview.getChildAt(0);
     }
 
     private View getSuggestionAt(int index) {
-        // The view hierarchy:
-        //   Keyboard accessory.
-        //    \--> A list of suggestions.
-        //          \--> A suggestion that can be clicked.
-        return mKeyboardAccessoryRef.get() != null
-                        && mKeyboardAccessoryRef.get().getChildAt(0) != null
-                ? ((ViewGroup) mKeyboardAccessoryRef.get().getChildAt(0)).getChildAt(index)
-                : null;
+        ViewGroup suggestionsList = getSuggestionsComponent();
+        if (suggestionsList == null) return null; // It might still be loading, so don't assert!
+        return suggestionsList.getChildAt(index);
     }
 }
