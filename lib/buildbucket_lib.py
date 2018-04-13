@@ -277,7 +277,7 @@ class BuildbucketClient(object):
     Returns:
       See return type of SendBuildbucketRequest.
     """
-    url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds' % {
+    url = 'https://%(hostname)s/api/buildbucket/v1/builds' % {
         'hostname': self.host
     }
 
@@ -293,7 +293,7 @@ class BuildbucketClient(object):
     Returns:
       See return type of SendBuildbucketRequest.
     """
-    url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s' % {
+    url = 'https://%(hostname)s/api/buildbucket/v1/builds/%(id)s' % {
         'hostname': self.host,
         'id': buildbucket_id
     }
@@ -310,7 +310,7 @@ class BuildbucketClient(object):
     Returns:
       See return type of SendBuildbucketRequest.
     """
-    url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/cancel' % {
+    url = 'https://%(hostname)s/api/buildbucket/v1/builds/%(id)s/cancel' % {
         'hostname': self.host,
         'id': buildbucket_id
     }
@@ -327,7 +327,7 @@ class BuildbucketClient(object):
     Returns:
       See return type of SendBuildbucketRequest.
     """
-    url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/cancel' % {
+    url = 'https://%(hostname)s/api/buildbucket/v1/builds/cancel' % {
         'hostname': self.host
     }
 
@@ -346,7 +346,7 @@ class BuildbucketClient(object):
     Returns:
       See return type of SendBuildbucketRequest.
     """
-    url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/retry' % {
+    url = 'https://%(hostname)s/api/buildbucket/v1/builds/%(id)s/retry' % {
         'hostname': self.host,
         'id': buildbucket_id
     }
@@ -393,7 +393,7 @@ class BuildbucketClient(object):
 
     params_str = urllib.urlencode(params)
 
-    url = ('https://%(hostname)s/_ah/api/buildbucket/v1/search?%(params_str)s'
+    url = ('https://%(hostname)s/api/buildbucket/v1/search?%(params_str)s'
            % {'hostname': self.host, 'params_str': params_str})
 
     return self.SendBuildbucketRequest(url, GET_METHOD, None, dryrun)
