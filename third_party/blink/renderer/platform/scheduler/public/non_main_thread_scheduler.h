@@ -14,8 +14,8 @@
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 namespace blink {
 namespace scheduler {
@@ -47,9 +47,9 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler {
 
  protected:
   explicit NonMainThreadScheduler(
-      std::unique_ptr<WorkerSchedulerHelper> helper);
+      std::unique_ptr<NonMainThreadSchedulerHelper> helper);
 
-  std::unique_ptr<WorkerSchedulerHelper> helper_;
+  std::unique_ptr<NonMainThreadSchedulerHelper> helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadScheduler);
 };

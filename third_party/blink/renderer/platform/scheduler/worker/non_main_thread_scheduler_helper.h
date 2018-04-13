@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_SCHEDULER_HELPER_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_SCHEDULER_HELPER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_SCHEDULER_HELPER_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_SCHEDULER_HELPER_H_
 
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
@@ -14,11 +14,12 @@ namespace scheduler {
 
 class NonMainThreadScheduler;
 
-class PLATFORM_EXPORT WorkerSchedulerHelper : public SchedulerHelper {
+class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
  public:
-  WorkerSchedulerHelper(std::unique_ptr<TaskQueueManager> manager,
-                        NonMainThreadScheduler* non_main_thread_scheduler);
-  ~WorkerSchedulerHelper() override;
+  NonMainThreadSchedulerHelper(
+      std::unique_ptr<TaskQueueManager> manager,
+      NonMainThreadScheduler* non_main_thread_scheduler);
+  ~NonMainThreadSchedulerHelper() override;
 
   scoped_refptr<WorkerTaskQueue> NewTaskQueue(const TaskQueue::Spec& spec);
 
@@ -34,10 +35,10 @@ class PLATFORM_EXPORT WorkerSchedulerHelper : public SchedulerHelper {
   const scoped_refptr<WorkerTaskQueue> default_task_queue_;
   const scoped_refptr<WorkerTaskQueue> control_task_queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerHelper);
+  DISALLOW_COPY_AND_ASSIGN(NonMainThreadSchedulerHelper);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_SCHEDULER_HELPER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_NON_MAIN_THREAD_SCHEDULER_HELPER_H_

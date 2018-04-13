@@ -14,8 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -54,7 +54,7 @@ class SchedulerHelperTest : public testing::Test {
     std::unique_ptr<TaskQueueManagerForTest> task_queue_manager =
         TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_);
     task_queue_manager_ = task_queue_manager.get();
-    scheduler_helper_ = std::make_unique<WorkerSchedulerHelper>(
+    scheduler_helper_ = std::make_unique<NonMainThreadSchedulerHelper>(
         std::move(task_queue_manager), nullptr);
     default_task_runner_ = scheduler_helper_->DefaultWorkerTaskQueue();
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
@@ -85,7 +85,7 @@ class SchedulerHelperTest : public testing::Test {
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
 
-  std::unique_ptr<WorkerSchedulerHelper> scheduler_helper_;
+  std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
   TaskQueueManagerForTest* task_queue_manager_;  // Owned by scheduler_helper.
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
