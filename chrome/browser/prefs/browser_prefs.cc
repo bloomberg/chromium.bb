@@ -172,6 +172,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
+#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #include "chrome/browser/android/ntp/recent_tabs_page_prefs.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
@@ -601,6 +602,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_ANDROID)
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
+  contextual_suggestions::ContextualSuggestionsPrefs::RegisterProfilePrefs(
+      registry);
   ContentSuggestionsNotifierService::RegisterProfilePrefs(registry);
   DownloadSuggestionsProvider::RegisterProfilePrefs(registry);
   ntp_snippets::BreakingNewsGCMAppHandler::RegisterProfilePrefs(registry);

@@ -1917,6 +1917,8 @@ jumbo_split_static_library("browser") {
       "android/content/content_utils.cc",
       "android/contextual_suggestions/contextual_suggestions_bridge.cc",
       "android/contextual_suggestions/contextual_suggestions_bridge.h",
+      "android/contextual_suggestions/contextual_suggestions_prefs.cc",
+      "android/contextual_suggestions/contextual_suggestions_prefs.h",
       "android/contextualsearch/contextual_search_context.cc",
       "android/contextualsearch/contextual_search_context.h",
       "android/contextualsearch/contextual_search_delegate.cc",

@@ -19,7 +19,7 @@ class FakeEnabledStateMonitor extends EnabledStateMonitor {
     }
 
     @Override
-    void destroy() {
+    public void destroy() {
         // Intentionally do nothing.
     }
 

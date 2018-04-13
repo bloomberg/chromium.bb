@@ -534,6 +534,17 @@ CHAR-LIMIT guidelines:
         Chrome Passwords
       </message>
 
+      <!-- Contextual suggestions preferences -->
+      <message name="IDS_PREFS_CONTEXTUAL_SUGGESTIONS" desc="Title of contextual suggestions settings, which allows the user to get site suggestions based on the current website.">
+        Suggest related pages
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_DESCRIPTION" desc="Description of contextual suggestions, which tells the user what contextual suggestions does.">
+        When you scroll up, show quick links to related pages.
+      </message>
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_MESSAGE" desc="Message of contextual suggestions settings, which tells the user how to opt in contextual suggestions.">
+        This feature uses <ph name="BEGIN_LINK">&lt;link&gt;</ph>sync<ph name="END_LINK">&lt;/link&gt;</ph>. The URLs of pages you visit are sent to Google.
+      </message>
+
       <!-- Homepage preferences -->
       <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
         Edit home page

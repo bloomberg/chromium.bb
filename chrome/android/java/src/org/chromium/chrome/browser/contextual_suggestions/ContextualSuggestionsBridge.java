@@ -21,7 +21,7 @@ import java.util.List;
  * Provides access to contextual suggestions.
  */
 @JNINamespace("contextual_suggestions")
-class ContextualSuggestionsBridge {
+public class ContextualSuggestionsBridge {
     private long mNativeContextualSuggestionsBridge;
 
     /** Result of fetching contextual suggestions. */
@@ -56,7 +56,7 @@ class ContextualSuggestionsBridge {
     /**
      * @return Whether the current profile is enterprise policy managed.
      */
-    static boolean isEnterprisePolicyManaged() {
+    public static boolean isEnterprisePolicyManaged() {
         return nativeIsEnterprisePolicyManaged();
     }
 

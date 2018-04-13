@@ -154,6 +154,9 @@ class ContextualSuggestionsMediator implements EnabledStateMonitor.Observer, Fet
     }
 
     @Override
+    public void onSettingsStateChanged(boolean enabled) {}
+
+    @Override
     public void requestSuggestions(String url) {
         mCurrentRequestUrl = url;
         mSuggestionsSource.fetchSuggestions(url, (suggestionsResult) -> {

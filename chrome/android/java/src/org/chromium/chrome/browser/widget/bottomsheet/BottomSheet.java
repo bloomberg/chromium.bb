@@ -1022,7 +1022,9 @@ public class BottomSheet extends FrameLayout
             }
         });
 
-        setInternalCurrentState(SHEET_STATE_SCROLLING, reason);
+        if (targetState != SHEET_STATE_HIDDEN) {
+            setInternalCurrentState(SHEET_STATE_SCROLLING, reason);
+        }
         mSettleAnimator.start();
     }
 

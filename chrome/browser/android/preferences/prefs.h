@@ -8,6 +8,7 @@
 #include <cstddef>
 
 #include "build/build_config.h"
+#include "chrome/browser/android/contextual_suggestions/contextual_suggestions_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/dom_distiller/core/pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -17,6 +18,7 @@
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.preferences
 enum Pref {
   ALLOW_DELETING_BROWSER_HISTORY,
+  CONTEXTUAL_SUGGESTIONS_ENABLED,
   INCOGNITO_MODE_AVAILABILITY,
   NTP_ARTICLES_SECTION_ENABLED,
   NTP_ARTICLES_LIST_VISIBLE,
@@ -30,6 +32,7 @@ enum Pref {
 // Remember to update prefs_unittest.cc as well.
 const char* const kPrefsExposedToJava[] = {
     prefs::kAllowDeletingBrowserHistory,
+    contextual_suggestions::prefs::kContextualSuggestionsEnabled,
     prefs::kIncognitoModeAvailability,
     ntp_snippets::prefs::kEnableSnippets,
     ntp_snippets::prefs::kArticlesListVisible,
