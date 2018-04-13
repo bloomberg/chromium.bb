@@ -109,6 +109,10 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
     window_icon_ = new TabIconView(this, nullptr);
     window_icon_->set_is_light(true);
     window_icon_->set_id(VIEW_ID_WINDOW_ICON);
+    // Stop the icon from intercepting clicks intended for the HTSYSMENU region
+    // of the window. Even though it does nothing on click, it will still
+    // prevent us from giving the event back to Windows to handle properly.
+    window_icon_->set_can_process_events_within_subtree(false);
     AddChildView(window_icon_);
   }
 
