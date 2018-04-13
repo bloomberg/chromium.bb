@@ -23,7 +23,7 @@ namespace vr {
 
 namespace {
 
-constexpr bool kEnableOptimizedTreeWalks = false;
+constexpr bool kEnableOptimizedTreeWalks = true;
 constexpr float kHitTestResolutionInMeter = 0.000001f;
 
 int AllocateId() {
