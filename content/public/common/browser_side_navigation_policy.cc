@@ -20,14 +20,7 @@ bool IsBrowserSideNavigationEnabled() {
 // NavigationMojoResponse feature replaces this mechanism by a Mojo DataPipe.
 // Design doc: https://goo.gl/Rrrc7n.
 bool IsNavigationMojoResponseEnabled() {
-  if (!IsBrowserSideNavigationEnabled())
-    return false;
-
-  return base::FeatureList::IsEnabled(features::kNavigationMojoResponse) ||
-         base::FeatureList::IsEnabled(
-             features::kServiceWorkerServicification) ||
-         base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
-         base::FeatureList::IsEnabled(network::features::kNetworkService);
+  return true;
 }
 
 }  // namespace content
