@@ -41,7 +41,7 @@ constexpr int kResponseInfoIndex = 0;
 constexpr int kResponseContentIndex = 1;
 
 const char* const kCommandNames[] = {
-    "stop",          "get_size",   "list_keys",          "get_stream_for_key",
+    "stop",          "get_size",   "list_keys",          "get_stream",
     "delete_stream", "delete_key", "update_raw_headers", "list_dups",
 };
 
@@ -147,19 +147,19 @@ class ProgramArgumentCommandMarshal final : public CommandMarshal {
     else if (args_id_ == command_line_args_.size())
       return "stop";
     else if (!has_failed())
-      ReturnFailure("Command line arguments to long.");
+      ReturnFailure("Command line arguments too long.");
     return "";
   }
 
   // Implements CommandMarshal.
   int ReadInt() override {
-    std::string interger_str = ReadString();
-    int interger = -1;
-    if (!base::StringToInt(interger_str, &interger)) {
+    std::string integer_str = ReadString();
+    int integer = -1;
+    if (!base::StringToInt(integer_str, &integer)) {
       ReturnFailure("Couldn't parse integer.");
       return 0;
     }
-    return interger;
+    return integer;
   }
 
   // Implements CommandMarshal.
