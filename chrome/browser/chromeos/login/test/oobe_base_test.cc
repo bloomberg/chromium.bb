@@ -221,14 +221,6 @@ void OobeBaseTest::WaitForGaiaPageLoad() {
 }
 
 void OobeBaseTest::WaitForGaiaPageReload() {
-  WaitForGaiaPageEvent("ready");
-}
-
-void OobeBaseTest::WaitForGaiaPageBackButtonUpdate() {
-  WaitForGaiaPageEvent("backButton");
-}
-
-void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
   // Starts listening to message before executing the JS code that generates
   // the message below.
   content::DOMMessageQueue message_queue;
@@ -237,16 +229,16 @@ void OobeBaseTest::WaitForGaiaPageEvent(const std::string& event) {
       "(function() {"
       "  var authenticator = $('gaia-signin').gaiaAuthHost_;"
       "  var f = function() {"
-      "    authenticator.removeEventListener('" + event + "', f);"
-      "    window.domAutomationController.send('Done');"
+      "    authenticator.removeEventListener('ready', f);"
+      "    window.domAutomationController.send('GaiaReady');"
       "  };"
-      "  authenticator.addEventListener('" + event + "', f);"
+      "  authenticator.addEventListener('ready', f);"
       "})();");
 
   std::string message;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&message));
-  } while (message != "\"Done\"");
+  } while (message != "\"GaiaReady\"");
 }
 
 void OobeBaseTest::WaitForSigninScreen() {
