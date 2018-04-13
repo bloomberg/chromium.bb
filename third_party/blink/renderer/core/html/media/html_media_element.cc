@@ -2601,6 +2601,11 @@ void HTMLMediaElement::enterPictureInPicture() {
     GetWebMediaPlayer()->EnterPictureInPicture();
 }
 
+void HTMLMediaElement::exitPictureInPicture() {
+  if (GetWebMediaPlayer())
+    GetWebMediaPlayer()->ExitPictureInPicture();
+}
+
 double HTMLMediaElement::EffectiveMediaVolume() const {
   if (muted_)
     return 0;

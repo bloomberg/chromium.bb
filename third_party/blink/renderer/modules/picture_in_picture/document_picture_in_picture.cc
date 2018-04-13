@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_controller_impl.h"
 
 namespace blink {
@@ -40,7 +41,9 @@ ScriptPromise DocumentPictureInPicture::exitPictureInPicture(
         DOMException::Create(kInvalidStateError, kNoPictureInPictureElement));
   }
 
-  // TODO(crbug.com/806249): Call element.exitPictureInPicture().
+  // TODO(crbug.com/806249): Check element is a video element.
+  // TODO(crbug.com/806249): Returns callback in promise.
+  ToHTMLVideoElement(picture_in_picture_element)->exitPictureInPicture();
 
   controller.OnClosePictureInPictureWindow();
 
