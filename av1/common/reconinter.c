@@ -42,16 +42,12 @@ static INLINE int allow_warp(const MB_MODE_INFO *const mbmi,
 
   *final_warp_params = default_warp_params;
 
-  if (mbmi->wm_params[0].invalid) return 0;
-  if (gm_params->invalid) return 0;
+  if (build_for_obmc) return 0;
 
-  if (warp_types->local_warp_allowed) {
-    if (!build_for_obmc) {
-      memcpy(final_warp_params, &mbmi->wm_params[0],
-             sizeof(*final_warp_params));
-      return 1;
-    }
-  } else if (warp_types->global_warp_allowed && !build_for_obmc) {
+  if (warp_types->local_warp_allowed && !mbmi->wm_params[0].invalid) {
+    memcpy(final_warp_params, &mbmi->wm_params[0], sizeof(*final_warp_params));
+    return 1;
+  } else if (warp_types->global_warp_allowed && !gm_params->invalid) {
     memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
     return 1;
   }
