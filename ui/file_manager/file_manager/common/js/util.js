@@ -659,10 +659,12 @@ util.isFakeEntry = function(entry) {
 
 /**
  * Obtains whether an entry is the root directory of a Team Drive.
- * @param {(!Entry|!FakeEntry)} entry Entry or a fake entry.
+ * @param {(!Entry|!FakeEntry)|null} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is root of a Team Drive.
  */
 util.isTeamDriveRoot = function(entry) {
+  if (entry === null)
+    return false;
   if (!entry.fullPath)
     return false;
   var tree = entry.fullPath.split('/');
