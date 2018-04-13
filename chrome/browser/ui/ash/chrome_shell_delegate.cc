@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/arc/intent_helper/arc_external_protocol_dialog.h"
 #include "chrome/browser/chromeos/ash_config.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
-#include "chrome/browser/chromeos/display/display_prefs.h"
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -155,15 +154,11 @@ void ChromeShellDelegate::PreInit() {
   if (chromeos::GetAshConfig() == ash::Config::MASH)
     return;
 
-  bool first_run_after_boot = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kFirstExecAfterBoot);
-  display_prefs_ = std::make_unique<chromeos::DisplayPrefs>(
-      g_browser_process->local_state());
-  // TODO(stevenjb): Move this to ash::Shell which will call
-  // LoadDisplayPreferences asynchronously when it receives local state.
-  display_prefs_->LoadDisplayPreferences(first_run_after_boot);
-  // Object owns itself, and deletes itself when Observer::OnShutdown is called:
+  // Object owns itself and deletes itself in OnWindowTreeHostManagerShutdown().
+  // Setup is done in OnShellInitialized() so this needs to be constructed after
+  // Shell is constructed but before OnShellInitialized() is called.
   new policy::DisplayRotationDefaultHandler();
+
   // Set the observer now so that we can save the initial state
   // in Shell::Init.
   display_configuration_observer_.reset(
