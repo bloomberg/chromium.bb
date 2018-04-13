@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_external_updater.h"
 #include "chrome/browser/chromeos/extensions/external_cache_impl.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -42,7 +43,6 @@
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -307,9 +307,10 @@ void KioskAppManager::InitSession(Profile* profile,
     // set here is to be able to properly restore session if the session is
     // restarted - e.g. due to crash. For example, this will ensure restarted
     // app session restores auto-launched state.
-    DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
-        cryptohome::Identification(
-            user_manager::UserManager::Get()->GetActiveUser()->GetAccountId()),
+    chromeos::UserSessionManager::GetInstance()->SetSwitchesForUser(
+        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
+        chromeos::UserSessionManager::CommandLineSwitchesType::
+            kPolicyAndFlagsAndKioskControl,
         flags);
   }
 
