@@ -30,6 +30,9 @@ The process of calculating styles for the elements is broken into 3 phases:
 
 A catalogue of the classes involved. Read their class docs.
 
+The following are long-lived objects that remain static during the calculation
+of each element's style.
+
 * [`Element`](https://cs.chromium.org/?q=symbol:%5Eblink::Element$) See also
 [dom/README.md](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/dom/README.md)
 * [`TreeScope`](https://cs.chromium.org/?q=symbol:%5Eblink::TreeScope$)
@@ -45,6 +48,10 @@ for this scope. See
 * [`StyleRule`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleRule$)
 * [`RuleData`](https://cs.chromium.org/?q=symbol:%5Eblink::RuleData$)
 * [`RuleSet`](https://cs.chromium.org/?q=symbol:%5Eblink::RuleSet$)
+
+The following are short-lived objects that are used when computing a single
+element's style.
+
 * [`ElementResolveContext`](https://cs.chromium.org/?q=symbol:%5Eblink::ElementResolveContext$)
 * [`StyleResolverState`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolverState$)
 * [`MatchRequest`](https://cs.chromium.org/?q=symbol:%5Eblink::MatchRequest$)
@@ -69,9 +76,7 @@ selector and chooses which of these maps to hold this `RuleData`. E.g. the
 selector `p.cname`'s right-most simple selector matches against `class="cname"`,
 so this is added to the `ClassRules` map with a key of `"cname"`.
 
-When rules that cross tree-boundaries (e.g. rules for styling into shadow trees)
-are added, the scope in which they occurred is added to the per-document list of
-tree-boundary-crossing scopes.
+At the end of this process, each `TreeScope` in the document has a `ScopedStyleResolver` containing all of the style rules defined directly in that scope, partitioned into various `RuleSet`s.
 
 
 # Calculating styles for each element - WIP
@@ -148,28 +153,34 @@ splits into two cases.
 
 #### [`MatchHostRules`](https://cs.chromium.org/?q=symbol:%5Eblink::MatchHostRules$)
 
-This handles the `:host` and `:host-context()` pseudo classes. This does nothing
-if the element in question is not in a shadow tree. These rules are gathered in
-the `ShadowHostRules` list in each `RuleSet`. `ScopedStyleResolver` associated
-with this shadow tree which creates a `MatchRequest`.
+This method matches :host and :host-context rules for shadow host elements.
+This does nothing if the element in question is not a shadow host.
+If it is a shadow host,
+it examines the `ScopedStyleResolver` of its shadow root.
+Any host related rules will be in the `ShadowHostRules` list of that `ScopedStyleResolver`
 
 
 #### [`MatchScopedRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchScopedRules$)
 
-This method considers the scope directly containing the element and each of the
-scopes in
-[`GetDocument()`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::GetDocument$)`.`[`GetStyleEngine()`](https://cs.chromium.org/?q=symbol:%5Eblink::Document::GetStyleEngine$).[`TreeBoundaryCrossingScopes()`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleEngine::TreeBoundaryCrossingScopes$). It
-considers them in the order returned from `TreeBoundaryCrossingScopes`. If the
-directly-containing scope is not in that list it is considered last. For the
-scope directly containing the element it calls
-[`MatchElementScopeRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchElementScopeRules$)
-for others it calls
-`scope.`[`GetScopedStyleResolver()`](https://cs.chromium.org/?q=symbol:%5Eblink::TreeScope::GetScopedStyleResolver$)`->`[`CollectMatchingTreeBoundaryCrossingRules()`](https://cs.chromium.org/?q=symbol:%5Eblink::ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules$). The
-difference is that `MatchElementScopeRules` calls
-[`CollectMatchingTreeBoundaryCrossingRules`](https://cs.chromium.org/?q=symbol:%5Eblink::ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules$)
-on the scope's style resolver but also calls
-[`CollectMatchingAuthorRules`](https://cs.chromium.org/?q=symbol:%5Eblink::ScopedStyleResolver::CollectMatchingAuthorRules$).
+For V1 Shadow DOM, this simply calls 3 functions explained below.
 
+##### ['MatchSlottedRules'](https://cs.chromium.org/?q=symbol:%5Eblink::MatchSlottedRules)
+
+This matches `::slotted` selectors.
+It matches rules in the element's slot's scope.
+If that slot is itself slotted it will match rules in the slot's slot's scope and so on.
+The result is that it considers a chain of scopes descending from the element's own scope.
+
+##### ['MatchElementScopeRules'](https://cs.chromium.org/?q=symbol:%5Eblink::MatchElementScopeRules)
+
+This matches rules from the element's scope.
+The selectors may cross shadow boundaries during matching,
+like for :host-context.
+
+##### ['MatchPseudoPartRules'](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchPseudoPartRules)
+
+This matches `::part` selectors.
+It looks in ancestor scopes as far as part mapping requires.
 
 #### <a name="CollectMatchingRulesForList"></a>[`CollectMatchingRulesForList`](https://cs.chromium.org/?q=symbol:%5Eblink::ElementRuleCollector::CollectMatchingRulesForList$) - testing some rules against an element
 
