@@ -6,12 +6,12 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/platform/autoplay.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_error.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
@@ -69,6 +69,11 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
   }
 
   void SetError(MediaError* err) { Media()->MediaEngineError(err); }
+
+  void SimulateHighMediaEngagement() {
+    Media()->GetDocument().GetPage()->AddAutoplayFlags(
+        mojom::blink::kAutoplayFlagHighMediaEngagement);
+  }
 
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -241,7 +246,6 @@ TEST_P(HTMLMediaElementTest, AutoplayInitiated_DocumentActivation_Low_Gesture) {
   RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  Media()->GetDocument().GetPage()->SetHasHighMediaEngagement(false);
   Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
 
   Media()->Play();
@@ -258,7 +262,7 @@ TEST_P(HTMLMediaElementTest,
   RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  Media()->GetDocument().GetPage()->SetHasHighMediaEngagement(true);
+  SimulateHighMediaEngagement();
   Frame::NotifyUserActivation(Media()->GetDocument().GetFrame());
 
   Media()->Play();
@@ -275,7 +279,7 @@ TEST_P(HTMLMediaElementTest,
   RuntimeEnabledFeatures::SetMediaEngagementBypassAutoplayPoliciesEnabled(true);
   Media()->GetDocument().GetSettings()->SetAutoplayPolicy(
       AutoplayPolicy::Type::kDocumentUserActivationRequired);
-  Media()->GetDocument().GetPage()->SetHasHighMediaEngagement(true);
+  SimulateHighMediaEngagement();
 
   Media()->Play();
 

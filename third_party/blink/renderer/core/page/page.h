@@ -321,9 +321,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   ukm::UkmRecorder* GetUkmRecorder() override;
   int64_t GetUkmSourceId() override;
 
-  void SetHasHighMediaEngagement(bool value);
+  void AddAutoplayFlags(int32_t flags);
 
-  bool HasHighMediaEngagement() const;
+  int32_t AutoplayFlags() const;
 
  private:
   friend class ScopedPagePauser;
@@ -416,7 +416,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   std::unique_ptr<PageScheduler> page_scheduler_;
 
-  bool has_high_media_engagement_;
+  int32_t autoplay_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };

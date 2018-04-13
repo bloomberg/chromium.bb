@@ -17,7 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/platform/media_engagement.mojom.h"
+#include "third_party/blink/public/platform/autoplay.mojom.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
@@ -29,9 +29,10 @@ namespace {
 
 void SendEngagementLevelToFrame(const url::Origin& origin,
                                 content::RenderFrameHost* render_frame_host) {
-  blink::mojom::MediaEngagementClientAssociatedPtr client;
+  blink::mojom::AutoplayConfigurationClientAssociatedPtr client;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
-  client->SetHasHighMediaEngagement(origin);
+  client->AddAutoplayFlags(origin,
+                           blink::mojom::kAutoplayFlagHighMediaEngagement);
 }
 
 }  // namespace.

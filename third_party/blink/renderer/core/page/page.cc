@@ -168,7 +168,7 @@ Page::Page(PageClients& page_clients)
       subframe_count_(0),
       next_related_page_(this),
       prev_related_page_(this),
-      has_high_media_engagement_(false) {
+      autoplay_flags_(0) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 }
@@ -833,12 +833,12 @@ int64_t Page::GetUkmSourceId() {
   return ToLocalFrame(frame)->GetDocument()->UkmSourceID();
 }
 
-void Page::SetHasHighMediaEngagement(bool value) {
-  has_high_media_engagement_ = value;
+void Page::AddAutoplayFlags(int32_t value) {
+  autoplay_flags_ = value;
 }
 
-bool Page::HasHighMediaEngagement() const {
-  return has_high_media_engagement_;
+int32_t Page::AutoplayFlags() const {
+  return autoplay_flags_;
 }
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}
