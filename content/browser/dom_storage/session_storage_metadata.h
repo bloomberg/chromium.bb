@@ -46,14 +46,16 @@ class CONTENT_EXPORT SessionStorageMetadata {
     // The key prefix for the map data (e.g. "map-2-").
     const std::vector<uint8_t>& KeyPrefix() const { return key_prefix_; }
 
+    // The number of the map as bytes (e.g. "2").
+    const std::vector<uint8_t>& MapNumberAsBytes() const {
+      return number_as_bytes_;
+    }
+
    private:
     friend class base::RefCounted<MapData>;
     friend class SessionStorageMetadata;
     ~MapData();
 
-    const std::vector<uint8_t>& MapNumberAsBytes() const {
-      return number_as_bytes_;
-    }
     void IncReferenceCount() { ++reference_count_; }
     void DecReferenceCount() { --reference_count_; }
 
