@@ -63,14 +63,6 @@ IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, InvokeUi_softer) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      safe_browsing::kGoogleBrandedPhishingWarning,
-      {{"softer_warning", "true"}});
-  ShowAndVerifyUi();
-}
-
 IN_PROC_BROWSER_TEST_F(PasswordReuseModalWarningTest, TestBasicDialogBehavior) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

@@ -103,7 +103,7 @@ class MockPageInfoUI : public PageInfoUI {
         new PageInfoUI::SecurityDescription());
     security_description->summary_style = SecuritySummaryColor::RED;
     security_description->summary =
-        l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER);
+        l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
     security_description->details =
         l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS);
     return security_description;

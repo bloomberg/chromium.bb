@@ -71,10 +71,6 @@
 #include "chrome/browser/ui/webui/certificate_manager_localized_strings_provider.h"
 #endif
 
-#if defined(SAFE_BROWSING_DB_LOCAL)
-#include "components/safe_browsing/password_protection/password_protection_service.h"
-#endif
-
 namespace settings {
 namespace {
 
@@ -458,26 +454,13 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
 #endif
 
 void AddChangePasswordStrings(content::WebUIDataSource* html_source) {
-#if defined(SAFE_BROWSING_DB_LOCAL)
-  bool show_softer_warning =
-      safe_browsing::PasswordProtectionService::ShouldShowSofterWarning();
-
-  auto title_string_id = show_softer_warning
-                             ? IDS_SETTINGS_CHANGE_PASSWORD_TITLE_SOFTER
-                             : IDS_SETTINGS_CHANGE_PASSWORD_TITLE;
   LocalizedString localized_strings[] = {
-      {"changePasswordPageTitle", title_string_id},
+      {"changePasswordPageTitle", IDS_SETTINGS_CHANGE_PASSWORD_TITLE},
       {"changePasswordPageDetails", IDS_SETTINGS_CHANGE_PASSWORD_DETAIL},
       {"changePasswordPageButton", IDS_SETTINGS_CHANGE_PASSWORD_BUTTON},
   };
-
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
-
-  const std::string icon_id =
-      show_softer_warning ? "cr:security" : "cr:warning";
-  html_source->AddString("changePasswordPageIcon", icon_id);
-#endif
 }
 
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,

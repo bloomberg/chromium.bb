@@ -365,9 +365,6 @@
     <!-- Password Protection -->
     <if expr="not is_android">
       <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if user has reuse their google password on current website.">
-        This site may have just stolen your password
-      </message>
-      <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY_SOFTER" desc="A one-line summary at the top of the Page Info bubble (which shows when you click the security indicator) if user has reuse their google password on current website.">
         Your password may be compromised
       </message>
       <if expr="_google_chrome">
