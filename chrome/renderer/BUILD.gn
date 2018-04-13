@@ -102,6 +102,8 @@ static_library("renderer") {
     "url_loader_throttle_provider_impl.h",
     "web_apps.cc",
     "web_apps.h",
+    "websocket_handshake_throttle_provider_impl.cc",
+    "websocket_handshake_throttle_provider_impl.h",
     "worker_content_settings_client.cc",
     "worker_content_settings_client.h",
   ]

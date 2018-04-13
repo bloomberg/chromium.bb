@@ -69,6 +69,11 @@ class CORE_EXPORT WorkerShadowPage : public WebFrameClient {
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
 
+  // TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+  // default (https://crbug.com/825740).
+  std::unique_ptr<WebSocketHandshakeThrottle> CreateWebSocketHandshakeThrottle()
+      override;
+
   Document* GetDocument() { return main_frame_->GetFrame()->GetDocument(); }
   WebSettings* GetSettings() { return web_view_->GetSettings(); }
   WebDocumentLoader* DocumentLoader() {

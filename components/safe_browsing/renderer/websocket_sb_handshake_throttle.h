@@ -24,12 +24,12 @@ namespace safe_browsing {
 class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
                                      public mojom::UrlCheckNotifier {
  public:
-  explicit WebSocketSBHandshakeThrottle(mojom::SafeBrowsing* safe_browsing);
+  WebSocketSBHandshakeThrottle(mojom::SafeBrowsing* safe_browsing,
+                               int render_frame_id);
   ~WebSocketSBHandshakeThrottle() override;
 
   void ThrottleHandshake(
       const blink::WebURL& url,
-      blink::WebLocalFrame* web_local_frame,
       blink::WebCallbacks<void, const blink::WebString&>* callbacks) override;
 
  private:
@@ -51,6 +51,7 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
                      bool showed_interstitial);
   void OnConnectionError();
 
+  const int render_frame_id_;
   GURL url_;
   blink::WebCallbacks<void, const blink::WebString&>* callbacks_;
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;

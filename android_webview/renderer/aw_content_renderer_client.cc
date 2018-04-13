@@ -18,6 +18,7 @@
 #include "android_webview/renderer/aw_render_frame_ext.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "android_webview/renderer/aw_url_loader_throttle_provider.h"
+#include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
@@ -284,12 +285,21 @@ void AwContentRendererClient::AddSupportedKeySystems(
   AwAddKeySystems(key_systems);
 }
 
+// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+// default (https://crbug.com/825740).
 std::unique_ptr<blink::WebSocketHandshakeThrottle>
 AwContentRendererClient::CreateWebSocketHandshakeThrottle() {
   if (!UsingSafeBrowsingMojoService())
     return nullptr;
+  // This is called only for Shared Worker and Service Worker that don't have a
+  // real frame, so we specify MSG_ROUTING_NONE here.
   return std::make_unique<safe_browsing::WebSocketSBHandshakeThrottle>(
-      safe_browsing_.get());
+      safe_browsing_.get(), MSG_ROUTING_NONE);
+}
+
+std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+AwContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
+  return std::make_unique<AwWebSocketHandshakeThrottleProvider>();
 }
 
 bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
@@ -355,6 +365,8 @@ void AwContentRendererClient::GetInterface(
       interface_name, std::move(interface_pipe));
 }
 
+// TODO(nhiroki): Remove this once the off-main-thread WebSocket is enabled by
+// default (https://crbug.com/825740).
 bool AwContentRendererClient::UsingSafeBrowsingMojoService() {
   if (safe_browsing_)
     return true;

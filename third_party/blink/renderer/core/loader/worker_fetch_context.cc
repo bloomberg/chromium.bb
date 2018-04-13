@@ -165,6 +165,11 @@ bool WorkerFetchContext::ShouldBlockWebSocketByMixedContentCheck(
       ToWorkerGlobalScope(global_scope_), web_context_.get(), url);
 }
 
+std::unique_ptr<WebSocketHandshakeThrottle>
+WorkerFetchContext::CreateWebSocketHandshakeThrottle() {
+  return web_context_->CreateWebSocketHandshakeThrottle();
+}
+
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     WebURLRequest::RequestContext request_context,
     network::mojom::RequestContextFrameType frame_type,

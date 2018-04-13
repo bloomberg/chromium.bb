@@ -13,6 +13,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
+#include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -102,7 +103,9 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
         url_loader_factory_info,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         direct_network_factory_info,
-    std::unique_ptr<URLLoaderThrottleProvider> throttle_provider)
+    std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
+    std::unique_ptr<WebSocketHandshakeThrottleProvider>
+        websocket_handshake_throttle_provider)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
       service_worker_container_host_info_(
@@ -111,7 +114,9 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       direct_network_loader_factory_info_(
           std::move(direct_network_factory_info)),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()),
-      throttle_provider_(std::move(throttle_provider)) {
+      throttle_provider_(std::move(throttle_provider)),
+      websocket_handshake_throttle_provider_(
+          std::move(websocket_handshake_throttle_provider)) {
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
         mojom::kBrowserServiceName,
@@ -242,6 +247,14 @@ WorkerFetchContextImpl::TakeSubresourceFilter() {
   if (!subresource_filter_builder_)
     return nullptr;
   return std::move(subresource_filter_builder_)->Build();
+}
+
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+WorkerFetchContextImpl::CreateWebSocketHandshakeThrottle() {
+  if (!websocket_handshake_throttle_provider_)
+    return nullptr;
+  return websocket_handshake_throttle_provider_->CreateThrottle(
+      parent_frame_id_);
 }
 
 void WorkerFetchContextImpl::set_service_worker_provider_id(int id) {

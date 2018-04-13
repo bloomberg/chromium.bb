@@ -1293,7 +1293,10 @@ ServiceWorkerContextClient::CreateServiceWorkerFetchContext() {
       script_url_, url_loader_factory_bundle->Clone(),
       provider_context_->provider_id(),
       GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kWorker));
+          URLLoaderThrottleProviderType::kWorker),
+      GetContentClient()
+          ->renderer()
+          ->CreateWebSocketHandshakeThrottleProvider());
 }
 
 std::unique_ptr<blink::WebServiceWorkerProvider>

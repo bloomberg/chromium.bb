@@ -109,6 +109,7 @@ class WebPresentationClient;
 class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
+class WebSocketHandshakeThrottle;
 class WebSpeechRecognizer;
 class WebString;
 class WebURL;
@@ -842,6 +843,12 @@ class BLINK_EXPORT WebFrameClient {
   // This method is used to expose the AX Tree stored in content/renderer to the
   // DOM as part of AOM Phase 4.
   virtual WebComputedAXTree* GetOrCreateWebComputedAXTree() { return nullptr; }
+
+  // WebSocket -----------------------------------------------------------
+  virtual std::unique_ptr<WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle() {
+    return nullptr;
+  }
 };
 
 }  // namespace blink

@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/renderer/layout_test/test_websocket_handshake_throttle.h"
+#include "content/shell/renderer/layout_test/test_websocket_handshake_throttle_provider.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "url/gurl.h"
+
+namespace content {
 
 namespace {
 
@@ -42,22 +46,36 @@ base::TimeDelta ExtractDelayFromUrl(const GURL& url) {
   return base::TimeDelta();
 }
 
+// A simple WebSocketHandshakeThrottle that calls callbacks->IsSuccess() after n
+// milli-seconds if the URL query contains
+// content-shell-websocket-delay-ms=n. Otherwise it calls IsSuccess()
+// immediately.
+class TestWebSocketHandshakeThrottle
+    : public blink::WebSocketHandshakeThrottle {
+ public:
+  ~TestWebSocketHandshakeThrottle() override = default;
+
+  void ThrottleHandshake(const blink::WebURL& url,
+                         Callbacks* callbacks) override {
+    DCHECK(callbacks);
+
+    // This use of Unretained is safe because this object is destroyed before
+    // |callbacks| is freed. Destroying this object prevents the timer from
+    // firing.
+    timer_.Start(FROM_HERE, ExtractDelayFromUrl(url),
+                 base::BindRepeating(&Callbacks::OnSuccess,
+                                     base::Unretained(callbacks)));
+  }
+
+ private:
+  base::OneShotTimer timer_;
+};
+
 }  // namespace
 
-namespace content {
-
-void TestWebSocketHandshakeThrottle::ThrottleHandshake(
-    const blink::WebURL& url,
-    blink::WebLocalFrame* frame,
-    Callbacks* callbacks) {
-  DCHECK(callbacks);
-
-  // This use of Unretained is safe because this object is destroyed before
-  // |callbacks| is freed. Destroying this object prevents the timer from
-  // firing.
-  timer_.Start(
-      FROM_HERE, ExtractDelayFromUrl(url),
-      base::BindRepeating(&Callbacks::OnSuccess, base::Unretained(callbacks)));
+std::unique_ptr<blink::WebSocketHandshakeThrottle>
+TestWebSocketHandshakeThrottleProvider::CreateThrottle(int render_frame_id) {
+  return std::make_unique<TestWebSocketHandshakeThrottle>();
 }
 
 }  // namespace content
