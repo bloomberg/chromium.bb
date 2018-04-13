@@ -124,9 +124,10 @@ bool CheckSecurityRequirementsBeforeRequest(
       !IsSameOriginWithAncestors(resolver->GetFrame())) {
     resolver->Reject(DOMException::Create(
         kNotAllowedError,
-        "`PasswordCredential` and `FederatedCredential` objects may only be "
-        "stored/retrieved in a document which is same-origin with all of its "
-        "ancestors."));
+        "The following credential operations can only occur in a document which"
+        " is same-origin with all of its ancestors: "
+        "storage/retrieval of 'PasswordCredential' and 'FederatedCredential', "
+        "and creation/retrieval of 'PublicKeyCredential'"));
     return false;
   }
 
@@ -427,10 +428,7 @@ ScriptPromise CredentialsContainer::get(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  auto required_origin_type =
-      options.hasFederated() || options.hasPassword()
-          ? RequiredOriginType::kSecureAndSameWithAncestors
-          : RequiredOriginType::kSecure;
+  auto required_origin_type = RequiredOriginType::kSecureAndSameWithAncestors;
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))
     return promise;
 
@@ -557,7 +555,10 @@ ScriptPromise CredentialsContainer::create(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  const auto required_origin_type = RequiredOriginType::kSecure;
+  auto required_origin_type =
+      options.hasPublicKey() ? RequiredOriginType::kSecureAndSameWithAncestors
+                             : RequiredOriginType::kSecure;
+
   if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))
     return promise;
 

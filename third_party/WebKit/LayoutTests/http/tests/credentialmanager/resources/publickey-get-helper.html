@@ -13,15 +13,16 @@ mockAuthenticator.setSignature(SIGNATURE);
 mockAuthenticator.setAuthenticatorStatus(
     webauth.mojom.AuthenticatorStatus.SUCCESS);
 let queryParams = new URLSearchParams(window.location.search);
-let relyingPartyId = queryParams.get('rpId');
-
+var relyingPartyId = queryParams.has('rpId') ? queryParams.get('rpId') : document.domain;
 var customPublicKey = {
     challenge: CHALLENGE,
     rpId: relyingPartyId,
     allowCredentials: [ACCEPTABLE_CREDENTIAL]
 };
 
+let responder =  window.opener || window.parent;
+
 navigator.credentials.get({publicKey : customPublicKey})
-  .then(r => window.opener.postMessage("SUCCESS", "*"))
-  .catch(t => window.opener.postMessage(t.name, "*"));
+  .then(r => responder.postMessage("SUCCESS", "*"))
+  .catch(t => responder.postMessage(t.name, "*"));
 </script>
