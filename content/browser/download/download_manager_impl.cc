@@ -41,6 +41,7 @@
 #include "components/download/public/common/url_download_handler_factory.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/download/blob_download_url_loader_factory_getter.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_resource_handler.h"
@@ -1304,6 +1305,8 @@ void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<network::ResourceRequest> request =
         download::CreateResourceRequest(params.get());
     GURL site_url, tab_url, tab_referrer_url;
+    network::mojom::URLLoaderFactoryPtrInfo proxy_factory_ptr_info;
+    network::mojom::URLLoaderFactoryRequest proxy_factory_request;
     auto* rfh = RenderFrameHost::FromID(params->render_process_host_id(),
                                         params->render_frame_host_routing_id());
     if (rfh) {
@@ -1313,6 +1316,15 @@ void DownloadManagerImpl::BeginDownloadInternal(
       if (entry) {
         tab_url = entry->GetURL();
         tab_referrer_url = entry->GetReferrer().url;
+      }
+      network::mojom::URLLoaderFactoryPtrInfo devtools_factory_ptr_info;
+      network::mojom::URLLoaderFactoryRequest devtools_factory_request =
+          MakeRequest(&devtools_factory_ptr_info);
+      if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
+              static_cast<RenderFrameHostImpl*>(rfh), true,
+              &devtools_factory_request)) {
+        proxy_factory_ptr_info = std::move(devtools_factory_ptr_info);
+        proxy_factory_request = std::move(devtools_factory_request);
       }
     }
 
@@ -1325,7 +1337,9 @@ void DownloadManagerImpl::BeginDownloadInternal(
     } else {
       url_loader_factory_getter =
           base::MakeRefCounted<NetworkDownloadURLLoaderFactoryGetter>(
-              storage_partition->url_loader_factory_getter());
+              storage_partition->url_loader_factory_getter(),
+              std::move(proxy_factory_ptr_info),
+              std::move(proxy_factory_request));
     }
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
