@@ -35,8 +35,6 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   //
   // Anything else is started in InitializeSandbox().
   service_manager::SandboxLinux::Options options;
-  options.has_wasm_trap_handler =
-      base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler);
   service_manager::Sandbox::Initialize(
       service_manager::SandboxTypeFromCommandLine(
           *base::CommandLine::ForCurrentProcess()),

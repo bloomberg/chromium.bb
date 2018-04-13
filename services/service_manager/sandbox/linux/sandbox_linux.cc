@@ -439,18 +439,12 @@ bool SandboxLinux::LimitAddressSpace(const std::string& process_type,
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kGpuProcess) {
       address_space_limit = 1ULL << 34;
-      if (options.has_wasm_trap_handler) {
-        // WebAssembly memory objects use a large amount of address space when
-        // trap-based bounds checks are enabled. To accomodate this, we allow
-        // the address space limit to adjust dynamically up to a certain limit.
-        // The limit is currently 4TiB, which should allow enough address space
-        // for any reasonable page. See https://crbug.com/750378.
-        address_space_limit_max = 1ULL << 42;
-      } else {
-        // If we are not using trap-based bounds checks, there's no reason to
-        // allow the address space limit to grow.
-        address_space_limit_max = address_space_limit;
-      }
+      // WebAssembly memory objects use a large amount of address space for
+      // guard regions. To accomodate this, we allow the address space limit to
+      // adjust dynamically up to a certain limit. The limit is currently 4TiB,
+      // which should allow enough address space for any reasonable page. See
+      // https://crbug.com/750378.
+      address_space_limit_max = 1ULL << 42;
     }
   }
 
