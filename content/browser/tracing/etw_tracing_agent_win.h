@@ -43,7 +43,7 @@ class EtwTracingAgent : public base::win::EtwTraceConsumerBase<EtwTracingAgent>,
   // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
-                    const Agent::StartTracingCallback& callback) override;
+                    Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
 
   // Static override of EtwTraceConsumerBase::ProcessEvent.

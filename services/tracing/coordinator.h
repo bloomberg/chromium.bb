@@ -59,15 +59,15 @@ class Coordinator : public mojom::Coordinator {
 
   // mojom::Coordinator
   void StartTracing(const std::string& config,
-                    const StartTracingCallback& callback) override;
+                    StartTracingCallback callback) override;
   void StopAndFlush(mojo::ScopedDataPipeProducerHandle stream,
-                    const StopAndFlushCallback& callback) override;
+                    StopAndFlushCallback callback) override;
   void StopAndFlushAgent(mojo::ScopedDataPipeProducerHandle stream,
                          const std::string& agent_label,
-                         const StopAndFlushCallback& callback) override;
-  void IsTracing(const IsTracingCallback& callback) override;
-  void RequestBufferUsage(const RequestBufferUsageCallback& callback) override;
-  void GetCategories(const GetCategoriesCallback& callback) override;
+                         StopAndFlushCallback callback) override;
+  void IsTracing(IsTracingCallback callback) override;
+  void RequestBufferUsage(RequestBufferUsageCallback callback) override;
+  void GetCategories(GetCategoriesCallback callback) override;
 
   // Internal methods for collecting events from agents.
   void SendStartTracingToAgent(AgentRegistry::AgentEntry* agent_entry);

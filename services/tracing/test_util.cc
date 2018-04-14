@@ -22,9 +22,9 @@ mojom::AgentPtr MockAgent::CreateAgentPtr() {
 
 void MockAgent::StartTracing(const std::string& config,
                              base::TimeTicks coordinator_time,
-                             const StartTracingCallback& cb) {
+                             StartTracingCallback cb) {
   call_stat_.push_back("StartTracing");
-  cb.Run(true);
+  std::move(cb).Run(true);
 }
 
 void MockAgent::StopAndFlush(mojom::RecorderPtr recorder) {
@@ -36,20 +36,21 @@ void MockAgent::StopAndFlush(mojom::RecorderPtr recorder) {
   }
 }
 
-void MockAgent::RequestClockSyncMarker(
-    const std::string& sync_id,
-    const RequestClockSyncMarkerCallback& cb) {
+void MockAgent::RequestClockSyncMarker(const std::string& sync_id,
+                                       RequestClockSyncMarkerCallback cb) {
   call_stat_.push_back("RequestClockSyncMarker");
+  std::move(cb).Run(base::TimeTicks(), base::TimeTicks());
 }
 
-void MockAgent::GetCategories(const GetCategoriesCallback& cb) {
+void MockAgent::GetCategories(GetCategoriesCallback cb) {
   call_stat_.push_back("GetCategories");
-  cb.Run(categories_);
+  std::move(cb).Run(categories_);
 }
 
-void MockAgent::RequestBufferStatus(const RequestBufferStatusCallback& cb) {
+void MockAgent::RequestBufferStatus(RequestBufferStatusCallback cb) {
   call_stat_.push_back("RequestBufferStatus");
-  cb.Run(trace_log_status_.event_capacity, trace_log_status_.event_count);
+  std::move(cb).Run(trace_log_status_.event_capacity,
+                    trace_log_status_.event_count);
 }
 
 }  // namespace tracing

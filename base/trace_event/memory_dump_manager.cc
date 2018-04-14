@@ -819,9 +819,9 @@ void MemoryDumpManager::SetupForTracing(
       if (is_coordinator_) {
         GetOrCreateBgTaskRunnerLocked()->PostTask(
             FROM_HERE,
-            BindRepeating(&DoGlobalDumpWithoutCallback, request_dump_function_,
-                          MemoryDumpType::PEAK_MEMORY_USAGE,
-                          trigger.level_of_detail));
+            BindOnce(&DoGlobalDumpWithoutCallback, request_dump_function_,
+                     MemoryDumpType::PEAK_MEMORY_USAGE,
+                     trigger.level_of_detail));
       }
     }
   }

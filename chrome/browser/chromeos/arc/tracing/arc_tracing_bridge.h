@@ -80,7 +80,7 @@ class ArcTracingBridge : public KeyedService,
   // tracing::mojom::Agent.
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
-                    const Agent::StartTracingCallback& callback) override;
+                    Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
 
   // Callback for QueryAvailableCategories.

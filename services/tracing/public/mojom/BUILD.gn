@@ -17,7 +17,4 @@ mojom_component("mojom") {
     "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }

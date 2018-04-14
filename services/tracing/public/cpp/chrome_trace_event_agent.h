@@ -48,14 +48,13 @@ class COMPONENT_EXPORT(TRACING_CPP) ChromeTraceEventAgent : public BaseAgent {
   // mojom::Agent
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
-                    const StartTracingCallback& callback) override;
+                    StartTracingCallback callback) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
   void RequestClockSyncMarker(
       const std::string& sync_id,
-      const Agent::RequestClockSyncMarkerCallback& callback) override;
-  void RequestBufferStatus(
-      const RequestBufferStatusCallback& callback) override;
-  void GetCategories(const GetCategoriesCallback& callback) override;
+      Agent::RequestClockSyncMarkerCallback callback) override;
+  void RequestBufferStatus(RequestBufferStatusCallback callback) override;
+  void GetCategories(GetCategoriesCallback callback) override;
 
   void OnTraceLogFlush(const scoped_refptr<base::RefCountedString>& events_str,
                        bool has_more_events);

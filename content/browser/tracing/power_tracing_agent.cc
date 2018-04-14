@@ -51,46 +51,46 @@ PowerTracingAgent::PowerTracingAgent(service_manager::Connector* connector)
 PowerTracingAgent::PowerTracingAgent() : binding_(this) {}
 PowerTracingAgent::~PowerTracingAgent() = default;
 
-void PowerTracingAgent::StartTracing(
-    const std::string& config,
-    base::TimeTicks coordinator_time,
-    const Agent::StartTracingCallback& callback) {
+void PowerTracingAgent::StartTracing(const std::string& config,
+                                     base::TimeTicks coordinator_time,
+                                     Agent::StartTracingCallback callback) {
   base::trace_event::TraceConfig trace_config(config);
   if (!trace_config.IsSystraceEnabled()) {
-    callback.Run(false /* success */);
+    std::move(callback).Run(false /* success */);
     return;
   }
 
   base::PostTaskWithTraits(
       FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
       base::BindOnce(&PowerTracingAgent::FindBattOrOnBackgroundThread,
-                     base::Unretained(this), callback));
+                     base::Unretained(this), std::move(callback)));
 }
 
 void PowerTracingAgent::FindBattOrOnBackgroundThread(
-    const Agent::StartTracingCallback& callback) {
+    Agent::StartTracingCallback callback) {
   std::string path = battor::BattOrFinder::FindBattOr();
   if (path.empty()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(callback, false /* success */));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(callback), false /* success */));
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PowerTracingAgent::StartTracingOnIOThread,
-                     base::Unretained(this), path, callback));
+                     base::Unretained(this), path, std::move(callback)));
 }
 
 void PowerTracingAgent::StartTracingOnIOThread(
     const std::string& path,
-    const Agent::StartTracingCallback& callback) {
+    Agent::StartTracingCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   battor_agent_.reset(new battor::BattOrAgent(
       path, this, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 
-  start_tracing_callback_ = callback;
+  start_tracing_callback_ = std::move(callback);
   battor_agent_->StartTracing();
 }
 
@@ -101,9 +101,9 @@ void PowerTracingAgent::OnStartTracingComplete(battor::BattOrError error) {
   if (!success)
     battor_agent_.reset();
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(start_tracing_callback_, success));
-  start_tracing_callback_.Reset();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(start_tracing_callback_), success));
 }
 
 void PowerTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
@@ -137,27 +137,28 @@ void PowerTracingAgent::OnStopTracingComplete(
 
 void PowerTracingAgent::RequestClockSyncMarker(
     const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
+    Agent::RequestClockSyncMarkerCallback callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PowerTracingAgent::RequestClockSyncMarkerOnIOThread,
-                     base::Unretained(this), sync_id, callback));
+                     base::Unretained(this), sync_id, std::move(callback)));
 }
 
 void PowerTracingAgent::RequestClockSyncMarkerOnIOThread(
     const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
+    Agent::RequestClockSyncMarkerCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // This makes sense only when the battor agent exists.
   if (!battor_agent_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(callback, base::TimeTicks(), base::TimeTicks()));
+        base::BindOnce(std::move(callback), base::TimeTicks(),
+                       base::TimeTicks()));
     return;
   }
 
-  request_clock_sync_marker_callback_ = callback;
+  request_clock_sync_marker_callback_ = std::move(callback);
   request_clock_sync_marker_start_time_ = TRACE_TIME_TICKS_NOW();
   battor_agent_->RecordClockSyncMarker(sync_id);
 }
@@ -172,11 +173,10 @@ void PowerTracingAgent::OnRecordClockSyncMarkerComplete(
   if (error != battor::BATTOR_ERROR_NONE)
     issue_start_ts = issue_end_ts = base::TimeTicks();
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(request_clock_sync_marker_callback_,
-                                         issue_start_ts, issue_end_ts));
-
-  request_clock_sync_marker_callback_.Reset();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(request_clock_sync_marker_callback_),
+                     issue_start_ts, issue_end_ts));
   request_clock_sync_marker_start_time_ = base::TimeTicks();
 }
 
@@ -185,14 +185,13 @@ void PowerTracingAgent::OnGetFirmwareGitHashComplete(
   return;
 }
 
-void PowerTracingAgent::GetCategories(
-    const Agent::GetCategoriesCallback& callback) {
-  callback.Run("");
+void PowerTracingAgent::GetCategories(Agent::GetCategoriesCallback callback) {
+  std::move(callback).Run("");
 }
 
 void PowerTracingAgent::RequestBufferStatus(
-    const Agent::RequestBufferStatusCallback& callback) {
-  callback.Run(0, 0);
+    Agent::RequestBufferStatusCallback callback) {
+  std::move(callback).Run(0, 0);
 }
 
 }  // namespace content

@@ -32,26 +32,26 @@ BaseAgent::~BaseAgent() = default;
 
 void BaseAgent::StartTracing(const std::string& config,
                              base::TimeTicks coordinator_time,
-                             const Agent::StartTracingCallback& callback) {
-  callback.Run(true /* success */);
+                             Agent::StartTracingCallback callback) {
+  std::move(callback).Run(true /* success */);
 }
 
 void BaseAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {}
 
 void BaseAgent::RequestClockSyncMarker(
     const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
+    Agent::RequestClockSyncMarkerCallback callback) {
   NOTREACHED() << "The agent claims to support explicit clock sync but does "
                << "not override BaseAgent::RequestClockSyncMarker()";
 }
 
-void BaseAgent::GetCategories(const Agent::GetCategoriesCallback& callback) {
-  callback.Run("" /* categories */);
+void BaseAgent::GetCategories(Agent::GetCategoriesCallback callback) {
+  std::move(callback).Run("" /* categories */);
 }
 
 void BaseAgent::RequestBufferStatus(
-    const Agent::RequestBufferStatusCallback& callback) {
-  callback.Run(0 /* capacity */, 0 /* count */);
+    Agent::RequestBufferStatusCallback callback) {
+  std::move(callback).Run(0 /* capacity */, 0 /* count */);
 }
 
 }  // namespace tracing
