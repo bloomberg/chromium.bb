@@ -37,16 +37,17 @@ class CrOSTracingAgent : public tracing::BaseAgent {
   // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
-                    const Agent::StartTracingCallback& callback) override;
+                    Agent::StartTracingCallback callback) override;
   void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
 
-  void StartTracingCallbackProxy(const std::string& agent_name, bool success);
+  void StartTracingCallbackProxy(Agent::StartTracingCallback callback,
+                                 const std::string& agent_name,
+                                 bool success);
   void RecorderProxy(const std::string& event_name,
                      const std::string& events_label,
                      const scoped_refptr<base::RefCountedString>& events);
 
   chromeos::DebugDaemonClient* debug_daemon_ = nullptr;
-  Agent::StartTracingCallback start_tracing_callback_;
   tracing::mojom::RecorderPtr recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSTracingAgent);

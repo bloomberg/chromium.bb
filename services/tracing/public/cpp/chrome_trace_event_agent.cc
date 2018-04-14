@@ -65,7 +65,7 @@ void ChromeTraceEventAgent::AddMetadataGeneratorFunction(
 
 void ChromeTraceEventAgent::StartTracing(const std::string& config,
                                          base::TimeTicks coordinator_time,
-                                         const StartTracingCallback& callback) {
+                                         StartTracingCallback callback) {
   DCHECK(!recorder_);
 #if defined(__native_client__)
   // NaCl and system times are offset by a bit, so subtract some time from
@@ -80,7 +80,7 @@ void ChromeTraceEventAgent::StartTracing(const std::string& config,
     enabled_tracing_modes_ |= base::trace_event::TraceLog::FILTERING_MODE;
   base::trace_event::TraceLog::GetInstance()->SetEnabled(
       trace_config, enabled_tracing_modes_);
-  callback.Run(true);
+  std::move(callback).Run(true);
 }
 
 void ChromeTraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
@@ -101,28 +101,27 @@ void ChromeTraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
 
 void ChromeTraceEventAgent::RequestClockSyncMarker(
     const std::string& sync_id,
-    const Agent::RequestClockSyncMarkerCallback& callback) {
+    Agent::RequestClockSyncMarkerCallback callback) {
 #if defined(OS_ANDROID)
   base::trace_event::TraceLog::GetInstance()->AddClockSyncMetadataEvent();
-  callback.Run(base::TimeTicks(), base::TimeTicks());
+  std::move(callback).Run(base::TimeTicks(), base::TimeTicks());
 #else
   NOTREACHED();
 #endif
 }
 
 void ChromeTraceEventAgent::RequestBufferStatus(
-    const RequestBufferStatusCallback& callback) {
+    RequestBufferStatusCallback callback) {
   base::trace_event::TraceLogStatus status =
       base::trace_event::TraceLog::GetInstance()->GetStatus();
-  callback.Run(status.event_capacity, status.event_count);
+  std::move(callback).Run(status.event_capacity, status.event_count);
 }
 
-void ChromeTraceEventAgent::GetCategories(
-    const GetCategoriesCallback& callback) {
+void ChromeTraceEventAgent::GetCategories(GetCategoriesCallback callback) {
   std::vector<std::string> category_vector;
   base::trace_event::TraceLog::GetInstance()->GetKnownCategoryGroups(
       &category_vector);
-  callback.Run(base::JoinString(category_vector, ","));
+  std::move(callback).Run(base::JoinString(category_vector, ","));
 }
 
 void ChromeTraceEventAgent::OnTraceLogFlush(

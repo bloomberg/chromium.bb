@@ -55,19 +55,18 @@ CastTracingAgent::CastTracingAgent(service_manager::Connector* connector)
 CastTracingAgent::~CastTracingAgent() = default;
 
 // tracing::mojom::Agent. Called by Mojo internals on the UI thread.
-void CastTracingAgent::StartTracing(
-    const std::string& config,
-    base::TimeTicks coordinator_time,
-    const Agent::StartTracingCallback& callback) {
+void CastTracingAgent::StartTracing(const std::string& config,
+                                    base::TimeTicks coordinator_time,
+                                    Agent::StartTracingCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::trace_event::TraceConfig trace_config(config);
 
   if (!trace_config.IsSystraceEnabled()) {
-    callback.Run(false /* success */);
+    std::move(callback).Run(false /* success */);
     return;
   }
 
-  start_tracing_callback_ = callback;
+  start_tracing_callback_ = std::move(callback);
 
   task_runner_->PostTask(FROM_HERE,
                          base::BindOnce(&CastTracingAgent::StartTracingOnIO,
@@ -86,9 +85,8 @@ void CastTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
                                         base::ThreadTaskRunnerHandle::Get()));
 }
 
-void CastTracingAgent::GetCategories(
-    const Agent::GetCategoriesCallback& callback) {
-  callback.Run(GetAllTracingCategories());
+void CastTracingAgent::GetCategories(Agent::GetCategoriesCallback callback) {
+  std::move(callback).Run(GetAllTracingCategories());
 }
 
 void CastTracingAgent::StartTracingOnIO(
@@ -116,7 +114,8 @@ void CastTracingAgent::FinishStartOnIO(
 
 void CastTracingAgent::FinishStart(chromecast::SystemTracer::Status status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  start_tracing_callback_.Run(status == chromecast::SystemTracer::Status::OK);
+  std::move(start_tracing_callback_)
+      .Run(status == chromecast::SystemTracer::Status::OK);
 }
 
 void CastTracingAgent::StopAndFlushOnIO(

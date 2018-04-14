@@ -59,14 +59,13 @@ EtwTracingAgent::~EtwTracingAgent() {
   g_etw_tracing_agent = nullptr;
 }
 
-void EtwTracingAgent::StartTracing(
-    const std::string& config,
-    base::TimeTicks coordinator_time,
-    const Agent::StartTracingCallback& callback) {
+void EtwTracingAgent::StartTracing(const std::string& config,
+                                   base::TimeTicks coordinator_time,
+                                   Agent::StartTracingCallback callback) {
   base::trace_event::TraceConfig trace_config(config);
   // Activate kernel tracing.
   if (!trace_config.IsSystraceEnabled() || !StartKernelSessionTracing()) {
-    callback.Run(false /* success */);
+    std::move(callback).Run(false /* success */);
     return;
   }
   is_tracing_ = true;
@@ -77,9 +76,9 @@ void EtwTracingAgent::StartTracing(
   // Tracing agents, e.g. this, live as long as BrowserMainLoop lives and so
   // using base::Unretained here is safe.
   thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&EtwTracingAgent::TraceAndConsumeOnThread,
-                            base::Unretained(this)));
-  callback.Run(true /* success */);
+      FROM_HERE, base::BindOnce(&EtwTracingAgent::TraceAndConsumeOnThread,
+                                base::Unretained(this)));
+  std::move(callback).Run(true /* success */);
 }
 
 void EtwTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
@@ -93,7 +92,7 @@ void EtwTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
   // BrowserMainLoop lives and so using base::Unretained here is safe.
   thread_.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&EtwTracingAgent::FlushOnThread, base::Unretained(this)));
+      base::BindOnce(&EtwTracingAgent::FlushOnThread, base::Unretained(this)));
 }
 
 void EtwTracingAgent::OnStopSystemTracingDone(const std::string& output) {

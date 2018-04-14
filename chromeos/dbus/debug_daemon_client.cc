@@ -284,7 +284,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   std::string GetTraceEventLabel() override { return kCrOSTraceLabel; }
 
   void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
-                         const StartAgentTracingCallback& callback) override {
+                         StartAgentTracingCallback callback) override {
     dbus::MethodCall method_call(
         debugd::kDebugdInterface,
         debugd::kSystraceStart);
@@ -298,11 +298,11 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr()));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, GetTracingAgentName(), true /* success */));
+        FROM_HERE, base::BindOnce(std::move(callback), GetTracingAgentName(),
+                                  true /* success */));
   }
 
-  void StopAgentTracing(const StopAgentTracingCallback& callback) override {
+  void StopAgentTracing(StopAgentTracingCallback callback) override {
     DCHECK(stop_agent_tracing_task_runner_);
     if (pipe_reader_ != NULL) {
       LOG(ERROR) << "Busy doing StopSystemTracing";
@@ -311,7 +311,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
 
     pipe_reader_ =
         std::make_unique<PipeReader>(stop_agent_tracing_task_runner_);
-    callback_ = callback;
+    callback_ = std::move(callback);
     base::ScopedFD pipe_write_end = pipe_reader_->StartIO(base::BindOnce(
         &DebugDaemonClientImpl::OnIOComplete, weak_ptr_factory_.GetWeakPtr()));
 
@@ -668,10 +668,9 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       // then pipe_reader_ can be NULL, see OnIOComplete().
       if (pipe_reader_.get()) {
         pipe_reader_.reset();
-        base::ResetAndReturn(&callback_)
-            .Run(GetTracingAgentName(), GetTraceEventLabel(),
-                 scoped_refptr<base::RefCountedString>(
-                     new base::RefCountedString()));
+        std::move(callback_).Run(GetTracingAgentName(), GetTraceEventLabel(),
+                                 scoped_refptr<base::RefCountedString>(
+                                     new base::RefCountedString()));
       }
     }
     // NB: requester is signaled when i/o completes
@@ -690,9 +689,8 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     pipe_reader_.reset();
     std::string pipe_data =
         result.has_value() ? std::move(result).value() : std::string();
-    base::ResetAndReturn(&callback_)
-        .Run(GetTracingAgentName(), GetTraceEventLabel(),
-             base::RefCountedString::TakeString(&pipe_data));
+    std::move(callback_).Run(GetTracingAgentName(), GetTraceEventLabel(),
+                             base::RefCountedString::TakeString(&pipe_data));
   }
 
   void OnSetOomScoreAdj(const SetOomScoreAdjCallback& callback,

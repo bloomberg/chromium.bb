@@ -38,13 +38,12 @@ class MockAgent : public mojom::Agent {
   // mojom::Agent
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
-                    const StartTracingCallback& cb) override;
+                    StartTracingCallback cb) override;
   void StopAndFlush(mojom::RecorderPtr recorder) override;
-  void RequestClockSyncMarker(
-      const std::string& sync_id,
-      const RequestClockSyncMarkerCallback& cb) override;
-  void GetCategories(const GetCategoriesCallback& cb) override;
-  void RequestBufferStatus(const RequestBufferStatusCallback& cb) override;
+  void RequestClockSyncMarker(const std::string& sync_id,
+                              RequestClockSyncMarkerCallback cb) override;
+  void GetCategories(GetCategoriesCallback cb) override;
+  void RequestBufferStatus(RequestBufferStatusCallback cb) override;
 
   mojo::Binding<mojom::Agent> binding_;
   std::vector<std::string> call_stat_;
