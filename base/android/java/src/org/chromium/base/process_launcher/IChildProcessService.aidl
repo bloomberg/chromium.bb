@@ -20,4 +20,7 @@ interface IChildProcessService {
 
   // Forcefully kills the child process.
   oneway void forceKill();
+
+  // Notifies about memory pressure. The argument is MemoryPressureLevel enum.
+  oneway void onMemoryPressure(int pressure);
 }

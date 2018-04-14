@@ -69,7 +69,7 @@ import java.util.concurrent.TimeUnit;
  *    around).
  *
  * 2. Services (GPU, renderers) don't poll, instead they get additional pressure signals
- *    from the main process (this is TBD).
+ *    from the main process.
  *
  * NOTE: except for notifyCurrentPressure() this class should only be used on UiThread
  *       as defined by ThreadUtils (which is Android main thread for Chrome, but can be
@@ -184,6 +184,15 @@ public class MemoryPressureMonitor {
         } else {
             ThreadUtils.postOnUiThread(() -> notifyPressureOnUiThread(pressure));
         }
+    }
+
+    /**
+     * Last pressure that was reported to MemoryPressureListener.
+     * Returns MemoryPressureLevel.NONE if nothing was reported yet.
+     */
+    public @MemoryPressureLevel int getLastReportedPressure() {
+        ThreadUtils.assertOnUiThread();
+        return mLastReportedPressure;
     }
 
     private void notifyPressureOnUiThread(@MemoryPressureLevel int pressure) {

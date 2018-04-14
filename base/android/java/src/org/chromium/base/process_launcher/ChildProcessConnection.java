@@ -15,8 +15,12 @@ import android.os.Looper;
 import android.os.RemoteException;
 
 import org.chromium.base.Log;
+import org.chromium.base.MemoryPressureLevel;
+import org.chromium.base.MemoryPressureListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.memory.MemoryPressureCallback;
 
 import java.util.List;
 
@@ -222,6 +226,8 @@ public class ChildProcessConnection {
 
     // Indicate |kill()| was called to intentionally kill this process.
     private volatile boolean mKilledByUs;
+
+    private MemoryPressureCallback mMemoryPressureCallback;
 
     public ChildProcessConnection(Context context, ComponentName serviceName, boolean bindToCaller,
             boolean bindAsExternalService, Bundle serviceBundle) {
@@ -431,6 +437,12 @@ public class ChildProcessConnection {
 
             mServiceConnectComplete = true;
 
+            if (mMemoryPressureCallback == null) {
+                final MemoryPressureCallback callback = this ::onMemoryPressure;
+                ThreadUtils.postOnUiThread(() -> MemoryPressureListener.addCallback(callback));
+                mMemoryPressureCallback = callback;
+            }
+
             // Run the setup if the connection parameters have already been provided. If
             // not, doConnectionSetup() will be called from setupConnection().
             if (mConnectionParams != null) {
@@ -528,6 +540,12 @@ public class ChildProcessConnection {
         mInitialBinding.unbind();
         // Note that we don't update the waived bound only state here as to preserve the state when
         // disconnected.
+
+        if (mMemoryPressureCallback != null) {
+            final MemoryPressureCallback callback = mMemoryPressureCallback;
+            ThreadUtils.postOnUiThread(() -> MemoryPressureListener.removeCallback(callback));
+            mMemoryPressureCallback = null;
+        }
     }
 
     public boolean isInitialBindingBound() {
@@ -666,5 +684,18 @@ public class ChildProcessConnection {
     @VisibleForTesting
     protected Handler getLauncherHandler() {
         return mLauncherHandler;
+    }
+
+    private void onMemoryPressure(@MemoryPressureLevel int pressure) {
+        mLauncherHandler.post(() -> onMemoryPressureOnLauncherThread(pressure));
+    }
+
+    private void onMemoryPressureOnLauncherThread(@MemoryPressureLevel int pressure) {
+        if (mService == null) return;
+        try {
+            mService.onMemoryPressure(pressure);
+        } catch (RemoteException ex) {
+            // Ignore
+        }
     }
 }

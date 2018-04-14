@@ -75,7 +75,7 @@ public class MemoryPressureListener {
      * Removes previously added memory pressure callback.
      * This method should be called only on ThreadUtils.UiThread.
      */
-    public void removeCallback(MemoryPressureCallback callback) {
+    public static void removeCallback(MemoryPressureCallback callback) {
         sCallbacks.removeObserver(callback);
     }
 
