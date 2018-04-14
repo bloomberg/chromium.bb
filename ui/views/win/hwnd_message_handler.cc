@@ -2334,28 +2334,21 @@ void HWNDMessageHandler::OnSysCommand(UINT notification_code,
                          ((notification_code & sc_mask) == SC_MOVE) ||
                          ((notification_code & sc_mask) == SC_MAXIMIZE)))
     return;
-
-  const bool window_control_action =
-      (notification_code & sc_mask) == SC_MINIMIZE ||
-      (notification_code & sc_mask) == SC_MAXIMIZE ||
-      (notification_code & sc_mask) == SC_RESTORE;
-  const bool custom_controls_frame_mode =
-      delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN_NO_CONTROLS ||
-      delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN;
-  if (custom_controls_frame_mode && window_control_action)
-    delegate_->ResetWindowControls();
-
   if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
-    const bool window_bounds_change =
-        (notification_code & sc_mask) == SC_MOVE ||
-        (notification_code & sc_mask) == SC_SIZE;
-    if (window_bounds_change || window_control_action)
+    if ((notification_code & sc_mask) == SC_MINIMIZE ||
+        (notification_code & sc_mask) == SC_MAXIMIZE ||
+        (notification_code & sc_mask) == SC_RESTORE) {
+      delegate_->ResetWindowControls();
       DestroyAXSystemCaret();
-    if (window_bounds_change && !IsVisible()) {
-      // Circumvent ScopedRedrawLocks and force visibility before entering a
-      // resize or move modal loop to get continuous sizing/moving feedback.
-      SetWindowLong(hwnd(), GWL_STYLE,
-                    GetWindowLong(hwnd(), GWL_STYLE) | WS_VISIBLE);
+    } else if ((notification_code & sc_mask) == SC_MOVE ||
+               (notification_code & sc_mask) == SC_SIZE) {
+      if (!IsVisible()) {
+        // Circumvent ScopedRedrawLocks and force visibility before entering a
+        // resize or move modal loop to get continuous sizing/moving feedback.
+        SetWindowLong(hwnd(), GWL_STYLE,
+                      GetWindowLong(hwnd(), GWL_STYLE) | WS_VISIBLE);
+      }
+      DestroyAXSystemCaret();
     }
   }
 
