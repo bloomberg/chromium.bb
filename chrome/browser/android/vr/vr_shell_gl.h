@@ -429,6 +429,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   scoped_refptr<gl::SurfaceTexture> content_overlay_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> ui_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> webvr_surface_texture_;
+  float webvr_surface_texture_uv_transform_[16];
   std::unique_ptr<gl::ScopedJavaSurface> content_surface_;
   std::unique_ptr<gl::ScopedJavaSurface> ui_surface_;
   std::unique_ptr<gl::ScopedJavaSurface> content_overlay_surface_;

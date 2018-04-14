@@ -94,7 +94,8 @@ class UiElementRenderer {
       float opacity,
       const gfx::Transform& model_view_proj_matrix);
 
-  VIRTUAL_FOR_MOCKS void DrawWebVr(int texture_data_handle, float y_sign);
+  VIRTUAL_FOR_MOCKS void DrawWebVr(int texture_data_handle,
+                                   const float (&uv_transform)[16]);
 
   VIRTUAL_FOR_MOCKS void DrawShadow(
       const gfx::Transform& model_view_proj_matrix,

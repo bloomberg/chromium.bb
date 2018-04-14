@@ -128,6 +128,11 @@ constexpr int kNumSamplesPerPixelWebVr = 1;
 
 constexpr float kRedrawSceneAngleDeltaDegrees = 1.0;
 
+// If we're not using the SurfaceTexture, use this matrix instead of
+// webvr_surface_texture_uv_transform_ for drawing to GVR.
+constexpr float kWebVrIdentityUvTransform[16] = {1, 0, 0, 0, 0, 1, 0, 0,
+                                                 0, 0, 1, 0, 0, 0, 0, 1};
+
 gfx::Transform PerspectiveMatrixFromView(const gvr::Rectf& fov,
                                          float z_near,
                                          float z_far) {
@@ -930,6 +935,15 @@ void VrShellGl::OnWebVRFrameAvailable() {
   int frame_index = pending_frames_.front();
   TRACE_EVENT1("gpu", "VrShellGl::OnWebVRFrameAvailable", "frame", frame_index);
   pending_frames_.pop();
+
+  // The usual transform matrix we get for the Surface flips Y, so we need to
+  // apply it in the copy shader to get the correct image orientation:
+  //  {1,  0, 0, 0,
+  //   0, -1, 0, 0,
+  //   0,  0, 1, 0,
+  //   0,  1, 0, 1}
+  webvr_surface_texture_->GetTransformMatrix(
+      &webvr_surface_texture_uv_transform_[0]);
 
   // LIFECYCLE: we should be in processing state.
   DCHECK(webxr_->HaveProcessingFrame());
@@ -1901,12 +1915,13 @@ void VrShellGl::DrawWebVr() {
         webxr_->GetProcessingFrame()->shared_buffer.get();
     CHECK(buffer);
 
-    // TODO(klausw): figure out how come these drawing modes
-    // need opposite Y directions. Who is flipping one of them?
-    // SurfaceTexture transform?
-    ui_->ui_element_renderer()->DrawWebVr(buffer->local_texture, 1.0f);
+    // Use an identity UV transform, the image is already oriented correctly.
+    ui_->ui_element_renderer()->DrawWebVr(buffer->local_texture,
+                                          kWebVrIdentityUvTransform);
   } else {
-    ui_->ui_element_renderer()->DrawWebVr(webvr_texture_id_, -1.0f);
+    // Apply the UV transform from the SurfaceTexture, that's usually a Y flip.
+    ui_->ui_element_renderer()->DrawWebVr(webvr_texture_id_,
+                                          webvr_surface_texture_uv_transform_);
   }
 }
 
