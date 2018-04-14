@@ -4090,3 +4090,4 @@ crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-
 
 # Sheriff 2018-04-13
 crbug.com/832842 [ Win7 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
+crbug.com/775534 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Failure ]
