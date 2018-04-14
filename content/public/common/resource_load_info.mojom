@@ -43,6 +43,10 @@ struct ResourceLoadInfo {
   // True if the request accessed the network in the process of retrieving data.
   bool network_accessed;
 
+  // True if loading this resource always requires accessing the network, either
+  // because it should always be revalidated or because it should not be cached.
+  bool always_access_network;
+
   // The network error code, net::OK if no error happened.
   int32 net_error;
 

@@ -211,6 +211,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     std::unique_ptr<NavigationResponseOverrideParameters>
         navigation_response_override;
     bool should_follow_redirect = true;
+    bool always_access_network = false;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;

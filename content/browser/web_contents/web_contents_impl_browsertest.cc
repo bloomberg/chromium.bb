@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <array>
 #include <utility>
 #include <vector>
 
@@ -853,6 +854,28 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(net::OK, observer.resource_load_infos()[0]->net_error);
   EXPECT_EQ(net::ERR_ADDRESS_UNREACHABLE,
             observer.resource_load_infos()[1]->net_error);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ResourceLoadCompleteAlwaysAccessNetwork) {
+  ResourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL cacheable_url(embedded_test_server()->GetURL("/set-header"));
+  NavigateToURL(shell(), cacheable_url);
+  ASSERT_EQ(1U, observer.resource_load_infos().size());
+  EXPECT_FALSE(observer.resource_load_infos()[0]->always_access_network);
+  observer.Reset();
+
+  std::array<std::string, 3> headers = {
+      "cache-control: no-cache", "cache-control: no-store", "pragma: no-cache"};
+  for (const std::string& header : headers) {
+    GURL no_cache_url(embedded_test_server()->GetURL("/set-header?" + header));
+    NavigateToURL(shell(), no_cache_url);
+    ASSERT_EQ(1U, observer.resource_load_infos().size());
+    EXPECT_TRUE(observer.resource_load_infos()[0]->always_access_network);
+    observer.Reset();
+  }
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,

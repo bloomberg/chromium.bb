@@ -119,6 +119,20 @@ void NotifyResourceLoadComplete(
       std::move(resource_load_info));
 }
 
+// Returns true if the headers indicate that this resource should always be
+// revalidated or not cached.
+bool AlwaysAccessNetwork(
+    const scoped_refptr<net::HttpResponseHeaders>& headers) {
+  if (!headers)
+    return false;
+
+  // RFC 2616, section 14.9.
+  return headers->HasHeaderValue("cache-control", "no-cache") ||
+         headers->HasHeaderValue("cache-control", "no-store") ||
+         headers->HasHeaderValue("pragma", "no-cache") ||
+         headers->HasHeaderValue("vary", "*");
+}
+
 }  // namespace
 
 // static
@@ -175,7 +189,8 @@ void ResourceDispatcher::OnReceivedResponse(
   request_info->response_start = base::TimeTicks::Now();
   request_info->mime_type = response_head.mime_type;
   request_info->network_accessed = response_head.network_accessed;
-
+  request_info->always_access_network =
+      AlwaysAccessNetwork(response_head.headers);
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
         std::move(request_info->peer), response_head.mime_type,
@@ -300,6 +315,8 @@ void ResourceDispatcher::OnRequestComplete(
     resource_load_info->ip = request_info->parsed_ip;
   resource_load_info->mime_type = request_info->mime_type;
   resource_load_info->network_accessed = request_info->network_accessed;
+  resource_load_info->always_access_network =
+      request_info->always_access_network;
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
   resource_load_info->request_start = request_info->request_start;
