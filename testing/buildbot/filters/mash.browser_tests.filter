@@ -131,12 +131,14 @@
 -FirstRunUIBrowserTest.*
 
 # ash::Shell::display_manager() to update displays.
+# http://crbug.com/831826
 -ForceMaximizeOnFirstRunTest.*
 -ForceMaximizePolicyFalseTest.*
 -PolicyDisplayRotationDefault/DisplayRotationBootTest.*
 -PolicyDisplayRotationDefault/DisplayRotationDefaultTest.*
 
 # ash::Shell::display_manager() to get display state.
+# http://crbug.com/831826
 -PolicyTest.UnifiedDesktopEnabledByDefault
 
 # Failures JS-side.
@@ -204,10 +206,8 @@
 # Crash in autofill::SaveCardBubbleViews::ShouldShowCloseButton().
 -SaveCardBubbleControllerImplTest.*
 
-# WindowSizerAsh does not compute correct show state.
--ShelfAppBrowserTest.AppWindowRestoreBehaviorTest
-
 # ash::Shell access in test for display configuration.
+# http://crbug.com/831826
 -ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus*
 
 # ash::Shell access in test.
