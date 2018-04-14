@@ -617,14 +617,14 @@ void WindowSelector::InitiateDrag(WindowSelectorItem* item,
 
 void WindowSelector::Drag(WindowSelectorItem* item,
                           const gfx::Point& location_in_screen) {
-  DCHECK(window_drag_controller_.get());
+  DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
   window_drag_controller_->Drag(location_in_screen);
 }
 
 void WindowSelector::CompleteDrag(WindowSelectorItem* item,
                                   const gfx::Point& location_in_screen) {
-  DCHECK(window_drag_controller_.get());
+  DCHECK(window_drag_controller_);
   DCHECK_EQ(item, window_drag_controller_->item());
   window_drag_controller_->CompleteDrag(location_in_screen);
 
@@ -632,13 +632,16 @@ void WindowSelector::CompleteDrag(WindowSelectorItem* item,
     grid->OnSelectorItemDragEnded();
 }
 
+void WindowSelector::StartSplitViewDragMode(
+    const gfx::Point& location_in_screen) {
+  window_drag_controller_->StartSplitViewDragMode(location_in_screen);
+}
+
 void WindowSelector::ActivateDraggedWindow() {
-  DCHECK(window_drag_controller_.get());
   window_drag_controller_->ActivateDraggedWindow();
 }
 
 void WindowSelector::ResetDraggedWindowGesture() {
-  DCHECK(window_drag_controller_.get());
   window_drag_controller_->ResetGesture();
 }
 
