@@ -118,6 +118,10 @@ constexpr int kDragAnimationMs = 167;
 // this fraction of size.
 constexpr float kPreCloseScale = 0.02f;
 
+// Before dragging an overview window, the window will scale up |kPreDragScale|
+// to indicate its selection.
+constexpr float kDragWindowScale = 0.04f;
+
 // The size in dp of the window icon shown on the overview window next to the
 // title.
 constexpr gfx::Size kIconSize = gfx::Size(24, 24);
@@ -250,9 +254,6 @@ class ShieldButton : public views::Button {
         case ui::ET_SCROLL_FLING_START:
         case ui::ET_GESTURE_SCROLL_END:
           listener()->HandleReleaseEvent(location);
-          break;
-        case ui::ET_GESTURE_LONG_PRESS:
-          listener()->HandleLongPressEvent(location);
           break;
         case ui::ET_GESTURE_TAP:
           listener()->ActivateDraggedWindow();
@@ -996,11 +997,6 @@ void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
   window_selector_->Drag(this, location_in_screen);
 }
 
-void WindowSelectorItem::HandleLongPressEvent(
-    const gfx::Point& location_in_screen) {
-  window_selector_->StartSplitViewDragMode(location_in_screen);
-}
-
 void WindowSelectorItem::ActivateDraggedWindow() {
   if (!IsDragItem())
     return;
@@ -1396,6 +1392,13 @@ void WindowSelectorItem::StartDrag() {
   // and rounded edges mask from showing up after dragging in the case the
   // window is pressed while still animating.
   transform_window_.CancelAnimationsListener();
+
+  gfx::Rect scaled_bounds(target_bounds_);
+  scaled_bounds.Inset(-target_bounds_.width() * kDragWindowScale,
+                      -target_bounds_.height() * kDragWindowScale);
+  OverviewAnimationType animation_type =
+      OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
+  SetBounds(scaled_bounds, animation_type);
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   aura::Window* window = GetWindowForStacking();
