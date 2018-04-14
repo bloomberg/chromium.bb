@@ -29,16 +29,10 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-
-namespace base {
-class DictionaryValue;
-class ListValue;
-class Value;
-}
+#include "base/strings/string_piece_forward.h"
+#include "base/values.h"
 
 namespace extensions {
-
-class ListBuilder;
 
 class DictionaryBuilder {
  public:
@@ -53,20 +47,27 @@ class DictionaryBuilder {
   // times as you like.
   std::string ToJSON() const;
 
-  // TODO(lazyboy): Switch |path| to base::StringPiece, just like base::Value's
-  // parameters.
-  DictionaryBuilder& Set(const std::string& path, int in_value);
-  DictionaryBuilder& Set(const std::string& path, double in_value);
-  DictionaryBuilder& Set(const std::string& path, bool in_value);
-  DictionaryBuilder& Set(const std::string& path, const char* in_value);
-  DictionaryBuilder& Set(const std::string& path, const std::string& in_value);
-  DictionaryBuilder& Set(const std::string& path,
-                         const base::string16& in_value);
-  DictionaryBuilder& Set(const std::string& path,
-                         std::unique_ptr<base::Value> in_value);
+  template <typename T>
+  DictionaryBuilder& Set(base::StringPiece key, T in_value) {
+    dict_->SetKey(key, base::Value(in_value));
+    return *this;
+  }
+
+  // NOTE(devlin): This overload is really just for passing
+  // std::unique_ptr<base::[SomeTypeOf]Value>, but the argument resolution
+  // would require us to define a template specialization for each of the value
+  // types. Just define this; it will fail to compile if <T> is anything but
+  // a base::Value (or one of its subclasses).
+  template <typename T>
+  DictionaryBuilder& Set(base::StringPiece key, std::unique_ptr<T> in_value) {
+    dict_->SetKey(key, std::move(*in_value));
+    return *this;
+  }
 
  private:
   std::unique_ptr<base::DictionaryValue> dict_;
+
+  DISALLOW_COPY_AND_ASSIGN(DictionaryBuilder);
 };
 
 class ListBuilder {
@@ -78,13 +79,18 @@ class ListBuilder {
   // Can only be called once, after which it's invalid to use the builder.
   std::unique_ptr<base::ListValue> Build() { return std::move(list_); }
 
-  ListBuilder& Append(int in_value);
-  ListBuilder& Append(double in_value);
-  ListBuilder& Append(bool in_value);
-  ListBuilder& Append(const char* in_value);
-  ListBuilder& Append(const std::string& in_value);
-  ListBuilder& Append(const base::string16& in_value);
-  ListBuilder& Append(std::unique_ptr<base::Value> in_value);
+  template <typename T>
+  ListBuilder& Append(T in_value) {
+    list_->GetList().emplace_back(in_value);
+    return *this;
+  }
+
+  // See note on DictionaryBuilder::Set().
+  template <typename T>
+  ListBuilder& Append(std::unique_ptr<T> in_value) {
+    list_->GetList().push_back(std::move(*in_value));
+    return *this;
+  }
 
  private:
   std::unique_ptr<base::ListValue> list_;
