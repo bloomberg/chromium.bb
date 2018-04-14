@@ -87,6 +87,10 @@ media::AudioParameters GetMixerOutputParams(
                                 input_params.channel_layout(),
                                 output_sample_rate, 16, output_buffer_size);
 
+  // Use the actual channel count when the channel layout is "DISCRETE".
+  if (input_params.channel_layout() == media::CHANNEL_LAYOUT_DISCRETE)
+    params.set_channels_for_discrete(input_params.channels());
+
   // Specify the latency info to be passed to the browser side.
   params.set_latency_tag(latency);
   return params;

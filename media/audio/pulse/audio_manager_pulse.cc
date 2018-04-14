@@ -166,7 +166,13 @@ AudioParameters AudioManagerPulse::GetPreferredOutputStreamParameters(
 
   if (input_params.IsValid()) {
     bits_per_sample = input_params.bits_per_sample();
-    channel_layout = input_params.channel_layout();
+
+    // Use the system's output channel count for the DISCRETE layout. This is to
+    // avoid a crash due to the lack of support on the multi-channel beyond 8 in
+    // the PulseAudio layer.
+    if (input_params.channel_layout() != CHANNEL_LAYOUT_DISCRETE)
+      channel_layout = input_params.channel_layout();
+
     buffer_size =
         std::min(kMaximumOutputBufferSize,
                  std::max(buffer_size, input_params.frames_per_buffer()));
