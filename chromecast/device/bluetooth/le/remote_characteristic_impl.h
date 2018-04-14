@@ -53,19 +53,15 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
   friend class RemoteDeviceImpl;
   friend class RemoteServiceImpl;
 
-  static std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
-  CreateDescriptorMap(
-      RemoteDevice* device,
-      base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
-      const bluetooth_v2_shlib::Gatt::Characteristic* characteristic,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-
   RemoteCharacteristicImpl(
       RemoteDevice* device,
       base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
       const bluetooth_v2_shlib::Gatt::Characteristic* characteristic,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~RemoteCharacteristicImpl() override;
+
+  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
+  CreateDescriptorMap();
 
   void OnConnectChanged(bool connected);
   void OnReadComplete(bool status, const std::vector<uint8_t>& value);
@@ -79,6 +75,10 @@ class RemoteCharacteristicImpl : public RemoteCharacteristic {
   // All bluetooth_v2_shlib calls are run on this task_runner. All members must
   // be accessed on this task_runner.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+
+  // Work around http://crbug/831878. This allows notifications on
+  // characteristics which do not have a CCCD.
+  const std::unique_ptr<bluetooth_v2_shlib::Gatt::Descriptor> fake_cccd_;
 
   const std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
       uuid_to_descriptor_;

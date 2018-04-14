@@ -559,5 +559,51 @@ TEST_F(GattClientManagerTest, RemoteDeviceDescriptor) {
   EXPECT_TRUE(cb_called);
 }
 
+TEST_F(GattClientManagerTest, FakeCccd) {
+  std::vector<bluetooth_v2_shlib::Gatt::Service> input_services(1);
+  input_services[0].uuid = {{0x1}};
+  input_services[0].handle = 0x1;
+  input_services[0].primary = true;
+
+  bluetooth_v2_shlib::Gatt::Characteristic input_characteristic;
+  input_characteristic.uuid = {{0x1, 0x1}};
+  input_characteristic.handle = 0x2;
+  input_characteristic.permissions = bluetooth_v2_shlib::Gatt::PERMISSION_READ;
+  input_characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_NOTIFY;
+  input_services[0].characteristics.push_back(input_characteristic);
+
+  // Test indicate as well
+  input_characteristic.uuid = {{0x1, 0x2}};
+  input_characteristic.handle = 0x3;
+  input_characteristic.properties = bluetooth_v2_shlib::Gatt::PROPERTY_INDICATE;
+  input_services[0].characteristics.push_back(input_characteristic);
+
+  Connect(kTestAddr1);
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  delegate->OnServicesAdded(kTestAddr1, input_services);
+  std::vector<scoped_refptr<RemoteService>> services =
+      GetServices(device.get());
+  ASSERT_EQ(input_services.size(), services.size());
+
+  auto service = services[0];
+  std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
+      service->GetCharacteristics();
+  ASSERT_EQ(2u, characteristics.size());
+  for (const auto& characteristic : characteristics) {
+    // A CCCD should have been created.
+    std::vector<scoped_refptr<RemoteDescriptor>> descriptors =
+        characteristic->GetDescriptors();
+    ASSERT_EQ(descriptors.size(), 1ul);
+    auto descriptor = descriptors[0];
+    EXPECT_EQ(RemoteDescriptor::kCccdUuid, descriptor->uuid());
+    EXPECT_EQ(static_cast<bluetooth_v2_shlib::Gatt::Permissions>(
+                  bluetooth_v2_shlib::Gatt::PERMISSION_READ |
+                  bluetooth_v2_shlib::Gatt::PERMISSION_WRITE),
+              descriptor->permissions());
+  }
+}
+
 }  // namespace bluetooth
 }  // namespace chromecast
