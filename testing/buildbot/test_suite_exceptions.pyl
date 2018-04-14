@@ -3422,11 +3422,6 @@
       'Win10 Tests x64',
       'Win7 Tests (1)',
     ],
-    'key_removals': {
-      'Win7 Tests (dbg)(1)': [
-        'results_handler',
-      ],
-    },
     'modifications': {
       # chromium.fyi
       'Dummy WebKit Mac10.13': {
