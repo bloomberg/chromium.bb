@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -51,6 +52,7 @@
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/prefs/pref_service.h"
@@ -1671,7 +1673,34 @@ class AutofillManagerTestDelegateDevtoolsImpl
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTestDelegateDevtoolsImpl);
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDispatchKeyEventShowsAutoFill) {
+// Test params:
+//  - bool popup_views_enabled: whether feature AutofillExpandedPopupViews
+//        is enabled for testing.
+//
+// This test is parametrized to ensure that it runs for the
+// AutofillExpandedPopupViews feature either enabled or disabled, while it's
+// rolled out.
+// TODO(crbug.com/831603): This can be merged into DevToolsSanityTest when
+//                         AutofillExpandedPopupViews becomes the default
+//                         behavior and is no longer used.
+class AutofillDevToolsSanityTest : public DevToolsSanityTest,
+                                   public ::testing::WithParamInterface<bool> {
+ public:
+  AutofillDevToolsSanityTest() = default;
+  ~AutofillDevToolsSanityTest() override = default;
+
+  void SetUpOnMainThread() override {
+    const bool popup_views_enabled = GetParam();
+    scoped_feature_list_.InitWithFeatureState(
+        autofill::kAutofillExpandedPopupViews, popup_views_enabled);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(AutofillDevToolsSanityTest,
+                       TestDispatchKeyEventShowsAutoFill) {
   OpenDevToolsWindow(kDispatchKeyEventShowsAutoFill, false);
 
   autofill::ContentAutofillDriver* autofill_driver =
@@ -1686,6 +1715,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDispatchKeyEventShowsAutoFill) {
   RunTestFunction(window_, "testDispatchKeyEventShowsAutoFill");
   CloseDevToolsWindow();
 }
+
+INSTANTIATE_TEST_CASE_P(All, AutofillDevToolsSanityTest, ::testing::Bool());
 
 // Tests that settings are stored in profile correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
