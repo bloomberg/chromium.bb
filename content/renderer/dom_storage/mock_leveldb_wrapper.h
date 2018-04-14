@@ -56,6 +56,8 @@ class MockLevelDBWrapper : public mojom::StoragePartitionService,
   // Methods and members for use by test fixtures.
   bool HasBindings() { return !bindings_.empty(); }
 
+  size_t NumNamespaceBindings() { return namespace_bindings_.size(); }
+
   void ResetObservations() {
     observed_get_all_ = false;
     observed_put_ = false;

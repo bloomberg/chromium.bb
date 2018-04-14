@@ -4,8 +4,11 @@
 
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 
+#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "content/public/common/content_features.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
 #include "content/renderer/dom_storage/mock_leveldb_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/test/fake_renderer_scheduler.h"
@@ -54,6 +57,28 @@ TEST(LocalStorageCachedAreasTest, CacheLimit) {
   scoped_refptr<LocalStorageCachedArea> cached_area3 =
       cached_areas.GetCachedArea(kOrigin3);
   EXPECT_EQ(cached_area2->memory_used(), cached_areas.TotalCacheSize());
+}
+
+TEST(LocalStorageCachedAreasTest, CloneBeforeGetArea) {
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kMojoSessionStorage);
+  const std::string kNamespace1 = base::GenerateGUID();
+  const std::string kNamespace2 = base::GenerateGUID();
+  const url::Origin kOrigin = url::Origin::Create(GURL("http://dom_storage1/"));
+
+  blink::scheduler::FakeRendererScheduler renderer_scheduler;
+
+  MockLevelDBWrapper mock_leveldb_wrapper;
+  LocalStorageCachedAreas cached_areas(&mock_leveldb_wrapper,
+                                       &renderer_scheduler);
+
+  cached_areas.CloneNamespace(kNamespace1, kNamespace2);
+
+  scoped_refptr<LocalStorageCachedArea> cached_area1 =
+      cached_areas.GetSessionStorageArea(kNamespace1, kOrigin);
+  EXPECT_TRUE(cached_area1);
+  EXPECT_EQ(1ul, mock_leveldb_wrapper.NumNamespaceBindings());
 }
 
 }  // namespace content

@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
+#include "content/common/dom_storage/dom_storage_namespace_ids.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/dom_storage/local_storage_cached_area.h"
@@ -40,7 +41,7 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
 scoped_refptr<LocalStorageCachedArea>
 LocalStorageCachedAreas::GetSessionStorageArea(const std::string& namespace_id,
                                                const url::Origin& origin) {
-  DCHECK_NE(namespace_id, kLocalStorageNamespaceId);
+  DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
   return GetCachedArea(namespace_id, origin, main_thread_scheduler_);
 }
 
@@ -48,19 +49,21 @@ void LocalStorageCachedAreas::CloneNamespace(
     const std::string& source_namespace,
     const std::string& destination_namespace) {
   DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
+  DCHECK_EQ(kSessionStorageNamespaceIdLength, source_namespace.size());
+  DCHECK_EQ(kSessionStorageNamespaceIdLength, destination_namespace.size());
+
   auto namespace_it = cached_namespaces_.find(source_namespace);
-  if (namespace_it != cached_namespaces_.end()) {
-    namespace_it->second.session_storage_namespace->Clone(
-        destination_namespace);
-    return;
+  if (namespace_it == cached_namespaces_.end()) {
+    namespace_it =
+        cached_namespaces_
+            .emplace(std::make_pair(source_namespace, DOMStorageNamespace()))
+            .first;
+    storage_partition_service_->OpenSessionStorage(
+        source_namespace,
+        mojo::MakeRequest(&namespace_it->second.session_storage_namespace));
   }
-  // The clone call still has to be sent, as we can have a case where the
-  // storage is never opened but there is still data there (from a restore or
-  // an earlier clone).
-  mojom::SessionStorageNamespacePtr session_storage_namespace;
-  storage_partition_service_->OpenSessionStorage(
-      source_namespace, mojo::MakeRequest(&session_storage_namespace));
-  session_storage_namespace->Clone(destination_namespace);
+  DCHECK(namespace_it->second.session_storage_namespace);
+  namespace_it->second.session_storage_namespace->Clone(destination_namespace);
 }
 
 size_t LocalStorageCachedAreas::TotalCacheSize() const {
@@ -126,9 +129,11 @@ scoped_refptr<LocalStorageCachedArea> LocalStorageCachedAreas::GetCachedArea(
           origin, storage_partition_service_, this, scheduler);
     } else {
       DCHECK(base::FeatureList::IsEnabled(features::kMojoSessionStorage));
-      storage_partition_service_->OpenSessionStorage(
-          namespace_id,
-          mojo::MakeRequest(&dom_namespace->session_storage_namespace));
+      if (!dom_namespace->session_storage_namespace) {
+        storage_partition_service_->OpenSessionStorage(
+            namespace_id,
+            mojo::MakeRequest(&dom_namespace->session_storage_namespace));
+      }
       result = base::MakeRefCounted<LocalStorageCachedArea>(
           namespace_id, origin, dom_namespace->session_storage_namespace.get(),
           this, scheduler);
