@@ -249,23 +249,6 @@ class CertVerifyProcInternalTest
     return true;
   }
 
-  bool SupportsDetectingKnownRoots() const {
-#if defined(OS_ANDROID)
-    // Before API level 17 (SDK_VERSION_JELLY_BEAN_MR1), Android does not expose
-    // the APIs necessary to get at the verified certificate chain and detect
-    // known roots.
-    if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID)
-      return base::android::BuildInfo::GetInstance()->sdk_int() >=
-             base::android::SDK_VERSION_JELLY_BEAN_MR1;
-#endif
-
-    // iOS does not expose the APIs necessary to get the known system roots.
-    if (verify_proc_type() == CERT_VERIFY_PROC_IOS)
-      return false;
-
-    return true;
-  }
-
   bool WeakKeysAreInvalid() const {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     // Starting with Mac OS 10.12, certs with weak keys are treated as
@@ -1229,7 +1212,7 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
     const char* const file;
     bool is_valid_too_long;
   } tests[] = {
-      {"twitter-chain.pem", false},
+      {"daltonridgeapts.com-chain.pem", false},
       {"start_after_expiry.pem", true},
       {"pre_br_validity_ok.pem", false},
       {"pre_br_validity_bad_121.pem", true},
@@ -1258,33 +1241,20 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
   }
 }
 
-// TODO(crbug.com/610546): Fix and re-enable this test.
-TEST_P(CertVerifyProcInternalTest, DISABLED_TestKnownRoot) {
-  if (!SupportsDetectingKnownRoots()) {
-    LOG(INFO) << "Skipping this test on this platform.";
-    return;
-  }
-
+TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
   base::FilePath certs_dir = GetTestCertsDirectory();
-  CertificateList certs = CreateCertificateListFromFile(
-      certs_dir, "twitter-chain.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, certs.size());
-
-  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
-  intermediates.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
-
-  scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromBuffer(
-      x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
-      std::move(intermediates));
+  scoped_refptr<X509Certificate> cert_chain = CreateCertificateChainFromFile(
+      certs_dir, "daltonridgeapts.com-chain.pem", X509Certificate::FORMAT_AUTO);
   ASSERT_TRUE(cert_chain);
 
   int flags = 0;
   CertVerifyResult verify_result;
-  // This will blow up, May 9th, 2016. Sorry! Please disable and file a bug
-  // against agl.
-  int error = Verify(cert_chain.get(), "twitter.com", flags, NULL,
+  int error = Verify(cert_chain.get(), "daltonridgeapts.com", flags, NULL,
                      CertificateList(), &verify_result);
-  EXPECT_THAT(error, IsOk());
+  EXPECT_THAT(error, IsOk()) << "This test relies on a real certificate that "
+                             << "expires on May 28, 2021. If failing on/after "
+                             << "that date, please disable and file a bug "
+                             << "against rsleevi.";
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
 }
 
