@@ -13,6 +13,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -40,6 +41,12 @@ ToolbarButton::ToolbarButton(Profile* profile,
 
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
+
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    const int radii =
+        ChromeLayoutProvider::Get()->GetCornerRadiusMetric(EMPHASIS_MEDIUM);
+    set_ink_drop_corner_radii(radii, radii);
+  }
 }
 
 ToolbarButton::~ToolbarButton() {}

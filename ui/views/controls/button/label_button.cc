@@ -398,7 +398,7 @@ std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
     const {
   return ShouldUseFloodFillInkDrop()
              ? std::make_unique<views::InkDropHighlight>(
-                   size(), kInkDropSmallCornerRadius,
+                   size(), ink_drop_small_corner_radius(),
                    gfx::RectF(GetLocalBounds()).CenterPoint(),
                    GetInkDropBaseColor())
              : CreateDefaultInkDropHighlight(
