@@ -570,7 +570,7 @@ std::unique_ptr<views::InkDropHighlight>
 DownloadItemView::CreateInkDropHighlight() const {
   gfx::Size size = GetPreferredSize();
   return std::make_unique<views::InkDropHighlight>(
-      size, kInkDropSmallCornerRadius,
+      size, ink_drop_small_corner_radius(),
       gfx::RectF(gfx::SizeF(size)).CenterPoint(),
       color_utils::DeriveDefaultIconColor(GetTextColor()));
 }

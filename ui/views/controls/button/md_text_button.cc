@@ -180,7 +180,7 @@ void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
     : LabelButton(listener, base::string16(), button_context),
       is_prominent_(false),
-      corner_radius_(kInkDropSmallCornerRadius) {
+      corner_radius_(ink_drop_small_corner_radius()) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);

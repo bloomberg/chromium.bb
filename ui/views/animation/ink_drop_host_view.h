@@ -64,6 +64,17 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   }
   float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
 
+  void set_ink_drop_corner_radii(int small_radius, int large_radius) {
+    ink_drop_small_corner_radius_ = small_radius;
+    ink_drop_large_corner_radius_ = large_radius;
+  }
+  int ink_drop_small_corner_radius() const {
+    return ink_drop_small_corner_radius_;
+  }
+  int ink_drop_large_corner_radius() const {
+    return ink_drop_large_corner_radius_;
+  }
+
   // Animates |ink_drop_| to the desired |ink_drop_state|. Caches |event| as the
   // last_ripple_triggering_event().
   //
@@ -74,9 +85,6 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
 
  protected:
-  static constexpr int kInkDropSmallCornerRadius = 2;
-  static constexpr int kInkDropLargeCornerRadius = 4;
-
   // Size used for the default SquareInkDropRipple.
   static constexpr int kDefaultInkDropSize = 24;
 
@@ -161,6 +169,10 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   std::unique_ptr<InkDropGestureHandler> gesture_handler_;
 
   float ink_drop_visible_opacity_;
+
+  // Radii used for the SquareInkDropRipple.
+  int ink_drop_small_corner_radius_;
+  int ink_drop_large_corner_radius_;
 
   // Determines whether the view was already painting to layer before adding ink
   // drop layer.
