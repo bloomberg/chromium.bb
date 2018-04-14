@@ -186,6 +186,9 @@ static inline ScopedStyleResolver* ScopedResolverFor(const Element& element) {
   return tree_scope->GetScopedStyleResolver();
 }
 
+// Matches :host and :host-context rules if the element is a shadow host.
+// It matches rules from the ShadowHostRules of the ScopedStyleResolver
+// of the attached shadow root.
 static void MatchHostRules(const Element& element,
                            ElementRuleCollector& collector) {
   ShadowRoot* shadow_root = element.GetShadowRoot();
@@ -200,6 +203,10 @@ static void MatchHostRules(const Element& element,
   }
 }
 
+// Matches `::slotted` selectors. It matches rules in the element's slot's
+// scope. If that slot is itself slotted it will match rules in the slot's
+// slot's scope and so on. The result is that it considers a chain of scopes
+// descending from the element's own scope.
 static void MatchSlottedRules(const Element& element,
                               ElementRuleCollector& collector) {
   HTMLSlotElement* slot = element.AssignedSlot();
@@ -220,6 +227,8 @@ static void MatchSlottedRules(const Element& element,
   }
 }
 
+// Matches rules from the element's scope. The selectors may cross shadow
+// boundaries during matching, like for :host-context.
 static void MatchElementScopeRules(const Element& element,
                                    ScopedStyleResolver* element_scope_resolver,
                                    ElementRuleCollector& collector) {
