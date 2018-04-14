@@ -363,12 +363,6 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
 }  // namespace
 
-StreamOverrideParameters::StreamOverrideParameters() {}
-StreamOverrideParameters::~StreamOverrideParameters() {
-  if (on_delete)
-    std::move(on_delete).Run(stream_url);
-}
-
 WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
     base::WeakPtr<ResourceDispatcher> resource_dispatcher,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
@@ -469,7 +463,6 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   ResourceDispatcher* resource_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
-  std::unique_ptr<StreamOverrideParameters> stream_override_;
   std::unique_ptr<SharedMemoryDataConsumerHandle::Writer> body_stream_writer_;
   std::unique_ptr<KeepAliveHandleWithChildProcessReference> keep_alive_handle_;
   enum DeferState {NOT_DEFERRING, SHOULD_DEFER, DEFERRED_DATA};
@@ -630,10 +623,11 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     return;
   }
 
+  std::unique_ptr<NavigationResponseOverrideParameters> response_override;
   if (request.GetExtraData()) {
     RequestExtraData* extra_data =
         static_cast<RequestExtraData*>(request.GetExtraData());
-    stream_override_ = extra_data->TakeStreamOverrideOwnership();
+    response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
 
@@ -641,7 +635,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // the WebURLLoader are the ones created by CommitNavigation. Several browser
   // tests load HTML directly through a data url which will be handled by the
   // block above.
-  DCHECK(!IsBrowserSideNavigationEnabled() || stream_override_ ||
+  DCHECK(response_override ||
          request.GetFrameType() ==
              network::mojom::RequestContextFrameType::kNone);
 
@@ -728,18 +722,16 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   // PlzNavigate: The network request has already been made by the browser.
   // The renderer should request a stream which contains the body of the
   // response. If the Network Service or NavigationMojoResponse is enabled, the
-  // URLLoaderClientEndpoints is used instead to get the body.
-  network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
-  if (stream_override_) {
+  // URLLoaderClientEndpoints from |response_override| is used instead to get
+  // the body.
+  if (response_override) {
     CHECK(IsBrowserSideNavigationEnabled());
     DCHECK(!sync_load_response);
     DCHECK_NE(network::mojom::RequestContextFrameType::kNone,
               request.GetFrameType());
-    if (stream_override_->url_loader_client_endpoints) {
-      url_loader_client_endpoints =
-          std::move(stream_override_->url_loader_client_endpoints);
-    } else {
-      resource_request->resource_body_stream_url = stream_override_->stream_url;
+    if (!response_override->url_loader_client_endpoints) {
+      resource_request->resource_body_stream_url =
+          response_override->stream_url;
     }
   }
 
@@ -784,8 +776,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       std::move(resource_request), request.RequestorID(), task_runner_,
       GetTrafficAnnotationTag(request), false /* is_sync */,
       request.PassResponsePipeToClient(), std::move(peer), url_loader_factory_,
-      extra_data->TakeURLLoaderThrottles(),
-      std::move(url_loader_client_endpoints), &continue_navigation_function);
+      extra_data->TakeURLLoaderThrottles(), std::move(response_override),
+      &continue_navigation_function);
   extra_data->set_continue_navigation_function(
       std::move(continue_navigation_function));
 
@@ -823,32 +815,13 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(
-    const network::ResourceResponseInfo& initial_info) {
+    const network::ResourceResponseInfo& info) {
   if (!client_)
     return;
 
   TRACE_EVENT_WITH_FLOW0(
       "loading", "WebURLLoaderImpl::Context::OnReceivedResponse",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
-  network::ResourceResponseInfo info = initial_info;
-
-  // PlzNavigate: during navigations, the ResourceResponse has already been
-  // received on the browser side, and has been passed down to the renderer.
-  if (stream_override_) {
-    CHECK(IsBrowserSideNavigationEnabled());
-    info = stream_override_->response;
-
-    // Replay the redirects that happened during navigation.
-    DCHECK_EQ(stream_override_->redirect_responses.size(),
-              stream_override_->redirect_infos.size());
-    for (size_t i = 0; i < stream_override_->redirect_responses.size(); ++i) {
-      bool result = OnReceivedRedirect(stream_override_->redirect_infos[i],
-                                       stream_override_->redirect_responses[i]);
-      if (!result)
-        return;
-    }
-  }
 
   WebURLResponse response;
   PopulateURLResponse(url_, info, &response, report_raw_headers_);

@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -82,15 +83,16 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
     requested_with_ = requested_with;
   }
 
-  // PlzNavigate: |stream_override| is used to override certain parameters of
-  // navigation requests.
-  std::unique_ptr<StreamOverrideParameters> TakeStreamOverrideOwnership() {
-    return std::move(stream_override_);
+  // PlzNavigate: |navigation_response_override| is used to override certain
+  // parameters of navigation requests.
+  std::unique_ptr<NavigationResponseOverrideParameters>
+  TakeNavigationResponseOverrideOwnership() {
+    return std::move(navigation_response_override_);
   }
 
-  void set_stream_override(
-      std::unique_ptr<StreamOverrideParameters> stream_override) {
-    stream_override_ = std::move(stream_override);
+  void set_navigation_response_override(
+      std::unique_ptr<NavigationResponseOverrideParameters> response_override) {
+    navigation_response_override_ = std::move(response_override);
   }
 
   // NavigationMojoResponse: |continue_navigation| is used to continue a
@@ -168,9 +170,10 @@ class CONTENT_EXPORT RequestExtraData : public blink::WebURLRequest::ExtraData {
   bool originated_from_service_worker_;
   blink::WebString custom_user_agent_;
   blink::WebString requested_with_;
-  std::unique_ptr<StreamOverrideParameters> stream_override_;
+  std::unique_ptr<NavigationResponseOverrideParameters>
+      navigation_response_override_;
   // TODO(arthursonzogni): Once NavigationMojoResponse is launched, move most of
-  // the |stream_override_| content as parameters of this function.
+  // the |navigation_response_override_| content as parameters of this function.
   base::OnceClosure continue_navigation_function_;
   bool initiated_in_secure_context_;
   bool is_for_no_state_prefetch_;

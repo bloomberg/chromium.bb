@@ -25,6 +25,7 @@
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
+#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/loader/test_request_peer.h"
 #include "net/base/net_errors.h"
@@ -119,7 +120,7 @@ class ResourceDispatcherTest : public testing::Test,
         TRAFFIC_ANNOTATION_FOR_TESTS, false, false, std::move(peer),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        network::mojom::URLLoaderClientEndpointsPtr(),
+        nullptr /* navigation_response_override_params */,
         nullptr /* continue_navigation_function */);
     peer_context->request_id = request_id;
     return request_id;
