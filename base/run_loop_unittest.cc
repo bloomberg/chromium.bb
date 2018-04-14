@@ -660,8 +660,8 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST(RunLoopDeathTest, MustRegisterBeforeInstantiating) {
   TestBoundDelegate unbound_test_delegate_;
-  // Exercise the DCHECK in RunLoop::RunLoop().
-  EXPECT_DCHECK_DEATH({ RunLoop(); });
+  // RunLoop::RunLoop() should CHECK fetching the ThreadTaskRunnerHandle.
+  EXPECT_DEATH_IF_SUPPORTED({ RunLoop(); }, "");
 }
 
 TEST(RunLoopDelegateTest, NestableTasksDontRunInDefaultNestedLoops) {
