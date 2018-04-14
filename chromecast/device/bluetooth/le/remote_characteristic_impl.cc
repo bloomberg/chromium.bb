@@ -43,23 +43,36 @@ std::vector<uint8_t> GetDescriptorNotificationValue(bool enable) {
       std::begin(bluetooth::RemoteDescriptor::kDisableNotificationValue),
       std::end(bluetooth::RemoteDescriptor::kDisableNotificationValue));
 }
-}  // namespace
 
-// static
-std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
-RemoteCharacteristicImpl::CreateDescriptorMap(
-    RemoteDevice* device,
-    base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
-    const bluetooth_v2_shlib::Gatt::Characteristic* characteristic,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
-  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>> ret;
-  for (const auto& descriptor : characteristic->descriptors) {
-    ret[descriptor.uuid] = new RemoteDescriptorImpl(
-        device, gatt_client_manager, &descriptor, io_task_runner);
+bool CharacteristicHasNotify(
+    const bluetooth_v2_shlib::Gatt::Characteristic* characteristic) {
+  return characteristic->properties &
+             bluetooth_v2_shlib::Gatt::PROPERTY_NOTIFY ||
+         characteristic->properties &
+             bluetooth_v2_shlib::Gatt::PROPERTY_INDICATE;
+}
+
+std::unique_ptr<bluetooth_v2_shlib::Gatt::Descriptor> MaybeCreateFakeCccd(
+    const bluetooth_v2_shlib::Gatt::Characteristic* characteristic) {
+  if (!CharacteristicHasNotify(characteristic)) {
+    return nullptr;
   }
 
-  return ret;
+  for (const auto& descriptor : characteristic->descriptors) {
+    if (descriptor.uuid == RemoteDescriptor::kCccdUuid) {
+      return nullptr;
+    }
+  }
+
+  auto cccd = std::make_unique<bluetooth_v2_shlib::Gatt::Descriptor>();
+  cccd->uuid = RemoteDescriptor::kCccdUuid;
+  cccd->permissions = static_cast<bluetooth_v2_shlib::Gatt::Permissions>(
+      bluetooth_v2_shlib::Gatt::PERMISSION_READ |
+      bluetooth_v2_shlib::Gatt::PERMISSION_WRITE);
+  return cccd;
 }
+
+}  // namespace
 
 RemoteCharacteristicImpl::RemoteCharacteristicImpl(
     RemoteDevice* device,
@@ -70,16 +83,31 @@ RemoteCharacteristicImpl::RemoteCharacteristicImpl(
       gatt_client_manager_(gatt_client_manager),
       characteristic_(characteristic),
       io_task_runner_(io_task_runner),
-      uuid_to_descriptor_(CreateDescriptorMap(device,
-                                              gatt_client_manager,
-                                              characteristic_,
-                                              io_task_runner)) {
+      fake_cccd_(MaybeCreateFakeCccd(characteristic)),
+      uuid_to_descriptor_(CreateDescriptorMap()) {
   DCHECK(gatt_client_manager);
   DCHECK(characteristic);
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 }
 
 RemoteCharacteristicImpl::~RemoteCharacteristicImpl() = default;
+
+std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>>
+RemoteCharacteristicImpl::CreateDescriptorMap() {
+  std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteDescriptor>> ret;
+  for (const auto& descriptor : characteristic_->descriptors) {
+    ret[descriptor.uuid] = new RemoteDescriptorImpl(
+        device_, gatt_client_manager_, &descriptor, io_task_runner_);
+  }
+
+  if (fake_cccd_) {
+    DCHECK(ret.find(RemoteDescriptor::kCccdUuid) == ret.end());
+    ret[fake_cccd_->uuid] = new RemoteDescriptorImpl(
+        device_, gatt_client_manager_, fake_cccd_.get(), io_task_runner_);
+  }
+
+  return ret;
+}
 
 std::vector<scoped_refptr<RemoteDescriptor>>
 RemoteCharacteristicImpl::GetDescriptors() {
@@ -111,21 +139,28 @@ void RemoteCharacteristicImpl::SetRegisterNotification(bool enable,
     EXEC_CB_AND_RET(cb, false);
   }
 
+  if (!CharacteristicHasNotify(characteristic_)) {
+    LOG(ERROR) << __func__
+               << " failed: Characteristic doesn't support notifications";
+    EXEC_CB_AND_RET(cb, false);
+  }
+
   if (!gatt_client_manager_->gatt_client()->SetCharacteristicNotification(
           device_->addr(), *characteristic_, enable)) {
     LOG(ERROR) << "Set characteristic notification failed";
     EXEC_CB_AND_RET(cb, false);
   }
 
-  auto it = uuid_to_descriptor_.find(RemoteDescriptor::kCccdUuid);
-  if (it == uuid_to_descriptor_.end()) {
-    // If there is no CCCD on the remote characteristic, this is unusual, but
-    // not something that we can necessarily help. Log a warning and return
-    // success.
-    LOG(WARNING) << "No CCCD found on the remote characteristic.";
+  // If device has no CCCD and we needed to create a fake one, just return
+  // success.
+  if (fake_cccd_) {
     EXEC_CB_AND_RET(cb, true);
   }
 
+  auto it = uuid_to_descriptor_.find(RemoteDescriptor::kCccdUuid);
+
+  // CCCD must exist. |fake_cccd_| should have been created if it doesn't exist.
+  DCHECK(it != uuid_to_descriptor_.end());
   it->second->WriteAuth(bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_NONE,
                         GetDescriptorNotificationValue(enable), std::move(cb));
 }
