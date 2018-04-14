@@ -20,6 +20,7 @@
 #include "services/device/generic_sensor/platform_sensor_linux.h"
 #include "services/device/generic_sensor/platform_sensor_reader_linux.h"
 #include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer.h"
+#include "services/device/generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_and_gyroscope.h"
 
 namespace device {
 namespace {
@@ -50,7 +51,7 @@ PlatformSensorProviderLinux::PlatformSensorProviderLinux()
       sensor_device_manager_(nullptr) {}
 
 PlatformSensorProviderLinux::~PlatformSensorProviderLinux() {
-  DCHECK(!sensor_device_manager_);
+  Shutdown();
 }
 
 void PlatformSensorProviderLinux::CreateSensorInternal(
@@ -60,13 +61,6 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
   if (!sensor_device_manager_)
     sensor_device_manager_.reset(new SensorDeviceManager());
 
-  if (IsFusionSensorType(type)) {
-    // For sensor fusion the device nodes initialization will happen
-    // during fetching the source sensors.
-    CreateFusionSensor(type, reading_buffer, callback);
-    return;
-  }
-
   if (!sensor_nodes_enumerated_) {
     if (!sensor_nodes_enumeration_started_) {
       sensor_nodes_enumeration_started_ = file_task_runner_->PostTask(
@@ -74,6 +68,11 @@ void PlatformSensorProviderLinux::CreateSensorInternal(
           base::Bind(&SensorDeviceManager::Start,
                      base::Unretained(sensor_device_manager_.get()), this));
     }
+    return;
+  }
+
+  if (IsFusionSensorType(type)) {
+    CreateFusionSensor(type, reading_buffer, callback);
     return;
   }
 
@@ -115,7 +114,6 @@ void PlatformSensorProviderLinux::SetFileTaskRunner(
 void PlatformSensorProviderLinux::FreeResources() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_task_runner_);
-  Shutdown();
   // When there are no sensors left, the polling thread must be stopped.
   // Stop() can only be called on a different thread that allows I/O.
   // Thus, browser's file thread is used for this purpose.
@@ -187,8 +185,15 @@ void PlatformSensorProviderLinux::ProcessStoredRequests() {
     return;
 
   for (auto const& type : request_types) {
-    if (IsFusionSensorType(type))
+    if (IsFusionSensorType(type)) {
+      SensorReadingSharedBuffer* reading_buffer =
+          GetSensorReadingSharedBufferForType(type);
+      CreateFusionSensor(
+          type, reading_buffer,
+          base::Bind(&PlatformSensorProviderLinux::NotifySensorCreated,
+                     base::Unretained(this), type));
       continue;
+    }
 
     SensorInfoLinux* device = nullptr;
     auto device_entry = sensor_devices_by_type_.find(type);
@@ -264,8 +269,13 @@ void PlatformSensorProviderLinux::CreateFusionSensor(
           true /* absolute */);
       break;
     case mojom::SensorType::RELATIVE_ORIENTATION_EULER_ANGLES:
-      fusion_algorithm = std::make_unique<
-          RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
+      if (GetSensorDevice(mojom::SensorType::GYROSCOPE)) {
+        fusion_algorithm = std::make_unique<
+            RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometerAndGyroscope>();
+      } else {
+        fusion_algorithm = std::make_unique<
+            RelativeOrientationEulerAnglesFusionAlgorithmUsingAccelerometer>();
+      }
       break;
     case mojom::SensorType::RELATIVE_ORIENTATION_QUATERNION:
       fusion_algorithm = std::make_unique<

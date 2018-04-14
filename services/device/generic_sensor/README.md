@@ -73,7 +73,8 @@ platform.
 | PRESSURE                          |                           |                                       |                                       |                                           |
 | ABSOLUTE_ORIENTATION_EULER_ANGLES | See below                 | ACCELEROMETER and MAGNETOMETER (*)    |                                       | SENSOR_TYPE_INCLINOMETER_3D               |
 | ABSOLUTE_ORIENTATION_QUATERNION   | See below                 | ABSOLUTE_ORIENTATION_EULER_ANGLES (*) |                                       | SENSOR_TYPE_AGGREGATED_DEVICE_ORIENTATION |
-| RELATIVE_ORIENTATION_EULER_ANGLES | See below                 | ACCELEROMETER (*)                     | ACCELEROMETER (*)                     |                                           |
+| RELATIVE_ORIENTATION_EULER_ANGLES | See below                 | ACCELEROMETER and GYROSCOPE (*)       | ACCELEROMETER (*)                     |                                           |
+|                                   |                           | or ACCELEROMETER (*)                  |                                       |                                           |
 | RELATIVE_ORIENTATION_QUATERNION   | TYPE_GAME_ROTATION_VECTOR | RELATIVE_ORIENTATION_EULER_ANGLES (*) | RELATIVE_ORIENTATION_EULER_ANGLES (*) |                                           |
 
 (Note: "*" means the sensor type is provided by sensor fusion.)
@@ -108,8 +109,8 @@ value that can be read from the ACCELEROMETER and MAGNETOMETER. The
 ABSOLUTE_ORIENTATION_QUATERNION sensor type is provided by interpreting the
 value that can be read from the ABSOLUTE_ORIENTATION_EULER_ANGLES. The
 RELATIVE_ORIENTATION_EULER_ANGLES sensor type is provided by interpreting the
-value that can be read from the ACCELEROMETER. The
-RELATIVE_ORIENTATION_QUATERNION sensor type is provided by interpreting the
+value that can be read from the ACCELEROMETER and GYROSCOPE, or ACCELEROMETER.
+The RELATIVE_ORIENTATION_QUATERNION sensor type is provided by interpreting the
 value that can be read from the RELATIVE_ORIENTATION_EULER_ANGLES.
 LINEAR_ACCELEROMETER sensor type is provided by implementing a low-pass-filter
 over the values returned by the ACCELEROMETER in order to remove the
