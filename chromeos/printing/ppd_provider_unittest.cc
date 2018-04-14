@@ -680,15 +680,14 @@ TEST_F(PpdProviderTest, ExtractPpdFilters) {
   ref.effective_make_and_model = "printer_b_ref";
   provider->ResolvePpd(ref, base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
                                            base::Unretained(this)));
-  scoped_task_environment_.RunUntilIdle();
 
-  ASSERT_EQ(2UL, captured_resolve_ppd_.size());
-  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
-  EXPECT_EQ(kCupsFilterPpdContents, captured_resolve_ppd_[0].ppd_contents);
+  scoped_task_environment_.RunUntilIdle();
 
   std::sort(captured_resolve_ppd_[0].ppd_filters.begin(),
             captured_resolve_ppd_[0].ppd_filters.end());
-
+  ASSERT_EQ(2UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+  EXPECT_EQ(kCupsFilterPpdContents, captured_resolve_ppd_[0].ppd_contents);
   EXPECT_EQ(
       std::vector<std::string>({"a_different_filter", "filter3", "my_filter"}),
       captured_resolve_ppd_[0].ppd_filters);
@@ -700,6 +699,50 @@ TEST_F(PpdProviderTest, ExtractPpdFilters) {
   EXPECT_EQ(
       std::vector<std::string>({"another_real_filter", "the_real_filter"}),
       captured_resolve_ppd_[1].ppd_filters);
+}
+
+// Test that all entrypoints will correctly work with case-insensitve
+// effective-make-and-model strings.
+TEST_F(PpdProviderTest, CaseInsensitiveMakeAndModel) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en", false);
+  std::string ref = "pRiNteR_A_reF";
+
+  Printer::PpdReference ppd_ref;
+  ppd_ref.effective_make_and_model = ref;
+  provider->ResolvePpd(ppd_ref,
+                       base::BindOnce(&PpdProviderTest::CaptureResolvePpd,
+                                      base::Unretained(this)));
+  provider->ReverseLookup(ref,
+                          base::BindOnce(&PpdProviderTest::CaptureReverseLookup,
+                                         base::Unretained(this)));
+  PpdProvider::PrinterSearchData printer_info;
+  printer_info.make_and_model = {ref};
+  provider->ResolvePpdReference(
+      printer_info, base::BindOnce(&PpdProviderTest::CaptureResolvePpdReference,
+                                   base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  std::sort(captured_resolve_ppd_[0].ppd_filters.begin(),
+            captured_resolve_ppd_[0].ppd_filters.end());
+
+  // Check PpdProvider::ResolvePpd
+  ASSERT_EQ(1UL, captured_resolve_ppd_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_[0].code);
+  EXPECT_EQ(kCupsFilterPpdContents, captured_resolve_ppd_[0].ppd_contents);
+
+  // Check PpdProvider::ReverseLookup
+  ASSERT_EQ(1UL, captured_reverse_lookup_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_reverse_lookup_[0].code);
+  EXPECT_EQ("manufacturer_a_en", captured_reverse_lookup_[0].manufacturer);
+  EXPECT_EQ("printer_a", captured_reverse_lookup_[0].model);
+
+  // Check PpdProvider::ResolvePpdReference
+  ASSERT_EQ(1UL, captured_resolve_ppd_references_.size());
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[0].first);
+  EXPECT_EQ(
+      "printer_a_ref",
+      captured_resolve_ppd_references_[0].second.effective_make_and_model);
 }
 
 // Verifies that we can extract the Manufacturer and Model selectison for a
