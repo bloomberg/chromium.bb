@@ -22,22 +22,26 @@ WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::TickClock* tick_clock)
     : WatchTimeReporter(std::move(properties),
                         false /* is_background */,
                         std::move(get_media_time_cb),
                         provider,
-                        task_runner) {}
+                        task_runner,
+                        tick_clock) {}
 
 WatchTimeReporter::WatchTimeReporter(
     mojom::PlaybackPropertiesPtr properties,
     bool is_background,
     GetMediaTimeCB get_media_time_cb,
     mojom::MediaMetricsProvider* provider,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::TickClock* tick_clock)
     : properties_(std::move(properties)),
       is_background_(is_background),
-      get_media_time_cb_(std::move(get_media_time_cb)) {
+      get_media_time_cb_(std::move(get_media_time_cb)),
+      reporting_timer_(tick_clock) {
   DCHECK(!get_media_time_cb_.is_null());
   DCHECK(properties_->has_audio || properties_->has_video);
   DCHECK_EQ(is_background, properties_->is_background);
@@ -56,9 +60,9 @@ WatchTimeReporter::WatchTimeReporter(
   // unnecessary complexity inside the UpdateWatchTime() for handling this case.
   auto prop_copy = properties_.Clone();
   prop_copy->is_background = true;
-  background_reporter_.reset(
-      new WatchTimeReporter(std::move(prop_copy), true /* is_background */,
-                            get_media_time_cb_, provider, task_runner));
+  background_reporter_.reset(new WatchTimeReporter(
+      std::move(prop_copy), true /* is_background */, get_media_time_cb_,
+      provider, task_runner, tick_clock));
 
   reporting_timer_.SetTaskRunner(task_runner);
 }

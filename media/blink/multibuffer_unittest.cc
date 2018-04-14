@@ -254,9 +254,6 @@ class MultiBufferTest : public testing::Test {
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<MultiBuffer::GlobalLRU> lru_;
   TestMultiBuffer multibuffer_;
-
-  // TODO(hubbe): Make MultiBufferReader take a task_runner_
-  base::MessageLoop message_loop_;
 };
 
 TEST_F(MultiBufferTest, ReadAll) {

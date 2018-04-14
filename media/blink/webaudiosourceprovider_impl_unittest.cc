@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/fake_audio_render_callback.h"
@@ -153,7 +152,6 @@ class WebAudioSourceProviderImplTest
   scoped_refptr<MockAudioRendererSink> mock_sink_;
   scoped_refptr<WebAudioSourceProviderImplUnderTest> wasp_impl_;
   MockAudioRendererSink* expected_sink_;
-  base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAudioSourceProviderImplTest);
 };

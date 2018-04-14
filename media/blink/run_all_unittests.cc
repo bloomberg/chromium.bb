@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/macros.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
 #include "media/base/media.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_thread.h"
@@ -25,68 +23,46 @@
 #include "mojo/edk/embedder/embedder.h"
 #endif
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "gin/v8_initializer.h"
-#endif
-
-namespace {
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-#if defined(USE_V8_CONTEXT_SNAPSHOT)
+#include "gin/v8_initializer.h"
+
 constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
+#if defined(USE_V8_CONTEXT_SNAPSHOT)
     gin::V8Initializer::V8SnapshotFileType::kWithAdditionalContext;
 #else
-constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
     gin::V8Initializer::V8SnapshotFileType::kDefault;
-#endif
-#endif
-}
+#endif  // defined(USE_V8_CONTEXT_SNAPSHOT)
+#endif  // defined(V8_USE_EXTERNAL_STARTUP_DATA)
 
-class TestBlinkPlatformSupport : public blink::Platform {
+// We must use a custom blink::Platform that ensures the main thread scheduler
+// knows about the ScopedTaskEnvironment.
+class BlinkPlatformWithTaskEnvironment : public blink::Platform {
  public:
-  TestBlinkPlatformSupport()
+  BlinkPlatformWithTaskEnvironment()
       : main_thread_scheduler_(
             blink::scheduler::CreateWebMainThreadSchedulerForTests()),
         main_thread_(main_thread_scheduler_->CreateMainThread()) {}
-  ~TestBlinkPlatformSupport() override;
 
+  ~BlinkPlatformWithTaskEnvironment() override {
+    main_thread_scheduler_->Shutdown();
+  }
+
+ protected:
   blink::WebThread* CurrentThread() override {
-    EXPECT_TRUE(main_thread_->IsCurrentThread());
+    CHECK(main_thread_->IsCurrentThread());
     return main_thread_.get();
   }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
       main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> main_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlinkPlatformWithTaskEnvironment);
 };
 
-TestBlinkPlatformSupport::~TestBlinkPlatformSupport() {
-  main_thread_scheduler_->Shutdown();
-}
-
-class BlinkMediaTestSuite : public base::TestSuite {
- public:
-  BlinkMediaTestSuite(int argc, char** argv);
-  ~BlinkMediaTestSuite() override;
-
- protected:
-  void Initialize() override;
-
- private:
-  std::unique_ptr<TestBlinkPlatformSupport> blink_platform_support_;
-};
-
-BlinkMediaTestSuite::BlinkMediaTestSuite(int argc, char** argv)
-    : TestSuite(argc, argv),
-      blink_platform_support_(new TestBlinkPlatformSupport()) {
-}
-
-BlinkMediaTestSuite::~BlinkMediaTestSuite() = default;
-
-void BlinkMediaTestSuite::Initialize() {
-  // Run TestSuite::Initialize first so that logging is initialized.
-  base::TestSuite::Initialize();
-
+static int RunTests(base::TestSuite* test_suite) {
 #if defined(OS_ANDROID)
   if (media::MediaCodecUtil::IsMediaCodecAvailable())
     media::EnablePlatformDecoderSupport();
@@ -96,29 +72,26 @@ void BlinkMediaTestSuite::Initialize() {
   // present.
   media::InitializeMediaLibrary();
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
   gin::V8Initializer::LoadV8Natives();
 #endif
 
-// Initialize mojo firstly to enable Blink initialization to use it.
 #if !defined(OS_IOS)
+  // Initialize mojo firstly to enable Blink initialization to use it.
   mojo::edk::Init();
 #endif
-  // Dummy task runner is initialized here because the blink::initialize creates
-  // IsolateHolder which needs the current task runner handle. There should be
-  // no task posted to this task runner.
-  std::unique_ptr<base::MessageLoop> message_loop;
-  if (!base::MessageLoop::current())
-    message_loop.reset(new base::MessageLoop());
+
+  BlinkPlatformWithTaskEnvironment platform_;
   service_manager::BinderRegistry empty_registry;
-  blink::Initialize(blink_platform_support_.get(), &empty_registry);
+  blink::Initialize(&platform_, &empty_registry);
+
+  return test_suite->Run();
 }
 
 int main(int argc, char** argv) {
-  BlinkMediaTestSuite test_suite(argc, argv);
-
+  base::TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&BlinkMediaTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc, argv,
+      base::BindRepeating(&RunTests, base::Unretained(&test_suite)));
 }

@@ -226,8 +226,8 @@ class MultibufferDataSourceTest : public testing::Test {
                           size_t file_size = kFileSize) {
     GURL gurl(url);
     data_source_.reset(new MockMultibufferDataSource(
-        message_loop_.task_runner(), url_index_->GetByUrl(gurl, cors_mode),
-        &host_));
+        base::ThreadTaskRunnerHandle::Get(),
+        url_index_->GetByUrl(gurl, cors_mode), &host_));
     data_source_->SetPreload(preload_);
 
     response_generator_.reset(new TestResponseGenerator(gurl, file_size));
@@ -449,7 +449,6 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
   MultibufferDataSource::Preload preload_;
   NiceMock<MockResourceFetchContext> fetch_context_;
   std::unique_ptr<TestUrlIndex> url_index_;
@@ -989,7 +988,7 @@ TEST_F(MultibufferDataSourceTest, Http_ShareData) {
 
   StrictMock<MockBufferedDataSourceHost> host2;
   MockMultibufferDataSource source2(
-      message_loop_.task_runner(),
+      base::ThreadTaskRunnerHandle::Get(),
       url_index_->GetByUrl(GURL(kHttpUrl), UrlData::CORS_UNSPECIFIED), &host2);
   source2.SetPreload(preload_);
 
@@ -1297,7 +1296,7 @@ TEST_F(MultibufferDataSourceTest,
 TEST_F(MultibufferDataSourceTest, SeekPastEOF) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
-      message_loop_.task_runner(),
+      base::ThreadTaskRunnerHandle::Get(),
       url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED), &host_));
   data_source_->SetPreload(preload_);
 
@@ -1604,7 +1603,7 @@ TEST_F(MultibufferDataSourceTest, CheckBufferSizeAfterReadingALot) {
 TEST_F(MultibufferDataSourceTest, Http_CheckLoadingTransition) {
   GURL gurl(kHttpUrl);
   data_source_.reset(new MockMultibufferDataSource(
-      message_loop_.task_runner(),
+      base::ThreadTaskRunnerHandle::Get(),
       url_index_->GetByUrl(gurl, UrlData::CORS_UNSPECIFIED), &host_));
   data_source_->SetPreload(preload_);
 

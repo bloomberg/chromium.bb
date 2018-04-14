@@ -19,7 +19,6 @@
 #include "base/task_runner_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,8 +45,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
@@ -55,9 +52,7 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
-#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_frame_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_scoped_user_gesture.h"
@@ -308,51 +303,6 @@ class MockVideoFrameCompositor : public VideoFrameCompositor {
                void(const viz::FrameSinkId&, media::VideoRotation));
 };
 
-// We must use a custom blink::Platform that ensures the main thread scheduler
-// knows about the ScopedTaskEnvironment; the default one is not setup with a
-// ScopedTaskEnvironment to allow other tests to use mock MessageLoops.
-class BlinkPlatformWithTaskEnvironment : public blink::Platform {
- public:
-  BlinkPlatformWithTaskEnvironment()
-      : original_platform_(blink::Platform::Current()),
-        scoped_task_environment_(
-            std::make_unique<base::test::ScopedTaskEnvironment>()),
-        main_thread_scheduler_(
-            blink::scheduler::CreateWebMainThreadSchedulerForTests()),
-        main_thread_(main_thread_scheduler_->CreateMainThread()) {
-    DCHECK(original_platform_);
-    blink::Platform::SetCurrentPlatformForTesting(this);
-  }
-
-  ~BlinkPlatformWithTaskEnvironment() override {
-    main_thread_scheduler_->Shutdown();
-    main_thread_.reset();
-    main_thread_scheduler_.reset();
-    scoped_task_environment_.reset();
-
-    DCHECK_EQ(this, blink::Platform::Current());
-    blink::Platform::SetCurrentPlatformForTesting(original_platform_);
-  }
-
-  blink::WebThread* CurrentThread() override {
-    EXPECT_TRUE(main_thread_->IsCurrentThread());
-    return main_thread_.get();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return scoped_task_environment_->GetMainThreadTaskRunner();
-  }
-
- private:
-  blink::Platform* const original_platform_;
-
-  // Must be constructed first; otherwise the main thread may stop pumping.
-  std::unique_ptr<base::test::ScopedTaskEnvironment> scoped_task_environment_;
-  std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
-      main_thread_scheduler_;
-  std::unique_ptr<blink::WebThread> main_thread_;
-};
-
 class WebMediaPlayerImplTest : public testing::Test {
  public:
   WebMediaPlayerImplTest()
@@ -406,8 +356,8 @@ class WebMediaPlayerImplTest : public testing::Test {
 
     auto params = std::make_unique<WebMediaPlayerParams>(
         std::move(media_log), WebMediaPlayerParams::DeferLoadCB(), audio_sink_,
-        media_thread_.task_runner(), platform_.task_runner(),
-        platform_.task_runner(), media_thread_.task_runner(),
+        media_thread_.task_runner(), base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
         base::BindRepeating(&OnAdjustAllocatedMemory), nullptr, nullptr,
         RequestRoutingTokenCallback(), nullptr,
         kMaxKeyframeDistanceToDisableBackgroundVideo,
@@ -675,8 +625,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     EXPECT_TRUE(wmpi_->demuxer_);
     EXPECT_FALSE(wmpi_->seeking_);
   }
-
-  BlinkPlatformWithTaskEnvironment platform_;
 
   // "Media" thread. This is necessary because WMPI destruction waits on a
   // WaitableEvent.
