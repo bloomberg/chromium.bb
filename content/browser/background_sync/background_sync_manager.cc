@@ -279,8 +279,28 @@ void BackgroundSyncManager::EmulateDispatchSyncEvent(
     bool last_chance,
     ServiceWorkerVersion::StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ServiceWorkerStatusCode code = CanEmulateSyncEvent(active_version);
+  if (code != SERVICE_WORKER_OK) {
+    std::move(callback).Run(code);
+    return;
+  }
   DispatchSyncEvent(tag, std::move(active_version), last_chance,
                     std::move(callback));
+}
+
+void BackgroundSyncManager::EmulateServiceWorkerOffline(
+    int64_t service_worker_id,
+    bool is_offline) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Multiple DevTools sessions may want to set the same SW offline, which
+  // is supposed to disable the background sync. For consistency with the
+  // network stack, SW remains offline until all DevTools sessions disable
+  // the offline mode.
+  emulated_offline_sw_[service_worker_id] += is_offline ? 1 : -1;
+  if (emulated_offline_sw_[service_worker_id] > 0)
+    return;
+  emulated_offline_sw_.erase(service_worker_id);
+  FireReadyEvents();
 }
 
 BackgroundSyncManager::BackgroundSyncManager(
@@ -845,13 +865,17 @@ bool BackgroundSyncManager::AreOptionConditionsMet(
 }
 
 bool BackgroundSyncManager::IsRegistrationReadyToFire(
-    const BackgroundSyncRegistration& registration) {
+    const BackgroundSyncRegistration& registration,
+    int64_t service_worker_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (registration.sync_state() != blink::mojom::BackgroundSyncState::PENDING)
     return false;
 
   if (clock_->Now() < registration.delay_until())
+    return false;
+
+  if (base::ContainsKey(emulated_offline_sw_, service_worker_id))
     return false;
 
   return AreOptionConditionsMet(*registration.options());
@@ -933,7 +957,8 @@ void BackgroundSyncManager::FireReadyEventsImpl(base::OnceClosure callback) {
     for (auto& key_and_registration :
          sw_id_and_registrations.second.registration_map) {
       BackgroundSyncRegistration* registration = &key_and_registration.second;
-      if (IsRegistrationReadyToFire(*registration)) {
+
+      if (IsRegistrationReadyToFire(*registration, service_worker_id)) {
         sw_id_and_tags_to_fire.push_back(
             std::make_pair(service_worker_id, key_and_registration.first));
         // The state change is not saved to persistent storage because
@@ -1200,6 +1225,18 @@ void BackgroundSyncManager::SetMaxSyncAttemptsImpl(int max_attempts,
 base::OnceClosure BackgroundSyncManager::MakeEmptyCompletion() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return op_scheduler_.WrapCallbackToRunNext(base::DoNothing::Once());
+}
+
+ServiceWorkerStatusCode BackgroundSyncManager::CanEmulateSyncEvent(
+    scoped_refptr<ServiceWorkerVersion> active_version) {
+  if (!active_version)
+    return SERVICE_WORKER_ERROR_FAILED;
+  if (!network_observer_->NetworkSufficient(NETWORK_STATE_ONLINE))
+    return SERVICE_WORKER_ERROR_NETWORK;
+  int64_t registration_id = active_version->registration_id();
+  if (base::ContainsKey(emulated_offline_sw_, registration_id))
+    return SERVICE_WORKER_ERROR_NETWORK;
+  return SERVICE_WORKER_OK;
 }
 
 }  // namespace content

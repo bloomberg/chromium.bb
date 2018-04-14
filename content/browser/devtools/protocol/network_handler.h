@@ -46,6 +46,7 @@ struct GlobalRequestID;
 struct InterceptedRequestInfo;
 
 namespace protocol {
+class BackgroundSyncRestorer;
 
 class NetworkHandler : public DevToolsDomainHandler,
                        public Network::Backend {
@@ -184,6 +185,7 @@ class NetworkHandler : public DevToolsDomainHandler,
   std::unique_ptr<DevToolsURLLoaderInterceptor> url_loader_interceptor_;
   bool bypass_service_worker_;
   bool cache_disabled_;
+  std::unique_ptr<BackgroundSyncRestorer> background_sync_restorer_;
   base::WeakPtrFactory<NetworkHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);

@@ -72,6 +72,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   // Returns the time when the ServiceWorker was doomed.
   base::Time version_doomed_time() const { return version_doomed_time_; }
 
+  int64_t version_id() const { return version_id_; }
+
   bool Matches(const ServiceWorkerContextCore* context, int64_t version_id);
 
  private:

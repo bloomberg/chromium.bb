@@ -107,6 +107,9 @@ class CONTENT_EXPORT BackgroundSyncManager
       bool last_chance,
       ServiceWorkerVersion::StatusCallback callback);
 
+  // Called from DevTools to toggle service worker "offline" status
+  void EmulateServiceWorkerOffline(int64_t service_worker_id, bool is_offline);
+
  protected:
   explicit BackgroundSyncManager(
       scoped_refptr<ServiceWorkerContextWrapper> context);
@@ -223,8 +226,8 @@ class CONTENT_EXPORT BackgroundSyncManager
                             StatusAndRegistrationsCallback callback);
 
   bool AreOptionConditionsMet(const BackgroundSyncRegistrationOptions& options);
-  bool IsRegistrationReadyToFire(
-      const BackgroundSyncRegistration& registration);
+  bool IsRegistrationReadyToFire(const BackgroundSyncRegistration& registration,
+                                 int64_t service_worker_id);
 
   // Determines if the browser needs to be able to run in the background (e.g.,
   // to run a pending registration or verify that a firing registration
@@ -282,6 +285,9 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   base::OnceClosure MakeEmptyCompletion();
 
+  ServiceWorkerStatusCode CanEmulateSyncEvent(
+      scoped_refptr<ServiceWorkerVersion> active_version);
+
   SWIdToRegistrationsMap active_registrations_;
   CacheStorageScheduler op_scheduler_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
@@ -299,6 +305,8 @@ class CONTENT_EXPORT BackgroundSyncManager
   std::unique_ptr<BackgroundSyncNetworkObserver> network_observer_;
 
   base::Clock* clock_;
+
+  std::map<int64_t, int> emulated_offline_sw_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 
