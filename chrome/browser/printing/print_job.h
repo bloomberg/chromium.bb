@@ -57,6 +57,12 @@ class PrintJob : public PrintJobWorkerOwner,
                           int page_count);
 
 #if defined(OS_WIN)
+  void StartConversionToNativeFormat(
+      const scoped_refptr<base::RefCountedMemory>& print_data,
+      const gfx::Size& page_size,
+      const gfx::Rect& content_area,
+      const gfx::Point& physical_offsets);
+
   // Overwrites the PDF page mapping to fill in values of -1 for all indices
   // that are not selected. This is needed when the user opens the system
   // dialog from the link in Print Preview on Windows and then sets a selection
@@ -105,24 +111,6 @@ class PrintJob : public PrintJobWorkerOwner,
   // Access the current printed document. Warning: may be NULL.
   PrintedDocument* document() const;
 
-#if defined(OS_WIN)
-  virtual void StartPdfToEmfConversion(
-      const scoped_refptr<base::RefCountedMemory>& bytes,
-      const gfx::Size& page_size,
-      const gfx::Rect& content_area,
-      bool print_text_with_gdi);
-
-  virtual void StartPdfToPostScriptConversion(
-      const scoped_refptr<base::RefCountedMemory>& bytes,
-      const gfx::Rect& content_area,
-      const gfx::Point& physical_offset,
-      bool ps_level2);
-
-  virtual void StartPdfToTextConversion(
-      const scoped_refptr<base::RefCountedMemory>& bytes,
-      const gfx::Size& page_size);
-#endif  // defined(OS_WIN)
-
  protected:
   ~PrintJob() override;
 
@@ -163,6 +151,21 @@ class PrintJob : public PrintJobWorkerOwner,
   void HoldUntilStopIsCalled();
 
 #if defined(OS_WIN)
+  virtual void StartPdfToEmfConversion(
+      const scoped_refptr<base::RefCountedMemory>& bytes,
+      const gfx::Size& page_size,
+      const gfx::Rect& content_area);
+
+  virtual void StartPdfToPostScriptConversion(
+      const scoped_refptr<base::RefCountedMemory>& bytes,
+      const gfx::Rect& content_area,
+      const gfx::Point& physical_offsets,
+      bool ps_level2);
+
+  virtual void StartPdfToTextConversion(
+      const scoped_refptr<base::RefCountedMemory>& bytes,
+      const gfx::Size& page_size);
+
   void OnPdfConversionStarted(int page_count);
   void OnPdfPageConverted(int page_number,
                           float scale_factor,

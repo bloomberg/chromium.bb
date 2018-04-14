@@ -51,8 +51,7 @@ bool TestPrintJob::FlushJob(base::TimeDelta timeout) {
 void TestPrintJob::StartPdfToEmfConversion(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const gfx::Size& page_size,
-    const gfx::Rect& content_area,
-    bool print_text_with_gdi) {
+    const gfx::Rect& content_area) {
   page_size_ = page_size;
   content_area_ = content_area;
   type_ = PrintSettings::PrinterType::TYPE_NONE;
@@ -61,10 +60,10 @@ void TestPrintJob::StartPdfToEmfConversion(
 void TestPrintJob::StartPdfToPostScriptConversion(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const gfx::Rect& content_area,
-    const gfx::Point& physical_offset,
+    const gfx::Point& physical_offsets,
     bool ps_level2) {
   content_area_ = content_area;
-  offsets_ = physical_offset;
+  physical_offsets_ = physical_offsets;
   type_ = ps_level2 ? PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL2
                     : PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL3;
 }

@@ -26,7 +26,7 @@ class TestPrintJob : public PrintJob {
   // Getters for values stored by TestPrintJob in Start...Converter functions.
   const gfx::Size& page_size() const { return page_size_; }
   const gfx::Rect& content_area() const { return content_area_; }
-  const gfx::Point& offsets() const { return offsets_; }
+  const gfx::Point& physical_offsets() const { return physical_offsets_; }
 #if defined(OS_WIN)
   PrintSettings::PrinterType type() const { return type_; }
 #endif
@@ -54,19 +54,17 @@ class TestPrintJob : public PrintJob {
   bool FlushJob(base::TimeDelta timeout) override;
 
 #if defined(OS_WIN)
-  // These functions fill in the values pointed to by |page_size_|,
-  // |content_area_|, |offsets_| and |type_| based on the arguments passed
-  // to them.
+  // These functions fill in the corresponding member variables based on the
+  // arguments passed in.
   void StartPdfToEmfConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Size& page_size,
-      const gfx::Rect& content_area,
-      bool print_text_with_gdi) override;
+      const gfx::Rect& content_area) override;
 
   void StartPdfToPostScriptConversion(
       const scoped_refptr<base::RefCountedMemory>& bytes,
       const gfx::Rect& content_area,
-      const gfx::Point& physical_offset,
+      const gfx::Point& physical_offsets,
       bool ps_level2) override;
 
   void StartPdfToTextConversion(
@@ -74,13 +72,12 @@ class TestPrintJob : public PrintJob {
       const gfx::Size& page_size) override;
 #endif  // defined(OS_WIN)
 
- protected:
+ private:
   ~TestPrintJob() override;
 
- private:
   gfx::Size page_size_;
   gfx::Rect content_area_;
-  gfx::Point offsets_;
+  gfx::Point physical_offsets_;
 #if defined(OS_WIN)
   PrintSettings::PrinterType type_;
 #endif
