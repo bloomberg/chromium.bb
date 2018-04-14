@@ -58,8 +58,9 @@ unit tests.
      All files are from the src/test/testdada directory in
      https://code.google.com/p/certificate-transparency/
 
-- twitter-chain.pem : A certificate chain for twitter.com which should be
-     valid albeit expired.
+- daltonridgeapts.com-chain.pem : A long-lived (39 month), BR compliant,
+     non-EV certificate, issued by a public trust anchor, and valid for the
+     domain daltonridgeapts.com.
 
 - gms.hongleong.com.my-verisign-chain.pem: A certificate chain for
   gms.hongleong.com.my issued by VeriSign Class 3 Public Primary Certification
