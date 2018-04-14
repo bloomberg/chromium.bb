@@ -385,6 +385,24 @@ TEST_P(FeatureInfoTest, InitializeWithANGLE) {
   EXPECT_TRUE(info_->gl_version_info().is_angle);
 }
 
+TEST_P(FeatureInfoTest, InitializeWithANGLED3D9Ex) {
+  SetupInitExpectationsWithGLVersion("", "ANGLE (foo bar Direct3D9Ex baz)", "");
+  EXPECT_TRUE(info_->gl_version_info().is_angle);
+  EXPECT_TRUE(info_->gl_version_info().is_d3d);
+}
+
+TEST_P(FeatureInfoTest, InitializeWithANGLED3D11) {
+  SetupInitExpectationsWithGLVersion("", "ANGLE (foo bar Direct3D11 baz)", "");
+  EXPECT_TRUE(info_->gl_version_info().is_angle);
+  EXPECT_TRUE(info_->gl_version_info().is_d3d);
+}
+
+TEST_P(FeatureInfoTest, InitializeWithANGLEOpenGL) {
+  SetupInitExpectationsWithGLVersion("", "ANGLE (foo bar OpenGL baz)", "");
+  EXPECT_TRUE(info_->gl_version_info().is_angle);
+  EXPECT_FALSE(info_->gl_version_info().is_d3d);
+}
+
 TEST_P(FeatureInfoTest, InitializeNPOTExtensionGLES) {
   SetupInitExpectations("GL_OES_texture_npot");
   EXPECT_TRUE(gl::HasExtension(info_->extensions(), "GL_OES_texture_npot"));
