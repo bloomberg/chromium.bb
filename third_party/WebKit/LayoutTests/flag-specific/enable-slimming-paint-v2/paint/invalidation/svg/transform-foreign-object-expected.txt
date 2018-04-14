@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [108, 8, 100, 100],
-          "reason": "appeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGForeignObject foreignObject",
           "rect": [8, 8, 100, 100],
-          "reason": "disappeared"
+          "reason": "paint property change"
         }
       ]
     }

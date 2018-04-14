@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
@@ -243,6 +244,11 @@ bool LayoutSVGResourceClipper::HitTestClipContent(
     IntPoint hit_point;
     HitTestResult result(HitTestRequest::kSVGClipContent, hit_point);
     LayoutObject* layout_object = child_element.GetLayoutObject();
+
+    if (layout_object->IsBoxModelObject() &&
+        ToLayoutBoxModelObject(layout_object)->HasSelfPaintingLayer())
+      continue;
+
     if (layout_object->NodeAtFloatPoint(result, point, kHitTestForeground))
       return true;
   }

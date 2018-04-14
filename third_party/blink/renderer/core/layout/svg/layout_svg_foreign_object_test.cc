@@ -34,6 +34,7 @@ TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {
   )HTML");
 
   const auto& svg = *GetDocument().getElementById("svg");
+  const auto& foreign = *GetDocument().getElementById("foreign");
   const auto& foreign_object = *GetLayoutObjectByElementId("foreign");
   const auto& div = *GetLayoutObjectByElementId("div");
 
@@ -69,10 +70,12 @@ TEST_F(LayoutSVGForeignObjectTest, DivInForeignObject) {
             rgm.MapToAncestor(FloatRect(0, 0, 1, 2), nullptr));
 
   // Hit testing
-  EXPECT_EQ(svg, HitTest(149, 149));
+  EXPECT_EQ(svg, HitTest(1, 1));
+  EXPECT_EQ(foreign, HitTest(149, 149));
   EXPECT_EQ(div.GetNode(), HitTest(150, 150));
   EXPECT_EQ(div.GetNode(), HitTest(349, 249));
-  EXPECT_EQ(svg, HitTest(350, 250));
+  EXPECT_EQ(foreign, HitTest(350, 250));
+  EXPECT_EQ(svg, HitTest(450, 350));
 }
 
 TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
@@ -95,6 +98,7 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   const auto& svg = *GetDocument().getElementById("svg");
+  const auto& foreign = *GetDocument().getElementById("foreign");
   const auto& foreign_object = *GetLayoutObjectByElementId("foreign");
   const auto& div = *ChildDocument().getElementById("div")->GetLayoutObject();
 
@@ -130,14 +134,99 @@ TEST_F(LayoutSVGForeignObjectTest, IframeInForeignObject) {
             rgm.MapToAncestor(FloatRect(0, 0, 1, 2), nullptr));
 
   // Hit testing
-  EXPECT_EQ(svg, HitTest(129, 129));
+  EXPECT_EQ(svg, HitTest(90, 90));
+  EXPECT_EQ(foreign, HitTest(129, 129));
   EXPECT_EQ(ChildDocument().documentElement(), HitTest(130, 130));
   EXPECT_EQ(ChildDocument().documentElement(), HitTest(199, 199));
   EXPECT_EQ(div.GetNode(), HitTest(200, 200));
   EXPECT_EQ(div.GetNode(), HitTest(299, 249));
   EXPECT_EQ(ChildDocument().documentElement(), HitTest(300, 250));
   EXPECT_EQ(ChildDocument().documentElement(), HitTest(369, 319));
-  EXPECT_EQ(svg, HitTest(370, 320));
+  EXPECT_EQ(foreign, HitTest(370, 320));
+  EXPECT_EQ(svg, HitTest(450, 400));
+}
+
+TEST_F(LayoutSVGForeignObjectTest, HitTestZoomedForeignObject) {
+  SetBodyInnerHTML(R"HTML(
+    <style>* { margin: 0; zoom: 150% }</style>
+    <svg id='svg' style='width: 200px; height: 200px'>
+      <foreignObject id='foreign' x='10' y='10' width='100' height='150'>
+        <div id='div' style='margin: 50px; width: 50px; height: 50px'>
+        </div>
+      </foreignObject>
+    </svg>
+  )HTML");
+
+  const auto& svg = *GetDocument().getElementById("svg");
+  const auto& foreign = *GetDocument().getElementById("foreign");
+  const auto& foreign_object = *GetLayoutObjectByElementId("foreign");
+  const auto& div = *GetDocument().getElementById("div");
+
+  EXPECT_EQ(FloatRect(10, 10, 100, 150), foreign_object.ObjectBoundingBox());
+  EXPECT_EQ(AffineTransform(), foreign_object.LocalSVGTransform());
+  EXPECT_EQ(AffineTransform(), foreign_object.LocalToSVGParentTransform());
+
+  // mapToVisualRectInAncestorSpace
+  LayoutRect div_rect(0, 0, 100, 50);
+  EXPECT_TRUE(div.GetLayoutObject()->MapToVisualRectInAncestorSpace(
+      &GetLayoutView(), div_rect));
+  EXPECT_EQ(LayoutRect(286, 286, 339, 170), div_rect);
+
+  // mapLocalToAncestor
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 FloatPoint());
+  div.GetLayoutObject()->MapLocalToAncestor(&GetLayoutView(), transform_state,
+                                            kTraverseDocumentBoundaries);
+  transform_state.Flatten();
+  EXPECT_EQ(FloatPoint(286.875, 286.875), transform_state.LastPlanarPoint());
+
+  // mapAncestorToLocal
+  TransformState transform_state1(
+      TransformState::kUnapplyInverseTransformDirection,
+      FloatPoint(286.875, 286.875));
+  div.GetLayoutObject()->MapAncestorToLocal(&GetLayoutView(), transform_state1,
+                                            kTraverseDocumentBoundaries);
+  transform_state1.Flatten();
+  EXPECT_EQ(FloatPoint(), transform_state1.LastPlanarPoint());
+
+  EXPECT_EQ(svg, HitTest(20, 20));
+  EXPECT_EQ(foreign, HitTest(280, 280));
+  EXPECT_EQ(div, HitTest(290, 290));
+}
+
+TEST_F(LayoutSVGForeignObjectTest, HitTestViewBoxForeignObject) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' style='width: 200px; height: 200px' viewBox='0 0 100 100'>
+      <foreignObject id='foreign' x='10' y='10' width='100' height='150'>
+        <div id='div' style='margin: 50px; width: 50px; height: 50px'>
+        </div>
+      </foreignObject>
+    </svg>
+  )HTML");
+
+  const auto& svg = *GetDocument().getElementById("svg");
+  const auto& foreign = *GetDocument().getElementById("foreign");
+  const auto& div = *GetDocument().getElementById("div");
+
+  // mapLocalToAncestor
+  TransformState transform_state(TransformState::kApplyTransformDirection,
+                                 FloatPoint());
+  div.GetLayoutObject()->MapLocalToAncestor(&GetLayoutView(), transform_state,
+                                            kTraverseDocumentBoundaries);
+  transform_state.Flatten();
+  EXPECT_EQ(FloatPoint(128, 128), transform_state.LastPlanarPoint());
+
+  // mapAncestorToLocal
+  TransformState transform_state1(
+      TransformState::kUnapplyInverseTransformDirection, FloatPoint(128, 128));
+  div.GetLayoutObject()->MapAncestorToLocal(&GetLayoutView(), transform_state1,
+                                            kTraverseDocumentBoundaries);
+  transform_state1.Flatten();
+  EXPECT_EQ(FloatPoint(), transform_state1.LastPlanarPoint());
+
+  EXPECT_EQ(svg, HitTest(20, 20));
+  EXPECT_EQ(foreign, HitTest(120, 110));
+  EXPECT_EQ(div, HitTest(160, 160));
 }
 
 }  // namespace blink

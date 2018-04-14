@@ -1851,6 +1851,16 @@ scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
     ConvertToLayerCoords(root_layer, offset);
   }
   offset.MoveBy(translation_offset);
+  // The location of a foreignObject element is added *after* transform, not
+  // before (all SVG child elements have this behavior). Therefore, remove
+  // the offset here to avoid applying it before the transform. It will be
+  // added later.
+  // TODO(chrishtr): this ugliness can be removed if we change the code to
+  // to be based on PaintOffset rather than PaintLayer offsets, like the
+  // paint code does. This is a larger effort though, that involves using
+  // property trees to drive hit testing coordinate spaces.
+  if (GetLayoutObject().IsSVGForeignObject())
+    offset.MoveBy(-LayoutBoxLocation());
 
   LayoutObject* container_layout_object =
       container_layer ? &container_layer->GetLayoutObject() : nullptr;
@@ -1928,8 +1938,14 @@ PaintLayer* PaintLayer::HitTestLayer(
   if (result.GetHitTestRequest().IgnoreClipping())
     clip_behavior = kIgnoreOverflowClip;
 
+  // Always send foreignObject PaintLayers through the "transform" code path,
+  // even if they have no transform. This is in order to collect any ancestor
+  // SVG transforms, including the SVG root to border box transform, which
+  // are represented outside of the PaintLayer tree.
+  bool use_transform = Transform() || GetLayoutObject().IsSVGForeignObject();
+
   // Apply a transform if we have one.
-  if (Transform() && !applied_transform) {
+  if (use_transform && !applied_transform) {
     if (EnclosingPaginationLayer()) {
       return HitTestTransformedLayerInFragments(
           root_layer, container_layer, result, hit_test_rect, hit_test_location,
@@ -2065,6 +2081,12 @@ PaintLayer* PaintLayer::HitTestLayer(
     return this;
   }
 
+  LayoutPoint offset = -LayoutBoxLocation();
+  // See comment in CreateLocalTransformState. The code here is
+  // where we re-add the location.
+  if (root_layer->GetLayoutObject().IsSVGForeignObject())
+    offset.MoveBy(root_layer->LayoutBoxLocation());
+
   // Next we want to see if the mouse pos is inside the child LayoutObjects of
   // the layer. Check every fragment in reverse order.
   if (IsSelfPaintingLayer()) {
@@ -2073,7 +2095,8 @@ PaintLayer* PaintLayer::HitTestLayer(
     HitTestResult temp_result(result.GetHitTestRequest(),
                               result.GetHitTestLocation());
     bool inside_fragment_foreground_rect = false;
-    if (HitTestContentsForFragments(layer_fragments, temp_result,
+
+    if (HitTestContentsForFragments(layer_fragments, offset, temp_result,
                                     hit_test_location, kHitTestDescendants,
                                     inside_fragment_foreground_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
@@ -2114,7 +2137,7 @@ PaintLayer* PaintLayer::HitTestLayer(
     HitTestResult temp_result(result.GetHitTestRequest(),
                               result.GetHitTestLocation());
     bool inside_fragment_background_rect = false;
-    if (HitTestContentsForFragments(layer_fragments, temp_result,
+    if (HitTestContentsForFragments(layer_fragments, offset, temp_result,
                                     hit_test_location, kHitTestSelf,
                                     inside_fragment_background_rect) &&
         IsHitCandidate(this, false, z_offset_for_contents_ptr,
@@ -2135,6 +2158,7 @@ PaintLayer* PaintLayer::HitTestLayer(
 
 bool PaintLayer::HitTestContentsForFragments(
     const PaintLayerFragments& layer_fragments,
+    const LayoutPoint& offset,
     HitTestResult& result,
     const HitTestLocation& hit_test_location,
     HitTestFilter hit_test_filter,
@@ -2150,8 +2174,10 @@ bool PaintLayer::HitTestContentsForFragments(
          !fragment.foreground_rect.Intersects(hit_test_location)))
       continue;
     inside_clip_rect = true;
-    if (HitTestContents(result, fragment.layer_bounds.Location(),
-                        hit_test_location, hit_test_filter))
+    LayoutPoint fragment_offset = offset;
+    fragment_offset.MoveBy(fragment.layer_bounds.Location());
+    if (HitTestContents(result, fragment_offset, hit_test_location,
+                        hit_test_filter))
       return true;
   }
 
@@ -2238,11 +2264,8 @@ bool PaintLayer::HitTestContents(HitTestResult& result,
                                  const HitTestLocation& hit_test_location,
                                  HitTestFilter hit_test_filter) const {
   DCHECK(IsSelfPaintingLayer() || HasSelfPaintingLayerDescendant());
-
-  if (!GetLayoutObject().HitTestAllPhases(
-          result, hit_test_location,
-          ToLayoutPoint(fragment_offset - LayoutBoxLocation()),
-          hit_test_filter)) {
+  if (!GetLayoutObject().HitTestAllPhases(result, hit_test_location,
+                                          fragment_offset, hit_test_filter)) {
     // It's wrong to set innerNode, but then claim that you didn't hit anything,
     // unless it is a rect-based test.
     DCHECK(!result.InnerNode() || (result.GetHitTestRequest().ListBased() &&
