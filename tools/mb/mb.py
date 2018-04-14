@@ -992,6 +992,7 @@ class MetaBuildWrapper(object):
     isolate_map = self.ReadIsolateMap()
 
     is_android = 'target_os="android"' in vals['gn_args']
+    is_simplechrome = vals.get('cros_passthrough', False)
     is_fuchsia = 'target_os="fuchsia"' in vals['gn_args']
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
 
@@ -1032,6 +1033,11 @@ class MetaBuildWrapper(object):
           '--logdog-bin-cmd', '../../bin/logdog_butler',
           '--store-tombstones']
     elif is_fuchsia and test_type != 'script':
+      cmdline = [
+          '../../testing/test_env.py',
+          os.path.join('bin', 'run_%s' % target),
+      ]
+    elif is_simplechrome and test_type != 'script':
       cmdline = [
           '../../testing/test_env.py',
           os.path.join('bin', 'run_%s' % target),
