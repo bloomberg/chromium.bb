@@ -43,12 +43,9 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
           kN32_SkColorType,
           LayerTreeSettings().decoded_image_working_set_budget_bytes) {
   SetDecodedImageTracker(&decoded_image_tracker_);
-
-  size_t prepaint_task_limit = std::numeric_limits<size_t>::max();
-  bool use_gpu_rasterization = false;
   SetResources(resource_pool, &image_decode_cache_, GetGlobalTaskGraphRunner(),
-               GetGlobalRasterBufferProvider(), prepaint_task_limit,
-               use_gpu_rasterization);
+               GetGlobalRasterBufferProvider(),
+               false /* use_gpu_rasterization */);
   SetTileTaskManagerForTesting(std::make_unique<FakeTileTaskManagerImpl>());
 }
 

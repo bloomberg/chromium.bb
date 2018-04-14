@@ -1721,45 +1721,6 @@ TEST_F(TileManagerTest, ActivateAndDrawWhenOOM) {
   }
 }
 
-class TileManagerTestRequiredOnly : public TileManagerTest {
-  LayerTreeSettings CreateSettings() override {
-    // Set max prepaint tasks to zero as they wait on callbacks in ways
-    // that other non-smoothness tasks do not.
-    auto settings = TileManagerTest::CreateSettings();
-
-    settings.max_prepaint_cpu_raster_tasks = 0;
-    settings.max_prepaint_gpu_raster_tasks = 0;
-    settings.max_prepaint_oop_raster_tasks = 0;
-    return settings;
-  }
-};
-
-// Verify that when there are zero prepaint tasks that we early out and notify
-// that all tasks are complete instead of spinning forever trying to schedule.
-TEST_F(TileManagerTestRequiredOnly, ZeroPrepaintLimitNotifyAllTasks) {
-  SetupDefaultTrees(gfx::Size(1000, 1000));
-
-  const gfx::Size tiny_viewport(1, 1);
-  host_impl()->SetViewportSize(tiny_viewport);
-
-  auto global_state = host_impl()->global_tile_state();
-  {
-    base::RunLoop run_loop;
-    EXPECT_FALSE(
-        host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
-    EXPECT_CALL(MockHostImpl(), NotifyReadyToActivate());
-    EXPECT_CALL(MockHostImpl(), NotifyReadyToDraw());
-    EXPECT_CALL(MockHostImpl(), NotifyAllTileTasksCompleted())
-        .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
-    host_impl()->tile_manager()->PrepareTiles(global_state);
-    EXPECT_TRUE(host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
-    run_loop.Run();
-  }
-
-  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToDraw());
-  EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
-}
-
 class PixelInspectTileManagerTest : public TileManagerTest {
  public:
   void SetUp() override {
@@ -2305,21 +2266,7 @@ class TileManagerReadyToDrawTest : public TileManagerTest {
   std::unique_ptr<FakeRecordingSource> solid_color_recording_source_;
 };
 
-class TileManagerReadyToDrawTestRequiredOnly
-    : public TileManagerReadyToDrawTest {
-  LayerTreeSettings CreateSettings() override {
-    // Set max prepaint tasks to zero as they wait on callbacks in ways
-    // that other non-smoothness tasks do not.
-    auto settings = TileManagerReadyToDrawTest::CreateSettings();
-    settings.max_prepaint_cpu_raster_tasks = 0;
-    settings.max_prepaint_gpu_raster_tasks = 0;
-    settings.max_prepaint_oop_raster_tasks = 0;
-    return settings;
-  }
-};
-
-TEST_F(TileManagerReadyToDrawTestRequiredOnly,
-       SmoothActivationWaitsOnCallback) {
+TEST_F(TileManagerReadyToDrawTest, SmoothActivationWaitsOnCallback) {
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   SetupTreesWithPendingTreeTiles();
 
@@ -2367,8 +2314,7 @@ TEST_F(TileManagerReadyToDrawTestRequiredOnly,
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
 }
 
-TEST_F(TileManagerReadyToDrawTestRequiredOnly,
-       NonSmoothActivationDoesNotWaitOnCallback) {
+TEST_F(TileManagerReadyToDrawTest, NonSmoothActivationDoesNotWaitOnCallback) {
   SetupTreesWithPendingTreeTiles();
 
   // We're using a StrictMock on the RasterBufferProvider, so any function call
@@ -2385,7 +2331,7 @@ TEST_F(TileManagerReadyToDrawTestRequiredOnly,
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
 }
 
-TEST_F(TileManagerReadyToDrawTestRequiredOnly, SmoothDrawWaitsOnCallback) {
+TEST_F(TileManagerReadyToDrawTest, SmoothDrawWaitsOnCallback) {
   host_impl()->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
   SetupTreesWithActiveTreeTiles();
 
@@ -2433,8 +2379,7 @@ TEST_F(TileManagerReadyToDrawTestRequiredOnly, SmoothDrawWaitsOnCallback) {
   EXPECT_TRUE(host_impl()->tile_manager()->IsReadyToActivate());
 }
 
-TEST_F(TileManagerReadyToDrawTestRequiredOnly,
-       NonSmoothDrawDoesNotWaitOnCallback) {
+TEST_F(TileManagerReadyToDrawTest, NonSmoothDrawDoesNotWaitOnCallback) {
   SetupTreesWithActiveTreeTiles();
 
   // We're using a StrictMock on the RasterBufferProvider, so any function call
@@ -2513,7 +2458,7 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
   {
     base::RunLoop run_loop;
 
-    EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, _))
+    EXPECT_CALL(*mock_raster_buffer_provider(), SetReadyToDrawCallback(_, _, 0))
         .WillOnce(testing::Invoke(
             [&run_loop, &callback](
                 const std::vector<const ResourcePool::InUsePoolResource*>&
@@ -2523,8 +2468,7 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
               callback = callback_in;
               run_loop.Quit();
               return 1;
-            }))
-        .WillRepeatedly(Return(0));
+            }));
     host_impl()->tile_manager()->DidModifyTilePriorities();
     host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
@@ -3176,92 +3120,6 @@ TEST_F(SynchronousRasterTileManagerTest, AlwaysUseImageCache) {
 
   // Destroy the LTHI since it accesses the RasterBufferProvider during cleanup.
   TakeHostImpl();
-}
-
-// Verify that setting a tile task limit properly limits how many tiles
-// get raster tasks from a single call to PrepareTiles.
-TEST_F(TileManagerTest, TileTaskLimit) {
-  const gfx::Size layer_bounds(1000, 1000);
-  host_impl()->SetViewportSize(layer_bounds);
-  SetupDefaultTrees(layer_bounds);
-
-  const int kTaskLimit = 5;
-  auto* tile_manager = host_impl()->tile_manager();
-  tile_manager->SetScheduledRasterTaskLimitForTesting(kTaskLimit);
-
-  tile_manager->PrepareTiles(host_impl()->global_tile_state());
-
-  std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
-      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
-  EXPECT_FALSE(queue->IsEmpty());
-
-  int tile_count = 0;
-  int task_count = 0;
-  std::set<Tile*> all_tiles;
-  while (!queue->IsEmpty()) {
-    auto* tile = queue->Top().tile();
-    ASSERT_TRUE(tile);
-    tile_count++;
-    if (tile->HasRasterTask())
-      task_count++;
-    queue->Pop();
-  }
-  // Sanity check.
-  EXPECT_GT(tile_count, kTaskLimit);
-
-  EXPECT_EQ(task_count, kTaskLimit);
-}
-
-class TileManagerLimitPrepaintTest : public TestLayerTreeHostBase {
- public:
-  const int kPrepaintTaskLimit = 1;
-
-  LayerTreeSettings CreateSettings() override {
-    LayerTreeSettings settings;
-    settings.max_prepaint_cpu_raster_tasks = kPrepaintTaskLimit;
-    settings.max_prepaint_gpu_raster_tasks = kPrepaintTaskLimit;
-    settings.max_prepaint_oop_raster_tasks = kPrepaintTaskLimit;
-    return settings;
-  }
-};
-
-// Verify that setting prepaint task limits properly limit how many prepaint
-// tiles get raster tasks from a single call to PrepareTiles.
-TEST_F(TileManagerLimitPrepaintTest, PrepaintTaskLimit) {
-  const gfx::Size layer_bounds(1000, 1000);
-  SetupDefaultTrees(layer_bounds);
-
-  // Use a tiny viewport so that many tasks are prepaint tasks.
-  const gfx::Size tiny_viewport(1, 1);
-  host_impl()->SetViewportSize(tiny_viewport);
-
-  auto* tile_manager = host_impl()->tile_manager();
-  tile_manager->PrepareTiles(host_impl()->global_tile_state());
-
-  std::unique_ptr<RasterTilePriorityQueue> queue(host_impl()->BuildRasterQueue(
-      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
-  EXPECT_FALSE(queue->IsEmpty());
-
-  int tile_count = 0;
-  int task_count = 0;
-  int prepaint_task_count = 0;
-  std::set<Tile*> all_tiles;
-  while (!queue->IsEmpty()) {
-    auto* tile = queue->Top().tile();
-    ASSERT_TRUE(tile);
-    tile_count++;
-    if (tile->HasRasterTask()) {
-      task_count++;
-      if (tile->is_prepaint())
-        prepaint_task_count++;
-    }
-    queue->Pop();
-  }
-  // Sanity check.
-  EXPECT_GT(tile_count, kPrepaintTaskLimit);
-  EXPECT_GT(task_count, prepaint_task_count);
-
-  EXPECT_EQ(prepaint_task_count, kPrepaintTaskLimit);
 }
 
 }  // namespace
