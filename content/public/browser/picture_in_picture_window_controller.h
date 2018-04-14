@@ -38,6 +38,7 @@ class PictureInPictureWindowController {
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;
+  virtual void UpdateLayerBounds() = 0;
 
   // Commands.
   virtual void TogglePlayPause() = 0;

@@ -34,6 +34,9 @@ class OverlayWindowViews : public content::OverlayWindow, public views::Widget {
   void OnNativeWidgetWorkspaceChanged() override;
   void OnMouseEvent(ui::MouseEvent* event) override;
 
+  // views::internal::NativeWidgetDelegate:
+  void OnNativeWidgetSizeChanged(const gfx::Size& new_size) override;
+
  private:
   // Determine the intended bounds of |this|. This should be called when there
   // is reason for the bounds to change, such as switching primary displays or

@@ -214,3 +214,12 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
     event->SetHandled();
   }
 }
+
+void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
+  // Update the surface layer bounds to stretch / shrink the size of the shown
+  // video in the window.
+  if (controller_)
+    controller_->UpdateLayerBounds();
+
+  views::Widget::OnNativeWidgetSizeChanged(new_size);
+}

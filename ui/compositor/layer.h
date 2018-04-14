@@ -445,6 +445,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // fill the bounds of |this|. Defaults to false.
   bool StretchContentToFillBounds() const;
 
+  // If |surface_layer_| exists, update the size. The updated size is necessary
+  // for proper scaling if the embedder is resized and the |surface_layer_| is
+  // set to stretch to fill bounds.
+  void SetSurfaceSize(gfx::Size surface_size_in_dip);
+
  private:
   friend class LayerOwner;
   class LayerMirror;

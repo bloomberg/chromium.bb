@@ -84,6 +84,11 @@ OverlayWindow* PictureInPictureWindowControllerImpl::GetWindowForTesting() {
   return window_.get();
 }
 
+void PictureInPictureWindowControllerImpl::UpdateLayerBounds() {
+  if (embedder_)
+    embedder_->UpdateLayerBounds();
+}
+
 void PictureInPictureWindowControllerImpl::TogglePlayPause() {
   DCHECK(window_ && window_->IsActive());
 
