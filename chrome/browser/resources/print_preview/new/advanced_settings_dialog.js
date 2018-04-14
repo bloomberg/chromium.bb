@@ -26,6 +26,14 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether there is more than one vendor item to display.
+   * @private
+   */
+  hasMultipleItems_: function() {
+    return this.destination.capabilities.printer.vendor_capability.length > 1;
+  },
+
+  /**
    * @return {boolean} Whether there is a setting matching the query.
    * @private
    */
