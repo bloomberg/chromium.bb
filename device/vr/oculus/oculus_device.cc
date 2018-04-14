@@ -57,7 +57,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(unsigned int id,
   display_info->capabilities->hasPosition = true;
   display_info->capabilities->hasExternalDisplay = true;
   display_info->capabilities->canPresent = true;
-  display_info->default_framebuffer_scale = 1.0;
+  display_info->webvr_default_framebuffer_scale = 1.0;
+  display_info->webxr_default_framebuffer_scale = 1.0;
 
   ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
   display_info->leftEye = GetEyeDetails(session, hmdDesc, ovrEye_Left);

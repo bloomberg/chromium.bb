@@ -140,9 +140,9 @@ void VRDisplay::Update(const device::mojom::blink::VRDisplayInfoPtr& display) {
     is_valid = true;
 
     eye_parameters_left_ = new VREyeParameters(
-        display->leftEye, display->default_framebuffer_scale);
+        display->leftEye, display->webvr_default_framebuffer_scale);
     eye_parameters_right_ = new VREyeParameters(
-        display->rightEye, display->default_framebuffer_scale);
+        display->rightEye, display->webvr_default_framebuffer_scale);
   }
 
   bool need_on_present_change = false;

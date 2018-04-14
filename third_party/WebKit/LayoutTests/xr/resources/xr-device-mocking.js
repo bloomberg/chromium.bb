@@ -86,7 +86,7 @@ function fakeXRDevices() {
       stageParameters: null,
       leftEye: null,
       rightEye: null,
-      defaultFramebufferScale: 1.0,
+      webxrDefaultFramebufferScale: 1.0,
     },
 
     FakeRoomScale: {
@@ -107,7 +107,7 @@ function fakeXRDevices() {
       },
       leftEye: generic_left_eye,
       rightEye: generic_right_eye,
-      defaultFramebufferScale: 1.0,
+      webxrDefaultFramebufferScale: 1.0,
     },
 
     FakeGooglePixelPhone: {
@@ -142,7 +142,7 @@ function fakeXRDevices() {
         renderWidth: 1920,
         renderHeight: 2160
       },
-      defaultFramebufferScale: 0.5,
+      webxrDefaultFramebufferScale: 0.7,
     }
   };
 }

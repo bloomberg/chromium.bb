@@ -260,7 +260,7 @@ void XRSession::ForceEnd() {
 
 double XRSession::DefaultFramebufferScale() const {
   if (exclusive_)
-    return device_->xrDisplayInfoPtr()->default_framebuffer_scale;
+    return device_->xrDisplayInfoPtr()->webxr_default_framebuffer_scale;
   return 1.0;
 }
 
