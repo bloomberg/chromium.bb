@@ -169,16 +169,7 @@ void CursorWindowController::UpdateContainer() {
     if (display.is_valid())
       SetDisplay(display);
   } else {
-    aura::Window::Windows mirror_windows = Shell::Get()
-                                               ->window_tree_host_manager()
-                                               ->mirror_window_controller()
-                                               ->GetAllRootWindows();
-    if (mirror_windows.empty()) {
-      SetContainer(nullptr);
-      return;
-    }
-    display_ = display::Screen::GetScreen()->GetPrimaryDisplay();
-    SetContainer(mirror_windows[0]);
+    SetContainer(nullptr);
   }
   // Updates the hot point based on the current display.
   UpdateCursorImage();
@@ -208,14 +199,10 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
 }
 
 void CursorWindowController::UpdateLocation() {
-  gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
-  if (!is_cursor_compositing_enabled_) {
-    Shell::GetPrimaryRootWindow()->GetHost()->ConvertDIPToPixels(&point);
-  } else {
-    point.Offset(-bounds_in_screen_.x(), -bounds_in_screen_.y());
-  }
   if (!cursor_window_)
     return;
+  gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
+  point.Offset(-bounds_in_screen_.x(), -bounds_in_screen_.y());
   point.Offset(-hot_point_.x(), -hot_point_.y());
   gfx::Rect bounds = cursor_window_->bounds();
   bounds.set_origin(point);
@@ -223,9 +210,9 @@ void CursorWindowController::UpdateLocation() {
 }
 
 void CursorWindowController::SetCursor(gfx::NativeCursor cursor) {
-  if (cursor_type_ == cursor.native_type())
+  if (cursor_ == cursor)
     return;
-  cursor_type_ = cursor.native_type();
+  cursor_ = cursor;
   UpdateCursorImage();
   UpdateCursorVisibility();
 }
@@ -285,81 +272,57 @@ void CursorWindowController::SetBoundsInScreenAndRotation(
 }
 
 void CursorWindowController::UpdateCursorImage() {
-  float cursor_scale;
-  if (!is_cursor_compositing_enabled_) {
-    cursor_scale = display_.device_scale_factor();
-  } else {
-    // Use the original device scale factor instead of the display's, which
-    // might have been adjusted for the UI scale.
-    const float original_scale = Shell::Get()
-                                     ->display_manager()
-                                     ->GetDisplayInfo(display_.id())
-                                     .device_scale_factor();
-    // And use the nearest resource scale factor.
-    cursor_scale =
-        ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
-  }
-  int resource_id;
-  // TODO(hshi): support custom cursor set.
-  if (!ui::GetCursorDataFor(cursor_size_, cursor_type_, cursor_scale,
-                            &resource_id, &hot_point_)) {
+  if (!is_cursor_compositing_enabled_)
     return;
-  }
-  const gfx::ImageSkia* image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
-  if (!is_cursor_compositing_enabled_) {
-    gfx::ImageSkia rotated = *image;
-    switch (display_.rotation()) {
-      case display::Display::ROTATE_0:
-        break;
-      case display::Display::ROTATE_90:
-        rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
-            *image, SkBitmapOperations::ROTATION_90_CW);
-        hot_point_.SetPoint(rotated.width() - hot_point_.y(), hot_point_.x());
-        break;
-      case display::Display::ROTATE_180:
-        rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
-            *image, SkBitmapOperations::ROTATION_180_CW);
-        hot_point_.SetPoint(rotated.height() - hot_point_.x(),
-                            rotated.width() - hot_point_.y());
-        break;
-      case display::Display::ROTATE_270:
-        rotated = gfx::ImageSkiaOperations::CreateRotatedImage(
-            *image, SkBitmapOperations::ROTATION_270_CW);
-        hot_point_.SetPoint(hot_point_.y(), rotated.height() - hot_point_.x());
-        break;
-    }
-    // Note that mirror window's scale factor is always 1.0f, therefore we
-    // need to take 2x's image and paint as if it's 1x image.
-    const gfx::ImageSkiaRep& image_rep =
-        rotated.GetRepresentation(cursor_scale);
-    delegate_->SetCursorImage(
-        image_rep.pixel_size(),
-        gfx::ImageSkia::CreateFrom1xBitmap(image_rep.sk_bitmap()));
+
+  // Use the original device scale factor instead of the display's, which
+  // might have been adjusted for the UI scale.
+  const float original_scale = Shell::Get()
+                                   ->display_manager()
+                                   ->GetDisplayInfo(display_.id())
+                                   .device_scale_factor();
+  // And use the nearest resource scale factor.
+  float cursor_scale =
+      ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactor(original_scale));
+
+  gfx::ImageSkia image;
+  if (cursor_.native_type() == ui::CursorType::kCustom) {
+    SkBitmap bitmap = cursor_.GetBitmap();
+    if (bitmap.isNull())
+      return;
+    image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+    hot_point_ = cursor_.GetHotspot();
   } else {
-    gfx::ImageSkia resized = *image;
-
-    // Rescale cursor size. This is used with the combination of accessibility
-    // large cursor. We don't need to care about the case where cursor
-    // compositing is disabled as we always use cursor compositing if
-    // accessibility large cursor is enabled.
-    if (cursor_size_ == ui::CursorSize::kLarge &&
-        large_cursor_size_in_dip_ != image->size().width()) {
-      float rescale = static_cast<float>(large_cursor_size_in_dip_) /
-                      static_cast<float>(image->size().width());
-      resized = gfx::ImageSkiaOperations::CreateResizedImage(
-          *image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
-          gfx::ScaleToCeiledSize(image->size(), rescale));
-      hot_point_ = gfx::ScaleToCeiledPoint(hot_point_, rescale);
+    int resource_id;
+    if (!ui::GetCursorDataFor(cursor_size_, cursor_.native_type(), cursor_scale,
+                              &resource_id, &hot_point_)) {
+      return;
     }
-
-    const gfx::ImageSkiaRep& image_rep =
-        resized.GetRepresentation(cursor_scale);
-    delegate_->SetCursorImage(
-        resized.size(),
-        gfx::ImageSkia(gfx::ImageSkiaRep(image_rep.sk_bitmap(), cursor_scale)));
-    hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
+    image =
+        *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   }
+
+  gfx::ImageSkia resized = image;
+
+  // Rescale cursor size. This is used with the combination of accessibility
+  // large cursor. We don't need to care about the case where cursor
+  // compositing is disabled as we always use cursor compositing if
+  // accessibility large cursor is enabled.
+  if (cursor_size_ == ui::CursorSize::kLarge &&
+      large_cursor_size_in_dip_ != image.size().width()) {
+    float rescale = static_cast<float>(large_cursor_size_in_dip_) /
+                    static_cast<float>(image.size().width());
+    resized = gfx::ImageSkiaOperations::CreateResizedImage(
+        image, skia::ImageOperations::ResizeMethod::RESIZE_GOOD,
+        gfx::ScaleToCeiledSize(image.size(), rescale));
+    hot_point_ = gfx::ScaleToCeiledPoint(hot_point_, rescale);
+  }
+
+  const gfx::ImageSkiaRep& image_rep = resized.GetRepresentation(cursor_scale);
+  delegate_->SetCursorImage(
+      resized.size(),
+      gfx::ImageSkia(gfx::ImageSkiaRep(image_rep.sk_bitmap(), cursor_scale)));
+  hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
 
   if (cursor_view_) {
     cursor_view_->SetCursorImage(delegate_->cursor_image(), delegate_->size(),
@@ -374,7 +337,7 @@ void CursorWindowController::UpdateCursorImage() {
 }
 
 void CursorWindowController::UpdateCursorVisibility() {
-  bool visible = (visible_ && cursor_type_ != ui::CursorType::kNone);
+  bool visible = (visible_ && cursor_.native_type() != ui::CursorType::kNone);
   if (visible) {
     if (cursor_view_)
       cursor_view_->GetWidget()->Show();

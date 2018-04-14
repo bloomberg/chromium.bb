@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point.h"
@@ -286,31 +287,40 @@ bool GetAnimatedCursorDataFor(CursorSize cursor_size,
                      id, scale_factor, resource_id, point);
 }
 
-bool GetCursorBitmap(const Cursor& cursor,
-                     SkBitmap* bitmap,
-                     gfx::Point* point) {
-  DCHECK(bitmap && point);
+SkBitmap Cursor::GetDefaultBitmap() const {
 #if defined(OS_WIN)
-  Cursor cursor_copy = cursor;
+  Cursor cursor_copy = *this;
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor_copy);
-  const std::unique_ptr<SkBitmap> cursor_bitmap(
-      IconUtil::CreateSkBitmapFromHICON(cursor_copy.platform()));
-  *point = IconUtil::GetHotSpotFromHICON(cursor_copy.platform());
+  return *IconUtil::CreateSkBitmapFromHICON(cursor_copy.platform());
 #else
   int resource_id;
-  if (!GetCursorDataFor(ui::CursorSize::kNormal, cursor.native_type(),
-                        cursor.device_scale_factor(), &resource_id, point)) {
-    return false;
+  gfx::Point hotspot;
+  if (!GetCursorDataFor(ui::CursorSize::kNormal, native_type(),
+                        device_scale_factor(), &resource_id, &hotspot)) {
+    return SkBitmap();
   }
-
-  const SkBitmap* cursor_bitmap = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(resource_id)->bitmap();
+  return *ResourceBundle::GetSharedInstance()
+              .GetImageSkiaNamed(resource_id)
+              ->bitmap();
 #endif
-  if (!cursor_bitmap)
-    return false;
-  *bitmap = *cursor_bitmap;
-  return true;
+}
+
+gfx::Point Cursor::GetDefaultHotspot() const {
+#if defined(OS_WIN)
+  Cursor cursor_copy = *this;
+  ui::CursorLoaderWin cursor_loader;
+  cursor_loader.SetPlatformCursor(&cursor_copy);
+  return IconUtil::GetHotSpotFromHICON(cursor_copy.platform());
+#else
+  int resource_id;
+  gfx::Point hotspot;
+  if (!GetCursorDataFor(ui::CursorSize::kNormal, native_type(),
+                        device_scale_factor(), &resource_id, &hotspot)) {
+    return gfx::Point();
+  }
+  return hotspot;
+#endif
 }
 
 }  // namespace ui

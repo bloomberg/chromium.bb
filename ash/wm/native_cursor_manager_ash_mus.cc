@@ -108,13 +108,7 @@ void NativeCursorManagerAshMus::SetCursor(
     } else {
       gfx::NativeCursor invisible_cursor(ui::CursorType::kNone);
       image_cursors_->SetPlatformCursor(&invisible_cursor);
-      if (cursor == ui::CursorType::kCustom) {
-        // Fall back to the default pointer cursor for now. (crbug.com/476078)
-        // TODO(oshima): support custom cursor.
-        cursor = ui::CursorType::kPointer;
-      } else {
-        cursor.SetPlatformCursor(invisible_cursor.platform());
-      }
+      cursor.SetPlatformCursor(invisible_cursor.platform());
     }
   }
   cursor.set_device_scale_factor(image_cursors_->GetScale());

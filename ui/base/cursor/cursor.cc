@@ -17,7 +17,9 @@ Cursor::Cursor(CursorType type)
 Cursor::Cursor(const Cursor& cursor)
     : native_type_(cursor.native_type_),
       platform_cursor_(cursor.platform_cursor_),
-      device_scale_factor_(cursor.device_scale_factor_) {
+      device_scale_factor_(cursor.device_scale_factor_),
+      custom_bitmap_(cursor.custom_bitmap_),
+      custom_hotspot_(cursor.custom_hotspot_) {
   if (native_type_ == CursorType::kCustom)
     RefCustomCursor();
 }
@@ -35,6 +37,26 @@ void Cursor::SetPlatformCursor(const PlatformCursor& platform) {
     RefCustomCursor();
 }
 
+SkBitmap Cursor::GetBitmap() const {
+  if (native_type_ == CursorType::kCustom)
+    return custom_bitmap_;
+#if defined(USE_AURA)
+  return GetDefaultBitmap();
+#else
+  return SkBitmap();
+#endif
+}
+
+gfx::Point Cursor::GetHotspot() const {
+  if (native_type_ == CursorType::kCustom)
+    return custom_hotspot_;
+#if defined(USE_AURA)
+  return GetDefaultHotspot();
+#else
+  return gfx::Point();
+#endif
+}
+
 void Cursor::Assign(const Cursor& cursor) {
   if (*this == cursor)
     return;
@@ -45,6 +67,8 @@ void Cursor::Assign(const Cursor& cursor) {
   if (native_type_ == CursorType::kCustom)
     RefCustomCursor();
   device_scale_factor_ = cursor.device_scale_factor_;
+  custom_bitmap_ = cursor.custom_bitmap_;
+  custom_hotspot_ = cursor.custom_hotspot_;
 }
 
 }  // namespace ui

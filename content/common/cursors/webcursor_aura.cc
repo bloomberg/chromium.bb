@@ -104,6 +104,11 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
     case WebCursorInfo::kTypeCustom: {
       ui::Cursor cursor(ui::CursorType::kCustom);
       cursor.SetPlatformCursor(GetPlatformCursor());
+      SkBitmap bitmap;
+      gfx::Point hotspot;
+      CreateScaledBitmapAndHotspotFromCustomData(&bitmap, &hotspot);
+      cursor.set_custom_bitmap(bitmap);
+      cursor.set_custom_hotspot(hotspot);
       return cursor;
     }
     default:

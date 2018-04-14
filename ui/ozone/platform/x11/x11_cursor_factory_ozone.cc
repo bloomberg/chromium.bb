@@ -22,11 +22,11 @@ PlatformCursor ToPlatformCursor(X11CursorOzone* cursor) {
 
 // Gets default aura cursor bitmap/hotspot and creates a X11CursorOzone with it.
 scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(CursorType type) {
-  SkBitmap bitmap;
-  gfx::Point hotspot;
-  if (GetCursorBitmap(type, &bitmap, &hotspot)) {
+  Cursor cursor(type);
+  SkBitmap bitmap = cursor.GetBitmap();
+  gfx::Point hotspot = cursor.GetHotspot();
+  if (!bitmap.isNull())
     return new X11CursorOzone(bitmap, hotspot);
-  }
   return nullptr;
 }
 
