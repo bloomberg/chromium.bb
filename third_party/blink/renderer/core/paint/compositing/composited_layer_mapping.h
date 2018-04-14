@@ -199,7 +199,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void ContentChanged(ContentChangeType);
 
   LayoutRect CompositedBounds() const { return composited_bounds_; }
-  IntRect PixelSnappedCompositedBounds() const;
 
   void PositionOverflowControlsLayers();
 
@@ -355,7 +354,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Helper methods to updateGraphicsLayerGeometry:
   void ComputeGraphicsLayerParentLocation(
       const PaintLayer* compositing_container,
-      const IntRect& ancestor_compositing_bounds,
       IntPoint& graphics_layer_parent_location);
   void UpdateSquashingLayerGeometry(
       const IntPoint& graphics_layer_parent_location,
