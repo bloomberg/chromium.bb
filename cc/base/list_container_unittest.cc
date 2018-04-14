@@ -103,6 +103,7 @@ class SimpleDerivedElementConstructMagicNumberOne
   SimpleDerivedElementConstructMagicNumberOne() {
     set_value(kMagicNumberToUseForSimpleDerivedElementOne);
   }
+  ~SimpleDerivedElementConstructMagicNumberOne() override = default;
 };
 
 class SimpleDerivedElementConstructMagicNumberTwo
@@ -111,6 +112,7 @@ class SimpleDerivedElementConstructMagicNumberTwo
   SimpleDerivedElementConstructMagicNumberTwo() {
     set_value(kMagicNumberToUseForSimpleDerivedElementTwo);
   }
+  ~SimpleDerivedElementConstructMagicNumberTwo() override = default;
 };
 
 class SimpleDerivedElementConstructMagicNumberThree
@@ -119,6 +121,7 @@ class SimpleDerivedElementConstructMagicNumberThree
   SimpleDerivedElementConstructMagicNumberThree() {
     set_value(kMagicNumberToUseForSimpleDerivedElementThree);
   }
+  ~SimpleDerivedElementConstructMagicNumberThree() override = default;
 };
 
 class MockDerivedElement : public SimpleDerivedElementConstructMagicNumberOne {
