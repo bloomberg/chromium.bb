@@ -38,6 +38,7 @@ class PictureInPictureWindowControllerImpl
   CONTENT_EXPORT void EmbedSurface(const viz::SurfaceId& surface_id,
                                    const gfx::Size& natural_size) override;
   CONTENT_EXPORT OverlayWindow* GetWindowForTesting() override;
+  CONTENT_EXPORT void UpdateLayerBounds() override;
   CONTENT_EXPORT void TogglePlayPause() override;
 
  private:

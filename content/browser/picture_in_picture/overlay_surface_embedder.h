@@ -24,6 +24,7 @@ class OverlaySurfaceEmbedder {
   ~OverlaySurfaceEmbedder();
 
   void SetPrimarySurfaceId(const viz::SurfaceId& surface_id);
+  void UpdateLayerBounds();
 
  private:
   // The window which embeds the client. Weak pointer since the

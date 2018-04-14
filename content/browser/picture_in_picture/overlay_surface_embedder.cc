@@ -37,4 +37,10 @@ void OverlaySurfaceEmbedder::SetPrimarySurfaceId(
       true /* stretch_content_to_fill_bounds */);
 }
 
+void OverlaySurfaceEmbedder::UpdateLayerBounds() {
+  surface_layer_->SetBounds(
+      gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
+  surface_layer_->SetSurfaceSize(window_->GetBounds().size());
+}
+
 }  // namespace content
