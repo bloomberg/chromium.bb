@@ -15936,7 +15936,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
 
       // Ensure the side effects of the copy are visible to the parent
       // context. There is no need to do this for ANGLE because it uses a
-      // single D3D device for all contexts.
+      // single underlying device/context for all contexts.
       if (!gl_version_info().is_angle)
         api()->glFlushFn();
     }

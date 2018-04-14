@@ -27,6 +27,7 @@ GLVersionInfo::GLVersionInfo(const char* version_str,
                              const ExtensionSet& extensions)
     : is_es(false),
       is_angle(false),
+      is_d3d(false),
       is_mesa(false),
       is_swiftshader(false),
       major_version(0),
@@ -52,6 +53,13 @@ void GLVersionInfo::Initialize(const char* version_str,
                                base::CompareCase::SENSITIVE);
     is_swiftshader = base::StartsWith(renderer_str, "Google SwiftShader",
                                       base::CompareCase::SENSITIVE);
+
+    // An ANGLE renderer string contains "Direct3D9", "Direct3DEx", or
+    // "Direct3D11" on D3D backends.
+    std::string renderer_string = std::string(renderer_str);
+    is_d3d = renderer_string.find("Direct3D") != std::string::npos;
+    // (is_d3d should only be possible if is_angle is true.)
+    DCHECK(!is_d3d || is_angle);
   }
   is_desktop_core_profile =
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
