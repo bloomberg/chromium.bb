@@ -75,7 +75,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
   WatchTimeReporter(mojom::PlaybackPropertiesPtr properties,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
-                    scoped_refptr<base::SequencedTaskRunner> task_runner);
+                    scoped_refptr<base::SequencedTaskRunner> task_runner,
+                    const base::TickClock* tick_clock = nullptr);
   ~WatchTimeReporter() override;
 
   // These methods are used to ensure that watch time is only reported for media
@@ -156,7 +157,8 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
                     bool is_background,
                     GetMediaTimeCB get_media_time_cb,
                     mojom::MediaMetricsProvider* provider,
-                    scoped_refptr<base::SequencedTaskRunner> task_runner);
+                    scoped_refptr<base::SequencedTaskRunner> task_runner,
+                    const base::TickClock* tick_clock);
 
   // base::PowerObserver implementation.
   //

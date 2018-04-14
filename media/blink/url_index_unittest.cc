@@ -27,8 +27,6 @@ class UrlIndexTest : public testing::Test {
     return ret;
   }
 
-  // TODO(hubbe): Make UrlIndex take a task_runner_
-  base::MessageLoop message_loop_;
   UrlIndex url_index_;
 };
 

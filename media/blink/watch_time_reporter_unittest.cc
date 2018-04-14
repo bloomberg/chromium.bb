@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/debug/stack_trace.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/test_message_loop.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/watch_time_keys.h"
 #include "media/blink/watch_time_reporter.h"
@@ -228,8 +228,19 @@ class WatchTimeReporterTest
   WatchTimeReporterTest()
       : has_video_(std::get<0>(GetParam())),
         has_audio_(std::get<1>(GetParam())),
-        fake_metrics_provider_(this) {}
-  ~WatchTimeReporterTest() override = default;
+        fake_metrics_provider_(this) {
+    // Do this first. Lots of pieces depend on the task runner.
+    auto message_loop = base::MessageLoop::current();
+    original_task_runner_ = message_loop.task_runner();
+    task_runner_ = new base::TestMockTimeTaskRunner();
+    message_loop.SetTaskRunner(task_runner_);
+  }
+
+  ~WatchTimeReporterTest() override {
+    CycleReportingTimer();
+    task_runner_->RunUntilIdle();
+    base::MessageLoop::current().SetTaskRunner(original_task_runner_);
+  }
 
  protected:
   void Initialize(bool is_mse,
@@ -245,19 +256,13 @@ class WatchTimeReporterTest
         base::BindRepeating(&WatchTimeReporterTest::GetCurrentMediaTime,
                             base::Unretained(this)),
         &fake_metrics_provider_,
-        blink::scheduler::GetSequencedTaskRunnerForTesting()));
-
-    // Setup the reporting interval to be immediate to avoid spinning real time
-    // within the unit test.
-    wtr_->reporting_interval_ = base::TimeDelta();
-    if (wtr_->background_reporter_)
-      wtr_->background_reporter_->reporting_interval_ = base::TimeDelta();
+        blink::scheduler::GetSequencedTaskRunnerForTesting(),
+        task_runner_->GetMockTickClock()));
+    reporting_interval_ = wtr_->reporting_interval_;
   }
 
   void CycleReportingTimer() {
-    base::RunLoop run_loop;
-    message_loop_.task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
+    task_runner_->FastForwardBy(reporting_interval_);
   }
 
   bool IsMonitoring() const { return wtr_->reporting_timer_.IsRunning(); }
@@ -544,9 +549,16 @@ class WatchTimeReporterTest
 
   const bool has_video_;
   const bool has_audio_;
+
+  // Task runner that allows for manual advancing of time. Instantiated during
+  // construction. |original_task_runner_| is a copy of the TaskRunner in place
+  // prior to the start of this test. It's restored after the test completes.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> original_task_runner_;
+
   FakeMediaMetricsProvider fake_metrics_provider_;
-  base::TestMessageLoop message_loop_;
   std::unique_ptr<WatchTimeReporter> wtr_;
+  base::TimeDelta reporting_interval_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WatchTimeReporterTest);
@@ -801,10 +813,6 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterShownHiddenBackground) {
   EXPECT_BACKGROUND_WATCH_TIME(Eme, kWatchTimeEarly);
   EXPECT_BACKGROUND_WATCH_TIME(Mse, kWatchTimeEarly);
   EXPECT_WATCH_TIME_FINALIZED();
-  CycleReportingTimer();
-
-  EXPECT_FALSE(IsBackgroundMonitoring());
-  EXPECT_TRUE(IsMonitoring());
 
   const base::TimeDelta kExpectedForegroundWatchTime =
       kWatchTimeLate - kWatchTimeEarly;
@@ -814,6 +822,8 @@ TEST_P(WatchTimeReporterTest, WatchTimeReporterShownHiddenBackground) {
   EXPECT_WATCH_TIME(Mse, kExpectedForegroundWatchTime);
   EXPECT_WATCH_TIME(NativeControlsOff, kExpectedForegroundWatchTime);
   EXPECT_WATCH_TIME_IF_VIDEO(DisplayInline, kExpectedForegroundWatchTime);
+  CycleReportingTimer();
+
   EXPECT_WATCH_TIME_FINALIZED();
   wtr_.reset();
 }

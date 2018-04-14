@@ -215,7 +215,6 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     return url_loader;
   }
 
-  base::MessageLoop message_loop_;
   GURL gurl_;
   int64_t first_position_;
 

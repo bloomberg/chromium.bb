@@ -5,7 +5,6 @@
 #include "media/blink/video_frame_compositor.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -60,12 +59,12 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
 
     if (!IsSurfaceLayerForVideoEnabled()) {
       compositor_ = std::make_unique<VideoFrameCompositor>(
-          message_loop.task_runner(), nullptr);
+          base::ThreadTaskRunnerHandle::Get(), nullptr);
       compositor_->SetVideoFrameProviderClient(client_.get());
     } else {
       EXPECT_CALL(*submitter_, Initialize(_));
       compositor_ = std::make_unique<VideoFrameCompositor>(
-          message_loop.task_runner(), std::move(client_));
+          base::ThreadTaskRunnerHandle::Get(), std::move(client_));
       base::RunLoop().RunUntilIdle();
       EXPECT_CALL(*submitter_,
                   SetRotation(Eq(media::VideoRotation::VIDEO_ROTATION_90)));
@@ -125,7 +124,6 @@ class VideoFrameCompositorTest : public VideoRendererSink::RenderCallback,
     compositor()->PutCurrentFrame();
   }
 
-  base::MessageLoop message_loop;
   base::SimpleTestTickClock tick_clock_;
   StrictMock<MockWebVideoFrameSubmitter>* submitter_;
   std::unique_ptr<StrictMock<MockWebVideoFrameSubmitter>> client_;
