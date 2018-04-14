@@ -85,7 +85,7 @@ class TestUrlRequestCallback {
   TestUrlRequestCallback();
   virtual ~TestUrlRequestCallback();
 
-  Cronet_ExecutorPtr CreateExecutor(bool direct);
+  Cronet_ExecutorPtr GetExecutor(bool direct);
 
   Cronet_UrlRequestCallbackPtr CreateUrlRequestCallback();
 
@@ -107,9 +107,7 @@ class TestUrlRequestCallback {
     step_block_.Reset();
   }
 
-  Cronet_ExecutorPtr executor() { return executor_; }
-
-  void ShutdownExecutor() { executor_thread_.reset(); }
+  void ShutdownExecutor();
 
   bool IsDone() { return done_.IsSignaled(); }
 
@@ -216,6 +214,9 @@ class TestUrlRequestCallback {
 
   // Signaled on each step when |auto_advance_| is false.
   base::WaitableEvent step_block_;
+
+  // Lock that synchronizes access to |executor_| and |executor_thread_|.
+  base::Lock executor_lock_;
 
   // Executor that runs callback tasks.
   Cronet_ExecutorPtr executor_ = nullptr;

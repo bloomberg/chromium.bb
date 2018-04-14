@@ -73,7 +73,7 @@ TEST_F(BufferTest, TestInitWithAlloc) {
 }
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(OS_FUCHSIA)
+    defined(THREAD_SANITIZER) || defined(OS_FUCHSIA)
 // ASAN and MSAN malloc by default triggers crash instead of returning null on
 // failure. Fuchsia malloc() also crashes on allocation failure in some kernel
 // builds.
