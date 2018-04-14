@@ -3040,10 +3040,10 @@ markEmphases(const TranslationTableHeader *table, const InString *input,
 }
 
 static void
-insertEmphasisSymbol(unsigned int *buffer, const int at, const EmphRuleNumber emphRule,
-		const EmphasisClass class, const TranslationTableHeader *table, int pos,
-		const InString *input, OutString *output, int *posMapping, int *cursorPosition,
-		int *cursorStatus) {
+insertEmphasisSymbol(const unsigned int *buffer, const int at,
+		const EmphRuleNumber emphRule, const EmphasisClass class,
+		const TranslationTableHeader *table, int pos, const InString *input,
+		OutString *output, int *posMapping, int *cursorPosition, int *cursorStatus) {
 	if (buffer[at] & class.symbol) {
 		const TranslationTableRule *indicRule;
 		if (brailleIndicatorDefined(
@@ -3054,10 +3054,10 @@ insertEmphasisSymbol(unsigned int *buffer, const int at, const EmphRuleNumber em
 }
 
 static void
-insertEmphasisBegin(unsigned int *buffer, const int at, const EmphRuleNumber emphRule,
-		const EmphasisClass class, const TranslationTableHeader *table, int pos,
-		const InString *input, OutString *output, int *posMapping, int *cursorPosition,
-		int *cursorStatus) {
+insertEmphasisBegin(const unsigned int *buffer, const int at,
+		const EmphRuleNumber emphRule, const EmphasisClass class,
+		const TranslationTableHeader *table, int pos, const InString *input,
+		OutString *output, int *posMapping, int *cursorPosition, int *cursorStatus) {
 	const TranslationTableRule *indicRule;
 	if (buffer[at] & class.begin) {
 		if (brailleIndicatorDefined(
@@ -3081,7 +3081,7 @@ insertEmphasisBegin(unsigned int *buffer, const int at, const EmphRuleNumber emp
 }
 
 static void
-insertEmphasisEnd(unsigned int *buffer, const int at, const EmphRuleNumber emphRule,
+insertEmphasisEnd(const unsigned int *buffer, const int at, const EmphRuleNumber emphRule,
 		const EmphasisClass class, const TranslationTableHeader *table, int pos,
 		const InString *input, OutString *output, int *posMapping, int *cursorPosition,
 		int *cursorStatus) {
@@ -3112,7 +3112,7 @@ insertEmphasisEnd(unsigned int *buffer, const int at, const EmphRuleNumber emphR
 }
 
 static int
-endCount(unsigned int *buffer, const int at, const EmphasisClass class) {
+endCount(const unsigned int *buffer, const int at, const EmphasisClass class) {
 	int i, cnt = 1;
 	if (!(buffer[at] & class.end)) return 0;
 	for (i = at - 1; i >= 0; i--)
@@ -3124,7 +3124,7 @@ endCount(unsigned int *buffer, const int at, const EmphasisClass class) {
 }
 
 static int
-beginCount(unsigned int *buffer, const int at, const EmphasisClass class,
+beginCount(const unsigned int *buffer, const int at, const EmphasisClass class,
 		const TranslationTableHeader *table, const InString *input) {
 	if (buffer[at] & class.begin) {
 		int i, cnt = 1;
@@ -3151,8 +3151,8 @@ beginCount(unsigned int *buffer, const int at, const EmphasisClass class,
 static void
 insertEmphasesAt(const int at, const TranslationTableHeader *table, int pos,
 		const InString *input, OutString *output, int *posMapping,
-		unsigned int *emphasisBuffer, unsigned int *transNoteBuffer, int haveEmphasis,
-		int transOpcode, int *cursorPosition, int *cursorStatus) {
+		const unsigned int *emphasisBuffer, const unsigned int *transNoteBuffer,
+		int haveEmphasis, int transOpcode, int *cursorPosition, int *cursorStatus) {
 	int type_counts[10];
 	int i, j, min, max;
 
@@ -3246,8 +3246,8 @@ insertEmphasesAt(const int at, const TranslationTableHeader *table, int pos,
 
 static void
 insertEmphases(const TranslationTableHeader *table, int pos, const InString *input,
-		OutString *output, int *posMapping, unsigned int *emphasisBuffer,
-		unsigned int *transNoteBuffer, int haveEmphasis, int transOpcode,
+		OutString *output, int *posMapping, const unsigned int *emphasisBuffer,
+		const unsigned int *transNoteBuffer, int haveEmphasis, int transOpcode,
 		int *cursorPosition, int *cursorStatus, int *pre_src) {
 	int at;
 
