@@ -8,12 +8,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace gl {
-class ScopedJavaSurface;
 class SurfaceTexture;
 }  // namespace gl
 
@@ -51,6 +53,10 @@ class MailboxToSurfaceBridge {
   bool IsGpuWorkaroundEnabled(int32_t workaround);
 
   void CreateSurface(gl::SurfaceTexture*);
+
+  // This creates the context using the surface provided by an earlier
+  // CreateSurface call, or an offscreen context if that wasn't called.
+  void CreateContextProvider();
 
   void ResizeSurface(int width, int height);
 
@@ -96,16 +102,18 @@ class MailboxToSurfaceBridge {
   void UnbindSharedBuffer(uint32_t image_id, uint32_t texture_id);
 
  private:
-  void OnContextAvailable(std::unique_ptr<gl::ScopedJavaSurface> surface,
-                          scoped_refptr<viz::ContextProvider>);
+  void OnContextAvailableOnUiThread(
+      scoped_refptr<viz::ContextProvider> provider);
+  void BindContextProvider();
   void InitializeRenderer();
   void DestroyContext();
   void DrawQuad(unsigned int textureHandle);
 
   scoped_refptr<viz::ContextProvider> context_provider_;
+  std::unique_ptr<gl::ScopedJavaSurface> surface_;
   gpu::gles2::GLES2Interface* gl_ = nullptr;
   gpu::ContextSupport* context_support_ = nullptr;
-  int surface_handle_ = 0;
+  int surface_handle_ = gpu::kNullSurfaceHandle;
   base::OnceClosure on_initialized_;
 
   // Saved state for a pending resize, the dimensions are only
@@ -113,6 +121,8 @@ class MailboxToSurfaceBridge {
   bool needs_resize_ = false;
   int resize_width_;
   int resize_height_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> gl_thread_task_runner_;
 
   // Must be last.
   base::WeakPtrFactory<MailboxToSurfaceBridge> weak_ptr_factory_;
