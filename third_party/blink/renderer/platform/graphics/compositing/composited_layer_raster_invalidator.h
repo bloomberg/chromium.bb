@@ -55,24 +55,25 @@ class PLATFORM_EXPORT CompositedLayerRasterInvalidator {
     PaintChunkInfo(const CompositedLayerRasterInvalidator& invalidator,
                    const ChunkToLayerMapper& mapper,
                    const PaintChunk& chunk)
-        : bounds_in_layer(invalidator.ClipByLayerBounds(
-              mapper.MapVisualRect(chunk.bounds))),
-          chunk_to_layer_transform(mapper.Transform()),
-          chunk_to_layer_clip(mapper.ClipRect()),
-          id(chunk.id),
+        : id(chunk.id),
+          properties(chunk.properties),
           is_cacheable(chunk.is_cacheable),
-          properties(chunk.properties) {}
+          bounds_in_layer(invalidator.ClipByLayerBounds(
+              mapper.MapVisualRect(chunk.bounds))),
+          chunk_to_layer_clip(mapper.ClipRect()),
+          chunk_to_layer_transform(
+              TransformationMatrix::ToSkMatrix44(mapper.Transform())) {}
 
     bool Matches(const PaintChunk& new_chunk) const {
       return is_cacheable && new_chunk.Matches(id);
     }
 
-    IntRect bounds_in_layer;
-    TransformationMatrix chunk_to_layer_transform;
-    FloatClipRect chunk_to_layer_clip;
     PaintChunk::Id id;
-    bool is_cacheable;
     PaintChunkProperties properties;
+    bool is_cacheable;
+    IntRect bounds_in_layer;
+    FloatClipRect chunk_to_layer_clip;
+    SkMatrix chunk_to_layer_transform;
   };
 
   void GenerateRasterInvalidations(const PaintChunkSubset& new_chunks,
