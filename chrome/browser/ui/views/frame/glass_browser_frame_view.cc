@@ -370,13 +370,6 @@ void GlassBrowserFrameView::UpdateWindowTitle() {
     window_title_->SchedulePaint();
 }
 
-void GlassBrowserFrameView::ResetWindowControls() {
-  minimize_button_->SetState(views::Button::STATE_NORMAL);
-  maximize_button_->SetState(views::Button::STATE_NORMAL);
-  restore_button_->SetState(views::Button::STATE_NORMAL);
-  close_button_->SetState(views::Button::STATE_NORMAL);
-}
-
 void GlassBrowserFrameView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (sender == minimize_button_)
