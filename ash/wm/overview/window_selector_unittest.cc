@@ -2952,14 +2952,14 @@ TEST_F(WindowSelectorTest, ShadowBounds) {
 }
 
 // Verify that attempting to drag with a secondary finger works as expected.
-// Flaky, see https://crbug.com/827435.
-TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
+TEST_F(WindowSelectorTest, DraggingWithTwoFingers) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
   // Dragging is only allowed in tablet mode.
   RunAllPendingInMessageLoop();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  RunAllPendingInMessageLoop();
 
   ToggleOverview();
   RunAllPendingInMessageLoop();
@@ -2972,11 +2972,21 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   constexpr int kTouchId1 = 1;
   constexpr int kTouchId2 = 2;
 
+  // Dispatches a long press event at the event generators current location.
+  // Long press is one way to start dragging in splitview.
+  auto dispatch_long_press = [this]() {
+    ui::TouchEvent long_press(
+        ui::ET_GESTURE_LONG_PRESS, GetEventGenerator().current_location(),
+        base::TimeTicks::Now(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH));
+    GetEventGenerator().Dispatch(&long_press);
+  };
+
   // Verify that the bounds of the tapped window expand when touched.
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(original_bounds1.CenterPoint());
   generator.PressTouchId(kTouchId1);
-  RunAllPendingInMessageLoop();
+  dispatch_long_press();
   EXPECT_GT(item1->target_bounds().width(), original_bounds1.width());
   EXPECT_GT(item1->target_bounds().height(), original_bounds1.height());
 
@@ -2985,7 +2995,7 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   // dragged.
   generator.set_current_location(original_bounds2.CenterPoint());
   generator.PressTouchId(kTouchId2);
-  RunAllPendingInMessageLoop();
+  dispatch_long_press();
   EXPECT_GT(item1->target_bounds().width(), original_bounds1.width());
   EXPECT_GT(item1->target_bounds().height(), original_bounds1.height());
   EXPECT_EQ(item2->target_bounds(), original_bounds2);
@@ -3002,8 +3012,8 @@ TEST_F(WindowSelectorTest, DISABLED_DraggingWithTwoFingers) {
   last_center_point = item1->target_bounds().CenterPoint();
   generator.ReleaseTouchId(kTouchId2);
   generator.PressTouchId(kTouchId2);
+  dispatch_long_press();
   generator.MoveTouchIdBy(kTouchId2, 40, 40);
-  RunAllPendingInMessageLoop();
   EXPECT_NE(last_center_point, item1->target_bounds().CenterPoint());
   EXPECT_EQ(original_bounds2.CenterPoint(),
             item2->target_bounds().CenterPoint());
@@ -3546,15 +3556,24 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsState) {
       screen_util::GetDisplayWorkAreaBoundsInParent(window1.get()).width();
   const int edge_inset = GetEdgeInset(screen_width);
 
-  // Verify that when are no snapped windows, the indicator is visible when a
-  // drag is initiated and the left preview area appears when the drag reaches
-  // |edge_inset| from the edge of the screen.
+  // Verify that when are no snapped windows, the indicator is visible once
+  // there is a long press or after the drag has started.
   const int grid_index = 0;
   WindowSelectorItem* selector_item =
       GetWindowItemForWindow(grid_index, window1.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_EQ(IndicatorState::kNone, indicator_state());
+  window_selector()->StartSplitViewDragMode(start_location);
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+
+  // Reset the gesture so we stay in overview mode.
+  window_selector()->ResetDraggedWindowGesture();
+
+  // Verify the indicator is visible once the item starts moving, and becomes a
+  // preview area once we reach the left edge of the screen.
+  window_selector()->InitiateDrag(selector_item, start_location);
+  EXPECT_EQ(IndicatorState::kNone, indicator_state());
   window_selector()->Drag(selector_item, gfx::Point(edge_inset + 1, 0));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   window_selector()->Drag(selector_item, gfx::Point(edge_inset, 0));
@@ -3571,7 +3590,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsState) {
   selector_item = GetWindowItemForWindow(grid_index, window2.get());
   start_location = selector_item->target_bounds().CenterPoint();
   window_selector()->InitiateDrag(selector_item, start_location);
-  EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
+  EXPECT_EQ(IndicatorState::kNone, indicator_state());
   window_selector()->Drag(selector_item, gfx::Point(screen_width - 1, 0));
   EXPECT_EQ(IndicatorState::kPreviewAreaRight, indicator_state());
   window_selector()->CompleteDrag(selector_item, start_location);
@@ -3591,6 +3610,7 @@ TEST_F(SplitViewWindowSelectorTest,
       GetWindowItemForWindow(grid_index, unsnappable_window.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
+  window_selector()->StartSplitViewDragMode(start_location);
   EXPECT_EQ(IndicatorState::kCannotSnap, indicator_state());
   const gfx::Point end_location1(0, 0);
   window_selector()->Drag(selector_item, end_location1);
@@ -3672,6 +3692,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsWidgetReparenting) {
       GetWindowItemForWindow(0, primary_screen_window.get());
   gfx::Point start_location(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
+  window_selector()->Drag(selector_item, gfx::Point(100, 100));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[0], window_selector()
                                  ->split_view_drag_indicators()
@@ -3690,6 +3711,7 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewDragIndicatorsWidgetReparenting) {
   selector_item = GetWindowItemForWindow(1, secondary_screen_window.get());
   start_location = gfx::Point(selector_item->target_bounds().CenterPoint());
   window_selector()->InitiateDrag(selector_item, start_location);
+  window_selector()->Drag(selector_item, gfx::Point(800, 200));
   EXPECT_EQ(IndicatorState::kDragArea, indicator_state());
   EXPECT_EQ(root_windows[1], window_selector()
                                  ->split_view_drag_indicators()
