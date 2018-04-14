@@ -14,18 +14,11 @@
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/window_positioning_utils.h"
+#include "ash/wm/wm_event.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
-
-namespace {
-
-// Before dragging an overview window, the window will scale up |kPreDragScale|
-// to indicate its selection.
-constexpr float kDragWindowScale = 0.04f;
-
-}  // namespace
 
 OverviewWindowDragController::OverviewWindowDragController(
     WindowSelector* window_selector)
@@ -46,6 +39,12 @@ void OverviewWindowDragController::InitiateDrag(
       GetSnapPosition(location_in_screen) == SplitViewController::NONE
           ? base::nullopt
           : base::make_optional(location_in_screen);
+
+  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
+      split_view_controller_->CanSnap(item->GetWindow())
+          ? IndicatorState::kDragArea
+          : IndicatorState::kCannotSnap,
+      location_in_screen);
 }
 
 void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
@@ -57,8 +56,8 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
         std::abs(distance.y()) < kMinimumDragOffset) {
       return;
     }
-    StartSplitViewDragMode(location_in_screen);
   }
+  did_move_ = true;
 
   // Update the dragged |item_|'s bounds accordingly.
   gfx::Rect bounds(item_->target_bounds());
@@ -93,23 +92,6 @@ void OverviewWindowDragController::CompleteDrag(
     }
   }
   item_ = nullptr;
-}
-
-void OverviewWindowDragController::StartSplitViewDragMode(
-    const gfx::Point& location_in_screen) {
-  // Increase the bounds of the dragged item.
-  gfx::Rect scaled_bounds(item_->target_bounds());
-  scaled_bounds.Inset(-scaled_bounds.width() * kDragWindowScale,
-                      -scaled_bounds.height() * kDragWindowScale);
-  item_->SetBounds(scaled_bounds,
-                   OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
-
-  did_move_ = true;
-  window_selector_->SetSplitViewDragIndicatorsIndicatorState(
-      split_view_controller_->CanSnap(item_->GetWindow())
-          ? IndicatorState::kDragArea
-          : IndicatorState::kCannotSnap,
-      location_in_screen);
 }
 
 void OverviewWindowDragController::ActivateDraggedWindow() {
