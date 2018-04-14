@@ -17,14 +17,18 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/devtools_interceptor_controller.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security.h"
+#include "content/browser/devtools/service_worker_devtools_agent_host.h"
+#include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -857,6 +861,62 @@ std::string StripFragment(const GURL& url) {
 
 }  // namespace
 
+class BackgroundSyncRestorer {
+ public:
+  BackgroundSyncRestorer(const std::string& host_id,
+                         StoragePartition* storage_partition)
+      : host_id_(host_id), storage_partition_(storage_partition) {
+    SetServiceWorkerOffline(true);
+  }
+
+  ~BackgroundSyncRestorer() { SetServiceWorkerOffline(false); }
+
+  void SetStoragePartition(StoragePartition* storage_partition) {
+    storage_partition_ = storage_partition;
+  }
+
+ private:
+  void SetServiceWorkerOffline(bool offline) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    scoped_refptr<DevToolsAgentHost> host =
+        DevToolsAgentHost::GetForId(host_id_);
+    if (!host || !storage_partition_ ||
+        host->GetType() != DevToolsAgentHost::kTypeServiceWorker) {
+      return;
+    }
+    scoped_refptr<ServiceWorkerDevToolsAgentHost> service_worker_host =
+        static_cast<ServiceWorkerDevToolsAgentHost*>(host.get());
+    scoped_refptr<BackgroundSyncContext> sync_context =
+        static_cast<StoragePartitionImpl*>(storage_partition_)
+            ->GetBackgroundSyncContext();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &SetServiceWorkerOfflineOnIO, sync_context,
+            base::RetainedRef(static_cast<ServiceWorkerContextWrapper*>(
+                storage_partition_->GetServiceWorkerContext())),
+            service_worker_host->version_id(), offline));
+  }
+
+  static void SetServiceWorkerOfflineOnIO(
+      scoped_refptr<BackgroundSyncContext> sync_context,
+      scoped_refptr<ServiceWorkerContextWrapper> swcontext,
+      int64_t version_id,
+      bool offline) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    ServiceWorkerVersion* version = swcontext.get()->GetLiveVersion(version_id);
+    if (!version)
+      return;
+    sync_context->background_sync_manager()->EmulateServiceWorkerOffline(
+        version->registration_id(), offline);
+  }
+
+  std::string host_id_;
+  StoragePartition* storage_partition_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRestorer);
+};
+
 NetworkHandler::NetworkHandler(const std::string& host_id)
     : DevToolsDomainHandler(Network::Metainfo::domainName),
       browser_context_(nullptr),
@@ -902,6 +962,8 @@ void NetworkHandler::SetRenderer(int render_process_host_id,
     browser_context_ = nullptr;
   }
   host_ = frame_host;
+  if (background_sync_restorer_)
+    background_sync_restorer_->SetStoragePartition(storage_partition_);
 }
 
 Response NetworkHandler::Enable(Maybe<int> max_total_size,
@@ -1891,7 +1953,14 @@ void NetworkHandler::SetNetworkConditions(
     return;
   network::mojom::NetworkContext* context =
       storage_partition_->GetNetworkContext();
+  bool offline = conditions ? conditions->offline : false;
   context->SetNetworkConditions(host_id_, std::move(conditions));
+
+  if (offline == !!background_sync_restorer_)
+    return;
+  background_sync_restorer_.reset(
+      offline ? new BackgroundSyncRestorer(host_id_, storage_partition_)
+              : nullptr);
 }
 
 }  // namespace protocol
