@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/public/common/weak_wrapper_shared_url_loader_factory.h"
+#include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -32,7 +33,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
                                           &request_peer_context_),
         base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(this),
         std::vector<std::unique_ptr<URLLoaderThrottle>>(),
-        network::mojom::URLLoaderClientEndpointsPtr(),
+        nullptr /* navigation_response_override_params */,
         nullptr /* continue_navigation_function */);
     request_peer_context_.request_id = request_id_;
 

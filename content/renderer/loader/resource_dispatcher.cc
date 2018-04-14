@@ -23,6 +23,7 @@
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/renderer/fixed_received_data.h"
@@ -155,12 +156,25 @@ void ResourceDispatcher::OnUploadProgress(int request_id,
 
 void ResourceDispatcher::OnReceivedResponse(
     int request_id,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead& initial_response_head) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedResponse");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
+
+  network::ResourceResponseHead response_head;
+  std::unique_ptr<NavigationResponseOverrideParameters> response_override =
+      std::move(request_info->navigation_response_override);
+  if (response_override) {
+    CHECK(IsBrowserSideNavigationEnabled());
+    response_head = response_override->response;
+  } else {
+    response_head = initial_response_head;
+  }
+
   request_info->response_start = base::TimeTicks::Now();
+  request_info->mime_type = response_head.mime_type;
+  request_info->network_accessed = response_head.network_accessed;
 
   if (delegate_) {
     std::unique_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
@@ -247,9 +261,8 @@ void ResourceDispatcher::OnReceivedRedirect(
     request_info->response_method = redirect_info.new_method;
     request_info->response_referrer = GURL(redirect_info.new_referrer);
     request_info->has_pending_redirect = true;
-    if (!request_info->is_deferred) {
+    if (!request_info->is_deferred)
       FollowPendingRedirect(request_info);
-    }
   } else {
     Cancel(request_id, std::move(task_runner));
   }
@@ -257,7 +270,8 @@ void ResourceDispatcher::OnReceivedRedirect(
 
 void ResourceDispatcher::FollowPendingRedirect(
     PendingRequestInfo* request_info) {
-  if (request_info->has_pending_redirect) {
+  if (request_info->has_pending_redirect &&
+      request_info->should_follow_redirect) {
     request_info->has_pending_redirect = false;
     request_info->url_loader->FollowRedirect();
   }
@@ -410,7 +424,9 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     const GURL& request_url,
     const std::string& method,
     const GURL& referrer,
-    bool download_to_file)
+    bool download_to_file,
+    std::unique_ptr<NavigationResponseOverrideParameters>
+        navigation_response_override_params)
     : peer(std::move(peer)),
       resource_type(resource_type),
       render_frame_id(render_frame_id),
@@ -419,7 +435,10 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       response_method(method),
       response_referrer(referrer),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()) {}
+      request_start(base::TimeTicks::Now()),
+      buffer_size(0),
+      navigation_response_override(
+          std::move(navigation_response_override_params)) {}
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
 }
@@ -473,27 +492,32 @@ int ResourceDispatcher::StartAsync(
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    std::unique_ptr<NavigationResponseOverrideParameters>
+        response_override_params,
     base::OnceClosure* continue_navigation_function) {
   CheckSchemeForReferrerPolicy(*request);
+
+  bool override_url_loader =
+      !!response_override_params &&
+      !!response_override_params->url_loader_client_endpoints;
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
       std::move(peer), static_cast<ResourceType>(request->resource_type),
       request->render_frame_id, request->url, request->method,
-      request->referrer, request->download_to_file);
+      request->referrer, request->download_to_file,
+      std::move(response_override_params));
 
-  if (url_loader_client_endpoints) {
+  if (override_url_loader) {
     pending_requests_[request_id]->url_loader_client =
         std::make_unique<URLLoaderClientImpl>(request_id, this,
                                               loading_task_runner);
 
     DCHECK(continue_navigation_function);
-    *continue_navigation_function = base::BindOnce(
-        &ResourceDispatcher::ContinueForNavigation, weak_factory_.GetWeakPtr(),
-        request_id, std::move(url_loader_client_endpoints));
-
+    *continue_navigation_function =
+        base::BindOnce(&ResourceDispatcher::ContinueForNavigation,
+                       weak_factory_.GetWeakPtr(), request_id);
     return request_id;
   }
 
@@ -582,29 +606,42 @@ base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
   return base::TimeTicks::FromInternalValue(result);
 }
 
-void ResourceDispatcher::ContinueForNavigation(
-    int request_id,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints) {
-  DCHECK(url_loader_client_endpoints);
+void ResourceDispatcher::ContinueForNavigation(int request_id) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
-  URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
+  std::unique_ptr<NavigationResponseOverrideParameters> response_override =
+      std::move(request_info->navigation_response_override);
+  DCHECK(response_override);
 
-  // Short circuiting call to OnReceivedResponse to immediately start
-  // the request. ResourceResponseHead can be empty here because we
-  // pull the StreamOverride's one in
-  // WebURLLoaderImpl::Context::OnReceivedResponse.
-  client_ptr->OnReceiveResponse(network::ResourceResponseHead(),
+  // Mark the request so we do not attempt to follow the redirects, they already
+  // happened.
+  request_info->should_follow_redirect = false;
+
+  URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
+  // PlzNavigate: during navigations, the ResourceResponse has already been
+  // received on the browser side, and has been passed down to the renderer.
+  // Replay the redirects that happened during navigation.
+  DCHECK_EQ(response_override->redirect_responses.size(),
+            response_override->redirect_infos.size());
+  for (size_t i = 0; i < response_override->redirect_responses.size(); ++i) {
+    client_ptr->OnReceiveRedirect(response_override->redirect_infos[i],
+                                  response_override->redirect_responses[i]);
+    // The request might have been cancelled while processing the redirect.
+    if (!GetPendingRequestInfo(request_id))
+      return;
+  }
+
+  client_ptr->OnReceiveResponse(response_override->response,
                                 network::mojom::DownloadedTempFilePtr());
-  // TODO(clamy): Move the replaying of redirects from WebURLLoaderImpl here.
 
   // Abort if the request is cancelled.
   if (!GetPendingRequestInfo(request_id))
     return;
 
-  client_ptr->Bind(std::move(url_loader_client_endpoints));
+  DCHECK(response_override->url_loader_client_endpoints);
+  client_ptr->Bind(std::move(response_override->url_loader_client_endpoints));
 }
 
 }  // namespace content
