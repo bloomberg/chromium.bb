@@ -4730,8 +4730,7 @@ static unsigned char *destSpacing = NULL;
 static int sizeDestSpacing = 0;
 static formtype *typebuf = NULL;
 static unsigned int *wordBuffer = NULL;
-static unsigned int *emphasisBuffer = NULL;
-static unsigned int *transNoteBuffer = NULL;
+static EmphasisInfo *emphasisBuffer = NULL;
 static int sizeTypebuf = 0;
 static widechar *passbuf[MAXPASSBUF] = { NULL };
 static int sizePassbuf[MAXPASSBUF] = { 0 };
@@ -4766,16 +4765,9 @@ _lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax) {
 	case alloc_emphasisBuffer:
 
 		if (emphasisBuffer != NULL) free(emphasisBuffer);
-		emphasisBuffer = malloc((srcmax + 4) * sizeof(unsigned int));
+		emphasisBuffer = malloc((srcmax + 4) * sizeof(EmphasisInfo));
 		if (!emphasisBuffer) _lou_outOfMemory();
 		return emphasisBuffer;
-
-	case alloc_transNoteBuffer:
-
-		if (transNoteBuffer != NULL) free(transNoteBuffer);
-		transNoteBuffer = malloc((srcmax + 4) * sizeof(unsigned int));
-		if (!transNoteBuffer) _lou_outOfMemory();
-		return transNoteBuffer;
 
 	case alloc_destSpacing:
 		if (destmax > sizeDestSpacing) {
@@ -4869,8 +4861,6 @@ lou_free(void) {
 	wordBuffer = NULL;
 	if (emphasisBuffer != NULL) free(emphasisBuffer);
 	emphasisBuffer = NULL;
-	if (transNoteBuffer != NULL) free(transNoteBuffer);
-	transNoteBuffer = NULL;
 	sizeTypebuf = 0;
 	if (destSpacing != NULL) free(destSpacing);
 	destSpacing = NULL;
