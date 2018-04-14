@@ -47,8 +47,11 @@ namespace media {
 
 D3D11VideoDecoder::D3D11VideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+    const gpu::GpuPreferences& gpu_preferences,
     base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb)
-    : impl_task_runner_(std::move(gpu_task_runner)), weak_factory_(this) {
+    : impl_task_runner_(std::move(gpu_task_runner)),
+      gpu_preferences_(gpu_preferences),
+      weak_factory_(this) {
   // We create |impl_| on the wrong thread, but we never use it here.
   // Note that the output callback will hop to our thread, post the video
   // frame, and along with a callback that will hop back to the impl thread
@@ -75,9 +78,7 @@ void D3D11VideoDecoder::Initialize(
     const InitCB& init_cb,
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& waiting_for_decryption_key_cb) {
-  bool is_h264 = config.profile() >= H264PROFILE_MIN &&
-                 config.profile() <= H264PROFILE_MAX;
-  if (!is_h264) {
+  if (IsUnsupported(config)) {
     init_cb.Run(false);
     return;
   }
@@ -124,6 +125,37 @@ bool D3D11VideoDecoder::CanReadWithoutStalling() const {
 int D3D11VideoDecoder::GetMaxDecodeRequests() const {
   // Wrong thread, but it's okay.
   return impl_->GetMaxDecodeRequests();
+}
+
+bool D3D11VideoDecoder::IsUnsupported(const VideoDecoderConfig& config) {
+  // TODO(liberato): All of this could be moved into MojoVideoDecoder, so that
+  // it could run on the client side and save the IPC hop.
+
+  // Must be H264.
+  const bool is_h264 = config.profile() >= H264PROFILE_MIN &&
+                       config.profile() <= H264PROFILE_MAX;
+  if (!is_h264)
+    return true;
+
+  // Must use NV12, which excludes HDR.
+  if (config.profile() == H264PROFILE_HIGH10PROFILE)
+    return true;
+
+  // TODO(liberato): dxva checks IsHDR() in the target colorspace, but we don't
+  // have the target colorspace.  It's commented as being for vpx, though, so
+  // we skip it here for now.
+
+  // Must use the validating decoder.
+  if (gpu_preferences_.use_passthrough_cmd_decoder)
+    return true;
+
+  // Must allow zero-copy of nv12 textures.
+  // TODO(liberato): check gpu workarounds too, once it's plumbed through.  It
+  // will be added as part of VDAVideoDecoder.
+  if (!gpu_preferences_.enable_zero_copy_dxgi_video)
+    return true;
+
+  return false;
 }
 
 }  // namespace media
