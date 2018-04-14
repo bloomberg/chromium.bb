@@ -749,10 +749,11 @@ void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
                      : login_constants::kClearBlurSigma);
     }
     is_wallpaper_blurred_ = needs_blur;
-    // TODO(crbug.com/776464): Replace the observer with mojo calls so that
-    // it works under mash and it's easier to add tests.
     for (auto& observer : observers_)
       observer.OnWallpaperBlurChanged();
+    mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
+      observer->OnWallpaperBlurChanged(is_wallpaper_blurred_);
+    });
   }
 }
 
@@ -1449,10 +1450,11 @@ void WallpaperController::InstallDesktopController(aura::Window* root_window) {
 
   if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
     is_wallpaper_blurred_ = is_wallpaper_blurred;
-    // TODO(crbug.com/776464): Replace the observer with mojo calls so that it
-    // works under mash and it's easier to add tests.
     for (auto& observer : observers_)
       observer.OnWallpaperBlurChanged();
+    mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
+      observer->OnWallpaperBlurChanged(is_wallpaper_blurred_);
+    });
   }
 
   const int container_id = GetWallpaperContainerId(locked_);
