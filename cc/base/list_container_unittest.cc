@@ -1054,6 +1054,17 @@ TEST(ListContainerTest, AppendByMovingDoesNotDestruct) {
   list_2.AppendByMoving(mde_1);
   EXPECT_CALL(*mde_1, Destruct()).Times(0);
   testing::Mock::VerifyAndClearExpectations(mde_1);
+}
+
+TEST(ListContainerTest, DISABLED_AppendByMovingDestructorCall) {
+  ListContainer<DerivedElement> list_1(kCurrentLargestDerivedElementAlign,
+                                       kCurrentLargestDerivedElementSize, 0);
+  ListContainer<DerivedElement> list_2(kCurrentLargestDerivedElementAlign,
+                                       kCurrentLargestDerivedElementSize, 0);
+  MockDerivedElement* mde_1 = list_1.AllocateAndConstruct<MockDerivedElement>();
+
+  // Make sure the destructor is called on the newly moved element.
+  list_2.AppendByMoving(mde_1);
   mde_1 = static_cast<MockDerivedElement*>(list_2.back());
   EXPECT_CALL(*mde_1, Destruct());
 }
