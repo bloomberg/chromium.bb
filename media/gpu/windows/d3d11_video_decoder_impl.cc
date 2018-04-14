@@ -67,7 +67,8 @@ void D3D11VideoDecoderImpl::Initialize(
 
   HRESULT hr;
 
-  // TODO(liberato): Handle cleanup better.
+  // TODO(liberato): Handle cleanup better.  Also consider being less chatty in
+  // the logs, since this will fall back.
   hr = device_context_.CopyTo(video_context_.GetAddressOf());
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to get device context");
@@ -353,7 +354,8 @@ void D3D11VideoDecoderImpl::OnMailboxReleased(
   // Note that |buffer| might no longer be in |picture_buffers_| if we've
   // replaced them.  That's okay.
 
-  // TODO(liberato): what about the sync token?
+  // TODO(liberato): Wait for the sync token here.
+
   buffer->set_in_client_use(false);
 
   // Also re-start decoding in case it was waiting for more pictures.

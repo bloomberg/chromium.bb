@@ -29,6 +29,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
  public:
   D3D11VideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
+      const gpu::GpuPreferences& gpu_preferences,
       base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb);
   ~D3D11VideoDecoder() override;
 
@@ -48,6 +49,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
   bool CanReadWithoutStalling() const override;
   int GetMaxDecodeRequests() const override;
 
+  // Return true if |config| definitely isn't going to work, so that we can fail
+  // init without bothering with a thread hop.
+  bool IsUnsupported(const VideoDecoderConfig& config);
+
  private:
   // The implementation, which we trampoline to the impl thread.
   // This must be freed on the impl thread.
@@ -58,6 +63,8 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder {
 
   // Task runner for |impl_|.  This must be the GPU main thread.
   scoped_refptr<base::SequencedTaskRunner> impl_task_runner_;
+
+  gpu::GpuPreferences gpu_preferences_;
 
   base::WeakPtrFactory<D3D11VideoDecoder> weak_factory_;
 

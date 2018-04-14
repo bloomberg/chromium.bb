@@ -128,7 +128,7 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                                               std::move(get_stub_cb)));
 #elif defined(OS_WIN)
   return std::make_unique<D3D11VideoDecoder>(
-      gpu_task_runner_,
+      gpu_task_runner_, gpu_preferences_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
                           command_buffer_id->route_id));

@@ -100,6 +100,8 @@ DefaultRendererFactory::CreateVideoDecoders(
 
   // Prefer an external decoder since one will only exist if it is hardware
   // accelerated.
+  // Remember that |gpu_factories| will be null if HW video decode is turned
+  // off in chrome://flags.
   if (gpu_factories) {
     // |gpu_factories_| requires that its entry points be called on its
     // |GetTaskRunner()|.  Since |pipeline_| will own decoders created from the
@@ -113,7 +115,15 @@ DefaultRendererFactory::CreateVideoDecoders(
     }
 
     // MojoVideoDecoder replaces any VDA for this platform when it's enabled.
-    if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
+    bool enable_vda = !base::FeatureList::IsEnabled(media::kMojoVideoDecoder);
+#if defined(OS_WIN)
+    // D3D11VideoDecoder doesn't support as many cases as dxva yet, so don't
+    // turn off hw decode just because it's enabled.
+    // TODO(crbug.com/832171): Move the check for the most common unsupported
+    // cases for D3D11VideoDecoder to the renderer, to save an IPC hop.
+    enable_vda = true;
+#endif
+    if (enable_vda) {
       video_decoders.push_back(std::make_unique<GpuVideoDecoder>(
           gpu_factories, request_overlay_info_cb, target_color_space,
           media_log_));
