@@ -23,7 +23,9 @@
 #include "printing/printed_document.h"
 
 #if defined(OS_WIN)
+#include "base/command_line.h"
 #include "chrome/browser/printing/pdf_to_emf_converter.h"
+#include "chrome/common/chrome_features.h"
 #include "printing/pdf_render_settings.h"
 #include "printing/printed_page_win.h"
 #endif
@@ -92,11 +94,37 @@ std::vector<int> PrintJob::GetFullPageMapping(const std::vector<int>& pages,
   return mapping;
 }
 
+void PrintJob::StartConversionToNativeFormat(
+    const scoped_refptr<base::RefCountedMemory>& print_data,
+    const gfx::Size& page_size,
+    const gfx::Rect& content_area,
+    const gfx::Point& physical_offsets) {
+  if (PrintedDocument::HasDebugDumpPath())
+    document()->DebugDumpData(print_data.get(), FILE_PATH_LITERAL(".pdf"));
+
+  if (settings_.printer_is_textonly()) {
+    StartPdfToTextConversion(print_data, page_size);
+  } else if ((settings_.printer_is_ps2() || settings_.printer_is_ps3()) &&
+             !base::FeatureList::IsEnabled(
+                 features::kDisablePostScriptPrinting)) {
+    StartPdfToPostScriptConversion(print_data, content_area, physical_offsets,
+                                   settings_.printer_is_ps2());
+  } else {
+    StartPdfToEmfConversion(print_data, page_size, content_area);
+  }
+
+  // Indicate that the PDF is fully rendered and we no longer need the renderer
+  // and web contents, so the print job does not need to be cancelled if they
+  // die. This is needed on Windows because the PrintedDocument will not be
+  // considered complete until PDF conversion finishes.
+  document()->SetConvertingPdf();
+}
+
 void PrintJob::ResetPageMapping() {
   pdf_page_mapping_ =
       GetFullPageMapping(pdf_page_mapping_, document_->page_count());
 }
-#endif
+#endif  // defined(OS_WIN)
 
 void PrintJob::Observe(int type,
                        const content::NotificationSource& source,
@@ -263,11 +291,19 @@ class PrintJob::PdfConversionState {
 void PrintJob::StartPdfToEmfConversion(
     const scoped_refptr<base::RefCountedMemory>& bytes,
     const gfx::Size& page_size,
-    const gfx::Rect& content_area,
-    bool print_text_with_gdi) {
+    const gfx::Rect& content_area) {
   DCHECK(!pdf_conversion_state_);
   pdf_conversion_state_ =
       std::make_unique<PdfConversionState>(page_size, content_area);
+
+  // TODO(thestig): Figure out why rendering text with GDI results in random
+  // missing characters for some users. https://crbug.com/658606
+  // Update : The missing letters seem to have been caused by the same
+  // problem as https://crbug.com/659604 which was resolved. GDI printing
+  // seems to work with the fix for this bug applied.
+  bool print_text_with_gdi =
+      settings_.print_text_with_gdi() && !settings_.printer_is_xps() &&
+      base::FeatureList::IsEnabled(features::kGdiTextPrinting);
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings().dpi_size(),
       /*autorotate=*/true, settings_.color() == COLOR,

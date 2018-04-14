@@ -36,7 +36,6 @@ namespace printing {
 class JobEventDetails;
 class PrintJob;
 class PrintQueriesQueue;
-class PrintedDocument;
 class PrinterQuery;
 
 // Base class for managing the print commands for a WebContents.
@@ -145,14 +144,13 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // been requested to the renderer.
   bool RenderAllMissingPagesNow();
 
-  // Checks that synchronization is correct and a print query exists for
-  // |cookie|. If so, returns the document associated with the cookie.
-  PrintedDocument* GetDocument(int cookie);
+  // Checks that synchronization is correct with |print_job_| based on |cookie|.
+  bool PrintJobHasDocument(int cookie);
 
-  // Starts printing |document| with the given |print_data|. This method assumes
-  // |print_data| contains valid data.
-  void PrintDocument(PrintedDocument* document,
-                     const scoped_refptr<base::RefCountedMemory>& print_data,
+  // Starts printing the |document| in |print_job_| with the given |print_data|.
+  // This method assumes PrintJobHasDocument() has been called, and |print_data|
+  // contains valid data.
+  void PrintDocument(const scoped_refptr<base::RefCountedMemory>& print_data,
                      const gfx::Size& page_size,
                      const gfx::Rect& content_area,
                      const gfx::Point& offsets);

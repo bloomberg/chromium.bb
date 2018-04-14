@@ -49,7 +49,9 @@ class TestPrintViewManager : public PrintViewManagerBase {
 
   const gfx::Rect& content_area() { return test_job()->content_area(); }
 
-  const gfx::Point& offsets() { return test_job()->offsets(); }
+  const gfx::Point& physical_offsets() {
+    return test_job()->physical_offsets();
+  }
 
 #if defined(OS_WIN)
   PrintSettings::PrinterType type() { return test_job()->type(); }
@@ -118,8 +120,8 @@ TEST_F(PrintViewManagerTest, PostScriptHasCorrectOffsets) {
 
   // Setup PostScript printer with printable area offsets of 0.1in.
   queue->SetupPrinterType(PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL2);
-  int offset_in_px = static_cast<int>(kTestPrinterDpi * 0.1f);
-  queue->SetupPrinterOffsets(offset_in_px, offset_in_px);
+  int offset_in_pixels = static_cast<int>(kTestPrinterDpi * 0.1f);
+  queue->SetupPrinterOffsets(offset_in_pixels, offset_in_pixels);
   g_browser_process->print_job_manager()->SetQueueForTest(queue);
 
   chrome::NewTab(browser());
@@ -148,7 +150,7 @@ TEST_F(PrintViewManagerTest, PostScriptHasCorrectOffsets) {
                                            std::move(callback));
   print_view_manager->WaitForCallback();
 
-  EXPECT_EQ(gfx::Point(60, 60), print_view_manager->offsets());
+  EXPECT_EQ(gfx::Point(60, 60), print_view_manager->physical_offsets());
   EXPECT_EQ(gfx::Rect(0, 0, 5100, 6600), print_view_manager->content_area());
   EXPECT_EQ(PrintSettings::PrinterType::TYPE_POSTSCRIPT_LEVEL2,
             print_view_manager->type());
