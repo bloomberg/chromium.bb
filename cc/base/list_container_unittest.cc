@@ -1077,7 +1077,8 @@ TEST(ListContainerTest, AppendByMovingReturnsMovedPointer) {
   EXPECT_NE(moved_1, moved_2);
 }
 
-TEST(ListContainerTest, AppendByMovingReplacesSourceWithNewDerivedElement) {
+TEST(ListContainerTest,
+     DISABLED_AppendByMovingReplacesSourceWithNewDerivedElement) {
   ListContainer<SimpleDerivedElementConstructMagicNumberOne> list_1(
       kCurrentLargestDerivedElementAlign, kCurrentLargestDerivedElementSize, 0);
   ListContainer<SimpleDerivedElementConstructMagicNumberTwo> list_2(
