@@ -2291,6 +2291,7 @@ crbug.com/832071 virtual/navigation-mojo-response/external/wpt/service-workers/s
 crbug.com/832071 virtual/outofblink-cors/external/wpt/service-workers/service-worker/worker-client-id.https.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.13 ] external/wpt/accelerometer/Accelerometer.https.html [ Timeout ]
 crbug.com/626703 external/wpt/css/cssom/cssstyledeclaration-mutationrecord-001.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-shapes/shape-outside/shape-image/gradients/shape-outside-linear-gradient-008.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCPeerConnection-track-stats.https.html [ Timeout ]
