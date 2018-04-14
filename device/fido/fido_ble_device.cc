@@ -142,7 +142,7 @@ void FidoBleDevice::OnConnectionStatus(bool success) {
 void FidoBleDevice::OnReadControlPointLength(base::Optional<uint16_t> length) {
   StopTimeout();
   if (length) {
-    transaction_.emplace(connection_.get(), *length);
+    control_point_length_ = *length;
     state_ = State::kReady;
   } else {
     state_ = State::kDeviceError;
@@ -158,6 +158,7 @@ void FidoBleDevice::OnStatusMessage(std::vector<uint8_t> data) {
 void FidoBleDevice::SendRequestFrame(FidoBleFrame frame,
                                      FrameCallback callback) {
   state_ = State::kBusy;
+  transaction_.emplace(connection_.get(), control_point_length_);
   transaction_->WriteRequestFrame(
       std::move(frame),
       base::BindOnce(&FidoBleDevice::OnResponseFrame, base::Unretained(this),
@@ -166,6 +167,9 @@ void FidoBleDevice::SendRequestFrame(FidoBleFrame frame,
 
 void FidoBleDevice::OnResponseFrame(FrameCallback callback,
                                     base::Optional<FidoBleFrame> frame) {
+  // The request is done, time to reset |transaction_|.
+  transaction_.reset();
+
   state_ = frame ? State::kReady : State::kDeviceError;
   auto self = GetWeakPtr();
   std::move(callback).Run(std::move(frame));

@@ -5,6 +5,7 @@
 #include "device/fido/fido_ble_device.h"
 
 #include "base/optional.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 #include "device/fido/fido_constants.h"
@@ -22,6 +23,28 @@ using ::testing::Invoke;
 using ::testing::Test;
 using TestDeviceCallbackReceiver =
     test::TestCallbackReceiver<base::Optional<std::vector<uint8_t>>>;
+
+constexpr uint16_t kControlPointLength = 20;
+constexpr uint8_t kTestData[] = {'T', 'E', 'S', 'T'};
+
+std::vector<std::vector<uint8_t>> ToSerializedFragments(
+    FidoBleDeviceCommand command,
+    std::vector<uint8_t> payload,
+    size_t max_fragment_size) {
+  FidoBleFrame frame(command, std::move(payload));
+  auto fragments = frame.ToFragments(max_fragment_size);
+
+  const size_t num_fragments = 1 /* init_fragment */ + fragments.second.size();
+  std::vector<std::vector<uint8_t>> serialized_fragments(num_fragments);
+
+  fragments.first.Serialize(&serialized_fragments[0]);
+  for (size_t i = 1; i < num_fragments; ++i) {
+    fragments.second.front().Serialize(&serialized_fragments[i]);
+    fragments.second.pop();
+  }
+
+  return serialized_fragments;
+}
 
 }  // namespace
 
@@ -67,62 +90,88 @@ TEST_F(FidoBleDeviceTest, ConnectionFailureTest) {
   device()->Connect();
 }
 
-TEST_F(FidoBleDeviceTest, SendPingTest_Failure_Callback) {
-  ConnectWithLength(20);
+TEST_F(FidoBleDeviceTest, SendPingTest_Failure_WriteFailed) {
+  ConnectWithLength(kControlPointLength);
 
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
-      .WillOnce(Invoke(
-          [this](const auto& data, auto* cb) { std::move(*cb).Run(false); }));
+      .WillOnce(Invoke([this](const auto& data, auto* cb) {
+        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(*cb), false));
+      }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  device()->SendPing({'T', 'E', 'S', 'T'}, callback_receiver.callback());
+  auto payload = u2f_parsing_utils::Materialize(kTestData);
+  device()->SendPing(std::move(payload), callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
   EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
 }
 
-TEST_F(FidoBleDeviceTest, SendPingTest_Failure_Timeout) {
-  ConnectWithLength(20);
-
+TEST_F(FidoBleDeviceTest, SendPingTest_Failure_NoResponse) {
+  ConnectWithLength(kControlPointLength);
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        scoped_task_environment_.FastForwardBy(kDeviceTimeout);
+        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(*cb), true));
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  device()->SendPing({'T', 'E', 'S', 'T'}, callback_receiver.callback());
+  const auto payload = u2f_parsing_utils::Materialize(kTestData);
+  device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
   EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
+}
+
+TEST_F(FidoBleDeviceTest, SendPingTest_Failure_SlowResponse) {
+  ConnectWithLength(kControlPointLength);
+  EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
+      .WillOnce(Invoke([this](const auto& data, auto* cb) {
+        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(*cb), true));
+      }));
+
+  TestDeviceCallbackReceiver callback_receiver;
+  auto payload = u2f_parsing_utils::Materialize(kTestData);
+  device()->SendPing(payload, callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_FALSE(std::get<0>(*callback_receiver.result()));
+
+  // Imitate a ping response from the device after the timeout has passed.
+  for (auto&& fragment :
+       ToSerializedFragments(FidoBleDeviceCommand::kPing, std::move(payload),
+                             kControlPointLength)) {
+    connection()->read_callback().Run(std::move(fragment));
+  }
 }
 
 TEST_F(FidoBleDeviceTest, SendPingTest) {
-  ConnectWithLength(20);
+  ConnectWithLength(kControlPointLength);
 
-  const std::vector<uint8_t> ping_data = {'T', 'E', 'S', 'T'};
   EXPECT_CALL(*connection(), WriteControlPointPtr(_, _))
       .WillOnce(Invoke([this](const auto& data, auto* cb) {
-        auto almost_time_out =
-            kDeviceTimeout - base::TimeDelta::FromMicroseconds(1);
-        scoped_task_environment_.FastForwardBy(almost_time_out);
-        connection()->read_callback().Run(data);
-        std::move(*cb).Run(true);
+        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::BindOnce(std::move(*cb), true));
+
+        scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+            FROM_HERE, base::BindOnce(connection()->read_callback(), data));
       }));
 
   TestDeviceCallbackReceiver callback_receiver;
-  device()->SendPing(ping_data, callback_receiver.callback());
+  const auto payload = u2f_parsing_utils::Materialize(kTestData);
+  device()->SendPing(payload, callback_receiver.callback());
 
   callback_receiver.WaitForCallback();
   const auto& result = std::get<0>(*callback_receiver.result());
   ASSERT_TRUE(result);
-  EXPECT_EQ(ping_data, *result);
+  EXPECT_EQ(payload, *result);
 }
 
 TEST_F(FidoBleDeviceTest, SendCancelTest) {
   // BLE cancel command, follow bytes 2 bytes of zero length payload.
   constexpr uint8_t kBleCancelCommand[] = {0xBE, 0x00, 0x00};
 
-  ConnectWithLength(20);
+  ConnectWithLength(kControlPointLength);
   EXPECT_CALL(*connection(),
               WriteControlPointPtr(
                   u2f_parsing_utils::Materialize(kBleCancelCommand), _));
