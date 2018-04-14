@@ -130,12 +130,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
 
   ~MessageLoop() override;
 
-  // Returns an interface to interact with the MessageLoop instance for the
-  // current thread. This interface evaluates to false if there are no
-  // MessageLoop on the current thread. This interface is valid as long as the
-  // underlying MessageLoop instance is valid.
-  // TODO(gab): Move this to message_loop_current.h so static callers don't even
-  // need to include message_loop.h
+  // TODO(gab): Mass migrate callers to MessageLoopCurrent::Get().
   static MessageLoopCurrent current();
 
   using MessagePumpFactory = std::unique_ptr<MessagePump>();
@@ -349,11 +344,8 @@ class BASE_EXPORT MessageLoopForUI : public MessageLoop {
 
   explicit MessageLoopForUI(std::unique_ptr<MessagePump> pump);
 
-  // Returns an interface for the MessageLoopForUI of the current thread.
-  // Asserts that IsCurrent().
+  // TODO(gab): Mass migrate callers to MessageLoopCurrentForUI::Get()/IsSet().
   static MessageLoopCurrentForUI current();
-
-  // Returns true if the current thread is running a MessageLoopForUI.
   static bool IsCurrent();
 
 #if defined(OS_IOS)
@@ -397,11 +389,8 @@ class BASE_EXPORT MessageLoopForIO : public MessageLoop {
  public:
   MessageLoopForIO() : MessageLoop(TYPE_IO) {}
 
-  // Returns an interface for the MessageLoopForIO of the current thread.
-  // Asserts that IsCurrent().
+  // TODO(gab): Mass migrate callers to MessageLoopCurrentForIO::Get()/IsSet().
   static MessageLoopCurrentForIO current();
-
-  // Returns true if the current thread is running a MessageLoopForIO.
   static bool IsCurrent();
 };
 

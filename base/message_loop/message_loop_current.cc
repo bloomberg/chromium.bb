@@ -8,11 +8,32 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
+#include "base/no_destructor.h"
+#include "base/threading/thread_local.h"
 
 namespace base {
 
+namespace {
+
+base::ThreadLocalPointer<MessageLoop>* GetTLSMessageLoop() {
+  static NoDestructor<ThreadLocalPointer<MessageLoop>> lazy_tls_ptr;
+  return lazy_tls_ptr.get();
+}
+
+}  // namespace
+
 //------------------------------------------------------------------------------
 // MessageLoopCurrent
+
+// static
+MessageLoopCurrent MessageLoopCurrent::Get() {
+  return MessageLoopCurrent(GetTLSMessageLoop()->Get());
+}
+
+// static
+bool MessageLoopCurrent::IsSet() {
+  return !!GetTLSMessageLoop()->Get();
+}
 
 void MessageLoopCurrent::AddDestructionObserver(
     DestructionObserver* destruction_observer) {
@@ -73,10 +94,55 @@ bool MessageLoopCurrent::NestableTasksAllowed() const {
   return current_->task_execution_allowed_;
 }
 
+// static
+void MessageLoopCurrent::BindToCurrentThreadInternal(MessageLoop* current) {
+  DCHECK(!GetTLSMessageLoop()->Get())
+      << "Can't register a second MessageLoop on the same thread.";
+  GetTLSMessageLoop()->Set(current);
+}
+
+// static
+void MessageLoopCurrent::UnbindFromCurrentThreadInternal(MessageLoop* current) {
+  DCHECK_EQ(current, GetTLSMessageLoop()->Get());
+  GetTLSMessageLoop()->Set(nullptr);
+}
+
+bool MessageLoopCurrent::IsBoundToCurrentThreadInternal(
+    MessageLoop* message_loop) {
+  return GetTLSMessageLoop()->Get() == message_loop;
+}
+
 #if !defined(OS_NACL)
 
 //------------------------------------------------------------------------------
 // MessageLoopCurrentForUI
+
+// static
+MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
+  MessageLoop* loop = GetTLSMessageLoop()->Get();
+  DCHECK(loop);
+#if defined(OS_ANDROID)
+  DCHECK(loop->IsType(MessageLoop::TYPE_UI) ||
+         loop->IsType(MessageLoop::TYPE_JAVA));
+#else   // defined(OS_ANDROID)
+  DCHECK(loop->IsType(MessageLoop::TYPE_UI));
+#endif  // defined(OS_ANDROID)
+  auto* loop_for_ui = static_cast<MessageLoopForUI*>(loop);
+  return MessageLoopCurrentForUI(
+      loop_for_ui, static_cast<MessagePumpForUI*>(loop_for_ui->pump_.get()));
+}
+
+// static
+bool MessageLoopCurrentForUI::IsSet() {
+  MessageLoop* loop = GetTLSMessageLoop()->Get();
+  return loop &&
+#if defined(OS_ANDROID)
+         (loop->IsType(MessageLoop::TYPE_UI) ||
+          loop->IsType(MessageLoop::TYPE_JAVA));
+#else   // defined(OS_ANDROID)
+         loop->IsType(MessageLoop::TYPE_UI);
+#endif  // defined(OS_ANDROID)
+}
 
 #if (defined(USE_OZONE) && !defined(OS_FUCHSIA)) || \
     (defined(USE_X11) && !defined(USE_GLIB))
@@ -111,6 +177,22 @@ void MessageLoopCurrentForUI::Abort() {
 
 //------------------------------------------------------------------------------
 // MessageLoopCurrentForIO
+
+// static
+MessageLoopCurrentForIO MessageLoopCurrentForIO::Get() {
+  MessageLoop* loop = GetTLSMessageLoop()->Get();
+  DCHECK(loop);
+  DCHECK_EQ(MessageLoop::TYPE_IO, loop->type());
+  auto* loop_for_io = static_cast<MessageLoopForIO*>(loop);
+  return MessageLoopCurrentForIO(
+      loop_for_io, static_cast<MessagePumpForIO*>(loop_for_io->pump_.get()));
+}
+
+// static
+bool MessageLoopCurrentForIO::IsSet() {
+  MessageLoop* loop = GetTLSMessageLoop()->Get();
+  return loop && loop->IsType(MessageLoop::TYPE_IO);
+}
 
 #if !defined(OS_NACL_SFI)
 

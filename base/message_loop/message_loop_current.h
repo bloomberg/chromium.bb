@@ -17,18 +17,16 @@
 namespace base {
 
 class MessageLoop;
-class MessageLoopForIO;
-class MessageLoopForUI;
 class SingleThreadTaskRunner;
 
 // MessageLoopCurrent is a proxy to the public interface of the MessageLoop
 // bound to the thread it's obtained on.
 //
 // MessageLoopCurrent(ForUI|ForIO) is available statically through
-// MessageLoop(ForUI|ForIO)::current() on threads that have a matching
+// MessageLoopCurrent(ForUI|ForIO)::Get() on threads that have a matching
 // MessageLoop instance. APIs intended for all consumers on the thread should be
-// on MessageLoopCurrent(ForUI|ForIO), while APIs intended for the owner of
-// the instance should be on MessageLoop(ForUI|ForIO).
+// on MessageLoopCurrent(ForUI|ForIO), while APIs intended for the owner of the
+// instance should be on MessageLoop(ForUI|ForIO).
 //
 // Why: Historically MessageLoop::current() gave access to the full MessageLoop
 // API, preventing both addition of powerful owner-only APIs as well as making
@@ -44,6 +42,15 @@ class BASE_EXPORT MessageLoopCurrent {
   // copy around.
   MessageLoopCurrent(const MessageLoopCurrent& other) = default;
   MessageLoopCurrent& operator=(const MessageLoopCurrent& other) = default;
+
+  // Returns a proxy object to interact with the MessageLoop running the
+  // current thread. It must only be used on the thread it was obtained.
+  static MessageLoopCurrent Get();
+
+  // Returns true if the current thread is running a MessageLoop. Prefer this to
+  // verifying the boolean value of Get() (so that Get() can ultimately DCHECK
+  // it's only invoked when IsSet()).
+  static bool IsSet();
 
   // Allow MessageLoopCurrent to be used like a pointer to support the many
   // callsites that used MessageLoop::current() that way when it was a
@@ -172,10 +179,21 @@ class BASE_EXPORT MessageLoopCurrent {
   // level.
   bool IsIdleForTesting();
 
+  // Binds |current| to the current thread. It will from then on be the
+  // MessageLoop driven by MessageLoopCurrent on this thread. This is only meant
+  // to be invoked by the MessageLoop itself.
+  static void BindToCurrentThreadInternal(MessageLoop* current);
+
+  // Unbinds |current| from the current thread. Must be invoked on the same
+  // thread that invoked |BindToCurrentThreadInternal(current)|. This is only
+  // meant to be invoked by the MessageLoop itself.
+  static void UnbindFromCurrentThreadInternal(MessageLoop* current);
+
+  // Returns true if |message_loop| is bound to MessageLoopCurrent on the
+  // current thread. This is only meant to be invoked by the MessageLoop itself.
+  static bool IsBoundToCurrentThreadInternal(MessageLoop* message_loop);
+
  protected:
-  // Apart from subclasses: only a MessageLoop can create MessageLoopCurrent
-  // instances.
-  friend class MessageLoop;
   MessageLoopCurrent(MessageLoop* current) : current_(current) {}
 
   MessageLoop* const current_;
@@ -186,6 +204,13 @@ class BASE_EXPORT MessageLoopCurrent {
 // ForUI extension of MessageLoopCurrent.
 class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
  public:
+  // Returns an interface for the MessageLoopForUI of the current thread.
+  // Asserts that IsSet().
+  static MessageLoopCurrentForUI Get();
+
+  // Returns true if the current thread is running a MessageLoopForUI.
+  static bool IsSet();
+
   MessageLoopCurrentForUI* operator->() { return this; }
 
 #if (defined(USE_OZONE) && !defined(OS_FUCHSIA)) || \
@@ -224,8 +249,6 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 #endif
 
  private:
-  // Only a MessageLoopForUI can create MessageLoopCurrentForUI instances.
-  friend class MessageLoopForUI;
   MessageLoopCurrentForUI(MessageLoop* current, MessagePumpForUI* pump)
       : MessageLoopCurrent(current), pump_(pump) {
     DCHECK(pump_);
@@ -239,6 +262,13 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 // ForIO extension of MessageLoopCurrent.
 class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
  public:
+  // Returns an interface for the MessageLoopForIO of the current thread.
+  // Asserts that IsSet().
+  static MessageLoopCurrentForIO Get();
+
+  // Returns true if the current thread is running a MessageLoopForIO.
+  static bool IsSet();
+
   MessageLoopCurrentForIO* operator->() { return this; }
 
 #if !defined(OS_NACL_SFI)
@@ -270,8 +300,6 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 #endif  // !defined(OS_NACL_SFI)
 
  private:
-  // Only a MessageLoopForIO can create MessageLoopCurrentForIO instances.
-  friend class MessageLoopForIO;
   MessageLoopCurrentForIO(MessageLoop* current, MessagePumpForIO* pump)
       : MessageLoopCurrent(current), pump_(pump) {
     DCHECK(pump_);
