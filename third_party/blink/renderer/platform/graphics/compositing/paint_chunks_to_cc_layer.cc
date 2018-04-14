@@ -137,10 +137,9 @@ class ConversionContext {
 
   SkMatrix GetSkMatrix(
       const TransformPaintPropertyNode* target_transform) const {
-    return AffineTransformToSkMatrix(
+    return SkMatrix(TransformationMatrix::ToSkMatrix44(
         GeometryMapper::SourceToDestinationProjection(target_transform,
-                                                      current_transform_)
-            .ToAffineTransform());
+                                                      current_transform_)));
   }
 
   void AppendRestore(size_t n) {
