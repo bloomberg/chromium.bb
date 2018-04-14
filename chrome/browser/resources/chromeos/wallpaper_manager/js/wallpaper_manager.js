@@ -464,13 +464,6 @@ WallpaperManager.prototype.preDownloadDomInit_ = function() {
  */
 WallpaperManager.prototype.postDownloadDomInit_ = function() {
   i18nTemplate.process(this.document_, loadTimeData);
-  // TODO(crbug.com/811619): Replace with i18n strings.
-  if (this.useNewWallpaperPicker_) {
-    $('currently-set-message').textContent = 'Currently set';
-    $('confirm-preview-wallpaper').textContent = 'Set Wallpaper';
-    $('set-successfully-message').textContent = 'Wallpaper set successfully';
-  }
-
   this.initCategoriesList_();
   this.initThumbnailsGrid_();
   this.presetCategory_();
