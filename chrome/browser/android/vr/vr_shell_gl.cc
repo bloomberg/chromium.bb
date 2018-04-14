@@ -526,6 +526,7 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
                        weak_ptr_factory_.GetWeakPtr()));
 
     mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
+    mailbox_bridge_->CreateContextProvider();
   }
 }
 
