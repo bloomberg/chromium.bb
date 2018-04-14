@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -27,6 +26,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,17 +55,15 @@ class FailureDecodeRequestSender
   }
 };
 
-class ArcWallpaperServiceTest : public ash::AshTestBase {
+class ArcWallpaperServiceTest : public testing::Test {
  public:
   ArcWallpaperServiceTest()
-      : user_manager_(new chromeos::FakeChromeUserManager()),
+      : thread_bundle_(std::make_unique<content::TestBrowserThreadBundle>()),
+        user_manager_(new chromeos::FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)) {}
   ~ArcWallpaperServiceTest() override = default;
 
   void SetUp() override {
-    disable_provide_local_state();
-    AshTestBase::SetUp();
-
     // Prefs
     TestingBrowserProcess::GetGlobal()->SetLocalState(&pref_service_);
     pref_service_.registry()->RegisterDictionaryPref(
@@ -96,8 +94,8 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
         arc_service_manager_.arc_bridge_service()->wallpaper());
 
     // Salt
-    std::vector<uint8_t> salt = {0x01, 0x02, 0x03};
-    chromeos::SystemSaltGetter::Get()->SetRawSaltForTesting(salt);
+    chromeos::SystemSaltGetter::Initialize();
+    chromeos::SystemSaltGetter::Get()->SetRawSaltForTesting({0x01, 0x02, 0x03});
   }
 
   void TearDown() override {
@@ -107,7 +105,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
 
     wallpaper_controller_client_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
-    AshTestBase::TearDown();
+    chromeos::SystemSaltGetter::Shutdown();
   }
 
  protected:
@@ -117,6 +115,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
   TestWallpaperController test_wallpaper_controller_;
 
  private:
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
   chromeos::FakeChromeUserManager* const user_manager_ = nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
   arc::ArcServiceManager arc_service_manager_;
