@@ -229,6 +229,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'nvidia', 'opengl'], bug=828572)
     self.Skip('conformance2/rendering/blitframebuffer-size-overflow.html',
         ['win', 'nvidia', 'opengl'], bug=830046)
+    self.Flaky('conformance2/transform_feedback/switching-objects.html',
+        ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
     self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
         ['win', 'nvidia', 'opengl', 'no_passthrough'], bug=832238)
 
@@ -424,11 +426,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/integerstatequery.html',
         ['passthrough', 'opengl'], bug=602688)
 
-    # These Transform Feedback tests seem flaky on ANGLE/GL.
+    # These Transform Feedback tests seem flaky on ANGLE/GL with passthrough.
     self.Flaky('conformance2/transform_feedback/switching-objects.html',
-        ['passthrough', 'opengl'], bug=696345)
+        ['passthrough', 'opengl'], bug=832238)
     self.Flaky('conformance2/transform_feedback/too-small-buffers.html',
-        ['passthrough', 'opengl'], bug=818383)
+        ['passthrough', 'opengl'], bug=832238)
 
     # Passthrough command decoder / OpenGL / Intel
     self.Fail('conformance2/textures/video/tex-2d-rgb32f-rgb-float.html',
@@ -756,7 +758,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_separate_triangles.html',
         ['sierra', 'amd'], bug=483282)
     self.Fail('conformance2/transform_feedback/too-small-buffers.html',
-        ['sierra', 'amd', 'no_angle'], bug=818383)
+        ['sierra', 'amd', 'no_angle'], bug=832238)
 
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_00.html',
         ['mac', 'amd'], bug=751254)
