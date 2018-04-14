@@ -344,9 +344,48 @@ template("test") {
       }
       bundle_deps += [ ":$_resources_bundle_data" ]
     }
+  } else if (is_chromeos && getenv("SDK_VERSION") != "") {
+    # When the env var SDK_VERSION is set, assume we're in the cros chrome-sdk
+    # building simplechrome.
+
+    import("//build/config/chromeos/rules.gni")
+
+    assert(getenv("SDK_BOARD") != "", "Must specify board to build for.")
+
+    _gen_runner_target = "${target_name}__runner"
+    _runtime_deps_file =
+        "$root_out_dir/gen.runtime/" + get_label_info(target_name, "dir") +
+        "/" + get_label_info(target_name, "name") + ".runtime_deps"
+
+    generate_vm_runner_script(_gen_runner_target) {
+      testonly = true
+      generated_script = "$root_build_dir/bin/run_" + invoker.target_name
+      test_exe = "$root_out_dir/" + get_label_info(invoker.target_name, "name")
+      runtime_deps_file = _runtime_deps_file
+    }
+
+    executable(target_name) {
+      forward_variables_from(invoker, "*")
+      if (!defined(deps)) {
+        deps = []
+      }
+      if (!defined(data)) {
+        data = []
+      }
+
+      testonly = true
+      output_name = target_name
+      write_runtime_deps = _runtime_deps_file
+      data += [ _runtime_deps_file ]
+      deps += [
+        ":$_gen_runner_target",
+        "//build/config:exe_and_shlib_deps",
+      ]
+    }
   } else {
     executable(target_name) {
       deps = []
+
       forward_variables_from(invoker, "*")
 
       testonly = true
