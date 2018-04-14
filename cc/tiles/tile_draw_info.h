@@ -81,7 +81,7 @@ class CC_EXPORT TileDrawInfo {
 
   inline bool has_resource() const { return !!resource_; }
 
-  const ResourcePool::InUsePoolResource& GetResource() const;
+  const ResourcePool::InUsePoolResource& GetResource();
 
   inline bool has_compressed_resource() const {
     return resource_ ? IsResourceFormatCompressed(resource_.format()) : false;
