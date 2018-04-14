@@ -114,15 +114,6 @@
       'CrWinAsan(dll)': 'asan_clang_shared_v8_heap_x86_full_symbols_release',
       'CrWinAsanCov': 'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release',
 
-      # TODO(crbug.com/751220): These are MSVC bots. Rename the buildbots at
-      # some point.
-      'CrWinClang': 'win_msvc_release_bot_x86',
-      'CrWinClang(dbg)': 'win_msvc_debug_bot_x86',
-      'CrWinClang(shared)': 'win_msvc_shared_release_bot_x86',
-      'CrWinClang64': 'win_msvc_release_bot',
-      'CrWinClang64(dbg)': 'win_msvc_debug_bot',
-      'CrWinClang64(dll)': 'win_msvc_shared_release_bot',
-
       'CrWinClangLLD': 'clang_tot_official_static_use_lld_x86',
       'CrWinClangLLD64': 'clang_tot_shared_release_use_lld_dcheck',
       'CrWinClngLLD64dbg': 'clang_tot_full_symbols_shared_debug_use_lld',
@@ -508,11 +499,6 @@
       'win64-jumbo-rel': 'jumbo_release_bot_minimal_symbols',
       'Win x64 Builder': 'release_bot_minimal_symbols',
       'Win x64 Builder (dbg)': 'debug_bot_minimal_symbols',
-      # TODO(thakis): Remove this once WinMSVC64 bots are live (the bots with
-      # unqualified names now use clang).
-      'WinClang64 (dbg)': 'win_clang_release_bot',
-      'WinMSVC64': 'win_msvc_release_bot_compile_only',
-      'WinMSVC64 (dbg)': 'win_msvc_debug_bot_compile_only',
     },
 
     'internal.client.kitchensync': {
@@ -706,9 +692,6 @@
       'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_minimal_symbols',
       'win_chromium_dbg_ng': 'debug_trybot_x86_minimal_symbols',
       'win_chromium_x64_rel_ng': 'release_trybot_minimal_symbols',
-      'win_clang': 'win_clang_release_bot',
-      'win-msvc-rel': 'win_msvc_release_bot_compile_only',
-      'win-msvc-dbg': 'win_msvc_debug_bot_compile_only',
       'win_mojo': 'release_trybot_x86',
       'win_nacl_sdk': 'release_bot_x86_minimal_symbols',
       'win_nacl_sdk_build': 'release_bot_x86_minimal_symbols',
@@ -1647,43 +1630,8 @@
       'vr', 'release_trybot', 'ozone',
     ],
 
-    'win_clang_release_bot': [
-      # Now that the default win bots use clang, use a "clang" bot to make sure
-      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
-      # check that is very confusing, so rename the bot to "msvc".
-      'no_clang', 'release_bot', 'minimal_symbols',
-    ],
-
     'win_msvc_release_bot': [
       'no_clang', 'release_bot',
-    ],
-
-    'win_msvc_release_bot_compile_only': [
-      'no_clang', 'release_bot', 'compile_only',
-    ],
-
-    'win_msvc_release_bot_x86': [
-      'no_clang', 'minimal_symbols', 'release_bot', 'x86',
-    ],
-
-    'win_msvc_debug_bot': [
-      'no_clang', 'debug_bot',
-    ],
-
-    'win_msvc_debug_bot_compile_only': [
-      'no_clang', 'debug_bot', 'compile_only',
-    ],
-
-    'win_msvc_debug_bot_x86': [
-      'no_clang', 'minimal_symbols', 'debug_bot', 'x86',
-    ],
-
-    'win_msvc_shared_release_bot': [
-      'no_clang', 'minimal_symbols', 'shared_release_bot', 'dcheck_always_on',
-    ],
-
-    'win_msvc_shared_release_bot_x86': [
-      'no_clang', 'minimal_symbols', 'shared_release_bot', 'dcheck_always_on', 'x86',
     ],
 
     # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
