@@ -10,10 +10,12 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
@@ -22,8 +24,11 @@
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#import "ios/chrome/browser/ui/util/pasteboard_util.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -53,6 +58,8 @@ const int kMaxFetchCount = 100;
 
 // Object to manage insertion of history entries into the table view model.
 @property(nonatomic, strong) HistoryEntryInserter* entryInserter;
+// Coordinator for displaying context menus for history entries.
+@property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 // The current query for visible history entries.
 @property(nonatomic, copy) NSString* currentQuery;
 // YES if there are no results to show.
@@ -73,6 +80,7 @@ const int kMaxFetchCount = 100;
 
 @implementation HistoryTableViewController
 @synthesize browserState = _browserState;
+@synthesize contextMenuCoordinator = _contextMenuCoordinator;
 @synthesize currentQuery = _currentQuery;
 @synthesize delegate = _delegate;
 @synthesize empty = _empty;
@@ -99,6 +107,13 @@ const int kMaxFetchCount = 100;
   self.tableView.sectionFooterHeight = 0.0;
   self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
   self.clearsSelectionOnViewWillAppear = NO;
+
+  // ContextMenu gesture recognizer.
+  UILongPressGestureRecognizer* longPressRecognizer = [
+      [UILongPressGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(displayContextMenuInvokedByGestureRecognizer:)];
+  [self.tableView addGestureRecognizer:longPressRecognizer];
 }
 
 // TODO(crbug.com/805190): These methods are supposed to be public, though we
@@ -413,17 +428,95 @@ const int kMaxFetchCount = 100;
 // Displays context menu on cell pressed with gestureRecognizer.
 - (void)displayContextMenuInvokedByGestureRecognizer:
     (UILongPressGestureRecognizer*)gestureRecognizer {
-  // TODO(crbug.com/805190): Migrate.
+  if (gestureRecognizer.numberOfTouches != 1 || self.editing ||
+      gestureRecognizer.state != UIGestureRecognizerStateBegan) {
+    return;
+  }
+
+  CGPoint touchLocation =
+      [gestureRecognizer locationOfTouch:0 inView:self.tableView];
+  NSIndexPath* touchedItemIndexPath =
+      [self.tableView indexPathForRowAtPoint:touchLocation];
+  // If there's no index path, or the index path is for the header item, do not
+  // display a contextual menu.
+  if (!touchedItemIndexPath ||
+      [touchedItemIndexPath
+          isEqual:[NSIndexPath indexPathForItem:0 inSection:0]])
+    return;
+
+  HistoryEntryItem* entry = base::mac::ObjCCastStrict<HistoryEntryItem>(
+      [self.tableViewModel itemAtIndexPath:touchedItemIndexPath]);
+
+  __weak HistoryTableViewController* weakSelf = self;
+  web::ContextMenuParams params;
+  params.location = touchLocation;
+  params.view = self.tableView;
+  NSString* menuTitle =
+      base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
+  params.menu_title = [menuTitle copy];
+
+  // Present sheet/popover using controller that is added to view hierarchy.
+  // TODO(crbug.com/754642): Remove TopPresentedViewController().
+  UIViewController* topController =
+      top_view_controller::TopPresentedViewController();
+
+  self.contextMenuCoordinator =
+      [[ContextMenuCoordinator alloc] initWithBaseViewController:topController
+                                                          params:params];
+
+  // TODO(crbug.com/606503): Refactor context menu creation code to be shared
+  // with BrowserViewController.
+  // Add "Open in New Tab" option.
+  NSString* openInNewTabTitle =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB);
+  ProceduralBlock openInNewTabAction = ^{
+    [weakSelf openURLInNewTab:entry.URL];
+  };
+  [self.contextMenuCoordinator addItemWithTitle:openInNewTabTitle
+                                         action:openInNewTabAction];
+
+  // Add "Open in New Incognito Tab" option.
+  NSString* openInNewIncognitoTabTitle = l10n_util::GetNSStringWithFixup(
+      IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
+  ProceduralBlock openInNewIncognitoTabAction = ^{
+    [weakSelf openURLInNewIncognitoTab:entry.URL];
+  };
+  [self.contextMenuCoordinator addItemWithTitle:openInNewIncognitoTabTitle
+                                         action:openInNewIncognitoTabAction];
+
+  // Add "Copy URL" option.
+  NSString* copyURLTitle =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_CONTENT_CONTEXT_COPY);
+  ProceduralBlock copyURLAction = ^{
+    StoreURLInPasteboard(entry.URL);
+  };
+  [self.contextMenuCoordinator addItemWithTitle:copyURLTitle
+                                         action:copyURLAction];
+  [self.contextMenuCoordinator start];
 }
 
 // Opens URL in a new non-incognito tab and dismisses the history view.
 - (void)openURLInNewTab:(const GURL&)URL {
-  // TODO(crbug.com/805190): Migrate.
+  GURL copiedURL(URL);
+  [self.delegate dismissHistoryWithCompletion:^{
+    [self.loader webPageOrderedOpen:copiedURL
+                           referrer:web::Referrer()
+                        inIncognito:NO
+                       inBackground:NO
+                           appendTo:kLastTab];
+  }];
 }
 
 // Opens URL in a new incognito tab and dismisses the history view.
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
-  // TODO(crbug.com/805190): Migrate.
+  GURL copiedURL(URL);
+  [self.delegate dismissHistoryWithCompletion:^{
+    [self.loader webPageOrderedOpen:copiedURL
+                           referrer:web::Referrer()
+                        inIncognito:YES
+                       inBackground:NO
+                           appendTo:kLastTab];
+  }];
 }
 
 #pragma mark Helper Methods
