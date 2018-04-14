@@ -3036,18 +3036,6 @@
       }
     ]
   },
-  "WinMSVC64": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "WinMSVC64 (dbg)": {
-    "additional_compile_targets": [
-      "chrome",
-      "browser_tests",
-      "unit_tests"
-    ]
-  },
   "win64-jumbo-rel": {
     "additional_compile_targets": [
       "all"

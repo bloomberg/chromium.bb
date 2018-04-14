@@ -285,16 +285,6 @@
           'shards': 20,
         },
       },
-      'CrWinClang(dbg)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'CrWinClang64(dbg)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'ToTWin(dbg)': {
         'swarming': {
           'shards': 20,
@@ -2341,12 +2331,6 @@
       'CrWinAsan',
       'CrWinAsan(dll)',
       'CrWinAsanCov',
-      'CrWinClang',
-      'CrWinClang(dbg)',
-      'CrWinClang(shared)',
-      'CrWinClang64',
-      'CrWinClang64(dbg)',
-      'CrWinClang64(dll)',
       'CrWinClangLLD',
       'CrWinClangLLD64',
       'CrWinClngLLD64dbg',

@@ -609,36 +609,6 @@
           'gtest_tests': 'chromium_win_clang_gtests',
         },
       },
-      'CrWinClang': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinClang(dbg)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinClang(shared)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinClang64': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinClang64(dbg)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
-      'CrWinClang64(dll)': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_clang_gtests',
-        },
-      },
       'CrWinClangLLD': {
         'test_suites': {
           'gtest_tests': 'chromium_win_clang_gtests',
@@ -2073,20 +2043,6 @@
         'additional_compile_targets': [
           'all'
         ]
-      },
-      'WinMSVC64': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
-      'WinMSVC64 (dbg)': {
-        'additional_compile_targets': [
-          # TODO(crbug.com/777642): Add more compile targets if we get
-          # more capacity.
-          'chrome',
-          'browser_tests',
-          'unit_tests',
-        ],
       },
       'Win 7 Tests x64 (1)': {
         'test_suites': {
