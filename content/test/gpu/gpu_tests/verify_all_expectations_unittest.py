@@ -73,8 +73,9 @@ class VerifyTestExpectations(unittest.TestCase):
     # Emulate several of the configurations on Chromium's waterfall to try to
     # catch test expectation collisions before they reach either the CQ or
     # waterfall.
-    d3d11 = 'OpenGL ES 3.0 (ANGLE Direct3D11)'
-    d3d9 = 'OpenGL ES 3.0 (ANGLE Direct3D9)'
+    d3d11 = 'ANGLE (Direct3D11)'
+    d3d9 = 'ANGLE (Direct3D9)'
+    angleogl = 'ANGLE (OpenGL 4.5 core)'
     es30 = 'OpenGL ES 3.0'
     ogl41 = 'OpenGL 4.1'
     ogl45 = 'OpenGL 4.5'
@@ -97,6 +98,8 @@ class VerifyTestExpectations(unittest.TestCase):
       StubBrowser('win', 'win7', 0x1002, '', 0x6613, '', d3d11, True),
       # Windows 7, AMD R7 240, D3D9, passthrough cmd decoder
       StubBrowser('win', 'win7', 0x1002, '', 0x6613, '', d3d9, True),
+      # Windows 10, NVIDIA Quadro P400, GL, validating cmd decoder
+      StubBrowser('win', 'win10', 0x10de, '', 0x1cb3, '', angleogl, False),
       # macOS Sierra, Intel GPU, validating cmd decoder
       StubBrowser('mac', 'sierra', 0x8086, '', 0x0a2e, '', ogl41, False),
       # macOS Sierra, AMD Retina MacBook Pro, validating cmd decoder
