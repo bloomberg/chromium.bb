@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 
@@ -69,6 +70,13 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
   // Paints a decoration over the base icon to indicate that the extension has
   // a blocked action that wants to run.
   void PaintBlockedActionDecoration(gfx::Canvas* canvas);
+
+  // The toolbar action view may have different values of paddings depending on
+  // the current material design mode (See ToolbarActionsBar::GetViewSize()). In
+  // all cases, our badges and decorations should be positions at the corners of
+  // the area where the icon exists (ignoring all the paddings).
+  // https://crbug.com/831946.
+  gfx::Rect GetIconAreaRect() const;
 
   // The base icon to draw.
   gfx::Image icon_;
