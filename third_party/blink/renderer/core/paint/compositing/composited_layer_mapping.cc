@@ -1147,15 +1147,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
            ->IsRunningBackdropFilterAnimationOnCompositor())
     UpdateBackdropFilters();
 
-  // We compute everything relative to the enclosing compositing layer.
-  IntRect ancestor_compositing_bounds;
-  if (compositing_container) {
-    DCHECK(compositing_container->HasCompositedLayerMapping());
-    ancestor_compositing_bounds =
-        compositing_container->GetCompositedLayerMapping()
-            ->PixelSnappedCompositedBounds();
-  }
-
   IntRect local_compositing_bounds;
   IntRect relative_compositing_bounds;
   LayoutPoint offset_from_composited_ancestor;
@@ -1167,7 +1158,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
 
   IntPoint graphics_layer_parent_location;
   ComputeGraphicsLayerParentLocation(compositing_container,
-                                     ancestor_compositing_bounds,
                                      graphics_layer_parent_location);
 
   // Might update graphicsLayerParentLocation.
@@ -1330,29 +1320,12 @@ LayoutPoint CompositedLayerMapping::FrameOwnerContentsLocation() const {
 
 void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
     const PaintLayer* compositing_container,
-    const IntRect& ancestor_compositing_bounds,
     IntPoint& graphics_layer_parent_location) {
-  if (compositing_container &&
-      compositing_container->GetCompositedLayerMapping()->HasClippingLayer()) {
-    DCHECK(compositing_container->GetLayoutObject().IsBox());
-    // If the compositing ancestor has a layer to clip children, we parent in
-    // that, and therefore position relative to it.
+  if (compositing_container) {
     graphics_layer_parent_location =
-        PixelSnappedIntRect(
-            ToLayoutBox(compositing_container->GetLayoutObject())
-                .ClippingRect(
-                    LayoutPoint(compositing_container->SubpixelAccumulation())))
-            .Location();
-  } else if (compositing_container &&
-             compositing_container->GetCompositedLayerMapping()
-                 ->ChildTransformLayer()) {
-    // Similarly, if the compositing ancestor has a child transform layer, we
-    // parent in that, and therefore position relative to it. It's already taken
-    // into account the contents offset, so we do not need to here.
-    graphics_layer_parent_location =
-        RoundedIntPoint(compositing_container->SubpixelAccumulation());
-  } else if (compositing_container) {
-    graphics_layer_parent_location = ancestor_compositing_bounds.Location();
+        IntPoint(compositing_container->GetCompositedLayerMapping()
+                     ->ParentForSublayers()
+                     ->OffsetFromLayoutObject());
   } else if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     graphics_layer_parent_location =
         GetLayoutObject().View()->DocumentRect().Location();
@@ -3734,12 +3707,6 @@ void CompositedLayerMapping::InvalidateTargetElementForTesting() {
   // non-compositing descendants as well.
   target_object->InvalidateDisplayItemClients(
       PaintInvalidationReason::kForTesting);
-}
-
-IntRect CompositedLayerMapping::PixelSnappedCompositedBounds() const {
-  LayoutRect bounds = composited_bounds_;
-  bounds.Move(owning_layer_.SubpixelAccumulation());
-  return PixelSnappedIntRect(bounds);
 }
 
 bool CompositedLayerMapping::InvalidateLayerIfNoPrecedingEntry(
