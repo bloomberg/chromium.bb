@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/graphics/cast_window_manager.h"
+#include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/web_contents.h"
 
 namespace chromecast {
@@ -45,6 +46,15 @@ class CastWebView {
         const base::string16& message,
         int32_t line_no,
         const base::string16& source_id) = 0;
+
+    // Invoked by CastWebView when WebContentsDelegate::RunBluetoothChooser is
+    // called. Returns a BluetoothChooser, a class used to solicit bluetooth
+    // device selection from the user for WebBluetooth applications. If a
+    // delegate does not provide an implementation, WebBluetooth will not be
+    // supported for that CastWebView.
+    virtual std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
+        content::RenderFrameHost* frame,
+        const content::BluetoothChooser::EventHandler& event_handler);
   };
 
   // Observer interface for tracking CastWebView lifetime.

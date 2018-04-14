@@ -17,6 +17,8 @@ cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
     "application_media_capabilities.h",
+    "bluetooth/cast_bluetooth_chooser.cc",
+    "bluetooth/cast_bluetooth_chooser.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
     "cast_browser_main_parts.cc",
@@ -99,6 +101,7 @@ cast_source_set("browser") {
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
     "//chromecast/browser:resources",
+    "//chromecast/browser/bluetooth/public/interfaces",
     "//chromecast/common",
     "//chromecast/common:interfaces",
     "//chromecast/common/media",
@@ -367,6 +370,7 @@ cast_source_set("unittests") {
   testonly = true
 
   sources = [
+    "bluetooth/cast_bluetooth_chooser_unittest.cc",
     "cast_media_blocker_unittest.cc",
     "cast_touch_device_manager_unittest.cc",
     "devtools/cast_devtools_manager_delegate_unittest.cc",

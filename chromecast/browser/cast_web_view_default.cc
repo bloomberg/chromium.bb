@@ -269,6 +269,16 @@ void CastWebViewDefault::RequestMediaAccessPermission(
                std::unique_ptr<content::MediaStreamUI>());
 }
 
+std::unique_ptr<content::BluetoothChooser>
+CastWebViewDefault::RunBluetoothChooser(
+    content::RenderFrameHost* frame,
+    const content::BluetoothChooser::EventHandler& event_handler) {
+  auto chooser = delegate_->RunBluetoothChooser(frame, event_handler);
+  return chooser
+             ? std::move(chooser)
+             : WebContentsDelegate::RunBluetoothChooser(frame, event_handler);
+}
+
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 CastWebViewDefault::GetContentVideoViewEmbedder() {
