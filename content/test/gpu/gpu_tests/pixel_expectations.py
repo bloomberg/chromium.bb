@@ -100,6 +100,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGL_PremultipliedAlpha_False',
               ['android', 'nvidia'], bug=791733)
 
+    self.Flaky('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
+        ['mac', 'intel'], bug=832900)
+
     # TODO(zmo): temporarily suppress these two tests until new
     # reference images with new names are generated.
     self.Fail('Pixel_Canvas2DRedBox_NoGpuProcess',
