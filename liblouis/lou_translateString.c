@@ -2587,7 +2587,7 @@ resolveEmphasisWords(unsigned int *buffer, const EmphasisClass class,
 
 					/* if whole word is one symbol,
 					 * turn it into a symbol */
-					if (class.symbol && word_start + 1 == i)
+					if (word_start + 1 == i)
 						buffer[word_start] |= class.symbol;
 					else {
 						buffer[word_start] |= class.word;
@@ -2614,7 +2614,7 @@ resolveEmphasisWords(unsigned int *buffer, const EmphasisClass class,
 				if (in_emp && word_start >= 0) {
 					/* if word is one symbol,
 					 * turn it into a symbol */
-					if (class.symbol && word_start + 1 == i)
+					if (word_start + 1 == i)
 						buffer[word_start] |= class.symbol;
 					else
 						buffer[word_start] |= class.word;
@@ -2635,7 +2635,7 @@ resolveEmphasisWords(unsigned int *buffer, const EmphasisClass class,
 			if (word_start >= 0) {
 				/* if word is one symbol,
 				 * turn it into a symbol */
-				if (class.symbol && word_start + 1 == i)
+				if (word_start + 1 == i)
 					buffer[word_start] |= class.symbol;
 				else
 					buffer[word_start] |= class.word;
@@ -2839,7 +2839,7 @@ resolveEmphasisResets(unsigned int *buffer, const EmphasisClass class,
 						in_word = 0;
 
 						/* check if symbol */
-						if (class.symbol && letter_cnt == 1) {
+						if (letter_cnt == 1) {
 							buffer[word_start] |= class.symbol;
 							buffer[word_start] &= ~class.word;
 							wordBuffer[word_start] &= ~WORD_WHOLE;
@@ -2877,7 +2877,7 @@ resolveEmphasisResets(unsigned int *buffer, const EmphasisClass class,
 							}
 
 							/* check if symbol is not already resetting */
-							if (class.symbol && letter_cnt == 1) {
+							if (letter_cnt == 1) {
 								buffer[word_start] |= class.symbol;
 								buffer[word_start] &= ~class.word;
 								wordBuffer[word_start] &= ~WORD_WHOLE;
@@ -2913,7 +2913,7 @@ resolveEmphasisResets(unsigned int *buffer, const EmphasisClass class,
 	/* clean up end */
 	if (in_word) {
 		/* check if symbol */
-		if (class.symbol && letter_cnt == 1) {
+		if (letter_cnt == 1) {
 			buffer[word_start] |= class.symbol;
 			buffer[word_start] &= ~class.word;
 			wordBuffer[word_start] &= ~WORD_WHOLE;
