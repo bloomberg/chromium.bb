@@ -4738,7 +4738,7 @@ test("net_unittests") {
     "cert/caching_cert_verifier_unittest.cc",
     "cert/cert_verifier_unittest.cc",
     "cert/cert_verify_proc_android_unittest.cc",
-    "cert/cert_verify_proc_ios_unittest.mm",
+    "cert/cert_verify_proc_ios_unittest.cc",
     "cert/cert_verify_proc_mac_unittest.cc",
     "cert/cert_verify_proc_unittest.cc",
     "cert/crl_set_unittest.cc",

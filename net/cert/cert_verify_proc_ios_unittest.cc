@@ -65,11 +65,7 @@ TEST_F(CertVerifyProcIOSTest, StatusForNotEvaluatedTrust) {
       CreateSecTrust("ok_cert.pem"));
   EXPECT_TRUE(status & CERT_STATUS_COMMON_NAME_INVALID);
   EXPECT_TRUE(status & CERT_STATUS_AUTHORITY_INVALID);
-  if (@available(iOS 11.4, *)) {
-    // Prior to iOS 11.4 non-evaluated certs report CERT_STATUS_DATE_INVALID.
-  } else {
-    EXPECT_FALSE(status & CERT_STATUS_DATE_INVALID);
-  }
+  EXPECT_FALSE(status & CERT_STATUS_DATE_INVALID);
 }
 
 // Tests |GetCertFailureStatusFromTrust| with evaluated trust object backed by
