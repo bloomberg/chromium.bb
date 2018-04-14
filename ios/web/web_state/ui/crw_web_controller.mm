@@ -2917,6 +2917,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
        error.code == web::kWebKitErrorCannotShowUrl))
     return;
 
+  // If URL is blocked due to Restriction, do not take any further action as
+  // WKWebView will show a built-in error.
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      [error.domain isEqual:base::SysUTF8ToNSString(web::kWebKitErrorDomain)] &&
+      error.code == web::kWebKitErrorUrlBlockedByContentFilter) {
+    return;
+  }
+
   if (error.code == NSURLErrorCancelled) {
     [self handleCancelledError:error forNavigation:navigation];
     // NSURLErrorCancelled errors that aren't handled by aborting the load will

@@ -26,6 +26,7 @@ const long kWebKitErrorFrameLoadInterruptedByPolicyChange = 102;
 
 // Undocumented iOS-specific WebKit error.
 const long kWebKitErrorUnsafePort = 103;
+const long kWebKitErrorUrlBlockedByContentFilter = 105;
 const long kWebKitErrorPlugInLoadFailed = 204;
 
 }  // namespace web
