@@ -113,7 +113,8 @@ struct VRDisplayInfo {
   // required for devices which have the canPresent capability.
   VREyeParameters? leftEye;
   VREyeParameters? rightEye;
-  float default_framebuffer_scale = 1.0;
+  float webvr_default_framebuffer_scale = 1.0;
+  float webxr_default_framebuffer_scale = 1.0;
 };
 
 // Options supplied by the Renderer when requesting presentation.

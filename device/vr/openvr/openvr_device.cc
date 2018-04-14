@@ -89,7 +89,8 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(vr::IVRSystem* vr_system,
   display_info->capabilities->hasPosition = true;
   display_info->capabilities->hasExternalDisplay = true;
   display_info->capabilities->canPresent = true;
-  display_info->default_framebuffer_scale = 1.0;
+  display_info->webvr_default_framebuffer_scale = 1.0;
+  display_info->webxr_default_framebuffer_scale = 1.0;
 
   display_info->leftEye = mojom::VREyeParameters::New();
   display_info->rightEye = mojom::VREyeParameters::New();

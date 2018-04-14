@@ -15,7 +15,7 @@ let fakeDisplay = fakeDisplays["Pixel"];
 vr_test( (t) => {
   return navigator.getVRDisplays().then( (displays) => {
     let display = displays[0];
-    let scale = fakeDisplay.defaultFramebufferScale;
+    let scale = fakeDisplay.webvrDefaultFramebufferScale;
 
     function compareEyes(actual, expected) {
       t.step( () => {

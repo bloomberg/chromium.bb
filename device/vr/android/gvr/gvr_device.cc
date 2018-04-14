@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/android/android_hardware_buffer_compat.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
@@ -28,12 +29,17 @@ namespace device {
 
 namespace {
 
-// Default downscale factor for computing the recommended WebVR
+// Default downscale factor for computing the recommended WebVR/WebXR
 // renderWidth/Height from the 1:1 pixel mapped size. Using a rather
 // aggressive downscale due to the high overhead of copying pixels
 // twice before handing off to GVR. For comparison, the polyfill
 // uses approximately 0.55 on a Pixel XL.
 static constexpr float kWebVrRecommendedResolutionScale = 0.5;
+static constexpr float kWebXrRecommendedResolutionScale = 0.7;
+
+// The scale factor for WebXR on devices that don't have shared buffer
+// support. (Android N and earlier.)
+static constexpr float kWebXrNoSharedBufferResolutionScale = 0.5;
 
 gfx::Size GetMaximumWebVrSize(gvr::GvrApi* gvr_api) {
   // Get the default, unscaled size for the WebVR transfer surface
@@ -116,7 +122,13 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
   // This scalar will be applied in the renderer to the recommended render
   // target sizes. For WebVR it will always be applied, for WebXR it can be
   // overridden.
-  device->default_framebuffer_scale = kWebVrRecommendedResolutionScale;
+  if (base::AndroidHardwareBufferCompat::IsSupportAvailable()) {
+    device->webxr_default_framebuffer_scale = kWebXrRecommendedResolutionScale;
+  } else {
+    device->webxr_default_framebuffer_scale =
+        kWebXrNoSharedBufferResolutionScale;
+  }
+  device->webvr_default_framebuffer_scale = kWebVrRecommendedResolutionScale;
 
   return device;
 }
