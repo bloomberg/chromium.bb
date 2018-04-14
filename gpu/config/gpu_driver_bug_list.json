@@ -2913,6 +2913,17 @@
       "features": [
         "disable_chromium_framebuffer_multisample"
       ]
+    },
+    {
+      "id": 268,
+      "cr_bugs": [797243],
+      "description": "Limit MSAA to 4x on Android devices",
+      "os": {
+        "type": "android"
+      },
+      "features": [
+        "max_msaa_sample_count_4"
+      ]
     }
   ]
 }
