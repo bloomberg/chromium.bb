@@ -148,39 +148,13 @@ which matches the rules from the
     [`MatchAuthorRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchAuthorRules$)
 
 [`MatchAuthorRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchAuthorRules$)
-splits into two cases.
+splits applies the following steps (read the method docs):
 
+- [`MatchHostRules`](https://cs.chromium.org/?q=symbol:%5Eblink::MatchHostRules$)
+- [`MatchSlottedRules`](https://cs.chromium.org/?q=symbol:%5Eblink::MatchSlottedRules$)
+- [`MatchElementScopeRules`](https://cs.chromium.org/?q=symbol:%5Eblink::MatchElementScopeRules$)
+- [`MatchPseudoPartRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchPseudoPartRules$)
 
-#### [`MatchHostRules`](https://cs.chromium.org/?q=symbol:%5Eblink::MatchHostRules$)
-
-This method matches :host and :host-context rules for shadow host elements.
-This does nothing if the element in question is not a shadow host.
-If it is a shadow host,
-it examines the `ScopedStyleResolver` of its shadow root.
-Any host related rules will be in the `ShadowHostRules` list of that `ScopedStyleResolver`
-
-
-#### [`MatchScopedRules`](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchScopedRules$)
-
-For V1 Shadow DOM, this simply calls 3 functions explained below.
-
-##### ['MatchSlottedRules'](https://cs.chromium.org/?q=symbol:%5Eblink::MatchSlottedRules)
-
-This matches `::slotted` selectors.
-It matches rules in the element's slot's scope.
-If that slot is itself slotted it will match rules in the slot's slot's scope and so on.
-The result is that it considers a chain of scopes descending from the element's own scope.
-
-##### ['MatchElementScopeRules'](https://cs.chromium.org/?q=symbol:%5Eblink::MatchElementScopeRules)
-
-This matches rules from the element's scope.
-The selectors may cross shadow boundaries during matching,
-like for :host-context.
-
-##### ['MatchPseudoPartRules'](https://cs.chromium.org/?q=symbol:%5Eblink::StyleResolver::MatchPseudoPartRules)
-
-This matches `::part` selectors.
-It looks in ancestor scopes as far as part mapping requires.
 
 #### <a name="CollectMatchingRulesForList"></a>[`CollectMatchingRulesForList`](https://cs.chromium.org/?q=symbol:%5Eblink::ElementRuleCollector::CollectMatchingRulesForList$) - testing some rules against an element
 
