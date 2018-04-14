@@ -100,6 +100,7 @@ void FidoBleTransaction::OnResponseFragment(std::vector<uint8_t> data) {
 }
 
 void FidoBleTransaction::ProcessResponseFrame(FidoBleFrame response_frame) {
+  DCHECK(request_frame_.has_value());
   if (response_frame.command() == request_frame_->command()) {
     request_frame_.reset();
     std::move(callback_).Run(std::move(response_frame));
