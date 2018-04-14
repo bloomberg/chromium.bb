@@ -469,6 +469,8 @@ void Pointer::UpdateCursor() {
 #endif
     cursor_ = ui::CursorType::kCustom;
     cursor_.SetPlatformCursor(platform_cursor);
+    cursor_.set_custom_bitmap(bitmap);
+    cursor_.set_custom_hotspot(hotspot);
 #if defined(USE_OZONE)
     ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor);
 #elif defined(USE_X11)

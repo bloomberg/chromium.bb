@@ -24,9 +24,8 @@ class CursorWindowControllerTest;
 class CursorWindowDelegate;
 
 // Draws a mouse cursor on a given container window.
-// When cursor compositing is disabled, CursorWindowController is responsible
-// to scale and rotate the mouse cursor bitmap to match settings of the
-// primary display.
+// When cursor compositing is disabled, draw nothing as the native cursor is
+// shown.
 // When cursor compositing is enabled, just draw the cursor as-is.
 class ASH_EXPORT CursorWindowController {
  public:
@@ -94,8 +93,8 @@ class ASH_EXPORT CursorWindowController {
   // The rotation of the container.
   display::Display::Rotation rotation_ = display::Display::ROTATE_0;
 
-  // The native_type of the cursor, see definitions in cursor.h
-  ui::CursorType cursor_type_ = ui::CursorType::kNone;
+  // The native cursor, see definitions in cursor.h
+  gfx::NativeCursor cursor_ = ui::CursorType::kNone;
 
   // The last requested cursor visibility.
   bool visible_ = true;

@@ -112,9 +112,8 @@ SkBitmap CursorRendererAura::GetLastKnownCursorImage(gfx::Point* hot_point) {
   }
 
   gfx::NativeCursor cursor = window_->GetHost()->last_cursor();
-  SkBitmap cursor_bitmap;
-  ui::GetCursorBitmap(cursor, &cursor_bitmap, hot_point);
-  return cursor_bitmap;
+  *hot_point = cursor.GetHotspot();
+  return cursor.GetBitmap();
 }
 
 void CursorRendererAura::OnMouseEvent(ui::MouseEvent* event) {

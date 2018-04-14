@@ -21,9 +21,10 @@ PlatformCursor ToPlatformCursor(BitmapCursorOzone* cursor) {
 }
 
 scoped_refptr<BitmapCursorOzone> CreateDefaultBitmapCursor(CursorType type) {
-  SkBitmap bitmap;
-  gfx::Point hotspot;
-  if (GetCursorBitmap(type, &bitmap, &hotspot))
+  Cursor cursor(type);
+  SkBitmap bitmap = cursor.GetBitmap();
+  gfx::Point hotspot = cursor.GetHotspot();
+  if (!bitmap.isNull())
     return new BitmapCursorOzone(bitmap, hotspot);
   return NULL;
 }

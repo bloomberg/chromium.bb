@@ -8,8 +8,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_export.h"
 
-class SkBitmap;
-
 namespace gfx {
 class Point;
 }
@@ -34,11 +32,6 @@ bool UI_BASE_EXPORT GetAnimatedCursorDataFor(CursorSize cursor_size,
                                              float scale_factor,
                                              int* resource_id,
                                              gfx::Point* point);
-
-// Returns the cursor bitmap for |cursor|. Returns false if |cursor| is invalid.
-// The cursor hot point location is set in |point|.
-bool UI_BASE_EXPORT
-    GetCursorBitmap(const Cursor& cursor, SkBitmap* bitmap, gfx::Point* point);
 
 }  // namespace ui
 
