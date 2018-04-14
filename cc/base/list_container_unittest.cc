@@ -8,7 +8,6 @@
 
 #include <algorithm>
 #include <vector>
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -124,10 +123,37 @@ class SimpleDerivedElementConstructMagicNumberThree
   ~SimpleDerivedElementConstructMagicNumberThree() override = default;
 };
 
+// This class' instances are moved by ListContainer via memcpy(). This behavior
+// is not supported by gmock's FunctionMocker, so this class must roll its own
+// mocking code.
 class MockDerivedElement : public SimpleDerivedElementConstructMagicNumberOne {
  public:
-  ~MockDerivedElement() override { Destruct(); }
-  MOCK_METHOD0(Destruct, void());
+  ~MockDerivedElement() override {
+    DestructorCalled();
+    CheckDestructExpectation();
+  }
+
+  void SetExpectedDestructorCalls(size_t expected_calls) {
+    expected_destructor_calls_ = expected_calls;
+    has_expected_destructor_calls_ = true;
+  }
+
+ private:
+  void DestructorCalled() { ++destructor_calls_; }
+
+  void CheckDestructExpectation() {
+    if (!has_expected_destructor_calls_)
+      return;
+    EXPECT_EQ(expected_destructor_calls_, destructor_calls_)
+        << "element destructor called the wrong number of times";
+  }
+
+  // Not using base::Optional<size_t> here in order to get a precise destructor
+  // behavior. The tests below need the ability to catch multiple destructor
+  // calls, and base::Optional's destructor might make has_value() return false.
+  size_t expected_destructor_calls_;
+  bool has_expected_destructor_calls_ = false;
+  size_t destructor_calls_ = 0;
 };
 
 class MockDerivedElementSubclass : public MockDerivedElement {
@@ -167,7 +193,7 @@ TEST(ListContainerTest, DestructorCalled) {
   size_t size = 1;
   MockDerivedElement* de_1 = list.AllocateAndConstruct<MockDerivedElement>();
 
-  EXPECT_CALL(*de_1, Destruct());
+  de_1->SetExpectedDestructorCalls(1);
   EXPECT_EQ(size, list.size());
   EXPECT_EQ(de_1, list.front());
 }
@@ -181,18 +207,10 @@ TEST(ListContainerTest, DestructorCalledOnceWhenClear) {
   EXPECT_EQ(size, list.size());
   EXPECT_EQ(de_1, list.front());
 
-  // Make sure destructor is called once during clear, and won't be called
-  // again.
-  testing::MockFunction<void()> separator;
-  {
-    testing::InSequence s;
-    EXPECT_CALL(*de_1, Destruct());
-    EXPECT_CALL(separator, Call());
-    EXPECT_CALL(*de_1, Destruct()).Times(0);
-  }
+  // Make sure destructor is called exactly once during clear.
+  de_1->SetExpectedDestructorCalls(1);
 
   list.clear();
-  separator.Call();
 }
 
 TEST(ListContainerTest, ClearDoesNotMalloc) {
@@ -238,21 +256,12 @@ TEST(ListContainerTest, ReplaceExistingElement) {
   EXPECT_EQ(size, list.size());
   EXPECT_EQ(de_1, list.front());
 
-  // Make sure destructor is called once during clear, and won't be called
-  // again.
-  testing::MockFunction<void()> separator;
-  {
-    testing::InSequence s;
-    EXPECT_CALL(*de_1, Destruct());
-    EXPECT_CALL(separator, Call());
-    EXPECT_CALL(*de_1, Destruct()).Times(0);
-  }
+  // Make sure destructor is called exactly once during clear.
+  de_1->SetExpectedDestructorCalls(1);
 
   list.ReplaceExistingElement<MockDerivedElementSubclass>(list.begin());
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo, de_1->get_value());
-  separator.Call();
 
-  EXPECT_CALL(*de_1, Destruct());
   list.clear();
 }
 
@@ -265,18 +274,10 @@ TEST(ListContainerTest, DestructorCalledOnceWhenErase) {
   EXPECT_EQ(size, list.size());
   EXPECT_EQ(de_1, list.front());
 
-  // Make sure destructor is called once during clear, and won't be called
-  // again.
-  testing::MockFunction<void()> separator;
-  {
-    testing::InSequence s;
-    EXPECT_CALL(*de_1, Destruct());
-    EXPECT_CALL(separator, Call());
-    EXPECT_CALL(*de_1, Destruct()).Times(0);
-  }
+  // Make sure destructor is called exactly once during clear.
+  de_1->SetExpectedDestructorCalls(1);
 
   list.EraseAndInvalidateAllPointers(list.begin());
-  separator.Call();
 }
 
 TEST(ListContainerTest, SimpleIndexAccessNonDerivedElement) {
@@ -1051,22 +1052,13 @@ TEST(ListContainerTest, AppendByMovingDoesNotDestruct) {
   MockDerivedElement* mde_1 = list_1.AllocateAndConstruct<MockDerivedElement>();
 
   // Make sure destructor isn't called during AppendByMoving.
+  mde_1->SetExpectedDestructorCalls(0);
   list_2.AppendByMoving(mde_1);
-  EXPECT_CALL(*mde_1, Destruct()).Times(0);
-  testing::Mock::VerifyAndClearExpectations(mde_1);
-}
 
-TEST(ListContainerTest, DISABLED_AppendByMovingDestructorCall) {
-  ListContainer<DerivedElement> list_1(kCurrentLargestDerivedElementAlign,
-                                       kCurrentLargestDerivedElementSize, 0);
-  ListContainer<DerivedElement> list_2(kCurrentLargestDerivedElementAlign,
-                                       kCurrentLargestDerivedElementSize, 0);
-  MockDerivedElement* mde_1 = list_1.AllocateAndConstruct<MockDerivedElement>();
-
-  // Make sure the destructor is called on the newly moved element.
-  list_2.AppendByMoving(mde_1);
+  // The element moved to list 2, but still expects no destructor calls. The
+  // expectation must be reset, as the element will be destroyed now.
   mde_1 = static_cast<MockDerivedElement*>(list_2.back());
-  EXPECT_CALL(*mde_1, Destruct());
+  mde_1->SetExpectedDestructorCalls(1);
 }
 
 TEST(ListContainerTest, AppendByMovingReturnsMovedPointer) {
