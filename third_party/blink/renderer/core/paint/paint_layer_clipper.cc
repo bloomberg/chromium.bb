@@ -219,7 +219,8 @@ LayoutRect PaintLayerClipper::LocalClipRect(
   if (use_geometry_mapper_) {
     ClipRect clip_rect;
     CalculateBackgroundClipRectWithGeometryMapper(
-        context, layer_.GetLayoutObject().FirstFragment(), clip_rect);
+        context, layer_.GetLayoutObject().FirstFragment(), kRespectOverflowClip,
+        clip_rect);
     LayoutRect premapped_rect = clip_rect.Rect();
 
     // The rect now needs to be transformed to the local space of this
@@ -326,8 +327,8 @@ void PaintLayerClipper::CalculateRectsWithGeometryMapper(
   }
   layer_bounds.SetSize(LayoutSize(layer_.PixelSnappedSize()));
 
-  CalculateBackgroundClipRectWithGeometryMapper(context, fragment_data,
-                                                background_rect);
+  CalculateBackgroundClipRectWithGeometryMapper(
+      context, fragment_data, kRespectOverflowClip, background_rect);
   background_rect.Intersect(paint_dirty_rect);
 
   if (ShouldClipOverflow(context)) {
@@ -482,6 +483,7 @@ static ClipRect BackgroundClipRectForPosition(const ClipRects& parent_rects,
 void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
     const ClipRectsContext& context,
     const FragmentData& fragment_data,
+    ShouldRespectOverflowClipType should_apply_self_overflow_clip,
     ClipRect& output) const {
   DCHECK(use_geometry_mapper_);
 
@@ -509,7 +511,8 @@ void PaintLayerClipper::CalculateBackgroundClipRectWithGeometryMapper(
   // of transforms. Tight results are required for most use cases of these
   // rects, so we should add methods to GeometryMapper that guarantee there
   // are tight results, or else signal an error.
-  if (HasOverflowClip(layer_)) {
+  if ((should_apply_self_overflow_clip == kRespectOverflowClip) &&
+      HasOverflowClip(layer_)) {
     // Implement the following special case: if computing clip rects with
     // respect to the root, don't exclude overlay scrollbars for the background
     // rect if layer_ is the same as the root.
@@ -623,7 +626,7 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
       return;
 
     CalculateBackgroundClipRectWithGeometryMapper(context, fragment_data,
-                                                  output);
+                                                  kIgnoreOverflowClip, output);
     return;
   }
   DCHECK(layer_.Parent());
@@ -640,6 +643,7 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
 
   output = BackgroundClipRectForPosition(
       *parent_clip_rects, layer_.GetLayoutObject().StyleRef().GetPosition());
+  output.Move(context.sub_pixel_accumulation);
 
   // Note: infinite clipRects should not be scrolled here, otherwise they will
   // accidentally no longer be considered infinite.

@@ -30,7 +30,79 @@ class PaintLayerClipperTest : public RenderingTest {
   }
 };
 
+TEST_F(PaintLayerClipperTest, ParentBackgroundClipRectSubpixelAccumulation) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div style="overflow: hidden; width: 300px;">
+      <div id=target style='position: relative; width: 200px; height: 300px'>
+    </div>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* target_paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           // When RLS is enabled, the LayoutView will have a
+                           // composited scrolling layer, so don't apply an
+                           // overflow clip.
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip,
+                           LayoutSize(FloatSize(0.25, 0.35)));
+
+  ClipRect background_rect_gm;
+  target_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
+      .CalculateBackgroundClipRect(context, background_rect_gm);
+
+  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.34375, 300, 300)),
+            background_rect_gm.Rect());
+
+  ClipRect background_rect_nogm;
+  target_paint_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .CalculateBackgroundClipRect(context, background_rect_nogm);
+
+  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.34375, 300, 300)),
+            background_rect_nogm.Rect());
+}
+
 TEST_F(PaintLayerClipperTest, BackgroundClipRectSubpixelAccumulation) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id=target width=200 height=300 style='position: relative'>
+  )HTML");
+
+  Element* target = GetDocument().getElementById("target");
+  PaintLayer* target_paint_layer =
+      ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
+  ClipRectsContext context(GetDocument().GetLayoutView()->Layer(),
+                           kUncachedClipRects,
+                           kIgnorePlatformOverlayScrollbarSize,
+                           // When RLS is enabled, the LayoutView will have a
+                           // composited scrolling layer, so don't apply an
+                           // overflow clip.
+                           RuntimeEnabledFeatures::RootLayerScrollingEnabled()
+                               ? kIgnoreOverflowClip
+                               : kRespectOverflowClip,
+                           LayoutSize(FloatSize(0.25, 0.35)));
+
+  ClipRect background_rect_gm;
+  target_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
+      .CalculateBackgroundClipRect(context, background_rect_gm);
+
+  EXPECT_GE(background_rect_gm.Rect().Size().Width().ToInt(), 33554422);
+  EXPECT_GE(background_rect_gm.Rect().Size().Height().ToInt(), 33554422);
+
+  ClipRect background_rect_nogm;
+  target_paint_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .CalculateBackgroundClipRect(context, background_rect_nogm);
+
+  EXPECT_GE(background_rect_nogm.Rect().Size().Width().ToInt(), 33554422);
+  EXPECT_GE(background_rect_nogm.Rect().Size().Height().ToInt(), 33554422);
+}
+
+TEST_F(PaintLayerClipperTest, SVGBackgroundClipRectSubpixelAccumulation) {
   SetBodyInnerHTML(R"HTML(
     <!DOCTYPE html>
     <svg id=target width=200 height=300 style='position: relative'>
@@ -51,13 +123,20 @@ TEST_F(PaintLayerClipperTest, BackgroundClipRectSubpixelAccumulation) {
                                ? kIgnoreOverflowClip
                                : kRespectOverflowClip,
                            LayoutSize(FloatSize(0.25, 0.35)));
-  ClipRect background_rect;
 
+  ClipRect background_rect_gm;
   target_paint_layer->Clipper(PaintLayer::kUseGeometryMapper)
-      .CalculateBackgroundClipRect(context, background_rect);
+      .CalculateBackgroundClipRect(context, background_rect_gm);
 
-  EXPECT_EQ(LayoutRect(FloatRect(8.25, 8.35, 200, 300)),
-            background_rect.Rect());
+  EXPECT_GE(background_rect_gm.Rect().Size().Width().ToInt(), 33554422);
+  EXPECT_GE(background_rect_gm.Rect().Size().Height().ToInt(), 33554422);
+
+  ClipRect background_rect_nogm;
+  target_paint_layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
+      .CalculateBackgroundClipRect(context, background_rect_nogm);
+
+  EXPECT_GE(background_rect_nogm.Rect().Size().Width().ToInt(), 33554422);
+  EXPECT_GE(background_rect_nogm.Rect().Size().Height().ToInt(), 33554422);
 }
 
 TEST_F(PaintLayerClipperTest, LayoutSVGRoot) {

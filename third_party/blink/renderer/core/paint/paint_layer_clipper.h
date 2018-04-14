@@ -214,6 +214,7 @@ class CORE_EXPORT PaintLayerClipper {
   ALWAYS_INLINE void CalculateBackgroundClipRectWithGeometryMapper(
       const ClipRectsContext&,
       const FragmentData&,
+      ShouldRespectOverflowClipType should_apply_self_overflow_clip,
       ClipRect& output) const;
 
   ALWAYS_INLINE void InitializeCommonClipRectState(
