@@ -82,6 +82,8 @@ _NEGATIVE_FILTER = [
 _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = []
 
+_VERSION_SPECIFIC_FILTER['67'] = []
+
 _VERSION_SPECIFIC_FILTER['66'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2304
     'ChromeDriverSiteIsolation.testCanClickOOPIF',
@@ -93,19 +95,6 @@ _VERSION_SPECIFIC_FILTER['65'] = [
     # https://bugs.chromium.org/p/chromium/issues/detail?id=803678
     'ChromeDriverTest.testGoBackAndGoForward',
     'ChromeDriverTest.testAlertHandlingOnPageUnload',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2350
-    'ChromeDriverTest.testSlowIFrame',
-]
-
-_VERSION_SPECIFIC_FILTER['64'] = [
-    # These tests are implemented to run on the latest versions of Chrome > 64
-    'HeadlessInvalidCertificateTest.*',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-    'ChromeDriverTest.testDoesntHangOnFragmentNavigation',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
-    'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
-    # https://bugs.chromium.org/p/chromium/issues/detail?id=746266
-    'ChromeDriverSiteIsolation.testCanClickOOPIF',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2350
     'ChromeDriverTest.testSlowIFrame',
 ]

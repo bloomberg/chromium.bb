@@ -111,13 +111,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'FrameSwitchingTest.testShouldBeAbleToClickInAFrameThatRewritesTopWindowLocation',
 ]
 
-_REVISION_NEGATIVE_FILTER['64'] = (
-    _REVISION_NEGATIVE_FILTER['HEAD'] + [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2025
-    'PageLoadingTest.testShouldBeAbleToGetAFragmentOnTheCurrentPage',
-    ]
-)
-
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=373
