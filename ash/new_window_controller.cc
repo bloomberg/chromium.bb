@@ -29,6 +29,11 @@ void NewWindowController::ShowKeyboardOverlay() {
     client_->ShowKeyboardOverlay();
 }
 
+void NewWindowController::NewTabWithUrl(const GURL& url) {
+  if (client_)
+    client_->NewTabWithUrl(url);
+}
+
 void NewWindowController::NewTab() {
   if (client_)
     client_->NewTab();

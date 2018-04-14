@@ -85,6 +85,7 @@ class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
 class AshAssistantController;
+class AshDBusServices;
 class AshDisplayController;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
@@ -684,6 +685,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<AshAssistantController> ash_assistant_controller_;
+  std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
