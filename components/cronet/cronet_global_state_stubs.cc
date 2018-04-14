@@ -5,6 +5,7 @@
 #include "components/cronet/cronet_global_state.h"
 
 #include "base/at_exit.h"
+#include "base/feature_list.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "net/proxy_resolution/proxy_config_service.h"
@@ -30,6 +31,8 @@ scoped_refptr<base::SingleThreadTaskRunner> InitializeAndCreateTaskRunner() {
   // See https://crbug.com/816705.
   ignore_result(new base::AtExitManager);
 #endif  // defined(NDEBUG)
+
+  base::FeatureList::InitializeInstance(std::string(), std::string());
 
   url::Initialize();
 

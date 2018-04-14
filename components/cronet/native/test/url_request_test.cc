@@ -39,8 +39,8 @@ class UrlRequestTest : public ::testing::Test {
     Cronet_UrlRequestPtr request = Cronet_UrlRequest_Create();
     Cronet_UrlRequestParamsPtr request_params =
         Cronet_UrlRequestParams_Create();
-    // Executor provided by the application.
-    Cronet_ExecutorPtr executor = test_callback->CreateExecutor(false);
+    // Executor provided by the application is owned by |test_callback|.
+    Cronet_ExecutorPtr executor = test_callback->GetExecutor(false);
     // Callback provided by the application.
     Cronet_UrlRequestCallbackPtr callback =
         test_callback->CreateUrlRequestCallback();
@@ -59,7 +59,6 @@ class UrlRequestTest : public ::testing::Test {
     Cronet_UrlRequestParams_Destroy(request_params);
     Cronet_UrlRequest_Destroy(request);
     Cronet_UrlRequestCallback_Destroy(callback);
-    Cronet_Executor_Destroy(executor);
     Cronet_Engine_Destroy(engine);
     return test_callback;
   }
@@ -136,8 +135,8 @@ TEST_F(UrlRequestTest, InitChecks) {
   const std::string url = cronet::TestServer::GetEchoMethodURL();
 
   TestUrlRequestCallback test_callback;
-  // Executor provided by the application.
-  Cronet_ExecutorPtr executor = test_callback.CreateExecutor(false);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -203,7 +202,6 @@ TEST_F(UrlRequestTest, InitChecks) {
   Cronet_UrlRequest_Destroy(request);
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequestCallback_Destroy(callback);
-  Cronet_Executor_Destroy(executor);
   Cronet_Engine_Destroy(engine);
 }
 
@@ -230,8 +228,8 @@ TEST_F(UrlRequestTest, SimpleRequest) {
   std::string url = cronet::TestServer::GetSimpleURL();
 
   TestUrlRequestCallback test_callback;
-  // Executor provided by the application.
-  Cronet_ExecutorPtr executor = test_callback.CreateExecutor(false);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -249,7 +247,6 @@ TEST_F(UrlRequestTest, SimpleRequest) {
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequest_Destroy(request);
   Cronet_UrlRequestCallback_Destroy(callback);
-  Cronet_Executor_Destroy(executor);
   Cronet_Engine_Destroy(engine);
 }
 
@@ -304,8 +301,8 @@ TEST_F(UrlRequestTest, CancelRequest) {
   TestUrlRequestCallback test_callback;
   test_callback.set_failure(test_callback.CANCEL_SYNC,
                             test_callback.ON_RESPONSE_STARTED);
-  // Executor provided by the application.
-  Cronet_ExecutorPtr executor = test_callback.CreateExecutor(false);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -324,7 +321,6 @@ TEST_F(UrlRequestTest, CancelRequest) {
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequest_Destroy(request);
   Cronet_UrlRequestCallback_Destroy(callback);
-  Cronet_Executor_Destroy(executor);
   Cronet_Engine_Destroy(engine);
 }
 
@@ -335,8 +331,8 @@ TEST_F(UrlRequestTest, FailedRequestHostNotFound) {
   std::string url = "https://notfound.example.com";
 
   TestUrlRequestCallback test_callback;
-  // Executor provided by the application.
-  Cronet_ExecutorPtr executor = test_callback.CreateExecutor(false);
+  // Executor provided by the application is owned by |test_callback|.
+  Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
   // Callback provided by the application.
   Cronet_UrlRequestCallbackPtr callback =
       test_callback.CreateUrlRequestCallback();
@@ -369,7 +365,6 @@ TEST_F(UrlRequestTest, FailedRequestHostNotFound) {
   Cronet_UrlRequestParams_Destroy(request_params);
   Cronet_UrlRequest_Destroy(request);
   Cronet_UrlRequestCallback_Destroy(callback);
-  Cronet_Executor_Destroy(executor);
   Cronet_Engine_Destroy(engine);
 }
 
@@ -447,8 +442,8 @@ TEST_F(UrlRequestTest, PerfTest) {
         Cronet_UrlRequestParams_Create();
     TestUrlRequestCallback test_callback;
     test_callback.set_accumulate_response_data(false);
-    // Executor provided by the application.
-    Cronet_ExecutorPtr executor = test_callback.CreateExecutor(false);
+    // Executor provided by the application is owned by |test_callback|.
+    Cronet_ExecutorPtr executor = test_callback.GetExecutor(false);
     // Callback provided by the application.
     Cronet_UrlRequestCallbackPtr callback =
         test_callback.CreateUrlRequestCallback();
@@ -465,7 +460,6 @@ TEST_F(UrlRequestTest, PerfTest) {
     Cronet_UrlRequestParams_Destroy(request_params);
     Cronet_UrlRequest_Destroy(request);
     Cronet_UrlRequestCallback_Destroy(callback);
-    Cronet_Executor_Destroy(executor);
   }
   base::Time end = base::Time::Now();
   base::TimeDelta delta = end - start;

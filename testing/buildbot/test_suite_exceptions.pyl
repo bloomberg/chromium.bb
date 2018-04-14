@@ -1278,8 +1278,6 @@
   },
   'cronet_tests': {
     'remove_from': [
-      # chromium.memory
-      'Linux TSan Tests',  # https://crbug.com/830819
       # chromium.fyi
       'Fuchsia (dbg)',
     ],
