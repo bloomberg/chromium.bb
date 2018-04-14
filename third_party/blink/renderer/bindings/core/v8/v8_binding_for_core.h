@@ -418,6 +418,19 @@ VectorOf<typename NativeValueTraits<IDLType>::ImplType> ToImplArguments(
   return result;
 }
 
+// Returns the iterator method for an object, or an empty v8::Local if the
+// method is null or undefined.
+CORE_EXPORT v8::Local<v8::Function> GetEsIteratorMethod(v8::Isolate*,
+                                                        v8::Local<v8::Object>,
+                                                        ExceptionState&);
+
+// Gets an iterator for an object, given the iterator method for that object.
+CORE_EXPORT v8::Local<v8::Object> GetEsIteratorWithMethod(
+    v8::Isolate*,
+    v8::Local<v8::Function>,
+    v8::Local<v8::Object>,
+    ExceptionState&);
+
 // Gets an iterator from an Object.
 CORE_EXPORT v8::Local<v8::Object> GetEsIterator(v8::Isolate*,
                                                 v8::Local<v8::Object>,
@@ -523,6 +536,10 @@ MaybeSharedType ToMaybeShared(v8::Isolate* isolate,
       V8TypeOf<DOMTypedArray>::Type::ToImplWithTypeCheck(isolate, value);
   return MaybeSharedType(dom_typed_array);
 }
+
+CORE_EXPORT Vector<String> GetOwnPropertyNames(v8::Isolate*,
+                                               const v8::Local<v8::Object>&,
+                                               ExceptionState&);
 
 }  // namespace blink
 

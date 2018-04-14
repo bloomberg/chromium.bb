@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/bindings/core/v8/dictionary_iterator.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 
-#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-DictionaryIterator::DictionaryIterator(v8::Local<v8::Object> iterator,
-                                       v8::Isolate* isolate)
+ScriptIterator::ScriptIterator(v8::Local<v8::Object> iterator,
+                               v8::Isolate* isolate)
     : isolate_(isolate),
       iterator_(iterator),
       next_key_(V8AtomicString(isolate, "next")),
@@ -24,9 +22,9 @@ DictionaryIterator::DictionaryIterator(v8::Local<v8::Object> iterator,
   DCHECK(!iterator.IsEmpty());
 }
 
-bool DictionaryIterator::Next(ExecutionContext* execution_context,
-                              ExceptionState& exception_state,
-                              v8::Local<v8::Value> next_value) {
+bool ScriptIterator::Next(ExecutionContext* execution_context,
+                          ExceptionState& exception_state,
+                          v8::Local<v8::Value> next_value) {
   DCHECK(!IsNull());
 
   v8::TryCatch try_catch(isolate_);
@@ -85,34 +83,6 @@ bool DictionaryIterator::Next(ExecutionContext* execution_context,
 
   done_ = done_boolean->Value();
   return !done_;
-}
-
-bool DictionaryIterator::ValueAsDictionary(Dictionary& result,
-                                           ExceptionState& exception_state) {
-  DCHECK(!IsNull());
-  DCHECK(!done_);
-
-  v8::Local<v8::Value> value;
-  if (!value_.ToLocal(&value) || !value->IsObject())
-    return false;
-
-  result = Dictionary(isolate_, value, exception_state);
-  return true;
-}
-
-bool DictionaryIterator::ValueAsString(String& result) {
-  DCHECK(!IsNull());
-  DCHECK(!done_);
-
-  v8::Local<v8::Value> value;
-  if (!value_.ToLocal(&value))
-    return false;
-
-  V8StringResource<> string_value(value);
-  if (!string_value.Prepare())
-    return false;
-  result = string_value;
-  return true;
 }
 
 }  // namespace blink

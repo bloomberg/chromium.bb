@@ -2,32 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_ITERATOR_H_
-#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_ITERATOR_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_ITERATOR_H_
+#define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_ITERATOR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
-namespace WTF {
-
-class String;
-
-}  // namespace WTF
-
 namespace blink {
 
-class Dictionary;
 class ExceptionState;
 class ExecutionContext;
 
-class CORE_EXPORT DictionaryIterator {
+class CORE_EXPORT ScriptIterator {
   STACK_ALLOCATED();
 
  public:
-  DictionaryIterator(std::nullptr_t) : isolate_(nullptr), done_(true) {}
+  ScriptIterator(std::nullptr_t) : isolate_(nullptr), done_(true) {}
 
-  DictionaryIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
+  ScriptIterator(v8::Local<v8::Object> iterator, v8::Isolate*);
 
   bool IsNull() const { return iterator_.IsEmpty(); }
 
@@ -37,8 +30,6 @@ class CORE_EXPORT DictionaryIterator {
             v8::Local<v8::Value> next_value = v8::Local<v8::Value>());
 
   v8::MaybeLocal<v8::Value> GetValue() { return value_; }
-  bool ValueAsDictionary(Dictionary& result, ExceptionState&);
-  bool ValueAsString(WTF::String& result);
 
  private:
   v8::Isolate* isolate_;
@@ -52,4 +43,4 @@ class CORE_EXPORT DictionaryIterator {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_DICTIONARY_ITERATOR_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_ITERATOR_H_
