@@ -74,6 +74,15 @@
   <message name="IDS_WALLPAPER_MANAGER_LAYOUT_STRETCH" desc="Label for option to stretch a customized wallpaper.">
     Stretch
   </message>
+  <message name="IDS_WALLPAPER_MANAGER_CURRENTLY_SET_LABEL" desc="The string displayed before the title of the currently set wallpaper.">
+    Currently set
+  </message>
+  <message name="IDS_WALLPAPER_MANAGER_CONFIRM_PREVIEW_WALLPAPER_LABEL" desc="Label for the button that confirms setting the preview wallpaper.">
+    Set Wallpaper
+  </message>
+  <message name="IDS_WALLPAPER_MANAGER_SET_SUCCESSFULLY_MESSAGE" desc="Message shown to user after setting wallpaper is done.">
+    Wallpaper set successfully
+  </message>
   <message name="IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE" desc="The string displayed to user if the current wallpaper is set by a third party wallpaper app/extension.">
     The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
   </message>
