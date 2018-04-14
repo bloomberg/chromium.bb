@@ -42,13 +42,15 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   }
 
   PaintInfo paint_info_before_filtering(paint_info);
-  paint_info_before_filtering.UpdateCullRect(
-      layout_svg_foreign_object_.LocalSVGTransform());
-  SVGTransformContext transform_context(
-      paint_info_before_filtering, layout_svg_foreign_object_,
-      layout_svg_foreign_object_.LocalSVGTransform());
+  Optional<SVGTransformContext> transform_context;
 
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    paint_info_before_filtering.UpdateCullRect(
+        layout_svg_foreign_object_.LocalSVGTransform());
+    transform_context.emplace(paint_info_before_filtering,
+                              layout_svg_foreign_object_,
+                              layout_svg_foreign_object_.LocalSVGTransform());
+
     // In theory we should just let BlockPainter::paint() handle the clip, but
     // for now we don't allow normal overflow clip for LayoutSVGBlock, so we
     // have to apply clip manually. See LayoutSVGBlock::allowsOverflowClip() for

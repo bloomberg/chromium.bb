@@ -127,10 +127,10 @@ void LayoutSVGForeignObject::UpdateLayout() {
 bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
                                               const FloatPoint& point_in_parent,
                                               HitTestAction hit_test_action) {
-  // Embedded content is drawn in the foreground phase.
-  if (hit_test_action != kHitTestForeground)
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    NOTREACHED();
     return false;
-
+  }
   AffineTransform local_transform = LocalSVGTransform();
   if (!local_transform.IsInvertible())
     return false;
@@ -152,14 +152,24 @@ bool LayoutSVGForeignObject::NodeAtFloatPoint(HitTestResult& result,
                                   kHitTestChildBlockBackgrounds);
 }
 
+void LayoutSVGForeignObject::GetTransformFromContainer(
+    const LayoutObject* container,
+    const LayoutSize& offset_in_container,
+    TransformationMatrix& matrix) const {
+  AffineTransform to_svg_root_transform;
+  SVGLayoutSupport::ComputeTransformToSVGRoot(*this, to_svg_root_transform);
+  matrix = to_svg_root_transform;
+  GetTransformFromContainerInternal(container, offset_in_container, matrix);
+}
+
 bool LayoutSVGForeignObject::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_parent,
     const LayoutPoint& accumulated_offset,
     HitTestAction hit_test_action) {
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    return NodeAtFloatPoint(result, FloatPoint(accumulated_offset),
-                            hit_test_action);
+    return LayoutBlock::NodeAtPoint(result, location_in_parent,
+                                    accumulated_offset, hit_test_action);
   }
   NOTREACHED();
   return false;

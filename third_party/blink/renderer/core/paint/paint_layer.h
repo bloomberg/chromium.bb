@@ -1086,6 +1086,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                        const HitTestLocation&,
                        HitTestFilter) const;
   bool HitTestContentsForFragments(const PaintLayerFragments&,
+                                   const LayoutPoint& offset,
                                    HitTestResult&,
                                    const HitTestLocation&,
                                    HitTestFilter,

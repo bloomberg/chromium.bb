@@ -153,6 +153,10 @@ class CORE_EXPORT SVGLayoutSupport {
   static LayoutObject* FindClosestLayoutSVGText(const LayoutObject*,
                                                 const FloatPoint&);
 
+  static const LayoutSVGRoot& ComputeTransformToSVGRoot(
+      const LayoutObject& object,
+      AffineTransform& root_border_box_transform);
+
  private:
   static void UpdateObjectBoundingBox(FloatRect& object_bounding_box,
                                       bool& object_bounding_box_valid,
