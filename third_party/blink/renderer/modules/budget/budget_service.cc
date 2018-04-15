@@ -60,11 +60,6 @@ ScriptPromise BudgetService::getCost(ScriptState* script_state,
                                      const AtomicString& operation) {
   DCHECK(service_);
 
-  String error_message;
-  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message))
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, error_message));
-
   mojom::blink::BudgetOperationType type = StringToOperationType(operation);
   DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
 
@@ -85,11 +80,6 @@ void BudgetService::GotCost(ScriptPromiseResolver* resolver,
 
 ScriptPromise BudgetService::getBudget(ScriptState* script_state) {
   DCHECK(service_);
-
-  String error_message;
-  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message))
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, error_message));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -129,11 +119,6 @@ ScriptPromise BudgetService::reserve(ScriptState* script_state,
 
   mojom::blink::BudgetOperationType type = StringToOperationType(operation);
   DCHECK_NE(type, mojom::blink::BudgetOperationType::INVALID_OPERATION);
-
-  String error_message;
-  if (!ExecutionContext::From(script_state)->IsSecureContext(error_message))
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, error_message));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();

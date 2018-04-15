@@ -10,6 +10,7 @@ enum OperationType {
 
 [
     RuntimeEnabled=Budget,
+    SecureContext,
     Exposed=(Window,Worker)
 ] interface BudgetService {
     [OriginTrialEnabled=BudgetQuery, CallWith=ScriptState, MeasureAs=BudgetAPIGetCost] Promise<double> getCost(OperationType operation);
