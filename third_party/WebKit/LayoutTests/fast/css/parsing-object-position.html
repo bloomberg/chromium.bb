@@ -34,8 +34,8 @@
             shouldBeEqualToString('testComputedStyle("object-position: 10px 10px;")', '10px 10px');
             shouldBeEqualToString('testComputedStyle("object-position: right top;")', '100% 0%');
             shouldBeEqualToString('testComputedStyle("object-position: top right;")', '100% 0%');
-            shouldBeEqualToString('testComputedStyle("object-position: left 20px center;")', '20px 50%');  // Deprecated
-            shouldBeEqualToString('testComputedStyle("object-position: center bottom 25%;")', '50% 75%');
+            shouldBeEqualToString('testComputedStyle("object-position: left 20px bottom 50%;")', '20px 50%');
+            shouldBeEqualToString('testComputedStyle("object-position: right 50% bottom 25%;")', '50% 75%');
             shouldBeEqualToString('testComputedStyle("object-position: bottom 20px right 12px;")', 'calc(-12px + 100%) calc(-20px + 100%)');
 
             shouldBeEqualToString('test("object-position: inherit;")', 'inherit');
@@ -61,12 +61,13 @@
             shouldBeEqualToString('test("object-position: 33px center;")', '33px center');
             shouldBeEqualToString('test("object-position: 33px bottom;")', '33px bottom');
             shouldBeEqualToString('test("object-position: 1vh 1vw;")', '1vh 1vw');
-            shouldBeEqualToString('test("object-position: left 20px center;")', 'left 20px center');
-            shouldBeEqualToString('test("object-position: center bottom 25%;")', 'center bottom 25%');
+            shouldBeEqualToString('test("object-position: left 20px bottom 50%;")', 'left 20px bottom 50%');
+            shouldBeEqualToString('test("object-position: right 50% bottom 25%;")', 'right 50% bottom 25%');
             shouldBeEqualToString('test("object-position: bottom 20px right 12px;")', 'right 12px bottom 20px');
 
             shouldBeEqualToString('test("object-position: 100px 100px 100px;")', '');
             shouldBeEqualToString('test("object-position: 100px 100px 200px 200px;")', '');
+            shouldBeEqualToString('test("object-position: center bottom 25%;")', '');
             shouldBeEqualToString('test("object-position: top left center;")', '');
             shouldBeEqualToString('test("object-position: top top;")', '');
             shouldBeEqualToString('test("object-position: top bottom;")', '');

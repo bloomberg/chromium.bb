@@ -898,10 +898,8 @@ bool ConsumePosition(CSSParserTokenRange& range,
       PositionFromTwoValues(value1, value2, result_x, result_y);
       return true;
     }
-    if (*threeValuePosition == WebFeature::kThreeValuedPositionBackground)
-      context.Count(*threeValuePosition);
-    else
-      context.CountDeprecation(*threeValuePosition);
+    DCHECK_EQ(*threeValuePosition, WebFeature::kThreeValuedPositionBackground);
+    context.Count(*threeValuePosition);
   }
 
   CSSValue* values[5];
@@ -1262,8 +1260,7 @@ static CSSValue* ConsumeRadialGradient(CSSParserTokenRange& args,
   if (args.Peek().Id() == CSSValueAt) {
     args.ConsumeIncludingWhitespace();
     ConsumePosition(args, context, UnitlessQuirk::kForbid,
-                    WebFeature::kThreeValuedPositionGradient, center_x,
-                    center_y);
+                    Optional<WebFeature>(), center_x, center_y);
     if (!(center_x && center_y))
       return nullptr;
     // Right now, CSS radial gradients have the same start and end centers.
@@ -1338,8 +1335,7 @@ static CSSValue* ConsumeConicGradient(CSSParserTokenRange& args,
   CSSValue* center_y = nullptr;
   if (ConsumeIdent<CSSValueAt>(args)) {
     if (!ConsumePosition(args, context, UnitlessQuirk::kForbid,
-                         WebFeature::kThreeValuedPositionGradient, center_x,
-                         center_y))
+                         Optional<WebFeature>(), center_x, center_y))
       return nullptr;
   }
 

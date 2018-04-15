@@ -235,9 +235,9 @@ CSSBasicShapeCircleValue* ConsumeBasicShapeCircle(
   if (CSSPropertyParserHelpers::ConsumeIdent<CSSValueAt>(args)) {
     CSSValue* center_x = nullptr;
     CSSValue* center_y = nullptr;
-    if (!ConsumePosition(
-            args, context, CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
-            WebFeature::kThreeValuedPositionBasicShape, center_x, center_y))
+    if (!ConsumePosition(args, context,
+                         CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
+                         Optional<WebFeature>(), center_x, center_y))
       return nullptr;
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);
@@ -263,9 +263,9 @@ CSSBasicShapeEllipseValue* ConsumeBasicShapeEllipse(
   if (CSSPropertyParserHelpers::ConsumeIdent<CSSValueAt>(args)) {
     CSSValue* center_x = nullptr;
     CSSValue* center_y = nullptr;
-    if (!ConsumePosition(
-            args, context, CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
-            WebFeature::kThreeValuedPositionBasicShape, center_x, center_y))
+    if (!ConsumePosition(args, context,
+                         CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
+                         Optional<WebFeature>(), center_x, center_y))
       return nullptr;
     shape->SetCenterX(center_x);
     shape->SetCenterY(center_y);

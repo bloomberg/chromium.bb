@@ -1,5 +1,0 @@
-CONSOLE WARNING: Expressing a position using 3 parts is deprecated and will be removed in M68, around July 2018. Please use <position> syntax instead. See https://www.chromestatus.com/features/5116559680864256 for more details.
-CONSOLE WARNING: Expressing a position using 3 parts is deprecated and will be removed in M68, around July 2018. Please use <position> syntax instead. See https://www.chromestatus.com/features/5116559680864256 for more details.
-CONSOLE WARNING: Expressing a position using 3 parts is deprecated and will be removed in M68, around July 2018. Please use <position> syntax instead. See https://www.chromestatus.com/features/5116559680864256 for more details.
-CONSOLE WARNING: Expressing a position using 3 parts is deprecated and will be removed in M68, around July 2018. Please use <position> syntax instead. See https://www.chromestatus.com/features/5116559680864256 for more details.
-

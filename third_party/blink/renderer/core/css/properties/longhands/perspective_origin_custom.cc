@@ -21,7 +21,7 @@ const CSSValue* PerspectiveOrigin::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return ConsumePosition(range, context,
                          CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
-                         WebFeature::kThreeValuedPositionPerspectiveOrigin);
+                         Optional<WebFeature>());
 }
 
 bool PerspectiveOrigin::IsLayoutDependent(const ComputedStyle* style,
