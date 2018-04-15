@@ -561,15 +561,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "Using unescaped '#' characters in a data URI body", "'%23'",
                   kM68, "5656049583390720")};
 
-    case WebFeature::kThreeValuedPositionBasicShape:
-    case WebFeature::kThreeValuedPositionGradient:
-    case WebFeature::kThreeValuedPositionObjectPosition:
-    case WebFeature::kThreeValuedPositionPerspectiveOrigin:
-      return {
-          "ThreeValuedPosition", kM68,
-          ReplacedWillBeRemoved("Expressing a position using 3 parts",
-                                "<position> syntax", kM68, "5116559680864256")};
-
     case WebFeature::kImageInputTypeFormDataWithNonEmptyValue:
       return {"ImageInputTypeFormDataWithNonEmptyValue", kM68,
               WillBeRemoved("Extra form data if value attribute "

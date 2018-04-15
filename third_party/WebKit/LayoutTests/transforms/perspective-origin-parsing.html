@@ -27,7 +27,6 @@ expect('center 10%').parsesAs('center 10%').isComputedTo('100px 10px');
 expect('top right').parsesAs('right top');
 expect('left 10%').parsesAs('left 10%');
 expect('left 10px').parsesAs('left 10px');
-expect('left 10% center').parsesAs('left 10% center');
 expect('10% top').parsesAs('10% top');
 expect('10px top').parsesAs('10px top');
 expect('10px 20%').parsesAs('10px 20%');
@@ -38,9 +37,10 @@ expect('0px top').parsesAs('0px top').isComputedTo('0px 0px');
 expect('0px bottom').parsesAs('0px bottom').isComputedTo('0px 100px');
 expect('0px center').parsesAs('0px center').isComputedTo('0px 50px');
 
-expect('center right 20%').parsesAs('right 20% center');
-expect('left bottom 30px').parsesAs('left bottom 30px');
-expect('top right 30px').parsesAs('right 30px top');
+expect('left 10% center').isInvalid();
+expect('center right 20%').isInvalid();
+expect('left bottom 30px').isInvalid();
+expect('top right 30px').isInvalid();
 
 expect('left 30px bottom 20px').parsesAs('left 30px bottom 20px');
 expect('top 10px left 20px').parsesAs('left 20px top 10px');
