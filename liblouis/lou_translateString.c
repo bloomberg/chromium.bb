@@ -1685,7 +1685,6 @@ insertBrailleIndicators(int finish, const TranslationTableHeader *table, int pos
 			if (!for_updatePositions(&indicRule->charsdots[0], 0, indicRule->dotslen, 0,
 						pos, input, output, posMapping, cursorPosition, cursorStatus))
 				return 0;
-			if (*cursorStatus == 2) checkWhat = checkNothing;
 		}
 	} while (checkWhat != checkNothing);
 	return 1;
@@ -2248,7 +2247,6 @@ putCharacter(widechar character, const TranslationTableHeader *table, int pos,
 	TranslationTableCharacter *chardef = NULL;
 	TranslationTableOffset offset;
 	widechar d;
-	if (*cursorStatus == 2) return 1;
 	chardef = (findCharOrDots(character, 0, table));
 	if ((chardef->attributes & CTC_Letter) && (chardef->attributes & CTC_UpperCase))
 		chardef = findCharOrDots(chardef->lowercase, 0, table);
@@ -3500,26 +3498,19 @@ translateString(const TranslationTableHeader *table, int mode, int currentPass,
 		//				goto failure;
 
 		default:
-			if (*cursorStatus == 2)
-				*cursorStatus = 1;
-			else {
-				if (transRule->dotslen) {
-					if (!for_updatePositions(&transRule->charsdots[transCharslen],
-								transCharslen, transRule->dotslen, 0, pos, input, output,
+			if (transRule->dotslen) {
+				if (!for_updatePositions(&transRule->charsdots[transCharslen],
+							transCharslen, transRule->dotslen, 0, pos, input, output,
+							posMapping, cursorPosition, cursorStatus))
+					goto failure;
+				pos += transCharslen;
+			} else {
+				for (k = 0; k < transCharslen; k++) {
+					if (!putCharacter(input->chars[pos], table, pos, input, output,
 								posMapping, cursorPosition, cursorStatus))
 						goto failure;
-				} else {
-					for (k = 0; k < transCharslen; k++) {
-						if (!putCharacter(input->chars[pos], table, pos, input, output,
-									posMapping, cursorPosition, cursorStatus))
-							goto failure;
-						pos++;
-					}
+					pos++;
 				}
-				if (*cursorStatus == 2)
-					*cursorStatus = 1;
-				else if (transRule->dotslen)
-					pos += transCharslen;
 			}
 			break;
 		}
