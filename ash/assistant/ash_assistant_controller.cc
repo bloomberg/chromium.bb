@@ -35,6 +35,17 @@ void AshAssistantController::SetAssistant(
   assistant->AddAssistantEventSubscriber(std::move(ptr));
 }
 
+void AshAssistantController::OnInteractionStarted() {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
+void AshAssistantController::OnInteractionFinished(
+    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
 void AshAssistantController::OnHtmlResponse(const std::string& response) {
   if (!is_app_list_shown_)
     return;

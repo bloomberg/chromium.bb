@@ -33,6 +33,10 @@ class AshAssistantController
   void BindRequest(mojom::AshAssistantControllerRequest request);
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
+  void OnInteractionStarted() override;
+  void OnInteractionFinished(
+      chromeos::assistant::mojom::AssistantInteractionResolution resolution)
+      override;
   void OnHtmlResponse(const std::string& response) override;
   void OnSuggestionsResponse(const std::vector<std::string>& response) override;
   void OnTextResponse(const std::string& response) override;

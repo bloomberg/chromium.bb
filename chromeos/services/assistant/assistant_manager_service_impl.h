@@ -67,6 +67,10 @@ class AssistantManagerServiceImpl
   void OnSpeechLevelUpdated(float speech_level) override;
 
   // assistant_client::ConversationStateListener overrides:
+  void OnConversationTurnStarted() override;
+  void OnConversationTurnFinished(
+      assistant_client::ConversationStateListener::Resolution resolution)
+      override;
   void OnRecognitionStateChanged(
       assistant_client::ConversationStateListener::RecognitionState state,
       const assistant_client::ConversationStateListener::RecognitionResult&
@@ -80,6 +84,9 @@ class AssistantManagerServiceImpl
   void HandleGetSettingsResponse(GetSettingsUiResponseCallback callback,
                                  const std::string& settings);
 
+  void OnConversationTurnStartedOnMainThread();
+  void OnConversationTurnFinishedOnMainThread(
+      assistant_client::ConversationStateListener::Resolution resolution);
   void OnShowHtmlOnMainThread(const std::string& html);
   void OnShowSuggestionsOnMainThread(
       const std::vector<std::string>& suggestions);

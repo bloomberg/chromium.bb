@@ -22,6 +22,12 @@ interface Assistant {
 // untrusted third-party content. Subscriber implementations must be sure to
 // handle the response data appropriately.
 interface AssistantEventSubscriber {
+  // Assistant interaction has started.
+  OnInteractionStarted();
+
+  // Assistant interaction has ended with the specified |resolution|.
+  OnInteractionFinished(AssistantInteractionResolution resolution);
+
   // Assistant got Html response from server.
   OnHtmlResponse(string response);
 
@@ -82,4 +88,16 @@ interface AudioInputObserver {
                               mojo_base.mojom.TimeTicks timestamp);
   // Notifies that audio input stream is closed.
   OnAudioInputClosed();
+};
+
+// Enumeration of possible completions for an Assistant interaction.
+enum AssistantInteractionResolution {
+  // Assistant interaction completed normally.
+  kNormal,
+  // Assistant interaction completed due to barge in or cancellation.
+  kInterruption,
+  // Assistant interaction completed due to error.
+  kError,
+  // Assistant interaction completed due to multi-device hotword loss.
+  kMultiDeviceHotwordLoss,
 };
