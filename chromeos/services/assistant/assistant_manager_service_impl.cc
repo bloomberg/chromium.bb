@@ -110,6 +110,23 @@ void AssistantManagerServiceImpl::AddAssistantEventSubscriber(
   subscribers_.AddPtr(std::move(subscriber));
 }
 
+void AssistantManagerServiceImpl::OnConversationTurnStarted() {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread,
+          weak_factory_.GetWeakPtr()));
+}
+
+void AssistantManagerServiceImpl::OnConversationTurnFinished(
+    assistant_client::ConversationStateListener::Resolution resolution) {
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread,
+          weak_factory_.GetWeakPtr(), resolution));
+}
+
 void AssistantManagerServiceImpl::OnShowHtml(const std::string& html) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
@@ -204,6 +221,52 @@ void AssistantManagerServiceImpl::HandleGetSettingsResponse(
     GetSettingsUiResponseCallback callback,
     const std::string& settings) {
   callback.Run(settings);
+}
+
+void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread() {
+  subscribers_.ForAllPtrs([](auto* ptr) { ptr->OnInteractionStarted(); });
+}
+
+void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
+    assistant_client::ConversationStateListener::Resolution resolution) {
+  switch (resolution) {
+    // Interaction ended normally.
+    // Note that TIMEOUT here does not refer to server timeout, but rather mic
+    // timeout due to speech inactivity. As this case does not require special
+    // UI logic, it is treated here as a normal interaction completion.
+    case assistant_client::ConversationStateListener::Resolution::NORMAL:
+    case assistant_client::ConversationStateListener::Resolution::
+        NORMAL_WITH_FOLLOW_ON:
+    case assistant_client::ConversationStateListener::Resolution::TIMEOUT:
+      subscribers_.ForAllPtrs([](auto* ptr) {
+        ptr->OnInteractionFinished(
+            mojom::AssistantInteractionResolution::kNormal);
+      });
+      break;
+    // Interaction ended due to interruption.
+    case assistant_client::ConversationStateListener::Resolution::BARGE_IN:
+    case assistant_client::ConversationStateListener::Resolution::CANCELLED:
+      subscribers_.ForAllPtrs([](auto* ptr) {
+        ptr->OnInteractionFinished(
+            mojom::AssistantInteractionResolution::kInterruption);
+      });
+      break;
+    // Interaction ended due to multi-device hotword loss.
+    case assistant_client::ConversationStateListener::Resolution::NO_RESPONSE:
+      subscribers_.ForAllPtrs([](auto* ptr) {
+        ptr->OnInteractionFinished(
+            mojom::AssistantInteractionResolution::kMultiDeviceHotwordLoss);
+      });
+      break;
+    // Interaction ended due to error.
+    case assistant_client::ConversationStateListener::Resolution::
+        COMMUNICATION_ERROR:
+      subscribers_.ForAllPtrs([](auto* ptr) {
+        ptr->OnInteractionFinished(
+            mojom::AssistantInteractionResolution::kError);
+      });
+      break;
+  }
 }
 
 void AssistantManagerServiceImpl::OnShowHtmlOnMainThread(
