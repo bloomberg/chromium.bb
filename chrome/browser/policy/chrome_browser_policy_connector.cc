@@ -40,6 +40,8 @@
 #include "components/policy/core/common/policy_loader_win.h"
 #elif defined(OS_MACOSX)
 #include <CoreFoundation/CoreFoundation.h>
+#include "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/preferences_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -51,20 +53,6 @@
 namespace policy {
 
 namespace {
-
-#if defined(OS_MACOSX)
-base::FilePath GetManagedPolicyPath() {
-  CFBundleRef bundle(CFBundleGetMainBundle());
-  if (!bundle)
-    return base::FilePath();
-
-  CFStringRef bundle_id = CFBundleGetIdentifier(bundle);
-  if (!bundle_id)
-    return base::FilePath();
-
-  return policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id);
-}
-#endif  // defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 std::unique_ptr<MachineLevelUserCloudPolicyManager>
@@ -189,10 +177,20 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
 #elif defined(OS_MACOSX)
-  std::unique_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
+#if defined(GOOGLE_CHROME_BUILD)
+  // Explicitly watch the "com.google.Chrome" bundle ID, no matter what this
+  // app's bundle ID actually is. All channels of Chrome should obey the same
+  // policies.
+  CFStringRef bundle_id = CFSTR("com.google.Chrome");
+#else
+  base::ScopedCFTypeRef<CFStringRef> bundle_id(
+      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+#endif
+  auto loader = std::make_unique<PolicyLoaderMac>(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND}),
-      GetManagedPolicyPath(), new MacPreferences()));
+      policy::PolicyLoaderMac::GetManagedPolicyPath(bundle_id),
+      new MacPreferences(), bundle_id);
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
