@@ -60,7 +60,7 @@ enum UiElementName {
   kOverflowMenuBackplane,
   kOverflowMenu,
   kOverflowMenuLayout,
-  kOverflowMenuFordwardButton,
+  kOverflowMenuForwardButton,
   kOverflowMenuReloadButton,
   kOverflowMenuCloseAllIncognitoTabsItem,
   kOverflowMenuNewIncognitoTabItem,

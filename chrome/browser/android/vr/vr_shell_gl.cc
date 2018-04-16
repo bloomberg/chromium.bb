@@ -36,6 +36,7 @@
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_gl_util.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/common/content_features.h"
@@ -2417,6 +2418,10 @@ void VrShellGl::OnTriggerEvent(bool pressed) {
 
 void VrShellGl::AcceptDoffPromptForTesting() {
   ui_->AcceptDoffPromptForTesting();
+}
+
+void VrShellGl::PerformUiActionForTesting(UiTestInput test_input) {
+  ui_->PerformUiActionForTesting(test_input);
 }
 
 }  // namespace vr

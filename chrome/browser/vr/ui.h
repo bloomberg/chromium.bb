@@ -15,8 +15,10 @@
 #include "chrome/browser/vr/keyboard_ui_interface.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "chrome/browser/vr/ui_element_renderer.h"
+#include "chrome/browser/vr/ui_test_input.h"
 
 namespace vr {
+
 class AudioDelegate;
 class BrowserUiInterface;
 class ContentInputDelegate;
@@ -164,6 +166,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnKeyboardHidden() override;
 
   void AcceptDoffPromptForTesting();
+  void PerformUiActionForTesting(UiTestInput test_input);
 
  private:
   void InitializeModel(const UiInitialState& ui_initial_state);

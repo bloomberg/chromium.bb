@@ -392,6 +392,7 @@ java_cpp_enum("chrome_vr_android_java_enums_srcjar") {
     "//chrome/browser/android/vr/vr_shell_delegate.h",
     "//chrome/browser/vr/metrics/session_metrics_helper.h",
     "//chrome/browser/vr/text_edit_action.h",
+    "//chrome/browser/vr/ui_test_input.h",
     "//chrome/browser/vr/ui_unsupported_mode.h",
   ]
 }
@@ -648,6 +649,7 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/VrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/rules/WebappActivityVrTestRule.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/HeadTrackingUtils.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/util/NativeUiUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/NfcSimUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/TransitionUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrInfoBarUtils.java",

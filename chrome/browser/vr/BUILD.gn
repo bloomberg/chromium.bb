@@ -213,6 +213,8 @@ static_library("vr_common") {
     "ui_scene.h",
     "ui_scene_creator.cc",
     "ui_scene_creator.h",
+    "ui_test_input.cc",
+    "ui_test_input.h",
     "ui_unsupported_mode.h",
     "vr_features.h",
     "vr_gl_util.cc",

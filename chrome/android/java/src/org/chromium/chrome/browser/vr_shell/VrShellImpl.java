@@ -1120,6 +1120,12 @@ public class VrShellImpl
         nativeAcceptDoffPromptForTesting(mNativeVrShell);
     }
 
+    @Override
+    public void performUiActionForTesting(int elementName, int actionType, Point position) {
+        nativePerformUiActionForTesting(
+                mNativeVrShell, elementName, actionType, position.x, position.y);
+    }
+
     private native long nativeInit(VrShellDelegate delegate, boolean forWebVR,
             boolean webVrAutopresentationExpected, boolean inCct, boolean browsingDisabled,
             boolean hasOrCanRequestAudioPermission, long gvrApi, boolean reprojectedRendering,
@@ -1164,6 +1170,8 @@ public class VrShellImpl
             int selectionEnd, int compositionStart, int compositionEnd);
     private native VrInputConnection nativeGetVrInputConnectionForTesting(long nativeVrShell);
     private native void nativeAcceptDoffPromptForTesting(long nativeVrShell);
+    private native void nativePerformUiActionForTesting(
+            long nativeVrShell, int elementName, int actionType, float x, float y);
     private native void nativeResumeContentRendering(long nativeVrShell);
     private native void nativeOnOverlayTextureEmptyChanged(long nativeVrShell, boolean empty);
 }
