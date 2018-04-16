@@ -54,7 +54,8 @@ class ProfileAttributesStorage
                           const std::string& gaia_id,
                           const base::string16& user_name,
                           size_t icon_index,
-                          const std::string& supervised_user_id) = 0;
+                          const std::string& supervised_user_id,
+                          const AccountId& account_id) = 0;
 
   // Removes the profile matching given |account_id| from this storage.
   // Calculates profile path and calls RemoveProfile() on it.
