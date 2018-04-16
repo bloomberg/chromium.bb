@@ -36,10 +36,6 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
   if (!monitor)
     return;
 
-  MockMouseListener listener;
-  // Ignore any callbacks.
-  EXPECT_CALL(listener, OnMouseMoved(testing::_)).Times(testing::AnyNumber());
-
   monitor->EnableKeyPressMonitoring();
   monitor->DisableKeyPressMonitoring();
 

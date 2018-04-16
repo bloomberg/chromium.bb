@@ -485,6 +485,7 @@ source_set("unit_tests") {
     "text_ranges_unittest.cc",
     "text_renderer_unittest.cc",
     "time_delta_interpolator_unittest.cc",
+    "user_input_monitor_unittest.cc",
     "vector_math_unittest.cc",
     "video_codecs_unittest.cc",
     "video_color_space_unittest.cc",
