@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/profiling_host/profiling_test_driver.h"
+#include "components/heap_profiling/test_driver.h"
 
 #include <string>
 
@@ -14,10 +14,11 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/heap_profiler_event_filter.h"
-#include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/heap_profiling/supervisor.h"
 #include "components/services/heap_profiling/public/cpp/allocator_shim.h"
+#include "components/services/heap_profiling/public/cpp/controller.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -527,14 +528,14 @@ bool ValidateProcessMmaps(base::Value* process_mmaps,
 
 }  // namespace
 
-ProfilingTestDriver::ProfilingTestDriver()
+TestDriver::TestDriver()
     : wait_for_ui_thread_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                           base::WaitableEvent::InitialState::NOT_SIGNALED) {
   partition_allocator_.init();
 }
-ProfilingTestDriver::~ProfilingTestDriver() {}
+TestDriver::~TestDriver() {}
 
-bool ProfilingTestDriver::RunTest(const Options& options) {
+bool TestDriver::RunTest(const Options& options) {
   options_ = options;
 
   running_on_ui_thread_ =
@@ -542,7 +543,16 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
 
   // The only thing to test for Mode::kNone is that profiling hasn't started.
   if (options_.mode == Mode::kNone) {
-    if (ProfilingProcessHost::has_started()) {
+    if (running_on_ui_thread_) {
+      has_started_ = Supervisor::GetInstance()->HasStarted();
+    } else {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::UI, FROM_HERE,
+          base::Bind(&TestDriver::GetHasStartedOnUIThread,
+                     base::Unretained(this)));
+      wait_for_ui_thread_.Wait();
+    }
+    if (has_started_) {
       LOG(ERROR) << "Profiling should not have started";
       return false;
     }
@@ -552,6 +562,7 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
   if (running_on_ui_thread_) {
     if (!CheckOrStartProfiling())
       return false;
+    Supervisor::GetInstance()->SetKeepSmallAllocations(true);
     if (ShouldProfileRenderer())
       WaitForProfilingToStartForAllRenderersUIThread();
     if (ShouldProfileBrowser())
@@ -560,17 +571,21 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
   } else {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &ProfilingTestDriver::CheckOrStartProfilingOnUIThreadAndSignal,
-            base::Unretained(this)));
+        base::Bind(&TestDriver::CheckOrStartProfilingOnUIThreadAndSignal,
+                   base::Unretained(this)));
     wait_for_ui_thread_.Wait();
     if (!initialization_success_)
       return false;
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal,
+                   base::Unretained(this)));
+    wait_for_ui_thread_.Wait();
     if (ShouldProfileRenderer()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
           base::Bind(
-              &ProfilingTestDriver::
+              &TestDriver::
                   WaitForProfilingToStartForAllRenderersUIThreadAndSignal,
               base::Unretained(this)));
       wait_for_ui_thread_.Wait();
@@ -578,13 +593,11 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
     if (ShouldProfileBrowser()) {
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(&ProfilingTestDriver::MakeTestAllocations,
-                     base::Unretained(this)));
+          base::Bind(&TestDriver::MakeTestAllocations, base::Unretained(this)));
     }
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ProfilingTestDriver::CollectResults, base::Unretained(this),
-                   false));
+        base::Bind(&TestDriver::CollectResults, base::Unretained(this), false));
     wait_for_ui_thread_.Wait();
   }
 
@@ -608,7 +621,13 @@ bool ProfilingTestDriver::RunTest(const Options& options) {
   return true;
 }
 
-void ProfilingTestDriver::CheckOrStartProfilingOnUIThreadAndSignal() {
+void TestDriver::GetHasStartedOnUIThread() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  has_started_ = Supervisor::GetInstance()->HasStarted();
+  wait_for_ui_thread_.Signal();
+}
+
+void TestDriver::CheckOrStartProfilingOnUIThreadAndSignal() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   initialization_success_ = CheckOrStartProfiling();
 
@@ -618,11 +637,17 @@ void ProfilingTestDriver::CheckOrStartProfilingOnUIThreadAndSignal() {
     wait_for_ui_thread_.Signal();
 }
 
-bool ProfilingTestDriver::CheckOrStartProfiling() {
+void TestDriver::SetKeepSmallAllocationsOnUIThreadAndSignal() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  Supervisor::GetInstance()->SetKeepSmallAllocations(true);
+  wait_for_ui_thread_.Signal();
+}
+
+bool TestDriver::CheckOrStartProfiling() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (options_.profiling_already_started) {
-    if (ProfilingProcessHost::has_started())
+    if (Supervisor::GetInstance()->HasStarted())
       return true;
     LOG(ERROR) << "Profiling should have been started, but wasn't";
     return false;
@@ -639,7 +664,10 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
   // When this is not-null, initialization should wait for the QuitClosure to be
   // called.
   std::unique_ptr<base::RunLoop> run_loop;
+  base::OnceClosure start_callback;
 
+  // If we're going to profile the browser, then wait for the allocator shim to
+  // start. Otherwise, wait for the Supervisor to start.
   if (ShouldProfileBrowser()) {
     if (running_on_ui_thread_) {
       run_loop.reset(new base::RunLoop);
@@ -652,14 +680,23 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
                      base::Unretained(&wait_for_ui_thread_)),
           base::ThreadTaskRunnerHandle::Get());
     }
+  } else {
+    if (running_on_ui_thread_) {
+      run_loop.reset(new base::RunLoop);
+      start_callback = run_loop->QuitClosure();
+    } else {
+      wait_for_profiling_to_start_ = true;
+      start_callback = base::BindOnce(&base::WaitableEvent::Signal,
+                                      base::Unretained(&wait_for_ui_thread_));
+    }
   }
 
   uint32_t sampling_rate = options_.should_sample
                                ? (options_.sample_everything ? 2 : kSampleRate)
                                : 1;
-  ProfilingProcessHost::Start(connection, options_.mode, options_.stack_mode,
-                              sampling_rate, base::Closure());
-  ProfilingProcessHost::GetInstance()->SetKeepSmallAllocations(true);
+  Supervisor::GetInstance()->Start(connection, options_.mode,
+                                   options_.stack_mode, sampling_rate,
+                                   std::move(start_callback));
 
   if (run_loop)
     run_loop->Run();
@@ -667,7 +704,7 @@ bool ProfilingTestDriver::CheckOrStartProfiling() {
   return true;
 }
 
-void ProfilingTestDriver::MakeTestAllocations() {
+void TestDriver::MakeTestAllocations() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   base::PlatformThread::SetName(kThreadName);
@@ -720,7 +757,8 @@ void ProfilingTestDriver::MakeTestAllocations() {
   //     browser(), embedded_test_server()->GetURL("/french_page.html"));
 }
 
-void ProfilingTestDriver::CollectResults(bool synchronous) {
+void TestDriver::CollectResults(bool synchronous) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   base::Closure finish_tracing_closure;
   std::unique_ptr<base::RunLoop> run_loop;
 
@@ -732,8 +770,8 @@ void ProfilingTestDriver::CollectResults(bool synchronous) {
                                         base::Unretained(&wait_for_ui_thread_));
   }
 
-  ProfilingProcessHost::GetInstance()->RequestTraceWithHeapDump(
-      base::Bind(&ProfilingTestDriver::TraceFinished, base::Unretained(this),
+  Supervisor::GetInstance()->RequestTraceWithHeapDump(
+      base::Bind(&TestDriver::TraceFinished, base::Unretained(this),
                  std::move(finish_tracing_closure)),
       false /* strip_path_from_mapped_files */);
 
@@ -741,14 +779,14 @@ void ProfilingTestDriver::CollectResults(bool synchronous) {
     run_loop->Run();
 }
 
-void ProfilingTestDriver::TraceFinished(base::Closure closure,
-                                        bool success,
-                                        std::string trace_json) {
+void TestDriver::TraceFinished(base::Closure closure,
+                               bool success,
+                               std::string trace_json) {
   serialized_trace_.swap(trace_json);
   std::move(closure).Run();
 }
 
-bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
+bool TestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
   base::Value* heaps_v2 =
       FindArgDump(base::Process::Current().Pid(), dump_json, "heaps_v2");
 
@@ -841,7 +879,7 @@ bool ProfilingTestDriver::ValidateBrowserAllocations(base::Value* dump_json) {
   return true;
 }
 
-bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
+bool TestDriver::ValidateRendererAllocations(base::Value* dump_json) {
   std::vector<int> pids;
   bool result = NumProcessesWithName(dump_json, "Renderer", &pids) >= 1;
   if (!result) {
@@ -893,35 +931,35 @@ bool ProfilingTestDriver::ValidateRendererAllocations(base::Value* dump_json) {
   return true;
 }
 
-bool ProfilingTestDriver::ShouldProfileBrowser() {
+bool TestDriver::ShouldProfileBrowser() {
   return options_.mode == Mode::kAll || options_.mode == Mode::kBrowser ||
          options_.mode == Mode::kMinimal;
 }
 
-bool ProfilingTestDriver::ShouldProfileRenderer() {
+bool TestDriver::ShouldProfileRenderer() {
   return options_.mode == Mode::kAll || options_.mode == Mode::kAllRenderers;
 }
 
-bool ProfilingTestDriver::ShouldIncludeNativeThreadNames() {
+bool TestDriver::ShouldIncludeNativeThreadNames() {
   return options_.stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES;
 }
 
-bool ProfilingTestDriver::HasPseudoFrames() {
+bool TestDriver::HasPseudoFrames() {
   return options_.stack_mode == mojom::StackMode::PSEUDO ||
          options_.stack_mode == mojom::StackMode::MIXED;
 }
 
-bool ProfilingTestDriver::HasNativeFrames() {
+bool TestDriver::HasNativeFrames() {
   return options_.stack_mode == mojom::StackMode::NATIVE_WITH_THREAD_NAMES ||
          options_.stack_mode == mojom::StackMode::NATIVE_WITHOUT_THREAD_NAMES ||
          options_.stack_mode == mojom::StackMode::MIXED;
 }
 
-bool ProfilingTestDriver::IsRecordingAllAllocations() {
+bool TestDriver::IsRecordingAllAllocations() {
   return !options_.should_sample || options_.sample_everything;
 }
 
-void ProfilingTestDriver::WaitForProfilingToStartForAllRenderersUIThread() {
+void TestDriver::WaitForProfilingToStartForAllRenderersUIThread() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   while (true) {
     std::vector<base::ProcessId> profiled_pids;
@@ -933,7 +971,7 @@ void ProfilingTestDriver::WaitForProfilingToStartForAllRenderersUIThread() {
           std::move(finished).Run();
         },
         &profiled_pids, run_loop.QuitClosure());
-    ProfilingProcessHost::GetInstance()->GetProfiledPids(std::move(callback));
+    Supervisor::GetInstance()->GetProfiledPids(std::move(callback));
     run_loop.Run();
 
     if (RenderersAreBeingProfiled(profiled_pids))
@@ -941,18 +979,15 @@ void ProfilingTestDriver::WaitForProfilingToStartForAllRenderersUIThread() {
   }
 }
 
-void ProfilingTestDriver::
-    WaitForProfilingToStartForAllRenderersUIThreadAndSignal() {
+void TestDriver::WaitForProfilingToStartForAllRenderersUIThreadAndSignal() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  ProfilingProcessHost::GetInstance()->GetProfiledPids(
-      base::BindOnce(&ProfilingTestDriver::
-                         WaitForProfilingToStartForAllRenderersUIThreadCallback,
-                     base::Unretained(this)));
+  Supervisor::GetInstance()->GetProfiledPids(base::BindOnce(
+      &TestDriver::WaitForProfilingToStartForAllRenderersUIThreadCallback,
+      base::Unretained(this)));
 }
 
-void ProfilingTestDriver::
-    WaitForProfilingToStartForAllRenderersUIThreadCallback(
-        std::vector<base::ProcessId> results) {
+void TestDriver::WaitForProfilingToStartForAllRenderersUIThreadCallback(
+    std::vector<base::ProcessId> results) {
   if (RenderersAreBeingProfiled(results)) {
     wait_for_ui_thread_.Signal();
     return;

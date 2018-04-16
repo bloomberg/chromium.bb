@@ -848,8 +848,6 @@ chrome_shared_library("libchromefortest") {
   sources = [
     "../app/android/chrome_main_delegate_android_initializer.cc",
     "../browser/android/chrome_entry_point_for_test.cc",
-    "../browser/profiling_host/profiling_test_driver.cc",
-    "../browser/profiling_host/profiling_test_driver.h",
     "../browser/profiling_host/test_android_shim.cc",
     "../browser/profiling_host/test_android_shim.h",
   ]
@@ -857,6 +855,7 @@ chrome_shared_library("libchromefortest") {
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
     "//chrome/browser/profiling_host:jni_headers",
+    "//components/heap_profiling:test_support",
   ]
 }
 
