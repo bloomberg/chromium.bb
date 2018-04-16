@@ -7,6 +7,7 @@
 #include "base/version.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
@@ -74,6 +75,30 @@ TEST(ExtensionBuilderTest, Actions) {
             .Build();
     EXPECT_FALSE(extension->manifest()->HasKey(manifest_keys::kPageAction));
     EXPECT_TRUE(extension->manifest()->HasKey(manifest_keys::kBrowserAction));
+  }
+}
+
+TEST(ExtensionBuilderTest, Background) {
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("no background").Build();
+    EXPECT_FALSE(BackgroundInfo::HasBackgroundPage(extension.get()));
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("persistent background page")
+            .SetBackgroundPage(ExtensionBuilder::BackgroundPage::PERSISTENT)
+            .Build();
+    EXPECT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
+    EXPECT_TRUE(BackgroundInfo::HasPersistentBackgroundPage(extension.get()));
+  }
+  {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("event page")
+            .SetBackgroundPage(ExtensionBuilder::BackgroundPage::EVENT)
+            .Build();
+    EXPECT_TRUE(BackgroundInfo::HasBackgroundPage(extension.get()));
+    EXPECT_TRUE(BackgroundInfo::HasLazyBackgroundPage(extension.get()));
   }
 }
 

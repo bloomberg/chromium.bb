@@ -20,11 +20,7 @@ namespace {
 // Creates a very simple extension with a background page.
 scoped_refptr<Extension> CreateExtensionWithBackgroundPage() {
   return ExtensionBuilder("test")
-      .MergeManifest(
-          DictionaryBuilder()
-              .Set("background",
-                   DictionaryBuilder().Set("page", "bg.html").Build())
-              .Build())
+      .SetBackgroundPage(ExtensionBuilder::BackgroundPage::PERSISTENT)
       .SetID("id2")
       .Build();
 }
