@@ -1200,8 +1200,6 @@ void Shell::Init(ui::ContextFactory* context_factory,
     cursor_manager_->SetCursor(ui::CursorType::kPointer);
   }
 
-  UpdateCursorCompositingEnabled();
-
   peripheral_battery_notifier_ = std::make_unique<PeripheralBatteryNotifier>();
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(
