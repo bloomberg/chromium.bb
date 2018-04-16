@@ -21,6 +21,7 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1992,6 +1993,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Checks if every attribute's type set by vertexAttrib API match
   // the type of corresponding attribute in vertex shader.
   bool AttribsTypeMatch();
+
+  // Verifies that front/back stencil settings match, per WebGL specification:
+  // https://www.khronos.org/registry/webgl/specs/latest/1.0/#6.11
+  bool ValidateStencilStateForDraw(const char* function_name);
 
   // Checks if the current program and vertex attributes are valid for drawing.
   bool IsDrawValid(
@@ -4110,6 +4115,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().unpremultiply_and_dither_copy;
   caps.texture_target_exception_list =
       group_->gpu_preferences().texture_target_exception_list;
+  caps.separate_stencil_ref_mask_writemask =
+      feature_info_->feature_flags().separate_stencil_ref_mask_writemask;
 
   return caps;
 }
@@ -4596,6 +4603,7 @@ bool GLES2DecoderImpl::MakeCurrent() {
     RestoreFramebufferBindings();
 
   framebuffer_state_.clear_state_dirty = true;
+  state_.stencil_state_changed_since_validation = true;
 
   // Rebind textures if the service ids may have changed.
   RestoreAllExternalTextureBindingsIfNeeded();
@@ -6058,6 +6066,7 @@ uint32_t GLES2DecoderImpl::GetAndClearBackbufferClearBitsForTest() {
 
 void GLES2DecoderImpl::OnFboChanged() const {
   state_.fbo_binding_for_scissor_workaround_dirty = true;
+  state_.stencil_state_changed_since_validation = true;
 
   if (workarounds().flush_on_framebuffer_change)
     api()->glFlushFn();
@@ -10256,6 +10265,39 @@ bool GLES2DecoderImpl::ClearUnclearedTextures() {
   return true;
 }
 
+bool GLES2DecoderImpl::ValidateStencilStateForDraw(const char* function_name) {
+  if (!state_.stencil_state_changed_since_validation) {
+    return true;
+  }
+
+  GLenum stencil_format = GetBoundFramebufferStencilFormat(GL_DRAW_FRAMEBUFFER);
+  uint8_t stencil_bits = GLES2Util::StencilBitsPerPixel(stencil_format);
+
+  if (state_.enable_flags.stencil_test && stencil_bits > 0) {
+    DCHECK(stencil_bits <= 8);
+
+    GLuint max_stencil_value = (1 << stencil_bits) - 1;
+    GLint max_stencil_ref = static_cast<GLint>(max_stencil_value);
+    bool different_refs =
+        base::ClampToRange(state_.stencil_front_ref, 0, max_stencil_ref) !=
+        base::ClampToRange(state_.stencil_back_ref, 0, max_stencil_ref);
+    bool different_writemasks =
+        (state_.stencil_front_writemask & max_stencil_value) !=
+        (state_.stencil_back_writemask & max_stencil_value);
+    bool different_value_masks =
+        (state_.stencil_front_mask & max_stencil_value) !=
+        (state_.stencil_back_mask & max_stencil_value);
+    if (different_refs || different_writemasks || different_value_masks) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "Front/back stencil settings do not match.");
+      return false;
+    }
+  }
+
+  state_.stencil_state_changed_since_validation = false;
+  return true;
+}
+
 bool GLES2DecoderImpl::IsDrawValid(
     const char* function_name, GLuint max_vertex_accessed, bool instanced,
     GLsizei primcount) {
@@ -10270,6 +10312,13 @@ bool GLES2DecoderImpl::IsDrawValid(
     // But GL says no ERROR.
     LOCAL_RENDER_WARNING("Drawing with no current shader program.");
     return false;
+  }
+
+  // Perform extra stencil validation on ANGLE/D3D, and for all WebGL contexts.
+  if (!feature_info_->feature_flags().separate_stencil_ref_mask_writemask) {
+    if (!ValidateStencilStateForDraw(function_name)) {
+      return false;
+    }
   }
 
   if (CheckDrawingFeedbackLoops()) {

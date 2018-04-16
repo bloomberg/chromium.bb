@@ -1340,10 +1340,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Helper function for validating compressed texture formats.
   bool ValidateCompressedTexFormat(const char* function_name, GLenum format);
 
-  // Helper function to validate if front/back stencilMask and stencilFunc
-  // settings are the same.
-  bool ValidateStencilSettings(const char* function_name);
-
   // Helper function to validate stencil or depth func.
   bool ValidateStencilOrDepthFunc(const char* function_name, GLenum);
 

@@ -1714,7 +1714,7 @@ _NAMED_TYPE_INFO = {
 #               bind function.
 # states:       array of states that get set by this function corresponding to
 #               the given arguments
-# state_flag:   name of flag that is set to true when function is called.
+# on_change:    string of C++ code that is executed when the function is called.
 # no_gl:        no GL function is called.
 # valid_args:   A dictionary of argument indices to args to use in unit tests
 #               when they can not be automatically determined.

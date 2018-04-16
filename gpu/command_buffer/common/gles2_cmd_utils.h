@@ -167,6 +167,8 @@ class GLES2_UTILS_EXPORT GLES2Util {
 
   static size_t RenderbufferBytesPerPixel(int format);
 
+  static uint8_t StencilBitsPerPixel(int format);
+
   // Return the element's number of bytes.
   // For example, GL_FLOAT_MAT3 returns sizeof(GLfloat).
   static uint32_t GetElementSizeForUniformType(int type);

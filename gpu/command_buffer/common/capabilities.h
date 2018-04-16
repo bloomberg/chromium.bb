@@ -25,7 +25,7 @@
 namespace gpu {
 
 // NOTE: When adding members to this struct, also add corresponding
-// entries in gpu/ipc/gpu_command_buffer_traits_multi.h.
+// entries in gpu/ipc/common/gpu_command_buffer_traits_multi.h.
 
 struct GPU_EXPORT Capabilities {
   struct ShaderPrecision {
@@ -185,6 +185,8 @@ struct GPU_EXPORT Capabilities {
   bool chromium_gpu_fence = false;
 
   bool unpremultiply_and_dither_copy = false;
+
+  bool separate_stencil_ref_mask_writemask = false;
 
   int major_version = 2;
   int minor_version = 0;

@@ -1479,6 +1479,13 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.unpremultiply_and_dither_copy = !is_passthrough_cmd_decoder_;
   if (feature_flags_.unpremultiply_and_dither_copy)
     AddExtensionString("GL_CHROMIUM_unpremultiply_and_dither_copy");
+
+  // On D3D, there is only one ref, mask, and writemask setting which applies
+  // to both FRONT and BACK faces. This restriction is always applied to WebGL.
+  // https://crbug.com/806557
+  // https://github.com/KhronosGroup/WebGL/pull/2583
+  feature_flags_.separate_stencil_ref_mask_writemask =
+      !(gl_version_info_->is_d3d) && !IsWebGLContext();
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

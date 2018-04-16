@@ -97,7 +97,8 @@ _PEPPER_INTERFACES = [
 _CAPABILITY_FLAGS = [
   {'name': 'blend'},
   {'name': 'cull_face'},
-  {'name': 'depth_test', 'state_flag': 'framebuffer_state_.clear_state_dirty'},
+  {'name': 'depth_test',
+    'on_change': 'framebuffer_state_.clear_state_dirty = true;'},
   {'name': 'dither', 'default': True},
   {'name': 'framebuffer_srgb_ext', 'default': True, 'no_init': True,
    'extension_flag': 'ext_srgb_write_control'},
@@ -106,7 +107,8 @@ _CAPABILITY_FLAGS = [
   {'name': 'sample_coverage'},
   {'name': 'scissor_test'},
   {'name': 'stencil_test',
-   'state_flag': 'framebuffer_state_.clear_state_dirty'},
+    'on_change': '''state_.stencil_state_changed_since_validation = true;
+                    framebuffer_state_.clear_state_dirty = true;'''},
   {'name': 'rasterizer_discard', 'es3': True},
   {'name': 'primitive_restart_fixed_index', 'es3': True},
   {'name': 'multisample_ext', 'default': True,
@@ -114,7 +116,6 @@ _CAPABILITY_FLAGS = [
   {'name': 'sample_alpha_to_one_ext',
    'extension_flag': 'ext_multisample_compatibility'},
 ]
-
 
 _STATE_INFO = {
   'ClearColor': {
@@ -166,7 +167,7 @@ _STATE_INFO = {
         'cached': True
       },
     ],
-    'state_flag': 'framebuffer_state_.clear_state_dirty',
+    'on_change': 'framebuffer_state_.clear_state_dirty = true;',
   },
   'ClearStencil': {
     'type': 'Normal',
@@ -319,7 +320,6 @@ _STATE_INFO = {
   'StencilMask': {
     'type': 'FrontBack',
     'func': 'StencilMaskSeparate',
-    'state_flag': 'framebuffer_state_.clear_state_dirty',
     'states': [
       {
         'name': 'stencil_front_writemask',
@@ -336,6 +336,8 @@ _STATE_INFO = {
         'cached': True,
       },
     ],
+    'on_change': '''framebuffer_state_.clear_state_dirty = true;
+                    state_.stencil_state_changed_since_validation = true;''',
   },
   'StencilOp': {
     'type': 'FrontBack',
@@ -420,6 +422,7 @@ _STATE_INFO = {
         'default': '0xFFFFFFFFU',
       },
     ],
+    'on_change': 'state_.stencil_state_changed_since_validation = true;',
   },
   'Hint': {
     'type': 'NamedParameter',
@@ -551,7 +554,7 @@ _STATE_INFO = {
         'cached': True
       },
     ],
-    'state_flag': 'framebuffer_state_.clear_state_dirty',
+    'on_change': 'framebuffer_state_.clear_state_dirty = true;',
   },
   'Scissor': {
     'type': 'Normal',
@@ -1617,8 +1620,8 @@ class StateSetHandler(TypeHandler):
     f.write("  if (%s) {\n" % " ||\n      ".join(code))
     for ndx,item in enumerate(states):
       f.write("    state_.%s = %s;\n" % (item['name'], args[ndx].name))
-    if 'state_flag' in state:
-      f.write("    %s = true;\n" % state['state_flag'])
+    if 'on_change' in state:
+      f.write("    %s\n" % state['on_change'])
     if not func.GetInfo("no_gl"):
       for ndx,item in enumerate(states):
         if item.get('cached', False):
@@ -1714,8 +1717,8 @@ class StateSetRGBAlphaHandler(TypeHandler):
     for ndx, item in enumerate(states):
       f.write("    state_.%s = %s;\n" %
                  (item['name'], args[ndx % num_args].name))
-    if 'state_flag' in state:
-      f.write("    %s = true;\n" % state['state_flag'])
+    if 'on_change' in state:
+      f.write("    %s\n" % state['on_change'])
     if not func.GetInfo("no_gl"):
       f.write("    %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
@@ -1758,8 +1761,8 @@ class StateSetFrontBackSeparateHandler(TypeHandler):
         f.write("      state_.%s = %s;\n" %
                    (item['name'], args[ndx + 1].name))
       f.write("    }\n")
-    if 'state_flag' in state:
-      f.write("    %s = true;\n" % state['state_flag'])
+    if 'on_change' in state:
+      f.write("    %s\n" % state['on_change'])
     if not func.GetInfo("no_gl"):
       f.write("    %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
@@ -1792,8 +1795,8 @@ class StateSetFrontBackHandler(TypeHandler):
     for group in Grouper(num_args, states):
       for ndx, item in enumerate(group):
         f.write("    state_.%s = %s;\n" % (item['name'], args[ndx].name))
-    if 'state_flag' in state:
-      f.write("    %s = true;\n" % state['state_flag'])
+    if 'on_change' in state:
+      f.write("    %s\n" % state['on_change'])
     if not func.GetInfo("no_gl"):
       f.write("    %s(%s);\n" %
                  (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
@@ -6802,13 +6805,13 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
 """)
         for capability in self.capability_flags:
           f.write("    case GL_%s:\n" % capability['name'].upper())
-          if 'state_flag' in capability:
+          if 'on_change' in capability:
 
             f.write("""\
               state_.enable_flags.%(name)s = enabled;
               if (state_.enable_flags.cached_%(name)s != enabled
                   || state_.ignore_cached_state) {
-                %(state_flag)s = true;
+                %(on_change)s
               }
               return false;
               """ % capability)
