@@ -115,8 +115,6 @@ source_set("unit_tests") {
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/proximity_auth/logging:unit_tests",
     "//components/cryptauth:test_support",
-    "//components/cryptauth:unit_tests",
-    "//components/cryptauth/ble",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
     "//device/bluetooth:mocks",
