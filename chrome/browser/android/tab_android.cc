@@ -24,6 +24,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/offline_pages/offline_page_utils.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -110,8 +111,18 @@ GURL GetPublisherURLForTrustedCDN(
   if (!trusted_cdn::IsTrustedCDN(navigation_handle->GetURL()))
     return GURL();
 
+  // Offline pages don't have headers when they are loaded.
+  // TODO(bauerb): Consider storing the publisher URL on the offline page item.
+  if (offline_pages::OfflinePageUtils::GetOfflinePageFromWebContents(
+          navigation_handle->GetWebContents())) {
+    return GURL();
+  }
+
   const net::HttpResponseHeaders* headers =
       navigation_handle->GetResponseHeaders();
+
+  // All other cases where there are no headers should have already been
+  // handled, either by the IsTrustedCDN() check or at the call site.
   DCHECK(headers);
   std::string publisher_url;
   if (!headers->GetNormalizedHeader("x-amp-cache", &publisher_url))

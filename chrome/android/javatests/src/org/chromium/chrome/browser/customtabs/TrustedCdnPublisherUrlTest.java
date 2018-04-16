@@ -36,6 +36,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.AnnotationRule;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -44,15 +45,20 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.offlinepages.ClientId;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.ScreenShooter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -297,6 +303,62 @@ public class TrustedCdnPublisherUrlTest {
         }));
 
         verifySecurityIcon(getDefaultSecurityIcon());
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
+    @OverrideTrustedCdn
+    public void testOfflinePage() throws TimeoutException, InterruptedException {
+        String publisherUrl = "https://example.com/test";
+        runTrustedCdnPublisherUrlTest(
+                publisherUrl, "com.example.test", "example.com", R.drawable.omnibox_https_valid);
+
+        OfflinePageBridge offlinePageBridge = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            Profile profile = Profile.getLastUsedProfile();
+            return OfflinePageBridge.getForProfile(profile);
+        });
+
+        // Wait until the offline page model has been loaded.
+        CallbackHelper callback = new CallbackHelper();
+        ThreadUtils.runOnUiThread(() -> {
+            if (offlinePageBridge.isOfflinePageModelLoaded()) {
+                callback.notifyCalled();
+                return;
+            }
+            offlinePageBridge.addObserver(new OfflinePageBridge.OfflinePageModelObserver() {
+                @Override
+                public void offlinePageModelLoaded() {
+                    callback.notifyCalled();
+                    offlinePageBridge.removeObserver(this);
+                }
+            });
+        });
+        callback.waitForCallback(0);
+
+        CallbackHelper callback2 = new CallbackHelper();
+        ThreadUtils.runOnUiThread(() -> {
+            CustomTabActivity customTabActivity = mCustomTabActivityTestRule.getActivity();
+            Tab tab = customTabActivity.getActivityTab();
+            String pageUrl = tab.getUrl();
+            offlinePageBridge.savePage(tab.getWebContents(),
+                    new ClientId(OfflinePageBridge.DOWNLOAD_NAMESPACE, "1234"),
+                    (savePageResult, url, offlineId) -> {
+                        Assert.assertEquals(SavePageResult.SUCCESS, savePageResult);
+                        Assert.assertEquals(pageUrl, url);
+                        // offlineId
+                        callback2.notifyCalled();
+                    });
+        });
+        callback2.waitForCallback(0);
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { NetworkChangeNotifier.forceConnectivityState(false); });
+
+        // With no connectivity, loading the offline page should succeed,
+        // but not show a publisher URL.
+        runTrustedCdnPublisherUrlTest(
+                publisherUrl, "com.example.test", null, getDefaultSecurityIcon());
     }
 
     private void runTrustedCdnPublisherUrlTest(@Nullable String publisherUrl, String clientPackage,
