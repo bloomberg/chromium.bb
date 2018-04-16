@@ -2663,6 +2663,7 @@ error::Error GLES2DecoderImpl::HandleStencilFunc(
     state_.stencil_back_func = func;
     state_.stencil_back_ref = ref;
     state_.stencil_back_mask = mask;
+    state_.stencil_state_changed_since_validation = true;
     api()->glStencilFuncFn(func, ref, mask);
   }
   return error::kNoError;
@@ -2707,6 +2708,7 @@ error::Error GLES2DecoderImpl::HandleStencilFuncSeparate(
       state_.stencil_back_ref = ref;
       state_.stencil_back_mask = mask;
     }
+    state_.stencil_state_changed_since_validation = true;
     api()->glStencilFuncSeparateFn(face, func, ref, mask);
   }
   return error::kNoError;
@@ -2723,6 +2725,7 @@ error::Error GLES2DecoderImpl::HandleStencilMask(
     state_.stencil_front_writemask = mask;
     state_.stencil_back_writemask = mask;
     framebuffer_state_.clear_state_dirty = true;
+    state_.stencil_state_changed_since_validation = true;
   }
   return error::kNoError;
 }
@@ -2753,6 +2756,7 @@ error::Error GLES2DecoderImpl::HandleStencilMaskSeparate(
       state_.stencil_back_writemask = mask;
     }
     framebuffer_state_.clear_state_dirty = true;
+    state_.stencil_state_changed_since_validation = true;
   }
   return error::kNoError;
 }
@@ -5410,6 +5414,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
       state_.enable_flags.stencil_test = enabled;
       if (state_.enable_flags.cached_stencil_test != enabled ||
           state_.ignore_cached_state) {
+        state_.stencil_state_changed_since_validation = true;
         framebuffer_state_.clear_state_dirty = true;
       }
       return false;

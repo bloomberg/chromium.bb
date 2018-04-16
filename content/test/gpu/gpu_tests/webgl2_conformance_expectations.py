@@ -37,9 +37,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
-    self.Fail('conformance/misc/webgl-specific-stencil-settings.html',
-        bug=806557)
-
     # Need to fix test, which uses a bad interpretation of the spec
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
         bug=754733)

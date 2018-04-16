@@ -127,6 +127,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_window_rectangles = false;
     bool chromium_gpu_fence = false;
     bool unpremultiply_and_dither_copy = false;
+    bool separate_stencil_ref_mask_writemask = false;
   };
 
   FeatureInfo();
