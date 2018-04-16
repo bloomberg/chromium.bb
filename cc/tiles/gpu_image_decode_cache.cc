@@ -861,16 +861,34 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
 
 void GpuImageDecodeCache::ClearCache() {
   base::AutoLock lock(lock_);
-  for (auto& entry : persistent_cache_) {
-    if (entry.second->decode.ref_count != 0 ||
-        entry.second->upload.ref_count != 0) {
-      // Orphan the entry so it will be deleted once no longer in use.
-      entry.second->is_orphaned = true;
-    } else if (entry.second->HasUploadedData()) {
-      DeleteImage(entry.second.get());
-    }
+  for (auto it = persistent_cache_.begin(); it != persistent_cache_.end();)
+    it = RemoveFromPersistentCache(it);
+  DCHECK(persistent_cache_.empty());
+  paint_image_entries_.clear();
+}
+
+GpuImageDecodeCache::PersistentCache::iterator
+GpuImageDecodeCache::RemoveFromPersistentCache(PersistentCache::iterator it) {
+  lock_.AssertAcquired();
+
+  if (it->second->decode.ref_count != 0 || it->second->upload.ref_count != 0) {
+    // Orphan the image and erase it from the |persisent_cache_|. This ensures
+    // that the image will be deleted once all refs are removed.
+    it->second->is_orphaned = true;
+  } else {
+    // Current entry has no refs. Ensure it is not locked.
+    DCHECK(!it->second->decode.is_locked());
+    DCHECK(!it->second->upload.is_locked());
+
+    // Unlocked images must not be budgeted.
+    DCHECK(!it->second->is_budgeted);
+
+    // Free the uploaded image if it exists.
+    if (it->second->HasUploadedData())
+      DeleteImage(it->second.get());
   }
-  persistent_cache_.Clear();
+
+  return persistent_cache_.Erase(it);
 }
 
 size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
@@ -879,16 +897,11 @@ size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
 
 void GpuImageDecodeCache::NotifyImageUnused(
     const PaintImage::FrameKey& frame_key) {
+  base::AutoLock hold(lock_);
+
   auto it = persistent_cache_.Peek(frame_key);
-  if (it != persistent_cache_.end()) {
-    if (it->second->decode.ref_count != 0 ||
-        it->second->upload.ref_count != 0) {
-      it->second->is_orphaned = true;
-    } else if (it->second->HasUploadedData()) {
-      DeleteImage(it->second.get());
-    }
-    persistent_cache_.Erase(it);
-  }
+  if (it != persistent_cache_.end())
+    RemoveFromPersistentCache(it);
 }
 
 bool GpuImageDecodeCache::OnMemoryDump(
@@ -1499,6 +1512,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
                "GpuImageDecodeCache::CreateImageData");
   lock_.AssertAcquired();
 
+  WillAddCacheEntry(draw_image);
   int mip_level = CalculateUploadScaleMipLevel(draw_image);
   SkImageInfo image_info = CreateImageInfoForDrawImage(draw_image, mip_level);
 
@@ -1525,6 +1539,49 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   return base::WrapRefCounted(new ImageData(
       mode, data_size, draw_image.target_color_space(),
       CalculateDesiredFilterQuality(draw_image), mip_level, is_bitmap_backed));
+}
+
+void GpuImageDecodeCache::WillAddCacheEntry(const DrawImage& draw_image) {
+  lock_.AssertAcquired();
+
+  // Remove any old entries for this image. We keep at-most 2 ContentIds for a
+  // PaintImage (pending and active tree).
+  auto& cached_content_ids =
+      paint_image_entries_[draw_image.paint_image().stable_id()].content_ids;
+  const PaintImage::ContentId new_content_id =
+      draw_image.frame_key().content_id();
+
+  if (cached_content_ids[0] == new_content_id ||
+      cached_content_ids[1] == new_content_id) {
+    return;
+  }
+
+  if (cached_content_ids[0] == PaintImage::kInvalidContentId) {
+    cached_content_ids[0] = new_content_id;
+    return;
+  }
+
+  if (cached_content_ids[1] == PaintImage::kInvalidContentId) {
+    cached_content_ids[1] = new_content_id;
+    return;
+  }
+
+  const PaintImage::ContentId content_id_to_remove =
+      std::min(cached_content_ids[0], cached_content_ids[1]);
+  const PaintImage::ContentId content_id_to_keep =
+      std::max(cached_content_ids[0], cached_content_ids[1]);
+  DCHECK_NE(content_id_to_remove, content_id_to_keep);
+
+  for (auto it = persistent_cache_.begin(); it != persistent_cache_.end();) {
+    if (it->first.content_id() != content_id_to_remove) {
+      ++it;
+    } else {
+      it = RemoveFromPersistentCache(it);
+    }
+  }
+
+  cached_content_ids[0] = content_id_to_keep;
+  cached_content_ids[1] = new_content_id;
 }
 
 void GpuImageDecodeCache::DeleteImage(ImageData* image_data) {
@@ -1735,6 +1792,12 @@ bool GpuImageDecodeCache::IsInInUseCacheForTesting(
     const DrawImage& image) const {
   auto found = in_use_cache_.find(InUseCacheKey::FromDrawImage(image));
   return found != in_use_cache_.end();
+}
+
+bool GpuImageDecodeCache::IsInPersistentCacheForTesting(
+    const DrawImage& image) const {
+  auto found = persistent_cache_.Peek(image.frame_key());
+  return found != persistent_cache_.end();
 }
 
 sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
