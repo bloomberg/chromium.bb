@@ -297,17 +297,24 @@ void Animation::TransitionValueTo(base::TimeTicks monotonic_time,
   cc::KeyframeModel* running_keyframe_model =
       GetRunningKeyframeModelForProperty(target_property);
 
+  ValueType effective_current = current;
+
   if (running_keyframe_model) {
     const auto* curve = AnimationTraits<ValueType>::ToDerivedCurve(
         *running_keyframe_model->curve());
-    if (SufficientlyEqual(
-            target, curve->GetValue(GetEndTime(running_keyframe_model)))) {
-      return;
-    }
-    if (SufficientlyEqual(
-            target, curve->GetValue(GetStartTime(running_keyframe_model)))) {
-      ReverseKeyframeModel(monotonic_time, running_keyframe_model);
-      return;
+
+    if (running_keyframe_model->IsFinishedAt(monotonic_time)) {
+      effective_current = curve->GetValue(GetEndTime(running_keyframe_model));
+    } else {
+      if (SufficientlyEqual(
+              target, curve->GetValue(GetEndTime(running_keyframe_model)))) {
+        return;
+      }
+      if (SufficientlyEqual(
+              target, curve->GetValue(GetStartTime(running_keyframe_model)))) {
+        ReverseKeyframeModel(monotonic_time, running_keyframe_model);
+        return;
+      }
     }
   } else if (SufficientlyEqual(target, current)) {
     return;
@@ -319,7 +326,7 @@ void Animation::TransitionValueTo(base::TimeTicks monotonic_time,
       curve(AnimationTraits<ValueType>::KeyframedCurveType::Create());
 
   curve->AddKeyframe(AnimationTraits<ValueType>::KeyframeType::Create(
-      base::TimeDelta(), current, CreateTransitionTimingFunction()));
+      base::TimeDelta(), effective_current, CreateTransitionTimingFunction()));
 
   curve->AddKeyframe(AnimationTraits<ValueType>::KeyframeType::Create(
       transition_.duration, target, CreateTransitionTimingFunction()));

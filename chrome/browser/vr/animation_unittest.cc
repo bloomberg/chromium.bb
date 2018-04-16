@@ -192,6 +192,35 @@ TEST(AnimationTest, AnimationQueue) {
   EXPECT_TRUE(animation.keyframe_models().empty());
 }
 
+TEST(AnimationTest, FinishedTransition) {
+  TestAnimationTarget target;
+  Animation animation;
+  animation.set_target(&target);
+  Transition transition;
+  transition.target_properties = {OPACITY};
+  transition.duration = MsToDelta(10);
+  animation.set_transition(transition);
+
+  base::TimeTicks start_time = MsToTicks(1000);
+  animation.Tick(start_time);
+
+  float from = 1.0f;
+  float to = 0.0f;
+  animation.TransitionFloatTo(start_time, OPACITY, from, to);
+
+  animation.Tick(start_time);
+  EXPECT_EQ(from, target.opacity());
+
+  // We now simulate a long pause where the element hasn't been ticked (eg, it
+  // may have been hidden). If this happens, the unticked transition must still
+  // be treated as having finished.
+  animation.TransitionFloatTo(start_time + MsToDelta(1000), OPACITY,
+                              target.opacity(), 1.0f);
+
+  animation.Tick(start_time + MsToDelta(1000));
+  EXPECT_EQ(to, target.opacity());
+}
+
 TEST(AnimationTest, OpacityTransitions) {
   TestAnimationTarget target;
   Animation animation;
