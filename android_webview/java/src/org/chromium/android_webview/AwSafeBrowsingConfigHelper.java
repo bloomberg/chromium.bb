@@ -45,23 +45,26 @@ public class AwSafeBrowsingConfigHelper {
     }
 
     public static void maybeEnableSafeBrowsingFromManifest(final Context appContext) {
-        Boolean appOptIn = getAppOptInPreference(appContext);
-        if (appOptIn == null) {
-            recordAppOptIn(AppOptIn.NO_PREFERENCE);
-        } else if (appOptIn) {
-            recordAppOptIn(AppOptIn.OPT_IN);
-        } else {
-            recordAppOptIn(AppOptIn.OPT_OUT);
+        try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped(
+                     "AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest")) {
+            Boolean appOptIn = getAppOptInPreference(appContext);
+            if (appOptIn == null) {
+                recordAppOptIn(AppOptIn.NO_PREFERENCE);
+            } else if (appOptIn) {
+                recordAppOptIn(AppOptIn.OPT_IN);
+            } else {
+                recordAppOptIn(AppOptIn.OPT_OUT);
+            }
+
+            // If the app specifies something, fallback to the app's preference, otherwise check for
+            // the existence of the CLI switch.
+            AwContentsStatics.setSafeBrowsingEnabledByManifest(
+                    appOptIn == null ? !isDisabledByCommandLine() : appOptIn);
+
+            Callback<Boolean> cb =
+                    optin -> setSafeBrowsingUserOptIn(optin == null ? DEFAULT_USER_OPT_IN : optin);
+            PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(appContext, cb);
         }
-
-        // If the app specifies something, fallback to the app's preference, otherwise check for the
-        // existence of the CLI switch.
-        AwContentsStatics.setSafeBrowsingEnabledByManifest(
-                appOptIn == null ? !isDisabledByCommandLine() : appOptIn);
-
-        Callback<Boolean> cb =
-                optin -> setSafeBrowsingUserOptIn(optin == null ? DEFAULT_USER_OPT_IN : optin);
-        PlatformServiceBridge.getInstance().querySafeBrowsingUserConsent(appContext, cb);
     }
 
     private static boolean isDisabledByCommandLine() {
