@@ -32,6 +32,7 @@ interface AccessibleNode : EventTarget
     getter autocomplete
     getter busy
     getter checked
+    getter childNodes
     getter colCount
     getter colIndex
     getter colSpan
@@ -82,6 +83,7 @@ interface AccessibleNode : EventTarget
     getter valueText
     method appendChild
     method constructor
+    method removeChild
     setter activeDescendant
     setter atomic
     setter autocomplete

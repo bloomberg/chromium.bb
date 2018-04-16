@@ -982,6 +982,10 @@ void AccessibleNode::setValueText(const AtomicString& value_text) {
   NotifyAttributeChanged(aria_valuetextAttr);
 }
 
+AccessibleNodeList* AccessibleNode::childNodes() {
+  return AccessibleNodeList::Create(children_);
+}
+
 void AccessibleNode::appendChild(AccessibleNode* child,
                                  ExceptionState& exception_state) {
   if (child->element()) {
@@ -1007,6 +1011,29 @@ void AccessibleNode::appendChild(AccessibleNode* child,
   }
 
   children_.push_back(child);
+  if (AXObjectCache* cache = GetAXObjectCache())
+    cache->ChildrenChanged(this);
+}
+
+void AccessibleNode::removeChild(AccessibleNode* old_child,
+                                 ExceptionState& exception_state) {
+  if (old_child->parent_ != this) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError, "Node to remove is not a child of this node.");
+    return;
+  }
+  auto ix = std::find_if(children_.begin(), children_.end(),
+                         [old_child](const Member<AccessibleNode> child) {
+                           return child.Get() == old_child;
+                         });
+  if (ix == children_.end()) {
+    exception_state.ThrowDOMException(
+        kInvalidAccessError, "Node to remove is not a child of this node.");
+    return;
+  }
+  old_child->parent_ = nullptr;
+  children_.erase(ix);
+
   if (AXObjectCache* cache = GetAXObjectCache())
     cache->ChildrenChanged(this);
 }

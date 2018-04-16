@@ -338,7 +338,10 @@ class CORE_EXPORT AccessibleNode : public EventTargetWithInlineData {
   AtomicString valueText() const;
   void setValueText(const AtomicString&);
 
+  AccessibleNodeList* childNodes();
+
   void appendChild(AccessibleNode*, ExceptionState&);
+  void removeChild(AccessibleNode*, ExceptionState&);
 
   // EventTarget
   const AtomicString& InterfaceName() const override;
