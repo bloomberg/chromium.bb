@@ -54,6 +54,31 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
 
 }  // namespace
 
+// RAII helper class for talking to SharedWorkerDevToolsManager.
+class SharedWorkerHost::ScopedDevToolsHandle {
+ public:
+  ScopedDevToolsHandle(SharedWorkerHost* owner,
+                       bool* out_pause_on_start,
+                       base::UnguessableToken* out_devtools_worker_token)
+      : owner_(owner) {
+    SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
+        owner, out_pause_on_start, out_devtools_worker_token);
+  }
+
+  ~ScopedDevToolsHandle() {
+    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(owner_);
+  }
+
+  void WorkerReadyForInspection() {
+    SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(
+        owner_);
+  }
+
+ private:
+  SharedWorkerHost* owner_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedDevToolsHandle);
+};
+
 SharedWorkerHost::SharedWorkerHost(
     SharedWorkerServiceImpl* service,
     std::unique_ptr<SharedWorkerInstance> instance,
@@ -72,8 +97,6 @@ SharedWorkerHost::SharedWorkerHost(
 SharedWorkerHost::~SharedWorkerHost() {
   UMA_HISTOGRAM_LONG_TIMES("SharedWorker.TimeToDeleted",
                            base::TimeTicks::Now() - creation_time_);
-  if (!closed_ && !termination_message_sent_)
-    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(this);
 }
 
 void SharedWorkerHost::Start(
@@ -91,7 +114,7 @@ void SharedWorkerHost::Start(
   // Register with DevTools.
   bool pause_on_start;
   base::UnguessableToken devtools_worker_token;
-  SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
+  devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(
       this, &pause_on_start, &devtools_worker_token);
 
   // Set up content settings interface.
@@ -152,8 +175,7 @@ void SharedWorkerHost::TerminateWorker() {
   if (termination_message_sent_)
     return;
   termination_message_sent_ = true;
-  if (!closed_)
-    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(this);
+  devtools_handle_.reset();
   worker_->Terminate();
   // Now, we wait to observe OnWorkerConnectionLost.
 }
@@ -186,13 +208,12 @@ void SharedWorkerHost::OnContextClosed() {
   // being sent to the worker (messages can still be sent from the worker,
   // for exception reporting, etc).
   closed_ = true;
-  if (!termination_message_sent_)
-    SharedWorkerDevToolsManager::GetInstance()->WorkerDestroyed(this);
+  devtools_handle_.reset();
 }
 
 void SharedWorkerHost::OnReadyForInspection() {
-  if (!closed_ && !termination_message_sent_)
-    SharedWorkerDevToolsManager::GetInstance()->WorkerReadyForInspection(this);
+  if (devtools_handle_)
+    devtools_handle_->WorkerReadyForInspection();
 }
 
 void SharedWorkerHost::OnScriptLoaded() {
