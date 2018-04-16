@@ -737,7 +737,9 @@ class MediaStopObserver : public WebContentsObserver {
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
 #define KillProcessZerosAudioStreams DISABLED_KillProcessZerosAudioStreams
 #endif
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
+// Flaky test: http://crbug.com/833185
+IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+                       DISABLED_KillProcessZerosAudioStreams) {
   // TODO(maxmorin): This test only uses an output stream. There should be a
   // similar test for input streams.
   embedded_test_server()->ServeFilesFromSourceDirectory(
