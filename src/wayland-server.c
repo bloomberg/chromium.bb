@@ -682,7 +682,7 @@ destroy_resource(void *element, void *data, uint32_t flags)
 	/* Don't emit the new signal for deprecated resources, as that would
 	 * access memory outside the bounds of the deprecated struct */
 	if (!resource_is_deprecated(resource))
-		wl_priv_signal_emit(&resource->destroy_signal, resource);
+		wl_priv_signal_final_emit(&resource->destroy_signal, resource);
 
 	if (resource->destroy)
 		resource->destroy(resource);
@@ -841,7 +841,7 @@ wl_client_destroy(struct wl_client *client)
 {
 	uint32_t serial = 0;
 
-	wl_priv_signal_emit(&client->destroy_signal, client);
+	wl_priv_signal_final_emit(&client->destroy_signal, client);
 
 	wl_client_flush(client);
 	wl_map_for_each(&client->objects, destroy_resource, &serial);
@@ -1089,7 +1089,7 @@ wl_display_destroy(struct wl_display *display)
 	struct wl_socket *s, *next;
 	struct wl_global *global, *gnext;
 
-	wl_priv_signal_emit(&display->destroy_signal, display);
+	wl_priv_signal_final_emit(&display->destroy_signal, display);
 
 	wl_list_for_each_safe(s, next, &display->socket_list, link) {
 		wl_socket_destroy(s);
@@ -2020,6 +2020,46 @@ wl_priv_signal_emit(struct wl_priv_signal *signal, void *data)
 
 		wl_list_remove(pos);
 		wl_list_insert(&signal->listener_list, pos);
+
+		l->notify(l, data);
+	}
+}
+
+/** Emit the signal for the last time, calling all the installed listeners
+ *
+ * Iterate over all the listeners added to this \a signal and call
+ * their \a notify function pointer, passing on the given \a data.
+ * Removing or adding a listener from within wl_priv_signal_emit()
+ * is safe, as is freeing the structure containing the listener.
+ *
+ * A large body of external code assumes it's ok to free a destruction
+ * listener without removing that listener from the list.  Mixing code
+ * that acts like this and code that doesn't will result in list
+ * corruption.
+ *
+ * We resolve this by removing each item from the list and isolating it
+ * in another list.  We discard it completely after firing the notifier.
+ * This should allow interoperability between code that unlinks its
+ * destruction listeners and code that just frees structures they're in.
+ *
+ */
+void
+wl_priv_signal_final_emit(struct wl_priv_signal *signal, void *data)
+{
+	struct wl_listener *l;
+	struct wl_list *pos;
+
+	/* During a destructor notifier isolate every list item before
+	 * notifying.  This renders harmless the long standing misuse
+	 * of freeing listeners without removing them, but allows
+	 * callers that do choose to remove them to interoperate with
+	 * ones that don't. */
+	while (!wl_list_empty(&signal->listener_list)) {
+		pos = signal->listener_list.next;
+		l = wl_container_of(pos, l, link);
+
+		wl_list_remove(pos);
+		wl_list_init(pos);
 
 		l->notify(l, data);
 	}

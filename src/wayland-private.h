@@ -254,6 +254,9 @@ void
 wl_priv_signal_emit(struct wl_priv_signal *signal, void *data);
 
 void
+wl_priv_signal_final_emit(struct wl_priv_signal *signal, void *data);
+
+void
 wl_connection_close_fds_in(struct wl_connection *connection, int max);
 
 #endif
