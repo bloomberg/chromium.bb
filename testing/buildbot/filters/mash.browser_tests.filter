@@ -247,9 +247,6 @@
 # ash::Shell access in test.
 -TrayAccessibilityTestInstance/TrayAccessibilityTest.*
 
-# chromeos::UserAddingScreenImpl::Cancel() uses ash::Shell to enable system tray.
--UserAddingScreenTest.*
-
 # Virtual keyboard not supported.
 -AccessibilityManagerLoginTest.ResumeSavedPref
 -DefaultKeyboardExtensionBrowserTest.*
