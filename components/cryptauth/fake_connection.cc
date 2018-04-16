@@ -38,6 +38,10 @@ void FakeConnection::Disconnect() {
   SetStatus(DISCONNECTED);
 }
 
+std::string FakeConnection::GetDeviceAddress() {
+  return std::string();
+}
+
 void FakeConnection::AddObserver(ConnectionObserver* observer) {
   observers_.push_back(observer);
   Connection::AddObserver(observer);

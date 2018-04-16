@@ -17,7 +17,6 @@ struct RemoteDevice {
   std::string user_id;
   std::string name;
   std::string public_key;
-  std::string bluetooth_address;
   std::string persistent_symmetric_key;
   bool unlock_key;
   bool supports_mobile_hotspot;
@@ -32,7 +31,6 @@ struct RemoteDevice {
   RemoteDevice(const std::string& user_id,
                const std::string& name,
                const std::string& public_key,
-               const std::string& bluetooth_address,
                const std::string& persistent_symmetric_key,
                bool unlock_key,
                bool supports_mobile_hotspot,

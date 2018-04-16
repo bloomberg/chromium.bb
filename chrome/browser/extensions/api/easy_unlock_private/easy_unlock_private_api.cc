@@ -379,14 +379,14 @@ void EasyUnlockPrivateFindSetupConnectionFunction::
 void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
     std::unique_ptr<cryptauth::Connection> connection) {
   // Connection are not persistent by default.
-  std::string device_address = connection->remote_device().bluetooth_address;
   bool persistent = false;
   int connection_id =
       GetConnectionManager(browser_context())
           ->AddConnection(extension(), std::move(connection), persistent);
+  // TODO(jhawkins): Remove the deviceAddress parameter from the API.
   Respond(
       ArgumentList(easy_unlock_private::FindSetupConnection::Results::Create(
-          connection_id, device_address)));
+          connection_id, /* device_address */ std::string())));
 }
 
 ExtensionFunction::ResponseAction

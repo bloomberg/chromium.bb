@@ -99,18 +99,6 @@ TEST(ProximityAuthMessengerImplTest, SupportsSignIn_ProtocolVersionThreeOne) {
   EXPECT_TRUE(messenger.SupportsSignIn());
 }
 
-TEST(ProximityAuthMessengerImplTest, SupportsSignIn_EmptyBluetoothAddress) {
-  cryptauth::RemoteDevice ble_remote_device =
-      cryptauth::CreateLERemoteDeviceForTest();
-  ble_remote_device.bluetooth_address = "";
-
-  TestMessenger messenger(std::unique_ptr<cryptauth::Connection>(
-      new cryptauth::FakeConnection(ble_remote_device)));
-  messenger.GetFakeSecureContext()->set_protocol_version(
-      cryptauth::SecureContext::PROTOCOL_VERSION_THREE_ONE);
-  EXPECT_TRUE(messenger.SupportsSignIn());
-}
-
 TEST(ProximityAuthMessengerImplTest,
      OnConnectionStatusChanged_ConnectionDisconnects) {
   TestMessenger messenger;

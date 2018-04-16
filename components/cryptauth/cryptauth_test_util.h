@@ -22,8 +22,7 @@ extern const int64_t kTestRemoteDeviceLastUpdateTimeMillis;
 // Returns a BLE RemoteDevice used for tests.
 inline RemoteDevice CreateLERemoteDeviceForTest() {
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-                      kTestRemoteDevicePublicKey,
-                      kTestRemoteDeviceBluetoothAddress, kTestRemoteDevicePSK,
+                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
                       kTestRemoteDeviceUnlockKey,
                       kTestRemoteDeviceSupportsMobileHotspot,
                       kTestRemoteDeviceLastUpdateTimeMillis);
@@ -32,8 +31,7 @@ inline RemoteDevice CreateLERemoteDeviceForTest() {
 // Returns a classic Bluetooth RemoteDevice used for tests.
 inline RemoteDevice CreateClassicRemoteDeviceForTest() {
   return RemoteDevice(kTestRemoteDeviceUserId, kTestRemoteDeviceName,
-                      kTestRemoteDevicePublicKey,
-                      kTestRemoteDeviceBluetoothAddress, kTestRemoteDevicePSK,
+                      kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
                       kTestRemoteDeviceUnlockKey,
                       kTestRemoteDeviceSupportsMobileHotspot,
                       kTestRemoteDeviceLastUpdateTimeMillis);

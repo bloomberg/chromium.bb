@@ -30,6 +30,7 @@ class MockConnection : public Connection {
   MOCK_METHOD1(SetPaused, void(bool paused));
   MOCK_METHOD0(Connect, void());
   MOCK_METHOD0(Disconnect, void());
+  MOCK_METHOD0(GetDeviceAddress, std::string());
   MOCK_METHOD0(CancelConnectionAttempt, void());
   MOCK_METHOD1(SendMessageImplProxy, void(WireMessage* message));
   MOCK_METHOD1(DeserializeWireMessageProxy,
@@ -114,6 +115,7 @@ TEST(CryptAuthConnectionTest, SendMessage_FailsWhenNotConnected) {
   StrictMock<MockConnection> connection;
   connection.SetStatus(Connection::IN_PROGRESS);
 
+  EXPECT_CALL(connection, GetDeviceAddress()).Times(1);
   EXPECT_CALL(connection, SendMessageImplProxy(_)).Times(0);
   connection.SendMessage(std::unique_ptr<WireMessage>());
 }
@@ -220,6 +222,7 @@ TEST(CryptAuthConnectionTest,
   StrictMock<MockConnectionObserver> observer;
   connection.AddObserver(&observer);
 
+  EXPECT_CALL(connection, GetDeviceAddress()).Times(1);
   EXPECT_CALL(observer, OnMessageReceived(_, _)).Times(0);
   connection.OnBytesReceived(std::string());
 }

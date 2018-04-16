@@ -40,8 +40,7 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
 RemoteDeviceLifeCycleImpl::~RemoteDeviceLifeCycleImpl() {}
 
 void RemoteDeviceLifeCycleImpl::Start() {
-  PA_LOG(INFO) << "Life cycle for " << remote_device_.bluetooth_address
-               << " started.";
+  PA_LOG(INFO) << "Life cycle for " << remote_device_.name << " started.";
   DCHECK(state_ == RemoteDeviceLifeCycle::State::STOPPED);
   FindConnection();
 }

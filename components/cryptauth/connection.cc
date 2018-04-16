@@ -50,10 +50,6 @@ void Connection::RemoveObserver(ConnectionObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::string Connection::GetDeviceAddress() {
-  return remote_device_.bluetooth_address;
-}
-
 void Connection::SetStatus(Status status) {
   if (status_ == status)
     return;

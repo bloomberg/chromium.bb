@@ -511,8 +511,8 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     // making that assumption here.
     cryptauth::RemoteDevice remote_device(
         account_id.GetUserEmail(), std::string(), decoded_public_key,
-        device.bluetooth_address, decoded_psk, true /* unlock_key */,
-        false /* supports_mobile_hotspot */, 0L /* last_update_time_millis */);
+        decoded_psk, true /* unlock_key */, false /* supports_mobile_hotspot */,
+        0L /* last_update_time_millis */);
 
     if (!device.serialized_beacon_seeds.empty()) {
       PA_LOG(INFO) << "Deserializing BeaconSeeds: "
@@ -527,8 +527,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     PA_LOG(INFO) << "Loaded Remote Device:\n"
                  << "  user id: " << remote_device.user_id << "\n"
                  << "  name: " << remote_device.name << "\n"
-                 << "  public key" << device.public_key << "\n"
-                 << "  bt_addr:" << remote_device.bluetooth_address;
+                 << "  public key" << device.public_key;
   }
 
   SetProximityAuthDevices(account_id, remote_devices);
