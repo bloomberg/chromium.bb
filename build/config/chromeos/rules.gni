@@ -9,7 +9,7 @@ template("generate_vm_runner_script") {
   _cros_sdk = getenv("SDK_VERSION")
 
   _vm_image_path = "//build/cros_cache/chrome-sdk/tarballs/${_cros_board}+${_cros_sdk}+chromiumos_qemu_image.tar.xz/chromiumos_qemu_image.bin"
-  _qemu_dir = "//build/cros_cache/chrome-sdk/tarballs/${_cros_board}+${_cros_sdk}+app-emulation/qemu-2.6.0-r2.tbz2/"
+  _qemu_dir = "//build/cros_cache/chrome-sdk/tarballs/${_cros_board}+${_cros_sdk}+app-emulation/"
 
   action(target_name) {
     forward_variables_from(invoker, [ "testonly" ])
