@@ -143,6 +143,8 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
@@ -270,7 +272,7 @@ Profile::ExitType SessionTypePrefValueToExitType(const std::string& value) {
 std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   switch (type) {
     case Profile::EXIT_NORMAL:
-        return ProfileImpl::kPrefExitTypeNormal;
+      return ProfileImpl::kPrefExitTypeNormal;
     case Profile::EXIT_SESSION_ENDED:
       return kPrefExitTypeSessionEnded;
     case Profile::EXIT_CRASHED:
@@ -411,8 +413,8 @@ ProfileImpl::ProfileImpl(
       delegate_(delegate),
       predictor_(nullptr) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
-  DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
-                            "profile files to the root directory!";
+  DCHECK(!path.empty()) << "Using an empty path will attempt to write "
+                        << "profile files to the root directory!";
 
 #if defined(OS_CHROMEOS)
   if (!chromeos::ProfileHelper::IsSigninProfile(this) &&
@@ -427,6 +429,11 @@ ProfileImpl::ProfileImpl(
                user->GetAccountId()))
         << "Attempting to construct the profile before starting the user "
            "session";
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(path.value());
+    account_manager->Initialize(path);
   }
 #endif
 

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 
+#include <utility>
+
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
@@ -28,6 +30,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -45,7 +48,9 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
-    : created_profile_helper_(false) {}
+    : created_profile_helper_(false),
+      account_manager_factory_(
+          std::make_unique<chromeos::AccountManagerFactory>()) {}
 
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -225,4 +230,9 @@ void BrowserProcessPlatformPart::CreateProfileHelper() {
   DCHECK(!created_profile_helper_ && !profile_helper_);
   created_profile_helper_ = true;
   profile_helper_.reset(new chromeos::ProfileHelper());
+}
+
+chromeos::AccountManagerFactory*
+BrowserProcessPlatformPart::GetAccountManagerFactory() {
+  return account_manager_factory_.get();
 }
