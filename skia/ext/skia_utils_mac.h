@@ -15,11 +15,7 @@
 struct SkIRect;
 struct SkRect;
 class SkMatrix;
-#ifdef __LP64__
-typedef CGSize NSSize;
-#else
-typedef struct _NSSize NSSize;
-#endif
+using NSSize = CGSize;
 
 #ifdef __OBJC__
 @class NSBitmapImageRep;

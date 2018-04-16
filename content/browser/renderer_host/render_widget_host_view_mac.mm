@@ -496,14 +496,6 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
     // Let AppKit cache the new input context to make IMEs happy.
     // See http://crbug.com/73039.
     [NSApp updateWindows];
-
-#ifndef __LP64__
-    bool can_compose_inline =
-        !!GetTextInputManager()->GetActiveWidget()
-            ? GetTextInputManager()->GetTextInputState()->can_compose_inline
-            : true;
-    UseInputWindow(TSMGetActiveDocument(), !can_compose_inline);
-#endif
   }
 }
 
