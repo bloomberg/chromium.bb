@@ -101,8 +101,6 @@ include_rules = [
   "+third_party/blink/public/platform/modules/screen_orientation/web_screen_orientation_type.h",
   "+third_party/blink/public/platform/modules/serviceworker/web_service_worker_error.h",
   "+third_party/blink/public/public_buildflags.h",
-  "+third_party/blink/public/web/devtools_agent.mojom.h",
-  "+third_party/blink/public/web/devtools_frontend.mojom.h",
   "+third_party/blink/public/web/web_ax_enums.h",
   "+third_party/blink/public/web/web_console_message.h",
   "+third_party/blink/public/web/web_context_menu_data.h",
@@ -152,6 +150,8 @@ include_rules = [
   "+third_party/blink/public/platform/reporting.mojom.h",
   "+third_party/blink/public/platform/web_feature.mojom.h",
   "+third_party/blink/public/web/commit_result.mojom.h",
+  "+third_party/blink/public/web/devtools_agent.mojom.h",
+  "+third_party/blink/public/web/devtools_frontend.mojom.h",
 
   # DO NOT ADD ANY CHROME OR COMPONENTS INCLUDES HERE!!!
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module

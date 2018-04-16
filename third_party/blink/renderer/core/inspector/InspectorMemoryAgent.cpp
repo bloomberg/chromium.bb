@@ -48,12 +48,10 @@ static const char samplingProfileInterval[] =
     "memoryAgentSamplingProfileInterval";
 }  // namespace MemoryAgentState
 
-using PrepareForLeakDetectionCallback =
-    protocol::Memory::Backend::PrepareForLeakDetectionCallback;
 using protocol::Response;
 
 InspectorMemoryAgent::InspectorMemoryAgent(InspectedFrames* inspected_frames)
-    : callback_(nullptr), frames_(inspected_frames) {}
+    : frames_(inspected_frames) {}
 
 InspectorMemoryAgent::~InspectorMemoryAgent() = default;
 
@@ -66,25 +64,6 @@ Response InspectorMemoryAgent::getDOMCounters(int* documents,
   *js_event_listeners =
       InstanceCounters::CounterValue(InstanceCounters::kJSEventListenerCounter);
   return Response::OK();
-}
-
-void InspectorMemoryAgent::prepareForLeakDetection(
-    std::unique_ptr<PrepareForLeakDetectionCallback> callback) {
-  callback_ = std::move(callback);
-
-  BlinkLeakDetector& detector = BlinkLeakDetector::Instance();
-  detector.SetClient(this);
-  detector.PrepareForLeakDetection();
-  detector.CollectGarbage();
-}
-
-void InspectorMemoryAgent::OnLeakDetectionComplete() {
-  DCHECK(callback_);
-  callback_->sendSuccess();
-  callback_.reset();
-
-  // Reset the client for BlinkLeakDetector
-  BlinkLeakDetector::Instance().SetClient(nullptr);
 }
 
 void InspectorMemoryAgent::Trace(blink::Visitor* visitor) {

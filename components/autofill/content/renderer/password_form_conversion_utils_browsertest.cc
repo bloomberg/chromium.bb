@@ -282,6 +282,11 @@ class MAYBE_PasswordFormConversionUtilsTest : public content::RenderViewTest {
     return form_util::ExtractFormData(form, data);
   }
 
+  void TearDown() override {
+    username_detector_cache_.clear();
+    content::RenderViewTest::TearDown();
+  }
+
   UsernameDetectorCache username_detector_cache_;
 
  private:

@@ -47,6 +47,7 @@ class LocalFrame;
 class MediaControls;
 class Page;
 class PictureInPictureController;
+class ResourceFetcher;
 class Settings;
 class ShadowRoot;
 class WebFrameClient;
@@ -116,6 +117,9 @@ class CORE_EXPORT CoreInitializer {
   virtual void ForceNextWebGLContextCreationToFail() const = 0;
 
   virtual void CollectAllGarbageForAnimationWorklet() const = 0;
+
+  // TODO(dgozman): we should have ResourceFetcher::Instances() instead.
+  virtual void RegisterResourceFetcher(ResourceFetcher*) const = 0;
 
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.

@@ -65,7 +65,7 @@ class CSSDefaultStyleSheets
     return fullscreen_style_sheet_.Get();
   }
 
-  void PrepareForLeakDetection();
+  CORE_EXPORT void PrepareForLeakDetection();
 
   // Media Controls UA stylesheet loading is handled by the media_controls
   // module.
