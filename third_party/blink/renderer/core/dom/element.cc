@@ -2281,6 +2281,9 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
 }
 
 void Element::RecalcStyleForReattach() {
+  if (HasCustomStyleCallbacks())
+    WillRecalcStyle(kReattach);
+
   bool recalc_descendants = false;
   if (ParentComputedStyle()) {
     scoped_refptr<ComputedStyle> non_attached_style = StyleForLayoutObject();
@@ -2298,12 +2301,13 @@ void Element::RecalcStyleForReattach() {
   }
   if (recalc_descendants)
     RecalcShadowIncludingDescendantStylesForReattach();
+
+  if (HasCustomStyleCallbacks())
+    DidRecalcStyle(kReattach);
 }
 
 void Element::RecalcShadowIncludingDescendantStylesForReattach() {
   if (!ChildrenCanHaveStyle())
-    return;
-  if (HasCustomStyleCallbacks())
     return;
   SelectorFilterParentScope filterScope(*this);
   RecalcShadowRootStylesForReattach();
