@@ -184,6 +184,7 @@ crbug.com/246749 http/tests/devtools/extensions/extensions-panel.js [ Slow ]
 
 # This test takes 5+ seconds as intended because it tests connection throttling.
 crbug.com/459377 http/tests/websocket/multiple-connections-throttled.html [ Slow ]
+crbug.com/459377 virtual/off-main-thread-websocket/http/tests/websocket/multiple-connections-throttled.html [ Slow ]
 
 # These tests are slow to measure bounding box of every single Unicode character.
 crbug.com/492664 external/wpt/css/css-writing-modes/text-orientation-script-001a.html [ Slow ]
