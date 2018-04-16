@@ -677,9 +677,11 @@ std::unique_ptr<UiElement> CreateHostedUi(
     UiBrowserInterface* browser,
     ContentInputDelegate* content_input_delegate,
     UiElementName name,
+    UiElementName content_name,
     float distance) {
-  auto hosted_ui = Create<ContentElement>(
-      kNone, kPhaseForeground, content_input_delegate, base::DoNothing());
+  auto hosted_ui =
+      Create<ContentElement>(content_name, kPhaseForeground,
+                             content_input_delegate, base::DoNothing());
   hosted_ui->SetSize(kContentWidth * kHostedUiWidthRatio,
                      kContentHeight * kHostedUiHeightRatio);
   // The hosted UI doesn't steal focus so that clikcing on an autofill
@@ -882,9 +884,9 @@ void UiSceneCreator::CreateScene() {
 }
 
 void UiSceneCreator::Create2dBrowsingHostedUi() {
-  auto hosted_ui_root =
-      CreateHostedUi(model_, browser_, content_input_delegate_,
-                     k2dBrowsingHostedUi, kContentDistance);
+  auto hosted_ui_root = CreateHostedUi(
+      model_, browser_, content_input_delegate_, k2dBrowsingHostedUi,
+      k2dBrowsingHostedUiContent, kContentDistance);
   scene_->AddUiElement(k2dBrowsingRepositioner, std::move(hosted_ui_root));
 }
 
@@ -1304,7 +1306,7 @@ void UiSceneCreator::CreateWebVrSubtree() {
   // This is needed to for accepting permissions in WebVR mode.
   auto hosted_ui_root =
       CreateHostedUi(model_, browser_, content_input_delegate_, kWebVrHostedUi,
-                     kTimeoutScreenDisatance);
+                     kWebVrHostedUiContent, kTimeoutScreenDisatance);
   scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(hosted_ui_root));
 
   // Note, this cannot be a descendant of the viewport aware root, otherwise it
