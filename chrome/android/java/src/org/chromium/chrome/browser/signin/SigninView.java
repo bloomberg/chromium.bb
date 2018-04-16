@@ -30,8 +30,8 @@ public class SigninView extends LinearLayout {
     private TextView mTitle;
     private View mAccountPicker;
     private ImageView mAccountImage;
-    private TextView mAccountName;
-    private TextView mAccountEmail;
+    private TextView mAccountTextPrimary;
+    private TextView mAccountTextSecondary;
     private TextView mSyncDescription;
     private TextView mPersonalizationDescription;
     private TextView mGoogleServicesDescription;
@@ -56,8 +56,8 @@ public class SigninView extends LinearLayout {
         mTitle = (TextView) findViewById(R.id.signin_title);
         mAccountPicker = findViewById(R.id.signin_account_picker);
         mAccountImage = (ImageView) findViewById(R.id.account_image);
-        mAccountName = (TextView) findViewById(R.id.account_name);
-        mAccountEmail = (TextView) findViewById(R.id.account_email);
+        mAccountTextPrimary = (TextView) findViewById(R.id.account_text_primary);
+        mAccountTextSecondary = (TextView) findViewById(R.id.account_text_secondary);
         mSyncDescription = (TextView) findViewById(R.id.signin_sync_description);
         mPersonalizationDescription =
                 (TextView) findViewById(R.id.signin_personalization_description);
@@ -90,12 +90,12 @@ public class SigninView extends LinearLayout {
         return mAccountImage;
     }
 
-    TextView getAccountNameView() {
-        return mAccountName;
+    TextView getAccountTextPrimary() {
+        return mAccountTextPrimary;
     }
 
-    TextView getAccountEmailView() {
-        return mAccountEmail;
+    TextView getAccountTextSecondary() {
+        return mAccountTextSecondary;
     }
 
     TextView getSyncDescriptionView() {
