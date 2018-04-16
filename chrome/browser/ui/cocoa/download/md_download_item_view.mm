@@ -647,6 +647,12 @@ NSTextField* MakeLabel(
                                    fileURLWithPath:base::SysUTF8ToNSString(
                                                        downloadPath_.value())]]
       autorelease];
+
+  // draggingFrame must be set to avoid triggering an AppKit crash. See
+  // https://crbug.com/826632.
+  NSRect dragRect = NSUnionRect(imageRect, labelRect);
+  draggingItem.draggingFrame = dragRect;
+
   draggingItem.imageComponentsProvider = ^{
     // If either component is zero sized (which shouldn't generally happen, but
     // apparently can… maybe a missing icon or empty string title?), omit it,
@@ -659,7 +665,8 @@ NSTextField* MakeLabel(
               initWithKey:NSDraggingImageComponentIconKey] autorelease];
       NSImage* image = imageView_.image;
       imageComponent.contents = image;
-      imageComponent.frame = imageRect;
+      imageComponent.frame =
+          NSOffsetRect(imageRect, -dragRect.origin.x, -dragRect.origin.y);
       [components addObject:imageComponent];
     }
     if (labelRect.size.width != 0 && labelRect.size.height != 0) {
@@ -673,7 +680,8 @@ NSTextField* MakeLabel(
                                           [filename drawAtPoint:NSZeroPoint];
                                           return YES;
                                         }];
-      labelComponent.frame = labelRect;
+      labelComponent.frame =
+          NSOffsetRect(labelRect, -dragRect.origin.x, -dragRect.origin.y);
       [components addObject:labelComponent];
     }
 
