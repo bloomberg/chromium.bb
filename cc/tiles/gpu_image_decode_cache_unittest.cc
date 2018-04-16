@@ -2337,6 +2337,45 @@ TEST_P(GpuImageDecodeCacheTest, NonLazyImageUploadDownscaled) {
   EXPECT_EQ(sw_image->height(), 5);
 }
 
+TEST_P(GpuImageDecodeCacheTest, KeepOnlyLast2ContentIds) {
+  auto cache = CreateCache();
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  viz::ContextProvider::ScopedContextLock context_lock(context_provider());
+  const PaintImage::Id paint_image_id = PaintImage::GetNextId();
+  std::vector<DrawImage> draw_images;
+  std::vector<DecodedDrawImage> decoded_draw_images;
+
+  for (int i = 0; i < 10; ++i) {
+    PaintImage image = CreateDiscardablePaintImage(
+        gfx::Size(10, 10), SkColorSpace::MakeSRGB(), true, paint_image_id);
+    DrawImage draw_image(
+        image, SkIRect::MakeWH(image.width(), image.height()), quality,
+        CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable),
+        PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+    DecodedDrawImage decoded_draw_image =
+        EnsureImageBacked(cache->GetDecodedImageForDraw(draw_image));
+
+    draw_images.push_back(draw_image);
+    decoded_draw_images.push_back(decoded_draw_image);
+
+    if (i == 0)
+      continue;
+
+    // We should only have the last 2 entries in the persistent cache, even
+    // though everything is in the in use cache.
+    EXPECT_EQ(cache->GetNumCacheEntriesForTesting(), 2u);
+    EXPECT_EQ(cache->GetInUseCacheEntriesForTesting(), i + 1u);
+    EXPECT_TRUE(cache->IsInPersistentCacheForTesting(draw_images[i]));
+    EXPECT_TRUE(cache->IsInPersistentCacheForTesting(draw_images[i - 1]));
+  }
+
+  for (int i = 0; i < 10; ++i) {
+    cache->DrawWithImageFinished(draw_images[i], decoded_draw_images[i]);
+  }
+}
+
 INSTANTIATE_TEST_CASE_P(
     GpuImageDecodeCacheTests,
     GpuImageDecodeCacheTest,

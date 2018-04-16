@@ -40,7 +40,8 @@ sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size);
 PaintImage CreateDiscardablePaintImage(
     const gfx::Size& size,
     sk_sp<SkColorSpace> color_space = nullptr,
-    bool allocate_encoded_memory = true);
+    bool allocate_encoded_memory = true,
+    PaintImage::Id id = PaintImage::kInvalidId);
 
 DrawImage CreateDiscardableDrawImage(const gfx::Size& size,
                                      sk_sp<SkColorSpace> color_space,

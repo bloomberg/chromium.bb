@@ -53,6 +53,7 @@ class CC_PAINT_EXPORT PaintImage {
     uint64_t hash() const { return hash_; }
     std::string ToString() const;
     size_t frame_index() const { return frame_index_; }
+    ContentId content_id() const { return content_id_; }
 
    private:
     ContentId content_id_;
