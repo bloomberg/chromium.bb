@@ -262,7 +262,8 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
 }
 #endif  // defined(USE_AURA)
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, CloseTab) {
+// Flaky test on site_per_browser_tests: https://crbug.com/833318
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_CloseTab) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "close_tab.html"))
       << message_;
