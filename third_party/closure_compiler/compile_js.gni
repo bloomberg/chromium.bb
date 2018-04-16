@@ -9,7 +9,6 @@ script_path = "//third_party/closure_compiler"
 compiler_path = "$script_path/compiler/compiler.jar"
 externs_path = "$script_path/externs"
 interfaces_path = "$script_path/interfaces"
-chrome_externs = "$externs_path/chrome.js"
 polymer_externs = "$externs_path/polymer-1.0.js"
 
 # Defines a target that creates an ordering for .js files to be used by
@@ -203,7 +202,6 @@ template("js_binary") {
     args += [ "--flags" ] + closure_flags
     args += [
       "--externs",
-      rebase_path("$chrome_externs", root_build_dir),
       rebase_path("$polymer_externs", root_build_dir),
     ]
     if (defined(externs_list)) {
