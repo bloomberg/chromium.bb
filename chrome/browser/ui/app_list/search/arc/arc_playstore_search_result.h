@@ -28,7 +28,7 @@ class ArcPlayStoreSearchResult : public ChromeSearchResult,
  public:
   ArcPlayStoreSearchResult(arc::mojom::AppDiscoveryResultPtr data,
                            Profile* profile,
-                           AppListControllerDelegate* list_controller_);
+                           AppListControllerDelegate* list_controller);
   ~ArcPlayStoreSearchResult() override;
 
   // ChromeSearchResult overrides:

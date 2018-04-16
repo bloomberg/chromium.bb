@@ -86,7 +86,6 @@ std::unique_ptr<ChromeSearchResult> ExtensionAppResult::Duplicate() const {
   copy->set_title(title());
   copy->set_title_tags(title_tags());
   copy->set_relevance(relevance());
-
   return copy;
 }
 

@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_web_contents.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
+#include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
 #include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
@@ -24,11 +26,6 @@
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_switches.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
-#include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
-#endif
-
 namespace app_list {
 
 namespace {
@@ -38,7 +35,6 @@ constexpr size_t kMaxAppsGroupResults = 6;
 constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxWebstoreResults = 2;
 constexpr size_t kMaxLauncherSearchResults = 2;
-#if defined(OS_CHROMEOS)
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
 // we request twice as many Play Store apps as we can show. Note that this still
@@ -48,7 +44,6 @@ constexpr size_t kMaxLauncherSearchResults = 2;
 constexpr size_t kMaxPlayStoreResults = 12;
 
 constexpr size_t kMaxAppDataResults = 6;
-#endif
 
 }  // namespace
 
@@ -105,7 +100,6 @@ std::unique_ptr<SearchController> CreateSearchController(
                             std::make_unique<LauncherSearchProvider>(profile));
   }
 
-#if defined(OS_CHROMEOS)
   if (features::IsPlayStoreAppSearchEnabled()) {
     // Set same boost 10.0 as apps group since Play store results are placed
     // with apps.
@@ -123,7 +117,6 @@ std::unique_ptr<SearchController> CreateSearchController(
                           std::make_unique<ArcAppDataSearchProvider>(
                               kMaxAppDataResults, profile, list_controller));
 
-#endif
   return controller;
 }
 
