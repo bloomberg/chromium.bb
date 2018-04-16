@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
 
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -37,12 +38,13 @@ VaapiPictureNativePixmap::~VaapiPictureNativePixmap() = default;
 
 bool VaapiPictureNativePixmap::DownloadFromSurface(
     const scoped_refptr<VASurface>& va_surface) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT1("media,gpu", "VaapiDrmPicture::DownloadFromSurface",
+               "VASurfaceID", va_surface->id());
+  // Can be called from any thread because |vaapi_wrapper_| is thread safe.
   return vaapi_wrapper_->BlitSurface(va_surface, va_surface_);
 }
 
 bool VaapiPictureNativePixmap::AllowOverlay() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return true;
 }
 

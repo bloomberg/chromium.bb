@@ -1462,16 +1462,26 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     GLRenderingVDAClient* client = clients_[i].get();
     TestVideoFile* video_file =
         test_video_files_[i % test_video_files_.size()].get();
-    if (video_file->num_frames > 0) {
+    const int expected_num_frames = video_file->num_frames;
+    if (expected_num_frames > 0) {
       // Expect the decoded frames may be more than the video frames as frames
       // could still be returned until resetting done.
-      if (video_file->reset_after_frame_num > 0)
-        EXPECT_GE(client->num_decoded_frames(), video_file->num_frames);
-      // In ResetBeforeNotifyFlushDone case the decoded frames may be less than
-      // the video frames because decoder is reset before flush done.
-      else if (video_file->reset_after_frame_num !=
-               RESET_BEFORE_NOTIFY_FLUSH_DONE)
-        EXPECT_EQ(client->num_decoded_frames(), video_file->num_frames);
+      if (video_file->reset_after_frame_num > 0) {
+        EXPECT_GE(client->num_decoded_frames(), expected_num_frames);
+      } else if (video_file->reset_after_frame_num ==
+                 RESET_BEFORE_NOTIFY_FLUSH_DONE) {
+        // In ResetBeforeNotifyFlushDone case the decoded frames may be less
+        // than the video frames because decoder is reset before flush done.
+        EXPECT_LE(client->num_decoded_frames(), expected_num_frames);
+#if BUILDFLAG(USE_VAAPI)
+      } else if (video_file->reset_after_frame_num == END_OF_STREAM_RESET) {
+        // If blitting happens on a background thread, Reset will prevent it
+        // from finishing and we might be missing a few frames.
+        EXPECT_LE(client->num_decoded_frames(), expected_num_frames);
+#endif
+      } else {
+        EXPECT_EQ(client->num_decoded_frames(), expected_num_frames);
+      }
     }
     if (reset_point == END_OF_STREAM_RESET) {
       EXPECT_EQ(video_file->num_fragments, client->num_skipped_fragments() +
