@@ -3,10 +3,15 @@
 // found in the LICENSE file.
 
 #include "ash/login/ui/login_auth_user_view.h"
+#include "ash/login/mock_login_screen_client.h"
+#include "ash/login/ui/login_password_view.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
+#include "ash/login/ui/login_user_view.h"
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -83,6 +88,30 @@ TEST_F(LoginAuthUserViewUnittest, ShowingPasswordForcesOpaque) {
   EXPECT_FALSE(user_test.is_opaque());
   view_->SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD);
   EXPECT_TRUE(user_test.is_opaque());
+}
+
+// Verifies that pressing return with an empty password field when tap-to-unlock
+// is enabled attempts unlock.
+TEST_F(LoginAuthUserViewUnittest, PressReturnWithTapToUnlockEnabled) {
+  std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  LoginAuthUserView::TestApi test_auth_user_view(view_);
+  LoginPasswordView* password_view(test_auth_user_view.password_view());
+  LoginUserView* user_view(test_auth_user_view.user_view());
+
+  SetUserCount(1);
+
+  EXPECT_CALL(
+      *client,
+      AttemptUnlock(user_view->current_user()->basic_user_info->account_id));
+  view_->SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD |
+                        LoginAuthUserView::AUTH_TAP);
+  password_view->Clear();
+
+  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace ash
