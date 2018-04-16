@@ -8,6 +8,7 @@
       'variables': {
         'script_args': ['--custom_sources'],
         'source_files': [
+          '<(DEPTH)/third_party/closure_compiler/externs/chrome.js',
           '<(DEPTH)/third_party/closure_compiler/externs/chrome_send.js',
           '<(DEPTH)/third_party/jstemplate/util.js',
           '<(DEPTH)/third_party/jstemplate/jsevalcontext.js',
