@@ -13,3 +13,8 @@
 
 ; Needed for Fonts.
 (allow-font-access)
+
+; Reads from /System.
+(allow file-read-data
+  ; https://crbug.com/822218
+  (subpath "/System/Library/ColorSync/Profiles"))

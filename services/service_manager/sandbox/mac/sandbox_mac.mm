@@ -165,8 +165,11 @@ void SandboxMac::Warmup(SandboxType sandbox_type) {
     CFTimeZoneCopySystem();
   }
 
-  if (sandbox_type == SANDBOX_TYPE_PPAPI) {
-    // Preload AppKit color spaces used for Flash/ppapi. http://crbug.com/348304
+  if (sandbox_type == SANDBOX_TYPE_PPAPI ||
+      sandbox_type == SANDBOX_TYPE_PDF_COMPOSITOR) {
+    // Preload AppKit color spaces used for ppapi(https://crbug.com/348304),
+    // as well as pdf compositor service likely on version 10.10 or
+    // older(https://crbug.com/822218).
     NSColor* color = [NSColor controlTextColor];
     [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
   }

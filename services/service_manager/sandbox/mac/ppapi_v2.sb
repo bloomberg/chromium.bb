@@ -24,8 +24,10 @@
 
 ; Reads from /System.
 (allow file-read-data
+  (path "/System/Library/Colors/System.clr/System.clr")
   (subpath "/System/Library/CoreServices/SystemAppearance.bundle")
-  (path "/System/Library/Colors/System.clr/System.clr"))
+  ; https://crbug.com/822218
+  (subpath "/System/Library/ColorSync/Profiles"))
 
 ; Allow the ppapi plugin binaries to be loaded.
 (if (param-defined? ppapi-plugin-0)
