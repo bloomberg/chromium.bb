@@ -17,7 +17,9 @@ SyncCycleContext::SyncCycleContext(
     ModelTypeRegistry* model_type_registry,
     bool keystore_encryption_enabled,
     bool client_enabled_pre_commit_update_avoidance,
-    const std::string& invalidator_client_id)
+    const std::string& invalidator_client_id,
+    base::TimeDelta short_poll_interval,
+    base::TimeDelta long_poll_interval)
     : connection_manager_(connection_manager),
       directory_(directory),
       extensions_activity_(extensions_activity),
@@ -31,7 +33,11 @@ SyncCycleContext::SyncCycleContext(
       client_enabled_pre_commit_update_avoidance_(
           client_enabled_pre_commit_update_avoidance),
       cookie_jar_mismatch_(false),
-      cookie_jar_empty_(false) {
+      cookie_jar_empty_(false),
+      short_poll_interval_(short_poll_interval),
+      long_poll_interval_(long_poll_interval) {
+  DCHECK(!short_poll_interval.is_zero());
+  DCHECK(!long_poll_interval.is_zero());
   std::vector<SyncEngineEventListener*>::const_iterator it;
   for (it = listeners.begin(); it != listeners.end(); ++it)
     listeners_.AddObserver(*it);

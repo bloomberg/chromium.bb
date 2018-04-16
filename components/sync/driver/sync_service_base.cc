@@ -18,6 +18,7 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
+#include "components/sync/engine/polling_constants.h"
 
 namespace syncer {
 
@@ -154,6 +155,16 @@ void SyncServiceBase::InitializeEngine() {
       base::Bind(ReportUnrecoverableError, channel_);
   params.saved_nigori_state = crypto_->TakeSavedNigoriState();
   sync_prefs_.GetInvalidationVersions(&params.invalidation_versions);
+  params.short_poll_interval = sync_prefs_.GetShortPollInterval();
+  if (params.short_poll_interval.is_zero()) {
+    params.short_poll_interval =
+        base::TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds);
+  }
+  params.long_poll_interval = sync_prefs_.GetLongPollInterval();
+  if (params.long_poll_interval.is_zero()) {
+    params.long_poll_interval =
+        base::TimeDelta::FromSeconds(kDefaultLongPollIntervalSeconds);
+  }
 
   engine_->Initialize(std::move(params));
 }

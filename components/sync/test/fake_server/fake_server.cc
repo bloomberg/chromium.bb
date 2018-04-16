@@ -21,8 +21,6 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 
-using std::string;
-using std::vector;
 using syncer::GetModelType;
 using syncer::GetModelTypeFromSpecifics;
 using syncer::LoopbackServer;
@@ -51,7 +49,7 @@ FakeServer::FakeServer()
 
 FakeServer::~FakeServer() {}
 
-void FakeServer::HandleCommand(const string& request,
+void FakeServer::HandleCommand(const std::string& request,
                                const base::Closure& completion_closure,
                                int* error_code,
                                int* response_code,
@@ -61,7 +59,7 @@ void FakeServer::HandleCommand(const string& request,
   if (!network_enabled_) {
     *error_code = net::ERR_FAILED;
     *response_code = net::ERR_FAILED;
-    *response = string();
+    *response = std::string();
     completion_closure.Run();
     return;
   }
@@ -70,7 +68,7 @@ void FakeServer::HandleCommand(const string& request,
   if (!authenticated_) {
     *error_code = 0;
     *response_code = net::HTTP_UNAUTHORIZED;
-    *response = string();
+    *response = std::string();
     completion_closure.Run();
     return;
   }
@@ -100,13 +98,10 @@ void FakeServer::HandleCommand(const string& request,
         break;
         // Don't care.
     }
-
-    int64_t response_code_large;
-    syncer::HttpResponse::ServerConnectionCode server_status;
-    base::ThreadRestrictions::SetIOAllowed(true);
-    loopback_server_->HandleCommand(request, &server_status,
-                                    &response_code_large, response);
-    *response_code = static_cast<int>(response_code_large);
+    *response_code = SendToLoopbackServer(request, response);
+    if (*response_code == net::HTTP_OK) {
+      InjectClientCommand(response);
+    }
     completion_closure.Run();
     return;
   }
@@ -114,6 +109,26 @@ void FakeServer::HandleCommand(const string& request,
   response_proto.set_store_birthday(loopback_server_->GetStoreBirthday());
   *response = response_proto.SerializeAsString();
   completion_closure.Run();
+}
+
+int FakeServer::SendToLoopbackServer(const std::string& request,
+                                     std::string* response) {
+  int64_t response_code;
+  syncer::HttpResponse::ServerConnectionCode server_status;
+  base::ThreadRestrictions::SetIOAllowed(true);
+  loopback_server_->HandleCommand(request, &server_status, &response_code,
+                                  response);
+  return static_cast<int>(response_code);
+}
+
+void FakeServer::InjectClientCommand(std::string* response) {
+  sync_pb::ClientToServerResponse response_proto;
+  bool parse_ok = response_proto.ParseFromString(*response);
+  DCHECK(parse_ok) << "Unable to parse-back the server response";
+  if (response_proto.error_code() == sync_pb::SyncEnums::SUCCESS) {
+    *response_proto.mutable_client_command() = client_command_;
+    *response = response_proto.SerializeAsString();
+  }
 }
 
 bool FakeServer::GetLastCommitMessage(sync_pb::ClientToServerMessage* message) {
@@ -184,6 +199,12 @@ void FakeServer::SetUnauthenticated() {
   authenticated_ = false;
 }
 
+void FakeServer::SetClientCommand(
+    const sync_pb::ClientCommand& client_command) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  client_command_ = client_command;
+}
+
 bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (triggered_actionable_error_.get()) {
@@ -197,8 +218,8 @@ bool FakeServer::TriggerError(const sync_pb::SyncEnums::ErrorType& error_type) {
 
 bool FakeServer::TriggerActionableError(
     const sync_pb::SyncEnums::ErrorType& error_type,
-    const string& description,
-    const string& url,
+    const std::string& description,
+    const std::string& url,
     const sync_pb::SyncEnums::Action& action) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (error_type_ != sync_pb::SyncEnums::SUCCESS) {

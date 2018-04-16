@@ -37,7 +37,9 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
     const std::vector<SyncEngineEventListener*>& listeners,
     DebugInfoGetter* debug_info_getter,
     ModelTypeRegistry* model_type_registry,
-    const std::string& invalidator_client_id) {
+    const std::string& invalidator_client_id,
+    base::TimeDelta short_poll_interval,
+    base::TimeDelta long_poll_interval) {
   // Tests don't wire up listeners.
   std::vector<SyncEngineEventListener*> empty_listeners;
   return std::unique_ptr<SyncCycleContext>(new SyncCycleContext(
@@ -46,7 +48,7 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
       switches_.encryption_method == ENCRYPTION_KEYSTORE,
       switches_.pre_commit_updates_policy ==
           FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE,
-      invalidator_client_id));
+      invalidator_client_id, short_poll_interval, long_poll_interval));
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>
