@@ -58,13 +58,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_ICON_SIZE:
       return touch_optimized_material ? 20 : 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      if (touch_optimized_material) {
-        // TODO(crbug.com/801583): This should actually be 8, but until
-        // LocationBarView is updated to remove its stroke, subtract the dips
-        // reserved for the stroke first.
-        return 7;
-      }
-      return 4;
+      return touch_optimized_material ? 8 : 4;
     case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
       // In non-touch optimized UI, we make the new tab button overlap with the
       // last tab in the tabstrip (i.e negative spacing). However, in

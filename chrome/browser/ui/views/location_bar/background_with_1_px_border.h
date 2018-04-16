@@ -21,18 +21,16 @@ class View;
 // BackgroundWith1PxBorder renders a solid background color, with a one pixel
 // border with rounded corners. This accounts for the scaling of the canvas, so
 // that the border is one pixel regardless of display scaling.
+// TODO(patricialor): Delete this & replace with CreateRoundRectWith1PxPainter.
 class BackgroundWith1PxBorder : public views::Background {
  public:
-  // The thickness of the location bar's border in DIP.
-  static constexpr int kLocationBarBorderThicknessDip = 1;
+  // The thickness of the border in DIP.
+  static constexpr int kBorderThicknessDip = 1;
 
   // The legacy (non touch/material) border radius.
   static constexpr int kLegacyBorderRadiusPx = 2;
 
   BackgroundWith1PxBorder(SkColor background, SkColor border);
-
-  // Whether the OmniboxBackgroundBorder is a pill shape.
-  static bool IsRounded();
 
   void set_blend_mode(SkBlendMode blend_mode) { blend_mode_ = blend_mode; }
 

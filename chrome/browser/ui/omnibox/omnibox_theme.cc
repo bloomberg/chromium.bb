@@ -65,6 +65,8 @@ ui::NativeTheme::ColorId GetLegacyColorId(ui::NativeTheme* native_theme,
                  : NativeId::kColorId_LinkEnabled;
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
       return NativeId::kColorId_TextfieldDefaultColor;
+    case OmniboxPart::LOCATION_BAR_FOCUS_RING:
+      return NativeId::kColorId_FocusedBorderColor;
     case OmniboxPart::RESULTS_BACKGROUND:
       return NormalHoveredSelected(
           state, NativeId::kColorId_ResultsTableNormalBackground,
@@ -230,6 +232,8 @@ SkColor GetOmniboxColor(OmniboxPart part,
       return GetSecurityChipColor(tint, state);
     case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
       return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
+    case OmniboxPart::LOCATION_BAR_FOCUS_RING:
+      return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
     case OmniboxPart::RESULTS_BACKGROUND:
       // The spec calls for transparent black (or white) overlays for hover (8%)
       // and select (6%), which can overlap (for 14%). Pre-blend these with the
