@@ -925,7 +925,12 @@ void OmniboxViewViews::OnBlur() {
 
   // Revert the URL if the user has not made any changes. If steady-state
   // elisions is on, this will also re-elide the URL.
-  if (model()->user_input_in_progress() &&
+  //
+  // Because merely Alt-Tabbing to another window and back should not change the
+  // Omnibox state, we only revert the text only if the Omnibox is blurred in
+  // favor of some other View in the same Widget.
+  if (GetWidget() && GetWidget()->IsActive() &&
+      model()->user_input_in_progress() &&
       text() == model()->GetCurrentPermanentUrlText()) {
     RevertAll();
   }
