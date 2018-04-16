@@ -85,6 +85,8 @@ const char kFirstDownloadUrl[] = "/download1";
 const char kSecondDownloadUrl[] = "/download2";
 const int kDownloadSize = 1024 * 10;
 
+void OnFileDeleted(bool success) {}
+
 // Comparator that orders download items by their ID. Can be used with
 // std::sort.
 struct DownloadIdComparator {
@@ -244,6 +246,8 @@ class DownloadsEventsListener : public content::NotificationObserver {
     last_wait_ = base::Time::Now();
     return success;
   }
+
+  base::circular_deque<std::unique_ptr<Event>>* events() { return &events_; }
 
  private:
   bool waiting_;
@@ -4343,6 +4347,52 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       &callback);
   BrowserActionTestUtil::Create(browser())->Press(0);
   observer->WaitForFinished();
+}
+
+// Test that file deletion event is correctly generated after download
+// completion.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_DeleteFileAfterCompletion) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GoOnTheRecord();
+  LoadExtension("downloads_split");
+  std::string download_url = embedded_test_server()->GetURL("/slow?0").spec();
+
+  // Start downloading a file.
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(),
+      base::StringPrintf("[{\"url\": \"%s\"}]", download_url.c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl().spec());
+
+  ASSERT_TRUE(WaitFor(downloads::OnCreated::kEventName,
+                      base::StringPrintf(R"([{"danger": "safe",)"
+                                         R"(  "incognito": false,)"
+                                         R"(  "id": %d,)"
+                                         R"(  "mime": "text/plain",)"
+                                         R"(  "paused": false,)"
+                                         R"(  "url": "%s"}])",
+                                         result_id, download_url.c_str())));
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf(R"([{"id": %d,)"
+                                         R"(  "state": {)"
+                                         R"(    "previous": "in_progress",)"
+                                         R"(    "current": "complete"}}])",
+                                         result_id)));
+
+  item->DeleteFile(base::BindRepeating(OnFileDeleted));
+
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf(R"([{"id": %d,)"
+                                         R"(  "exists": {)"
+                                         R"(    "previous": true,)"
+                                         R"(    "current": false}}])",
+                                         result_id)));
 }
 
 class DownloadsApiTest : public ExtensionApiTest {
