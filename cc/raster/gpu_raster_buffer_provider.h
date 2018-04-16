@@ -28,6 +28,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
                           int gpu_rasterization_msaa_sample_count,
                           viz::ResourceFormat preferred_tile_format,
                           const gfx::Size& max_tile_size,
+                          bool unpremultiply_and_dither_low_bit_depth_tiles,
                           bool enable_oop_rasterization);
   ~GpuRasterBufferProvider() override;
 
@@ -110,6 +111,8 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     DISALLOW_COPY_AND_ASSIGN(RasterBufferImpl);
   };
 
+  bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) const;
+
   viz::ContextProvider* const compositor_context_provider_;
   viz::RasterContextProvider* const worker_context_provider_;
   LayerTreeResourceProvider* const resource_provider_;
@@ -117,6 +120,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const int msaa_sample_count_;
   const viz::ResourceFormat preferred_tile_format_;
   const gfx::Size max_tile_size_;
+  const bool unpremultiply_and_dither_low_bit_depth_tiles_;
   const bool enable_oop_rasterization_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);

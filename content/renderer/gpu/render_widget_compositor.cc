@@ -100,6 +100,9 @@ using blink::WebOverscrollBehavior;
 namespace content {
 namespace {
 
+const base::Feature kUnpremultiplyAndDitherLowBitDepthTiles = {
+    "UnpremultiplyAndDitherLowBitDepthTiles", base::FEATURE_ENABLED_BY_DEFAULT};
+
 using ReportTimeCallback =
     base::Callback<void(WebLayerTreeView::SwapResult, double)>;
 
@@ -548,11 +551,17 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
         base::SysInfo::AmountOfPhysicalMemoryMB() <= 512 &&
         !using_synchronous_compositor) {
       settings.preferred_tile_format = viz::RGBA_4444;
-      // We need to allocate an additional RGBA_8888 intermediate for each tile
+
+      // If we are going to unpremultiply and dither these tiles, we need to
+      // allocate an additional RGBA_8888 intermediate for each tile
       // rasterization when rastering to RGBA_4444 to allow for dithering.
       // Setting a reasonable sized max tile size allows this intermediate to
       // be consistently reused.
-      settings.max_gpu_raster_tile_size = gfx::Size(512, 256);
+      if (base::FeatureList::IsEnabled(
+              kUnpremultiplyAndDitherLowBitDepthTiles)) {
+        settings.max_gpu_raster_tile_size = gfx::Size(512, 256);
+        settings.unpremultiply_and_dither_low_bit_depth_tiles = true;
+      }
     }
   }
 

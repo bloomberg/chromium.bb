@@ -247,15 +247,6 @@ static void RasterizeSource(
   ri->DeleteTextures(1, &texture_id);
 }
 
-bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) {
-  switch (format) {
-    case viz::RGBA_4444:
-      return true;
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 // Subclass for InUsePoolResource that holds ownership of a gpu-rastered backing
@@ -351,6 +342,7 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
     int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat preferred_tile_format,
     const gfx::Size& max_tile_size,
+    bool unpremultiply_and_dither_low_bit_depth_tiles,
     bool enable_oop_rasterization)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
@@ -359,6 +351,8 @@ GpuRasterBufferProvider::GpuRasterBufferProvider(
       msaa_sample_count_(gpu_rasterization_msaa_sample_count),
       preferred_tile_format_(preferred_tile_format),
       max_tile_size_(max_tile_size),
+      unpremultiply_and_dither_low_bit_depth_tiles_(
+          unpremultiply_and_dither_low_bit_depth_tiles),
       enable_oop_rasterization_(enable_oop_rasterization) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
@@ -550,6 +544,16 @@ gpu::SyncToken GpuRasterBufferProvider::PlaybackOnWorkerThread(
 
   // Generate sync token for cross context synchronization.
   return LayerTreeResourceProvider::GenerateSyncTokenHelper(ri);
+}
+
+bool GpuRasterBufferProvider::ShouldUnpremultiplyAndDitherResource(
+    viz::ResourceFormat format) const {
+  switch (format) {
+    case viz::RGBA_4444:
+      return unpremultiply_and_dither_low_bit_depth_tiles_;
+    default:
+      return false;
+  }
 }
 
 }  // namespace cc
