@@ -44,7 +44,7 @@ static const int kMaxLag = 4;
 GET_BLOCK_MEAN(uint8_t, lowbd);
 GET_BLOCK_MEAN(uint16_t, highbd);
 
-inline static double get_block_mean(const uint8_t *data, int w, int h,
+static INLINE double get_block_mean(const uint8_t *data, int w, int h,
                                     int stride, int x_o, int y_o,
                                     int block_size, int use_highbd) {
   if (use_highbd)
