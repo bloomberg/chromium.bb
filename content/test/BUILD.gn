@@ -1486,6 +1486,8 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_version_unittest.cc",
     "../browser/service_worker/service_worker_write_to_cache_job_unittest.cc",
     "../browser/shareable_file_reference_unittest.cc",
+    "../browser/shared_worker/mock_shared_worker.cc",
+    "../browser/shared_worker/mock_shared_worker.h",
     "../browser/shared_worker/shared_worker_instance_unittest.cc",
     "../browser/shared_worker/shared_worker_service_impl_unittest.cc",
     "../browser/site_instance_impl_unittest.cc",
