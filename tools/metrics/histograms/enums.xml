@@ -41501,6 +41501,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="User-initiated with logs enabled"/>
 </enum>
 
+<enum name="SpareProcessMaybeTakeAction">
+  <int value="0" label="NoSparePresent"/>
+  <int value="1" label="MismatchedBrowserContext"/>
+  <int value="2" label="MismatchedStoragePartition"/>
+  <int value="3" label="RefusedByEmbedder"/>
+  <int value="4" label="SpareTaken"/>
+</enum>
+
 <enum name="SpareWebContentsStatus">
   <int value="0" label="Created"/>
   <int value="1" label="Used"/>
