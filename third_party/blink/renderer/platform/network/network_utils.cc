@@ -49,7 +49,7 @@ bool IsReservedIPAddress(const String& host) {
   StringUTF8Adaptor utf8(host);
   if (!net::ParseURLHostnameToAddress(utf8.AsStringPiece(), &address))
     return false;
-  return address.IsReserved();
+  return !address.IsPubliclyRoutable();
 }
 
 bool IsLocalHostname(const String& host, bool* is_local6) {
