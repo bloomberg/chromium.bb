@@ -35,7 +35,7 @@ class CommonSwitches {
 #else
             FeatureSwitch::DEFAULT_DISABLED),
 #endif
-        error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_DISABLED),
+        error_console(switches::kErrorConsole, FeatureSwitch::DEFAULT_ENABLED),
         enable_override_bookmarks_ui(switches::kEnableOverrideBookmarksUI,
                                      FeatureSwitch::DEFAULT_DISABLED),
         scripts_require_action(switches::kScriptsRequireAction,
