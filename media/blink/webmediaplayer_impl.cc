@@ -2729,15 +2729,17 @@ void WebMediaPlayerImpl::FinishMemoryUsageReport(int64_t demuxer_memory_usage) {
   const int64_t data_source_memory_usage =
       data_source_ ? data_source_->GetMemoryUsage() : 0;
 
-  // If we have video and no video memory usage, assume the VideoFrameCompositor
-  // is holding onto the last frame after we've suspended the pipeline; which
-  // thus reports zero memory usage from the video renderer.
+  // If we have video and no video memory usage and we've rendered the first
+  // frame, assume the VideoFrameCompositor is holding onto the last frame after
+  // we've suspended the pipeline; which thus reports zero memory usage from the
+  // video renderer.
   //
   // Technically this should use the coded size, but that requires us to hop to
   // the compositor to get and byte-perfect accuracy isn't important here.
   const int64_t video_memory_usage =
       stats.video_memory_usage +
-      (pipeline_metadata_.has_video && !stats.video_memory_usage
+      ((pipeline_metadata_.has_video && !stats.video_memory_usage &&
+        has_first_frame_)
            ? VideoFrame::AllocationSize(PIXEL_FORMAT_I420,
                                         pipeline_metadata_.natural_size)
            : 0);
@@ -3132,6 +3134,7 @@ void WebMediaPlayerImpl::SetTickClockForTest(
 void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
   DCHECK(!load_start_time_.is_null());
   DCHECK(!skip_metrics_due_to_startup_suspend_);
+  has_first_frame_ = true;
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   RecordTimingUMA("Media.TimeToFirstFrame", elapsed);

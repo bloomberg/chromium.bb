@@ -897,6 +897,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // preload=metadata. Cleared upon pipeline startup.
   bool attempting_suspended_start_ = false;
 
+  // True if a frame has ever been rendered.
+  bool has_first_frame_ = false;
+
   // Keeps track of the SurfaceId for Picture-in-Picture. This is used to
   // route the video to be shown in the Picture-in-Picture window.
   viz::SurfaceId pip_surface_id_;

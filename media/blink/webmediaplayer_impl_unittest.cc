@@ -84,10 +84,6 @@ const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideo =
 const base::TimeDelta kMaxKeyframeDistanceToDisableBackgroundVideoMSE =
     base::TimeDelta::FromSeconds(10);
 
-int64_t OnAdjustAllocatedMemory(int64_t delta) {
-  return 0;
-}
-
 MATCHER(WmpiDestroyed, "") {
   return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
 }
@@ -358,8 +354,9 @@ class WebMediaPlayerImplTest : public testing::Test {
         std::move(media_log), WebMediaPlayerParams::DeferLoadCB(), audio_sink_,
         media_thread_.task_runner(), base::ThreadTaskRunnerHandle::Get(),
         base::ThreadTaskRunnerHandle::Get(), media_thread_.task_runner(),
-        base::BindRepeating(&OnAdjustAllocatedMemory), nullptr, nullptr,
-        RequestRoutingTokenCallback(), nullptr,
+        base::BindRepeating(&WebMediaPlayerImplTest::OnAdjustAllocatedMemory,
+                            base::Unretained(this)),
+        nullptr, nullptr, RequestRoutingTokenCallback(), nullptr,
         kMaxKeyframeDistanceToDisableBackgroundVideo,
         kMaxKeyframeDistanceToDisableBackgroundVideoMSE, false, false,
         std::move(provider),
@@ -404,6 +401,11 @@ class WebMediaPlayerImplTest : public testing::Test {
   std::unique_ptr<blink::WebSurfaceLayerBridge> CreateMockSurfaceLayerBridge(
       blink::WebSurfaceLayerBridgeObserver*) {
     return std::move(surface_layer_bridge_);
+  }
+
+  int64_t OnAdjustAllocatedMemory(int64_t delta) {
+    reported_memory_ += delta;
+    return 0;
   }
 
   void SetNetworkState(blink::WebMediaPlayer::NetworkState state) {
@@ -497,6 +499,10 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   bool IsSuspended() { return wmpi_->pipeline_controller_.IsSuspended(); }
+
+  int64_t GetDataSourceMemoryUsage() const {
+    return wmpi_->data_source_->GetMemoryUsage();
+  }
 
   void AddBufferedRanges() {
     wmpi_->buffered_data_source_host_.AddBufferedByteRange(0, 1);
@@ -667,6 +673,9 @@ class WebMediaPlayerImplTest : public testing::Test {
   // verifying a subset of potential media logs.
   NiceMock<MockMediaLog>* media_log_ = nullptr;
 
+  // Total memory in bytes allocated by the WebMediaPlayerImpl instance.
+  int64_t reported_memory_ = 0;
+
   // The WebMediaPlayerImpl instance under test.
   std::unique_ptr<WebMediaPlayerImpl> wmpi_;
 
@@ -691,6 +700,13 @@ TEST_F(WebMediaPlayerImplTest, LoadAndDestroy) {
   EXPECT_FALSE(IsSuspended());
   LoadAndWaitForMetadata(kAudioOnlyTestFile);
   EXPECT_FALSE(IsSuspended());
+  base::RunLoop().RunUntilIdle();
+
+  // The data source contains the entire file, so subtract it from the memory
+  // usage to ensure we're getting audio buffer and demuxer usage too.
+  const int64_t data_source_size = GetDataSourceMemoryUsage();
+  EXPECT_GT(data_source_size, 0);
+  EXPECT_GT(reported_memory_ - data_source_size, 0);
 }
 
 // Verify that preload=metadata suspend works properly.
@@ -705,6 +721,33 @@ TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspend) {
   EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(IsSuspended());
+
+  // The data source contains the entire file, so subtract it from the memory
+  // usage to ensure there's no other memory usage.
+  const int64_t data_source_size = GetDataSourceMemoryUsage();
+  EXPECT_GT(data_source_size, 0);
+  EXPECT_EQ(reported_memory_ - data_source_size, 0);
+}
+
+// Verify that preload=metadata suspend video w/ poster uses zero video memory.
+TEST_F(WebMediaPlayerImplTest, LoadPreloadMetadataSuspendNoVideoMemoryUsage) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(media::kPreloadMetadataSuspend);
+  InitializeWebMediaPlayerImpl();
+  EXPECT_CALL(client_, CouldPlayIfEnoughData()).WillRepeatedly(Return(false));
+  wmpi_->SetPreload(blink::WebMediaPlayer::kPreloadMetaData);
+  wmpi_->SetPoster(blink::WebURL(GURL("file://example.com/sample.jpg")));
+  LoadAndWaitForMetadata("bear-320x240-video-only.webm");
+  testing::Mock::VerifyAndClearExpectations(&client_);
+  EXPECT_CALL(client_, ReadyStateChanged()).Times(AnyNumber());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(IsSuspended());
+
+  // The data source contains the entire file, so subtract it from the memory
+  // usage to ensure there's no other memory usage.
+  const int64_t data_source_size = GetDataSourceMemoryUsage();
+  EXPECT_GT(data_source_size, 0);
+  EXPECT_EQ(reported_memory_ - data_source_size, 0);
 }
 
 // Verify that preload=metadata suspend is aborted if we know the element will
