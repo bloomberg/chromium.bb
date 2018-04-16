@@ -23,10 +23,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/buildflags.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/prefs/pref_member.h"
-#include "components/ssl_config/ssl_config_service_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "extensions/buildflags/buildflags.h"
@@ -316,8 +316,7 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // This is an instance of the default SSLConfigServiceManager for the current
   // platform and it gets SSL preferences from local_state object.
-  std::unique_ptr<ssl_config::SSLConfigServiceManager>
-      ssl_config_service_manager_;
+  std::unique_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;

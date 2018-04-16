@@ -220,7 +220,6 @@ ios_web_view_deps = [
   "//components/signin/core/browser",
   "//components/signin/ios/browser",
   "//components/signin/ios/browser:active_state_manager",
-  "//components/ssl_config",
   "//components/sync",
   "//components/translate/core/browser",
   "//components/translate/core/common",

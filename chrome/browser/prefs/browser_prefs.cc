@@ -52,6 +52,7 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
@@ -100,7 +101,6 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/signin/core/browser/profile_management_switches.h"
-#include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "components/sync/base/sync_prefs.h"
@@ -372,7 +372,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   rappor::RapporServiceImpl::RegisterPrefs(registry);
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
-  ssl_config::SSLConfigServiceManager::RegisterPrefs(registry);
+  SSLConfigServiceManager::RegisterPrefs(registry);
   startup_metric_utils::RegisterPrefs(registry);
   subresource_filter::IndexedRulesetVersion::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);

@@ -24,8 +24,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "components/ssl_config/ssl_config_prefs.h"
-#include "components/ssl_config/ssl_config_switches.h"
 #include "components/sync/base/pref_names.h"
 #include "content/public/common/content_switches.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -42,8 +40,8 @@ const CommandLinePrefStore::SwitchToPreferenceMapEntry
         {data_reduction_proxy::switches::kDataReductionProxy,
          data_reduction_proxy::prefs::kDataReductionProxy},
         {switches::kAuthServerWhitelist, prefs::kAuthServerWhitelist},
-        {switches::kSSLVersionMin, ssl_config::prefs::kSSLVersionMin},
-        {switches::kTLS13Variant, ssl_config::prefs::kTLS13Variant},
+        {switches::kSSLVersionMin, prefs::kSSLVersionMin},
+        {switches::kTLS13Variant, prefs::kTLS13Variant},
 #if defined(OS_ANDROID)
         {switches::kAuthAndroidNegotiateAccountType,
          prefs::kAuthAndroidNegotiateAccountType},
@@ -164,7 +162,7 @@ void ChromeCommandLinePrefStore::ApplySSLSwitches() {
     list_value->AppendStrings(base::SplitString(
         command_line()->GetSwitchValueASCII(switches::kCipherSuiteBlacklist),
         ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
-    SetValue(ssl_config::prefs::kCipherSuiteBlacklist, std::move(list_value),
+    SetValue(prefs::kCipherSuiteBlacklist, std::move(list_value),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 
@@ -173,7 +171,7 @@ void ChromeCommandLinePrefStore::ApplySSLSwitches() {
   if (command_line()->HasSwitch(switches::kTLS13Variant) &&
       command_line()->GetSwitchValueASCII(switches::kTLS13Variant) !=
           switches::kTLS13VariantDisabled) {
-    SetValue(ssl_config::prefs::kSSLVersionMax,
+    SetValue(prefs::kSSLVersionMax,
              std::make_unique<base::Value>(switches::kSSLVersionTLSv13),
              WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }

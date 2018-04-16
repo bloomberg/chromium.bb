@@ -136,7 +136,6 @@ test("components_unittests") {
     "//components/services/unzip:unit_tests",
     "//components/sessions:unit_tests",
     "//components/signin/core/browser:unit_tests",
-    "//components/ssl_config:unit_tests",
     "//components/ssl_errors:unit_tests",
     "//components/subresource_filter/core/browser:unit_tests",
     "//components/subresource_filter/core/common:unit_tests",

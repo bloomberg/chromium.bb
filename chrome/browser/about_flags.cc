@@ -85,7 +85,6 @@
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/ssl_config/ssl_config_switches.h"
 #include "components/suggestions/features.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/toolbar/toolbar_field_trial.h"

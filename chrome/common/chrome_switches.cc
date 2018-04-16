@@ -628,6 +628,25 @@ const char kSimulateUpgrade[]               = "simulate-upgrade";
 // for the format.
 const char kSSLKeyLogFile[]               = "ssl-key-log-file";
 
+// Specifies the maximum SSL/TLS version ("tls1.2" or "tls1.3").
+const char kSSLVersionMax[] = "ssl-version-max";
+
+// Specifies the minimum SSL/TLS version ("tls1", "tls1.1", "tls1.2", or
+// "tls1.3").
+const char kSSLVersionMin[] = "ssl-version-min";
+
+// TLS 1.0 mode for the |kSSLVersionMin| switch.
+const char kSSLVersionTLSv1[] = "tls1";
+
+// TLS 1.1 mode for the |kSSLVersionMin| switch.
+const char kSSLVersionTLSv11[] = "tls1.1";
+
+// TLS 1.2 mode for |kSSLVersionMax| and |kSSLVersionMin| switches.
+const char kSSLVersionTLSv12[] = "tls1.2";
+
+// TLS 1.2 mode for |kSSLVersionMax| and |kSSLVersionMin| switches.
+const char kSSLVersionTLSv13[] = "tls1.3";
+
 // Starts the browser maximized, regardless of any previous settings.
 const char kStartMaximized[]                = "start-maximized";
 
@@ -654,6 +673,15 @@ const char kTaskManagerShowExtraRenderers[] =
 
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
+
+// Specifies the enabled TLS 1.3 variant ("disabled", "draft23").
+const char kTLS13Variant[] = "tls13-variant";
+
+// This mode disables the TLS 1.3 variants for the |kTLS13Variant| switch.
+const char kTLS13VariantDisabled[] = "disabled";
+
+// This mode enables TLS 1.3 draft-23 variant for the |kTLS13Variant| switch.
+const char kTLS13VariantDraft23[] = "draft23";
 
 // Identifies a list of download sources as trusted, but only if proper group
 // policy is set.

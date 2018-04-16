@@ -10,7 +10,6 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "components/ssl_config/ssl_config_service_manager.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_fetcher.h"
@@ -59,7 +58,6 @@ TEST_F(IOSChromeIOThreadTest, AssertNoUrlRequests) {
 
   scoped_refptr<PrefRegistrySimple> pref_registry = new PrefRegistrySimple;
   PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
-  ssl_config::SSLConfigServiceManager::RegisterPrefs(pref_registry.get());
 
   std::unique_ptr<PrefService> pref_service(
       pref_service_factory.Create(pref_registry.get()));

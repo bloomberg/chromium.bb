@@ -14,7 +14,6 @@ include_rules = [
   "+components/proxy_config",
   "+components/signin/core",
   "+components/signin/ios",
-  "+components/ssl_config",
   "+components/sync",
   "+components/translate/core",
   "+components/translate/ios",

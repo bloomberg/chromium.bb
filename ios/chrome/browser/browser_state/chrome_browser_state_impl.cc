@@ -107,11 +107,6 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
       this);
 
-  ssl_config_service_manager_.reset(
-      ssl_config::SSLConfigServiceManager::CreateDefaultManager(
-          local_state,
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::IO)));
-
   base::FilePath cookie_path = state_path_.Append(kIOSChromeCookieFilename);
   base::FilePath channel_id_path =
       state_path_.Append(kIOSChromeChannelIDFilename);
@@ -229,15 +224,4 @@ PrefProxyConfigTracker* ChromeBrowserStateImpl::GetProxyConfigTracker() {
             GetPrefs(), GetApplicationContext()->GetLocalState());
   }
   return pref_proxy_config_tracker_.get();
-}
-
-net::SSLConfigService* ChromeBrowserStateImpl::GetSSLConfigService() {
-  // If ssl_config_service_manager_ is null, this typically means that some
-  // KeyedService is trying to create a RequestContext at startup,
-  // but SSLConfigServiceManager is not initialized until DoFinalInit() which is
-  // invoked after all KeyedServices have been initialized (see
-  // http://crbug.com/171406).
-  DCHECK(ssl_config_service_manager_)
-      << "SSLConfigServiceManager is not initialized yet";
-  return ssl_config_service_manager_->Get();
 }

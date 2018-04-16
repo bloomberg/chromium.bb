@@ -656,6 +656,15 @@ extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kNtlmV2Enabled[];
 #endif  // defined(OS_POSIX)
 
+extern const char kCertRevocationCheckingEnabled[];
+extern const char kCertRevocationCheckingRequiredLocalAnchors[];
+extern const char kCertEnableSha1LocalAnchors[];
+extern const char kCertEnableSymantecLegacyInfrastructure[];
+extern const char kSSLVersionMin[];
+extern const char kSSLVersionMax[];
+extern const char kTLS13Variant[];
+extern const char kCipherSuiteBlacklist[];
+
 extern const char kBuiltInDnsClientEnabled[];
 extern const char kDnsOverHttpsServers[];
 extern const char kDnsOverHttpsServerMethods[];

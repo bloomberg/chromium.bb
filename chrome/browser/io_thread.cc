@@ -371,7 +371,7 @@ IOThread::IOThread(
       nullptr,
       local_state);
   ssl_config_service_manager_.reset(
-      ssl_config::SSLConfigServiceManager::CreateDefaultManager(
+      SSLConfigServiceManager::CreateDefaultManager(
           local_state,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
