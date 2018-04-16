@@ -81,7 +81,8 @@ class UnescapeRule {
     // Convert %20 to spaces. In some places where we're showing URLs, we may
     // want this. In places where the URL may be copied and pasted out, then
     // you wouldn't want this since it might not be interpreted in one piece
-    // by other applications.
+    // by other applications.  Other unicode spaces will not be unescaped unless
+    // SPOOFING_AND_CONTROL_CHARS is used.
     SPACES = 1 << 1,
 
     // Unescapes '/' and '\\'. If these characters were unescaped, the resulting
@@ -116,7 +117,8 @@ class UnescapeRule {
 // Unescapes |escaped_text| and returns the result.
 // Unescaping consists of looking for the exact pattern "%XX", where each X is
 // a hex digit, and converting to the character with the numerical value of
-// those digits. Thus "i%20=%203%3b" unescapes to "i = 3;".
+// those digits. Thus "i%20=%203%3b" unescapes to "i = 3;", if the
+// "UnescapeRule::SPACES" used.
 //
 // This method does not ensure that the output is a valid string using any
 // character encoding. However, unless SPOOFING_AND_CONTROL_CHARS is set, it

@@ -236,6 +236,20 @@ TEST(EscapeTest, UnescapeURLComponent) {
        UnescapeRule::NORMAL | UnescapeRule::SPOOFING_AND_CONTROL_CHARS,
        "Some%20random text %25\xF0\x9F\x94\x93OK"},
 
+      // Two spoofing characters in a row should not be unescaped.
+      {"%D8%9C%D8%9C", UnescapeRule::NORMAL, "%D8%9C%D8%9C"},
+      // Non-spoofing characters surrounded by spoofing characters should be
+      // unescaped.
+      {"%D8%9C%C2%A1%D8%9C%C2%A1", UnescapeRule::NORMAL,
+       "%D8%9C\xC2\xA1%D8%9C\xC2\xA1"},
+      // Invalid UTF-8 characters surrounded by spoofing characters should be
+      // unescaped.
+      {"%D8%9C%85%D8%9C%85", UnescapeRule::NORMAL, "%D8%9C\x85%D8%9C\x85"},
+      // Test with enough trail bytes to overflow the CBU8_MAX_LENGTH-byte
+      // buffer. The first two bytes are a spoofing character as well.
+      {"%D8%9C%9C%9C%9C%9C%9C%9C%9C%9C%9C", UnescapeRule::NORMAL,
+       "%D8%9C\x9C\x9C\x9C\x9C\x9C\x9C\x9C\x9C\x9C"},
+
       {"Some%20random text %25%2dOK", UnescapeRule::SPACES,
        "Some random text %25-OK"},
       {"Some%20random text %25%2dOK", UnescapeRule::PATH_SEPARATORS,
@@ -370,44 +384,45 @@ TEST(EscapeTest, UnescapeAndDecodeUTF8URLComponent) {
 
 TEST(EscapeTest, AdjustOffset) {
   const AdjustOffsetCase adjust_cases[] = {
-    {"", 0, 0},
-    {"test", 0, 0},
-    {"test", 2, 2},
-    {"test", 4, 4},
-    {"test", std::string::npos, std::string::npos},
-    {"%2dtest", 6, 4},
-    {"%2dtest", 3, 1},
-    {"%2dtest", 2, std::string::npos},
-    {"%2dtest", 1, std::string::npos},
-    {"%2dtest", 0, 0},
-    {"test%2d", 2, 2},
-    {"%E4%BD%A0+%E5%A5%BD", 9, 1},
-    {"%E4%BD%A0+%E5%A5%BD", 6, std::string::npos},
-    {"%E4%BD%A0+%E5%A5%BD", 0, 0},
-    {"%E4%BD%A0+%E5%A5%BD", 10, 2},
-    {"%E4%BD%A0+%E5%A5%BD", 19, 3},
+      {"", 0, 0},
+      {"test", 0, 0},
+      {"test", 2, 2},
+      {"test", 4, 4},
+      {"test", std::string::npos, std::string::npos},
+      {"%2dtest", 6, 4},
+      {"%2dtest", 3, 1},
+      {"%2dtest", 2, std::string::npos},
+      {"%2dtest", 1, std::string::npos},
+      {"%2dtest", 0, 0},
+      {"test%2d", 2, 2},
+      {"test%2e", 2, 2},
+      {"%E4%BD%A0+%E5%A5%BD", 9, 1},
+      {"%E4%BD%A0+%E5%A5%BD", 6, std::string::npos},
+      {"%E4%BD%A0+%E5%A5%BD", 0, 0},
+      {"%E4%BD%A0+%E5%A5%BD", 10, 2},
+      {"%E4%BD%A0+%E5%A5%BD", 19, 3},
 
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 18, 8},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 15, std::string::npos},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 9, 7},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 19, 9},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 28, 10},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 0, 0},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 2, 2},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 3, std::string::npos},
-    {"hi%41test%E4%BD%A0+%E5%A5%BD", 5, 3},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 18, 8},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 15, std::string::npos},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 9, 7},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 19, 9},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 28, 10},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 0, 0},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 2, 2},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 3, std::string::npos},
+      {"hi%41test%E4%BD%A0+%E5%A5%BD", 5, 3},
 
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 9, 1},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 6, std::string::npos},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 0, 0},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 10, 2},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 19, 3},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 21, 5},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 22, std::string::npos},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 24, 6},
-    {"%E4%BD%A0+%E5%A5%BDhi%41test", 28, 10},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 9, 1},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 6, std::string::npos},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 0, 0},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 10, 2},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 19, 3},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 21, 5},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 22, std::string::npos},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 24, 6},
+      {"%E4%BD%A0+%E5%A5%BDhi%41test", 28, 10},
 
-    {"%ED%B0%80+%E5%A5%BD", 6, 6},  // not convertable to UTF-8
+      {"%ED%B0%80+%E5%A5%BD", 6, 6},  // not convertable to UTF-8
   };
 
   for (size_t i = 0; i < arraysize(adjust_cases); i++) {
