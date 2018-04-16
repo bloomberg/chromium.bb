@@ -68,7 +68,7 @@ const base::Feature kHighDynamicRange{"HighDynamicRange",
 // Enables using the monitor's provided color space information when rendering.
 // TODO(mcasas): remove this flag http://crbug.com/771345.
 const base::Feature kUseMonitorColorSpace{"UseMonitorColorSpace",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 }  // namespace features
