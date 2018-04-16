@@ -64,4 +64,9 @@ void LogOnFailedStatus(OnFailedStatus status) {
                             OnFailedStatus::COUNT);
 }
 
+void LogGetSettingStatus(GetSettingStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Windows.GetSettingStatus", status,
+                            GetSettingStatus::COUNT);
+}
+
 }  // namespace notifications_uma

@@ -55,6 +55,7 @@ using notifications_uma::DisplayStatus;
 using notifications_uma::GetDisplayedLaunchIdStatus;
 using notifications_uma::GetDisplayedStatus;
 using notifications_uma::GetNotificationLaunchIdStatus;
+using notifications_uma::GetSettingStatus;
 using notifications_uma::HandleEventStatus;
 using notifications_uma::HistoryStatus;
 using notifications_uma::OnDismissedStatus;
@@ -303,7 +304,9 @@ class NotificationPlatformBridgeWinImpl
     }
 
     winui::Notifications::NotificationSetting setting;
-    if (SUCCEEDED(notifier_->get_Setting(&setting))) {
+    HRESULT hr = notifier_->get_Setting(&setting);
+    if (SUCCEEDED(hr)) {
+      LogGetSettingStatus(GetSettingStatus::SUCCESS);
       switch (setting) {
         case winui::Notifications::NotificationSetting_Enabled:
           break;
@@ -324,6 +327,8 @@ class NotificationPlatformBridgeWinImpl
           DLOG(ERROR) << "Notification disabled by manifest";
           return;
       }
+    } else {
+      LogGetSettingStatus(GetSettingStatus::UNKNOWN_FAILURE);
     }
 
     NotificationLaunchId launch_id(notification_type, notification->id(),
@@ -333,8 +338,8 @@ class NotificationPlatformBridgeWinImpl
         NotificationTemplateBuilder::Build(image_retainer_.get(), launch_id,
                                            profile_id, *notification);
     mswr::ComPtr<winui::Notifications::IToastNotification> toast;
-    HRESULT hr = GetToastNotification(*notification, *notification_template,
-                                      profile_id, incognito, &toast);
+    hr = GetToastNotification(*notification, *notification_template, profile_id,
+                              incognito, &toast);
     if (FAILED(hr)) {
       // A histogram should have already been logged for this failure.
       DLOG(ERROR) << "Unable to get a toast notification";

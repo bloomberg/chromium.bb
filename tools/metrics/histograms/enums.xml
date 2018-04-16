@@ -47536,6 +47536,11 @@ Full version information for the fingerprint enum values:
   <int value="10" label="GET_STRING_FAILED"/>
 </enum>
 
+<enum name="WindowsNotificationGetSettingStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="UNKNOWN_FAILURE"/>
+</enum>
+
 <enum name="WindowsNotificationHandleEventStatus">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="HANDLE_EVENT_LAUNCH_ID_INVALID"/>
