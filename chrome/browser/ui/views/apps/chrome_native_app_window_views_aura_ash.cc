@@ -331,10 +331,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
 
   // Enter immersive mode if the app is opened in tablet mode with the hide
   // titlebars feature enabled.
-  if (ShouldUseImmersiveMode()) {
-    immersive_fullscreen_controller_->SetEnabled(
-        ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, true);
-  }
+  UpdateImmersiveMode();
 
   if (HasFrameColor()) {
     custom_frame_view->SetFrameColors(ActiveFrameColor(),
@@ -350,32 +347,18 @@ void ChromeNativeAppWindowViewsAuraAsh::SetFullscreen(int fullscreen_types) {
   ChromeNativeAppWindowViewsAura::SetFullscreen(fullscreen_types);
 
   if (immersive_fullscreen_controller_.get()) {
-    // Immersive mode should not change if we set fullscreen on a maximizable
-    // app in tablet mode when the hide titlebars feature is enabled.
-    bool autohide_titlebars_enabled = ShouldUseImmersiveMode();
+    UpdateImmersiveMode();
 
-    if (!autohide_titlebars_enabled) {
-      // |immersive_fullscreen_controller_| should only be set if immersive
-      // fullscreen is the fullscreen type used by the OS, or if we're in a
-      // public session where we always use immersive.
-      const bool immersive_enabled =
-          profiles::IsPublicSession() ||
-          (fullscreen_types & AppWindow::FULLSCREEN_TYPE_OS) != 0;
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
-          immersive_enabled);
-
-      // In a public session, display a toast with instructions on exiting
-      // fullscreen.
-      if (profiles::IsPublicSession()) {
-        UpdateExclusiveAccessExitBubbleContent(
-            GURL(),
-            fullscreen_types & (AppWindow::FULLSCREEN_TYPE_HTML_API |
-                                AppWindow::FULLSCREEN_TYPE_WINDOW_API)
-                ? EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION
-                : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
-            ExclusiveAccessBubbleHideCallback());
-      }
+    // In a public session, display a toast with instructions on exiting
+    // fullscreen.
+    if (profiles::IsPublicSession()) {
+      UpdateExclusiveAccessExitBubbleContent(
+          GURL(),
+          fullscreen_types & (AppWindow::FULLSCREEN_TYPE_HTML_API |
+                              AppWindow::FULLSCREEN_TYPE_WINDOW_API)
+              ? EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION
+              : EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE,
+          ExclusiveAccessBubbleHideCallback());
     }
 
     // Autohide the shelf instead of hiding the shelf completely when only in
@@ -424,23 +407,7 @@ void ChromeNativeAppWindowViewsAuraAsh::SetActivateOnPointer(
 // TabletModeClientObserver implementation:
 void ChromeNativeAppWindowViewsAuraAsh::OnTabletModeToggled(bool enabled) {
   tablet_mode_enabled_ = enabled;
-
-  if (!immersive_fullscreen_controller_)
-    return;
-
-  if (enabled) {
-    if (ShouldUseImmersiveMode()) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, true);
-    }
-  } else {
-    // Apps which are resizeable have immersive mode enabled upon entry or
-    // creation in tablet mode. Disable immersive mode upon exiting tablet mode.
-    if (!widget()->IsFullscreen()) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP, false);
-    }
-  }
+  UpdateImmersiveMode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -571,13 +538,7 @@ void ChromeNativeAppWindowViewsAuraAsh::OnWidgetActivationChanged(
   // overview window will calculate the title bar offset and the window will be
   // missing its top portion. Prevent this by disabling immersive mode upon
   // minimize.
-  // TODO(crbug.com/801619): This adds a little extra animation when minimizing
-  // or unminimizing window.
-  if (immersive_fullscreen_controller_) {
-    immersive_fullscreen_controller_->SetEnabled(
-        ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
-        ShouldUseImmersiveMode());
-  }
+  UpdateImmersiveMode();
 }
 
 void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
@@ -585,15 +546,27 @@ void ChromeNativeAppWindowViewsAuraAsh::OnMenuClosed() {
   menu_model_.reset();
 }
 
-bool ChromeNativeAppWindowViewsAuraAsh::ShouldUseImmersiveMode() const {
+void ChromeNativeAppWindowViewsAuraAsh::UpdateImmersiveMode() {
+  // |immersive_fullscreen_controller_| should only be set if immersive
+  // fullscreen is the fullscreen type used by the OS, or if we're in a
+  // public session where we always use immersive.
+  if (!immersive_fullscreen_controller_)
+    return;
   TabletModeClient* client = TabletModeClient::Get();
-  // Windows in tablet mode which are resizable have their title bars hidden in
-  // ash for more size, so enable immersive mode so users have access to
-  // window controls. Non resizable windows do not gain size by hidding the
-  // title bar, so it is not hidden and thus there is no need for immersive
-  // mode.
-  // TODO(sammiequon): Investigate whether we should check resizability using
-  // WindowState instead of CanResize.
-  return client && client->tablet_mode_enabled() && CanResize() &&
-         !IsMinimized();
+  const bool immersive_enabled =
+      profiles::IsPublicSession() || app_window()->IsOsFullscreen() ||
+      // Windows in tablet mode which are resizable have their title bars
+      // hidden in ash for more size, so enable immersive mode so users
+      // have access to window controls. Non resizable windows do not gain
+      // size by hidding the title bar, so it is not hidden and thus there
+      // is no need for immersive mode.
+      // TODO(sammiequon): Investigate whether we should check
+      // resizability using WindowState instead of CanResize.
+      // TODO(crbug.com/801619): This adds a little extra animation
+      // when minimizing or unminimizing window.
+      (client && client->tablet_mode_enabled() && CanResize() &&
+       !IsMinimized());
+  immersive_fullscreen_controller_->SetEnabled(
+      ash::ImmersiveFullscreenController::WINDOW_TYPE_PACKAGED_APP,
+      immersive_enabled);
 }

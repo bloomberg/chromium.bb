@@ -135,9 +135,9 @@ class ChromeNativeAppWindowViewsAuraAsh
   // Callback for MenuRunner
   void OnMenuClosed();
 
-  // Helper function which returns true if in tablet mode, the auto hide
-  // titlebars feature is turned on, and the widget is resizable.
-  bool ShouldUseImmersiveMode() const;
+  // Helper function to update the immersive mode based on the current
+  // app's and window manager's state.
+  void UpdateImmersiveMode();
 
   // Used to put non-frameless windows into immersive fullscreen on ChromeOS. In
   // immersive fullscreen, the window header (title bar and window controls)
