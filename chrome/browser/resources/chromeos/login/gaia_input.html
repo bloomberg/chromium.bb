@@ -28,6 +28,8 @@
                   automatically. Can be changed manually or with checkValidity()
                   method.
     'required' - whether empty field is invalid.
+    'pattern' - regular expression. If set input would be validated against it
+                in checkValidity function. Ignored if 'type' == 'email'.
 
   Methods:
     'focus'         - focuses input field.
@@ -44,7 +46,8 @@
       <label slot="label"><span>[[label]]</span></label>
       <input id="input" is="iron-input" on-keydown="onKeyDown"
           bind-value="{{value}}" invalid="[[isInvalid]]" slot="input"
-          required$="[[required]]" disabled$="[[disabled]]" class="flex">
+          required$="[[required]]" disabled$="[[disabled]]"
+          pattern$="[[pattern]]" class="flex">
       <span id="domainLabel" slot="suffix">[[domain]]</span>
       <template is="dom-if" if="[[error]]">
         <paper-input-error slot="add-on">[[error]]</paper-input-error>

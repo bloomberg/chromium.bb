@@ -22,7 +22,9 @@ Polymer((function() {
 
       error: String,
 
-      isInvalid: Boolean
+      isInvalid: Boolean,
+
+      pattern: String
     },
 
     attached: function() {
@@ -57,8 +59,12 @@ Polymer((function() {
         this.$.input.pattern = INPUT_EMAIL_PATTERN;
         this.$.input.type = 'text';
       } else {
-        this.$.input.removeAttribute('pattern');
         this.$.input.type = this.type;
+        if (this.pattern) {
+          this.$.input.pattern = this.pattern;
+        } else {
+          this.$.input.removeAttribute('pattern');
+        }
       }
       this.updateDomainVisibility_();
     }
