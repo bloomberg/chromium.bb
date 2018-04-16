@@ -59,7 +59,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                          const std::string& gaia_id,
                          const base::string16& user_name,
                          size_t icon_index,
-                         const std::string& supervised_user_id);
+                         const std::string& supervised_user_id,
+                         const AccountId& account_id);
   // Deprecated. Use RemoveProfile instead.
   void DeleteProfileFromCache(const base::FilePath& profile_path);
 
@@ -143,7 +144,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                   const std::string& gaia_id,
                   const base::string16& user_name,
                   size_t icon_index,
-                  const std::string& supervised_user_id) override;
+                  const std::string& supervised_user_id,
+                  const AccountId& account_id) override;
   void RemoveProfileByAccountId(const AccountId& account_id) override;
   void RemoveProfile(const base::FilePath& profile_path) override;
 

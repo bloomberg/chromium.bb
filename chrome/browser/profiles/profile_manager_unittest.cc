@@ -41,6 +41,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -189,7 +190,7 @@ class ProfileManagerTest : public testing::Test {
     size_t num_profiles = storage.GetNumberOfProfiles();
     base::FilePath path = temp_dir_.GetPath().AppendASCII(path_suffix);
     storage.AddProfile(path, profile_name, std::string(), base::string16(), 0,
-                       std::string());
+                       std::string(), EmptyAccountId());
     EXPECT_EQ(num_profiles + 1u, storage.GetNumberOfProfiles());
     return profile_manager->GetProfile(path);
   }
@@ -681,11 +682,14 @@ TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 
   storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_1"),
-      ASCIIToUTF16("name_1"), "12345", base::string16(), 0, std::string());
+                     ASCIIToUTF16("name_1"), "12345", base::string16(), 0,
+                     std::string(), EmptyAccountId());
   storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_2"),
-      ASCIIToUTF16("name_2"), "23456", base::string16(), 0, std::string());
+                     ASCIIToUTF16("name_2"), "23456", base::string16(), 0,
+                     std::string(), EmptyAccountId());
   storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_3"),
-      ASCIIToUTF16("name_3"), "34567", base::string16(), 0, std::string());
+                     ASCIIToUTF16("name_3"), "34567", base::string16(), 0,
+                     std::string(), EmptyAccountId());
 
   EXPECT_EQ(3u, storage.GetNumberOfProfiles());
 
@@ -709,9 +713,11 @@ TEST_F(ProfileManagerTest, DoNotAutoloadProfilesIfBackgroundModeOff) {
   EXPECT_EQ(0u, storage.GetNumberOfProfiles());
 
   storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_1"),
-      ASCIIToUTF16("name_1"), "12345", base::string16(), 0, std::string());
+                     ASCIIToUTF16("name_1"), "12345", base::string16(), 0,
+                     std::string(), EmptyAccountId());
   storage.AddProfile(profile_manager->user_data_dir().AppendASCII("path_2"),
-      ASCIIToUTF16("name_2"), "23456", base::string16(), 0, std::string());
+                     ASCIIToUTF16("name_2"), "23456", base::string16(), 0,
+                     std::string(), EmptyAccountId());
 
   EXPECT_EQ(2u, storage.GetNumberOfProfiles());
 
@@ -1092,7 +1098,8 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   base::FilePath path1 =
       profile_manager->user_data_dir().AppendASCII(profile_name1);
   storage.AddProfile(path1, base::UTF8ToUTF16(profile_name1), std::string(),
-                     base::UTF8ToUTF16(profile_name1), 0, std::string());
+                     base::UTF8ToUTF16(profile_name1), 0, std::string(),
+                     EmptyAccountId());
   storage.GetAllProfilesAttributes()[0u]->SetIsEphemeral(true);
   ASSERT_TRUE(base::CreateDirectory(path1));
 
@@ -1100,7 +1107,8 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   base::FilePath path2 =
       profile_manager->user_data_dir().AppendASCII(profile_name2);
   storage.AddProfile(path2, base::UTF8ToUTF16(profile_name2), std::string(),
-                     base::UTF8ToUTF16(profile_name2), 0, std::string());
+                     base::UTF8ToUTF16(profile_name2), 0, std::string(),
+                     EmptyAccountId());
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
   ASSERT_TRUE(base::CreateDirectory(path2));
 
@@ -1139,7 +1147,8 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfilesWithGuestLastUsedProfile) {
   base::FilePath path1 =
       profile_manager->user_data_dir().AppendASCII(profile_name1);
   storage.AddProfile(path1, base::UTF8ToUTF16(profile_name1), std::string(),
-                     base::UTF8ToUTF16(profile_name1), 0, std::string());
+                     base::UTF8ToUTF16(profile_name1), 0, std::string(),
+                     EmptyAccountId());
   storage.GetAllProfilesAttributes()[0u]->SetIsEphemeral(true);
   ASSERT_TRUE(base::CreateDirectory(path1));
   ASSERT_EQ(1u, storage.GetNumberOfProfiles());
@@ -1499,7 +1508,7 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNeedsToLoadNextProfile) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   storage.AddProfile(dest_path2, ASCIIToUTF16(profile_name2), "23456",
-                     base::string16(), 0, std::string());
+                     base::string16(), 0, std::string(), EmptyAccountId());
   content::RunAllTasksUntilIdle();
 
   EXPECT_EQ(1u, profile_manager->GetLoadedProfiles().size());
@@ -1548,9 +1557,11 @@ TEST_F(ProfileManagerTest, ActiveProfileDeletedNextProfileDeletedToo) {
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
   storage.AddProfile(dest_path2, ASCIIToUTF16(profile_name2), "23456",
-                     ASCIIToUTF16(profile_name2), 1, std::string());
+                     ASCIIToUTF16(profile_name2), 1, std::string(),
+                     EmptyAccountId());
   storage.AddProfile(dest_path3, ASCIIToUTF16(profile_name3), "34567",
-                     ASCIIToUTF16(profile_name3), 2, std::string());
+                     ASCIIToUTF16(profile_name3), 2, std::string(),
+                     EmptyAccountId());
 
   content::RunAllTasksUntilIdle();
 
