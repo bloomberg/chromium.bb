@@ -59,6 +59,7 @@
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/data_protocol_handler.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -241,11 +242,6 @@ IOSIOThread::IOSIOThread(PrefService* local_state,
   system_proxy_config_service_ = ProxyServiceFactory::CreateProxyConfigService(
       pref_proxy_config_tracker_.get());
 
-  ssl_config_service_manager_.reset(
-      ssl_config::SSLConfigServiceManager::CreateDefaultManager(
-          local_state,
-          web::WebThread::GetTaskRunnerForThread(web::WebThread::IO)));
-
   web::WebThread::SetDelegate(web::WebThread::IO, this);
 }
 
@@ -325,7 +321,7 @@ void IOSIOThread::Init() {
 
   globals_->ct_policy_enforcer.reset(new net::CTPolicyEnforcer());
 
-  globals_->ssl_config_service = GetSSLConfigService();
+  globals_->ssl_config_service = new net::SSLConfigServiceDefaults();
 
   CreateDefaultAuthHandlerFactory();
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
@@ -409,10 +405,6 @@ void IOSIOThread::ClearHostCache() {
 const net::HttpNetworkSession::Params& IOSIOThread::NetworkSessionParams()
     const {
   return params_;
-}
-
-net::SSLConfigService* IOSIOThread::GetSSLConfigService() {
-  return ssl_config_service_manager_->Get();
 }
 
 void IOSIOThread::ChangedToOnTheRecordOnIOThread() {

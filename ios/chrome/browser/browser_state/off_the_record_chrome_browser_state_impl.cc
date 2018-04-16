@@ -87,11 +87,6 @@ OffTheRecordChromeBrowserStateImpl::GetProxyConfigTracker() {
   return pref_proxy_config_tracker_.get();
 }
 
-net::SSLConfigService*
-OffTheRecordChromeBrowserStateImpl::GetSSLConfigService() {
-  return original_chrome_browser_state_->GetSSLConfigService();
-}
-
 ChromeBrowserStateIOData* OffTheRecordChromeBrowserStateImpl::GetIOData() {
   return io_data_->io_data();
 }

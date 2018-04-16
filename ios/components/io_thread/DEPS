@@ -3,7 +3,6 @@ include_rules = [
   "+components/network_session_configurator",
   "+components/prefs",
   "+components/proxy_config",
-  "+components/ssl_config",
   "+components/variations",
   "+components/version_info",
   "+ios/web/public",

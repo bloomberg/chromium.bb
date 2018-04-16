@@ -11,10 +11,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl_io_data.h"
 
-namespace ssl_config {
-class SSLConfigServiceManager;
-}
-
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -37,7 +33,6 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
   ios::ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   void DestroyOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
-  net::SSLConfigService* GetSSLConfigService() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   ChromeBrowserStateIOData* GetIOData() override;
@@ -87,8 +82,6 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
   std::unique_ptr<ChromeBrowserStateImplIOData::Handle> io_data_;
 
   std::unique_ptr<PrefProxyConfigTracker> pref_proxy_config_tracker_;
-  std::unique_ptr<ssl_config::SSLConfigServiceManager>
-      ssl_config_service_manager_;
 
   // STOP!!!! DO NOT ADD ANY MORE ITEMS HERE!!!!
   //

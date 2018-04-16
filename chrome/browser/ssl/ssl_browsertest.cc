@@ -92,7 +92,6 @@
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
-#include "components/ssl_config/ssl_config_prefs.h"
 #include "components/ssl_errors/error_classification.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/variations/variations_associated_data.h"
@@ -1848,7 +1847,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPOk) {
   ASSERT_NO_FATAL_FAILURE(
       EnablePolicy(g_browser_process->local_state(),
                    policy::key::kEnableOnlineRevocationChecks,
-                   ssl_config::prefs::kCertRevocationCheckingEnabled));
+                   prefs::kCertRevocationCheckingEnabled));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 
@@ -1876,7 +1875,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestHTTPSOCSPRevoked) {
   ASSERT_NO_FATAL_FAILURE(
       EnablePolicy(g_browser_process->local_state(),
                    policy::key::kEnableOnlineRevocationChecks,
-                   ssl_config::prefs::kCertRevocationCheckingEnabled));
+                   prefs::kCertRevocationCheckingEnabled));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 
@@ -1913,9 +1912,9 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1IsDefaultDisabled) {
 IN_PROC_BROWSER_TEST_P(SSLUITest, SHA1PrefsCanEnable) {
   bool net::SSLConfig::*member = &net::SSLConfig::sha1_local_anchors_enabled;
 
-  ASSERT_NO_FATAL_FAILURE(EnablePolicy(
-      g_browser_process->local_state(), policy::key::kEnableSha1ForLocalAnchors,
-      ssl_config::prefs::kCertEnableSha1LocalAnchors));
+  ASSERT_NO_FATAL_FAILURE(EnablePolicy(g_browser_process->local_state(),
+                                       policy::key::kEnableSha1ForLocalAnchors,
+                                       prefs::kCertEnableSha1LocalAnchors));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 
@@ -1942,7 +1941,7 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
   ASSERT_NO_FATAL_FAILURE(
       EnablePolicy(g_browser_process->local_state(),
                    policy::key::kEnableSymantecLegacyInfrastructure,
-                   ssl_config::prefs::kCertEnableSymantecLegacyInfrastructure));
+                   prefs::kCertEnableSymantecLegacyInfrastructure));
   ASSERT_NO_FATAL_FAILURE(
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 }

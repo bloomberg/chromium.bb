@@ -54,7 +54,6 @@
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
-#include "components/ssl_config/ssl_config_prefs.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/sync_policy_handler.h"
 #include "components/translate/core/browser/translate_pref_names.h"
@@ -258,19 +257,19 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kSigninAllowed,
     base::Value::Type::BOOLEAN },
   { key::kEnableOnlineRevocationChecks,
-    ssl_config::prefs::kCertRevocationCheckingEnabled,
+    prefs::kCertRevocationCheckingEnabled,
     base::Value::Type::BOOLEAN },
   { key::kMachineLevelUserCloudPolicyEnrollmentToken,
     policy_prefs::kMachineLevelUserCloudPolicyEnrollmentToken,
     base::Value::Type::STRING },
   { key::kRequireOnlineRevocationChecksForLocalAnchors,
-    ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
+    prefs::kCertRevocationCheckingRequiredLocalAnchors,
     base::Value::Type::BOOLEAN },
   { key::kEnableSha1ForLocalAnchors,
-    ssl_config::prefs::kCertEnableSha1LocalAnchors,
+    prefs::kCertEnableSha1LocalAnchors,
     base::Value::Type::BOOLEAN },
   { key::kEnableSymantecLegacyInfrastructure,
-    ssl_config::prefs::kCertEnableSymantecLegacyInfrastructure,
+    prefs::kCertEnableSymantecLegacyInfrastructure,
     base::Value::Type::BOOLEAN },
   { key::kAuthSchemes,
     prefs::kAuthSchemes,
@@ -468,10 +467,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kForceEphemeralProfiles,
     base::Value::Type::BOOLEAN },
   { key::kSSLVersionMin,
-    ssl_config::prefs::kSSLVersionMin,
+    prefs::kSSLVersionMin,
     base::Value::Type::STRING },
   { key::kSSLVersionMax,
-    ssl_config::prefs::kSSLVersionMax,
+    prefs::kSSLVersionMax,
     base::Value::Type::STRING },
   { key::kNTPContentSuggestionsEnabled,
     ntp_snippets::prefs::kEnableSnippets,

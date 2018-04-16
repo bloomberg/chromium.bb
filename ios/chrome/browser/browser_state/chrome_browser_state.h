@@ -28,10 +28,6 @@ class SequencedTaskRunner;
 class Time;
 }
 
-namespace net {
-class SSLConfigService;
-}
-
 namespace sync_preferences {
 class PrefServiceSyncable;
 }
@@ -113,9 +109,6 @@ class ChromeBrowserState : public web::BrowserState {
   // Returns the helper object that provides the proxy configuration service
   // access to the the proxy configuration possibly defined by preferences.
   virtual PrefProxyConfigTracker* GetProxyConfigTracker() = 0;
-
-  // Returns the SSLConfigService for this browser state.
-  virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
   // Creates the main net::URLRequestContextGetter that will be returned by
   // GetRequestContext(). Should only be called once.

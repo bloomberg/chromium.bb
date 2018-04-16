@@ -254,10 +254,6 @@ PrefProxyConfigTracker* TestChromeBrowserState::GetProxyConfigTracker() {
   return nullptr;
 }
 
-net::SSLConfigService* TestChromeBrowserState::GetSSLConfigService() {
-  return nullptr;
-}
-
 PrefService* TestChromeBrowserState::GetPrefs() {
   return prefs_.get();
 }

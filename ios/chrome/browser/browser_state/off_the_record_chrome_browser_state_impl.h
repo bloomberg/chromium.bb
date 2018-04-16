@@ -26,7 +26,6 @@ class OffTheRecordChromeBrowserStateImpl : public ios::ChromeBrowserState {
   ios::ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   void DestroyOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
-  net::SSLConfigService* GetSSLConfigService() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   ChromeBrowserStateIOData* GetIOData() override;

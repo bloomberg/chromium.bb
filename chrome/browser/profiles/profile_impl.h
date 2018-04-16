@@ -30,6 +30,7 @@
 
 class MediaDeviceIDSalt;
 class PrefService;
+class SSLConfigServiceManager;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
@@ -52,10 +53,6 @@ namespace policy {
 class ConfigurationPolicyProvider;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
-}
-
-namespace ssl_config {
-class SSLConfigServiceManager;
 }
 
 namespace sync_preferences {
@@ -241,8 +238,7 @@ class ProfileImpl : public Profile {
   scoped_refptr<ExtensionSpecialStoragePolicy>
       extension_special_storage_policy_;
 #endif
-  std::unique_ptr<ssl_config::SSLConfigServiceManager>
-      ssl_config_service_manager_;
+  std::unique_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
   // Exit type the last time the profile was opened. This is set only once from
   // prefs.

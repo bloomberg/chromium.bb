@@ -37,7 +37,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "components/prefs/pref_service.h"
-#include "components/ssl_config/ssl_config_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -1094,7 +1093,7 @@ void MobileActivator::ReEnableCertRevocationChecking() {
   if (!prefs)
     return;
   if (reenable_cert_check_) {
-    prefs->SetBoolean(ssl_config::prefs::kCertRevocationCheckingEnabled, true);
+    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, true);
     reenable_cert_check_ = false;
   }
 }
@@ -1105,9 +1104,9 @@ void MobileActivator::DisableCertRevocationChecking() {
   // TODO(rkc): We want to do this only if on Cellular.
   PrefService* prefs = g_browser_process->local_state();
   if (!reenable_cert_check_ &&
-      prefs->GetBoolean(ssl_config::prefs::kCertRevocationCheckingEnabled)) {
+      prefs->GetBoolean(prefs::kCertRevocationCheckingEnabled)) {
     reenable_cert_check_ = true;
-    prefs->SetBoolean(ssl_config::prefs::kCertRevocationCheckingEnabled, false);
+    prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, false);
   }
 }
 

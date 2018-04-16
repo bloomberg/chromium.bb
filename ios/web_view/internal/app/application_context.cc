@@ -15,7 +15,6 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/signin/core/browser/signin_manager_base.h"
-#include "components/ssl_config/ssl_config_service_manager.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web/public/web_thread.h"
 #include "ios/web_view/cwv_web_view_features.h"
@@ -70,8 +69,6 @@ PrefService* ApplicationContext::GetLocalState() {
     scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple);
     flags_ui::PrefServiceFlagsStorage::RegisterPrefs(pref_registry.get());
     PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
-    ssl_config::SSLConfigServiceManager::RegisterPrefs(pref_registry.get());
-
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)
     SigninManagerBase::RegisterPrefs(pref_registry.get());
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_SIGNIN)

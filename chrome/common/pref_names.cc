@@ -1590,6 +1590,45 @@ const char kAllowCrossOriginAuthPrompt[] = "auth.allow_cross_origin_prompt";
 const char kNtlmV2Enabled[] = "auth.ntlm_v2_enabled";
 #endif  // defined(OS_POSIX)
 
+// Boolean that specifies whether to enable revocation checking (best effort)
+// by default.
+const char kCertRevocationCheckingEnabled[] = "ssl.rev_checking.enabled";
+
+// Boolean that specifies whether to require a successful revocation check if
+// a certificate path ends in a locally-trusted (as opposed to publicly
+// trusted) trust anchor.
+const char kCertRevocationCheckingRequiredLocalAnchors[] =
+    "ssl.rev_checking.required_for_local_anchors";
+
+// Boolean that specifies whether to allow the SHA-1 digest algorithm in
+// certificate signatures for certificate paths that end in a locally-trusted
+// (as opposed to publicly trusted) trust anchor.
+const char kCertEnableSha1LocalAnchors[] = "ssl.sha1_enabled_for_local_anchors";
+
+// Boolean that specifies whether to allow certificates from the Legacy
+// Symantec Infrastructure, disabling the mitigations documented in
+// https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
+const char kCertEnableSymantecLegacyInfrastructure[] =
+    "ssl.enable_symantec_legacy_infrastructure";
+
+// String specifying the minimum TLS version to negotiate. Supported values
+// are "tls1", "tls1.1", "tls1.2", "tls1.3".
+const char kSSLVersionMin[] = "ssl.version_min";
+
+// String specifying the maximum TLS version to negotiate. Supported values
+// are "tls1.2", "tls1.3"
+const char kSSLVersionMax[] = "ssl.version_max";
+
+// String specifying the TLS 1.3 variant to negotiate when negotiating TLS 1.3.
+// Supported values are "disabled", which disables TLS 1.3, and "draft23".
+const char kTLS13Variant[] = "ssl.tls13_variant";
+
+// String specifying the TLS ciphersuites to disable. Ciphersuites are
+// specified as a comma-separated list of 16-bit hexadecimal values, with
+// the values being the ciphersuites assigned by the IANA registry (e.g.
+// "0x0004,0x0005").
+const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
+
 // Boolean that specifies whether the built-in asynchronous DNS client is used.
 const char kBuiltInDnsClientEnabled[] = "async_dns.enabled";
 

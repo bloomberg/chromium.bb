@@ -120,7 +120,6 @@ source_set("chromeos") {
     "//components/safe_browsing/db:metadata_proto",
     "//components/session_manager/core",
     "//components/signin/core/browser",
-    "//components/ssl_config",
     "//components/startup_metric_utils/browser:lib",
     "//components/storage_monitor",
     "//components/sync_preferences",

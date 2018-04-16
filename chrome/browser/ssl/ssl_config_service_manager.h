@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SSL_CONFIG_SSL_CONFIG_SERVICE_MANAGER_H_
-#define COMPONENTS_SSL_CONFIG_SSL_CONFIG_SERVICE_MANAGER_H_
+#ifndef CHROME_BROWSER_SSL_SSL_CONFIG_SERVICE_MANAGER_H_
+#define CHROME_BROWSER_SSL_SSL_CONFIG_SERVICE_MANAGER_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -17,8 +17,6 @@ class SSLConfigService;
 
 class PrefService;
 class PrefRegistrySimple;
-
-namespace ssl_config {
 
 // An interface for creating SSLConfigService objects.
 class SSLConfigServiceManager {
@@ -41,5 +39,4 @@ class SSLConfigServiceManager {
   virtual net::SSLConfigService* Get() = 0;
 };
 
-}  // namespace ssl_config
-#endif  // COMPONENTS_SSL_CONFIG_SSL_CONFIG_SERVICE_MANAGER_H_
+#endif  // CHROME_BROWSER_SSL_SSL_CONFIG_SERVICE_MANAGER_H_

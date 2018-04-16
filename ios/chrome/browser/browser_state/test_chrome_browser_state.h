@@ -48,7 +48,6 @@ class TestChromeBrowserState : public ios::ChromeBrowserState {
   bool HasOffTheRecordChromeBrowserState() const override;
   ios::ChromeBrowserState* GetOffTheRecordChromeBrowserState() override;
   PrefProxyConfigTracker* GetProxyConfigTracker() override;
-  net::SSLConfigService* GetSSLConfigService() override;
   PrefService* GetPrefs() override;
   PrefService* GetOffTheRecordPrefs() override;
   ChromeBrowserStateIOData* GetIOData() override;

@@ -1,7 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "components/ssl_config/ssl_config_service_manager.h"
+#include "chrome/browser/ssl/ssl_config_service_manager.h"
 
 #include <stdint.h>
 
@@ -16,14 +16,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/ssl_config/ssl_config_prefs.h"
-#include "components/ssl_config/ssl_config_switches.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -87,8 +87,6 @@ uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
 
 const char kTLS13VariantExperimentName[] = "TLS13Variant";
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServicePref
 
@@ -140,7 +138,7 @@ void SSLConfigServicePref::SetNewSSLConfig(const net::SSLConfig& new_config) {
 //  SSLConfigServiceManagerPref
 
 // The manager for holding and updating an SSLConfigServicePref instance.
-class SSLConfigServiceManagerPref : public ssl_config::SSLConfigServiceManager {
+class SSLConfigServiceManagerPref : public SSLConfigServiceManager {
  public:
   SSLConfigServiceManagerPref(
       PrefService* local_state,
@@ -205,38 +203,36 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
   }
 
   if (tls13_value) {
-    local_state->SetDefaultPrefValue(ssl_config::prefs::kTLS13Variant,
+    local_state->SetDefaultPrefValue(prefs::kTLS13Variant,
                                      base::Value(tls13_value));
   }
   if (version_value) {
-    local_state->SetDefaultPrefValue(ssl_config::prefs::kSSLVersionMax,
+    local_state->SetDefaultPrefValue(prefs::kSSLVersionMax,
                                      base::Value(version_value));
   }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
-      base::Bind(&SSLConfigServiceManagerPref::OnPreferenceChanged,
-                 base::Unretained(this), local_state);
+      base::BindRepeating(&SSLConfigServiceManagerPref::OnPreferenceChanged,
+                          base::Unretained(this), local_state);
 
-  rev_checking_enabled_.Init(ssl_config::prefs::kCertRevocationCheckingEnabled,
-                             local_state, local_state_callback);
+  rev_checking_enabled_.Init(prefs::kCertRevocationCheckingEnabled, local_state,
+                             local_state_callback);
   rev_checking_required_local_anchors_.Init(
-      ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
-      local_state, local_state_callback);
-  sha1_local_anchors_enabled_.Init(
-      ssl_config::prefs::kCertEnableSha1LocalAnchors, local_state,
+      prefs::kCertRevocationCheckingRequiredLocalAnchors, local_state,
       local_state_callback);
+  sha1_local_anchors_enabled_.Init(prefs::kCertEnableSha1LocalAnchors,
+                                   local_state, local_state_callback);
   symantec_legacy_infrastructure_enabled_.Init(
-      ssl_config::prefs::kCertEnableSymantecLegacyInfrastructure, local_state,
+      prefs::kCertEnableSymantecLegacyInfrastructure, local_state,
       local_state_callback);
-  ssl_version_min_.Init(ssl_config::prefs::kSSLVersionMin, local_state,
+  ssl_version_min_.Init(prefs::kSSLVersionMin, local_state,
                         local_state_callback);
-  ssl_version_max_.Init(ssl_config::prefs::kSSLVersionMax, local_state,
+  ssl_version_max_.Init(prefs::kSSLVersionMax, local_state,
                         local_state_callback);
-  tls13_variant_.Init(ssl_config::prefs::kTLS13Variant, local_state,
-                      local_state_callback);
+  tls13_variant_.Init(prefs::kTLS13Variant, local_state, local_state_callback);
 
   local_state_change_registrar_.Init(local_state);
-  local_state_change_registrar_.Add(ssl_config::prefs::kCipherSuiteBlacklist,
+  local_state_change_registrar_.Add(prefs::kCipherSuiteBlacklist,
                                     local_state_callback);
 
   OnDisabledCipherSuitesChange(local_state);
@@ -249,23 +245,18 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
 // static
 void SSLConfigServiceManagerPref::RegisterPrefs(PrefRegistrySimple* registry) {
   net::SSLConfig default_config;
+  registry->RegisterBooleanPref(prefs::kCertRevocationCheckingEnabled,
+                                default_config.rev_checking_enabled);
   registry->RegisterBooleanPref(
-      ssl_config::prefs::kCertRevocationCheckingEnabled,
-      default_config.rev_checking_enabled);
-  registry->RegisterBooleanPref(
-      ssl_config::prefs::kCertRevocationCheckingRequiredLocalAnchors,
+      prefs::kCertRevocationCheckingRequiredLocalAnchors,
       default_config.rev_checking_required_local_anchors);
-  registry->RegisterBooleanPref(ssl_config::prefs::kCertEnableSha1LocalAnchors,
-                                false);
-  registry->RegisterBooleanPref(
-      ssl_config::prefs::kCertEnableSymantecLegacyInfrastructure,
-      default_config.symantec_enforcement_disabled);
-  registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMin,
-                               std::string());
-  registry->RegisterStringPref(ssl_config::prefs::kSSLVersionMax,
-                               std::string());
-  registry->RegisterStringPref(ssl_config::prefs::kTLS13Variant, std::string());
-  registry->RegisterListPref(ssl_config::prefs::kCipherSuiteBlacklist);
+  registry->RegisterBooleanPref(prefs::kCertEnableSha1LocalAnchors, false);
+  registry->RegisterBooleanPref(prefs::kCertEnableSymantecLegacyInfrastructure,
+                                default_config.symantec_enforcement_disabled);
+  registry->RegisterStringPref(prefs::kSSLVersionMin, std::string());
+  registry->RegisterStringPref(prefs::kSSLVersionMax, std::string());
+  registry->RegisterStringPref(prefs::kTLS13Variant, std::string());
+  registry->RegisterListPref(prefs::kCipherSuiteBlacklist);
 }
 
 net::SSLConfigService* SSLConfigServiceManagerPref::Get() {
@@ -276,7 +267,7 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
     PrefService* prefs,
     const std::string& pref_name_in) {
   DCHECK(prefs);
-  if (pref_name_in == ssl_config::prefs::kCipherSuiteBlacklist)
+  if (pref_name_in == prefs::kCipherSuiteBlacklist)
     OnDisabledCipherSuitesChange(prefs);
 
   net::SSLConfig new_config;
@@ -284,9 +275,9 @@ void SSLConfigServiceManagerPref::OnPreferenceChanged(
 
   // Post a task to |io_loop| with the new configuration, so it can
   // update |cached_config_|.
-  io_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&SSLConfigServicePref::SetNewSSLConfig,
-                                       ssl_config_service_, new_config));
+  io_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&SSLConfigServicePref::SetNewSSLConfig,
+                                ssl_config_service_, new_config));
 }
 
 void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
@@ -329,14 +320,15 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
     PrefService* local_state) {
   const base::ListValue* value =
-      local_state->GetList(ssl_config::prefs::kCipherSuiteBlacklist);
+      local_state->GetList(prefs::kCipherSuiteBlacklist);
   disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //  SSLConfigServiceManager
 
-namespace ssl_config {
 // static
 SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
     PrefService* local_state,
@@ -348,4 +340,3 @@ SSLConfigServiceManager* SSLConfigServiceManager::CreateDefaultManager(
 void SSLConfigServiceManager::RegisterPrefs(PrefRegistrySimple* registry) {
   SSLConfigServiceManagerPref::RegisterPrefs(registry);
 }
-}  // namespace ssl_config
