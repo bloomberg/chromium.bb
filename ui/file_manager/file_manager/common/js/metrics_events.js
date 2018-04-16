@@ -64,6 +64,11 @@ metrics.FileSystemProviders = {
   ndjpildffkeodjdaeebdhnncfhopkajk: 'Network File Share for Chrome OS',
   gmhmnhjihabohahcllfgjooaoecglhpi: 'LanFolder',
   dmboannefpncccogfdikhmhpmdnddgoe: 'ZipArchiver',
+
+  /**
+   * Native Providers.
+   */
+  '@smb': 'Native Network File Share (SMB)',
 };
 
 /**
