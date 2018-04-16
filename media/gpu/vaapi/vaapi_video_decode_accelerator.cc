@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -209,32 +210,48 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
     gfx::Rect visible_rect) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  VaapiPicture* picture = PictureById(available_picture_buffers_.front());
-  DCHECK(picture);
+  VaapiPicture* vaapi_picture = PictureById(available_picture_buffers_.front());
+  DCHECK(vaapi_picture);
   available_picture_buffers_.pop();
 
-  const int32_t output_id = picture->picture_buffer_id();
+  const int32_t output_id = vaapi_picture->picture_buffer_id();
+
+  // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
+  Picture picture(output_id, input_id, visible_rect, gfx::ColorSpace(),
+                  vaapi_picture->AllowOverlay());
 
   VLOGF(4) << "Outputting VASurface " << va_surface->id()
            << " into pixmap bound to picture buffer id " << output_id;
-  {
-    TRACE_EVENT2("media,gpu", "VAVDA::DownloadFromSurface", "input_id",
-                 input_id, "output_id", output_id);
-    RETURN_AND_NOTIFY_ON_FAILURE(picture->DownloadFromSurface(va_surface),
-                                 "Failed putting surface into pixmap",
-                                 PLATFORM_FAILURE, );
-  }
-  // Notify the client a picture is ready to be displayed.
+
+  // base::Unretained(vaapi_picture) is fine because |vaapi_picture| is fully
+  // owned in |pictures_|. |decoder_thread_task_runner_| is also fully owned.
+  picture_buffers_awaiting_blit_.push(output_id);
+  base::PostTaskAndReplyWithResult(
+      decoder_thread_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&VaapiPicture::DownloadFromSurface,
+                     base::Unretained(vaapi_picture), va_surface),
+      base::BindOnce(&VaapiVideoDecodeAccelerator::NotifyPictureReady,
+                     weak_this_, base::Passed(&picture)));
+}
+
+void VaapiVideoDecodeAccelerator::NotifyPictureReady(Picture picture,
+                                                     bool result) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // We might have been Reset()ted and have no |picture_buffers_awaiting_blit_|.
+  if (!picture_buffers_awaiting_blit_.empty())
+    picture_buffers_awaiting_blit_.pop();
+  RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed putting surface into pixmap",
+                               PLATFORM_FAILURE, );
+  if (!client_)
+    return;
+
   ++num_frames_at_client_;
   TRACE_COUNTER1("media,gpu", "Vaapi frames at client", num_frames_at_client_);
-  VLOGF(4) << "Notifying output picture id " << output_id << " for input "
-           << input_id
-           << " is ready. visible rect: " << visible_rect.ToString();
-  if (client_) {
-    // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
-    client_->PictureReady(Picture(output_id, input_id, visible_rect,
-                                  gfx::ColorSpace(), picture->AllowOverlay()));
-  }
+  VLOGF(4) << "Notifying output picture id " << picture.picture_buffer_id()
+           << " for input " << picture.bitstream_buffer_id()
+           << " is ready. visible rect: " << picture.visible_rect().ToString();
+  client_->PictureReady(picture);
 }
 
 void VaapiVideoDecodeAccelerator::TryOutputPicture() {
@@ -396,11 +413,13 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange(
     return;
 
   if (!pending_output_cbs_.empty() ||
-      picture_map_.size() != available_va_surfaces_.size()) {
-    // Either: Not all |pending_output_cbs_| have been executed yet
-    // (i.e. they're waiting for resources in TryOutputPicture()), or |client_|
-    // hasn't returned all the |available_va_surfaces_| (via
-    // RecycleVASurfaceID), In any case, give some time for both to happen.
+      picture_map_.size() != available_va_surfaces_.size() ||
+      !picture_buffers_awaiting_blit_.empty()) {
+    // Either: Not all |pending_output_cbs_| have been executed yet (i.e.
+    // they're waiting for resources in TryOutputPicture()), or |client_| hasn't
+    // returned all the |available_va_surfaces_| (via RecycleVASurfaceID()), or
+    // there are PictureBuffers undergoing a blit operation (so we can't
+    // destroy them yet). In any case, give some time for all to satisfy.
     DVLOGF(2) << "Awaiting pending output/surface release callbacks to finish";
     task_runner_->PostTask(
         FROM_HERE,
@@ -418,11 +437,10 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange(
   std::swap(available_va_surfaces_, empty);
   vaapi_wrapper_->DestroySurfaces();
 
-  for (PictureMap::iterator iter = picture_map_.begin();
-       iter != picture_map_.end(); ++iter) {
-    VLOGF(2) << "Dismissing picture id: " << iter->first;
+  for (const auto& id_and_picture : picture_map_) {
+    VLOGF(2) << "Dismissing picture id: " << id_and_picture.first;
     if (client_)
-      client_->DismissPictureBuffer(iter->first);
+      client_->DismissPictureBuffer(id_and_picture.first);
   }
   picture_map_.clear();
 
@@ -698,6 +716,8 @@ void VaapiVideoDecodeAccelerator::Reset() {
   base::AutoLock auto_lock(lock_);
   state_ = kResetting;
   finish_flush_pending_ = false;
+  base::queue<int32_t> empty;
+  std::swap(picture_buffers_awaiting_blit_, empty);
 
   // Drop all remaining input buffers, if present.
   while (!input_buffers_.empty())

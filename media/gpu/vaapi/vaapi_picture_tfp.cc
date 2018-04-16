@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_picture_tfp.h"
 
+#include "base/trace_event/trace_event.h"
 #include "media/gpu/vaapi/va_surface.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "ui/gfx/x/x11_types.h"
@@ -106,6 +107,8 @@ bool VaapiTFPPicture::ImportGpuMemoryBufferHandle(
 bool VaapiTFPPicture::DownloadFromSurface(
     const scoped_refptr<VASurface>& va_surface) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  TRACE_EVENT1("media,gpu", "VaapiTFPPicture::DownloadFromSurface",
+               "VASurfaceID", va_surface->id());
   return vaapi_wrapper_->PutSurfaceIntoPixmap(va_surface->id(), x_pixmap_,
                                               va_surface->size());
 }

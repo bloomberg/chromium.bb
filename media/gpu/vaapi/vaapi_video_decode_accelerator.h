@@ -150,12 +150,15 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   bool InitializeFBConfig();
 
   // Callback to be executed once we have a |va_surface| to be output and an
-  // available VaapiPicture in |available_picture_buffers_| for output. Puts
-  // contents of |va_surface| into the latter, releases the surface and passes
-  // the resulting picture to |client_| along with |visible_rect|.
+  // available VaapiPicture in |available_picture_buffers_| for output. Blits
+  // the contents of |va_surface| into the latter, releases the surface and
+  // schedules NotifyPictureReady().
   void OutputPicture(const scoped_refptr<VASurface>& va_surface,
                      int32_t input_id,
                      gfx::Rect visible_rect);
+
+  // Notifies the |client_| of a |picture| ready, if |result| is true.
+  void NotifyPictureReady(Picture picture, bool result);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
   void TryOutputPicture();
@@ -207,6 +210,10 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // Queue of PictureBuffer ids available to be sent to |client_| via
   // OutputPicture() (|client_| returns them via ReusePictureBuffer()).
   base::queue<int32_t> available_picture_buffers_;
+  // Queue of PictureBuffer ids that are undergoing blit (DownloadFromSurface).
+  // Used to delay a potential TryFinishSurfaceSetChange() while these are busy.
+  base::queue<int32_t> picture_buffers_awaiting_blit_;
+
   // Available VaapiPictures allocated by |client_| in AssignPictureBuffers()
   // (and/or TryFinishSurfaceSetChange()). These pictures are indexed by the
   // |available_picture_buffers_|.
