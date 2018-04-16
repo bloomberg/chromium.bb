@@ -24034,6 +24034,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Chrome on Mac"/>
 </enum>
 
+<enum name="IOSITunesURLsStoreKitHandlingResult">
+  <int value="0" label="Handling failed"/>
+  <int value="1" label="Single App URL, handled"/>
+  <int value="2" label="App Bundle URL, handled"/>
+  <int value="3" label="App Bundle URL, not handled"/>
+</enum>
+
 <enum name="IosLocationAuthorizationStatus">
   <int value="0" label="NotDetermined"/>
   <int value="1" label="Restricted"/>

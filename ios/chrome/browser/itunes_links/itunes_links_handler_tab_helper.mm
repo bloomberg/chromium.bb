@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,19 +36,17 @@ const char kITunesUrlDomain[] = "itunes.apple.com";
 const char kITunesProductIdPrefix[] = "id";
 const char kITunesBundlePathIdentifier[] = "/app-bundle/";
 
+// Records the StoreKit handling result to IOS.StoreKit.ITunesURLsHandlingResult
+// UMA histogram.
+void RecordStoreKitHandlingResult(ITunesUrlsStoreKitHandlingResult result) {
+  UMA_HISTOGRAM_ENUMERATION("IOS.StoreKit.ITunesURLsHandlingResult", result,
+                            ITunesUrlsStoreKitHandlingResult::kCount);
+}
+
 // Returns true, it the given |url| is iTunes product url.
 bool IsITunesProductUrl(const GURL& url) {
   if (!url.SchemeIsHTTPOrHTTPS() || !url.DomainIs(kITunesUrlDomain))
     return false;
-
-  // Reject app bundles URLs after iOS 11, because StoreKit doesn't handle them
-  // correctly.
-  // TODO(crbug.com/831196): Handle bundles once StoreKit is fixed.
-  if (@available(iOS 11, *)) {
-    std::string path = url.GetWithoutFilename().path();
-    if (path.find(kITunesBundlePathIdentifier) != std::string::npos)
-      return false;
-  }
 
   std::string file_name = url.ExtractFileName();
   // The first |kITunesProductIdLength| characters must be
@@ -55,6 +54,12 @@ bool IsITunesProductUrl(const GURL& url) {
   size_t prefix_length = strlen(kITunesProductIdPrefix);
   return (file_name.length() > prefix_length &&
           file_name.substr(0, prefix_length) == kITunesProductIdPrefix);
+}
+
+// Returns true, if the given |itunes_url| is for app bundle.
+bool IsITunesAppBundleUrl(const GURL& itunes_url) {
+  std::string path = itunes_url.GetWithoutFilename().path();
+  return path.find(kITunesBundlePathIdentifier) != std::string::npos;
 }
 
 // Extracts iTunes product parameters from the given |url| to be used with the
@@ -83,10 +88,9 @@ class ITunesLinksHandlerWebStatePolicyDecider
   // web::WebStatePolicyDecider implementation
   bool ShouldAllowResponse(NSURLResponse* response,
                            bool for_main_frame) override {
-    // Don't allow rendering responses from Itunes appstore URLs unless it's on
-    // iframe.
-    return !for_main_frame ||
-           !IsITunesProductUrl(net::GURLWithNSURL(response.URL));
+    // Don't allow rendering responses from URLs that can be handled by
+    // iTunesLinksHandler unless it's on iframe.
+    return !for_main_frame || !CanHandleUrl(net::GURLWithNSURL(response.URL));
   }
 
   bool ShouldAllowRequest(NSURLRequest* request,
@@ -96,13 +100,26 @@ class ITunesLinksHandlerWebStatePolicyDecider
 
     if (!pending_item)
       return true;
-    // If the pending item URL is http iTunes appstore URL, but the request URL
-    // is not http URL, then there was a redirect to an external application and
-    // request should be blocked to be able to show the store kit later.
+    // If the pending item URL is http iTunes URL that can be handled, but the
+    // request URL is not http URL, then there was a redirect to an external
+    // application and request should be blocked to be able to show the store
+    // kit later.
     GURL pending_item_url = pending_item->GetURL();
     GURL request_url = net::GURLWithNSURL(request.URL);
-    return !IsITunesProductUrl(pending_item_url) ||
-           request_url.SchemeIsHTTPOrHTTPS();
+    return !CanHandleUrl(pending_item_url) || request_url.SchemeIsHTTPOrHTTPS();
+  }
+
+ private:
+  // Returns true, if iTunesLinksHandler can handle the given |url|.
+  static bool CanHandleUrl(const GURL& url) {
+    bool is_itunes_url = IsITunesProductUrl(url);
+    if (@available(iOS 11, *)) {
+      // ITunesLinksHandler can not handle app bundles URLs for iOS 11+, because
+      // StoreKit doesn't load them correctly.
+      // TODO(crbug.com/831196): Update once StoreKit is fixed.
+      return is_itunes_url && !IsITunesAppBundleUrl(url);
+    }
+    return is_itunes_url;
   }
 };
 
@@ -124,6 +141,20 @@ void ITunesLinksHandlerTabHelper::DidFinishNavigation(
   GURL url = navigation_context->GetUrl();
   // Whenever a navigation to iTunes product url is finished, launch StoreKit.
   if (IsITunesProductUrl(url)) {
+    ITunesUrlsStoreKitHandlingResult handling_result =
+        ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled;
+
+    if (IsITunesAppBundleUrl(url)) {
+      if (@available(iOS 11, *)) {
+        // Don't handle app bundles URLs after iOS 11, because StoreKit
+        // doesn't load them correctly.
+        // TODO(crbug.com/831196): remove this once StoreKit is fixed.
+        RecordStoreKitHandlingResult(
+            ITunesUrlsStoreKitHandlingResult::kBundleUrlNotHandled);
+        return;
+      }
+      handling_result = ITunesUrlsStoreKitHandlingResult::kBundleUrlHandled;
+    }
     // If the url is iTunes product url, then this navigation should not be
     // committed, as the policy decider's ShouldAllowResponse will return false.
     DCHECK(!navigation_context->HasCommitted());
@@ -132,7 +163,10 @@ void ITunesLinksHandlerTabHelper::DidFinishNavigation(
       base::RecordAction(
           base::UserMetricsAction("ITunesLinksHandler_StoreKitLaunched"));
       tab_helper->OpenAppStore(ExtractITunesProductParameters(url));
+    } else {
+      handling_result = ITunesUrlsStoreKitHandlingResult::kUrlHandlingFailed;
     }
+    RecordStoreKitHandlingResult(handling_result);
   }
 }
 

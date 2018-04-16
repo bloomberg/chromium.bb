@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/observer_list.h"
+#include "base/test/histogram_tester.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/test/fakes/fake_store_kit_launcher.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -20,6 +21,11 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+const char kITunesURLsHandlingResultHistogram[] =
+    "IOS.StoreKit.ITunesURLsHandlingResult";
+}  // namespace
 
 class ITunesLinksHandlerTabHelperTest : public PlatformTest {
  protected:
@@ -76,6 +82,7 @@ class ITunesLinksHandlerTabHelperTest : public PlatformTest {
   web::TestNavigationManager* navigation_manager_;
   FakeStoreKitLauncher* fake_launcher_;
   web::TestWebState web_state_;
+  base::HistogramTester histogram_tester_;
 };
 
 // Verifies that navigating to URLs that are not product hosted on the iTunes
@@ -91,6 +98,9 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
   EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com/id"));
   EXPECT_FALSE(VerifyStoreKitLaunched("http://itunes.apple.com/12345"));
   EXPECT_FALSE(VerifyStoreKitLaunched("itms-apps://itunes.apple.com/id123"));
+
+  histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 0);
+
   // Verify that StoreKit is not launched for iTunes bundle URLs for iOS 11.
   // TODO(crbug.com/831196): Remove the test after storeKit bug is fixed.
   if (@available(iOS 11, *)) {
@@ -98,6 +108,11 @@ TEST_F(ITunesLinksHandlerTabHelperTest, NonMatchingUrlsDoesntLaunchStoreKit) {
         "http://itunes.apple.com/us/app-bundle/testapp/id12345"));
     EXPECT_FALSE(
         VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
+    histogram_tester_.ExpectUniqueSample(
+        kITunesURLsHandlingResultHistogram,
+        static_cast<base::HistogramBase::Sample>(
+            ITunesUrlsStoreKitHandlingResult::kBundleUrlNotHandled),
+        2);
   }
 }
 
@@ -134,6 +149,12 @@ TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
   expected_params = @{product_id : @"123", af_tkn : @"2", @"uo" : @"4"};
   EXPECT_NSEQ(expected_params, fake_launcher_.launchedProductParams);
 
+  histogram_tester_.ExpectUniqueSample(
+      kITunesURLsHandlingResultHistogram,
+      static_cast<base::HistogramBase::Sample>(
+          ITunesUrlsStoreKitHandlingResult::kSingleAppUrlHandled),
+      6);
+  histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 6);
   // Verify that StoreKit is launched for iTunes bundle URLs before iOS 11.
   if (@available(iOS 11, *)) {
     // In iOS 11 StoreKit doesn't load iTunes bundle correctly.
@@ -143,6 +164,12 @@ TEST_F(ITunesLinksHandlerTabHelperTest, MatchingUrlsLaunchesStoreKit) {
         "http://itunes.apple.com/us/app-bundle/testapp/id12345"));
     EXPECT_TRUE(
         VerifyStoreKitLaunched("http://itunes.apple.com/app-bundle/id12345"));
+    histogram_tester_.ExpectBucketCount(
+        kITunesURLsHandlingResultHistogram,
+        static_cast<base::HistogramBase::Sample>(
+            ITunesUrlsStoreKitHandlingResult::kBundleUrlHandled),
+        2);
+    histogram_tester_.ExpectTotalCount(kITunesURLsHandlingResultHistogram, 8);
   }
 }
 
