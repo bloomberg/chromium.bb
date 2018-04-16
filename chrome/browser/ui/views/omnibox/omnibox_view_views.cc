@@ -545,8 +545,9 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
   size_t start, end;
   GetSelectionBounds(&start, &end);
 
-  // TODO(tommycli): Before this code goes into production, investigate
-  // whether using the offsets provided by FormatURL makes more sense.
+  // Find the length of the prefix that was chopped off to form the elided URL.
+  // This simple logic only works because we elide only prefixes from the full
+  // URL. Otherwise, we would have to use the FormatURL offset adjustments.
   size_t offset = full_url.find(GetText());
   if (offset != base::string16::npos) {
     start += offset;
