@@ -246,8 +246,9 @@ void TabStripModel::InsertWebContentsAt(int index,
   }
 }
 
-WebContents* TabStripModel::ReplaceWebContentsAt(int index,
-                                                 WebContents* new_contents) {
+std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
+    int index,
+    WebContents* new_contents) {
   delegate()->WillAddWebContents(new_contents);
 
   DCHECK(ContainsIndex(index));
@@ -269,7 +270,7 @@ WebContents* TabStripModel::ReplaceWebContentsAt(int index,
                                 TabStripModelObserver::CHANGE_REASON_REPLACED);
     }
   }
-  return old_contents;
+  return base::WrapUnique(old_contents);
 }
 
 WebContents* TabStripModel::DetachWebContentsAt(int index) {

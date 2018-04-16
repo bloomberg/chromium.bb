@@ -2050,7 +2050,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
   strip.AddObserver(&tabstrip_observer);
 
   WebContents* new_contents = CreateWebContents();
-  delete strip.ReplaceWebContentsAt(0, new_contents);
+  strip.ReplaceWebContentsAt(0, new_contents);
 
   ASSERT_EQ(2, tabstrip_observer.GetStateCount());
 
@@ -2075,7 +2075,7 @@ TEST_F(TabStripModelTest, ReplaceSendsSelected) {
 
   // And replace it.
   new_contents = CreateWebContents();
-  delete strip.ReplaceWebContentsAt(1, new_contents);
+  strip.ReplaceWebContentsAt(1, new_contents);
 
   ASSERT_EQ(1, tabstrip_observer.GetStateCount());
 

@@ -1978,10 +1978,11 @@ void Browser::PrintCrossProcessSubframe(
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, CoreTabHelperDelegate implementation:
 
-void Browser::SwapTabContents(content::WebContents* old_contents,
-                              content::WebContents* new_contents,
-                              bool did_start_load,
-                              bool did_finish_load) {
+std::unique_ptr<content::WebContents> Browser::SwapTabContents(
+    content::WebContents* old_contents,
+    content::WebContents* new_contents,
+    bool did_start_load,
+    bool did_finish_load) {
   // Copies the background color and contents of the old WebContents to a new
   // one that replaces it on the screen. This allows the new WebContents to
   // have something to show before having loaded any contents. As a result, we
@@ -1996,7 +1997,7 @@ void Browser::SwapTabContents(content::WebContents* old_contents,
 
   int index = tab_strip_model_->GetIndexOfWebContents(old_contents);
   DCHECK_NE(TabStripModel::kNoTab, index);
-  tab_strip_model_->ReplaceWebContentsAt(index, new_contents);
+  return tab_strip_model_->ReplaceWebContentsAt(index, new_contents);
 }
 
 bool Browser::CanReloadContents(content::WebContents* web_contents) const {

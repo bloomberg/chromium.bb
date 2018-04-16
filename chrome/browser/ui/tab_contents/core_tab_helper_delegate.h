@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_DELEGATE_H_
 #define CHROME_BROWSER_UI_TAB_CONTENTS_CORE_TAB_HELPER_DELEGATE_H_
 
+#include <memory>
 
 namespace content {
 class WebContents;
@@ -18,13 +19,14 @@ class WebContents;
 // don't cleanly fit elsewhere.
 class CoreTabHelperDelegate {
  public:
-  // The caller is responsible for deleting |old_contents|.
+  // The return parameter also passes ownership of |old_contents|.
   // |did_finish_load| is true if WebContentsObserver::DidFinishLoad() has
   // already been called for |new_contents|.
-  virtual void SwapTabContents(content::WebContents* old_contents,
-                               content::WebContents* new_contents,
-                               bool did_start_load,
-                               bool did_finish_load);
+  virtual std::unique_ptr<content::WebContents> SwapTabContents(
+      content::WebContents* old_contents,
+      content::WebContents* new_contents,
+      bool did_start_load,
+      bool did_finish_load);
 
   // Whether the specified WebContents can be reloaded.
   // Reloading can be disabled e.g. for the DevTools window.

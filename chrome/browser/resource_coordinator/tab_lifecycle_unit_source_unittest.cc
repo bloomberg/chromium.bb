@@ -313,13 +313,14 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
   TabLifecycleUnitExternal* tab_lifecycle_unit_external =
       source_->GetTabLifecycleUnitExternal(original_web_contents);
   content::WebContents* new_web_contents = CreateTestWebContents();
-  EXPECT_EQ(original_web_contents,
-            tab_strip_model_->ReplaceWebContentsAt(1, new_web_contents));
+  std::unique_ptr<content::WebContents> original_web_contents_deleter =
+      tab_strip_model_->ReplaceWebContentsAt(1, new_web_contents);
+  EXPECT_EQ(original_web_contents, original_web_contents_deleter.get());
   EXPECT_FALSE(source_->GetTabLifecycleUnitExternal(original_web_contents));
   EXPECT_EQ(tab_lifecycle_unit_external,
             source_->GetTabLifecycleUnitExternal(new_web_contents));
 
-  delete original_web_contents;
+  original_web_contents_deleter.reset();
 
   // Expect notifications when tabs are closed.
   CloseTabsAndExpectNotifications(

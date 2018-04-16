@@ -315,8 +315,8 @@ TEST_F(WindowActivityWatcherTest, ReplaceTab) {
   content::WebContents::CreateParams web_contents_params(profile(), nullptr);
   content::WebContents* new_contents =
       content::WebContentsTester::CreateTestWebContents(web_contents_params);
-  std::unique_ptr<content::WebContents> old_contents = base::WrapUnique(
-      browser->tab_strip_model()->ReplaceWebContentsAt(1, new_contents));
+  std::unique_ptr<content::WebContents> old_contents =
+      browser->tab_strip_model()->ReplaceWebContentsAt(1, new_contents);
 
   // Close the replaced tab. This should log an event with an updated TabCount.
   browser->tab_strip_model()->CloseWebContentsAt(1, TabStripModel::CLOSE_NONE);

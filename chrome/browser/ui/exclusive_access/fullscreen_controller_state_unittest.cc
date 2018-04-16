@@ -462,8 +462,8 @@ TEST_F(FullscreenControllerStateUnitTest, ExitTabFullscreenViaReplacingTab) {
 
   content::WebContents* new_web_contents = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));
-  std::unique_ptr<content::WebContents> old_web_contents(
-      browser()->tab_strip_model()->ReplaceWebContentsAt(0, new_web_contents));
+  std::unique_ptr<content::WebContents> old_web_contents =
+      browser()->tab_strip_model()->ReplaceWebContentsAt(0, new_web_contents);
   ChangeWindowFullscreenState();
   EXPECT_FALSE(browser()->window()->IsFullscreen());
 }

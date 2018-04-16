@@ -422,18 +422,17 @@ std::unique_ptr<WebContents> PrerenderManager::SwapInternal(
 
   std::unique_ptr<WebContents> new_web_contents =
       prerender_contents->ReleasePrerenderContents();
-  std::unique_ptr<WebContents> old_web_contents(web_contents);
   DCHECK(new_web_contents);
-  DCHECK(old_web_contents);
+  DCHECK(web_contents);
 
   // Merge the browsing history.
   new_web_contents->GetController().CopyStateFromAndPrune(
-      &old_web_contents->GetController(),
-      should_replace_current_entry);
-  CoreTabHelper::FromWebContents(old_web_contents.get())
-      ->delegate()
-      ->SwapTabContents(old_web_contents.get(), new_web_contents.get(), true,
-                        prerender_contents->has_finished_loading());
+      &web_contents->GetController(), should_replace_current_entry);
+  std::unique_ptr<content::WebContents> old_web_contents =
+      CoreTabHelper::FromWebContents(web_contents)
+          ->delegate()
+          ->SwapTabContents(web_contents, new_web_contents.get(), true,
+                            prerender_contents->has_finished_loading());
   prerender_contents->CommitHistory(new_web_contents.get());
 
   // Update PPLT metrics:
