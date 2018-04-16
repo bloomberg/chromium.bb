@@ -61,25 +61,16 @@ static void decode_color_map_tokens(Av1ColorMapParam *param, aom_reader *r) {
   }
 }
 
-static void get_palette_params(const MACROBLOCKD *const xd, int plane,
-                               BLOCK_SIZE bsize, Av1ColorMapParam *params) {
-  assert(plane == 0 || plane == 1);
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
-  params->color_map = xd->plane[plane].color_index_map;
-  params->map_cdf = plane ? xd->tile_ctx->palette_uv_color_index_cdf
-                          : xd->tile_ctx->palette_y_color_index_cdf;
-  params->n_colors = pmi->palette_size[plane];
-  av1_get_block_dimensions(bsize, plane, xd, &params->plane_width,
-                           &params->plane_height, &params->rows, &params->cols);
-}
-
 void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
                                aom_reader *r) {
-  const MB_MODE_INFO *const mbmi = xd->mi[0];
   assert(plane == 0 || plane == 1);
-  Av1ColorMapParam color_map_params;
-  memset(&color_map_params, 0, sizeof(color_map_params));
-  get_palette_params(xd, plane, mbmi->sb_type, &color_map_params);
-  decode_color_map_tokens(&color_map_params, r);
+  Av1ColorMapParam params;
+  params.color_map = xd->plane[plane].color_index_map;
+  params.map_cdf = plane ? xd->tile_ctx->palette_uv_color_index_cdf
+                         : xd->tile_ctx->palette_y_color_index_cdf;
+  const MB_MODE_INFO *const mbmi = xd->mi[0];
+  params.n_colors = mbmi->palette_mode_info.palette_size[plane];
+  av1_get_block_dimensions(mbmi->sb_type, plane, xd, &params.plane_width,
+                           &params.plane_height, &params.rows, &params.cols);
+  decode_color_map_tokens(&params, r);
 }
