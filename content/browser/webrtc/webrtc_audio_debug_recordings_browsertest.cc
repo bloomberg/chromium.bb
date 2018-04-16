@@ -38,7 +38,7 @@ const base::FilePath::CharType kBaseFilename[] =
 bool GetRenderProcessHostId(base::ProcessId* id) {
   content::RenderProcessHost::iterator it(
       content::RenderProcessHost::AllHostsIterator());
-  *id = base::GetProcId(it.GetCurrentValue()->GetHandle());
+  *id = it.GetCurrentValue()->GetProcess().Pid();
   EXPECT_NE(base::kNullProcessId, *id);
   if (*id == base::kNullProcessId)
     return false;
@@ -343,7 +343,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   base::FilePath file_path;
   for (; !it.IsAtEnd(); it.Advance()) {
     base::ProcessId render_process_id =
-        base::GetProcId(it.GetCurrentValue()->GetHandle());
+        it.GetCurrentValue()->GetProcess().Pid();
     EXPECT_NE(base::kNullProcessId, render_process_id);
 
     file_path = GetExpectedAecDumpFileName(base_file_path, render_process_id);

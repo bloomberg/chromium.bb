@@ -82,7 +82,7 @@ base::ProcessId GetRealProcessId(int process_host_id) {
   if (!rph)
     return base::kNullProcessId;
 
-  base::ProcessHandle handle = rph->GetHandle();
+  base::ProcessHandle handle = rph->GetProcess().Handle();
   if (handle == base::kNullProcessHandle)
     return base::kNullProcessId;
   // TODO(nhiroki): On Windows, |rph->GetHandle()| does not duplicate ownership

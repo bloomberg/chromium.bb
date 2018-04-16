@@ -195,7 +195,7 @@ void WebContentsEntry::RenderFrameReady(int render_process_id,
 
   const base::ProcessId determine_pid_from_handle = base::kNullProcessId;
   provider_->UpdateTaskProcessInfoAndNotifyObserver(
-      task, render_frame_host->GetProcess()->GetHandle(),
+      task, render_frame_host->GetProcess()->GetProcess().Handle(),
       determine_pid_from_handle);
 }
 

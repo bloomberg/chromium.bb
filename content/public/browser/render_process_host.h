@@ -12,7 +12,7 @@
 
 #include "base/containers/id_map.h"
 #include "base/process/kill.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -206,7 +206,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Init starts the process asynchronously.  It's guaranteed to be valid after
   // the first IPC arrives or RenderProcessReady was called on a
   // RenderProcessHostObserver for this. At that point, IsReady() returns true.
-  virtual base::ProcessHandle GetHandle() const = 0;
+  virtual const base::Process& GetProcess() const = 0;
 
   // Returns whether the process is ready. The process is ready once both
   // conditions (which can happen in arbitrary order) are true:

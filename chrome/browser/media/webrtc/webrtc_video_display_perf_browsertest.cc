@@ -149,8 +149,8 @@ class WebRtcVideoDisplayPerfBrowserTest
         OpenPageAndGetUserMediaInNewTabWithConstraints(
             embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage),
             "{audio: true, video: false}");
-    const int process_id = base::GetProcId(
-        right_tab->GetRenderViewHost()->GetProcess()->GetHandle());
+    const int process_id =
+        right_tab->GetRenderViewHost()->GetProcess()->GetProcess().Pid();
 
     const std::string disable_cpu_adaptation_constraint(
         "{'optional': [{'googCpuOveruseDetection': false}]}");

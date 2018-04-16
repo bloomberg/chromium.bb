@@ -155,7 +155,8 @@ void RendererFreezer::OnScreenLockStateChanged(chromeos::ScreenLocker* locker,
     content::WebContents* web_contents = locker->delegate()->GetWebContents();
     if (web_contents) {
       delegate_->SetShouldFreezeRenderer(
-          web_contents->GetMainFrame()->GetProcess()->GetHandle(), false);
+          web_contents->GetMainFrame()->GetProcess()->GetProcess().Handle(),
+          false);
     }
   }
 }
@@ -195,7 +196,7 @@ void RendererFreezer::OnRenderProcessCreated(content::RenderProcessHost* rph) {
 
     // This renderer has an extension that is using GCM.  Make sure it is not
     // frozen during suspend.
-    delegate_->SetShouldFreezeRenderer(rph->GetHandle(), false);
+    delegate_->SetShouldFreezeRenderer(rph->GetProcess().Handle(), false);
     gcm_extension_processes_.insert(rph_id);
 
     // Watch to see if the renderer process or the RenderProcessHost is
@@ -206,7 +207,7 @@ void RendererFreezer::OnRenderProcessCreated(content::RenderProcessHost* rph) {
 
   // We didn't find an extension in this RenderProcessHost that is using GCM so
   // we can go ahead and freeze it on suspend.
-  delegate_->SetShouldFreezeRenderer(rph->GetHandle(), true);
+  delegate_->SetShouldFreezeRenderer(rph->GetProcess().Handle(), true);
 }
 
 }  // namespace chromeos

@@ -500,7 +500,8 @@ ExtensionFunction::ResponseAction ProcessesTerminateFunction::Run() {
   auto* render_process_host =
       content::RenderProcessHost::FromID(child_process_host_id_);
   if (render_process_host)
-    return RespondNow(TerminateIfAllowed(render_process_host->GetHandle()));
+    return RespondNow(
+        TerminateIfAllowed(render_process_host->GetProcess().Handle()));
 
   // This could be a non-renderer child process like a plugin or a nacl
   // process. Try to get its handle from the BrowserChildProcessHost on the

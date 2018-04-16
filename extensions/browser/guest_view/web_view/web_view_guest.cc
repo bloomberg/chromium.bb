@@ -733,7 +733,7 @@ void WebViewGuest::Stop() {
 void WebViewGuest::Terminate() {
   base::RecordAction(UserMetricsAction("WebView.Guest.Terminate"));
   base::ProcessHandle process_handle =
-      web_contents()->GetMainFrame()->GetProcess()->GetHandle();
+      web_contents()->GetMainFrame()->GetProcess()->GetProcess().Handle();
   if (process_handle) {
     web_contents()->GetMainFrame()->GetProcess()->Shutdown(
         content::RESULT_CODE_KILLED);

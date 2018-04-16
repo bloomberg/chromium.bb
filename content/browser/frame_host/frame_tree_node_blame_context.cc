@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/frame_tree_node_blame_context.h"
 
+#include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -45,13 +46,10 @@ void FrameTreeNodeBlameContext::AsValueInto(
   if (!current_frame_host)
     return;
 
-  // On Windows, |rph->GetHandle()| does not duplicate ownership of the
-  // process handle and the render host still retains it. Therefore, we
-  // cannot create a base::Process object, which provides a proper way to get
-  // a process id, from the handle. For a stopgap, we use this deprecated
-  // function that does not require the ownership (http://crbug.com/417532).
-  int process_id = base::GetProcId(
-      current_frame_host->GetProcess()->GetHandle());
+  int process_id = base::kNullProcessId;
+  if (current_frame_host->GetProcess()->GetProcess().IsValid())
+    process_id = current_frame_host->GetProcess()->GetProcess().Pid();
+
   if (process_id >= 0) {
     int routing_id = current_frame_host->GetRoutingID();
     DCHECK_NE(routing_id, MSG_ROUTING_NONE);

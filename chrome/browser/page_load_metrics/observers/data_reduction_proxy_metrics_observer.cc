@@ -142,10 +142,11 @@ DataReductionProxyMetricsObserver::OnCommit(
   if (!data || !data->used_data_reduction_proxy())
     return STOP_OBSERVING;
   data_ = data->DeepCopy();
-  process_id_ = base::GetProcId(navigation_handle->GetWebContents()
-                                    ->GetMainFrame()
-                                    ->GetProcess()
-                                    ->GetHandle());
+  process_id_ = navigation_handle->GetWebContents()
+                    ->GetMainFrame()
+                    ->GetProcess()
+                    ->GetProcess()
+                    .Pid();
   render_process_host_id_ = navigation_handle->GetWebContents()
                                 ->GetMainFrame()
                                 ->GetProcess()

@@ -276,7 +276,8 @@ MemoryState MemoryCoordinatorImpl::GetStateForProcess(
 
   for (auto& iter : children()) {
     auto* render_process_host = GetRenderProcessHost(iter.first);
-    if (render_process_host && render_process_host->GetHandle() == handle)
+    if (render_process_host &&
+        render_process_host->GetProcess().Handle() == handle)
       return iter.second.memory_state;
   }
   return MemoryState::UNKNOWN;
