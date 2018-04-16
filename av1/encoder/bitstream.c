@@ -2891,6 +2891,77 @@ static void write_global_motion(AV1_COMP *cpi,
   }
 }
 
+void check_frame_refs_short_signaling(AV1_COMP *const cpi, int lst_map_idx,
+                                      int gld_map_idx) {
+  AV1_COMMON *const cm = &cpi->common;
+  if (!cm->frame_refs_short_signaling) return;
+
+  // Check whether all references are distinct frames.
+  int buf_markers[FRAME_BUFFERS] = { 0 };
+  for (int ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
+    const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
+    if (buf_idx != INVALID_IDX) {
+      assert(buf_idx >= 0 && buf_idx < FRAME_BUFFERS);
+      buf_markers[buf_idx] = 1;
+    }
+  }
+
+  int num_refs = 0;
+  for (int buf_idx = 0; buf_idx < FRAME_BUFFERS; ++buf_idx) {
+    num_refs += buf_markers[buf_idx];
+  }
+
+  // We only turn on frame_refs_short_signaling when all references are
+  // distinct.
+  if (num_refs < INTER_REFS_PER_FRAME) {
+    // It indicates that there exist more than one reference frame pointing to
+    // the same reference buffer, i.e. two or more references are duplicate.
+    cm->frame_refs_short_signaling = 0;
+    return;
+  }
+
+  // Check whether the encoder side ref frame choices are aligned with that to
+  // be derived at the decoder side.
+  RefBuffer frame_refs_copy[INTER_REFS_PER_FRAME];
+
+  // Backup the frame refs info
+  memcpy(frame_refs_copy, cm->frame_refs,
+         INTER_REFS_PER_FRAME * sizeof(RefBuffer));
+
+  // Set up the frame refs mapping indexes according to the
+  // frame_refs_short_signaling policy.
+  av1_set_frame_refs(cm, lst_map_idx, gld_map_idx);
+
+  // We only turn on frame_refs_short_signaling when the encoder side decision
+  // on ref frames is identical to that at the decoder side.
+  for (int ref_idx = 0; ref_idx < INTER_REFS_PER_FRAME; ++ref_idx) {
+    // Compare the buffer index between two reference frames indexed
+    // respectively by the encoder and the decoder side decisions.
+    if (cm->frame_refs[ref_idx].idx != frame_refs_copy[ref_idx].idx) {
+      cm->frame_refs_short_signaling = 0;
+      break;
+    }
+  }
+
+#if 0   // For debug
+  printf("\nFrame=%d: ", cm->current_video_frame);
+  for (int enc_ref = LAST_FRAME; enc_ref <= ALTREF_FRAME; ++enc_ref) {
+    printf("enc_ref(map_idx=%d, buf_idx=%d)=%d, mapped to "
+        "dec_ref(map_idx=%d, buf_idx=%d)=%d\n",
+        get_ref_frame_map_idx(cpi, enc_ref),
+        get_ref_frame_buf_idx(cpi, enc_ref), enc_ref,
+        cm->frame_refs[cpi->ref_conv[enc_ref] - LAST_FRAME].map_idx,
+        cm->frame_refs[cpi->ref_conv[enc_ref] - LAST_FRAME].idx,
+        cpi->ref_conv[enc_ref]);
+  }
+#endif  // 0
+
+  // Restore the frame refs info if frame_refs_short_signaling is off.
+  if (!cm->frame_refs_short_signaling)
+    memcpy(cm->frame_refs, frame_refs_copy,
+           INTER_REFS_PER_FRAME * sizeof(RefBuffer));
+}
+
 // New function based on HLS R18
 static void write_uncompressed_header_obu(AV1_COMP *cpi,
                                           struct aom_write_bit_buffer *saved_wb,
@@ -3131,12 +3202,22 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         assert(cm->frame_refs_short_signaling == 0);
 
       if (cm->frame_refs_short_signaling) {
-        assert(get_ref_frame_map_idx(cpi, LAST_FRAME) != INVALID_IDX);
-        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, LAST_FRAME),
-                             REF_FRAMES_LOG2);
-        assert(get_ref_frame_map_idx(cpi, GOLDEN_FRAME) != INVALID_IDX);
-        aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, GOLDEN_FRAME),
-                             REF_FRAMES_LOG2);
+        const int lst_ref = get_ref_frame_map_idx(cpi, LAST_FRAME);
+        assert(lst_ref != INVALID_IDX);
+
+        const int gld_ref = get_ref_frame_map_idx(cpi, GOLDEN_FRAME);
+        assert(gld_ref != INVALID_IDX);
+
+        // NOTE(zoeliu@google.com):
+        //   An example solution for encoder-side implementation on frame refs
+        //   short signaling, which is only turned on when the encoder side
+        //   decision on ref frames is identical to that at the decoder side.
+        check_frame_refs_short_signaling(cpi, lst_ref, gld_ref);
+
+        if (cm->frame_refs_short_signaling) {
+          aom_wb_write_literal(wb, lst_ref, REF_FRAMES_LOG2);
+          aom_wb_write_literal(wb, gld_ref, REF_FRAMES_LOG2);
+        }
       }
 
       for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
