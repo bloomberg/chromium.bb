@@ -233,7 +233,7 @@ void BrowserCompositorMac::ClearCompositorFrame() {
 }
 
 viz::FrameSinkId BrowserCompositorMac::GetRootFrameSinkId() {
-  if (recyclable_compositor_->compositor())
+  if (recyclable_compositor_)
     return recyclable_compositor_->compositor()->frame_sink_id();
   return viz::FrameSinkId();
 }
