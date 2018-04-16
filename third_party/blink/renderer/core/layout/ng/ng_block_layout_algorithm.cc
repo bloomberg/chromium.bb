@@ -967,10 +967,13 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   // We try and position the child within the block formatting context. This
   // may cause our BFC offset to be resolved, in which case we should abort our
   // layout if needed.
-  WTF::Optional<NGBfcOffset> child_bfc_offset;
-  if (layout_result->BfcOffset()) {
-    if (!PositionWithBfcOffset(layout_result->BfcOffset().value(),
-                               &child_bfc_offset))
+  WTF::Optional<NGBfcOffset> child_bfc_offset = layout_result->BfcOffset();
+  if (child_bfc_offset) {
+    // A child with a known BFC offset shouldn't leave behind pending floats.
+    DCHECK(unpositioned_floats_.IsEmpty());
+
+    bool updated = MaybeUpdateFragmentBfcOffset(child_bfc_offset->block_offset);
+    if (updated && abort_when_bfc_resolved_)
       return false;
   } else {
     // Layout wasn't able to determine the BFC offset of the child. This has to
@@ -1188,21 +1191,6 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
 
   return {child_end_bfc_block_offset, logical_block_offset, margin_strut,
           empty_or_sibling_empty_affected_by_clearance};
-}
-
-bool NGBlockLayoutAlgorithm::PositionWithBfcOffset(
-    const NGBfcOffset& bfc_offset,
-    WTF::Optional<NGBfcOffset>* child_bfc_offset) {
-  LayoutUnit bfc_block_offset = bfc_offset.block_offset;
-  bool updated = MaybeUpdateFragmentBfcOffset(bfc_block_offset);
-
-  if (updated && abort_when_bfc_resolved_)
-    return false;
-
-  PositionPendingFloats(bfc_block_offset);
-
-  *child_bfc_offset = bfc_offset;
-  return true;
 }
 
 NGBfcOffset NGBlockLayoutAlgorithm::PositionEmptyChildWithParentBfc(

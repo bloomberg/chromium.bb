@@ -81,10 +81,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGFragment& fragment,
       bool empty_block_affected_by_clearance);
 
-  // Positions the fragment that knows its BFC offset.
-  bool PositionWithBfcOffset(const NGBfcOffset& bfc_offset,
-                             WTF::Optional<NGBfcOffset>* child_bfc_offset);
-
   // Position an empty child using the parent BFC offset.
   // The fragment doesn't know its offset, but we can still calculate its BFC
   // position because the parent fragment's BFC is known.
