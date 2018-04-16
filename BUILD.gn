@@ -176,6 +176,7 @@ target(link_target_type, "ffmpeg_internal") {
     "_POSIX_C_SOURCE=200112",
     "_XOPEN_SOURCE=600",
     "PIC",
+    "FFMPEG_CONFIGURATION=NULL",
   ]
 
   # Disable internal ffmpeg logs in the official build; this saves ~158kb.

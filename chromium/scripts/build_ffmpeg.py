@@ -276,6 +276,10 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           'Host arch : %s\n'
           'Target arch : %s\n' % (host_os, target_os, host_arch, target_arch))
 
+  RewriteFile(
+      os.path.join(config_dir, 'config.h'), r'(#define FFMPEG_CONFIGURATION .*)',
+      (r'/* \1 -- elide long configuration string from binary */'))
+
   # Sanitizers can't compile the h264 code when EBP is used.
   if target_os != 'win' and target_arch == 'ia32':
     RewriteFile(
