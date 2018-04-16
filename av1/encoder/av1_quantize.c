@@ -405,13 +405,10 @@ void av1_highbd_quantize_fp_facade(const tran_low_t *coeff_ptr,
           p->dequant_QTX, eob_ptr, sc->scan, sc->iscan, qparam->log_scale);
       return;
     }
-
-    // TODO(yunqing): modify the AVX2 version to match the c version, and
-    // then turn on it and also enable its unit test.
-    av1_highbd_quantize_fp_c(
-        coeff_ptr, n_coeffs, skip_block, p->zbin_QTX, p->round_fp_QTX,
-        p->quant_fp_QTX, p->quant_shift_QTX, qcoeff_ptr, dqcoeff_ptr,
-        p->dequant_QTX, eob_ptr, sc->scan, sc->iscan, qparam->log_scale);
+    av1_highbd_quantize_fp(coeff_ptr, n_coeffs, skip_block, p->zbin_QTX,
+                           p->round_fp_QTX, p->quant_fp_QTX, p->quant_shift_QTX,
+                           qcoeff_ptr, dqcoeff_ptr, p->dequant_QTX, eob_ptr,
+                           sc->scan, sc->iscan, qparam->log_scale);
   }
 }
 

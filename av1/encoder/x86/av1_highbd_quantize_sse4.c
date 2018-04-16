@@ -36,6 +36,8 @@ static INLINE void quantize_coeff_phase1(__m128i *coeff, const __m128i *param,
   qcoeff[0] = _mm_srli_epi64(qcoeff[0], shift);
   dquan[0] = _mm_mul_epi32(qcoeff[0], param[2]);
   dquan[0] = _mm_srli_epi64(dquan[0], scale);
+  const __m128i abs_s = _mm_slli_epi32(*coeff, 1 + scale);
+  qcoeff[2] = _mm_cmplt_epi32(abs_s, param[3]);
 }
 
 // Coefficient quantization phase 2
@@ -70,7 +72,8 @@ static INLINE void quantize_coeff_phase2(__m128i *qcoeff, __m128i *dquan,
 
   qcoeff[0] = _mm_sign_epi32(qcoeff[0], *sign);
   dquan[0] = _mm_sign_epi32(dquan[0], *sign);
-
+  qcoeff[0] = _mm_andnot_si128(qcoeff[2], qcoeff[0]);
+  dquan[0] = _mm_andnot_si128(qcoeff[2], dquan[0]);
   _mm_storeu_si128((__m128i *)qAddr, qcoeff[0]);
   _mm_storeu_si128((__m128i *)dqAddr, dquan[0]);
 }
@@ -113,7 +116,7 @@ void av1_highbd_quantize_fp_sse4_1(
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan, const int16_t *iscan, int log_scale) {
-  __m128i coeff[2], qcoeff[2], dequant[2], qparam[3], coeff_sign;
+  __m128i coeff[2], qcoeff[3], dequant[2], qparam[4], coeff_sign;
   __m128i eob = _mm_setzero_si128();
   const tran_low_t *src = coeff_ptr;
   tran_low_t *quanAddr = qcoeff_ptr;
@@ -137,6 +140,8 @@ void av1_highbd_quantize_fp_sse4_1(
     qparam[0] = _mm_set_epi32(round1, round1, round1, round0);
     qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[0]);
     qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[0]);
+    qparam[3] = _mm_set_epi32(dequant_ptr[1], dequant_ptr[1], dequant_ptr[1],
+                              dequant_ptr[0]);
 
     // DC and first 3 AC
     quantize_coeff_phase1(&coeff[0], qparam, shift, log_scale, qcoeff, dequant,
@@ -146,7 +151,7 @@ void av1_highbd_quantize_fp_sse4_1(
     qparam[0] = _mm_unpackhi_epi64(qparam[0], qparam[0]);
     qparam[1] = _mm_set_epi32(0, quant_ptr[1], 0, quant_ptr[1]);
     qparam[2] = _mm_set_epi32(0, dequant_ptr[1], 0, dequant_ptr[1]);
-
+    qparam[3] = _mm_set1_epi32(dequant_ptr[1]);
     quantize_coeff_phase2(qcoeff, dequant, &coeff_sign, qparam, shift,
                           log_scale, quanAddr, dquanAddr);
 

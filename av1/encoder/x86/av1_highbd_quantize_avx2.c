@@ -59,6 +59,9 @@ static INLINE void quantize(const __m256i *qp, __m256i *c,
   q_hi = _mm256_srli_epi64(q_hi, 16 - log_scale);
   q_hi = _mm256_slli_epi64(q_hi, 32);
   q = _mm256_or_si256(q_lo, q_hi);
+  const __m256i abs_s = _mm256_slli_epi32(abs, 1 + log_scale);
+  const __m256i mask = _mm256_cmpgt_epi32(qp[2], abs_s);
+  q = _mm256_andnot_si256(mask, q);
 
   __m256i dq = _mm256_mullo_epi32(q, qp[2]);
   dq = _mm256_srai_epi32(dq, log_scale);

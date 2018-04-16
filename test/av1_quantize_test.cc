@@ -50,15 +50,15 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
   void RunQuantizeTest() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     DECLARE_ALIGNED(16, tran_low_t, coeff_ptr[maxSize]);
-    DECLARE_ALIGNED(16, int16_t, zbin_ptr[2]);
-    DECLARE_ALIGNED(16, int16_t, round_ptr[2]);
-    DECLARE_ALIGNED(16, int16_t, quant_ptr[2]);
-    DECLARE_ALIGNED(16, int16_t, quant_shift_ptr[2]);
+    DECLARE_ALIGNED(16, int16_t, zbin_ptr[8]);
+    DECLARE_ALIGNED(16, int16_t, round_ptr[8]);
+    DECLARE_ALIGNED(16, int16_t, quant_ptr[8]);
+    DECLARE_ALIGNED(16, int16_t, quant_shift_ptr[8]);
     DECLARE_ALIGNED(16, tran_low_t, qcoeff_ptr[maxSize]);
     DECLARE_ALIGNED(16, tran_low_t, dqcoeff_ptr[maxSize]);
     DECLARE_ALIGNED(16, tran_low_t, ref_qcoeff_ptr[maxSize]);
     DECLARE_ALIGNED(16, tran_low_t, ref_dqcoeff_ptr[maxSize]);
-    DECLARE_ALIGNED(16, int16_t, dequant_ptr[2]);
+    DECLARE_ALIGNED(16, int16_t, dequant_ptr[8]);
     uint16_t eob;
     uint16_t ref_eob;
     int err_count_total = 0;
@@ -86,7 +86,13 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
         quant_ptr[j] = (1 << 16) / dequant_ptr[j];
         round_ptr[j] = (abs(rnd(roundFactorRange)) * dequant_ptr[j]) >> 7;
       }
-
+      for (int j = 2; j < 8; ++j) {
+        zbin_ptr[j] = zbin_ptr[1];
+        quant_shift_ptr[j] = quant_shift_ptr[1];
+        dequant_ptr[j] = dequant_ptr[1];
+        quant_ptr[j] = quant_ptr[1];
+        round_ptr[j] = round_ptr[1];
+      }
       quanFuncRef(coeff_ptr, count, skip_block, zbin_ptr, round_ptr, quant_ptr,
                   quant_shift_ptr, ref_qcoeff_ptr, ref_dqcoeff_ptr, dequant_ptr,
                   &ref_eob, scanOrder.scan, scanOrder.iscan, log_scale);
@@ -99,7 +105,7 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
       for (int j = 0; j < count; ++j) {
         err_count += (ref_qcoeff_ptr[j] != qcoeff_ptr[j]) |
                      (ref_dqcoeff_ptr[j] != dqcoeff_ptr[j]);
-        EXPECT_EQ(ref_qcoeff_ptr[j], qcoeff_ptr[j])
+        ASSERT_EQ(ref_qcoeff_ptr[j], qcoeff_ptr[j])
             << "qcoeff error: i = " << i << " j = " << j << "\n";
         EXPECT_EQ(ref_dqcoeff_ptr[j], dqcoeff_ptr[j])
             << "dqcoeff error: i = " << i << " j = " << j << "\n";
@@ -120,15 +126,15 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
   void RunEobTest() {
     ACMRandom rnd(ACMRandom::DeterministicSeed());
     DECLARE_ALIGNED(16, tran_low_t, coeff_ptr[maxSize]);
-    DECLARE_ALIGNED(16, int16_t, zbin_ptr[2]);
-    DECLARE_ALIGNED(16, int16_t, round_ptr[2]);
-    DECLARE_ALIGNED(16, int16_t, quant_ptr[2]);
-    DECLARE_ALIGNED(16, int16_t, quant_shift_ptr[2]);
+    DECLARE_ALIGNED(16, int16_t, zbin_ptr[8]);
+    DECLARE_ALIGNED(16, int16_t, round_ptr[8]);
+    DECLARE_ALIGNED(16, int16_t, quant_ptr[8]);
+    DECLARE_ALIGNED(16, int16_t, quant_shift_ptr[8]);
     DECLARE_ALIGNED(16, tran_low_t, qcoeff_ptr[maxSize]);
     DECLARE_ALIGNED(16, tran_low_t, dqcoeff_ptr[maxSize]);
     DECLARE_ALIGNED(16, tran_low_t, ref_qcoeff_ptr[maxSize]);
     DECLARE_ALIGNED(16, tran_low_t, ref_dqcoeff_ptr[maxSize]);
-    DECLARE_ALIGNED(16, int16_t, dequant_ptr[2]);
+    DECLARE_ALIGNED(16, int16_t, dequant_ptr[8]);
     uint16_t eob;
     uint16_t ref_eob;
     int skip_block = 0;
@@ -156,6 +162,13 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
         dequant_ptr[j] = abs(rnd(dequantRange));
         quant_ptr[j] = (1 << 16) / dequant_ptr[j];
         round_ptr[j] = (abs(rnd(roundFactorRange)) * dequant_ptr[j]) >> 7;
+      }
+      for (int j = 2; j < 8; ++j) {
+        zbin_ptr[j] = zbin_ptr[1];
+        quant_shift_ptr[j] = quant_shift_ptr[1];
+        dequant_ptr[j] = dequant_ptr[1];
+        quant_ptr[j] = quant_ptr[1];
+        round_ptr[j] = round_ptr[1];
       }
 
       quanFuncRef(coeff_ptr, count, skip_block, zbin_ptr, round_ptr, quant_ptr,
@@ -191,8 +204,8 @@ class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeFuncParams> {
   QuantizeFuncParams params_;
 };
 
-TEST_P(AV1QuantizeTest, DISABLED_BitExactCheck) { RunQuantizeTest(); }
-TEST_P(AV1QuantizeTest, DISABLED_EobVerify) { RunEobTest(); }
+TEST_P(AV1QuantizeTest, BitExactCheck) { RunQuantizeTest(); }
+TEST_P(AV1QuantizeTest, EobVerify) { RunEobTest(); }
 
 #if HAVE_SSE4_1
 const QuantizeFuncParams qfps[4] = {
@@ -208,4 +221,20 @@ const QuantizeFuncParams qfps[4] = {
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1QuantizeTest, ::testing::ValuesIn(qfps));
 #endif  // HAVE_SSE4_1
+
+#if HAVE_AVX2
+const QuantizeFuncParams qfps_avx2[4] = {
+  QuantizeFuncParams(&av1_highbd_quantize_fp_avx2, &av1_highbd_quantize_fp_c,
+                     16),
+  QuantizeFuncParams(&av1_highbd_quantize_fp_avx2, &av1_highbd_quantize_fp_c,
+                     64),
+  QuantizeFuncParams(&av1_highbd_quantize_fp_avx2, &av1_highbd_quantize_fp_c,
+                     256),
+  QuantizeFuncParams(&av1_highbd_quantize_fp_avx2, &av1_highbd_quantize_fp_c,
+                     1024),
+};
+
+INSTANTIATE_TEST_CASE_P(AVX2, AV1QuantizeTest, ::testing::ValuesIn(qfps_avx2));
+#endif  // HAVE_AVX2
+
 }  // namespace
