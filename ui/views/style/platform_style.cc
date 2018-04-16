@@ -57,6 +57,9 @@ const bool PlatformStyle::kUseRipples = true;
 const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = true;
 const bool PlatformStyle::kShouldElideBookmarksInBookmarksBar = false;
+const float PlatformStyle::kFocusHaloThickness = 2.f;
+const float PlatformStyle::kFocusHaloInset =
+    -PlatformStyle::kFocusHaloThickness;
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
