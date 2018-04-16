@@ -56,9 +56,9 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
 
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
                        const base::Closure& done);
-  void Stop();
-  void SurfaceCreated(EAGLView* view);
-  void SurfaceChanged(int width, int height);
+  void CreateRendererContext(EAGLView* view);
+  void DestroyRendererContext();
+  void SetSurfaceSize(int width, int height);
 
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
 
@@ -76,11 +76,12 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
   base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
 
-  // TODO(yuweih): Release references once the surface is destroyed.
   EAGLContext* eagl_context_;
   std::unique_ptr<GlRenderer> renderer_;
-  //  GlDemoScreen *demo_screen_;
   __weak id<GlDisplayHandlerDelegate> handler_delegate_;
+
+  // Valid only when the surface is created.
+  __weak EAGLView* view_;
 
   // Used on display thread.
   base::WeakPtr<Core> weak_ptr_;
@@ -190,21 +191,20 @@ void Core::OnSizeChanged(int width, int height) {
       }));
 }
 
-void Core::Stop() {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-
-  eagl_context_ = nil;
-  // demo_screen_ = nil;
-}
-
-void Core::SurfaceCreated(EAGLView* view) {
+void Core::CreateRendererContext(EAGLView* view) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   DCHECK(eagl_context_);
+
+  if (view_) {
+    return;
+  }
+  view_ = view;
 
   runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
                                          [view startWithContext:eagl_context_];
                                        }));
 
+  // TODO(yuweih): Rename methods in GlRenderer.
   renderer_->OnSurfaceCreated(
       std::make_unique<GlCanvas>(static_cast<int>([eagl_context_ API])));
 
@@ -215,7 +215,22 @@ void Core::SurfaceCreated(EAGLView* view) {
                             frame_consumer_));
 }
 
-void Core::SurfaceChanged(int width, int height) {
+void Core::DestroyRendererContext() {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+
+  if (!view_) {
+    return;
+  }
+
+  renderer_->OnSurfaceDestroyed();
+  __weak EAGLView* view = view_;
+  runtime_->ui_task_runner()->PostTask(FROM_HERE, base::BindBlockArc(^() {
+                                         [view stop];
+                                       }));
+  view_ = nil;
+}
+
+void Core::SetSurfaceSize(int width, int height) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
   renderer_->OnSurfaceChanged(width, height);
 }
@@ -250,12 +265,6 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
 
 #pragma mark - Public
 
-- (void)stop {
-  _runtime->display_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&remoting::GlDisplayHandler::Core::Stop, _core->GetWeakPtr()));
-}
-
 - (std::unique_ptr<remoting::RendererProxy>)CreateRendererProxy {
   return _core->GrabRendererProxy();
 }
@@ -270,17 +279,25 @@ base::WeakPtr<remoting::GlDisplayHandler::Core> Core::GetWeakPtr() {
       _core->GetWeakPtr(), _runtime->display_task_runner());
 }
 
-- (void)onSurfaceCreated:(EAGLView*)view {
-  _runtime->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&remoting::GlDisplayHandler::Core::SurfaceCreated,
-                            _core->GetWeakPtr(), view));
-}
-
-- (void)onSurfaceChanged:(const CGRect&)frame {
+- (void)createRendererContext:(EAGLView*)view {
   _runtime->display_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&remoting::GlDisplayHandler::Core::SurfaceChanged,
-                 _core->GetWeakPtr(), frame.size.width, frame.size.height));
+      base::BindOnce(&remoting::GlDisplayHandler::Core::CreateRendererContext,
+                     _core->GetWeakPtr(), view));
+}
+
+- (void)destroyRendererContext {
+  _runtime->display_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&remoting::GlDisplayHandler::Core::DestroyRendererContext,
+                     _core->GetWeakPtr()));
+}
+
+- (void)setSurfaceSize:(const CGRect&)frame {
+  _runtime->display_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&remoting::GlDisplayHandler::Core::SetSurfaceSize,
+                     _core->GetWeakPtr(), frame.size.width, frame.size.height));
 }
 
 #pragma mark - Properties

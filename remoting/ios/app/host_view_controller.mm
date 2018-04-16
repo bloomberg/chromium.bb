@@ -46,7 +46,6 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   ClientGestures* _clientGestures;
   ClientKeyboard* _clientKeyboard;
   CGSize _keyboardSize;
-  BOOL _surfaceCreated;
   HostSettings* _settings;
 
   // Used to blur the content when the app enters background.
@@ -80,7 +79,6 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   if (self) {
     _client = client;
     _keyboardSize = CGSizeZero;
-    _surfaceCreated = NO;
     _blocksKeyboard = NO;
     _settings =
         [[RemotingPreferences instance] settingsForHost:client.hostInfo.hostId];
@@ -197,10 +195,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  if (!_surfaceCreated) {
-    [_client.displayHandler onSurfaceCreated:_hostView];
-    _surfaceCreated = YES;
-  }
+  [_client.displayHandler createRendererContext:_hostView];
 
   // |_clientKeyboard| should always be the first responder even when the soft
   // keyboard is not visible, so that input from physical keyboard can still be
@@ -272,7 +267,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   [super viewDidLayoutSubviews];
 
   // Pass the actual size of the view to the renderer.
-  [_client.displayHandler onSurfaceChanged:_hostView.bounds];
+  [_client.displayHandler setSurfaceSize:_hostView.bounds];
 
   // Start the animation on the host's visible area.
   _surfaceSizeAnimationLink.paused = NO;
@@ -646,6 +641,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     LOG(DFATAL) << "Blur view does not exist.";
     return;
   }
+  [_client.displayHandler createRendererContext:_hostView];
   [_client setVideoChannelEnabled:YES];
   [_blurView removeFromSuperview];
   _blurView = nil;
@@ -668,6 +664,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     [_blurView.bottomAnchor constraintEqualToAnchor:_hostView.bottomAnchor],
   ]];
   [_client setVideoChannelEnabled:NO];
+  [_client.displayHandler destroyRendererContext];
 }
 
 @end

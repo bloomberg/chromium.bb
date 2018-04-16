@@ -53,8 +53,8 @@ void GlRenderer::OnPixelTransformationChanged(
     const std::array<float, 9>& matrix) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!canvas_) {
-    LOG(WARNING) << "Trying to set transformation matrix when the canvas is "
-        "not ready.";
+    VLOG(1) << "Trying to set transformation matrix when the canvas is not "
+            << "ready.";
     return;
   }
   canvas_->SetTransformationMatrix(matrix);
