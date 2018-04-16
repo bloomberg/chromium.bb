@@ -31,6 +31,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -203,6 +204,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/url_request/test_url_request_interceptor.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -1910,6 +1912,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   // Verifies that extensions that are force-installed by policies are
   // installed and can't be uninstalled.
+
   ExtensionService* service = extension_service();
   ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 
@@ -2029,6 +2032,45 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   extension_host->render_process_host()->Shutdown(content::RESULT_CODE_KILLED);
   extension_crashed_observer.Wait();
   extension_loaded_observer.WaitForExtensionLoaded();
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest,
+                       ExtensionInstallForcelist_DefaultedUpdateUrl) {
+  // Verifies the ExtensionInstallForcelist policy with an empty (defaulted)
+  // "update" URL.
+
+  ExtensionService* service = extension_service();
+  ASSERT_FALSE(service->GetExtensionById(kGoodCrxId, true));
+
+  base::FilePath test_path;
+  GetTestDataDirectory(&test_path);
+
+  // Mock out requests to the Web Store.
+  net::TestURLRequestInterceptor interceptor(
+      "https", "clients2.google.com",
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      base::CreateTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  interceptor.SetResponseIgnoreQuery(
+      GURL("https://clients2.google.com/service/update2/crx"),
+      test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName));
+
+  // Setting the forcelist extension should install "good_v1.crx".
+  base::ListValue forcelist;
+  forcelist.AppendString(kGoodCrxId);
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               forcelist.CreateDeepCopy(), nullptr);
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
+  UpdateProviderPolicy(policies);
+  observer.WaitForExtensionWillBeInstalled();
+
+  EXPECT_LT(0, interceptor.GetHitCount());
+
+  EXPECT_TRUE(service->GetExtensionById(kGoodCrxId, true));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {

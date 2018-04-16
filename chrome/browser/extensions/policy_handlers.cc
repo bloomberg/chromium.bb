@@ -108,21 +108,21 @@ bool ExtensionInstallListPolicyHandler::ParseList(
       continue;
     }
 
-    // Each string item of the list has the following form:
-    // <extension_id>;<update_url>
+    // Each string item of the list should be of one of the following forms:
+    // * <extension_id>
+    // * <extension_id>;<update_url>
     // Note: The update URL might also contain semicolons.
+    std::string extension_id;
+    std::string update_url;
     size_t pos = entry_string.find(';');
     if (pos == std::string::npos) {
-      if (errors) {
-        errors->AddError(policy_name(),
-                         entry - policy_list_value->begin(),
-                         IDS_POLICY_VALUE_FORMAT_ERROR);
-      }
-      continue;
+      extension_id = entry_string;
+      update_url = extension_urls::kChromeWebstoreUpdateURL;
+    } else {
+      extension_id = entry_string.substr(0, pos);
+      update_url = entry_string.substr(pos + 1);
     }
 
-    const std::string extension_id = entry_string.substr(0, pos);
-    const std::string update_url = entry_string.substr(pos + 1);
     if (!crx_file::id_util::IdIsValid(extension_id) ||
         !GURL(update_url).is_valid()) {
       if (errors) {
