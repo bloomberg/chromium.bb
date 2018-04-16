@@ -239,6 +239,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Returns true if this object is associated with |render_frame_host|.
   bool FrameMatches(content::RenderFrameHost* render_frame_host) const;
 
+  // Invoked on Mojo connection error. Closes all Mojo message pipes held by
+  // |this|.
+  void OnConnectionError();
+
   // Returns |controller_delegate| if current frame is controller frame; Returns
   // |receiver_delegate| if current frame is receiver frame.
   PresentationServiceDelegate* GetPresentationServiceDelegate();

@@ -66,13 +66,12 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* script_state) {
 void PresentationReceiver::Init() {
   DCHECK(!receiver_binding_.is_bound());
 
-  mojom::blink::PresentationServicePtr presentation_service;
   auto* interface_provider = GetFrame()->Client()->GetInterfaceProvider();
-  interface_provider->GetInterface(mojo::MakeRequest(&presentation_service));
+  interface_provider->GetInterface(mojo::MakeRequest(&presentation_service_));
 
   mojom::blink::PresentationReceiverPtr receiver_ptr;
   receiver_binding_.Bind(mojo::MakeRequest(&receiver_ptr));
-  presentation_service->SetReceiver(std::move(receiver_ptr));
+  presentation_service_->SetReceiver(std::move(receiver_ptr));
 }
 
 void PresentationReceiver::OnReceiverTerminated() {
