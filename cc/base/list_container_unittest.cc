@@ -1077,22 +1077,21 @@ TEST(ListContainerTest, AppendByMovingReturnsMovedPointer) {
   EXPECT_NE(moved_1, moved_2);
 }
 
-TEST(ListContainerTest,
-     DISABLED_AppendByMovingReplacesSourceWithNewDerivedElement) {
-  ListContainer<SimpleDerivedElementConstructMagicNumberOne> list_1(
+TEST(ListContainerTest, AppendByMovingReplacesSourceWithNewDerivedElement) {
+  ListContainer<SimpleDerivedElement> list_1(
       kCurrentLargestDerivedElementAlign, kCurrentLargestDerivedElementSize, 0);
-  ListContainer<SimpleDerivedElementConstructMagicNumberTwo> list_2(
+  ListContainer<SimpleDerivedElement> list_2(
       kCurrentLargestDerivedElementAlign, kCurrentLargestDerivedElementSize, 0);
 
   list_1.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberOne>();
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
-            list_1.front()->get_value());
+            list_1.back()->get_value());
 
   list_2.AppendByMoving(list_1.front());
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
-            list_1.front()->get_value());
+            list_1.back()->get_value());
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementOne,
-            list_2.front()->get_value());
+            list_2.back()->get_value());
 
   // Change the value of list_2.front() to ensure the value is actually moved.
   list_2.back()->set_value(kMagicNumberToUseForSimpleDerivedElementThree);
@@ -1102,13 +1101,21 @@ TEST(ListContainerTest,
             list_1.front()->get_value());
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementThree,
             list_1.back()->get_value());
+
+  // Redo the check with another derived type.
+  list_1.AllocateAndConstruct<SimpleDerivedElementConstructMagicNumberTwo>();
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list_1.back()->get_value());
+  list_2.AppendByMoving(list_1.back());
   EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
             list_2.back()->get_value());
+  EXPECT_EQ(kMagicNumberToUseForSimpleDerivedElementTwo,
+            list_1.back()->get_value());
 
   // AppendByMoving replaces the source element with a new derived element so
   // we do not expect sizes to shrink after AppendByMoving is called.
-  EXPECT_EQ(2u, list_1.size());  // One direct allocation, one AppendByMoving.
-  EXPECT_EQ(1u, list_2.size());  // One AppendByMoving.
+  EXPECT_EQ(3u, list_1.size());  // Two direct allocations, one AppendByMoving.
+  EXPECT_EQ(2u, list_2.size());  // Two AppendByMoving.
 }
 
 const size_t kLongCountForLongSimpleDerivedElement = 5;
