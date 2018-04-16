@@ -51,6 +51,9 @@ _CONFIG = [
             'base::span',
             'logging::GetVlogLevel',
 
+            # //base/bind_helpers.h.
+            'base::DoNothing',
+
             # //base/callback.h is allowed, but you need to use WTF::Bind or
             # WTF::BindRepeating to create callbacks in Blink.
             'base::OnceCallback',
