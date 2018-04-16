@@ -117,7 +117,7 @@ const PredFuncMode kPredFuncMdArray[] = {
   make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_H_PRED),
   make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
-             FILTER_D153_PRED),
+             FILTER_D157_PRED),
   make_tuple(&av1_filter_intra_predictor_c, &av1_filter_intra_predictor_sse4_1,
              FILTER_PAETH_PRED),
 };
