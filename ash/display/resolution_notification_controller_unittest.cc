@@ -68,8 +68,8 @@ class ResolutionNotificationControllerTest : public AshTestBase {
 
     EXPECT_TRUE(controller()->PrepareNotificationAndSetDisplayMode(
         display.id(), old_mode, new_mode,
-        base::Bind(&ResolutionNotificationControllerTest::OnAccepted,
-                   base::Unretained(this))));
+        base::BindOnce(&ResolutionNotificationControllerTest::OnAccepted,
+                       base::Unretained(this))));
 
     // OnConfigurationChanged event won't be emitted in the test environment,
     // so invoke UpdateDisplay() to emit that event explicitly.
