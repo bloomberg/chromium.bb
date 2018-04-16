@@ -39,6 +39,7 @@ namespace content {
 struct CursorInfo;
 class RenderProcessHost;
 class RenderWidgetHostIterator;
+class RenderWidgetHostObserver;
 class RenderWidgetHostView;
 struct ScreenInfo;
 
@@ -240,6 +241,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // Add/remove an input event observer.
   virtual void AddInputEventObserver(InputEventObserver* observer) = 0;
   virtual void RemoveInputEventObserver(InputEventObserver* observer) = 0;
+
+  // Add and remove observers for widget host events. The order in which
+  // notifications are sent to observers is undefined. Observers must be sure to
+  // remove the observer before they go away.
+  virtual void AddObserver(RenderWidgetHostObserver* observer) = 0;
+  virtual void RemoveObserver(RenderWidgetHostObserver* observer) = 0;
 
   // Get the screen info corresponding to this render widget.
   virtual void GetScreenInfo(ScreenInfo* result) = 0;

@@ -82,6 +82,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_metadata_provider.h"
 #include "content/public/browser/render_widget_host_iterator.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -693,6 +694,8 @@ void RenderWidgetHostImpl::WasHidden() {
       NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(this),
       Details<bool>(&is_visible));
+  for (auto& observer : observers_)
+    observer.RenderWidgetHostVisibilityChanged(this, false);
 }
 
 void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
@@ -721,6 +724,8 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
       NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
       Source<RenderWidgetHost>(this),
       Details<bool>(&is_visible));
+  for (auto& observer : observers_)
+    observer.RenderWidgetHostVisibilityChanged(this, true);
 
   // It's possible for our size to be out of sync with the renderer. The
   // following is one case that leads to this:
@@ -1559,6 +1564,14 @@ void RenderWidgetHostImpl::RemoveInputEventObserver(
   input_event_observers_.RemoveObserver(observer);
 }
 
+void RenderWidgetHostImpl::AddObserver(RenderWidgetHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderWidgetHostImpl::RemoveObserver(RenderWidgetHostObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void RenderWidgetHostImpl::GetScreenInfo(ScreenInfo* result) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHostImpl::GetScreenInfo");
   if (view_)
@@ -1944,6 +1957,8 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
   DCHECK(!destroyed_);
   destroyed_ = true;
 
+  for (auto& observer : observers_)
+    observer.RenderWidgetHostDestroyed(this);
   NotificationService::current()->Notify(
       NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED, Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());

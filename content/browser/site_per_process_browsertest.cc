@@ -25,6 +25,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
@@ -69,6 +70,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -414,44 +416,46 @@ class SwapoutACKMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(SwapoutACKMessageFilter);
 };
 
-class RenderWidgetHostVisibilityObserver : public NotificationObserver {
+class RenderWidgetHostVisibilityObserver : public RenderWidgetHostObserver {
  public:
   explicit RenderWidgetHostVisibilityObserver(RenderWidgetHostImpl* rwhi,
                                               bool expected_visibility_state)
       : expected_visibility_state_(expected_visibility_state),
+        observer_(this),
         was_observed_(false),
         did_fail_(false),
-        source_(rwhi) {
-    registrar_.Add(this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-                   source_);
+        render_widget_(rwhi) {
+    observer_.Add(render_widget_);
     message_loop_runner_ = new MessageLoopRunner;
   }
 
   bool WaitUntilSatisfied() {
     if (!was_observed_)
       message_loop_runner_->Run();
-    registrar_.Remove(this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-                      source_);
+    if (observer_.IsObserving(render_widget_))
+      observer_.Remove(render_widget_);
     return !did_fail_;
   }
 
  private:
-  void Observe(int type,
-               const NotificationSource& source,
-               const NotificationDetails& details) override {
+  void RenderWidgetHostVisibilityChanged(RenderWidgetHost* widget_host,
+                                         bool became_visible) override {
     was_observed_ = true;
-    did_fail_ = expected_visibility_state_ !=
-                (*static_cast<const Details<bool>&>(details).ptr());
+    did_fail_ = expected_visibility_state_ != became_visible;
     if (message_loop_runner_->loop_running())
       message_loop_runner_->Quit();
   }
 
+  void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override {
+    observer_.Remove(widget_host);
+  }
+
   bool expected_visibility_state_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
-  NotificationRegistrar registrar_;
+  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> observer_;
   bool was_observed_;
   bool did_fail_;
-  Source<RenderWidgetHost> source_;
+  RenderWidgetHost* render_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityObserver);
 };

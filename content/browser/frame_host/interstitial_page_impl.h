@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -21,6 +22,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "url/gurl.h"
@@ -45,6 +47,7 @@ enum ResourceRequestAction {
 class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
                                             public NotificationObserver,
                                             public RenderFrameHostDelegate,
+                                            public RenderWidgetHostObserver,
                                             public RenderViewHostDelegate,
                                             public RenderWidgetHostDelegate,
                                             public NavigatorDelegate {
@@ -208,6 +211,9 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
     DISALLOW_COPY_AND_ASSIGN(UnderlyingContentObserver);
   };
 
+  // RenderWidgetHostObserver implementation:
+  void RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) override;
+
   // Disable the interstitial:
   // - if it is not yet showing, then it won't be shown.
   // - any command sent by the RenderViewHost will be ignored.
@@ -305,6 +311,8 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   std::unique_ptr<InterstitialPageDelegate> delegate_;
 
   scoped_refptr<SessionStorageNamespace> session_storage_namespace_;
+
+  ScopedObserver<RenderWidgetHost, RenderWidgetHostObserver> widget_observer_;
 
   base::WeakPtrFactory<InterstitialPageImpl> weak_ptr_factory_;
 

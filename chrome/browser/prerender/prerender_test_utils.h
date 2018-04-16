@@ -16,6 +16,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/synchronization/lock.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -25,6 +26,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "url/gurl.h"
@@ -99,7 +101,8 @@ class FakeSafeBrowsingDatabaseManager
 };
 
 // PrerenderContents that stops the UI message loop on DidStopLoading().
-class TestPrerenderContents : public PrerenderContents {
+class TestPrerenderContents : public PrerenderContents,
+                              public content::RenderWidgetHostObserver {
  public:
   TestPrerenderContents(PrerenderManager* prerender_manager,
                         Profile* profile,
@@ -125,12 +128,15 @@ class TestPrerenderContents : public PrerenderContents {
  private:
   void OnRenderViewHostCreated(
       content::RenderViewHost* new_render_view_host) override;
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void RenderWidgetHostVisibilityChanged(content::RenderWidgetHost* widget_host,
+                                         bool became_visible) override;
+  void RenderWidgetHostDestroyed(
+      content::RenderWidgetHost* widget_host) override;
 
   FinalStatus expected_final_status_;
 
+  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
+      observer_;
   // The RenderViewHost created for the prerender, if any.
   content::RenderViewHost* new_render_view_host_;
   // Set to true when the prerendering RenderWidget is hidden.

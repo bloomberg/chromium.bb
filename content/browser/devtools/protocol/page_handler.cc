@@ -43,8 +43,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -197,6 +196,7 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler)
 #endif  // !defined(OS_ANDROID)
       host_(nullptr),
       emulation_handler_(emulation_handler),
+      observer_(this),
       weak_factory_(this) {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
@@ -240,22 +240,14 @@ void PageHandler::SetRenderer(int process_host_id,
 
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
-  if (widget_host) {
-    registrar_.Remove(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(widget_host));
-  }
+  if (widget_host && observer_.IsObserving(widget_host))
+    observer_.Remove(widget_host);
 
   host_ = frame_host;
   widget_host = host_ ? host_->GetRenderWidgetHost() : nullptr;
 
-  if (widget_host) {
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-        content::Source<RenderWidgetHost>(widget_host));
-  }
+  if (widget_host)
+    observer_.Add(widget_host);
 
 #if !defined(OS_ANDROID)
   if (video_consumer_ && frame_host) {
@@ -295,14 +287,16 @@ void PageHandler::OnSynchronousSwapCompositorFrame(
     InnerSwapCompositorFrame();
 }
 
-void PageHandler::Observe(int type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
+void PageHandler::RenderWidgetHostVisibilityChanged(
+    RenderWidgetHost* widget_host,
+    bool became_visible) {
   if (!screencast_enabled_)
     return;
-  DCHECK(type == content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED);
-  bool visible = *Details<bool>(details).ptr();
-  NotifyScreencastVisibility(visible);
+  NotifyScreencastVisibility(became_visible);
+}
+
+void PageHandler::RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) {
+  observer_.Remove(widget_host);
 }
 
 void PageHandler::DidAttachInterstitialPage() {

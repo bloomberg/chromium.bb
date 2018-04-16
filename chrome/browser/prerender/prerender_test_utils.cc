@@ -26,10 +26,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
@@ -341,6 +339,7 @@ TestPrerenderContents::TestPrerenderContents(
     FinalStatus expected_final_status)
     : PrerenderContents(prerender_manager, profile, url, referrer, origin),
       expected_final_status_(expected_final_status),
+      observer_(this),
       new_render_view_host_(nullptr),
       was_hidden_(false),
       was_shown_(false),
@@ -384,36 +383,31 @@ void TestPrerenderContents::OnRenderViewHostCreated(
     RenderViewHost* new_render_view_host) {
   // Used to make sure the RenderViewHost is hidden and, if used,
   // subsequently shown.
-  notification_registrar().Add(
-      this, content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
-      content::Source<content::RenderWidgetHost>(
-          new_render_view_host->GetWidget()));
+  observer_.Add(new_render_view_host->GetWidget());
 
   new_render_view_host_ = new_render_view_host;
 
   PrerenderContents::OnRenderViewHostCreated(new_render_view_host);
 }
 
-void TestPrerenderContents::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == content::NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED) {
-    EXPECT_EQ(new_render_view_host_->GetWidget(),
-              content::Source<content::RenderWidgetHost>(source).ptr());
-    bool is_visible = *content::Details<bool>(details).ptr();
+void TestPrerenderContents::RenderWidgetHostVisibilityChanged(
+    content::RenderWidgetHost* widget_host,
+    bool became_visible) {
+  EXPECT_EQ(new_render_view_host_->GetWidget(), widget_host);
 
-    if (!is_visible) {
-      was_hidden_ = true;
-    } else if (is_visible && was_hidden_) {
-      // Once hidden, a prerendered RenderViewHost should only be shown after
-      // being removed from the PrerenderContents for display.
-      EXPECT_FALSE(GetRenderViewHost());
-      was_shown_ = true;
-    }
-    return;
+  if (!became_visible) {
+    was_hidden_ = true;
+  } else if (became_visible && was_hidden_) {
+    // Once hidden, a prerendered RenderViewHost should only be shown after
+    // being removed from the PrerenderContents for display.
+    EXPECT_FALSE(GetRenderViewHost());
+    was_shown_ = true;
   }
-  PrerenderContents::Observe(type, source, details);
+}
+
+void TestPrerenderContents::RenderWidgetHostDestroyed(
+    content::RenderWidgetHost* widget_host) {
+  observer_.Remove(widget_host);
 }
 
 DestructionWaiter::DestructionWaiter(TestPrerenderContents* prerender_contents,
