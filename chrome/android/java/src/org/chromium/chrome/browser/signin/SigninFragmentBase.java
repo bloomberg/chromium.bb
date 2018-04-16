@@ -12,6 +12,7 @@ import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -217,10 +218,19 @@ public abstract class SigninFragmentBase
         DisplayableProfileData profileData =
                 mProfileDataCache.getProfileDataOrDefault(mSelectedAccountName);
         mView.getAccountImageView().setImageDrawable(profileData.getImage());
-        mConsentTextTracker.setTextNonRecordable(
-                mView.getAccountNameView(), profileData.getFullNameOrEmail());
-        mConsentTextTracker.setTextNonRecordable(
-                mView.getAccountEmailView(), profileData.getAccountName());
+
+        final String fullName = profileData.getFullName();
+        if (!TextUtils.isEmpty(fullName)) {
+            mConsentTextTracker.setTextNonRecordable(mView.getAccountTextPrimary(), fullName);
+            mConsentTextTracker.setTextNonRecordable(
+                    mView.getAccountTextSecondary(), profileData.getAccountName());
+            mView.getAccountTextSecondary().setVisibility(View.VISIBLE);
+        } else {
+            // Full name is not available, show the email in the primary TextView.
+            mConsentTextTracker.setTextNonRecordable(
+                    mView.getAccountTextPrimary(), profileData.getAccountName());
+            mView.getAccountTextSecondary().setVisibility(View.GONE);
+        }
     }
 
     private void showAcceptButton() {
