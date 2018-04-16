@@ -2423,7 +2423,7 @@ void UiSceneCreator::CreateOmnibox() {
               e->SetTransitionedProperties({});
               y_offset += kUrlBarVerticalOffsetDMM;
             }
-            e->SetTranslate(0, y_offset, kOmniboxShadowOffset);
+            e->SetTranslate(0, y_offset, -kOmniboxShadowOffset);
           },
           shadow.get())));
 
@@ -2631,6 +2631,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_background->set_hit_testable(true);
   omnibox_background->set_focusable(false);
   omnibox_background->set_corner_radius(kOmniboxCornerRadiusDMM);
+  omnibox_background->SetTranslate(0, 0, kOmniboxShadowOffset);
   VR_BIND_COLOR(model_, omnibox_background.get(),
                 &ColorScheme::omnibox_background, &Rect::SetColor);
   omnibox_background->AddChild(std::move(omnibox_outer_layout));
