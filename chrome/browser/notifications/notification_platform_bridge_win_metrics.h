@@ -134,6 +134,14 @@ enum class OnFailedStatus {
   COUNT  // Must be the final value.
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class GetSettingStatus {
+  SUCCESS = 0,
+  UNKNOWN_FAILURE = 1,
+  COUNT  // Must be the final value.
+};
+
 // Methods to log histograms (to detect error rates in Native Notifications on
 // Windows).
 void LogDisplayHistogram(DisplayStatus status);
@@ -147,6 +155,7 @@ void LogActivationStatus(ActivationStatus status);
 void LogSetReadyCallbackStatus(SetReadyCallbackStatus status);
 void LogOnDismissedStatus(OnDismissedStatus status);
 void LogOnFailedStatus(OnFailedStatus status);
+void LogGetSettingStatus(GetSettingStatus status);
 
 }  // namespace notifications_uma
 
