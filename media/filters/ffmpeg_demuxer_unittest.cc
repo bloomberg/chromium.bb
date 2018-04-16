@@ -517,6 +517,15 @@ TEST_F(FFmpegDemuxerTest, Initialize_Encrypted) {
   InitializeDemuxer();
 }
 
+TEST_F(FFmpegDemuxerTest, Initialize_NoConfigChangeSupport) {
+  // Will create one audio, one video, and one text stream.
+  CreateDemuxer("bear-vp8-webvtt.webm");
+  InitializeDemuxer();
+
+  for (auto* stream : demuxer_->GetAllStreams())
+    EXPECT_FALSE(stream->SupportsConfigChanges());
+}
+
 TEST_F(FFmpegDemuxerTest, AbortPendingReads) {
   // We test that on a successful audio packet read.
   CreateDemuxer("bear-320x240.webm");

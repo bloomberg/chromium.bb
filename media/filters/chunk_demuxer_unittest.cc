@@ -1420,6 +1420,9 @@ TEST_P(ChunkDemuxerTest, Init) {
       EXPECT_FALSE(video_stream);
     }
 
+    for (auto* stream : demuxer_->GetAllStreams())
+      EXPECT_TRUE(stream->SupportsConfigChanges());
+
     ShutdownDemuxer();
     demuxer_.reset();
   }

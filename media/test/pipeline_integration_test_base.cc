@@ -274,12 +274,11 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
   // media files are provided in advance.
   EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
 
-  // SRC= demuxer does not support config changes.
-  for (auto* stream : demuxer_->GetAllStreams()) {
-    EXPECT_FALSE(stream->SupportsConfigChanges());
-  }
-  EXPECT_CALL(*this, OnAudioConfigChange(_)).Times(0);
-  EXPECT_CALL(*this, OnVideoConfigChange(_)).Times(0);
+  // DemuxerStreams may signal config changes.
+  // In practice, this doesn't happen for FFmpegDemuxer, but it's allowed for
+  // SRC= demuxers in general.
+  EXPECT_CALL(*this, OnAudioConfigChange(_)).Times(AnyNumber());
+  EXPECT_CALL(*this, OnVideoConfigChange(_)).Times(AnyNumber());
 
   base::RunLoop run_loop;
   pipeline_->Start(
@@ -606,10 +605,7 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
                  base::Unretained(this), run_loop.QuitWhenIdleClosure()));
   demuxer_ = source->GetDemuxer();
 
-  // MediaSource demuxer may signal config changes.
-  for (auto* stream : demuxer_->GetAllStreams()) {
-    EXPECT_TRUE(stream->SupportsConfigChanges());
-  }
+  // DemuxerStreams may signal config changes.
   // Config change tests should set more specific expectations about the number
   // of calls.
   EXPECT_CALL(*this, OnAudioConfigChange(_)).Times(AnyNumber());
@@ -645,6 +641,10 @@ PipelineStatus PipelineIntegrationTestBase::StartPipelineWithMediaSource(
   }
 
   RunUntilIdleOrEndedOrError(&run_loop);
+
+  for (auto* stream : demuxer_->GetAllStreams()) {
+    EXPECT_TRUE(stream->SupportsConfigChanges());
+  }
 
   return pipeline_status_;
 }
