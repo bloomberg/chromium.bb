@@ -8,8 +8,6 @@ component("cpp") {
     "base_agent.h",
     "chrome_trace_event_agent.cc",
     "chrome_trace_event_agent.h",
-    "tracing_features.cc",
-    "tracing_features.h",
   ]
 
   defines = [ "IS_TRACING_CPP_IMPL" ]
@@ -21,25 +19,4 @@ component("cpp") {
     "//services/service_manager/public/cpp",
     "//services/tracing/public/mojom",
   ]
-
-  if (is_mac || is_linux || is_android) {
-    sources += [
-      "perfetto/producer_client.cc",
-      "perfetto/producer_client.h",
-      "perfetto/shared_memory.cc",
-      "perfetto/shared_memory.h",
-      "perfetto/task_runner.cc",
-      "perfetto/task_runner.h",
-    ]
-
-    deps = [
-      # TODO(oysteine): Add a Perfetto build target which contains
-      # only the top-level proto to avoid pulling in unused messages.
-      "//third_party/perfetto/protos/perfetto/trace:zero",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:lite",
-      "//third_party/perfetto/protos/perfetto/trace/chrome:zero",
-    ]
-
-    public_deps += [ "//third_party/perfetto:libperfetto" ]
-  }
 }
