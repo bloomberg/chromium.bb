@@ -81,9 +81,8 @@ void WebViewFrameWidget::Paint(WebCanvas* canvas, const WebRect& view_port) {
   return web_view_->Paint(canvas, view_port);
 }
 
-void WebViewFrameWidget::LayoutAndPaintAsync(
-    WebLayoutAndPaintAsyncCallback* callback) {
-  return web_view_->LayoutAndPaintAsync(callback);
+void WebViewFrameWidget::LayoutAndPaintAsync(base::OnceClosure callback) {
+  return web_view_->LayoutAndPaintAsync(std::move(callback));
 }
 
 void WebViewFrameWidget::CompositeAndReadbackAsync(

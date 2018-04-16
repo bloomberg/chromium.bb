@@ -121,7 +121,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 #if defined(OS_ANDROID)
   void PaintIgnoringCompositing(WebCanvas*, const WebRect&) override;
 #endif
-  void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
+  void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
   void ThemeChanged() override;

@@ -65,7 +65,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
     return other && popup_client_ == other->popup_client_;
   }
   LocalDOMWindow* Window();
-  void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
+  void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
   WebPoint PositionRelativeToOwner() override;

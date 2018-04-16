@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_H_
 
+#include "base/callback.h"
 #include "third_party/blink/public/platform/web_browser_controls_state.h"
 #include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -51,7 +52,6 @@ namespace blink {
 class WebCompositeAndReadbackAsyncCallback;
 class WebCoalescedInputEvent;
 class WebLayerTreeView;
-class WebLayoutAndPaintAsyncCallback;
 class WebPagePopup;
 struct WebPoint;
 
@@ -121,9 +121,7 @@ class WebWidget {
   virtual void PaintIgnoringCompositing(WebCanvas*, const WebRect&) {}
 
   // Run layout and paint of all pending document changes asynchronously.
-  // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback
-  // object alive until it is called.
-  virtual void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) {}
+  virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
 
   // The caller is responsible for keeping the
   // WebCompositeAndReadbackAsyncCallback object alive until it is called. This

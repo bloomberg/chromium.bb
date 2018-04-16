@@ -1900,9 +1900,8 @@ void WebViewImpl::PaintIgnoringCompositing(WebCanvas* canvas,
 }
 #endif
 
-void WebViewImpl::LayoutAndPaintAsync(
-    WebLayoutAndPaintAsyncCallback* callback) {
-  layer_tree_view_->LayoutAndPaintAsync(callback);
+void WebViewImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
+  layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
 }
 
 void WebViewImpl::CompositeAndReadbackAsync(

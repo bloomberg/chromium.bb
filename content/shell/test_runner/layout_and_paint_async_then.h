@@ -18,7 +18,7 @@ namespace test_runner {
 // Calls |callback| after the layout and paint happens (for both the
 // |web_widget| and its popup (if any)).
 TEST_RUNNER_EXPORT void LayoutAndPaintAsyncThen(blink::WebWidget* web_widget,
-                                                const base::Closure& callback);
+                                                base::OnceClosure callback);
 
 }  // namespace test_runner
 

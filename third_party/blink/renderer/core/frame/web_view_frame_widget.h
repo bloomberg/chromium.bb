@@ -52,7 +52,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void UpdateLifecycle(LifecycleUpdate requested_update) override;
   void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
   void Paint(WebCanvas*, const WebRect& view_port) override;
-  void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) override;
+  void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) override;
   void ThemeChanged() override;
