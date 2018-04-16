@@ -33,18 +33,39 @@ _INCLUDE_TEMPLATE = """
 }""".lstrip()
 
 
-_TARGET_TEMPLATE = """
+_TARGET_TEMPLATE_NO_CHROME_DEPENDENCY = """
     {
       'target_name': '%s',
       'includes': ['%s'],
     }"""
 
+_TARGET_TEMPLATE = """
+    {
+      'target_name': '%s',
+      'dependencies': ['chrome'],
+      'includes': ['%s'],
+    }"""
+
+# Add externs files that do not depend on chrome.* namespace here. Everything
+# else will have chrome.js as a dependency.
+NO_CHROME_DEPENDENCY = set([
+  'chrome.js',
+  'mojo.js',
+  'pending.js',
+  'polymer-1.0.js',
+  'web_animations.js',
+])
 
 def CreateIncludeGyp(directory):
   include_path = os.path.normpath(os.path.relpath(_INCLUDE_GYPI, directory))
   js_files = [f for f in os.listdir(directory) if f.endswith('.js')]
   js_files.sort()
-  targets = [_TARGET_TEMPLATE % (f[:-3], include_path) for f in js_files]
+
+  targets = []
+  for f in js_files:
+    template = (_TARGET_TEMPLATE_NO_CHROME_DEPENDENCY if f in
+                NO_CHROME_DEPENDENCY else _TARGET_TEMPLATE)
+    targets.append(template % (f[:-3], include_path))
   return _INCLUDE_TEMPLATE % (date.today().year, ",".join(targets).strip())
 
 

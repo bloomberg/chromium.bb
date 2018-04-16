@@ -36,7 +36,7 @@
     'jscomp_error=uselessCode',
     'jscomp_error=visibility',
 
-    'language_in=ECMASCRIPT_NEXT',
+    'language_in=ECMASCRIPT_2017',
     'language_out=ECMASCRIPT5_STRICT',
 
     'checks_only',

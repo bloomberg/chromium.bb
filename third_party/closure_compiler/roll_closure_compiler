@@ -27,6 +27,7 @@ get_sha1() {
 trap cleanup SIGINT SIGHUP SIGTERM
 
 old_head=$(egrep -o "^Revision: [0-9a-f]{5,40}$" "${README}" | cut -d" " -f2)
+old_chrome_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome.js")
 old_extensions_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome_extensions.js")
 old_polymer_sha1=$(get_sha1 "${EXTERNS_DIR}/polymer-1.0.js")
 
@@ -69,7 +70,7 @@ check_jdk_version() {
 }
 
 echo "Checking JDK Version Used to Build"
-check_jdk_version 1.7 pom.xml
+check_jdk_version 1.8 pom.xml
 
 echo "Building Closure Compiler"
 mvn clean install -DskipTests=true --projects com.google.javascript:closure-compiler,com.google.javascript:closure-compiler-externs
@@ -103,8 +104,14 @@ readonly WARNING="$(cat <<EOT
 EOT
 )"
 
+(echo "${WARNING}" && cat contrib/externs/chrome.js) > "${EXTERNS_DIR}/chrome.js"
 (echo "${WARNING}" && cat contrib/externs/chrome_extensions.js) > "${EXTERNS_DIR}/chrome_extensions.js"
 (echo "${WARNING}" && cat contrib/externs/polymer-1.0.js) > "${EXTERNS_DIR}/polymer-1.0.js"
+
+new_chrome_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome.js")
+if [[ "${new_chrome_sha1}" != "${old_chrome_sha1}" ]]; then
+  chrome_range="chrome.js: ${old_chrome_sha1} -> ${new_chrome_sha1}"
+fi
 
 new_extensions_sha1=$(get_sha1 "${EXTERNS_DIR}/chrome_extensions.js")
 if [[ "${new_extensions_sha1}" != "${old_extensions_sha1}" ]]; then
@@ -125,6 +132,10 @@ echo "@  closure-compiler.git HEAD:"
 echo "@    Old: ${old_head}"
 echo "@    New: ${new_head}"
 echo "@"
+echo "@  externs/chrome.js SHA1:"
+echo "@    Old: ${old_chrome_sha1}"
+echo "@    New: ${new_chrome_sha1}"
+echo "@"
 echo "@  externs/chrome_extensions.js SHA1:"
 echo "@    Old: ${old_extensions_sha1}"
 echo "@    New: ${new_extensions_sha1}"
@@ -141,6 +152,7 @@ sed -i "s/^Revision: ${old_head}$/Revision: ${new_head}/" "${README}"
 echo "git commit -a -m 'Roll closure compiler"
 echo
 echo "${head_range}"
+if [[ ! -z "${chrome_range}" ]]; then echo "${chrome_range}"; fi
 if [[ ! -z "${extensions_range}" ]]; then echo "${extensions_range}"; fi
 if [[ ! -z "${polymer_range}" ]]; then echo "${polymer_range}"; fi
 echo

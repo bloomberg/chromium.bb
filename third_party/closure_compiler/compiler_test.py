@@ -19,6 +19,8 @@ _ASSERT_JS = os.path.join(_RESOURCES_DIR, "assert.js")
 _CR_JS = os.path.join(_RESOURCES_DIR, "cr.js")
 _CR_UI_JS = os.path.join(_RESOURCES_DIR, "cr", "ui.js")
 _PROMISE_RESOLVER_JS = os.path.join(_RESOURCES_DIR, "promise_resolver.js")
+_CHROME_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
+                               "externs", "chrome.js")
 _CHROME_SEND_EXTERNS = os.path.join(_SRC_DIR, "third_party", "closure_compiler",
                                     "externs", "chrome_send.js")
 _CLOSURE_ARGS_GYPI = os.path.join(_SCRIPT_DIR, "closure_args.gypi")
@@ -51,7 +53,7 @@ class CompilerTest(unittest.TestCase):
     if needs_output:
       args.remove("checks_only")
 
-    sources = [file_path, _CHROME_SEND_EXTERNS]
+    sources = [file_path, _CHROME_EXTERNS, _CHROME_SEND_EXTERNS]
     found_errors, stderr = self._checker.check(sources,
                                                out_file=out_file,
                                                closure_args=args)
