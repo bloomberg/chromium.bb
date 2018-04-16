@@ -29,8 +29,6 @@
 
 namespace {
 
-void TestAuthErrorCallback(const GoogleServiceAuthError& error) {}
-
 class SupervisedUserServiceTestSupervised : public InProcessBrowserTest {
  public:
   // content::BrowserTestBase:
@@ -42,45 +40,6 @@ class SupervisedUserServiceTestSupervised : public InProcessBrowserTest {
 }  // namespace
 
 typedef InProcessBrowserTest SupervisedUserServiceTest;
-
-// Crashes on Mac.
-// http://crbug.com/339501
-#if defined(OS_MACOSX)
-#define MAYBE_ClearOmitOnRegistration DISABLED_ClearOmitOnRegistration
-#else
-#define MAYBE_ClearOmitOnRegistration ClearOmitOnRegistration
-#endif
-// Ensure that a profile that has completed registration is included in the
-// list shown in the avatar menu.
-IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest,
-                       MAYBE_ClearOmitOnRegistration) {
-  // Artificially mark the profile as omitted.
-  Profile* profile = browser()->profile();
-  ProfileAttributesEntry* entry;
-  ASSERT_TRUE(g_browser_process->profile_manager()->
-                  GetProfileAttributesStorage().
-                  GetProfileAttributesWithPath(profile->GetPath(), &entry));
-  entry->SetIsOmitted(true);
-  ASSERT_TRUE(entry->IsOmitted());
-
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile);
-
-  // A registration error does not clear the flag (the profile should be deleted
-  // anyway).
-  supervised_user_service->OnSupervisedUserRegistered(
-      base::BindOnce(&TestAuthErrorCallback), profile,
-      GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED),
-      std::string());
-  ASSERT_TRUE(entry->IsOmitted());
-
-  // Successfully completing registration clears the flag.
-  supervised_user_service->OnSupervisedUserRegistered(
-      base::BindOnce(&TestAuthErrorCallback), profile,
-      GoogleServiceAuthError(GoogleServiceAuthError::NONE),
-      std::string("abcdef"));
-  EXPECT_FALSE(entry->IsOmitted());
-}
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTest, LocalPolicies) {
   Profile* profile = browser()->profile();

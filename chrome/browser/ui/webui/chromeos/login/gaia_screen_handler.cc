@@ -177,17 +177,7 @@ void UpdateAuthParams(base::DictionaryValue* params,
   if (!allow_new_user || is_restrictive_proxy)
     params->SetString("flow", "nosignup");
 
-  // Allow supervised user creation only if:
-  // 1. Enterprise managed device > is allowed by policy.
-  // 2. Consumer device > owner exists.
-  // 3. New users are allowed by owner.
-  // 4. Supervised users are allowed by owner.
-  ChromeUserManager* user_manager = ChromeUserManager::Get();
-  bool supervised_users_can_create =
-      base::FeatureList::IsEnabled(features::kSupervisedUserCreation) &&
-      user_manager->AreSupervisedUsersAllowed() && allow_new_user &&
-      !user_manager->GetUsersAllowedForSupervisedUsersCreation().empty();
-  params->SetBoolean("supervisedUsersCanCreate", supervised_users_can_create);
+  params->SetBoolean("supervisedUsersCanCreate", false);
 
   // Now check whether we're in multi-profiles user adding scenario and
   // disable GAIA right panel features if that's the case.

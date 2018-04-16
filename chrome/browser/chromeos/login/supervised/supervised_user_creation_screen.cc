@@ -234,71 +234,12 @@ void SupervisedUserCreationScreen::AuthenticateManager(
 void SupervisedUserCreationScreen::CreateSupervisedUser(
     const base::string16& display_name,
     const std::string& supervised_user_password) {
-  DCHECK(controller_.get());
-  int image;
-  if (selected_image_ == user_manager::User::USER_IMAGE_EXTERNAL)
-    // TODO(dzhioev): crbug/249660
-    image = SupervisedUserCreationController::kDummyAvatarIndex;
-  else
-    image = selected_image_;
-  controller_->StartCreation(display_name, supervised_user_password, image);
+  NOTREACHED();
 }
 
 void SupervisedUserCreationScreen::ImportSupervisedUser(
     const std::string& user_id) {
-  DCHECK(controller_.get());
-  DCHECK(existing_users_.get());
-  VLOG(1) << "Importing user " << user_id;
-  base::DictionaryValue* user_info;
-  if (!existing_users_->GetDictionary(user_id, &user_info)) {
-    LOG(ERROR) << "Can not import non-existing user " << user_id;
-    return;
-  }
-  base::string16 display_name;
-  std::string master_key;
-  std::string signature_key;
-  std::string encryption_key;
-  std::string avatar;
-  bool exists;
-  int avatar_index = SupervisedUserCreationController::kDummyAvatarIndex;
-  user_info->GetString(SupervisedUserSyncService::kName, &display_name);
-  user_info->GetString(SupervisedUserSyncService::kMasterKey, &master_key);
-  user_info->GetString(SupervisedUserSyncService::kPasswordSignatureKey,
-                       &signature_key);
-  user_info->GetString(SupervisedUserSyncService::kPasswordEncryptionKey,
-                       &encryption_key);
-  user_info->GetString(SupervisedUserSyncService::kChromeOsAvatar, &avatar);
-  user_info->GetBoolean(kUserExists, &exists);
-
-  // We should not get here with existing user selected, so just display error.
-  if (exists) {
-    view_->ShowErrorPage(
-        l10n_util::GetStringUTF16(
-            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE),
-        l10n_util::GetStringUTF16(IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR),
-        l10n_util::GetStringUTF16(
-            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON));
-    return;
-  }
-
-  SupervisedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
-
-  const base::DictionaryValue* password_data = NULL;
-  SupervisedUserSharedSettingsService* shared_settings_service =
-      SupervisedUserSharedSettingsServiceFactory::GetForBrowserContext(
-          controller_->GetManagerProfile());
-  const base::Value* value = shared_settings_service->GetValue(
-      user_id, supervised_users::kChromeOSPasswordData);
-
-  bool password_right_here = value && value->GetAsDictionary(&password_data) &&
-                             !password_data->empty();
-
-  if (password_right_here) {
-    controller_->StartImport(display_name, avatar_index, user_id, master_key,
-                             password_data, encryption_key, signature_key);
-  } else {
-    NOTREACHED() << " Oops, no password";
-  }
+  NOTREACHED();
 }
 
 // TODO(antrim): Code duplication with previous method will be removed once
@@ -306,39 +247,7 @@ void SupervisedUserCreationScreen::ImportSupervisedUser(
 void SupervisedUserCreationScreen::ImportSupervisedUserWithPassword(
     const std::string& user_id,
     const std::string& password) {
-  DCHECK(controller_.get());
-  DCHECK(existing_users_.get());
-  VLOG(1) << "Importing user " << user_id;
-  base::DictionaryValue* user_info;
-  if (!existing_users_->GetDictionary(user_id, &user_info)) {
-    LOG(ERROR) << "Can not import non-existing user " << user_id;
-    return;
-  }
-  base::string16 display_name;
-  std::string master_key;
-  std::string avatar;
-  bool exists;
-  int avatar_index = SupervisedUserCreationController::kDummyAvatarIndex;
-  user_info->GetString(SupervisedUserSyncService::kName, &display_name);
-  user_info->GetString(SupervisedUserSyncService::kMasterKey, &master_key);
-  user_info->GetString(SupervisedUserSyncService::kChromeOsAvatar, &avatar);
-  user_info->GetBoolean(kUserExists, &exists);
-
-  // We should not get here with existing user selected, so just display error.
-  if (exists) {
-    view_->ShowErrorPage(
-        l10n_util::GetStringUTF16(
-            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_TITLE),
-        l10n_util::GetStringUTF16(IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR),
-        l10n_util::GetStringUTF16(
-            IDS_CREATE_SUPERVISED_USER_GENERIC_ERROR_BUTTON));
-    return;
-  }
-
-  SupervisedUserSyncService::GetAvatarIndex(avatar, &avatar_index);
-
-  controller_->StartImport(display_name, password, avatar_index, user_id,
-                           master_key);
+  NOTREACHED();
 }
 
 void SupervisedUserCreationScreen::OnManagerLoginFailure() {

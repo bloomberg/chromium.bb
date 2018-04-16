@@ -71,9 +71,7 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
                      ProfileShortcutManager::IsFeatureEnabled());
   source->AddBoolean("isForceSigninEnabled",
                      signin_util::IsForceSigninEnabled());
-  source->AddBoolean(
-      "isSupervisedUserCreationEnabled",
-      base::FeatureList::IsEnabled(features::kSupervisedUserCreation));
+  source->AddBoolean("isSupervisedUserCreationEnabled", false);
 
   source->SetJsonPath("strings.js");
 

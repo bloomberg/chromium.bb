@@ -15,15 +15,12 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
-#include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "components/signin/core/account_id/account_id.h"
 
 class Profile;
 
 namespace chromeos {
-
-class UserContext;
 
 // Supervised user creation process:
 // 0. Manager is logged in
@@ -50,37 +47,6 @@ class SupervisedUserCreationControllerNew
   static SupervisedUserCreationControllerNew* current_controller() {
     return current_controller_;
   }
-
-  // Set up controller for creating new supervised user with |display_name|,
-  // |password| and avatar indexed by |avatar_index|. StartCreation() have to
-  // be called to actually start creating user.
-  void StartCreation(const base::string16& display_name,
-                     const std::string& password,
-                     int avatar_index) override;
-
-  // Starts import of the supervised users created prior to M35. They lack
-  // information about password.
-  // Configures and initiates importing existing supervised user to this device.
-  // Existing user is identified by |sync_id|, has |display_name|, |password|,
-  // |avatar_index|. The master key for cryptohome is a |master_key|.
-  void StartImport(const base::string16& display_name,
-                   const std::string& password,
-                   int avatar_index,
-                   const std::string& sync_id,
-                   const std::string& master_key) override;
-
-  // Configures and initiates importing existing supervised user to this device.
-  // Existing user is identified by |sync_id|, has |display_name|,
-  // |avatar_index|. The master key for cryptohome is a |master_key|. The user
-  // has password specified in |password_data| and
-  // |encryption_key|/|signature_key| for cryptohome.
-  void StartImport(const base::string16& display_name,
-                   int avatar_index,
-                   const std::string& sync_id,
-                   const std::string& master_key,
-                   const base::DictionaryValue* password_data,
-                   const std::string& encryption_key,
-                   const std::string& signature_key) override;
 
   void SetManagerProfile(Profile* manager_profile) override;
   Profile* GetManagerProfile() override;
@@ -148,24 +114,13 @@ class SupervisedUserCreationControllerNew
     base::DictionaryValue password_data;
 
     Profile* manager_profile;
-    std::unique_ptr<SupervisedUserRegistrationUtility> registration_utility;
   };
 
   // ExtendedAuthenticator::NewAuthStatusConsumer overrides.
   void OnAuthenticationFailure(ExtendedAuthenticator::AuthState error) override;
 
-  // Authenticator success callbacks.
-  void OnMountSuccess(const std::string& mount_hash);
-  void OnAddKeySuccess();
-  void OnKeyTransformedIfNeeded(const UserContext& user_context);
-
-  void StartCreationImpl();
-
   // Guard timer callback.
   void CreationTimedOut();
-  // SupervisedUserRegistrationUtility callback.
-  void RegistrationCallback(const GoogleServiceAuthError& error,
-                            const std::string& token);
 
   // Completion callback for StoreSupervisedUserFiles method.
   // Called on the UI thread.
