@@ -208,11 +208,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #define SK_SUPPORT_LEGACY_SVG_ARC_TO
 #endif
 
-// Remove after M66 branch to use new read/writePixels implementations
-#ifndef SK_LEGACY_GPU_PIXEL_OPS
-#define SK_LEGACY_GPU_PIXEL_OPS
-#endif
-
 #ifndef SK_SUPPORT_LEGACY_YUV_COLORSPACE
 #define SK_SUPPORT_LEGACY_YUV_COLORSPACE
 #endif
