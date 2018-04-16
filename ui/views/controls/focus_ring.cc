@@ -5,13 +5,12 @@
 #include "ui/views/controls/focus_ring.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/focusable_border.h"
+#include "ui/views/style/platform_style.h"
 
 namespace views {
 
 namespace {
-
-// The default stroke width of the focus border in dp.
-constexpr float kFocusHaloThicknessDp = 2.f;
 
 FocusRing* GetFocusRing(View* parent) {
   for (int i = 0; i < parent->child_count(); ++i) {
@@ -76,7 +75,7 @@ void FocusRing::Layout() {
   // The focus ring handles its own sizing, which is simply to fill the parent
   // and extend a little beyond its borders.
   gfx::Rect focus_bounds = parent()->GetLocalBounds();
-  focus_bounds.Inset(gfx::Insets(-kFocusHaloThicknessDp));
+  focus_bounds.Inset(gfx::Insets(PlatformStyle::kFocusHaloInset));
   SetBoundsRect(focus_bounds);
 }
 
@@ -85,14 +84,14 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setColor(SkColorSetA(color_, 0x66));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(kFocusHaloThicknessDp);
+  flags.setStrokeWidth(PlatformStyle::kFocusHaloThickness);
   gfx::RectF rect(GetLocalBounds());
-  rect.Inset(gfx::InsetsF(kFocusHaloThicknessDp / 2.f));
+  rect.Inset(gfx::InsetsF(PlatformStyle::kFocusHaloThickness / 2.f));
   // The focus indicator should hug the normal border, when present (as in the
   // case of text buttons). Since it's drawn outside the parent view, increase
   // the rounding slightly by adding half the ring thickness.
-  canvas->DrawRoundRect(rect, corner_radius_ + kFocusHaloThicknessDp / 2.f,
-                        flags);
+  canvas->DrawRoundRect(
+      rect, corner_radius_ + PlatformStyle::kFocusHaloThickness / 2.f, flags);
 }
 
 void FocusRing::OnViewNativeThemeChanged(View* observed_view) {

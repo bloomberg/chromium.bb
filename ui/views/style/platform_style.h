@@ -74,6 +74,10 @@ class VIEWS_EXPORT PlatformStyle {
   // tail] or fade out.
   static const bool kShouldElideBookmarksInBookmarksBar;
 
+  // The thickness and inset amount of focus ring halos.
+  static const float kFocusHaloThickness;
+  static const float kFocusHaloInset;
+
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 
