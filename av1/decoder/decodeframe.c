@@ -2416,14 +2416,10 @@ static int read_global_motion_params(WarpedMotionParams *params,
                                      int allow_hp) {
   TransformationType type = aom_rb_read_bit(rb);
   if (type != IDENTITY) {
-#if GLOBAL_TRANS_TYPES > 4
-    type += aom_rb_read_literal(rb, GLOBAL_TYPE_BITS);
-#else
     if (aom_rb_read_bit(rb))
       type = ROTZOOM;
     else
       type = aom_rb_read_bit(rb) ? TRANSLATION : AFFINE;
-#endif  // GLOBAL_TRANS_TYPES > 4
   }
 
   *params = default_warp_params;

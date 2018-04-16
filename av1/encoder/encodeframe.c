@@ -3808,7 +3808,6 @@ static int input_fpmb_stats(FIRSTPASS_MB_STATS *firstpass_mb_stats,
 #define GLOBAL_TRANS_TYPES_ENC 3  // highest motion model to search
 static int gm_get_params_cost(const WarpedMotionParams *gm,
                               const WarpedMotionParams *ref_gm, int allow_hp) {
-  assert(gm->wmtype < GLOBAL_TRANS_TYPES);
   int params_cost = 0;
   int trans_bits, trans_prec_diff;
   switch (gm->wmtype) {

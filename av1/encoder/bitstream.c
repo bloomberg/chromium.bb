@@ -2807,12 +2807,8 @@ static void write_global_motion_params(const WarpedMotionParams *params,
 
   aom_wb_write_bit(wb, type != IDENTITY);
   if (type != IDENTITY) {
-#if GLOBAL_TRANS_TYPES > 4
-    aom_wb_write_literal(wb, type - 1, GLOBAL_TYPE_BITS);
-#else
     aom_wb_write_bit(wb, type == ROTZOOM);
     if (type != ROTZOOM) aom_wb_write_bit(wb, type == TRANSLATION);
-#endif  // GLOBAL_TRANS_TYPES > 4
   }
 
   if (type >= ROTZOOM) {
