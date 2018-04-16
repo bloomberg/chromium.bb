@@ -250,12 +250,12 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxy) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  mock_quic_data_.AddWrite(ConstructSettingsPacket(1));
-  mock_quic_data_.AddWrite(ConstructConnectRequestPacket(2));
-  mock_quic_data_.AddRead(ConstructServerConnectReplyPacket(1, !kFin));
+  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
+  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructConnectRequestPacket(2));
+  mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddWrite(
-      ConstructAckAndRstPacket(3, QUIC_STREAM_CANCELLED, 1, 1, 1));
+      SYNCHRONOUS, ConstructAckAndRstPacket(3, QUIC_STREAM_CANCELLED, 1, 1, 1));
   mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<TransportSocketParams> transport_params =
@@ -299,12 +299,12 @@ TEST_P(HttpProxyClientSocketWrapperTest, QuicProxySocketTag) {
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
-  mock_quic_data_.AddWrite(ConstructSettingsPacket(1));
-  mock_quic_data_.AddWrite(ConstructConnectRequestPacket(2));
-  mock_quic_data_.AddRead(ConstructServerConnectReplyPacket(1, !kFin));
+  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
+  mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructConnectRequestPacket(2));
+  mock_quic_data_.AddRead(ASYNC, ConstructServerConnectReplyPacket(1, !kFin));
   mock_quic_data_.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   mock_quic_data_.AddWrite(
-      ConstructAckAndRstPacket(3, QUIC_STREAM_CANCELLED, 1, 1, 1));
+      SYNCHRONOUS, ConstructAckAndRstPacket(3, QUIC_STREAM_CANCELLED, 1, 1, 1));
   mock_quic_data_.AddSocketDataToFactory(&socket_factory_);
 
   scoped_refptr<TransportSocketParams> transport_params =
