@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.params.MethodParamAnnotationRule;
 import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
@@ -119,10 +120,13 @@ public class NewTabPageTest {
     @Rule
     public TestRule mFeatureRule = new Features.InstrumentationProcessor();
 
-    @ParameterAnnotations.MethodParameter("Modern")
-    private static List<ParameterSet> sMethodParamModern =
-            Arrays.asList(new ParameterSet().value(false).name("DisableChromeModern"),
+    public static class ModernParams implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(false).name("DisableChromeModern"),
                     new ParameterSet().value(true).name("EnableChromeModern"));
+        }
+    }
 
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
@@ -134,14 +138,14 @@ public class NewTabPageTest {
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
 
-    @ParameterAnnotations.UseMethodParameterBefore("Modern")
+    @ParameterAnnotations.UseMethodParameterBefore(ModernParams.class)
     public void setupModernDesign(boolean enabled) {
         mChromeModernProcessor.setPrefs(enabled);
 
         if (enabled) mRenderTestRule.setVariantPrefix("modern");
     }
 
-    @ParameterAnnotations.UseMethodParameterAfter("Modern")
+    @ParameterAnnotations.UseMethodParameterAfter(ModernParams.class)
     public void teardownModernDesign(boolean enabled) {
         mChromeModernProcessor.clearTestState();
     }
@@ -202,7 +206,7 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @ParameterAnnotations.UseMethodParameter("Modern")
+    @ParameterAnnotations.UseMethodParameter(ModernParams.class)
     public void testRender(boolean modern) throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());

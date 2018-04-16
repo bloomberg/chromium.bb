@@ -12,7 +12,7 @@ import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.TestClass;
 
 import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
-import org.chromium.base.test.params.ParameterAnnotations.MethodParameter;
+import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterizedRunnerDelegateFactory.ParameterizedRunnerDelegateInstantiationException;
 
@@ -20,21 +20,16 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * ParameterizedRunner generates a list of runners for each of class parameter set in a test class.
  *
  * ParameterizedRunner looks for {@code @ClassParameter} annotation in test class and
- * generates a list of ParameterizedRunnerDelegate runners for each ParameterSet. The class
- * runner also looks for {@code @MethodParameter} annotation, and creates a map that maps Strings
- * value(tag) to ParameterSet List.
+ * generates a list of ParameterizedRunnerDelegate runners for each ParameterSet.
  */
 public final class ParameterizedRunner extends Suite {
-    private static final String TAG = "ParameterizedRunner";
     private final List<Runner> mRunners;
 
     /**
@@ -97,10 +92,10 @@ public final class ParameterizedRunner extends Suite {
 
     private void validateAtLeastOneParameterSetField() {
         if (getTestClass().getAnnotatedFields(ClassParameter.class).isEmpty()
-                && getTestClass().getAnnotatedFields(MethodParameter.class).isEmpty()) {
+                && getTestClass().getAnnotatedMethods(UseMethodParameter.class).isEmpty()) {
             throw new IllegalArgumentException(String.format(Locale.getDefault(),
-                    "%s has no field annotated with @ClassParameter or @MethodParameter field, "
-                            + "it should not use ParameterizedRunner",
+                    "%s has no field annotated with @ClassParameter or method annotated with"
+                            + "@UseMethodParameter; it should not use ParameterizedRunner",
                     getTestClass().getName()));
         }
     }
@@ -119,8 +114,8 @@ public final class ParameterizedRunner extends Suite {
      *
      * For method parameter set: a single list method parameter sets is associated with
      * a string tag, an immutable map of string to parameter set list will be created and
-     * passed into factory for each runner delegate to create multiple tests. only one
-     * Runner will be created for a method that uses @MethodParameter, regardless of the
+     * passed into factory for each runner delegate to create multiple tests. Only one
+     * Runner will be created for a method that uses @UseMethodParameter, regardless of the
      * number of ParameterSets in the associated list.
      *
      * @return a list of runners
@@ -145,35 +140,19 @@ public final class ParameterizedRunner extends Suite {
         Class<? extends ParameterizedRunnerDelegate> runnerDelegateClass =
                 getRunnerDelegateClass(testClass);
         ParameterizedRunnerDelegateFactory factory = new ParameterizedRunnerDelegateFactory();
-        Map<String, List<ParameterSet>> tagToMethodParameterSetList =
-                Collections.unmodifiableMap(generateMethodParameterMap(testClass));
         List<Runner> runnersForTestClass = new ArrayList<>();
         for (ParameterSet classParameterSet : classParameterSetList) {
             BlockJUnit4ClassRunner runner = (BlockJUnit4ClassRunner) factory.createRunner(
-                    testClass, classParameterSet, tagToMethodParameterSetList, runnerDelegateClass);
+                    testClass, classParameterSet, runnerDelegateClass);
             runnersForTestClass.add(runner);
         }
         return runnersForTestClass;
     }
 
     /**
-     * Returns a map between MethodParameter tags and corresponding ParameterSetLists.
-     */
-    static Map<String, List<ParameterSet>> generateMethodParameterMap(TestClass testClass)
-            throws IllegalAccessException {
-        Map<String, List<ParameterSet>> result = new HashMap<>();
-        for (FrameworkField field : testClass.getAnnotatedFields(MethodParameter.class)) {
-            List<ParameterSet> parameterSetList = getParameterSetList(field, testClass);
-            validateWidth(parameterSetList);
-            result.put(field.getAnnotation(MethodParameter.class).value(), parameterSetList);
-        }
-        return result;
-    }
-
-    /**
      * Return an unmodifiable list of ParameterSet through a FrameworkField
      */
-    static List<ParameterSet> getParameterSetList(FrameworkField field, TestClass testClass)
+    private static List<ParameterSet> getParameterSetList(FrameworkField field, TestClass testClass)
             throws IllegalAccessException {
         field.getField().setAccessible(true);
         if (!Modifier.isStatic(field.getField().getModifiers())) {
@@ -183,8 +162,8 @@ public final class ParameterizedRunner extends Suite {
         }
         if (!(field.get(testClass.getJavaClass()) instanceof List)) {
             throw new IllegalArgumentException(String.format(Locale.getDefault(),
-                    "Fields with @ClassParameter or @MethodParameter annotations must be an"
-                            + " instance of List, this field %s in %s is not list",
+                    "Fields with @ClassParameter annotations must be an instance of List, "
+                            + "this field %s in %s is not list",
                     field.getName(), testClass.getName()));
         }
         @SuppressWarnings("unchecked") // checked above
@@ -192,9 +171,13 @@ public final class ParameterizedRunner extends Suite {
         return Collections.unmodifiableList(result);
     }
 
-    static void validateWidth(List<ParameterSet> parameterSetList) {
+    static void validateWidth(Iterable<ParameterSet> parameterSetList) {
         int lastSize = -1;
         for (ParameterSet set : parameterSetList) {
+            if (set.size() == 0) {
+                throw new IllegalParameterArgumentException(
+                        "No parameter is added to method ParameterSet");
+            }
             if (lastSize == -1 || set.size() == lastSize) {
                 lastSize = set.size();
             } else {
@@ -220,7 +203,7 @@ public final class ParameterizedRunner extends Suite {
     }
 
     static class IllegalParameterArgumentException extends IllegalArgumentException {
-        public IllegalParameterArgumentException(String msg) {
+        IllegalParameterArgumentException(String msg) {
             super(msg);
         }
     }

@@ -18,16 +18,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.params.BaseJUnit4RunnerDelegate;
-import org.chromium.base.test.params.ParameterAnnotations.MethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
+import org.chromium.base.test.params.ParameterProvider;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.webview_shell.PageCyclerTestActivity;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -41,18 +41,20 @@ import java.util.concurrent.TimeoutException;
 public class PageCyclerTest {
     private static final long TIMEOUT_IN_SECS = 20;
 
-    @MethodParameter("A")
-    private static List<ParameterSet> sMethodParameter = new ArrayList<>();
-
-    static {
-        sMethodParameter.add(new ParameterSet().value("http://google.com").name("Google"));
-        sMethodParameter.add(new ParameterSet().value("http://facebook.com").name("Facebook"));
-        sMethodParameter.add(new ParameterSet().value("http://wikipedia.org").name("Wikipedia"));
-        sMethodParameter.add(new ParameterSet().value("http://amazon.com").name("Amazon"));
-        sMethodParameter.add(new ParameterSet().value("http://youtube.com").name("Youtube"));
-        sMethodParameter.add(new ParameterSet().value("http://yahoo.com").name("Yahoo"));
-        sMethodParameter.add(new ParameterSet().value("http://ebay.com").name("Ebay"));
-        sMethodParameter.add(new ParameterSet().value("http://reddit.com").name("reddit"));
+    private static class WebsiteParams implements ParameterProvider {
+        @Override
+        public List<ParameterSet> getParameters() {
+            return Arrays.asList(
+                    new ParameterSet().value("http://google.com").name("Google"),
+                    new ParameterSet().value("http://facebook.com").name("Facebook"),
+                    new ParameterSet().value("http://wikipedia.org").name("Wikipedia"),
+                    new ParameterSet().value("http://amazon.com").name("Amazon"),
+                    new ParameterSet().value("http://youtube.com").name("Youtube"),
+                    new ParameterSet().value("http://yahoo.com").name("Yahoo"),
+                    new ParameterSet().value("http://ebay.com").name("Ebay"),
+                    new ParameterSet().value("http://reddit.com").name("reddit")
+            );
+        }
     }
 
     @Rule
@@ -66,7 +68,7 @@ public class PageCyclerTest {
 
     @Test
     @LargeTest
-    @UseMethodParameter("A")
+    @UseMethodParameter(WebsiteParams.class)
     @Restriction(Restriction.RESTRICTION_TYPE_INTERNET)
     public void testVisitPage(String url) throws Throwable {
         final PageCyclerWebViewClient pageCyclerWebViewClient = new PageCyclerWebViewClient();

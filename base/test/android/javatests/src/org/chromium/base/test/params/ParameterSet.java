@@ -99,6 +99,7 @@ public class ParameterSet {
     }
 
     int size() {
+        if (mValues == null) return 0;
         return mValues.size();
     }
 
