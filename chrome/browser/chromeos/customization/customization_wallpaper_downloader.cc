@@ -10,12 +10,13 @@
 
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "url/gurl.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace chromeos {
 namespace {
@@ -59,14 +60,12 @@ void RenameTemporaryFile(const base::FilePath& from,
 }  // namespace
 
 CustomizationWallpaperDownloader::CustomizationWallpaperDownloader(
-    net::URLRequestContextGetter* url_context_getter,
     const GURL& wallpaper_url,
     const base::FilePath& wallpaper_dir,
     const base::FilePath& wallpaper_downloaded_file,
     base::Callback<void(bool success, const GURL&)>
         on_wallpaper_fetch_completed)
-    : url_context_getter_(url_context_getter),
-      wallpaper_url_(wallpaper_url),
+    : wallpaper_url_(wallpaper_url),
       wallpaper_dir_(wallpaper_dir),
       wallpaper_downloaded_file_(wallpaper_downloaded_file),
       wallpaper_temporary_file_(wallpaper_downloaded_file.value() +
@@ -86,19 +85,30 @@ void CustomizationWallpaperDownloader::StartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(wallpaper_url_.is_valid());
 
-  url_fetcher_ =
-      net::URLFetcher::Create(wallpaper_url_, net::URLFetcher::GET, this);
-  url_fetcher_->SetRequestContext(url_context_getter_.get());
-  url_fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
-                             net::LOAD_DISABLE_CACHE |
-                             net::LOAD_DO_NOT_SAVE_COOKIES |
-                             net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
-  url_fetcher_->SaveResponseToFileAtPath(
-      wallpaper_temporary_file_,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND}));
-  url_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = wallpaper_url_;
+  resource_request->load_flags =
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  // TODO(crbug.com/833390): Add a real traffic annotation here.
+  simple_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
+                                                    MISSING_TRAFFIC_ANNOTATION);
+
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  // In unit tests, the browser process can return a null context manager
+  if (!system_network_context_manager)
+    return;
+
+  network::mojom::URLLoaderFactory* loader_factory =
+      system_network_context_manager->GetURLLoaderFactory();
+
+  simple_loader_->DownloadToFile(
+      loader_factory,
+      base::BindOnce(&CustomizationWallpaperDownloader::OnSimpleLoaderComplete,
+                     base::Unretained(this)),
+      wallpaper_temporary_file_);
 }
 
 void CustomizationWallpaperDownloader::Retry() {
@@ -139,36 +149,29 @@ void CustomizationWallpaperDownloader::OnWallpaperDirectoryCreated(
     StartRequest();
 }
 
-void CustomizationWallpaperDownloader::OnURLFetchComplete(
-    const net::URLFetcher* source) {
+void CustomizationWallpaperDownloader::OnSimpleLoaderComplete(
+    const base::FilePath& response_path) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(url_fetcher_.get(), source);
 
-  const net::URLRequestStatus status = source->GetStatus();
-  const int response_code = source->GetResponseCode();
-
-  const bool server_error =
-      !status.is_success() ||
-      (response_code >= net::HTTP_INTERNAL_SERVER_ERROR &&
-       response_code < (net::HTTP_INTERNAL_SERVER_ERROR + 100));
+  const bool error = response_path.empty();
 
   VLOG(1) << "CustomizationWallpaperDownloader::OnURLFetchComplete(): status="
-          << status.status();
+          << simple_loader_->NetError();
 
-  if (server_error) {
-    url_fetcher_.reset();
+  // Save the response_path before resetting SimplerURLLoader. It gets nulled
+  // out afterwards.
+  base::FilePath copy_response_path(response_path);
+  simple_loader_.reset();
+
+  if (error) {
     Retry();
     return;
   }
 
-  base::FilePath response_path;
-  url_fetcher_->GetResponseAsFilePath(true, &response_path);
-  url_fetcher_.reset();
-
   std::unique_ptr<bool> success(new bool(false));
 
   base::OnceClosure rename_closure = base::BindOnce(
-      &RenameTemporaryFile, response_path, wallpaper_downloaded_file_,
+      &RenameTemporaryFile, copy_response_path, wallpaper_downloaded_file_,
       base::Unretained(success.get()));
   base::OnceClosure on_rename_closure = base::BindOnce(
       &CustomizationWallpaperDownloader::OnTemporaryFileRenamed,
