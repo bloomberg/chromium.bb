@@ -15,32 +15,20 @@ void MockQuicData::AddConnect(IoMode mode, int rv) {
   connect_.reset(new MockConnect(mode, rv));
 }
 
-void MockQuicData::AddSynchronousRead(
-    std::unique_ptr<QuicEncryptedPacket> packet) {
-  reads_.push_back(MockRead(SYNCHRONOUS, packet->data(), packet->length(),
-                            sequence_number_++));
-  packets_.push_back(std::move(packet));
-}
-
-void MockQuicData::AddRead(std::unique_ptr<QuicEncryptedPacket> packet) {
+void MockQuicData::AddRead(IoMode mode,
+                           std::unique_ptr<QuicEncryptedPacket> packet) {
   reads_.push_back(
-      MockRead(ASYNC, packet->data(), packet->length(), sequence_number_++));
+      MockRead(mode, packet->data(), packet->length(), sequence_number_++));
   packets_.push_back(std::move(packet));
 }
-
 void MockQuicData::AddRead(IoMode mode, int rv) {
   reads_.push_back(MockRead(mode, rv, sequence_number_++));
 }
 
-void MockQuicData::AddWrite(std::unique_ptr<QuicEncryptedPacket> packet) {
-  writes_.push_back(MockWrite(SYNCHRONOUS, packet->data(), packet->length(),
-                              sequence_number_++));
-  packets_.push_back(std::move(packet));
-}
-
-void MockQuicData::AddAsyncWrite(std::unique_ptr<QuicEncryptedPacket> packet) {
+void MockQuicData::AddWrite(IoMode mode,
+                            std::unique_ptr<QuicEncryptedPacket> packet) {
   writes_.push_back(
-      MockWrite(ASYNC, packet->data(), packet->length(), sequence_number_++));
+      MockWrite(mode, packet->data(), packet->length(), sequence_number_++));
   packets_.push_back(std::move(packet));
 }
 
