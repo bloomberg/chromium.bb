@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 
 namespace blink {
@@ -34,6 +35,9 @@ class Longhand : public CSSProperty {
     return Color();
   }
   bool IsLonghand() const override { return true; }
+  virtual const CSSValue* InitialValue() const {
+    return CSSInitialValue::Create();
+  }
 
  protected:
   constexpr Longhand() : CSSProperty() {}

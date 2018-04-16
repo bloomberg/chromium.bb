@@ -9,12 +9,12 @@ element.style { ()
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
-        animation-timing-function: initial, initial, initial, initial;
-        animation-delay: 2s, initial, initial, initial;
-        animation-iteration-count: initial, initial, initial, initial;
-        animation-direction: initial, initial, initial, initial;
-        animation-fill-mode: initial, initial, initial, initial;
-        animation-play-state: initial, initial, initial, initial;
+        animation-timing-function: ease, ease, ease, ease;
+        animation-delay: 2s, 0s, 0s, 0s;
+        animation-iteration-count: 1, 1, 1, 1;
+        animation-direction: normal, normal, normal, normal;
+        animation-fill-mode: none, none, none, none;
+        animation-play-state: running, running, running, running;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -61,12 +61,12 @@ element.style { ()
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
-        animation-timing-function: initial, initial, initial, initial;
-        animation-delay: 2s, initial, initial, initial;
-        animation-iteration-count: initial, initial, initial, initial;
-        animation-direction: initial, initial, initial, initial;
-        animation-fill-mode: initial, initial, initial, initial;
-        animation-play-state: initial, initial, initial, initial;
+        animation-timing-function: ease, ease, ease, ease;
+        animation-delay: 2s, 0s, 0s, 0s;
+        animation-iteration-count: 1, 1, 1, 1;
+        animation-direction: normal, normal, normal, normal;
+        animation-fill-mode: none, none, none, none;
+        animation-play-state: running, running, running, running;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -113,12 +113,12 @@ element.style { ()
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
-        animation-timing-function: initial, initial, initial, initial;
-        animation-delay: 2s, initial, initial, initial;
-        animation-iteration-count: initial, initial, initial, initial;
-        animation-direction: initial, initial, initial, initial;
-        animation-fill-mode: initial, initial, initial, initial;
-        animation-play-state: initial, initial, initial, initial;
+        animation-timing-function: ease, ease, ease, ease;
+        animation-delay: 2s, 0s, 0s, 0s;
+        animation-iteration-count: 1, 1, 1, 1;
+        animation-direction: normal, normal, normal, normal;
+        animation-fill-mode: none, none, none, none;
+        animation-play-state: running, running, running, running;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -165,12 +165,12 @@ element.style { ()
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
-        animation-timing-function: initial, initial, initial, initial;
-        animation-delay: 2s, initial, initial, initial;
-        animation-iteration-count: initial, initial, initial, initial;
-        animation-direction: initial, initial, initial, initial;
-        animation-fill-mode: initial, initial, initial, initial;
-        animation-play-state: initial, initial, initial, initial;
+        animation-timing-function: ease, ease, ease, ease;
+        animation-delay: 2s, 0s, 0s, 0s;
+        animation-iteration-count: 1, 1, 1, 1;
+        animation-direction: normal, normal, normal, normal;
+        animation-fill-mode: none, none, none, none;
+        animation-play-state: running, running, running, running;
 
 [expanded] 
 div { (user agent stylesheet)
@@ -217,12 +217,12 @@ element.style { ()
     animation: animName 1s 2s, mediaAnim 2s, doesNotExist 3s, styleSheetAnim 0s;
         animation-name: animName, mediaAnim, doesNotExist, styleSheetAnim;
         animation-duration: 1s, 2s, 3s, 0s;
-        animation-timing-function: initial, initial, initial, initial;
-        animation-delay: 2s, initial, initial, initial;
-        animation-iteration-count: initial, initial, initial, initial;
-        animation-direction: initial, initial, initial, initial;
-        animation-fill-mode: initial, initial, initial, initial;
-        animation-play-state: initial, initial, initial, initial;
+        animation-timing-function: ease, ease, ease, ease;
+        animation-delay: 2s, 0s, 0s, 0s;
+        animation-iteration-count: 1, 1, 1, 1;
+        animation-direction: normal, normal, normal, normal;
+        animation-fill-mode: none, none, none, none;
+        animation-play-state: running, running, running, running;
 
 [expanded] 
 div { (user agent stylesheet)

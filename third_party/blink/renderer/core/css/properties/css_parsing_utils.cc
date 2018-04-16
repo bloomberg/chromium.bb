@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -738,10 +739,11 @@ bool ConsumeAnimationShorthand(
         return false;
     } while (!range.AtEnd() && range.Peek().GetType() != kCommaToken);
 
-    // TODO(timloh): This will make invalid longhands, see crbug.com/386459
     for (size_t i = 0; i < longhand_count; ++i) {
-      if (!parsed_longhand[i])
-        longhands[i]->Append(*CSSInitialValue::Create());
+      if (!parsed_longhand[i]) {
+        longhands[i]->Append(
+            *ToLonghand(shorthand.properties()[i])->InitialValue());
+      }
       parsed_longhand[i] = false;
     }
   } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));

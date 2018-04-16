@@ -37,9 +37,15 @@ const CSSValue* AnimationDirection::CSSValueFromComputedStyleInternal(
           animation_data->DirectionList()[i]));
     }
   } else {
-    list->Append(*CSSIdentifierValue::Create(CSSValueNormal));
+    list->Append(*InitialValue());
   }
   return list;
+}
+
+const CSSValue* AnimationDirection::InitialValue() const {
+  DEFINE_STATIC_LOCAL(CSSValue, value,
+                      (CSSIdentifierValue::Create(CSSValueNormal)));
+  return &value;
 }
 
 }  // namespace CSSLonghand

@@ -9,6 +9,6 @@ test(function(){
     div.style.animationName = "\\ ";
     assert_equals(div.style.cssText, 'animation-name: \\ ;');
     div.style.animation = 'hello 2s';
-    assert_equals(div.style.cssText, 'animation: hello 2s;');
+    assert_equals(div.style.cssText, 'animation: hello 2s ease 0s 1 normal none running;');
 }, 'cssText serializes animation properties sanely');
 </script>

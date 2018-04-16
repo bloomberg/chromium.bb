@@ -30,7 +30,8 @@
         "ParseSingleValue",
         "ParseShorthand",
         "CSSValueFromComputedStyleInternal",
-        "ColorIncludingFallback"
+        "ColorIncludingFallback",
+        "InitialValue"
       ],
     },
     // - custom_apply_functions_all
@@ -352,7 +353,7 @@
     // Animation Priority properties
     {
       name: "animation-delay",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       typedom_types: ["Time"],
@@ -360,7 +361,7 @@
     },
     {
       name: "animation-direction",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       typedom_types: ["Keyword"],
       separator: ",",
@@ -370,7 +371,7 @@
     },
     {
       name: "animation-duration",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       separator: ",",
       custom_apply_functions_all: true,
       priority: "Animation",
@@ -379,7 +380,7 @@
     },
     {
       name: "animation-fill-mode",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       keywords: ["none", "forwards", "backwards", "both"],
@@ -388,7 +389,7 @@
     },
     {
       name: "animation-iteration-count",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       keywords: ["infinite"],
       separator: ",",
       custom_apply_functions_all: true,
@@ -399,7 +400,7 @@
     },
     {
       name: "animation-name",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       keywords: ["none"],
@@ -408,7 +409,7 @@
     },
     {
       name: "animation-play-state",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       keywords: ["running", "paused"],
@@ -417,7 +418,7 @@
     },
     {
       name: "animation-timing-function",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
@@ -426,7 +427,7 @@
     },
     {
       name: "transition-delay",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       typedom_types: ["Time"],
@@ -434,7 +435,7 @@
     },
     {
       name: "transition-duration",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       typedom_types: ["Keyword", "Time"],
       separator: ",",
       custom_apply_functions_all: true,
@@ -442,7 +443,7 @@
     },
     {
       name: "transition-property",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       keywords: ["none"],
@@ -450,7 +451,7 @@
     },
     {
       name: "transition-timing-function",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       custom_apply_functions_all: true,
       priority: "Animation",
       keywords: ["linear", "ease", "ease-in", "ease-out", "ease-in-out", "step-start", "step-end"],
