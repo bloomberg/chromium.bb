@@ -24,6 +24,7 @@
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/ui_input_manager.h"
 #include "chrome/browser/vr/ui_renderer.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -302,6 +303,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void CancelToast();
 
   void AcceptDoffPromptForTesting();
+  void PerformUiActionForTesting(UiTestInput test_input);
 
  private:
   void GvrInit(gvr_context* gvr_api);

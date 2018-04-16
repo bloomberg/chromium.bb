@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIM
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
-;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
@@ -28,6 +27,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr_shell.rules.HeadTrackingMode;
+import org.chromium.chrome.browser.vr_shell.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr_shell.util.TransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -42,6 +42,8 @@ import java.util.concurrent.TimeoutException;
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=VrBrowsingNativeAndroidUi"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
 public class VrShellDialogTest {
+    // A long enough sleep after entering VR to ensure that the VR entry animations are complete.
+    private static final int VR_ENTRY_SLEEP_MS = 1000;
     private static final String TEST_IMAGE_DIR = "chrome/test/data/vr/UiCapture";
     private static final File sBaseDirectory =
             new File(UrlUtils.getIsolatedTestFilePath(TEST_IMAGE_DIR));
@@ -78,7 +80,7 @@ public class VrShellDialogTest {
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
 
-        // Display audio permissions prompt.
+        // Display the given permission prompt.
         Assert.assertTrue(TransitionUtils.forceEnterVr());
         TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         VrTestFramework.runJavaScriptOrFail(navigationCommand, POLL_TIMEOUT_SHORT_MS,
@@ -87,7 +89,17 @@ public class VrShellDialogTest {
 
         // There is currently no way to know whether a dialog has been drawn yet,
         // so sleep long enough for it to show up.
-        Thread.sleep(1000);
+        Thread.sleep(VR_ENTRY_SLEEP_MS);
+    }
+
+    private void clickElement(String initialPage, int elementName)
+            throws InterruptedException, TimeoutException {
+        mVrTestFramework.loadUrlAndAwaitInitialization(
+                VrTestFramework.getHtmlTestFile(initialPage), PAGE_LOAD_TIMEOUT_S);
+        Assert.assertTrue(TransitionUtils.forceEnterVr());
+        TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
+        NativeUiUtils.clickElement(elementName);
+        Thread.sleep(VR_ENTRY_SLEEP_MS);
     }
 
     /**
@@ -166,5 +178,33 @@ public class VrShellDialogTest {
 
         // Capture image
         Assert.assertTrue(captureScreen("MidiDialogTestImage"));
+    }
+
+    @Test
+    @Manual
+    @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
+    public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, TimeoutException {
+        clickElement("test_navigation_2d_page", UserFriendlyElementName.URL);
+        Assert.assertTrue(captureScreen("KeyboardAppearsOnUrlBarClickTestImage"));
+    }
+
+    @Test
+    @Manual
+    @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
+    public void testOverflowMenuAppears() throws InterruptedException, TimeoutException {
+        clickElement("test_navigation_2d_page", UserFriendlyElementName.OVERFLOW_MENU);
+        Assert.assertTrue(captureScreen("OverflowMenuAppearsTestImage"));
+    }
+
+    @Test
+    @Manual
+    @LargeTest
+    @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
+    public void testPageInfoAppearsOnSecurityTokenClick()
+            throws InterruptedException, TimeoutException {
+        clickElement("test_navigation_2d_page", UserFriendlyElementName.PAGE_INFO_BUTTON);
+        Assert.assertTrue(captureScreen("PageInfoAppearsOnSecurityTokenClickTestImage"));
     }
 }

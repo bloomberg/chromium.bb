@@ -42,6 +42,7 @@
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
 #include "chrome/browser/vr/toolbar_helper.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -72,6 +73,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
@@ -1204,6 +1206,22 @@ void VrShell::AcceptDoffPromptForTesting(
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::AcceptDoffPromptForTesting,
                                 gl_thread_->GetVrShellGl()));
+}
+
+void VrShell::PerformUiActionForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint element_name,
+    jint action_type,
+    jfloat x,
+    jfloat y) {
+  UiTestInput test_input;
+  test_input.element_name = static_cast<UserFriendlyElementName>(element_name);
+  test_input.action = static_cast<VrUiTestAction>(action_type);
+  test_input.position = gfx::PointF(x, y);
+  PostToGlThread(FROM_HERE,
+                 base::BindOnce(&VrShellGl::PerformUiActionForTesting,
+                                gl_thread_->GetVrShellGl(), test_input));
 }
 
 std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {

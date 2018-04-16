@@ -2224,7 +2224,7 @@ void UiSceneCreator::CreateOverflowMenu() {
   std::vector<
       std::tuple<UiElementName, LayoutAlignment, const gfx::VectorIcon&>>
       menu_buttons = {
-          {kOverflowMenuFordwardButton, LEFT, vector_icons::kForwardArrowIcon},
+          {kOverflowMenuForwardButton, LEFT, vector_icons::kForwardArrowIcon},
           {kOverflowMenuReloadButton, RIGHT, vector_icons::kReloadIcon},
       };
   for (auto& item : menu_buttons) {
@@ -2250,7 +2250,7 @@ void UiSceneCreator::CreateOverflowMenu() {
                           &Button::SetButtonColors);
 
     switch (std::get<0>(item)) {
-      case kOverflowMenuFordwardButton:
+      case kOverflowMenuForwardButton:
         button->set_click_handler(base::BindRepeating(
             [](Model* model, UiBrowserInterface* browser) {
               model->overflow_menu_enabled = false;

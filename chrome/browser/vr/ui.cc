@@ -27,6 +27,7 @@
 #include "chrome/browser/vr/ui_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_creator.h"
+#include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/common/chrome_features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -504,6 +505,31 @@ void Ui::AcceptDoffPromptForTesting() {
   } else {
     static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
         ->ClickSecondaryButtonForTesting();
+  }
+}
+
+void Ui::PerformUiActionForTesting(UiTestInput test_input) {
+  auto* element = scene()->GetUiElementByName(
+      UserFriendlyElementNameToUiElementName(test_input.element_name));
+  DCHECK(element) << "Unsupported test element";
+  switch (test_input.action) {
+    case VrUiTestAction::kHoverEnter:
+      element->OnHoverEnter(test_input.position);
+      break;
+    case VrUiTestAction::kHoverLeave:
+      element->OnHoverLeave();
+      break;
+    case VrUiTestAction::kMove:
+      element->OnMove(test_input.position);
+      break;
+    case VrUiTestAction::kButtonDown:
+      element->OnButtonDown(test_input.position);
+      break;
+    case VrUiTestAction::kButtonUp:
+      element->OnButtonUp(test_input.position);
+      break;
+    default:
+      NOTREACHED() << "Given unsupported action";
   }
 }
 

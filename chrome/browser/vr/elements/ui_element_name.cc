@@ -61,7 +61,7 @@ static const char* g_ui_element_name_strings[] = {
     "kOverflowMenuBackplane",
     "kOverflowMenu",
     "kOverflowMenuLayout",
-    "kOverflowMenuFordwardButton",
+    "kOverflowMenuForwardButton",
     "kOverflowMenuReloadButton",
     "kOverflowMenuCloseAllIncognitoTabsItem",
     "kOverflowMenuNewIncognitoTabItem",
