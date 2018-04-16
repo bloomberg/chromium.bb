@@ -949,6 +949,7 @@ if (!is_ios) {
       "//third_party/WebKit/LayoutTests/",
       "//third_party/WebKit/PerformanceTests/",
       "//third_party/WebKit/Tools/Scripts/",
+      "//third_party/pywebsocket/",
     ]
 
     if (is_win) {

@@ -38,7 +38,7 @@ class TestWPTServe(LoggingTestCase):
             {
                 'MOCK_ENVIRON_COPY': '1',
                 'PATH': '/bin:/mock/bin',
-                'PYTHONPATH': '/mock-checkout/third_party/WebKit/Tools/Scripts/webkitpy/thirdparty'
+                'PYTHONPATH': '/mock-checkout/third_party/pywebsocket/src'
             })
 
     def test_start_with_unkillable_zombie_process(self):
