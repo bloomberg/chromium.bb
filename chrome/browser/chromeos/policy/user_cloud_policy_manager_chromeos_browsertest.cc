@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/ui/login_display_webui.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/arc/arc_features.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/known_user.h"
@@ -276,7 +278,16 @@ class UserCloudPolicyManagerChildTest
   // LoginPolicyTestBase:
   std::string GetIdToken() const override { return kIdTokenChildAccount; }
 
+  // UserCloudPolicyManagerNonEnterpriseTest:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        arc::kAvailableForChildAccountFeature);
+    UserCloudPolicyManagerNonEnterpriseTest::SetUp();
+  }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerChildTest);
 };
 
