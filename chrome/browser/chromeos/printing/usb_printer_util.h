@@ -22,6 +22,8 @@ class Printer;
 
 bool UsbDeviceIsPrinter(const device::UsbDevice& usb_device);
 
+bool UsbDeviceSupportsIppusb(const device::UsbDevice& usb_device);
+
 // Convert the interesting details of a device to a string, for
 // logging/debugging.
 std::string UsbPrinterDeviceDetailsAsString(const device::UsbDevice& device);

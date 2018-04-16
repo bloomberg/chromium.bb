@@ -423,9 +423,21 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       auto it = detected_printer_ppd_references_.find(detected.printer.id());
       if (it != detected_printer_ppd_references_.end()) {
         if (it->second == nullptr) {
+          // If the detected printer supports ipp-over-usb and we could not find
+          // a ppd for it, then we switch to the ippusb scheme and mark it as
+          // autoconf.
+          auto printer = detected.printer;
+          if (printer.supports_ippusb()) {
+            printer.set_uri(
+                base::StringPrintf("ippusb://%04x_%04x/ipp/print",
+                                   detected.ppd_search_data.usb_vendor_id,
+                                   detected.ppd_search_data.usb_product_id));
+            printer.mutable_ppd_reference()->autoconf = true;
+          }
+
           // We couldn't figure out this printer, so it's in the discovered
           // class.
-          printers_[kDiscovered].push_back(detected.printer);
+          printers_[kDiscovered].push_back(printer);
         } else {
           // We have a ppd reference, so we think we can set this up
           // automatically.

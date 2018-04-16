@@ -77,6 +77,7 @@ class CHROMEOS_EXPORT Printer {
     kHttps = 5,
     kSocket = 6,
     kLpd = 7,
+    kIppUsb = 8,
     kProtocolMax
   };
 
@@ -132,6 +133,11 @@ class CHROMEOS_EXPORT Printer {
 
   const PpdReference& ppd_reference() const { return ppd_reference_; }
   PpdReference* mutable_ppd_reference() { return &ppd_reference_; }
+
+  bool supports_ippusb() const { return supports_ippusb_; }
+  void set_supports_ippusb(bool supports_ippusb) {
+    supports_ippusb_ = supports_ippusb;
+  }
 
   const std::string& uuid() const { return uuid_; }
   void set_uuid(const std::string& uuid) { uuid_ = uuid; }
@@ -205,6 +211,9 @@ class CHROMEOS_EXPORT Printer {
 
   // How to find the associated postscript printer description.
   PpdReference ppd_reference_;
+
+  // Represents whether or not the printer supports printing using ipp-over-usb.
+  bool supports_ippusb_ = false;
 
   // The UUID from an autoconf protocol for deduplication. Could be empty.
   std::string uuid_;
