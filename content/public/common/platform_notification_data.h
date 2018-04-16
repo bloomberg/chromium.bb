@@ -56,10 +56,6 @@ struct CONTENT_EXPORT PlatformNotificationData {
   PlatformNotificationData(const PlatformNotificationData& other);
   ~PlatformNotificationData();
 
-  // The maximum size of developer-provided data to be stored in the |data|
-  // property of this structure.
-  static const size_t kMaximumDeveloperDataSize = 1024 * 1024;
-
   enum Direction {
     DIRECTION_LEFT_TO_RIGHT,
     DIRECTION_RIGHT_TO_LEFT,
