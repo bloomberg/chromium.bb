@@ -108,11 +108,6 @@ VariableExpander::VariableExpander(std::map<std::string, std::string> variables)
 
 VariableExpander::~VariableExpander() = default;
 
-void VariableExpander::SetVariable(const std::string& variable,
-                                   const std::string& value) {
-  variables_[variable] = value;
-}
-
 bool VariableExpander::ExpandString(std::string* str) {
   bool no_error = true;
   for (const auto& kv : variables_)

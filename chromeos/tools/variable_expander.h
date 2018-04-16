@@ -24,6 +24,11 @@ namespace chromeos {
 //   "${machine_name}"     to "chromebook",
 //   "${machine_name,6}"   to "book" (position 6 of "chromebook" to end) and
 //   "${machine_name,2,4}" to "rome" (4 characters from position 2).
+// Sample usage:
+//   std::string str = "I run ${machine_name,0,6} on my ${machine_name}";
+//   VariableExpander expander({{"machine_name", "chromebook"}});
+//   expander.ExpandString(&str);
+//   // str is now "I run chrome on my chromebook"
 class CHROMEOS_EXPORT VariableExpander {
  public:
   VariableExpander();
@@ -33,12 +38,9 @@ class CHROMEOS_EXPORT VariableExpander {
 
   ~VariableExpander();
 
-  // Sets a |variable| to expand and the corresponding |value|.
-  void SetVariable(const std::string& variable, const std::string& value);
-
-  // Expands all variables in |str|, see SetVariable(). Returns true if no error
-  // has occurred. Returns false if at least one variable was malformed and
-  // could not be expanded (the good ones are still expanded).
+  // Expands all variables in |str|. Returns true if no error has occurred.
+  // Returns false if at least one variable was malformed and could not be
+  // expanded (the good ones are still expanded).
   bool ExpandString(std::string* str);
 
   // Calls ExpandString on every string contained in |value|. Recursively
@@ -49,7 +51,7 @@ class CHROMEOS_EXPORT VariableExpander {
 
  private:
   // Maps variable -> value.
-  std::map<std::string, std::string> variables_;
+  const std::map<std::string, std::string> variables_;
 
   DISALLOW_COPY_AND_ASSIGN(VariableExpander);
 };
