@@ -20,6 +20,9 @@ const LayoutBlockFlow* NGInlineFormattingContextOf(const PositionInFlatTree&);
 
 LocalCaretRect ComputeNGLocalCaretRect(const PositionInFlatTreeWithAffinity&);
 
+bool InSameNGLineBox(const PositionInFlatTreeWithAffinity&,
+                     const PositionInFlatTreeWithAffinity&);
+
 }  // namespace blink
 
 #endif
