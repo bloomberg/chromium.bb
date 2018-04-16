@@ -69,7 +69,7 @@ ClientTagBasedModelTypeProcessor::~ClientTagBasedModelTypeProcessor() {
 
 void ClientTagBasedModelTypeProcessor::OnSyncStarting(
     const ModelErrorHandler& error_handler,
-    const StartCallback& start_callback) {
+    StartCallback start_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsConnected());
   DCHECK(error_handler);
@@ -77,7 +77,7 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
 
   error_handler_ = error_handler;
-  start_callback_ = start_callback;
+  start_callback_ = std::move(start_callback);
   ConnectIfReady();
 }
 
@@ -135,7 +135,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
         std::make_unique<ModelTypeProcessorProxy>(
             weak_ptr_factory_.GetWeakPtr(),
             base::ThreadTaskRunnerHandle::Get());
-    start_callback_.Run(std::move(activation_context));
+    std::move(start_callback_).Run(std::move(activation_context));
   }
 
   start_callback_.Reset();

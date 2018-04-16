@@ -45,7 +45,7 @@ class UserEventSyncBridge : public ModelTypeSyncBridge {
   std::string GetStorageKey(const EntityData& entity_data) override;
   void OnSyncStarting(
       const ModelErrorHandler& error_handler,
-      const ModelTypeChangeProcessor::StartCallback& callback) override;
+      ModelTypeChangeProcessor::StartCallback callback) override;
   void ApplyDisableSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list) override;
 

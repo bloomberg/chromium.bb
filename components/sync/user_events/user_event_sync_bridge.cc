@@ -155,9 +155,10 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
 
 void UserEventSyncBridge::OnSyncStarting(
     const ModelErrorHandler& error_handler,
-    const ModelTypeChangeProcessor::StartCallback& start_callback) {
+    ModelTypeChangeProcessor::StartCallback start_callback) {
   DCHECK(!GetAuthenticatedAccountId().empty());
-  change_processor()->OnSyncStarting(std::move(error_handler), start_callback);
+  change_processor()->OnSyncStarting(std::move(error_handler),
+                                     std::move(start_callback));
 
   bool was_sync_starting_or_started = is_sync_starting_or_started_;
   is_sync_starting_or_started_ = true;

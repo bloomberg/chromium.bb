@@ -47,8 +47,8 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   }
 
   void OnSyncStarting(const ModelErrorHandler& error_handler,
-                      const StartCallback& callback) override {
-    other_->OnSyncStarting(error_handler, callback);
+                      StartCallback callback) override {
+    other_->OnSyncStarting(error_handler, std::move(callback));
   }
 
   void DisableSync() override { other_->DisableSync(); }
@@ -80,6 +80,12 @@ void MockModelTypeChangeProcessor::ModelReadyToSync(
     ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
   DoModelReadyToSync(bridge, batch.get());
+}
+
+void MockModelTypeChangeProcessor::OnSyncStarting(
+    const ModelErrorHandler& error_handler,
+    StartCallback callback) {
+  DoOnSyncStarting(error_handler, &callback);
 }
 
 std::unique_ptr<ModelTypeChangeProcessor>

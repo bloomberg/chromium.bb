@@ -42,25 +42,39 @@ struct BindToTaskRunnerTrampoline;
 template <typename... Args>
 struct BindToTaskRunnerTrampoline<void(Args...)> {
   static void Run(const scoped_refptr<base::TaskRunner>& task_runner,
-                  const base::Callback<void(Args...)>& cb,
+                  base::OnceCallback<void(Args...)> cb,
                   Args... args) {
-    task_runner->PostTask(FROM_HERE,
-                          base::BindOnce(cb, std::forward<Args>(args)...));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), std::forward<Args>(args)...));
   }
 };
 
 }  // namespace bind_helpers
 
 template <typename T>
-base::Callback<T> BindToTaskRunner(
+base::OnceCallback<T> BindToTaskRunner(
     const scoped_refptr<base::TaskRunner>& task_runner,
-    const base::Callback<T>& cb) {
-  return base::Bind(&bind_helpers::BindToTaskRunnerTrampoline<T>::Run,
-                    task_runner, cb);
+    base::OnceCallback<T> cb) {
+  return base::BindOnce(&bind_helpers::BindToTaskRunnerTrampoline<T>::Run,
+                        task_runner, std::move(cb));
 }
 
 template <typename T>
-base::Callback<T> BindToCurrentThread(const base::Callback<T>& cb) {
+base::RepeatingCallback<T> BindToTaskRunner(
+    const scoped_refptr<base::TaskRunner>& task_runner,
+    const base::RepeatingCallback<T>& cb) {
+  return base::BindRepeating(&bind_helpers::BindToTaskRunnerTrampoline<T>::Run,
+                             task_runner, cb);
+}
+
+template <typename T>
+base::OnceCallback<T> BindToCurrentThread(base::OnceCallback<T> cb) {
+  return BindToTaskRunner(base::ThreadTaskRunnerHandle::Get(), std::move(cb));
+}
+
+template <typename T>
+base::RepeatingCallback<T> BindToCurrentThread(
+    const base::RepeatingCallback<T>& cb) {
   return BindToTaskRunner(base::ThreadTaskRunnerHandle::Get(), cb);
 }
 
