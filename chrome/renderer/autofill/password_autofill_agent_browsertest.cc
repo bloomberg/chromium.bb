@@ -1148,13 +1148,8 @@ TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest_Redirection) {
 }
 
 // Tests that a password will only be filled as a suggested and will not be
-// accessible by the DOM until a user gesture has occurred. Leaks under ASan.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_GestureRequiredTest DISABLED_GestureRequiredTest
-#else
-#define MAYBE_GestureRequiredTest GestureRequiredTest
-#endif
-TEST_F(PasswordAutofillAgentTest, MAYBE_GestureRequiredTest) {
+// accessible by the DOM until a user gesture has occurred.
+TEST_F(PasswordAutofillAgentTest, GestureRequiredTest) {
   // Trigger the initial autocomplete.
   SimulateOnFillPasswordForm(fill_data_);
 
@@ -1181,16 +1176,9 @@ TEST_F(PasswordAutofillAgentTest, NoDOMActivationTest) {
 }
 
 // Verifies that password autofill triggers events in JavaScript for forms that
-// are filled on page load. Leaks under ASan.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad \
-  DISABLED_PasswordAutofillTriggersOnChangeEventsOnLoad
-#else
-#define MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad \
-  PasswordAutofillTriggersOnChangeEventsOnLoad
-#endif
+// are filled on page load.
 TEST_F(PasswordAutofillAgentTest,
-       MAYBE_PasswordAutofillTriggersOnChangeEventsOnLoad) {
+       PasswordAutofillTriggersOnChangeEventsOnLoad) {
   std::vector<base::string16> username_event_checkers;
   std::vector<base::string16> password_event_checkers;
   std::string events_registration_script =
@@ -3011,16 +2999,9 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 // Tests that password manager sees both autofill assisted and user entered
-// data on saving that is triggered by form submission. Leaks under ASan.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
-  DISABLED_UsernameChangedAfterPasswordInput_FormSubmitted
-#else
-#define MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted \
-  UsernameChangedAfterPasswordInput_FormSubmitted
-#endif
+// data on saving that is triggered by form submission.
 TEST_F(PasswordAutofillAgentTest,
-       MAYBE_UsernameChangedAfterPasswordInput_FormSubmitted) {
+       UsernameChangedAfterPasswordInput_FormSubmitted) {
   for (auto change_source :
        {FieldChangeSource::USER, FieldChangeSource::AUTOFILL,
         FieldChangeSource::USER_AUTOFILL}) {
@@ -3037,14 +3018,8 @@ TEST_F(PasswordAutofillAgentTest,
 }
 
 // Tests that a suggestion dropdown is shown on a password field even if a
-// username field is present. Leaks under ASan.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_SuggestPasswordFieldSignInForm \
-  DISABLED_SuggestPasswordFieldSignInForm
-#else
-#define MAYBE_SuggestPasswordFieldSignInForm SuggestPasswordFieldSignInForm
-#endif
-TEST_F(PasswordAutofillAgentTest, MAYBE_SuggestPasswordFieldSignInForm) {
+// username field is present.
+TEST_F(PasswordAutofillAgentTest, SuggestPasswordFieldSignInForm) {
   // Simulate the browser sending back the login info.
   SimulateOnFillPasswordForm(fill_data_);
 

@@ -1,8 +1,8 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/controller/blink_leak_detector.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector.h"
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -12,19 +12,19 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/leak_detector/blink_leak_detector_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_messaging_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
 
-// static
 BlinkLeakDetector& BlinkLeakDetector::Instance() {
-  DEFINE_STATIC_LOCAL(BlinkLeakDetector, blink_leak_detector, ());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(BlinkLeakDetector, blink_leak_detector, ());
   return blink_leak_detector;
 }
 
@@ -32,20 +32,12 @@ BlinkLeakDetector::BlinkLeakDetector()
     : delayed_gc_timer_(Platform::Current()->CurrentThread()->GetTaskRunner(),
                         this,
                         &BlinkLeakDetector::TimerFiredGC),
-      binding_(this) {}
+      number_of_gc_needed_(0),
+      client_(nullptr) {}
 
 BlinkLeakDetector::~BlinkLeakDetector() = default;
 
-// static
-void BlinkLeakDetector::Bind(mojom::blink::LeakDetectorRequest request) {
-  BlinkLeakDetector::Instance().binding_.Close();
-  BlinkLeakDetector::Instance().binding_.Bind(std::move(request));
-}
-
-void BlinkLeakDetector::PerformLeakDetection(
-    PerformLeakDetectionCallback callback) {
-  callback_ = std::move(callback);
-
+void BlinkLeakDetector::PrepareForLeakDetection() {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -86,7 +78,9 @@ void BlinkLeakDetector::PerformLeakDetection(
   // Stop keepalive loaders that may persist after page navigation.
   for (auto resource_fetcher : resource_fetchers_)
     resource_fetcher->PrepareForLeakDetection();
+}
 
+void BlinkLeakDetector::CollectGarbage() {
   V8GCController::CollectAllGarbageForTesting(
       V8PerIsolateData::MainThreadIsolate());
   CoreInitializer::GetInstance().CollectAllGarbageForAnimationWorklet();
@@ -121,7 +115,8 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
     // (crbug.com/616714)
     delayed_gc_timer_.StartOneShot(TimeDelta(), FROM_HERE);
   } else {
-    ReportResult();
+    DCHECK(client_);
+    client_->OnLeakDetectionComplete();
   }
 
   V8GCController::CollectAllGarbageForTesting(
@@ -130,39 +125,8 @@ void BlinkLeakDetector::TimerFiredGC(TimerBase*) {
   // Note: Oilpan precise GC is scheduled at the end of the event loop.
 }
 
-void BlinkLeakDetector::ReportResult() {
-  mojom::blink::LeakDetectionResultPtr result =
-      mojom::blink::LeakDetectionResult::New();
-  result->number_of_live_audio_nodes =
-      InstanceCounters::CounterValue(InstanceCounters::kAudioHandlerCounter);
-  result->number_of_live_documents =
-      InstanceCounters::CounterValue(InstanceCounters::kDocumentCounter);
-  result->number_of_live_nodes =
-      InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
-  result->number_of_live_layout_objects =
-      InstanceCounters::CounterValue(InstanceCounters::kLayoutObjectCounter);
-  result->number_of_live_resources =
-      InstanceCounters::CounterValue(InstanceCounters::kResourceCounter);
-  result->number_of_live_pausable_objects =
-      InstanceCounters::CounterValue(InstanceCounters::kPausableObjectCounter);
-  result->number_of_live_script_promises =
-      InstanceCounters::CounterValue(InstanceCounters::kScriptPromiseCounter);
-  result->number_of_live_frames =
-      InstanceCounters::CounterValue(InstanceCounters::kFrameCounter);
-  result->number_of_live_v8_per_context_data = InstanceCounters::CounterValue(
-      InstanceCounters::kV8PerContextDataCounter);
-  result->number_of_worker_global_scopes = InstanceCounters::CounterValue(
-      InstanceCounters::kWorkerGlobalScopeCounter);
-  result->number_of_live_ua_css_resources =
-      InstanceCounters::CounterValue(InstanceCounters::kUACSSResourceCounter);
-  result->number_of_live_resource_fetchers =
-      InstanceCounters::CounterValue(InstanceCounters::kResourceFetcherCounter);
-
-#ifndef NDEBUG
-  showLiveDocumentInstances();
-#endif
-
-  std::move(callback_).Run(std::move(result));
+void BlinkLeakDetector::SetClient(BlinkLeakDetectorClient* client) {
+  client_ = client;
 }
 
 void BlinkLeakDetector::RegisterResourceFetcher(ResourceFetcher* fetcher) {

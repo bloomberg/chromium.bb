@@ -39,7 +39,6 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h"
-#include "third_party/blink/renderer/controller/blink_leak_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -130,9 +129,6 @@ void BlinkInitializer::RegisterInterfaces(
   registry.AddInterface(
       ConvertToBaseCallback(CrossThreadBind(&OomInterventionImpl::Create)),
       main_thread->GetTaskRunner());
-  registry.AddInterface(
-      ConvertToBaseCallback(CrossThreadBind(&BlinkLeakDetector::Bind)),
-      main_thread->GetTaskRunner());
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
@@ -149,10 +145,6 @@ void BlinkInitializer::OnClearWindowObjectInMainWorld(
     devtools_frontend->DidClearWindowObject();
   }
   ModulesInitializer::OnClearWindowObjectInMainWorld(document, settings);
-}
-
-void BlinkInitializer::RegisterResourceFetcher(ResourceFetcher* fetcher) const {
-  BlinkLeakDetector::Instance().RegisterResourceFetcher(fetcher);
 }
 
 }  // namespace blink

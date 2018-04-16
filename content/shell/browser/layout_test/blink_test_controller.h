@@ -27,8 +27,8 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/web_preferences.h"
-#include "content/shell/browser/layout_test/leak_detector.h"
 #include "content/shell/common/layout_test.mojom.h"
+#include "content/shell/common/leak_detection_result.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(OS_ANDROID)
@@ -221,7 +221,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnCaptureSessionHistory();
   void OnCloseRemainingWindows();
   void OnResetDone();
-  void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);
+  void OnLeakDetectionDone(const content::LeakDetectionResult& result);
   void OnSetBluetoothManualChooser(bool enable);
   void OnGetBluetoothManualChooserEvents();
   void OnSendBluetoothManualChooserEvent(const std::string& event,
@@ -277,8 +277,8 @@ class BlinkTestController : public WebContentsObserver,
 
   NotificationRegistrar registrar_;
 
+  const bool is_leak_detection_enabled_;
   bool crash_when_leak_found_;
-  std::unique_ptr<LeakDetector> leak_detector_;
 
   std::unique_ptr<LayoutTestBluetoothChooserFactory> bluetooth_chooser_factory_;
 

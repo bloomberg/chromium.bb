@@ -69,7 +69,8 @@
             },
             {
                 "domain": "Memory",
-                "include": ["getDOMCounters", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"]
+                "include": ["getDOMCounters", "prepareForLeakDetection", "startSampling", "stopSampling", "getSamplingProfile", "getAllTimeSamplingProfile"],
+                "async": ["prepareForLeakDetection"]
             },
             {
                 "domain": "Tracing",
