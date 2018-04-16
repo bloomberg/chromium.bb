@@ -360,7 +360,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoSamePriority);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoUploadProgress);
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest, LoadInfoTwoRenderViews);
-  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest, UpdateLoadState);
 
   struct OustandingRequestsStats {
     int memory_cost;
