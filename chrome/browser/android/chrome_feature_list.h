@@ -41,6 +41,7 @@ extern const base::Feature kContextualSearchMlTapSuppression;
 extern const base::Feature kContextualSearchSecondTap;
 extern const base::Feature kContextualSearchTapDisableOverride;
 extern const base::Feature kContextualSuggestionsBottomSheet;
+extern const base::Feature kContextualSuggestionsEnterprisePolicyBypass;
 extern const base::Feature kCustomContextMenu;
 extern const base::Feature kCustomFeedbackUi;
 extern const base::Feature kDontPrefetchLibraries;

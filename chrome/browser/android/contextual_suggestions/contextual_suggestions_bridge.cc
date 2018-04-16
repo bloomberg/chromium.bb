@@ -7,6 +7,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -53,6 +54,12 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
 static jboolean JNI_ContextualSuggestionsBridge_IsEnterprisePolicyManaged(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
+  // Bypass policy check, if corresponding feature is enabled.
+  if (base::FeatureList::IsEnabled(
+          chrome::android::kContextualSuggestionsEnterprisePolicyBypass)) {
+    return false;
+  }
+
   // TODO(fgorski): This is simply checking whether the profile is managed by
   // an enterprise policy.
   // http://crbug.com/829460 covers implementation of policy controller for
