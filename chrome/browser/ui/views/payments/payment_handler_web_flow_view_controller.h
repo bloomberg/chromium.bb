@@ -52,7 +52,8 @@ class PaymentHandlerWebFlowViewController
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
   void DidAttachInterstitialPage() override;
-  void DidDetachInterstitialPage() override;
+
+  void AbortPayment();
 
   Profile* profile_;
   GURL target_;

@@ -8,11 +8,13 @@
 
 #include "base/base64.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/payments/content/origin_security_checker.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -200,12 +202,22 @@ void PaymentHandlerWebFlowViewController::ButtonPressed(
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!OriginSecurityChecker::IsOriginSecure(navigation_handle->GetURL()) ||
+      !OriginSecurityChecker::IsSchemeCryptographic(
+          navigation_handle->GetURL()) ||
+      !SslValidityChecker::IsSslCertificateValid(
+          navigation_handle->GetWebContents())) {
+    AbortPayment();
+    return;
+  }
+
   if (first_navigation_complete_callback_) {
     std::move(first_navigation_complete_callback_)
         .Run(true, web_contents()->GetMainFrame()->GetProcess()->GetID(),
              web_contents()->GetMainFrame()->GetRoutingID());
     first_navigation_complete_callback_ = PaymentHandlerOpenWindowCallback();
   }
+
   UpdateHeaderView();
 }
 
@@ -215,11 +227,14 @@ void PaymentHandlerWebFlowViewController::TitleWasSet(
 }
 
 void PaymentHandlerWebFlowViewController::DidAttachInterstitialPage() {
-  UpdateHeaderView();
+  AbortPayment();
 }
 
-void PaymentHandlerWebFlowViewController::DidDetachInterstitialPage() {
-  UpdateHeaderView();
+void PaymentHandlerWebFlowViewController::AbortPayment() {
+  if (web_contents())
+    web_contents()->Close();
+
+  dialog()->ShowErrorMessage();
 }
 
 }  // namespace payments
