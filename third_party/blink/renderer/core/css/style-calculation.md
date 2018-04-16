@@ -1,3 +1,5 @@
+# CSS Style Calculation in Blink
+
 [Rendered](https://chromium.googlesource.com/chromium/src/+/master/third_party/blink/renderer/core/css/style-calculation.md)
 
 
@@ -200,11 +202,11 @@ being applied is
 recurses through
 [`ContainerNode::RecalcDescendantStylesForReattach`](https://cs.chromium.org/?q=symbol:%5Eblink::ContainerNode::RecalcDescendantStylesForReattach$)
 and involves methods with names like
-[RecalcFooStyleForReattach](https://cs.chromium.org/search/?q=symbol:%5Eblink::.*::Recalc.*Styles?ForReattach$ file:dom/). The
+[`RecalcFooStyleForReattach`](https://cs.chromium.org/search/?q=symbol:%5Eblink::.*::Recalc.*Styles?ForReattach$+file:dom/). The
 more complex recursion is similar. It recurses through
 [`ContainerNode::RecalcDescendantStyles`](https://cs.chromium.org/?q=symbol:%5Eblink::ContainerNode::RecalcDescendantStyles$)
 and involves methods with names like
-[RecalcFooStyle](https://cs.chromium.org/search/?q=symbol:%5Eblink::.*::Recalc.*Styles?$ file:dom/)
+[`RecalcFooStyle`](https://cs.chromium.org/search/?q=symbol:%5Eblink::.*::Recalc.*Styles?$+file:dom/)
 but it can enter the reattach code also. In both cases, the actual style
 calculation is performed by
 [`Element::StyleForLayoutObject`](https://cs.chromium.org/?q=symbol:%5Eblink::Element::StyleForLayoutObject$).
