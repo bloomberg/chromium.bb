@@ -855,6 +855,10 @@ void WebMediaPlayerMS::OnBecamePersistentVideo(bool value) {
   get_client()->OnBecamePersistentVideo(value);
 }
 
+void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
+  NOTIMPLEMENTED();
+}
+
 bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned target,

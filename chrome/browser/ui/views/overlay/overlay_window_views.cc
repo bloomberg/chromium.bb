@@ -208,9 +208,14 @@ void OverlayWindowViews::OnNativeWidgetWorkspaceChanged() {
 }
 
 void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->IsOnlyLeftMouseButton() &&
-      event->type() == ui::ET_MOUSE_RELEASED) {
+  if (event->type() != ui::ET_MOUSE_RELEASED)
+    return;
+
+  if (event->IsOnlyLeftMouseButton()) {
     controller_->TogglePlayPause();
+    event->SetHandled();
+  } else if (event->IsOnlyRightMouseButton()) {
+    controller_->Close();
     event->SetHandled();
   }
 }
