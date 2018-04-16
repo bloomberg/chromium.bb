@@ -190,7 +190,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling android_sdk_tools_version
   # and whatever else without interference from each other.
-  'android_sdk_tools_version': 'version:26.1.1-cr0',
+  'android_sdk_tools_version': 'version:26.1.1-cr9',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
