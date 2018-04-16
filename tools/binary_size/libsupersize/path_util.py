@@ -89,7 +89,7 @@ class ToolPrefixFinder(_PathFinder):
     output_directory = self._output_directory_finder.Tentative()
     if output_directory:
       ret = None
-      if self._linker_name == 'lld':
+      if self._linker_name.startswith('lld'):
         ret = os.path.join(SRC_ROOT, 'third_party', 'llvm-build',
                            'Release+Asserts', 'bin', 'llvm-')
       else:

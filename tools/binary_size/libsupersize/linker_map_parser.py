@@ -284,12 +284,14 @@ class MapFileParserLld(object):
   # TODO(huangs): Add LTO support.
   # Map file writer for LLD linker (for ELF):
   # https://github.com/llvm-mirror/lld/blob/HEAD/ELF/MapFile.cpp
-  _MAIN_RE = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
+  _OLD_LINE_RE = re.compile(r'([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
+  _NEW_LINE_RE = re.compile(
+      r'\s*[0-9a-f]+\s+([0-9a-f]+)\s+([0-9a-f]+)\s+(\d+) ( *)(.*)')
 
-  def __init__(self):
+  def __init__(self, is_newer_format):
+    self._is_newer_format = is_newer_format
     self._common_symbols = []
     self._section_sizes = {}
-    self._lines = None
 
   def Parse(self, lines):
     """Parses a linker map file.
@@ -301,6 +303,13 @@ class MapFileParserLld(object):
     Returns:
       A tuple of (section_sizes, symbols).
     """
+# Newest format:
+#     VMA      LMA     Size Align Out     In      Symbol
+#     194      194       13     1 .interp
+#     194      194       13     1         <internal>:(.interp)
+#     1a8      1a8     22d8     4 .ARM.exidx
+#     1b0      1b0        8     4         obj/sandbox/syscall.o:(.ARM.exidx)
+# Older format:
 # Address          Size             Align Out     In      Symbol
 # 00000000002002a8 000000000000001c     1 .interp
 # 00000000002002a8 000000000000001c     1         <internal>:(.interp)
@@ -319,9 +328,10 @@ class MapFileParserLld(object):
     sym_maker = _SymbolMaker()
     cur_section = None
     cur_section_is_useful = None
+    pattern = self._NEW_LINE_RE if self._is_newer_format else self._OLD_LINE_RE
 
     for line in lines:
-      m = MapFileParserLld._MAIN_RE.match(line)
+      m = pattern.match(line)
       if m is None:
         continue
       address = int(m.group(1), 16)
@@ -338,8 +348,6 @@ class MapFileParserLld(object):
                             models.SECTION_RODATA,
                             models.SECTION_TEXT) or
             cur_section.startswith(models.SECTION_DATA))
-        cur_obj = None
-
       elif cur_section_is_useful:
         if indent_size == 8:
           sym_maker.Flush()
@@ -372,10 +380,12 @@ class MapFileParserLld(object):
 
 def DetectLinkerNameFromMapFileHeader(first_line):
   if first_line.startswith('Address'):
-    return 'lld'
+    return 'lld_v0'
+  elif first_line.lstrip().startswith('VMA'):
+    return 'lld_v1'
   if first_line.startswith('Archive member'):
     return 'gold'
-  raise Exception('Invalid map file.')
+  raise Exception('Invalid map file: ' + first_line)
 
 
 class MapFileParser(object):
@@ -390,8 +400,8 @@ class MapFileParser(object):
       A tuple of (section_sizes, symbols).
     """
     linker_name = DetectLinkerNameFromMapFileHeader(next(lines))
-    if linker_name == 'lld':
-      inner_parser = MapFileParserLld()
+    if linker_name.startswith('lld'):
+      inner_parser = MapFileParserLld(linker_name.endswith('v1'))
     elif linker_name == 'gold':
       inner_parser = MapFileParserGold()
     else:
