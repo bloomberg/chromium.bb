@@ -57,6 +57,12 @@ crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
 crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass Leak ]
 
 # -----------------------------------------------------------------
+# Not reverted by dgozman@ request, exposed by leak detector change.
+# -----------------------------------------------------------------
+crbug.com/833609 http/tests/history/back-during-beforeunload.html [ Leak Pass ]
+crbug.com/833609 fast/forms/form-associated-element-crash2.html [ Leak Pass ]
+
+# -----------------------------------------------------------------
 # Sheriff 2018-03-08
 # -----------------------------------------------------------------
 crbug.com/821547 [ Linux ] animations/composition/backdrop-filter-composition.html [ Pass Leak ]
