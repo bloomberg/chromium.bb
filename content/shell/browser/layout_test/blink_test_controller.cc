@@ -334,9 +334,6 @@ BlinkTestController::BlinkTestController()
       secondary_window_(nullptr),
       devtools_window_(nullptr),
       test_phase_(BETWEEN_TESTS),
-      is_leak_detection_enabled_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableLeakDetection)),
       crash_when_leak_found_(false),
       pending_layout_dumps_(0),
       render_process_host_observer_(this),
@@ -344,7 +341,9 @@ BlinkTestController::BlinkTestController()
   CHECK(!instance_);
   instance_ = this;
 
-  if (is_leak_detection_enabled_) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLeakDetection)) {
+    leak_detector_ = std::make_unique<LeakDetector>();
     std::string switchValue =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kEnableLeakDetection);
@@ -630,7 +629,6 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseRemainingWindows,
                         OnCloseRemainingWindows)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ResetDone, OnResetDone)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LeakDetectionDone, OnLeakDetectionDone)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SetBluetoothManualChooser,
                         OnSetBluetoothManualChooser)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GetBluetoothManualChooserEvents,
@@ -1072,10 +1070,15 @@ void BlinkTestController::OnCloseRemainingWindows() {
 }
 
 void BlinkTestController::OnResetDone() {
-  if (is_leak_detection_enabled_) {
+  if (leak_detector_) {
     if (main_window_ && main_window_->web_contents()) {
       RenderViewHost* rvh = main_window_->web_contents()->GetRenderViewHost();
-      rvh->Send(new ShellViewMsg_TryLeakDetection(rvh->GetRoutingID()));
+      DCHECK_EQ(GURL(url::kAboutBlankURL),
+                rvh->GetMainFrame()->GetLastCommittedURL());
+      leak_detector_->TryLeakDetection(
+          rvh->GetProcess(),
+          base::BindOnce(&BlinkTestController::OnLeakDetectionDone,
+                         weak_factory_.GetWeakPtr()));
     }
     return;
   }
@@ -1085,16 +1088,15 @@ void BlinkTestController::OnResetDone() {
 }
 
 void BlinkTestController::OnLeakDetectionDone(
-    const LeakDetectionResult& result) {
-  if (!result.leaked) {
+    const LeakDetector::LeakDetectionReport& report) {
+  if (!report.leaked) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     return;
   }
 
-  printer_->AddErrorMessage(
-      base::StringPrintf("#LEAK - renderer pid %d (%s)", current_pid_,
-                         result.detail.c_str()));
+  printer_->AddErrorMessage(base::StringPrintf(
+      "#LEAK - renderer pid %d (%s)", current_pid_, report.detail.c_str()));
   CHECK(!crash_when_leak_found_);
 
   DiscardMainWindow();

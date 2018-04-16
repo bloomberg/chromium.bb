@@ -517,7 +517,6 @@ source_set("blink_headers") {
     "web/web_input_method_controller.h",
     "web/web_label_element.h",
     "web/web_language_detection_details.h",
-    "web/web_leak_detector.h",
     "web/web_local_frame.h",
     "web/web_meaningful_layout.h",
     "web/web_media_player_action.h",

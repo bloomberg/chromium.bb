@@ -7,19 +7,28 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/common/bind_interface_helpers.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
 namespace protocol {
 
 MemoryHandler::MemoryHandler()
-    : DevToolsDomainHandler(Memory::Metainfo::domainName) {
-}
+    : DevToolsDomainHandler(Memory::Metainfo::domainName),
+      process_host_id_(ChildProcessHost::kInvalidUniqueID),
+      weak_factory_(this) {}
 
 MemoryHandler::~MemoryHandler() {}
 
 void MemoryHandler::Wire(UberDispatcher* dispatcher) {
   Memory::Dispatcher::wire(dispatcher, this);
+}
+
+void MemoryHandler::SetRenderer(int process_host_id,
+                                RenderFrameHostImpl* frame_host) {
+  process_host_id_ = process_host_id;
 }
 
 Response MemoryHandler::GetBrowserSamplingProfile(
@@ -72,6 +81,41 @@ Response MemoryHandler::SimulatePressureNotification(
   // Simulate memory pressure notification in the browser process.
   base::MemoryPressureListener::SimulatePressureNotification(parsed_level);
   return Response::OK();
+}
+
+void MemoryHandler::PrepareForLeakDetection(
+    std::unique_ptr<PrepareForLeakDetectionCallback> callback) {
+  if (leak_detection_callback_) {
+    callback->sendFailure(
+        Response::Error("Another leak detection in progress"));
+    return;
+  }
+  RenderProcessHost* process = RenderProcessHost::FromID(process_host_id_);
+  if (!process) {
+    callback->sendFailure(Response::Error("No process to detect leaks in"));
+    return;
+  }
+
+  leak_detection_callback_ = std::move(callback);
+  BindInterface(process, &leak_detector_);
+  leak_detector_.set_connection_error_handler(base::BindOnce(
+      &MemoryHandler::OnLeakDetectorIsGone, base::Unretained(this)));
+  leak_detector_->PerformLeakDetection(base::BindOnce(
+      &MemoryHandler::OnLeakDetectionComplete, weak_factory_.GetWeakPtr()));
+}
+
+void MemoryHandler::OnLeakDetectionComplete(
+    blink::mojom::LeakDetectionResultPtr result) {
+  leak_detection_callback_->sendSuccess();
+  leak_detection_callback_.reset();
+  leak_detector_.reset();
+}
+
+void MemoryHandler::OnLeakDetectorIsGone() {
+  leak_detection_callback_->sendFailure(
+      Response::Error("Failed to run leak detection"));
+  leak_detection_callback_.reset();
+  leak_detector_.reset();
 }
 
 }  // namespace protocol

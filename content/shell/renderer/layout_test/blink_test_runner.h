@@ -42,9 +42,6 @@ class AppBannerService;
 
 namespace content {
 
-class LeakDetector;
-struct LeakDetectionResult;
-
 // This is the renderer side of the webkit test runner.
 // TODO(lukasza): Rename to LayoutTestRenderViewObserver for consistency with
 // LayoutTestRenderFrameObserver.
@@ -166,8 +163,6 @@ class BlinkTestRunner : public RenderViewObserver,
   // also resets additional state, like the main frame's name and opener.
   void Reset(bool for_new_test);
 
-  void ReportLeakDetectionResult(const LeakDetectionResult& result);
-
   // Message handlers forwarded by LayoutTestRenderFrameObserver.
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
@@ -178,7 +173,6 @@ class BlinkTestRunner : public RenderViewObserver,
   // Message handlers.
   void OnReset();
   void OnTestFinishedInSecondaryRenderer();
-  void OnTryLeakDetection();
   void OnReplyBluetoothManualChooserEvents(
       const std::vector<std::string>& events);
 
@@ -219,8 +213,6 @@ class BlinkTestRunner : public RenderViewObserver,
   bool focus_on_next_commit_;
 
   std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
-
-  std::unique_ptr<LeakDetector> leak_detector_;
 
   mojom::LayoutTestControl::CaptureDumpCallback dump_callback_;
   mojom::LayoutTestDumpPtr dump_result_;

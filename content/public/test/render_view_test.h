@@ -20,10 +20,10 @@
 #include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_frame.h"
-#include "third_party/blink/public/web/web_leak_detector.h"
 
 namespace base {
 class FieldTrialList;
@@ -56,7 +56,7 @@ class RendererBlinkPlatformImplTestOverrideImpl;
 class RenderView;
 struct ResizeParams;
 
-class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
+class RenderViewTest : public testing::Test {
  public:
   // A special BlinkPlatformImpl class with overrides that are useful for
   // RenderViewTest.
@@ -188,9 +188,6 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
 
   void TearDown() override;
 
-  // blink::WebLeakDetectorClient implementation.
-  void OnLeakDetectionComplete(const Result& result) override;
-
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<FakeCompositorDependencies> compositor_deps_;
@@ -213,6 +210,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   // For Mojo.
   std::unique_ptr<base::TestIOThread> test_io_thread_;
   std::unique_ptr<mojo::edk::ScopedIPCSupport> ipc_support_;
+  service_manager::BinderRegistry binder_registry_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;

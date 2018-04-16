@@ -47,7 +47,6 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/renderer/layout_test/layout_test_render_thread_observer.h"
-#include "content/shell/renderer/layout_test/leak_detector.h"
 #include "content/shell/test_runner/app_banner_service.h"
 #include "content/shell/test_runner/gamepad_controller.h"
 #include "content/shell/test_runner/layout_and_paint_async_then.h"
@@ -84,7 +83,6 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
-#include "third_party/blink/public/web/web_leak_detector.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_testing_support.h"
@@ -234,8 +232,7 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
       test_config_(mojom::ShellTestConfiguration::New()),
       is_main_window_(false),
-      focus_on_next_commit_(false),
-      leak_detector_(new LeakDetector(this)) {}
+      focus_on_next_commit_(false) {}
 
 BlinkTestRunner::~BlinkTestRunner() {
 }
@@ -836,7 +833,6 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewMsg_Reset, OnReset)
     IPC_MESSAGE_HANDLER(ShellViewMsg_TestFinishedInSecondaryRenderer,
                         OnTestFinishedInSecondaryRenderer)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_TryLeakDetection, OnTryLeakDetection)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ReplyBluetoothManualChooserEvents,
                         OnReplyBluetoothManualChooserEvents)
     IPC_MESSAGE_HANDLER(ShellViewMsg_LayoutDumpCompleted, OnLayoutDumpCompleted)
@@ -985,17 +981,6 @@ void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
   TestFinished();
 }
 
-void BlinkTestRunner::OnTryLeakDetection() {
-  blink::WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
-
-  DCHECK(!main_frame->IsLoading());
-  DCHECK(main_frame->IsWebLocalFrame());
-  DCHECK_EQ(GURL(url::kAboutBlankURL),
-            GURL(main_frame->ToWebLocalFrame()->GetDocument().Url()));
-
-  leak_detector_->TryLeakDetection();
-}
-
 void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
     const std::vector<std::string>& events) {
   DCHECK(!get_bluetooth_events_callbacks_.empty());
@@ -1003,11 +988,6 @@ void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
       get_bluetooth_events_callbacks_.front();
   get_bluetooth_events_callbacks_.pop_front();
   std::move(callback).Run(events);
-}
-
-void BlinkTestRunner::ReportLeakDetectionResult(
-    const LeakDetectionResult& report) {
-  Send(new ShellViewHostMsg_LeakDetectionDone(routing_id(), report));
 }
 
 void BlinkTestRunner::OnDestruct() {

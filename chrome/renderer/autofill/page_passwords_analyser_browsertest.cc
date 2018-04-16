@@ -19,6 +19,7 @@ namespace {
 class MockPageFormAnalyserLogger : public PageFormAnalyserLogger {
  public:
   MockPageFormAnalyserLogger() : PageFormAnalyserLogger(nullptr) {}
+  virtual ~MockPageFormAnalyserLogger() {}
 
   void Send(std::string message,
             ConsoleLevel level,
@@ -116,9 +117,12 @@ const std::string AutocompleteSuggestionString(const std::string& suggestion) {
 
 class PagePasswordsAnalyserTest : public ChromeRenderViewTest {
  protected:
-  PagePasswordsAnalyserTest() {}
+  PagePasswordsAnalyserTest()
+      : mock_logger_(new MockPageFormAnalyserLogger()) {}
 
   void TearDown() override {
+    elements_.clear();
+    mock_logger_.reset();
     page_passwords_analyser.Reset();
     ChromeRenderViewTest::TearDown();
   }
@@ -143,22 +147,23 @@ class PagePasswordsAnalyserTest : public ChromeRenderViewTest {
     std::string documented = message + kExpectedDocumentationLink;
     for (size_t index : element_indices)
       nodes.push_back(elements_[index]);
-    EXPECT_CALL(mock_logger, Send(documented, level, nodes))
+    EXPECT_CALL(*mock_logger_, Send(documented, level, nodes))
         .RetiresOnSaturation();
   }
 
   void RunTestCase() {
-    EXPECT_CALL(mock_logger, Flush());
-    page_passwords_analyser.AnalyseDocumentDOM(GetMainFrame(), &mock_logger);
+    EXPECT_CALL(*mock_logger_, Flush());
+    page_passwords_analyser.AnalyseDocumentDOM(GetMainFrame(),
+                                               mock_logger_.get());
   }
 
   PagePasswordsAnalyser page_passwords_analyser;
-  MockPageFormAnalyserLogger mock_logger;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PagePasswordsAnalyserTest);
 
   std::vector<blink::WebElement> elements_;
+  std::unique_ptr<MockPageFormAnalyserLogger> mock_logger_;
 };
 
 TEST_F(PagePasswordsAnalyserTest, PasswordFieldNotInForm) {

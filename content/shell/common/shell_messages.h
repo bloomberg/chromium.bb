@@ -9,7 +9,6 @@
 #include "base/values.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/page_state.h"
-#include "content/shell/common/leak_detection_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -28,8 +27,6 @@ IPC_MESSAGE_CONTROL1(ShellViewMsg_SetWebKitSourceDir,
 // Tells the main window that a secondary renderer in a different process asked
 // to finish the test.
 IPC_MESSAGE_ROUTED0(ShellViewMsg_TestFinishedInSecondaryRenderer)
-
-IPC_MESSAGE_ROUTED0(ShellViewMsg_TryLeakDetection)
 
 // Notifies BlinkTestRunner that the layout dump has completed
 // (and that it can proceed with finishing up the test).
@@ -66,14 +63,6 @@ IPC_MESSAGE_ROUTED2(ShellViewHostMsg_LoadURLForFrame,
                     GURL /* url */,
                     std::string /* frame_name */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)
-
-IPC_STRUCT_TRAITS_BEGIN(content::LeakDetectionResult)
-IPC_STRUCT_TRAITS_MEMBER(leaked)
-IPC_STRUCT_TRAITS_MEMBER(detail)
-IPC_STRUCT_TRAITS_END()
-
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LeakDetectionDone,
-                    content::LeakDetectionResult /* result */)
 
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetBluetoothManualChooser,
                     bool /* enable */)
