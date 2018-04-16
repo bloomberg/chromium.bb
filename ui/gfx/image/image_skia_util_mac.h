@@ -9,11 +9,7 @@
 
 #include "ui/gfx/gfx_export.h"
 
-#ifdef __LP64__
-typedef CGSize NSSize;
-#else
-typedef struct _NSSize NSSize;
-#endif
+using NSSize = CGSize;
 
 #ifdef __OBJC__
 @class NSImage;

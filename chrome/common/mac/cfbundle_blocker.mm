@@ -50,22 +50,6 @@ NSArray* BlockedPaths() {
     // Everything in the suffix list has a trailing slash so as to only block
     // loading things contained in these directories.
     NSString* const blocked_suffixes[] = {
-#if !defined(__LP64__)
-      // Contextual menu manager plugins are unavailable to 64-bit processes.
-      // http://developer.apple.com/library/mac/releasenotes/Cocoa/AppKitOlderNotes.html#NSMenu
-      // Contextual menu plugins are loaded when a contextual menu is opened,
-      // for example, from within
-      // +[NSMenu popUpContextMenu:withEvent:forView:].
-      @"Contextual Menu Items/",
-
-      // Input managers are deprecated, would only be loaded under specific
-      // circumstances, and are entirely unavailable to 64-bit processes.
-      // http://developer.apple.com/library/mac/releasenotes/Cocoa/AppKitOlderNotes.html#NSInputManager
-      // Input managers are loaded when the NSInputManager class is
-      // initialized.
-      @"InputManagers/",
-#endif  // __LP64__
-
       // Don't load third-party scripting additions either. Scripting
       // additions are loaded by AppleScript from within AEProcessAppleEvent
       // in response to an Apple Event.

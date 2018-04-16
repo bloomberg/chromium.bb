@@ -85,9 +85,7 @@ MessagePumpNSApplication* g_app_pump;
 typedef struct __CFRuntimeBase {
   uintptr_t _cfisa;
   uint8_t _cfinfo[4];
-#if __LP64__
   uint32_t _rc;
-#endif
 } CFRuntimeBase;
 
 #if defined(__BIG_ENDIAN__)
