@@ -26,6 +26,8 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     private Spinner mSpinner;
     private DownloadManagerUi mManager;
 
+    private int mInfoMenuItemId;
+
     public DownloadManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateMenu(R.menu.download_manager_menu);
@@ -96,7 +98,7 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     protected void onDataChanged(int numItems) {
         super.onDataChanged(numItems);
         getMenu()
-                .findItem(R.id.info_menu_id)
+                .findItem(mInfoMenuItemId)
                 .setVisible(!mIsSearching && !mIsSelectionEnabled && numItems > 0);
     }
 
@@ -121,6 +123,12 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
     public void hideSearchView() {
         super.hideSearchView();
         mSpinner.setVisibility(VISIBLE);
+    }
+
+    @Override
+    public void setInfoMenuItem(int infoMenuItemId) {
+        super.setInfoMenuItem(infoMenuItemId);
+        mInfoMenuItemId = infoMenuItemId;
     }
 
     /** Returns the {@link Spinner}. */

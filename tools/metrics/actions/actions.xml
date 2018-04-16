@@ -1555,6 +1555,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.DownloadManager.Settings">
+  <owner>jming@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <description>
+    User selected the settings option in the download manager to open up the
+    settings page to download preferences.
+  </description>
+</action>
+
 <action name="Android.DownloadManager.UndoDelete">
   <owner>dfalcantara@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
