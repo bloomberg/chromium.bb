@@ -2412,17 +2412,8 @@ void UiSceneCreator::CreateOmnibox() {
       VR_BIND_LAMBDA(
           [](UiElement* e, const bool& v) {
             float y_offset = -0.5 * kOmniboxHeightDMM;
-            // TODO(crbug.com/830592): we should not have to alter the set of
-            // transitioned properties here, but there is a bug in the
-            // transitions code in that it doesn't take into account any
-            // currently running animations when starting a transition.
-            if (v) {
-              e->SetTransitionedProperties({TRANSFORM});
-              y_offset += kOmniboxVerticalOffsetDMM;
-            } else {
-              e->SetTransitionedProperties({});
-              y_offset += kUrlBarVerticalOffsetDMM;
-            }
+            y_offset +=
+                v ? kOmniboxVerticalOffsetDMM : kUrlBarVerticalOffsetDMM;
             e->SetTranslate(0, y_offset, -kOmniboxShadowOffset);
           },
           shadow.get())));
