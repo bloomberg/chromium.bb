@@ -12,14 +12,13 @@ import string
 import unittest
 
 # Assumes this script is in ffmpeg/chromium/scripts/
-SOURCE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                          os.path.pardir,
-                          os.path.pardir)
+SOURCE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), os.path.pardir, os.path.pardir)
 OUTPUT_FILE = 'CREDITS.testing'
 
 # Expected credits for swresample.h applied with the rot13 encoding. Otherwise
 # license scanners get confused about the license of this file.
-SWRESAMPLE_H_LICENSE_ROT_13 = '''yvofjerfnzcyr/fjerfnzcyr.u
+SWRESAMPLE_H_LICENSE_ROT_13 = """yvofjerfnzcyr/fjerfnzcyr.u
 
 Pbclevtug (P) 2011-2013 Zvpunry Avrqreznlre (zvpunryav@tzk.ng)
 
@@ -37,7 +36,7 @@ Yrffre Trareny Choyvp Yvprafr sbe zber qrgnvyf.
 
 Lbh fubhyq unir erprvirq n pbcl bs gur TAH Yrffre Trareny Choyvp
 Yvprafr nybat jvgu yvofjerfnzcyr; vs abg, jevgr gb gur Serr Fbsgjner
-Sbhaqngvba, Vap., 51 Senaxyva Fgerrg, Svsgu Sybbe, Obfgba, ZN 02110-1301 HFN'''
+Sbhaqngvba, Vap., 51 Senaxyva Fgerrg, Svsgu Sybbe, Obfgba, ZN 02110-1301 HFN"""
 
 # The real expected credits for swresample.h.
 SWRESAMPLE_H_LICENSE = codecs.decode(SWRESAMPLE_H_LICENSE_ROT_13, 'rot13')
@@ -90,15 +89,12 @@ class CreditsUpdaterUnittest(unittest.TestCase):
     # Expected output to have JPEG and MIPS text in addition to the typical LGPL
     # and LICENSE.md header. JPEG should appear before MIPS because known
     # buckets will be printed in alphabetical order.
-    expected_lines = NormalizeNewLines(GetLicenseMdLines() +
-                                       GetSeparatorLines() +
-                                       ['libavcodec/jfdctfst.c\n\n'] +
-                                       GetLicenseLines(cu.License.JPEG) +
-                                       GetSeparatorLines() +
-                                       ['libavutil/mips/float_dsp_mips.c\n\n'] +
-                                       GetLicenseLines(cu.License.MIPS) +
-                                       GetSeparatorLines() +
-                                       GetLicenseLines(cu.License.LGPL))
+    expected_lines = NormalizeNewLines(
+        GetLicenseMdLines() + GetSeparatorLines() +
+        ['libavcodec/jfdctfst.c\n\n'] + GetLicenseLines(cu.License.JPEG) +
+        GetSeparatorLines() + ['libavutil/mips/float_dsp_mips.c\n\n'] +
+        GetLicenseLines(cu.License.MIPS) + GetSeparatorLines() +
+        GetLicenseLines(cu.License.LGPL))
     credits_lines = ReadCreditsLines()
     self.assertEqual(expected_lines, credits_lines)
 
@@ -111,14 +107,12 @@ class CreditsUpdaterUnittest(unittest.TestCase):
     updater.WriteCredits()
 
     # Expect output to put swresample.h header first, followed by MIPS.
-    expected_lines = NormalizeNewLines(GetLicenseMdLines() +
-                                       GetSeparatorLines() +
-                                       SWRESAMPLE_H_LICENSE.splitlines(True) +
-                                       GetSeparatorLines() +
-                                       ['libavutil/mips/float_dsp_mips.c\n\n'] +
-                                       GetLicenseLines(cu.License.MIPS) +
-                                       GetSeparatorLines() +
-                                       GetLicenseLines(cu.License.LGPL))
+    expected_lines = NormalizeNewLines(
+        GetLicenseMdLines() + GetSeparatorLines() +
+        SWRESAMPLE_H_LICENSE.splitlines(True) + GetSeparatorLines() +
+        ['libavutil/mips/float_dsp_mips.c\n\n'] +
+        GetLicenseLines(cu.License.MIPS) + GetSeparatorLines() +
+        GetLicenseLines(cu.License.LGPL))
     credits_lines = ReadCreditsLines()
     self.assertEqual(expected_lines, credits_lines)
 
@@ -177,6 +171,7 @@ def GetFileLines(file_path):
 def GetSeparatorLines():
   # Pass True to preserve \n chars in the return.
   return cu.LICENSE_SEPARATOR.splitlines(True)
+
 
 # Combine into a string then split back out to a list. This is important for
 # making constructed expectations match the credits read from a file. E.g.

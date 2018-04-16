@@ -3,7 +3,6 @@
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 """Unittest for generate_gn.py.
 
 It's tough to test the lower-level GetSourceFiles() and GetObjectFiles()
@@ -16,7 +15,9 @@ from generate_gn import SourceSet, SourceListCondition
 import string
 import unittest
 
+
 class ModuleUnittest(unittest.TestCase):
+
   def testGetObjectToSourceMapping(self):
     srcs = [
         'a.c',
@@ -56,6 +57,7 @@ class ModuleUnittest(unittest.TestCase):
 
 
 class SourceSetUnittest(unittest.TestCase):
+
   def testEquals(self):
     a = SourceSet(set(['a', 'b']), set([SourceListCondition('1', '2', '3')]))
     b = SourceSet(set(['a', 'b']), set([SourceListCondition('1', '2', '3')]))
@@ -77,8 +79,12 @@ class SourceSetUnittest(unittest.TestCase):
     c = a.Intersect(b)
 
     self.assertEqual(c.sources, set(['a', 'b']))
-    self.assertEqual(c.conditions, set([SourceListCondition('1', '2', '3'),
-                                        SourceListCondition('3', '4', '6')]))
+    self.assertEqual(
+        c.conditions,
+        set([
+            SourceListCondition('1', '2', '3'),
+            SourceListCondition('3', '4', '6')
+        ]))
     self.assertFalse(c.IsEmpty())
 
   def testIntersect_Disjoint(self):
@@ -88,8 +94,12 @@ class SourceSetUnittest(unittest.TestCase):
     c = a.Intersect(b)
 
     self.assertEqual(c.sources, set())
-    self.assertEqual(c.conditions, set([SourceListCondition('1', '2', '3'),
-                                        SourceListCondition('3', '4', '6')]))
+    self.assertEqual(
+        c.conditions,
+        set([
+            SourceListCondition('1', '2', '3'),
+            SourceListCondition('3', '4', '6')
+        ]))
     self.assertTrue(c.IsEmpty())
 
   def testIntersect_Overlap(self):
@@ -99,8 +109,12 @@ class SourceSetUnittest(unittest.TestCase):
     c = a.Intersect(b)
 
     self.assertEqual(c.sources, set(['b']))
-    self.assertEqual(c.conditions, set([SourceListCondition('1', '2', '3'),
-                                        SourceListCondition('3', '4', '6')]))
+    self.assertEqual(
+        c.conditions,
+        set([
+            SourceListCondition('1', '2', '3'),
+            SourceListCondition('3', '4', '6')
+        ]))
     self.assertFalse(c.IsEmpty())
 
   def testDifference_Exact(self):
@@ -125,9 +139,12 @@ class SourceSetUnittest(unittest.TestCase):
 
   def testDifference_Overlap(self):
     a = SourceSet(set(['a', 'b']), set([SourceListCondition('1', '2', '5')]))
-    b = SourceSet(set(['b', 'c', 'd']),
-        set([SourceListCondition('1', '2', '5'),
-             SourceListCondition('3', '4', '6')]))
+    b = SourceSet(
+        set(['b', 'c', 'd']),
+        set([
+            SourceListCondition('1', '2', '5'),
+            SourceListCondition('3', '4', '6')
+        ]))
 
     c = a.Difference(b)
 
@@ -137,40 +154,44 @@ class SourceSetUnittest(unittest.TestCase):
 
   def testGenerateGnStanza(self):
     # ia32 should be x86.  Win should appear as an OS restriction.
-    a = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win')]))
+    a = SourceSet(
+        set(['a', 'b']), set([SourceListCondition('ia32', 'Chromium', 'win')]))
     a_stanza = a.GenerateGnStanza()
     string.index(a_stanza, 'current_cpu == "x86"')
     string.index(a_stanza, 'is_win')
 
     # x64 should just be x64.  Linux should appear as an OS restriction.
-    b = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('x64', 'Chromium', 'linux')]))
+    b = SourceSet(
+        set(['a', 'b']), set([SourceListCondition('x64', 'Chromium', 'linux')]))
     b_stanza = b.GenerateGnStanza()
     string.index(b_stanza, 'current_cpu == "x64"')
     string.index(b_stanza, 'use_linux_config')
 
     # arm should just be arm.
-    c = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('arm', 'Chromium', 'linux')]))
+    c = SourceSet(
+        set(['a', 'b']), set([SourceListCondition('arm', 'Chromium', 'linux')]))
     c_stanza = c.GenerateGnStanza()
     string.index(c_stanza, 'current_cpu == "arm"')
 
     # arm-neon should be arm and flip the arm_neon switch.
-    d = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('arm-neon', 'Chromium', 'linux')]))
+    d = SourceSet(
+        set(['a', 'b']),
+        set([SourceListCondition('arm-neon', 'Chromium', 'linux')]))
     d_stanza = d.GenerateGnStanza()
     string.index(d_stanza, 'current_cpu == "arm" && arm_use_neon')
 
     # Multiple conditions
-    e = SourceSet(set(['a', 'b']),
-                  set([SourceListCondition('arm', 'Chrome', 'win'),
-                       SourceListCondition('x64', 'Chromium', 'linux')]))
+    e = SourceSet(
+        set(['a', 'b']),
+        set([
+            SourceListCondition('arm', 'Chrome', 'win'),
+            SourceListCondition('x64', 'Chromium', 'linux')
+        ]))
     e_stanza = e.GenerateGnStanza()
     string.index(e_stanza, ('is_win && current_cpu == "arm"'
-        ' && ffmpeg_branding == "Chrome"'))
+                            ' && ffmpeg_branding == "Chrome"'))
     string.index(e_stanza, ('use_linux_config && current_cpu == "x64"'
-        ' && ffmpeg_branding == "Chromium"'))
+                            ' && ffmpeg_branding == "Chromium"'))
 
   def testComplexSourceListConditions(self):
     # Create 2 sets with intersecting source 'a', but setup such that 'a'
@@ -197,6 +218,7 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqual(string.find(stanza, bad_condition), -1)
 
   def assertEqualSets(self, expected, actual):
+
     def SetToString(source_set):
       sources = [str(e) for e in source_set.sources]
       conditions = [str(e) for e in source_set.conditions]
@@ -216,103 +238,144 @@ class SourceSetUnittest(unittest.TestCase):
       for e in extra_elements:
         msg += SetToString(e) + '\n'
 
-    self.assertTrue(expected == actual, msg = msg)
+    self.assertTrue(expected == actual, msg=msg)
 
   def testCreatePairwiseDisjointSets_Pair(self):
-    a = SourceSet(set(['common', 'intel']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win')]))
-    b = SourceSet(set(['common', 'intel', 'chrome']),
-                  set([SourceListCondition('ia32', 'Chrome', 'win')]))
+    a = SourceSet(
+        set(['common', 'intel']),
+        set([SourceListCondition('ia32', 'Chromium', 'win')]))
+    b = SourceSet(
+        set(['common', 'intel', 'chrome']),
+        set([SourceListCondition('ia32', 'Chrome', 'win')]))
 
     expected = set()
     expected.add(
-        SourceSet(set(['common', 'intel']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win'),
-                       SourceListCondition('ia32', 'Chrome', 'win')])))
+        SourceSet(
+            set(['common', 'intel']),
+            set([
+                SourceListCondition('ia32', 'Chromium', 'win'),
+                SourceListCondition('ia32', 'Chrome', 'win')
+            ])))
     expected.add(
-        SourceSet(set(['chrome']),
-                  set([SourceListCondition('ia32', 'Chrome', 'win')])))
+        SourceSet(
+            set(['chrome']), set([SourceListCondition('ia32', 'Chrome',
+                                                      'win')])))
 
     source_sets = gg.CreatePairwiseDisjointSets([a, b])
     self.assertEqualSets(expected, set(source_sets))
 
   def testCreatePairwiseDisjointSets_Triplet(self):
-    a = SourceSet(set(['common', 'intel']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win')]))
-    b = SourceSet(set(['common', 'intel', 'chrome']),
-                  set([SourceListCondition('x64', 'Chrome', 'win')]))
-    c = SourceSet(set(['common', 'arm']),
-                  set([SourceListCondition('arm', 'Chromium', 'win')]))
+    a = SourceSet(
+        set(['common', 'intel']),
+        set([SourceListCondition('ia32', 'Chromium', 'win')]))
+    b = SourceSet(
+        set(['common', 'intel', 'chrome']),
+        set([SourceListCondition('x64', 'Chrome', 'win')]))
+    c = SourceSet(
+        set(['common', 'arm']),
+        set([SourceListCondition('arm', 'Chromium', 'win')]))
 
     expected = set()
     expected.add(
-        SourceSet(set(['common']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win'),
-                       SourceListCondition('x64', 'Chrome', 'win'),
-                       SourceListCondition('arm', 'Chromium', 'win')])))
+        SourceSet(
+            set(['common']),
+            set([
+                SourceListCondition('ia32', 'Chromium', 'win'),
+                SourceListCondition('x64', 'Chrome', 'win'),
+                SourceListCondition('arm', 'Chromium', 'win')
+            ])))
     expected.add(
-        SourceSet(set(['intel']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win'),
-                       SourceListCondition('x64', 'Chrome', 'win')])))
+        SourceSet(
+            set(['intel']),
+            set([
+                SourceListCondition('ia32', 'Chromium', 'win'),
+                SourceListCondition('x64', 'Chrome', 'win')
+            ])))
     expected.add(
-        SourceSet(set(['chrome']),
-                  set([SourceListCondition('x64', 'Chrome', 'win')])))
+        SourceSet(
+            set(['chrome']), set([SourceListCondition('x64', 'Chrome',
+                                                      'win')])))
     expected.add(
-        SourceSet(set(['arm']),
-                  set([SourceListCondition('arm', 'Chromium', 'win')])))
+        SourceSet(
+            set(['arm']), set([SourceListCondition('arm', 'Chromium', 'win')])))
 
     source_sets = gg.CreatePairwiseDisjointSets([a, b, c])
     self.assertEqualSets(expected, set(source_sets))
 
   def testCreatePairwiseDisjointSets_Multiple(self):
-    a = SourceSet(set(['common', 'intel']),
-                  set([SourceListCondition('ia32', 'Chromium', 'linux')]))
-    b = SourceSet(set(['common', 'intel', 'chrome']),
-                  set([SourceListCondition('ia32', 'Chrome', 'linux')]))
-    c = SourceSet(set(['common', 'intel']),
-                  set([SourceListCondition('x64', 'Chromium', 'linux')]))
-    d = SourceSet(set(['common', 'intel', 'chrome']),
-                  set([SourceListCondition('x64', 'Chrome', 'linux')]))
-    e = SourceSet(set(['common', 'arm']),
-                  set([SourceListCondition('arm', 'Chromium', 'linux')]))
-    f = SourceSet(set(['common', 'arm-neon', 'chrome', 'chromeos']),
-                  set([SourceListCondition('arm-neon', 'ChromeOS', 'linux')]))
+    a = SourceSet(
+        set(['common', 'intel']),
+        set([SourceListCondition('ia32', 'Chromium', 'linux')]))
+    b = SourceSet(
+        set(['common', 'intel', 'chrome']),
+        set([SourceListCondition('ia32', 'Chrome', 'linux')]))
+    c = SourceSet(
+        set(['common', 'intel']),
+        set([SourceListCondition('x64', 'Chromium', 'linux')]))
+    d = SourceSet(
+        set(['common', 'intel', 'chrome']),
+        set([SourceListCondition('x64', 'Chrome', 'linux')]))
+    e = SourceSet(
+        set(['common', 'arm']),
+        set([SourceListCondition('arm', 'Chromium', 'linux')]))
+    f = SourceSet(
+        set(['common', 'arm-neon', 'chrome', 'chromeos']),
+        set([SourceListCondition('arm-neon', 'ChromeOS', 'linux')]))
 
     expected = set()
-    expected.add(SourceSet(set(['common']), set([
-        SourceListCondition('ia32', 'Chromium', 'linux'),
-        SourceListCondition('ia32', 'Chrome', 'linux'),
-        SourceListCondition('x64', 'Chromium', 'linux'),
-        SourceListCondition('x64', 'Chrome', 'linux'),
-        SourceListCondition('arm', 'Chromium', 'linux'),
-        SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
-    expected.add(SourceSet(set(['intel']), set([
-        SourceListCondition('ia32', 'Chromium', 'linux'),
-        SourceListCondition('ia32', 'Chrome', 'linux'),
-        SourceListCondition('x64', 'Chromium', 'linux'),
-        SourceListCondition('x64', 'Chrome', 'linux')])))
-    expected.add(SourceSet(set(['arm']), set([
-        SourceListCondition('arm', 'Chromium', 'linux')])))
-    expected.add(SourceSet(set(['chrome']), set([
-        SourceListCondition('ia32', 'Chrome', 'linux'),
-        SourceListCondition('x64', 'Chrome', 'linux'),
-        SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
-    expected.add(SourceSet(set(['arm-neon', 'chromeos']), set([
-        SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
+    expected.add(
+        SourceSet(
+            set(['common']),
+            set([
+                SourceListCondition('ia32', 'Chromium', 'linux'),
+                SourceListCondition('ia32', 'Chrome', 'linux'),
+                SourceListCondition('x64', 'Chromium', 'linux'),
+                SourceListCondition('x64', 'Chrome', 'linux'),
+                SourceListCondition('arm', 'Chromium', 'linux'),
+                SourceListCondition('arm-neon', 'ChromeOS', 'linux')
+            ])))
+    expected.add(
+        SourceSet(
+            set(['intel']),
+            set([
+                SourceListCondition('ia32', 'Chromium', 'linux'),
+                SourceListCondition('ia32', 'Chrome', 'linux'),
+                SourceListCondition('x64', 'Chromium', 'linux'),
+                SourceListCondition('x64', 'Chrome', 'linux')
+            ])))
+    expected.add(
+        SourceSet(
+            set(['arm']), set([SourceListCondition('arm', 'Chromium',
+                                                   'linux')])))
+    expected.add(
+        SourceSet(
+            set(['chrome']),
+            set([
+                SourceListCondition('ia32', 'Chrome', 'linux'),
+                SourceListCondition('x64', 'Chrome', 'linux'),
+                SourceListCondition('arm-neon', 'ChromeOS', 'linux')
+            ])))
+    expected.add(
+        SourceSet(
+            set(['arm-neon', 'chromeos']),
+            set([SourceListCondition('arm-neon', 'ChromeOS', 'linux')])))
 
     source_sets = gg.CreatePairwiseDisjointSets([a, b, c, d, e, f])
     self.assertEqualSets(expected, set(source_sets))
 
   def testReduceConditions(self):
     # Set conditions span all of the supported architectures for linux.
-    a = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('ia32', 'Chromium', 'linux'),
-                       SourceListCondition('x64', 'Chromium', 'linux'),
-                       SourceListCondition('arm', 'Chromium', 'linux'),
-                       SourceListCondition('arm64', 'Chromium', 'linux'),
-                       SourceListCondition('arm-neon', 'Chromium', 'linux'),
-                       SourceListCondition('mipsel', 'Chromium', 'linux'),
-                       SourceListCondition('mips64el', 'Chromium', 'linux')]))
+    a = SourceSet(
+        set(['foo.c']),
+        set([
+            SourceListCondition('ia32', 'Chromium', 'linux'),
+            SourceListCondition('x64', 'Chromium', 'linux'),
+            SourceListCondition('arm', 'Chromium', 'linux'),
+            SourceListCondition('arm64', 'Chromium', 'linux'),
+            SourceListCondition('arm-neon', 'Chromium', 'linux'),
+            SourceListCondition('mipsel', 'Chromium', 'linux'),
+            SourceListCondition('mips64el', 'Chromium', 'linux')
+        ]))
     gg.ReduceConditionalLogic(a)
 
     # Conditions should reduce to a single condition with wild-card for arch.
@@ -320,9 +383,12 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqualSets(expected, a.conditions)
 
     # Set conditions span all of the supported architectures for windows.
-    b = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win'),
-                       SourceListCondition('x64', 'Chromium', 'win')]))
+    b = SourceSet(
+        set(['foo.c']),
+        set([
+            SourceListCondition('ia32', 'Chromium', 'win'),
+            SourceListCondition('x64', 'Chromium', 'win')
+        ]))
     gg.ReduceConditionalLogic(b)
 
     # Conditions should reduce to a single condition with wild-card for
@@ -330,33 +396,44 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqualSets(expected, b.conditions)
 
     # Set conditions span all supported architectures and brandings for windows.
-    b = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('ia32', 'Chromium', 'win'),
-                       SourceListCondition('x64', 'Chromium', 'win'),
-                       SourceListCondition('ia32', 'Chrome', 'win'),
-                       SourceListCondition('x64', 'Chrome', 'win')]))
+    b = SourceSet(
+        set(['foo.c']),
+        set([
+            SourceListCondition('ia32', 'Chromium', 'win'),
+            SourceListCondition('x64', 'Chromium', 'win'),
+            SourceListCondition('ia32', 'Chrome', 'win'),
+            SourceListCondition('x64', 'Chrome', 'win')
+        ]))
     gg.ReduceConditionalLogic(b)
     expected = set([SourceListCondition('*', '*', 'win')])
     self.assertEqualSets(expected, b.conditions)
 
     # Set conditions span all supported platforms.
-    c = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('x64', 'Chromium', 'win'),
-                       SourceListCondition('x64', 'Chromium', 'mac'),
-                       SourceListCondition('x64', 'Chromium', 'linux'),
-                       SourceListCondition('x64', 'Chromium', 'android')]))
+    c = SourceSet(
+        set(['foo.c']),
+        set([
+            SourceListCondition('x64', 'Chromium', 'win'),
+            SourceListCondition('x64', 'Chromium', 'mac'),
+            SourceListCondition('x64', 'Chromium', 'linux'),
+            SourceListCondition('x64', 'Chromium', 'android')
+        ]))
     gg.ReduceConditionalLogic(c)
     expected = set([SourceListCondition('x64', 'Chromium', '*')])
     self.assertEqualSets(expected, c.conditions)
 
     # Spans all architectures for Chromium, but also all targets for ia32 & win.
-    d = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('x64', 'Chromium', 'win'),
-                       SourceListCondition('ia32', 'Chromium', 'win'),
-                       SourceListCondition('ia32', 'Chrome', 'win')]))
+    d = SourceSet(
+        set(['foo.c']),
+        set([
+            SourceListCondition('x64', 'Chromium', 'win'),
+            SourceListCondition('ia32', 'Chromium', 'win'),
+            SourceListCondition('ia32', 'Chrome', 'win')
+        ]))
     gg.ReduceConditionalLogic(d)
-    expected = set([SourceListCondition('*', 'Chromium', 'win'),
-                    SourceListCondition('ia32', '*', 'win')])
+    expected = set([
+        SourceListCondition('*', 'Chromium', 'win'),
+        SourceListCondition('ia32', '*', 'win')
+    ])
     self.assertEqualSets(expected, d.conditions)
 
   def testReduceConditions_fullSpan(self):
@@ -372,8 +449,8 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqualSets(expected, ss.conditions)
 
   def testGenerateStanzaWildCard(self):
-    a = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('x64', 'Chromium', '*')]))
+    a = SourceSet(
+        set(['foo.c']), set([SourceListCondition('x64', 'Chromium', '*')]))
     stanza = a.GenerateGnStanza()
     string.index(stanza, '== "x64"')
     string.index(stanza, 'ffmpeg_branding == "Chromium"')
@@ -383,34 +460,33 @@ class SourceSetUnittest(unittest.TestCase):
   def testFixObjectBasenameCollisions(self):
     # Use callback to capture executed renames.
     observed_renames = set()
+
     def do_rename_cb(old_path, new_path, content):
       observed_renames.add((old_path, new_path))
 
     # Verify basic rename case - same basename in different directories.
-    a = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('*', '*', '*')]))
-    b = SourceSet(set(['a/foo.c', 'b/foo.c']),
-                  set([SourceListCondition('*', '*', '*')]))
+    a = SourceSet(set(['foo.c']), set([SourceListCondition('*', '*', '*')]))
+    b = SourceSet(
+        set(['a/foo.c', 'b/foo.c']), set([SourceListCondition('*', '*', '*')]))
     expected_renames = set([('a/foo.c', 'a/autorename_a_foo.c'),
                             ('b/foo.c', 'b/autorename_b_foo.c')])
-    gg.FixObjectBasenameCollisions([a, b], [], do_rename_cb,
-                                   log_renames = False)
+    gg.FixObjectBasenameCollisions([a, b], [], do_rename_cb, log_renames=False)
     self.assertEqual(expected_renames, observed_renames)
 
     # Verify renames file extensions in same and different directory.
     observed_renames = set()
-    a = SourceSet(set(['foo.c']),
-                  set([SourceListCondition('*', '*', '*')]))
-    b = SourceSet(set(['foo.asm']),
-                  set([SourceListCondition('*', '*', '*')]))
-    c = SourceSet(set(['a/foo.S', 'b/foo.asm']),
-                  set([SourceListCondition('*', '*', '*')]))
+    a = SourceSet(set(['foo.c']), set([SourceListCondition('*', '*', '*')]))
+    b = SourceSet(set(['foo.asm']), set([SourceListCondition('*', '*', '*')]))
+    c = SourceSet(
+        set(['a/foo.S', 'b/foo.asm']), set([SourceListCondition('*', '*',
+                                                                '*')]))
     expected_renames = set([('foo.asm', 'autorename_foo.asm'),
                             ('a/foo.S', 'a/autorename_a_foo.S'),
                             ('b/foo.asm', 'b/autorename_b_foo.asm')])
-    gg.FixObjectBasenameCollisions([a, b, c], [], do_rename_cb,
-                                   log_renames = False)
+    gg.FixObjectBasenameCollisions(
+        [a, b, c], [], do_rename_cb, log_renames=False)
     self.assertEqual(expected_renames, observed_renames)
+
 
 if __name__ == '__main__':
   unittest.main()

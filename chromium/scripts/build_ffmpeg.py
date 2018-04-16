@@ -32,7 +32,10 @@ BRANDINGS = [
 
 ARCH_MAP = {
     'android': ['ia32', 'x64', 'mipsel', 'mips64el', 'arm-neon', 'arm64'],
-    'linux': ['ia32', 'x64', 'mipsel', 'mips64el', 'noasm-x64', 'arm', 'arm-neon', 'arm64'],
+    'linux': [
+        'ia32', 'x64', 'mipsel', 'mips64el', 'noasm-x64', 'arm', 'arm-neon',
+        'arm64'
+    ],
     'mac': ['x64'],
     'win': ['ia32', 'x64'],
 }
@@ -205,8 +208,7 @@ def SetupAndroidToolchain(target_arch):
       # correct tree.
       '--extra-cflags=-I' + NDK_ROOT_DIR + '/sysroot/usr/include',
       '--extra-cflags=-I' + NDK_ROOT_DIR + '/sysroot/usr/include/' +
-          toolchain_bin_prefix,
-
+      toolchain_bin_prefix,
       '--extra-cflags=--target=' + toolchain_bin_prefix,
       '--extra-ldflags=--target=' + toolchain_bin_prefix,
       '--extra-ldflags=--gcc-toolchain=' + gcc_toolchain,
@@ -277,13 +279,15 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
           'Target arch : %s\n' % (host_os, target_os, host_arch, target_arch))
 
   RewriteFile(
-      os.path.join(config_dir, 'config.h'), r'(#define FFMPEG_CONFIGURATION .*)',
+      os.path.join(config_dir,
+                   'config.h'), r'(#define FFMPEG_CONFIGURATION .*)',
       (r'/* \1 -- elide long configuration string from binary */'))
 
   # Sanitizers can't compile the h264 code when EBP is used.
   if target_os != 'win' and target_arch == 'ia32':
     RewriteFile(
-        os.path.join(config_dir, 'config.h'), r'(#define HAVE_EBP_AVAILABLE [01])',
+        os.path.join(config_dir,
+                     'config.h'), r'(#define HAVE_EBP_AVAILABLE [01])',
         (r'/* \1 -- ebp selection is done by the chrome build */'))
 
   if target_arch in ('arm', 'arm-neon', 'arm64'):
@@ -347,8 +351,14 @@ def main(argv):
           'Target arch   : %s\n'
           'Parallel jobs : %d\n' % (host_os, target_os, host_arch, target_arch,
                                     parallel_jobs))
-    ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
-                      configure_args, options=options)
+    ConfigureAndBuild(
+        target_arch,
+        target_os,
+        host_os,
+        host_arch,
+        parallel_jobs,
+        configure_args,
+        options=options)
     return
 
   pool_size = len(ARCH_MAP[target_os])
@@ -440,8 +450,8 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       '--enable-parser=opus,vorbis,flac,mpegaudio',
 
       # Setup include path so Chromium's libopus can be used.
-      '--extra-cflags=-I' +
-      os.path.join(CHROMIUM_ROOT_DIR, 'third_party/opus/src/include'),
+      '--extra-cflags=-I' + os.path.join(CHROMIUM_ROOT_DIR,
+                                         'third_party/opus/src/include'),
 
       # Disable usage of Linux Performance API. Not used in production code, but
       # missing system headers break some Android builds.
@@ -486,7 +496,7 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
       # them.  http://crbug.com/559379
       if target_os == 'android':
         configure_flags['Common'].extend([
-          '--disable-x86asm',
+            '--disable-x86asm',
         ])
     elif target_arch == 'arm' or target_arch == 'arm-neon':
       # TODO(ihf): ARM compile flags are tricky. The final options
@@ -537,8 +547,8 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
               '--target-os=linux',
               '--extra-cflags=--target=arm-linux-gnueabihf',
               '--extra-ldflags=--target=arm-linux-gnueabihf',
-              '--sysroot=' + os.path.join(
-                  CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_arm-sysroot'),
+              '--sysroot=' + os.path.join(CHROMIUM_ROOT_DIR,
+                                          'build/linux/debian_sid_arm-sysroot'),
               '--extra-cflags=-mtune=cortex-a8',
               # NOTE: we don't need softfp for this hardware.
               '--extra-cflags=-mfloat-abi=hard',
@@ -564,8 +574,8 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
             '--target-os=linux',
             '--extra-cflags=--target=aarch64-linux-gnu',
             '--extra-ldflags=--target=aarch64-linux-gnu',
-            '--sysroot=' + os.path.join(
-                CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_arm64-sysroot'),
+            '--sysroot=' + os.path.join(CHROMIUM_ROOT_DIR,
+                                        'build/linux/debian_sid_arm64-sysroot'),
         ])
       configure_flags['Common'].extend([
           '--arch=aarch64',
@@ -575,25 +585,25 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
     elif target_arch == 'mipsel':
       # These flags taken from android chrome build with target_cpu='mipsel'
       configure_flags['Common'].extend([
-        '--arch=mipsel',
-        '--disable-mips32r6',
-        '--disable-mips32r5',
-        '--disable-mips32r2',
-        '--disable-mipsdsp',
-        '--disable-mipsdspr2',
-        '--disable-msa',
-        '--enable-mipsfpu',
-        '--extra-cflags=-march=mipsel',
-        '--extra-cflags=-mcpu=mips32',
-        # Required to avoid errors about dynamic relocation w/o -fPIC.
-        '--extra-ldflags=-z notext',
+          '--arch=mipsel',
+          '--disable-mips32r6',
+          '--disable-mips32r5',
+          '--disable-mips32r2',
+          '--disable-mipsdsp',
+          '--disable-mipsdspr2',
+          '--disable-msa',
+          '--enable-mipsfpu',
+          '--extra-cflags=-march=mipsel',
+          '--extra-cflags=-mcpu=mips32',
+          # Required to avoid errors about dynamic relocation w/o -fPIC.
+          '--extra-ldflags=-z notext',
       ])
       if target_os == 'linux':
         configure_flags['Common'].extend([
             '--enable-cross-compile',
             '--target-os=linux',
-            '--sysroot=' + os.path.join(
-                CHROMIUM_ROOT_DIR, 'build/linux/debian_sid_mips-sysroot'),
+            '--sysroot=' + os.path.join(CHROMIUM_ROOT_DIR,
+                                        'build/linux/debian_sid_mips-sysroot'),
             '--extra-cflags=--target=mipsel-linux-gnu',
             '--extra-ldflags=--target=mipsel-linux-gnu',
         ])
@@ -746,15 +756,17 @@ def ConfigureAndBuild(target_arch, target_os, host_os, host_arch, parallel_jobs,
 
   # Only build Chromium, Chrome for ia32, x86 non-android platforms.
   if target_os != 'android':
-    do_build_ffmpeg('Chromium', configure_flags['Common'] +
-                    configure_flags['Chromium'] + configure_args)
+    do_build_ffmpeg(
+        'Chromium', configure_flags['Common'] + configure_flags['Chromium'] +
+        configure_args)
     do_build_ffmpeg(
         'Chrome',
         configure_flags['Common'] + configure_flags['Chrome'] + configure_args)
   else:
     do_build_ffmpeg('Chromium', configure_flags['Common'] + configure_args)
-    do_build_ffmpeg('Chrome', configure_flags['Common'] +
-                    configure_flags['ChromeAndroid'] + configure_args)
+    do_build_ffmpeg(
+        'Chrome', configure_flags['Common'] + configure_flags['ChromeAndroid'] +
+        configure_args)
 
   if target_os in ['linux', 'linux-noasm']:
     # ChromeOS enables MPEG4 which requires error resilience :(
