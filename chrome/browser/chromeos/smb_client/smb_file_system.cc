@@ -387,6 +387,11 @@ AbortCallback SmbFileSystem::WriteFile(
     int64_t offset,
     int length,
     storage::AsyncFileUtil::StatusCallback callback) {
+  if (length == 0) {
+    std::move(callback).Run(base::File::FILE_OK);
+    return CreateAbortCallback();
+  }
+
   const std::vector<uint8_t> data(buffer->data(), buffer->data() + length);
   base::ScopedFD temp_fd = temp_file_manager_.CreateTempFile(data);
 
