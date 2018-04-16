@@ -383,10 +383,9 @@ void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
   int connection_id =
       GetConnectionManager(browser_context())
           ->AddConnection(extension(), std::move(connection), persistent);
-  // TODO(jhawkins): Remove the deviceAddress parameter from the API.
   Respond(
       ArgumentList(easy_unlock_private::FindSetupConnection::Results::Create(
-          connection_id, /* device_address */ std::string())));
+          connection_id)));
 }
 
 ExtensionFunction::ResponseAction
