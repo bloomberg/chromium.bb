@@ -19,7 +19,8 @@
       "--revision",
       "src@HEAD",
       "--gerrit_no_rebase_patch_ref",
-      "--disable-syntax-validation"
+      "--disable-syntax-validation",
+      "--apply-patch-on-gclient"
     ],
     "env_prefixes": {
       "PATH": [
@@ -116,7 +117,8 @@
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
-      "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9"
+      "src@f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9",
+      "--apply-patch-on-gclient"
     ],
     "env_prefixes": {
       "PATH": [

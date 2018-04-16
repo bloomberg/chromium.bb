@@ -18,7 +18,8 @@
       "/path/to/tmp/json",
       "--revision",
       "src@abc",
-      "--disable-syntax-validation"
+      "--disable-syntax-validation",
+      "--apply-patch-on-gclient"
     ],
     "env_suffixes": {
       "PATH": [
