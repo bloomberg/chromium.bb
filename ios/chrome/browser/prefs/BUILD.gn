@@ -9,7 +9,6 @@ source_set("prefs") {
     "ios_chrome_pref_model_associator_client.h",
     "ios_chrome_pref_service_factory.cc",
     "ios_chrome_pref_service_factory.h",
-    "pref_observer_bridge.h",
   ]
   deps = [
     "//base",
