@@ -601,6 +601,25 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     StoragePartition* site_storage =
         BrowserContext::GetStoragePartition(browser_context, site_instance);
 
+    // Log UMA metrics.
+    using SpareProcessMaybeTakeAction =
+        RenderProcessHostImpl::SpareProcessMaybeTakeAction;
+    SpareProcessMaybeTakeAction action =
+        SpareProcessMaybeTakeAction::kNoSparePresent;
+    if (!spare_render_process_host_)
+      action = SpareProcessMaybeTakeAction::kNoSparePresent;
+    else if (browser_context != spare_render_process_host_->GetBrowserContext())
+      action = SpareProcessMaybeTakeAction::kMismatchedBrowserContext;
+    else if (site_storage != spare_render_process_host_->GetStoragePartition())
+      action = SpareProcessMaybeTakeAction::kMismatchedStoragePartition;
+    else if (!should_use_spare)
+      action = SpareProcessMaybeTakeAction::kRefusedByEmbedder;
+    else
+      action = SpareProcessMaybeTakeAction::kSpareTaken;
+    UMA_HISTOGRAM_ENUMERATION(
+        "BrowserRenderProcessHost.SpareProcessMaybeTakeAction", action);
+
+    // Decide whether to take or drop the spare process.
     RenderProcessHost* returned_process = nullptr;
     if (spare_render_process_host_ &&
         browser_context == spare_render_process_host_->GetBrowserContext() &&
@@ -612,6 +631,7 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
       // discard the spare RPH, so if one exists, it should always be live here.
       CHECK(spare_render_process_host_->HasConnection());
 
+      DCHECK_EQ(SpareProcessMaybeTakeAction::kSpareTaken, action);
       returned_process = spare_render_process_host_;
       ReleaseSpareRenderProcessHost(spare_render_process_host_);
     } else if (!RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes()) {

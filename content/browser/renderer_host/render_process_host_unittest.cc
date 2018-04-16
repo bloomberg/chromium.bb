@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
@@ -26,6 +27,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 
 namespace content {
@@ -907,6 +909,17 @@ class SpareRenderProcessHostUnitTest : public RenderViewHostImplTestHarness {
   DISALLOW_COPY_AND_ASSIGN(SpareRenderProcessHostUnitTest);
 };
 
+using SpareProcessMaybeTakeAction =
+    RenderProcessHostImpl::SpareProcessMaybeTakeAction;
+void ExpectSpareProcessMaybeTakeActionBucket(
+    const base::HistogramTester& histograms,
+    SpareProcessMaybeTakeAction expected_action) {
+  EXPECT_THAT(
+      histograms.GetAllSamples(
+          "BrowserRenderProcessHost.SpareProcessMaybeTakeAction"),
+      testing::ElementsAre(base::Bucket(static_cast<int>(expected_action), 1)));
+}
+
 TEST_F(SpareRenderProcessHostUnitTest, TestRendererTaken) {
   RenderProcessHost::WarmupSpareRenderProcessHost(browser_context());
   ASSERT_EQ(1U, rph_factory_.GetProcesses()->size());
@@ -915,9 +928,12 @@ TEST_F(SpareRenderProcessHostUnitTest, TestRendererTaken) {
   EXPECT_EQ(spare_rph, rph_factory_.GetProcesses()->at(0).get());
 
   const GURL kUrl1("http://foo.com");
+  base::HistogramTester histograms;
   SetContents(CreateTestWebContents());
   NavigateAndCommit(kUrl1);
   EXPECT_EQ(spare_rph, main_test_rfh()->GetProcess());
+  ExpectSpareProcessMaybeTakeActionBucket(
+      histograms, SpareProcessMaybeTakeAction::kSpareTaken);
 
   EXPECT_NE(spare_rph,
             RenderProcessHostImpl::GetSpareRenderProcessHostForTesting());
@@ -942,9 +958,12 @@ TEST_F(SpareRenderProcessHostUnitTest, TestRendererNotTaken) {
   EXPECT_EQ(old_spare, rph_factory_.GetProcesses()->at(0).get());
 
   const GURL kUrl1("http://foo.com");
+  base::HistogramTester histograms;
   SetContents(CreateTestWebContents());
   NavigateAndCommit(kUrl1);
   EXPECT_NE(old_spare, main_test_rfh()->GetProcess());
+  ExpectSpareProcessMaybeTakeActionBucket(
+      histograms, SpareProcessMaybeTakeAction::kMismatchedBrowserContext);
 
   // Pumping the message loop here accounts for the delay between calling
   // RPH::Cleanup on the spare and the time when the posted delete actually
@@ -962,6 +981,31 @@ TEST_F(SpareRenderProcessHostUnitTest, TestRendererNotTaken) {
   } else {
     EXPECT_EQ(1U, rph_factory_.GetProcesses()->size());
     EXPECT_EQ(nullptr, new_spare);
+  }
+}
+
+TEST_F(SpareRenderProcessHostUnitTest, SpareMissing) {
+  RenderProcessHostImpl::DiscardSpareRenderProcessHostForTesting();
+  ASSERT_EQ(0U, rph_factory_.GetProcesses()->size());
+  RenderProcessHost* spare_rph =
+      RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  EXPECT_FALSE(spare_rph);
+
+  const GURL kUrl1("http://foo.com");
+  base::HistogramTester histograms;
+  SetContents(CreateTestWebContents());
+  NavigateAndCommit(kUrl1);
+  EXPECT_TRUE(main_test_rfh()->GetProcess());
+  ExpectSpareProcessMaybeTakeActionBucket(
+      histograms, SpareProcessMaybeTakeAction::kNoSparePresent);
+
+  spare_rph = RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
+  if (RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes()) {
+    EXPECT_TRUE(spare_rph);
+    EXPECT_EQ(2U, rph_factory_.GetProcesses()->size());
+  } else {
+    EXPECT_FALSE(spare_rph);
+    EXPECT_EQ(1U, rph_factory_.GetProcesses()->size());
   }
 }
 

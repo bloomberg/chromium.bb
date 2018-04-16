@@ -303,6 +303,17 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void NotifySpareManagerAboutRecentlyUsedBrowserContext(
       BrowserContext* browser_context);
 
+  // This enum backs a histogram, so do not change the order of entries or
+  // remove entries and update enums.xml if adding new entries.
+  enum class SpareProcessMaybeTakeAction {
+    kNoSparePresent = 0,
+    kMismatchedBrowserContext = 1,
+    kMismatchedStoragePartition = 2,
+    kRefusedByEmbedder = 3,
+    kSpareTaken = 4,
+    kMaxValue = kSpareTaken
+  };
+
   static base::MessageLoop* GetInProcessRendererThreadForTesting();
 
   // This forces a renderer that is running "in process" to shut down.
