@@ -94,6 +94,7 @@ class CC_EXPORT LayerTreeSettings {
   size_t decoded_image_working_set_budget_bytes = 128 * 1024 * 1024;
   int max_preraster_distance_in_screen_pixels = 1000;
   viz::ResourceFormat preferred_tile_format;
+  bool unpremultiply_and_dither_low_bit_depth_tiles = false;
 
   bool enable_mask_tiling = true;
 

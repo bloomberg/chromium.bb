@@ -2654,7 +2654,9 @@ LayerTreeHostImpl::CreateRasterBufferProvider() {
         resource_provider_.get(),
         settings_.resource_settings.use_gpu_memory_buffer_resources,
         msaa_sample_count, settings_.preferred_tile_format,
-        settings_.max_gpu_raster_tile_size, use_oop_rasterization_);
+        settings_.max_gpu_raster_tile_size,
+        settings_.unpremultiply_and_dither_low_bit_depth_tiles,
+        use_oop_rasterization_);
   }
 
   bool use_zero_copy = settings_.use_zero_copy;
