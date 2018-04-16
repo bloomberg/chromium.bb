@@ -50,18 +50,6 @@ class SystemPrivateGetApiKeyFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 };
 
-// Dispatches systemPrivate.onBrightnessChanged event for extensions.
-void DispatchBrightnessChangedEvent(int brightness, bool user_initiated);
-
-// Dispatches systemPrivate.onVolumeChanged event for extensions.
-void DispatchVolumeChangedEvent(double volume, bool is_volume_muted);
-
-// Dispatches systemPrivate.onScreenChanged event for extensions.
-void DispatchScreenUnlockedEvent();
-
-// Dispatches systemPrivate.onWokeUp event for extensions.
-void DispatchWokeUpEvent();
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SYSTEM_PRIVATE_SYSTEM_PRIVATE_API_H_
