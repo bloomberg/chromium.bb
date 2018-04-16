@@ -24,6 +24,7 @@ class ExceptionState;
 class GetNotificationOptions;
 class NotificationOptions;
 class NotificationResourcesLoader;
+class ScriptPromiseResolver;
 class ScriptState;
 class SecurityOrigin;
 class ServiceWorkerRegistration;
@@ -62,10 +63,11 @@ class ServiceWorkerRegistrationNotifications final
       ServiceWorkerRegistration& registration);
 
   void PrepareShow(const WebNotificationData& data,
-                   std::unique_ptr<WebNotificationShowCallbacks> callbacks);
+                   ScriptPromiseResolver* resolver);
+
   void DidLoadResources(scoped_refptr<const SecurityOrigin> origin,
                         const WebNotificationData& data,
-                        std::unique_ptr<WebNotificationShowCallbacks> callbacks,
+                        ScriptPromiseResolver* resolver,
                         NotificationResourcesLoader* loader);
 
   Member<ServiceWorkerRegistration> registration_;
