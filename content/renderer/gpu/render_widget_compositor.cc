@@ -69,7 +69,6 @@
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_composite_and_readback_async_callback.h"
-#include "third_party/blink/public/platform/web_layout_and_paint_async_callback.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
@@ -290,7 +289,6 @@ RenderWidgetCompositor::RenderWidgetCompositor(
       threaded_(!!compositor_deps_->GetCompositorImplThreadTaskRunner()),
       never_visible_(false),
       is_for_oopif_(false),
-      layout_and_paint_async_callback_(nullptr),
       weak_factory_(this) {}
 
 void RenderWidgetCompositor::Initialize(
@@ -990,10 +988,9 @@ bool RenderWidgetCompositor::CompositeIsSynchronous() const {
   return false;
 }
 
-void RenderWidgetCompositor::LayoutAndPaintAsync(
-    blink::WebLayoutAndPaintAsyncCallback* callback) {
-  DCHECK(!layout_and_paint_async_callback_);
-  layout_and_paint_async_callback_ = callback;
+void RenderWidgetCompositor::LayoutAndPaintAsync(base::OnceClosure callback) {
+  DCHECK(layout_and_paint_async_callback_.is_null());
+  layout_and_paint_async_callback_ = std::move(callback);
 
   if (CompositeIsSynchronous()) {
     // The LayoutAndPaintAsyncCallback is invoked in WillCommit, which is
@@ -1018,15 +1015,13 @@ void RenderWidgetCompositor::SetLayerTreeFrameSink(
 }
 
 void RenderWidgetCompositor::InvokeLayoutAndPaintCallback() {
-  if (!layout_and_paint_async_callback_)
-    return;
-  layout_and_paint_async_callback_->DidLayoutAndPaint();
-  layout_and_paint_async_callback_ = nullptr;
+  if (!layout_and_paint_async_callback_.is_null())
+    std::move(layout_and_paint_async_callback_).Run();
 }
 
 void RenderWidgetCompositor::CompositeAndReadbackAsync(
     blink::WebCompositeAndReadbackAsyncCallback* callback) {
-  DCHECK(!layout_and_paint_async_callback_);
+  DCHECK(layout_and_paint_async_callback_.is_null());
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner();
   std::unique_ptr<viz::CopyOutputRequest> request =

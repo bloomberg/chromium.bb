@@ -8,6 +8,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -208,7 +209,7 @@ void TestRunnerForSpecificView::LayoutAndPaintAsync() {
   // this structure more generic.
   test_runner::LayoutAndPaintAsyncThen(
       web_view()->MainFrame()->ToWebLocalFrame()->FrameWidget(),
-      base::Closure());
+      base::DoNothing());
 }
 
 void TestRunnerForSpecificView::LayoutAndPaintAsyncThen(

@@ -49,7 +49,6 @@ namespace blink {
 
 class WebCompositeAndReadbackAsyncCallback;
 class WebLayer;
-class WebLayoutAndPaintAsyncCallback;
 struct WebPoint;
 class WebSelection;
 
@@ -147,9 +146,7 @@ class WebLayerTreeView {
   virtual void DidStopFlinging() {}
 
   // Run layout and paint of all pending document changes asynchronously.
-  // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback
-  // object alive until it is called.
-  virtual void LayoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) {}
+  virtual void LayoutAndPaintAsync(base::OnceClosure callback) {}
 
   // The caller is responsible for keeping the
   // WebCompositeAndReadbackAsyncCallback object alive until it is called.

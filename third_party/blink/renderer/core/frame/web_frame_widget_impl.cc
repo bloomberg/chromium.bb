@@ -378,9 +378,8 @@ void WebFrameWidgetImpl::ClearBaseBackgroundColorOverride() {
   UpdateBaseBackgroundColor();
 }
 
-void WebFrameWidgetImpl::LayoutAndPaintAsync(
-    WebLayoutAndPaintAsyncCallback* callback) {
-  layer_tree_view_->LayoutAndPaintAsync(callback);
+void WebFrameWidgetImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
+  layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
 }
 
 void WebFrameWidgetImpl::CompositeAndReadbackAsync(

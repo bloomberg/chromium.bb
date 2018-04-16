@@ -148,8 +148,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void HeuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   void SetNeedsBeginFrame() override;
   void DidStopFlinging() override;
-  void LayoutAndPaintAsync(
-      blink::WebLayoutAndPaintAsyncCallback* callback) override;
+  void LayoutAndPaintAsync(base::OnceClosure callback) override;
   void CompositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback) override;
   void SynchronouslyCompositeNoRasterForTesting() override;
@@ -254,7 +253,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 
   bool in_synchronous_compositor_update_ = false;
-  blink::WebLayoutAndPaintAsyncCallback* layout_and_paint_async_callback_;
+  base::OnceClosure layout_and_paint_async_callback_;
 
   viz::FrameSinkId frame_sink_id_;
 

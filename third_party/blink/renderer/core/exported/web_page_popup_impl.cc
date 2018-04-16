@@ -574,9 +574,8 @@ LocalDOMWindow* WebPagePopupImpl::Window() {
   return page_->DeprecatedLocalMainFrame()->DomWindow();
 }
 
-void WebPagePopupImpl::LayoutAndPaintAsync(
-    WebLayoutAndPaintAsyncCallback* callback) {
-  layer_tree_view_->LayoutAndPaintAsync(callback);
+void WebPagePopupImpl::LayoutAndPaintAsync(base::OnceClosure callback) {
+  layer_tree_view_->LayoutAndPaintAsync(std::move(callback));
 }
 
 void WebPagePopupImpl::CompositeAndReadbackAsync(
